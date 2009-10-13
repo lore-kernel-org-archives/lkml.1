@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZJMEuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752548AbZJMEud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbZJMEuL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 00:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZJMEuK
+	id S1752548AbZJMEud (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 00:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZJMEuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 00:50:10 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:44273 "EHLO e8.ny.us.ibm.com"
+	Tue, 13 Oct 2009 00:50:32 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:55157 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752346AbZJMEuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 00:50:08 -0400
-Date: Mon, 12 Oct 2009 21:50:41 -0700
+	id S1752125AbZJMEub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 00:50:31 -0400
+Date: Mon, 12 Oct 2009 21:51:04 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
@@ -22,8 +22,8 @@ Cc: Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
        kosaki.motohiro@jp.fujitsu.com, randy.dunlap@oracle.com,
        linux-api@vger.kernel.org,
        Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
-Subject: [RFC][v8][PATCH 3/10]: Make pid_max a pid_ns property
-Message-ID: <20091013045041.GC28435@us.ibm.com>
+Subject: [RFC][v8][PATCH 4/10]: Add target_pid parameter to alloc_pidmap()
+Message-ID: <20091013045104.GD28435@us.ibm.com>
 References: <20091013044925.GA28181@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,109 +37,87 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-From: Serge Hallyn <serue@us.ibm.com>
-Subject: [RFC][v8][PATCH 3/10]: Make pid_max a pid_ns property
+Subject: [RFC][v8][PATCH 4/10]: Add target_pid parameter to alloc_pidmap()
 
-Remove the pid_max global, and make it a property of the
-pid_namespace.  When a pid_ns is created, it inherits
-the parent's pid_ns.
+With support for setting a specific pid number for a process,
+alloc_pidmap() will need a 'target_pid' parameter.
 
-Fixing up sysctl (trivial akin to ipc version, but
-potentially tedious to get right for all CONFIG*
-combinations) is left for later.
-
+Changelog[v6]:
+	- Separate target_pid > 0 case to minimize the number of checks needed.
+Changelog[v3]:
+	- (Eric Biederman): Avoid set_pidmap() function. Added couple of
+	  checks for target_pid in alloc_pidmap() itself.
 Changelog[v2]:
-	- Port to newer kernel
-	- Make pid_max a local variable in alloc_pidmap() to simplify code/patch
+	- (Serge Hallyn) Check for 'pid < 0' in set_pidmap().(Code
+	  actually checks for 'pid <= 0' for completeness).
 
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
- include/linux/pid_namespace.h |    1 +
- kernel/pid.c                  |    4 ++--
- kernel/pid_namespace.c        |    1 +
- kernel/sysctl.c               |    4 ++--
- 4 files changed, 6 insertions(+), 4 deletions(-)
+ kernel/pid.c |   26 +++++++++++++++++++++-----
+ 1 file changed, 21 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/include/linux/pid_namespace.h
-===================================================================
---- linux-2.6.orig/include/linux/pid_namespace.h	2009-09-09 19:06:21.000000000 -0700
-+++ linux-2.6/include/linux/pid_namespace.h	2009-09-09 19:07:20.000000000 -0700
-@@ -30,6 +30,7 @@ struct pid_namespace {
- #ifdef CONFIG_BSD_PROCESS_ACCT
- 	struct bsd_acct_struct *bacct;
- #endif
-+	int pid_max;
- };
- 
- extern struct pid_namespace init_pid_ns;
 Index: linux-2.6/kernel/pid.c
 ===================================================================
---- linux-2.6.orig/kernel/pid.c	2009-09-09 19:06:46.000000000 -0700
-+++ linux-2.6/kernel/pid.c	2009-09-09 19:07:20.000000000 -0700
-@@ -43,8 +43,6 @@ static struct hlist_head *pid_hash;
- static int pidhash_shift;
- struct pid init_struct_pid = INIT_STRUCT_PID;
+--- linux-2.6.orig/kernel/pid.c	2009-09-09 19:07:20.000000000 -0700
++++ linux-2.6/kernel/pid.c	2009-09-10 10:23:27.000000000 -0700
+@@ -146,16 +146,22 @@ static int alloc_pidmap_page(struct pidm
+ 	return 0;
+ }
  
--int pid_max = PID_MAX_DEFAULT;
--
- #define RESERVED_PIDS		300
- 
- int pid_max_min = RESERVED_PIDS + 1;
-@@ -78,6 +76,7 @@ struct pid_namespace init_pid_ns = {
- 	.last_pid = 0,
- 	.level = 0,
- 	.child_reaper = &init_task,
-+	.pid_max = PID_MAX_DEFAULT,
- };
- EXPORT_SYMBOL_GPL(init_pid_ns);
- 
-@@ -151,6 +150,7 @@ static int alloc_pidmap(struct pid_names
+-static int alloc_pidmap(struct pid_namespace *pid_ns)
++static int alloc_pidmap(struct pid_namespace *pid_ns, int target_pid)
  {
  	int i, offset, max_scan, pid, last = pid_ns->last_pid;
  	int rc = -EAGAIN;
-+	int pid_max = pid_ns->pid_max;
+ 	int pid_max = pid_ns->pid_max;
  	struct pidmap *map;
  
- 	pid = last + 1;
-Index: linux-2.6/kernel/pid_namespace.c
-===================================================================
---- linux-2.6.orig/kernel/pid_namespace.c	2009-09-09 19:06:21.000000000 -0700
-+++ linux-2.6/kernel/pid_namespace.c	2009-09-09 19:07:20.000000000 -0700
-@@ -87,6 +87,7 @@ static struct pid_namespace *create_pid_
+-	pid = last + 1;
+-	if (pid >= pid_max)
+-		pid = RESERVED_PIDS;
++	if (target_pid) {
++		pid = target_pid;
++		if (pid < 0 || pid >= pid_max)
++			return -EINVAL;
++	} else {
++		pid = last + 1;
++		if (pid >= pid_max)
++			pid = RESERVED_PIDS;
++	}
+ 	offset = pid & BITS_PER_PAGE_MASK;
+ 	map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
+ 	max_scan = (pid_max + BITS_PER_PAGE - 1)/BITS_PER_PAGE - !offset;
+@@ -164,6 +170,15 @@ static int alloc_pidmap(struct pid_names
+ 		if (rc)
+ 			break;
  
- 	kref_init(&ns->kref);
- 	ns->level = level;
-+	ns->pid_max = parent_pid_ns->pid_max;
- 	ns->parent = get_pid_ns(parent_pid_ns);
++		if (target_pid) {
++			rc = -EBUSY;
++			if (!test_and_set_bit(offset, map->page)) {
++				atomic_dec(&map->nr_free);
++				rc = pid;
++			}
++			return rc;
++		}
++
+ 		if (likely(atomic_read(&map->nr_free))) {
+ 			do {
+ 				if (!test_and_set_bit(offset, map->page)) {
+@@ -196,6 +211,7 @@ static int alloc_pidmap(struct pid_names
+ 		}
+ 		pid = mk_pid(pid_ns, map, offset);
+ 	}
++
+ 	return rc;
+ }
  
- 	set_bit(0, ns->pidmap[0].page);
-Index: linux-2.6/kernel/sysctl.c
-===================================================================
---- linux-2.6.orig/kernel/sysctl.c	2009-09-09 19:06:21.000000000 -0700
-+++ linux-2.6/kernel/sysctl.c	2009-09-09 19:07:20.000000000 -0700
-@@ -55,6 +55,7 @@
+@@ -272,7 +288,7 @@ struct pid *alloc_pid(struct pid_namespa
  
- #include <asm/uaccess.h>
- #include <asm/processor.h>
-+#include <linux/pid_namespace.h>
+ 	tmp = ns;
+ 	for (i = ns->level; i >= 0; i--) {
+-		nr = alloc_pidmap(tmp);
++		nr = alloc_pidmap(tmp, 0);
+ 		if (nr < 0)
+ 			goto out_free;
  
- #ifdef CONFIG_X86
- #include <asm/nmi.h>
-@@ -78,7 +79,6 @@ extern int max_threads;
- extern int core_uses_pid;
- extern int suid_dumpable;
- extern char core_pattern[];
--extern int pid_max;
- extern int min_free_kbytes;
- extern int pid_max_min, pid_max_max;
- extern int sysctl_drop_caches;
-@@ -670,7 +670,7 @@ static struct ctl_table kern_table[] = {
- 	{
- 		.ctl_name	= KERN_PIDMAX,
- 		.procname	= "pid_max",
--		.data		= &pid_max,
-+		.data		= &init_pid_ns.pid_max,
- 		.maxlen		= sizeof (int),
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec_minmax,
