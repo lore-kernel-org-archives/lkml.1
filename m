@@ -1,90 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZJMO50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbZJMO5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbZJMO50 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759670AbZJMO50
+	id S1760121AbZJMO5a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760051AbZJMO52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:57:26 -0400
-Received: from lennier.cc.vt.edu ([198.82.162.213]:36029 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758721AbZJMO5Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:57:25 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Herbert Poetzl <herbert@13thfloor.at>, vatsa@in.ibm.com,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
-In-Reply-To: Your message of "Tue, 13 Oct 2009 16:19:41 +0400."
-             <4AD4705D.6020109@openvz.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20090930124919.GA19951@in.ibm.com> <4AC35EDD.1080902@openvz.org> <20090930142537.GJ19951@in.ibm.com> <20090930143953.GA2014@in.ibm.com> <4AD466E5.4010206@openvz.org> <20091013120354.GF24787@MAIL.13thfloor.at>
-            <4AD4705D.6020109@openvz.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1255445760_3097P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 13 Oct 2009 10:57:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48881 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760025AbZJMO51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 10:57:27 -0400
+Message-ID: <4AD4950A.6050201@kernel.org>
+Date: Tue, 13 Oct 2009 23:56:10 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mel Gorman <mel@csn.ul.ie>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [this_cpu_xx V6 3/7] Use this_cpu operations in slub
+References: <20091007211024.442168959@gentwo.org> <20091007211052.614790286@gentwo.org> <4AD302A8.4010409@kernel.org> <alpine.DEB.1.10.0910121053240.7932@gentwo.org> <4AD3E23B.8020103@kernel.org> <alpine.DEB.1.10.0910131037420.21608@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0910131037420.21608@gentwo.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Tue, 13 Oct 2009 10:56:00 -0400
-Message-ID: <4906.1255445760@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.14.107 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=dagger.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020202.4AD49501.009E,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Oct 2009 14:56:13 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1255445760_3097P
-Content-Type: text/plain; charset=us-ascii
-
-On Tue, 13 Oct 2009 16:19:41 +0400, Pavel Emelyanov said:
-
-> >   with 50%, you get 1s/0.5s
-> >   with 20%, you get 1s/0.2s
-> >   with  5%, you get 1s/0.05s
-> > 
-> > well, you get the idea :)
+Christoph Lameter wrote:
+> On Tue, 13 Oct 2009, Tejun Heo wrote:
 > 
-> No I don't.
-> Is 1s/0.5s worse or better than 2s/1s?
-> How should I make a choice?
+>> The only difference between this_cpu_ptr() and __this_cpu_ptr() is the
+>> usage of my_cpu_offset and __my_cpu_offset which in turn are only
+>> different in whether they check preemption status to make sure the cpu
+>> is pinned down when called.
+> 
+> Correct.
+> 
+>> The only places where the underbar prefixed versions should be used
+>> are places where cpu locality is nice but not critical and preemption
+>> debug check wouldn't work properly for whatever reason.  The above is
+>> none of the two and the conversion is buried in a patch which is
+>> supposed to do something else.  Am I missing something?
+> 
+> I used __this_cpu_* whenever the context is already providing enough
+> safety that preempt disable or irq disable would not matter. The use of
+> __this_cpu_ptr was entirely for consistent usage here. this_cpu_ptr would
+> be safer because it has additional checks that preemption really is
+> disabled. So if someone gets confused about logic flow later it can be
+> dtected.
 
-It depends how sensitive you want to be to short bursts of CPU usage.
+Yeah, widespread use of underscored versions isn't very desirable.
+The underscored versions should notify certain specific exceptional
+conditions instead of being used as general optimization (which
+doesn't make much sense after all as the optimization is only
+meaningful with debug option turned on).  Are you interested in doing
+a sweeping patch to drop underscores from __this_cpu_*() conversions?
 
-And of course, if we're going down that route, I'll point out that over in
-the network world, 95% percentile billing is pretty popular.  How to do it
-in this application, I have not a clue. ;)
+Thanks.
 
-http://en.wikipedia.org/wiki/Burstable_billing
-
---==_Exmh_1255445760_3097P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFK1JUAcC3lWbTT17ARApoJAKCc/qiRsyBiEjROl21lNpLe1mPk3QCgiVx4
-G/6dvU82BMIBOGogyNCIw0g=
-=N46y
------END PGP SIGNATURE-----
-
---==_Exmh_1255445760_3097P--
-
+-- 
+tejun
