@@ -1,65 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbZJMBtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758375AbZJMBwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932252AbZJMBtM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 21:49:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbZJMBtM
+	id S1758375AbZJMBwj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 21:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZJMBwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 21:49:12 -0400
-Received: from mail-vw0-f203.google.com ([209.85.212.203]:40910 "EHLO
-	mail-vw0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754835AbZJMBtL convert rfc822-to-8bit (ORCPT
+	Mon, 12 Oct 2009 21:52:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55264 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753498AbZJMBwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 21:49:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=d/AzfbKen+NL13aM0ccxKqUpncI2nCN4O9ulv8a0Z7uVK7il4JBKrpIlA6QiRbSu3H
-         h7M3DNg39gIMMYZUYS24xlsZslvs2Sow2xtENP14Ihbq/vfwXiHC7kp6ZCSiQQupXdEZ
-         90hNuX8s75LEian9G/MYxIKLz0x8L/nBJ9zII=
-MIME-Version: 1.0
-In-Reply-To: <a4423d670910060354j30be25car1aa966f23639e150@mail.gmail.com>
-References: <a4423d670910020246n1e82644bud8b7a01d49b93e26@mail.gmail.com>
-	 <1254780056.8066.6.camel@dwillia2-linux.ch.intel.com>
-	 <a4423d670910060354j30be25car1aa966f23639e150@mail.gmail.com>
-Date: Mon, 12 Oct 2009 18:48:34 -0700
-X-Google-Sender-Auth: ea55568da7f35149
-Message-ID: <e9c3a7c20910121848u69e0a225t1eb03c43e011ebb2@mail.gmail.com>
-Subject: Re: 2.6.32-rc2: Intel(R) I/OAT DMA Engine init failed
-From: Dan Williams <dan.j.williams@intel.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 12 Oct 2009 21:52:38 -0400
+Date: Mon, 12 Oct 2009 18:51:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Oleg Nesterov <onestero@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [resend][PATCH v2] mlock() doesn't wait to finish
+ lru_add_drain_all()
+Message-Id: <20091012185139.75c13648.akpm@linux-foundation.org>
+In-Reply-To: <20091013090347.C752.A69D9226@jp.fujitsu.com>
+References: <20091009111709.1291.A69D9226@jp.fujitsu.com>
+	<20091012165747.97f5bd87.akpm@linux-foundation.org>
+	<20091013090347.C752.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 6, 2009 at 3:54 AM, Alexander Beregalov
-<a.beregalov@gmail.com> wrote:
-> but when I commented DEBUG definition, it failed again:
->
-> ioatdma: Intel(R) QuickData Technology Driver 4.00
-> ioatdma 0000:00:08.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> ioatdma 0000:00:08.0: setting latency timer to 64
->  alloc irq_desc for 33 on node -1
->  alloc kstat_irqs on node -1
-> ioatdma 0000:00:08.0: irq 33 for MSI/MSI-X
-> ioatdma 0000:00:08.0: Self-test copy timed out, disabling 0:0
-> ioatdma 0000:00:08.0: Intel(R) I/OAT DMA Engine init failed
-> ioatdma 0000:00:08.0: PCI INT A disabled
+On Tue, 13 Oct 2009 10:17:48 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-Odd, it looks like neither a dma channel interrupt nor the timer fired
-while this operation was in flight.  However, when you turn on debug
-we see timer events firing as expected (ioat1_timer_event).  The
-operation completes successfully ( dma->device_is_tx_complete returns
-DMA_SUCCESS), but its not clear what is causing us to violate the
-timeout.  Before bisecting can you try commit 1f6672d4?  This is the
-state of the aysnc_tx.git tree before it was merged for 2.6.32.  If
-that fails then a full bisect is the only recourse I can see to get
-closer to root cause.
+> Hi
+> 
+> > On Fri,  9 Oct 2009 11:21:55 +0900 (JST)
+> > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > 
+> > > Recently, Mike Galbraith reported mlock() makes hang-up very long time in
+> > > his system. Peter Zijlstra explainted the reason.
+> > > 
+> > >   Suppose you have 2 cpus, cpu1 is busy doing a SCHED_FIFO-99 while(1),
+> > >   cpu0 does mlock()->lru_add_drain_all(), which does
+> > >   schedule_on_each_cpu(), which then waits for all cpus to complete the
+> > >   work. Except that cpu1, which is busy with the RT task, will never run
+> > >   keventd until the RT load goes away.
+> > > 
+> > >   This is not so much an actual deadlock as a serious starvation case.
+> > > 
+> > > His system has two partions using cpusets and RT-task partion cpu doesn't
+> > > have any PCP cache. thus, this result was pretty unexpected.
+> > > 
+> > > The fact is, mlock() doesn't need to wait to finish lru_add_drain_all().
+> > > if mlock() can't turn on PG_mlock, vmscan turn it on later.
+> > > 
+> > > Thus, this patch replace it with lru_add_drain_all_async().
+> > 
+> > So why don't we just remove the lru_add_drain_all() call from sys_mlock()?
+> 
+> There are small reason. the administrators and the testers (include me)
+> look at Mlock field in /proc/meminfo.
+> They natually expect Mlock field match with actual number of mlocked pages
+> if the system don't have any stress. Otherwise, we can't make mlock test case ;)
+> 
+> 
+> > How did you work out why the lru_add_drain_all() is present in
+> > sys_mlock() anyway?  Neither the code nor the original changelog tell
+> > us.  Who do I thwap for that?  Nick and his reviewers.  Sigh.
+> 
+> [Umm, My dictionaly don't tell me the meaning of "thwap".  An meaning of
+> an imitative word strongly depend on culture. Thus, I probably
+> misunderstand this paragraph.]
 
-Thanks,
-Dan
+"slap"?
+
+> I've understand the existing reason by looooooong time review.
+> 
+> 
+> > There are many callers of lru_add_drain_all() all over the place.  Each
+> > of those is vulnerable to the same starvation issue, is it not?
+> 
+> There are.
+> 
+> > If so, it would be better to just fix up lru_add_drain_all().  Afaict
+> > all of its functions can be performed in hard IRQ context, so we can
+> > use smp_call_function()?
+> 
+> There is a option. but it have one downside, it require lru_add_pvecs
+> related function call irq_disable().
+
+I don't know what this means.  ____pagevec_lru_add() (for example) can
+be trivially changed from spin_lock_irq() to spin_lock_irqsave().
+
+In other cases we can perhaps split an existing
+
+foo()
+{
+	spin_lock_irq(zone->lock);
+}
+
+into
+
+__foo()
+{
+	spin_lock(zone->lock);
+}
+
+foo()
+{
+	local_irq_disable()
+	__foo();
+}
+
+then call the new __foo().
+	
+
