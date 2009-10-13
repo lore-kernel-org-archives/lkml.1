@@ -1,89 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933856AbZJMKQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759336AbZJMKSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933856AbZJMKQS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 06:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759299AbZJMKQS
+	id S1759336AbZJMKSU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 06:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759325AbZJMKST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 06:16:18 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:54485 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756240AbZJMKQR (ORCPT
+	Tue, 13 Oct 2009 06:18:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46175
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759323AbZJMKSS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 06:16:17 -0400
-Subject: Re: [RFC][PATCH 0/2] LIS3LV02D I2C driver
-From: Onkalo Samu <samu.p.onkalo@nokia.com>
-Reply-To: samu.p.onkalo@nokia.com
-To: ext =?ISO-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>
-Cc: Jonathan Cameron <Jonathan.Cameron@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>,
-       Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <4ACCCF48.5090005@tremplin-utc.net>
-References: <1254391591-9696-1-git-send-email-samu.p.onkalo@nokia.com>
-	 <4ACCC273.1030308@gmail.com> <4ACCC957.3060802@tremplin-utc.net>
-	 <4ACCCF48.5090005@tremplin-utc.net>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Nokia Oyj
-Date: Tue, 13 Oct 2009 13:13:33 +0300
-Message-Id: <1255428813.3974.9.camel@4fid08082>
+	Tue, 13 Oct 2009 06:18:18 -0400
+Date: Tue, 13 Oct 2009 03:18:14 -0700 (PDT)
+Message-Id: <20091013.031814.100807531.davem@davemloft.net>
+To: eric.dumazet@gmail.com
+Cc: herbert@gondor.apana.org.au, rjw@sisk.pl, Ralf.Hildebrandt@charite.de,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       netdev@vger.kernel.org, yjwei@cn.fujitsu.com, tyasui@redhat.com,
+       haoki@redhat.com
+Subject: Re: [PATCH] udp: Fix udp_poll() and ioctl()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4ACF4C1C.4050505@gmail.com>
+References: <4AC78F7C.40908@gmail.com>
+	<4ACCB6BE.5040602@gmail.com>
+	<4ACF4C1C.4050505@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 13 Oct 2009 10:13:40.0555 (UTC) FILETIME=[D624D1B0:01CA4BED]
-X-Nokia-AV: Clean
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 19:26 +0200, ext Éric Piel wrote:
-> Op 07-10-09 19:01, Éric Piel schreef:
-> > Op 07-10-09 18:31, Jonathan Cameron schreef:
-> >> Just a quick heads up wrt overlapping work.
-> >>
-> >> For the i2c support Kalhan Trisal has been posting patches for i2c
-> >> support for this
-> >> driver to the lm-sensors list for some time and the latest version of that
-> >> set is also pretty clean.
-> > You mean this post, right?
-> > http://lists.lm-sensors.org/pipermail/lm-sensors/2009-August/026505.html
-> > "Accelerometer driver for STMicroeletronics-LIS331DL-three-axis-digital"
-> > Thanks for the heads up, I had never heard of this driver before.
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Fri, 09 Oct 2009 16:43:40 +0200
+
+> [PATCH] udp: Fix udp_poll()
 > 
-> :
-> > Kalhan, would
-> > you mind having a look at the patch from Samu, and see what is required
-> > to get your LIS331DL working with the lis3lv02d driver? It should be
-> > very little and avoid duplication of efforts :-)
-> Ah, bah,
-> I see you have actually already more or less done this!
-> http://lists.lm-sensors.org/pipermail/lm-sensors/2009-October/026840.html
-> "I2C glue layer for lis3lv02d STMicroelectronics digital accelerometer"
+> udp_poll() can in some circumstances drop frames with incorrect checksums.
 > 
-> The main thing you forgot to do with this patch was to CC the maintainer
-> of the driver (AKA me) ;-)
+> Problem is we now have to lock the socket while dropping frames, or risk
+> sk_forward corruption.
 > 
-> Anyway, this version is _very_ close to the one from Samu. It has just
-> all the basics, really clean! Samu has already added some nifty things
-> (like changing the axis conversion, support for suspend...). So it
-> should _really_ easy to converge :-) As Samu's patch is already in
-> Andrew's queue, I think it's simpler to leave it as it, and just to keep
-> my request to you, Kalhan, to check that it works for your hardware as
-> well.
+> This bug is present since commit 95766fff6b9a78d1
+> ([UDP]: Add memory accounting.)
+> 
+> While we are at it, we can correct ioctl(SIOCINQ) to also drop bad frames.
+> 
+> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 
-Hi Kalhan,
-
-Have you been able to test my patch if it works also for your HW?
-
-http://marc.info/?l=linux-kernel&m=125472767421625&w=2
-
-http://marc.info/?l=linux-kernel&m=125472767421629&w=2
-
-http://marc.info/?l=linux-kernel&m=125472767421639&w=2
-
-Br,
-Samu
-
-
-
+Looks good, applied, thanks Eric!
