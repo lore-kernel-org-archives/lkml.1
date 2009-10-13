@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760294AbZJMPeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbZJMPfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760294AbZJMPeP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760285AbZJMPeO
+	id S1760302AbZJMPfH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 11:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760297AbZJMPfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:34:14 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:38520
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756448AbZJMPeN (ORCPT
+	Tue, 13 Oct 2009 11:35:06 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:62982 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760290AbZJMPfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:34:13 -0400
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-From: Paul Fulghum <paulkf@microgate.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Nix <nix@esperi.org.uk>,
-       "Justin P. Mattock" <justinmattock@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Boyan <btanastasov@yahoo.co.uk>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= "L. W. Meunier" <fredlwm@gmail.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-In-Reply-To: <alpine.LFD.2.01.0910130721530.3438@localhost.localdomain>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
-	 <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera>
-	 <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com>
-	 <87ljjgfcbu.fsf@spindle.srvr.nix>
-	 <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>
-	 <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
-	 <20091013113232.384b2432@lxorguk.ukuu.org.uk>
-	 <alpine.LFD.2.01.0910130721530.3438@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 13 Oct 2009 10:33:00 -0500
-Message-Id: <1255447980.3898.3.camel@x2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Oct 2009 11:35:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=MfzXjoClPAAFcV67hrb31afHxkTOIl82tKNA9Qe0HYjeTvUJStiqi8oJh/rcb1XhNT
+         X9NlRov4uBCoMgJlYr+m6W0dLhsPdfFa7vMH80r1zr2AWhGRfLA29adDN7A7RXpFRPjA
+         5vrGk13+WuIxwXLsoqTJxQgQ3siiVARN6KRAQ=
+MIME-Version: 1.0
+In-Reply-To: <20091013154943.1e1d3c3f@lxorguk.ukuu.org.uk>
+References: <817ecb6f0910121803p52a4049ep4a712545d28bba76@mail.gmail.com>
+	 <20091012213229.11898c12@infradead.org>
+	 <20091013060312.GA3215@elte.hu>
+	 <817ecb6f0910130435q56fcbf63r82fae9b94f3eb199@mail.gmail.com>
+	 <20091013070722.6e27b25e@infradead.org>
+	 <20091013141527.GA7053@elte.hu>
+	 <20091013072907.1daeba73@infradead.org>
+	 <20091013154943.1e1d3c3f@lxorguk.ukuu.org.uk>
+Date: Tue, 13 Oct 2009 11:34:26 -0400
+Message-ID: <817ecb6f0910130834y1b039515q245d586e5e281fc6@mail.gmail.com>
+Subject: Re: [PATCH V5] x86: NX protection for kernel data
+From: Siarhei Liakh <sliakh.lkml@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>, Aristeu Rozanski <aris@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 07:39 -0700, Linus Torvalds wrote:
-> It's not a f*cking performance tweak, and you're ludicrous to claim it is. 
-> It's pointless, and it's making the code _slower_ rather than faster.
-> 
-> Lookie here, Alan - the common sequence is crap like this:
-> 
-> 	tty_buffer_request_room(tty, buf->size);
-> 	tty_insert_flip_string(tty, buf->base, buf->size);
+>> I'd be surprised if anything ever did; this is the *kernel* mapping of
+>> the first megabyte, not some userspace mapping....
+>
+> APM, BIOS32, EDD, PnPBIOS ..
+>
+> However except for APM (which isn't generally needed on NX capable
+> devices or found on them) none of them are usually on critical paths
+> because EDD is just grovelling around sort of stuff, and BIOS32 isn't
+> generally used by the kernel anyway so could probably cope with flipping
+> the permissions on the low 1 MB each call.
 
-The performance tweak of tty_prepare_xxx is that you fill
-the tty_buffer directly instead of writing data first to a staging
-buffer and then calling tty_insert_flip_string, which just copies
-from the staging buffer to the tty_buffer. So it saves a copy operation.
- 
---
-Paul Fulghum
-Microgate Systems, Ltd
+Actually, I have posted a patch to fix RW+X problem with BIOS32 some
+time ago. See my submission to LKML (and subsequent discussion) on Jul
+19 2009 "[PATCH] x86: Reducing footprint of BIOS32 service mappings".
 
+Nevertheless, that 1MB area is on my "to do" list, and I will be
+patching it sooner or later (assuming I get my patches tested well
+enough to get them accepted).
