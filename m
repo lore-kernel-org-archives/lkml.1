@@ -1,128 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933728AbZJMHqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759070AbZJMHtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933728AbZJMHqL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 03:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759065AbZJMHqK
+	id S1759070AbZJMHtF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 03:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZJMHtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 03:46:10 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57458 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758982AbZJMHqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 03:46:09 -0400
-Message-ID: <4AD42FF5.2080109@cn.fujitsu.com>
-Date: Tue, 13 Oct 2009 15:44:53 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
-       mtosatti@redhat.com, torvalds@linux-foundation.org
-Subject: Re: [PATCH RFC tip/core/rcu 1/3] rcu: The Bloatwatch Edition, v7
-References: <20091009224954.GA26516@linux.vnet.ibm.com> <12551286511987-git-send-email->
-In-Reply-To: <12551286511987-git-send-email->
-Content-Type: text/plain; charset=UTF-8
+	Tue, 13 Oct 2009 03:49:04 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60968 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753250AbZJMHtD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 03:49:03 -0400
+Subject: Re: [tip:timers/tracing] hrtimer: Add tracepoint for hrtimers
+From: Peter Zijlstra <peterz@infradead.org>
+To: rostedt@goodmis.org
+Cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       anton@samba.org, linux-kernel@vger.kernel.org, zhaolei@cn.fujitsu.com,
+       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com, tglx@linutronix.de,
+       kosaki.motohiro@jp.fujitsu.com, linux-tip-commits@vger.kernel.org
+In-Reply-To: <1255404309.7113.948.camel@gandalf.stny.rr.com>
+References: <4A7F8B2B.5020908@cn.fujitsu.com>
+	 <tip-c6a2a1770245f654f35f60e1458d4356680f9519@git.kernel.org>
+	 <1255404309.7113.948.camel@gandalf.stny.rr.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Oct 2009 09:48:02 +0200
+Message-Id: <1255420082.8392.44.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Again. trivial code-beautifying except the last one.
+On Mon, 2009-10-12 at 23:25 -0400, Steven Rostedt wrote:
+> > +     TP_printk("hrtimer %p, func %pf, expires %llu, softexpires %llu",
+> > +               __entry->timer, __entry->function,
+> > +               (unsigned long long)ktime_to_ns((ktime_t) {
+> > +                               .tv64 = __entry->expires }),
+> > +               (unsigned long long)ktime_to_ns((ktime_t) {
+> > +                               .tv64 = __entry->softexpires }))
+> > +);
+> > +
+> 
+> I was just fixing up the trace-cmd parser (which is also used for perf)
+> and came across this code. That TP_printk shows up in the format file
+> as:
+> 
+> print fmt: "hrtimer %p, func %pf, expires %llu, softexpires %llu", REC->timer, REC->function, (unsigned long long)(((ktime_t) { .tv64 = REC->expires }).tv64), (unsigned long long)(((ktime_t) { .tv64 = REC->softexpires }).tv64)
+> 
+> Now I'm trying to parse this with a tool so that we can have something
+> that can read the binary output, and be able to easily figure it out by
+> reading the format files. But trying to parse:
+> 
+> (unsigned long long)(((ktime_t) { .tv64 = REC->expires }).tv64)
+> 
+> Is not easy. It's basically implementing a C interpreter :-(
+> 
+> Is there anyway we can change that TRACE_EVENT to give us a better,
+> trace printk output?
 
-Paul E. McKenney wrote:
+LOL
 
-[...]
+Either convince tglx that ktime_t really ought to die for good (yeah, I
+know arm), or specialize the whole printout for 32 vs 64 ktime_t.
 
-> +
-> +/* Global control variables for rcupdate callback mechanism. */
-> +struct rcu_ctrlblk {
-> +	struct rcu_head *rcucblist;	/* List of pending callbacks (CBs). */
-> +	struct rcu_head **donetail;	/* ->next pointer of last "done" CB. */
-> +	struct rcu_head **curtail;	/* ->next pointer of last CB. */
-> +};
-> +
-> +extern struct rcu_ctrlblk rcu_ctrlblk;
-> +extern struct rcu_ctrlblk rcu_bh_ctrlblk;
+union ktime {
+        s64     tv64;
+#if BITS_PER_LONG != 64 && !defined(CONFIG_KTIME_SCALAR)
+        struct {
+# ifdef __BIG_ENDIAN
+        s32     sec, nsec;
+# else
+        s32     nsec, sec;
+# endif
+        } tv;
+#endif
+};
 
-Since rcu_batches_completed() returns a constant, this piece of
-code is not needed here. We can move it to rcutiny.c.
 
-and remove "EXPORT_SYMBOL_GPL(rcu_ctrlblk);" &
-"EXPORT_SYMBOL_GPL(rcu_bh_ctrlblk);".
-
-[...]
-
-> +/* extern void rcu_restart_cpu(int cpu); */
-> +
-
-redundant comments.
-
-[...]
-
-> +
-> +static inline int rcu_pending(int cpu)
-> +{
-> +	return 1;
-> +}
-
-It seems that no one use it.
-
-[...]
-
-> +/* Definition for rcupdate control block. */
-> +struct rcu_ctrlblk rcu_ctrlblk = {
-> +	.rcucblist = NULL,
-> +	.donetail = &rcu_ctrlblk.rcucblist,
-> +	.curtail = &rcu_ctrlblk.rcucblist,
-> +};
-> +EXPORT_SYMBOL_GPL(rcu_ctrlblk);
-
-remove "EXPORT_SYMBOL_GPL(rcu_ctrlblk);"
-
-> +struct rcu_ctrlblk rcu_bh_ctrlblk = {
-> +	.rcucblist = NULL,
-> +	.donetail = &rcu_bh_ctrlblk.rcucblist,
-> +	.curtail = &rcu_bh_ctrlblk.rcucblist,
-> +};
-> +EXPORT_SYMBOL_GPL(rcu_bh_ctrlblk);
-
-remove "EXPORT_SYMBOL_GPL(rcu_bh_ctrlblk);"
-
-> +
-> +#ifdef CONFIG_NO_HZ
-> +
-> +static long rcu_dynticks_nesting = 1;
-> +
-> +/*
-> + * Enter dynticks-idle mode, which is an extended quiescent state
-> + * if we have fully entered that mode (i.e., if the new value of
-> + * dynticks_nesting is zero).
-> + */
-> +void rcu_enter_nohz(void)
-> +{
-> +	if (--rcu_dynticks_nesting == 0)
-> +		rcu_sched_qs(0); /* implies rcu_bh_qsctr_inc(0) */
-> +}
-> +
-> +/*
-> + * Exit dynticks-idle mode, so that we are no longer in an extended
-> + * quiescent state.
-> + */
-> +void rcu_exit_nohz(void)
-> +{
-> +	rcu_dynticks_nesting++;
-> +}
-> +
-> +#endif /* #ifdef CONFIG_NO_HZ */
-
-It's an old issue.
-It's not only about RCUTINY, it's also about other rcu implementations:
-
-rcu_enter_nohz()/rcu_exit_nohz() are not called in pairs.
-
-irq_exit() calls tick_nohz_stop_sched_tick() which calls rcu_enter_nohz(),
-where is the corresponding rcu_exit_nohz()?
-(or tick_nohz_restart_sched_tick())?
