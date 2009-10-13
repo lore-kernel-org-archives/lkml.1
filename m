@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759549AbZJMLrC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759572AbZJMLrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759549AbZJMLrC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 07:47:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759537AbZJMLrA
+	id S1759572AbZJMLrt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 07:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759562AbZJMLrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 07:47:00 -0400
-Received: from mail-vw0-f203.google.com ([209.85.212.203]:54267 "EHLO
-	mail-vw0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759536AbZJMLq7 convert rfc822-to-8bit (ORCPT
+	Tue, 13 Oct 2009 07:47:48 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:59488 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759560AbZJMLrs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 07:46:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=cusPAasZ8pwPqiC0qI/i67EeCIAi5cTzWJPD9TRodwn7eGg3AvgI+FN5xktrm8CDgw
-         vPC9Jz+jhnncAzz3cQT3bg3NyqpErivxgmZanlJM3lhlHFAaQDYNBVNR8PQB7gEJcg7P
-         MDFBQsu/d32vM2wPaFclo718WY/1qVDIIwIuY=
+	Tue, 13 Oct 2009 07:47:48 -0400
 MIME-Version: 1.0
-Date: Tue, 13 Oct 2009 07:46:21 -0400
-Message-ID: <ba1f10320910130446g33264abfy845e28856e2e6f69@mail.gmail.com>
-Subject: Intel on-board NIC negotiates at 10mbps instead of 1gbps (new Intel 
-	P55KG motherboard), driver bug?
-From: Justin Piszcz <jpiszcz@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-net@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
+Message-ID: <19156.26810.772413.603275@pilspetsen.it.uu.se>
+Date: Tue, 13 Oct 2009 13:47:06 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "Leonidas ." <leonidas137@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Using intptr_t and uintptr_t in Kernel
+In-Reply-To: <f22d86810910130158u73c2f669wa129fa4e8d48b521@mail.gmail.com>
+References: <f22d86810910130037x48cac5c1s8928a6ff49dda381@mail.gmail.com>
+	<19156.16146.326389.380625@pilspetsen.it.uu.se>
+	<f22d86810910130158u73c2f669wa129fa4e8d48b521@mail.gmail.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Leonidas . writes:
+ > >  > typedef unsigned long           uintptr_t;
+ > >  >
+ > >  > but intptr_t is not defined at all. Also, isn't above definition
+ > >  > incorrect?
+ > >
+ > > No, it's correct because Linux requires sizeof(void*) == sizeof(long).
+ > >
+ > >  > Since the whole idea
+ > >  > behind uintptr_t is to store pointer in a int sized variable,
+ > >
+ > > uintptr_t will use _some_ integer type, not necessarily 'int'.
+ > >
+ > > If ISO C said 'int' there would be no need for {,u}intptr_t.
+ > >
+ > >  > are we
+ > >  > not assuming here that
+ > >  >
+ > >  > sizeof(int) = sizeof(unsigned long ) on all archs?
+ > >
+ > > No, see above.
+ > >
+ > 
+ > Thanks, for the response, but frankly I am still confused.
+ > Let me recollect my thoughts in more concise manner.
+ > 
+ > 
+ > User space documentation for C99, http://linux.die.net/man/3/intptr_t says,
+ > 
+ > typedef unsigned int uint16_t
+ > typedef uint16_t uintptr_t
 
-I recently purchased/installed an Intel DP55KG motherboard and when I
-boot from the System Rescue CD (1.3.0) the on-board NIC only
-negotiates at 10mbps, when I plug the same cable into two other Intel
-x1 PCI-e nics, they negotiate at 1gbps without any issue.  My old
-system also negotiated at 1gbps (a DG965WH) board.
+That's based on what C99 states, but it's not the definition of uintptr_t
+but a specification of the minimal size of that type.  The page you're
+referring to fails to mention that.
 
-I understand support for chip has recently been added to the e1000e
-driver, has this been resolved in newer kernels?
-
-I am asking as I am still running memtest etc before putting the box
-in production, thanks.
-
->From the logs:
-
-e1000e: Intel(R) PRO/1000 Network Driver - 1.0.2-k2
-e1000e: Copyright (c) 1999-2008 Intel Corporation.
-e1000e 0000:00:19.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-e1000e 0000:00:19.0: pci_enable_pcie_error_
-reporting failed 0xfffffffb
-e1000e 0000:00:19.0: setting latency timer to 64
-e1000e 0000:00:19.0: irq 36 for MSI/MSI-X
-0000:00:19.0: eth0: (PCI Express:2.5GB/s:Width x1) (mac address)
-0000:00:19.0: eth0: Intel(R) PRO/1000 Network Connection
-0000:00:19.0: eth0: MAC: 9, PHY: 9, PBA No: ffffff-0ff
-
-e1000e 0000:00:19.0: irq 36 for MSI/MSI-X
-e1000e 0000:00:19.0: irq 36 for MSI/MSI-X
-ADDRCONF(NETDEV_UP): eth0: link is not ready
-e1000e: eth0 NIC Link is Up 10 Mbps Full Duplex, Flow Control: RX
-0000:00:19.0: eth0: 10/100 speed: disabling TSO
-ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
-eth0: no IPv6 routers present
-
-Please cc as I am not on the lists, thanks.
-
-(resent as plain-text)
-
-Justin.
+Anyway, this is not an issue with the kernel.  Please direct C questions
+to a C-specific forum, like comp.std.c.  Or google n1124.pdf and read that.
