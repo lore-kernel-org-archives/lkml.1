@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934122AbZJMWyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934349AbZJMWyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934122AbZJMWyP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 18:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761036AbZJMWyO
+	id S934349AbZJMWyh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 18:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934157AbZJMWyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 18:54:14 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:18114 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbZJMWyN (ORCPT
+	Tue, 13 Oct 2009 18:54:36 -0400
+Received: from smtp103.sbc.mail.gq1.yahoo.com ([67.195.15.62]:49074 "HELO
+	smtp103.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933981AbZJMWyg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 18:54:13 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=sWClKFp7W6IcHsKUBzjx12XPsTkt2gg80+AHcbImGu3HXmPh1aqjnJEowHeQpKAGo
-	eYs9Sqi2G1MpmoMYx+1+g==
-Date: Tue, 13 Oct 2009 15:53:00 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Mel Gorman <mel@csn.ul.ie>, Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu
- operations in the hotpaths
-In-Reply-To: <alpine.DEB.1.10.0910131625370.13756@gentwo.org>
-Message-ID: <alpine.DEB.1.00.0910131550050.15347@chino.kir.corp.google.com>
-References: <20091007211024.442168959@gentwo.org> <20091007211053.378634196@gentwo.org> <4AD307A5.105@kernel.org> <84144f020910120614r529d8e4em9babe83a90e9371f@mail.gmail.com> <alpine.DEB.1.00.0910130231570.27262@chino.kir.corp.google.com>
- <alpine.DEB.1.10.0910131041450.21608@gentwo.org> <alpine.DEB.1.10.0910131509170.32394@gentwo.org> <4AD4D8B6.6010700@cs.helsinki.fi> <alpine.DEB.1.10.0910131541290.7246@gentwo.org> <alpine.DEB.1.00.0910131305440.3529@chino.kir.corp.google.com>
- <alpine.DEB.1.10.0910131625370.13756@gentwo.org>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Tue, 13 Oct 2009 18:54:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=O+boJQWLSv9Np18An2tuK7aaeuB39SWd5cyTajmF7JM4+Msg8o7DlQNych+eyc/79tAUdCUXL2lrD8uQTnLvqX/5h85a+jo5E7TlWVYckehjUhUi3IOxf1YqPlRTG8qIHc6aQjcyhAZ9U8Qo5Ny8IgvtMtYo3ORkawbZnWiAy3w=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: utQHcTYVM1lOHcMdKyQA3BnjHBtv1By6kFJuC0.LNqsYgQx2XqFG.nFWtDl_3cqUcpPnmRETSsjRxbif.xZcMF79qt_xcOKJtDZ44djCXotr5g3TeHx22oMA4kwigxb0g0qHbYsbJ4sbRMhJ83hsBj2b6STsC_kn64LgwNkRzjjjYqzkI0GA1tnfPOgrX9btPf8EAB3uikznyn0hKpY2BYZosIxZHjVAjQcxX79W98EoV0wyLvI4Gy3Nj0i_idBkIcp.aoDMj8ZP5WpqQMYyAqiqUhiB2ZmuPDI6
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH v2] GPIO: Add gpio_lookup
+Date: Tue, 13 Oct 2009 15:53:58 -0700
+User-Agent: KMail/1.9.10
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20091010134814.0bac8624@bike.lwn.net> <200910131410.40305.david-b@pacbell.net> <20091013162819.02f53284@bike.lwn.net>
+In-Reply-To: <20091013162819.02f53284@bike.lwn.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910131553.58804.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009, Christoph Lameter wrote:
-
-> > For an optimized fastpath, I'd expect such a workload would result in at
-> > least a slightly higher transfer rate.
+On Tuesday 13 October 2009, Jonathan Corbet wrote:
+> On Tue, 13 Oct 2009 14:10:40 -0700
+> David Brownell <david-b@pacbell.net> wrote:
 > 
-> There will be no improvements if the load is dominated by the
-> instructions in the network layer or caching issues. None of that is
-> changed by the path. It only reduces the cycle count in the fastpath.
+> > Not real keen on this; see separate emails, and below.
+> 
+> OK, so the story I'm getting is that each driver needs to set up its
+> own mechanism for obtaining GPIO numbers - it needs to create its own
+> lookup mechanism.
+
+Each driver needs its own *configuration* scheme.  Yes;
+that's a very standard requirement.  ;)
+
+
+> That's fine, I can do that; I just thought it made 
+> sense to make use of the information that's already there.
+
+It's not necessarily "there" though; or safe to use in this way,
+should it happen to be present.
+
+
+> Andrew, you might as well drop the patch.
+> 
+> (I'm less worried about the uniqueness side, BTW; it just means drivers
+> need to create meaningful names for their GPIOs.)
+
+I don't see how they *can* though ... unless they're dynamically
+allocated using a scheme like "combine <this device's sysfs name>
+with <token>".  Consider two PCI cards with two different GPIOs
+for their "camera_active" LED... "camera_active" is meaningful,
+but unusable because it's not unique.
+
+
+Quick rule of thumb:  in absolutely *ANYTHING* to do with resource
+lookup, see how the names/IDs are scoped.  That's the first place
+problems show up.  If the scopes are not clearly defined, or there
+is nothing to ensure uniqueness within that scope ... trouble.
+
+- Dave
+
+
+> 
+> Thanks,
+> 
+> jon
+> 
 > 
 
-Right, but CONFIG_SLAB shows a 5-6% improvement over CONFIG_SLUB in the 
-same workload so it shows that the slab allocator does have an impact in 
-transfer rate.  I understand that the performance gain with this patchset, 
-however, may not be representative with the benchmark since it also 
-frequently uses the slowpath for kmalloc-256 about 25% of the time and the 
-added code of the irqless patch may mask the fastpath gain.
+
