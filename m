@@ -1,91 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbZJMLdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756852AbZJMLEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758784AbZJMLdz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 07:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755147AbZJMLdy
+	id S1756852AbZJMLEy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 07:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbZJMLEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 07:33:54 -0400
-Received: from lanfw001a.cxnet.dk ([87.72.215.196]:35399 "EHLO
-	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753780AbZJMLdx (ORCPT
+	Tue, 13 Oct 2009 07:04:53 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39418 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751006AbZJMLEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 07:33:53 -0400
-X-Greylist: delayed 1919 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Oct 2009 07:33:53 EDT
-Subject: (Solved) Problem compile kernel on Ubuntu and using on Debian
-From: Jesper Dangaard Brouer <hawk@comx.dk>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Content-Type: text/plain
-Organization: ComX Networks A/S
-Date: Tue, 13 Oct 2009 13:01:17 +0200
-Message-Id: <1255431677.13607.118.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Oct 2009 11:01:17.0580 (UTC) FILETIME=[7D103CC0:01CA4BF4]
+	Tue, 13 Oct 2009 07:04:52 -0400
+Date: Tue, 13 Oct 2009 13:04:08 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+Subject: Re: 32-rc2: runtime_pm is noisy
+Message-ID: <20091013110407.GC31984@elf.ucw.cz>
+References: <20091006080241.GB1362@ucw.cz>
+ <200910062342.20910.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910062342.20910.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 2009-10-06 23:42:20, Rafael J. Wysocki wrote:
+> On Tuesday 06 October 2009, Pavel Machek wrote:
+> > Hi!
+> > 
+> > Maybe it is my config,
+> 
+> Yes it is.
+> 
+> > but pm_runtime_idle is a bit too noisy on
+> > zaurus... ok, I do have pm_debug & pm_verbose
+> 
+> Exactly.
+> 
+> > set... but still, is it useful to print message about devices that do not
+> > support it?
+> 
+> It may be useful, because, for example, PCI can put devices without drivers
+> into low power states using this mechanism.
+> 
+> Still, perhaps we can drop the debug messages from __pm_runtime_idle().
+> 
+> Care to send a patch?
 
-Hi Google,
+Yep, something like this?
 
-I had a problem compile kernel 2.6.31.3 on an Ubuntu 9.04 server (CPU
-core i7) and using it on a Debian 5.0.3 lenny (CPU Atom 330).  Both
-systems using the 64-bit version of the OS'es.  And kernel compiled
-for x86_64.
+---
 
-Problems seen:
- "Waiting for root file system..."
+pm_runtime_idle is somewhat noisy. Remove debug prints.
 
-If you get past this one, by compiling enough modules into the kernel,
-BUT then a lot of modules does not seem to be loaded (modprobe).
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-Solution:
-
-The solution seems to be related to the modules.dep files generated on
-the Ubuntu system and copied to the debian system.
-
-Run the following commands on the debian system:
-
- depmod -a              2.6.31.3-ubuntu-compiled
- update-initramfs -u -k 2.6.31.3-ubuntu-compiled
- update-grub2
-
-Which means:
- 1. update the modules.dep files
- 2. recreate the initrd.img
- 3. update the grub config
-
-Q: I don't know why a depmod update is required, anyone feel free to answer that question?
-
-
-
-Ubuntu 9.04:
- depmod -V
-     module-init-tools 3.7-pre9
- gcc --version
-     gcc (Ubuntu 4.3.3-5ubuntu4) 4.3.3
-
-Debian lenny:
- depmod -V
-     module-init-tools 3.4
- gcc --version
-     gcc (Debian 4.3.2-1.1) 4.3.2
-
-
-My reason for compiling on the Ubuntu system, is that its CPU is a
-Core i7, which can compile the kernel in 5 minuts where the Debian
-systems has a ATOM 330 CPU which uses 58 minuts to compile the same
-kernel...
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -51,8 +51,6 @@ static int __pm_runtime_idle(struct device *dev)
+ {
+ 	int retval = 0;
+ 
+-	dev_dbg(dev, "__pm_runtime_idle()!\n");
+-
+ 	if (dev->power.runtime_error)
+ 		retval = -EINVAL;
+ 	else if (dev->power.idle_notification)
+@@ -93,8 +91,6 @@ static int __pm_runtime_idle(struct device *dev)
+ 	wake_up_all(&dev->power.wait_queue);
+ 
+  out:
+-	dev_dbg(dev, "__pm_runtime_idle() returns %d!\n", retval);
+-
+ 	return retval;
+ }
+ 
 
 -- 
-Med venlig hilsen / Best regards
-  Jesper Brouer
-  ComX Networks A/S
-  Linux Network developer
-  Cand. Scient Datalog / MSc.
-  Author of http://adsl-optimizer.dk
-  LinkedIn: http://www.linkedin.com/in/brouer
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
