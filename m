@@ -1,93 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934200AbZJMTYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761120AbZJMT0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934200AbZJMTYp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 15:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934215AbZJMTYn
+	id S1761120AbZJMT0P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 15:26:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761096AbZJMT0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 15:24:43 -0400
-Received: from cantor.suse.de ([195.135.220.2]:42145 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934110AbZJMTYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 15:24:36 -0400
-Date: Tue, 13 Oct 2009 21:23:57 +0200
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       jbacik@redhat.com
-Subject: Re: Fun with fdatasync()
-Message-ID: <20091013192357.GD31440@duck.suse.cz>
-References: <20091012140049.GO2632@think> <20091012220043.GC3965@duck.suse.cz> <20091013160028.GA7850@think>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091013160028.GA7850@think>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 13 Oct 2009 15:26:14 -0400
+Received: from outbound-mail-09.bluehost.com ([69.89.17.209]:50521 "HELO
+	outbound-mail-09.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761079AbZJMT0O convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 15:26:14 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=BIcPyETpaGECDmCWpLmAmWVYq8gfOimEiDMg9BNFFHwe2/HGesAlXd8T+aUDWCIO5jvz1zR/K0iUW6mPPwzYtCMpowltTsxRNmDgf4pPtIzqRdTUdXNPo+salTca+SSf;
+Date: Tue, 13 Oct 2009 12:25:15 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+       Keith Packard <keithp@keithp.com>
+Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with T400
+  laptops
+Message-ID: <20091013122515.5074d7f3@jbarnes-g45>
+In-Reply-To: <b637ec0b0910131219u638e37dan2f3a98a9a89a2570@mail.gmail.com>
+References: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
+	<20091008103620.5e5aae66@jbarnes-g45>
+	<20091010204106.GA8251@mit.edu>
+	<20091012095438.1e82b54f@jbarnes-g45>
+	<20091012184651.GA4603@Pilar.aei.mpg.de>
+	<20091012120510.16bd1194@jbarnes-g45>
+	<b637ec0b0910131219u638e37dan2f3a98a9a89a2570@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 13-10-09 12:00:28, Chris Mason wrote:
-> On Tue, Oct 13, 2009 at 12:00:43AM +0200, Jan Kara wrote:
-> >   Hi,
-> > 
-> > On Mon 12-10-09 10:00:49, Chris Mason wrote:
-> 
-> [ clearing of I_DIRTY_DATASYNC by pdflush ]
-> 
-> > > 
-> > > Am I missing something?  I don't see how fdatasync is safe in our
-> > > current usage.
-> >   Yeah, we already discussed similar problems I_DIRTY flags with Ted and
-> > others in thread "fsync on ext[34] working only by an accident" on
-> > linux-ext4.
-> >   I don't quite like clearing dirty flags only on sync - pdflush would then
-> > unnecessarily try to get rid of those inodes and burn CPU on them.
-> > Actually, mapping->private_list (and bh->b_assoc_buffers) is meant to be
-> > used exactly for the purpose of tracking what needs to be written on fsync
-> > so my current plan is to somehow utilize that list to fix the problem.
-> >   Maybe I even get to that tomorrow ;) Thanks for the reminder.
-> 
-> I honestly don't remember all the details now, but I know that when
-> reiserfs stopped using the b_assoc_buffers stuff life got much less
-> complex.  From an outsider's point of view the last thing jbd needs is
-> another list of buffers to live on.
-> 
-> It seems like ext34 need to be able to answer 3 questions during an
-> fsync or fdatasync:
-> 
-> The last transaction to change this file (fill hole, change
-> i_size)
-> 
-> The last transaction to log this inode (for full fsync)
-> 
-> The last transaction committed such that fsync would consider it done.
-> 
-> Filling holes and changing i_size only happens from a handful of places,
-> so it would be easy to update a transid field in the in-memory inode for
-> that.
-> 
-> The inode logging code could bump a second transid field to catch all
-> the other ways inodes change.
-> 
-> The transaction code could (or already does?) export an easy way to
-> check the last commit.  Put the three together and you can safely jump
-> out of fsync or fdatasync based on what the inode really needs instead
-> of guessing with the I_ flags or page dirty bits.
-  I was thinking about this solution as well (before thinking about
-using b_assoc_queue). But to make this reliable we have to pin the inode
-in memory until transactions modifying it (or its data) are committed.
-Otherwise it could be reclaimed and we'd loose the information about
-which transactions we have to wait for. And when we pin the inode, we'd
-have to unpin it at transaction commit which implies we have to somehow
-attach the inode to the transaction... That doesn't look more appealing
-than b_assoc_queue in my opinion (OK, for ext4/JBD2 we have a way to
-attach inodes to transactions but ext3/JBD does not have such way).
-  So to me it seemed easier to use b_assoc_queue but I admit I haven't
-thought through all the details and your experiences with reiserfs
-frighten me a bit ;)
+The patch below should have only affected GM45 chipsets, what chipset
+do you have (lspci -vvv -s 02.0 should tell you).
 
-								Honza
+Sounds like this patch was good enough for both you and Carlos, but not
+sufficient for Ted or Keith.  What resolution are you running?
+
+Jesse
+
+On Tue, 13 Oct 2009 21:19:32 +0200
+Fabio Comolli <fabio.comolli@gmail.com> wrote:
+
+> Hi Jesse.
+> Sorry to jump in but I also had issues with -32rc (i915 chip) and this
+> patch seems to have resolved all problems.
+> 
+> I don't know how to describe in english what happened to my desktop
+> but probably "glitches" and "tearings" could be the correct words.
+> Also sometimes the screen went blank and needed to switch to terminal
+> console and back to return to the normal X screen.
+> 
+> Nothing in the logs, neither messages nor Xorg.0.log.
+> 
+> Regards,
+> Fabio
+> 
+> 
+> 
+> On Mon, Oct 12, 2009 at 9:05 PM, Jesse Barnes
+> <jbarnes@virtuousgeek.org> wrote:
+> > On Mon, 12 Oct 2009 20:46:51 +0200
+> > "Carlos R. Mafra" <crmafra2@gmail.com> wrote:
+> >
+> >> On Mon 12.Oct'09 at  9:54:38 -0700, Jesse Barnes wrote:
+> >> > >
+> >> > > Nope, unfortunately, it's not helping on my T400 laptop.  I'm
+> >> > > still getting huge amounts of glitching and tearing with this
+> >> > > patch applied against -rc3.
+> >> > >
+> >> > > What I'm using for now to fix up my system is this patch.
+> >> > >
+> >> >
+> >> > How about this one?  I have one more idea to try out if this
+> >> > doesn't work (hacking on it now).
+> >>
+> >> I was also experiencing something very similar to Theodore's bug
+> >> report and, at least for me, the patch below fixed the issue (the
+> >> previous one also had no effect).
+> >
+> > Cool, good to hear.  Hopefully Ted and Keith will confirm too.
+> >
+> > --
+> > Jesse Barnes, Intel Open Source Technology Center
+> >
+> > diff --git a/drivers/gpu/drm/i915/intel_display.c
+> > b/drivers/gpu/drm/i915/intel_display.c index 7a5fb79..1451945 100644
+> > --- a/drivers/gpu/drm/i915/intel_display.c
+> > +++ b/drivers/gpu/drm/i915/intel_display.c
+> > @@ -1047,7 +1047,7 @@ static void g4x_enable_fbc(struct drm_crtc
+> > *crtc, unsigned long interval) dev_priv->cfb_fence =
+> > obj_priv->fence_reg; dev_priv->cfb_plane = intel_crtc->plane;
+> >
+> > -       dpfc_ctl = plane | DPFC_SR_EN | DPFC_CTL_LIMIT_1X;
+> > +       dpfc_ctl = plane | DPFC_CTL_LIMIT_1X;
+> >        if (obj_priv->tiling_mode != I915_TILING_NONE) {
+> >                dpfc_ctl |= DPFC_CTL_FENCE_EN | dev_priv->cfb_fence;
+> >                I915_WRITE(DPFC_CHICKEN, DPFC_HT_MODIFY);
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe
+> > linux-kernel" in the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >
+> 
+
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Jesse Barnes, Intel Open Source Technology Center
