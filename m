@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761177AbZJMTwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934194AbZJMUA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761177AbZJMTwE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 15:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbZJMTwD
+	id S934194AbZJMUA6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 16:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZJMUA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 15:52:03 -0400
-Received: from mga09.intel.com ([134.134.136.24]:54072 "EHLO mga09.intel.com"
+	Tue, 13 Oct 2009 16:00:58 -0400
+Received: from claw.goop.org ([74.207.240.146]:42044 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754059AbZJMTwC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 15:52:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,552,1249282800"; 
-   d="scan'208";a="457116496"
-Date: Tue, 13 Oct 2009 12:50:55 -0700
-From: mgross <mgross@linux.intel.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 01/28] pm_qos: remove BKL
-Message-ID: <20091013195055.GA10270@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20091010153314.827301943@linutronix.de> <20091010153349.071381158@linutronix.de> <20091013191218.GA5197@linux.intel.com> <20091013132108.6528b56a@bike.lwn.net>
+	id S1752059AbZJMUA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 16:00:57 -0400
+Message-ID: <4AD4DC52.8090508@goop.org>
+Date: Tue, 13 Oct 2009 13:00:18 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091013132108.6528b56a@bike.lwn.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Avi Kivity <avi@redhat.com>
+CC: Dan Magenheimer <dan.magenheimer@oracle.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>,
+       Zach Brown <zach.brown@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add	vsyscall	implementation
+References: <1254790211-15416-1-git-send-email-jeremy.fitzhardinge@citrix.com>	<1254790211-15416-4-git-send-email-jeremy.fitzhardinge@citrix.com>	<4ACB0833.2050203@redhat.com>	<4ACB9074.1000804@goop.org>	<4ACC6C9C.7080707@redhat.com>	<4ACFD43E.6000506@goop.org> <4AD0CDFB.9030704@redhat.com>	<4AD3738B.6050200@goop.org> <4AD375A5.8050205@redhat.com> <4AD37FE3.1010002@goop.org> <4AD420A4.7050508@redhat.com>
+In-Reply-To: <4AD420A4.7050508@redhat.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 01:21:08PM -0600, Jonathan Corbet wrote:
-> On Tue, 13 Oct 2009 12:12:18 -0700
-> mgross <mgross@linux.intel.com> wrote:
-> 
-> > I thought we made this change a month or 3 ago.
-> > 
-> > Signed-off-by: Mark Gross <mgross@linux.intel.com>
-> 
-> Change went out but it was caught snoozing during the 2.6.32 merge
-> window.
-> 
-> I think you really want "Acked-by", no?
+On 10/12/09 23:39, Avi Kivity wrote:
+> On 10/12/2009 09:13 PM, Jeremy Fitzhardinge wrote:
+>> On 10/12/09 11:29, Avi Kivity wrote:
+>>   
+>>> Good catch.  Doesn't that invalidate rdtscp based vgettimeofday on
+>>> non-virt as well (assuming p == cpu)?
+>>>      
+>> The tsc clocksource assumes the tsc is (mostly?) synced; it doesn't use
+>> rdtscp or make any attempt at per-cpu corrections.
+>>    
+>
+> So it's broken or disabled when that assumption is wrong?  We could
+> easily fix that now.  Might even reuse the pvclock structures.
 
-Yes.  Sorry.
+Well, the kernel internally makes more or less the same assumption; the
+vsyscall clocksource is the same as the kernel's internal one.  I think
+idea is that it just drops back to something like hpet if the tsc
+doesn't have very simple SMP characteristics.
 
---mgross
+If the kernel could characterize the per-cpu properties of the tsc more
+accurately, then it could use the pvclock mechanism on native.
 
-> 
-> Thanks,
-> 
-> jon
+    J
+
