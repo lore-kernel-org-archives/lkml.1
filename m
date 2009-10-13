@@ -1,207 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759667AbZJMMlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbZJMMqC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759667AbZJMMlc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 08:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbZJMMlb
+	id S1751984AbZJMMqC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 08:46:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbZJMMqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 08:41:31 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:45213 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751264AbZJMMl3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 08:41:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=hjEWt+oIT4dxx68LxFyuOuJbEUrt5RNj3djcq1o4eZxHkpT+cxyBWpXfy/dsWf4rX7
-         CjDA1pzYCGkGXEZnMRvnyjMfl1Er3NGRefZunyo5sWpUyqbNrzYr6ywdHylfnj9r3nnM
-         F/93a2DbbtUZGvUoJN/f7svMQSW/rmd26iyoY=
-From: Arnd Bergmann <arndbergmann@googlemail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [patch 11/28] nvram: Drop the bkl from nvram_llseek()
-Date: Tue, 13 Oct 2009 14:40:45 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
-Cc: Arnd Bergmann <arndbergmann@googlemail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
-       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>,
-       "Sven-Thorsten Dietrich" <sven@thebigcorporation.com>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg KH <gregkh@suse.de>
-References: <20091010153314.827301943@linutronix.de> <200910112350.24870.arnd@arndb.de> <20091011221448.GA8146@nowhere>
-In-Reply-To: <20091011221448.GA8146@nowhere>
+	Tue, 13 Oct 2009 08:46:01 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:34104 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750771AbZJMMqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 08:46:00 -0400
+Message-ID: <4AD4765B.3010907@openvz.org>
+Date: Tue, 13 Oct 2009 16:45:15 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+CC: Herbert Poetzl <herbert@13thfloor.at>, vatsa@in.ibm.com,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
+References: <20090930124919.GA19951@in.ibm.com> <4AC35EDD.1080902@openvz.org> <20090930142537.GJ19951@in.ibm.com> <20090930143953.GA2014@in.ibm.com> <4AD466E5.4010206@openvz.org> <20091013120354.GF24787@MAIL.13thfloor.at> <4AD4705D.6020109@openvz.org> <20091013123047.GC26069@linux.vnet.ibm.com>
+In-Reply-To: <20091013123047.GC26069@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910131440.45623.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, Frederic Weisbecker wrote:
-> On Sun, Oct 11, 2009 at 11:50:24PM +0200, Arnd Bergmann wrote:
-> >
-> > There are various *_operations structures that have a .ioctl pointer.
-> > While there are a lot of struct file_operations with a locked .ioctl
-> > operation, stuff like block_device_operations does not hold the
-> > BKL in .ioctl but in .locked_ioctl.
+Dhaval Giani wrote:
+> On Tue, Oct 13, 2009 at 04:19:41PM +0400, Pavel Emelyanov wrote:
+>>> as I already stated, it seems perfectly fine for me 
+>> You're not the only one interested in it, sorry. Besides, I
+>> got your point in "I'm find with it". Now get mine which is
+>> about "I am not".
+>>
+>>> can be trivially mapped to the two values, by chosing a
+>>> fixed multiplicative base (let's say '1s' to simplify :) 
+>>>
+>>>   with 50%, you get 1s/0.5s
+>>>   with 20%, you get 1s/0.2s
+>>>   with  5%, you get 1s/0.05s
+>>>
+>>> well, you get the idea :)
+>> No I don't.
+>> Is 1s/0.5s worse or better than 2s/1s?
+>> How should I make a choice?
 > 
-> Oh right. Thanks for the tip.
-> 
+> I would say it depends on your requirement. How fast do you want to
+> respond back to the user? Wiht lower bandwidth, you would want to have
+> shorter periods so that the user would not get the impression that he
+> has to "wait" to get CPU time. But having a very short period is not a
+> good thing, since there are other considerations (such as the overhead of
+> hard limits).
 
-FWIW, I've done a grep through the current source tree, this should be
-the full list of all .ioctl methods in struct file_operations, a total
-of 141 instances in 2.6.32-rc4.
+That's it - long period is bad for one reason, short period is bad for 
+some other one and neither of them is clearly described unlike the 
+limit itself.
 
-When we do a pushdown of the BKL into these functions, we can kill off
-the file operation.
+In other words there are two numbers we're essentially playing with:
+* the limit (int percents, Hz, whatever)
+* and this abstract "badness"
 
-	Arnd <><
+Can't we give the user one of them for "must be configured" usage, put
+the other one in some "good for most users" position and let the user
+move it later on demand?
 
-arch/blackfin/mach-bf561/coreb.c:	.ioctl   = coreb_ioctl,
-arch/cris/arch-v10/drivers/ds1302.c:	.ioctl =	rtc_ioctl,
-arch/cris/arch-v10/drivers/gpio.c:	.ioctl       = gpio_ioctl,
-arch/cris/arch-v10/drivers/i2c.c:	.ioctl    = i2c_ioctl,
-arch/cris/arch-v10/drivers/pcf8563.c:	.ioctl = pcf8563_ioctl,
-arch/cris/arch-v10/drivers/sync_serial.c:	.ioctl   = sync_serial_ioctl,
-arch/cris/arch-v32/drivers/cryptocop.c:	.ioctl =	cryptocop_ioctl
-arch/cris/arch-v32/drivers/i2c.c:	.ioctl =    i2c_ioctl,
-arch/cris/arch-v32/drivers/mach-a3/gpio.c:	.ioctl       = gpio_ioctl,
-arch/cris/arch-v32/drivers/mach-fs/gpio.c:	.ioctl       = gpio_ioctl,
-arch/cris/arch-v32/drivers/pcf8563.c:	.ioctl =	pcf8563_ioctl
-arch/cris/arch-v32/drivers/sync_serial.c:	.ioctl   = sync_serial_ioctl,
-arch/ia64/kernel/perfmon.c:	.ioctl    = pfm_ioctl,
-arch/ia64/sn/kernel/sn2/sn_hwperf.c:	.ioctl = sn_hwperf_ioctl,
-arch/m68k/bvme6000/rtc.c:	.ioctl =	rtc_ioctl,
-arch/m68k/mvme16x/rtc.c:	.ioctl =	rtc_ioctl,
-arch/powerpc/kernel/nvram_64.c:	.ioctl =	dev_nvram_ioctl,
-arch/sh/boards/mach-landisk/gio.c:      .ioctl = gio_ioctl,     /* ioctl */
-arch/um/drivers/harddog_kern.c:	.ioctl		= harddog_ioctl,
-arch/um/drivers/hostaudio_kern.c:	.ioctl          = hostaudio_ioctl,
-arch/um/drivers/mmapper_kern.c:	.ioctl		= mmapper_ioctl,
-drivers/block/pktcdvd.c:	.ioctl	 = pkt_ctl_ioctl,
-drivers/bluetooth/hci_vhci.c:	.ioctl		= vhci_ioctl,
-drivers/char/apm-emulation.c:	.ioctl		= apm_ioctl,
-drivers/char/applicom.c:	.ioctl = ac_ioctl,
-drivers/char/ds1620.c:	.ioctl		= ds1620_ioctl,
-drivers/char/dtlk.c:	.ioctl		= dtlk_ioctl,
-drivers/char/nvram.c:	.ioctl		= nvram_ioctl,
-drivers/char/generic_nvram.c:	.ioctl		= nvram_ioctl,
-drivers/char/genrtc.c:	.ioctl		= gen_rtc_ioctl,
-drivers/char/hpet.c:	.ioctl = hpet_ioctl,
-drivers/char/i8k.c:	.ioctl		= i8k_ioctl,
-drivers/char/ipmi/ipmi_devintf.c:	.ioctl		= ipmi_ioctl,
-drivers/char/ipmi/ipmi_watchdog.c:	.ioctl   = ipmi_ioctl,
-drivers/char/istallion.c:	.ioctl		= stli_memioctl,
-drivers/char/lp.c:	.ioctl		= lp_ioctl,
-drivers/char/nwflash.c:	.ioctl		= flash_ioctl,
-drivers/char/raw.c:	.ioctl	=	raw_ioctl,
-drivers/char/sonypi.c:	.ioctl		= sonypi_misc_ioctl,
-drivers/char/stallion.c:	.ioctl		= stl_memioctl,
-drivers/char/toshiba.c:	.ioctl		= tosh_ioctl,
-drivers/gpu/drm/i810/i810_dma.c:	.ioctl = drm_ioctl,
-drivers/gpu/drm/i810/i810_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/i830/i830_dma.c:	.ioctl = drm_ioctl,
-drivers/gpu/drm/i830/i830_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/i915/i915_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/mga/mga_drv.c:		.ioctl = drm_ioctl,
-drivers/gpu/drm/r128/r128_drv.c:		.ioctl = drm_ioctl,
-drivers/gpu/drm/radeon/radeon_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/radeon/radeon_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/savage/savage_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/sis/sis_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/tdfx/tdfx_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/via/via_drv.c:		.ioctl = drm_ioctl,
-drivers/gpu/drm/i810/i810_dma.c:	.ioctl = drm_ioctl,
-drivers/gpu/drm/i810/i810_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/i830/i830_dma.c:	.ioctl = drm_ioctl,
-drivers/gpu/drm/i830/i830_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/i915/i915_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/mga/mga_drv.c:		.ioctl = drm_ioctl,
-drivers/gpu/drm/r128/r128_drv.c:		.ioctl = drm_ioctl,
-drivers/gpu/drm/radeon/radeon_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/radeon/radeon_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/savage/savage_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/sis/sis_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/tdfx/tdfx_drv.c:		 .ioctl = drm_ioctl,
-drivers/gpu/drm/via/via_drv.c:		.ioctl = drm_ioctl,
-drivers/hwmon/fschmd.c:	.ioctl = watchdog_ioctl,
-drivers/ide/ide-tape.c:	.ioctl		= idetape_chrdev_ioctl,
-drivers/input/misc/hp_sdc_rtc.c:        .ioctl =	hp_sdc_rtc_ioctl,
-drivers/isdn/capi/capi.c:	.ioctl		= capi_ioctl,
-drivers/isdn/divert/divert_procfs.c:	.ioctl          = isdn_divert_ioctl,
-drivers/isdn/i4l/isdn_common.c:	.ioctl		= isdn_ioctl,
-drivers/isdn/mISDN/timerdev.c:	.ioctl		= mISDN_ioctl,
-drivers/macintosh/ans-lcd.c:	.ioctl	= anslcd_ioctl,
-drivers/macintosh/nvram.c:	.ioctl		= nvram_ioctl,
-drivers/macintosh/via-pmu.c:	.ioctl		= pmu_ioctl,
-drivers/media/dvb/dvb-core/dmxdev.c:	.ioctl = dvb_demux_ioctl,
-drivers/media/dvb/dvb-core/dmxdev.c:	.ioctl = dvb_dvr_ioctl,
-drivers/media/dvb/dvb-core/dvb_ca_en50221.c:	.ioctl = dvb_ca_en50221_io_ioctl,
-drivers/media/dvb/dvb-core/dvb_net.c:	.ioctl = dvb_net_ioctl,
-drivers/media/dvb/dvb-core/dvb_frontend.c:	.ioctl		= dvb_generic_ioctl,
-drivers/media/dvb/firewire/firedtv-ci.c:	.ioctl		= dvb_generic_ioctl,
-drivers/media/dvb/ttpci/av7110.c:	.ioctl		= dvb_generic_ioctl,
-drivers/media/dvb/ttpci/av7110_av.c:	.ioctl		= dvb_generic_ioctl,
-drivers/media/dvb/ttpci/av7110_av.c:	.ioctl		= dvb_generic_ioctl,
-drivers/media/dvb/ttpci/av7110_ca.c:	.ioctl		= dvb_generic_ioctl,
-drivers/message/i2o/i2o_config.c:	.ioctl = i2o_cfg_ioctl,
-drivers/mtd/mtdchar.c:	.ioctl		= mtd_ioctl,
-drivers/net/wan/cosa.c:	.ioctl		= cosa_chardev_ioctl,
-drivers/parisc/eisa_eeprom.c:	.ioctl =	eisa_eeprom_ioctl,
-drivers/pcmcia/pcmcia_ioctl.c:	.ioctl		= ds_ioctl,
-drivers/rtc/rtc-m41t80.c:	.ioctl	= wdt_ioctl,
-drivers/s390/char/tape_char.c:	.ioctl = tapechar_ioctl,
-drivers/s390/char/vmwatchdog.c:	.ioctl   = &vmwdt_ioctl,
-drivers/sbus/char/openprom.c:	.ioctl =	openprom_ioctl,
-drivers/scsi/3w-9xxx.c:	.ioctl		= twa_chrdev_ioctl,
-drivers/scsi/3w-xxxx.c:	.ioctl		= tw_chrdev_ioctl,
-drivers/scsi/aacraid/linit.c:	.ioctl		= aac_cfg_ioctl,
-drivers/scsi/dpt_i2o.c:	.ioctl		= adpt_ioctl,
-drivers/scsi/gdth.c:    .ioctl   = gdth_ioctl,
-drivers/scsi/megaraid.c:	.ioctl		= megadev_ioctl,
-drivers/scsi/megaraid/megaraid_mm.c:	.ioctl	= mraid_mm_ioctl,
-drivers/scsi/osst.c:	.ioctl =        osst_ioctl,
-drivers/scsi/sg.c:	.ioctl = sg_ioctl,
-drivers/staging/comedi/comedi_fops.c:	.ioctl = comedi_ioctl,
-drivers/staging/poch/poch.c:	.ioctl = poch_ioctl,
-drivers/staging/sep/sep_driver.c:	.ioctl = sep_ioctl,
-drivers/staging/vme/devices/vme_user.c:        .ioctl = vme_user_ioctl,
-drivers/usb/core/devio.c:	.ioctl =	usbdev_ioctl,
-drivers/usb/mon/mon_bin.c:	.ioctl =	mon_bin_ioctl,
-fs/autofs/root.c:	.ioctl		= autofs_root_ioctl,
-fs/autofs4/root.c:	.ioctl		= autofs4_root_ioctl,
-fs/coda/pioctl.c:	.ioctl		= coda_pioctl,
-fs/coda/psdev.c:	.ioctl		= coda_psdev_ioctl,
-fs/ecryptfs/file.c:	.ioctl = ecryptfs_ioctl,
-fs/ecryptfs/file.c:	.ioctl = ecryptfs_ioctl,
-fs/fat/dir.c:	.ioctl		= fat_dir_ioctl,
-fs/fat/file.c:	.ioctl		= fat_generic_ioctl,
-fs/hfsplus/dir.c:	.ioctl          = hfsplus_ioctl,
-fs/hfsplus/inode.c:	.ioctl          = hfsplus_ioctl,
-fs/ncpfs/dir.c:	.ioctl		= ncp_ioctl,
-fs/ncpfs/file.c:	.ioctl		= ncp_ioctl,
-fs/reiserfs/dir.c:	.ioctl = reiserfs_ioctl,
-fs/reiserfs/file.c:	.ioctl = reiserfs_ioctl,
-fs/smbfs/dir.c:	.ioctl		= smb_ioctl,
-fs/smbfs/file.c:	.ioctl		= smb_ioctl,
-fs/udf/dir.c:	.ioctl			= udf_ioctl,
-fs/udf/file.c:	.ioctl			= udf_ioctl,
-net/sunrpc/cache.c:     .ioctl          = cache_ioctl_procfs, /* for FIONREAD */
-net/sunrpc/cache.c:     .ioctl          = cache_ioctl_pipefs, /* for FIONREAD */
-net/sunrpc/rpc_pipe.c:	.ioctl		= rpc_pipe_ioctl,
-sound/oss/dmasound/dmasound_core.c:	.ioctl		= mixer_ioctl,
-sound/oss/dmasound/dmasound_core.c:	.ioctl		= sq_ioctl,
-sound/oss/msnd_pinnacle.c:	.ioctl		= dev_ioctl,
-sound/oss/sh_dac_audio.c:      .ioctl =	dac_audio_ioctl,
-sound/oss/soundcard.c:	.ioctl		= sound_ioctl,
-sound/oss/swarm_cs4297a.c:	.ioctl		= cs4297a_ioctl_mixdev,
-sound/oss/swarm_cs4297a.c:	.ioctl		= cs4297a_ioctl,
-sound/oss/vwsnd.c:	.ioctl =	vwsnd_audio_ioctl,
-sound/oss/vwsnd.c:	.ioctl =	vwsnd_mixer_ioctl,
+Yet again - weights in CFQ CPU-sched, ionoce in CFQ-iosched, bandwidth
+in tc (traffic shaping), etc. are all clean for end-user. Plus there are
+other fine tunes, that user should not configure by default, but which
+change the default behavior. I propose to create simple and clean 
+interface for limits as well. If you think that virtual cpu power is 
+not good, ok. Let's ask user for a percentage and give him yet another
+option to control this "badness" or "responsiveness".
+
+> thanks,
+
