@@ -1,64 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761218AbZJMUfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbZJMUjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761218AbZJMUfl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 16:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760943AbZJMUfk
+	id S1761284AbZJMUjX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 16:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761244AbZJMUjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 16:35:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51500 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752223AbZJMUfj (ORCPT
+	Tue, 13 Oct 2009 16:39:22 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:63737 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760930AbZJMUjS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 16:35:39 -0400
-Date: Tue, 13 Oct 2009 13:34:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Ben Woodard <bwoodard@llnl.gov>,
-       David Howells <dhowells@redhat.com>,
-       Brian Behlendorf <behlendorf1@llnl.gov>
-Subject: Re: [Patch v4] rwsem: fix rwsem_is_locked() bugs
-Message-Id: <20091013133419.3c8f5f21.akpm@linux-foundation.org>
-In-Reply-To: <20091008092632.7101.62229.sendpatchset@localhost.localdomain>
-References: <20091008092632.7101.62229.sendpatchset@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Oct 2009 16:39:18 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+Date: Tue, 13 Oct 2009 22:38:37 +0200
+User-Agent: KMail/1.9.9
+Cc: David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <20091012134328.GB8200@csn.ul.ie> <200910121932.14607.elendil@planet.nl>
+In-Reply-To: <200910121932.14607.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910132238.40867.elendil@planet.nl>
+X-OriginalArrivalTime: 13 Oct 2009 20:38:41.0495 (UTC) FILETIME=[26722670:01CA4C45]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Oct 2009 05:23:53 -0400
-Amerigo Wang <amwang@redhat.com> wrote:
+On Monday 12 October 2009, Frans Pop wrote:
+> On Monday 12 October 2009, Mel Gorman wrote:
+> > but after some digging around in this general area, I saw this patch
+> >
+> > 4752c93c30 iwlcore: Allow skb allocation from tasklet
+>
+> That is v2.6.30-rc6-773-g4752c93, which is part of the first wireless
+> merge I tested and where I saw no issues. But see below.
+>
+> > This patch increases the number of GFP_ATOMIC allocations that can
+> > occur by allocating GFP_ATOMIC in some cases and GFP_KERNEL in others.
+> > Previously, only GFP_KERNEL was used and I didn't realise this
+> > allocation method was so recent. Problems of this sort have cropped up
+> > before and while there are later changes that suppress some of these
+> > warnings, I believe this is a strong candidate for where the
+> > allocation failures started appearing.
 
-> --- a/include/linux/rwsem-spinlock.h
-> +++ b/include/linux/rwsem-spinlock.h
-> @@ -71,7 +71,13 @@ extern void __downgrade_write(struct rw_semaphore *sem);
->  
->  static inline int rwsem_is_locked(struct rw_semaphore *sem)
->  {
-> -	return (sem->activity != 0);
-> +	int ret = 1;
-> +
-> +	if (spin_trylock_irq(&sem->wait_lock)) {
-> +		ret = (sem->activity != 0);
-> +		spin_unlock_irq(&sem->wait_lock);
-> +	}
-> +	return ret;
->  }
+I have tried reverting this patch and that does make a significant 
+difference, but the results are still not really conclusive.
+I tested the revert on top of:
+- the first net-next-2.6 merge (2ed0e21), i.e. before the mm merge
+- 2.6.31.1
 
-a) probably to large to be inlined
+In both cases I no longer get SKB errors, but instead (?) I get firmware 
+errors:
+iwlagn 0000:10:00.0: Microcode SW error detected.  Restarting 0x2000000.
 
-b) the function will now cause bugs if called under
-   local_irq_disable().  That wasn't the case before.  Fixable via
-   spin_lock_irqsave().
+So on the wireless side it does look as if there is more than one change 
+involved. Remember that with .30 I don't get any errors, only relatively 
+mild latencies and skips in the music.
 
-In the present kernel there don't appear to be any irqs-off callers. 
-There may of course be some out-of-tree ones which will get bitten by
-this semantic change.
+> I really do think that v2.6.30-rc6-1032-g7ba10a8 could play a role here.
+> That's a fix for v2.6.30-rc1-1131-gaa837e1. So that bug was introduced
+> _before_ the merge 82d0481 and may thus well explain both the latencies
+> I saw _and_ why that merge tested without problems. And that would also
+> go a long way to explain my test results.
+> So I'm going to retest 82d0481 with 7ba10a8 cherry-picked on top.
+                         ^^^^^^^-- should be 45ea4ea
 
-If we decide to leave this new rule in place then we should add a
-WARN_ON(irqs_disabled()) to prevent hitting people with a nasty, subtle
-bug.
+I've tried this but still don't get any SKB errors, so that bug does not 
+seem to make a difference.
 
-Methinks that _irqsave() is better.
+> > > BISECTION of akpm (mm) MERGE
+> > > ----------------------------
+> > While I didn't spot anything too out of the ordinary here, they did
+> > occur shortly after a number of other page allocator related patches.
+> > One small thing I noticed there is that kswapd is getting woken up
+> > less now than it did previously. Generally, I wouldn't have expected
+> > it to make a difference but it's possible that kswapd is not being
+> > woken up to reclaim at a higher order than it was previously. I have a
+> > patch for this below. It'd be nice if you could apply it and see do
+> > fewer allocation failures occur on current mainline.
+>
+> I'll give that patch a try and report back.
+
+With your patch on .32-rc4 I still get the SKB errors, so it does not seem 
+to help. The only change there may have been is that the desktop was 
+frozen longer than without the patch, but that is an impression, not a 
+hard fact.
+
+
+Although identifying the problem on the wireless side is important, I still 
+feel that tracing the mm change should have priority as it influences much 
+more than just iwlagn, as the other reports prove.
+
+> > After that, could you edit drivers/net/wireless/iwlwifi/iwl-rx.c and
+> > make the GFP_ATOMIC in iwl_rx_replenish_now() GFP_ATOMIC|__GFP_NOWARN
+> > and see do any of the "serious" allocation failure messages appear.
+
+For the above reason I've not yet tried this. It seems to me that this 
+change will not really solve anything, but just suppress errors.
+
+Cheers,
+FJP
