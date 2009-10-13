@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751172AbZJMEGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751372AbZJMEIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751172AbZJMEGF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 00:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZJMEGE
+	id S1751372AbZJMEIh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 00:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZJMEIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 00:06:04 -0400
-Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:53647 "EHLO
-	quartz.edm.orcorp.ca" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750907AbZJMEGE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 00:06:04 -0400
-Date: Mon, 12 Oct 2009 22:05:15 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Roland Dreier <rdreier@cisco.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-rdma@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Anton Blanchard <anton@samba.org>, general@lists.openfabrics.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       Jeff Squyres <jsquyres@cisco.com>
-Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
-Message-ID: <20091013040515.GI18578@obsidianresearch.com>
-References: <adaab0tej5c.fsf@cisco.com> <1253198976.14935.27.camel@laptop> <adazl8td35u.fsf@cisco.com> <adatyz1d17q.fsf@cisco.com> <20090929171332.GD14405@elf.ucw.cz> <20090930094456.GD24621@elte.hu> <20090930160232.GZ22310@obsidianresearch.com> <20091012181944.GF17138@elte.hu> <20091012193048.GA20313@obsidianresearch.com> <20091012202046.GA7648@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012202046.GA7648@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 13 Oct 2009 00:08:36 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:39926 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751048AbZJMEIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 00:08:35 -0400
+Date: Tue, 13 Oct 2009 15:07:53 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@linux.intel.com>
+Subject: linux-next: staging tree build failure
+Message-Id: <20091013150753.f738576e.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__13_Oct_2009_15_07_53_+1100_cxUZnMh0ZWE8WWsQ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 10:20:46PM +0200, Ingo Molnar wrote:
-> It might be more acceptable because the flag-hint mechanism can at most 
-> cause over-flushing - while with perf events we might miss to invalidate 
-> a range altogether.
+--Signature=_Tue__13_Oct_2009_15_07_53_+1100_cxUZnMh0ZWE8WWsQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Right. Overflushing is not important, but missing an event entirely is not
-recoverable (at least within the current kernel APIs).
+Hi Greg,
 
-Jason
+Today's linux-next build (x86_64 allmodconfig) failed like this:
+
+make[4]: *** No rule to make target `include/linux/hayesesp.h', needed by `=
+usr/include/linux/.install'.  Stop.
+
+Caused by commit a724aa0a5ad2b3c6b5ee48e79a09e9fbc5cf3ec9 ("tty: esp:
+remove broken driver") which I have reverted for today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__13_Oct_2009_15_07_53_+1100_cxUZnMh0ZWE8WWsQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrT/RkACgkQjjKRsyhoI8wZsQCbBd4tPJo+jiH75Tq83LmSKijE
+4p8An27Liz+hPJwfyQHCEKJ3U86Z6ctP
+=L1A+
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__13_Oct_2009_15_07_53_+1100_cxUZnMh0ZWE8WWsQ--
