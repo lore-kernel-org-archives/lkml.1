@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760105AbZJMOwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760100AbZJMOyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760105AbZJMOwO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760051AbZJMOwO
+	id S1760100AbZJMOyL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:54:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933802AbZJMOyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:52:14 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38259 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760050AbZJMOwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:52:12 -0400
-Date: Tue, 13 Oct 2009 16:51:30 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Nix <nix@esperi.org.uk>,
-       "Justin P. Mattock" <justinmattock@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Boyan <btanastasov@yahoo.co.uk>, Ed Tomlinson <edt@aei.ca>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?= 
-	<fredlwm@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <20091013120046.5efb3365@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LRH.2.00.0910131645290.12171@twin.jikos.cz>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <20091013003841.6c2988d0@lxorguk.ukuu.org.uk> <20091012234641.GF8345@core.coreip.homeip.net>
- <20091013120046.5efb3365@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Tue, 13 Oct 2009 10:54:10 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:44103 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933763AbZJMOyI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 10:54:08 -0400
+Date: Tue, 13 Oct 2009 10:53:31 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+cc: linux-media@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: uvcvideo causes ehci_hcd to halt
+In-Reply-To: <4AD42453.20103@pardus.org.tr>
+Message-ID: <Pine.LNX.4.44L0.0910131050460.3169-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009, Alan Cox wrote:
+On Tue, 13 Oct 2009, [UTF-8] Ozan Çağlayan wrote:
 
-> > > > So it seems likely to me that this is a kernel bug, somewhere, and the
-> > > > TTY layer seems like a good place to look (OK, a horrible place, but a
-> > > > *likely* place).
-> > > 
-> > > Somewhere around 2.6.29-30 various things went funny in the keyboard
-> > > layer for me - notably characters "bleeding" across console switches.
-> > 
-> > What do you mean by "bleeding"? Are you sure it is not autorepeat
-> > kicking in?
+> Hi,
 > 
-> Fairly. Just now and then I'll do something like type
+> Some recent netbooks (Some MSI winds and LG X110's) equipped with an
+> integrated webcam have non-working USB ports unless the uvcvideo module
+> is blacklisted. I've found some bug reports in launchpad:
 > 
-> "blahblah<alt-f1>"
+> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/435352
 > 
-> eg when flipping consoles to check something and the last letter or two
-> ends up on the screen after the flip (as if the alt-f1 vc switch passes
-> the data somewhere). I suspect its some kind of asynchronous handling
-> using the "current console" rather than the "current console at the time
-> the letter was typed" but it doesn't occur to order so isn't bisectable
-> and I've never managed to pin down where in the keyboard/vt/tty stack it's
-> occurring.
+> I have an LG X110 on which I can reproduce the problem with 2.6.30.8.
+> Here's the interesting part in dmesg:
+> 
+> Oct 13 08:46:32 x110 kernel: [  261.048312] uvcvideo: Found UVC 1.00
+> device BisonCam, NB Pro (5986:0203)
+> Oct 13 08:46:32 x110 kernel: [  261.053592] input: BisonCam, NB Pro as
+> /devices/pci0000:00/0000:00:1d.7/usb1/1-5/1-5:1.0/input/input10
+> Oct 13 08:46:32 x110 kernel: [  261.053891] usbcore: registered new
+> interface driver uvcvideo
+> Oct 13 08:46:32 x110 kernel: [  261.054755] USB Video Class driver (v0.1.0)
+> Oct 13 08:46:32 x110 kernel: [  261.091014] ehci_hcd 0000:00:1d.7: force
+> halt; handhake f807c024 00004000 00000000 -> -110
 
-This has been reported by Andi Kleen some time ago [1] [2]. He seems to 
-have had clear idea between which kernel versions this started happening 
-and seemed to be able to reproduce it very reliably (which wasn't the case 
-on my side), but I don't think he bisected it down to single commit yet.
+Can you add a dump_stack() call just after the ehci_err() line in 
+drivers/usb/host/ehci-hcd.c:handshake_on_error_set_halt()?  It should 
+provide some clues.
 
-Andi?
+At the same time (i.e., during the same test) you should collect a 
+usbmon trace.
 
-[1] http://marc.info/?l=linux-kernel&m=124695628924382&w=4
-[2] http://bugzilla.kernel.org/show_bug.cgi?id=13739
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Alan Stern
 
