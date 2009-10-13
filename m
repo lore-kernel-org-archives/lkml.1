@@ -1,110 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbZJMROn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbZJMRPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760640AbZJMROn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 13:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760444AbZJMROm
+	id S1760652AbZJMRPr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 13:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760625AbZJMRPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 13:14:42 -0400
-Received: from lo.gmane.org ([80.91.229.12]:50779 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760425AbZJMROm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 13:14:42 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedranf@vedranf.mine.nu>
-Subject: Re: Memory overcommit
-Date: Tue, 13 Oct 2009 19:13:34 +0200
-Message-ID: <hb2cfu$r08$2@ger.gmane.org>
-References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com>
-Reply-To: vedran.furac@gmail.com
-Mime-Version: 1.0
+	Tue, 13 Oct 2009 13:15:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46176 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760612AbZJMRPq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 13:15:46 -0400
+Message-ID: <4AD4B54C.2060804@zytor.com>
+Date: Tue, 13 Oct 2009 10:13:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] x86: unify sys_iopl
+References: <4ABD3EC2.1020104@goop.org> <20091013103044.GA3915@elte.hu> <4AD4A9AE.10306@zytor.com> <4AD4B0A0.6050200@goop.org>
+In-Reply-To: <4AD4B0A0.6050200@goop.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 89-201-154-239.dsl.optinet.hr
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090701 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
-In-Reply-To: <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com>
-X-Age: 25
-X-Location: Lovran, Croatia
-X-OS: Debian GNU/Linux
-X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-
-> On Mon, 12 Oct 2009 13:51:07 +0200 Vedran Furač
-> <vedranf@vedranf.mine.nu> wrote:
->> /proc/meminfo MemTotal:        3542532 kB MemFree:          892972
->> kB Buffers:            2664 kB Cached:           130940 kB
->> 
->> ...that there is almost 900MB free memory. But OK, I can live with
->> it.
->> 
->> So, my question is: why today overcommit isn't turned off *by
->> default*? I have it turned off for a few years now and only side
->> effect is that I don't get processes killed randomly anymore, I
->> don't loose valuable time and data.
->> 
-> "isn't turned off" means "vm.overcommit_memory==2" ?
-
-Yes, "2: always check, never overcommit" as per proc(5)
-
-> And...what's version your kernel is ?
-
-Applies to every 2.6.
-
-> oom-killer still finds "definitely-not-guilty" ones ?
-
-Yes. It's always repeatable. Just compile and run that code. I'll
-probably just file a bug report.
-
-> I guess the reason of default value is that the kernel assume
-> processes will not always use all mmaped range. There will be unused
-> range in process's virtual memory and it can be big.
+On 10/13/2009 09:53 AM, Jeremy Fitzhardinge wrote:
+> On 10/13/09 09:24, H. Peter Anvin wrote:
+>> First of all, the unification looks good.
+>>
+>> As far as .32 is concerned... this *is* a bug even if this is only for
+>> paravirt, and given the small amount of code I am personally OK with
+>> taking the whole patch for .32.
+>>
+>> However, the patch is not complete!  The patch incidentally eliminates
+>> the need to have assembly stubs for sys_iopl, and those assembly stubs
+>> should be removed.  I have a patch for that currently test building.
+>>   
 > 
-> For example, typical case in a server, when you run multi-thread
-> program (like java VM),
+> I wasn't sure whether task_pt_regs() needed the full register set to be
+> saved to correctly return rflags (that is, does PTREGSCALL change the
+> shape of the stack, or just the contents?).
 > 
-> - stack per thread - malloc() arena per thread
-> 
-> can makes difference among size-of-mapped-range v.s. used-pages
-> bigger. I saw Gigabytes of unused range on ia64 host,...statck size
-> was big.
 
-Yes, I noticed that JVM allocates gigabytes but then uses less than 10%
-of that and, as a consequence, eclipse sometimes fails to start although
-there's plenty of free memory. So overcommiting is some kind of a
-workaround for broken software that allocate not what they need but what
-they might need in some rare occurrences. I would rather like fixing
-this userland software than risking OOM situations and random killing of
-innocent processes.
+PTREGSCALL does change the shape of the stack on 64 bits, but not on 32
+bits.  However, I believe it only matters for the additional fields,
+since the structure is anchored at the top.  I will double-check.
 
-> And if strict check(vm.ovecommit_memory=2) is used, mmap() return
-> -ENOMEM whenever it hits limit.
+	-hpa
 
-% strace -f -e mmap java -version
-[...]
-mmap(NULL, 996147200, PROT_READ|PROT_WRITE|PROT_EXEC,
-MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = -1 ENOMEM (Cannot
-allocate memory)
-
-And that should be fine.
-
-> Against random-kill, you may have 2 choices.
-> 
-> 1. use  /proc/<pid>/oom_adj 2. use  memory cgroup.
-> 
-> Something more easy-to-use method may be appriciated. We have above 2
-> now.
-
-These are just bad workarounds for bad OOM algorithm. I tested this
-little program on multiple systems (including windows) without any
-tweaking and linux behavior is, unfortunately *the worst*.  :/
-
-
-Regards,
-
-Vedran
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
