@@ -1,156 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760584AbZJMRBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbZJMRDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760584AbZJMRBO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 13:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760566AbZJMRBN
+	id S1760608AbZJMRDV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 13:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760339AbZJMRDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 13:01:13 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:36236 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752926AbZJMRBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 13:01:12 -0400
-Date: Tue, 13 Oct 2009 10:00:22 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
-       mtosatti@redhat.com, torvalds@linux-foundation.org
-Subject: Re: [PATCH RFC tip/core/rcu 1/3] rcu: The Bloatwatch Edition, v7
-Message-ID: <20091013170022.GA6782@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091009224954.GA26516@linux.vnet.ibm.com> <4AD42FF5.2080109@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD42FF5.2080109@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 13 Oct 2009 13:03:20 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:62231 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752439AbZJMRDT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 13:03:19 -0400
+Date: Tue, 13 Oct 2009 10:01:28 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de,
+       David Vrabel <david.vrabel@csr.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       lud <linux-usb@vger.kernel.org>
+Subject: [PATCH] whci: fix type and format warnings
+Message-Id: <20091013100128.0f06d67c.randy.dunlap@oracle.com>
+In-Reply-To: <20091013162312.8b93998b.sfr@canb.auug.org.au>
+References: <20091013162312.8b93998b.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4AD4B28E.00AC:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 03:44:53PM +0800, Lai Jiangshan wrote:
-> Again. trivial code-beautifying except the last one.
-> 
-> Paul E. McKenney wrote:
-> 
-> [...]
-> 
-> > +
-> > +/* Global control variables for rcupdate callback mechanism. */
-> > +struct rcu_ctrlblk {
-> > +	struct rcu_head *rcucblist;	/* List of pending callbacks (CBs). */
-> > +	struct rcu_head **donetail;	/* ->next pointer of last "done" CB. */
-> > +	struct rcu_head **curtail;	/* ->next pointer of last CB. */
-> > +};
-> > +
-> > +extern struct rcu_ctrlblk rcu_ctrlblk;
-> > +extern struct rcu_ctrlblk rcu_bh_ctrlblk;
-> 
-> Since rcu_batches_completed() returns a constant, this piece of
-> code is not needed here. We can move it to rcutiny.c.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Good point, moved.  And removed the "extern" declarations.
+Fix format and type warnings in whci driver:
 
-> and remove "EXPORT_SYMBOL_GPL(rcu_ctrlblk);" &
-> "EXPORT_SYMBOL_GPL(rcu_bh_ctrlblk);".
+drivers/usb/host/whci/qset.c:440: warning: comparison of distinct pointer types lacks a cast
+drivers/usb/host/whci/qset.c:442: warning: format '%d' expects type 'int', but argument 6 has type 'size_t'
+drivers/usb/host/whci/qset.c:488: warning: format '%d' expects type 'int', but argument 4 has type 'size_t'
+drivers/usb/host/whci/qset.c:509: warning: format '%08x' expects type 'unsigned int', but argument 5 has type 'dma_addr_t'
+drivers/usb/host/whci/qset.c:568: warning: comparison of distinct pointer types lacks a cast
+drivers/usb/host/whci/qset.c:571: warning: format '%d' expects type 'int', but argument 5 has type 'size_t'
+drivers/usb/host/whci/qset.c:590: warning: format '%d' expects type 'int', but argument 4 has type 'size_t'
+drivers/usb/host/whci/qset.c:590: warning: format '%d' expects type 'int', but argument 6 has type 'long int'
 
-Fixed, thank you!  And marked them "static".
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/usb/host/whci/qset.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-> [...]
-> 
-> > +/* extern void rcu_restart_cpu(int cpu); */
-> > +
-> 
-> redundant comments.
-
-Good eyes!  I believe I have long since proven to myself that
-rcu_restart_cpu() is no longer used.  :-)
-
-> [...]
-> 
-> > +
-> > +static inline int rcu_pending(int cpu)
-> > +{
-> > +	return 1;
-> > +}
-> 
-> It seems that no one use it.
-
-Indeed!  Removed.
-
-> [...]
-> 
-> > +/* Definition for rcupdate control block. */
-> > +struct rcu_ctrlblk rcu_ctrlblk = {
-> > +	.rcucblist = NULL,
-> > +	.donetail = &rcu_ctrlblk.rcucblist,
-> > +	.curtail = &rcu_ctrlblk.rcucblist,
-> > +};
-> > +EXPORT_SYMBOL_GPL(rcu_ctrlblk);
-> 
-> remove "EXPORT_SYMBOL_GPL(rcu_ctrlblk);"
-
-Done, above.
-
-> > +struct rcu_ctrlblk rcu_bh_ctrlblk = {
-> > +	.rcucblist = NULL,
-> > +	.donetail = &rcu_bh_ctrlblk.rcucblist,
-> > +	.curtail = &rcu_bh_ctrlblk.rcucblist,
-> > +};
-> > +EXPORT_SYMBOL_GPL(rcu_bh_ctrlblk);
-> 
-> remove "EXPORT_SYMBOL_GPL(rcu_bh_ctrlblk);"
-
-Done, above.
-
-> > +
-> > +#ifdef CONFIG_NO_HZ
-> > +
-> > +static long rcu_dynticks_nesting = 1;
-> > +
-> > +/*
-> > + * Enter dynticks-idle mode, which is an extended quiescent state
-> > + * if we have fully entered that mode (i.e., if the new value of
-> > + * dynticks_nesting is zero).
-> > + */
-> > +void rcu_enter_nohz(void)
-> > +{
-> > +	if (--rcu_dynticks_nesting == 0)
-> > +		rcu_sched_qs(0); /* implies rcu_bh_qsctr_inc(0) */
-> > +}
-> > +
-> > +/*
-> > + * Exit dynticks-idle mode, so that we are no longer in an extended
-> > + * quiescent state.
-> > + */
-> > +void rcu_exit_nohz(void)
-> > +{
-> > +	rcu_dynticks_nesting++;
-> > +}
-> > +
-> > +#endif /* #ifdef CONFIG_NO_HZ */
-> 
-> It's an old issue.
-> It's not only about RCUTINY, it's also about other rcu implementations:
-> 
-> rcu_enter_nohz()/rcu_exit_nohz() are not called in pairs.
-> 
-> irq_exit() calls tick_nohz_stop_sched_tick() which calls rcu_enter_nohz(),
-> where is the corresponding rcu_exit_nohz()?
-> (or tick_nohz_restart_sched_tick())?
-
-The tick_nohz_restart_sched_tick() function is called from the various
-per-architecture cpu_idle() functions (or default_idle() or whatever
-name that the architecture uses).  For example, in:
-
-	arch/x86/kernel/process_64.c
-
-the cpu_idle() function invokes tick_nohz_restart_sched_tick() just
-before invoking schedule() to exit the idle loop.
-
-And, as you say, tick_nohz_restart_sched_tick() invokes rcu_exit_nohz().
-
-							Thanx, Paul
+--- linux-next-20091012.orig/drivers/usb/host/whci/qset.c
++++ linux-next-20091012/drivers/usb/host/whci/qset.c
+@@ -437,9 +437,9 @@ static int qset_add_urb_sg(struct whc *w
+ 		}
+ 
+ 		dma_addr = sg_dma_address(sg);
+-		dma_remaining = min(sg_dma_len(sg), remaining);
++		dma_remaining = min_t(size_t, sg_dma_len(sg), remaining);
+ 
+-		dev_dbg(&whc->umc->dev, "adding sg[%d] %08x %d\n", i, (unsigned)dma_addr,
++		dev_dbg(&whc->umc->dev, "adding sg[%d] %08x %zu\n", i, (unsigned)dma_addr,
+ 			dma_remaining);
+ 
+ 		while (dma_remaining) {
+@@ -485,7 +485,7 @@ static int qset_add_urb_sg(struct whc *w
+ 				dma_len = ep - dma_addr;
+ 			}
+ 
+-			dev_dbg(&whc->umc->dev, "adding %d\n", dma_len);
++			dev_dbg(&whc->umc->dev, "adding %zu\n", dma_len);
+ 
+ 			std->len += dma_len;
+ 			std->ntds_remaining = -1; /* filled in later */
+@@ -506,7 +506,8 @@ static int qset_add_urb_sg(struct whc *w
+ 			}
+ 
+ 			for (;p < std->num_pointers; p++, entry++) {
+-				dev_dbg(&whc->umc->dev, "e[%d] %08x\n", p, dma_addr);
++				dev_dbg(&whc->umc->dev, "e[%d] %08llx\n", p,
++					(unsigned long long)dma_addr);
+ 				std->pl_virt[p].buf_ptr = cpu_to_le64(dma_addr);
+ 				dma_addr = (dma_addr + WHCI_PAGE_SIZE) & ~(WHCI_PAGE_SIZE-1);
+ 			}
+@@ -565,10 +566,10 @@ static int qset_add_urb_sg_linearize(str
+ 			break;
+ 		}
+ 
+-		sg_remaining = min(remaining, sg->length);
++		sg_remaining = min_t(size_t, remaining, sg->length);
+ 		orig = sg_virt(sg);
+ 
+-		dev_dbg(&whc->umc->dev, "adding sg[%d] %d\n", i, sg_remaining);
++		dev_dbg(&whc->umc->dev, "adding sg[%d] %zu\n", i, sg_remaining);
+ 
+ 		while (sg_remaining) {
+ 			if (!std || std->len == max_std_len) {
+@@ -587,7 +588,7 @@ static int qset_add_urb_sg_linearize(str
+ 
+ 			len = min(sg_remaining, max_std_len - std->len);
+ 
+-			dev_dbg(&whc->umc->dev, "added %d from sg[%d] @ offset %d\n",
++			dev_dbg(&whc->umc->dev, "added %zu from sg[%d] @ offset %td\n",
+ 				len, i, orig - sg_virt(sg));
+ 
+ 			if (is_out)
