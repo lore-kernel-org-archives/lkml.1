@@ -1,60 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759844AbZJMNUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbZJMNWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759844AbZJMNUY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 09:20:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbZJMNUX
+	id S1759873AbZJMNWt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 09:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759865AbZJMNWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 09:20:23 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33459 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755830AbZJMNUX (ORCPT
+	Tue, 13 Oct 2009 09:22:49 -0400
+Received: from ernst.netinsight.se ([194.16.221.21]:35580 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759856AbZJMNWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 09:20:23 -0400
-Subject: Re: [tip:timers/tracing] hrtimer: Add tracepoint for hrtimers
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       anton@samba.org, linux-kernel@vger.kernel.org, peterz@infradead.org,
-       zhaolei@cn.fujitsu.com, xiaoguangrong@cn.fujitsu.com,
-       fweisbec@gmail.com, tglx@linutronix.de, kosaki.motohiro@jp.fujitsu.com,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <1255439822.7113.1541.camel@gandalf.stny.rr.com>
-References: <4A7F8B2B.5020908@cn.fujitsu.com>
-	 <tip-c6a2a1770245f654f35f60e1458d4356680f9519@git.kernel.org>
-	 <1255404309.7113.948.camel@gandalf.stny.rr.com>
-	 <20091013070853.GA13175@elte.hu>
-	 <1255439822.7113.1541.camel@gandalf.stny.rr.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 13 Oct 2009 09:18:24 -0400
-Message-Id: <1255439904.7113.1545.camel@gandalf.stny.rr.com>
+	Tue, 13 Oct 2009 09:22:48 -0400
+Date: Tue, 13 Oct 2009 15:21:58 +0200
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH/RFC v5 1/5]: mtdoops: avoid erasing already empty areas
+Message-ID: <20091013152158.558df8e9@marrow.netinsight.se>
+In-Reply-To: <20091013151751.59e217a7@marrow.netinsight.se>
+References: <20091012113758.GB11035@elte.hu>
+	<20091012140149.6789efab@marrow.netinsight.se>
+	<20091012120951.GA16799@elte.hu>
+	<1255349748.10605.13.camel@macbook.infradead.org>
+	<20091012122023.GA19365@elte.hu>
+	<20091012150650.51a4b4dc@marrow.netinsight.se>
+	<20091012131528.GC25464@elte.hu>
+	<20091012153937.0dcd73e5@marrow.netinsight.se>
+	<alpine.LFD.2.01.0910120828390.3438@localhost.localdomain>
+	<20091012110954.67d7d8d8.akpm@linux-foundation.org>
+	<20091012182346.GH17138@elte.hu>
+	<alpine.LFD.2.01.0910121130190.3438@localhost.localdomain>
+	<20091013151751.59e217a7@marrow.netinsight.se>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 09:17 -0400, Steven Rostedt wrote:
-> On Tue, 2009-10-13 at 09:08 +0200, Ingo Molnar wrote:
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> 
-> > > (unsigned long long)(((ktime_t) { .tv64 = REC->expires }).tv64)
-> > > 
-> > > Is not easy. It's basically implementing a C interpreter :-(
-> > 
-> > Btw., what i suggested quite some time ago was that we should bind 
-> > tracepoints by emitting C source code stubs, which tools can then build 
-> > and link in, using gcc.
-> 
-> Yeah, and I thought about that too. But that kills any chance of running
-> the trace on one box (non x86) and reading it on another (x86). And that
-> is one of my goals for this.
+After having scanned the entire mtdoops area, mtdoops will erase it if
+there are no mtdoops headers in it. However, empty and already erased
+areas (i.e., without mtdoops headers) will therefore also be erased at
+each startup.
 
-I'd love to see the kernel code for having this also understand ktime_t.
+This patch counts the number of unclean pages (neither empty nor with
+the mtdoops header) and only erases if no headers are found and the area
+is still unclean.
 
--- Steve
+Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
+---
+ drivers/mtd/mtdoops.c |   18 ++++++++++++++----
+ 1 files changed, 14 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/mtd/mtdoops.c b/drivers/mtd/mtdoops.c
+index 18c6c96..c785e1a 100644
+--- a/drivers/mtd/mtdoops.c
++++ b/drivers/mtd/mtdoops.c
+@@ -225,7 +225,7 @@ static void mtdoops_workfunc_write(struct work_struct *work)
+ static void find_next_position(struct mtdoops_context *cxt)
+ {
+ 	struct mtd_info *mtd = cxt->mtd;
+-	int ret, page, maxpos = 0;
++	int ret, page, maxpos = 0, unclean_pages = 0;
+ 	u32 count[2], maxcount = 0xffffffff;
+ 	size_t retlen;
+ 
+@@ -237,10 +237,13 @@ static void find_next_position(struct mtdoops_context *cxt)
+ 			continue;
+ 		}
+ 
+-		if (count[1] != MTDOOPS_KERNMSG_MAGIC)
+-			continue;
+ 		if (count[0] == 0xffffffff)
+ 			continue;
++		if (count[1] != MTDOOPS_KERNMSG_MAGIC) {
++			/* Page is neither clean nor empty */
++			unclean_pages++;
++			continue;
++		}
+ 		if (maxcount == 0xffffffff) {
+ 			maxcount = count[0];
+ 			maxpos = page;
+@@ -259,7 +262,14 @@ static void find_next_position(struct mtdoops_context *cxt)
+ 	if (maxcount == 0xffffffff) {
+ 		cxt->nextpage = 0;
+ 		cxt->nextcount = 1;
+-		schedule_work(&cxt->work_erase);
++		if (unclean_pages != 0) {
++			printk(KERN_INFO "mtdoops: cleaning area\n");
++			schedule_work(&cxt->work_erase);
++		} else {
++			printk(KERN_DEBUG "mtdoops: ready %d, %d (clean)\n",
++			       cxt->nextpage, cxt->nextcount);
++			cxt->ready = 1;
++		}
+ 		return;
+ 	}
+ 
+-- 
+1.6.0.4
 
