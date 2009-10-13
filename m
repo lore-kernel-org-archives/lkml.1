@@ -1,68 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbZJMNh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759675AbZJMNlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759922AbZJMNh4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 09:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758243AbZJMNhz
+	id S1759675AbZJMNlf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 09:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZJMNle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 09:37:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45858 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750831AbZJMNhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 09:37:55 -0400
-Date: Tue, 13 Oct 2009 15:37:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] perf_counter tools: remove expensive old debug code
-	from perf top
-Message-ID: <20091013133707.GA21409@elte.hu>
-References: <1255438640.7173.1.camel@marge.simson.net>
+	Tue, 13 Oct 2009 09:41:34 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:34290 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539AbZJMNld (ORCPT
+	<rfc822;groupwise-GHaskins@novell.com;0:0>);
+	Tue, 13 Oct 2009 09:41:33 -0400
+Message-ID: <4AD48364.4000807@novell.com>
+Date: Tue, 13 Oct 2009 09:40:52 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255438640.7173.1.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Rakib Mullick <rakib.mullick@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm]: vbus: Fix section mismatch warnings in pci-bridge.c
+References: <b9df5fa10910111808p424bba2bu999a7a49f32cc3d0@mail.gmail.com>
+In-Reply-To: <b9df5fa10910111808p424bba2bu999a7a49f32cc3d0@mail.gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigA27442C53551BD4B8C00119F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigA27442C53551BD4B8C00119F
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-* Mike Galbraith <efault@gmx.de> wrote:
+Rakib Mullick wrote:
+>  The functions vbus_pci_open, _ioq_init, eventq_init,
+> vbus_pci_eventq_register are
+> annoted with __init and referenced from a function __devinit
+> vbus_pci_probe, which
+> causes a section mismatch.So annote those functions with __devinit.
+>=20
+>  We were warned by the following warnings:
+>=20
+>   LD      drivers/vbus/vbus-pcibridge.o
+> WARNING: drivers/vbus/vbus-pcibridge.o(.devinit.text+0x19e): Section
+> mismatch in reference from the function vbus_pci_probe() to the
+> function .init.text:vbus_pci_open()
+> The function __devinit vbus_pci_probe() references
+> a function __init vbus_pci_open().
+> If vbus_pci_open is only used by vbus_pci_probe then
+> annotate vbus_pci_open with a matching annotation.
+>=20
+> WARNING: drivers/vbus/vbus-pcibridge.o(.devinit.text+0x1f4): Section
+> mismatch in reference from the function vbus_pci_probe() to the
+> function .init.text:_ioq_init()
+> The function __devinit vbus_pci_probe() references
+> a function __init _ioq_init().
+> If _ioq_init is only used by vbus_pci_probe then
+> annotate _ioq_init with a matching annotation.
+>=20
+> WARNING: drivers/vbus/vbus-pcibridge.o(.devinit.text+0x240): Section
+> mismatch in reference from the function vbus_pci_probe() to the
+> function .init.text:eventq_init()
+> The function __devinit vbus_pci_probe() references
+> a function __init eventq_init().
+> If eventq_init is only used by vbus_pci_probe then
+> annotate eventq_init with a matching annotation.
+>=20
+> WARNING: drivers/vbus/vbus-pcibridge.o(.devinit.text+0x45a): Section
+> mismatch in reference from the function vbus_pci_probe() to the
+> function .init.text:vbus_pci_eventq_register()
+> The function __devinit vbus_pci_probe() references
+> a function __init vbus_pci_eventq_register().
+> If vbus_pci_eventq_register is only used by vbus_pci_probe then
+> annotate vbus_pci_eventq_register with a matching annotation.
+>=20
+> ---
+> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
 
-> perf_counter tools: remove expensive old debug code from perf top
-> 
-> Calling gettimeofday() at high frequency is painful for handicapped 
-> boxen. The spot calling gettimeofday() is old unneeded debug code, so 
-> remove it.
+Applied Rakib, thanks.
 
-Thanks!
+Kind Regards,
+-Greg
 
-We still seem to have a performance problem. Just running perf top on a 
-16-way box:
 
- Performance counter stats for 'perf top -e cycles -c 3000000':
+--------------enigA27442C53551BD4B8C00119F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-     585.694831  task-clock-msecs         #      0.113 CPUs 
-          35163  context-switches         #      0.060 M/sec
-             17  CPU-migrations           #      0.000 M/sec
-          20355  page-faults              #      0.035 M/sec
-     1476952962  cycles                   #   2521.711 M/sec
-      730770658  instructions             #      0.495 IPC  
-       11489471  cache-references         #     19.617 M/sec
-        2055001  cache-misses             #      3.509 M/sec
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-    5.169518576  seconds time elapsed
+iEYEARECAAYFAkrUg2QACgkQP5K2CMvXmqEK3ACfQZYjcPAWE4Wwc+XLm2v3oQ+B
+8vwAmgP0lsWpeqHB6EgcHhUJS8CEF8xY
+=4T5u
+-----END PGP SIGNATURE-----
 
-that's 11% of CPU time used on a single CPU - just displaying a measly 
-16K irqs/sec. Something's not quite right here.
-
-	Ingo
+--------------enigA27442C53551BD4B8C00119F--
