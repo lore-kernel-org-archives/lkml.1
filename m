@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbZJMF6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbZJMGBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756329AbZJMF6e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 01:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbZJMF6d
+	id S1756911AbZJMGBr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 02:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbZJMGBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 01:58:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47072 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754912AbZJMF6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 01:58:33 -0400
-Date: Tue, 13 Oct 2009 07:57:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: mm-commits@vger.kernel.org, randy.dunlap@oracle.com, dhowells@redhat.com
-Subject: Re: +
-	mutex-subsystem-synchro-test-module-add-missing-header-file.patch
-	added to -mm tree
-Message-ID: <20091013055743.GA2594@elte.hu>
-References: <200910130232.n9D2WRvr026737@imap1.linux-foundation.org>
+	Tue, 13 Oct 2009 02:01:46 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42539 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755970AbZJMGBq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 02:01:46 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AD41793.9020400@jp.fujitsu.com>
+Date: Tue, 13 Oct 2009 15:00:51 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910130232.n9D2WRvr026737@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Huang Ying <ying.huang@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 6/6] mce-inject: use injected mce only during faked handler
+ call
+References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com>	 <4AC95F5A.4000708@jp.fujitsu.com>  <4AC96391.1060001@jp.fujitsu.com>	 <1255072482.5228.157.camel@yhuang-dev.sh.intel.com>	 <4ACEE5E0.3050701@jp.fujitsu.com>	 <1255074286.5228.163.camel@yhuang-dev.sh.intel.com>	 <4ACEF4D9.9090600@jp.fujitsu.com>	 <1255079484.5228.201.camel@yhuang-dev.sh.intel.com>	 <4AD3E731.7080900@jp.fujitsu.com> <1255404495.6047.298.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1255404495.6047.298.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
-
-> Subject: synchro-test: add missing header file
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+Huang Ying wrote:
+> On Tue, 2009-10-13 at 10:34 +0800, Hidetoshi Seto wrote: 
+>> How long do I have to wait your next post, which will fix my urgent issue on
+>> Nehalem?
 > 
-> Fix build errors, add <sched.h> header file:
+> I think my patch with title:
 > 
-> kernel/synchro-test.c: In function 'sched':
-> kernel/synchro-test.c:220: error: implicit declaration of function 'schedule'
-> kernel/synchro-test.c: In function 'mutexer':
-> kernel/synchro-test.c:227: error: implicit declaration of function 'daemonize'
-> kernel/synchro-test.c:228: error: implicit declaration of function 'set_user_nice'
-> kernel/synchro-test.c:241: error: dereferencing pointer to incomplete type
-> kernel/synchro-test.c: In function 'semaphorer':
-> kernel/synchro-test.c:263: error: dereferencing pointer to incomplete type
-> kernel/synchro-test.c: In function 'reader':
-> kernel/synchro-test.c:287: error: dereferencing pointer to incomplete type
-> kernel/synchro-test.c: In function 'writer':
-> kernel/synchro-test.c:311: error: dereferencing pointer to incomplete type
-> kernel/synchro-test.c: In function 'downgrader':
-> kernel/synchro-test.c:340: error: dereferencing pointer to incomplete type
+> [BUGFIX -v2] x86, mce, inject: Make injected mce valid only during faked handler call
 > 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Acked-by: David Howells <dhowells@redhat.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  kernel/synchro-test.c |    1 +
->  1 file changed, 1 insertion(+)
+> fixes this issue correctly.
 
-Btw., locking related tests generally live in lib/.
+I should note that there are 2 pending patches from you:
 
-	Ingo
+[BUGFIX -v2] x86, mce, inject: Make injected mce valid only during faked handler call
+  for issue A) injected mce could be consumed by real poll handler  
+
+[BUGFIX -v7] x86, MCE: Fix bugs and issues of MCE log ring buffer
+  for issue B) log buffer is too small
+  and for issue C) log buffer is not ring buffer
+  (I'm not sure but there might be other targeting issues D), E) and so on.)
+
+And the only one what I believe it is urgent is issue B).
+
+
+Thanks,
+H.Seto
+
