@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761607AbZJMXch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761614AbZJMXfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761607AbZJMXch (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 19:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757454AbZJMXch
+	id S1761614AbZJMXfB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 19:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZJMXfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 19:32:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:51921 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752522AbZJMXcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 19:32:36 -0400
-Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2 [PATCH]
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ben Efros <ben@pc-doctor.com>, Josua Dietze <digidietze@draisberghof.de>,
-       fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>
-In-Reply-To: <Pine.LNX.4.44L0.0910131003250.3169-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0910131003250.3169-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 14 Oct 2009 10:30:06 +1100
-Message-Id: <1255476606.2347.15.camel@pasglop>
+	Tue, 13 Oct 2009 19:35:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37715 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753873AbZJMXe7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 19:34:59 -0400
+Date: Tue, 13 Oct 2009 16:34:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas DuBuisson <thomas.dubuisson@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] Include hrtimer.h for ANSI compliance
+Message-Id: <20091013163414.62ec9244.akpm@linux-foundation.org>
+In-Reply-To: <4c44d90b0910061520o36adc7m50419be3a3d9d0fa@mail.gmail.com>
+References: <4c44d90b0910061520o36adc7m50419be3a3d9d0fa@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 10:03 -0400, Alan Stern wrote:
-> On Tue, 13 Oct 2009, Benjamin Herrenschmidt wrote:
+On Tue, 6 Oct 2009 15:20:16 -0700
+Thomas DuBuisson <thomas.dubuisson@gmail.com> wrote:
+
+> Include <linux/hrtimer.h> to make pci.h ansi compliant (it references
+> an hrtimer enum).
+
+extern enum hrtimer_restart it_real_fn(struct hrtimer *);
+
+
+Perhaps the declaration of it_real_fn() should be moved to hrtimer.h
+instead.  Or perhaps not.
+
+
+Or we could "forward declare" the enum with simply
+
+enum hrtimer_restart;
+
+but given that the compiler works out the storage size of the type at
+compile-time, that looks risky.
+
+
+Or we could not do anything.  Because increasing our inclusion
+complexity for no known gain isn't a bargain.
+
+
+Or is it no known gain?  What prompted you to write this patch?  Some
+error message or warning from some tool?  If so, please describe it
+fully.
+
 > 
-> > usb-storage: Workaround devices with bogus sense size
-> > 
-> > Some devices, such as Huawei E169, advertise more than the standard
-> > amount of sense data, causing us to set US_FL_SANE_SENSE, assuming
-> > they support it. However, they subsequently fail the request sense
-> > with that size.
-> > 
-> > This works around it generically. When a sense request fails due to
-> > a device returning an error, US_FL_SANE_SENSE was set, and that sense
-> > request used a larger sense size, we retry with a smaller size before
-> > giving up.
-> > 
-> > Based on an original patch by Ben Efros <ben@pc-doctor.com>
-> > 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> diff --git a/include/linux/timer.h b/include/linux/timer.h
+> index a2d1eb6..ad2b3cb 100644
+> --- a/include/linux/timer.h
+> +++ b/include/linux/timer.h
+> @@ -6,6 +6,7 @@
+> #include <linux/stddef.h>
+> #include <linux/debugobjects.h>
+> #include <linux/stringify.h>
+> +#include <linux/hrtimer.h>
 > 
-> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+> struct tvec_base;
 
-Cool. Who's going to commit it ? Greg ? Or should I send it to Linus ?
-
-Cheers,
-Ben
-
+Your email client mangles whitespace, thus destroying the patch.
