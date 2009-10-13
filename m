@@ -1,86 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934409AbZJMV3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761446AbZJMVbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934409AbZJMV3q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 17:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934399AbZJMV3p
+	id S1761446AbZJMVbu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 17:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761431AbZJMVbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 17:29:45 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:34577 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934400AbZJMV3n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 17:29:43 -0400
-From: Thomas Schlichter <thomas.schlichter@web.de>
-To: "Jan Beulich" <JBeulich@novell.com>
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not available
-Date: Tue, 13 Oct 2009 23:29:05 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.28.10-modified-ioremap; KDE/4.3.2; i686; ; )
-Cc: "Jeremy Fitzhardinge" <jeremy.fitzhardinge@citrix.com>,
-       "Robert Hancock" <hancockrwd@gmail.com>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
-       "Tejun Heo" <tj@kernel.org>, x86@kernel.org,
-       "Yinghai Lu" <yinghai@kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Arjan van de Ven" <arjan@linux.intel.com>,
-       dri-devel@lists.sourceforge.net, "Ingo Molnar" <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       "Thomas Hellstrom" <thellstrom@vmware.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <4AD449A702000078000197EE@vpn.id2.novell.com>
-In-Reply-To: <4AD449A702000078000197EE@vpn.id2.novell.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910132329.05152.thomas.schlichter@web.de>
-X-Provags-ID: V01U2FsdGVkX1+PM0xSwz96zQGuAQsv2QDn+CBBfvJmddcR/txc
-	APrptynF1uXO+97pg/zMuGcDHcq6igVoZgMnB4QxJQ+mtEt7Aw
-	S9v/nEm7tw/15K/GYb2A==
+	Tue, 13 Oct 2009 17:31:49 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:58403 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761430AbZJMVbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 17:31:48 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: uclinux-dev@uclinux.org, David Howells <dhowells@redhat.com>,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
+       Jie Zhang <jie.zhang@analog.com>, Robin Getz <robin.getz@analog.com>,
+       David Howells <dhowells@redhat.com>
+Subject: [PATCH v3] NOMMU: fix malloc performance by adding uninitialized flag
+Date: Tue, 13 Oct 2009 17:31:07 -0400
+Message-Id: <1255469467-17065-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5
+In-Reply-To: <3372.1255449822@redhat.com>
+References: <3372.1255449822@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> >>> Thomas Schlichter <thomas.schlichter@web.de> 12.10.09 20:32 >>>
-> >+	if (!pat_enabled) {
-> >+		void __iomem *ret = ioremap_nocache(phys_addr, size);
-> >+		if (ret)
-> >+			mtrr_add(phys_addr, size, MTRR_TYPE_WRCOMB, false);
-> 
-> This won't work if phys_addr or size aren't page aligned, or if size isn't
-> a power of two.
+From: Jie Zhang <jie.zhang@analog.com>
 
-No, at least the comments in mtrr_add and mtrr_check state that it is just 
-required that phys_addr and size are multiple of PAGE_SIZE. And I'm not sure 
-if it is always safe to round these up/down to the next PAGE boundary. If it 
-is not, maybe it is better to fail...
+The NOMMU code currently clears all anonymous mmapped memory.  While this
+is what we want in the default case, all memory allocation from userspace
+under NOMMU has to go through this interface, including malloc() which is
+allowed to return uninitialized memory.  This can easily be a significant
+performance penalty.  So for constrained embedded systems were security is
+irrelevant, allow people to avoid clearing memory unnecessarily.
 
-> >+	if (!pat_enabled) {
-> >+		ret = set_memory_uc(addr, numpages);
-> >+		if (!ret)
-> >+			mtrr_add(__pa(addr), numpages * PAGE_SIZE,
-> >+				 MTRR_TYPE_WRCOMB, false);
-> 
-> Similarly, this requires numpages to be a power of two.
+This also alters the ELF-FDPIC binfmt such that it obtains uninitialised
+memory for the brk and stack region.
 
-Same as above.
+Signed-off-by: Jie Zhang <jie.zhang@analog.com>
+Signed-off-by: Robin Getz <robin.getz@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
+Acked-by: Paul Mundt <lethal@linux-sh.org>
+---
+v3
+	- tweak kconfig desc
 
-> I think user mode code handles this by splitting the request and trying to
-> establish as many entries as possible (and those as big as possible).
+ Documentation/nommu-mmap.txt      |   26 ++++++++++++++++++++++++++
+ fs/binfmt_elf_fdpic.c             |    3 ++-
+ include/asm-generic/mman-common.h |    5 +++++
+ init/Kconfig                      |   22 ++++++++++++++++++++++
+ mm/nommu.c                        |    8 +++++---
+ 5 files changed, 60 insertions(+), 4 deletions(-)
 
-Seems not required here...
+diff --git a/Documentation/nommu-mmap.txt b/Documentation/nommu-mmap.txt
+index b565e82..8e1ddec 100644
+--- a/Documentation/nommu-mmap.txt
++++ b/Documentation/nommu-mmap.txt
+@@ -119,6 +119,32 @@ FURTHER NOTES ON NO-MMU MMAP
+      granule but will only discard the excess if appropriately configured as
+      this has an effect on fragmentation.
+ 
++ (*) The memory allocated by a request for an anonymous mapping will normally
++     be cleared by the kernel before being returned in accordance with the
++     Linux man pages (ver 2.22 or later).
++
++     In the MMU case this can be achieved with reasonable performance as
++     regions are backed by virtual pages, with the contents only being mapped
++     to cleared physical pages when a write happens on that specific page
++     (prior to which, the pages are effectively mapped to the global zero page
++     from which reads can take place).  This spreads out the time it takes to
++     initialize the contents of a page - depending on the write-usage of the
++     mapping.
++
++     In the no-MMU case, however, anonymous mappings are backed by physical
++     pages, and the entire map is cleared at allocation time.  This can cause
++     significant delays during a userspace malloc() as the C library does an
++     anonymous mapping and the kernel then does a memset for the entire map.
++
++     However, for memory that isn't required to be precleared - such as that
++     returned by malloc() - mmap() can take a MAP_UNINITIALIZED flag to
++     indicate to the kernel that it shouldn't bother clearing the memory before
++     returning it.  Note that CONFIG_MMAP_ALLOW_UNINITIALIZED must be enabled
++     to permit this, otherwise the flag will be ignored.
++
++     uClibc uses this to speed up malloc(), and the ELF-FDPIC binfmt uses this
++     to allocate the brk and stack region.
++
+  (*) A list of all the private copy and anonymous mappings on the system is
+      visible through /proc/maps in no-MMU mode.
+ 
+diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+index 38502c6..79d2b1a 100644
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -380,7 +380,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
+ 	down_write(&current->mm->mmap_sem);
+ 	current->mm->start_brk = do_mmap(NULL, 0, stack_size,
+ 					 PROT_READ | PROT_WRITE | PROT_EXEC,
+-					 MAP_PRIVATE | MAP_ANONYMOUS | MAP_GROWSDOWN,
++					 MAP_PRIVATE | MAP_ANONYMOUS |
++					 MAP_UNINITIALIZED | MAP_GROWSDOWN,
+ 					 0);
+ 
+ 	if (IS_ERR_VALUE(current->mm->start_brk)) {
+diff --git a/include/asm-generic/mman-common.h b/include/asm-generic/mman-common.h
+index 5ee13b2..2011126 100644
+--- a/include/asm-generic/mman-common.h
++++ b/include/asm-generic/mman-common.h
+@@ -19,6 +19,11 @@
+ #define MAP_TYPE	0x0f		/* Mask for type of mapping */
+ #define MAP_FIXED	0x10		/* Interpret addr exactly */
+ #define MAP_ANONYMOUS	0x20		/* don't use a file */
++#ifdef CONFIG_MMAP_ALLOW_UNINITIALIZED
++# define MAP_UNINITIALIZED 0x4000000	/* For anonymous mmap, memory could be uninitialized */
++#else
++# define MAP_UNINITIALIZED 0x0		/* Don't support this flag */
++#endif
+ 
+ #define MS_ASYNC	1		/* sync memory asynchronously */
+ #define MS_INVALIDATE	2		/* invalidate the caches */
+diff --git a/init/Kconfig b/init/Kconfig
+index 09c5c64..309cd9a 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1069,6 +1069,28 @@ config SLOB
+ 
+ endchoice
+ 
++config MMAP_ALLOW_UNINITIALIZED
++	bool "Allow mmapped anonymous memory to be uninitialized"
++	depends on EMBEDDED && !MMU
++	default n
++	help
++	  Normally, and according to the Linux spec, anonymous memory obtained
++	  from mmap() has it's contents cleared before it is passed to
++	  userspace.  Enabling this config option allows you to request that
++	  mmap() skip that if it is given an MAP_UNINITIALIZED flag, thus
++	  providing a huge performance boost.  If this option is not enabled,
++	  then the flag will be ignored.
++
++	  This is taken advantage of by uClibc's malloc(), and also by
++	  ELF-FDPIC binfmt's brk and stack allocator.
++
++	  Because of the obvious security issues, this option should only be
++	  enabled on embedded devices where you control what is run in
++	  userspace.  Since that isn't generally a problem on no-MMU systems,
++	  it is normally safe to say Y here.
++
++	  See Documentation/nommu-mmap.txt for more information.
++
+ config PROFILING
+ 	bool "Profiling support (EXPERIMENTAL)"
+ 	help
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 5189b5a..11e8231 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -1143,9 +1143,6 @@ static int do_mmap_private(struct vm_area_struct *vma,
+ 		if (ret < rlen)
+ 			memset(base + ret, 0, rlen - ret);
+ 
+-	} else {
+-		/* if it's an anonymous mapping, then just clear it */
+-		memset(base, 0, rlen);
+ 	}
+ 
+ 	return 0;
+@@ -1343,6 +1340,11 @@ unsigned long do_mmap_pgoff(struct file *file,
+ 		goto error_just_free;
+ 	add_nommu_region(region);
+ 
++	/* clear anonymous mappings that don't ask for uninitialized data */
++	if (!vma->vm_file && !(flags & MAP_UNINITIALIZED))
++		memset((void *)region->vm_start, 0,
++		       region->vm_end - region->vm_start);
++
+ 	/* okay... we have a mapping; now we have to register it */
+ 	result = vma->vm_start;
+ 
+-- 
+1.6.5
 
-> Also, in all cases you pass 'false' for the 'increment' parameter, in order
-> to avoid having to tear down the established entries. While this may be
-> reasonable for kernel initiated mappings, I don't think that's acceptable
-> for such originating from user mode.
-
-Well, therefore I would have to remember which mmap successfully set up which 
-MTRR entries. And it must be ensured that for each mmap there always is a 
-munmap. If this is indeed always ensured, and if it's worth to maintain the 
-required data, I'd be happy to add a corresponding mtrr_del there.
-
-Kind regards,
-  Thomas
