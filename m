@@ -1,116 +1,400 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbZJMLge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbZJMLiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759517AbZJMLge (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 07:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759508AbZJMLge
+	id S1759521AbZJMLiR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 07:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759330AbZJMLiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 07:36:34 -0400
-Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:43867 "EHLO
-	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759507AbZJMLgd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 07:36:33 -0400
-Message-ID: <4AD4661A.8090905@xyzw.org>
-Date: Tue, 13 Oct 2009 04:35:54 -0700
-From: Brian Rogers <brian@xyzw.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: tim.gardner@canonical.com, stable <stable@kernel.org>
-CC: kernel-team@lists.ubuntu.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-bluetooth@vger.kernel.org
-Subject: Bluetooth input fixes for stable
-References: <4AD284F1.7050605@xyzw.org> <4AD3DCAF.7050908@canonical.com>
-In-Reply-To: <4AD3DCAF.7050908@canonical.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Oct 2009 07:38:15 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:61268 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755648AbZJMLiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 07:38:14 -0400
+To: linux-security-module@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] TOMOYO: Add recursive directory matching operator support.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
+	<20091004125327.105675949@I-love.SAKURA.ne.jp>
+	<4ACE1CFE.3020507@canonical.com>
+	<alpine.LRH.2.00.0910121203090.19066@tundra.namei.org>
+	<200910132034.DAE39014.OVLFFOMHJQFOSt@I-love.SAKURA.ne.jp>
+In-Reply-To: <200910132034.DAE39014.OVLFFOMHJQFOSt@I-love.SAKURA.ne.jp>
+Message-Id: <200910132037.BHJ57351.QLVJtMHSFOFOOF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Tue, 13 Oct 2009 20:37:36 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Gardner wrote:
-> Brian Rogers wrote:
->   
->> For Karmic's kernel, I recommend the following cherry-picks from upstream:
->>
->> 364f63519d94442ed373ac7da79033c8282df46a
->> 9eba32b86d17ef87131fa0bce43c614904ab5781
->> edad63886993d18ab800c49f6587a93432ef8b35
->>
->> They ensure Bluetooth input devices such as keyboards and mice are 
->> removed completely and in proper order when they disconnect, so that HAL 
->> sees the removal and relays the info to X. Without this, disconnected 
->> Bluetooth devices are left in X, and duplicates appear on each 
->> reconnection until the input device limit is hit. Then no newly 
->> connected input devices will work.
->>
->> Brian
->>     
->
-> These look suitable for 2.6.31 stable. Have you sent them to
-> stable@kernel.org?
->   
+[PATCH] TOMOYO: Add recursive directory matching operator support.
 
-Actually, I hadn't sent these to stable yet, but that's a good idea. 
-CCing relevant parties.
+This patch introduces new operator /\{dir\}/ which matches
+'/' + 'One or more repetitions of dir/' (e.g. /dir/ /dir/dir/ /dir/dir/dir/ ).
 
-It's not actually a regression (or at least not a recent one) since the 
-stale input device problem has existed as far back as I can remember, 
-but these commits do 'fix a real bug that bothers people', as the 
-guideline states, so I guess it's appropriate for stable.
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ security/tomoyo/common.c |  200 ++++++++++++++++++++++++++++-------------------
+ security/tomoyo/common.h |    4 
+ 2 files changed, 121 insertions(+), 83 deletions(-)
 
-Commit messages below:
-
-commit 364f63519d94442ed373ac7da79033c8282df46a
-Author: Marcel Holtmann <marcel@holtmann.org>
-Date:   Sat Aug 22 14:15:53 2009 -0700
-
-    Bluetooth: Disconnect HIDRAW devices on disconnect
-
-    Currently the HID subsystem will create HIDRAW devices for the transport
-    driver, but it will not disconnect them. Until the HID subsytem gets
-    fixed, ensure that HIDRAW and HIDDEV devices are disconnected when the
-    Bluetooth HID device gets removed.
-
-    Based on a patch from Brian Rogers <brian@xyzw.org>
-
-    Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
-
-commit 9eba32b86d17ef87131fa0bce43c614904ab5781
-Author: Marcel Holtmann <marcel@holtmann.org>
-Date:   Sat Aug 22 14:19:26 2009 -0700
-
-    Bluetooth: Add extra device reference counting for connections
-
-    The device model itself has no real usable reference counting at the
-    moment and this causes problems if parents are deleted before their
-    children. The device model itself handles the memory details of this
-    correctly, but the uevent order is not consistent. This causes various
-    problems for systems like HAL or even X.
-
-    So until device_put() does a proper cleanup, the device for Bluetooth
-    connection will be protected with an extra reference counting to ensure
-    the correct order of uevents when connections are terminated.
-
-    This is not an automatic feature. Higher Bluetooth layers like HIDP or
-    BNEP should grab this new reference to ensure that their uevents are
-    send before the ones from the parent device.
-
-    Based on a report by Brian Rogers <brian@xyzw.org>
-
-    Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
-
-commit edad63886993d18ab800c49f6587a93432ef8b35
-Author: Marcel Holtmann <marcel@holtmann.org>
-Date:   Sat Aug 22 14:22:15 2009 -0700
-
-    Bluetooth: Let HIDP grab the device reference for connections
-
-    The core exports the hci_conn_hold_device() and hci_conn_put_device()
-    functions for device reference of connections. Use this to ensure that
-    the uevents from the parent are send after the child ones.
-
-    Based on a report by Brian Rogers <brian@xyzw.org>
-
-    Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
-
+--- security-testing-2.6.orig/security/tomoyo/common.c
++++ security-testing-2.6/security/tomoyo/common.c
+@@ -187,6 +187,8 @@ bool tomoyo_is_correct_path(const char *
+ 			    const s8 pattern_type, const s8 end_type,
+ 			    const char *function)
+ {
++	const char *const start = filename;
++	bool in_repetition = false;
+ 	bool contains_pattern = false;
+ 	unsigned char c;
+ 	unsigned char d;
+@@ -212,9 +214,13 @@ bool tomoyo_is_correct_path(const char *
+ 		if (c == '/')
+ 			goto out;
+ 	}
+-	while ((c = *filename++) != '\0') {
++	while (1) {
++		c = *filename++;
++		if (!c)
++			break;
+ 		if (c == '\\') {
+-			switch ((c = *filename++)) {
++			c = *filename++;
++			switch (c) {
+ 			case '\\':  /* "\\" */
+ 				continue;
+ 			case '$':   /* "\$" */
+@@ -231,6 +237,22 @@ bool tomoyo_is_correct_path(const char *
+ 					break; /* Must not contain pattern */
+ 				contains_pattern = true;
+ 				continue;
++			case '{':   /* "/\{" */
++				if (filename - 3 < start ||
++				    *(filename - 3) != '/')
++					break;
++				if (pattern_type == -1)
++					break; /* Must not contain pattern */
++				contains_pattern = true;
++				in_repetition = true;
++				continue;
++			case '}':   /* "\}/" */
++				if (*filename != '/')
++					break;
++				if (!in_repetition)
++					break;
++				in_repetition = false;
++				continue;
+ 			case '0':   /* "\ooo" */
+ 			case '1':
+ 			case '2':
+@@ -246,6 +268,8 @@ bool tomoyo_is_correct_path(const char *
+ 					continue; /* pattern is not \000 */
+ 			}
+ 			goto out;
++		} else if (in_repetition && c == '/') {
++			goto out;
+ 		} else if (tomoyo_is_invalid(c)) {
+ 			goto out;
+ 		}
+@@ -254,6 +278,8 @@ bool tomoyo_is_correct_path(const char *
+ 		if (!contains_pattern)
+ 			goto out;
+ 	}
++	if (in_repetition)
++		goto out;
+ 	return true;
+  out:
+ 	printk(KERN_DEBUG "%s: Invalid pathname '%s'\n", function,
+@@ -360,33 +386,6 @@ struct tomoyo_domain_info *tomoyo_find_d
+ }
+ 
+ /**
+- * tomoyo_path_depth - Evaluate the number of '/' in a string.
+- *
+- * @pathname: The string to evaluate.
+- *
+- * Returns path depth of the string.
+- *
+- * I score 2 for each of the '/' in the @pathname
+- * and score 1 if the @pathname ends with '/'.
+- */
+-static int tomoyo_path_depth(const char *pathname)
+-{
+-	int i = 0;
+-
+-	if (pathname) {
+-		const char *ep = pathname + strlen(pathname);
+-		if (pathname < ep--) {
+-			if (*ep != '/')
+-				i++;
+-			while (pathname <= ep)
+-				if (*ep-- == '/')
+-					i += 2;
+-		}
+-	}
+-	return i;
+-}
+-
+-/**
+  * tomoyo_const_part_length - Evaluate the initial length without a pattern in a token.
+  *
+  * @filename: The string to evaluate.
+@@ -444,11 +443,10 @@ void tomoyo_fill_path_info(struct tomoyo
+ 	ptr->is_dir = len && (name[len - 1] == '/');
+ 	ptr->is_patterned = (ptr->const_len < len);
+ 	ptr->hash = full_name_hash(name, len);
+-	ptr->depth = tomoyo_path_depth(name);
+ }
+ 
+ /**
+- * tomoyo_file_matches_to_pattern2 - Pattern matching without '/' character
++ * tomoyo_file_matches_pattern2 - Pattern matching without '/' character
+  * and "\-" pattern.
+  *
+  * @filename:     The start of string to check.
+@@ -458,10 +456,10 @@ void tomoyo_fill_path_info(struct tomoyo
+  *
+  * Returns true if @filename matches @pattern, false otherwise.
+  */
+-static bool tomoyo_file_matches_to_pattern2(const char *filename,
+-					    const char *filename_end,
+-					    const char *pattern,
+-					    const char *pattern_end)
++static bool tomoyo_file_matches_pattern2(const char *filename,
++					 const char *filename_end,
++					 const char *pattern,
++					 const char *pattern_end)
+ {
+ 	while (filename < filename_end && pattern < pattern_end) {
+ 		char c;
+@@ -519,7 +517,7 @@ static bool tomoyo_file_matches_to_patte
+ 		case '*':
+ 		case '@':
+ 			for (i = 0; i <= filename_end - filename; i++) {
+-				if (tomoyo_file_matches_to_pattern2(
++				if (tomoyo_file_matches_pattern2(
+ 						    filename + i, filename_end,
+ 						    pattern + 1, pattern_end))
+ 					return true;
+@@ -550,7 +548,7 @@ static bool tomoyo_file_matches_to_patte
+ 					j++;
+ 			}
+ 			for (i = 1; i <= j; i++) {
+-				if (tomoyo_file_matches_to_pattern2(
++				if (tomoyo_file_matches_pattern2(
+ 						    filename + i, filename_end,
+ 						    pattern + 1, pattern_end))
+ 					return true;
+@@ -567,7 +565,7 @@ static bool tomoyo_file_matches_to_patte
+ }
+ 
+ /**
+- * tomoyo_file_matches_to_pattern - Pattern matching without without '/' character.
++ * tomoyo_file_matches_pattern - Pattern matching without without '/' character.
+  *
+  * @filename:     The start of string to check.
+  * @filename_end: The end of string to check.
+@@ -576,7 +574,7 @@ static bool tomoyo_file_matches_to_patte
+  *
+  * Returns true if @filename matches @pattern, false otherwise.
+  */
+-static bool tomoyo_file_matches_to_pattern(const char *filename,
++static bool tomoyo_file_matches_pattern(const char *filename,
+ 					   const char *filename_end,
+ 					   const char *pattern,
+ 					   const char *pattern_end)
+@@ -589,10 +587,10 @@ static bool tomoyo_file_matches_to_patte
+ 		/* Split at "\-" pattern. */
+ 		if (*pattern++ != '\\' || *pattern++ != '-')
+ 			continue;
+-		result = tomoyo_file_matches_to_pattern2(filename,
+-							 filename_end,
+-							 pattern_start,
+-							 pattern - 2);
++		result = tomoyo_file_matches_pattern2(filename,
++						      filename_end,
++						      pattern_start,
++						      pattern - 2);
+ 		if (first)
+ 			result = !result;
+ 		if (result)
+@@ -600,13 +598,79 @@ static bool tomoyo_file_matches_to_patte
+ 		first = false;
+ 		pattern_start = pattern;
+ 	}
+-	result = tomoyo_file_matches_to_pattern2(filename, filename_end,
+-						 pattern_start, pattern_end);
++	result = tomoyo_file_matches_pattern2(filename, filename_end,
++					      pattern_start, pattern_end);
+ 	return first ? result : !result;
+ }
+ 
+ /**
++ * tomoyo_path_matches_pattern2 - Do pathname pattern matching.
++ *
++ * @f: The start of string to check.
++ * @p: The start of pattern to compare.
++ *
++ * Returns true if @f matches @p, false otherwise.
++ */
++static bool tomoyo_path_matches_pattern2(const char *f, const char *p)
++{
++	const char *f_delimiter;
++	const char *p_delimiter;
++
++	while (*f && *p) {
++		f_delimiter = strchr(f, '/');
++		if (!f_delimiter)
++			f_delimiter = f + strlen(f);
++		p_delimiter = strchr(p, '/');
++		if (!p_delimiter)
++			p_delimiter = p + strlen(p);
++		if (*p == '\\' && *(p + 1) == '{')
++			goto recursive;
++		if (!tomoyo_file_matches_pattern(f, f_delimiter, p,
++						 p_delimiter))
++			return false;
++		f = f_delimiter;
++		if (*f)
++			f++;
++		p = p_delimiter;
++		if (*p)
++			p++;
++	}
++	/* Ignore trailing "\*" and "\@" in @pattern. */
++	while (*p == '\\' &&
++	       (*(p + 1) == '*' || *(p + 1) == '@'))
++		p += 2;
++	return !*f && !*p;
++ recursive:
++	/*
++	 * The "\{" pattern is permitted only after '/' character.
++	 * This guarantees that below "*(p - 1)" is safe.
++	 * Also, the "\}" pattern is permitted only before '/' character
++	 * so that "\{" + "\}" pair will not break the "\-" operator.
++	 */
++	if (*(p - 1) != '/' || p_delimiter <= p + 3 || *p_delimiter != '/' ||
++	    *(p_delimiter - 1) != '}' || *(p_delimiter - 2) != '\\')
++		return false; /* Bad pattern. */
++	do {
++		/* Compare current component with pattern. */
++		if (!tomoyo_file_matches_pattern(f, f_delimiter, p + 2,
++						 p_delimiter - 2))
++			break;
++		/* Proceed to next component. */
++		f = f_delimiter;
++		if (!*f)
++			break;
++		f++;
++		/* Continue comparison. */
++		if (tomoyo_path_matches_pattern2(f, p_delimiter + 1))
++			return true;
++		f_delimiter = strchr(f, '/');
++	} while (f_delimiter);
++	return false; /* Not matched. */
++}
++
++/**
+  * tomoyo_path_matches_pattern - Check whether the given filename matches the given pattern.
++ *
+  * @filename: The filename to check.
+  * @pattern:  The pattern to compare.
+  *
+@@ -615,24 +679,24 @@ static bool tomoyo_file_matches_to_patte
+  * The following patterns are available.
+  *   \\     \ itself.
+  *   \ooo   Octal representation of a byte.
+- *   \*     More than or equals to 0 character other than '/'.
+- *   \@     More than or equals to 0 character other than '/' or '.'.
++ *   \*     Zero or more repetitions of characters other than '/'.
++ *   \@     Zero or more repetitions of characters other than '/' or '.'.
+  *   \?     1 byte character other than '/'.
+- *   \$     More than or equals to 1 decimal digit.
++ *   \$     One or more repetitions of decimal digits.
+  *   \+     1 decimal digit.
+- *   \X     More than or equals to 1 hexadecimal digit.
++ *   \X     One or more repetitions of hexadecimal digits.
+  *   \x     1 hexadecimal digit.
+- *   \A     More than or equals to 1 alphabet character.
++ *   \A     One or more repetitions of alphabet characters.
+  *   \a     1 alphabet character.
++ *
+  *   \-     Subtraction operator.
++ *
++ *   /\{dir\}/   '/' + 'One or more repetitions of dir/' (e.g. /dir/ /dir/dir/
++ *               /dir/dir/dir/ ).
+  */
+ bool tomoyo_path_matches_pattern(const struct tomoyo_path_info *filename,
+ 				 const struct tomoyo_path_info *pattern)
+ {
+-	/*
+-	  if (!filename || !pattern)
+-	  return false;
+-	*/
+ 	const char *f = filename->name;
+ 	const char *p = pattern->name;
+ 	const int len = pattern->const_len;
+@@ -640,37 +704,15 @@ bool tomoyo_path_matches_pattern(const s
+ 	/* If @pattern doesn't contain pattern, I can use strcmp(). */
+ 	if (!pattern->is_patterned)
+ 		return !tomoyo_pathcmp(filename, pattern);
+-	/* Dont compare if the number of '/' differs. */
+-	if (filename->depth != pattern->depth)
++	/* Don't compare directory and non-directory. */
++	if (filename->is_dir != pattern->is_dir)
+ 		return false;
+ 	/* Compare the initial length without patterns. */
+ 	if (strncmp(f, p, len))
+ 		return false;
+ 	f += len;
+ 	p += len;
+-	/* Main loop. Compare each directory component. */
+-	while (*f && *p) {
+-		const char *f_delimiter = strchr(f, '/');
+-		const char *p_delimiter = strchr(p, '/');
+-		if (!f_delimiter)
+-			f_delimiter = f + strlen(f);
+-		if (!p_delimiter)
+-			p_delimiter = p + strlen(p);
+-		if (!tomoyo_file_matches_to_pattern(f, f_delimiter,
+-						    p, p_delimiter))
+-			return false;
+-		f = f_delimiter;
+-		if (*f)
+-			f++;
+-		p = p_delimiter;
+-		if (*p)
+-			p++;
+-	}
+-	/* Ignore trailing "\*" and "\@" in @pattern. */
+-	while (*p == '\\' &&
+-	       (*(p + 1) == '*' || *(p + 1) == '@'))
+-		p += 2;
+-	return !*f && !*p;
++	return tomoyo_path_matches_pattern2(f, p);
+ }
+ 
+ /**
+--- security-testing-2.6.orig/security/tomoyo/common.h
++++ security-testing-2.6/security/tomoyo/common.h
+@@ -56,9 +56,6 @@ struct tomoyo_page_buffer {
+  * (5) "is_patterned" is a bool which is true if "name" contains wildcard
+  *     characters, false otherwise. This allows TOMOYO to use "hash" and
+  *     strcmp() for string comparison if "is_patterned" is false.
+- * (6) "depth" is calculated using the number of "/" characters in "name".
+- *     This allows TOMOYO to avoid comparing two pathnames which never match
+- *     (e.g. whether "/var/www/html/index.html" matches "/tmp/sh-thd-\$").
+  */
+ struct tomoyo_path_info {
+ 	const char *name;
+@@ -66,7 +63,6 @@ struct tomoyo_path_info {
+ 	u16 const_len;     /* = tomoyo_const_part_length(name)     */
+ 	bool is_dir;       /* = tomoyo_strendswith(name, "/")      */
+ 	bool is_patterned; /* = tomoyo_path_contains_pattern(name) */
+-	u16 depth;         /* = tomoyo_path_depth(name)            */
+ };
+ 
+ /*
