@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760906AbZJMSYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934029AbZJMS0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760906AbZJMSYf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 14:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760897AbZJMSYe
+	id S934029AbZJMS0D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 14:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933981AbZJMS0C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 14:24:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43671 "EHLO mx2.mail.elte.hu"
+	Tue, 13 Oct 2009 14:26:02 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43953 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760896AbZJMSYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 14:24:33 -0400
-Date: Tue, 13 Oct 2009 20:23:49 +0200
+	id S933561AbZJMS0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 14:26:00 -0400
+Date: Tue, 13 Oct 2009 20:25:15 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] scheduler fixes
-Message-ID: <20091013182349.GA11251@elte.hu>
+Subject: [GIT PULL] perf events fixes
+Message-ID: <20091013182515.GA14001@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,108 +34,171 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest sched-fixes-for-linus git tree from:
+Please pull the latest perf-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perf-fixes-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Ingo Molnar (1):
-      Revert "x86, timers: Check for pending timers after (device) interrupts"
+Ashwin Chaugule (1):
+      perf tools: Remove static debugfs path from parse-events
 
-Mike Galbraith (1):
-      sched: Update the clock of runqueue select_task_rq() selected
+Ingo Molnar (1):
+      perf tools: Fix the NO_64BIT build on pure 64-bit systems
 
 Randy Dunlap (1):
-      sched: Fix missing kernel-doc notation
+      perf tools: Fix const char type propagation
+
+Vincent Legoll (1):
+      perf events: Update MAINTAINERS entry file patterns
 
 
- arch/x86/kernel/irq.c |    2 --
- arch/x86/kernel/smp.c |    1 -
- kernel/sched.c        |   10 ++++++++--
- 3 files changed, 8 insertions(+), 5 deletions(-)
+ MAINTAINERS                         |    7 +++++++
+ tools/perf/Makefile                 |   21 ++++++++++++++-------
+ tools/perf/builtin-sched.c          |    4 ++--
+ tools/perf/util/parse-events.c      |    5 ++++-
+ tools/perf/util/trace-event-parse.c |    8 ++++----
+ 5 files changed, 31 insertions(+), 14 deletions(-)
 
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index 3912061..74656d1 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -244,7 +244,6 @@ unsigned int __irq_entry do_IRQ(struct pt_regs *regs)
- 				__func__, smp_processor_id(), vector, irq);
- 	}
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 69e31aa..cf69091 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4071,6 +4071,13 @@ M:	Peter Zijlstra <a.p.zijlstra@chello.nl>
+ M:	Paul Mackerras <paulus@samba.org>
+ M:	Ingo Molnar <mingo@elte.hu>
+ S:	Supported
++F:	kernel/perf_event.c
++F:	include/linux/perf_event.h
++F:	arch/*/*/kernel/perf_event.c
++F:	arch/*/include/asm/perf_event.h
++F:	arch/*/lib/perf_event.c
++F:	arch/*/kernel/perf_callchain.c
++F:	tools/perf/
  
--	run_local_timers();
- 	irq_exit();
+ PERSONALITY HANDLING
+ M:	Christoph Hellwig <hch@infradead.org>
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 5881943..742a32e 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -157,11 +157,18 @@ uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
+ uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
+ uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
  
- 	set_irq_regs(old_regs);
-@@ -269,7 +268,6 @@ void smp_generic_interrupt(struct pt_regs *regs)
- 	if (generic_interrupt_extension)
- 		generic_interrupt_extension();
+-# If we're on a 64-bit kernel, use -m64
+-ifndef NO_64BIT
+-	ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
+-	  M64 := -m64
+-	endif
++#
++# Add -m32 for cross-builds:
++#
++ifdef NO_64BIT
++  MBITS := -m32
++else
++  #
++  # If we're on a 64-bit kernel, use -m64:
++  #
++  ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
++    MBITS := -m64
++  endif
+ endif
  
--	run_local_timers();
- 	irq_exit();
+ # CFLAGS and LDFLAGS are for the users to override from the command line.
+@@ -194,7 +201,7 @@ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wold-style-definition
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wstrict-prototypes
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wdeclaration-after-statement
  
- 	set_irq_regs(old_regs);
-diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
-index d915d95..ec1de97 100644
---- a/arch/x86/kernel/smp.c
-+++ b/arch/x86/kernel/smp.c
-@@ -198,7 +198,6 @@ void smp_reschedule_interrupt(struct pt_regs *regs)
+-CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
++CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
+ LDFLAGS = -lpthread -lrt -lelf -lm
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+@@ -416,7 +423,7 @@ ifeq ($(uname_S),Darwin)
+ endif
+ 
+ ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
+-	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel);
++	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el]);
+ endif
+ 
+ ifdef NO_DEMANGLE
+diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
+index ea9c15c..ce2d5be 100644
+--- a/tools/perf/builtin-sched.c
++++ b/tools/perf/builtin-sched.c
+@@ -1287,7 +1287,7 @@ static struct sort_dimension *available_sorts[] = {
+ 
+ static LIST_HEAD(sort_list);
+ 
+-static int sort_dimension__add(char *tok, struct list_head *list)
++static int sort_dimension__add(const char *tok, struct list_head *list)
  {
- 	ack_APIC_irq();
- 	inc_irq_stat(irq_resched_count);
--	run_local_timers();
- 	/*
- 	 * KVM uses this interrupt to force a cpu out of guest mode
- 	 */
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 76c0e96..789001d 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -676,6 +676,7 @@ inline void update_rq_clock(struct rq *rq)
+ 	int i;
  
- /**
-  * runqueue_is_locked
-+ * @cpu: the processor in question.
-  *
-  * Returns true if the current cpu runqueue is locked.
-  * This interface allows printk to be called with the runqueue lock
-@@ -2311,7 +2312,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
+@@ -1917,7 +1917,7 @@ static void setup_sorting(void)
+ 
+ 	free(str);
+ 
+-	sort_dimension__add((char *)"pid", &cmp_pid);
++	sort_dimension__add("pid", &cmp_pid);
+ }
+ 
+ static const char *record_args[] = {
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 87c424d..8cfb48c 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -691,7 +691,10 @@ static void store_event_type(const char *orgname)
+ 	FILE *file;
+ 	int id;
+ 
+-	sprintf(filename, "/sys/kernel/debug/tracing/events/%s/id", orgname);
++	sprintf(filename, "%s/", debugfs_path);
++	strncat(filename, orgname, strlen(orgname));
++	strcat(filename, "/id");
++
+ 	c = strchr(filename, ':');
+ 	if (c)
+ 		*c = '/';
+diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
+index 55b41b9..55c9659 100644
+--- a/tools/perf/util/trace-event-parse.c
++++ b/tools/perf/util/trace-event-parse.c
+@@ -618,7 +618,7 @@ static int test_type(enum event_type type, enum event_type expect)
+ }
+ 
+ static int test_type_token(enum event_type type, char *token,
+-		    enum event_type expect, char *expect_tok)
++		    enum event_type expect, const char *expect_tok)
  {
- 	int cpu, orig_cpu, this_cpu, success = 0;
- 	unsigned long flags;
--	struct rq *rq;
-+	struct rq *rq, *orig_rq;
+ 	if (type != expect) {
+ 		die("Error: expected type %d but read %d",
+@@ -650,7 +650,7 @@ static int read_expect_type(enum event_type expect, char **tok)
+ 	return __read_expect_type(expect, tok, 1);
+ }
  
- 	if (!sched_feat(SYNC_WAKEUPS))
- 		wake_flags &= ~WF_SYNC;
-@@ -2319,7 +2320,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
- 	this_cpu = get_cpu();
+-static int __read_expected(enum event_type expect, char *str, int newline_ok)
++static int __read_expected(enum event_type expect, const char *str, int newline_ok)
+ {
+ 	enum event_type type;
+ 	char *token;
+@@ -668,12 +668,12 @@ static int __read_expected(enum event_type expect, char *str, int newline_ok)
+ 	return 0;
+ }
  
- 	smp_wmb();
--	rq = task_rq_lock(p, &flags);
-+	rq = orig_rq = task_rq_lock(p, &flags);
- 	update_rq_clock(rq);
- 	if (!(p->state & state))
- 		goto out;
-@@ -2350,6 +2351,10 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
- 		set_task_cpu(p, cpu);
+-static int read_expected(enum event_type expect, char *str)
++static int read_expected(enum event_type expect, const char *str)
+ {
+ 	return __read_expected(expect, str, 1);
+ }
  
- 	rq = task_rq_lock(p, &flags);
-+
-+	if (rq != orig_rq)
-+		update_rq_clock(rq);
-+
- 	WARN_ON(p->state != TASK_WAKING);
- 	cpu = task_cpu(p);
- 
-@@ -3656,6 +3661,7 @@ static void update_group_power(struct sched_domain *sd, int cpu)
- 
- /**
-  * update_sg_lb_stats - Update sched_group's statistics for load balancing.
-+ * @sd: The sched_domain whose statistics are to be updated.
-  * @group: sched_group whose statistics are to be updated.
-  * @this_cpu: Cpu for which load balance is currently performed.
-  * @idle: Idle status of this_cpu
+-static int read_expected_item(enum event_type expect, char *str)
++static int read_expected_item(enum event_type expect, const char *str)
+ {
+ 	return __read_expected(expect, str, 0);
+ }
