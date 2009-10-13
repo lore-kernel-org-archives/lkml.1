@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759588AbZJMLwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbZJMLxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759588AbZJMLwp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 07:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759551AbZJMLwo
+	id S1759596AbZJMLxr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 07:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759566AbZJMLxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 07:52:44 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:48032 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759152AbZJMLwn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 07:52:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JDSV+HKXVlRBKyVthn4LmqmIRPPlfAe98C2Vk0dM8jFbWYzFOTO4CYTO9QW9FJdVML
-         +x+EddiL59UH0G4i6AMtbpauASOlfEBW9dFfhTlj9q/Cjw7meQbj5vr/Ixxdl7+XYndc
-         BgJTjA3c+fw1UDZlQ1zjuY8t5pKKG4WM5mkcg=
-MIME-Version: 1.0
-In-Reply-To: <20091013100101.GA26846@elte.hu>
-References: <4727185d0910130118m5387058dndb02ac9b384af9f0@mail.gmail.com>
-	 <20091013100101.GA26846@elte.hu>
-Date: Tue, 13 Oct 2009 13:51:35 +0200
-Message-ID: <4727185d0910130451h3a5adcebtc0c06f48b6c9ab99@mail.gmail.com>
-Subject: Re: [PATCH] [PERF] do not manually count string lengths
-From: Vincent Legoll <vincent.legoll@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>, paulus@samba.org,
-       a.p.zijlstra@chello.nl
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 13 Oct 2009 07:53:46 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58041 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759551AbZJMLxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 07:53:45 -0400
+Date: Tue, 13 Oct 2009 22:53:04 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: manual merge of the i7core_edac tree with Linus'
+ tree
+Message-Id: <20091013225304.211dc64e.sfr@canb.auug.org.au>
+In-Reply-To: <1209036982.100421255434636304.JavaMail.root@zmail05.collab.prod.int.phx2.redhat.com>
+References: <20091012142328.710881fe.sfr@canb.auug.org.au>
+	<1209036982.100421255434636304.JavaMail.root@zmail05.collab.prod.int.phx2.redhat.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__13_Oct_2009_22_53_04_+1100_Fr+AjoaMiwNyZb+2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 12:01 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> We should add 'F:' file patterns to that entry i guess ...
+--Signature=_Tue__13_Oct_2009_22_53_04_+1100_Fr+AjoaMiwNyZb+2
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Mauro,
+
+On Tue, 13 Oct 2009 07:50:36 -0400 (EDT) Mauro Carvalho Chehab <mchehab@red=
+hat.com> wrote:
 >
-> Something like:
->
-> F:      kernel/perf_event.c
-> F:      include/linux/perf_event.h
-> F:      arch/*/*/kernel/perf_event.c
-> F:      arch/*/include/asm/perf_event.h
-> F:      tools/perf/
->
-> Would do the trick. Mind sending a patch for that too?
+> Thanks for letting me know. I've rebased it fixing the merge conflict. Fo=
+r now,
+> I just removed the call to edac_mce_parse() for Uncorrected Errors, since=
+ I'll
+> eventually replace that part of the code with something better.
+>=20
+> You should now be able to merge it without merging conflicts.
 
-Yep, I'll do, but a quick find in the tree may reveal other
-suspects that could be in the same league:
+OK, thanks.
 
-$ find . -name .git -prune -false -o -name drivers -prune \
--false -o -name '*perf*' | grep -v perfmon | grep -v gperf
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-arch/*/kernel/perf_event.c
+--Signature=_Tue__13_Oct_2009_22_53_04_+1100_Fr+AjoaMiwNyZb+2
+Content-Type: application/pgp-signature
 
-arch/frv/lib/perf_event.c
-arch/x86/kernel/cpu/perf_event.c
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-or maybe not:
+iEYEARECAAYFAkrUaiAACgkQjjKRsyhoI8ycIQCgnvYj6diFZAKYRQt1NvUuYbdr
+EnoAoIOnW+cZWH1+XrR/qAdmJseQDAo9
+=R4/V
+-----END PGP SIGNATURE-----
 
-arch/powerpc/kernel/perf_callchain.c
-arch/parisc/kernel/perf_asm.S
-arch/parisc/kernel/perf_images.h
-arch/parisc/kernel/perf.c
-arch/parisc/include/asm/perf.h
-
-Was your list really comprehensive ?
-
--- 
-Vincent Legoll
+--Signature=_Tue__13_Oct_2009_22_53_04_+1100_Fr+AjoaMiwNyZb+2--
