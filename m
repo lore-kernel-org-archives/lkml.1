@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758992AbZJMHGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbZJMHIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758992AbZJMHGB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 03:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbZJMHGA
+	id S933565AbZJMHIF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 03:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933330AbZJMHIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 03:06:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56647 "EHLO mx2.mail.elte.hu"
+	Tue, 13 Oct 2009 03:08:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39844 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754415AbZJMHF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 03:05:59 -0400
-Date: Tue, 13 Oct 2009 09:05:05 +0200
+	id S933192AbZJMHID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 03:08:03 -0400
+Date: Tue, 13 Oct 2009 09:07:13 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Frans Pop <elendil@planet.nl>
+To: David Rientjes <rientjes@google.com>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Frans Pop <elendil@planet.nl>, Dirk Hohndel <hohndel@infradead.org>,
+       Len Brown <lenb@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH, v2] kbuild: Improve version string logic
-Message-ID: <20091013070505.GC31483@elte.hu>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <20091006173508.GA4786@elte.hu> <20091012195733.GA7351@elte.hu> <200910130004.46388.elendil@planet.nl>
+Message-ID: <20091013070713.GD31483@elte.hu>
+References: <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <20091006153632.GA29795@elte.hu> <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain> <alpine.LFD.2.01.0910060925490.3432@localhost.localdomain> <20091006173508.GA4786@elte.hu> <20091012195733.GA7351@elte.hu> <alpine.DEB.1.00.0910121853050.26949@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200910130004.46388.elendil@planet.nl>
+In-Reply-To: <alpine.DEB.1.00.0910121853050.26949@chino.kir.corp.google.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,38 +36,55 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frans Pop <elendil@planet.nl> wrote:
+* David Rientjes <rientjes@google.com> wrote:
 
-> On Monday 12 October 2009, Ingo Molnar wrote:
-> > It changes how CONFIG_LOCALVERSION_AUTO works, in the following trivial
-> > way:
-> >
-> >  - if it is set, things work the way they always have, and you get a
-> >    extended kernel release like:
-> >
-> >         2.6.32-rc3-00052-g0eca52a
-> >
-> >  - but if it is _not_ set, we'll still try to get a version from the
-> >    underlying SCM (we actually support git, hg and SVN right now, even
-> > if some comments may say "git only"), and if the underlying SCM says it
-> > has a local version, we append just "+", so you get a version number
-> > like:
-> >
-> >         2.6.32-rc3+
+> On Mon, 12 Oct 2009, Ingo Molnar wrote:
 > 
-> I don't object to making this the default (even a strong default), but 
-> I still don't like the fact that it's not optional.
->
-> IMO both LOCALVERSION_AUTO *and* the added "+" can be unsuitable for 
-> some use cases, for example for distributions.
+> > diff --git a/Makefile b/Makefile
+> > index 927d7a3..5dab509 100644
+> > --- a/Makefile
+> > +++ b/Makefile
+> > @@ -963,8 +963,6 @@ localver = $(subst $(space),, $(string) \
+> >  # .scmversion is used when generating rpm packages so we do not loose
+> >  # the version information from the SCM when we do the build of the kernel
+> >  # from the copied source
+> > -ifdef CONFIG_LOCALVERSION_AUTO
+> > -
+> >  ifeq ($(wildcard .scmversion),)
+> >          _localver-auto = $(shell $(CONFIG_SHELL) \
+> >                           $(srctree)/scripts/setlocalversion $(srctree))
+> > @@ -972,7 +970,14 @@ else
+> >          _localver-auto = $(shell cat .scmversion 2> /dev/null)
+> >  endif
+> >  
+> > +ifdef CONFIG_LOCALVERSION_AUTO
+> >  	localver-auto  = $(LOCALVERSION)$(_localver-auto)
+> > +else
+> > +	ifeq ($_localver-auto,)
+> > +		localver-auto = $(LOCALVERSION)
+> > +	else
+> > +		localver-auto = $(LOCALVERSION)+
+> > +	endif
+> >  endif
+> >  
+> >  localver-full = $(localver)$(localver-auto)
 > 
-> If someone uses git to manage their custom patches, the only out this 
-> patch leaves them to avoid the "+" is to revert it in their own trees.
+> I don't see where the `+' is dropped between -rc tags; 
+> scripts/setlocalversion should return -00000-rc5 for v2.6.32-rc5, for 
+> example, so _localver-auto will always be non-NULL and the `+' is 
+> appended.
+> 
+> I think scripts/setlocalversion should also be modified as I earlier 
+> suggested to suppress output when git-describe shows no additional 
+> commits beyond the tag.  Then, CONFIG_LOCALVERSION_AUTO would not be 
+> v2.6.32-rc4-00000-rc4, for example, when 2.6.32-rc4 is released.
+> 
+> Your patch also adds the make LOCALVERSION= string to the version 
+> without requiring CONFIG_LOCALVERSION_AUTO.  That's a change from 
+> prior behavior, but I think it's helpful for user-specified version 
+> tags.
 
-Is this a bad thing?
-
-> IMO that should not be necessary.
-
-Why not?
+Good points - the patch is defective in its current form. Anyone 
+interested in fixing it? I'll be busy with other things.
 
 	Ingo
