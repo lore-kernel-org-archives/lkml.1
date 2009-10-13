@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbZJMOH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759836AbZJMONw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759960AbZJMOH3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759903AbZJMOH1
+	id S1759836AbZJMONw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZJMONv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:07:27 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35662 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754576AbZJMOH0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:07:26 -0400
-Date: Tue, 13 Oct 2009 07:07:22 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Siarhei Liakh <sliakh.lkml@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Howells <dhowells@redhat.com>, Aristeu Rozanski <aris@redhat.com>
-Subject: Re: [PATCH V5] x86: NX protection for kernel data
-Message-ID: <20091013070722.6e27b25e@infradead.org>
-In-Reply-To: <817ecb6f0910130435q56fcbf63r82fae9b94f3eb199@mail.gmail.com>
-References: <817ecb6f0910121803p52a4049ep4a712545d28bba76@mail.gmail.com>
-	<20091012213229.11898c12@infradead.org>
-	<20091013060312.GA3215@elte.hu>
-	<817ecb6f0910130435q56fcbf63r82fae9b94f3eb199@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Oct 2009 10:13:51 -0400
+Received: from cantor.suse.de ([195.135.220.2]:60448 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752416AbZJMONu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 10:13:50 -0400
+Message-ID: <4AD48AF6.1010700@suse.com>
+Date: Tue, 13 Oct 2009 10:13:10 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-1.1 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roman Zippel andr <zippel@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] hfs: fix oops on mount with corrupted btree extent records
+References: <4AD3CCC1.9020102@suse.com> <14762.1255407123@turing-police.cc.vt.edu>
+In-Reply-To: <14762.1255407123@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009 07:35:28 -0400
-Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
-
-> ---[ Kernel Mapping ]---
->  0xc0000000-0xc0100000           1M     RW             GLB x  pte
-> -0xc0100000-0xc048d000        3636K     ro             GLB x  pte
-> -0xc048d000-0xc04d0000         268K     RW             GLB x  pte
-> -0xc04d0000-0xc04d2000           8K     RW             GLB NX pte
-> -0xc04d2000-0xc04d3000           4K     RW             GLB x  pte
-> -0xc04d3000-0xc0531000         376K     RW             GLB NX pte
-> -0xc0531000-0xc0600000         828K     RW             GLB x  pte
-> +0xc0100000-0xc0381000        2564K     ro             GLB x  pte
-> +0xc0381000-0xc048d000        1072K     ro             GLB NX pte
-> +0xc048d000-0xc0600000        1484K     RW             GLB NX pte
->  0xc0600000-0xf7800000         882M     RW         PSE GLB NX pmd
->  0xf7800000-0xf79fe000        2040K     RW             GLB NX pte
->  0xf79fe000-0xf7a00000           8K                           pte
-> ===============================================
+On 10/13/2009 12:12 AM, Valdis.Kletnieks@vt.edu wrote:
+> On Mon, 12 Oct 2009 20:41:37 EDT, Jeff Mahoney said:
+>>  A particular fsfuzzer run caused an hfs file system to crash on mount. This
+>>  is due to a corrupted MDB extent record causing a miscalculation of
+>>  HFS_I(inode)->first_blocks for the extent tree. If the extent records
+>>  are zereod out, it won't trigger the first_blocks special case. Instead
+>>  it falls through to the extent code which we're still in the middle
+>>  of initializing.
+>>
+>>  This patch catches the 0 size extent records, reports the corruption,
+>>  and fails the mount.
 > 
+> Just for completeness - does the current fsck.hfs already know how to fix it, or
+> at least heave stuff over the side so the filesystem is self-consistent again?
+> Or will a user who hits this need a new fsck.hfs to get it back to mountable?
 
-looks great to me; the result is 
-* kernel is ro + x
-* rodata is ro + NX
-* data is RW + NX
-(and there is no "RW + x", other than the first megabyte... hmm. maybe
-we need to look at that as well at some point)
+Sorry, I don't actually know. We don't ship a fsck.hfs so I haven't
+tested it.
 
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+-Jeff
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Jeff Mahoney
+SUSE Labs
