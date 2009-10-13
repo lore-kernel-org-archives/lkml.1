@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760817AbZJMSBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbZJMRwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760817AbZJMSBX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 14:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760805AbZJMSBW
+	id S1760791AbZJMRwj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 13:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760778AbZJMRwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 14:01:22 -0400
-Received: from cluster-d.mailcontrol.com ([85.115.60.190]:41081 "EHLO
-	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754414AbZJMSBV (ORCPT
+	Tue, 13 Oct 2009 13:52:39 -0400
+Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:62360 "EHLO
+	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760764AbZJMRwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 14:01:21 -0400
-Message-ID: <4AD4BE19.8040005@csr.com>
-Date: Tue, 13 Oct 2009 18:51:21 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 13 Oct 2009 13:52:38 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH, v2] kbuild: Improve version string logic
+Date: Tue, 13 Oct 2009 19:51:59 +0200
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <200910130004.46388.elendil@planet.nl> <20091013070505.GC31483@elte.hu>
+In-Reply-To: <20091013070505.GC31483@elte.hu>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       lud <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH] whci: fix type and format warnings
-References: <20091013162312.8b93998b.sfr@canb.auug.org.au> <20091013100128.0f06d67c.randy.dunlap@oracle.com>
-In-Reply-To: <20091013100128.0f06d67c.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Oct 2009 17:51:21.0896 (UTC) FILETIME=[C660EA80:01CA4C2D]
+Content-Disposition: inline
+Message-Id: <200910131952.01209.elendil@planet.nl>
+X-OriginalArrivalTime: 13 Oct 2009 17:52:02.0039 (UTC) FILETIME=[DE4E4070:01CA4C2D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix format and type warnings in whci driver:
+On Tuesday 13 October 2009, Ingo Molnar wrote:
+> > IMO both LOCALVERSION_AUTO *and* the added "+" can be unsuitable for
+> > some use cases, for example for distributions.
+> >
+> > If someone uses git to manage their custom patches, the only out this
+> > patch leaves them to avoid the "+" is to revert it in their own trees.
+>
+> Is this a bad thing?
 
-I'd prefer this fixed differently.  Those debug messages were left in by
-mistake.  Randy, you want to respin this or shall I?
+IMHO yes. This change essentially creates a backwards incompatibility with 
+existing naming schemes. Requiring to patch the change out to preserve an 
+existing naming scheme just seems a tad unfriendly.
 
-David
--- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+But if I'm the only one who feels that way, go right ahead. You might 
+consider adding a comment in the Makefile as a pointer though.
 
+I appreciate that you want this to be a strong default. Does Kconfig 
+support defining an option that can only be set by manually editing the 
+config and is not displayed as a config question?
+If that is supported (or if support for that could be added), then that 
+might be a sufficiently obscure solution that experts would know how to 
+find, but would leave the vast majority of users using the default.
 
-Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
+Cheers,
+FJP
