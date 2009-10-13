@@ -1,88 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbZJMFUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbZJMFUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752717AbZJMFUR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 01:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbZJMFUR
+	id S1756397AbZJMFUg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 01:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZJMFUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 01:20:17 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:23414 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbZJMFUP (ORCPT
+	Tue, 13 Oct 2009 01:20:35 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:57390 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752430AbZJMFUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 01:20:15 -0400
+	Tue, 13 Oct 2009 01:20:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=RqHoz4Y91JGRCYJgMT+aDo5csr0XSf70wZ1ApeuoFMzhxas/fdFWGQenFtO4LvL1Sf
-         3fTfxkPr9fKDMRVqfebeT0peCuYZO9YLzBGdpDtuBqvNwFFZeWLCMzlK43SKI5qQRb2q
-         2mLrTMGRNFh43L2P1nGBwCJk99Eh3gixK3SPg=
-Date: Mon, 12 Oct 2009 22:19:03 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Marin Mitov <mitov@issp.bas.bg>
-Cc: Vojtech Pavlik <vojtech@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: Regression?: keyboard state/LED inconsistency in
-	2.6.32-rc1/2,3,4
-Message-ID: <20091013051903.GE2887@core.coreip.homeip.net>
-References: <200910121118.29415.mitov@issp.bas.bg> <20091012085708.GA7403@core.coreip.homeip.net> <20091013030314.GA2887@core.coreip.homeip.net> <200910130755.43510.mitov@issp.bas.bg> <20091013051738.GD2887@core.coreip.homeip.net>
+        b=NvlLhg2SZzTb5dpZ913hMQAs3yhp7d3bUsoWjQm7Y0GyGM2u5sqtR4HFqMOgvl0JrO
+         VtkCataN2VCJKcwfrcEZPT2CahGKeMVH9LIDCM1kHTEKVZBf0a9Ac+hG4D76yBIf5PuC
+         cwrXnwhSOL1q39Y/TuglKQjSeRLt+OSW6otbg=
+Date: Tue, 13 Oct 2009 09:19:53 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>, arnd@arndb.de,
+       peterz@infradead.org, Louis.Rilling@kerlabs.com, roland@redhat.com,
+       kosaki.motohiro@jp.fujitsu.com, randy.dunlap@oracle.com,
+       linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
+Subject: Re: [RFC][v8][PATCH 3/10]: Make pid_max a pid_ns property
+Message-ID: <20091013051953.GA19895@x200>
+References: <20091013044925.GA28181@us.ibm.com>
+ <20091013045041.GC28435@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091013051738.GD2887@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091013045041.GC28435@us.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 10:17:38PM -0700, Dmitry Torokhov wrote:
-> On Tue, Oct 13, 2009 at 07:55:43AM +0300, Marin Mitov wrote:
-> > On Tuesday 13 October 2009 06:03:14 am Dmitry Torokhov wrote:
-> > > On Mon, Oct 12, 2009 at 01:57:08AM -0700, Dmitry Torokhov wrote:
-> > > > On Mon, Oct 12, 2009 at 10:30:15AM +0200, Vojtech Pavlik wrote:
-> > > > > On Mon, Oct 12, 2009 at 11:18:28AM +0300, Marin Mitov wrote:
-> > > > > > Hello,
-> > > > > > 
-> > > > > > I'm testing 2.6.32-rc1/2,3,4 and I'm using 2.6.31.3.
-> > > > > > There is a difference in keyboard/LED behavior.
-> > > > > > If in BIOS NumLock is set on, when the kernel starts
-> > > > > > it puts NumLock off and the LED state is off in 2.6.31.3
-> > > > > > (which is consistent), but in 2.6.32-rc1/2,3,4 the LED
-> > > > > > stays on (and this is not consistent with keyboard's state).
-> > > > > > 
-> > > > > > Comparing drivers/input/keyboard/atkbd.c (I'm using it)
-> > > > > > in 2.6.31.3 and 2.6.32-rc1/2,3,4 among others changes I
-> > > > > > found the following lines (see the patch bellow) deleted,
-> > > > > > so I propose either to add them again (this will restore 
-> > > > > > keyboard/LED consistency) or revert the patch that has 
-> > > > > > deleted them.
-> > > > > 
-> > > > > Oh, wow, those lines are quite clearly needed, I wonder why they got
-> > > > > deleted, and I'm too lazy to find the commit comment ...
-> > > > > 
-> > > > 
-> > > > Hmm, it appears I deleted a bit too much.. At some point I was thinking
-> > > > the input core would reset LEDs and repeat rate on newly created device
-> > > > but it was wrong idea. Unfortunately I was careless in applying atkbd
-> > > > patch removing resume support (which should be handled by the input
-> > > > core)...
-> > > > 
-> > > 
-> > > Could you please try the patch below and let me know if it fixes
-> > > things?
-> > > 
-> > > Thanks!
-> > > 
-> > 
-> > Yes, Dmitry, it fixes the problem, thank you.
-> > 
+On Mon, Oct 12, 2009 at 09:50:41PM -0700, Sukadev Bhattiprolu wrote:
+> From: Serge Hallyn <serue@us.ibm.com>
+> Subject: [RFC][v8][PATCH 3/10]: Make pid_max a pid_ns property
 > 
-> Thank you for testing. Mouse re-initialization is pretty delicate topic,
-> may I ask you to test some more just to make sure fix is reliable - a
-> few more resumes and cold/warm boots would do...
+> Remove the pid_max global, and make it a property of the
+> pid_namespace.  When a pid_ns is created, it inherits
+> the parent's pid_ns.
 > 
+> Fixing up sysctl (trivial akin to ipc version, but
+> potentially tedious to get right for all CONFIG*
+> combinations) is left for later.
 
-Oh, wait, scratch that... I mixed up the issues ;) Sorry about the
-confusion.
-
--- 
-Dmitry
+pid_max is not pid_ns property, it's just sysctl to limit cpu time
+during bitmap search. Just like vm.max_map_count limits kernel memory
+used by VMAs.
