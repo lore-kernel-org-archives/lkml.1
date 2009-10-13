@@ -1,57 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761434AbZJMXRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934150AbZJMXUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761434AbZJMXRg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 19:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760951AbZJMXRg
+	id S934150AbZJMXUF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 19:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761585AbZJMXUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 19:17:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40545 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759324AbZJMXRf (ORCPT
+	Tue, 13 Oct 2009 19:20:03 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:35950 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752419AbZJMXUB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 19:17:35 -0400
-Date: Tue, 13 Oct 2009 16:16:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Boyan <btanastasov@yahoo.co.uk>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?= 
-	<fredlwm@gmail.com>,
-       "Justin P. Mattock" <justinmattock@gmail.com>, Nix <nix@esperi.org.uk>,
-       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <20091014001131.302d3272@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.01.0910131612410.3404@localhost.localdomain>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
- <4AD3F769.5080405@gmail.com> <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net> <4AD437F9.9020708@yahoo.co.uk> <alpine.LFD.2.01.0910130745550.3438@localhost.localdomain> <4AD4DE4C.4010402@yahoo.co.uk> <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
- <20091013223212.3260a7eb@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0910131548280.3404@localhost.localdomain> <20091014001131.302d3272@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 13 Oct 2009 19:20:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=mJax19ZDjQjChQheJee80Rq8bxu+LIdB5ltGM2kyl9dD7aHP4SuIgi+e+dh82RGTYr
+         vHrQ2+CGHJDqSJdO8Ybsb1NkB2OHBAjTGTFoY+U6VslLoFj0i3P3LPCh3fCfiofxfzzt
+         l36icUqaJYFupGMFhpF02Fkn6ShwiI9nuPlys=
+Date: Wed, 14 Oct 2009 01:16:41 +0200
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-input@vger.kernel.org
+Subject: Re: [bisected regression] Touchpad "paste" stops working after
+	suspend to RAM
+Message-ID: <20091013231641.GA4404@Pilar.aei.mpg.de>
+References: <20091011180134.GA5197@core.coreip.homeip.net> <20091011193100.GA4410@Pilar.aei.mpg.de> <20091012090224.GB7403@core.coreip.homeip.net> <20091012100929.GA4402@Pilar.aei.mpg.de> <20091013032414.GC2887@core.coreip.homeip.net> <20091013121109.GB4619@Pilar.aei.mpg.de> <20091013182643.GC21593@core.coreip.homeip.net> <20091013190819.GA7555@Pilar.aei.mpg.de> <20091013194654.GD21593@core.coreip.homeip.net> <20091013202459.GE21593@core.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091013202459.GE21593@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[restoring Cc: list]
 
+On Tue 13.Oct'09 at 13:24:59 -0700, Dmitry Torokhov wrote:
+>
+> Could you please try this patch (again if you could post dmesg that
+> would be great). Thank you!
 
-On Wed, 14 Oct 2009, Alan Cox wrote:
+The patch quoted below also fixes the problem. I attached the
+syslog with i8042.debug (with a s2ram in the middle) to the
+bugzilla: 
+
+http://bugzilla.kernel.org/show_bug.cgi?id=14392
+
+(cool! the address above was pasted with the touchpad,
+so it is really working :-)
+
+Thanks Dmitry!
+
 > 
-> The better existing lock is probably tty->ldisc_mutex which we take when
-> doing ldisc changes (which are an even more dramatic change during
-> receive_buf).
-
-Yeah, that makes sense. And then we'd automatically also solve the 
-"somebody tries to write during ldisc changes" issue. Not that I've 
-checked how much it could help, but maybe we could get rid of _some_ of 
-the special "tty_get_ldisc_wait()" kind of hacks.
-
-And having that then protect flushing too would get rid of the 
-TTY_FLUSHING and TTY_FLUSHPENDING logic. So it does smell like a good 
-solution (without me looking at the code any closer right now, I can't 
-take any more tty code reading just now ;)
-
-		Linus
+> Input: atkbd - postpone restoring LED/repeat rate at resume
+> 
+> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> 
+> We need to postpone restoring LED state and typematic settings until
+> keyboard is finished reconnecting upon resume. Normally driver core
+> and PM infrastructure takes care of proper ordering and dependencies,
+> but or case actual reconnect is done asynchronously from kseriod.
+> So while driver core thinks that keyboard was resumed and it is time
+> to let input core run it's resume handlers in reality keyboard is not
+> ready yet. The solution is to keep rescheduling work that adjusts LED
+> and rate settings until keyboard is fully enabled.
+> 
+> Reported-by: Carlos R. Mafra <crmafra2@gmail.com>
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+> ---
+> 
+>  drivers/input/keyboard/atkbd.c |   19 +++++++++++++++----
+>  1 files changed, 15 insertions(+), 4 deletions(-)
+> 
+> 
+> diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
+> index a45157d..022f3cb 100644
+> --- a/drivers/input/keyboard/atkbd.c
+> +++ b/drivers/input/keyboard/atkbd.c
+> @@ -574,11 +574,22 @@ static void atkbd_event_work(struct work_struct *work)
+>  
+>  	mutex_lock(&atkbd->event_mutex);
+>  
+> -	if (test_and_clear_bit(ATKBD_LED_EVENT_BIT, &atkbd->event_mask))
+> -		atkbd_set_leds(atkbd);
+> +	if (!atkbd->enabled) {
+> +		/*
+> +		 * Serio ports are resumed asynchronously so while driver core
+> +		 * thinks that device is already fully operational in reality
+> +		 * it may not be ready yet. In this case we need to keep
+> +		 * rescheduling till reconnect completes.
+> +		 */
+> +		schedule_delayed_work(&atkbd->event_work,
+> +					msecs_to_jiffies(100));
+> +	} else {
+> +		if (test_and_clear_bit(ATKBD_LED_EVENT_BIT, &atkbd->event_mask))
+> +			atkbd_set_leds(atkbd);
+>  
+> -	if (test_and_clear_bit(ATKBD_REP_EVENT_BIT, &atkbd->event_mask))
+> -		atkbd_set_repeat_rate(atkbd);
+> +		if (test_and_clear_bit(ATKBD_REP_EVENT_BIT, &atkbd->event_mask))
+> +			atkbd_set_repeat_rate(atkbd);
+> +	}
+>  
+>  	mutex_unlock(&atkbd->event_mutex);
+>  }
