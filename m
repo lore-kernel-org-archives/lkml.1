@@ -1,243 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759674AbZJMM5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759731AbZJMM6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759674AbZJMM5m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 08:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZJMM5l
+	id S1759731AbZJMM6P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 08:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759719AbZJMM6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 08:57:41 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:61231 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbZJMM5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 08:57:40 -0400
-To: catalin.marinas@arm.com
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.32-rc3 kmemleak] WARNING: at kernel/lockdep.c:3161 check_flags+0xbe/0x180()
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20091007155142.GB6743@linux.vnet.ibm.com>
-	<200910082134.EJD35962.HLFSQVFOOFMJOt@I-love.SAKURA.ne.jp>
-	<1255005738.6715.6.camel@pc1117.cambridge.arm.com>
-	<200910130317.n9D3HTOH055400@www262.sakura.ne.jp>
-	<1255435201.9987.22.camel@pc1117.cambridge.arm.com>
-In-Reply-To: <1255435201.9987.22.camel@pc1117.cambridge.arm.com>
-Message-Id: <200910132157.FDF13518.OQHLtVFFJMSFOO@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Tue, 13 Oct 2009 21:57:03 +0900
+	Tue, 13 Oct 2009 08:58:14 -0400
+Received: from mail.gmx.net ([213.165.64.20]:53076 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759706AbZJMM6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 08:58:13 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18h1z1WWMYhRyykac8VJPEHKRmp0RCi2/9aR1ed1p
+	2PXrQlqZwJpY9U
+Subject: [patch] perf_counter tools: remove expensive old debug code from
+ perf top
+From: Mike Galbraith <efault@gmx.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain
+Date: Tue, 13 Oct 2009 14:57:20 +0200
+Message-Id: <1255438640.7173.1.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Catalin Marinas wrote:
-> Could you send me your .config file and I'll try to reproduce this as
-> well?
-Yes. It is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.32-rc3 .
-Above log is obtained using Debian Sarge.
 
-Below log is obtained using CentOS 5.
-Adding "kmemleak=off" in CentOS 5 avoids this error.
-Full log is at http://I-love.SAKURA.ne.jp/tmp/dmesg-2.6.32-rc4-centos5.txt .
+perf_counter tools: remove expensive old debug code from perf top
 
-[    0.000000] Linux version 2.6.32-rc4 (root@tomoyo) (gcc version 4.1.2 20080704 (Red Hat 4.1.2-44)) #2 SMP Tue Oct 13 20:23:13 JST 2009
-(...snipped...)
-[    0.000000] ------------[ cut here ]------------
-[    0.000000] WARNING: at kernel/lockdep.c:3161 check_flags+0xf1/0x180()
-[    0.000000] Hardware name: VMware Virtual Platform
-[    0.000000] Modules linked in:
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.32-rc4 #2
-[    0.000000] Call Trace:
-[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
-[    0.000000] BUG: unable to handle kernel paging request at 54205ab1
-[    0.000000] IP: [<c1006e88>] print_context_stack+0x58/0xe0
-[    0.000000] *pde = 00000000 
-[    0.000000] Thread overran stack, or stack corrupted
-[    0.000000] Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
-[    0.000000] last sysfs file: 
-[    0.000000] Modules linked in:
-[    0.000000] 
-[    0.000000] Pid: 0, comm: swapper Not tainted (2.6.32-rc4 #2) VMware Virtual Platform
-[    0.000000] EIP: 0060:[<c1006e88>] EFLAGS: 00010016 CPU: 0
-[    0.000000] EIP is at print_context_stack+0x58/0xe0
-[    0.000000] EAX: c1421000 EBX: c1421fb0 ECX: c103c7f5 EDX: 54204649
-[    0.000000] ESI: c1064cc1 EDI: c131d6e0 EBP: c1421f24 ESP: c1421f10
-[    0.000000]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-[    0.000000] Process swapper (pid: 0, ti=c1421000 task=c146ff60 task.ti=c145d000)
-[    0.000000] Stack:
-[    0.000000]  c1421fb8 c1421000 c1421000 c1421fac c1421fb8 c1421f50 c1005e76 c131d6e0
-[    0.000000] <0> c13d29de 00000000 c1421f40 c1421f50 00000000 c13d29de c1421fac 00000000
-[    0.000000] <0> c1421f74 c1006dac c1421fb8 c131d6e0 c13d29de 00000000 c1421fb8 c1421fb8
-[    0.000000] Call Trace:
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000] BUG: unable to handle kernel paging request at 54205ab1
-[    0.000000] IP: [<c1006e88>] print_context_stack+0x58/0xe0
-[    0.000000] *pde = 00000000 
-[    0.000000] Thread overran stack, or stack corrupted
-[    0.000000] Oops: 0000 [#2] SMP DEBUG_PAGEALLOC
-[    0.000000] last sysfs file: 
-[    0.000000] Modules linked in:
-[    0.000000] 
-[    0.000000] Pid: 0, comm: swapper Not tainted (2.6.32-rc4 #2) VMware Virtual Platform
-[    0.000000] EIP: 0060:[<c1006e88>] EFLAGS: 00010006 CPU: 0
-[    0.000000] EIP is at print_context_stack+0x58/0xe0
-[    0.000000] EAX: c1421000 EBX: c1421f28 ECX: c103c7f5 EDX: 54204649
-[    0.000000] ESI: c1005e76 EDI: c131d6e0 EBP: c1421d64 ESP: c1421d50
-[    0.000000]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-[    0.000000] Process swapper (pid: 0, ti=c1421000 task=c146ff60 task.ti=c145d000)
-[    0.000000] Stack:
-[    0.000000]  c1421d90 c1421000 c1421000 c1421f10 c1421d90 c1421d90 c1005e76 c131d6e0
-[    0.000000] <0> c13d34df 00000000 c1421d80 c1421d90 00000000 c13d34df c1421f10 c1421ed4
-[    0.000000] <0> c1421db4 c1006dac 00000000 c131d6e0 c13d34df 00000000 c1421f73 00000018
-[    0.000000] Call Trace:
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-(...snipped...)
-[    0.000000] Thread overran stack, or stack corrupted
-[    0.000000] Oops: 0000 [#8] SMP DEBUG_PAGEALLOC
-[    0.000000] last sysfs file: 
-[    0.000000] Modules linked in:
-[    0.000000] 
-[    0.000000] Pid: 0, comm: swapper Not tainted (2.6.32-rc4 #2) VMware Virtual Platform
-[    0.000000] EIP: 0060:[<c1006e88>] EFLAGS: 00010006 CPU: 0
-[    0.000000] EIP is at print_context_stack+0x58/0xe0
-[    0.000000] EAX: c1421000 EBX: c14214a8 ECX: c103c7f5 EDX: ffffffff
-[    0.000000] ESI: c1005e76 EDI: c131d6e0 EBP: c14212e4 ESP: c14212d0
-[    0.000000]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-[    0.000000] Process swapper (pid: 0, ti=c1421000 task=c146ff60 task.ti=c145d000)
-[    0.000000] Stack:
-[    0.000000]  c1421310 c1421000 c1421000 c1421490 c1421310 c1421310 c1005e76 c131d6e0
-[    0.000000] <0> c13d34df 00000000 c1421300 c1421310 00000000 c13d34df c1421490 c1421454
-[    0.000000] <0> c1421334 c1006dac 00000000 c131d6e0 c13d34df 00000000 c14214f3 00000018
-[    0.000000] Call Trace:
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
-[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
-[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
-[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
-[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
-[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
-[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
-[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
-[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
-[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
-[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
-[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
-[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
-[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
-[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
-[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
-[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
-[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
-[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
-[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
-[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
-[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
-[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
-[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
-[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
-[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
-[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
-[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
-[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
-[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
-[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
-[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
-[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
-[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
-[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
-[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
-[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
-[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
-[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
-[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
-[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
-[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
-[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
-[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
-[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
-[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
-[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
-[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
-[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
-[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
-[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
-[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
-[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
-[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
-[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
-[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
-[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
-[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
-[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
-[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
-[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
-[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
-[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
-[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
-[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
-[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
-[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
-[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
-[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
-[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
-[    0.000000]  [<c1006ddf>] ? show_trace+0x1f/0x30
-[    0.000000]  [<c1006f83>] ? dump_stack+0x73/0x80
-[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
-[    0.000000]  [<c103ba41>] ? warn_slowpath_common+0x81/0xa0
-[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
-[    0.000000]  [<c103ba7a>] ? warn_slowpath_null+0x1a/0x20
-[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
-[    0.000000]  [<c106934c>] ? lock_acquire+0x3c/0xf0
-[    0.000000]  <IRQ> 
-(...snipped...)
+Calling gettimeofday() at high frequency is painful for handicapped boxen.
+The spot calling gettimeofday() is old unneeded debug code, so remove it.
 
-Regards.
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Reported-by: Ingo Molnar <mingo@elte.hu>
+LKML-Reference: <new-submission>
+
+---
+ tools/perf/builtin-top.c |   15 +--------------
+ 1 file changed, 1 insertion(+), 14 deletions(-)
+
+Index: linux-2.6/tools/perf/builtin-top.c
+===================================================================
+--- linux-2.6.orig/tools/perf/builtin-top.c
++++ linux-2.6/tools/perf/builtin-top.c
+@@ -870,8 +870,6 @@ static unsigned int mmap_read_head(struc
+ 	return head;
+ }
+ 
+-struct timeval last_read, this_read;
+-
+ static void mmap_read_counter(struct mmap_data *md)
+ {
+ 	unsigned int head = mmap_read_head(md);
+@@ -879,8 +877,6 @@ static void mmap_read_counter(struct mma
+ 	unsigned char *data = md->base + page_size;
+ 	int diff;
+ 
+-	gettimeofday(&this_read, NULL);
+-
+ 	/*
+ 	 * If we're further behind than half the buffer, there's a chance
+ 	 * the writer will bite our tail and mess up the samples under us.
+@@ -891,14 +887,7 @@ static void mmap_read_counter(struct mma
+ 	 */
+ 	diff = head - old;
+ 	if (diff > md->mask / 2 || diff < 0) {
+-		struct timeval iv;
+-		unsigned long msecs;
+-
+-		timersub(&this_read, &last_read, &iv);
+-		msecs = iv.tv_sec*1000 + iv.tv_usec/1000;
+-
+-		fprintf(stderr, "WARNING: failed to keep up with mmap data."
+-				"  Last read %lu msecs ago.\n", msecs);
++		fprintf(stderr, "WARNING: failed to keep up with mmap data.\n");
+ 
+ 		/*
+ 		 * head points to a known good entry, start there.
+@@ -906,8 +895,6 @@ static void mmap_read_counter(struct mma
+ 		old = head;
+ 	}
+ 
+-	last_read = this_read;
+-
+ 	for (; old != head;) {
+ 		event_t *event = (event_t *)&data[old & md->mask];
+ 
+
+
