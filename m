@@ -1,412 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934294AbZJMULS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760805AbZJMUDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934294AbZJMULS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 16:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934285AbZJMULR
+	id S1760805AbZJMUDw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 16:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbZJMUDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 16:11:17 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:58861 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934282AbZJMULO (ORCPT
+	Tue, 13 Oct 2009 16:03:51 -0400
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:63295 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752949AbZJMUDu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 16:11:14 -0400
-X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 7
-	times
-Message-Id: <20091013200302.536418191@gentwo.org>
-References: <20091013200233.260324963@gentwo.org>
-User-Agent: quilt/0.46-1
-Date: Tue, 13 Oct 2009 16:02:36 -0400
-From: Christoph Lameter <cl@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: linux-kernel@vger.kernel.org
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
-Subject: [RFC In-kernel benchmarks 3/3] Page allocator test
-Content-Disposition: inline; filename=0003-Page-allocator-test.patch
+	Tue, 13 Oct 2009 16:03:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SzV1S8x8k9va04/2k77i9SoTnZDriSXRuGdrBd1PkKTA1T+mPZqFvMLQ87UXgEbuqC
+         tZjbNPVchZjctbEHI3EZ/82b0TYM1rEec9aiKm7t4Pa6s10IxPxp62OVRPyrIvzTFVht
+         cgXJ1hSx43r5KFS1WgsNbPp4+v2aCmgmiODw0=
+MIME-Version: 1.0
+In-Reply-To: <20091013122515.5074d7f3@jbarnes-g45>
+References: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
+	 <20091008103620.5e5aae66@jbarnes-g45> <20091010204106.GA8251@mit.edu>
+	 <20091012095438.1e82b54f@jbarnes-g45>
+	 <20091012184651.GA4603@Pilar.aei.mpg.de>
+	 <20091012120510.16bd1194@jbarnes-g45>
+	 <b637ec0b0910131219u638e37dan2f3a98a9a89a2570@mail.gmail.com>
+	 <20091013122515.5074d7f3@jbarnes-g45>
+Date: Tue, 13 Oct 2009 22:03:14 +0200
+Message-ID: <b637ec0b0910131303p2aecacf7x860b2c46919db45a@mail.gmail.com>
+Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with T400 
+	laptops
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+       Keith Packard <keithp@keithp.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement a test of the page allocator speed in the same way as for the
-slab allocators.
+Hi.
 
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
----
- tests/Kconfig          |    7 +
- tests/Makefile         |    3 
- tests/pagealloc_test.c |  334 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 343 insertions(+), 1 deletion(-)
- create mode 100644 tests/page_test.c
+On Tue, Oct 13, 2009 at 9:25 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> The patch below should have only affected GM45 chipsets, what chipset
+> do you have (lspci -vvv -s 02.0 should tell you).
+>
 
-Index: linux-2.6/tests/Makefile
-===================================================================
---- linux-2.6.orig/tests/Makefile	2009-10-12 15:17:45.000000000 -0500
-+++ linux-2.6/tests/Makefile	2009-10-12 15:17:46.000000000 -0500
-@@ -1,3 +1,4 @@
- obj-$(CONFIG_BENCHMARK_SLAB) += slab_test.o
--obj-#(CONFIG_BENCHMARK_VMSTAT) += vmstat_test.o
-+obj-$(CONFIG_BENCHMARK_VMSTAT) += vmstat_test.o
-+obj-$(CONFIG_BENCHMARK_PAGEALLOC) += pagealloc_test.o
- 
-Index: linux-2.6/tests/pagealloc_test.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/tests/pagealloc_test.c	2009-10-12 15:17:46.000000000 -0500
-@@ -0,0 +1,334 @@
-+/* pagealloc_test.c
-+ *
-+ * Test module for in kernel synthetic page allocator testing.
-+ *
-+ * Compiled as a module. The module needs to be loaded to run.
-+ *
-+ * (C) 2009 Linux Foundation, Christoph Lameter <cl@linux-foundation.org>
-+ */
-+
-+
-+#include <linux/jiffies.h>
-+#include <linux/init.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <asm/timex.h>
-+#include <asm/system.h>
-+
-+#define TEST_COUNT 1000
-+
-+#define CONCURRENT_MAX_ORDER 6
-+
-+#ifdef CONFIG_SMP
-+#include <linux/completion.h>
-+#include <linux/sched.h>
-+#include <linux/workqueue.h>
-+#include <linux/kthread.h>
-+
-+static struct test_struct {
-+	struct task_struct *task;
-+	int cpu;
-+	int order;
-+	int count;
-+	struct page **v;
-+	void (*test_p1)(struct test_struct *);
-+	void (*test_p2)(struct test_struct *);
-+	unsigned long start1;
-+	unsigned long stop1;
-+	unsigned long start2;
-+	unsigned long stop2;
-+} test[NR_CPUS];
-+
-+/*
-+ * Allocate TEST_COUNT objects on cpus > 0 and then all the
-+ * objects later on cpu 0
-+ */
-+static void remote_free_test_p1(struct test_struct *t)
-+{
-+	int i;
-+
-+	/* Perform no allocations on cpu 0 */
-+	for (i = 0; i < t->count; i++) {
-+		struct page *p;
-+
-+		if (smp_processor_id()) {
-+			p = alloc_pages(GFP_KERNEL | __GFP_COMP, t->order);
-+			/* Use object */
-+			memset(page_address(p), 17, 4);
-+		} else
-+			p = NULL;
-+		t->v[i] = p;
-+	}
-+}
-+
-+static void remote_free_test_p2(struct test_struct *t)
-+{
-+	int i;
-+	int cpu;
-+
-+	/* All frees are completed on cpu zero */
-+	if (smp_processor_id())
-+		return;
-+
-+	for_each_online_cpu(cpu)
-+		for (i = 0; i < t->count; i++) {
-+			struct page *p = test[cpu].v[i];
-+
-+			if (!p)
-+				continue;
-+
-+			__free_pages(p, t->order);
-+		}
-+}
-+
-+/*
-+ * Allocate TEST_COUNT objects and later free them all again
-+ */
-+static void alloc_then_free_test_p1(struct test_struct *t)
-+{
-+	int i;
-+
-+	for (i = 0; i < t->count; i++) {
-+		struct page *p = alloc_pages(GFP_KERNEL | __GFP_COMP, t->order);
-+
-+		memset(page_address(p), 14, 4);
-+		t->v[i] = p;
-+	}
-+}
-+
-+static void alloc_then_free_test_p2(struct test_struct *t)
-+{
-+	int i;
-+
-+	for (i = 0; i < t->count; i++) {
-+		struct page *p = t->v[i];
-+
-+		__free_pages(p, t->order);
-+	}
-+}
-+
-+/*
-+ * Allocate TEST_COUNT objects. Free them immediately.
-+ */
-+static void alloc_free_test_p1(struct test_struct *t)
-+{
-+	int i;
-+
-+	for (i = 0; i < TEST_COUNT; i++) {
-+		struct page *p = alloc_pages(GFP_KERNEL | __GFP_COMP, t->order);
-+
-+		memset(page_address(p), 12, 4);
-+		__free_pages(p, t->order);
-+	}
-+}
-+
-+static atomic_t tests_running;
-+static atomic_t phase1_complete;
-+static DECLARE_COMPLETION(completion1);
-+static DECLARE_COMPLETION(completion2);
-+static int started;
-+
-+static int test_func(void *private)
-+{
-+	struct test_struct *t = private;
-+	cpumask_t newmask = CPU_MASK_NONE;
-+
-+	cpu_set(t->cpu, newmask);
-+	set_cpus_allowed(current, newmask);
-+	t->v = kmalloc(t->count * sizeof(struct page *), GFP_KERNEL);
-+
-+	atomic_inc(&tests_running);
-+	wait_for_completion(&completion1);
-+	t->start1 = get_cycles();
-+	t->test_p1(t);
-+	t->stop1 = get_cycles();
-+	atomic_inc(&phase1_complete);
-+	wait_for_completion(&completion2);
-+	t->start2 = get_cycles();
-+	if (t->test_p2)
-+		t->test_p2(t);
-+	t->stop2 = get_cycles();
-+	kfree(t->v);
-+	atomic_dec(&tests_running);
-+	set_current_state(TASK_UNINTERRUPTIBLE);
-+	schedule();
-+	return 0;
-+}
-+
-+static void do_concurrent_test(void (*p1)(struct test_struct *),
-+		void (*p2)(struct test_struct *),
-+		int order, const char *name)
-+{
-+	int cpu;
-+	unsigned long time1 = 0;
-+	unsigned long time2 = 0;
-+	unsigned long sum1 = 0;
-+	unsigned long sum2 = 0;
-+
-+	atomic_set(&tests_running, 0);
-+	atomic_set(&phase1_complete, 0);
-+	started = 0;
-+	init_completion(&completion1);
-+	init_completion(&completion2);
-+
-+	for_each_online_cpu(cpu) {
-+		struct test_struct *t = &test[cpu];
-+
-+		t->cpu = cpu;
-+		t->count = TEST_COUNT;
-+		t->test_p1 = p1;
-+		t->test_p2 = p2;
-+		t->order = order;
-+		t->task = kthread_run(test_func, t, "test%d", cpu);
-+		if (IS_ERR(t->task)) {
-+			printk("Failed to start test func\n");
-+			return;
-+		}
-+	}
-+
-+	/* Wait till all processes are running */
-+	while (atomic_read(&tests_running) < num_online_cpus()) {
-+		set_current_state(TASK_UNINTERRUPTIBLE);
-+		schedule_timeout(10);
-+	}
-+	complete_all(&completion1);
-+
-+	/* Wait till all processes have completed phase 1 */
-+	while (atomic_read(&phase1_complete) < num_online_cpus()) {
-+		set_current_state(TASK_UNINTERRUPTIBLE);
-+		schedule_timeout(10);
-+	}
-+	complete_all(&completion2);
-+
-+	while (atomic_read(&tests_running)) {
-+		set_current_state(TASK_UNINTERRUPTIBLE);
-+		schedule_timeout(10);
-+	}
-+
-+	for_each_online_cpu(cpu)
-+		kthread_stop(test[cpu].task);
-+
-+	printk(KERN_ALERT "%s(%d):", name, order);
-+	for_each_online_cpu(cpu) {
-+		struct test_struct *t = &test[cpu];
-+
-+		time1 = t->stop1 - t->start1;
-+		time2 = t->stop2 - t->start2;
-+		sum1 += time1;
-+		sum2 += time2;
-+		printk(" %d=%lu", cpu, time1 / TEST_COUNT);
-+		if (p2)
-+			printk("/%lu", time2 / TEST_COUNT);
-+	}
-+	printk(" Average=%lu", sum1 / num_online_cpus() / TEST_COUNT);
-+	if (p2)
-+		printk("/%lu", sum2 / num_online_cpus() / TEST_COUNT);
-+	printk("\n");
-+	schedule_timeout(200);
-+}
-+#endif
-+
-+static int pagealloc_test_init(void)
-+{
-+	void **v = kmalloc(TEST_COUNT * sizeof(void *), GFP_KERNEL);
-+	unsigned int i;
-+	cycles_t time1, time2, time;
-+	int rem;
-+	int order;
-+
-+	printk(KERN_ALERT "test init\n");
-+
-+	printk(KERN_ALERT "Single thread testing\n");
-+	printk(KERN_ALERT "=====================\n");
-+	printk(KERN_ALERT "1. Repeatedly allocate then free test\n");
-+	for (order = 0; order < MAX_ORDER; order++) {
-+		time1 = get_cycles();
-+		for (i = 0; i < TEST_COUNT; i++) {
-+			struct page *p = alloc_pages(GFP_KERNEL | __GFP_COMP,
-+						order);
-+
-+			if (!p) {
-+				printk("Cannot allocate order=%d\n", order);
-+				break;
-+			}
-+
-+			/* Touch page */
-+			memset(page_address(p), 22, 4);
-+			v[i] = p;
-+		}
-+		time2 = get_cycles();
-+		time = time2 - time1;
-+
-+		printk(KERN_ALERT "%i times alloc_page(,%d) ", i, order);
-+		time = div_u64_rem(time, TEST_COUNT, &rem);
-+		printk("-> %llu cycles ", time);
-+
-+		time1 = get_cycles();
-+		for (i = 0; i < TEST_COUNT; i++) {
-+			struct page *p = v[i];
-+
-+			__free_pages(p, order);
-+		}
-+		time2 = get_cycles();
-+		time = time2 - time1;
-+
-+		printk("__free_pages(,%d)", order);
-+		time = div_u64_rem(time, TEST_COUNT, &rem);
-+		printk("-> %llu cycles\n", time);
-+	}
-+
-+	printk(KERN_ALERT "2. alloc/free test\n");
-+	for (order = 0; order < MAX_ORDER; order++) {
-+		time1 = get_cycles();
-+		for (i = 0; i < TEST_COUNT; i++) {
-+			struct page *p = alloc_pages(GFP_KERNEL| __GFP_COMP, order);
-+
-+			__free_pages(p, order);
-+		}
-+		time2 = get_cycles();
-+		time = time2 - time1;
-+
-+		printk(KERN_ALERT "%i times alloc( ,%d)/free ", i, order);
-+		time = div_u64_rem(time, TEST_COUNT, &rem);
-+		printk("-> %llu cycles\n", time);
-+	}
-+	kfree(v);
-+#ifdef CONFIG_SMP
-+	printk(KERN_INFO "Concurrent allocs\n");
-+	printk(KERN_INFO "=================\n");
-+	for (order = 0; order < CONCURRENT_MAX_ORDER; order++) {
-+		do_concurrent_test(alloc_then_free_test_p1,
-+			alloc_then_free_test_p2,
-+			order, "Page alloc N*alloc N*free");
-+	}
-+	printk("----Fastpath---\n");
-+	for (order = 0; order < CONCURRENT_MAX_ORDER; order++) {
-+		do_concurrent_test(alloc_free_test_p1, NULL,
-+			order, "Page N*(alloc free)");
-+	}
-+
-+	printk(KERN_INFO "Remote free test\n");
-+	printk(KERN_INFO "================\n");
-+	for (order = 0; order < CONCURRENT_MAX_ORDER; order++) {
-+		do_concurrent_test(remote_free_test_p1,
-+				remote_free_test_p2,
-+			order, "N*remote free");
-+	}
-+
-+#endif
-+
-+	return -EAGAIN; /* Fail will directly unload the module */
-+}
-+
-+static void pagealloc_test_exit(void)
-+{
-+	printk(KERN_ALERT "test exit\n");
-+}
-+
-+module_init(pagealloc_test_init)
-+module_exit(pagealloc_test_exit)
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Christoph Lameter");
-+MODULE_DESCRIPTION("page allocator performance test");
-+
-Index: linux-2.6/tests/Kconfig
-===================================================================
---- linux-2.6.orig/tests/Kconfig	2009-10-12 15:17:45.000000000 -0500
-+++ linux-2.6/tests/Kconfig	2009-10-12 15:17:46.000000000 -0500
-@@ -22,5 +22,12 @@ config BENCHMARK_VMSTAT
- 	help
- 	  A benchmark measuring the performance of vm statistics.
- 
-+config BENCHMARK_PAGEALLOC
-+	tristate "Page Allocator Benchmark"
-+	default m
-+	depends on m
-+	help
-+	  A benchmark measuring the performance of the page allocator.
-+
- endif # BENCHMARKS
- 
+Very strange because it's a 915:
 
--- 
+00:02.0 VGA compatible controller: Intel Corporation Mobile
+915GM/GMS/910GML Express Graphics Controller (rev 04) (prog-if 00 [VGA
+controller])
+	Subsystem: ASUSTeK Computer Inc. Device 82d9
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Interrupt: pin A routed to IRQ 16
+	Region 0: Memory at f7f00000 (32-bit, non-prefetchable) [size=512K]
+	Region 1: I/O ports at ec00 [size=8]
+	Region 2: Memory at d0000000 (32-bit, prefetchable) [size=256M]
+	Region 3: Memory at f7ec0000 (32-bit, non-prefetchable) [size=256K]
+	Expansion ROM at <unassigned> [disabled]
+	Capabilities: [d0] Power Management version 2
+		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+	Kernel driver in use: i915
+
+> Sounds like this patch was good enough for both you and Carlos, but not
+> sufficient for Ted or Keith.  What resolution are you running?
+
+It's an Asus eeePC 900 @ 1024x600
+
+BTW, the patch really helps, usually I experienced problems after 3/4
+minutes of work and sometimes I couldn't recover form the blank
+screen. Now it's more than 1h 30' I'm at the laptop and everything is
+perfect.
+
+>
+> Jesse
+>
+
+Regards,
+Fabio
+
+
+> On Tue, 13 Oct 2009 21:19:32 +0200
+> Fabio Comolli <fabio.comolli@gmail.com> wrote:
+>
+>> Hi Jesse.
+>> Sorry to jump in but I also had issues with -32rc (i915 chip) and this
+>> patch seems to have resolved all problems.
+>>
+>> I don't know how to describe in english what happened to my desktop
+>> but probably "glitches" and "tearings" could be the correct words.
+>> Also sometimes the screen went blank and needed to switch to terminal
+>> console and back to return to the normal X screen.
+>>
+>> Nothing in the logs, neither messages nor Xorg.0.log.
+>>
+>> Regards,
+>> Fabio
+>>
+>>
+>>
+>> On Mon, Oct 12, 2009 at 9:05 PM, Jesse Barnes
+>> <jbarnes@virtuousgeek.org> wrote:
+>> > On Mon, 12 Oct 2009 20:46:51 +0200
+>> > "Carlos R. Mafra" <crmafra2@gmail.com> wrote:
+>> >
+>> >> On Mon 12.Oct'09 at  9:54:38 -0700, Jesse Barnes wrote:
+>> >> > >
+>> >> > > Nope, unfortunately, it's not helping on my T400 laptop.  I'm
+>> >> > > still getting huge amounts of glitching and tearing with this
+>> >> > > patch applied against -rc3.
+>> >> > >
+>> >> > > What I'm using for now to fix up my system is this patch.
+>> >> > >
+>> >> >
+>> >> > How about this one?  I have one more idea to try out if this
+>> >> > doesn't work (hacking on it now).
+>> >>
+>> >> I was also experiencing something very similar to Theodore's bug
+>> >> report and, at least for me, the patch below fixed the issue (the
+>> >> previous one also had no effect).
+>> >
+>> > Cool, good to hear.  Hopefully Ted and Keith will confirm too.
+>> >
+>> > --
+>> > Jesse Barnes, Intel Open Source Technology Center
+>> >
+>> > diff --git a/drivers/gpu/drm/i915/intel_display.c
+>> > b/drivers/gpu/drm/i915/intel_display.c index 7a5fb79..1451945 100644
+>> > --- a/drivers/gpu/drm/i915/intel_display.c
+>> > +++ b/drivers/gpu/drm/i915/intel_display.c
+>> > @@ -1047,7 +1047,7 @@ static void g4x_enable_fbc(struct drm_crtc
+>> > *crtc, unsigned long interval) dev_priv->cfb_fence =
+>> > obj_priv->fence_reg; dev_priv->cfb_plane = intel_crtc->plane;
+>> >
+>> > -       dpfc_ctl = plane | DPFC_SR_EN | DPFC_CTL_LIMIT_1X;
+>> > +       dpfc_ctl = plane | DPFC_CTL_LIMIT_1X;
+>> >        if (obj_priv->tiling_mode != I915_TILING_NONE) {
+>> >                dpfc_ctl |= DPFC_CTL_FENCE_EN | dev_priv->cfb_fence;
+>> >                I915_WRITE(DPFC_CHICKEN, DPFC_HT_MODIFY);
+>> > --
+>> > To unsubscribe from this list: send the line "unsubscribe
+>> > linux-kernel" in the body of a message to majordomo@vger.kernel.org
+>> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> > Please read the FAQ at  http://www.tux.org/lkml/
+>> >
+>>
+>
+>
+> --
+> Jesse Barnes, Intel Open Source Technology Center
+>
