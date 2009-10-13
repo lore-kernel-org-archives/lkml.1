@@ -1,111 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbZJMGt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbZJMGuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758893AbZJMGt5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 02:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbZJMGt5
+	id S1758977AbZJMGuI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 02:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758967AbZJMGuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 02:49:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53163 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755046AbZJMGt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 02:49:56 -0400
-Date: Tue, 13 Oct 2009 08:49:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Ricardo Jorge da Fonseca Marques Ferreira 
-	<storm@sys49152.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Yannick Roehlly <yannick.roehlly@free.fr>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, x86@kernel.org,
-       andreaorru91@gmail.com, jjorge@free.fr
-Subject: Re: [PATCH] pci: increase alignment to make more space for hidden
-	code
-Message-ID: <20091013064901.GD9470@elte.hu>
-References: <200908072333.24631.storm@sys49152.net> <4ACAC8F1.1050706@kernel.org> <4AD24B5C.4050905@kernel.org> <200910121059.10366.bjorn.helgaas@hp.com> <4AD37CA4.90601@kernel.org> <20091012192242.GA2691@elte.hu> <4AD38734.2040600@kernel.org> <1255414115.14484.47.camel@dc7800.home>
+	Tue, 13 Oct 2009 02:50:06 -0400
+Received: from mx06.lb01.inode.at ([62.99.145.6]:5985 "EHLO mx.inode.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758947AbZJMGuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 02:50:05 -0400
+Message-ID: <4AD422F2.4080308@sbg.ac.at>
+Date: Tue, 13 Oct 2009 08:49:22 +0200
+From: Alexander Huemer <alexander.huemer@sbg.ac.at>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090826)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255414115.14484.47.camel@dc7800.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Tejun Heo <tj@kernel.org>
+CC: Jean Delvare <jdelvare@suse.de>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, alexander.huemer@sbg.ac.at
+Subject: Re: 2.6.{30,31} x86_64 ahci problem - irq 23: nobody cared
+References: <4ABBB8C2.2080901@sbg.ac.at> <200910101513.51320.elendil@planet.nl> <4AD2DFA4.9000602@kernel.org> <200910121148.16439.elendil@planet.nl> <4AD2FC60.8080705@kernel.org> <4AD2FD10.2010800@sbg.ac.at> <4AD2FFC7.5010402@kernel.org> <4AD300B5.6080102@sbg.ac.at> <4AD34554.3050701@sbg.ac.at> <4AD3E348.5030508@kernel.org>
+In-Reply-To: <4AD3E348.5030508@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tejun Heo wrote:
+> [cc'ing Jean and quoting whole body]
+>
+> Hello, Jean.
+>
+> It seems i2c_i801 is triggering IRQ storm on Alexander's machine.  The
+> original thread is
+>
+>  http://thread.gmane.org/gmane.linux.kernel/894187
+>
+> Any ideas?
+>
+> Thanks.
+>
+> Alexander Huemer wrote:
+>   
+>> Alexander Huemer wrote:
+>>     
+>>> Tejun Heo wrote:
+>>>       
+>>>> Alexander Huemer wrote:
+>>>>  
+>>>>         
+>>>>> Tejun Heo wrote:
+>>>>>   
+>>>>>           
+>>>>>> Frans Pop wrote:
+>>>>>>  
+>>>>>>     
+>>>>>>             
+>>>>>>> On Monday 12 October 2009, Tejun Heo wrote:
+>>>>>>>          
+>>>>>>>               
+>>>>>>>> Alexander, can you please attach full boot log and the output of
+>>>>>>>> "lspci -nn"?  Also, how reproducible is the problem?  You already
+>>>>>>>> answered to Frans' question but can you be more specific?
+>>>>>>>>                 
+>>>>>>>>                 
+>>>>>>> Full dmesg was made available earlier at:
+>>>>>>> http://xx.vu/~ahuemer/dmesg_ahuemer_20090923
+>>>>>>>             
+>>>>>>>               
+>>>>>> Does blacklisting i801_smbus make any difference?
+>>>>>>
+>>>>>>         
+>>>>>>             
+>>>>> lspci -nn:
+>>>>> http://xx.vu/~ahuemer/lspci_nn_ahuemer_20091012
+>>>>>
+>>>>> what do you mean with "blacklisting i801_smbus" ?
+>>>>>     
+>>>>>           
+>>>> [    3.872387] i2c /dev entries driver
+>>>> [    3.873943] i801_smbus 0000:00:1f.3: PCI INT B -> GSI 23 (level,
+>>>> low) -> IRQ 23
+>>>> [    3.875580] w83627hf: Found W83627HF chip at 0x290
+>>>>
+>>>> IRQ23 is also used by i801_smbus and it would be nice to confirm
+>>>> whether the problem can still be triggered with that driver not
+>>>> loaded.  Adding "blacklist i2c_i801" to /etc/modprobe.d/blacklist
+>>>> should probabaly do the trick.
+>>>>
+>>>> Thanks.
+>>>>
+>>>>   
+>>>>         
+>>> okay, i think you assume that i2c_i801 is a module.
+>>> it is indeed built into the kernel.
+>>> i'll rebuild the kernel without that component and run a test again.
+>>>
+>>> regards
+>>> -alex
+>>>       
+>> tejun, it seems you hit an interesting point.
+>> i compiled kernel-2.6.31.3 with my ususal config _without_ i2c_i801.
+>> my usual test (compilation of gcc-4.3.2) finished 5 times without the
+>> error.
+>> i'll let it run some more times over night.
+>> does anybody have an idea how i can trace what exactly causes the error
+>> during the compilation run so that i can create a short test program ?
+>>
+>> regards
+>> -alex
+>>     
+>
+>   
+hi,
 
-* Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+i compiled gcc in a loop over night, 14 times. no error.
+it really seams i2c_i801 was the cause...
+unfortunately i still don't know how i can extract the part of the gcc
+compilation process that causes the error on an affected kernel.
+that would enable me to create a simple test program.
 
-> We've established that the bridge and the NIC are handed off from BIOS 
-> like this:
-> 
->   pci 0000:00:1c.4: bridge io port: [0x3000-0x3fff]
->   pci 0000:00:1c.4: bridge 32bit mmio: [0xf4500000-0xf45fffff]
->   pci 0000:07:00.0: reg 10 64bit mmio: [0xf4500000-0xf4503fff]
->   pci 0000:07:00.0: reg 18 io port: [0x3000-0x30ff]
-> 
-> Unless we boot with "acpi=off", this configuration is lost, and by the 
-> time we discover them, they look like this:
-> 
->   pci 0000:00:1c.4: bridge io port: [0x00-0xfff]
->   pci 0000:00:1c.4: bridge 32bit mmio: [0x000000-0x0fffff]
->   pci 0000:00:1c.4: bridge 64bit mmio pref: [0x000000-0x0fffff]
->   pci 0000:07:00.0: reg 10 64bit mmio: [0x000000-0x003fff]
->   pci 0000:07:00.0: reg 18 io port: [0x00-0xff]
-> 
-> Mystery #1 is why this configuration gets lost, and whether this is 
-> telling us about a Linux defect.  We might get a clue about this if we 
-> could see what resources the NIC uses under Windows.  If it uses the 
-> handoff range (0xf4500000-0xf4503fff), it's likely that Windows 
-> managed to keep the BIOS-programmed resources, and Linux is doing 
-> something wrong.  If it uses some other range, then Windows likely had 
-> to reconfigure the device just like Linux does.
-
-I can see two possibilities here, on the Linux side:
-
-- AML: if there's an ACPI table with an AML script in it, with some BIOS 
-  provided vendor quirk that reprograms those BARs, that would explain 
-  why acpi=off makes the side-effect go away. ACPI does not touch BARs 
-  except if told by the firmware.
-
-- The other possibility would be for there to be some ACPI table driven
-  Linux PCI/driver/chipset quirk somewhere. With acpi=off that quirk 
-  does not get executed.
-
-> Mystery #2 is why, even with the lost configuration, 2.6.30 configures 
-> the NIC so it works, but 2.6.31 does not.  In 2.6.30, we put the NIC 
-> in the [0xb8000000-0xb80fffff] range, and in 2.6.31, we put it in 
-> [0xb6000000-0xb60fffff].  I'd really like to know what the host bridge 
-> _CRS says.  It's possible that we're only supposed to use the range 
-> above 0xb8000000.  If that's the case, the fact that we're ignoring 
-> the _CRS would be another Linux defect.
-
-Another theory would be just pure luck: the device might have a BAR 
-address constraint (which the BIOS knows about but doesnt tell us), and 
-2.6.30 gets it right accidentally while 2.6.31 violates the constraint.
-
-> In the patch below, I added some extra PCI dumps of the bridge and the 
-> NIC around the ACPI EC init.  The patch also removes Yinghai's 
-> workaround so we should see the original failure, just with a little 
-> more debug.
-
-Btw., i'd _strongly_ suggest to finally add some sort of pci=verbose 
-easy-to-use debug toggle for users to enable.
-
-Everything that matters to resource allocation. We should print the BIOS 
-state (Yinghai did a patch for this some time ago and that is upstream 
-already), we should print quirk execution, we should print ACPI AML 
-execution - everything that might matter to PCI allocations.
-
-An easy-to-use 'give me all the debug info' feature is really important. 
-We have apic=verbose for similar reasons.
-
-	Ingo
+regards
+-alex
