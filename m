@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933601AbZJMHPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933610AbZJMHQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933601AbZJMHPL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 03:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933105AbZJMHPJ
+	id S933610AbZJMHQK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 03:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933263AbZJMHQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 03:15:09 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:33081 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758917AbZJMHPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 03:15:07 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <817ecb6f0910121803p52a4049ep4a712545d28bba76@mail.gmail.com>
-References: <817ecb6f0910121803p52a4049ep4a712545d28bba76@mail.gmail.com>
-To: Siarhei Liakh <sliakh.lkml@gmail.com>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Aristeu Rozanski <aris@redhat.com>
-Subject: Re: [PATCH V5] x86: NX protection for kernel data
-Date: Tue, 13 Oct 2009 08:14:06 +0100
-Message-ID: <10109.1255418046@redhat.com>
+	Tue, 13 Oct 2009 03:16:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44892
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758952AbZJMHQH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 03:16:07 -0400
+Date: Tue, 13 Oct 2009 00:16:03 -0700 (PDT)
+Message-Id: <20091013.001603.160899793.davem@davemloft.net>
+To: sbhatewara@vmware.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       shemminger@linux-foundation.org, chrisw@sous-sol.org, greg@kroah.com,
+       virtualization@lists.linux-foundation.org, pv-drivers@vmware.com
+Subject: Re: [PATCH 2.6.32-rc4] net: VMware virtual Ethernet NIC driver:
+ vmxnet3
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LRH.2.00.0910121447090.13205@sbhatewara-dev1.eng.vmware.com>
+References: <alpine.LRH.2.00.0910121447090.13205@sbhatewara-dev1.eng.vmware.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
+From: Shreyas Bhatewara <sbhatewara@vmware.com>
+Date: Mon, 12 Oct 2009 15:18:42 -0700 (PDT)
 
-> @@ -440,11 +441,29 @@ void free_init_pages(char *what, unsigned long
-> begin, unsigned long end)
+> 
+> Ethernet NIC driver for VMware's vmxnet3
+> 
+> From: Shreyas Bhatewara <sbhatewara@vmware.com>
+> 
+> This patch adds driver support for VMware's virtual Ethernet NIC: vmxnet3
+> Guests running on VMware hypervisors supporting vmxnet3 device will thus have
+> access to improved network functionalities and performance.
+> 
+> Signed-off-by: Shreyas Bhatewara <sbhatewara@vmware.com>
+> Signed-off-by: Bhavesh Davda <bhavesh@vmware.com>
+> Signed-off-by: Ronghua Zhang <ronghua@vmware.com>
 
-Your mail client is word wrapping your patches.
-
-David
+Ok, looks good, applied to net-2.6, thanks!
