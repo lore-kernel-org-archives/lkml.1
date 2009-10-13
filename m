@@ -1,59 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbZJMRPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760670AbZJMRZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760652AbZJMRPr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 13:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760625AbZJMRPr
+	id S1760670AbZJMRZy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 13:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759817AbZJMRZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 13:15:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46176 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760612AbZJMRPq (ORCPT
+	Tue, 13 Oct 2009 13:25:54 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:43429 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757246AbZJMRZx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 13:15:46 -0400
-Message-ID: <4AD4B54C.2060804@zytor.com>
-Date: Tue, 13 Oct 2009 10:13:48 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 13 Oct 2009 13:25:53 -0400
+Date: Tue, 13 Oct 2009 13:17:37 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [this_cpu_xx V6 0/7] Introduce per cpu atomic operations and
+ avoid per cpu address arithmetic
+In-Reply-To: <20091013160909.GB18716@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0910131317040.32394@gentwo.org>
+References: <20091007211024.442168959@gentwo.org> <20091013154020.GA18716@csn.ul.ie> <alpine.DEB.1.10.0910131145150.9478@gentwo.org> <20091013160909.GB18716@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] x86: unify sys_iopl
-References: <4ABD3EC2.1020104@goop.org> <20091013103044.GA3915@elte.hu> <4AD4A9AE.10306@zytor.com> <4AD4B0A0.6050200@goop.org>
-In-Reply-To: <4AD4B0A0.6050200@goop.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/13/2009 09:53 AM, Jeremy Fitzhardinge wrote:
-> On 10/13/09 09:24, H. Peter Anvin wrote:
->> First of all, the unification looks good.
->>
->> As far as .32 is concerned... this *is* a bug even if this is only for
->> paravirt, and given the small amount of code I am personally OK with
->> taking the whole patch for .32.
->>
->> However, the patch is not complete!  The patch incidentally eliminates
->> the need to have assembly stubs for sys_iopl, and those assembly stubs
->> should be removed.  I have a patch for that currently test building.
->>   
-> 
-> I wasn't sure whether task_pt_regs() needed the full register set to be
-> saved to correctly return rflags (that is, does PTREGSCALL change the
-> shape of the stack, or just the contents?).
-> 
-
-PTREGSCALL does change the shape of the stack on 64 bits, but not on 32
-bits.  However, I believe it only matters for the additional fields,
-since the structure is anchored at the top.  I will double-check.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+I am stuck too. Sysfs is screwed up somehow and triggers the
+hangcheck timer.
 
