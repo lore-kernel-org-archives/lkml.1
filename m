@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934089AbZJMSxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761000AbZJMS6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934089AbZJMSxy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 14:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934074AbZJMSxx
+	id S1761000AbZJMS6P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 14:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760964AbZJMS6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 14:53:53 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:46951 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934075AbZJMSxv (ORCPT
+	Tue, 13 Oct 2009 14:58:14 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60292 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753848AbZJMS6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 14:53:51 -0400
-Date: Tue, 13 Oct 2009 20:53:14 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [Bug #14389] Build system issue
-Message-ID: <20091013185313.GB5249@merkur.ravnborg.org>
-References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera> <r-4Wjt4coy.A.r3B.Ial0KB@chimera>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <r-4Wjt4coy.A.r3B.Ial0KB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 13 Oct 2009 14:58:14 -0400
+Subject: Re: [tip:timers/tracing] hrtimer: Add tracepoint for hrtimers
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       anton@samba.org, linux-kernel@vger.kernel.org, peterz@infradead.org,
+       zhaolei@cn.fujitsu.com, xiaoguangrong@cn.fujitsu.com,
+       fweisbec@gmail.com, tglx@linutronix.de, kosaki.motohiro@jp.fujitsu.com,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20091013184150.GA17492@elte.hu>
+References: <4A7F8B2B.5020908@cn.fujitsu.com>
+	 <tip-c6a2a1770245f654f35f60e1458d4356680f9519@git.kernel.org>
+	 <1255404309.7113.948.camel@gandalf.stny.rr.com>
+	 <20091013070853.GA13175@elte.hu>
+	 <1255439822.7113.1541.camel@gandalf.stny.rr.com>
+	 <20091013132656.GA12292@elte.hu>
+	 <1255442557.7113.1623.camel@gandalf.stny.rr.com>
+	 <20091013184150.GA17492@elte.hu>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 13 Oct 2009 14:56:14 -0400
+Message-Id: <1255460174.7113.2115.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 12:22:09AM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.31.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14389
-> Subject		: Build system issue
-> Submitter	: Peter Zijlstra <peterz@infradead.org>
-> Date		: 2009-10-09 8:58 (3 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=575543347b5baed0ca927cb90ba8807396fe9cc9
-> References	: http://marc.info/?l=linux-kernel&m=125507914909152&w=4
+On Tue, 2009-10-13 at 20:41 +0200, Ingo Molnar wrote:
 
-It is fixed by: 2331d1a6cd3d6e580bc88b9a160066d9e1177fe1
+> > But still, we need to build a way to convert big endian to little, as 
+> > well as perhaps converting 32bit to 64 bit longs. As well as vice 
+> > versa.
+> 
+> Exporting the print line as C in a convenient way does not in any way 
+> make it more difficult to define endianness and bit size - we have to do 
+> that anyway. It's largely orthogonal.
 
-I did not have the bug-entry when the changelog was written
-so no references there.
+The way I do it now, is basically making a C interpreter. This can
+easily handle word size and endianess (I have those exported too, and
+can handle differences between host and file).
 
-	Sam
+But to export the "printf" as a C function, that C function will need to
+know a way what size a long is, as well as how to convert endianess.
+
+I'm not really sure how to go about doing something like this
+automatically. Every event will need its own C function to convert.
+Sounds more like what Mathieu was describing.
+
+We still don't have a way to handle enums and structures (like ktime).
+
+-- Steve
+
+
