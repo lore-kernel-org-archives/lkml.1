@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758944AbZJMGTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932873AbZJMGUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758944AbZJMGTg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 02:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758828AbZJMGTf
+	id S932873AbZJMGUL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 02:20:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758893AbZJMGUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 02:19:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53976
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758371AbZJMGTf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 02:19:35 -0400
-Date: Mon, 12 Oct 2009 23:19:30 -0700 (PDT)
-Message-Id: <20091012.231930.141968218.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mchan@broadcom.com, shmulikr@broadcom.com
-Subject: Re: linux-next: net tree build failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091013153308.af56910a.sfr@canb.auug.org.au>
-References: <20091013153308.af56910a.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 13 Oct 2009 02:20:09 -0400
+Received: from mga01.intel.com ([192.55.52.88]:40837 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758832AbZJMGUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 02:20:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,550,1249282800"; 
+   d="scan'208";a="735759185"
+Subject: Re: [PATCH 6/6] mce-inject: use injected mce only during faked
+ handler call
+From: Huang Ying <ying.huang@intel.com>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AD41793.9020400@jp.fujitsu.com>
+References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com>
+	 <4AC95F5A.4000708@jp.fujitsu.com>  <4AC96391.1060001@jp.fujitsu.com>
+	 <1255072482.5228.157.camel@yhuang-dev.sh.intel.com>
+	 <4ACEE5E0.3050701@jp.fujitsu.com>
+	 <1255074286.5228.163.camel@yhuang-dev.sh.intel.com>
+	 <4ACEF4D9.9090600@jp.fujitsu.com>
+	 <1255079484.5228.201.camel@yhuang-dev.sh.intel.com>
+	 <4AD3E731.7080900@jp.fujitsu.com>
+	 <1255404495.6047.298.camel@yhuang-dev.sh.intel.com>
+	 <4AD41793.9020400@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Tue, 13 Oct 2009 14:19:30 +0800
+Message-Id: <1255414771.6047.405.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 13 Oct 2009 15:33:08 +1100
-
-> Today's linux-next build (powerpc allyesconfig) failed like this:
+On Tue, 2009-10-13 at 14:00 +0800, Hidetoshi Seto wrote: 
+> Huang Ying wrote:
+> > On Tue, 2009-10-13 at 10:34 +0800, Hidetoshi Seto wrote: 
+> >> How long do I have to wait your next post, which will fix my urgent issue on
+> >> Nehalem?
+> > 
+> > I think my patch with title:
+> > 
+> > [BUGFIX -v2] x86, mce, inject: Make injected mce valid only during faked handler call
+> > 
+> > fixes this issue correctly.
 > 
-> drivers/net/cnic.c: In function 'cnic_init_storm_conn_bufs':
-> drivers/net/cnic.c:1757: error: implicit declaration of functi
-> on 'csum_ipv6_magic'
+> I should note that there are 2 pending patches from you:
 > 
-> Caused by commit 71034ba845c9ff219373066f904286c0b7506922 ("cnic: Add
-> main functions to support bnx2x devices") which I have reverted for today.
+> [BUGFIX -v2] x86, mce, inject: Make injected mce valid only during faked handler call
+>   for issue A) injected mce could be consumed by real poll handler  
+> 
+> [BUGFIX -v7] x86, MCE: Fix bugs and issues of MCE log ring buffer
+>   for issue B) log buffer is too small
+>   and for issue C) log buffer is not ring buffer
+>   (I'm not sure but there might be other targeting issues D), E) and so on.)
+> 
+> And the only one what I believe it is urgent is issue B).
 
-It's because x86 and sparc64 seem to get the ipv6 checksum header
-implicitly somehow.
+I have talked with Ingo about this patch. But he has different idea
+about MCE log ring buffer and he didn't want to merge the patch even as
+an urgent bug fixes. It seems that another re-post can not convince him.
 
-I'll fix this as follows, thanks for the report Stephen:
+Best Regards,
+Huang Ying
 
-cnic: Need to include net/ip6_checksum.h
-
-drivers/net/cnic.c: In function 'cnic_init_storm_conn_bufs':
-drivers/net/cnic.c:1757: error: implicit declaration of function 'csum_ipv6_magic'
-
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- drivers/net/cnic.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/net/cnic.c b/drivers/net/cnic.c
-index 6e7af7b..333b1d1 100644
---- a/drivers/net/cnic.c
-+++ b/drivers/net/cnic.c
-@@ -33,6 +33,7 @@
- #include <net/route.h>
- #include <net/ipv6.h>
- #include <net/ip6_route.h>
-+#include <net/ip6_checksum.h>
- #include <scsi/iscsi_if.h>
- 
- #include "cnic_if.h"
--- 
-1.6.4.4
 
