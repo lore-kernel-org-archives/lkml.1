@@ -1,68 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933834AbZJMPGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbZJMPQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933834AbZJMPGK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757788AbZJMPGI
+	id S1760251AbZJMPQv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 11:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760238AbZJMPQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:06:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48249 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752734AbZJMPGH (ORCPT
+	Tue, 13 Oct 2009 11:16:50 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:37426 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760235AbZJMPQr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:06:07 -0400
-Date: Tue, 13 Oct 2009 08:05:07 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Boyan <btanastasov@yahoo.co.uk>
-cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?= 
-	<fredlwm@gmail.com>,
-       "Justin P. Mattock" <justinmattock@gmail.com>, Nix <nix@esperi.org.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <4AD437F9.9020708@yahoo.co.uk>
-Message-ID: <alpine.LFD.2.01.0910130745550.3438@localhost.localdomain>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
- <4AD3F769.5080405@gmail.com> <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net> <4AD437F9.9020708@yahoo.co.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 13 Oct 2009 11:16:47 -0400
+Date: Tue, 13 Oct 2009 11:05:58 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6 2009-10-13
+Message-ID: <20091013150558.GC2747@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dave,
 
+Here are a few (almost-)one-liners for 2.6.32.  Included are fixes for
+a use-after-free, a missing "!" in front of a memcmp when comparing
+BSSIDs, a race when using hardware-based scanning, the ieee80211_rx
+context problem, a related documentation change, and a minor build
+issue.
 
-On Tue, 13 Oct 2009, Boyan wrote:
-> 
-> I've just tested it on top of 2.6.31.3 and it doesn't work. As I've
-> mentioned in previous email - I usually trigger the problem easily
-> watching pictures with gthumb - this is combination of cpu intensive
-> operations and keyboard usage and if it doesn't work it takes me no more
-> than a minute to trigger the problem.
+Please let me know if there are problems!
 
-The whole "CPU intensive" thing makes me wonder..
+Thanks,
 
-Do you have 'CONFIG_PREEMPT' enabled? Normally, "CPU intensive" does not 
-at all increase the likelihood of any kernel races, but with kernel 
-preemption we may well hit some preemption point and switch away, and make 
-some race window much bigger.
+John
 
-So if you do have CONFIG_PREEMPT on, try to turn it off and see if it 
-makes the problem go away. Also, are people seeing this always running SMP 
-kernels, or are there UP kernels out there too (on UP _without_ preemption 
-it is almost impossible to hit 99% of all race conditions, so if anybody 
-is running an UP kernel with no preemption, then I'd be very surprised if 
-it is a kernel issue).
+---
 
-But I also still wonder if it might be user-space races, and just the 
-timing differences in the kernel. I don't know the input layer in X well 
-enough, I'm wondering if things like composition engine/window manager 
-could screw up here. Is there some pattern to the X versions (and/or 
-window managers and composition engines)?
+Individual patches are available here:
 
-			Linus
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit 10c435f18b8cb78a5870c08d52955594f5ec9c31:
+  David S. Miller (1):
+        net: Link in PHY drivers before others.
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Alan Cox (1):
+      libertas: fix build
+
+Felix Fietkau (1):
+      mac80211: fix logic error ibss merge bssid check
+
+Johannes Berg (3):
+      mac80211: fix ibss race
+      b43: fix ieee80211_rx() context
+      mac80211: document ieee80211_rx() context requirement
+
+Wey-Yi Guy (1):
+      iwlwifi: change the order of freeing memory
+
+ drivers/net/wireless/b43/xmit.c             |    3 +++
+ drivers/net/wireless/iwlwifi/iwl-agn.c      |    2 +-
+ drivers/net/wireless/iwlwifi/iwl3945-base.c |    2 +-
+ drivers/net/wireless/libertas/cmdresp.c     |    1 +
+ include/net/mac80211.h                      |    2 ++
+ net/mac80211/ibss.c                         |    4 ++--
+ net/mac80211/rx.c                           |    2 ++
+ 7 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/wireless/b43/xmit.c b/drivers/net/wireless/b43/xmit.c
+index 892573b..f4e9695 100644
+--- a/drivers/net/wireless/b43/xmit.c
++++ b/drivers/net/wireless/b43/xmit.c
+@@ -690,7 +690,10 @@ void b43_rx(struct b43_wldev *dev, struct sk_buff *skb, const void *_rxhdr)
+ 	}
+ 
+ 	memcpy(IEEE80211_SKB_RXCB(skb), &status, sizeof(status));
++
++	local_bh_disable();
+ 	ieee80211_rx(dev->wl->hw, skb);
++	local_bh_enable();
+ 
+ #if B43_DEBUG
+ 	dev->rx_count++;
+diff --git a/drivers/net/wireless/iwlwifi/iwl-agn.c b/drivers/net/wireless/iwlwifi/iwl-agn.c
+index cdc07c4..9b5ea8b 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-agn.c
++++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
+@@ -3105,8 +3105,8 @@ static int iwl_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+  out_pci_disable_device:
+ 	pci_disable_device(pdev);
+  out_ieee80211_free_hw:
+-	ieee80211_free_hw(priv->hw);
+ 	iwl_free_traffic_mem(priv);
++	ieee80211_free_hw(priv->hw);
+  out:
+ 	return err;
+ }
+diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+index c390dbd..837a193 100644
+--- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -4096,8 +4096,8 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
+ 	pci_set_drvdata(pdev, NULL);
+ 	pci_disable_device(pdev);
+  out_ieee80211_free_hw:
+-	ieee80211_free_hw(priv->hw);
+ 	iwl_free_traffic_mem(priv);
++	ieee80211_free_hw(priv->hw);
+  out:
+ 	return err;
+ }
+diff --git a/drivers/net/wireless/libertas/cmdresp.c b/drivers/net/wireless/libertas/cmdresp.c
+index c42d3fa..23f6843 100644
+--- a/drivers/net/wireless/libertas/cmdresp.c
++++ b/drivers/net/wireless/libertas/cmdresp.c
+@@ -3,6 +3,7 @@
+   * responses as well as events generated by firmware.
+   */
+ #include <linux/delay.h>
++#include <linux/sched.h>
+ #include <linux/if_arp.h>
+ #include <linux/netdevice.h>
+ #include <asm/unaligned.h>
+diff --git a/include/net/mac80211.h b/include/net/mac80211.h
+index 466859b..c75b960 100644
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -1669,6 +1669,8 @@ void ieee80211_restart_hw(struct ieee80211_hw *hw);
+  * to this function and ieee80211_rx_irqsafe() may not be mixed for a
+  * single hardware.
+  *
++ * Note that right now, this function must be called with softirqs disabled.
++ *
+  * @hw: the hardware this frame came in on
+  * @skb: the buffer to receive, owned by mac80211 after this call
+  */
+diff --git a/net/mac80211/ibss.c b/net/mac80211/ibss.c
+index 920ec87..6eaf698 100644
+--- a/net/mac80211/ibss.c
++++ b/net/mac80211/ibss.c
+@@ -544,7 +544,7 @@ static void ieee80211_sta_find_ibss(struct ieee80211_sub_if_data *sdata)
+ 		       "%pM\n", bss->cbss.bssid, ifibss->bssid);
+ #endif /* CONFIG_MAC80211_IBSS_DEBUG */
+ 
+-	if (bss && memcmp(ifibss->bssid, bss->cbss.bssid, ETH_ALEN)) {
++	if (bss && !memcmp(ifibss->bssid, bss->cbss.bssid, ETH_ALEN)) {
+ 		printk(KERN_DEBUG "%s: Selected IBSS BSSID %pM"
+ 		       " based on configured SSID\n",
+ 		       sdata->dev->name, bss->cbss.bssid);
+@@ -829,7 +829,7 @@ void ieee80211_ibss_notify_scan_completed(struct ieee80211_local *local)
+ 		if (!sdata->u.ibss.ssid_len)
+ 			continue;
+ 		sdata->u.ibss.last_scan_completed = jiffies;
+-		ieee80211_sta_find_ibss(sdata);
++		mod_timer(&sdata->u.ibss.timer, 0);
+ 	}
+ 	mutex_unlock(&local->iflist_mtx);
+ }
+diff --git a/net/mac80211/rx.c b/net/mac80211/rx.c
+index 865fbc0..7170bf4 100644
+--- a/net/mac80211/rx.c
++++ b/net/mac80211/rx.c
+@@ -2453,6 +2453,8 @@ void ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb)
+ 	struct ieee80211_supported_band *sband;
+ 	struct ieee80211_rx_status *status = IEEE80211_SKB_RXCB(skb);
+ 
++	WARN_ON_ONCE(softirq_count() == 0);
++
+ 	if (WARN_ON(status->band < 0 ||
+ 		    status->band >= IEEE80211_NUM_BANDS))
+ 		goto drop;
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
