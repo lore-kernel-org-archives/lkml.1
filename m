@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbZJMVDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbZJMVDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761313AbZJMVDJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 17:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760815AbZJMVDI
+	id S1761335AbZJMVDY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 17:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761326AbZJMVDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 17:03:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59642 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752372AbZJMVDG (ORCPT
+	Tue, 13 Oct 2009 17:03:24 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:5510 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761320AbZJMVDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 17:03:06 -0400
-Date: Tue, 13 Oct 2009 14:02:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Boyan <btanastasov@yahoo.co.uk>
-cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?= 
-	<fredlwm@gmail.com>,
-       "Justin P. Mattock" <justinmattock@gmail.com>, Nix <nix@esperi.org.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0910131358140.26777@localhost.localdomain>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
- <4AD3F769.5080405@gmail.com> <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net> <4AD437F9.9020708@yahoo.co.uk> <alpine.LFD.2.01.0910130745550.3438@localhost.localdomain> <4AD4DE4C.4010402@yahoo.co.uk>
- <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 13 Oct 2009 17:03:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=lsg0Jpw7F6d0WP1AUEYDA6qcBk/36yGlmpkADavT+CW1zEc+2y4BVmZl6Lht0gbp1t
+         dKpCJRXBlxx6R0k0vyaHuBqxRUWIXt8T0SUmb6/D3snlfHRJNXZEtkYcSCZI6ON1V0iC
+         UDkxVS8MIurbRMBiOAvMHCqgu3SVdV1fcy168=
+Date: Tue, 13 Oct 2009 23:02:10 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH 1/5] [PATCH 1/5] function-graph/x86: replace unbalanced
+	ret with jmp
+Message-ID: <20091013210208.GB5135@nowhere>
+References: <20091013203349.814936710@goodmis.org> <20091013203425.042034383@goodmis.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091013203425.042034383@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 13 Oct 2009, Linus Torvalds wrote:
+On Tue, Oct 13, 2009 at 04:33:50PM -0400, Steven Rostedt wrote:
+> From: Steven Rostedt <srostedt@redhat.com>
 > 
-> Anyway, I'm not entirely happy with this patch, and I haven't actually 
-> TESTED it so it might well be totally broken [..]
+> The function graph tracer replaces the return address with a hook to
+> trace the exit of the function call. This hook will finish by returning
+> to the real location the function should return to.
+> 
+> But the current implementation uses a ret to jump to the real return
+> location. This causes a imbalance between calls and ret. That is
+> the original function does a call, the ret goes to the handler
+> and then the handler does a ret without a matching call.
+> 
+> Although the function graph tracer itself still breaks the branch
+> predictor by replacing the original ret, by using a second ret and
+> causing an imbalance, it breaks the predictor even more.
 
-It is.
 
-Looking over the patch a bit more, at a minimum that
 
-	if (test_and_set_bit(TTY_FLUSHING, &tty->flags)) {
+I have troubles to understand by it breaks the predictor, especially
+since there is not conditional branch in return_to_handler.
+But still I don't understand why a ret would break more the branch
+prediction than a jmp.
 
-line should be
-
-	if (!test_and_set_bit(TTY_FLUSHING, &tty->flags)) {
-
-(ie add the '!') since we want to do things if the bit wasn't set before 
-(and if it was already set it all turns into a no-op).
-
-But apart from that obvious typo, the patch still looks good even after 
-looking it through a bit more. It's still TOTALLY UNTESTED, though!
-
-		Linus
