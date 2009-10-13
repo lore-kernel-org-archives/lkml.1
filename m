@@ -1,101 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934082AbZJMTUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934102AbZJMTUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934082AbZJMTUM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 15:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbZJMTUL
+	id S934102AbZJMTUc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 15:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761086AbZJMTUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 15:20:11 -0400
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:53796 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753674AbZJMTUJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 15:20:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kH/kFVlRi5QqueVSpERHiiEneYbIJGqy4isaOG/XqmSscuq8ro8k0+phB3ysn9VClE
-         xdmbbDxQ5fAkKikm8+6kJNURjow8m1QYDX3o0MNY+I4XJf8vxc693I6xXk9xHP0B0NX+
-         ZguFAQlrJHhLTnp0nkvjXHYNEHXp/xovoMdNc=
+	Tue, 13 Oct 2009 15:20:31 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:51834 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761085AbZJMTUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 15:20:30 -0400
+Message-ID: <4AD4D2D8.5000904@msgid.tls.msk.ru>
+Date: Tue, 13 Oct 2009 23:19:52 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-In-Reply-To: <20091012120510.16bd1194@jbarnes-g45>
-References: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
-	 <20091008103620.5e5aae66@jbarnes-g45> <20091010204106.GA8251@mit.edu>
-	 <20091012095438.1e82b54f@jbarnes-g45>
-	 <20091012184651.GA4603@Pilar.aei.mpg.de>
-	 <20091012120510.16bd1194@jbarnes-g45>
-Date: Tue, 13 Oct 2009 21:19:32 +0200
-Message-ID: <b637ec0b0910131219u638e37dan2f3a98a9a89a2570@mail.gmail.com>
-Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with T400 
-	laptops
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
-       Keith Packard <keithp@keithp.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: [GIT PULL] kbuild fixes
+References: <20091011221818.GA2833@merkur.ravnborg.org> <4AD2EBC6.1000505@msgid.tls.msk.ru> <20091013185841.GC5249@merkur.ravnborg.org>
+In-Reply-To: <20091013185841.GC5249@merkur.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesse.
-Sorry to jump in but I also had issues with -32rc (i915 chip) and this
-patch seems to have resolved all problems.
+Sam Ravnborg wrote:
+> On Mon, Oct 12, 2009 at 12:41:42PM +0400, Michael Tokarev wrote:
+>> Sam Ravnborg wrote:
+>>> Hi Linus.
+>>>
+>>> A few kbuild related fixes.
+>> []
+>>> - Fix use of echo -ne. Is caused issues for ubuntu (IIRC) users
+>> As has been discussed previously (and Sam has been CC'ed), the fix
+>> is still incorrect.
+> 
+> In the thread hpa asked for a patch at least twice.
+> Only after I submitted -fixes to Linus it shows up.
+> 
+> Bad timing.
+> 
+> And please - do not even think of asking me to do it.
 
-I don't know how to describe in english what happened to my desktop
-but probably "glitches" and "tearings" could be the correct words.
-Also sometimes the screen went blank and needed to switch to terminal
-console and back to return to the normal X screen.
+How many patches should one send? How many trees one should
+compare against and send different patch for, in case such
+an obvious trivial cases?  If I'll provide this against
+mainline, it wont apply to Sam's tree.  If against Sam's
+tree, it wont apply to mainline.  And for such trivial
+cases, it's just amusing to expect full patch.
 
-Nothing in the logs, neither messages nor Xorg.0.log.
+It's not bad timing.  I needed to know which damn tree
+I should diff against.  In Sam's pull request I found
+the - hopefully - correct tree.
 
-Regards,
-Fabio
+Please don't even think I will be submitting something like
+this again.  I spent half a week debugging a mysterious issue,
+and I provided at least information in hope it will be useful
+to someone with the same issue.  And it turns out that by doing
+so, *I* owe something to everyone else.  It's not how things
+works, or SHOULD work.
 
+Thanks.
 
+/mjt
 
-On Mon, Oct 12, 2009 at 9:05 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Mon, 12 Oct 2009 20:46:51 +0200
-> "Carlos R. Mafra" <crmafra2@gmail.com> wrote:
->
->> On Mon 12.Oct'09 at  9:54:38 -0700, Jesse Barnes wrote:
->> > >
->> > > Nope, unfortunately, it's not helping on my T400 laptop.  I'm
->> > > still getting huge amounts of glitching and tearing with this
->> > > patch applied against -rc3.
->> > >
->> > > What I'm using for now to fix up my system is this patch.
->> > >
->> >
->> > How about this one?  I have one more idea to try out if this doesn't
->> > work (hacking on it now).
->>
->> I was also experiencing something very similar to Theodore's bug
->> report and, at least for me, the patch below fixed the issue (the
->> previous one also had no effect).
->
-> Cool, good to hear.  Hopefully Ted and Keith will confirm too.
->
-> --
-> Jesse Barnes, Intel Open Source Technology Center
->
-> diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
-> index 7a5fb79..1451945 100644
-> --- a/drivers/gpu/drm/i915/intel_display.c
-> +++ b/drivers/gpu/drm/i915/intel_display.c
-> @@ -1047,7 +1047,7 @@ static void g4x_enable_fbc(struct drm_crtc *crtc, unsigned long interval)
->        dev_priv->cfb_fence = obj_priv->fence_reg;
->        dev_priv->cfb_plane = intel_crtc->plane;
->
-> -       dpfc_ctl = plane | DPFC_SR_EN | DPFC_CTL_LIMIT_1X;
-> +       dpfc_ctl = plane | DPFC_CTL_LIMIT_1X;
->        if (obj_priv->tiling_mode != I915_TILING_NONE) {
->                dpfc_ctl |= DPFC_CTL_FENCE_EN | dev_priv->cfb_fence;
->                I915_WRITE(DPFC_CHICKEN, DPFC_HT_MODIFY);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> You guys are the one that see the issue, who know how to fix it,
+> and knows how to check that the fix really works.
+> 
+> In other words - provide a patch next time you are asked to do so.
+> 
+> I'm off for much needed vacation rest of the week and
+> may rememeber to handle the patch when I get back...
+> 
+> 	Sam
+
