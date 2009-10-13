@@ -1,90 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbZJMSJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbZJMSMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760861AbZJMSJP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 14:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760845AbZJMSJO
+	id S1760867AbZJMSMz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 14:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760838AbZJMSMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 14:09:14 -0400
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:53701 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760842AbZJMSJL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 14:09:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Cg3HpfY/Hd/dr+H4Jzx21aXMXrKu5JMXq9dYiIw5wvKH7XVYo6scMLXjVEruRyy3Sq
-         sDHhHDi1bVrN6SHBunyPWX545cgyGdCnapdlTY1k/b9rC2dK6CivpsOY8Stdf/BegtMs
-         ya34bejL2YIUhAsaCIMOsXqDnHOKZgM/3B3BY=
+	Tue, 13 Oct 2009 14:12:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44161 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760505AbZJMSMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 14:12:53 -0400
+Date: Tue, 13 Oct 2009 20:12:14 +0200
+From: Jan Kara <jack@suse.cz>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       Myklebust Trond <Trond.Myklebust@netapp.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Nick Piggin <npiggin@suse.de>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Richard Kennedy <richard@rsk.demon.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
+	balance_dirty_pages()
+Message-ID: <20091013181214.GA31440@duck.suse.cz>
+References: <20091007073818.318088777@intel.com> <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz> <20091010213339.GA8644@localhost> <20091012211838.GA3965@duck.suse.cz> <20091013032405.GA20405@localhost>
 MIME-Version: 1.0
-In-Reply-To: <20091012232429.GA24254@suse.de>
-References: <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain> 
-	<alpine.LFD.2.01.0910081410400.3432@localhost.localdomain> 
-	<20091009091538.GA4154@elte.hu> <1255097287.2934.21.camel@localhost.localdomain> 
-	<20091012130652.GB25464@elte.hu> <1255357148.2850.91.camel@localhost.localdomain> 
-	<20091012145453.GD4565@elte.hu> <20091012150911.GB1656@suse.de> 
-	<20091012154244.GA13323@elte.hu> <20091012232429.GA24254@suse.de>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Tue, 13 Oct 2009 11:08:15 -0700
-Message-ID: <43e72e890910131108m789110b4hc35e25601ad67bb7@mail.gmail.com>
-Subject: Re: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for 
-	2.6.32-rc3)
-To: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, James Bottomley <James.Bottomley@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jing Huang <huangj@brocade.com>, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091013032405.GA20405@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 4:24 PM, Greg KH <gregkh@suse.de> wrote:
-> On Mon, Oct 12, 2009 at 05:42:44PM +0200, Ingo Molnar wrote:
->> Hm, i think i even gave drivers/staging/ its name?
->
-> Yes you did, and I appreciate it :)
->
->> > [...] It seems that I'm the only one that has the ability to drop
->> > drivers out of the kernel tree, which is a funny situation :)
->>
->> You are the only one who has the ability to send a warning shot towards
->> drivers _without hurting users_, and by moving it into the focus of a
->> team of cleanup oriented developers.
->>
->> I think that's an important distinction ;-)
->
-> Good point.
->
->> > In thinking about this a lot more, I don't really mind it.  If people
->> > want to push stuff out of "real" places in the kernel, into
->> > drivers/staging/ and give the original authors and maintainers notice
->> > about what is going on, _and_ provide a TODO file for what needs to
->> > happen to get the code back into the main portion of the kernel tree,
->> > then I'll be happy to help out with this and manage it.
->> >
->> > I think a 6-9 month window (basically 3 kernel releases) should be
->> > sufficient time to have a driver that has been in drivers/staging/ be
->> > cleaned up enough to move back into the main kernel tree.  If not, it
->> > could be easily dropped.
->> >
->> > Any objections to this?
->>
->> Sounds excellent to me!
->
-> Great, I'll await the patches to move stuff to drivers/staging/ now.
->
-> Wireless developers, warm up your editors :)
+On Tue 13-10-09 11:24:05, Wu Fengguang wrote:
+> On Tue, Oct 13, 2009 at 05:18:38AM +0800, Jan Kara wrote:
+> > On Sun 11-10-09 05:33:39, Wu Fengguang wrote:
+> > > On Fri, Oct 09, 2009 at 11:12:31PM +0800, Jan Kara wrote:
+> > > > > +			/* don't wait if we've done enough */
+> > > > > +			if (pages_written >= write_chunk)
+> > > > > +				break;
+> > > > >  		}
+> > > > > -
+> > > > > -		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+> > > > > -			break;
+> > > > > -		if (pages_written >= write_chunk)
+> > > > > -			break;		/* We've done our duty */
+> > > > > -
+> > > >   Here, we had an opportunity to break from the loop even if we didn't
+> > > > manage to write everything (for example because per-bdi thread managed to
+> > > > write enough or because enough IO has completed while we were trying to
+> > > > write). After the patch, we will sleep. IMHO that's not good...
+> > > 
+> > > Note that the pages_written check is moved several lines up in the patch :)
+> > > 
+> > > >   I'd think that if we did all that work in writeback_inodes_wbc we could
+> > > > spend the effort on regetting and rechecking the stats...
+> > > 
+> > > Yes maybe. I didn't care it because the later throttle queue patch totally
+> > > removed the loop and hence to need to reget the stats :)
+> >   Yes, since the loop gets removed in the end, this does not matter. You
+> > are right.
+> 
+> You are right too :) I followed you and Peter's advice to do the loop
+> and the recheck of stats as follows:
+> 
+> static void balance_dirty_pages(struct address_space *mapping,
+> 				unsigned long write_chunk)
+> {
+> 	long nr_reclaimable, bdi_nr_reclaimable;
+> 	long nr_writeback, bdi_nr_writeback;
+> 	unsigned long background_thresh;
+> 	unsigned long dirty_thresh;
+> 	unsigned long bdi_thresh;
+> 	int dirty_exceeded;
+> 	struct backing_dev_info *bdi = mapping->backing_dev_info;
+> 
+> 	/*
+> 	 * If sync() is in progress, curb the to-be-synced inodes regardless
+> 	 * of dirty limits, so that a fast dirtier won't livelock the sync.
+> 	 */
+> 	if (unlikely(bdi->sync_time &&
+> 		     S_ISREG(mapping->host->i_mode) &&
+> 		     time_after_eq(bdi->sync_time,
+> 				   mapping->host->dirtied_when))) {
+> 		write_chunk *= 2;
+> 		bdi_writeback_wait(bdi, write_chunk);
+> 	}
+> 
+> 	for (;;) {
+> 		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+> 				 global_page_state(NR_UNSTABLE_NFS);
+> 		nr_writeback = global_page_state(NR_WRITEBACK) +
+> 			       global_page_state(NR_WRITEBACK_TEMP);
+> 
+> 		global_dirty_thresh(&background_thresh, &dirty_thresh);
+> 
+> 		/*
+> 		 * Throttle it only when the background writeback cannot
+> 		 * catch-up. This avoids (excessively) small writeouts
+> 		 * when the bdi limits are ramping up.
+> 		 */
+> 		if (nr_reclaimable + nr_writeback <
+> 		    (background_thresh + dirty_thresh) / 2)
+> 			break;
+> 
+> 		bdi_thresh = bdi_dirty_thresh(bdi, dirty_thresh);
+> 
+> 		/*
+> 		 * In order to avoid the stacked BDI deadlock we need
+> 		 * to ensure we accurately count the 'dirty' pages when
+> 		 * the threshold is low.
+> 		 *
+> 		 * Otherwise it would be possible to get thresh+n pages
+> 		 * reported dirty, even though there are thresh-m pages
+> 		 * actually dirty; with m+n sitting in the percpu
+> 		 * deltas.
+> 		 */
+> 		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
+> 			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
+> 			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
+> 		} else {
+> 			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+> 			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+> 		}
+> 
+> 		/*
+> 		 * The bdi thresh is somehow "soft" limit derived from the
+> 		 * global "hard" limit. The former helps to prevent heavy IO
+> 		 * bdi or process from holding back light ones; The latter is
+> 		 * the last resort safeguard.
+> 		 */
+> 		dirty_exceeded =
+> 			(bdi_nr_reclaimable + bdi_nr_writeback >= bdi_thresh)
+> 			|| (nr_reclaimable + nr_writeback >= dirty_thresh);
+> 
+> 		if (!dirty_exceeded)
+> 			break;
+> 
+> 		bdi->dirty_exceed_time = jiffies;
+> 
+> 		bdi_writeback_wait(bdi, write_chunk);
+  Hmm, probably you've discussed this in some other email but why do we
+cycle in this loop until we get below dirty limit? We used to leave the
+loop after writing write_chunk... So the time we spend in
+balance_dirty_pages() is no longer limited, right?
 
-OK -- prism54 seems like a good candidate, instead of removing it
-completely as I originally outlined on the feature removal schedule.
-Do we have a file to give notices to move drivers to staging because
-they are old as with the feature removal schedule? The more visible
-these things become the better it is for users.
+> 	}
+> 
+> 	/*
+> 	 * In laptop mode, we wait until hitting the higher threshold before
+> 	 * starting background writeout, and then write out all the way down
+> 	 * to the lower threshold.  So slow writers cause minimal disk activity.
+> 	 *
+> 	 * In normal mode, we start background writeout at the lower
+> 	 * background_thresh, to keep the amount of dirty memory low.
+> 	 */
+> 	if (!laptop_mode && (nr_reclaimable > background_thresh) &&
+> 	    can_submit_background_writeback(bdi))
+> 		bdi_start_writeback(bdi, NULL, WB_FOR_BACKGROUND);
+> }
+> 
+> > > > >  		schedule_timeout_interruptible(pause);
+> > > > >
+> > > > >  		/*
+> > > > > @@ -577,8 +547,7 @@ static void balance_dirty_pages(struct a
+> > > > >  			pause = HZ / 10;
+> > > > >  	}
+> > > > >
+> > > > > -	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
+> > > > > -			bdi->dirty_exceeded)
+> > > > > +	if (!dirty_exceeded && bdi->dirty_exceeded)
+> > > > >  		bdi->dirty_exceeded = 0;
+> > > >   Here we fail to clear dirty_exceeded if we are over global dirty limit
+> > > > but not over per-bdi dirty limit...
+> > > 
+> > > You must be mistaken: dirty_exceeded = (over bdi limit || over global limit),
+> > > so !dirty_exceeded = (!over bdi limit && !over global limit).
+> >   Exactly. Previously, the check was:
+> > if (!over bdi limit)
+> >   bdi->dirty_exceeded = 0;
+> > 
+> >   Now it is
+> > if (!over bdi limit && !over global limit)
+> >   bdi->dirty_exceeded = 0;
+> > 
+> >   That's clearly not equivalent which is what I was trying to point out.
+> > But looking at where dirty_exceeded is used, your new way is probably more
+> > useful. It's just a bit counterintuitive that bdi->dirty_exceeded is set
+> > even if the per-bdi limit is not exceeded...
+> 
+> Yeah good point. Since the per-bdi limits are more about "soft" limits
+> which are derived from the global "hard" limit, the code makes sense
+> with some comments and updated changelog :)
+> 
+>         This patch slightly changes behavior by replacing clip_bdi_dirty_limit()
+>         with the explicit check (nr_reclaimable + nr_writeback >= dirty_thresh)
+>         to avoid exceeding the dirty limit. Since the bdi dirty limit is mostly
+>         accurate we don't need to do routinely clip. A simple dirty limit check
+>         would be enough.
+> 
+>         The check is necessary because, in principle we should throttle
+>         everything calling balance_dirty_pages() when we're over the total
+>         limit, as said by Peter.
+> 
+>         We now set and clear dirty_exceeded not only based on bdi dirty limits,
+>         but also on the global dirty limits. This is a bit counterintuitive, but
+>         the global limits are the ultimate goal and shall be always imposed.
+> 
+>         We may now start background writeback work based on outdated conditions.
+>         That's safe because the bdi flush thread will (and have to) double check
+>         the states. It reduces overall overheads because the test based on old
+>         states still have good chance to be right.
+  The new description is good, thanks!
 
-  Luis
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
