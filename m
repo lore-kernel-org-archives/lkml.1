@@ -1,68 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbZJMLxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759446AbZJMMAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759596AbZJMLxr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 07:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759566AbZJMLxq
+	id S1759446AbZJMMAq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 08:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbZJMMAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 07:53:46 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58041 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759551AbZJMLxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 07:53:45 -0400
-Date: Tue, 13 Oct 2009 22:53:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next: manual merge of the i7core_edac tree with Linus'
- tree
-Message-Id: <20091013225304.211dc64e.sfr@canb.auug.org.au>
-In-Reply-To: <1209036982.100421255434636304.JavaMail.root@zmail05.collab.prod.int.phx2.redhat.com>
-References: <20091012142328.710881fe.sfr@canb.auug.org.au>
-	<1209036982.100421255434636304.JavaMail.root@zmail05.collab.prod.int.phx2.redhat.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+	Tue, 13 Oct 2009 08:00:46 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:40573 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753089AbZJMMAp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 08:00:45 -0400
+Subject: Re: [2.6.32-rc3 kmemleak] WARNING: at
+	kernel/lockdep.c:3161check_flags+0xbe/0x180()
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+In-Reply-To: <200910130317.n9D3HTOH055400@www262.sakura.ne.jp>
+References: <200910050315.n953FCD9030264@www262.sakura.ne.jp>
+	 <20091007155142.GB6743@linux.vnet.ibm.com>
+	 <200910082134.EJD35962.HLFSQVFOOFMJOt@I-love.SAKURA.ne.jp>
+	 <1255005738.6715.6.camel@pc1117.cambridge.arm.com>
+	 <200910130317.n9D3HTOH055400@www262.sakura.ne.jp>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 13 Oct 2009 13:00:01 +0100
+Message-Id: <1255435201.9987.22.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__13_Oct_2009_22_53_04_+1100_Fr+AjoaMiwNyZb+2"
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Oct 2009 12:00:02.0760 (UTC) FILETIME=[B23C0480:01CA4BFC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__13_Oct_2009_22_53_04_+1100_Fr+AjoaMiwNyZb+2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-10-13 at 12:17 +0900, Tetsuo Handa wrote:
+> Catalin Marinas wrote:
+> > On Thu, 2009-10-08 at 21:34 +0900, Tetsuo Handa wrote:
+> > > If the stack dump is correct, this error indicates circular function calls.
+> > > We need to find the location which triggers circular memory allocation.
+> > > Maybe just checking for NULL is not sufficient.
+> > 
+> > The circular function call is expected, nothing to do with the NULL
+> > checking. You get callbacks from the slab allocator into kmemleak which
+> > also allocates memory (but this latter call isn't traced - similar
+> > behaviour in kmemtrace).
+> 
+> So, something is preventing kmemleak from being traced, isn't it?
 
-Hi Mauro,
+The SLAB_NOLEAKTRACE flag is preventing kmemleak from tracing itself
+since it needs to do some memory allocations for its internal data.
 
-On Tue, 13 Oct 2009 07:50:36 -0400 (EDT) Mauro Carvalho Chehab <mchehab@red=
-hat.com> wrote:
->
-> Thanks for letting me know. I've rebased it fixing the merge conflict. Fo=
-r now,
-> I just removed the call to edac_mce_parse() for Uncorrected Errors, since=
- I'll
-> eventually replace that part of the code with something better.
->=20
-> You should now be able to merge it without merging conflicts.
+When kmemleak calls the slab allocator, it uses the GFP_KERNEL|
+GFP_ATOMIC flags passed by the original alloc caller to the slab
+allocator. Is there any other flag that would need to be preserved? If
+the alloc caller doesn't use GFP_ATOMIC when it should, neither does
+kmemleak so you would also get a warning in kmemleak.
 
-OK, thanks.
+But in this particular case, you say that disabling kmemleak no longer
+shows this warning.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> I tried 2.6.32-rc4 , but the error is not yet fixed. How can I help you?
+> 
+> [    0.000000] Linux version 2.6.32-rc4 (root@tomoyo) (gcc version 3.3.5 (Debian 1:3.3.5-13)) #2 SMP Tue Oct 13 11:10:53 JST 2009
+> (...snipped...)
+> [    0.000000] -------------------------------------------------------
+> [    0.000000] Good, all 218 testcases passed! |
+> [    0.000000] ---------------------------------
+> [    0.000000] ------------[ cut here ]------------
+> [    0.000000] WARNING: at kernel/lockdep.c:3161 check_flags+0xbe/0x180()
+> [    0.000000] Hardware name: VMware Virtual Platform
+> [    0.000000] Modules linked in:
+> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.32-rc4 #2
+> [    0.000000] Call Trace:
+> [    0.000000]  [<c10417dd>] ? printk+0x1d/0x30
+> [    0.000000]  [<c10703ae>] ? check_flags+0xbe/0x180
+> [    0.000000]  [<c1040d91>] warn_slowpath_common+0x81/0xa0
+> [    0.000000]  [<c10703ae>] ? check_flags+0xbe/0x180
+> [    0.000000]  [<c1040e0a>] warn_slowpath_null+0x1a/0x30
+> [    0.000000]  [<c10703ae>] check_flags+0xbe/0x180
+> [    0.000000]  [<c106e23e>] lockdep_trace_alloc+0x2e/0x60
+> [    0.000000]  [<c10cfded>] kmem_cache_alloc+0x2d/0x1d0
+> [    0.000000]  [<c106e00b>] ? trace_hardirqs_off+0xb/0x10
+> [    0.000000]  [<c10ceeaf>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10ceeaf>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf2ee>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf90b>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10cff6a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd8c8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3879>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3879>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd8b8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10cdf8a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321613>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c10ceeaf>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cff45>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c10ceeaf>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10ceeaf>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf2ee>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf90b>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10cff6a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd8c8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3879>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3879>] create_object+0x29/0x220
 
---Signature=_Tue__13_Oct_2009_22_53_04_+1100_Fr+AjoaMiwNyZb+2
-Content-Type: application/pgp-signature
+This is the "DEBUG_LOCKS_WARN_ON(current->softirqs_enabled)" warning.
+I'm not sure why this happens but from the trace it seems that kmemleak
+is being called recursively via alloc_slabmgmt() which is caused by
+kmem_cache_alloc() called from create_object() in kmemleak.c.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Could you send me your .config file and I'll try to reproduce this as
+well?
 
-iEYEARECAAYFAkrUaiAACgkQjjKRsyhoI8ycIQCgnvYj6diFZAKYRQt1NvUuYbdr
-EnoAoIOnW+cZWH1+XrR/qAdmJseQDAo9
-=R4/V
------END PGP SIGNATURE-----
+Thanks.
 
---Signature=_Tue__13_Oct_2009_22_53_04_+1100_Fr+AjoaMiwNyZb+2--
+-- 
+Catalin
+
