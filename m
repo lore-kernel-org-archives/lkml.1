@@ -1,47 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759693AbZJMMgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbZJMKiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759693AbZJMMgM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 08:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759648AbZJMMgL
+	id S1759438AbZJMKiE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 06:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759424AbZJMKiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 08:36:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42133 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759440AbZJMMgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 08:36:11 -0400
-Message-ID: <4AD473F9.7090606@kernel.org>
-Date: Tue, 13 Oct 2009 21:35:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Alexander Huemer <alexander.huemer@sbg.ac.at>
-CC: Jean Delvare <jdelvare@suse.de>, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: 2.6.{30,31} x86_64 ahci problem - irq 23: nobody cared
-References: <4ABBB8C2.2080901@sbg.ac.at> <200910101513.51320.elendil@planet.nl> <4AD2DFA4.9000602@kernel.org> <200910121148.16439.elendil@planet.nl> <4AD2FC60.8080705@kernel.org> <4AD2FD10.2010800@sbg.ac.at> <4AD2FFC7.5010402@kernel.org> <4AD300B5.6080102@sbg.ac.at> <4AD34554.3050701@sbg.ac.at> <4AD3E348.5030508@kernel.org> <4AD422F2.4080308@sbg.ac.at>
-In-Reply-To: <4AD422F2.4080308@sbg.ac.at>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 13 Oct 2009 06:38:03 -0400
+Received: from mtagate5.de.ibm.com ([195.212.17.165]:41793 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758483AbZJMKiB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 06:38:01 -0400
+Subject: Re: [patch 13/28] s390: Remove BKL from prng
+From: Jan Glauber <jang@linux.vnet.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
+       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+In-Reply-To: <20091010153349.601625576@linutronix.de>
+References: <20091010153314.827301943@linutronix.de>
+	 <20091010153349.601625576@linutronix.de>
+Content-Type: text/plain
+Date: Tue, 13 Oct 2009 12:36:14 +0000
+Message-Id: <1255437374.10239.545.camel@bender>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Oct 2009 12:35:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Huemer wrote:
-> i compiled gcc in a loop over night, 14 times. no error.
-> it really seams i2c_i801 was the cause...
-> unfortunately i still don't know how i can extract the part of the gcc
-> compilation process that causes the error on an affected kernel.
-> that would enable me to create a simple test program.
+On Sat, 2009-10-10 at 15:36 +0000, Thomas Gleixner wrote:
+> einfaches Textdokument attachment (s390-remove-bkl-from-prng.patch)
+> cycle_kernel_lock() was added during the big BKL pushdown. It should
+> ensure the serializiation against driver init code. In this case there
+> is nothing to serialize. Remove it.
 
-Given that i2c is used for temperature monitoring, I think it is not
-triggered by any single step of the compiling but rather by the
-accumulated heat load during compilation.  Let's wait for Jean to
-chime in.  :-)
+Looks good.
+Acked-by: Jan Glauber <jang.linux.vnet.ibm.com>
 
-Thanks.
+-- Jan
 
--- 
-tejun
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+>  arch/s390/crypto/prng.c |    2 --
+>  1 file changed, 2 deletions(-)
+> 
+> Index: linux-2.6-tip/arch/s390/crypto/prng.c
+> ===================================================================
+> --- linux-2.6-tip.orig/arch/s390/crypto/prng.c
+> +++ linux-2.6-tip/arch/s390/crypto/prng.c
+> @@ -6,7 +6,6 @@
+>  #include <linux/fs.h>
+>  #include <linux/init.h>
+>  #include <linux/kernel.h>
+> -#include <linux/smp_lock.h>
+>  #include <linux/miscdevice.h>
+>  #include <linux/module.h>
+>  #include <linux/moduleparam.h>
+> @@ -49,7 +48,6 @@ static unsigned char parm_block[32] = {
+>  
+>  static int prng_open(struct inode *inode, struct file *file)
+>  {
+> -	cycle_kernel_lock();
+>  	return nonseekable_open(inode, file);
+>  }
+>  
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
