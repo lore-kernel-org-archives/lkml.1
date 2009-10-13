@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbZJMDe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbZJMDha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757943AbZJMDe1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 23:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZJMDe0
+	id S1758839AbZJMDha (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 23:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZJMDh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 23:34:26 -0400
-Received: from grsecurity.net ([209.9.226.146]:54625 "EHLO grsecurity.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751745AbZJMDe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 23:34:26 -0400
-Date: Mon, 12 Oct 2009 23:33:40 -0400
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH] ia64: Don't call SAL < 3.2 for extended config space
-Message-ID: <20091013033340.GA8673@grsecurity.net>
-References: <20091011074531.GA12357@grsecurity.net> <4AD1AE0D.1030007@kernel.org> <4AD24766.7050205@kernel.org> <20091011213245.GC18513@grsecurity.net> <20091011231039.GB7545@parisc-linux.org> <20091012135628.GA310@grsecurity.net> <20091012142430.GE7545@parisc-linux.org>
+	Mon, 12 Oct 2009 23:37:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43062 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752605AbZJMDh2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 23:37:28 -0400
+Date: Mon, 12 Oct 2009 20:35:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Oleg Nesterov <onestero@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [resend][PATCH v2] mlock() doesn't wait to finish
+ lru_add_drain_all()
+Message-Id: <20091012203555.405bd9e7.akpm@linux-foundation.org>
+In-Reply-To: <20091013110409.C758.A69D9226@jp.fujitsu.com>
+References: <20091013090347.C752.A69D9226@jp.fujitsu.com>
+	<20091012185139.75c13648.akpm@linux-foundation.org>
+	<20091013110409.C758.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
-Content-Disposition: inline
-In-Reply-To: <20091012142430.GE7545@parisc-linux.org>
-User-Agent: Mutt/1.5.9i
-From: spender@grsecurity.net (Brad Spengler)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 13 Oct 2009 12:18:17 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
---LZvS9be/3tNcYl/X
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> The problem is in __lru_cache_add().
+> 
+> ============================================================
+> void __lru_cache_add(struct page *page, enum lru_list lru)
+> {
+>         struct pagevec *pvec = &get_cpu_var(lru_add_pvecs)[lru];
+> 
+>         page_cache_get(page);
+>         if (!pagevec_add(pvec, page))
+>                 ____pagevec_lru_add(pvec, lru);
+>         put_cpu_var(lru_add_pvecs);
+> }
+> ============================================================
+> 
+> current typical scenario is
+> 1. preempt disable
+> 2. assign lru_add_pvec
+> 3. page_cache_get()
+> 4. pvec->pages[pvec->nr++] = page;
+> 5. preempt enable
+> 
+> but the preempt disabling assume drain_cpu_pagevecs() run on process context.
+> we need to convert it with irq_disabling.
 
-> +	} else if (sal_revision >= SAL_VERSION_CODE(3,2))
+Nope, preempt_disable()/enable() can be performed in hard IRQ context. 
+I see nothing in __lru_cache_add() which would cause problems when run
+from hard IRQ.
 
-Looks like a missing ending { here ^
-> +	} else if (sal_revision >= SAL_VERSION_CODE(3,2))
-and here ^
+Apart from latency, of course.  Doing a full smp_call_function() in
+lru_add_drain_all() might get expensive if it's ever called with any
+great frequency.
 
-I'll test it to confirm it fixes the problem.
+A smart implementation might take a peek at other cpu's queues and omit
+the cross-CPU call if the queue is empty, for example..
 
--Brad
-
---LZvS9be/3tNcYl/X
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFK0/UTmHm2SUJF1GoRAjlAAJ4yWDmVByCLxU3gvpmeg2neYWGqjACgh3Ow
-nlIhAteyiSJAVq8aDb/6om4=
-=e9tL
------END PGP SIGNATURE-----
-
---LZvS9be/3tNcYl/X--
