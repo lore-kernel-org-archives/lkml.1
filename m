@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933730AbZJMOvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbZJMOtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933730AbZJMOvE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759852AbZJMOvD
+	id S1760090AbZJMOtv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759670AbZJMOts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:51:03 -0400
-Received: from lennier.cc.vt.edu ([198.82.162.213]:34031 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760051AbZJMOvB (ORCPT
+	Tue, 13 Oct 2009 10:49:48 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45341 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759579AbZJMOtr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:51:01 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: vatsa@in.ibm.com, Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
-In-Reply-To: Your message of "Tue, 13 Oct 2009 15:39:17 +0400."
-             <4AD466E5.4010206@openvz.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20090930124919.GA19951@in.ibm.com> <4AC35EDD.1080902@openvz.org> <20090930142537.GJ19951@in.ibm.com> <20090930143953.GA2014@in.ibm.com>
-            <4AD466E5.4010206@openvz.org>
+	Tue, 13 Oct 2009 10:49:47 -0400
+Date: Tue, 13 Oct 2009 15:49:43 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Siarhei Liakh <sliakh.lkml@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>, Aristeu Rozanski <aris@redhat.com>
+Subject: Re: [PATCH V5] x86: NX protection for kernel data
+Message-ID: <20091013154943.1e1d3c3f@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091013072907.1daeba73@infradead.org>
+References: <817ecb6f0910121803p52a4049ep4a712545d28bba76@mail.gmail.com>
+	<20091012213229.11898c12@infradead.org>
+	<20091013060312.GA3215@elte.hu>
+	<817ecb6f0910130435q56fcbf63r82fae9b94f3eb199@mail.gmail.com>
+	<20091013070722.6e27b25e@infradead.org>
+	<20091013141527.GA7053@elte.hu>
+	<20091013072907.1daeba73@infradead.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1255445366_3097P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Tue, 13 Oct 2009 10:49:26 -0400
-Message-ID: <4562.1255445366@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.14.107 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020208.4AD49377.023E,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1255445366_3097P
-Content-Type: text/plain; charset=us-ascii
+> I'd be surprised if anything ever did; this is the *kernel* mapping of
+> the first megabyte, not some userspace mapping....
 
-On Tue, 13 Oct 2009 15:39:17 +0400, Pavel Emelyanov said:
+APM, BIOS32, EDD, PnPBIOS ..
 
-> 3) virtual cpu power in M/GHz - I don't agree with Balbir that
->    this is difficult for administrator. This is better than two
->    numbers and better that the percentage, since the amount of
->    cpu time got by a container will not change after migrating to
->    a more powerful CPU.
-
-2Gz worth of throughput on an old Xeon is probably not the same as
-half of a 4Gz i7.
-
---==_Exmh_1255445366_3097P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFK1JN2cC3lWbTT17ARAtIQAJ9xU3WzoqTLQyphm1RjQq4qM/7WvgCfcyQe
-+SG8IvdBESjJJrOvOTyfIvk=
-=FTqX
------END PGP SIGNATURE-----
-
---==_Exmh_1255445366_3097P--
-
+However except for APM (which isn't generally needed on NX capable
+devices or found on them) none of them are usually on critical paths
+because EDD is just grovelling around sort of stuff, and BIOS32 isn't
+generally used by the kernel anyway so could probably cope with flipping
+the permissions on the low 1 MB each call.
