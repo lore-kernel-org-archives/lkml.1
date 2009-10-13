@@ -1,72 +1,483 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759973AbZJMOQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbZJMORM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759973AbZJMOQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZJMOQ1
+	id S1759984AbZJMORM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759763AbZJMORL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:16:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53446 "EHLO mx3.mail.elte.hu"
+	Tue, 13 Oct 2009 10:17:11 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:52418 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750730AbZJMOQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:16:26 -0400
-Date: Tue, 13 Oct 2009 16:15:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Howells <dhowells@redhat.com>, Aristeu Rozanski <aris@redhat.com>
-Subject: Re: [PATCH V5] x86: NX protection for kernel data
-Message-ID: <20091013141527.GA7053@elte.hu>
-References: <817ecb6f0910121803p52a4049ep4a712545d28bba76@mail.gmail.com> <20091012213229.11898c12@infradead.org> <20091013060312.GA3215@elte.hu> <817ecb6f0910130435q56fcbf63r82fae9b94f3eb199@mail.gmail.com> <20091013070722.6e27b25e@infradead.org>
+	id S1758124AbZJMORJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 10:17:09 -0400
+Date: Tue, 13 Oct 2009 11:16:29 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
+Subject: [PATCH 1/1 v2] perf tools: Move threads & last_match to threads.c
+Message-ID: <20091013141629.GD21809@ghostprotocols.net>
+References: <1255279254-9956-1-git-send-email-acme@redhat.com> <20091012091134.GC24031@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091013070722.6e27b25e@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: 
+In-Reply-To: <20091012091134.GC24031@elte.hu>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Em Mon, Oct 12, 2009 at 11:11:34AM +0200, Ingo Molnar escreveu:
+> hm, mind refreshing this against latest -tip? It doesnt apply anymore:
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+Sure:
 
-> On Tue, 13 Oct 2009 07:35:28 -0400
-> Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
-> 
-> > ---[ Kernel Mapping ]---
-> >  0xc0000000-0xc0100000           1M     RW             GLB x  pte
-> > -0xc0100000-0xc048d000        3636K     ro             GLB x  pte
-> > -0xc048d000-0xc04d0000         268K     RW             GLB x  pte
-> > -0xc04d0000-0xc04d2000           8K     RW             GLB NX pte
-> > -0xc04d2000-0xc04d3000           4K     RW             GLB x  pte
-> > -0xc04d3000-0xc0531000         376K     RW             GLB NX pte
-> > -0xc0531000-0xc0600000         828K     RW             GLB x  pte
-> > +0xc0100000-0xc0381000        2564K     ro             GLB x  pte
-> > +0xc0381000-0xc048d000        1072K     ro             GLB NX pte
-> > +0xc048d000-0xc0600000        1484K     RW             GLB NX pte
-> >  0xc0600000-0xf7800000         882M     RW         PSE GLB NX pmd
-> >  0xf7800000-0xf79fe000        2040K     RW             GLB NX pte
-> >  0xf79fe000-0xf7a00000           8K                           pte
-> > ===============================================
-> > 
-> 
-> looks great to me; the result is 
-> * kernel is ro + x
-> * rodata is ro + NX
-> * data is RW + NX
->
-> (and there is no "RW + x", other than the first megabyte... hmm. maybe 
-> we need to look at that as well at some point)
+>From 4a1ab396733881fbd7b89693c6beeb40d1ae67ed Mon Sep 17 00:00:00 2001
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Date: Tue, 13 Oct 2009 09:14:46 -0200
+Subject: [PATCH 1/1] perf tools: Move threads & last_match to threads.c
 
-Could we cover the first megabyte too please via a (default-disabled) 
-option? Modern Xorg shouldnt mind about that anymore, right?
+This was just being copy'n'pasted all over.
 
-	Ingo
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/builtin-annotate.c |   25 +++++++------------------
+ tools/perf/builtin-report.c   |   26 +++++++-------------------
+ tools/perf/builtin-sched.c    |   30 +++++++++++-------------------
+ tools/perf/builtin-trace.c    |   13 +++----------
+ tools/perf/util/thread.c      |   27 ++++++++++++++-------------
+ tools/perf/util/thread.h      |    8 +++-----
+ 6 files changed, 45 insertions(+), 84 deletions(-)
+
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 8c84320..3fe0de0 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -37,10 +37,6 @@ static int		print_line;
+ static unsigned long	page_size;
+ static unsigned long	mmap_window = 32;
+ 
+-static struct rb_root	threads;
+-static struct thread	*last_match;
+-
+-
+ struct sym_ext {
+ 	struct rb_node	node;
+ 	double		percent;
+@@ -96,12 +92,10 @@ static int
+ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+ 	char level;
+-	struct thread *thread;
+ 	u64 ip = event->ip.ip;
+ 	struct map *map = NULL;
+ 	struct symbol *sym = NULL;
+-
+-	thread = threads__findnew(event->ip.pid, &threads, &last_match);
++	struct thread *thread = threads__findnew(event->ip.pid);
+ 
+ 	dump_printf("%p [%p]: PERF_EVENT (IP, %d): %d: %p\n",
+ 		(void *)(offset + head),
+@@ -166,10 +160,8 @@ got_map:
+ static int
+ process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	struct thread *thread;
+ 	struct map *map = map__new(&event->mmap, NULL, 0);
+-
+-	thread = threads__findnew(event->mmap.pid, &threads, &last_match);
++	struct thread *thread = threads__findnew(event->mmap.pid);
+ 
+ 	dump_printf("%p [%p]: PERF_RECORD_MMAP %d: [%p(%p) @ %p]: %s\n",
+ 		(void *)(offset + head),
+@@ -194,9 +186,8 @@ process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
+ static int
+ process_comm_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	struct thread *thread;
++	struct thread *thread = threads__findnew(event->comm.pid);
+ 
+-	thread = threads__findnew(event->comm.pid, &threads, &last_match);
+ 	dump_printf("%p [%p]: PERF_RECORD_COMM: %s:%d\n",
+ 		(void *)(offset + head),
+ 		(void *)(long)(event->header.size),
+@@ -215,11 +206,9 @@ process_comm_event(event_t *event, unsigned long offset, unsigned long head)
+ static int
+ process_fork_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	struct thread *thread;
+-	struct thread *parent;
++	struct thread *thread = threads__findnew(event->fork.pid);
++	struct thread *parent = threads__findnew(event->fork.ppid);
+ 
+-	thread = threads__findnew(event->fork.pid, &threads, &last_match);
+-	parent = threads__findnew(event->fork.ppid, &threads, &last_match);
+ 	dump_printf("%p [%p]: PERF_RECORD_FORK: %d:%d\n",
+ 		(void *)(offset + head),
+ 		(void *)(long)(event->header.size),
+@@ -558,7 +547,7 @@ static int __cmd_annotate(void)
+ 	uint32_t size;
+ 	char *buf;
+ 
+-	register_idle_thread(&threads, &last_match);
++	register_idle_thread();
+ 
+ 	input = open(input_name, O_RDONLY);
+ 	if (input < 0) {
+@@ -659,7 +648,7 @@ more:
+ 		return 0;
+ 
+ 	if (verbose > 3)
+-		threads__fprintf(stdout, &threads);
++		threads__fprintf(stdout);
+ 
+ 	if (verbose > 2)
+ 		dsos__fprintf(stdout);
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index f57a23b..015c797 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -55,9 +55,6 @@ static char		callchain_default_opt[] = "fractal,0.5";
+ static char		*cwd;
+ static int		cwdlen;
+ 
+-static struct rb_root	threads;
+-static struct thread	*last_match;
+-
+ static struct perf_header *header;
+ 
+ static u64		sample_type;
+@@ -593,15 +590,13 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+ 	char level;
+ 	struct symbol *sym = NULL;
+-	struct thread *thread;
+ 	u64 ip = event->ip.ip;
+ 	u64 period = 1;
+ 	struct map *map = NULL;
+ 	void *more_data = event->ip.__more_data;
+ 	struct ip_callchain *chain = NULL;
+ 	int cpumode;
+-
+-	thread = threads__findnew(event->ip.pid, &threads, &last_match);
++	struct thread *thread = threads__findnew(event->ip.pid);
+ 
+ 	if (sample_type & PERF_SAMPLE_PERIOD) {
+ 		period = *(u64 *)more_data;
+@@ -685,10 +680,8 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ static int
+ process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	struct thread *thread;
+ 	struct map *map = map__new(&event->mmap, cwd, cwdlen);
+-
+-	thread = threads__findnew(event->mmap.pid, &threads, &last_match);
++	struct thread *thread = threads__findnew(event->mmap.pid);
+ 
+ 	dump_printf("%p [%p]: PERF_RECORD_MMAP %d/%d: [%p(%p) @ %p]: %s\n",
+ 		(void *)(offset + head),
+@@ -714,9 +707,7 @@ process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
+ static int
+ process_comm_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	struct thread *thread;
+-
+-	thread = threads__findnew(event->comm.pid, &threads, &last_match);
++	struct thread *thread = threads__findnew(event->comm.pid);
+ 
+ 	dump_printf("%p [%p]: PERF_RECORD_COMM: %s:%d\n",
+ 		(void *)(offset + head),
+@@ -736,11 +727,8 @@ process_comm_event(event_t *event, unsigned long offset, unsigned long head)
+ static int
+ process_task_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	struct thread *thread;
+-	struct thread *parent;
+-
+-	thread = threads__findnew(event->fork.pid, &threads, &last_match);
+-	parent = threads__findnew(event->fork.ppid, &threads, &last_match);
++	struct thread *thread = threads__findnew(event->fork.pid);
++	struct thread *parent = threads__findnew(event->fork.ppid);
+ 
+ 	dump_printf("%p [%p]: PERF_RECORD_%s: (%d:%d):(%d:%d)\n",
+ 		(void *)(offset + head),
+@@ -857,7 +845,7 @@ static int __cmd_report(void)
+ 	struct thread *idle;
+ 	int ret;
+ 
+-	idle = register_idle_thread(&threads, &last_match);
++	idle = register_idle_thread();
+ 	thread__comm_adjust(idle);
+ 
+ 	if (show_threads)
+@@ -881,7 +869,7 @@ static int __cmd_report(void)
+ 		return 0;
+ 
+ 	if (verbose > 3)
+-		threads__fprintf(stdout, &threads);
++		threads__fprintf(stdout);
+ 
+ 	if (verbose > 2)
+ 		dsos__fprintf(stdout);
+diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
+index 62585b2..c9c6856 100644
+--- a/tools/perf/builtin-sched.c
++++ b/tools/perf/builtin-sched.c
+@@ -24,9 +24,6 @@ static char			const *input_name = "perf.data";
+ 
+ static unsigned long		total_comm = 0;
+ 
+-static struct rb_root		threads;
+-static struct thread		*last_match;
+-
+ static struct perf_header	*header;
+ static u64			sample_type;
+ 
+@@ -641,9 +638,7 @@ static void test_calibrations(void)
+ static int
+ process_comm_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	struct thread *thread;
+-
+-	thread = threads__findnew(event->comm.tid, &threads, &last_match);
++	struct thread *thread = threads__findnew(event->comm.tid);
+ 
+ 	dump_printf("%p [%p]: perf_event_comm: %s:%d\n",
+ 		(void *)(offset + head),
+@@ -1086,8 +1081,8 @@ latency_switch_event(struct trace_switch_event *switch_event,
+ 		die("hm, delta: %Ld < 0 ?\n", delta);
+ 
+ 
+-	sched_out = threads__findnew(switch_event->prev_pid, &threads, &last_match);
+-	sched_in = threads__findnew(switch_event->next_pid, &threads, &last_match);
++	sched_out = threads__findnew(switch_event->prev_pid);
++	sched_in = threads__findnew(switch_event->next_pid);
+ 
+ 	out_events = thread_atoms_search(&atom_root, sched_out, &cmp_pid);
+ 	if (!out_events) {
+@@ -1120,13 +1115,10 @@ latency_runtime_event(struct trace_runtime_event *runtime_event,
+ 		     u64 timestamp,
+ 		     struct thread *this_thread __used)
+ {
+-	struct work_atoms *atoms;
+-	struct thread *thread;
++	struct thread *thread = threads__findnew(runtime_event->pid);
++	struct work_atoms *atoms = thread_atoms_search(&atom_root, thread, &cmp_pid);
+ 
+ 	BUG_ON(cpu >= MAX_CPUS || cpu < 0);
+-
+-	thread = threads__findnew(runtime_event->pid, &threads, &last_match);
+-	atoms = thread_atoms_search(&atom_root, thread, &cmp_pid);
+ 	if (!atoms) {
+ 		thread_atoms_insert(thread);
+ 		atoms = thread_atoms_search(&atom_root, thread, &cmp_pid);
+@@ -1153,7 +1145,7 @@ latency_wakeup_event(struct trace_wakeup_event *wakeup_event,
+ 	if (!wakeup_event->success)
+ 		return;
+ 
+-	wakee = threads__findnew(wakeup_event->pid, &threads, &last_match);
++	wakee = threads__findnew(wakeup_event->pid);
+ 	atoms = thread_atoms_search(&atom_root, wakee, &cmp_pid);
+ 	if (!atoms) {
+ 		thread_atoms_insert(wakee);
+@@ -1202,7 +1194,7 @@ latency_migrate_task_event(struct trace_migrate_task_event *migrate_task_event,
+ 	if (profile_cpu == -1)
+ 		return;
+ 
+-	migrant = threads__findnew(migrate_task_event->pid, &threads, &last_match);
++	migrant = threads__findnew(migrate_task_event->pid);
+ 	atoms = thread_atoms_search(&atom_root, migrant, &cmp_pid);
+ 	if (!atoms) {
+ 		thread_atoms_insert(migrant);
+@@ -1458,8 +1450,8 @@ map_switch_event(struct trace_switch_event *switch_event,
+ 		die("hm, delta: %Ld < 0 ?\n", delta);
+ 
+ 
+-	sched_out = threads__findnew(switch_event->prev_pid, &threads, &last_match);
+-	sched_in = threads__findnew(switch_event->next_pid, &threads, &last_match);
++	sched_out = threads__findnew(switch_event->prev_pid);
++	sched_in = threads__findnew(switch_event->next_pid);
+ 
+ 	curr_thread[this_cpu] = sched_in;
+ 
+@@ -1649,7 +1641,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 	if (!(sample_type & PERF_SAMPLE_RAW))
+ 		return 0;
+ 
+-	thread = threads__findnew(event->ip.pid, &threads, &last_match);
++	thread = threads__findnew(event->ip.pid);
+ 
+ 	if (sample_type & PERF_SAMPLE_TIME) {
+ 		timestamp = *(u64 *)more_data;
+@@ -1725,7 +1717,7 @@ static struct perf_file_handler file_handler = {
+ 
+ static int read_events(void)
+ {
+-	register_idle_thread(&threads, &last_match);
++	register_idle_thread();
+ 	register_perf_file_handler(&file_handler);
+ 
+ 	return mmap_dispatch_perf_file(&header, input_name, 0, 0, &cwdlen, &cwd);
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+index fb3f3c2..ccf867d 100644
+--- a/tools/perf/builtin-trace.c
++++ b/tools/perf/builtin-trace.c
+@@ -19,9 +19,6 @@ static char		const *input_name = "perf.data";
+ static unsigned long	total = 0;
+ static unsigned long	total_comm = 0;
+ 
+-static struct rb_root	threads;
+-static struct thread	*last_match;
+-
+ static struct perf_header *header;
+ static u64		sample_type;
+ 
+@@ -32,9 +29,7 @@ static int		cwdlen;
+ static int
+ process_comm_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	struct thread *thread;
+-
+-	thread = threads__findnew(event->comm.pid, &threads, &last_match);
++	struct thread *thread = threads__findnew(event->comm.pid);
+ 
+ 	dump_printf("%p [%p]: PERF_RECORD_COMM: %s:%d\n",
+ 		(void *)(offset + head),
+@@ -54,14 +49,12 @@ process_comm_event(event_t *event, unsigned long offset, unsigned long head)
+ static int
+ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	struct thread *thread;
+ 	u64 ip = event->ip.ip;
+ 	u64 timestamp = -1;
+ 	u32 cpu = -1;
+ 	u64 period = 1;
+ 	void *more_data = event->ip.__more_data;
+-
+-	thread = threads__findnew(event->ip.pid, &threads, &last_match);
++	struct thread *thread = threads__findnew(event->ip.pid);
+ 
+ 	if (sample_type & PERF_SAMPLE_TIME) {
+ 		timestamp = *(u64 *)more_data;
+@@ -135,7 +128,7 @@ static struct perf_file_handler file_handler = {
+ 
+ static int __cmd_trace(void)
+ {
+-	register_idle_thread(&threads, &last_match);
++	register_idle_thread();
+ 	register_perf_file_handler(&file_handler);
+ 
+ 	return mmap_dispatch_perf_file(&header, input_name, 0, 0, &cwdlen, &cwd);
+diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
+index 3b56aeb..f53fad7 100644
+--- a/tools/perf/util/thread.c
++++ b/tools/perf/util/thread.c
+@@ -6,6 +6,9 @@
+ #include "util.h"
+ #include "debug.h"
+ 
++static struct rb_root threads;
++static struct thread *last_match;
++
+ static struct thread *thread__new(pid_t pid)
+ {
+ 	struct thread *self = calloc(1, sizeof(*self));
+@@ -50,10 +53,9 @@ static size_t thread__fprintf(struct thread *self, FILE *fp)
+ 	return ret;
+ }
+ 
+-struct thread *
+-threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match)
++struct thread *threads__findnew(pid_t pid)
+ {
+-	struct rb_node **p = &threads->rb_node;
++	struct rb_node **p = &threads.rb_node;
+ 	struct rb_node *parent = NULL;
+ 	struct thread *th;
+ 
+@@ -62,15 +64,15 @@ threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match)
+ 	 * so most of the time we dont have to look up
+ 	 * the full rbtree:
+ 	 */
+-	if (*last_match && (*last_match)->pid == pid)
+-		return *last_match;
++	if (last_match && last_match->pid == pid)
++		return last_match;
+ 
+ 	while (*p != NULL) {
+ 		parent = *p;
+ 		th = rb_entry(parent, struct thread, rb_node);
+ 
+ 		if (th->pid == pid) {
+-			*last_match = th;
++			last_match = th;
+ 			return th;
+ 		}
+ 
+@@ -83,17 +85,16 @@ threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match)
+ 	th = thread__new(pid);
+ 	if (th != NULL) {
+ 		rb_link_node(&th->rb_node, parent, p);
+-		rb_insert_color(&th->rb_node, threads);
+-		*last_match = th;
++		rb_insert_color(&th->rb_node, &threads);
++		last_match = th;
+ 	}
+ 
+ 	return th;
+ }
+ 
+-struct thread *
+-register_idle_thread(struct rb_root *threads, struct thread **last_match)
++struct thread *register_idle_thread(void)
+ {
+-	struct thread *thread = threads__findnew(0, threads, last_match);
++	struct thread *thread = threads__findnew(0);
+ 
+ 	if (!thread || thread__set_comm(thread, "swapper")) {
+ 		fprintf(stderr, "problem inserting idle task.\n");
+@@ -197,12 +198,12 @@ int thread__fork(struct thread *self, struct thread *parent)
+ 	return 0;
+ }
+ 
+-size_t threads__fprintf(FILE *fp, struct rb_root *threads)
++size_t threads__fprintf(FILE *fp)
+ {
+ 	size_t ret = 0;
+ 	struct rb_node *nd;
+ 
+-	for (nd = rb_first(threads); nd; nd = rb_next(nd)) {
++	for (nd = rb_first(&threads); nd; nd = rb_next(nd)) {
+ 		struct thread *pos = rb_entry(nd, struct thread, rb_node);
+ 
+ 		ret += thread__fprintf(pos, fp);
+diff --git a/tools/perf/util/thread.h b/tools/perf/util/thread.h
+index 845d9b6..1abef3b 100644
+--- a/tools/perf/util/thread.h
++++ b/tools/perf/util/thread.h
+@@ -15,13 +15,11 @@ struct thread {
+ };
+ 
+ int thread__set_comm(struct thread *self, const char *comm);
+-struct thread *
+-threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match);
+-struct thread *
+-register_idle_thread(struct rb_root *threads, struct thread **last_match);
++struct thread *threads__findnew(pid_t pid);
++struct thread *register_idle_thread(void);
+ void thread__insert_map(struct thread *self, struct map *map);
+ int thread__fork(struct thread *self, struct thread *parent);
+-size_t threads__fprintf(FILE *fp, struct rb_root *threads);
++size_t threads__fprintf(FILE *fp);
+ 
+ void maps__insert(struct rb_root *maps, struct map *map);
+ struct map *maps__find(struct rb_root *maps, u64 ip);
+-- 
+1.5.5.1
+
