@@ -1,158 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933909AbZJMKfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933851AbZJMKLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933909AbZJMKfx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 06:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933810AbZJMKfx
+	id S933851AbZJMKLr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 06:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933787AbZJMKLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 06:35:53 -0400
-Received: from fw.sj.tdf-pmm.net ([91.197.165.186]:32768 "EHLO
-	mx.fr.smartjog.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933889AbZJMKfv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 06:35:51 -0400
-X-Greylist: delayed 1667 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Oct 2009 06:35:51 EDT
-Date: Tue, 13 Oct 2009 12:09:55 +0200
-From: Laurent CORBES <laurent.corbes@smartjog.com>
-To: linux-kernel@vger.kernel.org
-Subject: Ext3 sequential read performance drop 2.6.29 -> 2.6.30,2.6.31,...
-Message-ID: <20091013120955.6bd5844b@smartjog.com>
-Organization: SmartJog
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Importance: high
-X-Priority: 1 (Highest)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 13 Oct 2009 06:11:46 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:20537 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933314AbZJMKLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 06:11:45 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1255419845-30504-1-git-send-email-vapier@gentoo.org>
+References: <1255419845-30504-1-git-send-email-vapier@gentoo.org> <12871.1175267477@redhat.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: dhowells@redhat.com, uclinux-dev@uclinux.org,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Jie Zhang <jie.zhang@analog.com>, Robin Getz <rgetz@analog.com>
+Subject: Re: [PATCH] NOMMU: fix malloc performance by adding uninitialized flag
+Date: Tue, 13 Oct 2009 11:10:18 +0100
+Message-ID: <32310.1255428618@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-While benchmarking some systems I discover a big sequential read performance
-drop using ext3 on ~ big files. The drop seems to be introduced in 2.6.30. I'm
-testing with 2.6.28.6 -> 2.6.29.6 -> 2.6.30.4 -> 2.6.31.3.
+This seems reasonable.  MAP_UNINITIALIZE definitely needs adding to the
+general list so that the MMU folks don't steal the bit.  I would also call it
+MAP_UNINITIALIZED (well, actually, I'd call it MAP_UNINITIALISED:-), otherwise
+it looks like you're asking mmap() to uninitialise the memory for you.
+Similarly for CONFIG_MMAP_ALLOW_UNINITIALIZE - I'd add a terminal 'D'.
 
-I'm running a software raid6 (chunk 256k) on 6 750Go 7200rpm disks. here are
-the raw datas of disks and raid device:
+I've also re-written the documenation somewhat and expanded the patch
+description to mention the changes to ELF-FDPIC.
 
-$ dd if=/dev/sda of=/dev/null bs=1M count=10240
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 98.7483 seconds, 109 MB/s
+David
+---
+From: Jie Zhang <jie.zhang@analog.com>
+Subject: [PATCH] NOMMU: Fix malloc performance by adding uninitialized flag
 
-$ dd if=/dev/md7 of=/dev/null bs=1M count=10240
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 34.8744 seconds, 308 MB/s
+The NOMMU code currently clears all anonymous mmapped memory.  While this is
+what we want in the default case, all memory allocation from userspace under
+NOMMU has to go through this interface, including malloc() which is allowed to
+return uninitialized memory.  This can easily be a significant performance
+penalty.  So for constrained embedded systems were security is irrelevant,
+allow people to avoid clearing memory unnecessarily.
 
-Over the different kernels changes here are not important (~1MB on the raw disk
-and ~5MB on the raid device). The write of a 10GB file over the fs here is also
-almost constant at ~100MB/s.
+This also alters the ELF-FDPIC binfmt such that it obtains uninitialised
+memory for the brk and stack region.
 
-$ dd if=/dev/zero of=/mnt/space/benchtmp//dd.out bs=1M count=10240
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 102.547 seconds, 105 MB/s
+Signed-off-by: Jie Zhang <jie.zhang@analog.com>
+Signed-off-by: Robin Getz <rgetz@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-However while reading this file there is a huge perf drop between 2.6.29.6 and
-2.6.30.4 and 2.6.31.3:
-
-2.6.28.6:
-sj-dev-7:/mnt/space/Benchmark# dd if=dd.out of=/dev/null bs=1M
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 43.8288 seconds, 245 MB/s
-
-2.6.29.6:
-sj-dev-7:/mnt/space/Benchmark# dd if=dd.out of=/dev/null bs=1M
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 42.745 seconds, 251 MB/s
-
-2.6.30.4:
-$ dd if=/mnt/space/benchtmp//dd.out of=/dev/null bs=1M
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 48.621 seconds, 221 MB/s
-
-2.6.31.3:
-sj-dev-7:/mnt/space/Benchmark# dd if=dd.out of=/dev/null bs=1M
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 51.4148 seconds, 209 MB/s
-
-... Things going worst over time ...
-
-Numbers are average over ~10 runs each.
-
-I first check for stripe/stride aligment of the ext3 fs that is quite important
-in raid6. I recheck it and everything seems fine from my understandings and
-formula:
-raid6 chunk 256k -> stride = 64. 4 data disks -> stripe-width = 256 ?
-
-In both case I'm using cfq IO scheduler and no special tuning is done with it.
+ Documentation/nommu-mmap.txt      |   26 ++++++++++++++++++++++++++
+ fs/binfmt_elf_fdpic.c             |    3 ++-
+ include/asm-generic/mman-common.h |    5 +++++
+ init/Kconfig                      |   22 ++++++++++++++++++++++
+ mm/nommu.c                        |    8 +++++---
+ 5 files changed, 60 insertions(+), 4 deletions(-)
 
 
-For informations the test server is a Dell PowerEdge R710 with SAS 6iR, 4GB
-ram and 6*750GB sata disks. I got the same behavior on PE2950 Perc6i, 2GB
-ram and 6*750GB sata disks. 
-
-Here are misc informations about the setup:
-sj-dev-7:/mnt/space/Benchmark# cat /proc/mdstat 
-md7 : active raid6 sdf7[5] sde7[4] sdd7[3] sdc7[2] sdb7[1] sda7[0]
-      2923443200 blocks level 6, 256k chunk, algorithm 2 [6/6] [UUUUUU]
-      bitmap: 0/175 pages [0KB], 2048KB chunk
-
-sj-dev-7:/mnt/space/Benchmark# dumpe2fs -h /dev/md7
-dumpe2fs 1.40-WIP (14-Nov-2006)
-Filesystem volume name:   <none>
-Last mounted on:          <not available>
-Filesystem UUID:          9c29f236-e4f2-4db4-bf48-ea613cd0ebad
-Filesystem magic number:  0xEF53
-Filesystem revision #:    1 (dynamic)
-Filesystem features:      has_journal resize_inode dir_index filetype
-needs_recovery sparse_super large_file Filesystem flags:         signed
-directory hash Default mount options:    (none)
-Filesystem state:         clean
-Errors behavior:          Continue
-Filesystem OS type:       Linux
-Inode count:              713760
-Block count:              730860800
-Reserved block count:     0
-Free blocks:              705211695
-Free inodes:              713655
-First block:              0
-Block size:               4096
-Fragment size:            4096
-Reserved GDT blocks:      849
-Blocks per group:         32768
-Fragments per group:      32768
-Inodes per group:         32
-Inode blocks per group:   1
-Filesystem created:       Thu Oct  1 15:45:01 2009
-Last mount time:          Mon Oct 12 13:17:45 2009
-Last write time:          Mon Oct 12 13:17:45 2009
-Mount count:              10
-Maximum mount count:      30
-Last checked:             Thu Oct  1 15:45:01 2009
-Check interval:           15552000 (6 months)
-Next check after:         Tue Mar 30 15:45:01 2010
-Reserved blocks uid:      0 (user root)
-Reserved blocks gid:      0 (group root)
-First inode:              11
-Inode size:               128
-Journal inode:            8
-Default directory hash:   tea
-Directory Hash Seed:      378d4fd2-23c9-487c-b635-5601585f0da7
-Journal backup:           inode blocks
-Journal size:             128M
-
-
-Thanks all.
-
--- 
-Laurent Corbes - laurent.corbes@smartjog.com
-SmartJog SAS | Phone: +33 1 5868 6225 | Fax: +33 1 5868 6255 | www.smartjog.com
-27 Blvd Hippolyte Marquès, 94200 Ivry-sur-Seine, France
-A TDF Group company
+diff --git a/Documentation/nommu-mmap.txt b/Documentation/nommu-mmap.txt
+index b565e82..b216ced 100644
+--- a/Documentation/nommu-mmap.txt
++++ b/Documentation/nommu-mmap.txt
+@@ -119,6 +119,32 @@ FURTHER NOTES ON NO-MMU MMAP
+      granule but will only discard the excess if appropriately configured as
+      this has an effect on fragmentation.
+ 
++ (*) The memory allocated by a request for an anonymous mapping will normally
++     be cleared by the kernel before being returned in accordance with the
++     Linux man pages (ver 2.22 or later)
++
++     In the MMU case this can be achieved with reasonable performance as
++     regions are backed by virtual pages, with the contents only being mapped
++     to cleared physical pages when a write happens on that specific page
++     (prior to which, the pages are effectively mapped to the global zero page
++     from which reads can take place).  This spreads out the time it takes to
++     initialize the contents of a page - depending on the write-usage of the
++     mapping.
++
++     In the no-MMU case, however, anonymous mappings are backed by physical
++     pages, and the entire map is cleared at allocation time.  This can cause
++     significant delays during a userspace malloc() as the C library does an
++     anonymous mapping and the kernel then does a memset for the entire map.
++
++     However, for memory that isn't required to be precleared - such as that
++     returned by malloc() - mmap() can take a MAP_UNINITIALIZE flag to indicate
++     to the kernel that it shouldn't bother clearing the memory before
++     returning it.  Note that CONFIG_MMAP_ALLOW_UNINITIALIZE must be enabled to
++     permit this, otherwise the flag will be ignored.
++
++     uClibc uses this to speed up malloc(), and the ELF-FDPIC binfmt uses this
++     to allocate the brk and stack region.
++
+  (*) A list of all the private copy and anonymous mappings on the system is
+      visible through /proc/maps in no-MMU mode.
+ 
+diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+index e19b9bb..ab7e57b 100644
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -380,7 +380,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
+ 	down_write(&current->mm->mmap_sem);
+ 	current->mm->start_brk = do_mmap(NULL, 0, stack_size,
+ 					 PROT_READ | PROT_WRITE | PROT_EXEC,
+-					 MAP_PRIVATE | MAP_ANONYMOUS | MAP_GROWSDOWN,
++					 MAP_PRIVATE | MAP_ANONYMOUS |
++					 MAP_UNINITIALIZE | MAP_GROWSDOWN,
+ 					 0);
+ 
+ 	if (IS_ERR_VALUE(current->mm->start_brk)) {
+diff --git a/include/asm-generic/mman-common.h b/include/asm-generic/mman-common.h
+index 5ee13b2..dddf626 100644
+--- a/include/asm-generic/mman-common.h
++++ b/include/asm-generic/mman-common.h
+@@ -19,6 +19,11 @@
+ #define MAP_TYPE	0x0f		/* Mask for type of mapping */
+ #define MAP_FIXED	0x10		/* Interpret addr exactly */
+ #define MAP_ANONYMOUS	0x20		/* don't use a file */
++#ifdef CONFIG_MMAP_ALLOW_UNINITIALIZE
++# define MAP_UNINITIALIZE 0x4000000	/* For anonymous mmap, memory could be uninitialized */
++#else
++# define MAP_UNINITIALIZE 0x0		/* Don't support this flag */
++#endif
+ 
+ #define MS_ASYNC	1		/* sync memory asynchronously */
+ #define MS_INVALIDATE	2		/* invalidate the caches */
+diff --git a/init/Kconfig b/init/Kconfig
+index 09c5c64..9c0ffd1 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1069,6 +1069,28 @@ config SLOB
+ 
+ endchoice
+ 
++config MMAP_ALLOW_UNINITIALIZE
++	bool "Allow mmapped anonymous memory to be un-initialized"
++	depends on EMBEDDED && !MMU
++	default n
++	help
++	   Normally, and according to the Linux spec, anonymous memory obtained
++	   from mmap() has it's contents cleared before it is passed to
++	   userspace.  Enabling this config option allows you to request that
++	   mmap() skip that if it is given an MAP_UNINITIALIZE flag, thus
++	   providing a huge performance boost.  If this option is not enabled,
++	   then the flag will be ignored.
++
++	   This is taken advantage of by uClibc's malloc(), and also by
++	   ELF-FDPIC binfmt's brk and stack allocator.
++
++	   Because of the obvious security issues, this option should only be
++	   enabled on embedded devices where you control what is run in
++	   userspace.  Since that isn't generally a problem on no-MMU systems,
++	   it is normally safe to say Y here.
++
++	   See Documentation/nommu-mmap.txt for more information.
++
+ config PROFILING
+ 	bool "Profiling support (EXPERIMENTAL)"
+ 	help
+diff --git a/mm/nommu.c b/mm/nommu.c
+index eefce2d..688f6d0 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -1143,9 +1143,6 @@ static int do_mmap_private(struct vm_area_struct *vma,
+ 		if (ret < rlen)
+ 			memset(base + ret, 0, rlen - ret);
+ 
+-	} else {
+-		/* if it's an anonymous mapping, then just clear it */
+-		memset(base, 0, rlen);
+ 	}
+ 
+ 	return 0;
+@@ -1343,6 +1340,11 @@ unsigned long do_mmap_pgoff(struct file *file,
+ 		goto error_just_free;
+ 	add_nommu_region(region);
+ 
++	/* clear anonymous mappings that don't ask for uninitialized data */
++	if (!vma->vm_file && !(flags & MAP_UNINITIALIZE))
++		memset((void *)region->vm_start, 0,
++		       region->vm_end - region->vm_start);
++
+ 	/* okay... we have a mapping; now we have to register it */
+ 	result = vma->vm_start;
+ 
