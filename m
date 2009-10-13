@@ -1,30 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758896AbZJMD1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbZJMD2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758896AbZJMD1L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 23:27:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbZJMD1J
+	id S1758902AbZJMD2y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 23:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZJMD2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 23:27:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44010 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbZJMD1I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 23:27:08 -0400
-Subject: Re: [tip:timers/tracing] hrtimer: Add tracepoint for hrtimers
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       anton@samba.org, linux-kernel@vger.kernel.org, peterz@infradead.org,
-       zhaolei@cn.fujitsu.com, xiaoguangrong@cn.fujitsu.com,
-       fweisbec@gmail.com, tglx@linutronix.de, kosaki.motohiro@jp.fujitsu.com
-Cc: linux-tip-commits@vger.kernel.org
-In-Reply-To: <tip-c6a2a1770245f654f35f60e1458d4356680f9519@git.kernel.org>
-References: <4A7F8B2B.5020908@cn.fujitsu.com>
-	 <tip-c6a2a1770245f654f35f60e1458d4356680f9519@git.kernel.org>
+	Mon, 12 Oct 2009 23:28:54 -0400
+Received: from mga09.intel.com ([134.134.136.24]:34754 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751256AbZJMD2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 23:28:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,549,1249282800"; 
+   d="scan'208";a="558990183"
+Subject: Re: [PATCH 6/6] mce-inject: use injected mce only during faked
+ handler call
+From: Huang Ying <ying.huang@intel.com>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AD3E731.7080900@jp.fujitsu.com>
+References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com>
+	 <4AC95F5A.4000708@jp.fujitsu.com>  <4AC96391.1060001@jp.fujitsu.com>
+	 <1255072482.5228.157.camel@yhuang-dev.sh.intel.com>
+	 <4ACEE5E0.3050701@jp.fujitsu.com>
+	 <1255074286.5228.163.camel@yhuang-dev.sh.intel.com>
+	 <4ACEF4D9.9090600@jp.fujitsu.com>
+	 <1255079484.5228.201.camel@yhuang-dev.sh.intel.com>
+	 <4AD3E731.7080900@jp.fujitsu.com>
 Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Mon, 12 Oct 2009 23:25:09 -0400
-Message-Id: <1255404309.7113.948.camel@gandalf.stny.rr.com>
+Date: Tue, 13 Oct 2009 11:28:15 +0800
+Message-Id: <1255404495.6047.298.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
@@ -32,58 +38,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-02 at 12:18 +0000, tip-bot for Xiao Guangrong wrote:
+On Tue, 2009-10-13 at 10:34 +0800, Hidetoshi Seto wrote: 
+> Huang Ying wrote:
+> > On Fri, 2009-10-09 at 16:31 +0800, Hidetoshi Seto wrote: 
+> >> In short, I believe that my idea is "use two flags" and your idea is
+> >> "share one flag" ... right?
+> > 
+> > No. There are many flags in .inject_flags (MCJ_EXCEPTION, MCJ_LOADED,
+> > etc), .finished is just another flag.
+> 
+> Maybe I should have said "to indicate 'loaded' and 'ready for consume'",
+> "use two variables" and "share one variable."
 
-> +/**
-> + * hrtimer_start - called when the hrtimer is started
-> + * @timer: pointer to struct hrtimer
-> + */
-> +TRACE_EVENT(hrtimer_start,
-> +
-> +	TP_PROTO(struct hrtimer *timer),
-> +
-> +	TP_ARGS(timer),
-> +
-> +	TP_STRUCT__entry(
-> +		__field( void *,	timer		)
-> +		__field( void *,	function	)
-> +		__field( s64,		expires		)
-> +		__field( s64,		softexpires	)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->timer		= timer;
-> +		__entry->function	= timer->function;
-> +		__entry->expires	= hrtimer_get_expires(timer).tv64;
-> +		__entry->softexpires	= hrtimer_get_softexpires(timer).tv64;
-> +	),
-> +
-> +	TP_printk("hrtimer %p, func %pf, expires %llu, softexpires %llu",
-> +		  __entry->timer, __entry->function,
-> +		  (unsigned long long)ktime_to_ns((ktime_t) {
-> +				  .tv64 = __entry->expires }),
-> +		  (unsigned long long)ktime_to_ns((ktime_t) {
-> +				  .tv64 = __entry->softexpires }))
-> +);
-> +
+.inject_flags and .finished are two variables. I think you try to avoid
+using .inject_flags. But I think it is OK to use .inject_flags.
 
-I was just fixing up the trace-cmd parser (which is also used for perf)
-and came across this code. That TP_printk shows up in the format file
-as:
+> > It is OK to discuss the name and places of the two flags, but you should
+> > not send out a similar patch and declare it is your idea. 
+> 
+> I have experienced that some person received an alternative patch from
+> another person saying that "hey, how about this patch to do same thing in
+> an other way?" and that the original author replied "oh, it looks much
+> better, use it instead of mine" with his Acked-by:.
 
-print fmt: "hrtimer %p, func %pf, expires %llu, softexpires %llu", REC->timer, REC->function, (unsigned long long)(((ktime_t) { .tv64 = REC->expires }).tv64), (unsigned long long)(((ktime_t) { .tv64 = REC->softexpires }).tv64)
+I don't do that because I don't think your patch is in another way and
+much better.
 
-Now I'm trying to parse this with a tool so that we can have something
-that can read the binary output, and be able to easily figure it out by
-reading the format files. But trying to parse:
+> Now I have learned you are not one of such open-minded people, so I will
+> never try to make such patch for you again.  Please throw all of my patches
+> posted last week in the trash.
+> 
+> >> The only thing what I want to do here is merge your "fix" into upstream.
+> > 
+> > You should provide comment, instead of sending out a similar patch and
+> > declaring it is your idea.
+> 
+> I hope you could flexibly reflect comments from others, without saying like
+> "I don't think this is necessary because it works fine."
 
-(unsigned long long)(((ktime_t) { .tv64 = REC->expires }).tv64)
+When I say: "I don't think it is necessary". I do think so really.
 
-Is not easy. It's basically implementing a C interpreter :-(
+> How long do I have to wait your next post, which will fix my urgent issue on
+> Nehalem?
 
-Is there anyway we can change that TRACE_EVENT to give us a better,
-trace printk output?
+I think my patch with title:
 
--- Steve
+[BUGFIX -v2] x86, mce, inject: Make injected mce valid only during faked handler call
+
+fixes this issue correctly.
+
+Hi, Ingo and Peter,
+
+what are your idea about the patch above? Maybe you don't like the
+naming style of MCJ_XXX. But I think if they need to be changed, it
+should be in another patch. And H.Seto has posted the patch for it.
+
+Best Regards,
+Huang Ying
 
 
