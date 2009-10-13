@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933863AbZJMPWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbZJMPPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933863AbZJMPWf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760188AbZJMPWe
+	id S1760218AbZJMPPr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 11:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760201AbZJMPPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:22:34 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:49084 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755752AbZJMPWd (ORCPT
+	Tue, 13 Oct 2009 11:15:46 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:30496 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760174AbZJMPPp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:22:33 -0400
-Date: Tue, 13 Oct 2009 11:14:28 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Tejun Heo <tj@kernel.org>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] this_cpu: Use this_cpu_xx in trace_functions_graph.c
-In-Reply-To: <4AD49559.5050707@kernel.org>
-Message-ID: <alpine.DEB.1.10.0910131110110.8088@gentwo.org>
-References: <20091013144812.bdb376aa.sfr@canb.auug.org.au> <4AD48EC4.8040701@kernel.org> <alpine.DEB.1.10.0910131035450.11413@gentwo.org> <4AD49317.6080503@kernel.org> <alpine.DEB.1.10.0910131043460.8088@gentwo.org> <4AD49559.5050707@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 13 Oct 2009 11:15:45 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] pci: increase alignment to make more space for hidden code
+Date: Tue, 13 Oct 2009 09:15:03 -0600
+User-Agent: KMail/1.9.10
+Cc: Yinghai Lu <yinghai@kernel.org>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       Ricardo Jorge da Fonseca Marques Ferreira 
+	<storm@sys49152.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Yannick Roehlly <yannick.roehlly@free.fr>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, x86@kernel.org,
+       andreaorru91@gmail.com, jjorge@free.fr
+References: <200908072333.24631.storm@sys49152.net> <1255414115.14484.47.camel@dc7800.home> <20091013064901.GD9470@elte.hu>
+In-Reply-To: <20091013064901.GD9470@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910130915.04697.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009, Tejun Heo wrote:
+On Tuesday 13 October 2009 12:49:01 am Ingo Molnar wrote:
+> * Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-> > For this_cpu_ptr / __this_cpu_ptr it does not matter. this_cpu_ptr gives
-> > you additional checks.
->
-> Yes, you're right.  The naming scheme in percpu sucks really hard.
-> The subtle differences among [__]get_cpu_var(), [__]this_cpu_ptr() and
-> other this_cpu ops.  Arghhhhhh.......
+> > In the patch below, I added some extra PCI dumps of the bridge and the 
+> > NIC around the ACPI EC init.  The patch also removes Yinghai's 
+> > workaround so we should see the original failure, just with a little 
+> > more debug.
+> 
+> Btw., i'd _strongly_ suggest to finally add some sort of pci=verbose 
+> easy-to-use debug toggle for users to enable.
+> 
+> Everything that matters to resource allocation. We should print the BIOS 
+> state (Yinghai did a patch for this some time ago and that is upstream 
+> already), we should print quirk execution, we should print ACPI AML 
+> execution - everything that might matter to PCI allocations.
+> 
+> An easy-to-use 'give me all the debug info' feature is really important. 
+> We have apic=verbose for similar reasons.
 
-Yeah. __this_cpu_ptr is safe to use in preempt / irq disable sections
-though the same way as __this_cpu_add/dec etc.
+Agreed.  That's why I sent such a huge testing patch -- I think we do
+a poor job of making this stuff debuggable, so I want to use this problem
+as a test case of "what useful stuff can we print to make this easier in
+the future."
 
-(__)get_cpu_var can be mostly gotten rid off through __this_cpu
-operations.
-
-We could define __get_cpu_var and get_cpu_var using this_cpu
-
-#define get_cpu_var(x) (get_cpu(); this_cpu_read(per_cpu_var(x))
-
-#define __get_cpu_var __this_cpu_read(per_cpu_var(x))
-
-
+Bjorn
