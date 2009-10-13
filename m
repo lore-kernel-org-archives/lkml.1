@@ -1,213 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934197AbZJMTXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934200AbZJMTYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934197AbZJMTXk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 15:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934188AbZJMTXj
+	id S934200AbZJMTYp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 15:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934215AbZJMTYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 15:23:39 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:47202 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754263AbZJMTXU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 15:23:20 -0400
-Subject: [PATCH v2 9/9] PNP: print resources consistently with %pR
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Joe Perches <joe@perches.com>, Len Brown <lenb@kernel.org>
-Date: Tue, 13 Oct 2009 13:22:41 -0600
-Message-ID: <20091013192240.22336.38909.stgit@bob.kio>
-In-Reply-To: <20091013192040.22336.84876.stgit@bob.kio>
-References: <20091013192040.22336.84876.stgit@bob.kio>
-User-Agent: StGit/0.14.3.386.gb02d
+	Tue, 13 Oct 2009 15:24:43 -0400
+Received: from cantor.suse.de ([195.135.220.2]:42145 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934110AbZJMTYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 15:24:36 -0400
+Date: Tue, 13 Oct 2009 21:23:57 +0200
+From: Jan Kara <jack@suse.cz>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       jbacik@redhat.com
+Subject: Re: Fun with fdatasync()
+Message-ID: <20091013192357.GD31440@duck.suse.cz>
+References: <20091012140049.GO2632@think> <20091012220043.GC3965@duck.suse.cz> <20091013160028.GA7850@think>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091013160028.GA7850@think>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This uses %pR and %pr to print additional resource information (type,
-size, prefetchability, etc.) consistently.
+On Tue 13-10-09 12:00:28, Chris Mason wrote:
+> On Tue, Oct 13, 2009 at 12:00:43AM +0200, Jan Kara wrote:
+> >   Hi,
+> > 
+> > On Mon 12-10-09 10:00:49, Chris Mason wrote:
+> 
+> [ clearing of I_DIRTY_DATASYNC by pdflush ]
+> 
+> > > 
+> > > Am I missing something?  I don't see how fdatasync is safe in our
+> > > current usage.
+> >   Yeah, we already discussed similar problems I_DIRTY flags with Ted and
+> > others in thread "fsync on ext[34] working only by an accident" on
+> > linux-ext4.
+> >   I don't quite like clearing dirty flags only on sync - pdflush would then
+> > unnecessarily try to get rid of those inodes and burn CPU on them.
+> > Actually, mapping->private_list (and bh->b_assoc_buffers) is meant to be
+> > used exactly for the purpose of tracking what needs to be written on fsync
+> > so my current plan is to somehow utilize that list to fix the problem.
+> >   Maybe I even get to that tomorrow ;) Thanks for the reminder.
+> 
+> I honestly don't remember all the details now, but I know that when
+> reiserfs stopped using the b_assoc_buffers stuff life got much less
+> complex.  From an outsider's point of view the last thing jbd needs is
+> another list of buffers to live on.
+> 
+> It seems like ext34 need to be able to answer 3 questions during an
+> fsync or fdatasync:
+> 
+> The last transaction to change this file (fill hole, change
+> i_size)
+> 
+> The last transaction to log this inode (for full fsync)
+> 
+> The last transaction committed such that fsync would consider it done.
+> 
+> Filling holes and changing i_size only happens from a handful of places,
+> so it would be easy to update a transid field in the in-memory inode for
+> that.
+> 
+> The inode logging code could bump a second transid field to catch all
+> the other ways inodes change.
+> 
+> The transaction code could (or already does?) export an easy way to
+> check the last commit.  Put the three together and you can safely jump
+> out of fsync or fdatasync based on what the inode really needs instead
+> of guessing with the I_ flags or page dirty bits.
+  I was thinking about this solution as well (before thinking about
+using b_assoc_queue). But to make this reliable we have to pin the inode
+in memory until transactions modifying it (or its data) are committed.
+Otherwise it could be reclaimed and we'd loose the information about
+which transactions we have to wait for. And when we pin the inode, we'd
+have to unpin it at transaction commit which implies we have to somehow
+attach the inode to the transaction... That doesn't look more appealing
+than b_assoc_queue in my opinion (OK, for ext4/JBD2 we have a way to
+attach inodes to transactions but ext3/JBD does not have such way).
+  So to me it seemed easier to use b_assoc_queue but I admit I haven't
+thought through all the details and your experiences with reiserfs
+frighten me a bit ;)
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
----
- drivers/pnp/quirks.c   |   13 ++++---------
- drivers/pnp/resource.c |   10 ++++------
- drivers/pnp/support.c  |   43 +++++--------------------------------------
- drivers/pnp/system.c   |   14 ++++++--------
- 4 files changed, 19 insertions(+), 61 deletions(-)
-
-diff --git a/drivers/pnp/quirks.c b/drivers/pnp/quirks.c
-index 8473fe5..dfbd5a6 100644
---- a/drivers/pnp/quirks.c
-+++ b/drivers/pnp/quirks.c
-@@ -285,15 +285,10 @@ static void quirk_system_pci_resources(struct pnp_dev *dev)
- 				 * the PCI region, and that might prevent a PCI
- 				 * driver from requesting its resources.
- 				 */
--				dev_warn(&dev->dev, "%s resource "
--					"(0x%llx-0x%llx) overlaps %s BAR %d "
--					"(0x%llx-0x%llx), disabling\n",
--					pnp_resource_type_name(res),
--					(unsigned long long) pnp_start,
--					(unsigned long long) pnp_end,
--					pci_name(pdev), i,
--					(unsigned long long) pci_start,
--					(unsigned long long) pci_end);
-+				dev_warn(&dev->dev,
-+					 "disabling %pR because it overlaps "
-+					 "%s BAR %d %pR\n", res,
-+					 pci_name(pdev), i, &pdev->resource[i]);
- 				res->flags |= IORESOURCE_DISABLED;
- 			}
- 		}
-diff --git a/drivers/pnp/resource.c b/drivers/pnp/resource.c
-index ba97654..64d0596 100644
---- a/drivers/pnp/resource.c
-+++ b/drivers/pnp/resource.c
-@@ -517,7 +517,7 @@ struct pnp_resource *pnp_add_irq_resource(struct pnp_dev *dev, int irq,
- 	res->start = irq;
- 	res->end = irq;
- 
--	pnp_dbg(&dev->dev, "  add irq %d flags %#x\n", irq, flags);
-+	pnp_dbg(&dev->dev, "  add %pr\n", res);
- 	return pnp_res;
- }
- 
-@@ -538,7 +538,7 @@ struct pnp_resource *pnp_add_dma_resource(struct pnp_dev *dev, int dma,
- 	res->start = dma;
- 	res->end = dma;
- 
--	pnp_dbg(&dev->dev, "  add dma %d flags %#x\n", dma, flags);
-+	pnp_dbg(&dev->dev, "  add %pr\n", res);
- 	return pnp_res;
- }
- 
-@@ -562,8 +562,7 @@ struct pnp_resource *pnp_add_io_resource(struct pnp_dev *dev,
- 	res->start = start;
- 	res->end = end;
- 
--	pnp_dbg(&dev->dev, "  add io  %#llx-%#llx flags %#x\n",
--		(unsigned long long) start, (unsigned long long) end, flags);
-+	pnp_dbg(&dev->dev, "  add %pr\n", res);
- 	return pnp_res;
- }
- 
-@@ -587,8 +586,7 @@ struct pnp_resource *pnp_add_mem_resource(struct pnp_dev *dev,
- 	res->start = start;
- 	res->end = end;
- 
--	pnp_dbg(&dev->dev, "  add mem %#llx-%#llx flags %#x\n",
--		(unsigned long long) start, (unsigned long long) end, flags);
-+	pnp_dbg(&dev->dev, "  add %pr\n", res);
- 	return pnp_res;
- }
- 
-diff --git a/drivers/pnp/support.c b/drivers/pnp/support.c
-index 63087d5..9585c1c 100644
---- a/drivers/pnp/support.c
-+++ b/drivers/pnp/support.c
-@@ -75,47 +75,14 @@ char *pnp_resource_type_name(struct resource *res)
- 
- void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
- {
--	char buf[128];
--	int len;
- 	struct pnp_resource *pnp_res;
--	struct resource *res;
- 
--	if (list_empty(&dev->resources)) {
-+	if (list_empty(&dev->resources))
- 		pnp_dbg(&dev->dev, "%s: no current resources\n", desc);
--		return;
--	}
--
--	pnp_dbg(&dev->dev, "%s: current resources:\n", desc);
--	list_for_each_entry(pnp_res, &dev->resources, list) {
--		res = &pnp_res->res;
--		len = 0;
--
--		len += scnprintf(buf + len, sizeof(buf) - len, "  %-3s ",
--				 pnp_resource_type_name(res));
--
--		if (res->flags & IORESOURCE_DISABLED) {
--			pnp_dbg(&dev->dev, "%sdisabled\n", buf);
--			continue;
--		}
--
--		switch (pnp_resource_type(res)) {
--		case IORESOURCE_IO:
--		case IORESOURCE_MEM:
--			len += scnprintf(buf + len, sizeof(buf) - len,
--					 "%#llx-%#llx flags %#lx",
--					 (unsigned long long) res->start,
--					 (unsigned long long) res->end,
--					 res->flags);
--			break;
--		case IORESOURCE_IRQ:
--		case IORESOURCE_DMA:
--			len += scnprintf(buf + len, sizeof(buf) - len,
--					 "%lld flags %#lx",
--					 (unsigned long long) res->start,
--					 res->flags);
--			break;
--		}
--		pnp_dbg(&dev->dev, "%s\n", buf);
-+	else {
-+		pnp_dbg(&dev->dev, "%s: current resources:\n", desc);
-+		list_for_each_entry(pnp_res, &dev->resources, list)
-+			pnp_dbg(&dev->dev, "%pr\n", &pnp_res->res);
- 	}
- }
- 
-diff --git a/drivers/pnp/system.c b/drivers/pnp/system.c
-index 59b9092..49c1720 100644
---- a/drivers/pnp/system.c
-+++ b/drivers/pnp/system.c
-@@ -22,11 +22,11 @@ static const struct pnp_device_id pnp_dev_table[] = {
- 	{"", 0}
- };
- 
--static void reserve_range(struct pnp_dev *dev, resource_size_t start,
--			  resource_size_t end, int port)
-+static void reserve_range(struct pnp_dev *dev, struct resource *r, int port)
- {
- 	char *regionid;
- 	const char *pnpid = dev_name(&dev->dev);
-+	resource_size_t start = r->start, end = r->end;
- 	struct resource *res;
- 
- 	regionid = kmalloc(16, GFP_KERNEL);
-@@ -48,10 +48,8 @@ static void reserve_range(struct pnp_dev *dev, resource_size_t start,
- 	 * example do reserve stuff they know about too, so we may well
- 	 * have double reservations.
- 	 */
--	dev_info(&dev->dev, "%s range 0x%llx-0x%llx %s reserved\n",
--		port ? "ioport" : "iomem",
--		(unsigned long long) start, (unsigned long long) end,
--		res ? "has been" : "could not be");
-+	dev_info(&dev->dev, "%pR %s reserved\n", r,
-+		 res ? "has been" : "could not be");
- }
- 
- static void reserve_resources_of_dev(struct pnp_dev *dev)
-@@ -77,14 +75,14 @@ static void reserve_resources_of_dev(struct pnp_dev *dev)
- 		if (res->end < res->start)
- 			continue;	/* invalid */
- 
--		reserve_range(dev, res->start, res->end, 1);
-+		reserve_range(dev, res, 1);
- 	}
- 
- 	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
- 		if (res->flags & IORESOURCE_DISABLED)
- 			continue;
- 
--		reserve_range(dev, res->start, res->end, 0);
-+		reserve_range(dev, res, 0);
- 	}
- }
- 
-
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
