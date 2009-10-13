@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760726AbZJMR2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbZJMQYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760726AbZJMR2N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 13:28:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760647AbZJMR2N
+	id S1759891AbZJMQYz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 12:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZJMQYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 13:28:13 -0400
-Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:48539 "EHLO
-	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759817AbZJMR2M (ORCPT
+	Tue, 13 Oct 2009 12:24:55 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:46700
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751154AbZJMQYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 13:28:12 -0400
-Date: Tue, 13 Oct 2009 11:27:31 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: pci-express hotplug
-Message-ID: <20091013172731.GB22797@ldl.fc.hp.com>
-References: <20091012120620.GG9228@kernel.dk> <20091012145254.GA1517@kroah.com> <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca> <20091012150603.GK9228@kernel.dk> <20091012214854.GA14102@ldl.fc.hp.com> <20091013082903.GQ9228@kernel.dk>
+	Tue, 13 Oct 2009 12:24:54 -0400
+Message-ID: <4AD4B8C9.5000208@microgate.com>
+Date: Tue, 13 Oct 2009 11:28:41 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091013082903.GQ9228@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Nix <nix@esperi.org.uk>,
+       "Justin P. Mattock" <justinmattock@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Boyan <btanastasov@yahoo.co.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       =?ISO-8859-1?Q?=22Fr=E9d=E9ric_L=2E_W=2E_Meunier=22?= 
+	<fredlwm@gmail.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>  <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera>  <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com>  <87ljjgfcbu.fsf@spindle.srvr.nix>  <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>  <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>  <20091013113232.384b2432@lxorguk.ukuu.org.uk>  <alpine.LFD.2.01.0910130721530.3438@localhost.localdomain> <1255447980.3898.3.camel@x2.microgate.com> <alpine.LFD.2.01.0910130837370.26777@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0910130837370.26777@localhost.localdomain>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jens Axboe <jens.axboe@oracle.com>:
-> > > >> On Mon, Oct 12 2009, Greg KH wrote:
-> > > >>> Can you try the acpiphp driver instead?  That's usually the
-> > > >>> driver you want to use for "modern" systems (i.e. anything
-> > > >>> made in the past 5 years.)
-> > > >>
-> > > >> I should have mentioned that I tried that too. It doesn't
-> > > >> complain, but I don't see my cards anywhere afterwards. I'm
-> > > >> a hotplug newbie, do I need to do anything else?
-> > 
-> > Can you modprobe acpiphp with debug=1? And send the output?
-> 
-> acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
-> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:05.0
-> acpiphp_glue: found ACPI PCI Hotplug slot 1 at PCI 0000:08:00
-> acpiphp: Slot [1] registered
-> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:07.0
-> acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:0b:00
-> acpiphp: Slot [2] registered
-> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:07.0
-> acpiphp_glue: found ACPI PCI Hotplug slot 6 at PCI 0000:84:00
-> acpiphp: Slot [6] registered
-> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:09.0
-> acpiphp_glue: found ACPI PCI Hotplug slot 7 at PCI 0000:87:00
-> acpiphp: Slot [7] registered
-> acpiphp_glue: Bus 0000:87 has 1 slot
-> acpiphp_glue: Bus 0000:84 has 1 slot
-> acpiphp_glue: Bus 0000:0b has 1 slot
-> acpiphp_glue: Bus 0000:08 has 1 slot
-> acpiphp_glue: Total 4 slots
+Linus Torvalds wrote:
+> What _you_ are talking about is something else, namely the 
+> tty_prepare_flip stuff. But dammit, that has nothing what-so-ever to do 
+> with "tty_buffer_request_room()".
 
-You mentioned in another mail that you echoed 1 into the various
-slots' power files.
+OK, I should have followed your argument more closely.
+I was trying to interpret it in terms of your patch,
+which touched the tty_prepare stuff, but that is separate
+from your comments about optimizations.
 
-Did you do that after modprobing acpiphp with debug=1?
-
-If so, there should be debug output when you try and turn them
-on.
-
-Also, quick dummy check, you are trying to power on populated
-slots, right? :)
-
-Can you send the output of lspci -vv? And I like the output of
-lspci -vt as well... Both before and after loading acpiphp
-please.
-
-Thanks.
-
-/ac
-
+-- 
+Paul Fulghum
+MicroGate Systems, Ltd.
+=Customer Driven, by Design=
+(800)444-1982
+(512)345-7791 (Direct)
+(512)343-9046 (Fax)
+Central Time Zone (GMT -5h)
+www.microgate.com
