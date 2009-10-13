@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933674AbZJMOon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760071AbZJMOps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933674AbZJMOon (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933425AbZJMOom
+	id S1760071AbZJMOps (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760025AbZJMOpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:44:42 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:35253 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760056AbZJMOoe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:44:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=QHdmoGJ3Ts2bGXBmAjXdzb1DiQUrFb2BqROOWUq/J+CsjUdh/1AAjdwR1NmqILNBwz
-         NjbiWLGh0TUYmhYoQ9cDYPed5iZyB4E45PrQ3UYG80pdU67A/l4PaVqcGI+XGQsckp4Y
-         okVJbnKA/qJCuyk9YOZE5s3VSZN9l3lNqb92U=
-Date: Tue, 13 Oct 2009 18:43:56 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>, x86team <x86@kernel.org>
-Subject: Re: [RFC -tip] apic NOOP driver
-Message-ID: <20091013144356.GD6019@lenovo>
-References: <20090924203147.GD5476@lenovo> <20091013103229.GB3915@elte.hu>
+	Tue, 13 Oct 2009 10:45:47 -0400
+Received: from thunk.org ([69.25.196.29]:55173 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760023AbZJMOpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 10:45:46 -0400
+Date: Tue, 13 Oct 2009 10:45:04 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: =?utf-8?B?6aOe6aKc?= <win847@gmail.com>
+Cc: Tim Abbott <tabbott@ksplice.com>, Greg Ungerer <gerg@snapgear.com>,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: Drivers compiled into the kernel can reduce code size
+Message-ID: <20091013144504.GC8175@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	=?utf-8?B?6aOe6aKc?= <win847@gmail.com>,
+	Tim Abbott <tabbott@ksplice.com>, Greg Ungerer <gerg@snapgear.com>,
+	linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+References: <363172900910122246y2ea4ee69gf133e725b0a54146@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20091013103229.GB3915@elte.hu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <363172900910122246y2ea4ee69gf133e725b0a54146@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Tue, Oct 13, 2009 at 12:32:29PM +0200]
-| 
-| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > Ingo,
-| > 
-| > here is what implemented at moment. Did you mean something like that? 
-| > Note that it's quite early RFC not for any kind of inclusion.
-| 
-| yeah, this looks pretty good.
-| 
-| And i'd suggest to separate the patches that introduce this APIC driver 
-| from the changes that make use of it. Makes for an easier bisection 
-| target.
-| 
-| 	Ingo
-| 
+On Tue, Oct 13, 2009 at 01:46:18PM +0800, 飞颜 wrote:
+> Dear all,
+> 
+>        I has a question below:
+> 
+>      Why Drivers compiled into the kernel can reduce code size
+> compared with Module ways?
+> 
+>      Kernel + Driver Module (Code Size) > Kernel(include Driver)
 
-OK, will do so over fresh -tip.
+Each loadable kernel module is subject to rounding to 4k pages, where
+as when a driver is built into the kernel, its text, data, and BSS
+segments can be included into the kernel text, data, and BSS segments. 
 
-	-- Cyrill
+Drivers that are compiled into the kernel also can use the same single
+huge page TLB entry for the kernel text segment, so using a fewer
+kernel modules can also result in fewer TLB misses.
+
+       	       	   	       	  	    - Ted
