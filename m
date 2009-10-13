@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbZJMOmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760280AbZJMPjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760042AbZJMOmv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbZJMOmu
+	id S1760280AbZJMPjI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 11:39:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755147AbZJMPjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:42:50 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59061 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753526AbZJMOmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:42:49 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18qkYxT904q0V/YwfVlWdT7RVJke06sG97plqz28p
-	FfTHeFRpdCPY1K
-Subject: Re: [patch] perf_counter tools: remove expensive old debug code
- from perf top
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20091013133707.GA21409@elte.hu>
-References: <1255438640.7173.1.camel@marge.simson.net>
-	 <20091013133707.GA21409@elte.hu>
+	Tue, 13 Oct 2009 11:39:07 -0400
+Received: from msux-gh1-uea01.nsa.gov ([63.239.67.1]:47758 "EHLO
+	msux-gh1-uea01.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753854AbZJMPjG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 11:39:06 -0400
+X-Greylist: delayed 3456 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Oct 2009 11:39:06 EDT
+Subject: Re: [PATCH] sysfs: mark a locally-only used function static
+From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: James Morris <jmorris@namei.org>, "Stephen D. Smalley" <sds@tycho.nsa.gov>,
+       linux-kernel@vger.kernel.org, greg@kroah.com
+In-Reply-To: <tkrat.974f8a5e166a4c9f@s5r6.in-berlin.de>
+References: <tkrat.974f8a5e166a4c9f@s5r6.in-berlin.de>
 Content-Type: text/plain
-Date: Tue, 13 Oct 2009 16:41:59 +0200
-Message-Id: <1255444919.7042.2.camel@marge.simson.net>
+Organization: National Security Agency
+Date: Tue, 13 Oct 2009 10:42:44 -0400
+Message-Id: <1255444964.11749.340.camel@moss-terrapins.epoch.ncsc.mil>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 15:37 +0200, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
+On Sun, 2009-10-11 at 03:02 +0200, Stefan Richter wrote:
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
+> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+> index e28cecf..e144351 100644
+> --- a/fs/sysfs/inode.c
+> +++ b/fs/sysfs/inode.c
+> @@ -46,7 +46,7 @@ int __init sysfs_inode_init(void)
+>  	return bdi_init(&sysfs_backing_dev_info);
+>  }
+>  
+> -struct sysfs_inode_attrs *sysfs_init_inode_attrs(struct sysfs_dirent *sd)
+> +static struct sysfs_inode_attrs *sysfs_init_inode_attrs(struct sysfs_dirent *sd)
+>  {
+>  	struct sysfs_inode_attrs *attrs;
+>  	struct iattr *iattrs;
+> @@ -64,6 +64,7 @@ struct sysfs_inode_attrs *sysfs_init_inode_attrs(struct sysfs_dirent *sd)
+>  
+>  	return attrs;
+>  }
+> +
+>  int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+>  {
+>  	struct inode * inode = dentry->d_inode;
 > 
-> > perf_counter tools: remove expensive old debug code from perf top
-> > 
-> > Calling gettimeofday() at high frequency is painful for handicapped 
-> > boxen. The spot calling gettimeofday() is old unneeded debug code, so 
-> > remove it.
-> 
-> Thanks!
-> 
-> We still seem to have a performance problem. Just running perf top on a 
-> 16-way box:
-> 
->  Performance counter stats for 'perf top -e cycles -c 3000000':
-> 
->      585.694831  task-clock-msecs         #      0.113 CPUs 
->           35163  context-switches         #      0.060 M/sec
->              17  CPU-migrations           #      0.000 M/sec
->           20355  page-faults              #      0.035 M/sec
->      1476952962  cycles                   #   2521.711 M/sec
->       730770658  instructions             #      0.495 IPC  
->        11489471  cache-references         #     19.617 M/sec
->         2055001  cache-misses             #      3.509 M/sec
-> 
->     5.169518576  seconds time elapsed
-> 
-> that's 11% of CPU time used on a single CPU - just displaying a measly 
-> 16K irqs/sec. Something's not quite right here.
 
-I'll try to figure out why after I do some more wakeup preempt testing.
+I don't see why this shouldn't or can't be made static. I'll ACK it and
+then you guys can deal with it however you like.
 
-btw, something broke top annotation (again).  Module symbols still
-annotate, but vmlinux symbols went south.
+-Dave
 
-	-Mike
+
 
