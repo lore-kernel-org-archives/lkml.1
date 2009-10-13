@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbZJMKph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759466AbZJMKrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759449AbZJMKph (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 06:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759429AbZJMKpg
+	id S1759466AbZJMKrO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 06:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759300AbZJMKrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 06:45:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49877
+	Tue, 13 Oct 2009 06:47:13 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49896
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759407AbZJMKpg (ORCPT
+	by vger.kernel.org with ESMTP id S1759280AbZJMKrM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 06:45:36 -0400
-Date: Tue, 13 Oct 2009 03:45:32 -0700 (PDT)
-Message-Id: <20091013.034532.36362276.davem@davemloft.net>
-To: eric.dumazet@gmail.com
-Cc: thomas@wytron.com.tw, netdev@vger.kernel.org,
-       thierry.reding@avionic-design.de, nios2-dev@sopc.et.ntust.edu.tw,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: Add netdev_alloc_skb_ip_align() helper
+	Tue, 13 Oct 2009 06:47:12 -0400
+Date: Tue, 13 Oct 2009 03:47:08 -0700 (PDT)
+Message-Id: <20091013.034708.218523749.davem@davemloft.net>
+To: kxie@chelsio.com
+Cc: swise@opengridcomputing.com, divy@chelsio.com, rakesh@chelsio.com,
+       James.Bottomley@HansenPartnership.com, michaelc@cs.wisc.edu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v4 net-next-2.6] cxgb3: Added private MAC address and
+ provisioning packet handler for iSCSI
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <4ACD585B.5080106@gmail.com>
-References: <1254969161-3609-1-git-send-email-thomas@wytron.com.tw>
-	<4ACD585B.5080106@gmail.com>
+In-Reply-To: <200910081911.n98JB6na024344@localhost.localdomain>
+References: <200910081911.n98JB6na024344@localhost.localdomain>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,14 +29,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Thu, 08 Oct 2009 05:11:23 +0200
+From: kxie@chelsio.com
+Date: Thu, 08 Oct 2009 12:11:05 -0700
 
-> [PATCH] net: Add netdev_alloc_skb_ip_align() helper
+> From: Karen Xie <kxie@chelsio.com>
 > 
-> Instead of hardcoding NET_IP_ALIGN stuff in various network drivers, we can
-> add a helper around netdev_alloc_skb()
+> [PATCH v4 net-next-2.6] cxgb3: Added private MAC address and provisioning packet handler for iSCSI
 > 
-> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> This patch added support of private MAC address per port and provisioning
+> packet handler for iSCSI traffic only.
+> 
+> The above changes are isolated to the cxgb3 driver, independent of any scsi or iscsi driver changes.
+> 
+> Acked-by: Karen Xie <kxie@chelsio.com>
+> Acked-by: Divy Le Ray <divy@chelsio.com>
+> Signed-off-by: Rakesh Ranjan <rakesh@chelsio.com>
 
-Applied to net-next-2.6
+Applied to net-next-2.6, thanks.
