@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761070AbZJMTNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934086AbZJMTP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761070AbZJMTNW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 15:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbZJMTNW
+	id S934086AbZJMTP1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 15:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbZJMTP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 15:13:22 -0400
-Received: from mga12.intel.com ([143.182.124.36]:2385 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751165AbZJMTNV (ORCPT
+	Tue, 13 Oct 2009 15:15:26 -0400
+Received: from outbound-mail-319.bluehost.com ([67.222.54.251]:35757 "HELO
+	outbound-mail-319.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751658AbZJMTPZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 15:13:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,552,1249282800"; 
-   d="scan'208";a="198506506"
-Date: Tue, 13 Oct 2009 12:12:18 -0700
-From: mgross <mgross@linux.intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
-       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 01/28] pm_qos: remove BKL
-Message-ID: <20091013191218.GA5197@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20091010153314.827301943@linutronix.de> <20091010153349.071381158@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091010153349.071381158@linutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 13 Oct 2009 15:15:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=Nh8cXcyzD98nEec9qN8hw73+oYv+KRCC2NWP0POKPOWil81b71IqyzbMDcM1nLTsSB9PtdqHyIcK5vgvK1QkWmkmxgjNakwoAK9coZVaGO5kHiMS6s3HIUNOcHHvTVHp;
+Date: Tue, 13 Oct 2009 12:14:26 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Eric Anholt <eric@anholt.net>,
+       linux-kernel@vger.kernel.org, Keith Packard <keithp@keithp.com>
+Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with T400
+ laptops
+Message-ID: <20091013121426.35f409ff@jbarnes-g45>
+In-Reply-To: <20091013190055.GI8175@mit.edu>
+References: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
+	<20091008103620.5e5aae66@jbarnes-g45>
+	<20091010204106.GA8251@mit.edu>
+	<20091012095438.1e82b54f@jbarnes-g45>
+	<20091012184651.GA4603@Pilar.aei.mpg.de>
+	<20091012120510.16bd1194@jbarnes-g45>
+	<20091013023146.GA8414@mit.edu>
+	<20091013100135.2b3d914f@jbarnes-g45>
+	<20091013190055.GI8175@mit.edu>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I thought we made this change a month or 3 ago.
+On Tue, 13 Oct 2009 15:00:55 -0400
+Theodore Tso <tytso@mit.edu> wrote:
 
-Signed-off-by: Mark Gross <mgross@linux.intel.com>
+> Thanks, should I apply this on top of your previous patch, or on a
+> completely virgin 2.6.32-rc3 tree?
 
---mgross
+Either way should be fine, since the previous patches don't appear to
+be helping (they shouldn't hurt either).
 
-
-On Sat, Oct 10, 2009 at 03:35:24PM -0000, Thomas Gleixner wrote:
-> pm_qos_power_open got its lock_kernel() calls from the open() pushdown.  A
-> look at the code shows that the only global resources accessed are
-> pm_qos_array and "name".  pm_qos_array doesn't change (things pointed to
-> therein do change, but they are atomics and/or are protected by
-> pm_qos_lock).  Accesses to "name" are totally unprotected with or without
-> the BKL; that will be fixed shortly.  The BKL is not helpful here; take it
-> out.
+> I don't know if this helps, but the amount of tearing seems to be
+> roughly proportional to how many "white" pixels are on the screen.
+> There isn't much tearing if I just have my (brown) Ubuntu 9.04 default
+> background image.  There is a bit more tearing on the virtual desktop
+> once I open an 80x52 black-on-white gnome-terminal window, so that 45%
+> of my widescreen has white pixels due to the backgrouin of the
+> gnome-terminal.
 > 
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-> Cc: Mark Gross <mgross@linux.intel.com>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> On the virtual desktop where my firefox browser is opened, the
+> tearing/glitching is much more frequent.  And where the
+> tearing/glitching is seems to be be roughly related to where the mouse
+> cursor happens to be.  (Usually starting at the horizontol row of
+> pixels where the mouse is going down towards the bottom of the screen;
+> although sometimes if the mouse is very close to the bottom of the
+> screen, there is some tearing at the top of the screen as well.)
 > 
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index dfdec52..d96b83e 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -29,7 +29,6 @@
->  
->  #include <linux/pm_qos_params.h>
->  #include <linux/sched.h>
-> -#include <linux/smp_lock.h>
->  #include <linux/spinlock.h>
->  #include <linux/slab.h>
->  #include <linux/time.h>
-> @@ -352,20 +351,15 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
->  	int ret;
->  	long pm_qos_class;
->  
-> -	lock_kernel();
->  	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
->  	if (pm_qos_class >= 0) {
->  		filp->private_data = (void *)pm_qos_class;
->  		sprintf(name, "process_%d", current->pid);
->  		ret = pm_qos_add_requirement(pm_qos_class, name,
->  					PM_QOS_DEFAULT_VALUE);
-> -		if (ret >= 0) {
-> -			unlock_kernel();
-> +		if (ret >= 0)
->  			return 0;
-> -		}
->  	}
-> -	unlock_kernel();
-> -
->  	return -EPERM;
->  }
->  
-> 
+> Does this description help at all?  Would a video clip of the
+> tearing/glitching be useful?
+
+Thanks for the description, it matches what I've seen on Eric and Ian's
+machines, though I can't reproduce it myself.
+
+According to the chipset team that form of display corruption is likely
+related to RAM self-refresh... Sounds like the display plane isn't
+getting its memory requests serviced fast enough when in self-refresh
+mode, which might mean we have to program the self-refresh watermarks
+more aggressively on GM45.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
