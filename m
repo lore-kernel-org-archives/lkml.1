@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933556AbZJMHEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758992AbZJMHGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933556AbZJMHEI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 03:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933533AbZJMHEI
+	id S1758992AbZJMHGB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 03:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbZJMHGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 03:04:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56100 "EHLO mx2.mail.elte.hu"
+	Tue, 13 Oct 2009 03:06:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56647 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933527AbZJMHEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 03:04:06 -0400
-Date: Tue, 13 Oct 2009 09:03:11 +0200
+	id S1754415AbZJMHF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 03:05:59 -0400
+Date: Tue, 13 Oct 2009 09:05:05 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86/pci: intel bus root res with IOH reading -v2
-Message-ID: <20091013070311.GB31483@elte.hu>
-References: <4AC97C00.7090503@kernel.org> <200910061257.54877.bjorn.helgaas@hp.com> <20091012203453.GC7648@elte.hu> <200910121545.47794.bjorn.helgaas@hp.com> <4AD3A460.6060505@zytor.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, v2] kbuild: Improve version string logic
+Message-ID: <20091013070505.GC31483@elte.hu>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <20091006173508.GA4786@elte.hu> <20091012195733.GA7351@elte.hu> <200910130004.46388.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4AD3A460.6060505@zytor.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200910130004.46388.elendil@planet.nl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -38,45 +36,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+* Frans Pop <elendil@planet.nl> wrote:
 
-> On 10/12/2009 02:45 PM, Bjorn Helgaas wrote:
->
-> > For the patch in question, we don't even have a root cause for the 
-> > bug (or at least, I couldn't decipher it from the changelog). 
-> > There's a reference to _CRS being wrong, but we don't currently use 
-> > _CRS for x86 host bridges.
-> > 
-> > But in general, my objection is that even if BIOS provides perfectly 
-> > valid information about host bridge apertures, the the fact that 
-> > Linux ignores that information means we have to add this sort of 
-> > vendor- specific code every time we trip over something. And we're 
-> > tripping over things quite often.
-> > 
-> > Windows consumes this _CRS information, so while I grant there are 
-> > certainly BIOS bugs there, I think most of the bugs are actually in 
-> > Linux.
+> On Monday 12 October 2009, Ingo Molnar wrote:
+> > It changes how CONFIG_LOCALVERSION_AUTO works, in the following trivial
+> > way:
+> >
+> >  - if it is set, things work the way they always have, and you get a
+> >    extended kernel release like:
+> >
+> >         2.6.32-rc3-00052-g0eca52a
+> >
+> >  - but if it is _not_ set, we'll still try to get a version from the
+> >    underlying SCM (we actually support git, hg and SVN right now, even
+> > if some comments may say "git only"), and if the underlying SCM says it
+> > has a local version, we append just "+", so you get a version number
+> > like:
+> >
+> >         2.6.32-rc3+
 > 
-> I think the right policy for most if not all things should be "use the 
-> BIOS information unless we know better."
+> I don't object to making this the default (even a strong default), but 
+> I still don't like the fact that it's not optional.
+>
+> IMO both LOCALVERSION_AUTO *and* the added "+" can be unsuitable for 
+> some use cases, for example for distributions.
+> 
+> If someone uses git to manage their custom patches, the only out this 
+> patch leaves them to avoid the "+" is to revert it in their own trees.
 
-My argument is that if we know how to access the hardware and know how 
-to interpret its state then that is _ALWAYS_ higher quality information 
-than anything the BIOS tells us.
+Is this a bad thing?
 
-Basically the BIOS is a second-level fall-back, and the less we have to 
-use this fall-back in Linux, the better. In many cases we have no other 
-info but BIOS info - that puts all our eggs into the BIOS basket and we 
-have to live with that.
+> IMO that should not be necessary.
 
-And reducing that dependency on the BIOS is what Yinghai's patch is 
-doing in essence - it adds a higher-grade source of information: reading 
-the PCI config space directly.
-
-( I make no argument about the specific correctness of the patch - i 
-  just raised the principle and i think we should move in this direction 
-  in general. )
-
-Thanks,
+Why not?
 
 	Ingo
