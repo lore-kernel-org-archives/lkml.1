@@ -1,107 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760188AbZJMT4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761177AbZJMTwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760188AbZJMT4g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 15:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZJMT4g
+	id S1761177AbZJMTwE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 15:52:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbZJMTwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 15:56:36 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:57884 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750914AbZJMT4f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 15:56:35 -0400
-Date: Tue, 13 Oct 2009 15:48:22 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: David Rientjes <rientjes@google.com>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Mel Gorman <mel@csn.ul.ie>, Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu
- operations in the hotpaths
-In-Reply-To: <4AD4D8B6.6010700@cs.helsinki.fi>
-Message-ID: <alpine.DEB.1.10.0910131541290.7246@gentwo.org>
-References: <20091007211024.442168959@gentwo.org> <20091007211053.378634196@gentwo.org> <4AD307A5.105@kernel.org> <84144f020910120614r529d8e4em9babe83a90e9371f@mail.gmail.com> <alpine.DEB.1.00.0910130231570.27262@chino.kir.corp.google.com>
- <alpine.DEB.1.10.0910131041450.21608@gentwo.org> <alpine.DEB.1.10.0910131509170.32394@gentwo.org> <4AD4D8B6.6010700@cs.helsinki.fi>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 13 Oct 2009 15:52:03 -0400
+Received: from mga09.intel.com ([134.134.136.24]:54072 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754059AbZJMTwC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 15:52:02 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,552,1249282800"; 
+   d="scan'208";a="457116496"
+Date: Tue, 13 Oct 2009 12:50:55 -0700
+From: mgross <mgross@linux.intel.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 01/28] pm_qos: remove BKL
+Message-ID: <20091013195055.GA10270@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20091010153314.827301943@linutronix.de> <20091010153349.071381158@linutronix.de> <20091013191218.GA5197@linux.intel.com> <20091013132108.6528b56a@bike.lwn.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091013132108.6528b56a@bike.lwn.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009, Pekka Enberg wrote:
+On Tue, Oct 13, 2009 at 01:21:08PM -0600, Jonathan Corbet wrote:
+> On Tue, 13 Oct 2009 12:12:18 -0700
+> mgross <mgross@linux.intel.com> wrote:
+> 
+> > I thought we made this change a month or 3 ago.
+> > 
+> > Signed-off-by: Mark Gross <mgross@linux.intel.com>
+> 
+> Change went out but it was caught snoozing during the 2.6.32 merge
+> window.
+> 
+> I think you really want "Acked-by", no?
 
-> I wonder how reliable these numbers are. We did similar testing a while back
-> because we thought kmalloc-96 caches had weird cache behavior but finally
-> figured out the anomaly was explained by the order of the tests run, not cache
-> size.
+Yes.  Sorry.
 
-Well you need to look behind these numbers to see when the allocator uses
-the fastpath or slow path. Only the fast path is optimized here.
+--mgross
 
-> AFAICT, we have similar artifact in these tests as well:
->
-> > no this_cpu ops
-> >
-> > 1. Kmalloc: Repeatedly allocate then free test
-> > 10000 times kmalloc(8) -> 239 cycles kfree -> 261 cycles
-> > 10000 times kmalloc(16) -> 249 cycles kfree -> 208 cycles
-> > 10000 times kmalloc(32) -> 215 cycles kfree -> 232 cycles
-> > 10000 times kmalloc(64) -> 164 cycles kfree -> 216 cycles
->
-> Notice the jump from 32 to 64 and then back to 64. One would expect we see
-> linear increase as object size grows as we hit the page allocator more often,
-> no?
-
-64 is the cacheline size for the machine. At that point you have the
-advantage of no overlapping data between different allocations and the
-prefetcher may do a particularly good job.
-
-> > 10000 times kmalloc(16384)/kfree -> 1002 cycles
->
-> If there's 50% improvement in the kmalloc() path, why does the this_cpu()
-> version seem to be roughly as fast as the mainline version?
-
-Its not that the kmalloc() is faster. The instructions used for the
-fastpath generate less cycles. Other components figure into the total
-latency as well.
-
-16k allocations for example are not handled by slub anymore. Fastpath has
-no effect. The wins there is just the improved percpu handling in the page
-allocator.
-
-I have some numbers here for irqless which drops another half of the
-fastpath latency (and it adds some code to the slow path, sigh):
-
-1. Kmalloc: Repeatedly allocate then free test
-10000 times kmalloc(8) -> 55 cycles kfree -> 251 cycles
-10000 times kmalloc(16) -> 201 cycles kfree -> 261 cycles
-10000 times kmalloc(32) -> 220 cycles kfree -> 261 cycles
-10000 times kmalloc(64) -> 186 cycles kfree -> 224 cycles
-10000 times kmalloc(128) -> 205 cycles kfree -> 125 cycles
-10000 times kmalloc(256) -> 351 cycles kfree -> 267 cycles
-10000 times kmalloc(512) -> 330 cycles kfree -> 310 cycles
-10000 times kmalloc(1024) -> 416 cycles kfree -> 419 cycles
-10000 times kmalloc(2048) -> 537 cycles kfree -> 439 cycles
-10000 times kmalloc(4096) -> 458 cycles kfree -> 594 cycles
-10000 times kmalloc(8192) -> 810 cycles kfree -> 678 cycles
-10000 times kmalloc(16384) -> 879 cycles kfree -> 746 cycles
-2. Kmalloc: alloc/free test
-10000 times kmalloc(8)/kfree -> 66 cycles
-10000 times kmalloc(16)/kfree -> 187 cycles
-10000 times kmalloc(32)/kfree -> 116 cycles
-10000 times kmalloc(64)/kfree -> 107 cycles
-10000 times kmalloc(128)/kfree -> 115 cycles
-10000 times kmalloc(256)/kfree -> 65 cycles
-10000 times kmalloc(512)/kfree -> 66 cycles
-10000 times kmalloc(1024)/kfree -> 206 cycles
-10000 times kmalloc(2048)/kfree -> 65 cycles
-10000 times kmalloc(4096)/kfree -> 193 cycles
-10000 times kmalloc(8192)/kfree -> 65 cycles
-10000 times kmalloc(16384)/kfree -> 976 cycles
-
-
-
-
+> 
+> Thanks,
+> 
+> jon
