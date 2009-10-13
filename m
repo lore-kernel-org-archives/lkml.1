@@ -1,99 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbZJMCzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932644AbZJMDD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758933AbZJMCzH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 22:55:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758924AbZJMCzG
+	id S932644AbZJMDD7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 23:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758782AbZJMDD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 22:55:06 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:44540 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758921AbZJMCzD (ORCPT
+	Mon, 12 Oct 2009 23:03:59 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:50074 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754463AbZJMDD6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 22:55:03 -0400
+	Mon, 12 Oct 2009 23:03:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:in-reply-to:message-id:references
-         :user-agent:x-archive:mime-version:content-type;
-        b=EqGtFF/QXMucwlcEETCr0P/6UK5J+Xn0li+Lv/r0oBodIVCYbqtFlatNNQ1NwfmvCn
-         hh7Yu6QM/vZWCULLejYKHrqRFejp8AWW88F5jHOnCUU4AxAC6AwjtUq+f/pGUnrCWIFJ
-         FRlXz81XjvK/BZ+CmkRCXtTpU22+1IYX1sQnw=
-Date: Mon, 12 Oct 2009 23:54:19 -0300 (BRST)
-From: "=?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?=" 
-	<fredlwm@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Nix <nix@esperi.org.uk>, "Justin P. Mattock" <justinmattock@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Boyan <btanastasov@yahoo.co.uk>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>
-Message-ID: <alpine.LNX.2.01.0910122343340.19647@dyndns.pervalidus.net>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>
-User-Agent: Alpine 2.01 (LNX 1266 2009-07-14)
-X-Archive: encrypt
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=KFLkkd8jfoGCGcRWeNqtBlGw+EsJAvjjIsANf8U4Y5grnVUU43HD01X6qXza0ja0Tt
+         SYsHcCK5NpzKn6rmTvxYFnEcRgosQKTUKnumaLT3cNRgnV3ErIqFrG+V/TdQBwnBVkSZ
+         8wbKSIngTcJFXiN42bXlvkeNGrzX1Dej1Xgl0=
+Date: Mon, 12 Oct 2009 20:03:14 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Vojtech Pavlik <vojtech@suse.cz>
+Cc: Marin Mitov <mitov@issp.bas.bg>, linux-kernel@vger.kernel.org
+Subject: Re: Regression?: keyboard state/LED inconsistency in
+	2.6.32-rc1/2,3,4
+Message-ID: <20091013030314.GA2887@core.coreip.homeip.net>
+References: <200910121118.29415.mitov@issp.bas.bg> <20091012083015.GA11483@suse.cz> <20091012085708.GA7403@core.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1177665380-1255402465=:19647"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012085708.GA7403@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, Oct 12, 2009 at 01:57:08AM -0700, Dmitry Torokhov wrote:
+> On Mon, Oct 12, 2009 at 10:30:15AM +0200, Vojtech Pavlik wrote:
+> > On Mon, Oct 12, 2009 at 11:18:28AM +0300, Marin Mitov wrote:
+> > > Hello,
+> > > 
+> > > I'm testing 2.6.32-rc1/2,3,4 and I'm using 2.6.31.3.
+> > > There is a difference in keyboard/LED behavior.
+> > > If in BIOS NumLock is set on, when the kernel starts
+> > > it puts NumLock off and the LED state is off in 2.6.31.3
+> > > (which is consistent), but in 2.6.32-rc1/2,3,4 the LED
+> > > stays on (and this is not consistent with keyboard's state).
+> > > 
+> > > Comparing drivers/input/keyboard/atkbd.c (I'm using it)
+> > > in 2.6.31.3 and 2.6.32-rc1/2,3,4 among others changes I
+> > > found the following lines (see the patch bellow) deleted,
+> > > so I propose either to add them again (this will restore 
+> > > keyboard/LED consistency) or revert the patch that has 
+> > > deleted them.
+> > 
+> > Oh, wow, those lines are quite clearly needed, I wonder why they got
+> > deleted, and I'm too lazy to find the commit comment ...
+> > 
+> 
+> Hmm, it appears I deleted a bit too much.. At some point I was thinking
+> the input core would reset LEDs and repeat rate on newly created device
+> but it was wrong idea. Unfortunately I was careless in applying atkbd
+> patch removing resume support (which should be handled by the input
+> core)...
+> 
 
---8323328-1177665380-1255402465=:19647
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8BIT
+Could you please try the patch below and let me know if it fixes
+things?
 
-On Mon, 12 Oct 2009, Linus Torvalds wrote:
+Thanks!
 
-> On Mon, 12 Oct 2009, Nix wrote:
->> On 12 Oct 2009, Justin P. Mattock uttered the following:
->>
->>> Not sure where this stands. Right now all three machines I have seem  to be having no issues with the kayboard
->>> (xserver 1.6.*) I can go and build the latest xserver(1.7) to see if I  hit something.
->> [...]
->>>> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=14388
->>>> Subject        : keyboard under X with 2.6.31
->>>> Submitter    : Frédéric L. W. Meunier <fredlwm@gmail.com>
->>>> Date        : 2009-10-07 20:19 (5 days old)
->>>> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e043e42bdb66885b3ac10d27a01ccb9972e2b0a3
->>>> References    : http://marc.info/?l=linux-kernel&m=125494753228217&w=4
->>
->> I have been seeing problems precisely like those described (sometimes
->> the keyboard dies, sometimes it gets 'stuck' with a key held down, until
->> I switch TTYs, which generally means killing X as I'm not aware of an
->> easy way to switch VTs using only the mouse), since I moved to 2.6.31
->
-> The particular commit that was bisected to should really not matter for X,
-> except perhaps from a timing standpoint.
->
-> The problem it fixed was in pty's, and X doesn't use them much if at all
-> (various X _programs_ may, of course, but the symptoms don't sound like
-> it's just a particular X app that has issues, but more of a generic X
-> keyboard handling thing)
->
-> But for non-pty's, there should be no semantic changes from that commit
-> outside of some general tty timing differences by doing that
-> tty_flush_to_ldisc() at new points.
->
-> I could fairly easily imagine that some timing difference does expose
-> another longer-standing problem in either the kernel or X itself. So the
-> bisection isn't necessarily wrong, it's just not likely telling us what
-> the real problem is.
->
-> Of course, maybe there is some race condition in the tty_buffer.c code. We
-> _used_ to not call flush_to_ldisc() except through the workqueue code, so
-> races would not be seen in normal circumstances. Now that flush_to_ldisc()
-> could easily get called both synchronously from tty_read()/tty_poll(),
-> while also being hit from the workqueues.
->
-> Alan, Ogawa-san, do either of you see some problem in tty_buffer.c,
-> perhaps?
+-- 
+Dmitry
 
-Just a note. With me, all the keyboard problems happened while I 
-was under X, but doing something in a terminal running screen. 
-Reverting the commit stopped the problem.
---8323328-1177665380-1255402465=:19647--
+
+Input: atkbd - restore resetting LED state at startup
+
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
+Fix breakage caused by commit 9605fb48e1998935a5ee70c965f90ad1ac023add
+While the input core indeed takes care of restoring led state and
+typematic settings upon resume the driver still need to initialize
+them properly when registering a new device
+
+Reported-by: Marin Mitov <mitov@issp.bas.bg>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+
+ drivers/input/keyboard/atkbd.c |   26 ++++++++++++++++++++++++++
+ 1 files changed, 26 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
+index 4709e15..03d961f 100644
+--- a/drivers/input/keyboard/atkbd.c
++++ b/drivers/input/keyboard/atkbd.c
+@@ -770,6 +770,30 @@ static int atkbd_select_set(struct atkbd *atkbd, int target_set, int allow_extra
+ 	return 3;
+ }
+ 
++static int atkbd_reset_state(struct atkbd *atkbd)
++{
++        struct ps2dev *ps2dev = &atkbd->ps2dev;
++	unsigned char param[1];
++
++	/*
++	 * Set the LEDs to a predefined state (all off).
++	 */
++
++	param[0] = 0;
++	if (ps2_command(ps2dev, param, ATKBD_CMD_SETLEDS))
++		return -1;
++
++	/*
++	 * Set autorepeat to fastest possible.
++	 */
++
++	param[0] = 0;
++	if (ps2_command(ps2dev, param, ATKBD_CMD_SETREP))
++		return -1;
++
++	return 0;
++}
++
+ static int atkbd_activate(struct atkbd *atkbd)
+ {
+ 	struct ps2dev *ps2dev = &atkbd->ps2dev;
+@@ -1087,6 +1111,7 @@ static int atkbd_connect(struct serio *serio, struct serio_driver *drv)
+ 		}
+ 
+ 		atkbd->set = atkbd_select_set(atkbd, atkbd_set, atkbd_extra);
++		atkbd_reset_state(atkbd);
+ 		atkbd_activate(atkbd);
+ 
+ 	} else {
+@@ -1267,6 +1292,7 @@ static ssize_t atkbd_set_extra(struct atkbd *atkbd, const char *buf, size_t coun
+ 
+ 		atkbd->dev = new_dev;
+ 		atkbd->set = atkbd_select_set(atkbd, atkbd->set, value);
++		atkbd_reset_state(atkbd);
+ 		atkbd_activate(atkbd);
+ 		atkbd_set_keycode_table(atkbd);
+ 		atkbd_set_device_attrs(atkbd);
