@@ -1,217 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934308AbZJMUyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934334AbZJMUze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934308AbZJMUyp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 16:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934158AbZJMUyp
+	id S934334AbZJMUze (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 16:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934317AbZJMUze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 16:54:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58570 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934034AbZJMUyn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 16:54:43 -0400
-Date: Tue, 13 Oct 2009 13:53:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Boyan <btanastasov@yahoo.co.uk>
-cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?= 
-	<fredlwm@gmail.com>,
-       "Justin P. Mattock" <justinmattock@gmail.com>, Nix <nix@esperi.org.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <4AD4DE4C.4010402@yahoo.co.uk>
-Message-ID: <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
- <4AD3F769.5080405@gmail.com> <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net> <4AD437F9.9020708@yahoo.co.uk> <alpine.LFD.2.01.0910130745550.3438@localhost.localdomain> <4AD4DE4C.4010402@yahoo.co.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 13 Oct 2009 16:55:34 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:58802 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934081AbZJMUzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 16:55:32 -0400
+From: Glauber Costa <glommer@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: [PATCH] v3: allow userspace to adjust kvmclock offset
+Date: Tue, 13 Oct 2009 16:55:05 -0400
+Message-Id: <1255467305-14748-1-git-send-email-glommer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When we migrate a kvm guest that uses pvclock between two hosts, we may
+suffer a large skew. This is because there can be significant differences
+between the monotonic clock of the hosts involved. When a new host with
+a much larger monotonic time starts running the guest, the view of time
+will be significantly impacted.
 
+Situation is much worse when we do the opposite, and migrate to a host with
+a smaller monotonic clock.
 
-On Tue, 13 Oct 2009, Boyan wrote:
-> 
-> Composite is enabled in my X config, but I don't have compiz or
-> something like that enabled. DRI is enabled.
+This proposed ioctl will allow userspace to inform us what is the monotonic
+clock value in the source host, so we can keep the time skew short, and
+more importantly, never goes backwards. Userspace may also need to trigger
+the current data, since from the first migration onwards, it won't be
+reflected by a simple call to clock_gettime() anymore.
 
-I think I may actually see the problem. And if I'm right, then the bug you 
-guys bisected down to is really the fundamental reason. Embarrassing. I 
-was so convinced it should only change flush timing, that I didn't think 
-through all the possibilities.
+[ v2: uses a struct with a padding ]
+[ v3: provide an ioctl to get clock data too ]
 
-The reason for thinking that it only really changes timing si fairly 
-simple: the only thing it really does is to call "flush_to_ldisc()" 
-synchronously when needed. On the face of it, that should be perfectly 
-safe.
-
-But flush_to_ldisc() itself has a real oddity: it uses "tty->buf.lock" to 
-protect everything, BUT NOT THE ACTUAL CALL TO ->receive_buf()!
-
-So even though that function looks _trivially_ atomic, once you look 
-deeper it suddenly becomes clear how it's not really atomic at all: it 
-will do all the buffer handling with the spinlock held, but then after it 
-has figured out the buffer, it does:
-
-	...
-        spin_unlock_irqrestore(&tty->buf.lock, flags);
-        disc->ops->receive_buf(tty, char_buf,
-                                        flag_buf, count);
-        spin_lock_irqsave(&tty->buf.lock, flags);
-	...
-
-and by releasing that lock it actually seems to break all the buffering 
-guarantees! What can happen is:
-
-	CPU1 (or thread1 with PREEMPTION)
-					CPU2 (or thread2 with PREEMPTION)
-
-	flush_to_ldisc()
-	...
-	spin_lock_irqsave(..)
-	.. get one buffer..
-	spin_unlock_irqrestore(..);
-
-			<- PREEMPTION POINT, anything can happen ->
-			<- more buffers can be added, etc ->
-
-					flush_to_ldisc()
-					spin_lock_irqsave(..)
-					.. get second buffer..
-					spin_unlock_irqrestore(..);
-					->receive_buf(tty, char_buf, ...
-					spin_lock_irqrestore(..)
-					.. all done ..
-
-
-	->receive_buf(tty, char_buf, ...
-        spin_lock_irqrestore(...)
-
-Notice how the "->receive_buf()" calls were done out of order, even if the 
-data was perfectly in-order in the buffers.
-
-And you can get the same race on SMP even without preemption, just thanks 
-to CPU's hitting that lock just right. CONFIG_PREEMPT just makes it easier 
-(probably _much_ easier) to trigger, and possible even on UP.
-
-As far as I can tell, this is not really a new bug (it could have happened 
-with low_latency before too), but on a tty without low_latency it would 
-never happen until the commit you bisected to because the workqueue itself 
-would serialize everything, and only one flush would ever be pending.
-
-Anyway, the above explanation "feels right". It would easily explain the 
-behavior, because if the ->receive_buf() calls get re-ordered, then the 
-events get re-ordered, and one simple case of that would be to see the key 
-"release" event before the key "press" event.
-
-It also explains how that commit seems to be indicated so consistently. It 
-still requires some specific timing, but now it's not timing _introduced_ 
-by the commit, it's an old bug that that commit exposed, and then needs 
-some unlucky timing to actually happen.
-
-The sane fix would be to just run ->receive_buf() under the tty->buf.lock, 
-but I assume we'd have a lot of unhappy ldiscs if we did that (and 
-possibly irq latency problems too).
-
-I think the
-
-	tty->buf.head = NULL;
-	...
-	/* Restore the queue head */
-	tty->buf.head = head;
-
-around that loop is actually there to try to avoid this whole problem, but 
-whoever did that didn't realize that there are other things that could set 
-buf.head (in particular, tty_buffer_request_room() while the lock is 
-dropped, so that whole logic is totally broken anyway and might even 
-conspire to make the problem worse (ie if somebody tries to add data while 
-->receive_buf() is running and the lock is gone, you are now _really_ 
-screwing things up).
-
-So instead of playing games with buf.head, I think we should just rely on 
-the TTY_FLUSHING bit. I'm not _entirely_ happy with this, because now if 
-we call flush_to_ldisc() while somebody else is busy flushing it, it will 
-return early even though the flush hasn't completed yet. But that was 
-always true to some degree (ie the "buffer full" case).
-
-Anyway, I'm not entirely happy with this patch, and I haven't actually 
-TESTED it so it might well be totally broken, but something along the 
-lines of the appended may just fix it. It would be good if people who see 
-this problem tried it out.
-
-			Linus
+Signed-off-by: Glauber Costa <glommer@redhat.com>
 ---
- drivers/char/tty_buffer.c |   31 +++++++++++++------------------
- 1 files changed, 13 insertions(+), 18 deletions(-)
+ arch/x86/include/asm/kvm_host.h |    1 +
+ arch/x86/kvm/x86.c              |   35 ++++++++++++++++++++++++++++++++++-
+ include/linux/kvm.h             |    7 +++++++
+ 3 files changed, 42 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/char/tty_buffer.c b/drivers/char/tty_buffer.c
-index 3108991..da59334 100644
---- a/drivers/char/tty_buffer.c
-+++ b/drivers/char/tty_buffer.c
-@@ -402,28 +402,24 @@ static void flush_to_ldisc(struct work_struct *work)
- 		container_of(work, struct tty_struct, buf.work.work);
- 	unsigned long 	flags;
- 	struct tty_ldisc *disc;
--	struct tty_buffer *tbuf, *head;
--	char *char_buf;
--	unsigned char *flag_buf;
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 179a919..c9b0d9f 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -410,6 +410,7 @@ struct kvm_arch{
  
- 	disc = tty_ldisc_ref(tty);
- 	if (disc == NULL)	/*  !TTY_LDISC */
- 		return;
+ 	unsigned long irq_sources_bitmap;
+ 	u64 vm_init_tsc;
++	s64 kvmclock_offset;
+ };
  
- 	spin_lock_irqsave(&tty->buf.lock, flags);
--	/* So we know a flush is running */
--	set_bit(TTY_FLUSHING, &tty->flags);
--	head = tty->buf.head;
--	if (head != NULL) {
--		tty->buf.head = NULL;
--		for (;;) {
--			int count = head->commit - head->read;
+ struct kvm_vm_stat {
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 9601bc6..58a380a 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -699,7 +699,8 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
+ 	/* With all the info we got, fill in the values */
+ 
+ 	vcpu->hv_clock.system_time = ts.tv_nsec +
+-				     (NSEC_PER_SEC * (u64)ts.tv_sec);
++				     (NSEC_PER_SEC * (u64)ts.tv_sec) + v->kvm->arch.kvmclock_offset;
 +
-+	if (test_and_set_bit(TTY_FLUSHING, &tty->flags)) {
-+		struct tty_buffer *head;
-+		while ((head = tty->buf.head) != NULL) {
-+			int count;
-+			char *char_buf;
-+			unsigned char *flag_buf;
-+
-+			count = head->commit - head->read;
- 			if (!count) {
--				if (head->next == NULL)
--					break;
--				tbuf = head;
--				head = head->next;
--				tty_buffer_free(tty, tbuf);
-+				tty->buf.head = head->next;
-+				tty_buffer_free(tty, head);
- 				continue;
- 			}
- 			/* Ldisc or user is trying to flush the buffers
-@@ -445,9 +441,9 @@ static void flush_to_ldisc(struct work_struct *work)
- 							flag_buf, count);
- 			spin_lock_irqsave(&tty->buf.lock, flags);
- 		}
--		/* Restore the queue head */
--		tty->buf.head = head;
-+		clear_bit(TTY_FLUSHING, &tty->flags);
+ 	/*
+ 	 * The interface expects us to write an even number signaling that the
+ 	 * update is finished. Since the guest won't see the intermediate
+@@ -2441,6 +2442,38 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 		r = 0;
+ 		break;
  	}
++	case KVM_SET_CLOCK: {
++		struct timespec now;
++		struct kvm_clock_data user_ns;
++		u64 now_ns;
++		long delta;
 +
- 	/* We may have a deferred request to flush the input buffer,
- 	   if so pull the chain under the lock and empty the queue */
- 	if (test_bit(TTY_FLUSHPENDING, &tty->flags)) {
-@@ -455,7 +451,6 @@ static void flush_to_ldisc(struct work_struct *work)
- 		clear_bit(TTY_FLUSHPENDING, &tty->flags);
- 		wake_up(&tty->read_wait);
++		r =  -EFAULT;
++		if (copy_from_user(&user_ns, argp, sizeof(user_ns)))
++			goto out;
++
++		r = 0;
++		ktime_get_ts(&now);
++		now_ns = timespec_to_ns(&now);
++		delta = user_ns.clock - now_ns;
++		kvm->arch.kvmclock_offset = delta;
++		break;	
++	}
++	case KVM_GET_CLOCK: {
++		struct timespec now;
++		struct kvm_clock_data user_ns;
++		u64 now_ns;
++
++		ktime_get_ts(&now);
++		now_ns = timespec_to_ns(&now);
++		user_ns.clock = kvm->arch.kvmclock_offset + now_ns;
++
++		if (copy_to_user(argp, &user_ns, sizeof(user_ns)))
++			r =  -EFAULT;
++
++		break;	
++	}
++
+ 	default:
+ 		;
  	}
--	clear_bit(TTY_FLUSHING, &tty->flags);
- 	spin_unlock_irqrestore(&tty->buf.lock, flags);
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index f8f8900..ad0ecbc 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -497,6 +497,11 @@ struct kvm_irqfd {
+ 	__u8  pad[20];
+ };
  
- 	tty_ldisc_deref(disc);
++struct kvm_clock_data {
++	__u64 clock;
++	__u64 pad[2];
++};
++
+ /*
+  * ioctls for VM fds
+  */
+@@ -546,6 +551,8 @@ struct kvm_irqfd {
+ #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
+ #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
+ #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
++#define KVM_SET_CLOCK		  _IOW(KVMIO, 0x7a, struct kvm_clock_data)
++#define KVM_GET_CLOCK		  _IOW(KVMIO, 0x7b, struct kvm_clock_data)
+ 
+ /*
+  * ioctls for vcpu fds
+-- 
+1.6.2.2
+
