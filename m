@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933904AbZJMP5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933924AbZJMP53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933904AbZJMP5M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760282AbZJMP5L
+	id S933924AbZJMP53 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 11:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933914AbZJMP52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:57:11 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:1259 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753359AbZJMP5K (ORCPT
+	Tue, 13 Oct 2009 11:57:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:56176 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933907AbZJMP51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:57:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=P0gjpuRFWws8xuXvidn5jK7wicxC7k8Bj2ton0aOUHKQwzVHQn6DEVHwu+bjsPQ4Xp
-         PD9/G6v6emvNjJwmN9+M9AK2rmDYBXpAVHxSBx0xz61pFo4I97Az1mrvuY+q7MTG5ave
-         z7brbWznx6NKwfnQfZhmidpFj0L84oJNDLmiM=
-From: Volker Armin Hemmann <volkerarmin@googlemail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Bug #14264] ehci problem - mouse dead on scroll
-Date: Tue, 13 Oct 2009 17:55:20 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.31.1r4; KDE/4.3.2; x86_64; ; )
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Tue, 13 Oct 2009 11:57:27 -0400
+Date: Tue, 13 Oct 2009 17:56:47 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Nix <nix@esperi.org.uk>,
+       "Justin P. Mattock" <justinmattock@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Oliver Neukum <oliver@neukum.org>
-References: <Pine.LNX.4.44L0.0910131132150.3169-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0910131132150.3169-100000@iolanthe.rowland.org>
+       Boyan <btanastasov@yahoo.co.uk>, Ed Tomlinson <edt@aei.ca>,
+       =?iso-8859-1?B?RnLpZOlyaWMgTC4gVy4=?= Meunier <fredlwm@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+Message-ID: <20091013155647.GB2127@basil.fritz.box>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <20091013003841.6c2988d0@lxorguk.ukuu.org.uk> <20091012234641.GF8345@core.coreip.homeip.net> <20091013120046.5efb3365@lxorguk.ukuu.org.uk> <alpine.LRH.2.00.0910131645290.12171@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910131755.20166.volkerarmin@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.0910131645290.12171@twin.jikos.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dienstag 13 Oktober 2009, Alan Stern wrote:
-> On Mon, 12 Oct 2009, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.30 and 2.6.31.
-> >
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> > be listed and let me know (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14264
-> > Subject		: ehci problem - mouse dead on scroll
-> > Submitter	: Volker Armin Hemmann <volkerarmin@googlemail.com>
-> > Date		: 2009-09-12 7:46 (30 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125274202707893&w=4
-> > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+> This has been reported by Andi Kleen some time ago [1] [2]. He seems to 
+> have had clear idea between which kernel versions this started happening 
+> and seemed to be able to reproduce it very reliably (which wasn't the case 
+> on my side), but I don't think he bisected it down to single commit yet.
 > 
-> This is probably a hardware problem in the mouse or the Logitech
-> receiver.  It affected both EHCI and OHCI, and it was not reproducible
-> with a different mouse.  But Volker hasn't reported any results since
-> the end of September.
-> 
-> Volker, another good test would be to try plugging your mouse into
-> someone else's computer.
-> 
-> Alan Stern
-> 
+> Andi?
 
-yeah, that is a problem - I am pretty 'alone' in regard of linux users. I know 
-very few, and they have either only servers without X or run some stable 
-distributions with old kernels.
+I've never tried to bisect it, but I think it was introduced between
+.29->.30. Or at least I had never noticed the problem before upgrading
+to some .30rc*
 
-It is probably hardware related. I have tried two other mice and both were ok. 
-Both had a lesser resolution and were slower, but that shouldn't make any 
-difference.
+My symptoms were slightly different from Alan though, for me the actual
+console switch leaked. I can't remember seeing keys before the switch
+leaking too.
 
-I wanted to try some of the 32-rcs to see if they make any difference but the 
-reiser4 for 2.6.31 patch does not result in a buildable kernel anymore, thanks 
-to changes in writeback.h. So all I can say is:
-2.6.31 is ok with the logitech, using ehci+hub+Translator settings and that is 
-good enough for me.
-every other mouse is ok with either ohci or attached to the hub.
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
