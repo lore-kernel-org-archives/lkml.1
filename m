@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933533AbZJMJoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933629AbZJMJrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933533AbZJMJoT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 05:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbZJMJoS
+	id S933629AbZJMJrN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 05:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbZJMJrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 05:44:18 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:44323 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755317AbZJMJoS (ORCPT
+	Tue, 13 Oct 2009 05:47:13 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:43019 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755365AbZJMJrM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 05:44:18 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=w4iE+TBsmj5y1WloLYF40w==:17 a=V9ycAcD1m8Vuzo_b-_wA:9
- a=SFf-wKSZRJ094thInyAA:7 a=GJB5KP4zH0nxu8lCOQr9DhV5TYQA:4
-From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
-Reply-To: tfjellstrom@shaw.ca
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: buffer io error on device sr0?
-Date: Tue, 13 Oct 2009 03:43:32 -0600
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-git2; KDE/4.3.2; x86_64; ; )
+	Tue, 13 Oct 2009 05:47:12 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=i6/sR9nBkk6ruCqUeT+FAIfLTJEEvfKJE70suLEPK3L2nuojGpNqNH31ruA/RP3+L
+	9XLQ3gmEhq3BZWob3pvQQ==
+Date: Tue, 13 Oct 2009 02:45:56 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Mel Gorman <mel@csn.ul.ie>, Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu
+ operations in the hotpaths
+In-Reply-To: <84144f020910120614r529d8e4em9babe83a90e9371f@mail.gmail.com>
+Message-ID: <alpine.DEB.1.00.0910130231570.27262@chino.kir.corp.google.com>
+References: <20091007211024.442168959@gentwo.org> <20091007211053.378634196@gentwo.org> <4AD307A5.105@kernel.org> <84144f020910120614r529d8e4em9babe83a90e9371f@mail.gmail.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910130343.32162.tfjellstrom@shaw.ca>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm not sure which version it started, but it seems at least 2.6.32-rc3-git2 
-has issues with detecting blank DVDR disks.
+On Mon, 12 Oct 2009, Pekka Enberg wrote:
 
-[220595.198654] cdrom: This disc doesn't have any tracks I recognize!
-[220595.298488] sr 3:0:0:0: [sr0] Unhandled sense code
-[220595.298492] sr 3:0:0:0: [sr0] Result: hostbyte=DID_OK 
-driverbyte=DRIVER_SENSE
-[220595.298496] sr 3:0:0:0: [sr0] Sense Key : Blank Check [current]
-[220595.298501] sr 3:0:0:0: [sr0] Add. Sense: No additional sense information
-[220595.298505] sr 3:0:0:0: [sr0] CDB: Read(10): 28 00 00 00 00 00 00 00 01 00
-[220595.298514] end_request: I/O error, dev sr0, sector 0
-[220595.298518] Buffer I/O error on device sr0, logical block 0
-[220595.304554] sr 3:0:0:0: [sr0] Unhandled sense code
-[220595.304562] sr 3:0:0:0: [sr0] Result: hostbyte=DID_OK 
-driverbyte=DRIVER_SENSE
-[220595.304570] sr 3:0:0:0: [sr0] Sense Key : Blank Check [current]
-[220595.304579] sr 3:0:0:0: [sr0] Add. Sense: No additional sense information
-[220595.304588] sr 3:0:0:0: [sr0] CDB: Read(10): 28 00 00 00 00 00 00 00 01 00
-[220595.304609] end_request: I/O error, dev sr0, sector 0
-[220595.304616] Buffer I/O error on device sr0, logical block 0
+> The patch looks sane to me but the changelog contains no relevant
+> numbers on performance. I am fine with the patch going in -percpu but
+> the patch probably needs some more beating performance-wise before it
+> can go into .33. I'm CC'ing some more people who are known to do SLAB
+> performance testing just in case they're interested in looking at the
+> patch. In any case,
+> 
 
-Unless its supposed to be this way. Although I didn't receive any kind of 
-notification when inserting the disk, as I used to (could be a hal/kde error, 
-but the logs in dmesg seem to hint otherwise).
+I ran 60-second netperf TCP_RR benchmarks with various thread counts over 
+two machines, both four quad-core Opterons.  I ran the trials ten times 
+each with both vanilla per-cpu#for-next at 9288f99 and with v6 of this 
+patchset.  The transfer rates were virtually identical showing no 
+improvement or regression with this patchset in this benchmark.
 
--- 
-Thomas Fjellstrom
-tfjellstrom@shaw.ca
+ [ As I reported in http://marc.info/?l=linux-kernel&m=123839191416472, 
+   this benchmark continues to be the most significant regression slub has 
+   compared to slab. ]
