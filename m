@@ -1,95 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933148AbZJMJkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933533AbZJMJoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933148AbZJMJkM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 05:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbZJMJkL
+	id S933533AbZJMJoT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 05:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbZJMJoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 05:40:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43199 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754623AbZJMJkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 05:40:10 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/Cma06nwHC9c39qYH2jpZhOUmoM8lxTub3bPvZoz
-	SOcwCyt33ANSfb
-Subject: Re: hackbench regression with kernel 2.6.32-rc1
-From: Mike Galbraith <efault@gmx.de>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1255403522.3684.57.camel@ymzhang>
-References: <1255079943.25078.23.camel@ymzhang>
-	 <1255084986.8802.46.camel@laptop>  <1255331120.3684.43.camel@ymzhang>
-	 <1255357264.10420.15.camel@twins>  <1255403522.3684.57.camel@ymzhang>
-Content-Type: text/plain
-Date: Tue, 13 Oct 2009 11:39:00 +0200
-Message-Id: <1255426740.9958.95.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Tue, 13 Oct 2009 05:44:18 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:44323 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755317AbZJMJoS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 05:44:18 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=w4iE+TBsmj5y1WloLYF40w==:17 a=V9ycAcD1m8Vuzo_b-_wA:9
+ a=SFf-wKSZRJ094thInyAA:7 a=GJB5KP4zH0nxu8lCOQr9DhV5TYQA:4
+From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+Reply-To: tfjellstrom@shaw.ca
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: buffer io error on device sr0?
+Date: Tue, 13 Oct 2009 03:43:32 -0600
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-git2; KDE/4.3.2; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.54
+Message-Id: <200910130343.32162.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 11:12 +0800, Zhang, Yanmin wrote:
+I'm not sure which version it started, but it seems at least 2.6.32-rc3-git2 
+has issues with detecting blank DVDR disks.
 
-> NEXT_BUDDY has no help on volanoMark and tbench.
+[220595.198654] cdrom: This disc doesn't have any tracks I recognize!
+[220595.298488] sr 3:0:0:0: [sr0] Unhandled sense code
+[220595.298492] sr 3:0:0:0: [sr0] Result: hostbyte=DID_OK 
+driverbyte=DRIVER_SENSE
+[220595.298496] sr 3:0:0:0: [sr0] Sense Key : Blank Check [current]
+[220595.298501] sr 3:0:0:0: [sr0] Add. Sense: No additional sense information
+[220595.298505] sr 3:0:0:0: [sr0] CDB: Read(10): 28 00 00 00 00 00 00 00 01 00
+[220595.298514] end_request: I/O error, dev sr0, sector 0
+[220595.298518] Buffer I/O error on device sr0, logical block 0
+[220595.304554] sr 3:0:0:0: [sr0] Unhandled sense code
+[220595.304562] sr 3:0:0:0: [sr0] Result: hostbyte=DID_OK 
+driverbyte=DRIVER_SENSE
+[220595.304570] sr 3:0:0:0: [sr0] Sense Key : Blank Check [current]
+[220595.304579] sr 3:0:0:0: [sr0] Add. Sense: No additional sense information
+[220595.304588] sr 3:0:0:0: [sr0] CDB: Read(10): 28 00 00 00 00 00 00 00 01 00
+[220595.304609] end_request: I/O error, dev sr0, sector 0
+[220595.304616] Buffer I/O error on device sr0, logical block 0
 
-Vmark is mostly about preemption and affinity.  Increases in wakeup
-preemption or load balancing will bring it down.  The affinity bit
-applies heavily to mysql+oltp too, though it loves wakeup preemption.
+Unless its supposed to be this way. Although I didn't receive any kind of 
+notification when inserting the disk, as I used to (could be a hal/kde error, 
+but the logs in dmesg seem to hint otherwise).
 
-test test test...
-
-My conclusion for results _here_ is load balancing changes are harming
-cache wise.  GENTLE_FAIR_SLEEPERS harms short term fairness, but despite
-GENTLE_FAIR_SLEEPERS, we're still wakeup preempting too much, likely
-doing more cache harm.
-
-(even for the desktop, overly aggressive wakeup preemption can do harm)
-
-I'd suggest trying the settings below.
-
-vmark 
-
- 92143 stock settings
- 96396 -SD_BALANCE_NEWIDLE
- 99403 -SD_WAKE_BALANCE
-121821 min_granularity+wakeup_granularity *= 2
-128795 NO_WAKEUP_PREEMPT (and back on, just checking fairness)
- 97193 NO_FAIR_SLEEPERS (vmark likes fairness, max out fairness)
-107519 FAIR_SLEEPERS NO_GENTLE_FAIR_SLEEPERS (over-preempt again, so..)
-123721 min_granularity+wakeup_granularity *= 2
-131290 NO_WAKEUP_PREEMPT (and back on, just checking fairness)
-123464 NEXT_BUDDY (no effect)
-vs stock 1.339
-
-tbench 8 with these settings.
-
-752.249 MB/sec 8 procs
-747.010 MB/sec 8 procs NO_NEXT_BUDDY
-753.177 MB/sec 8 procs min_granularity+wakeup_granularity /= 2
-749.518 MB/sec 8 procs GENTLE_FAIR_SLEEPERS
-753.051 MB/sec 8 procs min_granularity+wakeup_granularity /= 2
-734.772 MB/sec 8 procs +SD_WAKE_BALANCE
-733.683 MB/sec 8 procs +SD_BALANCE_NEWIDLE (we are at stock)
-vs stock 1.025
-
-Turns off netfilter, stock settings
-
-903.304 MB/sec 8 procs
-900.656 MB/sec 8 procs -SD_BALANCE_NEWIDLE
-928.914 MB/sec 8 procs -SD_WAKE_BALANCE
-930.591 MB/sec 8 procs min_granularity+wakeup_granularity *= 2
-926.836 MB/sec 8 procs NO_GENTLE_FAIR_SLEEPERS
-931.148 MB/sec 8 procs min_granularity+wakeup_granularity *= 2
-vs stock 1.030
-
-vmark
-
-146264
-116559 stock
-vs stock 1.254
-
+-- 
+Thomas Fjellstrom
+tfjellstrom@shaw.ca
