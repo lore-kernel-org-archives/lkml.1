@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbZJMJxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbZJMKBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759247AbZJMJxK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 05:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbZJMJxJ
+	id S1759307AbZJMKBu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 06:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759044AbZJMKBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 05:53:09 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:24400 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755882AbZJMJxI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 05:53:08 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -14.389
-Message-ID: <4AD44DD3.4070508@tremplin-utc.net>
-Date: Tue, 13 Oct 2009 11:52:19 +0200
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091009 Mandriva/2.0.0.23-3mdv2010.0 (2010.0) Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
+	Tue, 13 Oct 2009 06:01:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38149 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756444AbZJMKBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 06:01:49 -0400
+Date: Tue, 13 Oct 2009 12:01:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vincent Legoll <vincent.legoll@gmail.com>
+Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] [PERF] do not manually count string lengths
+Message-ID: <20091013100101.GA26846@elte.hu>
+References: <4727185d0910130118m5387058dndb02ac9b384af9f0@mail.gmail.com>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work	anymore
-References: <4AD120F2.3020606@tremplin-utc.net> <20091011030029.GA6526@suse.de> <200910112135.29384.dmitry.torokhov@gmail.com> <4AD31709.4000103@tremplin-utc.net> <20091012154846.GB7996@core.coreip.homeip.net>
-In-Reply-To: <20091012154846.GB7996@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4727185d0910130118m5387058dndb02ac9b384af9f0@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 12-10-09 17:48, Dmitry Torokhov schreef:
-> On Mon, Oct 12, 2009 at 01:46:17PM +0200, Éric Piel wrote:
->>> Eric, do you still need to fiddle with i8042 to get your keyboard working with 
->>> 2.6.32-rc3? We need to make sure that resube works without users needing to 
->>> mess with bind/unbind.
->> Yes, the keyboard doesn't work after the first resume from ram (the
->> later resumes do work). I haven't tried any special option to the i8042
->> driver. This is on a HP 2510, in 64 bits.
-> 
-> Could you please try and let me know if unloading at suspend and
-> reloading after resume atkbd and/or psmouse drivers and leaving i8042
-> alone "fixes" the issue?
-> 
-Unloading the modules before suspend and reloading them after works
-around the issue, indeed.
 
-Eric
+* Vincent Legoll <vincent.legoll@gmail.com> wrote:
+
+> Hello,
+> 
+> here is a small patch to the perf tool to use strlen & macros
+> instead of manually counting string lengths.
+> 
+> I didn't find mention of any maintainer for the tool...
+
+It's maintained by:
+
+ PERFORMANCE EVENTS SUBSYSTEM
+ M:      Peter Zijlstra <a.p.zijlstra@chello.nl>
+ M:      Paul Mackerras <paulus@samba.org>
+ M:      Ingo Molnar <mingo@elte.hu>
+ S:      Supported
+
+We should add 'F:' file patterns to that entry i guess ...
+
+Something like:
+
+F:	kernel/perf_event.c
+F:	include/linux/perf_event.h
+F:	arch/*/*/kernel/perf_event.c
+F:	arch/*/include/asm/perf_event.h
+F:	tools/perf/
+
+Would do the trick. Mind sending a patch for that too?
+
+> Please advise if I should submit this in another way
+
+Submitting it to lkml was fine enough - please Cc: it to us in the 
+future to make sure we dont miss it.
+
+Applied, thanks for the patch!
+
+	Ingo
