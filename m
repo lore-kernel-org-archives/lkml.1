@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752020AbZJMEt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752270AbZJMEtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752020AbZJMEt1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 00:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbZJMEt1
+	id S1752270AbZJMEtt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 00:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZJMEts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 00:49:27 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:49549 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbZJMEt0 (ORCPT
+	Tue, 13 Oct 2009 00:49:48 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:56882 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752066AbZJMEtr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 00:49:26 -0400
-Date: Mon, 12 Oct 2009 21:49:55 -0700
+	Tue, 13 Oct 2009 00:49:47 -0400
+Date: Mon, 12 Oct 2009 21:50:17 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
@@ -23,8 +23,8 @@ Cc: Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
        kosaki.motohiro@jp.fujitsu.com, randy.dunlap@oracle.com,
        linux-api@vger.kernel.org,
        Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
-Subject: [RFC][v8][PATCH 1/10]: Factor out code to allocate pidmap page
-Message-ID: <20091013044955.GA28435@us.ibm.com>
+Subject: [RFC][v8][PATCH 2/10]: Have alloc_pidmap() return actual error code
+Message-ID: <20091013045017.GB28435@us.ibm.com>
 References: <20091013044925.GA28181@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -38,89 +38,90 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Subject: [RFC][v8][PATCH 1/10]: Factor out code to allocate pidmap page
+Subject: [RFC][v8][PATCH 2/10]: Have alloc_pidmap() return actual error code
 
-To simplify alloc_pidmap(), move code to allocate a pid map page to a
-separate function.
+alloc_pidmap() can fail either because all pid numbers are in use or
+because memory allocation failed.  With support for setting a specific
+pid number, alloc_pidmap() would also fail if either the given pid
+number is invalid or in use.
 
-Changelog[v3]:
-	- Earlier version of patchset called alloc_pidmap_page() from two
-	  places. But now its called from only one place. Even so, moving
-	  this code out into a separate function simplifies alloc_pidmap().
-Changelog[v2]:
-	- (Matt Helsley, Dave Hansen) Have alloc_pidmap_page() return
-	  -ENOMEM on error instead of -1.
+Rather than have callers assume -ENOMEM, have alloc_pidmap() return
+the actual error.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- kernel/pid.c |   45 ++++++++++++++++++++++++++++++---------------
- 1 file changed, 30 insertions(+), 15 deletions(-)
+ kernel/fork.c |    5 +++--
+ kernel/pid.c  |   14 +++++++++-----
+ 2 files changed, 12 insertions(+), 7 deletions(-)
 
+Index: linux-2.6/kernel/fork.c
+===================================================================
+--- linux-2.6.orig/kernel/fork.c	2009-09-09 19:06:21.000000000 -0700
++++ linux-2.6/kernel/fork.c	2009-09-09 19:06:46.000000000 -0700
+@@ -1110,10 +1110,11 @@ static struct task_struct *copy_process(
+ 		goto bad_fork_cleanup_io;
+ 
+ 	if (pid != &init_struct_pid) {
+-		retval = -ENOMEM;
+ 		pid = alloc_pid(p->nsproxy->pid_ns);
+-		if (!pid)
++		if (IS_ERR(pid)) {
++			retval = PTR_ERR(pid);
+ 			goto bad_fork_cleanup_io;
++		}
+ 
+ 		if (clone_flags & CLONE_NEWPID) {
+ 			retval = pid_ns_prepare_proc(p->nsproxy->pid_ns);
 Index: linux-2.6/kernel/pid.c
 ===================================================================
---- linux-2.6.orig/kernel/pid.c	2009-09-09 19:06:21.000000000 -0700
-+++ linux-2.6/kernel/pid.c	2009-09-09 19:06:25.000000000 -0700
-@@ -122,9 +122,35 @@ static void free_pidmap(struct upid *upi
- 	atomic_inc(&map->nr_free);
- }
- 
-+static int alloc_pidmap_page(struct pidmap *map)
-+{
-+	void *page;
-+
-+	if (likely(map->page))
-+		return 0;
-+
-+	page = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+
-+	/*
-+	 * Free the page if someone raced with us installing it:
-+	 */
-+	spin_lock_irq(&pidmap_lock);
-+	if (map->page)
-+		kfree(page);
-+	else
-+		map->page = page;
-+	spin_unlock_irq(&pidmap_lock);
-+
-+	if (unlikely(!map->page))
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
+--- linux-2.6.orig/kernel/pid.c	2009-09-09 19:06:25.000000000 -0700
++++ linux-2.6/kernel/pid.c	2009-09-09 19:06:46.000000000 -0700
+@@ -150,7 +150,7 @@ static int alloc_pidmap_page(struct pidm
  static int alloc_pidmap(struct pid_namespace *pid_ns)
  {
  	int i, offset, max_scan, pid, last = pid_ns->last_pid;
-+	int rc;
+-	int rc;
++	int rc = -EAGAIN;
  	struct pidmap *map;
  
  	pid = last + 1;
-@@ -134,21 +160,10 @@ static int alloc_pidmap(struct pid_names
- 	map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
- 	max_scan = (pid_max + BITS_PER_PAGE - 1)/BITS_PER_PAGE - !offset;
- 	for (i = 0; i <= max_scan; ++i) {
--		if (unlikely(!map->page)) {
--			void *page = kzalloc(PAGE_SIZE, GFP_KERNEL);
--			/*
--			 * Free the page if someone raced with us
--			 * installing it:
--			 */
--			spin_lock_irq(&pidmap_lock);
--			if (map->page)
--				kfree(page);
--			else
--				map->page = page;
--			spin_unlock_irq(&pidmap_lock);
--			if (unlikely(!map->page))
--				break;
--		}
-+		rc = alloc_pidmap_page(map);
-+		if (rc)
-+			break;
-+
- 		if (likely(atomic_read(&map->nr_free))) {
- 			do {
- 				if (!test_and_set_bit(offset, map->page)) {
+@@ -189,12 +189,14 @@ static int alloc_pidmap(struct pid_names
+ 		} else {
+ 			map = &pid_ns->pidmap[0];
+ 			offset = RESERVED_PIDS;
+-			if (unlikely(last == offset))
++			if (unlikely(last == offset)) {
++				rc = -EAGAIN;
+ 				break;
++			}
+ 		}
+ 		pid = mk_pid(pid_ns, map, offset);
+ 	}
+-	return -1;
++	return rc;
+ }
+ 
+ int next_pidmap(struct pid_namespace *pid_ns, int last)
+@@ -263,8 +265,10 @@ struct pid *alloc_pid(struct pid_namespa
+ 	struct upid *upid;
+ 
+ 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
+-	if (!pid)
++	if (!pid) {
++		pid = ERR_PTR(-ENOMEM);
+ 		goto out;
++	}
+ 
+ 	tmp = ns;
+ 	for (i = ns->level; i >= 0; i--) {
+@@ -299,7 +303,7 @@ out_free:
+ 		free_pidmap(pid->numbers + i);
+ 
+ 	kmem_cache_free(ns->pid_cachep, pid);
+-	pid = NULL;
++	pid = ERR_PTR(nr);
+ 	goto out;
+ }
+ 
