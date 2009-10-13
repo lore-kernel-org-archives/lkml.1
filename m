@@ -1,103 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759483AbZJMKtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbZJMK6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759483AbZJMKtv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 06:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759474AbZJMKtu
+	id S1757326AbZJMK6H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 06:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbZJMK6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 06:49:50 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48725 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759333AbZJMKtt (ORCPT
+	Tue, 13 Oct 2009 06:58:06 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:55305 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754679AbZJMK6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 06:49:49 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AD45B1B.8000609@jp.fujitsu.com>
-Date: Tue, 13 Oct 2009 19:48:59 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 13 Oct 2009 06:58:04 -0400
+Date: Tue, 13 Oct 2009 16:27:20 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, heiko.carstens@de.ibm.com,
+       linux-s390@vger.kernel.org
+Subject: Re: [BUILD-FAILURE] next-20091013 - s390x build breaks at mm/fault
+	with !CONFIG_S390_EXEC_PROTECT
+Message-ID: <20091013105720.GB7542@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20091013162312.8b93998b.sfr@canb.auug.org.au> <20091013100648.GA7542@linux.vnet.ibm.com> <20091013123335.6d6820b3@mschwide.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: pci-express hotplug
-References: <20091012120620.GG9228@kernel.dk> <4AD3F1D4.1000006@jp.fujitsu.com> <20091013083152.GR9228@kernel.dk>
-In-Reply-To: <20091013083152.GR9228@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091013123335.6d6820b3@mschwide.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Tue, Oct 13 2009, Kenji Kaneshige wrote:
->> Jens Axboe wrote:
->>> Hi,
->>>
->>> I'm trying to get pci-express hotplug working in a box here. I don't
->>> really care about the hotplug aspect, I just want the darn pci-e slots
->>> that are designated hotplug slots to actually WORK. When I load pciehp,
->>> I get:
->>>
->>> Firmware did not grant requested _OSC control
->>> Firmware did not grant requested _OSC control
->>> Firmware did not grant requested _OSC control
->>> Firmware did not grant requested _OSC control
->>> pciehp 0000:00:05.0:pcie04: HPC vendor_id 8086 device_id 340c ss_vid 0 ss_did 0
->>> pciehp 0000:00:05.0:pcie04: service driver pciehp loaded
->>> Firmware did not grant requested _OSC control
->>> pciehp 0000:00:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
->>> pciehp 0000:00:07.0:pcie04: service driver pciehp loaded
->>> Firmware did not grant requested _OSC control
->>> pciehp 0000:80:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
->>> pciehp 0000:80:07.0:pcie04: service driver pciehp loaded
->>> pciehp 0000:80:09.0:pcie04: HPC vendor_id 8086 device_id 3410 ss_vid 0 ss_did 0
->>> pciehp 0000:80:09.0:pcie04: service driver pciehp loaded
->>> pciehp: PCI Express Hot Plug Controller Driver version: 0.4
->>>
->>> and the devices in the hotplug slots stay off. Is this an ACPI/bios
->>> issue? How can I debug this?
->>>
->> Could you give me the result of "ls -lR /sys/bus/pci/slots/"
->> after loading pciehp?
+* Martin Schwidefsky <schwidefsky@de.ibm.com> [2009-10-13 12:33:35]:
+
+> On Tue, 13 Oct 2009 15:36:48 +0530
+> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 > 
-> I have attached the result of that ls prior to loading pciehp/acpiphp
-> (pre-load), after loading pciehp (pciehp-load), and with acpiphp loaded
-> only as well (acpiphp-load).
+> > 	next-20091013 randconfig build breaks on s390, with
+> > CONFIG_S390_EXEC_PROTECT=y
+> > 
+> > arch/s390/mm/fault.c: In function 'signal_return':
+> > arch/s390/mm/fault.c:221: error: implicit declaration of function 'is_compat_task'
+> > make[1]: *** [arch/s390/mm/fault.o] Error 1
+> > 
+> > is_compat_task is defined at asm/compat.h, including the 
+> > header, helps
 > 
+> I'll merge that info "[PATCH] fault handler performance optimization" if you
+> don't mind.
 
-Thank you for the info. From the information, I confirmed that hotplug
-slots are detected by pciehp even though _OSC evaluation failed. There
-are two ways to take control from the firmware through ACPI control
-method. One is _OSC control method, and the other is OSHP control method.
-I guess your ACPI fimware has both _OSC and OSHP on DSDT (ACPI Namespace),
-and pciehp assumes that it took control through OSHP after the _OSC
-evaluation failure. I think this pciehp's behavior is wrong because of
-the following reasons and I think pciehp driver mis-detected the hotplug
-slots on your environment because of this.
+Please feel free to merge it.
 
-- According to the PCI firmware specification, pciehp driver must use the
-  result of _OSC, if the platform implements both _OSC and OSHP.
-- OSHP control method seems only for SHPC, not for PCI Express native hot-
-  plug. So pciehp must not evaluate OSHP to take control from firmware.
-
-To confirm this, could you send me the dmesg output after loading pciehp
-with 'debug_acpi' of pci_hotplug (PCI hotplug core driver) enabled?
-For example,
-
-    $ su
-    # echo Y > /sys/module/pci_hotplug/parameters/debug_acpi
-    # modprobe pciehp
-    # dmesg
-
-And if it is possible, could you send me DSDT of your platform?
-
-Anyway, my recommendation is using acpiphp on your environment because
-your firmware didn't grant control over hotplug control through _OSC.
->From the information, acpiphp also detects the hotplug slots successfully.
-Please try "echo 1 > /sys/bus/pci/slots/<slot#>/power". It would turn on
-the slot and initialize adapter card on the slot.
-
-Thanks,
-Kenji Kaneshige
-
-
+> 
+> -- 
+> blue skies,
+>    Martin.
+> 
+> "Reality continues to ruin my life." - Calvin.
+> 
+			
+			Kamalesh
