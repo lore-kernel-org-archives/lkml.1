@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbZJMOae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759976AbZJMOaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760028AbZJMOae (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760008AbZJMOae
+	id S1759976AbZJMOaX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbZJMOaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:30:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59051 "EHLO hera.kernel.org"
+	Tue, 13 Oct 2009 10:30:21 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37033 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760007AbZJMOad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:30:33 -0400
-Message-ID: <4AD48EC4.8040701@kernel.org>
-Date: Tue, 13 Oct 2009 23:29:24 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] this_cpu: Use this_cpu_xx in trace_functions_graph.c
-References: <20091013144812.bdb376aa.sfr@canb.auug.org.au>
-In-Reply-To: <20091013144812.bdb376aa.sfr@canb.auug.org.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752059AbZJMOaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 10:30:19 -0400
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+From: James Bottomley <James.Bottomley@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jing Huang <huangj@brocade.com>
+In-Reply-To: <alpine.LFD.2.01.0910121022110.3438@localhost.localdomain>
+References: <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain>
+	 <1255031298.4187.260.camel@mulgrave.site>
+	 <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain>
+	 <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain>
+	 <20091008210737.GD29181@mit.edu>
+	 <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain>
+	 <20091009091538.GA4154@elte.hu>
+	 <1255097287.2934.21.camel@localhost.localdomain>
+	 <20091012130652.GB25464@elte.hu>
+	 <1255357148.2850.91.camel@localhost.localdomain>
+	 <20091012145453.GD4565@elte.hu>
+	 <1255361148.2850.298.camel@localhost.localdomain>
+	 <alpine.LFD.2.01.0910121022110.3438@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 13 Oct 2009 14:29:37 +0000
+Message-Id: <1255444177.2855.91.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Oct 2009 14:29:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ftrace_cpu_disabled usage in trace_functions_graph.c were left out
-during this_cpu_xx conversion in commit 9288f99a causing compile
-failure.  Convert them.
+On Mon, 2009-10-12 at 10:24 -0700, Linus Torvalds wrote: 
+> 
+> On Mon, 12 Oct 2009, James Bottomley wrote:
+> > > 
+> > > I think you are interpreting what should go into drivers/staging/ _very_ 
+> > > narrowly.
+> > 
+> > As it is my right to do.
+> 
+> Umm, James, it cuts both ways.
+> 
+> Others can assert their interpretation, and quite frankly, yours is the 
+> odd one out. Everybody else agrees oevrwhelmingly that "staging" is about 
+> ugly and not-up-to-snuff drivers.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Christoph Lameter <cl@linux-foundation.org>
----
-This patch has been committed to percpu#for-next.  Thanks.
+I haven't actually ever said otherwise.  I have asserted that the bfa
+driver, while large, isn't out of the ball park for a FC driver, that it
+does provide all the correct user visible FC ABI pieces but that it does
+have minor anomalies, primarily in bfa/include, that need cleaning up,
+plus it needs to interface to libfc at some future point.  I have also
+asserted that drivers/scsi is the best place to address the remaining
+issues.
 
- kernel/trace/trace_functions_graph.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> So you can talk about your 'right' to interpret things all you want, but 
+> what's the point? If others haev the same right (which presumably even you 
+> agree they do), then if people think a driver is ugly and needs to be in 
+> staging, what makes _your_ right so special?
 
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index 45e6c01..90a6daa 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -176,7 +176,7 @@ static int __trace_graph_entry(struct trace_array *tr,
- 	struct ring_buffer *buffer = tr->buffer;
- 	struct ftrace_graph_ent_entry *entry;
+It's a judgement call whether a driver goes through staging or not.  I'm
+happy to hear other opinions about this driver, but I'd like them to be
+from reading the code, not generalities.  I've stated my specific
+reasons why this driver isn't a good candidate for staging.
 
--	if (unlikely(local_read(&__get_cpu_var(ftrace_cpu_disabled))))
-+	if (unlikely(__this_cpu_read(per_cpu_var(ftrace_cpu_disabled))))
- 		return 0;
+> As mentioned earlier, I don't personally care about this driver, but I do 
+> care about your behavior. You can't just ignore other people if they say 
+> that a driver is too damn ugly.
 
- 	event = trace_buffer_lock_reserve(buffer, TRACE_GRAPH_ENT,
-@@ -240,7 +240,7 @@ static void __trace_graph_return(struct trace_array *tr,
- 	struct ring_buffer *buffer = tr->buffer;
- 	struct ftrace_graph_ret_entry *entry;
+But no-one's actually said that.  The whole discussion was theoretical
+rather than based on this driver.  My position on the generalities is
+that ABI issues head a driver automatically for staging.  For non user
+visible code based issues, it's a maintainer judgement call where the
+cleanup is best done, which in turn depends on what the actual issues
+are.  For this specific driver, I've given reasons several times why the
+changes are best made in drivers/scsi.
 
--	if (unlikely(local_read(&__get_cpu_var(ftrace_cpu_disabled))))
-+	if (unlikely(__this_cpu_read(per_cpu_var(ftrace_cpu_disabled))))
- 		return;
+James
 
- 	event = trace_buffer_lock_reserve(buffer, TRACE_GRAPH_RET,
--- 
-1.6.4.2
 
