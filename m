@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758313AbZJMBXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbZJMB1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758313AbZJMBXe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 21:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757180AbZJMBXd
+	id S1758404AbZJMB1L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 21:27:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757420AbZJMB1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 21:23:33 -0400
-Received: from mga14.intel.com ([143.182.124.37]:14355 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756702AbZJMBXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 21:23:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,548,1249282800"; 
-   d="scan'208";a="198154483"
-Date: Tue, 13 Oct 2009 09:22:54 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Tommi Rantala <tt.rantala@gmail.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] page-types: trivial typo fixes
-Message-ID: <20091013012254.GA7345@localhost>
-References: <1255380694-4122-1-git-send-email-tt.rantala@gmail.com> <1255380694-4122-2-git-send-email-tt.rantala@gmail.com>
+	Mon, 12 Oct 2009 21:27:10 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44275 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754767AbZJMB1J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 21:27:09 -0400
+Date: Mon, 12 Oct 2009 21:26:27 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       samba-technical@lists.samba.org
+Subject: Re: [rfc][patch] store-free path walking
+Message-ID: <20091013012627.GA19089@infradead.org>
+References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <20091007095657.GB8703@kernel.dk> <20091012035843.GC25882@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1255380694-4122-2-git-send-email-tt.rantala@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091012035843.GC25882@wotan.suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 04:51:34AM +0800, Tommi Rantala wrote:
-> Trivial typo fixes.
+On Mon, Oct 12, 2009 at 05:58:43AM +0200, Nick Piggin wrote:
+> Tridge, Samba people: measuring vfs performance with dbench
+> in my effort to improve Linux vfs scalability has shown up
+> the statvfs syscall you make to be the final problematic
+> issue for this workload. In particular reading /proc/mounts
+> that glibc does to impement it. We could add complexity to
+> the kernel to try improving it, or we could extend the
+> statfs syscall so glibc can avoid the issue (requiring
+> glibc upgrade). But I would like to know whether samba
+> really uses statvfs() significantly?
 
-Good catch, thanks!
+Not sure if it's the reason why Samba uses it, but many portable
+applications use statvfs because that is the standardizes one in
+XPG / recent Posix while statfs is just a BSD extension Linux picked
+up.  So making sure statvfs goes fast is a pretty essential thing.
 
-Fengguang
-
-> Signed-off-by: Tommi Rantala <tt.rantala@gmail.com>
-> ---
->  Documentation/vm/page-types.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/vm/page-types.c b/Documentation/vm/page-types.c
-> index 16fb478..d6d21c2 100644
-> --- a/Documentation/vm/page-types.c
-> +++ b/Documentation/vm/page-types.c
-> @@ -301,7 +301,7 @@ static char *page_flag_name(uint64_t flags)
->  		present = (flags >> i) & 1;
->  		if (!page_flag_names[i]) {
->  			if (present)
-> -				fatal("unkown flag bit %d\n", i);
-> +				fatal("unknown flag bit %d\n", i);
->  			continue;
->  		}
->  		buf[j++] = present ? page_flag_names[i][0] : '_';
-> @@ -682,7 +682,7 @@ static void usage(void)
->  #endif
->  "            -l|--list                 Show page details in ranges\n"
->  "            -L|--list-each            Show page details one by one\n"
-> -"            -N|--no-summary           Don't show summay info\n"
-> +"            -N|--no-summary           Don't show summary info\n"
->  "            -X|--hwpoison             hwpoison pages\n"
->  "            -x|--unpoison             unpoison pages\n"
->  "            -h|--help                 Show this usage message\n"
-> -- 
-> 1.5.6.5
