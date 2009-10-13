@@ -1,76 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758488AbZJMBJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757662AbZJMBSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758488AbZJMBJd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 21:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbZJMBJc
+	id S1757662AbZJMBSi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 21:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbZJMBSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 21:09:32 -0400
-Received: from mail-px0-f187.google.com ([209.85.216.187]:47676 "EHLO
-	mail-px0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756772AbZJMBJb (ORCPT
+	Mon, 12 Oct 2009 21:18:38 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50171 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755439AbZJMBSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 21:09:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=gQn4e0fDkEXPjEl4p08eJkQ2LzHs4HUyvGKSorukBZmGsjRETaqOHx4H0vAsLn9Je0
-         P7b3pNv5s227fdH/SFA6RvrqxF8cSsw2OApSIk+WWVhoqBZKyIePpr2R8BvPw4PVbeB5
-         3a4H5MKfO2tjTMq5suqbgB3+a+Imwt/sKfTrI=
-Date: Mon, 12 Oct 2009 18:08:51 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Thomas Chou <thomas@wytron.com.tw>
-Cc: linux-input@vger.kernel.org,
-       Nios2 development list <nios2-dev@sopc.et.ntust.edu.tw>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: New driver for Altera PS/2 controller
-Message-ID: <20091013010850.GC21626@core.coreip.homeip.net>
-References: <1254985152-32407-1-git-send-email-thomas@wytron.com.tw> <20091010045603.GA9914@core.coreip.homeip.net> <4AD060D0.7090502@wytron.com.tw>
+	Mon, 12 Oct 2009 21:18:37 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [resend][PATCH v2] mlock() doesn't wait to finish lru_add_drain_all()
+Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>, Oleg Nesterov <onestero@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20091012165747.97f5bd87.akpm@linux-foundation.org>
+References: <20091009111709.1291.A69D9226@jp.fujitsu.com> <20091012165747.97f5bd87.akpm@linux-foundation.org>
+Message-Id: <20091013090347.C752.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD060D0.7090502@wytron.com.tw>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 13 Oct 2009 10:17:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 10, 2009 at 06:24:16PM +0800, Thomas Chou wrote:
-> On 10/10/2009 12:56 PM, Dmitry Torokhov wrote:
->> Hi Thomas,
->>
->> On Thu, Oct 08, 2009 at 02:59:12PM +0800, Thomas Chou wrote:
->>    
->>> This patch adds a new SERIO driver to support the Altera University
->>> Program PS/2 controller.
->>>
->>>      
->> Thank you for the patch, it looks like it is reasonable written although
->> it should do request_mem_region for the IO memory region it tries to
->> remap and also IO addresses should not be cast to unsigned int but
->> rather 'void __iomem *'. I also don;t see the reason for it to depend on
->> EMBEDDED since the things that depend on EMBEDDED are usually features
->> that are used almost by everyone and only in case of embedded arch you
->> may want to turn them off to save some memory.
->>
->> I also prefer even static functions to have the driver name as their
->> prefix - this way if I see a backtrace I know exactly which module is
->> involved.
->>
->> I made a small patch on top of yours, please give it a try and if it did
->> not break anything then I will fold it all together and queue for
->> 2.6.33.
->>
->> Thanks!
->>
->>    
-> Hi Dmitry,
->
-> Thank you very much for your help. I have tested the updated driver with  
-> PS/2 keyboard and mouse on boards. They all worked well.
->
+Hi
 
-Great, tahnk you for giving it a spin. I'll queue the driver for 2.6.33.
+> On Fri,  9 Oct 2009 11:21:55 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > Recently, Mike Galbraith reported mlock() makes hang-up very long time in
+> > his system. Peter Zijlstra explainted the reason.
+> > 
+> >   Suppose you have 2 cpus, cpu1 is busy doing a SCHED_FIFO-99 while(1),
+> >   cpu0 does mlock()->lru_add_drain_all(), which does
+> >   schedule_on_each_cpu(), which then waits for all cpus to complete the
+> >   work. Except that cpu1, which is busy with the RT task, will never run
+> >   keventd until the RT load goes away.
+> > 
+> >   This is not so much an actual deadlock as a serious starvation case.
+> > 
+> > His system has two partions using cpusets and RT-task partion cpu doesn't
+> > have any PCP cache. thus, this result was pretty unexpected.
+> > 
+> > The fact is, mlock() doesn't need to wait to finish lru_add_drain_all().
+> > if mlock() can't turn on PG_mlock, vmscan turn it on later.
+> > 
+> > Thus, this patch replace it with lru_add_drain_all_async().
+> 
+> So why don't we just remove the lru_add_drain_all() call from sys_mlock()?
 
--- 
-Dmitry
+There are small reason. the administrators and the testers (include me)
+look at Mlock field in /proc/meminfo.
+They natually expect Mlock field match with actual number of mlocked pages
+if the system don't have any stress. Otherwise, we can't make mlock test case ;)
+
+
+> How did you work out why the lru_add_drain_all() is present in
+> sys_mlock() anyway?  Neither the code nor the original changelog tell
+> us.  Who do I thwap for that?  Nick and his reviewers.  Sigh.
+
+[Umm, My dictionaly don't tell me the meaning of "thwap".  An meaning of
+an imitative word strongly depend on culture. Thus, I probably
+misunderstand this paragraph.]
+
+I've understand the existing reason by looooooong time review.
+
+
+> There are many callers of lru_add_drain_all() all over the place.  Each
+> of those is vulnerable to the same starvation issue, is it not?
+
+There are.
+
+> If so, it would be better to just fix up lru_add_drain_all().  Afaict
+> all of its functions can be performed in hard IRQ context, so we can
+> use smp_call_function()?
+
+There is a option. but it have one downside, it require lru_add_pvecs
+related function call irq_disable().
+
+__lru_cache_add() is often called from page fault path. then we need
+performance mesurement.
+
+
+
+
