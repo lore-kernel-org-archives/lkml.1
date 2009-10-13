@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759737AbZJMOBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759871AbZJMODL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759737AbZJMOBr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZJMOBq
+	id S1759871AbZJMODL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbZJMODK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:01:46 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32816 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751056AbZJMOBq (ORCPT
+	Tue, 13 Oct 2009 10:03:10 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:60044 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751142AbZJMODJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:01:46 -0400
-Date: Tue, 13 Oct 2009 15:02:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bo Forslund <bo.forslund@abc.se>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: answer to "Please submit a full bug report" kernel 2.6.31.4
-Message-ID: <20091013150202.5fafb518@lxorguk.ukuu.org.uk>
-In-Reply-To: <4AD47201.7000400@abc.se>
-References: <4AD47201.7000400@abc.se>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Oct 2009 10:03:09 -0400
+X-Trace: 273778390/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.12.149/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.12.149
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAHMl1EpQKQyV/2dsb2JhbACBUY4nAcgthC0E
+X-IronPort-AV: E=Sophos;i="4.44,551,1249254000"; 
+   d="scan'208";a="273778390"
+Date: Tue, 13 Oct 2009 15:02:11 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andi Kleen <andi@firstfloor.org>
+cc: Wu Fengguang <fengguang.wu@intel.com>, Izik Eidus <ieidus@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] hwpoison: fix oops on ksm pages
+Message-ID: <Pine.LNX.4.64.0910131451280.4698@sister.anvils>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009 14:26:41 +0200
-Bo Forslund <bo.forslund@abc.se> wrote:
+Memory failure on a KSM page currently oopses on its NULL anon_vma in
+page_lock_anon_vma(): that may not be much worse than the consequence
+of ignoring it, but it is better to be consistent with how ZERO_PAGE
+and hugetlb pages and other awkward cases are treated.  Just skip it.
 
-> I got this error messages when trying to build a custom kernel. I don't 
-> know if it is the kernel source or the compiler that is failing. It is 
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+---
+We could fix it for 2.6.32 at the KSM end, by putting a dummy anon_vma
+pointer in there; but that would get harder next time, when KSM will
+put a pointer to something else there (and I'm not currently planning
+to do any work to open that up to memory_failure).  So I would prefer
+this simple PageKsm test, until the other exceptions are handled.
 
-Or the machine.. see if it is repeatable first, if not suspect the
-hardware of being flaky. If it is repeatable then it is the compiler
+ mm/memory-failure.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> an out-of-the-box Debian Squeeze system on an old dual cpu bp6 machine.
-
-What compiler version and what architecture ?
-
-> The word "Fel" below translate to Error.
-
-Your compiler broke so you should also report this to the debian gcc
-maintainer. However it is useful for the kernel people to know too as it
-may be possible to tweak the code to avoid the compiler bug.
-
-Alan
+--- 2.6.32-rc4/mm/memory-failure.c	2009-09-28 00:28:41.000000000 +0100
++++ linux/mm/memory-failure.c	2009-10-13 14:09:12.000000000 +0100
+@@ -35,6 +35,7 @@
+ #include <linux/mm.h>
+ #include <linux/page-flags.h>
+ #include <linux/sched.h>
++#include <linux/ksm.h>
+ #include <linux/rmap.h>
+ #include <linux/pagemap.h>
+ #include <linux/swap.h>
+@@ -661,7 +662,7 @@ static void hwpoison_user_mappings(struc
+ 	int i;
+ 	int kill = 1;
+ 
+-	if (PageReserved(p) || PageCompound(p) || PageSlab(p))
++	if (PageReserved(p) || PageCompound(p) || PageSlab(p) || PageKsm(p))
+ 		return;
+ 
+ 	if (!PageLRU(p))
