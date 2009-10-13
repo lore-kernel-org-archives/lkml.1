@@ -1,52 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760968AbZJMSqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934065AbZJMSrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760968AbZJMSqM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 14:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760954AbZJMSqL
+	id S934065AbZJMSrf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 14:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934052AbZJMSrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 14:46:11 -0400
-Received: from www.tglx.de ([62.245.132.106]:44688 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760087AbZJMSqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 14:46:10 -0400
-Date: Tue, 13 Oct 2009 20:45:03 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Darren Hart <dvhltc@us.ibm.com>
-cc: Blaise Gassend <blaise@willowgarage.com>,
-       Jeremy Leibs <leibs@willowgarage.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "lkml," <linux-kernel@vger.kernel.org>
-Subject: Re: ERESTARTSYS escaping from sem_wait with RTLinux patch
-In-Reply-To: <4AD49928.40600@us.ibm.com>
-Message-ID: <alpine.LFD.2.00.0910132042150.9428@localhost.localdomain>
-References: <1255165747.6385.117.camel@doodleydee> <alpine.LFD.2.00.0910101931080.9428@localhost.localdomain> <92be2ef30910102248t70d5e683tc525580fbf902af1@mail.gmail.com> <4AD33A4D.4070006@us.ibm.com> <1255384010.10236.123.camel@lts.willowgarage.com>
- <4AD3BD57.6080703@us.ibm.com> <4AD3D6AE.2050609@us.ibm.com> <4AD3FFB0.5030405@us.ibm.com>  <4AD4080C.20703@us.ibm.com> <1255424204.12737.233.camel@doodleydee> <4AD49928.40600@us.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 13 Oct 2009 14:47:35 -0400
+Received: from smtp151.iad.emailsrvr.com ([207.97.245.151]:33017 "EHLO
+	smtp151.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760201AbZJMSrd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 14:47:33 -0400
+Message-ID: <4AD4CB1C.7040207@librato.com>
+Date: Tue, 13 Oct 2009 14:46:52 -0400
+From: Oren Laadan <orenl@librato.com>
+Organization: Librato
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+CC: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, arnd@arndb.de,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, Louis.Rilling@kerlabs.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       kosaki.motohiro@jp.fujitsu.com, hpa@zytor.com, mingo@elte.hu,
+       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v8][PATCH 9/10]: Define clone3() syscall
+References: <20091013044925.GA28181@us.ibm.com> <20091013045439.GI28435@us.ibm.com>
+In-Reply-To: <20091013045439.GI28435@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009, Darren Hart wrote:
-> Talking with Thomas a bit more we're not sure the patch that introduced this
-> lockless waking actually does any good, as the normal wakeup path doesn't take
-> the hb->lock anyway, it's more likely the contention was due to an app like
-> this that wakes a task and almost immediately puts it back to sleep on a futex
-> before the waker has a chance to drop the hb->lock.
 
-The patch was done before we restructured the wakeup code in mainline
-and it's not necessary anymore.
- 
-> The futex wake-up path is complicated enough as it is, in my personal opinion,
-> we are better off dropping the "lockless wake-up" patch and removing the race
-> and simplifying the wake-up path at the same time.
 
-Nevertheless we need graceful handling of spurious wakeups in the
-waiter code. I'm working on a fix for mainline, which will be in the
-next -rt release as well (after I reverted the no longer valid wakeup
-optimization)
+Sukadev Bhattiprolu wrote:
+> 
+> Subject: [RFC][v8][PATCH 9/10]: Define clone3() syscall
+> 
+> Container restart requires that a task have the same pid it had when it was
+> checkpointed. When containers are nested the tasks within the containers
+> exist in multiple pid namespaces and hence have multiple pids to specify
+> during restart.
+> 
+> clone3(), intended for use during restart, is the same as clone(), except
+> that it takes a 'pids' paramter. This parameter lets caller choose
+> specific pid numbers for the child process, in the process's active and
+> ancestor pid namespaces. (Descendant pid namespaces in general don't matter
+> since processes don't have pids in them anyway, but see comments in
+> copy_target_pids() regarding CLONE_NEWPID).
+> 
+> Clone2() system call also attempts to address a second limitation of the
+> clone() system call. clone() is restricted to 32 clone flags and most (all ?)
+> of these are in use. If a new clone flag is needed, we will be forced to
+> define a new variant of the clone() system call.
+> 
+> To prevent unprivileged processes from misusing this interface, clone3()
+> currently needs CAP_SYS_ADMIN, when the 'pids' parameter is non-NULL.
+> 
+> See Documentation/clone3 in next patch for more details of clone3() and an
+> example of its usage.
+> 
+> NOTE:
+> 	System calls are restricted to 6 parameters and the number and sizes
+> 	of parameters needed for sys_clone3() exceed 6 integers. The new
+> 	prototype works around this restriction while providing some
+> 	flexibility if clone3() needs to be further extended in the future.
+> TODO:
+> 	- May need additional sanity checks in do_fork_with_pids().
+> 
+> Changelog[v8]
+> 	- [Oren Laadan] parent_tid and child_tid fields in 'struct clone_arg'
+> 	  must be 64-bit.
+> 	- clone2() is in use in IA64. Rename system call to clone3().
+> 
+> Changelog[v7]:
+> 	- [Peter Zijlstra, Arnd Bergmann] Rename system call to clone2()
+> 	  and group parameters into a new 'struct clone_struct' object.
+> 
+> Changelog[v6]:
+> 	- (Nathan Lynch, Arnd Bergmann, H. Peter Anvin, Linus Torvalds)
+> 	  Change 'pid_set.pids' to a 'pid_t pids[]' so size of 'struct pid_set'
+> 	  is constant across architectures.
+> 	- (Nathan Lynch) Change pid_set.num_pids to unsigned and remove
+> 	  'unum_pids < 0' check.
+> 
+> Changelog[v4]:
+> 	- (Oren Laadan) rename 'struct target_pid_set' to 'struct pid_set'
+> 
+> Changelog[v3]:
+> 	- (Oren Laadan) Allow CLONE_NEWPID flag (by allocating an extra pid
+> 	  in the target_pids[] list and setting it 0. See copy_target_pids()).
+> 	- (Oren Laadan) Specified target pids should apply only to youngest
+> 	  pid-namespaces (see copy_target_pids())
+> 	- (Matt Helsley) Update patch description.
+> 
+> Changelog[v2]:
+> 	- Remove unnecessary printk and add a note to callers of
+> 	  copy_target_pids() to free target_pids.
+> 	- (Serge Hallyn) Mention CAP_SYS_ADMIN restriction in patch description.
+> 	- (Oren Laadan) Add checks for 'num_pids < 0' (return -EINVAL) and
+> 	  'num_pids == 0' (fall back to normal clone()).
+> 	- Move arch-independent code (sanity checks and copy-in of target-pids)
+> 	  into kernel/fork.c and simplify sys_clone_with_pids()
+> 
+> Changelog[v1]:
+> 	- Fixed some compile errors (had fixed these errors earlier in my
+> 	  git tree but had not refreshed patches before emailing them)
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+>  arch/x86/include/asm/syscalls.h    |    1 
+>  arch/x86/include/asm/unistd_32.h   |    1 
+>  arch/x86/kernel/process_32.c       |   34 +++++++++++++
+>  arch/x86/kernel/syscall_table_32.S |    1 
+>  include/linux/types.h              |   10 +++
+>  kernel/fork.c                      |   96 ++++++++++++++++++++++++++++++++++++-
+>  6 files changed, 142 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/include/linux/types.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/types.h	2009-10-12 19:13:24.000000000 -0700
+> +++ linux-2.6/include/linux/types.h	2009-10-12 19:15:08.000000000 -0700
+> @@ -204,6 +204,16 @@ struct ustat {
+>  	char			f_fpack[6];
+>  };
+>  
+> +struct clone_struct {
+> +	u64 flags;
+> +	u64 child_stack;
+> +	u32 nr_pids;
+> +	u32 reserved1;
+> +	u64 parent_tid;
+> +	u64 child_tid;
+> +	u64 reserved2;
+> +};
+> +
+>  #endif	/* __KERNEL__ */
+>  #endif /*  __ASSEMBLY__ */
+>  #endif /* _LINUX_TYPES_H */
+> Index: linux-2.6/arch/x86/include/asm/syscalls.h
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/include/asm/syscalls.h	2009-10-12 19:13:24.000000000 -0700
+> +++ linux-2.6/arch/x86/include/asm/syscalls.h	2009-10-12 19:15:08.000000000 -0700
+> @@ -55,6 +55,7 @@ struct sel_arg_struct;
+>  struct oldold_utsname;
+>  struct old_utsname;
+>  
+> +asmlinkage long sys_clone3(struct clone_struct __user *cs, pid_t *pids);
+>  asmlinkage long sys_mmap2(unsigned long, unsigned long, unsigned long,
+>  			  unsigned long, unsigned long, unsigned long);
+>  asmlinkage int old_mmap(struct mmap_arg_struct __user *);
+> Index: linux-2.6/arch/x86/include/asm/unistd_32.h
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/include/asm/unistd_32.h	2009-10-12 19:13:24.000000000 -0700
+> +++ linux-2.6/arch/x86/include/asm/unistd_32.h	2009-10-12 19:15:08.000000000 -0700
+> @@ -342,6 +342,7 @@
+>  #define __NR_pwritev		334
+>  #define __NR_rt_tgsigqueueinfo	335
+>  #define __NR_perf_counter_open	336
+> +#define __NR_clone3		337
+>  
+>  #ifdef __KERNEL__
+>  
+> Index: linux-2.6/arch/x86/kernel/process_32.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/process_32.c	2009-10-12 19:13:24.000000000 -0700
+> +++ linux-2.6/arch/x86/kernel/process_32.c	2009-10-12 19:54:34.000000000 -0700
+> @@ -443,6 +443,40 @@ int sys_clone(struct pt_regs *regs)
+>  	return do_fork(clone_flags, newsp, regs, 0, parent_tidptr, child_tidptr);
+>  }
+>  
+> +asmlinkage long
+> +sys_clone3(struct clone_struct __user *ucs, pid_t __user *pids)
+> +{
+> +	int rc;
+> +	struct clone_struct kcs;
+> +	unsigned long clone_flags;
+> +	int __user *parent_tid_ptr;
+> +	int __user *child_tid_ptr;
+> +	unsigned long __user child_stack_base;
+> +	struct pt_regs *regs;
+> +
+> +	rc = copy_from_user(&kcs, ucs, sizeof(kcs));
+> +	if (rc)
+> +		return -EFAULT;
+> +
+> +	if (kcs.reserved1 || kcs.reserved2)
+> +		return -EINVAL;
+> +
+> +	/*
+> +	 * TODO: Convert clone_flags to 64-bit
+> +	 */
+> +	clone_flags = (unsigned long)kcs.flags;
 
-Thanks folks for debugging that.
+On 32-bit arch this would dismiss upper half of the flags :(
+Is there a reason not to use 64-bit ('u64' or 'long long') now ?
 
-       tglx
+[...]
+
+Oren.
+
