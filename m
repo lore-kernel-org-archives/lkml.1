@@ -1,93 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933780AbZJMIOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933778AbZJMIS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933780AbZJMIOX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 04:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933770AbZJMIOW
+	id S933778AbZJMIS4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 04:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933710AbZJMISz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 04:14:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56569 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933769AbZJMIOV (ORCPT
+	Tue, 13 Oct 2009 04:18:55 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:45334 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933661AbZJMISy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 04:14:21 -0400
-Subject: [PATCH] fcntl: rename F_OWNER_GID to F_OWNER_PGRP
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
-       torvalds@linux-foundation.org, eranian@googlemail.com, hch@lst.de,
-       oleg@redhat.com, roland@redhat.com, viro@zeniv.linux.org.uk,
-       akpm@linux-foundation.org, Ulrich Drepper <drepper@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 13 Oct 2009 10:13:23 +0200
-Message-Id: <1255421603.8392.87.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 13 Oct 2009 04:18:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=NEfMrSP5Xo0u0naQqbwIyrLFKkSgQRFJllJD9xvsMCfVk7aws/+p2XvO7arSp5ddnr
+         Dwe7AhDfXHjUynfAoaiEEqtaThHtssRufRTpVEAvIdl1ZlCjYlFroOm575KduQ7yhrAc
+         MTbQu+8/qA4QxJHMaAUkNe7PlfTJhmh8TCq7g=
+MIME-Version: 1.0
+Date: Tue, 13 Oct 2009 10:18:16 +0200
+Message-ID: <4727185d0910130118m5387058dndb02ac9b384af9f0@mail.gmail.com>
+Subject: [PATCH] [PERF] do not manually count string lengths
+From: Vincent Legoll <vincent.legoll@gmail.com>
+To: Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Content-Type: multipart/mixed; boundary=0016e6d645a82d92a80475ccb096
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed this patch never quite made it to LKML..
+--0016e6d645a82d92a80475ccb096
+Content-Type: text/plain; charset=ISO-8859-1
 
----
-Subject: fcntl: rename F_OWNER_GID to F_OWNER_PGRP
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Mon, 05 Oct 2009 14:44:47 +0200
+Hello,
 
-On Sat, 2009-10-03 at 14:09 +0200, Michael Kerrisk wrote:
-> Please, could you change F_OWNER_GID to F_OWNER_PGRP.
->
-> This is for consistency with various ioctl() operations that include
-> the suffix "PGRP" in their names, and also for consistency with
-> PRIO_PGRP, used with setpriority() and getpriority(). Also, using PGRP
-> instead of GID avoids confusion with the common abbreviation of "group
-> ID".
+here is a small patch to the perf tool to use strlen & macros
+instead of manually counting string lengths.
 
-I'm fine with anything that makes it more consistent, and if PGRP is
-what is the predominant abbreviation then I see no need to further
-confuse matters by adding a third one.
+I didn't find mention of any maintainer for the tool...
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
----
- fs/fcntl.c                  |    4 ++--
- include/asm-generic/fcntl.h |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Please advise if I should submit this in another way
 
-Index: linux-2.6/fs/fcntl.c
-===================================================================
---- linux-2.6.orig/fs/fcntl.c
-+++ linux-2.6/fs/fcntl.c
-@@ -284,7 +284,7 @@ static int f_setown_ex(struct file *filp
- 		type = PIDTYPE_PID;
- 		break;
- 
--	case F_OWNER_GID:
-+	case F_OWNER_PGRP:
- 		type = PIDTYPE_PGID;
- 		break;
- 
-@@ -321,7 +321,7 @@ static int f_getown_ex(struct file *filp
- 		break;
- 
- 	case PIDTYPE_PGID:
--		owner.type = F_OWNER_GID;
-+		owner.type = F_OWNER_PGRP;
- 		break;
- 
- 	default:
-Index: linux-2.6/include/asm-generic/fcntl.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/fcntl.h
-+++ linux-2.6/include/asm-generic/fcntl.h
-@@ -80,7 +80,7 @@
- 
- #define F_OWNER_TID	0
- #define F_OWNER_PID	1
--#define F_OWNER_GID	2
-+#define F_OWNER_PGRP	2
- 
- struct f_owner_ex {
- 	int	type;
+-- 
+Vincent Legoll
 
+--0016e6d645a82d92a80475ccb096
+Content-Type: text/x-diff; charset=US-ASCII; 
+	name="0001-Do-not-manually-count-string-lengths.patch"
+Content-Disposition: attachment; 
+	filename="0001-Do-not-manually-count-string-lengths.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g0qdmr7a0
+
+RnJvbSAxYzg3NTVkNTc1M2Y5MTNmZTRjMDJhOWQwZWU3ZmE1MWZkYTBjMDAyIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBWaW5jZW50IExlZ29sbCA8dmluY2VudC5sZWdvbGxAZ21haWwu
+Y29tPgpEYXRlOiBUdWUsIDEzIE9jdCAyMDA5IDEwOjA0OjU0ICswMjAwClN1YmplY3Q6IFtQQVRD
+SF0gRG8gbm90IG1hbnVhbGx5IGNvdW50IHN0cmluZyBsZW5ndGhzCgpVc2Ugc3RybGVuICYgbWFj
+cm9zIGluc3RlYWQgb2YgbWFudWFsbHkgY291bnRpbmcgc3RyaW5nIGxlbmd0aHMKYXMgdGhpcyBp
+cyBlcnJvciBwcm9uZSBhbmQgbWF5IGxlbmQgdG8gYnVncy4KClNpZ25lZC1vZmYtYnk6IFZpbmNl
+bnQgTGVnb2xsIDx2aW5jZW50LmxlZ29sbEBnbWFpbC5jb20+Ci0tLQogdG9vbHMvcGVyZi9wZXJm
+LmMgICAgICAgfCAgIDE2ICsrKysrKysrLS0tLS0tLS0KIHRvb2xzL3BlcmYvdXRpbC9jYWNoZS5o
+IHwgICAgNSArKysrKwogMiBmaWxlcyBjaGFuZ2VkLCAxMyBpbnNlcnRpb25zKCspLCA4IGRlbGV0
+aW9ucygtKQoKZGlmZiAtLWdpdCBhL3Rvb2xzL3BlcmYvcGVyZi5jIGIvdG9vbHMvcGVyZi9wZXJm
+LmMKaW5kZXggMTlmYzdmZS4uNjI0ZTYyZCAxMDA2NDQKLS0tIGEvdG9vbHMvcGVyZi9wZXJmLmMK
+KysrIGIvdG9vbHMvcGVyZi9wZXJmLmMKQEAgLTg5LDggKzg5LDggQEAgc3RhdGljIGludCBoYW5k
+bGVfb3B0aW9ucyhjb25zdCBjaGFyKioqIGFyZ3YsIGludCogYXJnYywgaW50KiBlbnZjaGFuZ2Vk
+KQogCQkvKgogCQkgKiBDaGVjayByZW1haW5pbmcgZmxhZ3MuCiAJCSAqLwotCQlpZiAoIXByZWZp
+eGNtcChjbWQsICItLWV4ZWMtcGF0aCIpKSB7Ci0JCQljbWQgKz0gMTE7CisJCWlmICghcHJlZml4
+Y21wKGNtZCwgQ01EX0VYRUNfUEFUSCkpIHsKKwkJCWNtZCArPSBzdHJsZW4oQ01EX0VYRUNfUEFU
+SCk7CiAJCQlpZiAoKmNtZCA9PSAnPScpCiAJCQkJcGVyZl9zZXRfYXJndl9leGVjX3BhdGgoY21k
+ICsgMSk7CiAJCQllbHNlIHsKQEAgLTExNyw4ICsxMTcsOCBAQCBzdGF0aWMgaW50IGhhbmRsZV9v
+cHRpb25zKGNvbnN0IGNoYXIqKiogYXJndiwgaW50KiBhcmdjLCBpbnQqIGVudmNoYW5nZWQpCiAJ
+CQkoKmFyZ3YpKys7CiAJCQkoKmFyZ2MpLS07CiAJCQloYW5kbGVkKys7Ci0JCX0gZWxzZSBpZiAo
+IXByZWZpeGNtcChjbWQsICItLXBlcmYtZGlyPSIpKSB7Ci0JCQlzZXRlbnYoUEVSRl9ESVJfRU5W
+SVJPTk1FTlQsIGNtZCArIDEwLCAxKTsKKwkJfSBlbHNlIGlmICghcHJlZml4Y21wKGNtZCwgQ01E
+X1BFUkZfRElSKSkgeworCQkJc2V0ZW52KFBFUkZfRElSX0VOVklST05NRU5ULCBjbWQgKyBzdHJs
+ZW4oQ01EX1BFUkZfRElSKSwgMSk7CiAJCQlpZiAoZW52Y2hhbmdlZCkKIAkJCQkqZW52Y2hhbmdl
+ZCA9IDE7CiAJCX0gZWxzZSBpZiAoIXN0cmNtcChjbWQsICItLXdvcmstdHJlZSIpKSB7CkBAIC0x
+MzEsOCArMTMxLDggQEAgc3RhdGljIGludCBoYW5kbGVfb3B0aW9ucyhjb25zdCBjaGFyKioqIGFy
+Z3YsIGludCogYXJnYywgaW50KiBlbnZjaGFuZ2VkKQogCQkJCSplbnZjaGFuZ2VkID0gMTsKIAkJ
+CSgqYXJndikrKzsKIAkJCSgqYXJnYyktLTsKLQkJfSBlbHNlIGlmICghcHJlZml4Y21wKGNtZCwg
+Ii0td29yay10cmVlPSIpKSB7Ci0JCQlzZXRlbnYoUEVSRl9XT1JLX1RSRUVfRU5WSVJPTk1FTlQs
+IGNtZCArIDEyLCAxKTsKKwkJfSBlbHNlIGlmICghcHJlZml4Y21wKGNtZCwgQ01EX1dPUktfVFJF
+RSkpIHsKKwkJCXNldGVudihQRVJGX1dPUktfVFJFRV9FTlZJUk9OTUVOVCwgY21kICsgc3RybGVu
+KENNRF9XT1JLX1RSRUUpLCAxKTsKIAkJCWlmIChlbnZjaGFuZ2VkKQogCQkJCSplbnZjaGFuZ2Vk
+ID0gMTsKIAkJfSBlbHNlIGlmICghc3RyY21wKGNtZCwgIi0tZGVidWdmcy1kaXIiKSkgewpAQCAt
+MTQ2LDggKzE0Niw4IEBAIHN0YXRpYyBpbnQgaGFuZGxlX29wdGlvbnMoY29uc3QgY2hhcioqKiBh
+cmd2LCBpbnQqIGFyZ2MsIGludCogZW52Y2hhbmdlZCkKIAkJCQkqZW52Y2hhbmdlZCA9IDE7CiAJ
+CQkoKmFyZ3YpKys7CiAJCQkoKmFyZ2MpLS07Ci0JCX0gZWxzZSBpZiAoIXByZWZpeGNtcChjbWQs
+ICItLWRlYnVnZnMtZGlyPSIpKSB7Ci0JCQlzdHJuY3B5KGRlYnVnZnNfbW50cHQsIGNtZCArIDE0
+LCBNQVhQQVRITEVOKTsKKwkJfSBlbHNlIGlmICghcHJlZml4Y21wKGNtZCwgQ01EX0RFQlVHRlNf
+RElSKSkgeworCQkJc3RybmNweShkZWJ1Z2ZzX21udHB0LCBjbWQgKyBzdHJsZW4oQ01EX0RFQlVH
+RlNfRElSKSwgTUFYUEFUSExFTik7CiAJCQlkZWJ1Z2ZzX21udHB0W01BWFBBVEhMRU4gLSAxXSA9
+ICdcMCc7CiAJCQlpZiAoZW52Y2hhbmdlZCkKIAkJCQkqZW52Y2hhbmdlZCA9IDE7CmRpZmYgLS1n
+aXQgYS90b29scy9wZXJmL3V0aWwvY2FjaGUuaCBiL3Rvb2xzL3BlcmYvdXRpbC9jYWNoZS5oCmlu
+ZGV4IDZmOGVhOWQuLmM2ZGVlYmMgMTAwNjQ0Ci0tLSBhL3Rvb2xzL3BlcmYvdXRpbC9jYWNoZS5o
+CisrKyBiL3Rvb2xzL3BlcmYvdXRpbC9jYWNoZS5oCkBAIC01LDYgKzUsMTEgQEAKICNpbmNsdWRl
+ICJzdHJidWYuaCIKICNpbmNsdWRlICIuLi9wZXJmLmgiCiAKKyNkZWZpbmUgQ01EX0VYRUNfUEFU
+SCAiLS1leGVjLXBhdGgiCisjZGVmaW5lIENNRF9QRVJGX0RJUiAiLS1wZXJmLWRpcj0iCisjZGVm
+aW5lIENNRF9XT1JLX1RSRUUgIi0td29yay10cmVlPSIKKyNkZWZpbmUgQ01EX0RFQlVHRlNfRElS
+ICItLWRlYnVnZnMtZGlyPSIKKwogI2RlZmluZSBQRVJGX0RJUl9FTlZJUk9OTUVOVCAiUEVSRl9E
+SVIiCiAjZGVmaW5lIFBFUkZfV09SS19UUkVFX0VOVklST05NRU5UICJQRVJGX1dPUktfVFJFRSIK
+ICNkZWZpbmUgREVGQVVMVF9QRVJGX0RJUl9FTlZJUk9OTUVOVCAiLnBlcmYiCi0tIAoxLjYuMC40
+Cgo=
+--0016e6d645a82d92a80475ccb096--
