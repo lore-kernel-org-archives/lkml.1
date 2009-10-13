@@ -1,81 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbZJMFvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZJMF5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757851AbZJMFvY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 01:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbZJMFvY
+	id S1756227AbZJMF5A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 01:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755147AbZJMF5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 01:51:24 -0400
-Received: from mtagate3.de.ibm.com ([195.212.17.163]:42458 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754577AbZJMFvX (ORCPT
+	Tue, 13 Oct 2009 01:57:00 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:60670 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752461AbZJMF47 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 01:51:23 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Organization: IBM
-To: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
-Subject: Re: oomkiller over-ambitious after "vmscan: make mapped executable pages the first class citizen" (bisected)
-Date: Tue, 13 Oct 2009 07:50:36 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-self-00256-g36a0790; KDE/4.3.1; i686; ; )
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Elladan <elladan@eskimo.com>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Minchan Kim <minchan.kim@gmail.com>
-References: <200910122244.19666.borntraeger@de.ibm.com> <20091013022650.GB7345@localhost>
-In-Reply-To: <20091013022650.GB7345@localhost>
+	Tue, 13 Oct 2009 01:56:59 -0400
+Message-ID: <4AD4166C.5090306@snapgear.com>
+Date: Tue, 13 Oct 2009 15:55:56 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Tim Abbott <tabbott@ksplice.com>
+CC: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH v3 4/7] m68knommu: Use more macros inside the .init section.
+References: <4AD3BFD8.90408@snapgear.com> <1255397413-4862-1-git-send-email-tabbott@ksplice.com> <1255397413-4862-2-git-send-email-tabbott@ksplice.com> <1255397413-4862-3-git-send-email-tabbott@ksplice.com> <1255397413-4862-4-git-send-email-tabbott@ksplice.com> <1255397413-4862-5-git-send-email-tabbott@ksplice.com>
+In-Reply-To: <1255397413-4862-5-git-send-email-tabbott@ksplice.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910130750.36392.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 13 Oktober 2009 04:26:50 schrieb Wu Fengguang:
-[...]
+Hi Tim,
 
-> Can you try this patch? Thanks!
-
-Yes, this patch solves the problem. In fact, my test case was a reduced version
-of KVM on s390 and it helps there as well.
-
-Since the problem also affects 2.6.31 I added stable.
-
-I agree with Rik, that this patch should go to Linus quickly, what is the best 
-way? Andrew?
-
+Tim Abbott wrote:
+> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
 > ---
-> vmscan: limit VM_EXEC protection to file pages
+>  arch/m68knommu/kernel/vmlinux.lds.S |   23 +++++------------------
+>  1 files changed, 5 insertions(+), 18 deletions(-)
 > 
-> It is possible to have !Anon but SwapBacked pages, and some apps could
-> create huge number of such pages with MAP_SHARED|MAP_ANONYMOUS. These
-> pages go into the ANON lru list, and hence shall not be protected: we
-> only care mapped executable files. Failing to do so may trigger OOM.
-> 
-> Reported-by: Christian Borntraeger <borntraeger@de.ibm.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
+> index 153569b..f7df82a 100644
+> --- a/arch/m68knommu/kernel/vmlinux.lds.S
+> +++ b/arch/m68knommu/kernel/vmlinux.lds.S
+> @@ -161,25 +161,12 @@ SECTIONS {
+>  		INIT_TEXT
+>  		_einittext = .;
+>  		INIT_DATA
+> -		. = ALIGN(16);
+> -		__setup_start = .;
+> -		*(.init.setup)
+> -		__setup_end = .;
+> -		__initcall_start = .;
+> +		INIT_SETUP(16)
+> +		INIT_CALL
+                 ^^^^^^^^^^
+I take it this should be INIT_CALLS?
 
-Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
-> ---
->  mm/vmscan.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux.orig/mm/vmscan.c	2009-10-13 09:49:05.000000000 +0800
-> +++ linux/mm/vmscan.c	2009-10-13 09:49:37.000000000 +0800
-> @@ -1356,7 +1356,7 @@ static void shrink_active_list(unsigned
->  			 * IO, plus JVM can create lots of anon VM_EXEC pages,
->  			 * so we ignore them here.
->  			 */
-> -			if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
-> +			if ((vm_flags & VM_EXEC) && page_is_file_cache(page)) {
->  				list_add(&page->lru, &l_active);
->  				continue;
->  			}
-> 
+>  		INITCALLS
+> -		__initcall_end = .;
+> -		__con_initcall_start = .;
+> -		*(.con_initcall.init)
+> -		__con_initcall_end = .;
+> -		__security_initcall_start = .;
+> -		*(.security_initcall.init)
+> -		__security_initcall_end = .;
+> -#ifdef CONFIG_BLK_DEV_INITRD
+> -		. = ALIGN(4);
+> -		__initramfs_start = .;
+> -		*(.init.ramfs)
+> -		__initramfs_end = .;
+> -#endif
+> +		CON_INITCALL
+> +		SECURITY_INITCALL
+> +		INIT_RAM_FS
+>  		. = ALIGN(PAGE_SIZE);
+>  		__init_end = .;
+>  	} > INIT
+
+
+With this patch applied the kernel no longer boots. All previous
+patches (so 1, 2 and 3) applied run fine.
+
+Headers list:
+
+vmlinux:     file format elf32-m68k
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+   0 .text         00125ff0  40020000  40020000  00002000  2**4
+                   CONTENTS, ALLOC, LOAD, READONLY, CODE
+   1 .data         00012010  40145ff0  40145ff0  00127ff0  2**4
+                   CONTENTS, ALLOC, LOAD, DATA
+   2 .init         0000c000  40158000  40158000  0013a000  2**2
+                   CONTENTS, ALLOC, LOAD, CODE
+   3 .bss          0000a9ec  40164000  40164000  00146000  2**4
+                   ALLOC
+   4 .comment      00001c56  00000000  00000000  00146000  2**0
+                   CONTENTS, READONLY
+
+I haven't debugged any further...
+
+Regards
+Greg
+
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
