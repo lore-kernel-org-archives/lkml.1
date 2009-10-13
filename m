@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbZJMBWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758313AbZJMBXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758299AbZJMBWR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 21:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757079AbZJMBWQ
+	id S1758313AbZJMBXe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 21:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757180AbZJMBXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 21:22:16 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:49788 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755575AbZJMBWP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 21:22:15 -0400
-Subject: Re: [PATCH] x86: avoid modifying global flag tsc_unstable in
-	unsychronized_tsc()
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: "Hillier, Gernot" <gernot.hillier@siemens.com>
-Cc: "x86@kernel.org" <x86@kernel.org>,
+	Mon, 12 Oct 2009 21:23:33 -0400
+Received: from mga14.intel.com ([143.182.124.37]:14355 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756702AbZJMBXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 21:23:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,548,1249282800"; 
+   d="scan'208";a="198154483"
+Date: Tue, 13 Oct 2009 09:22:54 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Tommi Rantala <tt.rantala@gmail.com>
+Cc: Randy Dunlap <rdunlap@xenotime.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AD33BB0.8080903@siemens.com>
-References: <4AD33BB0.8080903@siemens.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Mon, 12 Oct 2009 18:21:39 -0700
-Message-Id: <1255396899.31156.71.camel@ank32.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] page-types: trivial typo fixes
+Message-ID: <20091013012254.GA7345@localhost>
+References: <1255380694-4122-1-git-send-email-tt.rantala@gmail.com> <1255380694-4122-2-git-send-email-tt.rantala@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255380694-4122-2-git-send-email-tt.rantala@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 13, 2009 at 04:51:34AM +0800, Tommi Rantala wrote:
+> Trivial typo fixes.
 
-On Mon, 2009-10-12 at 07:22 -0700, Hillier, Gernot wrote:
-> From: Gernot Hillier <gernot.hillier@siemens.com>
-> 
-> The current behavior of unsynchronized_tsc() prevents the warning for
-> unsychronized TSCs to be printed: tsc_init() calls unsynchronized_tsc()
-> first to check for such problems; if found, mark_tsc_unstable() is
-> called. However, the latter bails out immediately as unsynchronized_
-> tsc() did already set the global flag tsc_unstable. Thus, the intended
-> warning message "Marking TSC unstable due to TSCs unsynchronized" won't
-> show up.
-> 
-> This patch changes the behavior for unsynchronized_tsc() to only *check*
-> for the quirk condition, but not to modify any global flags. If I'm not
-> mistaken, the only place to *set* the flag shall be mark_tsc_unstable().
+Good catch, thanks!
 
-Yes, you are right. The patch looks good to me.
+Fengguang
 
-Thanks,
-Alok
-
+> Signed-off-by: Tommi Rantala <tt.rantala@gmail.com>
+> ---
+>  Documentation/vm/page-types.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> Signed-off-by: Gernot Hillier <gernot.hillier@siemens.com>
-> Reviewed-by: Jan Kiszka <jan.kiszka@siemens.com>
-> Reviewed-by: Wolfgang Mauerer <wolfgang.mauerer@siemens.com>
-> 
-> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> index cd982f4..ffbb786 100644
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -836,10 +836,10 @@ __cpuinit int unsynchronized_tsc(void)
->  	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL) {
->  		/* assume multi socket systems are not synchronized: */
->  		if (num_possible_cpus() > 1)
-> -			tsc_unstable = 1;
-> +			return 1;
->  	}
-> 
-> -	return tsc_unstable;
-> +	return 0;
->  }
-> 
->  static void __init init_tsc_clocksource(void)
-> 
-
+> diff --git a/Documentation/vm/page-types.c b/Documentation/vm/page-types.c
+> index 16fb478..d6d21c2 100644
+> --- a/Documentation/vm/page-types.c
+> +++ b/Documentation/vm/page-types.c
+> @@ -301,7 +301,7 @@ static char *page_flag_name(uint64_t flags)
+>  		present = (flags >> i) & 1;
+>  		if (!page_flag_names[i]) {
+>  			if (present)
+> -				fatal("unkown flag bit %d\n", i);
+> +				fatal("unknown flag bit %d\n", i);
+>  			continue;
+>  		}
+>  		buf[j++] = present ? page_flag_names[i][0] : '_';
+> @@ -682,7 +682,7 @@ static void usage(void)
+>  #endif
+>  "            -l|--list                 Show page details in ranges\n"
+>  "            -L|--list-each            Show page details one by one\n"
+> -"            -N|--no-summary           Don't show summay info\n"
+> +"            -N|--no-summary           Don't show summary info\n"
+>  "            -X|--hwpoison             hwpoison pages\n"
+>  "            -x|--unpoison             unpoison pages\n"
+>  "            -h|--help                 Show this usage message\n"
+> -- 
+> 1.5.6.5
