@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933441AbZJMJZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbZJMJYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933441AbZJMJZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 05:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbZJMJZ3
+	id S1759275AbZJMJYf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 05:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbZJMJYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 05:25:29 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50532 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750960AbZJMJZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 05:25:28 -0400
-Message-ID: <4AD4471B.7000200@cn.fujitsu.com>
-Date: Tue, 13 Oct 2009 17:23:39 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 13 Oct 2009 05:24:33 -0400
+Received: from host179-6-static.238-77-b.business.telecomitalia.it ([77.238.6.179]:55120
+	"EHLO mail.navynet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755434AbZJMJYa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 05:24:30 -0400
+Message-ID: <4AD44724.4040105@navynet.it>
+Date: Tue, 13 Oct 2009 11:23:48 +0200
+From: Massimo Cetra <mcetra@navynet.it>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/4] tracing/profile: Add filter support
-References: <4AD3E34C.1020301@cn.fujitsu.com>	 <4AD3E3B5.70502@cn.fujitsu.com> <1255425377.8392.156.camel@twins>
-In-Reply-To: <1255425377.8392.156.camel@twins>
-Content-Type: text/plain; charset=UTF-8
+To: Massimo Cetra <ctrixk@navynet.it>
+CC: David Miller <davem@davemloft.net>, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [Bug #14378] Problems with net/core/skbuff.c
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>	<r-4Wjt4coy.A.CwC.Wal0KB@chimera> <20091012.034224.64980795.davem@davemloft.net> <4AD44435.3050703@navynet.it>
+In-Reply-To: <4AD44435.3050703@navynet.it>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-auth-from: mcetra@navynet.it
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2009-10-13 at 10:19 +0800, Li Zefan wrote:
->> +#ifdef CONFIG_EVENT_PROFILE
->> +       struct event_filter             *filter;
->> +       int                             filter_active;
->>  #endif
-> 
-> Why do you need filter_active, isn't !filter equivalent?
-> 
+Massimo Cetra ha scritto:
+> David Miller ha scritto:
+>> From: "Rafael J. Wysocki" <rjw@sisk.pl>
+>> Date: Mon, 12 Oct 2009 00:22:04 +0200 (CEST)
+>>
+>>  
+>>> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=14378
+>>> Subject        : Problems with net/core/skbuff.c
+>>> Submitter    : Massimo Cetra <mcetra@navynet.it>
+>>> Date        : 2009-10-08 14:51 (4 days old)
+>>> References    : http://marc.info/?l=linux-kernel&m=125501488220358&w=4
+>>>     
+>>
+>> I don't know what to do about this one.
+>>
+>> The user indicates that they have the vserver patches applied,
+>> so maybe there is some interaction with that stuff.
+>>   
+> Actually i found another oops which is very similar to the previous one.
 
-Indeed. I realized this right after I sent out this patchset. I'll
-fix it. Thanks.
+And here it is another one, this time triggered by postfix, where mor 
+drbd nor vserver are involved.
+This is not the same server where the other oopses were grabbed.
+
+Max
+
+
 
