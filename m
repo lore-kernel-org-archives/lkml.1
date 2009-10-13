@@ -1,86 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbZJMAR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbZJMAUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758536AbZJMAR0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 20:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757329AbZJMARZ
+	id S1758671AbZJMAUR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 20:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbZJMAUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 20:17:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49324 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756626AbZJMARY (ORCPT
+	Mon, 12 Oct 2009 20:20:16 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:49024 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757339AbZJMAUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 20:17:24 -0400
-Date: Mon, 12 Oct 2009 17:16:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Nix <nix@esperi.org.uk>
-cc: "Justin P. Mattock" <justinmattock@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Boyan <btanastasov@yahoo.co.uk>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?= 
-	<fredlwm@gmail.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <87ljjgfcbu.fsf@spindle.srvr.nix>
-Message-ID: <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 12 Oct 2009 20:20:14 -0400
+Date: Tue, 13 Oct 2009 02:19:11 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: [spi-devel-general] [PATCH] drivers/misc: add driver for
+ TexasInstruments DAC7512
+Message-ID: <20091013001909.GF28832@buzzloop.caiaq.de>
+References: <1254945665-28053-1-git-send-email-daniel@caiaq.de>
+ <BD79186B4FD85F4B8E60E381CAEE190901DB7EF3@mi8nycmail19.Mi8.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901DB7EF3@mi8nycmail19.Mi8.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 12 Oct 2009, Nix wrote:
-> On 12 Oct 2009, Justin P. Mattock uttered the following:
+On Mon, Oct 12, 2009 at 12:31:46PM -0400, H Hartley Sweeten wrote:
+> On Wednesday, October 07, 2009 1:01 PM, Daniel Mack wrote:
+> > This is actually too trivial to publish, but to export the function of
+> > that chip to the userspace, a module like this is needed.
+> > 
+> > Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > Cc: David Brownell <dbrownell@users.sourceforge.net>
+> > Cc: spi-devel-general@lists.sourceforge.net
+> > ---
 > 
-> > Not sure where this stands. Right now all three machines I have seem  to be having no issues with the kayboard
-> > (xserver 1.6.*) I can go and build the latest xserver(1.7) to see if I  hit something.
-> [...]
-> >> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=14388
-> >> Subject        : keyboard under X with 2.6.31
-> >> Submitter    : Frédéric L. W. Meunier <fredlwm@gmail.com>
-> >> Date        : 2009-10-07 20:19 (5 days old)
-> >> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e043e42bdb66885b3ac10d27a01ccb9972e2b0a3
-> >> References    : http://marc.info/?l=linux-kernel&m=125494753228217&w=4
+> [snip]
 > 
-> I have been seeing problems precisely like those described (sometimes
-> the keyboard dies, sometimes it gets 'stuck' with a key held down, until
-> I switch TTYs, which generally means killing X as I'm not aware of an
-> easy way to switch VTs using only the mouse), since I moved to 2.6.31
+> > +static ssize_t dac7512_store_val(struct device *dev,
+> > +				 struct device_attribute *attr,
+> > +				 const char *buf, size_t count)
+> > +{
+> > +	struct spi_device *spi = to_spi_device(dev);
+> > +	unsigned char tmp[2];
+> > +	unsigned long val;
+> > +
+> > +	if (strict_strtoul(buf, 10, &val) < 0)
+> > +		return -EINVAL;
+> > +
+> > +	tmp[0] = val >> 8;
+> > +	tmp[1] = val & 0xff;
+> > +	spi_write(spi, tmp, sizeof(tmp));
+> > +	return count;
+> > +}
+> > +
+> > +static DEVICE_ATTR(value, S_IWUSR | S_IRUGO,
+> > +		   NULL, dac7512_store_val);
+> 
+> You have declared the "value" device attribute with mode S_IWUSR | S_IRUGO
+> but have not provided a show callback.
 
-The particular commit that was bisected to should really not matter for X, 
-except perhaps from a timing standpoint.
+Sorry, forget my last mail, I got you wrong. You're of course right,
+S_IRUGO shouldn't be set for write-only attributes. Updates patch below.
 
-The problem it fixed was in pty's, and X doesn't use them much if at all 
-(various X _programs_ may, of course, but the symptoms don't sound like 
-it's just a particular X app that has issues, but more of a generic X 
-keyboard handling thing)
+Thanks,
+Daniel
 
-But for non-pty's, there should be no semantic changes from that commit 
-outside of some general tty timing differences by doing that 
-tty_flush_to_ldisc() at new points.
+>From ab18a967e55d2bb1d39559333bca81a01c2838f0 Mon Sep 17 00:00:00 2001
+From: Daniel Mack <daniel@caiaq.de>
+Date: Thu, 8 Oct 2009 03:55:46 +0800
+Subject: [PATCH] drivers/misc: add driver for Texas Instruments DAC7512
 
-I could fairly easily imagine that some timing difference does expose 
-another longer-standing problem in either the kernel or X itself. So the 
-bisection isn't necessarily wrong, it's just not likely telling us what 
-the real problem is.
+This is actually too trivial to publish, but to export the function of
+that chip to the userspace, a module like this is needed.
 
-Of course, maybe there is some race condition in the tty_buffer.c code. We 
-_used_ to not call flush_to_ldisc() except through the workqueue code, so 
-races would not be seen in normal circumstances. Now that flush_to_ldisc() 
-could easily get called both synchronously from tty_read()/tty_poll(), 
-while also being hit from the workqueues.
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: spi-devel-general@lists.sourceforge.net
+---
+ drivers/misc/Kconfig      |   10 ++++
+ drivers/misc/Makefile     |    1 +
+ drivers/misc/ti_dac7512.c |  101 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 112 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/misc/ti_dac7512.c
 
-Alan, Ogawa-san, do either of you see some problem in tty_buffer.c, 
-perhaps?
-
-		Linus
-
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index df1f86b..1191446 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -246,6 +246,16 @@ config EP93XX_PWM
+ 	  To compile this driver as a module, choose M here: the module will
+ 	  be called ep93xx_pwm.
+ 
++config TI_DAC7512
++	tristate "Texas Instruments DAC7512"
++	depends on SPI && SYSFS
++	help
++	  If you say yes here you get support for the Texas Instruments
++	  DAC7512 16-bit digital-to-analog converter.
++
++	  This driver can also be built as a module. If so, the module
++	  will be calles ti_dac7512.
++
+ source "drivers/misc/c2port/Kconfig"
+ source "drivers/misc/eeprom/Kconfig"
+ source "drivers/misc/cb710/Kconfig"
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index f982d2e..d59830e 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_SGI_GRU)		+= sgi-gru/
+ obj-$(CONFIG_HP_ILO)		+= hpilo.o
+ obj-$(CONFIG_ISL29003)		+= isl29003.o
+ obj-$(CONFIG_EP93XX_PWM)	+= ep93xx_pwm.o
++obj-$(CONFIG_TI_DAC7512)	+= ti_dac7512.o
+ obj-$(CONFIG_C2PORT)		+= c2port/
+ obj-y				+= eeprom/
+ obj-y				+= cb710/
+diff --git a/drivers/misc/ti_dac7512.c b/drivers/misc/ti_dac7512.c
+new file mode 100644
+index 0000000..d3f229a
+--- /dev/null
++++ b/drivers/misc/ti_dac7512.c
+@@ -0,0 +1,101 @@
++/*
++ *  dac7512.c - Linux kernel module for
++ * 	Texas Instruments DAC7512
++ *
++ *  Copyright (c) 2009 Daniel Mack <daniel@caiaq.de>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/spi/spi.h>
++
++#define DAC7512_DRV_NAME	"dac7512"
++#define DRIVER_VERSION		"1.0"
++
++static ssize_t dac7512_store_val(struct device *dev,
++				 struct device_attribute *attr,
++				 const char *buf, size_t count)
++{
++	struct spi_device *spi = to_spi_device(dev);
++	unsigned char tmp[2];
++	unsigned long val;
++
++	if (strict_strtoul(buf, 10, &val) < 0)
++		return -EINVAL;
++
++	tmp[0] = val >> 8;
++	tmp[1] = val & 0xff;
++	spi_write(spi, tmp, sizeof(tmp));
++	return count;
++}
++
++static DEVICE_ATTR(value, S_IWUSR, NULL, dac7512_store_val);
++
++static struct attribute *dac7512_attributes[] = {
++	&dev_attr_value.attr,
++	NULL
++};
++
++static const struct attribute_group dac7512_attr_group = {
++	.attrs = dac7512_attributes,
++};
++
++static int __devinit dac7512_probe(struct spi_device *spi)
++{
++	int ret;
++
++	spi->bits_per_word = 8;
++	spi->mode = SPI_MODE_0;
++	ret = spi_setup(spi);
++	if (ret < 0)
++		return ret;
++
++	return sysfs_create_group(&spi->dev.kobj, &dac7512_attr_group);
++}
++
++static int __devexit dac7512_remove(struct spi_device *spi)
++{
++	sysfs_remove_group(&spi->dev.kobj, &dac7512_attr_group);
++	return 0;
++}
++
++static struct spi_driver dac7512_driver = {
++	.driver = {
++		.name	= DAC7512_DRV_NAME,
++		.owner	= THIS_MODULE,
++	},
++	.probe	= dac7512_probe,
++	.remove	= __devexit_p(dac7512_remove),
++};
++
++static int __init dac7512_init(void)
++{
++	return spi_register_driver(&dac7512_driver);
++}
++
++static void __exit dac7512_exit(void)
++{
++	spi_unregister_driver(&dac7512_driver);
++}
++
++MODULE_AUTHOR("Daniel Mack <daniel@caiaq.de>");
++MODULE_DESCRIPTION("DAC7512 16-bit DAC");
++MODULE_LICENSE("GPL v2");
++MODULE_VERSION(DRIVER_VERSION);
++
++module_init(dac7512_init);
++module_exit(dac7512_exit);
+-- 
+1.6.0.4
 
