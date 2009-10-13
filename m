@@ -1,105 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbZJMLJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZJMLKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759479AbZJMLJP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 07:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZJMLJP
+	id S1759493AbZJMLKP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 07:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759443AbZJMLKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 07:09:15 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53195 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750944AbZJMLJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 07:09:14 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19uX+AQEaNuO2efMiELj8GyxNX/MVYwXccqXryioK
-	292aeHWAnq7PFO
-Subject: Re: hackbench regression with kernel 2.6.32-rc1
-From: Mike Galbraith <efault@gmx.de>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1255426740.9958.95.camel@marge.simson.net>
-References: <1255079943.25078.23.camel@ymzhang>
-	 <1255084986.8802.46.camel@laptop>  <1255331120.3684.43.camel@ymzhang>
-	 <1255357264.10420.15.camel@twins>  <1255403522.3684.57.camel@ymzhang>
-	 <1255426740.9958.95.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Tue, 13 Oct 2009 13:08:24 +0200
-Message-Id: <1255432104.7101.33.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+	Tue, 13 Oct 2009 07:10:14 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:12904 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759352AbZJMLKM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 07:10:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=W3sCGR98OGrY+xHox4cShNyRE71U+UWsGF9SkLoJx9wgndH1QT7Zlj++pdBYT0mtLL
+         Msv4u3axKbF5twp7gNBgPiu1SDlT1JDPgBpFzBMyQ6f1DkdJ5rfbQtj1VA7ADF9bfEBg
+         qeFs9RCeTuHSeWdydGHNg4eQG5LHd+66gR4hA=
+MIME-Version: 1.0
+In-Reply-To: <20091013010518.GA2606@mit.edu>
+References: <94a0d4530910120651i18ce33d2k89abcd66d1b865a1@mail.gmail.com>
+	 <20091012222910.GB18195@mit.edu>
+	 <94a0d4530910121602i14f34150h18d388668fc355d9@mail.gmail.com>
+	 <20091012231211.GC18195@mit.edu>
+	 <94a0d4530910121627j74faac64l29169e17c0b2961b@mail.gmail.com>
+	 <20091013010518.GA2606@mit.edu>
+Date: Tue, 13 Oct 2009 14:08:25 +0300
+Message-ID: <94a0d4530910130408q2e0f488dlf982986ebb766789@mail.gmail.com>
+Subject: Re: Weird ext4 bug: 256P used?
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Theodore Tso <tytso@mit.edu>,
+       Felipe Contreras <felipe.contreras@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 11:39 +0200, Mike Galbraith wrote:
-> On Tue, 2009-10-13 at 11:12 +0800, Zhang, Yanmin wrote:
-> 
-> > NEXT_BUDDY has no help on volanoMark and tbench.
-> 
-> Vmark is mostly about preemption and affinity.  Increases in wakeup
-> preemption or load balancing will bring it down.  The affinity bit
-> applies heavily to mysql+oltp too, though it loves wakeup preemption.
-> 
-> test test test...
-> 
-> My conclusion for results _here_ is load balancing changes are harming
-> cache wise.  GENTLE_FAIR_SLEEPERS harms short term fairness, but despite
-> GENTLE_FAIR_SLEEPERS, we're still wakeup preempting too much, likely
-> doing more cache harm.
-> 
-> (even for the desktop, overly aggressive wakeup preemption can do harm)
-> 
-> I'd suggest trying the settings below.
+On Tue, Oct 13, 2009 at 4:05 AM, Theodore Tso <tytso@mit.edu> wrote:
+> On Tue, Oct 13, 2009 at 02:27:48AM +0300, Felipe Contreras wrote:
+>>
+>> stat /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586
+>>   File: `/var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586'
+>>   Size: 4096          Blocks: 281470681743368 IO Block: 4096   directory
+>> Device: fe00h/65024d  Inode: 141257      Links: 2
+>> Access: (0755/drwxr-xr-x)  Uid: (4294901760/ UNKNOWN)   Gid: (16711680/ UNKNOWN)
+>> Access: 2009-10-12 16:36:22.326920328 +0300
+>> Modify: 2009-07-27 20:52:23.000000000 +0300
+>> Change: 2009-07-27 20:52:23.000000000 +0300
+>
+> OK, I see what's going on.   i_blocks_hi is getting set to 0xFFFF.
+>
+> So I definitely see the bug in e2fsck in not reporitng and fixing the
+> problem (and I'll fix that).  I'm not sure how i_blocks_hi got set to
+> that value, though; it looks like everything should be doing the right
+> thing in the latest mainline kernel.  What version of the kernel are
+> you using?
 
-Except don't bother tweaking min_granularity.  Further testing showed
-that's fine.  So turn off GENTLE_FAIR_SLEEPERS, and bump
-wakeup_granularity up a bit.
+I was using F11 kernels, and at some point I went back to compile my
+own kernels. I think I started with 2.6.31 and now 2.6.31.1.
 
-Note: don't bump it further than the short term fairness goal
-(sched_latency, or half of that if gentle is enabled), or you won't have
-any wakeup preemption, which is deadly for many loads. 
-
-> vmark 
-> 
->  92143 stock settings
->  96396 -SD_BALANCE_NEWIDLE
->  99403 -SD_WAKE_BALANCE
-> 121821 min_granularity+wakeup_granularity *= 2
-> 128795 NO_WAKEUP_PREEMPT (and back on, just checking fairness)
->  97193 NO_FAIR_SLEEPERS (vmark likes fairness, max out fairness)
-> 107519 FAIR_SLEEPERS NO_GENTLE_FAIR_SLEEPERS (over-preempt again, so..)
-> 123721 min_granularity+wakeup_granularity *= 2
-> 131290 NO_WAKEUP_PREEMPT (and back on, just checking fairness)
-> 123464 NEXT_BUDDY (no effect)
-> vs stock 1.339
-> 
-> tbench 8 with these settings.
-> 
-> 752.249 MB/sec 8 procs
-> 747.010 MB/sec 8 procs NO_NEXT_BUDDY
-> 753.177 MB/sec 8 procs min_granularity+wakeup_granularity /= 2
-> 749.518 MB/sec 8 procs GENTLE_FAIR_SLEEPERS
-> 753.051 MB/sec 8 procs min_granularity+wakeup_granularity /= 2
-> 734.772 MB/sec 8 procs +SD_WAKE_BALANCE
-> 733.683 MB/sec 8 procs +SD_BALANCE_NEWIDLE (we are at stock)
-> vs stock 1.025
-> 
-> Turns off netfilter, stock settings
-> 
-> 903.304 MB/sec 8 procs
-> 900.656 MB/sec 8 procs -SD_BALANCE_NEWIDLE
-> 928.914 MB/sec 8 procs -SD_WAKE_BALANCE
-> 930.591 MB/sec 8 procs min_granularity+wakeup_granularity *= 2
-> 926.836 MB/sec 8 procs NO_GENTLE_FAIR_SLEEPERS
-> 931.148 MB/sec 8 procs min_granularity+wakeup_granularity *= 2
-> vs stock 1.030
-> 
-> vmark
-> 
-> 146264
-> 116559 stock
-> vs stock 1.254
-
+-- 
+Felipe Contreras
