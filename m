@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759200AbZJMI3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbZJMIby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759200AbZJMI3m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 04:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759191AbZJMI3m
+	id S1759172AbZJMIby (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 04:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZJMIbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 04:29:42 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:37352 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759188AbZJMI3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 04:29:40 -0400
-Date: Tue, 13 Oct 2009 10:29:03 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: pci-express hotplug
-Message-ID: <20091013082903.GQ9228@kernel.dk>
-References: <20091012120620.GG9228@kernel.dk> <20091012145254.GA1517@kroah.com> <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca> <20091012150603.GK9228@kernel.dk> <20091012214854.GA14102@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012214854.GA14102@ldl.fc.hp.com>
+	Tue, 13 Oct 2009 04:31:53 -0400
+Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.104]:41821
+	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753250AbZJMIbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 04:31:52 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvQAACrX00p8qM+u/2dsb2JhbAAI1iiELQQ
+X-IronPort-AV: E=Sophos;i="4.44,550,1249228800"; 
+   d="scan'208";a="472883263"
+Subject: Re: [PATCH v2] GPIO: Add gpio_lookup
+From: Ben Nizette <bn@niasdigital.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>, dsilvers@simtec.co.uk
+In-Reply-To: <20091012092331.45d7e71b@bike.lwn.net>
+References: <20091010134814.0bac8624@bike.lwn.net>
+	 <20091010135343.775e535f@bike.lwn.net>
+	 <1255327904.5347.79.camel@ben-desktop>
+	 <20091012092331.45d7e71b@bike.lwn.net>
+Content-Type: text/plain
+Date: Tue, 13 Oct 2009 19:31:09 +1100
+Message-Id: <1255422669.5347.281.camel@ben-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12 2009, Alex Chiang wrote:
-> > >>> On Mon, Oct 12, 2009 at 02:06:20PM +0200, Jens Axboe wrote:
-> > >>>> I'm trying to get pci-express hotplug working in a box here. I don't
-> > >>>> really care about the hotplug aspect, I just want the darn pci-e slots
-> > >>>> that are designated hotplug slots to actually WORK. When I load pciehp,
-> > >>>> I get:
-> > >>>>
-> > >>>> Firmware did not grant requested _OSC control
-> > >>>> Firmware did not grant requested _OSC control
-> > >>>> Firmware did not grant requested _OSC control
-> > >>>> Firmware did not grant requested _OSC control
+On Mon, 2009-10-12 at 09:23 -0600, Jonathan Corbet wrote:
+> On Mon, 12 Oct 2009 17:11:44 +1100
+> Ben Nizette <bn@niasdigital.com> wrote:
 > 
-> This isn't just a benign message. It means the OS asked to take
-> over control of the slots and firmware really did say, "nope,
-> sorry".
+> > Back to this patch though, the gpio names have to come from the platform
+> > code via some platform_data for the gpio chip [1], the driver then looks
+> > up that pre-defined name to find the gpio number.  Why not just pass the
+> > gpio number straight to the end device driver through platform_data and
+> > bypass the middle-man?
 > 
-> Which means that this:
+> That's true in a situation where you've one One Platform to Bind Them
+> All, yes.  But if you have (say) GPIOs provided by a PCI-connected
+> peripheral which are needed in (say) a camera driver, there is no one
+> platform which can manage all those GPIO numbers.  In particular, I've
+> done a driver for viafb-based GPIOs; these devices can show up in any
+> of a number of x86-based systems.  I honestly don't know why it would
+> make sense to try to hardware numbers to these GPIOs when using names
+> and dynamic numbering is so much more flexible - and we are already
+> tracking the names.
 > 
-> > On Mon, Oct 12 2009, Mark Lord wrote:
-> > > Tried this yet:
-> > >
-> > >   options pciehp pciehp_force=1
+> Perhaps it would make sense to implement a proper namespace layer for
+> GPIOs rather than continuing to grow something which evidently sneaked
+> in through the back door.  Until that's done, though, I think this
+> patch is useful.  But it it's really unwanted I'll find some other way.
 > 
-> Is generally a bad idea.
-> 
-> Don't do it unless you really know your platform well.
 
-Since I had nothing to lose, I tried it. This is what it prints:
+Fair enough; I hadn't seen gpio controllers on such buses before but
+that makes sense.  If the naming information isn't coming from platform
+code but from some driver itself this seems fairly sane.
 
-Firmware did not grant requested _OSC control
-Firmware did not grant requested _OSC control
-Firmware did not grant requested _OSC control
-pciehp 0000:00:05.0:pcie04: Bypassing BIOS check for pciehp use on 0000:00:05.0
-pciehp 0000:00:05.0:pcie04: HPC vendor_id 8086 device_id 340c ss_vid 0 ss_did 0
-pciehp 0000:00:05.0:pcie04: Power fault on Slot(1)
-pciehp 0000:00:05.0:pcie04: Power fault bit 0 set
+If gpios are going to be named, and it seems they are, then personally
+I'd like to see the names field of struct gpio_chip go and a proper
+namespace layer inserted.  Something which allows gpio_name() and
+gpio_lookup() and decentralises that responsibility would be nice (the
+chip could call gpio_name itself if it has reason).  That code could be
+common to all gpio framework implementations.
 
-and modprobe is continually in msleep() afterwards.
+But a) I don't have the hours to do this myself and b) it's really
+David's call, I'm just an interested bystander :-)
 
-> > >> On Mon, Oct 12 2009, Greg KH wrote:
-> > >>> Can you try the acpiphp driver instead?  That's usually the
-> > >>> driver you want to use for "modern" systems (i.e. anything
-> > >>> made in the past 5 years.)
-> > >>
-> > >> I should have mentioned that I tried that too. It doesn't
-> > >> complain, but I don't see my cards anywhere afterwards. I'm
-> > >> a hotplug newbie, do I need to do anything else?
-> 
-> Can you modprobe acpiphp with debug=1? And send the output?
+	--Ben
 
-acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
-acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:05.0
-acpiphp_glue: found ACPI PCI Hotplug slot 1 at PCI 0000:08:00
-acpiphp: Slot [1] registered
-acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:07.0
-acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:0b:00
-acpiphp: Slot [2] registered
-acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:07.0
-acpiphp_glue: found ACPI PCI Hotplug slot 6 at PCI 0000:84:00
-acpiphp: Slot [6] registered
-acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:09.0
-acpiphp_glue: found ACPI PCI Hotplug slot 7 at PCI 0000:87:00
-acpiphp: Slot [7] registered
-acpiphp_glue: Bus 0000:87 has 1 slot
-acpiphp_glue: Bus 0000:84 has 1 slot
-acpiphp_glue: Bus 0000:0b has 1 slot
-acpiphp_glue: Bus 0000:08 has 1 slot
-acpiphp_glue: Total 4 slots
 
--- 
-Jens Axboe
 
