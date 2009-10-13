@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbZJMA2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZJMAcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758071AbZJMA2w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 20:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZJMA2v
+	id S1757547AbZJMAcY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 20:32:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbZJMAcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 20:28:51 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37717 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754184AbZJMA2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 20:28:51 -0400
-Message-ID: <4AD3C99B.8040507@suse.com>
-Date: Mon, 12 Oct 2009 20:28:11 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-1.1 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] staging: more sched.h fixes
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 12 Oct 2009 20:32:23 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52032 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754938AbZJMAcW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 20:32:22 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 13 Oct 2009 09:29:20 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Ying Han <yinghan@google.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 0/2] memcg: improving scalability by reducing lock 
+ contention at charge/uncharge
+Message-Id: <20091013092920.7d509ffa.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <604427e00910111134o6f22f0ddg2b87124dd334ec02@mail.gmail.com>
+References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
+	<604427e00910091737s52e11ce9p256c95d533dc2837@mail.gmail.com>
+	<f82dee90d0ab51d5bd33a6c01a9feb17.squirrel@webmail-b.css.fujitsu.com>
+	<604427e00910111134o6f22f0ddg2b87124dd334ec02@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains more sched.h additions for drivers that built
-fine under x86_64 but not i386 for some reason.
+On Sun, 11 Oct 2009 11:34:39 -0700
+Ying Han <yinghan@google.com> wrote:
 
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
----
- drivers/staging/rt2860/common/cmm_info.c |    1 +
- drivers/staging/rt2860/rt_linux.c        |    1 +
- drivers/staging/rt3090/common/cmm_info.c |    1 +
- drivers/staging/rt3090/rt_linux.c        |    1 +
- 4 files changed, 4 insertions(+)
+> 2009/10/10 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
---- a/drivers/staging/rt2860/common/cmm_info.c
-+++ b/drivers/staging/rt2860/common/cmm_info.c
-@@ -25,6 +25,7 @@
-  *************************************************************************
- */
- 
-+#include <linux/sched.h>
- #include "../rt_config.h"
- 
- INT	Show_SSID_Proc(
---- a/drivers/staging/rt2860/rt_linux.c
-+++ b/drivers/staging/rt2860/rt_linux.c
-@@ -25,6 +25,7 @@
-  *************************************************************************
-  */
- 
-+#include <linux/sched.h>
- #include "rt_config.h"
- 
- ULONG	RTDebugLevel = RT_DEBUG_ERROR;
---- a/drivers/staging/rt3090/common/cmm_info.c
-+++ b/drivers/staging/rt3090/common/cmm_info.c
-@@ -34,6 +34,7 @@
-     ---------    ----------    ----------------------------------------------
-  */
- 
-+#include <linux/sched.h>
- #include "../rt_config.h"
- 
- 
---- a/drivers/staging/rt3090/rt_linux.c
-+++ b/drivers/staging/rt3090/rt_linux.c
-@@ -25,6 +25,7 @@
-  *************************************************************************
-  */
- 
-+#include <linux/sched.h>
- #include "rt_config.h"
- 
- ULONG	RTDebugLevel = RT_DEBUG_ERROR;
--- 
-Jeff Mahoney
-SUSE Labs
+> > This patch series is only for "child" cgroup. Sorry, I had to write it
+> > clearer. No effects to root.
+> >
+> 
+> Ok, Thanks for making it clearer. :) So Do you mind post the cgroup+memcg
+> configuration
+> while you are running on your host?
+> 
+
+#mount -t cgroup /dev/null /cgroups -omemory
+#mkdir /cgroups/A
+#echo $$ > /cgroups/A
+
+and run test.
+
+Thanks,
+-Kame
+
+
