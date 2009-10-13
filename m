@@ -1,165 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbZJMDS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbZJMDS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753796AbZJMDS2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 23:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZJMDS2
+	id S1755358AbZJMDS5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 23:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbZJMDS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 23:18:28 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:59954 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbZJMDS1 (ORCPT
+	Mon, 12 Oct 2009 23:18:56 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36273 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751553AbZJMDSz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 23:18:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hEEXCP7dDHZklFZIV/G21GCCva6lUv9GVgFgS+elXmMrRg5rssK7hh+3U3bYKQzh9T
-         ifMNwxg5kaJZvrgeesj9L6fzAlqHDGmmD8RpOFbiBVaA+TvBC+0mvFyGjVVRTtD2P7ry
-         kiYpocDkPQDi2OBtyGN3e3Kn3VokED1NLsL00=
-Date: Mon, 12 Oct 2009 20:17:41 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
-	anymore
-Message-ID: <20091013031741.GB2887@core.coreip.homeip.net>
-References: <4AD120F2.3020606@tremplin-utc.net> <20091011030029.GA6526@suse.de> <200910112135.29384.dmitry.torokhov@gmail.com> <4AD31709.4000103@tremplin-utc.net> <20091012154846.GB7996@core.coreip.homeip.net> <20091012173551.GC10557@suse.de> <20091012183313.GC8345@core.coreip.homeip.net> <20091012185417.GA30342@suse.de>
+	Mon, 12 Oct 2009 23:18:55 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [resend][PATCH v2] mlock() doesn't wait to finish lru_add_drain_all()
+Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>, Oleg Nesterov <onestero@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20091012185139.75c13648.akpm@linux-foundation.org>
+References: <20091013090347.C752.A69D9226@jp.fujitsu.com> <20091012185139.75c13648.akpm@linux-foundation.org>
+Message-Id: <20091013110409.C758.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012185417.GA30342@suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 13 Oct 2009 12:18:17 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 11:54:17AM -0700, Greg KH wrote:
-> On Mon, Oct 12, 2009 at 11:33:13AM -0700, Dmitry Torokhov wrote:
-> > On Mon, Oct 12, 2009 at 10:35:51AM -0700, Greg KH wrote:
-> > > On Mon, Oct 12, 2009 at 08:48:46AM -0700, Dmitry Torokhov wrote:
-> > > > > So at least, unbind should fail as well as bind.
-> > > > >
-> > > > 
-> > > > That would be Greg's domain s it is driver core decision whether to
-> > > > allow unbinding platform devices registered with
-> > > > platform_driver_probe().
-> > > 
-> > > No, I do not see why that should not be allowed.
-> > > 
+> On Tue, 13 Oct 2009 10:17:48 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > Hi
 > > 
-> > Because once you did unbind the device you are stuck (unless the driver
-> > is compiled as a module, but then you could just unload the module
-> > instead of unbinding). Disallowing unbind would allow discarding not
-> > only __devinit but __devexit sections when driver is built in which
-> > would make ebedded people happy[^Hier].
+> > > On Fri,  9 Oct 2009 11:21:55 +0900 (JST)
+> > > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > > 
+> > > > Recently, Mike Galbraith reported mlock() makes hang-up very long time in
+> > > > his system. Peter Zijlstra explainted the reason.
+> > > > 
+> > > >   Suppose you have 2 cpus, cpu1 is busy doing a SCHED_FIFO-99 while(1),
+> > > >   cpu0 does mlock()->lru_add_drain_all(), which does
+> > > >   schedule_on_each_cpu(), which then waits for all cpus to complete the
+> > > >   work. Except that cpu1, which is busy with the RT task, will never run
+> > > >   keventd until the RT load goes away.
+> > > > 
+> > > >   This is not so much an actual deadlock as a serious starvation case.
+> > > > 
+> > > > His system has two partions using cpusets and RT-task partion cpu doesn't
+> > > > have any PCP cache. thus, this result was pretty unexpected.
+> > > > 
+> > > > The fact is, mlock() doesn't need to wait to finish lru_add_drain_all().
+> > > > if mlock() can't turn on PG_mlock, vmscan turn it on later.
+> > > > 
+> > > > Thus, this patch replace it with lru_add_drain_all_async().
+> > > 
+> > > So why don't we just remove the lru_add_drain_all() call from sys_mlock()?
+> > 
+> > There are small reason. the administrators and the testers (include me)
+> > look at Mlock field in /proc/meminfo.
+> > They natually expect Mlock field match with actual number of mlocked pages
+> > if the system don't have any stress. Otherwise, we can't make mlock test case ;)
+> > 
+> > 
+> > > How did you work out why the lru_add_drain_all() is present in
+> > > sys_mlock() anyway?  Neither the code nor the original changelog tell
+> > > us.  Who do I thwap for that?  Nick and his reviewers.  Sigh.
+> > 
+> > [Umm, My dictionaly don't tell me the meaning of "thwap".  An meaning of
+> > an imitative word strongly depend on culture. Thus, I probably
+> > misunderstand this paragraph.]
 > 
-> Yeah, good point.
+> "slap"?
 > 
-> Does anyone do bind/unbind with platform devices today?
+> > I've understand the existing reason by looooooong time review.
+> > 
+> > 
+> > > There are many callers of lru_add_drain_all() all over the place.  Each
+> > > of those is vulnerable to the same starvation issue, is it not?
+> > 
+> > There are.
+> > 
+> > > If so, it would be better to just fix up lru_add_drain_all().  Afaict
+> > > all of its functions can be performed in hard IRQ context, so we can
+> > > use smp_call_function()?
+> > 
+> > There is a option. but it have one downside, it require lru_add_pvecs
+> > related function call irq_disable().
 > 
-> If not, a patch changing this would be welcome.
+> I don't know what this means.  ____pagevec_lru_add() (for example) can
+> be trivially changed from spin_lock_irq() to spin_lock_irqsave().
 > 
+> In other cases we can perhaps split an existing
+> 
+> foo()
+> {
+> 	spin_lock_irq(zone->lock);
+> }
+> 
+> into
+> 
+> __foo()
+> {
+> 	spin_lock(zone->lock);
+> }
+> 
+> foo()
+> {
+> 	local_irq_disable()
+> 	__foo();
+> }
+> 
+> then call the new __foo().
 
-How about this one?
+The problem is in __lru_cache_add().
 
--- 
-Dmitry
+============================================================
+void __lru_cache_add(struct page *page, enum lru_list lru)
+{
+        struct pagevec *pvec = &get_cpu_var(lru_add_pvecs)[lru];
 
+        page_cache_get(page);
+        if (!pagevec_add(pvec, page))
+                ____pagevec_lru_add(pvec, lru);
+        put_cpu_var(lru_add_pvecs);
+}
+============================================================
 
-Driver core: allow certain drivers prohibit bind/unbind via sysfs
+current typical scenario is
+1. preempt disable
+2. assign lru_add_pvec
+3. page_cache_get()
+4. pvec->pages[pvec->nr++] = page;
+5. preempt enable
 
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+but the preempt disabling assume drain_cpu_pagevecs() run on process context.
+we need to convert it with irq_disabling.
 
-Platform drivers registered via platform_driver_probe() can be bound
-to devices only once, upon registration, because discard their probe()
-routines to save memory. Unbinding the driver through sysfs 'unbind'
-leaves the device stranded and confuses users so let's not create
-bind and unbind attributes for such drivers.
+I don't know this how much serious. I haven't mesure it. Yes, I can.
+I will report this result as another mail.
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
+Thanks.
 
- drivers/base/bus.c      |   17 +++++++++++------
- drivers/base/platform.c |    6 +++++-
- include/linux/device.h  |    4 +++-
- 3 files changed, 19 insertions(+), 8 deletions(-)
-
-
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 973bf2a..63c143e 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -689,15 +689,19 @@ int bus_add_driver(struct device_driver *drv)
- 		printk(KERN_ERR "%s: driver_add_attrs(%s) failed\n",
- 			__func__, drv->name);
- 	}
--	error = add_bind_files(drv);
--	if (error) {
--		/* Ditto */
--		printk(KERN_ERR "%s: add_bind_files(%s) failed\n",
--			__func__, drv->name);
-+
-+	if (!drv->suppress_bind_attrs) {
-+		error = add_bind_files(drv);
-+		if (error) {
-+			/* Ditto */
-+			printk(KERN_ERR "%s: add_bind_files(%s) failed\n",
-+				__func__, drv->name);
-+		}
- 	}
- 
- 	kobject_uevent(&priv->kobj, KOBJ_ADD);
- 	return 0;
-+
- out_unregister:
- 	kfree(drv->p);
- 	drv->p = NULL;
-@@ -720,7 +724,8 @@ void bus_remove_driver(struct device_driver *drv)
- 	if (!drv->bus)
- 		return;
- 
--	remove_bind_files(drv);
-+	if (!drv->suppress_bind_attrs)
-+		remove_bind_files(drv);
- 	driver_remove_attrs(drv->bus, drv);
- 	driver_remove_file(drv, &driver_attr_uevent);
- 	klist_remove(&drv->p->knode_bus);
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index ed156a1..4fa954b 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -521,11 +521,15 @@ int __init_or_module platform_driver_probe(struct platform_driver *drv,
- {
- 	int retval, code;
- 
-+	/* make sure driver won't have bind/unbind attributes */
-+	drv->driver.suppress_bind_attrs = true;
-+
- 	/* temporary section violation during probe() */
- 	drv->probe = probe;
- 	retval = code = platform_driver_register(drv);
- 
--	/* Fixup that section violation, being paranoid about code scanning
-+	/*
-+	 * Fixup that section violation, being paranoid about code scanning
- 	 * the list of drivers in order to probe new devices.  Check to see
- 	 * if the probe was successful, and make sure any forced probes of
- 	 * new devices fail.
-diff --git a/include/linux/device.h b/include/linux/device.h
-index aca31bf..2ea3e49 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -124,7 +124,9 @@ struct device_driver {
- 	struct bus_type		*bus;
- 
- 	struct module		*owner;
--	const char 		*mod_name;	/* used for built-in modules */
-+	const char		*mod_name;	/* used for built-in modules */
-+
-+	bool suppress_bind_attrs;	/* disables bind/unbind via sysfs */
- 
- 	int (*probe) (struct device *dev);
- 	int (*remove) (struct device *dev);
