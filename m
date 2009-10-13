@@ -1,105 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933778AbZJMIS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933789AbZJMITa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933778AbZJMIS4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 04:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933710AbZJMISz
+	id S933789AbZJMITa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 04:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933762AbZJMIT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 04:18:55 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:45334 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933661AbZJMISy (ORCPT
+	Tue, 13 Oct 2009 04:19:29 -0400
+Received: from smtp101.mail.ukl.yahoo.com ([77.238.184.33]:34613 "HELO
+	smtp101.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933770AbZJMIT0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 04:18:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=NEfMrSP5Xo0u0naQqbwIyrLFKkSgQRFJllJD9xvsMCfVk7aws/+p2XvO7arSp5ddnr
-         Dwe7AhDfXHjUynfAoaiEEqtaThHtssRufRTpVEAvIdl1ZlCjYlFroOm575KduQ7yhrAc
-         MTbQu+8/qA4QxJHMaAUkNe7PlfTJhmh8TCq7g=
+	Tue, 13 Oct 2009 04:19:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.uk;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=hsVMKUSjMEZNctZOF7k978V+qkheRSDxTaOylR5DXE2ykkTw4YtWwjGPVBRYNKiGwxUD6zVrO5pjKX/+YO1+PR50rAQzXWJcyKUmr/Bs2Rh/AZMR0nPFkVx4dTmZPqH50ec8vsUq2ZFCKjcqCMXs7A6AzFtpZT7Yr+DSSgznH3Y=  ;
+X-Yahoo-SMTP: dGJefyiswBAq8gjvkVdDD_Aeiz1oX_mV
+X-YMail-OSG: 4gSbXCYVM1mYrLxU1ilx4CFwlx_HKHOy5ChjYYgQrOgunA8W2HBsPg3AElNd14U.AgpR8T9AkeZy3FshjR8aB1tspdww9OXj1x8cg3lBZMhqAmuQCksGMWuA8jdOUQWOp2WfcHty7i9X_H.U5j2PagFewH_XyQOIGav9dX5MZ3S.1CweKG6RIcGSQZDa5xu_BWAQ0460QVu.UPTum1QStuHtXawdKnA0kall273uQpMI9ddQPlSmSRbAa3vSRHNl
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4AD437F9.9020708@yahoo.co.uk>
+Date: Tue, 13 Oct 2009 11:19:05 +0300
+From: Boyan <btanastasov@yahoo.co.uk>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.23) Gecko/20090823 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Date: Tue, 13 Oct 2009 10:18:16 +0200
-Message-ID: <4727185d0910130118m5387058dndb02ac9b384af9f0@mail.gmail.com>
-Subject: [PATCH] [PERF] do not manually count string lengths
-From: Vincent Legoll <vincent.legoll@gmail.com>
-To: Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Content-Type: multipart/mixed; boundary=0016e6d645a82d92a80475ccb096
+To: =?ISO-8859-1?Q?=22Fr=E9d=E9ric_L=2E_W=2E_Meunier=22?= 
+	<fredlwm@gmail.com>
+CC: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Nix <nix@esperi.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain> <4AD3F769.5080405@gmail.com> <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net>
+In-Reply-To: <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016e6d645a82d92a80475ccb096
-Content-Type: text/plain; charset=ISO-8859-1
+Frédéric L. W. Meunier wrote:
+> On Mon, 12 Oct 2009, Justin P. Mattock wrote:
+> 
+>> Linus Torvalds wrote:
+>>> [ Alan, Paulkf - the tty buffering and locking is originally your code,
+>>>    although from about three years ago, when it used to be in tty_io.c..
+>>>    Any comment? ]
+>>>
+>>> On Mon, 12 Oct 2009, Linus Torvalds wrote:
+>>>
+>>>> Alan, Ogawa-san, do either of you see some problem in tty_buffer.c,
+>>>> perhaps?
+>>>>
+>>>
+>>> Hmm. I see one, at least.
+>>>
+>>> The "tty_insert_flip_string()" locking seems totally bogus.
+>>>
+>>> It does that "tty_buffer_request_room()" call and subsequent copying 
+>>> with
+>>> no locking at all - sure, the tty_buffer_request_room() function itself
+>>> locks the buffers, but then unlocks it when returning, so when we 
+>>> actually
+>>> do the memcpy() etc, we can race with anybody.
+>>>
+>>> I don't really see who would care, but it does look totally broken.
+>>>
+>>> I dunno, this patch seems to make sense to me. Am I missing something?
+>>>
+>>> [ NOTE! The patch is totally untested. It compiled for me on x86-64, and
+>>>    apart from that I'm just going to say that it looks obvious, and 
+>>> the old
+>>>    code looks obviously buggy. Also, any remaining users of
+>>>
+>>>     tty_prepare_flip_string
+>>>     tty_prepare_flip_string_flags
+>>>
+>>>    are still fundamentally broken and buggy, while users of
+>>>
+>>>     tty_buffer_request_room
+>>>
+>>>    are pretty damn odd and suspect (but a lot of them seem to be just
+>>>    pointless: they then call tty_insert_flip_string(), which means 
+>>> that the
+>>>    tty_buffer_request_room() call was totally redundant ]
+>>>
+>>> Comments? Does this work? Does it make any difference? It seems fairly
+>>> unlikely, but it's the only obvious problem I've seen in the tty 
+>>> buffering
+>>> code so far.
+>>>
+>>> And that code is literally 3 years old, and it seems unlikely that a
+>>> regular _keyboard_ buffer would be able to hit the (rather small) race
+>>> condition. But other serialization may have hidden it, and timing
+>>> differences could certainly have caused it to trigger much more easily.
+>>>
+>>>             Linus
+>>>
+>>> ---
+>>>   drivers/char/tty_buffer.c |   33 +++++++++++++++++++++++++--------
+>>>   1 files changed, 25 insertions(+), 8 deletions(-)
+>>>
+>>> diff --git a/drivers/char/tty_buffer.c b/drivers/char/tty_buffer.c
+>>> index 3108991..25ab538 100644
+>>> --- a/drivers/char/tty_buffer.c
+>>> +++ b/drivers/char/tty_buffer.c
+>>> @@ -196,13 +196,10 @@ static struct tty_buffer 
+>>> *tty_buffer_find(struct tty_struct *tty, size_t size)
+>>>    *
+>>>    *    Locking: Takes tty->buf.lock
+>>>    */
+>>> -int tty_buffer_request_room(struct tty_struct *tty, size_t size)
+>>> +static int locked_tty_buffer_request_room(struct tty_struct *tty, 
+>>> size_t size)
+>>>   {
+>>>       struct tty_buffer *b, *n;
+>>>       int left;
+>>> -    unsigned long flags;
+>>> -
+>>> -    spin_lock_irqsave(&tty->buf.lock, flags);
+>>>
+>>>       /* OPTIMISATION: We could keep a per tty "zero" sized buffer to
+>>>          remove this conditional if its worth it. This would be 
+>>> invisible
+>>> @@ -225,9 +222,20 @@ int tty_buffer_request_room(struct tty_struct 
+>>> *tty, size_t size)
+>>>               size = left;
+>>>       }
+>>>
+>>> -    spin_unlock_irqrestore(&tty->buf.lock, flags);
+>>>       return size;
+>>>   }
+>>> +
+>>> +int tty_buffer_request_room(struct tty_struct *tty, size_t size)
+>>> +{
+>>> +    int retval;
+>>> +    unsigned long flags;
+>>> +
+>>> +    spin_lock_irqsave(&tty->buf.lock, flags);
+>>> +    retval = locked_tty_buffer_request_room(tty, size);
+>>> +    spin_unlock_irqrestore(&tty->buf.lock, flags);
+>>> +    return retval;
+>>> +}
+>>> +
+>>>   EXPORT_SYMBOL_GPL(tty_buffer_request_room);
+>>>
+>>>   /**
+>>> @@ -239,16 +247,20 @@ EXPORT_SYMBOL_GPL(tty_buffer_request_room);
+>>>    *    Queue a series of bytes to the tty buffering. All the characters
+>>>    *    passed are marked as without error. Returns the number added.
+>>>    *
+>>> - *    Locking: Called functions may take tty->buf.lock
+>>> + *    Locking: We take tty->buf.lock
+>>>    */
+>>>
+>>>   int tty_insert_flip_string(struct tty_struct *tty, const unsigned 
+>>> char *chars,
+>>>                   size_t size)
+>>>   {
+>>>       int copied = 0;
+>>> +    unsigned long flags;
+>>> +
+>>> +    spin_lock_irqsave(&tty->buf.lock, flags);
+>>>       do {
+>>> -        int space = tty_buffer_request_room(tty, size - copied);
+>>> +        int space = locked_tty_buffer_request_room(tty, size - copied);
+>>>           struct tty_buffer *tb = tty->buf.tail;
+>>> +
+>>>           /* If there is no space then tb may be NULL */
+>>>           if (unlikely(space == 0))
+>>>               break;
+>>> @@ -260,6 +272,7 @@ int tty_insert_flip_string(struct tty_struct 
+>>> *tty, const unsigned char *chars,
+>>>           /* There is a small chance that we need to split the data over
+>>>              several buffers. If this is the case we must loop */
+>>>       } while (unlikely(size>  copied));
+>>> +    spin_unlock_irqrestore(&tty->buf.lock, flags);
+>>>       return copied;
+>>>   }
+>>>   EXPORT_SYMBOL(tty_insert_flip_string);
+>>> @@ -282,8 +295,11 @@ int tty_insert_flip_string_flags(struct 
+>>> tty_struct *tty,
+>>>           const unsigned char *chars, const char *flags, size_t size)
+>>>   {
+>>>       int copied = 0;
+>>> +    unsigned long irqflags;
+>>> +
+>>> +    spin_lock_irqsave(&tty->buf.lock, irqflags);
+>>>       do {
+>>> -        int space = tty_buffer_request_room(tty, size - copied);
+>>> +        int space = locked_tty_buffer_request_room(tty, size - copied);
+>>>           struct tty_buffer *tb = tty->buf.tail;
+>>>           /* If there is no space then tb may be NULL */
+>>>           if (unlikely(space == 0))
+>>> @@ -297,6 +313,7 @@ int tty_insert_flip_string_flags(struct 
+>>> tty_struct *tty,
+>>>           /* There is a small chance that we need to split the data over
+>>>              several buffers. If this is the case we must loop */
+>>>       } while (unlikely(size>  copied));
+>>> +    spin_unlock_irqrestore(&tty->buf.lock, irqflags);
+>>>       return copied;
+>>>   }
+>>>   EXPORT_SYMBOL(tty_insert_flip_string_flags);
+>>>
+>>>
+>> I can throw your patch in over here for the heck of it.
+>> If there's somebody who's really hitting this bug
+>> then the results would be better  if this is the area that causing
+>> this bug.(from here the only issue I'm seeing is spinning
+>> history commands in the terminal  from time to time,
+>> nothing of any unusable keys like others are reporting).
+> 
+> I tested it on top of 2.6.31.4 (after putting back 
+> e043e42bdb66885b3ac10d27a01ccb9972e2b0a3), and the keyboard is fine 
+> after almost 3h. Before that, the problems would appear in less than 1h. 
+> Maybe I spoke too soon, but...
+> 
+> Boyan, does it work for you ?
+> 
 
-Hello,
+I've just tested it on top of 2.6.31.3 and it doesn't work. As I've
+mentioned in previous email - I usually trigger the problem easily
+watching pictures with gthumb - this is combination of cpu intensive
+operations and keyboard usage and if it doesn't work it takes me no more
+than a minute to trigger the problem.
 
-here is a small patch to the perf tool to use strlen & macros
-instead of manually counting string lengths.
-
-I didn't find mention of any maintainer for the tool...
-
-Please advise if I should submit this in another way
-
--- 
-Vincent Legoll
-
---0016e6d645a82d92a80475ccb096
-Content-Type: text/x-diff; charset=US-ASCII; 
-	name="0001-Do-not-manually-count-string-lengths.patch"
-Content-Disposition: attachment; 
-	filename="0001-Do-not-manually-count-string-lengths.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g0qdmr7a0
-
-RnJvbSAxYzg3NTVkNTc1M2Y5MTNmZTRjMDJhOWQwZWU3ZmE1MWZkYTBjMDAyIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBWaW5jZW50IExlZ29sbCA8dmluY2VudC5sZWdvbGxAZ21haWwu
-Y29tPgpEYXRlOiBUdWUsIDEzIE9jdCAyMDA5IDEwOjA0OjU0ICswMjAwClN1YmplY3Q6IFtQQVRD
-SF0gRG8gbm90IG1hbnVhbGx5IGNvdW50IHN0cmluZyBsZW5ndGhzCgpVc2Ugc3RybGVuICYgbWFj
-cm9zIGluc3RlYWQgb2YgbWFudWFsbHkgY291bnRpbmcgc3RyaW5nIGxlbmd0aHMKYXMgdGhpcyBp
-cyBlcnJvciBwcm9uZSBhbmQgbWF5IGxlbmQgdG8gYnVncy4KClNpZ25lZC1vZmYtYnk6IFZpbmNl
-bnQgTGVnb2xsIDx2aW5jZW50LmxlZ29sbEBnbWFpbC5jb20+Ci0tLQogdG9vbHMvcGVyZi9wZXJm
-LmMgICAgICAgfCAgIDE2ICsrKysrKysrLS0tLS0tLS0KIHRvb2xzL3BlcmYvdXRpbC9jYWNoZS5o
-IHwgICAgNSArKysrKwogMiBmaWxlcyBjaGFuZ2VkLCAxMyBpbnNlcnRpb25zKCspLCA4IGRlbGV0
-aW9ucygtKQoKZGlmZiAtLWdpdCBhL3Rvb2xzL3BlcmYvcGVyZi5jIGIvdG9vbHMvcGVyZi9wZXJm
-LmMKaW5kZXggMTlmYzdmZS4uNjI0ZTYyZCAxMDA2NDQKLS0tIGEvdG9vbHMvcGVyZi9wZXJmLmMK
-KysrIGIvdG9vbHMvcGVyZi9wZXJmLmMKQEAgLTg5LDggKzg5LDggQEAgc3RhdGljIGludCBoYW5k
-bGVfb3B0aW9ucyhjb25zdCBjaGFyKioqIGFyZ3YsIGludCogYXJnYywgaW50KiBlbnZjaGFuZ2Vk
-KQogCQkvKgogCQkgKiBDaGVjayByZW1haW5pbmcgZmxhZ3MuCiAJCSAqLwotCQlpZiAoIXByZWZp
-eGNtcChjbWQsICItLWV4ZWMtcGF0aCIpKSB7Ci0JCQljbWQgKz0gMTE7CisJCWlmICghcHJlZml4
-Y21wKGNtZCwgQ01EX0VYRUNfUEFUSCkpIHsKKwkJCWNtZCArPSBzdHJsZW4oQ01EX0VYRUNfUEFU
-SCk7CiAJCQlpZiAoKmNtZCA9PSAnPScpCiAJCQkJcGVyZl9zZXRfYXJndl9leGVjX3BhdGgoY21k
-ICsgMSk7CiAJCQllbHNlIHsKQEAgLTExNyw4ICsxMTcsOCBAQCBzdGF0aWMgaW50IGhhbmRsZV9v
-cHRpb25zKGNvbnN0IGNoYXIqKiogYXJndiwgaW50KiBhcmdjLCBpbnQqIGVudmNoYW5nZWQpCiAJ
-CQkoKmFyZ3YpKys7CiAJCQkoKmFyZ2MpLS07CiAJCQloYW5kbGVkKys7Ci0JCX0gZWxzZSBpZiAo
-IXByZWZpeGNtcChjbWQsICItLXBlcmYtZGlyPSIpKSB7Ci0JCQlzZXRlbnYoUEVSRl9ESVJfRU5W
-SVJPTk1FTlQsIGNtZCArIDEwLCAxKTsKKwkJfSBlbHNlIGlmICghcHJlZml4Y21wKGNtZCwgQ01E
-X1BFUkZfRElSKSkgeworCQkJc2V0ZW52KFBFUkZfRElSX0VOVklST05NRU5ULCBjbWQgKyBzdHJs
-ZW4oQ01EX1BFUkZfRElSKSwgMSk7CiAJCQlpZiAoZW52Y2hhbmdlZCkKIAkJCQkqZW52Y2hhbmdl
-ZCA9IDE7CiAJCX0gZWxzZSBpZiAoIXN0cmNtcChjbWQsICItLXdvcmstdHJlZSIpKSB7CkBAIC0x
-MzEsOCArMTMxLDggQEAgc3RhdGljIGludCBoYW5kbGVfb3B0aW9ucyhjb25zdCBjaGFyKioqIGFy
-Z3YsIGludCogYXJnYywgaW50KiBlbnZjaGFuZ2VkKQogCQkJCSplbnZjaGFuZ2VkID0gMTsKIAkJ
-CSgqYXJndikrKzsKIAkJCSgqYXJnYyktLTsKLQkJfSBlbHNlIGlmICghcHJlZml4Y21wKGNtZCwg
-Ii0td29yay10cmVlPSIpKSB7Ci0JCQlzZXRlbnYoUEVSRl9XT1JLX1RSRUVfRU5WSVJPTk1FTlQs
-IGNtZCArIDEyLCAxKTsKKwkJfSBlbHNlIGlmICghcHJlZml4Y21wKGNtZCwgQ01EX1dPUktfVFJF
-RSkpIHsKKwkJCXNldGVudihQRVJGX1dPUktfVFJFRV9FTlZJUk9OTUVOVCwgY21kICsgc3RybGVu
-KENNRF9XT1JLX1RSRUUpLCAxKTsKIAkJCWlmIChlbnZjaGFuZ2VkKQogCQkJCSplbnZjaGFuZ2Vk
-ID0gMTsKIAkJfSBlbHNlIGlmICghc3RyY21wKGNtZCwgIi0tZGVidWdmcy1kaXIiKSkgewpAQCAt
-MTQ2LDggKzE0Niw4IEBAIHN0YXRpYyBpbnQgaGFuZGxlX29wdGlvbnMoY29uc3QgY2hhcioqKiBh
-cmd2LCBpbnQqIGFyZ2MsIGludCogZW52Y2hhbmdlZCkKIAkJCQkqZW52Y2hhbmdlZCA9IDE7CiAJ
-CQkoKmFyZ3YpKys7CiAJCQkoKmFyZ2MpLS07Ci0JCX0gZWxzZSBpZiAoIXByZWZpeGNtcChjbWQs
-ICItLWRlYnVnZnMtZGlyPSIpKSB7Ci0JCQlzdHJuY3B5KGRlYnVnZnNfbW50cHQsIGNtZCArIDE0
-LCBNQVhQQVRITEVOKTsKKwkJfSBlbHNlIGlmICghcHJlZml4Y21wKGNtZCwgQ01EX0RFQlVHRlNf
-RElSKSkgeworCQkJc3RybmNweShkZWJ1Z2ZzX21udHB0LCBjbWQgKyBzdHJsZW4oQ01EX0RFQlVH
-RlNfRElSKSwgTUFYUEFUSExFTik7CiAJCQlkZWJ1Z2ZzX21udHB0W01BWFBBVEhMRU4gLSAxXSA9
-ICdcMCc7CiAJCQlpZiAoZW52Y2hhbmdlZCkKIAkJCQkqZW52Y2hhbmdlZCA9IDE7CmRpZmYgLS1n
-aXQgYS90b29scy9wZXJmL3V0aWwvY2FjaGUuaCBiL3Rvb2xzL3BlcmYvdXRpbC9jYWNoZS5oCmlu
-ZGV4IDZmOGVhOWQuLmM2ZGVlYmMgMTAwNjQ0Ci0tLSBhL3Rvb2xzL3BlcmYvdXRpbC9jYWNoZS5o
-CisrKyBiL3Rvb2xzL3BlcmYvdXRpbC9jYWNoZS5oCkBAIC01LDYgKzUsMTEgQEAKICNpbmNsdWRl
-ICJzdHJidWYuaCIKICNpbmNsdWRlICIuLi9wZXJmLmgiCiAKKyNkZWZpbmUgQ01EX0VYRUNfUEFU
-SCAiLS1leGVjLXBhdGgiCisjZGVmaW5lIENNRF9QRVJGX0RJUiAiLS1wZXJmLWRpcj0iCisjZGVm
-aW5lIENNRF9XT1JLX1RSRUUgIi0td29yay10cmVlPSIKKyNkZWZpbmUgQ01EX0RFQlVHRlNfRElS
-ICItLWRlYnVnZnMtZGlyPSIKKwogI2RlZmluZSBQRVJGX0RJUl9FTlZJUk9OTUVOVCAiUEVSRl9E
-SVIiCiAjZGVmaW5lIFBFUkZfV09SS19UUkVFX0VOVklST05NRU5UICJQRVJGX1dPUktfVFJFRSIK
-ICNkZWZpbmUgREVGQVVMVF9QRVJGX0RJUl9FTlZJUk9OTUVOVCAiLnBlcmYiCi0tIAoxLjYuMC40
-Cgo=
---0016e6d645a82d92a80475ccb096--
+I thought the problem may be more easily triggered because of the newer
+(1.6.4 RC) in fedora which is slower for my ati radeon cards, but now
+I'm with older version 1.6.1.901 which is fine in speed - so it doesn't
+matter what is the version of X.
