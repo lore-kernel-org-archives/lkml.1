@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759654AbZJMMbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759687AbZJMMbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759654AbZJMMbP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 08:31:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759641AbZJMMbN
+	id S1759687AbZJMMbs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 08:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759679AbZJMMbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 08:31:13 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:11729 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759330AbZJMMbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 08:31:12 -0400
-Date: Tue, 13 Oct 2009 09:30:42 -0300
-From: Glauber Costa <glommer@redhat.com>
-To: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: [PATCH] fix msr list
-Message-ID: <20091013123042.GB8092@mothafucka.localdomain>
-References: <1254849890-3916-1-git-send-email-glommer@redhat.com> <20091012175026.GA4768@amt.cnet>
+	Tue, 13 Oct 2009 08:31:47 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:36537 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759677AbZJMMbp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 08:31:45 -0400
+Date: Tue, 13 Oct 2009 18:00:47 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Herbert Poetzl <herbert@13thfloor.at>, vatsa@in.ibm.com,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
+Message-ID: <20091013123047.GC26069@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20090930124919.GA19951@in.ibm.com> <4AC35EDD.1080902@openvz.org> <20090930142537.GJ19951@in.ibm.com> <20090930143953.GA2014@in.ibm.com> <4AD466E5.4010206@openvz.org> <20091013120354.GF24787@MAIL.13thfloor.at> <4AD4705D.6020109@openvz.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091012175026.GA4768@amt.cnet>
-X-ChuckNorris: True
-User-Agent: Jack Bauer
+In-Reply-To: <4AD4705D.6020109@openvz.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 02:50:27PM -0300, Marcelo Tosatti wrote:
-> On Tue, Oct 06, 2009 at 01:24:50PM -0400, Glauber Costa wrote:
-> > For a while now, we are issuing a rdmsr instruction to find out which msrs in our
-> > save list are really supported by the underlying machine. However, it fails to account
-> > for kvm-specific msrs, such as the pvclock ones.
-> > 
-> > This patch moves then to the beginning of the list, and skip testing them.
-> > 
-> > Signed-off-by: Glauber Costa <glommer@redhat.com>
+On Tue, Oct 13, 2009 at 04:19:41PM +0400, Pavel Emelyanov wrote:
+> > as I already stated, it seems perfectly fine for me 
 > 
-> Applied, thanks.
+> You're not the only one interested in it, sorry. Besides, I
+> got your point in "I'm find with it". Now get mine which is
+> about "I am not".
 > 
-> But this alone won't fix migration to include the two pvclock MSRs
-> right?
-Yes, exactly. It will just make userspace see the correct list, but we'd
-still have to take action based on it.
+> > can be trivially mapped to the two values, by chosing a
+> > fixed multiplicative base (let's say '1s' to simplify :) 
+> > 
+> >   with 50%, you get 1s/0.5s
+> >   with 20%, you get 1s/0.2s
+> >   with  5%, you get 1s/0.05s
+> > 
+> > well, you get the idea :)
+> 
+> No I don't.
+> Is 1s/0.5s worse or better than 2s/1s?
+> How should I make a choice?
 
+I would say it depends on your requirement. How fast do you want to
+respond back to the user? Wiht lower bandwidth, you would want to have
+shorter periods so that the user would not get the impression that he
+has to "wait" to get CPU time. But having a very short period is not a
+good thing, since there are other considerations (such as the overhead of
+hard limits).
+
+thanks,
+-- 
+regards,
+Dhaval
