@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751372AbZJMEIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751391AbZJMENI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751372AbZJMEIh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 00:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZJMEIg
+	id S1751391AbZJMENI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 00:13:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbZJMENH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 00:08:36 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39926 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751048AbZJMEIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 00:08:35 -0400
-Date: Tue, 13 Oct 2009 15:07:53 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@linux.intel.com>
-Subject: linux-next: staging tree build failure
-Message-Id: <20091013150753.f738576e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+	Tue, 13 Oct 2009 00:13:07 -0400
+Received: from lennier.cc.vt.edu ([198.82.162.213]:41975 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751078AbZJMENG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 00:13:06 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roman Zippel andr <zippel@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] hfs: fix oops on mount with corrupted btree extent records
+In-Reply-To: Your message of "Mon, 12 Oct 2009 20:41:37 EDT."
+             <4AD3CCC1.9020102@suse.com>
+From: Valdis.Kletnieks@vt.edu
+References: <4AD3CCC1.9020102@suse.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__13_Oct_2009_15_07_53_+1100_cxUZnMh0ZWE8WWsQ"
+Content-Type: multipart/signed; boundary="==_Exmh_1255407123_3557P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Oct 2009 00:12:03 -0400
+Message-ID: <14762.1255407123@turing-police.cc.vt.edu>
+X-Mirapoint-Received-SPF: 128.173.35.215 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (0) 
+X-Junkmail-Status: score=10/50, host=zidane.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020206.4AD3FE14.01D1,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-07-29 21:33:33,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__13_Oct_2009_15_07_53_+1100_cxUZnMh0ZWE8WWsQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--==_Exmh_1255407123_3557P
+Content-Type: text/plain; charset=us-ascii
 
-Hi Greg,
+On Mon, 12 Oct 2009 20:41:37 EDT, Jeff Mahoney said:
+>  A particular fsfuzzer run caused an hfs file system to crash on mount. This
+>  is due to a corrupted MDB extent record causing a miscalculation of
+>  HFS_I(inode)->first_blocks for the extent tree. If the extent records
+>  are zereod out, it won't trigger the first_blocks special case. Instead
+>  it falls through to the extent code which we're still in the middle
+>  of initializing.
+> 
+>  This patch catches the 0 size extent records, reports the corruption,
+>  and fails the mount.
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+Just for completeness - does the current fsck.hfs already know how to fix it, or
+at least heave stuff over the side so the filesystem is self-consistent again?
+Or will a user who hits this need a new fsck.hfs to get it back to mountable?
 
-make[4]: *** No rule to make target `include/linux/hayesesp.h', needed by `=
-usr/include/linux/.install'.  Stop.
-
-Caused by commit a724aa0a5ad2b3c6b5ee48e79a09e9fbc5cf3ec9 ("tty: esp:
-remove broken driver") which I have reverted for today.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__13_Oct_2009_15_07_53_+1100_cxUZnMh0ZWE8WWsQ
+--==_Exmh_1255407123_3557P
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-iEYEARECAAYFAkrT/RkACgkQjjKRsyhoI8wZsQCbBd4tPJo+jiH75Tq83LmSKijE
-4p8An27Liz+hPJwfyQHCEKJ3U86Z6ctP
-=L1A+
+iD8DBQFK0/4TcC3lWbTT17ARAi4gAKCFKumzgSHNv+7cLfcVLA7uiaVp5ACgqhkn
+nR4oH3u/QhRiHGbwHTO5UBo=
+=wNE3
 -----END PGP SIGNATURE-----
 
---Signature=_Tue__13_Oct_2009_15_07_53_+1100_cxUZnMh0ZWE8WWsQ--
+--==_Exmh_1255407123_3557P--
+
