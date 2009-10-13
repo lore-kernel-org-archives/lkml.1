@@ -1,90 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbZJMHIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933586AbZJMHIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933565AbZJMHIF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 03:08:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933330AbZJMHIF
+	id S933586AbZJMHIW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 03:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933573AbZJMHIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 03:08:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39844 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933192AbZJMHID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 03:08:03 -0400
-Date: Tue, 13 Oct 2009 09:07:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Rientjes <rientjes@google.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Dirk Hohndel <hohndel@infradead.org>,
-       Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH, v2] kbuild: Improve version string logic
-Message-ID: <20091013070713.GD31483@elte.hu>
-References: <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <20091006153632.GA29795@elte.hu> <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain> <alpine.LFD.2.01.0910060925490.3432@localhost.localdomain> <20091006173508.GA4786@elte.hu> <20091012195733.GA7351@elte.hu> <alpine.DEB.1.00.0910121853050.26949@chino.kir.corp.google.com>
+	Tue, 13 Oct 2009 03:08:21 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:53329 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933330AbZJMHIU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 03:08:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rR66x75JO7IByOSLD0SPX4yr6THYmkqlpYQLHAyrXRteYRRfo3SRBrKRiC1ZSxXThY
+         4dnLqGVebLixlRbwrttu8XZjSkijmf0cA+ZrghN8heNupYBMtSnH3a1nkir308IW6DlT
+         7+vKwq1/Cl4/9LR7zUJimD5wStWfMggTDtY1A=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0910121853050.26949@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <b637ec0b0910121148g34f46481n1d5d4edb67b0ac55@mail.gmail.com>
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>
+	 <r-4Wjt4coy.A.TPD.dal0KB@chimera>
+	 <b637ec0b0910121148g34f46481n1d5d4edb67b0ac55@mail.gmail.com>
+Date: Tue, 13 Oct 2009 09:07:42 +0200
+Message-ID: <8db1092f0910130007s3a65c432u64e8fc27fb26a650@mail.gmail.com>
+Subject: Re: [Bug #14372] Wireless not working after suspend-resume
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       reinette chatre <reinette.chatre@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+CC added
 
-* David Rientjes <rientjes@google.com> wrote:
+2009/10/12 Fabio Comolli <fabio.comolli@gmail.com>:
 
-> On Mon, 12 Oct 2009, Ingo Molnar wrote:
-> 
-> > diff --git a/Makefile b/Makefile
-> > index 927d7a3..5dab509 100644
-> > --- a/Makefile
-> > +++ b/Makefile
-> > @@ -963,8 +963,6 @@ localver = $(subst $(space),, $(string) \
-> >  # .scmversion is used when generating rpm packages so we do not loose
-> >  # the version information from the SCM when we do the build of the kernel
-> >  # from the copied source
-> > -ifdef CONFIG_LOCALVERSION_AUTO
-> > -
-> >  ifeq ($(wildcard .scmversion),)
-> >          _localver-auto = $(shell $(CONFIG_SHELL) \
-> >                           $(srctree)/scripts/setlocalversion $(srctree))
-> > @@ -972,7 +970,14 @@ else
-> >          _localver-auto = $(shell cat .scmversion 2> /dev/null)
-> >  endif
-> >  
-> > +ifdef CONFIG_LOCALVERSION_AUTO
-> >  	localver-auto  = $(LOCALVERSION)$(_localver-auto)
-> > +else
-> > +	ifeq ($_localver-auto,)
-> > +		localver-auto = $(LOCALVERSION)
-> > +	else
-> > +		localver-auto = $(LOCALVERSION)+
-> > +	endif
-> >  endif
-> >  
-> >  localver-full = $(localver)$(localver-auto)
-> 
-> I don't see where the `+' is dropped between -rc tags; 
-> scripts/setlocalversion should return -00000-rc5 for v2.6.32-rc5, for 
-> example, so _localver-auto will always be non-NULL and the `+' is 
-> appended.
-> 
-> I think scripts/setlocalversion should also be modified as I earlier 
-> suggested to suppress output when git-describe shows no additional 
-> commits beyond the tag.  Then, CONFIG_LOCALVERSION_AUTO would not be 
-> v2.6.32-rc4-00000-rc4, for example, when 2.6.32-rc4 is released.
-> 
-> Your patch also adds the make LOCALVERSION= string to the version 
-> without requiring CONFIG_LOCALVERSION_AUTO.  That's a change from 
-> prior behavior, but I think it's helpful for user-specified version 
-> tags.
+[...]
+> [  690.553298] wlan0: AP denied association (code=12)
+[...]
 
-Good points - the patch is defective in its current form. Anyone 
-interested in fixing it? I'll be busy with other things.
+I have the same code in different situation:
+http://bugzilla.intellinuxwireless.org/show_bug.cgi?id=2089
 
-	Ingo
+Regards
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
