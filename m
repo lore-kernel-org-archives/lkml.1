@@ -1,83 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbZJMAMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758286AbZJMAQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757666AbZJMAMR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 20:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbZJMAMQ
+	id S1758286AbZJMAQA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 20:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbZJMAP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 20:12:16 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40912
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751603AbZJMAMP (ORCPT
+	Mon, 12 Oct 2009 20:15:59 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:58902 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756590AbZJMAP6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 20:12:15 -0400
-Date: Mon, 12 Oct 2009 17:12:11 -0700 (PDT)
-Message-Id: <20091012.171211.94935517.davem@davemloft.net>
-To: gregkh@suse.de
-Cc: Fred.L.Templin@boeing.com, greg@kroah.com, contact@saschahlusiak.de,
-       yoshfuji@linux-ipv6.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 37/37] sit: fix off-by-one
- inipip6_tunnel_get_prl
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091012235806.GA25153@suse.de>
-References: <20091012220445.GB31010@kroah.com>
-	<12F4112206976147A34FEC0277597CCF27A4164C1A@XCH-NW-15V.nw.nos.boeing.com>
-	<20091012235806.GA25153@suse.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 12 Oct 2009 20:15:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=vfwYzo8lS9WCB713JuF2DqeK8qO5CZnk7CdI2zoZaqS7hAcjFkBR+18K65pVDrJHee
+         NiQ57aBTgj1g1BaVU7XQpLrfUIpl5zvu3QI0cItZHzPBIIN2UjHomeNRC8xVvdyYfLcX
+         OPRKYTqmImWV+pgHc/NJj8WOYFcyTmFKJR1MA=
+Message-ID: <4AD3C680.8060306@gmail.com>
+Date: Mon, 12 Oct 2009 17:14:56 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Nix <nix@esperi.org.uk>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Boyan <btanastasov@yahoo.co.uk>, Ed Tomlinson <edt@aei.ca>,
+       =?ISO-8859-1?Q?=22Fr=E9d=E9ric_L=2E_W=2E_Meunier=22?= 
+	<fredlwm@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <20091013003841.6c2988d0@lxorguk.ukuu.org.uk> <20091012234641.GF8345@core.coreip.homeip.net>
+In-Reply-To: <20091012234641.GF8345@core.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg KH <gregkh@suse.de>
-Date: Mon, 12 Oct 2009 16:58:06 -0700
+Dmitry Torokhov wrote:
+> On Tue, Oct 13, 2009 at 12:38:41AM +0100, Alan Cox wrote:
+>    
+>>> So it seems likely to me that this is a kernel bug, somewhere, and the
+>>> TTY layer seems like a good place to look (OK, a horrible place, but a
+>>> *likely* place).
+>>>        
+>> Somewhere around 2.6.29-30 various things went funny in the keyboard
+>> layer for me - notably characters "bleeding" across console switches.
+>>
+>>      
+>
+> What do you mean by "bleeding"? Are you sure it is not autorepeat
+> kicking in?
+>
+>    
+>>> I'm about to try reverting the suggested commit and will report back. I
+>>> see this failure about once a day, so I'll give it three days to go
+>>> wrong and then (if it doesn't) will presume it works and so inform you.
+>>>
+>>>
+>>> (Of course with this commit reverted Emacsen start dropping data from
+>>> their ptys, and as bad luck would have it I live in (X)Emacs, but that's
+>>> on a different machine! so I can have my compile buffer data *and* not
+>>> destroy X ;} )
+>>>        
+>> X doesn't touch the pty layer. It touches vt (extensively) and the input
+>> layers. It's vt/kbd access is also very raw so bypasses much of that
+>> layer. That isn't to say tty isn't the cause but look for input layer
+>> changes too.
+>>      
+>
+>    
+FWIW:
+Something I noticed with fedora/ubuntu(latest) is while opening
+a terminal the history(example: pressing up arrow) will just
+start firing off as if I pressed the arrow up key and held it,
+all the way until the end of the history file( .bash_history).
+seems to do this at a random, if I'm compiling most notable during 
+./configure.
+(When this happens the screen will be garbled with characters similar to 
+this:
+^C)
 
-> Which patch?  I need it to be in Linus's tree before we can apply it to
-> a stable release.
+During my clfs build I used fedora as the host system, and this behavior 
+went
+right into the newly created system. When I built another system, I used 
+ubuntu
+and it seems to not be as bad, but still present.(I'm thinking , if this 
+is what
+others are experiencing it must be something in  userspace)
 
-It's already upstream, and I already submitted it to -stable a few
-days ago, remember?  This one below.
-
-Greg, it's the one that you said "I already commited this one, is it
-reall so broken?" about earlier today.
-
->From a9cb3db986f8bceaa741175cf016b0b7df59caf0 Mon Sep 17 00:00:00 2001
-From: Sascha Hlusiak <contact@saschahlusiak.de>
-Date: Tue, 29 Sep 2009 11:27:05 +0000
-Subject: [PATCH 11/11] sit: fix off-by-one in ipip6_tunnel_get_prl
-
-[ Upstream commit 298bf12ddb25841804f26234a43b89da1b1c0e21 ]
-
-When requesting all prl entries (kprl.addr == INADDR_ANY) and there are
-more prl entries than there is space passed from userspace, the existing
-code would always copy cmax+1 entries, which is more than can be handled.
-
-This patch makes the kernel copy only exactly cmax entries.
-
-Signed-off-by: Sascha Hlusiak <contact@saschahlusiak.de>
-Acked-By: Fred L. Templin <Fred.L.Templin@boeing.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- net/ipv6/sit.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/ipv6/sit.c b/net/ipv6/sit.c
-index 98b7327..2e41849 100644
---- a/net/ipv6/sit.c
-+++ b/net/ipv6/sit.c
-@@ -313,7 +313,7 @@ static int ipip6_tunnel_get_prl(struct ip_tunnel *t,
- 
- 	c = 0;
- 	for (prl = t->prl; prl; prl = prl->next) {
--		if (c > cmax)
-+		if (c >= cmax)
- 			break;
- 		if (kprl.addr != htonl(INADDR_ANY) && prl->addr != kprl.addr)
- 			continue;
--- 
-1.6.4.4
-
+Justin P. Mattock
