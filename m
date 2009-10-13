@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbZJMOPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759973AbZJMOQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759969AbZJMOPN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:15:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbZJMOPM
+	id S1759973AbZJMOQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZJMOQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:15:12 -0400
-Received: from taz.net.au ([203.16.167.1]:57800 "EHLO taz.net.au"
+	Tue, 13 Oct 2009 10:16:27 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53446 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752482AbZJMOPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:15:12 -0400
-Date: Wed, 14 Oct 2009 01:14:34 +1100
-From: Craig Sanders <cas@taz.net.au>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: PROBLEM: kernel oops when tickless. 2.6.28.x to 2.6.31.3
-Message-ID: <20091013141434.GA10613@taz.net.au>
-References: <20091013090554.GB28715@taz.net.au>
- <4AD45169.2030507@gmail.com>
+	id S1750730AbZJMOQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 10:16:26 -0400
+Date: Tue, 13 Oct 2009 16:15:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>, Aristeu Rozanski <aris@redhat.com>
+Subject: Re: [PATCH V5] x86: NX protection for kernel data
+Message-ID: <20091013141527.GA7053@elte.hu>
+References: <817ecb6f0910121803p52a4049ep4a712545d28bba76@mail.gmail.com> <20091012213229.11898c12@infradead.org> <20091013060312.GA3215@elte.hu> <817ecb6f0910130435q56fcbf63r82fae9b94f3eb199@mail.gmail.com> <20091013070722.6e27b25e@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AD45169.2030507@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091013070722.6e27b25e@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: 
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 12:07:37PM +0200, Eric Dumazet wrote:
-> This particular problem should/could be fixed in 2.6.31.4 by commit 
-> d99927f4d93f36553699573b279e0ff98ad7dea6
-> (net: Fix sock_wfree() race)
+
+* Arjan van de Ven <arjan@infradead.org> wrote:
+
+> On Tue, 13 Oct 2009 07:35:28 -0400
+> Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
 > 
-> Please try to reproduce your tickless problem on 2.6.31.4 or latest
-> Linus git tree
+> > ---[ Kernel Mapping ]---
+> >  0xc0000000-0xc0100000           1M     RW             GLB x  pte
+> > -0xc0100000-0xc048d000        3636K     ro             GLB x  pte
+> > -0xc048d000-0xc04d0000         268K     RW             GLB x  pte
+> > -0xc04d0000-0xc04d2000           8K     RW             GLB NX pte
+> > -0xc04d2000-0xc04d3000           4K     RW             GLB x  pte
+> > -0xc04d3000-0xc0531000         376K     RW             GLB NX pte
+> > -0xc0531000-0xc0600000         828K     RW             GLB x  pte
+> > +0xc0100000-0xc0381000        2564K     ro             GLB x  pte
+> > +0xc0381000-0xc048d000        1072K     ro             GLB NX pte
+> > +0xc048d000-0xc0600000        1484K     RW             GLB NX pte
+> >  0xc0600000-0xf7800000         882M     RW         PSE GLB NX pmd
+> >  0xf7800000-0xf79fe000        2040K     RW             GLB NX pte
+> >  0xf79fe000-0xf7a00000           8K                           pte
+> > ===============================================
+> > 
+> 
+> looks great to me; the result is 
+> * kernel is ro + x
+> * rodata is ro + NX
+> * data is RW + NX
+>
+> (and there is no "RW + x", other than the first megabyte... hmm. maybe 
+> we need to look at that as well at some point)
 
+Could we cover the first megabyte too please via a (default-disabled) 
+option? Modern Xorg shouldnt mind about that anymore, right?
 
-I've already compiled 2.6.31.4 @1000HZ, but I'll compile again and try
-2.6.31.4 tickless in the morning. i'll report back with the result - it
-usually takes a few days after booting before the Oops occurs, so if it
-goes well that might not be until the weekend or early next week.
-
-any idea what actually triggers it?  pppoe? malformed packets from the
-internet?  udp/514 packets for rsyslogd?
-
-
-thanks,
-
-craig
-
--- 
-craig sanders <cas@taz.net.au>
+	Ingo
