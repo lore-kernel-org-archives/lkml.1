@@ -1,165 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbZJML0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759502AbZJMLcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759489AbZJML0F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 07:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759271AbZJML0E
+	id S1759502AbZJMLcJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 07:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbZJMLcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 07:26:04 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:39262 "EHLO kernel.dk"
+	Tue, 13 Oct 2009 07:32:08 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59046 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756812AbZJML0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 07:26:02 -0400
-Date: Tue, 13 Oct 2009 13:25:26 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: pci-express hotplug
-Message-ID: <20091013112525.GX9228@kernel.dk>
-References: <20091012120620.GG9228@kernel.dk> <4AD3F1D4.1000006@jp.fujitsu.com> <20091013083152.GR9228@kernel.dk> <4AD45B1B.8000609@jp.fujitsu.com>
+	id S1754466AbZJMLcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 07:32:07 -0400
+Date: Tue, 13 Oct 2009 13:30:20 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: Greg Ungerer <gerg@snapgear.com>, Thomas Gleixner <tglx@linutronix.de>
+cc: linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jonathan Corbet <corbet@lwn.net>, Mike Frysinger <vapier@gentoo.org>,
+       David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+Subject: Re: [PATCH 5/6 RFC] arch/m68knommu/kernel/process.c: Remove the BKL
+ from sys_execve
+In-Reply-To: <4AD45A06.2090606@snapgear.com>
+Message-ID: <alpine.LFD.2.00.0910131328260.3781@localhost.localdomain>
+References: <alpine.LFD.2.00.0910122350140.3658@localhost.localdomain> <alpine.LFD.2.00.0910130007240.3658@localhost.localdomain> <alpine.LFD.2.00.0910130008320.3658@localhost.localdomain> <alpine.LFD.2.00.0910130010000.3658@localhost.localdomain>
+ <alpine.LFD.2.00.0910130011180.3658@localhost.localdomain> <alpine.LFD.2.00.0910130014520.3658@localhost.localdomain> <4AD45A06.2090606@snapgear.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD45B1B.8000609@jp.fujitsu.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13 2009, Kenji Kaneshige wrote:
-> Jens Axboe wrote:
->> On Tue, Oct 13 2009, Kenji Kaneshige wrote:
->>> Jens Axboe wrote:
->>>> Hi,
->>>>
->>>> I'm trying to get pci-express hotplug working in a box here. I don't
->>>> really care about the hotplug aspect, I just want the darn pci-e slots
->>>> that are designated hotplug slots to actually WORK. When I load pciehp,
->>>> I get:
->>>>
->>>> Firmware did not grant requested _OSC control
->>>> Firmware did not grant requested _OSC control
->>>> Firmware did not grant requested _OSC control
->>>> Firmware did not grant requested _OSC control
->>>> pciehp 0000:00:05.0:pcie04: HPC vendor_id 8086 device_id 340c ss_vid 0 ss_did 0
->>>> pciehp 0000:00:05.0:pcie04: service driver pciehp loaded
->>>> Firmware did not grant requested _OSC control
->>>> pciehp 0000:00:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
->>>> pciehp 0000:00:07.0:pcie04: service driver pciehp loaded
->>>> Firmware did not grant requested _OSC control
->>>> pciehp 0000:80:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
->>>> pciehp 0000:80:07.0:pcie04: service driver pciehp loaded
->>>> pciehp 0000:80:09.0:pcie04: HPC vendor_id 8086 device_id 3410 ss_vid 0 ss_did 0
->>>> pciehp 0000:80:09.0:pcie04: service driver pciehp loaded
->>>> pciehp: PCI Express Hot Plug Controller Driver version: 0.4
->>>>
->>>> and the devices in the hotplug slots stay off. Is this an ACPI/bios
->>>> issue? How can I debug this?
->>>>
->>> Could you give me the result of "ls -lR /sys/bus/pci/slots/"
->>> after loading pciehp?
->>
->> I have attached the result of that ls prior to loading pciehp/acpiphp
->> (pre-load), after loading pciehp (pciehp-load), and with acpiphp loaded
->> only as well (acpiphp-load).
->>
->
-> Thank you for the info. From the information, I confirmed that hotplug
-> slots are detected by pciehp even though _OSC evaluation failed. There
-> are two ways to take control from the firmware through ACPI control
-> method. One is _OSC control method, and the other is OSHP control method.
-> I guess your ACPI fimware has both _OSC and OSHP on DSDT (ACPI Namespace),
-> and pciehp assumes that it took control through OSHP after the _OSC
-> evaluation failure. I think this pciehp's behavior is wrong because of
-> the following reasons and I think pciehp driver mis-detected the hotplug
-> slots on your environment because of this.
->
-> - According to the PCI firmware specification, pciehp driver must use the
->  result of _OSC, if the platform implements both _OSC and OSHP.
-> - OSHP control method seems only for SHPC, not for PCI Express native hot-
->  plug. So pciehp must not evaluate OSHP to take control from firmware.
->
-> To confirm this, could you send me the dmesg output after loading pciehp
-> with 'debug_acpi' of pci_hotplug (PCI hotplug core driver) enabled?
-> For example,
->
->    $ su
->    # echo Y > /sys/module/pci_hotplug/parameters/debug_acpi
->    # modprobe pciehp
->    # dmesg
-
-See below.
-
-> And if it is possible, could you send me DSDT of your platform?
-
-Not sure I can do that, I'll check.
-
-> Anyway, my recommendation is using acpiphp on your environment because
-> your firmware didn't grant control over hotplug control through _OSC.
-> From the information, acpiphp also detects the hotplug slots successfully.
-> Please try "echo 1 > /sys/bus/pci/slots/<slot#>/power". It would turn on
-> the slot and initialize adapter card on the slot.
-
-It does find the 4 slots correctly. But if I try to turn on the power,
-nothing happens and 'power' stays at 0. If I do the same with pciehp, I
-get the same hang as described when using pciehp with pciehp_force=1.
-But apparently this machine is getting a board replacement very soon, so
-it may solve itself. Unless you think it should work and there's
-something I can try to check, then lets just leave this issue until I
-get it upgraded and return from kernel summit / JLS.
 
 
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0
-Firmware did not grant requested _OSC control
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0.MRP5 
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Gained control for hotplug HW for pci 0000:00:05.0 (\_SB_.IOH0.MRP5)
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0
-Firmware did not grant requested _OSC control
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0.MRP7 
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Gained control for hotplug HW for pci 0000:00:07.0 (\_SB_.IOH0.MRP7)
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0
-Firmware did not grant requested _OSC control
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0.PEX0 
-acpi_pcihp: acpi_run_oshp: acpi_run_oshp:\_SB_.IOH0.PEX0 OSHP not found
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0 
-acpi_pcihp: acpi_run_oshp: acpi_run_oshp:\_SB_.IOH0 OSHP not found
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Cannot get control of hotplug hardware for pci 0000:00:1c.0
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH1
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH1.MRPI 
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Gained control for hotplug HW for pci 0000:80:07.0 (\_SB_.IOH1.MRPI)
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH1
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH1.MRPK 
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Gained control for hotplug HW for pci 0000:80:09.0 (\_SB_.IOH1.MRPK)
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0
-Firmware did not grant requested _OSC control
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0.MRP5 
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Gained control for hotplug HW for pci 0000:00:05.0 (\_SB_.IOH0.MRP5)
-pciehp 0000:00:05.0:pcie04: HPC vendor_id 8086 device_id 340c ss_vid 0 ss_did 0
-pciehp 0000:00:05.0:pcie04: service driver pciehp loaded
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0
-Firmware did not grant requested _OSC control
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0.MRP7 
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Gained control for hotplug HW for pci 0000:00:07.0 (\_SB_.IOH0.MRP7)
-pciehp 0000:00:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
-pciehp 0000:00:07.0:pcie04: service driver pciehp loaded
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0
-Firmware did not grant requested _OSC control
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0.PEX0 
-acpi_pcihp: acpi_run_oshp: acpi_run_oshp:\_SB_.IOH0.PEX0 OSHP not found
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH0 
-acpi_pcihp: acpi_run_oshp: acpi_run_oshp:\_SB_.IOH0 OSHP not found
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Cannot get control of hotplug hardware for pci 0000:00:1c.0
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH1
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH1.MRPI 
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Gained control for hotplug HW for pci 0000:80:07.0 (\_SB_.IOH1.MRPI)
-pciehp 0000:80:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
-pciehp 0000:80:07.0:pcie04: service driver pciehp loaded
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH1
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Trying to get hotplug control for \_SB_.IOH1.MRPK 
-acpi_pcihp: acpi_get_hp_hw_control_from_firmware: Gained control for hotplug HW for pci 0000:80:09.0 (\_SB_.IOH1.MRPK)
-pciehp 0000:80:09.0:pcie04: HPC vendor_id 8086 device_id 3410 ss_vid 0 ss_did 0
-pciehp 0000:80:09.0:pcie04: service driver pciehp loaded
-pciehp: PCI Express Hot Plug Controller Driver version: 0.4
+On Tue, 13 Oct 2009, Greg Ungerer wrote:
 
--- 
-Jens Axboe
+> Hi John,
+> 
+> On 10/13/2009 08:34 AM, John Kacur wrote:
+> > > From e36c53d296132bc0ddbf6d9fb43ea5ea56dbd4a2 Mon Sep 17 00:00:00 2001
+> > From: John Kacur<jkacur@redhat.com>
+> > Date: Mon, 12 Oct 2009 23:37:28 +0200
+> > Subject: [PATCH] arch/m68knommu/kernel/process.c: Remove the BKL from
+> > sys_execve
+> > 
+> > This looks like a copy-and-paste of functionality that no-longer needs the
+> > bkl.
+> > Just remove it.
+> > 
+> > Signed-off-by: John Kacur<jkacur@redhat.com>
+> 
+> Tested and runs fine on m68knommu.
+> 
+> Acked-by: Greg Ungerer <gerg@uclinux.org>
+> 
+> Do you want me to push this into the m68knommu git tree,
+> for eventual merging into Linus' tree?  Or are you going
+> to push the whole set of patches together?
+> 
+> Regards
+> Greg
+ 
+@Thomas - do you want to pick this up for your proposed kill bkl tree and
+push it to Linus during this next merge window - or in this case is it 
+more appropriate for Greg as the m68knommu maintainer to do so?
 
+Thanks
+
+John 
+
+ 
+> > ---
+> >   arch/m68knommu/kernel/process.c |    5 +----
+> >   1 files changed, 1 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/arch/m68knommu/kernel/process.c
+> > b/arch/m68knommu/kernel/process.c
+> > index 8f8f4ab..5c9ecd4 100644
+> > --- a/arch/m68knommu/kernel/process.c
+> > +++ b/arch/m68knommu/kernel/process.c
+> > @@ -352,15 +352,12 @@ asmlinkage int sys_execve(char *name, char **argv,
+> > char **envp)
+> >   	char * filename;
+> >   	struct pt_regs *regs = (struct pt_regs *)&name;
+> > 
+> > -	lock_kernel();
+> >   	filename = getname(name);
+> >   	error = PTR_ERR(filename);
+> >   	if (IS_ERR(filename))
+> > -		goto out;
+> > +		return error;
+> >   	error = do_execve(filename, argv, envp, regs);
+> >   	putname(filename);
+> > -out:
+> > -	unlock_kernel();
+> >   	return error;
+> >   }
+> > 
+> 
+> -- 
+> ------------------------------------------------------------------------
+> Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+> SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+> 825 Stanley St,                             FAX:         +61 7 3891 3630
+> Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+> 
