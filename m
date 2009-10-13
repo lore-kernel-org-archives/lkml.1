@@ -1,101 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbZJMMzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbZJMM5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756683AbZJMMzZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 08:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZJMMzY
+	id S1759605AbZJMM5I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 08:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZJMM5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 08:55:24 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:47846 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751300AbZJMMzX convert rfc822-to-8bit (ORCPT
+	Tue, 13 Oct 2009 08:57:07 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:49197 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752590AbZJMM5G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 08:55:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fAzd+3QtVXwNzBXRXUPd9JOs6Ht8XUo1OR1BnNMuRALkUovcg78dEiWIXUftaZFefN
-         2VEG/o6Bni/AwZ6/BFZZq1WJmKn0NXDVroMGJpljkUKTMUdb5iv9SYRI+s9VX+jEBMhy
-         QjzSnD8xdy10Ds9WqD3foozrbnsMRrlne9hnE=
+	Tue, 13 Oct 2009 08:57:06 -0400
+Date: Tue, 13 Oct 2009 18:26:14 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Herbert Poetzl <herbert@13thfloor.at>, vatsa@in.ibm.com,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
+Message-ID: <20091013125614.GE26069@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20090930124919.GA19951@in.ibm.com> <4AC35EDD.1080902@openvz.org> <20090930142537.GJ19951@in.ibm.com> <20090930143953.GA2014@in.ibm.com> <4AD466E5.4010206@openvz.org> <20091013120354.GF24787@MAIL.13thfloor.at> <4AD4705D.6020109@openvz.org> <20091013123047.GC26069@linux.vnet.ibm.com> <4AD4765B.3010907@openvz.org>
 MIME-Version: 1.0
-In-Reply-To: <s5h63ajx1nh.wl%tiwai@suse.de>
-References: <20091010130110.GA5445@nb-core2.darkstar.lan>
-	 <s5hk4z1f90p.wl%tiwai@suse.de>
-	 <68676e00910121239qd2d87cbnbdab32efe041a65d@mail.gmail.com>
-	 <s5h63ajx1nh.wl%tiwai@suse.de>
-Date: Tue, 13 Oct 2009 14:54:46 +0200
-Message-ID: <68676e00910130554x418f8689x10bccec31df8d49c@mail.gmail.com>
-Subject: Re: [BUG] GPF in snd_hda_intel
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AD4765B.3010907@openvz.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 8:12 AM, Takashi Iwai <tiwai@suse.de> wrote:
-> At Mon, 12 Oct 2009 21:39:21 +0200,
-> Luca Tettamanti wrote:
->>
->> On Mon, Oct 12, 2009 at 7:58 AM, Takashi Iwai <tiwai@suse.de> wrote:
->> > At Sat, 10 Oct 2009 15:01:10 +0200,
->> > Luca Tettamanti wrote:
->> >>
->> >> Hello,
->> >> with current git kernel (bd381934) I see a GPF when the snd_hda_intel driver is
->> >> loaded; the regression is recent, 0eca52a works fine.
->> >> The machine is an ASUS laptop (F3Sa), this is the sound card:
->> >
->> > Could you load the snd-hda-intel module with probe_only=1 option,
->> > and give the output of "alsa-info.sh --no-upload" ?
->> >
->> > If 0eca52a worked, there are only a few changes regarding hda-intel.
->> >
->> > f8f25ba3563dab14b1c3ea4d829642b8a61ca5d7
->> >    ALSA: hda - Add a workaround for ASUS A7K
->>
->> This is probably related; I haven't actually tested yet, but I have
->> one more information: I had "model=lenovo" in modprobe configuration.
->
-> Ah, this is it.  I can reproduce the problem with my emulator now.
-> The patch below fixes the issue.
+On Tue, Oct 13, 2009 at 04:45:15PM +0400, Pavel Emelyanov wrote:
+> Dhaval Giani wrote:
+> > On Tue, Oct 13, 2009 at 04:19:41PM +0400, Pavel Emelyanov wrote:
+> >>> as I already stated, it seems perfectly fine for me 
+> >> You're not the only one interested in it, sorry. Besides, I
+> >> got your point in "I'm find with it". Now get mine which is
+> >> about "I am not".
+> >>
+> >>> can be trivially mapped to the two values, by chosing a
+> >>> fixed multiplicative base (let's say '1s' to simplify :) 
+> >>>
+> >>>   with 50%, you get 1s/0.5s
+> >>>   with 20%, you get 1s/0.2s
+> >>>   with  5%, you get 1s/0.05s
+> >>>
+> >>> well, you get the idea :)
+> >> No I don't.
+> >> Is 1s/0.5s worse or better than 2s/1s?
+> >> How should I make a choice?
+> > 
+> > I would say it depends on your requirement. How fast do you want to
+> > respond back to the user? Wiht lower bandwidth, you would want to have
+> > shorter periods so that the user would not get the impression that he
+> > has to "wait" to get CPU time. But having a very short period is not a
+> > good thing, since there are other considerations (such as the overhead of
+> > hard limits).
+> 
+> That's it - long period is bad for one reason, short period is bad for 
+> some other one and neither of them is clearly described unlike the 
+> limit itself.
+> 
+> In other words there are two numbers we're essentially playing with:
+> * the limit (int percents, Hz, whatever)
+> * and this abstract "badness"
+> 
+> Can't we give the user one of them for "must be configured" usage, put
+> the other one in some "good for most users" position and let the user
+> move it later on demand?
+> 
 
-Yup, no more GPF.
+Right, but is this not more of a policy decision as opposed to an
+infrastructure one and better handled in userspace?
 
-> From 2d9c648295d7bc376305337d29f540a5e411f632 Mon Sep 17 00:00:00 2001
-> From: Takashi Iwai <tiwai@suse.de>
-> Date: Tue, 13 Oct 2009 08:06:55 +0200
-> Subject: [PATCH] ALSA: hda - Fix overflow of spec->init_verbs in patch_realtek.c
->
-> ALC861-VD lenovo model causes overflow of spec->init_verbs entries due to
-> the recent changes.  Simply increase the array size to avoid the overflow.
->
-> Reported-by: Luca Tettamanti <kronos.it@gmail.com>
-> Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> Yet again - weights in CFQ CPU-sched, ionoce in CFQ-iosched, bandwidth
+> in tc (traffic shaping), etc. are all clean for end-user. Plus there are
+> other fine tunes, that user should not configure by default, but which
+> change the default behavior. I propose to create simple and clean 
+> interface for limits as well. If you think that virtual cpu power is 
+> not good, ok. Let's ask user for a percentage and give him yet another
+> option to control this "badness" or "responsiveness".
+> 
 
-Tested-by: Luca Tettamanti <kronos.it@gmail.com>
+How is virtual cpu power defined? GHz is not a clear definition. It
+means different things (in terms of performance) for different
+processors. Do you want to define it as getting x cycles of a CPU in
+y seconds for the cgroup, or do you want to define it as a certain number
+of operations in a second. If it is the former, I think we can map it to
+the current interface in userspace itself.  Why don't we define this
+metric, and then look to solve the problem? 
 
-> ---
->  sound/pci/hda/patch_realtek.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
-> index 470fd74..c08ca66 100644
-> --- a/sound/pci/hda/patch_realtek.c
-> +++ b/sound/pci/hda/patch_realtek.c
-> @@ -275,7 +275,7 @@ struct alc_spec {
->        struct snd_kcontrol_new *cap_mixer;     /* capture mixer */
->        unsigned int beep_amp;  /* beep amp value, set via set_beep_amp() */
->
-> -       const struct hda_verb *init_verbs[5];   /* initialization verbs
-> +       const struct hda_verb *init_verbs[10];  /* initialization verbs
->                                                 * don't forget NULL
->                                                 * termination!
->                                                 */
-> --
-> 1.6.4.2
->
->
+thanks,
+-- 
+regards,
+Dhaval
