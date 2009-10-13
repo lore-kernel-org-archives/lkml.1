@@ -1,116 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760391AbZJMPtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933887AbZJMPyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760391AbZJMPtm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759955AbZJMPtm
+	id S933887AbZJMPyp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 11:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760453AbZJMPyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:49:42 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:39934 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753541AbZJMPtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:49:41 -0400
-Date: Tue, 13 Oct 2009 10:48:41 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Gerald Schaefer <geralds@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linuxppc-dev@ozlabs.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/2][v2] mm: add notifier in pageblock isolation for
-	balloon drivers
-Message-ID: <20091013154841.GB18305@austin.ibm.com>
-Mail-Followup-To: Mel Gorman <mel@csn.ul.ie>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Gerald Schaefer <geralds@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	linuxppc-dev@ozlabs.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091002184458.GC4908@austin.ibm.com> <20091008163449.00dce972.akpm@linux-foundation.org> <20091009202304.GB19114@austin.ibm.com> <20091009204326.GH24845@csn.ul.ie>
+	Tue, 13 Oct 2009 11:54:44 -0400
+Received: from gv-out-0910.google.com ([216.239.58.188]:58243 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760447AbZJMPyn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 11:54:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=a7nIc853SNH90UTeljbNr/r+IcDrVvVLE3hmHl7jCy5iM2nS+zjKn7LqvCech0C4Az
+         HyRQjJDxk1bZ+wjsP/jg6E2zeFcODwZjQE/w9D/IwlDfctIe/VgxIIcka2xkm8044fjj
+         dZsUJHptQlNQQ91GBEfqti0zOnJoIij2k8wUE=
+From: Ivo van Doorn <ivdoorn@gmail.com>
+To: Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>
+Subject: Re: Current status of rt2800usb and staging/rt2870
+Date: Tue, 13 Oct 2009 17:52:52 +0200
+User-Agent: KMail/1.9.10
+Cc: linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <4AD46380.9020308@pardus.org.tr>
+In-Reply-To: <4AD46380.9020308@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091009204326.GH24845@csn.ul.ie>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200910131752.52589.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 21:43:26 +0100, Mal Gorman wrote:
-> As you have tested this recently, would you be willing to post the
-> results? While it's not a requirement of the patch, it would be nice to have
-> an idea of how the effectiveness of memory hot-remove is improved when used
-> with the powerpc balloon. This might convince others developers for balloons
-> to register with the notifier.
+Hi,
+ 
+> In 2.6.31, there are USB device IDs common between both drivers.
 
-I did ten test runs without my patches and ten test runs with my patches
-on a 2.6.32-rc3 kernel.
+That is because they are drivers for the same hardware.
 
-Without the patch:
-6 out of 10 memory-remove operations without the patch removed 1 LMB
-(64Mb), the rest of the memory-remove attempts failed to remove any LMBs.
+> Should  a distribution enable both drivers? What do you suggest? Are there any
+> *known issues* stuff for one of them?
 
-With the patch:
-All of the memory-remove operations removed some LMBs.  The average
-removed was just over 11 LMBs (704Mb) per attempt.
+The staging/rt2870 should actually be removed from the kernel tree,
+I am going to merge rt2800pci soon as well and after that I'll send a patch
+to remove all Ralink drivers from the staging tree.
 
-Linux was given 2Gb of memory.  During the test runs the average memory in
-use was 140Mb, not including cache and buffers, and the average amount
-consumed by the balloon was 1217Mb.  The system was idle while the
-memory remove operation was performed.  After each attempt the system
-was rebooted and allowed ~10 minutes to settle after boot.
+As for known issues:
+- staging/rt2870 is a piece of crap which apparently works for some people
+but isn't generally stable or reliable
+- wireless/rt2800usb follows the kernel coding style/rules and uses mac80211
+but isn't showing a high quality for usability.
 
-With a 2Gb configuration on POWER the LMB size is 64Mb.  The drmgr command
-(part of powerpc-utils) was used to remove memory by LBM, just as an
-end-user would.  Below is a list of the runs and the number of LMBs
-removed.
-
-Stock kernel (v2.6.32-rc3)
---------------------------
-LMBs	Used kb	Loaned kb
-removed
-0	135232	1257280
-0	151168	1231744
-1	152128	1234176
-1	150976	1239232
-1	151808	1232064
-0	136064	1249152
-0	137088	1246976
-1	135296	1289984
-1	136384	1263104
-1	152960	1243904
-=======================
-0.60	143910	1248762 Average
-0.49	  7929	  16960 StdDev
-
-Patched kernel
---------------------------
-LMBs	Used kb	Loaned kb
-removed
-12	134336	1294336
-10	152192	1250432
- 9	152832	1235520
-15	153152	1237952
-12	152320	1232704
-13	135360	1252224
-11	154176	1237056
-10	153920	1243264
-10	150720	1236416
-13	151040	1230848
-=======================
-11.50	149005  1245075 Average
- 1.75	  7158	  17738 StdDev
-
-
-Regards,
-Robert Jennings
+Ivo
