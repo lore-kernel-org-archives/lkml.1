@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759604AbZJMM2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933505AbZJMM3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759604AbZJMM2K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 08:28:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbZJMM2J
+	id S933505AbZJMM3O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 08:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933139AbZJMM3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 08:28:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57493 "EHLO mx2.mail.elte.hu"
+	Tue, 13 Oct 2009 08:29:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47199 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751011AbZJMM2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 08:28:08 -0400
-Date: Tue, 13 Oct 2009 14:27:20 +0200
+	id S933014AbZJMM3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 08:29:11 -0400
+Date: Tue, 13 Oct 2009 14:28:15 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Vincent Legoll <vincent.legoll@gmail.com>
-Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>, paulus@samba.org,
-       a.p.zijlstra@chello.nl
-Subject: Re: [PATCH] [PERF] do not manually count string lengths
-Message-ID: <20091013122720.GA5561@elte.hu>
-References: <4727185d0910130118m5387058dndb02ac9b384af9f0@mail.gmail.com> <20091013100101.GA26846@elte.hu> <4727185d0910130451h3a5adcebtc0c06f48b6c9ab99@mail.gmail.com>
+To: Siarhei Liakh <sliakh.lkml@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>, Aristeu Rozanski <aris@redhat.com>
+Subject: Re: [PATCH V5] x86: NX protection for kernel data
+Message-ID: <20091013122815.GB5561@elte.hu>
+References: <817ecb6f0910121803p52a4049ep4a712545d28bba76@mail.gmail.com> <20091012213229.11898c12@infradead.org> <20091013060312.GA3215@elte.hu> <817ecb6f0910130435q56fcbf63r82fae9b94f3eb199@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4727185d0910130451h3a5adcebtc0c06f48b6c9ab99@mail.gmail.com>
+In-Reply-To: <817ecb6f0910130435q56fcbf63r82fae9b94f3eb199@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,43 +38,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Vincent Legoll <vincent.legoll@gmail.com> wrote:
+* Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
 
-> On Tue, Oct 13, 2009 at 12:01 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > We should add 'F:' file patterns to that entry i guess ...
+> >> I like doing this, but... maybe it is useful to have a diff of the
+> >> pagetable dump (PT_DUMP config option) to show the effect, in the
+> >> changelog. That'd be like the proof on the pudding...
 > >
-> > Something like:
-> >
-> > F:      kernel/perf_event.c
-> > F:      include/linux/perf_event.h
-> > F:      arch/*/*/kernel/perf_event.c
-> > F:      arch/*/include/asm/perf_event.h
-> > F:      tools/perf/
-> >
-> > Would do the trick. Mind sending a patch for that too?
+> > That's a good suggestion. Siarhei Liakh, mind doing that?
 > 
-> Yep, I'll do, but a quick find in the tree may reveal other
-> suspects that could be in the same league:
+> Here you go:
+> ===============================================
+> --- data_nx_pt_before.txt	2009-10-13 07:26:17.000000000 -0400
+> +++ data_nx_pt_after.txt	2009-10-13 07:26:46.000000000 -0400
+> @@ -2,12 +2,9 @@
+>  0x00000000-0xc0000000           3G                           pmd
+>  ---[ Kernel Mapping ]---
+>  0xc0000000-0xc0100000           1M     RW             GLB x  pte
+> -0xc0100000-0xc048d000        3636K     ro             GLB x  pte
+> -0xc048d000-0xc04d0000         268K     RW             GLB x  pte
+> -0xc04d0000-0xc04d2000           8K     RW             GLB NX pte
+> -0xc04d2000-0xc04d3000           4K     RW             GLB x  pte
+> -0xc04d3000-0xc0531000         376K     RW             GLB NX pte
+> -0xc0531000-0xc0600000         828K     RW             GLB x  pte
+> +0xc0100000-0xc0381000        2564K     ro             GLB x  pte
+> +0xc0381000-0xc048d000        1072K     ro             GLB NX pte
+> +0xc048d000-0xc0600000        1484K     RW             GLB NX pte
+>  0xc0600000-0xf7800000         882M     RW         PSE GLB NX pmd
+>  0xf7800000-0xf79fe000        2040K     RW             GLB NX pte
+>  0xf79fe000-0xf7a00000           8K                           pte
+> ===============================================
 > 
-> $ find . -name .git -prune -false -o -name drivers -prune \
-> -false -o -name '*perf*' | grep -v perfmon | grep -v gperf
-> 
-> arch/*/kernel/perf_event.c
-> 
-> arch/frv/lib/perf_event.c
-> arch/x86/kernel/cpu/perf_event.c
-> 
-> or maybe not:
-> 
-> arch/powerpc/kernel/perf_callchain.c
-> arch/parisc/kernel/perf_asm.S
-> arch/parisc/kernel/perf_images.h
-> arch/parisc/kernel/perf.c
-> arch/parisc/include/asm/perf.h
-> 
-> Was your list really comprehensive ?
+> Would you like me to re-post whole patch with this addition?
 
-ah, yes - perf_callchain.c too indeed. The pattern does not have to be 
-100% full coverage.
+Yep, v6 with Arjan's ack (once he sends it) would be handy.
 
 	Ingo
