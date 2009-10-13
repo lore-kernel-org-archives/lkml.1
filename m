@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933926AbZJMP7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933959AbZJMQBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933926AbZJMP7Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933517AbZJMP7X
+	id S933959AbZJMQBs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 12:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933949AbZJMQBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:59:23 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55734 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933880AbZJMP7W convert rfc822-to-8bit (ORCPT
+	Tue, 13 Oct 2009 12:01:47 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:60878 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933893AbZJMQBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:59:22 -0400
-Date: Tue, 13 Oct 2009 16:59:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Paul Fulghum <paulkf@microgate.com>, Nix <nix@esperi.org.uk>,
-       "Justin P. Mattock" <justinmattock@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Boyan <btanastasov@yahoo.co.uk>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       "=?ISO-8859-14?B?RnLpZOlyaWM=?= L. W. Meunier" <fredlwm@gmail.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-Message-ID: <20091013165921.4b0ffef5@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0910130837370.26777@localhost.localdomain>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
-	<L6tb-VyKHZK.A.PaB.Ozl0KB@chimera>
-	<C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com>
-	<87ljjgfcbu.fsf@spindle.srvr.nix>
-	<alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>
-	<alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
-	<20091013113232.384b2432@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0910130721530.3438@localhost.localdomain>
-	<1255447980.3898.3.camel@x2.microgate.com>
-	<alpine.LFD.2.01.0910130837370.26777@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-14
-Content-Transfer-Encoding: 8BIT
+	Tue, 13 Oct 2009 12:01:45 -0400
+Date: Tue, 13 Oct 2009 12:00:28 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com
+Subject: Re: Fun with fdatasync()
+Message-ID: <20091013160028.GA7850@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	jbacik@redhat.com
+References: <20091012140049.GO2632@think>
+ <20091012220043.GC3965@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012220043.GC3965@duck.suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4AD4A432.00D6:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What I was pointing out is that there are a lot of 
-> "tty_buffer_request_room()" calls, and as far as I can see, all of them 
-> (or at least a large percentage) are just pure and utter crap.
+On Tue, Oct 13, 2009 at 12:00:43AM +0200, Jan Kara wrote:
+>   Hi,
+> 
+> On Mon 12-10-09 10:00:49, Chris Mason wrote:
 
-Almost certainly. When the original conversion was done all the code
-which tried to peer into the flip buffer and check what bytes were left
-was converted systematically to call request_room() as well in order to
-make the conversion easy and reliable. For most devices thats a fairly
-naïve conversion as with the new buffering the tty device really
-shouldn't care about overruns. If we overrun now it's because we really
-do want to dump stuff not because of crappy buffering.
+[ clearing of I_DIRTY_DATASYNC by pdflush ]
 
-The request_room actually trying to produce big buffers semantic was
-added because some of the high speed DMA based adapters (notably 3G USB
-ones) would hand large blocks of data over each time at rates upwards of
-10-20Mbits. Without that request_room tweak they tended to drop data.
+> > 
+> > Am I missing something?  I don't see how fdatasync is safe in our
+> > current usage.
+>   Yeah, we already discussed similar problems I_DIRTY flags with Ted and
+> others in thread "fsync on ext[34] working only by an accident" on
+> linux-ext4.
+>   I don't quite like clearing dirty flags only on sync - pdflush would then
+> unnecessarily try to get rid of those inodes and burn CPU on them.
+> Actually, mapping->private_list (and bh->b_assoc_buffers) is meant to be
+> used exactly for the purpose of tracking what needs to be written on fsync
+> so my current plan is to somehow utilize that list to fix the problem.
+>   Maybe I even get to that tomorrow ;) Thanks for the reminder.
 
-Because of the way they work the DMA buffers are allocated when the URB
-is submitted so they can't use prepare_* ops but had to copy in some form.
+I honestly don't remember all the details now, but I know that when
+reiserfs stopped using the b_assoc_buffers stuff life got much less
+complex.  From an outsider's point of view the last thing jbd needs is
+another list of buffers to live on.
 
-With those in place we top out at about 40-50Mbits over a USB serial
-link, which ought to be enough for anyone sane for the moment.
+It seems like ext34 need to be able to answer 3 questions during an
+fsync or fdatasync:
 
-Your change to tty_insert_flip_string() is irrelevant for any practical
-situation simply because the caller has to provide ordering of the blocks
-it submits (if it receives 5 bytes and they all queue asynchronously then
-it doesn't matter one iota whether tty_insert_flip_string has extra
-internal locking "linus" is still going to turn randomly into things like
-"sunil" in the serial stream and cause much confusion).
+The last transaction to change this file (fill hole, change
+i_size)
 
-I actually think you should make the tty_insert_flip_string internal
-length checking change because:
-- It makes the consistency of tty_insert_flip_string clearer to any
-  future reader
-- It's a very very mindbogglingly slight performance win
-- It'll no doubt make you feel less grumpy ;)
+The last transaction to log this inode (for full fsync)
 
-Alan
+The last transaction committed such that fsync would consider it done.
+
+Filling holes and changing i_size only happens from a handful of places,
+so it would be easy to update a transid field in the in-memory inode for
+that.
+
+The inode logging code could bump a second transid field to catch all
+the other ways inodes change.
+
+The transaction code could (or already does?) export an easy way to
+check the last commit.  Put the three together and you can safely jump
+out of fsync or fdatasync based on what the inode really needs instead
+of guessing with the I_ flags or page dirty bits.
+
+-chris
+
+
+
+
+
+
