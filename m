@@ -1,223 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbZJMSMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760875AbZJMSOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760867AbZJMSMz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 14:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760838AbZJMSMz
+	id S1760875AbZJMSOL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 14:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760575AbZJMSOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 14:12:55 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:44161 "EHLO mx2.suse.de"
+	Tue, 13 Oct 2009 14:14:11 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:54543 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760505AbZJMSMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 14:12:53 -0400
-Date: Tue, 13 Oct 2009 20:12:14 +0200
-From: Jan Kara <jack@suse.cz>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
-	balance_dirty_pages()
-Message-ID: <20091013181214.GA31440@duck.suse.cz>
-References: <20091007073818.318088777@intel.com> <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz> <20091010213339.GA8644@localhost> <20091012211838.GA3965@duck.suse.cz> <20091013032405.GA20405@localhost>
+	id S1754079AbZJMSOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 14:14:09 -0400
+Message-ID: <4AD4C346.20801@austin.ibm.com>
+Date: Tue, 13 Oct 2009 13:13:26 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091013032405.GA20405@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: linuxppc-dev@ozlabs.org
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5 v3] kernel handling of memory DLPAR
+References: <4AB39FB3.1020608@austin.ibm.com> <4AB3A13D.1060405@austin.ibm.com>
+In-Reply-To: <4AB3A13D.1060405@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 13-10-09 11:24:05, Wu Fengguang wrote:
-> On Tue, Oct 13, 2009 at 05:18:38AM +0800, Jan Kara wrote:
-> > On Sun 11-10-09 05:33:39, Wu Fengguang wrote:
-> > > On Fri, Oct 09, 2009 at 11:12:31PM +0800, Jan Kara wrote:
-> > > > > +			/* don't wait if we've done enough */
-> > > > > +			if (pages_written >= write_chunk)
-> > > > > +				break;
-> > > > >  		}
-> > > > > -
-> > > > > -		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-> > > > > -			break;
-> > > > > -		if (pages_written >= write_chunk)
-> > > > > -			break;		/* We've done our duty */
-> > > > > -
-> > > >   Here, we had an opportunity to break from the loop even if we didn't
-> > > > manage to write everything (for example because per-bdi thread managed to
-> > > > write enough or because enough IO has completed while we were trying to
-> > > > write). After the patch, we will sleep. IMHO that's not good...
-> > > 
-> > > Note that the pages_written check is moved several lines up in the patch :)
-> > > 
-> > > >   I'd think that if we did all that work in writeback_inodes_wbc we could
-> > > > spend the effort on regetting and rechecking the stats...
-> > > 
-> > > Yes maybe. I didn't care it because the later throttle queue patch totally
-> > > removed the loop and hence to need to reget the stats :)
-> >   Yes, since the loop gets removed in the end, this does not matter. You
-> > are right.
-> 
-> You are right too :) I followed you and Peter's advice to do the loop
-> and the recheck of stats as follows:
-> 
-> static void balance_dirty_pages(struct address_space *mapping,
-> 				unsigned long write_chunk)
-> {
-> 	long nr_reclaimable, bdi_nr_reclaimable;
-> 	long nr_writeback, bdi_nr_writeback;
-> 	unsigned long background_thresh;
-> 	unsigned long dirty_thresh;
-> 	unsigned long bdi_thresh;
-> 	int dirty_exceeded;
-> 	struct backing_dev_info *bdi = mapping->backing_dev_info;
-> 
-> 	/*
-> 	 * If sync() is in progress, curb the to-be-synced inodes regardless
-> 	 * of dirty limits, so that a fast dirtier won't livelock the sync.
-> 	 */
-> 	if (unlikely(bdi->sync_time &&
-> 		     S_ISREG(mapping->host->i_mode) &&
-> 		     time_after_eq(bdi->sync_time,
-> 				   mapping->host->dirtied_when))) {
-> 		write_chunk *= 2;
-> 		bdi_writeback_wait(bdi, write_chunk);
-> 	}
-> 
-> 	for (;;) {
-> 		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
-> 				 global_page_state(NR_UNSTABLE_NFS);
-> 		nr_writeback = global_page_state(NR_WRITEBACK) +
-> 			       global_page_state(NR_WRITEBACK_TEMP);
-> 
-> 		global_dirty_thresh(&background_thresh, &dirty_thresh);
-> 
-> 		/*
-> 		 * Throttle it only when the background writeback cannot
-> 		 * catch-up. This avoids (excessively) small writeouts
-> 		 * when the bdi limits are ramping up.
-> 		 */
-> 		if (nr_reclaimable + nr_writeback <
-> 		    (background_thresh + dirty_thresh) / 2)
-> 			break;
-> 
-> 		bdi_thresh = bdi_dirty_thresh(bdi, dirty_thresh);
-> 
-> 		/*
-> 		 * In order to avoid the stacked BDI deadlock we need
-> 		 * to ensure we accurately count the 'dirty' pages when
-> 		 * the threshold is low.
-> 		 *
-> 		 * Otherwise it would be possible to get thresh+n pages
-> 		 * reported dirty, even though there are thresh-m pages
-> 		 * actually dirty; with m+n sitting in the percpu
-> 		 * deltas.
-> 		 */
-> 		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
-> 			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
-> 			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
-> 		} else {
-> 			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
-> 			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
-> 		}
-> 
-> 		/*
-> 		 * The bdi thresh is somehow "soft" limit derived from the
-> 		 * global "hard" limit. The former helps to prevent heavy IO
-> 		 * bdi or process from holding back light ones; The latter is
-> 		 * the last resort safeguard.
-> 		 */
-> 		dirty_exceeded =
-> 			(bdi_nr_reclaimable + bdi_nr_writeback >= bdi_thresh)
-> 			|| (nr_reclaimable + nr_writeback >= dirty_thresh);
-> 
-> 		if (!dirty_exceeded)
-> 			break;
-> 
-> 		bdi->dirty_exceed_time = jiffies;
-> 
-> 		bdi_writeback_wait(bdi, write_chunk);
-  Hmm, probably you've discussed this in some other email but why do we
-cycle in this loop until we get below dirty limit? We used to leave the
-loop after writing write_chunk... So the time we spend in
-balance_dirty_pages() is no longer limited, right?
+This adds the capability to DLPAR add and remove memory from the kernel.  The
+patch extends the powerpc handling of memory_add_physaddr_to_nid(), which is
+called from the sysfs memory 'probe' file to first ensure that the memory
+has been added to the system.  This is done by creating a platform specific
+callout from the routine.  The pseries implementation of this handles the
+DLPAR work to add the memory to the system and update the device tree.
 
-> 	}
-> 
-> 	/*
-> 	 * In laptop mode, we wait until hitting the higher threshold before
-> 	 * starting background writeout, and then write out all the way down
-> 	 * to the lower threshold.  So slow writers cause minimal disk activity.
-> 	 *
-> 	 * In normal mode, we start background writeout at the lower
-> 	 * background_thresh, to keep the amount of dirty memory low.
-> 	 */
-> 	if (!laptop_mode && (nr_reclaimable > background_thresh) &&
-> 	    can_submit_background_writeback(bdi))
-> 		bdi_start_writeback(bdi, NULL, WB_FOR_BACKGROUND);
-> }
-> 
-> > > > >  		schedule_timeout_interruptible(pause);
-> > > > >
-> > > > >  		/*
-> > > > > @@ -577,8 +547,7 @@ static void balance_dirty_pages(struct a
-> > > > >  			pause = HZ / 10;
-> > > > >  	}
-> > > > >
-> > > > > -	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
-> > > > > -			bdi->dirty_exceeded)
-> > > > > +	if (!dirty_exceeded && bdi->dirty_exceeded)
-> > > > >  		bdi->dirty_exceeded = 0;
-> > > >   Here we fail to clear dirty_exceeded if we are over global dirty limit
-> > > > but not over per-bdi dirty limit...
-> > > 
-> > > You must be mistaken: dirty_exceeded = (over bdi limit || over global limit),
-> > > so !dirty_exceeded = (!over bdi limit && !over global limit).
-> >   Exactly. Previously, the check was:
-> > if (!over bdi limit)
-> >   bdi->dirty_exceeded = 0;
-> > 
-> >   Now it is
-> > if (!over bdi limit && !over global limit)
-> >   bdi->dirty_exceeded = 0;
-> > 
-> >   That's clearly not equivalent which is what I was trying to point out.
-> > But looking at where dirty_exceeded is used, your new way is probably more
-> > useful. It's just a bit counterintuitive that bdi->dirty_exceeded is set
-> > even if the per-bdi limit is not exceeded...
-> 
-> Yeah good point. Since the per-bdi limits are more about "soft" limits
-> which are derived from the global "hard" limit, the code makes sense
-> with some comments and updated changelog :)
-> 
->         This patch slightly changes behavior by replacing clip_bdi_dirty_limit()
->         with the explicit check (nr_reclaimable + nr_writeback >= dirty_thresh)
->         to avoid exceeding the dirty limit. Since the bdi dirty limit is mostly
->         accurate we don't need to do routinely clip. A simple dirty limit check
->         would be enough.
-> 
->         The check is necessary because, in principle we should throttle
->         everything calling balance_dirty_pages() when we're over the total
->         limit, as said by Peter.
-> 
->         We now set and clear dirty_exceeded not only based on bdi dirty limits,
->         but also on the global dirty limits. This is a bit counterintuitive, but
->         the global limits are the ultimate goal and shall be always imposed.
-> 
->         We may now start background writeback work based on outdated conditions.
->         That's safe because the bdi flush thread will (and have to) double check
->         the states. It reduces overall overheads because the test based on old
->         states still have good chance to be right.
-  The new description is good, thanks!
+The patch also creates a pseries only 'release' sys file,
+/sys/devices/system/memory/release.  This file handles the DLPAR release of
+memory back to firmware and updating of the device-tree.
 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Updated to add #ifdef CONFIG_MEMORY_HOTPLUG around the memory hotplug specific
+updates.  This allows the file to be built without CONFIG_MEMORY_HOTPLUG
+defined.
+
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+--- 
+
+Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-10-08 11:08:42.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-10-13 13:08:22.000000000 -0500
+@@ -16,6 +16,10 @@
+ #include <linux/notifier.h>
+ #include <linux/proc_fs.h>
+ #include <linux/spinlock.h>
++#include <linux/memory_hotplug.h>
++#include <linux/sysdev.h>
++#include <linux/sysfs.h>
++
+ 
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+@@ -404,11 +408,165 @@
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_MEMORY_HOTPLUG
++
++static struct property *clone_property(struct property *old_prop)
++{
++	struct property *new_prop;
++
++	new_prop = kzalloc((sizeof *new_prop), GFP_KERNEL);
++	if (!new_prop)
++		return NULL;
++
++	new_prop->name = kzalloc(strlen(old_prop->name) + 1, GFP_KERNEL);
++	new_prop->value = kzalloc(old_prop->length + 1, GFP_KERNEL);
++	if (!new_prop->name || !new_prop->value) {
++		free_property(new_prop);
++		return NULL;
++	}
++
++	strcpy(new_prop->name, old_prop->name);
++	memcpy(new_prop->value, old_prop->value, old_prop->length);
++	new_prop->length = old_prop->length;
++
++	return new_prop;
++}
++
++int platform_probe_memory(u64 phys_addr)
++{
++	struct device_node *dn;
++	struct property *new_prop, *old_prop;
++	struct property *lmb_sz_prop;
++	struct of_drconf_cell *drmem;
++	u64 lmb_size;
++	int num_entries, i, rc;
++
++	if (!phys_addr)
++		return -EINVAL;
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		return -EINVAL;
++
++	lmb_sz_prop = of_find_property(dn, "ibm,lmb-size", NULL);
++	lmb_size = *(u64 *)lmb_sz_prop->value;
++
++	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
++
++	num_entries = *(u32 *)old_prop->value;
++	drmem = (struct of_drconf_cell *)
++				((char *)old_prop->value + sizeof(u32));
++
++	for (i = 0; i < num_entries; i++) {
++		u64 lmb_end_addr = drmem[i].base_addr + lmb_size;
++		if (phys_addr >= drmem[i].base_addr
++		    && phys_addr < lmb_end_addr)
++			break;
++	}
++
++	if (i >= num_entries) {
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	if (drmem[i].flags & DRCONF_MEM_ASSIGNED) {
++		of_node_put(dn);
++		return 0;
++	}
++
++	rc = acquire_drc(drmem[i].drc_index);
++	if (rc) {
++		of_node_put(dn);
++		return -1;
++	}
++
++	new_prop = clone_property(old_prop);
++	drmem = (struct of_drconf_cell *)
++				((char *)new_prop->value + sizeof(u32));
++
++	drmem[i].flags |= DRCONF_MEM_ASSIGNED;
++	prom_update_property(dn, new_prop, old_prop);
++
++	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
++					  PSERIES_DRCONF_MEM_ADD,
++					  &drmem[i].base_addr);
++	if (rc == NOTIFY_BAD) {
++		prom_update_property(dn, old_prop, new_prop);
++		release_drc(drmem[i].drc_index);
++	}
++
++	of_node_put(dn);
++	return rc == NOTIFY_BAD ? -1 : 0;
++}
++
++static ssize_t memory_release_store(struct class *class, const char *buf,
++				    size_t count)
++{
++	unsigned long drc_index;
++	struct device_node *dn;
++	struct property *new_prop, *old_prop;
++	struct of_drconf_cell *drmem;
++	int num_entries;
++	int i, rc;
++
++	rc = strict_strtoul(buf, 0, &drc_index);
++	if (rc)
++		return -EINVAL;
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		return 0;
++
++	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
++	new_prop = clone_property(old_prop);
++
++	num_entries = *(u32 *)new_prop->value;
++	drmem = (struct of_drconf_cell *)
++				((char *)new_prop->value + sizeof(u32));
++
++	for (i = 0; i < num_entries; i++) {
++		if (drmem[i].drc_index == drc_index)
++			break;
++	}
++
++	if (i >= num_entries) {
++		free_property(new_prop);
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	drmem[i].flags &= ~DRCONF_MEM_ASSIGNED;
++	prom_update_property(dn, new_prop, old_prop);
++
++	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
++					  PSERIES_DRCONF_MEM_REMOVE,
++					  &drmem[i].base_addr);
++	if (rc != NOTIFY_BAD)
++		rc = release_drc(drc_index);
++
++	if (rc)
++		prom_update_property(dn, old_prop, new_prop);
++
++	of_node_put(dn);
++	return rc ? -1 : count;
++}
++
++static struct class_attribute class_attr_mem_release =
++			__ATTR(release, S_IWUSR, NULL, memory_release_store);
++#endif
++
+ static int pseries_dlpar_init(void)
+ {
+ 	if (!machine_is(pseries))
+ 		return 0;
+ 
++#ifdef CONFIG_MEMORY_HOTPLUG
++	if (sysfs_create_file(&memory_sysdev_class.kset.kobj,
++			      &class_attr_mem_release.attr))
++		printk(KERN_INFO "DLPAR: Could not create sysfs memory "
++		       "release file\n");
++#endif
++
+ 	return 0;
+ }
+ device_initcall(pseries_dlpar_init);
+Index: powerpc/arch/powerpc/mm/mem.c
+===================================================================
+--- powerpc.orig/arch/powerpc/mm/mem.c	2009-10-08 11:07:45.000000000 -0500
++++ powerpc/arch/powerpc/mm/mem.c	2009-10-08 11:08:54.000000000 -0500
+@@ -111,8 +111,19 @@
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ 
+ #ifdef CONFIG_NUMA
++int __attribute ((weak)) platform_probe_memory(u64 start)
++{
++	return 0;
++}
++
+ int memory_add_physaddr_to_nid(u64 start)
+ {
++	int rc;
++
++	rc = platform_probe_memory(start);
++	if (rc)
++		return rc;
++
+ 	return hot_add_scn_to_nid(start);
+ }
+ #endif
