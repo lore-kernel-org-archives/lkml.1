@@ -1,549 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbZJMOtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759395AbZJMLgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760079AbZJMOtU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760066AbZJMOtT
+	id S1759395AbZJMLgK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 07:36:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756525AbZJMLgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:49:19 -0400
-Received: from fallback2.mail.ru ([94.100.176.87]:44932 "EHLO
-	fallback2.mail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760045AbZJMOtR (ORCPT
+	Tue, 13 Oct 2009 07:36:08 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:50457 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754724AbZJMLgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:49:17 -0400
-From: Dmitry Artamonow <mad_soft@inbox.ru>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Russell King <linux@arm.linux.org.uk>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       Anton Vorontsov <cbouatmailru@gmail.com>, linux-mtd@lists.infradead.org,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [RESEND][PATCH] mtd: maps: remove obsolete ipaq-flash driver
-Date: Tue, 13 Oct 2009 15:34:54 +0400
-Message-Id: <1255433694-26471-1-git-send-email-mad_soft@inbox.ru>
-X-Mailer: git-send-email 1.6.3.4
-X-Spam: Not detected
-X-Mras: Ok
+	Tue, 13 Oct 2009 07:36:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=SQ++A9ie4r8RTwDx6whp5Ns4JkDNRxXdY7CW2dBLcTxvI+OFwTQf+U3RuSDmxVWKhY
+         nwWbTJrkMdMOwQpAiMzOatwGB2ga+JE1GkKYAybjiH9JF3zyLKVaEUDrF4EWgHS20pKX
+         qISPai0OEofbMqhD2O8Uc8VJowyXGYx7m57fY=
+MIME-Version: 1.0
+In-Reply-To: <20091013060312.GA3215@elte.hu>
+References: <817ecb6f0910121803p52a4049ep4a712545d28bba76@mail.gmail.com>
+	 <20091012213229.11898c12@infradead.org>
+	 <20091013060312.GA3215@elte.hu>
+Date: Tue, 13 Oct 2009 07:35:28 -0400
+Message-ID: <817ecb6f0910130435q56fcbf63r82fae9b94f3eb199@mail.gmail.com>
+Subject: Re: [PATCH V5] x86: NX protection for kernel data
+From: Siarhei Liakh <sliakh.lkml@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>, Aristeu Rozanski <aris@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver seems to be obsolete and broken for a long time.
-It depends on CONFIG_IPAQ_HANDHELD that simply doesn't exists
-anywhere in kernel. Also, it seems that none of machines it
-claims to support have any use of it:
- SA11xx-based iPAQs (h3100/h3600) use sa1100-flash
- iPAQ h5000 uses physmap-flash
- Jornada 720 uses sa1100-flash
- Jornada 560 and iPAQ h1910 are not in mainline
+>> I like doing this, but... maybe it is useful to have a diff of the
+>> pagetable dump (PT_DUMP config option) to show the effect, in the
+>> changelog. That'd be like the proof on the pudding...
+>
+> That's a good suggestion. Siarhei Liakh, mind doing that?
 
-Signed-off-by: Dmitry Artamonow <mad_soft@inbox.ru>
----
- drivers/mtd/maps/Kconfig      |    6 -
- drivers/mtd/maps/Makefile     |    1 -
- drivers/mtd/maps/ipaq-flash.c |  460 -----------------------------------------
- 3 files changed, 0 insertions(+), 467 deletions(-)
- delete mode 100644 drivers/mtd/maps/ipaq-flash.c
+Here you go:
+===============================================
+--- data_nx_pt_before.txt	2009-10-13 07:26:17.000000000 -0400
++++ data_nx_pt_after.txt	2009-10-13 07:26:46.000000000 -0400
+@@ -2,12 +2,9 @@
+ 0x00000000-0xc0000000           3G                           pmd
+ ---[ Kernel Mapping ]---
+ 0xc0000000-0xc0100000           1M     RW             GLB x  pte
+-0xc0100000-0xc048d000        3636K     ro             GLB x  pte
+-0xc048d000-0xc04d0000         268K     RW             GLB x  pte
+-0xc04d0000-0xc04d2000           8K     RW             GLB NX pte
+-0xc04d2000-0xc04d3000           4K     RW             GLB x  pte
+-0xc04d3000-0xc0531000         376K     RW             GLB NX pte
+-0xc0531000-0xc0600000         828K     RW             GLB x  pte
++0xc0100000-0xc0381000        2564K     ro             GLB x  pte
++0xc0381000-0xc048d000        1072K     ro             GLB NX pte
++0xc048d000-0xc0600000        1484K     RW             GLB NX pte
+ 0xc0600000-0xf7800000         882M     RW         PSE GLB NX pmd
+ 0xf7800000-0xf79fe000        2040K     RW             GLB NX pte
+ 0xf79fe000-0xf7a00000           8K                           pte
+===============================================
 
-First posted back in February to linux-mtd list here:
-http://lists.infradead.org/pipermail/linux-mtd/2009-February/024664.html
-and gathered no replies.
+Would you like me to re-post whole patch with this addition?
 
-diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
-index 841e085..8e4a655 100644
---- a/drivers/mtd/maps/Kconfig
-+++ b/drivers/mtd/maps/Kconfig
-@@ -361,12 +361,6 @@ config MTD_SA1100
- 	  the SA1100 and SA1110, including the Assabet and the Compaq iPAQ.
- 	  If you have such a board, say 'Y'.
- 
--config MTD_IPAQ
--	tristate "CFI Flash device mapped on Compaq/HP iPAQ"
--	depends on IPAQ_HANDHELD && MTD_CFI
--	help
--	  This provides a driver for the on-board flash of the iPAQ.
--
- config MTD_DC21285
- 	tristate "CFI Flash device mapped on DC21285 Footbridge"
- 	depends on MTD_CFI && ARCH_FOOTBRIDGE && MTD_COMPLEX_MAPPINGS
-diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
-index 1d5cf86..34f3cdd 100644
---- a/drivers/mtd/maps/Makefile
-+++ b/drivers/mtd/maps/Makefile
-@@ -29,7 +29,6 @@ obj-$(CONFIG_MTD_PCMCIA)	+= pcmciamtd.o
- obj-$(CONFIG_MTD_RPXLITE)	+= rpxlite.o
- obj-$(CONFIG_MTD_TQM8XXL)	+= tqm8xxl.o
- obj-$(CONFIG_MTD_SA1100)	+= sa1100-flash.o
--obj-$(CONFIG_MTD_IPAQ)		+= ipaq-flash.o
- obj-$(CONFIG_MTD_SBC_GXX)	+= sbc_gxx.o
- obj-$(CONFIG_MTD_SC520CDP)	+= sc520cdp.o
- obj-$(CONFIG_MTD_NETSC520)	+= netsc520.o
-diff --git a/drivers/mtd/maps/ipaq-flash.c b/drivers/mtd/maps/ipaq-flash.c
-deleted file mode 100644
-index 76708e7..0000000
---- a/drivers/mtd/maps/ipaq-flash.c
-+++ /dev/null
-@@ -1,460 +0,0 @@
--/*
-- * Flash memory access on iPAQ Handhelds (either SA1100 or PXA250 based)
-- *
-- * (C) 2000 Nicolas Pitre <nico@fluxnic.net>
-- * (C) 2002 Hewlett-Packard Company <jamey.hicks@hp.com>
-- * (C) 2003 Christian Pellegrin <chri@ascensit.com>, <chri@infis.univ.ts.it>: concatenation of multiple flashes
-- */
--
--#include <linux/module.h>
--#include <linux/types.h>
--#include <linux/kernel.h>
--#include <linux/spinlock.h>
--#include <linux/init.h>
--#include <linux/slab.h>
--#include <asm/page.h>
--#include <asm/mach-types.h>
--#include <asm/system.h>
--#include <asm/errno.h>
--
--#include <linux/mtd/mtd.h>
--#include <linux/mtd/map.h>
--#include <linux/mtd/partitions.h>
--#ifdef CONFIG_MTD_CONCAT
--#include <linux/mtd/concat.h>
--#endif
--
--#include <mach/hardware.h>
--#include <mach/h3600.h>
--#include <asm/io.h>
--
--
--#ifndef CONFIG_IPAQ_HANDHELD
--#error This is for iPAQ Handhelds only
--#endif
--#ifdef CONFIG_SA1100_JORNADA56X
--
--static void jornada56x_set_vpp(struct map_info *map, int vpp)
--{
--	if (vpp)
--		GPSR = GPIO_GPIO26;
--	else
--		GPCR = GPIO_GPIO26;
--	GPDR |= GPIO_GPIO26;
--}
--
--#endif
--
--#ifdef CONFIG_SA1100_JORNADA720
--
--static void jornada720_set_vpp(struct map_info *map, int vpp)
--{
--	if (vpp)
--		PPSR |= 0x80;
--	else
--		PPSR &= ~0x80;
--	PPDR |= 0x80;
--}
--
--#endif
--
--#define MAX_IPAQ_CS 2		/* Number of CS we are going to test */
--
--#define IPAQ_MAP_INIT(X) \
--	{ \
--		name:		"IPAQ flash " X, \
--	}
--
--
--static struct map_info ipaq_map[MAX_IPAQ_CS] = {
--	IPAQ_MAP_INIT("bank 1"),
--	IPAQ_MAP_INIT("bank 2")
--};
--
--static struct mtd_info *my_sub_mtd[MAX_IPAQ_CS] = {
--	NULL,
--	NULL
--};
--
--/*
-- * Here are partition information for all known IPAQ-based devices.
-- * See include/linux/mtd/partitions.h for definition of the mtd_partition
-- * structure.
-- *
-- * The *_max_flash_size is the maximum possible mapped flash size which
-- * is not necessarily the actual flash size.  It must be no more than
-- * the value specified in the "struct map_desc *_io_desc" mapping
-- * definition for the corresponding machine.
-- *
-- * Please keep these in alphabetical order, and formatted as per existing
-- * entries.  Thanks.
-- */
--
--#ifdef CONFIG_IPAQ_HANDHELD
--static unsigned long h3xxx_max_flash_size = 0x04000000;
--static struct mtd_partition h3xxx_partitions[] = {
--	{
--		name:		"H3XXX boot firmware",
--#ifndef CONFIG_LAB
--		size:		0x00040000,
--#else
--		size:		0x00080000,
--#endif
--		offset:		0,
--#ifndef CONFIG_LAB
--		mask_flags:	MTD_WRITEABLE,  /* force read-only */
--#endif
--	},
--	{
--		name:		"H3XXX root jffs2",
--#ifndef CONFIG_LAB
--		size:		0x2000000 - 2*0x40000, /* Warning, this is fixed later */
--		offset:		0x00040000,
--#else
--		size:		0x2000000 - 0x40000 - 0x80000, /* Warning, this is fixed later */
--		offset:		0x00080000,
--#endif
--	},
--	{
--		name:		"asset",
--		size:		0x40000,
--		offset:		0x2000000 - 0x40000, /* Warning, this is fixed later */
--		mask_flags:	MTD_WRITEABLE,  /* force read-only */
--	}
--};
--
--#ifndef CONFIG_MTD_CONCAT
--static struct mtd_partition h3xxx_partitions_bank2[] = {
--	/* this is used only on 2 CS machines when concat is not present */
--	{
--		name:		"second H3XXX root jffs2",
--		size:		0x1000000 - 0x40000, /* Warning, this is fixed later */
--		offset:		0x00000000,
--	},
--	{
--		name:		"second asset",
--		size:		0x40000,
--		offset:		0x1000000 - 0x40000, /* Warning, this is fixed later */
--		mask_flags:	MTD_WRITEABLE,  /* force read-only */
--	}
--};
--#endif
--
--static DEFINE_SPINLOCK(ipaq_vpp_lock);
--
--static void h3xxx_set_vpp(struct map_info *map, int vpp)
--{
--	static int nest = 0;
--
--	spin_lock(&ipaq_vpp_lock);
--	if (vpp)
--		nest++;
--	else
--		nest--;
--	if (nest)
--		assign_h3600_egpio(IPAQ_EGPIO_VPP_ON, 1);
--	else
--		assign_h3600_egpio(IPAQ_EGPIO_VPP_ON, 0);
--	spin_unlock(&ipaq_vpp_lock);
--}
--
--#endif
--
--#if defined(CONFIG_SA1100_JORNADA56X) || defined(CONFIG_SA1100_JORNADA720)
--static unsigned long jornada_max_flash_size = 0x02000000;
--static struct mtd_partition jornada_partitions[] = {
--	{
--		name:		"Jornada boot firmware",
--		size:		0x00040000,
--		offset:		0,
--		mask_flags:	MTD_WRITEABLE,  /* force read-only */
--	}, {
--		name:		"Jornada root jffs2",
--		size:		MTDPART_SIZ_FULL,
--		offset:		0x00040000,
--	}
--};
--#endif
--
--
--static struct mtd_partition *parsed_parts;
--static struct mtd_info *mymtd;
--
--static unsigned long cs_phys[] = {
--#ifdef CONFIG_ARCH_SA1100
--	SA1100_CS0_PHYS,
--	SA1100_CS1_PHYS,
--	SA1100_CS2_PHYS,
--	SA1100_CS3_PHYS,
--	SA1100_CS4_PHYS,
--	SA1100_CS5_PHYS,
--#else
--	PXA_CS0_PHYS,
--	PXA_CS1_PHYS,
--	PXA_CS2_PHYS,
--	PXA_CS3_PHYS,
--	PXA_CS4_PHYS,
--	PXA_CS5_PHYS,
--#endif
--};
--
--static const char *part_probes[] = { "cmdlinepart", "RedBoot", NULL };
--
--static int __init h1900_special_case(void);
--
--static int __init ipaq_mtd_init(void)
--{
--	struct mtd_partition *parts = NULL;
--	int nb_parts = 0;
--	int parsed_nr_parts = 0;
--	const char *part_type;
--	int i; /* used when we have >1 flash chips */
--	unsigned long tot_flashsize = 0; /* used when we have >1 flash chips */
--
--	/* Default flash bankwidth */
--	// ipaq_map.bankwidth = (MSC0 & MSC_RBW) ? 2 : 4;
--
--	if (machine_is_h1900())
--	{
--		/* For our intents, the h1900 is not a real iPAQ, so we special-case it. */
--		return h1900_special_case();
--	}
--
--	if (machine_is_h3100() || machine_is_h1900())
--		for(i=0; i<MAX_IPAQ_CS; i++)
--			ipaq_map[i].bankwidth = 2;
--	else
--		for(i=0; i<MAX_IPAQ_CS; i++)
--			ipaq_map[i].bankwidth = 4;
--
--	/*
--	 * Static partition definition selection
--	 */
--	part_type = "static";
--
--	simple_map_init(&ipaq_map[0]);
--	simple_map_init(&ipaq_map[1]);
--
--#ifdef CONFIG_IPAQ_HANDHELD
--	if (machine_is_ipaq()) {
--		parts = h3xxx_partitions;
--		nb_parts = ARRAY_SIZE(h3xxx_partitions);
--		for(i=0; i<MAX_IPAQ_CS; i++) {
--			ipaq_map[i].size = h3xxx_max_flash_size;
--			ipaq_map[i].set_vpp = h3xxx_set_vpp;
--			ipaq_map[i].phys = cs_phys[i];
--			ipaq_map[i].virt = ioremap(cs_phys[i], 0x04000000);
--			if (machine_is_h3100 () || machine_is_h1900())
--				ipaq_map[i].bankwidth = 2;
--		}
--		if (machine_is_h3600()) {
--			/* No asset partition here */
--			h3xxx_partitions[1].size += 0x40000;
--			nb_parts--;
--		}
--	}
--#endif
--#ifdef CONFIG_ARCH_H5400
--	if (machine_is_h5400()) {
--		ipaq_map[0].size = 0x02000000;
--		ipaq_map[1].size = 0x02000000;
--		ipaq_map[1].phys = 0x02000000;
--		ipaq_map[1].virt = ipaq_map[0].virt + 0x02000000;
--	}
--#endif
--#ifdef CONFIG_ARCH_H1900
--	if (machine_is_h1900()) {
--		ipaq_map[0].size = 0x00400000;
--		ipaq_map[1].size = 0x02000000;
--		ipaq_map[1].phys = 0x00080000;
--		ipaq_map[1].virt = ipaq_map[0].virt + 0x00080000;
--	}
--#endif
--
--#ifdef CONFIG_SA1100_JORNADA56X
--	if (machine_is_jornada56x()) {
--		parts = jornada_partitions;
--		nb_parts = ARRAY_SIZE(jornada_partitions);
--		ipaq_map[0].size = jornada_max_flash_size;
--		ipaq_map[0].set_vpp = jornada56x_set_vpp;
--		ipaq_map[0].virt = (__u32)ioremap(0x0, 0x04000000);
--	}
--#endif
--#ifdef CONFIG_SA1100_JORNADA720
--	if (machine_is_jornada720()) {
--		parts = jornada_partitions;
--		nb_parts = ARRAY_SIZE(jornada_partitions);
--		ipaq_map[0].size = jornada_max_flash_size;
--		ipaq_map[0].set_vpp = jornada720_set_vpp;
--	}
--#endif
--
--
--	if (machine_is_ipaq()) { /* for iPAQs only */
--		for(i=0; i<MAX_IPAQ_CS; i++) {
--			printk(KERN_NOTICE "iPAQ flash: probing %d-bit flash bus, window=%lx with CFI.\n", ipaq_map[i].bankwidth*8, ipaq_map[i].virt);
--			my_sub_mtd[i] = do_map_probe("cfi_probe", &ipaq_map[i]);
--			if (!my_sub_mtd[i]) {
--				printk(KERN_NOTICE "iPAQ flash: probing %d-bit flash bus, window=%lx with JEDEC.\n", ipaq_map[i].bankwidth*8, ipaq_map[i].virt);
--				my_sub_mtd[i] = do_map_probe("jedec_probe", &ipaq_map[i]);
--			}
--			if (!my_sub_mtd[i]) {
--				printk(KERN_NOTICE "iPAQ flash: failed to find flash.\n");
--				if (i)
--					break;
--				else
--					return -ENXIO;
--			} else
--				printk(KERN_NOTICE "iPAQ flash: found %d bytes\n", my_sub_mtd[i]->size);
--
--			/* do we really need this debugging? --joshua 20030703 */
--			// printk("my_sub_mtd[%d]=%p\n", i, my_sub_mtd[i]);
--			my_sub_mtd[i]->owner = THIS_MODULE;
--			tot_flashsize += my_sub_mtd[i]->size;
--		}
--#ifdef CONFIG_MTD_CONCAT
--		/* fix the asset location */
--#	ifdef CONFIG_LAB
--		h3xxx_partitions[1].size = tot_flashsize - 0x40000 - 0x80000 /* extra big boot block */;
--#	else
--		h3xxx_partitions[1].size = tot_flashsize - 2 * 0x40000;
--#	endif
--		h3xxx_partitions[2].offset = tot_flashsize - 0x40000;
--		/* and concat the devices */
--		mymtd = mtd_concat_create(&my_sub_mtd[0], i,
--					  "ipaq");
--		if (!mymtd) {
--			printk("Cannot create iPAQ concat device\n");
--			return -ENXIO;
--		}
--#else
--		mymtd = my_sub_mtd[0];
--
--		/*
--		 *In the very near future, command line partition parsing
--		 * will use the device name as 'mtd-id' instead of a value
--		 * passed to the parse_cmdline_partitions() routine. Since
--		 * the bootldr says 'ipaq', make sure it continues to work.
--		 */
--		mymtd->name = "ipaq";
--
--		if ((machine_is_h3600())) {
--#	ifdef CONFIG_LAB
--			h3xxx_partitions[1].size = my_sub_mtd[0]->size - 0x80000;
--#	else
--			h3xxx_partitions[1].size = my_sub_mtd[0]->size - 0x40000;
--#	endif
--			nb_parts = 2;
--		} else {
--#	ifdef CONFIG_LAB
--			h3xxx_partitions[1].size = my_sub_mtd[0]->size - 0x40000 - 0x80000; /* extra big boot block */
--#	else
--			h3xxx_partitions[1].size = my_sub_mtd[0]->size - 2*0x40000;
--#	endif
--			h3xxx_partitions[2].offset = my_sub_mtd[0]->size - 0x40000;
--		}
--
--		if (my_sub_mtd[1]) {
--#	ifdef CONFIG_LAB
--			h3xxx_partitions_bank2[0].size = my_sub_mtd[1]->size - 0x80000;
--#	else
--			h3xxx_partitions_bank2[0].size = my_sub_mtd[1]->size - 0x40000;
--#	endif
--			h3xxx_partitions_bank2[1].offset = my_sub_mtd[1]->size - 0x40000;
--		}
--#endif
--	}
--	else {
--		/*
--		 * Now let's probe for the actual flash.  Do it here since
--		 * specific machine settings might have been set above.
--		 */
--		printk(KERN_NOTICE "IPAQ flash: probing %d-bit flash bus, window=%lx\n", ipaq_map[0].bankwidth*8, ipaq_map[0].virt);
--		mymtd = do_map_probe("cfi_probe", &ipaq_map[0]);
--		if (!mymtd)
--			return -ENXIO;
--		mymtd->owner = THIS_MODULE;
--	}
--
--
--	/*
--	 * Dynamic partition selection stuff (might override the static ones)
--	 */
--
--	 i = parse_mtd_partitions(mymtd, part_probes, &parsed_parts, 0);
--
--	 if (i > 0) {
--		 nb_parts = parsed_nr_parts = i;
--		 parts = parsed_parts;
--		 part_type = "dynamic";
--	 }
--
--	 if (!parts) {
--		 printk(KERN_NOTICE "IPAQ flash: no partition info available, registering whole flash at once\n");
--		 add_mtd_device(mymtd);
--#ifndef CONFIG_MTD_CONCAT
--		 if (my_sub_mtd[1])
--			 add_mtd_device(my_sub_mtd[1]);
--#endif
--	 } else {
--		 printk(KERN_NOTICE "Using %s partition definition\n", part_type);
--		 add_mtd_partitions(mymtd, parts, nb_parts);
--#ifndef CONFIG_MTD_CONCAT
--		 if (my_sub_mtd[1])
--			 add_mtd_partitions(my_sub_mtd[1], h3xxx_partitions_bank2, ARRAY_SIZE(h3xxx_partitions_bank2));
--#endif
--	 }
--
--	 return 0;
--}
--
--static void __exit ipaq_mtd_cleanup(void)
--{
--	int i;
--
--	if (mymtd) {
--		del_mtd_partitions(mymtd);
--#ifndef CONFIG_MTD_CONCAT
--		if (my_sub_mtd[1])
--			del_mtd_partitions(my_sub_mtd[1]);
--#endif
--		map_destroy(mymtd);
--#ifdef CONFIG_MTD_CONCAT
--		for(i=0; i<MAX_IPAQ_CS; i++)
--#else
--			for(i=1; i<MAX_IPAQ_CS; i++)
--#endif
--			{
--				if (my_sub_mtd[i])
--					map_destroy(my_sub_mtd[i]);
--			}
--		kfree(parsed_parts);
--	}
--}
--
--static int __init h1900_special_case(void)
--{
--	/* The iPAQ h1900 is a special case - it has weird ROM. */
--	simple_map_init(&ipaq_map[0]);
--	ipaq_map[0].size = 0x80000;
--	ipaq_map[0].set_vpp = h3xxx_set_vpp;
--	ipaq_map[0].phys = 0x0;
--	ipaq_map[0].virt = ioremap(0x0, 0x04000000);
--	ipaq_map[0].bankwidth = 2;
--
--	printk(KERN_NOTICE "iPAQ flash: probing %d-bit flash bus, window=%lx with JEDEC.\n", ipaq_map[0].bankwidth*8, ipaq_map[0].virt);
--	mymtd = do_map_probe("jedec_probe", &ipaq_map[0]);
--	if (!mymtd)
--		return -ENODEV;
--	add_mtd_device(mymtd);
--	printk(KERN_NOTICE "iPAQ flash: registered h1910 flash\n");
--
--	return 0;
--}
--
--module_init(ipaq_mtd_init);
--module_exit(ipaq_mtd_cleanup);
--
--MODULE_AUTHOR("Jamey Hicks");
--MODULE_DESCRIPTION("IPAQ CFI map driver");
--MODULE_LICENSE("MIT");
--- 
-1.6.3.4
-
+Thanks.
