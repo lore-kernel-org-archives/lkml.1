@@ -1,45 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbZJMLbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbZJMLe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758575AbZJMLbj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 07:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbZJMLbi
+	id S1758140AbZJMLe4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 07:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbZJMLez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 07:31:38 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47878 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753441AbZJMLbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 07:31:37 -0400
-Date: Tue, 13 Oct 2009 13:31:01 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] blkdev: flush disk cache on ->fsync
-Message-ID: <20091013113101.GZ9228@kernel.dk>
-References: <20090820182432.GA31520@lst.de> <20091010161531.GA30289@lst.de> <20091012150713.GM9228@kernel.dk> <20091013014128.GB7931@lst.de>
+	Tue, 13 Oct 2009 07:34:55 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:26928 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754353AbZJMLey (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 07:34:54 -0400
+X-Trace: 273701757/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.95.113/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.95.113
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvQEAEsC1EpQKV9x/2dsb2JhbACBUdRIhC0E
+X-IronPort-AV: E=Sophos;i="4.44,550,1249254000"; 
+   d="scan'208";a="273701757"
+Date: Tue, 13 Oct 2009 12:33:58 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Wu Fengguang <fengguang.wu@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       Rik van Riel <riel@redhat.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Elladan <elladan@eskimo.com>, Nick Piggin <npiggin@suse.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: [PATCH][BUGFIX] vmscan: limit VM_EXEC protection to file pages
+In-Reply-To: <20091013080054.GA20395@localhost>
+Message-ID: <Pine.LNX.4.64.0910131221220.25854@sister.anvils>
+References: <200910122244.19666.borntraeger@de.ibm.com> <20091013022650.GB7345@localhost>
+ <4AD3E6C4.805@redhat.com> <20091013080054.GA20395@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091013014128.GB7931@lst.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13 2009, Christoph Hellwig wrote:
-> On Mon, Oct 12, 2009 at 05:07:13PM +0200, Jens Axboe wrote:
-> > On Sat, Oct 10 2009, Christoph Hellwig wrote:
-> > > Is anyone going to pick up this patch?
-> > 
-> > I can pick it up for .33. I think it looks good, but it's probably
-> > something we should add up front.
+On Tue, 13 Oct 2009, Wu Fengguang wrote:
+
+> It is possible to have !Anon but SwapBacked pages, and some apps could
+> create huge number of such pages with MAP_SHARED|MAP_ANONYMOUS. These
+> pages go into the ANON lru list, and hence shall not be protected: we
+> only care mapped executable files. Failing to do so may trigger OOM.
 > 
-> Given that it's impossible to get data to a raw block device reliably
-> without this I think it's .32 material.  Especially given how small
-> the patch is and how long it's been out there..
+> Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 
-Yes I agree, but it's also not a regression since this has been the
-situation for eternity. So why not just accept .33 and we can push it to
--stable after that?
+I'm not going to stand against this patch.  But I would like to point
+out that it will "penalize" (well, no longer favour) executables being
+run from a tmpfs.  Probably not a big deal.
 
--- 
-Jens Axboe
+And I want to put on record that (like Andrea) I really loathe this
+(vm_flags & VM_EXEC) test: it's a heuristic unlike any other in page
+reclaim, and one that is open to any application writer to take unfair
+advantage of.
 
+I know that it's there to make some things work better, and that it
+has been successful (though now inevitably it's found to require a
+tweak - how long until its next tweak?).  But I do hope that one
+day you will come up with something much more satisfactory here.
+
+Hugh
+
+> ---
+>  mm/vmscan.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux.orig/mm/vmscan.c	2009-10-13 09:49:05.000000000 +0800
+> +++ linux/mm/vmscan.c	2009-10-13 09:49:37.000000000 +0800
+> @@ -1356,7 +1356,7 @@ static void shrink_active_list(unsigned 
+>  			 * IO, plus JVM can create lots of anon VM_EXEC pages,
+>  			 * so we ignore them here.
+>  			 */
+> -			if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
+> +			if ((vm_flags & VM_EXEC) && page_is_file_cache(page)) {
+>  				list_add(&page->lru, &l_active);
+>  				continue;
+>  			}
