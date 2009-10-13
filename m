@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759753AbZJMM6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759743AbZJMNAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759753AbZJMM6x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 08:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759707AbZJMM6w
+	id S1759743AbZJMNAq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 09:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759705AbZJMNAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 08:58:52 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:46778 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759431AbZJMM6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 08:58:51 -0400
-Date: Tue, 13 Oct 2009 18:27:37 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, vatsa@in.ibm.com,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
-Message-ID: <20091013125737.GB3672@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090930124919.GA19951@in.ibm.com> <4AC35EDD.1080902@openvz.org> <20090930142537.GJ19951@in.ibm.com> <20090930143953.GA2014@in.ibm.com> <4AD466E5.4010206@openvz.org> <20091013120354.GF24787@MAIL.13thfloor.at> <4AD4705D.6020109@openvz.org> <20091013123047.GC26069@linux.vnet.ibm.com> <4AD4765B.3010907@openvz.org>
+	Tue, 13 Oct 2009 09:00:46 -0400
+Received: from gv-out-0910.google.com ([216.239.58.184]:9486 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759530AbZJMNAo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 09:00:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=iaGWybNXtHa20N7cuCzr933yQqO5hMl/6g8q5ydPOI5M6Jz8mHw3OkOy4wIroPpKN/
+         ecI7ETr/xAVNp/PJ1WitE8q9HsunTa4uajFtg1UT1Cpq9dvCmVS0dGOPx5GbA40Y5+Mj
+         7aSVd5apeXS0jgtDhT3l7dzcrQ6kL/FoZ8R9A=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD4765B.3010907@openvz.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4727185d0910130548p325f0185vf4e23b5491c730a0@mail.gmail.com>
+References: <4727185d0910130118m5387058dndb02ac9b384af9f0@mail.gmail.com>
+	 <20091013100101.GA26846@elte.hu>
+	 <4727185d0910130451h3a5adcebtc0c06f48b6c9ab99@mail.gmail.com>
+	 <20091013122720.GA5561@elte.hu>
+	 <4727185d0910130548p325f0185vf4e23b5491c730a0@mail.gmail.com>
+Date: Tue, 13 Oct 2009 15:58:56 +0300
+X-Google-Sender-Auth: a7befb85cd997136
+Message-ID: <84144f020910130558y1fe27de7q378286e60b69e883@mail.gmail.com>
+Subject: Re: [PATCH] [PERF] do not manually count string lengths
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Vincent Legoll <vincent.legoll@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, paulus@samba.org,
+       a.p.zijlstra@chello.nl
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 04:45:15PM +0400, Pavel Emelyanov wrote:
-> Dhaval Giani wrote:
-> > On Tue, Oct 13, 2009 at 04:19:41PM +0400, Pavel Emelyanov wrote:
-> >>> as I already stated, it seems perfectly fine for me 
-> >> You're not the only one interested in it, sorry. Besides, I
-> >> got your point in "I'm find with it". Now get mine which is
-> >> about "I am not".
-> >>
-> >>> can be trivially mapped to the two values, by chosing a
-> >>> fixed multiplicative base (let's say '1s' to simplify :) 
-> >>>
-> >>>   with 50%, you get 1s/0.5s
-> >>>   with 20%, you get 1s/0.2s
-> >>>   with  5%, you get 1s/0.05s
-> >>>
-> >>> well, you get the idea :)
-> >> No I don't.
-> >> Is 1s/0.5s worse or better than 2s/1s?
-> >> How should I make a choice?
-> > 
-> > I would say it depends on your requirement. How fast do you want to
-> > respond back to the user? Wiht lower bandwidth, you would want to have
-> > shorter periods so that the user would not get the impression that he
-> > has to "wait" to get CPU time. But having a very short period is not a
-> > good thing, since there are other considerations (such as the overhead of
-> > hard limits).
-> 
-> That's it - long period is bad for one reason, short period is bad for 
-> some other one and neither of them is clearly described unlike the 
-> limit itself.
-> 
-> In other words there are two numbers we're essentially playing with:
-> * the limit (int percents, Hz, whatever)
-> * and this abstract "badness"
-> 
-> Can't we give the user one of them for "must be configured" usage, put
-> the other one in some "good for most users" position and let the user
-> move it later on demand?
+Hi Vincent,
 
-This is what we have right now. All the groups will start with a default
-period (of .5s) and user has the option of changing it based on his
-requirement. However we need to find out if the default period is really
-"good for most users"
+On Tue, Oct 13, 2009 at 2:27 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>>> Was your list really comprehensive ?
+>>
+>> ah, yes - perf_callchain.c too indeed. The pattern does not have to be
+>> 100% full coverage.
 
-Regards,
-Bharata.
+On Tue, Oct 13, 2009 at 3:48 PM, Vincent Legoll
+<vincent.legoll@gmail.com> wrote:
+> How looks the attached ?
+
+Can you please send patches as plain-text in the future? Attachments
+are pain to review on some email clients (such as mine).
+
+                        Pekka
