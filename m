@@ -1,400 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbZJMLiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbZJMLkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759521AbZJMLiR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 07:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759330AbZJMLiP
+	id S1759532AbZJMLkK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 07:40:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759512AbZJMLkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 07:38:15 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:61268 "EHLO smtp.wine.ocn.ne.jp"
+	Tue, 13 Oct 2009 07:40:08 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:37905 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755648AbZJMLiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 07:38:14 -0400
-To: linux-security-module@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] TOMOYO: Add recursive directory matching operator support.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
-	<20091004125327.105675949@I-love.SAKURA.ne.jp>
-	<4ACE1CFE.3020507@canonical.com>
-	<alpine.LRH.2.00.0910121203090.19066@tundra.namei.org>
-	<200910132034.DAE39014.OVLFFOMHJQFOSt@I-love.SAKURA.ne.jp>
-In-Reply-To: <200910132034.DAE39014.OVLFFOMHJQFOSt@I-love.SAKURA.ne.jp>
-Message-Id: <200910132037.BHJ57351.QLVJtMHSFOFOOF@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Tue, 13 Oct 2009 20:37:36 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1759513AbZJMLkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 07:40:05 -0400
+Message-ID: <4AD466E5.4010206@openvz.org>
+Date: Tue, 13 Oct 2009 15:39:17 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: vatsa@in.ibm.com, Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
+References: <20090930124919.GA19951@in.ibm.com> <4AC35EDD.1080902@openvz.org> <20090930142537.GJ19951@in.ibm.com> <20090930143953.GA2014@in.ibm.com>
+In-Reply-To: <20090930143953.GA2014@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] TOMOYO: Add recursive directory matching operator support.
+> IMO Pavel's requirement can be met with a hard limit of 25%
+> 
+> 	2 CPU of 1GHz = (1/2 x 4) (1/2 x 2) GHz CPUs
+> 		      = 1/4 x 4 2GHz CPU
+> 		      = 25% of (4 2GHz CPU)
+> 
+> IOW by hard-limiting a container thread to run just 0.5sec every sec on a 2GHz 
+> cpu, it is effectively making progress at the rate of 1GHz?
 
-This patch introduces new operator /\{dir\}/ which matches
-'/' + 'One or more repetitions of dir/' (e.g. /dir/ /dir/dir/ /dir/dir/dir/ ).
+So, any suggestions on this? I'm not against the patches themselves.
+I'm just trying to tell, that setting a cpulimit with 2 numbers is
+not a good way to go (at least a clean explanation of how to calculate
+them should go with the patches).
 
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
----
- security/tomoyo/common.c |  200 ++++++++++++++++++++++++++++-------------------
- security/tomoyo/common.h |    4 
- 2 files changed, 121 insertions(+), 83 deletions(-)
+I propose to first collect what *can* be done. I see the following
+possibilities:
 
---- security-testing-2.6.orig/security/tomoyo/common.c
-+++ security-testing-2.6/security/tomoyo/common.c
-@@ -187,6 +187,8 @@ bool tomoyo_is_correct_path(const char *
- 			    const s8 pattern_type, const s8 end_type,
- 			    const char *function)
- {
-+	const char *const start = filename;
-+	bool in_repetition = false;
- 	bool contains_pattern = false;
- 	unsigned char c;
- 	unsigned char d;
-@@ -212,9 +214,13 @@ bool tomoyo_is_correct_path(const char *
- 		if (c == '/')
- 			goto out;
- 	}
--	while ((c = *filename++) != '\0') {
-+	while (1) {
-+		c = *filename++;
-+		if (!c)
-+			break;
- 		if (c == '\\') {
--			switch ((c = *filename++)) {
-+			c = *filename++;
-+			switch (c) {
- 			case '\\':  /* "\\" */
- 				continue;
- 			case '$':   /* "\$" */
-@@ -231,6 +237,22 @@ bool tomoyo_is_correct_path(const char *
- 					break; /* Must not contain pattern */
- 				contains_pattern = true;
- 				continue;
-+			case '{':   /* "/\{" */
-+				if (filename - 3 < start ||
-+				    *(filename - 3) != '/')
-+					break;
-+				if (pattern_type == -1)
-+					break; /* Must not contain pattern */
-+				contains_pattern = true;
-+				in_repetition = true;
-+				continue;
-+			case '}':   /* "\}/" */
-+				if (*filename != '/')
-+					break;
-+				if (!in_repetition)
-+					break;
-+				in_repetition = false;
-+				continue;
- 			case '0':   /* "\ooo" */
- 			case '1':
- 			case '2':
-@@ -246,6 +268,8 @@ bool tomoyo_is_correct_path(const char *
- 					continue; /* pattern is not \000 */
- 			}
- 			goto out;
-+		} else if (in_repetition && c == '/') {
-+			goto out;
- 		} else if (tomoyo_is_invalid(c)) {
- 			goto out;
- 		}
-@@ -254,6 +278,8 @@ bool tomoyo_is_correct_path(const char *
- 		if (!contains_pattern)
- 			goto out;
- 	}
-+	if (in_repetition)
-+		goto out;
- 	return true;
-  out:
- 	printk(KERN_DEBUG "%s: Invalid pathname '%s'\n", function,
-@@ -360,33 +386,6 @@ struct tomoyo_domain_info *tomoyo_find_d
- }
- 
- /**
-- * tomoyo_path_depth - Evaluate the number of '/' in a string.
-- *
-- * @pathname: The string to evaluate.
-- *
-- * Returns path depth of the string.
-- *
-- * I score 2 for each of the '/' in the @pathname
-- * and score 1 if the @pathname ends with '/'.
-- */
--static int tomoyo_path_depth(const char *pathname)
--{
--	int i = 0;
--
--	if (pathname) {
--		const char *ep = pathname + strlen(pathname);
--		if (pathname < ep--) {
--			if (*ep != '/')
--				i++;
--			while (pathname <= ep)
--				if (*ep-- == '/')
--					i += 2;
--		}
--	}
--	return i;
--}
--
--/**
-  * tomoyo_const_part_length - Evaluate the initial length without a pattern in a token.
-  *
-  * @filename: The string to evaluate.
-@@ -444,11 +443,10 @@ void tomoyo_fill_path_info(struct tomoyo
- 	ptr->is_dir = len && (name[len - 1] == '/');
- 	ptr->is_patterned = (ptr->const_len < len);
- 	ptr->hash = full_name_hash(name, len);
--	ptr->depth = tomoyo_path_depth(name);
- }
- 
- /**
-- * tomoyo_file_matches_to_pattern2 - Pattern matching without '/' character
-+ * tomoyo_file_matches_pattern2 - Pattern matching without '/' character
-  * and "\-" pattern.
-  *
-  * @filename:     The start of string to check.
-@@ -458,10 +456,10 @@ void tomoyo_fill_path_info(struct tomoyo
-  *
-  * Returns true if @filename matches @pattern, false otherwise.
-  */
--static bool tomoyo_file_matches_to_pattern2(const char *filename,
--					    const char *filename_end,
--					    const char *pattern,
--					    const char *pattern_end)
-+static bool tomoyo_file_matches_pattern2(const char *filename,
-+					 const char *filename_end,
-+					 const char *pattern,
-+					 const char *pattern_end)
- {
- 	while (filename < filename_end && pattern < pattern_end) {
- 		char c;
-@@ -519,7 +517,7 @@ static bool tomoyo_file_matches_to_patte
- 		case '*':
- 		case '@':
- 			for (i = 0; i <= filename_end - filename; i++) {
--				if (tomoyo_file_matches_to_pattern2(
-+				if (tomoyo_file_matches_pattern2(
- 						    filename + i, filename_end,
- 						    pattern + 1, pattern_end))
- 					return true;
-@@ -550,7 +548,7 @@ static bool tomoyo_file_matches_to_patte
- 					j++;
- 			}
- 			for (i = 1; i <= j; i++) {
--				if (tomoyo_file_matches_to_pattern2(
-+				if (tomoyo_file_matches_pattern2(
- 						    filename + i, filename_end,
- 						    pattern + 1, pattern_end))
- 					return true;
-@@ -567,7 +565,7 @@ static bool tomoyo_file_matches_to_patte
- }
- 
- /**
-- * tomoyo_file_matches_to_pattern - Pattern matching without without '/' character.
-+ * tomoyo_file_matches_pattern - Pattern matching without without '/' character.
-  *
-  * @filename:     The start of string to check.
-  * @filename_end: The end of string to check.
-@@ -576,7 +574,7 @@ static bool tomoyo_file_matches_to_patte
-  *
-  * Returns true if @filename matches @pattern, false otherwise.
-  */
--static bool tomoyo_file_matches_to_pattern(const char *filename,
-+static bool tomoyo_file_matches_pattern(const char *filename,
- 					   const char *filename_end,
- 					   const char *pattern,
- 					   const char *pattern_end)
-@@ -589,10 +587,10 @@ static bool tomoyo_file_matches_to_patte
- 		/* Split at "\-" pattern. */
- 		if (*pattern++ != '\\' || *pattern++ != '-')
- 			continue;
--		result = tomoyo_file_matches_to_pattern2(filename,
--							 filename_end,
--							 pattern_start,
--							 pattern - 2);
-+		result = tomoyo_file_matches_pattern2(filename,
-+						      filename_end,
-+						      pattern_start,
-+						      pattern - 2);
- 		if (first)
- 			result = !result;
- 		if (result)
-@@ -600,13 +598,79 @@ static bool tomoyo_file_matches_to_patte
- 		first = false;
- 		pattern_start = pattern;
- 	}
--	result = tomoyo_file_matches_to_pattern2(filename, filename_end,
--						 pattern_start, pattern_end);
-+	result = tomoyo_file_matches_pattern2(filename, filename_end,
-+					      pattern_start, pattern_end);
- 	return first ? result : !result;
- }
- 
- /**
-+ * tomoyo_path_matches_pattern2 - Do pathname pattern matching.
-+ *
-+ * @f: The start of string to check.
-+ * @p: The start of pattern to compare.
-+ *
-+ * Returns true if @f matches @p, false otherwise.
-+ */
-+static bool tomoyo_path_matches_pattern2(const char *f, const char *p)
-+{
-+	const char *f_delimiter;
-+	const char *p_delimiter;
-+
-+	while (*f && *p) {
-+		f_delimiter = strchr(f, '/');
-+		if (!f_delimiter)
-+			f_delimiter = f + strlen(f);
-+		p_delimiter = strchr(p, '/');
-+		if (!p_delimiter)
-+			p_delimiter = p + strlen(p);
-+		if (*p == '\\' && *(p + 1) == '{')
-+			goto recursive;
-+		if (!tomoyo_file_matches_pattern(f, f_delimiter, p,
-+						 p_delimiter))
-+			return false;
-+		f = f_delimiter;
-+		if (*f)
-+			f++;
-+		p = p_delimiter;
-+		if (*p)
-+			p++;
-+	}
-+	/* Ignore trailing "\*" and "\@" in @pattern. */
-+	while (*p == '\\' &&
-+	       (*(p + 1) == '*' || *(p + 1) == '@'))
-+		p += 2;
-+	return !*f && !*p;
-+ recursive:
-+	/*
-+	 * The "\{" pattern is permitted only after '/' character.
-+	 * This guarantees that below "*(p - 1)" is safe.
-+	 * Also, the "\}" pattern is permitted only before '/' character
-+	 * so that "\{" + "\}" pair will not break the "\-" operator.
-+	 */
-+	if (*(p - 1) != '/' || p_delimiter <= p + 3 || *p_delimiter != '/' ||
-+	    *(p_delimiter - 1) != '}' || *(p_delimiter - 2) != '\\')
-+		return false; /* Bad pattern. */
-+	do {
-+		/* Compare current component with pattern. */
-+		if (!tomoyo_file_matches_pattern(f, f_delimiter, p + 2,
-+						 p_delimiter - 2))
-+			break;
-+		/* Proceed to next component. */
-+		f = f_delimiter;
-+		if (!*f)
-+			break;
-+		f++;
-+		/* Continue comparison. */
-+		if (tomoyo_path_matches_pattern2(f, p_delimiter + 1))
-+			return true;
-+		f_delimiter = strchr(f, '/');
-+	} while (f_delimiter);
-+	return false; /* Not matched. */
-+}
-+
-+/**
-  * tomoyo_path_matches_pattern - Check whether the given filename matches the given pattern.
-+ *
-  * @filename: The filename to check.
-  * @pattern:  The pattern to compare.
-  *
-@@ -615,24 +679,24 @@ static bool tomoyo_file_matches_to_patte
-  * The following patterns are available.
-  *   \\     \ itself.
-  *   \ooo   Octal representation of a byte.
-- *   \*     More than or equals to 0 character other than '/'.
-- *   \@     More than or equals to 0 character other than '/' or '.'.
-+ *   \*     Zero or more repetitions of characters other than '/'.
-+ *   \@     Zero or more repetitions of characters other than '/' or '.'.
-  *   \?     1 byte character other than '/'.
-- *   \$     More than or equals to 1 decimal digit.
-+ *   \$     One or more repetitions of decimal digits.
-  *   \+     1 decimal digit.
-- *   \X     More than or equals to 1 hexadecimal digit.
-+ *   \X     One or more repetitions of hexadecimal digits.
-  *   \x     1 hexadecimal digit.
-- *   \A     More than or equals to 1 alphabet character.
-+ *   \A     One or more repetitions of alphabet characters.
-  *   \a     1 alphabet character.
-+ *
-  *   \-     Subtraction operator.
-+ *
-+ *   /\{dir\}/   '/' + 'One or more repetitions of dir/' (e.g. /dir/ /dir/dir/
-+ *               /dir/dir/dir/ ).
-  */
- bool tomoyo_path_matches_pattern(const struct tomoyo_path_info *filename,
- 				 const struct tomoyo_path_info *pattern)
- {
--	/*
--	  if (!filename || !pattern)
--	  return false;
--	*/
- 	const char *f = filename->name;
- 	const char *p = pattern->name;
- 	const int len = pattern->const_len;
-@@ -640,37 +704,15 @@ bool tomoyo_path_matches_pattern(const s
- 	/* If @pattern doesn't contain pattern, I can use strcmp(). */
- 	if (!pattern->is_patterned)
- 		return !tomoyo_pathcmp(filename, pattern);
--	/* Dont compare if the number of '/' differs. */
--	if (filename->depth != pattern->depth)
-+	/* Don't compare directory and non-directory. */
-+	if (filename->is_dir != pattern->is_dir)
- 		return false;
- 	/* Compare the initial length without patterns. */
- 	if (strncmp(f, p, len))
- 		return false;
- 	f += len;
- 	p += len;
--	/* Main loop. Compare each directory component. */
--	while (*f && *p) {
--		const char *f_delimiter = strchr(f, '/');
--		const char *p_delimiter = strchr(p, '/');
--		if (!f_delimiter)
--			f_delimiter = f + strlen(f);
--		if (!p_delimiter)
--			p_delimiter = p + strlen(p);
--		if (!tomoyo_file_matches_to_pattern(f, f_delimiter,
--						    p, p_delimiter))
--			return false;
--		f = f_delimiter;
--		if (*f)
--			f++;
--		p = p_delimiter;
--		if (*p)
--			p++;
--	}
--	/* Ignore trailing "\*" and "\@" in @pattern. */
--	while (*p == '\\' &&
--	       (*(p + 1) == '*' || *(p + 1) == '@'))
--		p += 2;
--	return !*f && !*p;
-+	return tomoyo_path_matches_pattern2(f, p);
- }
- 
- /**
---- security-testing-2.6.orig/security/tomoyo/common.h
-+++ security-testing-2.6/security/tomoyo/common.h
-@@ -56,9 +56,6 @@ struct tomoyo_page_buffer {
-  * (5) "is_patterned" is a bool which is true if "name" contains wildcard
-  *     characters, false otherwise. This allows TOMOYO to use "hash" and
-  *     strcmp() for string comparison if "is_patterned" is false.
-- * (6) "depth" is calculated using the number of "/" characters in "name".
-- *     This allows TOMOYO to avoid comparing two pathnames which never match
-- *     (e.g. whether "/var/www/html/index.html" matches "/tmp/sh-thd-\$").
-  */
- struct tomoyo_path_info {
- 	const char *name;
-@@ -66,7 +63,6 @@ struct tomoyo_path_info {
- 	u16 const_len;     /* = tomoyo_const_part_length(name)     */
- 	bool is_dir;       /* = tomoyo_strendswith(name, "/")      */
- 	bool is_patterned; /* = tomoyo_path_contains_pattern(name) */
--	u16 depth;         /* = tomoyo_path_depth(name)            */
- };
- 
- /*
+1) two times (as it is now) - I believe this is inconvenient.
+2) the amount in percents (like 50%) - this is how it works in
+   OpenVZ and customers are quite happy with it. It's better than
+   two numbers, since you need to specify only one clean number.
+3) virtual cpu power in M/GHz - I don't agree with Balbir that
+   this is difficult for administrator. This is better than two
+   numbers and better that the percentage, since the amount of
+   cpu time got by a container will not change after migrating to
+   a more powerful CPU.
+
+Thoughts?
+
+> - vatsa
+> 
+
