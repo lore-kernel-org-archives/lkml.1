@@ -1,73 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbZJMJBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbZJMJQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759255AbZJMJBm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 05:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbZJMJBl
+	id S1756474AbZJMJQa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 05:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbZJMJQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 05:01:41 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:50875 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758996AbZJMJBk (ORCPT
+	Tue, 13 Oct 2009 05:16:29 -0400
+Received: from taz.net.au ([203.16.167.1]:37233 "EHLO taz.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752497AbZJMJQ0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 05:01:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=Vdgywb3Y2gTvz+G4bqIXHsS+6oArMoseWBTWFTS4wYzCW2gp/0X4vVW2RGi73FSkD4
-         +cr+/dNh7Nz5HfrS3Cl98A8H++obdR324zPEl7ToyPuEsUlJze1QNUTqmfktY8V6diVq
-         CLHZ9WGAZjtrEvTOLIXg5Q4iE1vSyGMigcHcc=
-MIME-Version: 1.0
-Date: Tue, 13 Oct 2009 02:01:03 -0700
-Message-ID: <9a158e2e0910130201m1f63a7d7h15c8a7445a36cd51@mail.gmail.com>
-Subject: iommu-helper.c -> find_next_zero_area errors
-From: Kyle Hubert <khubert@gmail.com>
+	Tue, 13 Oct 2009 05:16:26 -0400
+X-Greylist: delayed 591 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Oct 2009 05:16:26 EDT
+Date: Tue, 13 Oct 2009 20:05:54 +1100
+From: Craig Sanders <cas@taz.net.au>
 To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: PROBLEM: kernel oops when tickless. 2.6.28.x to 2.6.31.3
+Message-ID: <20091013090554.GB28715@taz.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the function find_next_zero_area in iommu-helper.c, I think there
-are two small issues. For one, it appears the conditionals after
-find_next_zero_bit will cause failures when there is still room in the
-IOMMU area. Here is the code in question:
+(please CC me on any replies.  I'm not subscribed to the list)
 
-  15again:
-  16        index = find_next_zero_bit(map, size, start);
-  17
-  18        /* Align allocation */
-  19        index = (index + align_mask) & ~align_mask;
-  20
-  21        end = index + nr;
-  22        if (end >= size)
-  23                return -1;
-  24        for (i = index; i < end; i++) {
-  25                if (test_bit(i, map)) {
-  26                        start = i+1;
-  27                        goto again;
-  28                }
-  29        }
-  30        return index;
+I've been trying to switch to a tickless kernel on this one machine
+since at least 2.6.28.  Every time I run a tickless kernel, though,
+I get a kernel oops within a few days (at most).
 
-On line 16, we get the index with the next zero bit in the bit-field.
-Then the "end" value is compared against size on line 22. By testing
-for >=, an allocation of 64 elements in a 64 bit bit-field would
-result in (0 + 64) >= 64. This means it would return -1, or, no space.
-Anything that butts against the end of the area will fail.
+The *exact* same kernels work on 3 other machines on my home network
+without a problem (I compile them on my fastest machine using debian's
+make-kpkg and install the same kernel on all boxes, they're all fairly
+similar).  It's ONLY this one machine which oopses - this machine is my
+combined pppoe internet gateway/server/personal desktop.
 
-Then continuing on to line 24, we see the for loop starting at the
-"index" value. Index was just returned by find_next_zero_bit, so we
-know it's zero, and there is no reason to call test_bit on it. This is
-just a spurious execution of the loop.
+this machine is a Quad core AMD Phenom II 940 with 8GB RAM.  Motherboard
+is a Gigabyte M3A79-T Deluxe.
 
-I would think you would want it to look like this:
+The other machines are all either dual or quad core AMD CPUs with either
+4GB or 8GB RAM.  All machines are running debian sid (unstable) and are
+updated regularly (last update was on Sunday when i compiled, installed,
+and rebooted them all with the new kernel).
 
--       if (end >= size)
-+       if (end > size)
-               return -1;
--       for (i = index; i < end; i++) {
-+       for (i = index + 1; i < end; i++) {
 
-Thanks,
+the main things that this machine is running that the others aren't are:
 
--Kyle Hubert
+1. pppoe
+
+2. rsyslogd UDPServer, as a syslog server for the other machines and
+   various network devices (adsl modem, siemens gigaset phone, linksys
+   3102 ATA)
+
+3. bind9
+
+4. asterisk  (although asterisk seems unaffected and unrelated)
+
+5. /proc/sys/net/ipv4/ip_forward=1
+
+6. iptables firewall rules
+
+7. the kvm and kvm_amd modules (unlikely to be the cause because i've
+   only recently started compiling support for this in, and i'm not
+   actively using kvm on this machine yet)
+
+8. this machine also has two network interfaces in use, one for the LAN
+   (eth0 - sky2) and one for pppoe (eth1 - r8169).
+
+$ lspci | grep Ethernet
+02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
+03:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev 12)
+
+$ cat /etc/udev/rules.d/70-persistent-net.rules
+# PCI device 0x11ab:0x4364 (sky2)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="00:23:54:f3:86:8e", ATTR{type}=="1", KERNEL=="eth*", NAME="eth0"
+
+# PCI device 0x10ec:0x8168 (r8169)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="00:23:cd:b0:23:b9", ATTR{type}=="1", KERNEL=="eth*", NAME="eth1"
+
+
+The oopses nearly always mention both rsyslogd and "last sysfs file:
+/sys/class/net/ppp0/statistics/collisions".  Bind 9 also hangs (stops
+responding to requests), which causes some dependent services (e.g.
+postfix) to have problems until I notice and restart bind9...and then
+manually restart affected services.
+
+if i recompile the same kernel but go back to 250 or 1000 Hz ticks,
+it can run for months without a problem...essentially until I decide
+to upgrade the kernel, at which point i try tickless again.
+
+
+nothing in particular seems to trigger it.  there's nothing in the kernel
+log immediately before the oops, and nothing unusual in the other logs.
+
+
+I'd like to get this fixed, or at least find out what the problem is
+and work around it....in the meantime, i'll be compiling a non-tickless
+kernel for this machine (and upgrade to 2.6.31.4 at the same time) and
+rebooting ASAP.
+
+anyone have any ideas on what it might be?
+
+
+
+Oct 13 14:10:02 taz kernel: [170654.573785] BUG: unable to handle kernel NULL pointer dereference at (null)
+Oct 13 14:10:02 taz kernel: [170654.573791] IP: [<(null)>] (null)
+Oct 13 14:10:02 taz kernel: [170654.573793] PGD 227734067 PUD 22773b067 PMD 0 
+Oct 13 14:10:02 taz kernel: [170654.573796] Oops: 0010 [#1] PREEMPT SMP 
+Oct 13 14:10:02 taz kernel: [170654.573798] last sysfs file: /sys/class/net/ppp0/statistics/collisions
+Oct 13 14:10:02 taz kernel: [170654.573800] CPU 1 
+Oct 13 14:10:02 taz kernel: [170654.573802] Modules linked in: xt_comment sch_ingress cls_u32 sch_sfq sch_htb pppoe pppox ppp_generic slhc binfmt_misc sco bridge stp llc bnep rfcomm l2cap vboxnetadp vboxnetflt vboxdrv ipt_ULOG kvm_amd kvm powernow_k8 cpufreq_powersave cpufreq_conservative cpufreq_userspace cpufreq_stats xt_pkttype xt_recent xt_conntrack xt_multiport ipt_REDIRECT xt_tcpudp xt_state ipt_REJECT ipt_LOG iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 iptable_filter ip_tables nfsd nfs lockd fscache nfs_acl auth_rpcgss sunrpc fuse xt_mac x_tables hwmon_vid lp parport nvidia(P) visor usbserial tun mt2060 snd_hda_codec_analog snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss dvb_usb_dib0700 snd_pcm dib7000p dib7000m dvb_usb dvb_core snd_seq_dummy snd_seq_oss dib3000mc dibx000_common snd_seq_midi dib0070 firewire_ohci asus_atk0110 firewire_core snd_rawmidi snd_seq_midi_event snd_seq ohci1394 hwmon snd_timer snd_seq_device pcspkr ieee1394 i2c_piix4 snd rtc_cmos r8169 soundcore btus
+Oct 13 14:10:02 taz kernel: b mii snd_page_alloc evdev sky2 thermal button usblp usb_storage sg ub amd64_edac_mod bluetooth sr_mod processor rfkill
+Oct 13 14:10:02 taz kernel: [170654.573854] Pid: 23870, comm: rsyslogd Tainted: P           2.6.31.3 #1 System Product Name
+Oct 13 14:10:02 taz kernel: [170654.573855] RIP: 0010:[<0000000000000000>]  [<(null)>] (null)
+Oct 13 14:10:02 taz kernel: [170654.573857] RSP: 0018:ffff8800be83bbf0  EFLAGS: 00010246
+Oct 13 14:10:02 taz kernel: [170654.573859] RAX: ffff88019c0d37a0 RBX: 0000000000000179 RCX: ffff88022dc68038
+Oct 13 14:10:02 taz kernel: [170654.573860] RDX: ffffffff81432ac0 RSI: ffff88022dc68000 RDI: ffff88019c0d3700
+Oct 13 14:10:02 taz kernel: [170654.573862] RBP: 00000000fffffe88 R08: ffff8801f5e3b980 R09: 0000000000000000
+Oct 13 14:10:02 taz kernel: [170654.573863] R10: 0000000000000000 R11: 0000000000000246 R12: ffff88019c0d3700
+Oct 13 14:10:02 taz kernel: [170654.573864] R13: ffff88022dc68000 R14: ffff8801f5e3b700 R15: ffff8801d4c818c0
+Oct 13 14:10:02 taz kernel: [170654.573866] FS:  00007fa29c930950(0000) GS:ffff880028050000(0000) knlGS:0000000000e4fb90
+Oct 13 14:10:02 taz kernel: [170654.573868] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+Oct 13 14:10:02 taz kernel: [170654.573869] CR2: 0000000000000000 CR3: 0000000227791000 CR4: 00000000000006e0
+Oct 13 14:10:02 taz kernel: [170654.573870] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+Oct 13 14:10:02 taz kernel: [170654.573872] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Oct 13 14:10:02 taz kernel: [170654.573873] Process rsyslogd (pid: 23870, threadinfo ffff8800be83a000, task ffff88015e828000)
+Oct 13 14:10:02 taz kernel: [170654.573875] Stack:
+Oct 13 14:10:02 taz kernel: [170654.573876]  ffffffff81432b43 ffff88022dc68000 0000000000000000 ffff8800be83bee8
+Oct 13 14:10:02 taz kernel: [170654.573878] <0> ffffffff814370cc ffff88022dc68000 ffffffff81436de9 ffff8801f5e3b700
+Oct 13 14:10:02 taz kernel: [170654.573880] <0> ffffffff8143a48c ffff8800be83bc68 ffffffff814b5102 0000000000000058
+Oct 13 14:10:02 taz kernel: [170654.573883] Call Trace:
+Oct 13 14:10:02 taz kernel: [170654.573889]  [<ffffffff81432b43>] ? sock_wfree+0x83/0x90
+Oct 13 14:10:02 taz kernel: [170654.573892]  [<ffffffff814370cc>] ? skb_release_head_state+0x5c/0x110
+Oct 13 14:10:02 taz kernel: [170654.573894]  [<ffffffff81436de9>] ? __kfree_skb+0x9/0xa0
+Oct 13 14:10:02 taz kernel: [170654.573896]  [<ffffffff8143a48c>] ? skb_free_datagram+0xc/0x40
+Oct 13 14:10:02 taz kernel: [170654.573900]  [<ffffffff814b5102>] ? unix_dgram_recvmsg+0x202/0x330
+Oct 13 14:10:02 taz kernel: [170654.573902]  [<ffffffff8142f1f5>] ? sock_recvmsg+0xd5/0x100
+Oct 13 14:10:02 taz kernel: [170654.573905]  [<ffffffff8103ca32>] ? enqueue_entity+0x12/0x140
+Oct 13 14:10:02 taz kernel: [170654.573909]  [<ffffffff8105f200>] ? autoremove_wake_function+0x0/0x30
+Oct 13 14:10:02 taz kernel: [170654.573913]  [<ffffffff810d039f>] ? core_sys_select+0x28f/0x350
+Oct 13 14:10:02 taz kernel: [170654.573916]  [<ffffffff8106f101>] ? do_futex+0x711/0xa70
+Oct 13 14:10:02 taz kernel: [170654.573918]  [<ffffffff8100be4e>] ? common_interrupt+0xe/0x13
+Oct 13 14:10:02 taz kernel: [170654.573921]  [<ffffffff814711e0>] ? tcp_poll+0x0/0x160
+Oct 13 14:10:02 taz kernel: [170654.573923]  [<ffffffff8142e962>] ? sockfd_lookup_light+0x22/0x80
+Oct 13 14:10:02 taz kernel: [170654.573925]  [<ffffffff81430789>] ? sys_recvfrom+0xe9/0x180
+Oct 13 14:10:02 taz kernel: [170654.573927]  [<ffffffff8103c4c5>] ? set_next_entity+0x35/0x80
+Oct 13 14:10:02 taz kernel: [170654.573929]  [<ffffffff810419a2>] ? finish_task_switch+0x102/0x130
+Oct 13 14:10:02 taz kernel: [170654.573931]  [<ffffffff810d06f3>] ? sys_select+0x63/0x110
+Oct 13 14:10:02 taz kernel: [170654.573933]  [<ffffffff8100b4c2>] ? system_call_fastpath+0x16/0x1b
+Oct 13 14:10:02 taz kernel: [170654.573934] Code:  Bad RIP value.
+Oct 13 14:10:02 taz kernel: [170654.573939] RIP  [<(null)>] (null)
+Oct 13 14:10:02 taz kernel: [170654.573940]  RSP <ffff8800be83bbf0>
+Oct 13 14:10:02 taz kernel: [170654.573941] CR2: 0000000000000000
+Oct 13 14:10:02 taz kernel: [170654.573943] ---[ end trace f32dd62a9c839c8c ]---
+
+
+
+$ sh scripts/ver_linux
+If some fields are empty or look unusual you may have an old version.
+Compare to the current minimal requirements in Documentation/Changes.
+
+Linux ganesh 2.6.31.3 #1 SMP PREEMPT Sun Oct 11 10:50:25 EST 2009 x86_64 GNU/Linux
+
+Gnu C                  4.3.4
+Gnu make               3.81
+binutils               2.19.91.20091006
+util-linux             2.16.1
+mount                  support
+module-init-tools      3.10
+e2fsprogs              1.41.9
+xfsprogs               3.0.4
+pcmciautils            014
+quota-tools            3.17.
+Linux C Library        2.9
+Dynamic linker (ldd)   2.9
+Procps                 3.2.8
+Net-tools              1.60
+Console-tools          0.2.3
+oprofile               0.9.5cvs
+Sh-utils               7.5
+wireless-tools         29
+Modules Loaded         xt_comment sch_ingress cls_u32 sch_sfq sch_htb pppoe pppox ppp_generic slhc binfmt_misc sco bridge stp llc bnep rfcomm l2cap ipt_ULOG kvm_amd kvm
+powernow_k8 cpufreq_powersave cpufreq_conservative cpufreq_userspace cpufreq_stats xt_pkttype xt_recent xt_conntrack xt_multiport ipt_REDIRECT xt_tcpudp xt_state
+ipt_REJECT ipt_LOG iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 iptable_filter ip_tables nfsd nfs lockd fscache nfs_acl auth_rpcgss sunrpc fuse
+xt_mac x_tables hwmon_vid lp parport nvidia visor usbserial tun mt2060 snd_hda_codec_analog snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss dvb_usb_dib0700
+snd_pcm dib7000p dib7000m dvb_usb dvb_core snd_seq_dummy snd_seq_oss dib3000mc dibx000_common snd_seq_midi dib0070 firewire_ohci asus_atk0110 firewire_core snd_rawmidi
+snd_seq_midi_event snd_seq ohci1394 hwmon snd_timer snd_seq_device pcspkr ieee1394 i2c_piix4 snd rtc_cmos r8169 soundcore btusb mii snd_page_alloc evdev sky2 thermal
+button usblp usb_storage sg ub amd64_edac_mod bluetooth sr_mod processor rfkill
+
+
+
+craig
+
+-- 
+craig sanders <cas@taz.net.au>
