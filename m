@@ -1,97 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934495AbZJMWOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbZJMWNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934495AbZJMWOy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 18:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934486AbZJMWOx
+	id S1761542AbZJMWNq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 18:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761532AbZJMWNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 18:14:53 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:38953 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934474AbZJMWOv (ORCPT
+	Tue, 13 Oct 2009 18:13:45 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:51299 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761513AbZJMWNh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 18:14:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=qmPlbDqaOSTBYtfGDyyzDxhuXHIqLKvgf0+hopfVSgp7G8bhF0BO8UTz/UdxzBIRDt
-         zncKMyGPyxe09rvyW1zKQWZ9NSC7aEd9l05uxIY/Qy7tO+Lq3h6SYVDSm5lcnzZtQbxq
-         4vwQYcg8TXsl2QJusWRvog2k4gwxQK7AZiyi4=
-From: Paul Fertser <fercerpav@gmail.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, Nelson Castillo <arhuaco@freaks-unidos.net>,
-       Lars-Peter Clausen <lars@metafoo.de>,
-       Paul Fertser <fercerpav@gmail.com>
-Subject: [PATCH 7/7] mfd: pcf50633: Fix pcf50633-regulator drvdata usage
-Date: Wed, 14 Oct 2009 02:12:36 +0400
-Message-Id: <1255471956-29201-7-git-send-email-fercerpav@gmail.com>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1255471956-29201-6-git-send-email-fercerpav@gmail.com>
-References: <1255471956-29201-1-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-2-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-3-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-4-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-5-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-6-git-send-email-fercerpav@gmail.com>
+	Tue, 13 Oct 2009 18:13:37 -0400
+Subject: Re: SCSI driver for VMware's virtual HBA - V5.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: James Bottomley <James.Bottomley@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Bart Van Assche <bvanassche@acm.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
+       Roland Dreier <rdreier@cisco.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Robert Love <robert.w.love@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Walker <dwalker@fifo99.com>, Greg KH <gregkh@suse.de>,
+       "virtualization@lists.linux-foundataion.org" 
+	<virtualization@lists.linux-foundataion.org>
+In-Reply-To: <20091013220013.GB2908@sequoia.sous-sol.org>
+References: <1254336812.19921.23.camel@ank32.eng.vmware.com>
+	 <20091002004725.GP3958@sequoia.sous-sol.org>
+	 <1254789028.15233.54.camel@ank32.eng.vmware.com>
+	 <20091013053726.GE17547@sequoia.sous-sol.org>
+	 <1255469294.12792.93.camel@ank32.eng.vmware.com>
+	 <20091013220013.GB2908@sequoia.sous-sol.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Tue, 13 Oct 2009 15:13:01 -0700
+Message-Id: <1255471981.12792.126.camel@ank32.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Lars-Peter Clausen <lars@metafoo.de>
 
-Currently the pcf50633-regulator driver data is set to the pcf50633 core
-structure, but the pcf50633-regulator remove handler assumes that it is set to
-the regulator device. This patch fixes the issue by accessing the pcf506533
-core structure through its parent device and setting the driver data to the
-regulator device.
+On Tue, 2009-10-13 at 15:00 -0700, Chris Wright wrote:
+> * Alok Kataria (akataria@vmware.com) wrote:
+> > On Mon, 2009-10-12 at 22:37 -0700, Chris Wright wrote:
+> > > > +     pvscsi_template.can_queue =
+> > > > +             min(PVSCSI_MAX_NUM_PAGES_REQ_RING, pvscsi_ring_pages) *
+> > > > +             PVSCSI_MAX_NUM_REQ_ENTRIES_PER_PAGE;
+> > > > +     pvscsi_template.cmd_per_lun =
+> > > > +             min(pvscsi_template.can_queue, pvscsi_cmd_per_lun);
+> > > 
+> > > When/how are these tunables used?  Are they still useful?
+> > 
+> > cmd_per_lun, is a commandline parameter.
+> 
+> Actually I meant how is a user supposed to use these?  They looked to me
+> like tunables that were part of developing a driver that may not be
+> needed any longer.  
+> What are the right values, what are the tradeoffs,
+> etc?  Or should they just be removed?
 
-Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
-Signed-off-by: Paul Fertser <fercerpav@gmail.com>
----
- drivers/mfd/pcf50633-core.c            |    1 -
- drivers/regulator/pcf50633-regulator.c |    5 ++++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+The defaults are the right values, and though a normal user won't change
+those in practice (he can if he wants to by passing values during
+insmod), a developer working on performance tuning can use it. 
 
-diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
-index 4604ba5..a86b0c6 100644
---- a/drivers/mfd/pcf50633-core.c
-+++ b/drivers/mfd/pcf50633-core.c
-@@ -632,7 +632,6 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
- 		pdev->dev.parent = pcf->dev;
- 		platform_device_add_data(pdev, &pdata->reg_init_data[i],
- 					sizeof(pdata->reg_init_data[i]));
--		dev_set_drvdata(&pdev->dev, pcf);
- 		pcf->regulator_pdev[i] = pdev;
- 
- 		platform_device_add(pdev);
-diff --git a/drivers/regulator/pcf50633-regulator.c b/drivers/regulator/pcf50633-regulator.c
-index 0803ffe..c8f41dc 100644
---- a/drivers/regulator/pcf50633-regulator.c
-+++ b/drivers/regulator/pcf50633-regulator.c
-@@ -314,13 +314,15 @@ static int __devinit pcf50633_regulator_probe(struct platform_device *pdev)
- 	struct pcf50633 *pcf;
- 
- 	/* Already set by core driver */
--	pcf = platform_get_drvdata(pdev);
-+	pcf = dev_to_pcf50633(pdev->dev.parent);
- 
- 	rdev = regulator_register(&regulators[pdev->id], &pdev->dev,
- 				  pdev->dev.platform_data, pcf);
- 	if (IS_ERR(rdev))
- 		return PTR_ERR(rdev);
- 
-+	platform_set_drvdata(pdev, rdev);
-+
- 	if (pcf->pdata->regulator_registered)
- 		pcf->pdata->regulator_registered(pcf, pdev->id);
- 
-@@ -331,6 +333,7 @@ static int __devexit pcf50633_regulator_remove(struct platform_device *pdev)
- {
- 	struct regulator_dev *rdev = platform_get_drvdata(pdev);
- 
-+	platform_set_drvdata(pdev, NULL);
- 	regulator_unregister(rdev);
- 
- 	return 0;
--- 
-1.6.0.6
+So I would like to keep these tunables around as it helps any future
+performance work. 
+
+Thanks,
+Alok
+
+> 
+> thanks,
+> -chris
 
