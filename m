@@ -1,269 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933875AbZJMPgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760289AbZJMPib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933875AbZJMPgd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760329AbZJMPgc
+	id S1760289AbZJMPib (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 11:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZJMPia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:36:32 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:39044 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760287AbZJMPgb (ORCPT
+	Tue, 13 Oct 2009 11:38:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33184 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751404AbZJMPi3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:36:31 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvQEAAM71EpMRK1g/2dsb2JhbACBUtc3hC0E
-Date: Tue, 13 Oct 2009 11:35:49 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       anton@samba.org, linux-kernel@vger.kernel.org, peterz@infradead.org,
-       zhaolei@cn.fujitsu.com, xiaoguangrong@cn.fujitsu.com,
-       fweisbec@gmail.com, tglx@linutronix.de, kosaki.motohiro@jp.fujitsu.com,
-       linux-tip-commits@vger.kernel.org
-Subject: [RFC] Trace types registry
-Message-ID: <20091013153549.GC31859@Krystal>
-References: <4A7F8B2B.5020908@cn.fujitsu.com> <tip-c6a2a1770245f654f35f60e1458d4356680f9519@git.kernel.org> <1255404309.7113.948.camel@gandalf.stny.rr.com> <20091013070853.GA13175@elte.hu> <1255439822.7113.1541.camel@gandalf.stny.rr.com> <20091013132656.GA12292@elte.hu> <1255442557.7113.1623.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1255442557.7113.1623.camel@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:09:09 up 56 days, 58 min,  2 users,  load average: 0.53, 0.84,
-	0.66
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 13 Oct 2009 11:38:29 -0400
+Date: Tue, 13 Oct 2009 08:37:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Simon Kagstrom <simon.kagstrom@netinsight.net>
+cc: linux-mtd <linux-mtd@lists.infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH/RFC v5 4/5]: core: Add dump device to call on oopses and
+ panics
+In-Reply-To: <20091013152235.188059d2@marrow.netinsight.se>
+Message-ID: <alpine.LFD.2.01.0910130813320.26777@localhost.localdomain>
+References: <20091012113758.GB11035@elte.hu> <20091012140149.6789efab@marrow.netinsight.se> <20091012120951.GA16799@elte.hu> <1255349748.10605.13.camel@macbook.infradead.org> <20091012122023.GA19365@elte.hu> <20091012150650.51a4b4dc@marrow.netinsight.se>
+ <20091012131528.GC25464@elte.hu> <20091012153937.0dcd73e5@marrow.netinsight.se> <alpine.LFD.2.01.0910120828390.3438@localhost.localdomain> <20091012110954.67d7d8d8.akpm@linux-foundation.org> <20091012182346.GH17138@elte.hu> <alpine.LFD.2.01.0910121130190.3438@localhost.localdomain>
+ <20091013151751.59e217a7@marrow.netinsight.se> <20091013152235.188059d2@marrow.netinsight.se>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> On Tue, 2009-10-13 at 15:26 +0200, Ingo Molnar wrote:
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > On Tue, 2009-10-13 at 09:08 +0200, Ingo Molnar wrote:
-> > > > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > > 
-> > > 
-> > > > > (unsigned long long)(((ktime_t) { .tv64 = REC->expires }).tv64)
-> > > > > 
-> > > > > Is not easy. It's basically implementing a C interpreter :-(
-> > > > 
-> > > > Btw., what i suggested quite some time ago was that we should bind 
-> > > > tracepoints by emitting C source code stubs, which tools can then build 
-> > > > and link in, using gcc.
-> > > 
-> > > Yeah, and I thought about that too. But that kills any chance of 
-> > > running the trace on one box (non x86) and reading it on another 
-> > > (x86). And that is one of my goals for this.
-> > 
-> > Why does it kill that chance?
-> 
-> Ah, I was thinking binary libraries from the trace points. But I missed
-> you said C source code.
-> 
-> But still, we need to build a way to convert big endian to little, as
-> well as perhaps converting 32bit to 64 bit longs. As well as vice versa.
-> 
-> We also need a way to export all structures (here ktime_t) as well as
-> enums. Of course we need to export enums now anyway, since the tools
-> don't know how to convert them now.
-> 
-> -- Steve
 
-I fully agree with Steve here. Embedded system developers, for instance,
-will typically export traces taken on small embedded devices to a
-completely different architecture for analysis and visualization.
 
-The problem I see with exporting this as C code is that it does not
-represent the type size and endianness of the traced kernel.
+On Tue, 13 Oct 2009, Simon Kagstrom wrote:
+> +
+> +struct dump_device {
 
-I think I may have a solution that could deal with these compound types.
-Comments are welcome.
+I know I used that name myself in the example code I sent out, but 
+thinking about it more, I hate the name.
 
-The idea is to create a type registry, that could be expressed in either
-textual or binary format. (binary format simply requires a header with
-the architecture endianness and basic types sizes expressed)
+Most people think a "dump" is something much more than just the kernel 
+messages, so "dump_device" ends up being misleading. And the "device" part 
+is kind of pointless and redundant (it need not be a real device).
 
-The registry, which would be saved along with a trace, could look like
-what follows (written in C here, but would be created dynamically). Note
-that this registry is only saved once with a trace, so we do not care
-about compactness. What we really do care about is to make it easy to
-parse a trace coming from an alien architecture.
+So I suspect it would be better to name it by what it does, and make it 
+clear what that is.
 
-enum entry_type { T_SCALAR, T_COMPOUND, T_EVENT };
+Maybe something like "struct kmsg_dumper" or similar. That is pretty 
+unambiguous, and nobody is going to get confused about what the semantics 
+are.
 
-struct event_field {
-	u32 type_id;	/* maps to a type */
-	char name[MAX_FIELD_NAME];
-};
+> +	void	(*oops)(struct dump_device *, const char *, unsigned long,
+> +			const char *, unsigned long);
+> +	void	(*panic)(struct dump_device *, const char *, unsigned long,
+> +			const char *, unsigned long);
 
-union compound_field {
-	u32 type_id;		  /* Unnamed fields (array, sequence, string) */
-	struct event_field field; /* Named fields (struct, union) */
-}
+I don't much like this. Why separate 'oops' and 'panic' functions, 
+especially since we migth have many more causes to do a kmsg dump in the 
+future (ie 'shutdown', 'sysrq', 'suspend' etc etc)?
 
-/* Use "type_id" lookup to find if type is scalar or compound */
-union event_type {
-	struct event_type_scalar scalar;
-	struct event_type_compound compound;
-};
+So separating them out as two different functions is just wrong. Make it 
+one function, and then perhaps you can add a
 
-struct event_type_scalar {
-	struct entry_type etype;
-	u32 type_id;	/* Allocated dynamically */
-	char name[MAX_TYPE_NAME];
-	u32 size;
-	u8 host_byte_order;
-	u8 signed;
-	u8 format;	/* one of 256 possible print formats */
-	u8 float;	/* useful for user-space tracing */
-};
+	enum kmsg_dump_reason {
+		kmsg_dump_panic,
+		kmsg_dump_oops,
+		..
+	};
 
-/* array, sequence, struct, union, string */
-struct event_type_compound {
-	struct entry_type etype;
-	u32 type_id;	/* Allocated dynamically */
-	char name[MAX_TYPE_NAME];
-	enum { T_ARRAY, T_SEQ, T_STRUCT, T_UNION, T_STRING } type;
-	u32 nr_fields;
-	union compound_field[nr_fields] field;
-};
+and pass it as an argument.
 
-struct event {
-	struct entry_type etype;
-	/* map to the event */
-	unsigned int group_id;
-	unsigned int event_id;
-	char group_name[MAX_GROUP_NAME];
-	char event_name[MAX_EVENT_NAME];
-	u32 type_id;
-};
+> +	int	(*setup)(struct dump_device *);
 
-stuct trace_registry {
-	struct regheader {
-		u32 magic_num;	/* detect endianness */
-		u8 int_size;	/* basic types */
-		u8 long_size;
-		u8 size_t_size;
-		u8 off_t_size;
-		u8 ptr_diff_t_size;
-	}
+Why?
 
-	struct event_type_scalar {
-		.etype = T_SCALAR,
-		.type_id = lookup_or_create_type_id(char);
-		.name = "char",
-		.size = 1,
-		.host_byte_order = 1,
-		.signed = 0,
-		.format = 'c',
-		.float = 0,
-	}
+There seems to be no reason for this. Who ever registers the dumper should 
+just do the setup call itself. Why would we have a callback that just gets 
+called immediately, rather than have the registration code just do the 
+call itself?
 
-	struct event_type_compound = {
-		.etype = T_COMPOUND,
-		.type_id = lookup_or_create_type_id(char [TASK_COMM_LEN]),
-		.name = "char [TASK_COMM_LEN]",
-		.type = T_ARRAY,
-		.nr_fields = TASK_COMM_LEN,
-		.field[0].type_id = lookup_type_id("char");
-	}
+> +int register_dumpdevice(struct dump_device *dump, void *priv)
+> +{
+> +	/* We need at least one of these set */
+> +	if (!dump->oops && !dump->panic)
+> +		return -EINVAL;
+> +	if (dump->setup && dump->setup(dump) != 0)
+> +		return -EINVAL;
 
-	struct event_type_scalar {
-		.etype = T_SCALAR,
-		.type_id = lookup_or_create_type_id(pid_t),
-		.name = "pid_t",
-		.size = sizeof(pid_t),
-		.host_byte_order = 1,
-		.signed = 0,
-		.format = 'u',
-		.float = 0,
-	}
+So the above two tests should be pointless.
 
-	struct event_type_scalar {
-		.etype = T_SCALAR,
-		.type_id = lookup_or_create_type_id(int),
-		.name = "int",
-		.size = sizeof(int),
-		.host_byte_order = 1,
-		.signed = 1,
-		.format = 'd',
-		.float = 0,
-	}
+> +	dump->priv = priv;
+> +
+> +	INIT_LIST_HEAD(&dump->list);
 
-	struct event_type_compound = {
-		.etype = T_COMPOUND,
-		.type_id = lookup_or_create_type_id(
-			{
-				char [TASK_COMM_LEN];
-				pid_t;
-				int;
-				char;
-				pid_t;
-				int;
-			});
+Don't do "INIT_LIST_HEAD()" here. It's pointless as far as I can tell (the 
+list_add() will initialize it), but even in general we should basically 
+have basic initialization done by callers if needed.
 
-		.name = "{
-				char [TASK_COMM_LEN];
-				pid_t;
-				int;
-				char;
-				pid_t;
-				int;
-			}",
-		.type = T_STRUCT,
-		.nr_fields = 6,
-		.field[0].field.type_id = lookup_type_id(char [TASK_COMM_LEN]),
-		.field[0].field.name = "prev_comm",
-		.field[1].field.type_id = lookup_type_id(pid_t),
-		.field[1].field.name = "prev_pid",
-		.field[2].field.type_id = lookup_type_id(int),
-		.field[2].field.name = "prev_prio",
-		.field[2].field.type_id = lookup_type_id(char [TASK_COMM_LEN]),
-		.field[2].field.name = "next_comm",
-		.field[2].field.type_id = lookup_type_id(pid_t),
-		.field[2].field.name = "next_pid",
-		.field[2].field.type_id = lookup_type_id(int),
-		.field[2].field.name = "next_prio",
-	}
+And judging by historical problems in areas like that, we should protect 
+against people registering the same dumper twice. One way to do that would 
+be to perhaps _require_ that the caller has initialized it, and then do a 
 
-	struct event sched_switch_event {
-		.etype = T_EVENT,
-		.group_id = lookup_event_group("groupname"),
-		.event_id = lookup_event_id("evname"),
-		.groupname = "groupname",
-		.eventname = "evname",
-		.type_id = lookup_type_id(
-			{
-				char [TASK_COMM_lEN];
-				pid_t;
-				int;
-				char;
-				pid_t;
-				int;
-			});
+	if (!list_empty(&dump->list))
+		return -EBUSY;
 
-.......
+(but I could also see using just a "registered" flag)
 
-	}
-}
+> +	write_lock(&dump_list_lock);
 
-Note: lookup_type_id() and lookup_or_create_type_id() could be a macro
-that stringify their parameters.
+This looks dubious. Dumping can obviously happen from interrupts, so _if_ 
+you were to protect against dumpers, you'd need to use an interrupt-safe 
+lock.
 
-Steve, do you think this could be created by TRACE_EVENT() automatically ?
-Basically, each field and event would try to register its types at
-module load time. Registration would allocate a unique ID to each type
-and a unique ID to each group and event.
+Of course, you do not actually take the lock at dump time (which may be 
+intentional, and that is not necessarily wrong - taking locks at oops time 
+is generally not a good thing to do, and it may be entirely reasonable to 
+say "we take the risk of not locking properly in order to _maybe_ work 
+even if the lock is scrogged").
 
-When "unrolling" the registry at trace analysis time, these IDs would be
-used to populate a hash table, so the event, group and type lookups can
-be performed.
+But if you don't take the lock at dump time (or, perhaps preferably, if 
+you make the dump-time lock be a "try_lock()" - maybe the oops is due to 
+dump list corruption, and if the dump_list_lock is held thew oopser 
+should simply not dump!), then you should probably use a spinlock rather 
+than an rwlock.
 
-Mathieu
+> +	list_for_each_entry(dump, &dump_list, list) {
+> +		if (panic && dump->panic)
+> +			dump->panic(dump, s1, l1, s2, l2);
+> +		else if (!panic && dump->oops)
+> +			dump->oops(dump, s1, l1, s2, l2);
+> +	}
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+So this would just become
+
+	list_for_each_entry(dump, &dump_list, list)
+		dump->fn(dump, s1, l1, s2, l2, reason);
+
+or something.
+
+			Linus
