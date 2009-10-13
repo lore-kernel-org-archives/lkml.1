@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761620AbZJMXnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761697AbZJNABZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761620AbZJMXnc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 19:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZJMXnb
+	id S1761697AbZJNABZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 20:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761507AbZJNABY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 19:43:31 -0400
-Received: from sous-sol.org ([216.99.217.87]:51764 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751768AbZJMXn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 19:43:29 -0400
-Date: Tue, 13 Oct 2009 16:41:27 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Alok Kataria <akataria@vmware.com>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Bart Van Assche <bvanassche@acm.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
-       Roland Dreier <rdreier@cisco.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Robert Love <robert.w.love@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@fifo99.com>, virtualization@lists.osdl.org,
-       "virtualization@lists.linux-foundataion.org" 
-	<virtualization@lists.linux-foundataion.org>
-Subject: Re: SCSI driver for VMware's virtual HBA - V6.
-Message-ID: <20091013234127.GA9024@sequoia.sous-sol.org>
-References: <1254336812.19921.23.camel@ank32.eng.vmware.com> <20091002004725.GP3958@sequoia.sous-sol.org> <1254789028.15233.54.camel@ank32.eng.vmware.com> <20091013053726.GE17547@sequoia.sous-sol.org> <1255470665.12792.105.camel@ank32.eng.vmware.com>
+	Tue, 13 Oct 2009 20:01:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33458 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760825AbZJNABX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 20:01:23 -0400
+Message-ID: <4AD511F1.7010207@zytor.com>
+Date: Tue, 13 Oct 2009 16:49:05 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255470665.12792.105.camel@ank32.eng.vmware.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+CC: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       Nathan Lynch <nathanl@austin.ibm.com>, arnd@arndb.de,
+       peterz@infradead.org, Louis.Rilling@kerlabs.com, roland@redhat.com,
+       kosaki.motohiro@jp.fujitsu.com, randy.dunlap@oracle.com,
+       linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
+Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
+References: <20091013044925.GA28181@us.ibm.com>
+In-Reply-To: <20091013044925.GA28181@us.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alok Kataria (akataria@vmware.com) wrote:
-> SCSI driver for VMware's virtual HBA.
+On 10/12/2009 09:49 PM, Sukadev Bhattiprolu wrote:
 > 
-> From: Alok N Kataria <akataria@vmware.com>
+> This patchset implements a new system call, clone3() that lets a process
+> specify the pids of the child process.
 > 
-> This is a driver for VMware's paravirtualized SCSI device,
-> which should improve disk performance for guests running
-> under control of VMware hypervisors that support such devices.
-> 
-> Signed-off-by: Alok N Kataria <akataria@vmware.com>
 
-Looks in good shape to me.
+A system call named clone3() taking two parameters is just too weird to
+live.  No, please.
 
-Reviewed-by: Chris Wright <chrisw@sous-sol.org>
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
