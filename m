@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759751AbZJMOEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759964AbZJMOEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759751AbZJMOEZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbZJMOEZ
+	id S1759964AbZJMOEz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759091AbZJMOEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:04:25 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38617 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753467AbZJMOEY (ORCPT
+	Tue, 13 Oct 2009 10:04:55 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:28104 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759955AbZJMOEy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:04:24 -0400
-Date: Tue, 13 Oct 2009 10:03:48 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Ben Efros <ben@pc-doctor.com>, Josua Dietze <digidietze@draisberghof.de>,
-       fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>
-Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2 [PATCH]
-In-Reply-To: <1255409627.2192.172.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0910131003250.3169-100000@iolanthe.rowland.org>
+	Tue, 13 Oct 2009 10:04:54 -0400
+X-Trace: 269918160/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.12.149/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.12.149
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEALQl1EpQKQyV/2dsb2JhbACBUY4nAcgvhC0E
+X-IronPort-AV: E=Sophos;i="4.44,551,1249254000"; 
+   d="scan'208";a="269918160"
+Date: Tue, 13 Oct 2009 15:03:59 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andi Kleen <andi@firstfloor.org>
+cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] hwpoison: fix/proc/meminfo alignment
+Message-ID: <Pine.LNX.4.64.0910131502150.4698@sister.anvils>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009, Benjamin Herrenschmidt wrote:
+Given such a long name, the kB count in /proc/meminfo's HardwareCorrupted
+line is being shown too far right (it does align with x86_64's VmallocChunk
+above, but I hope nobody will ever have that much corrupted!).  Align it.
 
-> usb-storage: Workaround devices with bogus sense size
-> 
-> Some devices, such as Huawei E169, advertise more than the standard
-> amount of sense data, causing us to set US_FL_SANE_SENSE, assuming
-> they support it. However, they subsequently fail the request sense
-> with that size.
-> 
-> This works around it generically. When a sense request fails due to
-> a device returning an error, US_FL_SANE_SENSE was set, and that sense
-> request used a larger sense size, we retry with a smaller size before
-> giving up.
-> 
-> Based on an original patch by Ben Efros <ben@pc-doctor.com>
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+---
 
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+ fs/proc/meminfo.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+--- 2.6.32-rc4/fs/proc/meminfo.c	2009-09-28 00:28:37.000000000 +0100
++++ linux/fs/proc/meminfo.c	2009-10-13 14:09:12.000000000 +0100
+@@ -99,7 +99,7 @@ static int meminfo_proc_show(struct seq_
+ 		"VmallocUsed:    %8lu kB\n"
+ 		"VmallocChunk:   %8lu kB\n"
+ #ifdef CONFIG_MEMORY_FAILURE
+-		"HardwareCorrupted: %8lu kB\n"
++		"HardwareCorrupted: %5lu kB\n"
+ #endif
+ 		,
+ 		K(i.totalram),
