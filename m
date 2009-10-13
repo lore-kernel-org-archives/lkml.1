@@ -1,113 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758302AbZJMBi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbZJMBmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758302AbZJMBi5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 21:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbZJMBi4
+	id S1758735AbZJMBmL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 21:42:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbZJMBmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 21:38:56 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:56500 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755665AbZJMBiz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 21:38:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=pLoLqsSnmcOnBXiiBDvYSyxlIQ8S/AOnewS7C3XUTpHtwLNYYJJoqGPz0iy90JB5WW
-         pzB/sqLu1+Ko7zSQeJqy6l5a3wNFGYbPGylmAYZcj40Cua3bDCg2mAYTUeyWI68ll5+2
-         nIWtf7YZG+gjFQ7lYvDLn7CSHD+TljzW35FNw=
-Date: Tue, 13 Oct 2009 05:38:15 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org, viro@zeniv.linux.org.uk
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] loop: fix NULL dereference if mount fails
-Message-ID: <20091013013815.GA8087@x200>
-MIME-Version: 1.0
+	Mon, 12 Oct 2009 21:42:10 -0400
+Received: from verein.lst.de ([213.95.11.210]:51418 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754490AbZJMBmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 21:42:10 -0400
+Date: Tue, 13 Oct 2009 03:41:28 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] blkdev: flush disk cache on ->fsync
+Message-ID: <20091013014128.GB7931@lst.de>
+References: <20090820182432.GA31520@lst.de> <20091010161531.GA30289@lst.de> <20091012150713.GM9228@kernel.dk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091012150713.GM9228@kernel.dk>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit bb21488482bd36eae6b30b014d93619063773fd4 ("[PATCH] switch loop")
-started to pass NULL bdev to ioctl hook.
+On Mon, Oct 12, 2009 at 05:07:13PM +0200, Jens Axboe wrote:
+> On Sat, Oct 10 2009, Christoph Hellwig wrote:
+> > Is anyone going to pick up this patch?
+> 
+> I can pick it up for .33. I think it looks good, but it's probably
+> something we should add up front.
 
-Steps to reproduce:
+Given that it's impossible to get data to a raw block device reliably
+without this I think it's .32 material.  Especially given how small
+the patch is and how long it's been out there..
 
-	[boot with loop.max_part=1]
-	[mount -o loop something so mount fails]
-
-BUG: unable to handle kernel NULL pointer dereference at 00000000000000b8
-IP: [<ffffffff811486ee>] blkdev_ioctl+0x2e/0xa30
-PGD 0 
-Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-last sysfs file: /sys/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/device:35/ACPI0003:00/power_supply/ACAD/online
-CPU 0 
-Modules linked in: zfs nvidia(P) [last unloaded: zfs]
-Pid: 15177, comm: mount Tainted: P           2.6.32-rc4-zfs #2 Satellite X200
-RIP: 0010:[<ffffffff811486ee>]  [<ffffffff811486ee>] blkdev_ioctl+0x2e/0xa30
-RSP: 0018:ffff88003b3d5bb8  EFLAGS: 00010286
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
-RDX: 000000000000125f RSI: 0000000000000000 RDI: 0000000000000000
-RBP: ffff88003b3d5ce8 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000000 R12: 00007ffffffff000
-R13: 0000000000000000 R14: ffff880071cef280 R15: 00000000000200da
-FS:  00007fd77cfe7740(0000) GS:ffff880001600000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 00000000000000b8 CR3: 0000000001001000 CR4: 00000000000026f0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process mount (pid: 15177, threadinfo ffff88003b3d4000, task ffff88007572f920)
-Stack:
- ffff88003b3d5c38 ffffffff812f95f5 ffff88007eeb6600 0000000000000000
-<0> 0000000000000000 ffff88003b3d5c18 ffffffff811547d9 ffff88001bf11ef0
-<0> 7fffffffffffffff ffff88001bf11ee8 ffff88001bf11ef0 0000000000000000
-Call Trace:
- [<ffffffff812f95f5>] ? schedule_timeout+0x1f5/0x250
- [<ffffffff811547d9>] ? rb_insert_color+0x109/0x140
- [<ffffffff812fb754>] ? _spin_unlock_irq+0x14/0x40
- [<ffffffff812f84c6>] ? wait_for_common+0x66/0x170
- [<ffffffff8105a280>] ? default_wake_function+0x0/0x10
- [<ffffffff810f8258>] ioctl_by_bdev+0x38/0x50
- [<ffffffff811d2481>] loop_clr_fd+0x1e1/0x210
- [<ffffffff811d2522>] lo_release+0x72/0x80
- [<ffffffff810f934c>] __blkdev_put+0x1ac/0x1d0
- [<ffffffff810f937b>] blkdev_put+0xb/0x10
- [<ffffffff810f93b9>] blkdev_close+0x39/0x60
- [<ffffffff810ccef3>] __fput+0xd3/0x230
- [<ffffffff810cd06d>] fput+0x1d/0x30
- [<ffffffff810c9680>] filp_close+0x50/0x80
- [<ffffffff81061f11>] put_files_struct+0x81/0x100
- [<ffffffff81061fde>] exit_files+0x4e/0x60
- [<ffffffff81063ec5>] do_exit+0x6b5/0x730
- [<ffffffff8107b279>] ? up_read+0x9/0x10
- [<ffffffff8104c86e>] ? do_page_fault+0x18e/0x2a0
- [<ffffffff81063f81>] do_group_exit+0x41/0xc0
- [<ffffffff81064012>] sys_exit_group+0x12/0x20
- [<ffffffff81030deb>] system_call_fastpath+0x16/0x1b
-Code: f8 48 89 e5 48 81 ec 30 01 00 00 48 89 5d d8 4c 89 6d e8 4c 89 65 e0 4c 89 75 f0 4c 89 7d f8 48 89 bd e8 fe ff ff 49 89 cd 89 f3 <49> 8b 88 b8 00 00 00 81 fa 68 12 00 00 0f 84 57 05 00 00 0f 86 
-RIP  [<ffffffff811486ee>] blkdev_ioctl+0x2e/0xa30
- RSP <ffff88003b3d5bb8>
-CR2: 00000000000000b8
----[ end trace c0b4d3c3118d1427 ]---
-Fixing recursive fault but reboot is needed!
-
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
-
- drivers/block/loop.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/block/loop.c
-+++ b/drivers/block/loop.c
-@@ -949,7 +949,7 @@ static int loop_clr_fd(struct loop_device *lo, struct block_device *bdev)
- 	lo->lo_state = Lo_unbound;
- 	/* This is safe: open() is still holding a reference. */
- 	module_put(THIS_MODULE);
--	if (max_part > 0)
-+	if (max_part > 0 && bdev)
- 		ioctl_by_bdev(bdev, BLKRRPART, 0);
- 	mutex_unlock(&lo->lo_ctl_mutex);
- 	/*
