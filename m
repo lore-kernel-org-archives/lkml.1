@@ -1,321 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934385AbZJMV2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934409AbZJMV3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934385AbZJMV2y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 17:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761432AbZJMV2x
+	id S934409AbZJMV3q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 17:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934399AbZJMV3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 17:28:53 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:49632 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761428AbZJMV2v (ORCPT
+	Tue, 13 Oct 2009 17:29:45 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:34577 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934400AbZJMV3n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 17:28:51 -0400
-Subject: Re: SCSI driver for VMware's virtual HBA - V5.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Bart Van Assche <bvanassche@acm.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
-       Roland Dreier <rdreier@cisco.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Robert Love <robert.w.love@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@fifo99.com>, Greg KH <gregkh@suse.de>,
-       "virtualization@lists.linux-foundataion.org" 
-	<virtualization@lists.linux-foundataion.org>
-In-Reply-To: <20091013053726.GE17547@sequoia.sous-sol.org>
-References: <1254336812.19921.23.camel@ank32.eng.vmware.com>
-	 <20091002004725.GP3958@sequoia.sous-sol.org>
-	 <1254789028.15233.54.camel@ank32.eng.vmware.com>
-	 <20091013053726.GE17547@sequoia.sous-sol.org>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 13 Oct 2009 14:28:14 -0700
-Message-Id: <1255469294.12792.93.camel@ank32.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+	Tue, 13 Oct 2009 17:29:43 -0400
+From: Thomas Schlichter <thomas.schlichter@web.de>
+To: "Jan Beulich" <JBeulich@novell.com>
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not available
+Date: Tue, 13 Oct 2009 23:29:05 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.28.10-modified-ioremap; KDE/4.3.2; i686; ; )
+Cc: "Jeremy Fitzhardinge" <jeremy.fitzhardinge@citrix.com>,
+       "Robert Hancock" <hancockrwd@gmail.com>,
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       "Suresh Siddha" <suresh.b.siddha@intel.com>,
+       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
+       "Tejun Heo" <tj@kernel.org>, x86@kernel.org,
+       "Yinghai Lu" <yinghai@kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Arjan van de Ven" <arjan@linux.intel.com>,
+       dri-devel@lists.sourceforge.net, "Ingo Molnar" <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       "Thomas Hellstrom" <thellstrom@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <4AD449A702000078000197EE@vpn.id2.novell.com>
+In-Reply-To: <4AD449A702000078000197EE@vpn.id2.novell.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910132329.05152.thomas.schlichter@web.de>
+X-Provags-ID: V01U2FsdGVkX1+PM0xSwz96zQGuAQsv2QDn+CBBfvJmddcR/txc
+	APrptynF1uXO+97pg/zMuGcDHcq6igVoZgMnB4QxJQ+mtEt7Aw
+	S9v/nEm7tw/15K/GYb2A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Chris,
+Jan Beulich wrote:
+> >>> Thomas Schlichter <thomas.schlichter@web.de> 12.10.09 20:32 >>>
+> >+	if (!pat_enabled) {
+> >+		void __iomem *ret = ioremap_nocache(phys_addr, size);
+> >+		if (ret)
+> >+			mtrr_add(phys_addr, size, MTRR_TYPE_WRCOMB, false);
+> 
+> This won't work if phys_addr or size aren't page aligned, or if size isn't
+> a power of two.
 
-Thanks for taking a look. 
+No, at least the comments in mtrr_add and mtrr_check state that it is just 
+required that phys_addr and size are multiple of PAGE_SIZE. And I'm not sure 
+if it is always safe to round these up/down to the next PAGE boundary. If it 
+is not, maybe it is better to fail...
 
-On Mon, 2009-10-12 at 22:37 -0700, Chris Wright wrote:
-> mostly just nits
+> >+	if (!pat_enabled) {
+> >+		ret = set_memory_uc(addr, numpages);
+> >+		if (!ret)
+> >+			mtrr_add(__pa(addr), numpages * PAGE_SIZE,
+> >+				 MTRR_TYPE_WRCOMB, false);
 > 
-> * Alok Kataria (akataria@vmware.com) wrote:
-> > +#include <linux/kernel.h>
-> > +#include <linux/module.h>
-> > +#include <linux/moduleparam.h>
-> 
-> shouldn't be needed
-> 
-> > +#include <linux/types.h>
-> 
-> shouldn't be needed
+> Similarly, this requires numpages to be a power of two.
 
-Removed.
-> 
-> > +#include <linux/interrupt.h>
-> > +#include <linux/workqueue.h>
-> > +#include <linux/pci.h>
-> > +
-> > +#include <scsi/scsi.h>
-> > +#include <scsi/scsi_host.h>
-> > +#include <scsi/scsi_cmnd.h>
-> > +#include <scsi/scsi_device.h>
-> > +
-> > +#include "vmw_pvscsi.h"
-> > +
-> > +#define PVSCSI_LINUX_DRIVER_DESC "VMware PVSCSI driver"
-> > +
-> > +MODULE_DESCRIPTION(PVSCSI_LINUX_DRIVER_DESC);
-> > +MODULE_AUTHOR("VMware, Inc.");
-> > +MODULE_LICENSE("GPL");
-> > +MODULE_VERSION(PVSCSI_DRIVER_VERSION_STRING);
-> > +
-> > +#define PVSCSI_DEFAULT_NUM_PAGES_PER_RING    8
-> > +#define PVSCSI_DEFAULT_NUM_PAGES_MSG_RING    1
-> > +#define PVSCSI_DEFAULT_QUEUE_DEPTH           64
-> > +#define SGL_SIZE                             PAGE_SIZE
-> > +
-> > +#define pvscsi_dev(adapter) (&(adapter->dev->dev))
-> 
-> easy to make it static inline and get some type checking for free
+Same as above.
 
-Done.
+> I think user mode code handles this by splitting the request and trying to
+> establish as many entries as possible (and those as big as possible).
 
-> 
-> > +
-> > +static struct pvscsi_ctx *
-> > +pvscsi_acquire_context(struct pvscsi_adapter *adapter, struct scsi_cmnd *cmd)
-> > +{
-> > +     struct pvscsi_ctx *ctx;
-> > +
-> > +     if (list_empty(&adapter->cmd_pool))
-> > +             return NULL;
-> > +
-> > +     ctx = list_first_entry(&adapter->cmd_pool, struct pvscsi_ctx, list);
-> > +     ctx->cmd = cmd;
-> > +     list_del(&ctx->list);
-> > +
-> > +     return ctx;
-> > +}
-> > +
-> > +static void pvscsi_release_context(struct pvscsi_adapter *adapter,
-> > +                                struct pvscsi_ctx *ctx)
-> > +{
-> > +     ctx->cmd = NULL;
-> > +     list_add(&ctx->list, &adapter->cmd_pool);
-> > +}
-> 
-> These list manipulations are protected by hw_lock?  Looks like all cases
-> are covered.
-> 
+Seems not required here...
 
-Yep. 
+> Also, in all cases you pass 'false' for the 'increment' parameter, in order
+> to avoid having to tear down the established entries. While this may be
+> reasonable for kernel initiated mappings, I don't think that's acceptable
+> for such originating from user mode.
 
-> <snip>
-> > +/*
-> > + * Allocate scatter gather lists.
-> > + *
-> > + * These are statically allocated.  Trying to be clever was not worth it.
-> > + *
-> > + * Dynamic allocation can fail, and we can't go deeep into the memory
-> > + * allocator, since we're a SCSI driver, and trying too hard to allocate
-> > + * memory might generate disk I/O.  We also don't want to fail disk I/O
-> > + * in that case because we can't get an allocation - the I/O could be
-> > + * trying to swap out data to free memory.  Since that is pathological,
-> > + * just use a statically allocated scatter list.
-> > + *
-> > + */
-> > +static int __devinit pvscsi_allocate_sg(struct pvscsi_adapter *adapter)
-> > +{
-> > +     struct pvscsi_ctx *ctx;
-> > +     int i;
-> > +
-> > +     ctx = adapter->cmd_map;
-> > +     BUILD_BUG_ON(sizeof(struct pvscsi_sg_list) > SGL_SIZE);
-> > +
-> > +     for (i = 0; i < adapter->req_depth; ++i, ++ctx) {
-> > +             ctx->sgl = kmalloc(SGL_SIZE, GFP_KERNEL);
-> > +             ctx->sglPA = 0;
-> > +             BUG_ON(!IS_ALIGNED(((unsigned long)ctx->sgl), PAGE_SIZE));
-> 
-> Why not simply allocate a page?  Seems different allocator or debugging
-> options could trigger this.
+Well, therefore I would have to remember which mmap successfully set up which 
+MTRR entries. And it must be ensured that for each mmap there always is a 
+munmap. If this is indeed always ensured, and if it's worth to maintain the 
+required data, I'd be happy to add a corresponding mtrr_del there.
 
-Done.
-
-> > +
-> > +static int __devinit pvscsi_probe(struct pci_dev *pdev,
-> > +                               const struct pci_device_id *id)
-> > +{
-> > +     struct pvscsi_adapter *adapter;
-> > +     struct Scsi_Host *host;
-> > +     unsigned int i;
-> > +     int error;
-> > +
-> > +     error = -ENODEV;
-> > +
-> > +     if (pci_enable_device(pdev))
-> > +             return error;
-> 
-> looks mmio only, pci_enable_device_mem()
-
-We have a IOBAR as well though the driver doesn't use it.
-Hence, I will skip this change since it is more future proof this way.
-> 
-> > +
-> > +     if (pci_set_dma_mask(pdev, DMA_BIT_MASK(64)) == 0 &&
-> > +         pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64)) == 0) {
-> > +             printk(KERN_INFO "vmw_pvscsi: using 64bit dma\n");
-> > +     } else if (pci_set_dma_mask(pdev, DMA_BIT_MASK(32)) == 0 &&
-> > +                pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32)) == 0) {
-> > +             printk(KERN_INFO "vmw_pvscsi: using 32bit dma\n");
-> > +     } else {
-> > +             printk(KERN_ERR "vmw_pvscsi: failed to set DMA mask\n");
-> > +             goto out_disable_device;
-> > +     }
-> > +
-> > +     pvscsi_template.can_queue =
-> > +             min(PVSCSI_MAX_NUM_PAGES_REQ_RING, pvscsi_ring_pages) *
-> > +             PVSCSI_MAX_NUM_REQ_ENTRIES_PER_PAGE;
-> > +     pvscsi_template.cmd_per_lun =
-> > +             min(pvscsi_template.can_queue, pvscsi_cmd_per_lun);
-> 
-> When/how are these tunables used?  Are they still useful?
-
-cmd_per_lun, is a commandline parameter.
-
-> 
-> > +     host = scsi_host_alloc(&pvscsi_template, sizeof(struct pvscsi_adapter));
-> > +     if (!host) {
-> > +             printk(KERN_ERR "vmw_pvscsi: failed to allocate host\n");
-> > +             goto out_disable_device;
-> > +     }
-> > +
-> > +     adapter = shost_priv(host);
-> > +     memset(adapter, 0, sizeof(*adapter));
-> > +     adapter->dev  = pdev;
-> > +     adapter->host = host;
-> > +
-> > +     spin_lock_init(&adapter->hw_lock);
-> > +
-> > +     host->max_channel = 0;
-> > +     host->max_id      = 16;
-> > +     host->max_lun     = 1;
-> > +     host->max_cmd_len = 16;
-> > +
-> > +     adapter->rev = pdev->revision;
-> > +
-> > +     if (pci_request_regions(pdev, "vmw_pvscsi")) {
-> > +             printk(KERN_ERR "vmw_pvscsi: pci memory selection failed\n");
-> > +             goto out_free_host;
-> > +     }
-> > +
-> > +     for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-> > +             if ((pci_resource_flags(pdev, i) & PCI_BASE_ADDRESS_SPACE_IO))
-> > +                     continue;
-> > +
-> > +             if (pci_resource_len(pdev, i) < PVSCSI_MEM_SPACE_SIZE)
-> > +                     continue;
-> > +
-> > +             break;
-> > +     }
-> > +
-> > +     if (i == DEVICE_COUNT_RESOURCE) {
-> > +             printk(KERN_ERR
-> > +                    "vmw_pvscsi: adapter has no suitable MMIO region\n");
-> > +             goto out_release_resources;
-> > +     }
-> 
-> Could simplify and just do pci_request_selected_regions.
-
-this method is more future proof, that is if we decide to export some
-more bars or anything of that sought. So, will keep it as is.
-> 
-> > +     adapter->mmioBase = pci_iomap(pdev, i, PVSCSI_MEM_SPACE_SIZE);
-> > +
-> > +     if (!adapter->mmioBase) {
-> > +             printk(KERN_ERR
-> > +                    "vmw_pvscsi: can't iomap for BAR %d memsize %lu\n",
-> > +                    i, PVSCSI_MEM_SPACE_SIZE);
-> > +             goto out_release_resources;
-> > +     }
-> > +
-> > +     pci_set_master(pdev);
-> > +     pci_set_drvdata(pdev, host);
-> > +
-> > +     ll_adapter_reset(adapter);
-> > +
-> > +     adapter->use_msg = pvscsi_setup_msg_workqueue(adapter);
-> > +
-> > +     error = pvscsi_allocate_rings(adapter);
-> > +     if (error) {
-> > +             printk(KERN_ERR "vmw_pvscsi: unable to allocate ring memory\n");
-> > +             goto out_release_resources;
-> > +     }
-> > +
-> > +     /*
-> > +      * From this point on we should reset the adapter if anything goes
-> > +      * wrong.
-> > +      */
-> > +     pvscsi_setup_all_rings(adapter);
-> > +
-> > +     adapter->cmd_map = kcalloc(adapter->req_depth,
-> > +                                sizeof(struct pvscsi_ctx), GFP_KERNEL);
-> > +     if (!adapter->cmd_map) {
-> > +             printk(KERN_ERR "vmw_pvscsi: failed to allocate memory.\n");
-> > +             error = -ENOMEM;
-> > +             goto out_reset_adapter;
-> > +     }
-> > +
-> > +     INIT_LIST_HEAD(&adapter->cmd_pool);
-> > +     for (i = 0; i < adapter->req_depth; i++) {
-> > +             struct pvscsi_ctx *ctx = adapter->cmd_map + i;
-> > +             list_add(&ctx->list, &adapter->cmd_pool);
-> > +     }
-> > +
-> > +     error = pvscsi_allocate_sg(adapter);
-> > +     if (error) {
-> > +             printk(KERN_ERR "vmw_pvscsi: unable to allocate s/g table\n");
-> > +             goto out_reset_adapter;
-> > +     }
-> > +
-> > +     if (!pvscsi_disable_msix &&
-> > +         pvscsi_setup_msix(adapter, &adapter->irq) == 0) {
-> > +             printk(KERN_INFO "vmw_pvscsi: using MSI-X\n");
-> > +             adapter->use_msix = 1;
-> > +     } else if (!pvscsi_disable_msi && pci_enable_msi(pdev) == 0) {
-> > +             printk(KERN_INFO "vmw_pvscsi: using MSI\n");
-> > +             adapter->use_msi = 1;
-> > +             adapter->irq = pdev->irq;
-> > +     } else {
-> > +             printk(KERN_INFO "vmw_pvscsi: using INTx\n");
-> > +             adapter->irq = pdev->irq;
-> > +     }
-> > +
-> > +     error = request_irq(adapter->irq, pvscsi_isr, IRQF_SHARED,
-> > +                         "vmw_pvscsi", adapter);
-> 
-> Typically IRQF_SHARED w/ INTx, not MSI and MSI-X.
-> 
-
-Done. 
-
-Will send a V6 with all the changes. 
-
-Thanks,
-Alok
-
+Kind regards,
+  Thomas
