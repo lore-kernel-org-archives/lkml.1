@@ -1,101 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761221AbZJMUS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761229AbZJMUU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761221AbZJMUS4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 16:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934262AbZJMUSz
+	id S1761229AbZJMUU7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 16:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761215AbZJMUU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 16:18:55 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43723 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760454AbZJMUSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 16:18:54 -0400
-Date: Tue, 13 Oct 2009 22:18:16 +0200
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       jbacik@redhat.com
-Subject: Re: Fun with fdatasync()
-Message-ID: <20091013201816.GF31440@duck.suse.cz>
-References: <20091012140049.GO2632@think> <20091012220043.GC3965@duck.suse.cz> <20091013160028.GA7850@think> <20091013192357.GD31440@duck.suse.cz> <20091013200115.GB7850@think>
+	Tue, 13 Oct 2009 16:20:58 -0400
+Received: from smtp130.rog.mail.re2.yahoo.com ([206.190.53.35]:32896 "HELO
+	smtp130.rog.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753636AbZJMUU6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 16:20:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=rogers.com;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=dDSW65rCQD+rPc7rGwhPard11zhho8dlJsrX6uBMsNcnHiDnZ/uHcgKP+KuDyUOmerAoR0DoVrIJsa9Cc8Nep4T1e9WGM3fGP7995gstmtMcsKlEmVuDep8VBms07vGktMi+Q4Cr0K+69PdDL48OUhyKcajdAO1MWRuCgXi4o8E=  ;
+X-YMail-OSG: Hq8kXF8VM1mJyHXNjnLVwYcoWBvZXQ9daJZFd6e3Scjp.eM4UkFxXzs5m5AyKVAbnQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Shawn Starr <shawn.starr@rogers.com>
+To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.32-rc4] + EXT4 corruption
+Date: Tue, 13 Oct 2009 16:20:12 -0400
+User-Agent: KMail/1.12.90 (Linux/2.6.32-rc4-custom; KDE/4.3.69; x86_64; svn-1027797; 2009-09-23)
+References: <200910122207.50140.shawn.starr@rogers.com> <20091013022301.GC2606@mit.edu>
+In-Reply-To: <20091013022301.GC2606@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091013200115.GB7850@think>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910131620.12676.shawn.starr@rogers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 13-10-09 16:01:15, Chris Mason wrote:
-> On Tue, Oct 13, 2009 at 09:23:57PM +0200, Jan Kara wrote:
-> > On Tue 13-10-09 12:00:28, Chris Mason wrote:
-> > > On Tue, Oct 13, 2009 at 12:00:43AM +0200, Jan Kara wrote:
-> > > >   Hi,
-> > > > 
-> > > > On Mon 12-10-09 10:00:49, Chris Mason wrote:
-> > > 
-> > > [ clearing of I_DIRTY_DATASYNC by pdflush ]
-> > > 
-> > > > > 
-> > > > > Am I missing something?  I don't see how fdatasync is safe in our
-> > > > > current usage.
-> > > >   Yeah, we already discussed similar problems I_DIRTY flags with Ted and
-> > > > others in thread "fsync on ext[34] working only by an accident" on
-> > > > linux-ext4.
-> > > >   I don't quite like clearing dirty flags only on sync - pdflush would then
-> > > > unnecessarily try to get rid of those inodes and burn CPU on them.
-> > > > Actually, mapping->private_list (and bh->b_assoc_buffers) is meant to be
-> > > > used exactly for the purpose of tracking what needs to be written on fsync
-> > > > so my current plan is to somehow utilize that list to fix the problem.
-> > > >   Maybe I even get to that tomorrow ;) Thanks for the reminder.
-> > > 
-> > > I honestly don't remember all the details now, but I know that when
-> > > reiserfs stopped using the b_assoc_buffers stuff life got much less
-> > > complex.  From an outsider's point of view the last thing jbd needs is
-> > > another list of buffers to live on.
-> > > 
-> > > It seems like ext34 need to be able to answer 3 questions during an
-> > > fsync or fdatasync:
-> > > 
-> > > The last transaction to change this file (fill hole, change
-> > > i_size)
-> > > 
-> > > The last transaction to log this inode (for full fsync)
-> > > 
-> > > The last transaction committed such that fsync would consider it done.
-> > > 
-> > > Filling holes and changing i_size only happens from a handful of places,
-> > > so it would be easy to update a transid field in the in-memory inode for
-> > > that.
-> > > 
-> > > The inode logging code could bump a second transid field to catch all
-> > > the other ways inodes change.
-> > > 
-> > > The transaction code could (or already does?) export an easy way to
-> > > check the last commit.  Put the three together and you can safely jump
-> > > out of fsync or fdatasync based on what the inode really needs instead
-> > > of guessing with the I_ flags or page dirty bits.
-> >   I was thinking about this solution as well (before thinking about
-> > using b_assoc_queue). But to make this reliable we have to pin the inode
-> > in memory until transactions modifying it (or its data) are committed.
-> > Otherwise it could be reclaimed and we'd loose the information about
-> > which transactions we have to wait for. And when we pin the inode, we'd
-> > have to unpin it at transaction commit which implies we have to somehow
-> > attach the inode to the transaction... That doesn't look more appealing
-> > than b_assoc_queue in my opinion (OK, for ext4/JBD2 we have a way to
-> > attach inodes to transactions but ext3/JBD does not have such way).
+On October 12, 2009 10:23:01 pm Theodore Tso wrote:
+> On Mon, Oct 12, 2009 at 10:07:49PM -0400, Shawn Starr wrote:
+> > Hello everyone,
+> >
+> > I somehow managed to corrupt some of my filesystem.
+> >
+> > What I did was this:
+> >
+> > in /etc/modprobe.d/alsa-base.conf (Kubuntu)
+> >
+> > I added:
+> >
+> > install snd-aloop /sbin/modprobe snd-aloop
+> >
+> > Saved it, then ran, modprobe snd-aloop, the system started spawning
+> > many copies of modprobe, then machine started going though a swap
+> > storm, could not reboot safely, hit power button on laptop. When the
+> > system came back up, EXT4 greeted me with severe errors on some
+> > opened files. It did repair filesystem however. It corrupted some
+> > configuration files that were open at the time of the shutdown.
+> >
+> > I'm guessing no matter how much you attempt to replay a journal you
+> > still can get corruption such as this?
 > 
-> Most of the time the file is open from the time it is written to the
-> time it is sunk.  For the cases where we lose the inode, we just find a
-> zero in the last trans field and error on the side of doing the full
-> fsync.  This will be a pretty rare event ;)
-  You're probably right that fsyncing an inode that has been freshly loaded
-from disk is rare enough so that we can take the penalty of unnecessary
-transaction commit in such cases. OK, I'll implement it like that.  It
-should be pretty straightforward. Thanks for the discussion.
+> You shouldn't get any file system corruption after replaying a
+> journal.  I'm trying to get an easily reproducible test case for this.
+> Can you give me more information about where your root filesystem is
+> located.  Is it using LVM?  dm-crypt?  Can you reliably reproducible
+> the file system corruption?
+> 
+> 						- Ted
+> 
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Hi Ted, 
+
+No LVM, no encryption. Regular primary partitions. root is on sda4, swap on 
+sda3, /boot is on sda2, sda1 contains another OS that came with laptop.
+
+/ is mounted as: 
+/dev/sda4 on / type ext4 (rw,noatime,nodiratime,errors=remount-ro)
+
+Some more information:
+
+I was in X with several KDE and non-KDE applications at the time of the swap 
+storm. I noticed in my .viminfo file contents got corrupted with of some .kde4 
+configurations (looks to be a plasma configuration), lost my kconversationrc 
+completely.  That file is was also in $HOME/.kde4/config. 
+
+fsck.ext4 asked me if I wanted to clone some inodes and truncate illegal ones. 
+I said yes to all the warnings (too bad it doesn't have a log of that anywhere 
+I could give you).
+
+It might be useful to have fsck write a log file to filesystem after its 
+cleaned, then one could provide you a full dump of what fsck says and what 
+EXT4 spits out?
+
+I am pretty sure I can reproduce the corruption. I am more surprised that 
+opened files such as .viminfo were corrupted when they are not being changed? 
+(I don't believe vim examines the file if you've loaded it once during start 
+of vim?)
+
+Thanks, 
+Shawn.
