@@ -1,70 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbZJMVOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934363AbZJMVO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761357AbZJMVOq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 17:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761181AbZJMVOq
+	id S934363AbZJMVO4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 17:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934344AbZJMVOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 17:14:46 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34845 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761169AbZJMVOp (ORCPT
+	Tue, 13 Oct 2009 17:14:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34841 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761360AbZJMVOy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 17:14:45 -0400
-Subject: Re: [PATCH 1/5] [PATCH 1/5] function-graph/x86: replace unbalanced
- ret with jmp
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <20091013210208.GB5135@nowhere>
-References: <20091013203349.814936710@goodmis.org>
-	 <20091013203425.042034383@goodmis.org>  <20091013210208.GB5135@nowhere>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 13 Oct 2009 17:12:46 -0400
-Message-Id: <1255468366.7113.2403.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Oct 2009 17:14:54 -0400
+Date: Tue, 13 Oct 2009 14:13:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Boyan <btanastasov@yahoo.co.uk>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?= 
+	<fredlwm@gmail.com>,
+       "Justin P. Mattock" <justinmattock@gmail.com>, Nix <nix@esperi.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+In-Reply-To: <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0910131413240.3596@localhost.localdomain>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
+ <4AD3F769.5080405@gmail.com> <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net> <4AD437F9.9020708@yahoo.co.uk> <alpine.LFD.2.01.0910130745550.3438@localhost.localdomain> <4AD4DE4C.4010402@yahoo.co.uk>
+ <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 23:02 +0200, Frederic Weisbecker wrote:
-> On Tue, Oct 13, 2009 at 04:33:50PM -0400, Steven Rostedt wrote:
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > The function graph tracer replaces the return address with a hook to
-> > trace the exit of the function call. This hook will finish by returning
-> > to the real location the function should return to.
-> > 
-> > But the current implementation uses a ret to jump to the real return
-> > location. This causes a imbalance between calls and ret. That is
-> > the original function does a call, the ret goes to the handler
-> > and then the handler does a ret without a matching call.
-> > 
-> > Although the function graph tracer itself still breaks the branch
-> > predictor by replacing the original ret, by using a second ret and
-> > causing an imbalance, it breaks the predictor even more.
-> 
-> 
-> 
-> I have troubles to understand by it breaks the predictor, especially
-> since there is not conditional branch in return_to_handler.
-> But still I don't understand why a ret would break more the branch
-> prediction than a jmp.
 
-Calls are branch prediction jumps. Which associates the "ret" with the
-call. As it approaches the ret, it starts to receive the code after the
-call.
+Another bug:
 
-But this is stack order. Every call should hit one ret. But with the
-original code, we break this stack. We have one call and two rets. Which
-means that the branch prediction will also get messed up with the
-previous stored call.
+On Tue, 13 Oct 2009, Linus Torvalds wrote:
+>  			if (!count) {
+> -				if (head->next == NULL)
+> -					break;
 
--- Steve
+Those two lines should _not_ be deleted. I cleaned up a bit too much.
 
+The rule is that we must not free the last buffer, because it's also going 
+to be 'tail'.
 
+So here's a new version with that fixed (and the previous bug I already 
+mentioned).
+
+Whether it _works_ is still not clear. It might eat your pet goldfish, or 
+make farting noises in your general direction. Or it might fix the bug. 
+Who knows?
+
+		Linus
+
+---
+ drivers/char/tty_buffer.c |   29 +++++++++++++----------------
+ 1 files changed, 13 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/char/tty_buffer.c b/drivers/char/tty_buffer.c
+index 3108991..0296612 100644
+--- a/drivers/char/tty_buffer.c
++++ b/drivers/char/tty_buffer.c
+@@ -402,28 +402,26 @@ static void flush_to_ldisc(struct work_struct *work)
+ 		container_of(work, struct tty_struct, buf.work.work);
+ 	unsigned long 	flags;
+ 	struct tty_ldisc *disc;
+-	struct tty_buffer *tbuf, *head;
+-	char *char_buf;
+-	unsigned char *flag_buf;
+ 
+ 	disc = tty_ldisc_ref(tty);
+ 	if (disc == NULL)	/*  !TTY_LDISC */
+ 		return;
+ 
+ 	spin_lock_irqsave(&tty->buf.lock, flags);
+-	/* So we know a flush is running */
+-	set_bit(TTY_FLUSHING, &tty->flags);
+-	head = tty->buf.head;
+-	if (head != NULL) {
+-		tty->buf.head = NULL;
+-		for (;;) {
+-			int count = head->commit - head->read;
++
++	if (!test_and_set_bit(TTY_FLUSHING, &tty->flags)) {
++		struct tty_buffer *head;
++		while ((head = tty->buf.head) != NULL) {
++			int count;
++			char *char_buf;
++			unsigned char *flag_buf;
++
++			count = head->commit - head->read;
+ 			if (!count) {
+ 				if (head->next == NULL)
+ 					break;
+-				tbuf = head;
+-				head = head->next;
+-				tty_buffer_free(tty, tbuf);
++				tty->buf.head = head->next;
++				tty_buffer_free(tty, head);
+ 				continue;
+ 			}
+ 			/* Ldisc or user is trying to flush the buffers
+@@ -445,9 +443,9 @@ static void flush_to_ldisc(struct work_struct *work)
+ 							flag_buf, count);
+ 			spin_lock_irqsave(&tty->buf.lock, flags);
+ 		}
+-		/* Restore the queue head */
+-		tty->buf.head = head;
++		clear_bit(TTY_FLUSHING, &tty->flags);
+ 	}
++
+ 	/* We may have a deferred request to flush the input buffer,
+ 	   if so pull the chain under the lock and empty the queue */
+ 	if (test_bit(TTY_FLUSHPENDING, &tty->flags)) {
+@@ -455,7 +453,6 @@ static void flush_to_ldisc(struct work_struct *work)
+ 		clear_bit(TTY_FLUSHPENDING, &tty->flags);
+ 		wake_up(&tty->read_wait);
+ 	}
+-	clear_bit(TTY_FLUSHING, &tty->flags);
+ 	spin_unlock_irqrestore(&tty->buf.lock, flags);
+ 
+ 	tty_ldisc_deref(disc);
