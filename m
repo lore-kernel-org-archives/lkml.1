@@ -1,116 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbZJMJ31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759291AbZJMJ3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759304AbZJMJ31 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 05:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759295AbZJMJ3Z
+	id S1759291AbZJMJ3M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 05:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759279AbZJMJ3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 05:29:25 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:52273 "EHLO
+	Tue, 13 Oct 2009 05:29:10 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:52283 "EHLO
 	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754477AbZJMJ24 (ORCPT
+	with ESMTP id S1757110AbZJMJ25 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 05:28:56 -0400
+	Tue, 13 Oct 2009 05:28:57 -0400
 From: Philipp Reisner <philipp.reisner@linbit.com>
 To: Greg KH <greg@kroah.com>
 Cc: linux-kernel@vger.kernel.org, serue@us.ibm.com,
        Philipp Reisner <philipp.reisner@linbit.com>
-Subject: [PATCH 3/7] connector: Removed the destruct_data callback since it is always kfree_skb()
-Date: Tue, 13 Oct 2009 11:28:14 +0200
-Message-Id: <1255426098-9411-4-git-send-email-philipp.reisner@linbit.com>
+Subject: [PATCH 4/7] dm/connector: Only process connector packages from privileged processes
+Date: Tue, 13 Oct 2009 11:28:15 +0200
+Message-Id: <1255426098-9411-5-git-send-email-philipp.reisner@linbit.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1255426098-9411-3-git-send-email-philipp.reisner@linbit.com>
+In-Reply-To: <1255426098-9411-4-git-send-email-philipp.reisner@linbit.com>
 References: <20091009222505.GA28979@kroah.com>
  <1255426098-9411-1-git-send-email-philipp.reisner@linbit.com>
  <1255426098-9411-2-git-send-email-philipp.reisner@linbit.com>
  <1255426098-9411-3-git-send-email-philipp.reisner@linbit.com>
+ <1255426098-9411-4-git-send-email-philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
-Acked-by: Lars Ellenberg <lars.ellenberg@linbit.com>
-Acked-by: Evgeniy Polyakov <zbr@ioremap.net>
-(cherry picked from commit f4b5129f5e838942f759c2637967441cf4a98c20)
+(cherry picked from commit 93136335f9ad7a98b92eacda1b43dccbf063cd07)
 ---
- drivers/connector/cn_queue.c  |    4 ++--
- drivers/connector/connector.c |   11 +++--------
- include/linux/connector.h     |    3 ---
- 3 files changed, 5 insertions(+), 13 deletions(-)
+ drivers/md/dm-log-userspace-transfer.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/connector/cn_queue.c b/drivers/connector/cn_queue.c
-index 163c3e3..210338e 100644
---- a/drivers/connector/cn_queue.c
-+++ b/drivers/connector/cn_queue.c
-@@ -83,8 +83,8 @@ void cn_queue_wrapper(struct work_struct *work)
- 
- 	d->callback(msg, nsp);
- 
--	d->destruct_data(d->ddata);
--	d->ddata = NULL;
-+	kfree_skb(d->skb);
-+	d->skb = NULL;
- 
- 	kfree(d->free);
- }
-diff --git a/drivers/connector/connector.c b/drivers/connector/connector.c
-index e59f0ab..f060246 100644
---- a/drivers/connector/connector.c
-+++ b/drivers/connector/connector.c
-@@ -129,7 +129,7 @@ EXPORT_SYMBOL_GPL(cn_netlink_send);
- /*
-  * Callback helper - queues work and setup destructor for given data.
-  */
--static int cn_call_callback(struct sk_buff *skb, void (*destruct_data)(void *), void *data)
-+static int cn_call_callback(struct sk_buff *skb)
+diff --git a/drivers/md/dm-log-userspace-transfer.c b/drivers/md/dm-log-userspace-transfer.c
+index 1327e1a..54abf9e 100644
+--- a/drivers/md/dm-log-userspace-transfer.c
++++ b/drivers/md/dm-log-userspace-transfer.c
+@@ -133,6 +133,9 @@ static void cn_ulog_callback(struct cn_msg *msg, struct netlink_skb_parms *nsp)
  {
- 	struct cn_callback_entry *__cbq, *__new_cbq;
- 	struct cn_dev *dev = &cdev;
-@@ -140,12 +140,9 @@ static int cn_call_callback(struct sk_buff *skb, void (*destruct_data)(void *),
- 	list_for_each_entry(__cbq, &dev->cbdev->queue_list, callback_entry) {
- 		if (cn_cb_equal(&__cbq->id.id, &msg->id)) {
- 			if (likely(!work_pending(&__cbq->work) &&
--					__cbq->data.ddata == NULL)) {
-+					__cbq->data.skb == NULL)) {
- 				__cbq->data.skb = skb;
+ 	struct dm_ulog_request *tfr = (struct dm_ulog_request *)(msg + 1);
  
--				__cbq->data.ddata = data;
--				__cbq->data.destruct_data = destruct_data;
--
- 				if (queue_cn_work(__cbq, &__cbq->work))
- 					err = 0;
- 				else
-@@ -159,8 +156,6 @@ static int cn_call_callback(struct sk_buff *skb, void (*destruct_data)(void *),
- 					d = &__new_cbq->data;
- 					d->skb = skb;
- 					d->callback = __cbq->data.callback;
--					d->ddata = data;
--					d->destruct_data = destruct_data;
- 					d->free = __new_cbq;
- 
- 					__new_cbq->pdev = __cbq->pdev;
-@@ -208,7 +203,7 @@ static void cn_rx_skb(struct sk_buff *__skb)
- 			return;
- 		}
- 
--		err = cn_call_callback(skb, (void (*)(void *))kfree_skb, skb);
-+		err = cn_call_callback(skb);
- 		if (err < 0)
- 			kfree_skb(skb);
- 	}
-diff --git a/include/linux/connector.h b/include/linux/connector.h
-index 545728e..3a14615 100644
---- a/include/linux/connector.h
-+++ b/include/linux/connector.h
-@@ -132,9 +132,6 @@ struct cn_callback_id {
- };
- 
- struct cn_callback_data {
--	void (*destruct_data) (void *);
--	void *ddata;
--
- 	struct sk_buff *skb;
- 	void (*callback) (struct cn_msg *, struct netlink_skb_parms *);
- 
++	if (!cap_raised(nsp->eff_cap, CAP_SYS_ADMIN))
++		return;
++
+ 	spin_lock(&receiving_list_lock);
+ 	if (msg->len == 0)
+ 		fill_pkg(msg, NULL);
 -- 
 1.6.0.4
 
