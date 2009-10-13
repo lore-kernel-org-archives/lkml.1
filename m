@@ -1,32 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759136AbZJMIAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759122AbZJMH67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759136AbZJMIAT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 04:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759109AbZJMIAS
+	id S1759122AbZJMH67 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 03:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759105AbZJMH66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 04:00:18 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:39776 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759086AbZJMIAR (ORCPT
+	Tue, 13 Oct 2009 03:58:58 -0400
+Received: from ernst.netinsight.se ([194.16.221.21]:38262 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759086AbZJMH66 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 04:00:17 -0400
-Date: Tue, 13 Oct 2009 16:57:19 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       h-shimamoto@ct.jp.nec.com, linux-kernel@vger.kernel.org,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 2/2] memcg: coalescing charge by percpu (Oct/9)
-Message-Id: <20091013165719.c5781bfa.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <72e9a96ea399491948f396dab01b4c77.squirrel@webmail-b.css.fujitsu.com>
-References: <20091009165826.59c6f6e3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091009170105.170e025f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091009165002.629a91d2.akpm@linux-foundation.org>
-	<72e9a96ea399491948f396dab01b4c77.squirrel@webmail-b.css.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 13 Oct 2009 03:58:58 -0400
+Date: Tue, 13 Oct 2009 09:58:05 +0200
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] panic.c: export panic_on_oops
+Message-ID: <20091013095805.477f1928@marrow.netinsight.se>
+In-Reply-To: <alpine.LFD.2.01.0910121130190.3438@localhost.localdomain>
+References: <20091012113758.GB11035@elte.hu>
+	<20091012140149.6789efab@marrow.netinsight.se>
+	<20091012120951.GA16799@elte.hu>
+	<1255349748.10605.13.camel@macbook.infradead.org>
+	<20091012122023.GA19365@elte.hu>
+	<20091012150650.51a4b4dc@marrow.netinsight.se>
+	<20091012131528.GC25464@elte.hu>
+	<20091012153937.0dcd73e5@marrow.netinsight.se>
+	<alpine.LFD.2.01.0910120828390.3438@localhost.localdomain>
+	<20091012110954.67d7d8d8.akpm@linux-foundation.org>
+	<20091012182346.GH17138@elte.hu>
+	<alpine.LFD.2.01.0910121130190.3438@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -34,59 +43,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Oct 2009 11:37:35 +0900 (JST), "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Andrew Morton wrote:
-> > On Fri, 9 Oct 2009 17:01:05 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> >
-> >> +static void drain_all_stock_async(void)
-> >> +{
-> >> +	int cpu;
-> >> +	/* This function is for scheduling "drain" in asynchronous way.
-> >> +	 * The result of "drain" is not directly handled by callers. Then,
-> >> +	 * if someone is calling drain, we don't have to call drain more.
-> >> +	 * Anyway, work_pending() will catch if there is a race. We just do
-> >> +	 * loose check here.
-> >> +	 */
-> >> +	if (atomic_read(&memcg_drain_count))
-> >> +		return;
-> >> +	/* Notify other cpus that system-wide "drain" is running */
-> >> +	atomic_inc(&memcg_drain_count);
-Shouldn't we use atomic_inc_not_zero() ?
-(Do you mean this problem by "is not very good" below ?)
+On Mon, 12 Oct 2009 11:45:15 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
+> So the logic should literally be something like this:
+> 
+>  - kernel/printk.c:
+> 
+> 	void dump_kmsg(void)
+> 	{
+> 		unsigned long len = ACCESS_ONCE(log_end);
 
-Thanks,
-Daisuke Nishimura.
+OK, I'll get back with a few patches that does this later today.
 
-> >> +	get_online_cpus();
-> >> +	for_each_online_cpu(cpu) {
-> >> +		struct memcg_stock_pcp *stock = &per_cpu(memcg_stock, cpu);
-> >> +		if (work_pending(&stock->work))
-> >> +			continue;
-> >> +		INIT_WORK(&stock->work, drain_local_stock);
-> >> +		schedule_work_on(cpu, &stock->work);
-> >> +	}
-> >> + 	put_online_cpus();
-> >> +	atomic_dec(&memcg_drain_count);
-> >> +	/* We don't wait for flush_work */
-> >> +}
-> >
-> > It's unusual to run INIT_WORK() each time we use a work_struct.
-> > Usually we will run INIT_WORK a single time, then just repeatedly use
-> > that structure.  Because after the work has completed, it is still in a
-> > ready-to-use state.
-> >
-> > Running INIT_WORK() repeatedly against the same work_struct adds a risk
-> > that we'll scribble on an in-use work_struct, which would make a big
-> > mess.
-> >
-> Ah, ok. I'll prepare a fix. (And I think atomic_dec/inc placement is not
-> very good....I'll do total review, again.)
-> 
-> Thank you for review.
-> 
-> Regards,
-> -Kame
-> 
-> 
+// Simon
