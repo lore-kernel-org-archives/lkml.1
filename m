@@ -1,64 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbZJMLOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbZJMLVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759473AbZJMLOX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 07:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbZJMLOW
+	id S1759498AbZJMLVB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 07:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759028AbZJMLVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 07:14:22 -0400
-Received: from mail-qy0-f186.google.com ([209.85.221.186]:54958 "EHLO
-	mail-qy0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbZJMLOV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 07:14:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Ck9+j6v1bw6wm0VjllbXzPnfR7Dmt+6/PdMmF0zmvMHgcrdNpHWe/46ypuEj5CBipo
-         Y72YB7tgVFSwx9y3vYpIBUt70jtHvjPVh01jPbz90yi7rYqLvRWcFirpOs5ASSTxKLlH
-         AaarooJtsNuLcdSnodRpgb+MThLnBq86kl2f0=
-MIME-Version: 1.0
-In-Reply-To: <359ed6810910130335m45919d6ala921d4cbfa5a341a@mail.gmail.com>
-References: <20091007061701.GA7567@july>
-	 <359ed6810910130335m45919d6ala921d4cbfa5a341a@mail.gmail.com>
-Date: Tue, 13 Oct 2009 16:43:43 +0530
-Message-ID: <5d5443650910130413t6ecd3d54p214d8f80972ed128@mail.gmail.com>
-Subject: Re: [PATCH 1/6] Haptic: add haptic class
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 13 Oct 2009 07:21:00 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:47631 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755944AbZJMLVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 07:21:00 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: uclinux-dev@uclinux.org, David Howells <dhowells@redhat.com>,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Jie Zhang <jie.zhang@analog.com>, Robin Getz <rgetz@analog.com>,
+       David Howells <dhowells@redhat.com>
+Subject: [PATCH v2] NOMMU: fix malloc performance by adding uninitialized flag
+Date: Tue, 13 Oct 2009 07:20:21 -0400
+Message-Id: <1255432821-1104-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5
+In-Reply-To: <32310.1255428618@redhat.com>
+References: <32310.1255428618@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kyungmin, Dmitry,
+From: Jie Zhang <jie.zhang@analog.com>
 
-On Tue, Oct 13, 2009 at 4:05 PM, Jani Nikula
-<ext-jani.1.nikula@nokia.com> wrote:
-> On Wed, Oct 7, 2009 at 09:17, Kyungmin Park <kyungmin.park@samsung.com> wrote:
->> New haptic class support.
->> This class handles the haptic devices.
->
-> I'm wondering why a haptic class is needed when there is force
-> feedback support. Admittedly, I don't know the force feedback
-> implementation too well, but could someone please enlighten me on
-> this? Am I missing something here?
->
-> I see haptics as simple force feedback, just with (usually) small
-> force and short duration. There are devices out there doing haptics
-> using vibra motors, which I think would be limited if implemented
-> using this haptics class driver. Would it be somehow problematic
-> interfacing with the simple haptic hardware using the force feedback
-> API?
+The NOMMU code currently clears all anonymous mmapped memory.  While this
+is what we want in the default case, all memory allocation from userspace
+under NOMMU has to go through this interface, including malloc() which is
+allowed to return uninitialized memory.  This can easily be a significant
+performance penalty.  So for constrained embedded systems were security is
+irrelevant, allow people to avoid clearing memory unnecessarily.
 
-Please share your inputs on ff_device usage instead of haptics class.
-I think Dmitry could add some points here as I don't see much users of
-ff_device and I don't see any embedded device (like mobile) using it.
+This also alters the ELF-FDPIC binfmt such that it obtains uninitialised
+memory for the brk and stack region.
 
+Signed-off-by: Jie Zhang <jie.zhang@analog.com>
+Signed-off-by: Robin Getz <rgetz@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+v2
+	- add a 'D' suffix in define names
+
+David: i think i slurped all your changes into this and changed all the
+	occurrences to have a D suffix ...
+
+ Documentation/nommu-mmap.txt      |   26 ++++++++++++++++++++++++++
+ fs/binfmt_elf_fdpic.c             |    3 ++-
+ include/asm-generic/mman-common.h |    5 +++++
+ init/Kconfig                      |   22 ++++++++++++++++++++++
+ mm/nommu.c                        |    8 +++++---
+ 5 files changed, 60 insertions(+), 4 deletions(-)
+
+diff --git a/Documentation/nommu-mmap.txt b/Documentation/nommu-mmap.txt
+index b565e82..8e1ddec 100644
+--- a/Documentation/nommu-mmap.txt
++++ b/Documentation/nommu-mmap.txt
+@@ -119,6 +119,32 @@ FURTHER NOTES ON NO-MMU MMAP
+      granule but will only discard the excess if appropriately configured as
+      this has an effect on fragmentation.
+ 
++ (*) The memory allocated by a request for an anonymous mapping will normally
++     be cleared by the kernel before being returned in accordance with the
++     Linux man pages (ver 2.22 or later).
++
++     In the MMU case this can be achieved with reasonable performance as
++     regions are backed by virtual pages, with the contents only being mapped
++     to cleared physical pages when a write happens on that specific page
++     (prior to which, the pages are effectively mapped to the global zero page
++     from which reads can take place).  This spreads out the time it takes to
++     initialize the contents of a page - depending on the write-usage of the
++     mapping.
++
++     In the no-MMU case, however, anonymous mappings are backed by physical
++     pages, and the entire map is cleared at allocation time.  This can cause
++     significant delays during a userspace malloc() as the C library does an
++     anonymous mapping and the kernel then does a memset for the entire map.
++
++     However, for memory that isn't required to be precleared - such as that
++     returned by malloc() - mmap() can take a MAP_UNINITIALIZED flag to
++     indicate to the kernel that it shouldn't bother clearing the memory before
++     returning it.  Note that CONFIG_MMAP_ALLOW_UNINITIALIZED must be enabled
++     to permit this, otherwise the flag will be ignored.
++
++     uClibc uses this to speed up malloc(), and the ELF-FDPIC binfmt uses this
++     to allocate the brk and stack region.
++
+  (*) A list of all the private copy and anonymous mappings on the system is
+      visible through /proc/maps in no-MMU mode.
+ 
+diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+index 38502c6..79d2b1a 100644
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -380,7 +380,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
+ 	down_write(&current->mm->mmap_sem);
+ 	current->mm->start_brk = do_mmap(NULL, 0, stack_size,
+ 					 PROT_READ | PROT_WRITE | PROT_EXEC,
+-					 MAP_PRIVATE | MAP_ANONYMOUS | MAP_GROWSDOWN,
++					 MAP_PRIVATE | MAP_ANONYMOUS |
++					 MAP_UNINITIALIZED | MAP_GROWSDOWN,
+ 					 0);
+ 
+ 	if (IS_ERR_VALUE(current->mm->start_brk)) {
+diff --git a/include/asm-generic/mman-common.h b/include/asm-generic/mman-common.h
+index 5ee13b2..2011126 100644
+--- a/include/asm-generic/mman-common.h
++++ b/include/asm-generic/mman-common.h
+@@ -19,6 +19,11 @@
+ #define MAP_TYPE	0x0f		/* Mask for type of mapping */
+ #define MAP_FIXED	0x10		/* Interpret addr exactly */
+ #define MAP_ANONYMOUS	0x20		/* don't use a file */
++#ifdef CONFIG_MMAP_ALLOW_UNINITIALIZED
++# define MAP_UNINITIALIZED 0x4000000	/* For anonymous mmap, memory could be uninitialized */
++#else
++# define MAP_UNINITIALIZED 0x0		/* Don't support this flag */
++#endif
+ 
+ #define MS_ASYNC	1		/* sync memory asynchronously */
+ #define MS_INVALIDATE	2		/* invalidate the caches */
+diff --git a/init/Kconfig b/init/Kconfig
+index 09c5c64..817aeca 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1069,6 +1069,28 @@ config SLOB
+ 
+ endchoice
+ 
++config MMAP_ALLOW_UNINITIALIZED
++	bool "Allow mmaped anonymous memory to be un-initialized"
++	depends on EMBEDDED && !MMU
++	default n
++	help
++	  Normally, and according to the Linux spec, anonymous memory obtained
++	  from mmap() has it's contents cleared before it is passed to
++	  userspace.  Enabling this config option allows you to request that
++	  mmap() skip that if it is given an MAP_UNINITIALIZED flag, thus
++	  providing a huge performance boost.  If this option is not enabled,
++	  then the flag will be ignored.
++
++	  This is taken advantage of by uClibc's malloc(), and also by
++	  ELF-FDPIC binfmt's brk and stack allocator.
++
++	  Because of the obvious security issues, this option should only be
++	  enabled on embedded devices where you control what is run in
++	  userspace.  Since that isn't generally a problem on no-MMU systems,
++	  it is normally safe to say Y here.
++
++	  See Documentation/nommu-mmap.txt for more information.
++
+ config PROFILING
+ 	bool "Profiling support (EXPERIMENTAL)"
+ 	help
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 5189b5a..11e8231 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -1143,9 +1143,6 @@ static int do_mmap_private(struct vm_area_struct *vma,
+ 		if (ret < rlen)
+ 			memset(base + ret, 0, rlen - ret);
+ 
+-	} else {
+-		/* if it's an anonymous mapping, then just clear it */
+-		memset(base, 0, rlen);
+ 	}
+ 
+ 	return 0;
+@@ -1343,6 +1340,11 @@ unsigned long do_mmap_pgoff(struct file *file,
+ 		goto error_just_free;
+ 	add_nommu_region(region);
+ 
++	/* clear anonymous mappings that don't ask for uninitialized data */
++	if (!vma->vm_file && !(flags & MAP_UNINITIALIZED))
++		memset((void *)region->vm_start, 0,
++		       region->vm_end - region->vm_start);
++
+ 	/* okay... we have a mapping; now we have to register it */
+ 	result = vma->vm_start;
+ 
 -- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+1.6.5
+
