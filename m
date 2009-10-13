@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761438AbZJMV2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934396AbZJMV3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761438AbZJMV2u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 17:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761428AbZJMV2t
+	id S934396AbZJMV3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 17:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZJMV3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 17:28:49 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:49886 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761427AbZJMV2s (ORCPT
+	Tue, 13 Oct 2009 17:29:39 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41946 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752092AbZJMV3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 17:28:48 -0400
-Subject: Re: [PATCH 1/5] [PATCH 1/5] function-graph/x86: replace unbalanced
- ret with jmp
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <20091013212126.GA8039@Krystal>
-References: <20091013203349.814936710@goodmis.org>
-	 <20091013203425.042034383@goodmis.org> <20091013204702.GA4533@Krystal>
-	 <1255468214.7113.2396.camel@gandalf.stny.rr.com>
-	 <20091013212126.GA8039@Krystal>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 13 Oct 2009 17:26:50 -0400
-Message-Id: <1255469210.7113.2436.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Tue, 13 Oct 2009 17:29:39 -0400
+Message-ID: <4AD4F0C8.9080205@zytor.com>
+Date: Tue, 13 Oct 2009 14:27:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] x86: unify sys_iopl
+References: <4ABD3EC2.1020104@goop.org> <20091013103044.GA3915@elte.hu> <4AD4A9AE.10306@zytor.com> <4AD4B0A0.6050200@goop.org>
+In-Reply-To: <4AD4B0A0.6050200@goop.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 17:21 -0400, Mathieu Desnoyers wrote:
-
-> > What it was:
-> > 
-> > call function
-> >   function:
-> >   call mcount
-> >      mcount:
-> >      call ftrace_entry
+On 10/13/2009 09:53 AM, Jeremy Fitzhardinge wrote:
+> On 10/13/09 09:24, H. Peter Anvin wrote:
+>> First of all, the unification looks good.
+>>
+>> As far as .32 is concerned... this *is* a bug even if this is only for
+>> paravirt, and given the small amount of code I am personally OK with
+>> taking the whole patch for .32.
+>>
+>> However, the patch is not complete!  The patch incidentally eliminates
+>> the need to have assembly stubs for sys_iopl, and those assembly stubs
+>> should be removed.  I have a patch for that currently test building.
+>>   
 > 
-> Can we manage to change this call
-
-Note, that call jumps to C code.
-
+> I wasn't sure whether task_pt_regs() needed the full register set to be
+> saved to correctly return rflags (that is, does PTREGSCALL change the
+> shape of the stack, or just the contents?).
 > 
-> >        ftrace_entry:
-> >        mess up with return code of caller
-> >        ret
-> 
-> .. and this ret for 2 jmp instructions too ?
 
-The code is all in C, and it too calls functions. Not sure where this
-helps out any. The ret here matches their calls. Thus the prediction
-will work.
+Erk, I was right but still wrong... it isn't safe to modify the partial
+pt_regs because of the magic sync stuff that goes on in entry_64.S.
 
-> 
-> Given that we have no choice but to kill call/ret prediction logic, I
-> think it might be good to try to use this logic as little as possible
-> (by favoring jmp jmp over call/ret when the return target is invariant).
-> 
-> That's just an idea, benchmarks could prove me right/wrong.
+I have to say the entry_64.S stuff gives me a headache in the extreme.
+It really can't be the sanest way to do this stuff.
 
-I don't see how this would help. And I'm not about to waste time
-experimenting. What's the rational?
+/me makes a mental note to try to work through this code at some point.
 
--- Steve
+	-hpa
 
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
