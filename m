@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759685AbZJMNn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932088AbZJMNye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759685AbZJMNn2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 09:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbZJMNn2
+	id S932088AbZJMNye (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 09:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758511AbZJMNye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 09:43:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40299 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751429AbZJMNn1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 09:43:27 -0400
-Subject: Re: [PATCH 2/3] tracing: Rename set_ftrace to set_bootup_ftrace
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>
-In-Reply-To: <c62985530910130635k3127d163u3c6b6a46a96e3ffb@mail.gmail.com>
-References: <1255419540-5481-1-git-send-email-fweisbec@gmail.com>
-	 <1255419540-5481-3-git-send-email-fweisbec@gmail.com>
-	 <1255440127.7113.1551.camel@gandalf.stny.rr.com>
-	 <c62985530910130635k3127d163u3c6b6a46a96e3ffb@mail.gmail.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 13 Oct 2009 09:41:29 -0400
-Message-Id: <1255441289.7113.1587.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Oct 2009 09:54:34 -0400
+Received: from tac.ki.iif.hu ([193.6.222.43]:32882 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752227AbZJMNyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 09:54:33 -0400
+From: Ferenc Wagner <wferi@niif.hu>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.32-rc4 ipw2200: oops on missing firmware 
+Date: Tue, 13 Oct 2009 15:53:56 +0200
+Message-ID: <87hbu3h023.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 15:35 +0200, Frederic Weisbecker wrote:
-> 2009/10/13 Steven Rostedt <rostedt@goodmis.org>:
+Hi,
 
-> >> -__setup("ftrace=", set_ftrace);
-> >> +__setup("ftrace=", set_bootup_ftrace);
-> >
-> > Actually, it probably should be called, set_cmdline_ftrace. Since it
-> > came from the command line, and that is what is matching.
-> >
-> > -- Steve
-> 
-> No problem, I can change that in another request that also addresses
-> Li's suggestion.
+See the screenshot at http://apt.niif.hu/ipw_oops.png.  During bootup,
+initramfs-tools tried to load the ipw2200 module, but nobody fed it
+the necessary firmware, so request_firmware timed out and the module
+unload cleanup oopsed in device_pm_remove:
 
-Yeah, I would label this as an extreme NON-critical change ;-)
+void device_pm_remove(struct device *dev)
+{
+        pr_debug("PM: Removing info for %s:%s\n",
+                 dev->bus ? dev->bus->name : "No Bus",
+                 kobject_name(&dev->kobj));
+        mutex_lock(&dpm_list_mtx);
+        list_del_init(&dev->power.entry);
+        mutex_unlock(&dpm_list_mtx);
+        pm_runtime_remove(dev);
+}
 
--- Steve
+00000a0a <device_pm_remove>:
+ a0a:   55                      push   %ebp
+ a0b:   89 e5                   mov    %esp,%ebp
+ a0d:   53                      push   %ebx
+ a0e:   89 c3                   mov    %eax,%ebx
+ a10:   b8 08 00 00 00          mov    $0x8,%eax
+ a15:   e8 fc ff ff ff          call   a16 <device_pm_remove+0xc>
+ a1a:   8d 4b 5c                lea    0x5c(%ebx),%ecx
+ a1d:   8b 53 5c                mov    0x5c(%ebx),%edx
+ a20:   8b 43 60                mov    0x60(%ebx),%eax
+ a23:   89 42 04                mov    %eax,0x4(%edx)
+ a26:   89 10                   mov    %edx,(%eax)
+ a28:   89 4b 5c                mov    %ecx,0x5c(%ebx)
+ a2b:   89 4b 60                mov    %ecx,0x60(%ebx)
+ a2e:   b8 08 00 00 00          mov    $0x8,%eax
+ a33:   e8 fc ff ff ff          call   a34 <device_pm_remove+0x2a>
+ a38:   89 d8                   mov    %ebx,%eax
+ a3a:   e8 fc ff ff ff          call   a3b <device_pm_remove+0x31>
+ a3f:   5b                      pop    %ebx
+ a40:   5d                      pop    %ebp
+ a41:   c3                      ret    
 
+The offending IP translates to line a23, so the problem is edx being 0
+at that point.  I'm not sure which struct device field has offset
+0x5c, maybe power, but I'm lost at this point anyway.
 
+I don't know whether it's a new bug or not, never did such insane
+things previously.  rmmod ipw2200 definitely worked under 2.6.31, and
+it's possible that it works under 2.6.32-rc4 too, I forgot to check
+that (but will do so tonight).
+-- 
+Regards,
+Feri.
