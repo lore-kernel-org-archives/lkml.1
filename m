@@ -1,186 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbZJMPQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbZJMPHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760251AbZJMPQv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760238AbZJMPQu
+	id S1760161AbZJMPHx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 11:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759949AbZJMPHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:16:50 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:37426 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760235AbZJMPQr (ORCPT
+	Tue, 13 Oct 2009 11:07:52 -0400
+Received: from mail-vw0-f203.google.com ([209.85.212.203]:36775 "EHLO
+	mail-vw0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752801AbZJMPHv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:16:47 -0400
-Date: Tue, 13 Oct 2009 11:05:58 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: davem@davemloft.net
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: pull request: wireless-2.6 2009-10-13
-Message-ID: <20091013150558.GC2747@tuxdriver.com>
+	Tue, 13 Oct 2009 11:07:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bySxvGiAH+59hir8lm//jNu3KLfZl2R3cwgx3X0YZgfkIxgZR86XHKRi+rrpcvxsEb
+         +Qt7eZTFQuOEfEqljyUWpOvaNxHX1xky9o+6TIM/8bVfvFENciLgzJLHOvQ5f3kU0Z0f
+         5sPCDq97Nv+R5n5+eOoeuh8l3VyGAsMr+ooys=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <ba1f10320910130446g33264abfy845e28856e2e6f69@mail.gmail.com>
+References: <ba1f10320910130446g33264abfy845e28856e2e6f69@mail.gmail.com>
+Date: Tue, 13 Oct 2009 11:07:15 -0400
+Message-ID: <ba1f10320910130807r3f8ed8a5h543c14259d1bd1b@mail.gmail.com>
+Subject: Re: Intel on-board NIC negotiates at 10mbps instead of 1gbps (new 
+	Intel P55KG motherboard), driver bug?
+From: Justin Piszcz <jpiszcz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-net@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
+On Tue, Oct 13, 2009 at 7:46 AM, Justin Piszcz <jpiszcz@gmail.com> wrote:
+> Hello,
+>
+> I recently purchased/installed an Intel DP55KG motherboard and when I
+> boot from the System Rescue CD (1.3.0) the on-board NIC only
+> negotiates at 10mbps, when I plug the same cable into two other Intel
+> x1 PCI-e nics, they negotiate at 1gbps without any issue.  My old
+> system also negotiated at 1gbps (a DG965WH) board.
+>
+> I understand support for chip has recently been added to the e1000e
+> driver, has this been resolved in newer kernels?
+>
+> I am asking as I am still running memtest etc before putting the box
+> in production, thanks.
+>
+> From the logs:
+>
+> e1000e: Intel(R) PRO/1000 Network Driver - 1.0.2-k2
+> e1000e: Copyright (c) 1999-2008 Intel Corporation.
+> e1000e 0000:00:19.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+> e1000e 0000:00:19.0: pci_enable_pcie_error_
+> reporting failed 0xfffffffb
+> e1000e 0000:00:19.0: setting latency timer to 64
+> e1000e 0000:00:19.0: irq 36 for MSI/MSI-X
+> 0000:00:19.0: eth0: (PCI Express:2.5GB/s:Width x1) (mac address)
+> 0000:00:19.0: eth0: Intel(R) PRO/1000 Network Connection
+> 0000:00:19.0: eth0: MAC: 9, PHY: 9, PBA No: ffffff-0ff
+>
+> e1000e 0000:00:19.0: irq 36 for MSI/MSI-X
+> e1000e 0000:00:19.0: irq 36 for MSI/MSI-X
+> ADDRCONF(NETDEV_UP): eth0: link is not ready
+> e1000e: eth0 NIC Link is Up 10 Mbps Full Duplex, Flow Control: RX
+> 0000:00:19.0: eth0: 10/100 speed: disabling TSO
+> ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+> eth0: no IPv6 routers present
+>
+> Please cc as I am not on the lists, thanks.
+>
+> (resent as plain-text)
+>
+> Justin.
+>
 
-Here are a few (almost-)one-liners for 2.6.32.  Included are fixes for
-a use-after-free, a missing "!" in front of a memcmp when comparing
-BSSIDs, a race when using hardware-based scanning, the ieee80211_rx
-context problem, a related documentation change, and a minor build
-issue.
 
-Please let me know if there are problems!
+I spoke with Intel, they said they do not support Linux :-P
 
-Thanks,
+"However, Linux* has not been tested on this desktop board and we do
+not offer any drivers for that operating system."
 
-John
+-- Can someone from Intel on the list (or linux-net) comment on this?
+If the problem still occurs with the latest 2.6.31-rcX, I should try
+and/or use the latest e1000e driver from here:
+http://sourceforge.net/projects/e1000/ -- aside from that, are there
+any other workarounds (if the problem persists)?
 
----
+I have used the same cable with 3 different NICs (two x1 PCI-e) and
+the last system I had was PCI-e (on-board) all negotiated 1gbps, this
+one though only negotiates at 10mbps duplex.
 
-Individual patches are available here:
+Is this a known bug?
 
-	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
-
----
-
-The following changes since commit 10c435f18b8cb78a5870c08d52955594f5ec9c31:
-  David S. Miller (1):
-        net: Link in PHY drivers before others.
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
-
-Alan Cox (1):
-      libertas: fix build
-
-Felix Fietkau (1):
-      mac80211: fix logic error ibss merge bssid check
-
-Johannes Berg (3):
-      mac80211: fix ibss race
-      b43: fix ieee80211_rx() context
-      mac80211: document ieee80211_rx() context requirement
-
-Wey-Yi Guy (1):
-      iwlwifi: change the order of freeing memory
-
- drivers/net/wireless/b43/xmit.c             |    3 +++
- drivers/net/wireless/iwlwifi/iwl-agn.c      |    2 +-
- drivers/net/wireless/iwlwifi/iwl3945-base.c |    2 +-
- drivers/net/wireless/libertas/cmdresp.c     |    1 +
- include/net/mac80211.h                      |    2 ++
- net/mac80211/ibss.c                         |    4 ++--
- net/mac80211/rx.c                           |    2 ++
- 7 files changed, 12 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/wireless/b43/xmit.c b/drivers/net/wireless/b43/xmit.c
-index 892573b..f4e9695 100644
---- a/drivers/net/wireless/b43/xmit.c
-+++ b/drivers/net/wireless/b43/xmit.c
-@@ -690,7 +690,10 @@ void b43_rx(struct b43_wldev *dev, struct sk_buff *skb, const void *_rxhdr)
- 	}
- 
- 	memcpy(IEEE80211_SKB_RXCB(skb), &status, sizeof(status));
-+
-+	local_bh_disable();
- 	ieee80211_rx(dev->wl->hw, skb);
-+	local_bh_enable();
- 
- #if B43_DEBUG
- 	dev->rx_count++;
-diff --git a/drivers/net/wireless/iwlwifi/iwl-agn.c b/drivers/net/wireless/iwlwifi/iwl-agn.c
-index cdc07c4..9b5ea8b 100644
---- a/drivers/net/wireless/iwlwifi/iwl-agn.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
-@@ -3105,8 +3105,8 @@ static int iwl_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
-  out_pci_disable_device:
- 	pci_disable_device(pdev);
-  out_ieee80211_free_hw:
--	ieee80211_free_hw(priv->hw);
- 	iwl_free_traffic_mem(priv);
-+	ieee80211_free_hw(priv->hw);
-  out:
- 	return err;
- }
-diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-index c390dbd..837a193 100644
---- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-@@ -4096,8 +4096,8 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
- 	pci_set_drvdata(pdev, NULL);
- 	pci_disable_device(pdev);
-  out_ieee80211_free_hw:
--	ieee80211_free_hw(priv->hw);
- 	iwl_free_traffic_mem(priv);
-+	ieee80211_free_hw(priv->hw);
-  out:
- 	return err;
- }
-diff --git a/drivers/net/wireless/libertas/cmdresp.c b/drivers/net/wireless/libertas/cmdresp.c
-index c42d3fa..23f6843 100644
---- a/drivers/net/wireless/libertas/cmdresp.c
-+++ b/drivers/net/wireless/libertas/cmdresp.c
-@@ -3,6 +3,7 @@
-   * responses as well as events generated by firmware.
-   */
- #include <linux/delay.h>
-+#include <linux/sched.h>
- #include <linux/if_arp.h>
- #include <linux/netdevice.h>
- #include <asm/unaligned.h>
-diff --git a/include/net/mac80211.h b/include/net/mac80211.h
-index 466859b..c75b960 100644
---- a/include/net/mac80211.h
-+++ b/include/net/mac80211.h
-@@ -1669,6 +1669,8 @@ void ieee80211_restart_hw(struct ieee80211_hw *hw);
-  * to this function and ieee80211_rx_irqsafe() may not be mixed for a
-  * single hardware.
-  *
-+ * Note that right now, this function must be called with softirqs disabled.
-+ *
-  * @hw: the hardware this frame came in on
-  * @skb: the buffer to receive, owned by mac80211 after this call
-  */
-diff --git a/net/mac80211/ibss.c b/net/mac80211/ibss.c
-index 920ec87..6eaf698 100644
---- a/net/mac80211/ibss.c
-+++ b/net/mac80211/ibss.c
-@@ -544,7 +544,7 @@ static void ieee80211_sta_find_ibss(struct ieee80211_sub_if_data *sdata)
- 		       "%pM\n", bss->cbss.bssid, ifibss->bssid);
- #endif /* CONFIG_MAC80211_IBSS_DEBUG */
- 
--	if (bss && memcmp(ifibss->bssid, bss->cbss.bssid, ETH_ALEN)) {
-+	if (bss && !memcmp(ifibss->bssid, bss->cbss.bssid, ETH_ALEN)) {
- 		printk(KERN_DEBUG "%s: Selected IBSS BSSID %pM"
- 		       " based on configured SSID\n",
- 		       sdata->dev->name, bss->cbss.bssid);
-@@ -829,7 +829,7 @@ void ieee80211_ibss_notify_scan_completed(struct ieee80211_local *local)
- 		if (!sdata->u.ibss.ssid_len)
- 			continue;
- 		sdata->u.ibss.last_scan_completed = jiffies;
--		ieee80211_sta_find_ibss(sdata);
-+		mod_timer(&sdata->u.ibss.timer, 0);
- 	}
- 	mutex_unlock(&local->iflist_mtx);
- }
-diff --git a/net/mac80211/rx.c b/net/mac80211/rx.c
-index 865fbc0..7170bf4 100644
---- a/net/mac80211/rx.c
-+++ b/net/mac80211/rx.c
-@@ -2453,6 +2453,8 @@ void ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb)
- 	struct ieee80211_supported_band *sband;
- 	struct ieee80211_rx_status *status = IEEE80211_SKB_RXCB(skb);
- 
-+	WARN_ON_ONCE(softirq_count() == 0);
-+
- 	if (WARN_ON(status->band < 0 ||
- 		    status->band >= IEEE80211_NUM_BANDS))
- 		goto drop;
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+Justin.
