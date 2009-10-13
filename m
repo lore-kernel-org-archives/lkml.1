@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758872AbZJMCgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932266AbZJMCOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758872AbZJMCgX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 22:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758738AbZJMCgW
+	id S932266AbZJMCOq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 22:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758693AbZJMCOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 22:36:22 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:44669 "EHLO mx2.suse.de"
+	Mon, 12 Oct 2009 22:14:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35785 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757693AbZJMCgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 22:36:22 -0400
-Date: Mon, 12 Oct 2009 19:12:38 -0700
-From: Greg KH <gregkh@suse.de>
-To: Am??rico Wang <xiyou.wangcong@gmail.com>
-Cc: Antoine Martin <antoine@nagafix.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31.2 broke UML 64-bit build (2.6.31 was fine)
-Message-ID: <20091013021238.GA13241@suse.de>
-References: <4AD34542.7050500@nagafix.co.uk> <20091012160548.GA3961@hack> <4AD36022.4090300@nagafix.co.uk> <2375c9f90910121854v72422318u6b8f67f4437e4066@mail.gmail.com>
+	id S1757450AbZJMCOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 22:14:45 -0400
+Message-ID: <4AD3E23B.8020103@kernel.org>
+Date: Tue, 13 Oct 2009 11:13:15 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2375c9f90910121854v72422318u6b8f67f4437e4066@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mel Gorman <mel@csn.ul.ie>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [this_cpu_xx V6 3/7] Use this_cpu operations in slub
+References: <20091007211024.442168959@gentwo.org> <20091007211052.614790286@gentwo.org> <4AD302A8.4010409@kernel.org> <alpine.DEB.1.10.0910121053240.7932@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0910121053240.7932@gentwo.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Oct 2009 02:13:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 09:54:52AM +0800, Am??rico Wang wrote:
-> On Tue, Oct 13, 2009 at 12:58 AM, Antoine Martin <antoine@nagafix.co.uk> wrote:
-> > -----BEGIN PGP SIGNED MESSAGE-----
-> > Hash: SHA512
-> >
-> >> Hmm, this is a known problem:
-> >> https://lists.linux-foundation.org/pipermail/bugme-new/2009-May/021900.html
-> > How odd that I have been compiling successfully all that time!
-> > Maybe the fact that it broke "more" recently will help you...
+Christoph Lameter wrote:
+> On Mon, 12 Oct 2009, Tejun Heo wrote:
 > 
-> Please try this patch:
+>>> -		c = get_cpu_slab(s, smp_processor_id());
+>>> +		c = __this_cpu_ptr(s->cpu_slab);
+>> Shouldn't this be this_cpu_ptr() without the double underscore?
 > 
-> http://patchwork.kernel.org/patch/48759/
+> Interrupts are disabled so no concurrent fast path can occur.
 > 
-> It should fix your problem.
-> 
-> What I can do here is to suggest -stable team to include this patch in the
-> next update for .31. Greg?
 
-Send the git commit id of the patch that fixes the problem that is
-already in Linus's tree to stable@kernel.org and cc: me.
+The only difference between this_cpu_ptr() and __this_cpu_ptr() is the
+usage of my_cpu_offset and __my_cpu_offset which in turn are only
+different in whether they check preemption status to make sure the cpu
+is pinned down when called.
 
-thanks,
+The only places where the underbar prefixed versions should be used
+are places where cpu locality is nice but not critical and preemption
+debug check wouldn't work properly for whatever reason.  The above is
+none of the two and the conversion is buried in a patch which is
+supposed to do something else.  Am I missing something?
 
-greg k-h
+-- 
+tejun
