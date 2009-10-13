@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758931AbZJMDs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751172AbZJMEGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758931AbZJMDs5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 23:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbZJMDs5
+	id S1751172AbZJMEGF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 00:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZJMEGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 23:48:57 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47388 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753409AbZJMDs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 23:48:56 -0400
-Date: Tue, 13 Oct 2009 14:48:12 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: percpu tree build failure
-Message-Id: <20091013144812.bdb376aa.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__13_Oct_2009_14_48_12_+1100_3xisOSqDA8LiiuK9"
+	Tue, 13 Oct 2009 00:06:04 -0400
+Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:53647 "EHLO
+	quartz.edm.orcorp.ca" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750907AbZJMEGE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 00:06:04 -0400
+Date: Mon, 12 Oct 2009 22:05:15 -0600
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Roland Dreier <rdreier@cisco.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-rdma@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Anton Blanchard <anton@samba.org>, general@lists.openfabrics.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       Jeff Squyres <jsquyres@cisco.com>
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
+Message-ID: <20091013040515.GI18578@obsidianresearch.com>
+References: <adaab0tej5c.fsf@cisco.com> <1253198976.14935.27.camel@laptop> <adazl8td35u.fsf@cisco.com> <adatyz1d17q.fsf@cisco.com> <20090929171332.GD14405@elf.ucw.cz> <20090930094456.GD24621@elte.hu> <20090930160232.GZ22310@obsidianresearch.com> <20091012181944.GF17138@elte.hu> <20091012193048.GA20313@obsidianresearch.com> <20091012202046.GA7648@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012202046.GA7648@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__13_Oct_2009_14_48_12_+1100_3xisOSqDA8LiiuK9
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Oct 12, 2009 at 10:20:46PM +0200, Ingo Molnar wrote:
+> It might be more acceptable because the flag-hint mechanism can at most 
+> cause over-flushing - while with perf events we might miss to invalidate 
+> a range altogether.
 
-Hi all,
+Right. Overflushing is not important, but missing an event entirely is not
+recoverable (at least within the current kernel APIs).
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
-
-kernel/trace/trace_functions_graph.c: In function '__trace_graph_entry':
-kernel/trace/trace_functions_graph.c:179: error: request for member 'a' in =
-something not a structure or union
-kernel/trace/trace_functions_graph.c: In function '__trace_graph_return':
-kernel/trace/trace_functions_graph.c:243: error: request for member 'a' in =
-something not a structure or union
-
-Caused by commit 9288f99aa52d90a5b82573c4b769c97c55af2f56 ("this_cpu: Use
-this_cpu_xx for ftrace").
-
-I have used the version of the percpu tree from next-20091012 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__13_Oct_2009_14_48_12_+1100_3xisOSqDA8LiiuK9
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrT+HwACgkQjjKRsyhoI8w0NwCfYFaEOXdXpoPJpfO0kIpgh/35
-4tcAni7y7IaqRfWpnjGxzlS/yRioRcZE
-=GjyN
------END PGP SIGNATURE-----
-
---Signature=_Tue__13_Oct_2009_14_48_12_+1100_3xisOSqDA8LiiuK9--
+Jason
