@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbZJMWNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761563AbZJMWVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761542AbZJMWNq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 18:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761532AbZJMWNp
+	id S1761563AbZJMWVd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 18:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbZJMWVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 18:13:45 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:51299 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761513AbZJMWNh (ORCPT
+	Tue, 13 Oct 2009 18:21:31 -0400
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:41564 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755235AbZJMWVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 18:13:37 -0400
-Subject: Re: SCSI driver for VMware's virtual HBA - V5.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Bart Van Assche <bvanassche@acm.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
-       Roland Dreier <rdreier@cisco.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Robert Love <robert.w.love@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@fifo99.com>, Greg KH <gregkh@suse.de>,
-       "virtualization@lists.linux-foundataion.org" 
-	<virtualization@lists.linux-foundataion.org>
-In-Reply-To: <20091013220013.GB2908@sequoia.sous-sol.org>
-References: <1254336812.19921.23.camel@ank32.eng.vmware.com>
-	 <20091002004725.GP3958@sequoia.sous-sol.org>
-	 <1254789028.15233.54.camel@ank32.eng.vmware.com>
-	 <20091013053726.GE17547@sequoia.sous-sol.org>
-	 <1255469294.12792.93.camel@ank32.eng.vmware.com>
-	 <20091013220013.GB2908@sequoia.sous-sol.org>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 13 Oct 2009 15:13:01 -0700
-Message-Id: <1255471981.12792.126.camel@ank32.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Oct 2009 18:21:13 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=gzjsjZI92PP8l6pusp/bRuoMEMiwedMKti3NZ73TX0fx7riptZDjBBeFYaATIEalYVqnS3gg4XKKfsjKl2Ga70S8SiaHBEH/XoBthDf2kvmDTjpaFrSB9g83Se3HF/fNGpB8KGTqcgUhacQJZ9k3cWvnLFjA7CgmJR9WFvSJPh4=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: WaE9s70VM1kAwodAZf.0wvfo_Tl8nDP56.RdqQna4O5uU5fHm4dpvQA4F_.iPVn6_6D6Nw82Q9W_y7CcXAqNg4agraQkrooZEG0aT9ylzSDDbQMvGLjKqDiNMJadO3NQPwIiMaLhtgsHCucYi1nZ.5NJgImvA6baqzGGAGL_WWMdZUAxSzVWOFxd6_0MlogyXzq_6dtpRGdfMgXuFxVR5Ym4NhUoVL2Ww3Vjl0BSJEz_mSdcB9M3zXJH5Q_ot9fIq8L2zU5EGvPnOM201fLM6Y8UpiJ6tBaiktP7
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Ben Nizette <bn@niasdigital.com>
+Subject: Re: [PATCH v2] GPIO: Add gpio_lookup
+Date: Tue, 13 Oct 2009 15:13:53 -0700
+User-Agent: KMail/1.9.10
+Cc: Jonathan Corbet <corbet@lwn.net>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, dsilvers@simtec.co.uk
+References: <20091010134814.0bac8624@bike.lwn.net> <20091012092331.45d7e71b@bike.lwn.net> <1255422669.5347.281.camel@ben-desktop>
+In-Reply-To: <1255422669.5347.281.camel@ben-desktop>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200910131513.53851.david-b@pacbell.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 13 October 2009, Ben Nizette wrote:
+> If gpios are going to be named, and it seems they are,
 
-On Tue, 2009-10-13 at 15:00 -0700, Chris Wright wrote:
-> * Alok Kataria (akataria@vmware.com) wrote:
-> > On Mon, 2009-10-12 at 22:37 -0700, Chris Wright wrote:
-> > > > +     pvscsi_template.can_queue =
-> > > > +             min(PVSCSI_MAX_NUM_PAGES_REQ_RING, pvscsi_ring_pages) *
-> > > > +             PVSCSI_MAX_NUM_REQ_ENTRIES_PER_PAGE;
-> > > > +     pvscsi_template.cmd_per_lun =
-> > > > +             min(pvscsi_template.can_queue, pvscsi_cmd_per_lun);
-> > > 
-> > > When/how are these tunables used?  Are they still useful?
-> > 
-> > cmd_per_lun, is a commandline parameter.
-> 
-> Actually I meant how is a user supposed to use these?  They looked to me
-> like tunables that were part of developing a driver that may not be
-> needed any longer.  
-> What are the right values, what are the tradeoffs,
-> etc?  Or should they just be removed?
+I'm not so sure of that.  Keep in mind that "name" implies, to me,
+focussing on name-centric operation, with lookup and browsing.
+Neither of those mechanisms is fundamental to what GPIOs solve.
 
-The defaults are the right values, and though a normal user won't change
-those in practice (he can if he wants to by passing values during
-insmod), a developer working on performance tuning can use it. 
+So far I've not seen any use case that can't be addressed within
+the current framework, which keys only on numeric IDs.  If we *did*
+see such cases appear in real-world scenarios, we could explore
+what that means.
 
-So I would like to keep these tunables around as it helps any future
-performance work. 
 
-Thanks,
-Alok
+> then personally 
+> I'd like to see the names field of struct gpio_chip go and a proper
+> namespace layer inserted.  Something which allows gpio_name() and
+> gpio_lookup() and decentralises that responsibility would be nice (the
+> chip could call gpio_name itself if it has reason).  That code could be
+> common to all gpio framework implementations.
 
-> 
-> thanks,
-> -chris
+But why would we need such lookups in the first place?
+
+In-kernel, they are not needed, for either static or dynamic ID
+assignment schemes.  Just register the numbers so they're available
+as needed.
+
+For userspace, I think gpio_export_link() is the best way to
+go ... it scopes the names sanely, so there's no requirement
+for driver-provided labels to be globally unique.
+
+- Dave
 
