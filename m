@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759988AbZJMO2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760004AbZJMO2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759988AbZJMO2H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759946AbZJMO2G
+	id S1760004AbZJMO2L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759992AbZJMO2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:28:06 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:8458 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755752AbZJMO2F (ORCPT
+	Tue, 13 Oct 2009 10:28:10 -0400
+Received: from viefep17-int.chello.at ([62.179.121.37]:8924 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759954AbZJMO2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:28:05 -0400
+	Tue, 13 Oct 2009 10:28:07 -0400
 X-SourceIP: 213.93.53.227
-Subject: Re: [RFC v2 PATCH 4/8] sched: Enforce hard limits by throttling
+Subject: Re: [RFC v2 PATCH 3/8] sched: Bandwidth initialization for fair
+ task groups
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: bharata@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
@@ -23,12 +24,12 @@ Cc: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
        Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
        Mike Waychison <mikew@google.com>
-In-Reply-To: <20090930125252.GE19951@in.ibm.com>
+In-Reply-To: <20090930125204.GD19951@in.ibm.com>
 References: <20090930124919.GA19951@in.ibm.com>
-	 <20090930125252.GE19951@in.ibm.com>
+	 <20090930125204.GD19951@in.ibm.com>
 Content-Type: text/plain
-Date: Tue, 13 Oct 2009 16:27:00 +0200
-Message-Id: <1255444020.8392.362.camel@twins>
+Date: Tue, 13 Oct 2009 16:27:01 +0200
+Message-Id: <1255444021.8392.363.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -38,45 +39,115 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Wed, 2009-09-30 at 18:22 +0530, Bharata B Rao wrote:
 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 0f1ea4a..77ace43 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1024,7 +1024,7 @@ struct sched_domain;
->  struct sched_class {
->  	const struct sched_class *next;
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index c283d0f..0147f6f 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -262,6 +262,15 @@ static DEFINE_MUTEX(sched_domains_mutex);
 >  
-> -	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
-> +	int (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
->  	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
->  	void (*yield_task) (struct rq *rq);
+>  #include <linux/cgroup.h>
 >  
+> +#if defined(CONFIG_FAIR_GROUP_SCHED) && defined(CONFIG_CFS_HARD_LIMITS)
+> +struct cfs_bandwidth {
+> +	spinlock_t		cfs_runtime_lock;
+> +	ktime_t			cfs_period;
+> +	u64			cfs_runtime;
+> +	struct hrtimer		cfs_period_timer;
+> +};
+> +#endif
 
-I really hate this, it uglfies all the enqueue code in a horrid way
-(which is most of this patch).
+too much cfs here..
 
-Why can't we simply enqueue the task on a throttled group just like rt?
-
-> @@ -3414,6 +3443,18 @@ int can_migrate_task(struct task_struct *p, struct rq *rq, int this_cpu,
->  	}
+>  struct cfs_rq;
 >  
->  	/*
-> +	 * Don't migrate the task if it belongs to a
-> +	 * - throttled group on its current cpu
-> +	 * - throttled group on this_cpu
-> +	 * - group whose hierarchy is throttled on this_cpu
-> +	 */
-> +	if (cfs_rq_throttled(cfs_rq_of(&p->se)) ||
-> +		task_group_throttled(task_group(p), this_cpu)) {
-> +		schedstat_inc(p, se.nr_failed_migrations_throttled);
-> +		return 0;
-> +	}
+>  static LIST_HEAD(task_groups);
+> @@ -282,6 +291,11 @@ struct task_group {
+>  	/* runqueue "owned" by this group on each cpu */
+>  	struct cfs_rq **cfs_rq;
+>  	unsigned long shares;
+> +#ifdef CONFIG_CFS_HARD_LIMITS
+> +	struct cfs_bandwidth cfs_bandwidth;
+> +	/* If set, throttle when the group exceeds its bandwidth */
+> +	int hard_limit_enabled;
+> +#endif
+
+What's wrong with doing something like cfs_bandwidth.cfs_runtime ==
+RUNTIME_INF ?
+
+>  #endif
+>  
+>  #ifdef CONFIG_RT_GROUP_SCHED
+> @@ -477,6 +491,16 @@ struct cfs_rq {
+>  	unsigned long rq_weight;
+>  #endif
+>  #endif
+> +#ifdef CONFIG_CFS_HARD_LIMITS
+> +	/* set when the group is throttled  on this cpu */
+> +	int cfs_throttled;
 > +
+> +	/* runtime currently consumed by the group on this rq */
+> +	u64 cfs_time;
+> +
+> +	/* runtime available to the group on this rq */
+> +	u64 cfs_runtime;
+> +#endif
+
+too much cfs_ again.
+
+>  	/*
+>  	 * Number of tasks at this heirarchy.
+>  	 */
+> @@ -665,6 +689,11 @@ struct rq {
+>  	/* BKL stats */
+>  	unsigned int bkl_count;
+>  #endif
 > +	/*
->  	 * Aggressive migration if:
->  	 * 1) task is cache cold, or
->  	 * 2) too many balance attempts have failed.
+> +	 * Protects the cfs runtime related fields of all cfs_rqs under
+> +	 * this rq
+> +	 */
+> +	spinlock_t runtime_lock;
+>  };
+>  
+>  static DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
-Simply don't iterate throttled groups?
 
+> +static inline void rq_runtime_lock(struct rq *rq)
+> +{
+> +	spin_lock(&rq->runtime_lock);
+> +}
+> +
+> +static inline void rq_runtime_unlock(struct rq *rq)
+> +{
+> +	spin_unlock(&rq->runtime_lock);
+> +}
+
+needless obfuscation.
+
+> CONFIG_RT_GROUP_SCHED
+> @@ -10317,6 +10617,23 @@ static struct cftype cpu_files[] = {
+>  		.read_u64 = cpu_shares_read_u64,
+>  		.write_u64 = cpu_shares_write_u64,
+>  	},
+> +#ifdef CONFIG_CFS_HARD_LIMITS
+> +	{
+> +		.name = "cfs_runtime_us",
+> +		.read_s64 = cpu_cfs_runtime_read_s64,
+> +		.write_s64 = cpu_cfs_runtime_write_s64,
+> +	},
+> +	{
+> +		.name = "cfs_period_us",
+> +		.read_u64 = cpu_cfs_period_read_u64,
+> +		.write_u64 = cpu_cfs_period_write_u64,
+> +	},
+> +	{
+> +		.name = "cfs_hard_limit",
+> +		.read_u64 = cpu_cfs_hard_limit_read_u64,
+> +		.write_u64 = cpu_cfs_hard_limit_write_u64,
+> +	},
+> +#endif /* CONFIG_CFS_HARD_LIMITS */
+>  #endif
+>  #ifdef CONFIG_RT_GROUP_SCHED
+>  	{
+
+I guess that cfs_hard_limit thing is superfluous as well.
 
