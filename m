@@ -1,128 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934363AbZJMVO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934379AbZJMVQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934363AbZJMVO4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 17:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934344AbZJMVOz
+	id S934379AbZJMVQw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 17:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934368AbZJMVQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 17:14:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34841 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761360AbZJMVOy (ORCPT
+	Tue, 13 Oct 2009 17:16:51 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:64518 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934366AbZJMVQu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 17:14:54 -0400
-Date: Tue, 13 Oct 2009 14:13:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Boyan <btanastasov@yahoo.co.uk>
-cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?= 
-	<fredlwm@gmail.com>,
-       "Justin P. Mattock" <justinmattock@gmail.com>, Nix <nix@esperi.org.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0910131413240.3596@localhost.localdomain>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
- <4AD3F769.5080405@gmail.com> <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net> <4AD437F9.9020708@yahoo.co.uk> <alpine.LFD.2.01.0910130745550.3438@localhost.localdomain> <4AD4DE4C.4010402@yahoo.co.uk>
- <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 13 Oct 2009 17:16:50 -0400
+Subject: Re: [PATCH 2/5] [PATCH 2/5] tracing: export symbols for kernel
+ lock tracepoints
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20091013204345.GA5135@nowhere>
+References: <20091013203349.814936710@goodmis.org>
+	 <20091013203425.342967518@goodmis.org>  <20091013204345.GA5135@nowhere>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 13 Oct 2009 17:14:51 -0400
+Message-Id: <1255468491.7113.2409.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-10-13 at 22:43 +0200, Frederic Weisbecker wrote:
+> On Tue, Oct 13, 2009 at 04:33:51PM -0400, Steven Rostedt wrote:
+> > From: Steven Rostedt <srostedt@redhat.com>
+> > 
+> > The big kernel lock tracepoints are used inside modules and they need
+> > to be exported accordingly.
+> > 
+> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> > ---
+> >  lib/kernel_lock.c |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/lib/kernel_lock.c b/lib/kernel_lock.c
+> > index 4ebfa5a..76f05bc 100644
+> > --- a/lib/kernel_lock.c
+> > +++ b/lib/kernel_lock.c
+> > @@ -139,3 +139,5 @@ void __lockfunc _unlock_kernel(const char *func, const char *file, int line)
+> >  EXPORT_SYMBOL(_lock_kernel);
+> >  EXPORT_SYMBOL(_unlock_kernel);
+> >  
+> > +EXPORT_TRACEPOINT_SYMBOL(lock_kernel);
+> > +EXPORT_TRACEPOINT_SYMBOL(unlock_kernel);
+> > -- 
+> 
+> 
+> I remember when you showed me this patch, and it fixed a real
+> issue because we had the tracepoint call in smp_lock.h:
+> 
+> #define lock_kernel()	\
+> 	trace_lock_kernel(__FUNC__, __FILE__, __LINE__);	\
+> 	_lock_kernel();						\
+> 
+> So indeed the modules needed this missing export. But I had
+> to move the tracepoint calls to lib/kernel_lock.c instead,
+> because we had very bad headers dependencies.
+> 
+> So it's not needed anymore.
 
-Another bug:
+Ah, I missed that change. I've had this queued up for a while.
 
-On Tue, 13 Oct 2009, Linus Torvalds wrote:
->  			if (!count) {
-> -				if (head->next == NULL)
-> -					break;
+Ingo, want me to rebase and remove this patch?
 
-Those two lines should _not_ be deleted. I cleaned up a bit too much.
+-- Steve
 
-The rule is that we must not free the last buffer, because it's also going 
-to be 'tail'.
 
-So here's a new version with that fixed (and the previous bug I already 
-mentioned).
-
-Whether it _works_ is still not clear. It might eat your pet goldfish, or 
-make farting noises in your general direction. Or it might fix the bug. 
-Who knows?
-
-		Linus
-
----
- drivers/char/tty_buffer.c |   29 +++++++++++++----------------
- 1 files changed, 13 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/char/tty_buffer.c b/drivers/char/tty_buffer.c
-index 3108991..0296612 100644
---- a/drivers/char/tty_buffer.c
-+++ b/drivers/char/tty_buffer.c
-@@ -402,28 +402,26 @@ static void flush_to_ldisc(struct work_struct *work)
- 		container_of(work, struct tty_struct, buf.work.work);
- 	unsigned long 	flags;
- 	struct tty_ldisc *disc;
--	struct tty_buffer *tbuf, *head;
--	char *char_buf;
--	unsigned char *flag_buf;
- 
- 	disc = tty_ldisc_ref(tty);
- 	if (disc == NULL)	/*  !TTY_LDISC */
- 		return;
- 
- 	spin_lock_irqsave(&tty->buf.lock, flags);
--	/* So we know a flush is running */
--	set_bit(TTY_FLUSHING, &tty->flags);
--	head = tty->buf.head;
--	if (head != NULL) {
--		tty->buf.head = NULL;
--		for (;;) {
--			int count = head->commit - head->read;
-+
-+	if (!test_and_set_bit(TTY_FLUSHING, &tty->flags)) {
-+		struct tty_buffer *head;
-+		while ((head = tty->buf.head) != NULL) {
-+			int count;
-+			char *char_buf;
-+			unsigned char *flag_buf;
-+
-+			count = head->commit - head->read;
- 			if (!count) {
- 				if (head->next == NULL)
- 					break;
--				tbuf = head;
--				head = head->next;
--				tty_buffer_free(tty, tbuf);
-+				tty->buf.head = head->next;
-+				tty_buffer_free(tty, head);
- 				continue;
- 			}
- 			/* Ldisc or user is trying to flush the buffers
-@@ -445,9 +443,9 @@ static void flush_to_ldisc(struct work_struct *work)
- 							flag_buf, count);
- 			spin_lock_irqsave(&tty->buf.lock, flags);
- 		}
--		/* Restore the queue head */
--		tty->buf.head = head;
-+		clear_bit(TTY_FLUSHING, &tty->flags);
- 	}
-+
- 	/* We may have a deferred request to flush the input buffer,
- 	   if so pull the chain under the lock and empty the queue */
- 	if (test_bit(TTY_FLUSHPENDING, &tty->flags)) {
-@@ -455,7 +453,6 @@ static void flush_to_ldisc(struct work_struct *work)
- 		clear_bit(TTY_FLUSHPENDING, &tty->flags);
- 		wake_up(&tty->read_wait);
- 	}
--	clear_bit(TTY_FLUSHING, &tty->flags);
- 	spin_unlock_irqrestore(&tty->buf.lock, flags);
- 
- 	tty_ldisc_deref(disc);
