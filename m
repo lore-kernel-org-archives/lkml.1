@@ -1,252 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbZJMCUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbZJMCTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932468AbZJMCUH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 22:20:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757541AbZJMCUG
+	id S1758776AbZJMCTP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 22:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbZJMCTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 22:20:06 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56267 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756001AbZJMCUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 22:20:05 -0400
-Message-ID: <4AD3E369.10608@cn.fujitsu.com>
-Date: Tue, 13 Oct 2009 10:18:17 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 12 Oct 2009 22:19:14 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:57472 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754314AbZJMCTL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 22:19:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hqt2SRfAeyQEmF5dEsurFU3Plvtj3MVdcBrJHd9d5SGrS9kKAjw5N9mwjnsPnfZWUe
+         ZbMbBwgXEzq+u6gm4rIRzQIiqGD683UFmf8k6/nDLQLURRUts3rjg9FPmdFgPJn8Z+fM
+         p1y8OJnF1cQ27QVQWcXVbwpldxHZ4dSCGZjqg=
+Date: Tue, 13 Oct 2009 11:18:18 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Lothar Wassmann <LW@KARO-electronics.de>, linux-usb@vger.kernel.org,
+       Roland Dreier <rolandd@cisco.com>,
+       Yevgeny Petrilin <yevgenyp@mellanox.co.il>, netdev@vger.kernel.org,
+       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64@vger.kernel.org, linux-altix@sgi.com
+Subject: Re: [PATCH 2/8] bitmap: Introduce bitmap_set, bitmap_clear,
+	bitmap_find_next_zero_area
+Message-ID: <20091013021818.GA3898@localhost.localdomain>
+References: <1255076961-21325-1-git-send-email-akinobu.mita@gmail.com> <1255076961-21325-2-git-send-email-akinobu.mita@gmail.com> <20091009164100.85a36188.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/4] tracing/filters: Refactor subsystem filter code
-References: <4AD3E34C.1020301@cn.fujitsu.com>
-In-Reply-To: <4AD3E34C.1020301@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091009164100.85a36188.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change:
-	for_each_pred
-		for_each_subsystem
-To:
-	for_each_subsystem
-		for_each_pred
+On Fri, Oct 09, 2009 at 04:41:00PM -0700, Andrew Morton wrote:
+> On Fri,  9 Oct 2009 17:29:15 +0900
+> Akinobu Mita <akinobu.mita@gmail.com> wrote:
+> 
+> > This introduces new bitmap functions:
+> > 
+> > bitmap_set: Set specified bit area
+> > bitmap_clear: Clear specified bit area
+> > bitmap_find_next_zero_area: Find free bit area
+> > 
+> > These are stolen from iommu helper.
+> > 
+> > I changed the return value of bitmap_find_next_zero_area if there is
+> > no zero area.
+> > 
+> > find_next_zero_area in iommu helper: returns -1
+> > bitmap_find_next_zero_area: return >= bitmap size
+> 
+> I'll plan to merge this patch into 2.6.32 so we can trickle all the
+> other patches into subsystems in an orderly fashion.
 
-This change also prepares for later patches.
+Sounds good.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/trace.h               |    1 -
- kernel/trace/trace_events_filter.c |  124 +++++++++++++-----------------------
- 2 files changed, 45 insertions(+), 80 deletions(-)
+> > +void bitmap_set(unsigned long *map, int i, int len)
+> > +{
+> > +	int end = i + len;
+> > +
+> > +	while (i < end) {
+> > +		__set_bit(i, map);
+> > +		i++;
+> > +	}
+> > +}
+> 
+> This is really inefficient, isn't it?  It's a pretty trivial matter to
+> romp through memory 32 or 64 bits at a time.
 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index b17e0ea..300cdae 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -705,7 +705,6 @@ struct event_filter {
- 	int			n_preds;
- 	struct filter_pred	**preds;
- 	char			*filter_string;
--	bool			no_reset;
- };
- 
- struct event_subsystem {
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 8c194de..1d22749 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -615,14 +615,7 @@ static int init_subsystem_preds(struct event_subsystem *system)
- 	return 0;
- }
- 
--enum {
--	FILTER_DISABLE_ALL,
--	FILTER_INIT_NO_RESET,
--	FILTER_SKIP_NO_RESET,
--};
--
--static void filter_free_subsystem_preds(struct event_subsystem *system,
--					int flag)
-+static void filter_free_subsystem_preds(struct event_subsystem *system)
- {
- 	struct ftrace_event_call *call;
- 
-@@ -633,14 +626,6 @@ static void filter_free_subsystem_preds(struct event_subsystem *system,
- 		if (strcmp(call->system, system->name) != 0)
- 			continue;
- 
--		if (flag == FILTER_INIT_NO_RESET) {
--			call->filter->no_reset = false;
--			continue;
--		}
--
--		if (flag == FILTER_SKIP_NO_RESET && call->filter->no_reset)
--			continue;
--
- 		filter_disable_preds(call);
- 		remove_filter_string(call->filter);
- 	}
-@@ -817,44 +802,6 @@ add_pred_fn:
- 	return 0;
- }
- 
--static int filter_add_subsystem_pred(struct filter_parse_state *ps,
--				     struct event_subsystem *system,
--				     struct filter_pred *pred,
--				     char *filter_string,
--				     bool dry_run)
--{
--	struct ftrace_event_call *call;
--	int err = 0;
--	bool fail = true;
--
--	list_for_each_entry(call, &ftrace_events, list) {
--
--		if (!call->define_fields)
--			continue;
--
--		if (strcmp(call->system, system->name))
--			continue;
--
--		if (call->filter->no_reset)
--			continue;
--
--		err = filter_add_pred(ps, call, pred, dry_run);
--		if (err)
--			call->filter->no_reset = true;
--		else
--			fail = false;
--
--		if (!dry_run)
--			replace_filter_string(call->filter, filter_string);
--	}
--
--	if (fail) {
--		parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
--		return err;
--	}
--	return 0;
--}
--
- static void parse_init(struct filter_parse_state *ps,
- 		       struct filter_op *ops,
- 		       char *infix_string)
-@@ -1208,8 +1155,7 @@ static int check_preds(struct filter_parse_state *ps)
- 	return 0;
- }
- 
--static int replace_preds(struct event_subsystem *system,
--			 struct ftrace_event_call *call,
-+static int replace_preds(struct ftrace_event_call *call,
- 			 struct filter_parse_state *ps,
- 			 char *filter_string,
- 			 bool dry_run)
-@@ -1256,11 +1202,7 @@ static int replace_preds(struct event_subsystem *system,
- add_pred:
- 		if (!pred)
- 			return -ENOMEM;
--		if (call)
--			err = filter_add_pred(ps, call, pred, false);
--		else
--			err = filter_add_subsystem_pred(ps, system, pred,
--						filter_string, dry_run);
-+		err = filter_add_pred(ps, call, pred, dry_run);
- 		filter_free_pred(pred);
- 		if (err)
- 			return err;
-@@ -1271,6 +1213,44 @@ add_pred:
- 	return 0;
- }
- 
-+static int replace_system_preds(struct event_subsystem *system,
-+				struct filter_parse_state *ps,
-+				char *filter_string)
-+{
-+	struct ftrace_event_call *call;
-+	int err;
-+	bool fail = true;
-+
-+	list_for_each_entry(call, &ftrace_events, list) {
-+
-+		if (!call->define_fields)
-+			continue;
-+
-+		if (strcmp(call->system, system->name) != 0)
-+			continue;
-+
-+		/* try to see if the filter can be applied */
-+		err = replace_preds(call, ps, filter_string, true);
-+		if (err)
-+			continue;
-+
-+		/* really apply the filter */
-+		filter_disable_preds(call);
-+		err = replace_preds(call, ps, filter_string, false);
-+		if (err)
-+			filter_disable_preds(call);
-+		else
-+			replace_filter_string(call->filter, filter_string);
-+		fail = false;
-+	}
-+
-+	if (fail) {
-+		parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
-+		return err;
-+	}
-+	return 0;
-+}
-+
- int apply_event_filter(struct ftrace_event_call *call, char *filter_string)
- {
- 	int err;
-@@ -1305,7 +1285,7 @@ int apply_event_filter(struct ftrace_event_call *call, char *filter_string)
- 		goto out;
- 	}
- 
--	err = replace_preds(NULL, call, ps, filter_string, false);
-+	err = replace_preds(call, ps, filter_string, false);
- 	if (err)
- 		append_filter_err(ps, call->filter);
- 
-@@ -1333,7 +1313,7 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
- 		goto out_unlock;
- 
- 	if (!strcmp(strstrip(filter_string), "0")) {
--		filter_free_subsystem_preds(system, FILTER_DISABLE_ALL);
-+		filter_free_subsystem_preds(system);
- 		remove_filter_string(system->filter);
- 		mutex_unlock(&event_mutex);
- 		return 0;
-@@ -1353,23 +1333,9 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
- 		goto out;
- 	}
- 
--	filter_free_subsystem_preds(system, FILTER_INIT_NO_RESET);
--
--	/* try to see the filter can be applied to which events */
--	err = replace_preds(system, NULL, ps, filter_string, true);
--	if (err) {
--		append_filter_err(ps, system->filter);
--		goto out;
--	}
--
--	filter_free_subsystem_preds(system, FILTER_SKIP_NO_RESET);
--
--	/* really apply the filter to the events */
--	err = replace_preds(system, NULL, ps, filter_string, false);
--	if (err) {
-+	err = replace_system_preds(system, ps, filter_string);
-+	if (err)
- 		append_filter_err(ps, system->filter);
--		filter_free_subsystem_preds(system, 2);
--	}
- 
- out:
- 	filter_opstack_clear(ps);
--- 
-1.6.3
+OK. I'll do
+
+> > +unsigned long bitmap_find_next_zero_area(unsigned long *map,
+> > +					 unsigned long size,
+> > +					 unsigned long start,
+> > +					 unsigned int nr,
+> > +					 unsigned long align_mask)
+> > +{
+> > +	unsigned long index, end, i;
+> > +again:
+> > +	index = find_next_zero_bit(map, size, start);
+> > +
+> > +	/* Align allocation */
+> > +	index = (index + align_mask) & ~align_mask;
+> > +
+> > +	end = index + nr;
+> > +	if (end >= size)
+> > +		return end;
+> > +	i = find_next_bit(map, end, index);
+> > +	if (i < end) {
+> > +		start = i + 1;
+> > +		goto again;
+> > +	}
+> > +	return index;
+> > +}
+> > +EXPORT_SYMBOL(bitmap_find_next_zero_area);
+> 
+> This needs documentation, please.  It appears that `size' is the size
+> of the bitmap and `nr' is the number of zeroed bits we're looking for,
+> but an inattentive programmer could get those reversed.
+> 
+> Also the semantics of `align_mask' could benefit from spelling out.  Is
+> the alignment with respect to memory boundaries or with respect to
+> `map' or with respect to map+start or what?
+
+OK. I will document it.
+
+And I plan to change bitmap_find_next_zero_area() to take the alignment
+instead of an align_mask as Roland said.
+
+> And why does align_mask exist at all?  I was a bit surprised to see it
+> there.  In which scenarios will it be non-zero?
+
+Because the users of iommu-helper and mlx4 need the alignment requirement
+for the zero area.
+
+arch/powerpc/kernel/iommu.c
+arch/x86/kernel/amd_iommu.c
+arch/x86/kernel/pci-gart_64.c
+drivers/net/mlx4/alloc.c
 
