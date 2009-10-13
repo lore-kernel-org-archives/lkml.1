@@ -1,130 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760987AbZJMTF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760603AbZJMTJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760987AbZJMTF3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 15:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZJMTF2
+	id S1760603AbZJMTJX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 15:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZJMTJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 15:05:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55865 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753748AbZJMTF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 15:05:27 -0400
-Date: Tue, 13 Oct 2009 19:04:19 GMT
-From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, peterz@infradead.org, blaise@willowgarage.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
-       linux-kernel@vger.kernel.org, blaise@willowgarage.com,
-       peterz@infradead.org, tglx@linutronix.de
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/urgent] futex: Handle spurious wake up
-Message-ID: <tip-d58e6576b0deec6f0b9ff8450fe282da18c50883@git.kernel.org>
-Git-Commit-ID: d58e6576b0deec6f0b9ff8450fe282da18c50883
-X-Mailer: tip-git-log-daemon
+	Tue, 13 Oct 2009 15:09:22 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:53528 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753931AbZJMTJV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 15:09:21 -0400
+From: Ricardo Jorge da Fonseca Marques Ferreira <storm@sys49152.net>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH] pci: increase alignment to make more space for hidden code
+Date: Tue, 13 Oct 2009 20:05:27 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-44.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Yannick Roehlly <yannick.roehlly@free.fr>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, x86@kernel.org,
+       andreaorru91@gmail.com, jjorge@free.fr
+References: <200908072333.24631.storm@sys49152.net> <4AD38734.2040600@kernel.org> <1255414115.14484.47.camel@dc7800.home>
+In-Reply-To: <1255414115.14484.47.camel@dc7800.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Oct 2009 19:04:20 +0000 (UTC)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910132005.27487.storm@sys49152.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d58e6576b0deec6f0b9ff8450fe282da18c50883
-Gitweb:     http://git.kernel.org/tip/d58e6576b0deec6f0b9ff8450fe282da18c50883
-Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Tue, 13 Oct 2009 20:40:43 +0200
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Tue, 13 Oct 2009 20:40:43 +0200
+On Tuesday 13 October 2009, Bjorn Helgaas wrote: 
+> If anybody can try this, I'd really appreciate it.  Here's what I would
+> like to see:
+> 
+>   - start with a current git tree (I used 2caa731819a633be)
+>   - apply the patch below
+>   - turn on CONFIG_PCI_DEBUG
+>   - boot with "pci=earlydump", collect dmesg
+>   - boot with "pci=earlydump,use_crs", collect dmesg
+>   - boot Windows, collect Device Manager resources for 00:1c.4 and
+> 07:00.0 
 
-futex: Handle spurious wake up
+I just did what you requested and added the attachments to the original 
+bugreport. I couldn't boot Windows because i don't have it installed anywhere 
+in the laptop.
 
-The futex code does not handle spurious wake up in futex_wait and
-futex_wait_requeue_pi.
-
-The code assumes that any wake up which was not caused by futex_wake /
-requeue or by a timeout was caused by a signal wake up and returns one
-of the syscall restart error codes.
-
-In case of a spurious wake up the signal delivery code which deals
-with the restart error codes is not invoked and we return that error
-code to user space. That causes applications which actually check the
-return codes to fail. Blaise reported that on preempt-rt a python test
-program run into a exception trap. -rt exposed that due to a built in
-spurious wake up accelerator :)
-
-Solve this by checking signal_pending(current) in the wake up path and
-handle the spurious wake up case w/o returning to user space.
-
-Reported-by: Blaise Gassend <blaise@willowgarage.com>
-Debugged-by: Darren Hart <dvhltc@us.ibm.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: stable@kernel.org
-LKML-Reference: <new-submission>
----
- kernel/futex.c |   18 +++++++++++++++---
- 1 files changed, 15 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 4949d33..5c88839 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1791,6 +1791,7 @@ static int futex_wait(u32 __user *uaddr, int fshared,
- 					     current->timer_slack_ns);
- 	}
- 
-+retry:
- 	/* Prepare to wait on uaddr. */
- 	ret = futex_wait_setup(uaddr, val, fshared, &q, &hb);
- 	if (ret)
-@@ -1808,9 +1809,14 @@ static int futex_wait(u32 __user *uaddr, int fshared,
- 		goto out_put_key;
- 
- 	/*
--	 * We expect signal_pending(current), but another thread may
--	 * have handled it for us already.
-+	 * We expect signal_pending(current), but we might be the
-+	 * victim of a spurious wakeup as well.
- 	 */
-+	if (!signal_pending(current)) {
-+		put_futex_key(fshared, &q.key);
-+		goto retry;
-+	}
-+
- 	ret = -ERESTARTSYS;
- 	if (!abs_time)
- 		goto out_put_key;
-@@ -2118,9 +2124,11 @@ int handle_early_requeue_pi_wakeup(struct futex_hash_bucket *hb,
- 		 */
- 		plist_del(&q->list, &q->list.plist);
- 
-+		/* Handle spurious wakeups gracefully */
-+		ret = -EAGAIN;
- 		if (timeout && !timeout->task)
- 			ret = -ETIMEDOUT;
--		else
-+		else if (signal_pending(current))
- 			ret = -ERESTARTNOINTR;
- 	}
- 	return ret;
-@@ -2198,6 +2206,7 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, int fshared,
- 	debug_rt_mutex_init_waiter(&rt_waiter);
- 	rt_waiter.task = NULL;
- 
-+retry:
- 	key2 = FUTEX_KEY_INIT;
- 	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
- 	if (unlikely(ret != 0))
-@@ -2292,6 +2301,9 @@ out_put_keys:
- out_key2:
- 	put_futex_key(fshared, &key2);
- 
-+	/* Spurious wakeup ? */
-+	if (ret == -EAGAIN)
-+		goto retry;
- out:
- 	if (to) {
- 		hrtimer_cancel(&to->timer);
+Booting both latest and 2.6.31 with pci=use_crs, fixes the problem.
