@@ -1,101 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761088AbZJMTWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934082AbZJMTUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761088AbZJMTWg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 15:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761034AbZJMTWf
+	id S934082AbZJMTUM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 15:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbZJMTUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 15:22:35 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:45243 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754454AbZJMTWe (ORCPT
+	Tue, 13 Oct 2009 15:20:11 -0400
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:53796 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753674AbZJMTUJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 15:22:34 -0400
-Date: Tue, 13 Oct 2009 15:14:38 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: David Rientjes <rientjes@google.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Mel Gorman <mel@csn.ul.ie>, Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu
- operations in the hotpaths
-In-Reply-To: <alpine.DEB.1.10.0910131041450.21608@gentwo.org>
-Message-ID: <alpine.DEB.1.10.0910131509170.32394@gentwo.org>
-References: <20091007211024.442168959@gentwo.org> <20091007211053.378634196@gentwo.org> <4AD307A5.105@kernel.org> <84144f020910120614r529d8e4em9babe83a90e9371f@mail.gmail.com> <alpine.DEB.1.00.0910130231570.27262@chino.kir.corp.google.com>
- <alpine.DEB.1.10.0910131041450.21608@gentwo.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 13 Oct 2009 15:20:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kH/kFVlRi5QqueVSpERHiiEneYbIJGqy4isaOG/XqmSscuq8ro8k0+phB3ysn9VClE
+         xdmbbDxQ5fAkKikm8+6kJNURjow8m1QYDX3o0MNY+I4XJf8vxc693I6xXk9xHP0B0NX+
+         ZguFAQlrJHhLTnp0nkvjXHYNEHXp/xovoMdNc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20091012120510.16bd1194@jbarnes-g45>
+References: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
+	 <20091008103620.5e5aae66@jbarnes-g45> <20091010204106.GA8251@mit.edu>
+	 <20091012095438.1e82b54f@jbarnes-g45>
+	 <20091012184651.GA4603@Pilar.aei.mpg.de>
+	 <20091012120510.16bd1194@jbarnes-g45>
+Date: Tue, 13 Oct 2009 21:19:32 +0200
+Message-ID: <b637ec0b0910131219u638e37dan2f3a98a9a89a2570@mail.gmail.com>
+Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with T400 
+	laptops
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+       Keith Packard <keithp@keithp.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some cycle numbers w/o the slub patches and with. I will post the
-full test results and the patches to do these in kernel tests in a new
-thread. The regression may be due to caching behavior of SLUB that will
-not change with these patches.
+Hi Jesse.
+Sorry to jump in but I also had issues with -32rc (i915 chip) and this
+patch seems to have resolved all problems.
 
-Alloc fastpath wins ~ 50%. kfree also has a 50% win if the fastpath is
-being used. First test does 10000 kmallocs and then frees them all.
-Second test alloc one and free one and does that 10000 times.
+I don't know how to describe in english what happened to my desktop
+but probably "glitches" and "tearings" could be the correct words.
+Also sometimes the screen went blank and needed to switch to terminal
+console and back to return to the normal X screen.
 
-no this_cpu ops
+Nothing in the logs, neither messages nor Xorg.0.log.
 
-1. Kmalloc: Repeatedly allocate then free test
-10000 times kmalloc(8) -> 239 cycles kfree -> 261 cycles
-10000 times kmalloc(16) -> 249 cycles kfree -> 208 cycles
-10000 times kmalloc(32) -> 215 cycles kfree -> 232 cycles
-10000 times kmalloc(64) -> 164 cycles kfree -> 216 cycles
-10000 times kmalloc(128) -> 266 cycles kfree -> 275 cycles
-10000 times kmalloc(256) -> 478 cycles kfree -> 199 cycles
-10000 times kmalloc(512) -> 449 cycles kfree -> 201 cycles
-10000 times kmalloc(1024) -> 484 cycles kfree -> 398 cycles
-10000 times kmalloc(2048) -> 475 cycles kfree -> 559 cycles
-10000 times kmalloc(4096) -> 792 cycles kfree -> 506 cycles
-10000 times kmalloc(8192) -> 753 cycles kfree -> 679 cycles
-10000 times kmalloc(16384) -> 968 cycles kfree -> 712 cycles
-2. Kmalloc: alloc/free test
-10000 times kmalloc(8)/kfree -> 292 cycles
-10000 times kmalloc(16)/kfree -> 308 cycles
-10000 times kmalloc(32)/kfree -> 326 cycles
-10000 times kmalloc(64)/kfree -> 303 cycles
-10000 times kmalloc(128)/kfree -> 257 cycles
-10000 times kmalloc(256)/kfree -> 262 cycles
-10000 times kmalloc(512)/kfree -> 293 cycles
-10000 times kmalloc(1024)/kfree -> 262 cycles
-10000 times kmalloc(2048)/kfree -> 289 cycles
-10000 times kmalloc(4096)/kfree -> 274 cycles
-10000 times kmalloc(8192)/kfree -> 265 cycles
-10000 times kmalloc(16384)/kfree -> 1041 cycles
+Regards,
+Fabio
 
 
-with this_cpu_xx
 
-1. Kmalloc: Repeatedly allocate then free test
-10000 times kmalloc(8) -> 134 cycles kfree -> 212 cycles
-10000 times kmalloc(16) -> 109 cycles kfree -> 116 cycles
-10000 times kmalloc(32) -> 157 cycles kfree -> 231 cycles
-10000 times kmalloc(64) -> 168 cycles kfree -> 169 cycles
-10000 times kmalloc(128) -> 263 cycles kfree -> 260 cycles
-10000 times kmalloc(256) -> 430 cycles kfree -> 251 cycles
-10000 times kmalloc(512) -> 415 cycles kfree -> 258 cycles
-10000 times kmalloc(1024) -> 406 cycles kfree -> 432 cycles
-10000 times kmalloc(2048) -> 457 cycles kfree -> 579 cycles
-10000 times kmalloc(4096) -> 624 cycles kfree -> 553 cycles
-10000 times kmalloc(8192) -> 851 cycles kfree -> 851 cycles
-10000 times kmalloc(16384) -> 907 cycles kfree -> 722 cycles
-2. Kmalloc: alloc/free test
-10000 times kmalloc(8)/kfree -> 232 cycles
-10000 times kmalloc(16)/kfree -> 150 cycles
-10000 times kmalloc(32)/kfree -> 278 cycles
-10000 times kmalloc(64)/kfree -> 263 cycles
-10000 times kmalloc(128)/kfree -> 280 cycles
-10000 times kmalloc(256)/kfree -> 279 cycles
-10000 times kmalloc(512)/kfree -> 299 cycles
-10000 times kmalloc(1024)/kfree -> 289 cycles
-10000 times kmalloc(2048)/kfree -> 288 cycles
-10000 times kmalloc(4096)/kfree -> 321 cycles
-10000 times kmalloc(8192)/kfree -> 285 cycles
-10000 times kmalloc(16384)/kfree -> 1002 cycles
-
+On Mon, Oct 12, 2009 at 9:05 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> On Mon, 12 Oct 2009 20:46:51 +0200
+> "Carlos R. Mafra" <crmafra2@gmail.com> wrote:
+>
+>> On Mon 12.Oct'09 at  9:54:38 -0700, Jesse Barnes wrote:
+>> > >
+>> > > Nope, unfortunately, it's not helping on my T400 laptop.  I'm
+>> > > still getting huge amounts of glitching and tearing with this
+>> > > patch applied against -rc3.
+>> > >
+>> > > What I'm using for now to fix up my system is this patch.
+>> > >
+>> >
+>> > How about this one?  I have one more idea to try out if this doesn't
+>> > work (hacking on it now).
+>>
+>> I was also experiencing something very similar to Theodore's bug
+>> report and, at least for me, the patch below fixed the issue (the
+>> previous one also had no effect).
+>
+> Cool, good to hear.  Hopefully Ted and Keith will confirm too.
+>
+> --
+> Jesse Barnes, Intel Open Source Technology Center
+>
+> diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
+> index 7a5fb79..1451945 100644
+> --- a/drivers/gpu/drm/i915/intel_display.c
+> +++ b/drivers/gpu/drm/i915/intel_display.c
+> @@ -1047,7 +1047,7 @@ static void g4x_enable_fbc(struct drm_crtc *crtc, unsigned long interval)
+>        dev_priv->cfb_fence = obj_priv->fence_reg;
+>        dev_priv->cfb_plane = intel_crtc->plane;
+>
+> -       dpfc_ctl = plane | DPFC_SR_EN | DPFC_CTL_LIMIT_1X;
+> +       dpfc_ctl = plane | DPFC_CTL_LIMIT_1X;
+>        if (obj_priv->tiling_mode != I915_TILING_NONE) {
+>                dpfc_ctl |= DPFC_CTL_FENCE_EN | dev_priv->cfb_fence;
+>                I915_WRITE(DPFC_CHICKEN, DPFC_HT_MODIFY);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
