@@ -1,98 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759360AbZJMKVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbZJMKVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759360AbZJMKVH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 06:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759347AbZJMKVG
+	id S1759356AbZJMKVm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 06:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759287AbZJMKVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 06:21:06 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:53513 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759332AbZJMKVE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 06:21:04 -0400
-Message-ID: <4AD45447.7030705@gmail.com>
-Date: Tue, 13 Oct 2009 12:19:51 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 13 Oct 2009 06:21:41 -0400
+Received: from mga01.intel.com ([192.55.52.88]:57234 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755851AbZJMKVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 06:21:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,550,1249282800"; 
+   d="scan'208";a="502630895"
+From: "Trisal, Kalhan" <kalhan.trisal@intel.com>
+To: "samu.p.onkalo@nokia.com" <samu.p.onkalo@nokia.com>,
+       =?utf-8?B?ZXh0IMOJcmljIFBpZWw=?= <eric.piel@tremplin-utc.net>
+CC: Jonathan Cameron <Jonathan.Cameron@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>,
+       Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 13 Oct 2009 15:50:10 +0530
+Subject: RE: [RFC][PATCH 0/2] LIS3LV02D I2C driver
+Thread-Topic: [RFC][PATCH 0/2] LIS3LV02D I2C driver
+Thread-Index: AcpL7d4MWRwB4D9IRJCg98SNk/pU8QAAGLUw
+Message-ID: <3CA6C6D9F70D314CA34352990B57DA1539AE7E1D@bgsmsx502.gar.corp.intel.com>
+References: <1254391591-9696-1-git-send-email-samu.p.onkalo@nokia.com>
+	 <4ACCC273.1030308@gmail.com> <4ACCC957.3060802@tremplin-utc.net>
+	 <4ACCCF48.5090005@tremplin-utc.net> <1255428813.3974.9.camel@4fid08082>
+In-Reply-To: <1255428813.3974.9.camel@4fid08082>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Massimo Cetra <ctrixk@navynet.it>
-CC: David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [Bug #14378] Problems with net/core/skbuff.c
-References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>	<r-4Wjt4coy.A.CwC.Wal0KB@chimera> <20091012.034224.64980795.davem@davemloft.net> <4AD44435.3050703@navynet.it>
-In-Reply-To: <4AD44435.3050703@navynet.it>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 13 Oct 2009 12:19:52 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n9DAQJ16005443
 
-Massimo Cetra a écrit :
-> David Miller ha scritto:
->> From: "Rafael J. Wysocki" <rjw@sisk.pl>
->> Date: Mon, 12 Oct 2009 00:22:04 +0200 (CEST)
->>
->>  
->>> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=14378
->>> Subject        : Problems with net/core/skbuff.c
->>> Submitter    : Massimo Cetra <mcetra@navynet.it>
->>> Date        : 2009-10-08 14:51 (4 days old)
->>> References    : http://marc.info/?l=linux-kernel&m=125501488220358&w=4
->>>     
->>
->> I don't know what to do about this one.
->>
->> The user indicates that they have the vserver patches applied,
->> so maybe there is some interaction with that stuff.
->>   
-> Actually i found another oops which is very similar to the previous one.
-> Here, vserver is not involved, and the problem starts at drbd which
-> lives in kernel space (the other oops started at ocfs2).
+
+
+-----Original Message-----
+From: Onkalo Samu [mailto:samu.p.onkalo@nokia.com] 
+Sent: Tuesday, October 13, 2009 3:44 PM
+To: ext Ã‰ric Piel; Trisal, Kalhan
+Cc: Jonathan Cameron; linux-kernel@vger.kernel.org; LM Sensors; Jean Delvare; Andrew Morton
+Subject: Re: [RFC][PATCH 0/2] LIS3LV02D I2C driver
+
+On Wed, 2009-10-07 at 19:26 +0200, ext Ã‰ric Piel wrote:
+> Op 07-10-09 19:01, Ã‰ric Piel schreef:
+> > Op 07-10-09 18:31, Jonathan Cameron schreef:
+> >> Just a quick heads up wrt overlapping work.
+> >>
+> >> For the i2c support Kalhan Trisal has been posting patches for i2c
+> >> support for this
+> >> driver to the lm-sensors list for some time and the latest version of that
+> >> set is also pretty clean.
+> > You mean this post, right?
+> > http://lists.lm-sensors.org/pipermail/lm-sensors/2009-August/026505.html
+> > "Accelerometer driver for STMicroeletronics-LIS331DL-three-axis-digital"
+> > Thanks for the heads up, I had never heard of this driver before.
 > 
-> Both ocfs2 and drbd make heavy use of network I/O so i guess the problem
-> is something in the network layer.
+> :
+> > Kalhan, would
+> > you mind having a look at the patch from Samu, and see what is required
+> > to get your LIS331DL working with the lis3lv02d driver? It should be
+> > very little and avoid duplication of efforts :-)
+> Ah, bah,
+> I see you have actually already more or less done this!
+> http://lists.lm-sensors.org/pipermail/lm-sensors/2009-October/026840.html
+> "I2C glue layer for lis3lv02d STMicroelectronics digital accelerometer"
 > 
-> Anything i can do to help to debugging and solving this issue ?
+> The main thing you forgot to do with this patch was to CC the maintainer
+> of the driver (AKA me) ;-)
 > 
-> Thanks
-> Max
-> 
+> Anyway, this version is _very_ close to the one from Samu. It has just
+> all the basics, really clean! Samu has already added some nifty things
+> (like changing the axis conversion, support for suspend...). So it
+> should _really_ easy to converge :-) As Samu's patch is already in
+> Andrew's queue, I think it's simpler to leave it as it, and just to keep
+> my request to you, Kalhan, to check that it works for your hardware as
+> well.
 
-Problem is kfree_skb() is called from irq context, wich is not allowed.
+Hi Kalhan,
 
-static void skb_release_head_state(struct sk_buff *skb)
-{
-...
-if (skb->destructor) {
-	WARN_ON(in_irq());
-	skb->destructor();
-}
-...
-}
+Have you been able to test my patch if it works also for your HW?
 
-virtio_net start_xmit() function calls free_old_xmit_skbs() and 
-free_old_xmit_skbs() ultimately calls kfree_skb()
+http://marc.info/?l=linux-kernel&m=125472767421625&w=2
 
-Quick fix would be to use dev_kfree_skb_any() instead,
-because netpoll can definitly calls start_xmit()
-with irq disabled.
+http://marc.info/?l=linux-kernel&m=125472767421629&w=2
 
-Could you please following patch ?
-
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 8d00976..54bf091 100644
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -454,7 +454,7 @@ static unsigned int free_old_xmit_skbs(struct virtnet_info *vi)
- 		vi->dev->stats.tx_bytes += skb->len;
- 		vi->dev->stats.tx_packets++;
- 		tot_sgs += skb_vnet_hdr(skb)->num_sg;
--		kfree_skb(skb);
-+		dev_kfree_skb_any(skb);
- 	}
- 	return tot_sgs;
- }
+http://marc.info/?l=linux-kernel&m=125472767421639&w=2
+ 
+Br,
+Samu
 
 
+Hi Samu, 
+  I haven't tested your patch yet but it will work.
+   I have seen the patch, the glue layer is exactly same 
+   what I have also tested part of my driver.
+
+Br
+Kalhan
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
