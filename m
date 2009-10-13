@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933872AbZJMKdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933861AbZJMKcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933872AbZJMKdL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 06:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933794AbZJMKdK
+	id S933861AbZJMKcf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 06:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759389AbZJMKce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 06:33:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49247 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933812AbZJMKdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 06:33:09 -0400
-Date: Tue, 13 Oct 2009 12:32:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>, x86team <x86@kernel.org>
-Subject: Re: [RFC -tip] apic NOOP driver
-Message-ID: <20091013103229.GB3915@elte.hu>
-References: <20090924203147.GD5476@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090924203147.GD5476@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 13 Oct 2009 06:32:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36227 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755630AbZJMKce (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 06:32:34 -0400
+Date: Tue, 13 Oct 2009 11:32:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nix <nix@esperi.org.uk>, Paul Fulghum <paulkf@microgate.com>,
+       "Justin P. Mattock" <justinmattock@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Boyan <btanastasov@yahoo.co.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       "=?ISO-8859-14?B?RnLpZOlyaWM=?= L. W. Meunier" <fredlwm@gmail.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+Message-ID: <20091013113232.384b2432@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
+	<L6tb-VyKHZK.A.PaB.Ozl0KB@chimera>
+	<C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com>
+	<87ljjgfcbu.fsf@spindle.srvr.nix>
+	<alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>
+	<alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> It does that "tty_buffer_request_room()" call and subsequent copying with 
+> no locking at all - sure, the tty_buffer_request_room() function itself 
+> locks the buffers, but then unlocks it when returning, so when we actually 
+> do the memcpy() etc, we can race with anybody.
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+The tty_buffer_request_room() is a hint to help better allocation. It's
+also only safe to run from the receiving path of the driver (which
+has always been assumed not to make two parallel calls to the function at
+once.
 
-> Ingo,
-> 
-> here is what implemented at moment. Did you mean something like that? 
-> Note that it's quite early RFC not for any kind of inclusion.
+There is a simple reason the locking is sufficient. If you can call the
+function from two places at once in your serial driver at the same you've
+scrambled the data order so you've already lost.
 
-yeah, this looks pretty good.
+So - not a bug - and the lock changes don't actually "fix" any behaviour
+either because the ordering must be imposed by the caller.
 
-And i'd suggest to separate the patches that introduce this APIC driver 
-from the changes that make use of it. Makes for an easier bisection 
-target.
+>   pointless: they then call tty_insert_flip_string(), which means that the 
+>   tty_buffer_request_room() call was totally redundant ]
 
-	Ingo
+It's a performance tweak. With a 3G USB modem or similar device running
+at 20Mbits or more being able to generate one allocation per chunk
+received for DMA made a measurable performance difference on some
+platforms. 
+ 
+Alan
