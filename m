@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbZJMBaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbZJMBeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758082AbZJMBaq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 21:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbZJMBaq
+	id S1758716AbZJMBeX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 21:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758692AbZJMBeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 21:30:46 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64521 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755493AbZJMBap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 21:30:45 -0400
-Message-ID: <4AD3D7D9.4070400@cn.fujitsu.com>
-Date: Tue, 13 Oct 2009 09:28:57 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing/filters: Fix memory leak when setting a filter
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Oct 2009 21:34:23 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:41908 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758685AbZJMBeW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 21:34:22 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: Greg Ungerer <gerg@snapgear.com>
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Tim Abbott <tabbott@ksplice.com>
+Subject: [PATCH v3 0/7] m68knommu: Clean up linker script using new linker script macros.
+Date: Mon, 12 Oct 2009 21:30:06 -0400
+Message-Id: <1255397413-4862-1-git-send-email-tabbott@ksplice.com>
+X-Mailer: git-send-email 1.6.4.3
+In-Reply-To: <4AD3BFD8.90408@snapgear.com>
+References: <4AD3BFD8.90408@snapgear.com>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every time we set a filter, we leak memory allocated by
-postfix_append_operand() and postfix_append_op().
+On Mon, 12 Oct 2009, Greg Ungerer wrote:
+> Tim Abbott wrote:
+>> I don't any good ideas for what in patch is likely to be
+>> responsible.  Would it be helpful to debug if I split this into ~5
+>> very small patches so that we can find out what part of the patch
+>> is responsible?
+> Yes, that will make it quick and easy for me.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/trace_events_filter.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+OK, below's a new patch series that is the same as the previous one
+but in 7-patch format.
 
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 2324578..98a6cc5 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -933,8 +933,9 @@ static void postfix_clear(struct filter_parse_state *ps)
- 
- 	while (!list_empty(&ps->postfix)) {
- 		elt = list_first_entry(&ps->postfix, struct postfix_elt, list);
--		kfree(elt->operand);
- 		list_del(&elt->list);
-+		kfree(elt->operand);
-+		kfree(elt);
- 	}
- }
- 
--- 
-1.6.3
+	-Tim Abbott
+
+Tim Abbott (7):
+  m68knommu: Don't hardcode the value of PAGE_SIZE in the linker
+    script.
+  m68knommu: Make THREAD_SIZE available to assembly files.
+  m68knommu: Use INIT_TASK_DATA and CACHELINE_ALIGNED_DATA.
+  m68knommu: Use more macros inside the .init section.
+  m68knommu: Move __init_begin out of the .init section.
+  m68knommu: Move __init_end out of the .init section.
+  m68knommu: Split the .init section into INIT_TEXT_SECTION and
+    INIT_DATA_SECTION.
+
+ arch/m68k/include/asm/thread_info_no.h |    4 +-
+ arch/m68knommu/kernel/vmlinux.lds.S    |   41 ++++++++-----------------------
+ 2 files changed, 13 insertions(+), 32 deletions(-)
 
