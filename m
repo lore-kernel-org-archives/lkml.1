@@ -1,59 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933293AbZJMGoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758958AbZJMGjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933293AbZJMGoU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 02:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933024AbZJMGoU
+	id S1758958AbZJMGjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 02:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758851AbZJMGjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 02:44:20 -0400
-Received: from mail-qy0-f186.google.com ([209.85.221.186]:44173 "EHLO
-	mail-qy0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932993AbZJMGoT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 02:44:19 -0400
-X-Greylist: delayed 379 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Oct 2009 02:44:19 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=mDBpruAMIyV+Gkerke45wfhHbg01xNL1qbhVFBy2ZYeU/9uMDQYuPlSBmPkOQ01a6o
-         +OJ6MVyLKf94Ly+LZQSp9+fTgqR5u9wVzitWznESqXXc/fcM807wHOCb2iKJSyIDVm+p
-         YjfID1N8wzb6ch9msi8ekoOfIHf2cLMKDxpY8=
+	Tue, 13 Oct 2009 02:39:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46065 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758813AbZJMGjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 02:39:16 -0400
+Date: Tue, 13 Oct 2009 08:38:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       Pavel Machek <pavel@ucw.cz>, Roland Dreier <rdreier@cisco.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-rdma@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Anton Blanchard <anton@samba.org>, general@lists.openfabrics.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       Jeff Squyres <jsquyres@cisco.com>
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
+Message-ID: <20091013063816.GB9470@elte.hu>
+References: <1253198976.14935.27.camel@laptop> <adazl8td35u.fsf@cisco.com> <adatyz1d17q.fsf@cisco.com> <20090929171332.GD14405@elf.ucw.cz> <20090930094456.GD24621@elte.hu> <20090930160232.GZ22310@obsidianresearch.com> <20091012181944.GF17138@elte.hu> <20091012193048.GA20313@obsidianresearch.com> <20091012202046.GA7648@elte.hu> <4AD41373.8010108@inria.fr>
 MIME-Version: 1.0
-In-Reply-To: <20091009141538.GA22861@tuxdriver.com>
-References: <95455e980910090412i32f401abmf4cc901be2e9acc8@mail.gmail.com>
-	 <20091009141538.GA22861@tuxdriver.com>
-Date: Tue, 13 Oct 2009 17:37:22 +1100
-Message-ID: <95455e980910122337y9e1186ft90cb78204bdd671c@mail.gmail.com>
-Subject: Re: support TOE
-From: hce <webmail.hce@gmail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AD41373.8010108@inria.fr>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 10, 2009 at 1:15 AM, John W. Linville
-<linville@tuxdriver.com> wrote:
-> On Fri, Oct 09, 2009 at 09:12:20PM +1000, hce wrote:
->
->> Which Linux kernel version supports TOE (TCP Offload Engine)? Or not
->> at all, I have to use TOE patch?
->
-> Google is your friend...
->
->        http://www.linuxfoundation.org/en/Net:TOE
->
 
-Nice article, but it does not mention if the current kernel supports
-TOE or not. Anyway, I downloaded the latest kernel 2.6.31.4, and
-checked source code. There is nothing to indicate supporting TOE. My
-conclusion is as of today, Linux kernel does not support TOE, please
-correct me if my conclusion is wrong.
+* Brice Goglin <Brice.Goglin@inria.fr> wrote:
 
-Thank you.
+> Ingo Molnar wrote:
+> > * Jason Gunthorpe <jgunthorpe@obsidianresearch.com> wrote:
+> >
+> >   
+> >> On Mon, Oct 12, 2009 at 08:19:44PM +0200, Ingo Molnar wrote:
+> >>
+> >>     
+> >>>> After that point the scheme is perfectly lossless.
+> >>>>         
+> >>> Well if it can OOM it's not lossless, obviously. You just define 
+> >>> "event loss" to be equivalent to "Destruction of the universe." ;-)
+> >>>       
+> >> It can't OOM once the ummunotify registration is done - when an event 
+> >> occurs it doesn't allocate any memory and it doesn't loose events.
+> >>     
+> >
+> > Well, it has built-in event loss via the UMMUNOTIFY_FLAG_HINT mechanism: 
+> > any double events on the same range will cause an imprecise event to be 
+> > recorded and cause the loss of information.
+> >   
+> 
+> The target (MPI) application doesn't care about how many events are 
+> coming here. It just needs to know whether something has been 
+> invalidated in the range. If so, it destroy the whole RDMA window 
+> anyway. So it's actually _good_ that multiple events are merged into a 
+> single one: the application only has to process a single event per 
+> partially-invalidated range.
 
-Cheers.
+it's not unconditionally good as the fuzzy-merge-events rule:
 
-jupiter
+                        events[n].flags      = UMMUNOTIFY_EVENT_FLAG_HINT;
+                        events[n].hint_start = max(reg->start, reg->hint_start);
+                        events[n].hint_end   = min(reg->end, reg->hint_end);
+
+in essence merges flushes into a single interval - which inevitably 
+might include areas of memory that were not flushed at all.
+
+For example these two flushes:
+
+  [...]          [...]
+
+Would be merged into:
+
+  [..................]
+
+Btw., isnt the above max/min logic buggy, causing lost events? Shouldnt 
+it be:
+
+                        events[n].hint_start = min(reg->start, reg->hint_start);
+                        events[n].hint_end   = max(reg->end, reg->hint_end);
+
+?
+
+	Ingo
