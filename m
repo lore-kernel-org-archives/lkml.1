@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758705AbZJMB4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbZJMCI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758705AbZJMB4A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 21:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbZJMBz7
+	id S1758756AbZJMCI5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 22:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758744AbZJMCI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 21:55:59 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:52832 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753570AbZJMBz6 (ORCPT
+	Mon, 12 Oct 2009 22:08:56 -0400
+Received: from keil-draco.com ([216.193.185.50]:48061 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758738AbZJMCIz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 21:55:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type;
-        b=AKD5za+msojOM0rFHS+B1AG9z9i+iQdQwjX+Nt8eYsWc4fQV0mZAYV/6AXRsxSuRkY
-         ayZxOu4VyGVBLaeXOUhiOb9KgBDZpBqHBKlHC0Ph6L628cZKfpUa/qDJc5pi2kDRWPPH
-         NCmK7baOEjw256/UEyLp0skqM6pPFzUcoyGxQ=
+	Mon, 12 Oct 2009 22:08:55 -0400
+X-Greylist: delayed 478 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Oct 2009 22:08:55 EDT
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+Date: Mon, 12 Oct 2009 22:00:17 -0400
+User-Agent: KMail/1.12.2 (Linux/2.6.28-15-generic; KDE/4.3.2; x86_64; ; )
+Cc: Nix <nix@esperi.org.uk>, "Justin P. Mattock" <justinmattock@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Boyan <btanastasov@yahoo.co.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       " =?iso-8859-1?q?Fr=E9d=E9ric_L=2E_W=2E?= Meunier" 
+	<fredlwm@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <87ljjgfcbu.fsf@spindle.srvr.nix> <20091013003841.6c2988d0@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091013003841.6c2988d0@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <4AD36022.4090300@nagafix.co.uk>
-References: <4AD34542.7050500@nagafix.co.uk> <20091012160548.GA3961@hack>
-	 <4AD36022.4090300@nagafix.co.uk>
-Date: Tue, 13 Oct 2009 09:54:52 +0800
-Message-ID: <2375c9f90910121854v72422318u6b8f67f4437e4066@mail.gmail.com>
-Subject: Re: 2.6.31.2 broke UML 64-bit build (2.6.31 was fine)
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Antoine Martin <antoine@nagafix.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910122200.18064.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 12:58 AM, Antoine Martin <antoine@nagafix.co.uk> wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA512
->
->> Hmm, this is a known problem:
->> https://lists.linux-foundation.org/pipermail/bugme-new/2009-May/021900.html
-> How odd that I have been compiling successfully all that time!
-> Maybe the fact that it broke "more" recently will help you...
+On Monday 12 October 2009 07:38:41 pm Alan Cox wrote:
+> > So it seems likely to me that this is a kernel bug, somewhere, and the
+> > TTY layer seems like a good place to look (OK, a horrible place, but a
+> > *likely* place).
+> 
+> Somewhere around 2.6.29-30 various things went funny in the keyboard
+> layer for me - notably characters "bleeding" across console switches.
 
-Please try this patch:
+Possibly not even related... I was seeing a similar problem in .26 or so and 
+it turned out to be caused, IIRC, by SCIM (in Gnome) and the KDE "Input 
+Methods" system. However my problem might not be related, because this even 
+stopped Alt-SysRq-K from working - and it only happened if I was holding down 
+a "modifier key" for a longer than average (say 30 seconds). I never reported 
+this because I soon after got tired of that distro (I was giving it a try at 
+the urging of friends) and replaced it.
 
-http://patchwork.kernel.org/patch/48759/
+The problem has not re-occurred since.
 
-It should fix your problem.
-
-What I can do here is to suggest -stable team to include this patch in the
-next update for .31. Greg?
+DRH
