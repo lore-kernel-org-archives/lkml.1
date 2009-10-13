@@ -1,100 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbZJMM5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759674AbZJMM5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759605AbZJMM5I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 08:57:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZJMM5H
+	id S1759674AbZJMM5m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 08:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZJMM5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 08:57:07 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:49197 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752590AbZJMM5G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 08:57:06 -0400
-Date: Tue, 13 Oct 2009 18:26:14 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Herbert Poetzl <herbert@13thfloor.at>, vatsa@in.ibm.com,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
-Message-ID: <20091013125614.GE26069@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20090930124919.GA19951@in.ibm.com> <4AC35EDD.1080902@openvz.org> <20090930142537.GJ19951@in.ibm.com> <20090930143953.GA2014@in.ibm.com> <4AD466E5.4010206@openvz.org> <20091013120354.GF24787@MAIL.13thfloor.at> <4AD4705D.6020109@openvz.org> <20091013123047.GC26069@linux.vnet.ibm.com> <4AD4765B.3010907@openvz.org>
-MIME-Version: 1.0
+	Tue, 13 Oct 2009 08:57:41 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:61231 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752755AbZJMM5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 08:57:40 -0400
+To: catalin.marinas@arm.com
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.32-rc3 kmemleak] WARNING: at kernel/lockdep.c:3161 check_flags+0xbe/0x180()
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20091007155142.GB6743@linux.vnet.ibm.com>
+	<200910082134.EJD35962.HLFSQVFOOFMJOt@I-love.SAKURA.ne.jp>
+	<1255005738.6715.6.camel@pc1117.cambridge.arm.com>
+	<200910130317.n9D3HTOH055400@www262.sakura.ne.jp>
+	<1255435201.9987.22.camel@pc1117.cambridge.arm.com>
+In-Reply-To: <1255435201.9987.22.camel@pc1117.cambridge.arm.com>
+Message-Id: <200910132157.FDF13518.OQHLtVFFJMSFOO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Tue, 13 Oct 2009 21:57:03 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD4765B.3010907@openvz.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 04:45:15PM +0400, Pavel Emelyanov wrote:
-> Dhaval Giani wrote:
-> > On Tue, Oct 13, 2009 at 04:19:41PM +0400, Pavel Emelyanov wrote:
-> >>> as I already stated, it seems perfectly fine for me 
-> >> You're not the only one interested in it, sorry. Besides, I
-> >> got your point in "I'm find with it". Now get mine which is
-> >> about "I am not".
-> >>
-> >>> can be trivially mapped to the two values, by chosing a
-> >>> fixed multiplicative base (let's say '1s' to simplify :) 
-> >>>
-> >>>   with 50%, you get 1s/0.5s
-> >>>   with 20%, you get 1s/0.2s
-> >>>   with  5%, you get 1s/0.05s
-> >>>
-> >>> well, you get the idea :)
-> >> No I don't.
-> >> Is 1s/0.5s worse or better than 2s/1s?
-> >> How should I make a choice?
-> > 
-> > I would say it depends on your requirement. How fast do you want to
-> > respond back to the user? Wiht lower bandwidth, you would want to have
-> > shorter periods so that the user would not get the impression that he
-> > has to "wait" to get CPU time. But having a very short period is not a
-> > good thing, since there are other considerations (such as the overhead of
-> > hard limits).
-> 
-> That's it - long period is bad for one reason, short period is bad for 
-> some other one and neither of them is clearly described unlike the 
-> limit itself.
-> 
-> In other words there are two numbers we're essentially playing with:
-> * the limit (int percents, Hz, whatever)
-> * and this abstract "badness"
-> 
-> Can't we give the user one of them for "must be configured" usage, put
-> the other one in some "good for most users" position and let the user
-> move it later on demand?
-> 
+Catalin Marinas wrote:
+> Could you send me your .config file and I'll try to reproduce this as
+> well?
+Yes. It is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.32-rc3 .
+Above log is obtained using Debian Sarge.
 
-Right, but is this not more of a policy decision as opposed to an
-infrastructure one and better handled in userspace?
+Below log is obtained using CentOS 5.
+Adding "kmemleak=off" in CentOS 5 avoids this error.
+Full log is at http://I-love.SAKURA.ne.jp/tmp/dmesg-2.6.32-rc4-centos5.txt .
 
-> Yet again - weights in CFQ CPU-sched, ionoce in CFQ-iosched, bandwidth
-> in tc (traffic shaping), etc. are all clean for end-user. Plus there are
-> other fine tunes, that user should not configure by default, but which
-> change the default behavior. I propose to create simple and clean 
-> interface for limits as well. If you think that virtual cpu power is 
-> not good, ok. Let's ask user for a percentage and give him yet another
-> option to control this "badness" or "responsiveness".
-> 
+[    0.000000] Linux version 2.6.32-rc4 (root@tomoyo) (gcc version 4.1.2 20080704 (Red Hat 4.1.2-44)) #2 SMP Tue Oct 13 20:23:13 JST 2009
+(...snipped...)
+[    0.000000] ------------[ cut here ]------------
+[    0.000000] WARNING: at kernel/lockdep.c:3161 check_flags+0xf1/0x180()
+[    0.000000] Hardware name: VMware Virtual Platform
+[    0.000000] Modules linked in:
+[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.32-rc4 #2
+[    0.000000] Call Trace:
+[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
+[    0.000000] BUG: unable to handle kernel paging request at 54205ab1
+[    0.000000] IP: [<c1006e88>] print_context_stack+0x58/0xe0
+[    0.000000] *pde = 00000000 
+[    0.000000] Thread overran stack, or stack corrupted
+[    0.000000] Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
+[    0.000000] last sysfs file: 
+[    0.000000] Modules linked in:
+[    0.000000] 
+[    0.000000] Pid: 0, comm: swapper Not tainted (2.6.32-rc4 #2) VMware Virtual Platform
+[    0.000000] EIP: 0060:[<c1006e88>] EFLAGS: 00010016 CPU: 0
+[    0.000000] EIP is at print_context_stack+0x58/0xe0
+[    0.000000] EAX: c1421000 EBX: c1421fb0 ECX: c103c7f5 EDX: 54204649
+[    0.000000] ESI: c1064cc1 EDI: c131d6e0 EBP: c1421f24 ESP: c1421f10
+[    0.000000]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[    0.000000] Process swapper (pid: 0, ti=c1421000 task=c146ff60 task.ti=c145d000)
+[    0.000000] Stack:
+[    0.000000]  c1421fb8 c1421000 c1421000 c1421fac c1421fb8 c1421f50 c1005e76 c131d6e0
+[    0.000000] <0> c13d29de 00000000 c1421f40 c1421f50 00000000 c13d29de c1421fac 00000000
+[    0.000000] <0> c1421f74 c1006dac c1421fb8 c131d6e0 c13d29de 00000000 c1421fb8 c1421fb8
+[    0.000000] Call Trace:
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000] BUG: unable to handle kernel paging request at 54205ab1
+[    0.000000] IP: [<c1006e88>] print_context_stack+0x58/0xe0
+[    0.000000] *pde = 00000000 
+[    0.000000] Thread overran stack, or stack corrupted
+[    0.000000] Oops: 0000 [#2] SMP DEBUG_PAGEALLOC
+[    0.000000] last sysfs file: 
+[    0.000000] Modules linked in:
+[    0.000000] 
+[    0.000000] Pid: 0, comm: swapper Not tainted (2.6.32-rc4 #2) VMware Virtual Platform
+[    0.000000] EIP: 0060:[<c1006e88>] EFLAGS: 00010006 CPU: 0
+[    0.000000] EIP is at print_context_stack+0x58/0xe0
+[    0.000000] EAX: c1421000 EBX: c1421f28 ECX: c103c7f5 EDX: 54204649
+[    0.000000] ESI: c1005e76 EDI: c131d6e0 EBP: c1421d64 ESP: c1421d50
+[    0.000000]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[    0.000000] Process swapper (pid: 0, ti=c1421000 task=c146ff60 task.ti=c145d000)
+[    0.000000] Stack:
+[    0.000000]  c1421d90 c1421000 c1421000 c1421f10 c1421d90 c1421d90 c1005e76 c131d6e0
+[    0.000000] <0> c13d34df 00000000 c1421d80 c1421d90 00000000 c13d34df c1421f10 c1421ed4
+[    0.000000] <0> c1421db4 c1006dac 00000000 c131d6e0 c13d34df 00000000 c1421f73 00000018
+[    0.000000] Call Trace:
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+(...snipped...)
+[    0.000000] Thread overran stack, or stack corrupted
+[    0.000000] Oops: 0000 [#8] SMP DEBUG_PAGEALLOC
+[    0.000000] last sysfs file: 
+[    0.000000] Modules linked in:
+[    0.000000] 
+[    0.000000] Pid: 0, comm: swapper Not tainted (2.6.32-rc4 #2) VMware Virtual Platform
+[    0.000000] EIP: 0060:[<c1006e88>] EFLAGS: 00010006 CPU: 0
+[    0.000000] EIP is at print_context_stack+0x58/0xe0
+[    0.000000] EAX: c1421000 EBX: c14214a8 ECX: c103c7f5 EDX: ffffffff
+[    0.000000] ESI: c1005e76 EDI: c131d6e0 EBP: c14212e4 ESP: c14212d0
+[    0.000000]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[    0.000000] Process swapper (pid: 0, ti=c1421000 task=c146ff60 task.ti=c145d000)
+[    0.000000] Stack:
+[    0.000000]  c1421310 c1421000 c1421000 c1421490 c1421310 c1421310 c1005e76 c131d6e0
+[    0.000000] <0> c13d34df 00000000 c1421300 c1421310 00000000 c13d34df c1421490 c1421454
+[    0.000000] <0> c1421334 c1006dac 00000000 c131d6e0 c13d34df 00000000 c14214f3 00000018
+[    0.000000] Call Trace:
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
+[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
+[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
+[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
+[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
+[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
+[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
+[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
+[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
+[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
+[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
+[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
+[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
+[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
+[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
+[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
+[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
+[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
+[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
+[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
+[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
+[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
+[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
+[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
+[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
+[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
+[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
+[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
+[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
+[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
+[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
+[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
+[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
+[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
+[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
+[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
+[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
+[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
+[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
+[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
+[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
+[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
+[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
+[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
+[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
+[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
+[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
+[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
+[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
+[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
+[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
+[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
+[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
+[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
+[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
+[    0.000000]  [<c1005dc8>] ? show_stack_log_lvl+0xb8/0xe0
+[    0.000000]  [<c1005f8a>] ? show_registers+0xca/0x1c0
+[    0.000000]  [<c1007121>] ? __die+0xa1/0x100
+[    0.000000]  [<c101f5af>] ? no_context+0xff/0x150
+[    0.000000]  [<c101f708>] ? __bad_area_nosemaphore+0x58/0x130
+[    0.000000]  [<c131abac>] ? _spin_unlock_irqrestore+0x3c/0x60
+[    0.000000]  [<c101f887>] ? bad_area_nosemaphore+0x17/0x20
+[    0.000000]  [<c101fbaf>] ? do_page_fault+0x17f/0x2a0
+[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c131b4d3>] ? error_code+0x6b/0x70
+[    0.000000]  [<c103c7f5>] ? release_console_sem+0x1c5/0x1f0
+[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
+[    0.000000]  [<c101fa30>] ? do_page_fault+0x0/0x2a0
+[    0.000000]  [<c1006e88>] ? print_context_stack+0x58/0xe0
+[    0.000000]  [<c1005e76>] ? dump_trace+0x86/0xd0
+[    0.000000]  [<c1006dac>] ? show_trace_log_lvl+0x4c/0x60
+[    0.000000]  [<c1006ddf>] ? show_trace+0x1f/0x30
+[    0.000000]  [<c1006f83>] ? dump_stack+0x73/0x80
+[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
+[    0.000000]  [<c103ba41>] ? warn_slowpath_common+0x81/0xa0
+[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
+[    0.000000]  [<c103ba7a>] ? warn_slowpath_null+0x1a/0x20
+[    0.000000]  [<c1064cc1>] ? check_flags+0xf1/0x180
+[    0.000000]  [<c106934c>] ? lock_acquire+0x3c/0xf0
+[    0.000000]  <IRQ> 
+(...snipped...)
 
-How is virtual cpu power defined? GHz is not a clear definition. It
-means different things (in terms of performance) for different
-processors. Do you want to define it as getting x cycles of a CPU in
-y seconds for the cgroup, or do you want to define it as a certain number
-of operations in a second. If it is the former, I think we can map it to
-the current interface in userspace itself.  Why don't we define this
-metric, and then look to solve the problem? 
-
-thanks,
--- 
-regards,
-Dhaval
+Regards.
