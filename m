@@ -1,160 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbZJMImK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759240AbZJMIoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759228AbZJMImK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 04:42:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbZJMImJ
+	id S1759240AbZJMIoM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 04:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759211AbZJMIoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 04:42:09 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:16851 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757330AbZJMImH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 04:42:07 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
- balance_dirty_pages()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091013032405.GA20405@localhost>
-References: <20091007073818.318088777@intel.com>
-	 <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz>
-	 <20091010213339.GA8644@localhost> <20091012211838.GA3965@duck.suse.cz>
-	 <20091013032405.GA20405@localhost>
-Content-Type: text/plain
-Date: Tue, 13 Oct 2009 10:41:17 +0200
-Message-Id: <1255423277.8392.119.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Oct 2009 04:44:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58203 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759192AbZJMIoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 04:44:09 -0400
+Date: Tue, 13 Oct 2009 10:43:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC] x86, mce: use of TRACE_EVENT for mce
+Message-ID: <20091013084324.GB9610@elte.hu>
+References: <4ACEE5E0.3050701@jp.fujitsu.com> <1255074286.5228.163.camel@yhuang-dev.sh.intel.com> <4ACEF4D9.9090600@jp.fujitsu.com> <1255079484.5228.201.camel@yhuang-dev.sh.intel.com> <4AD3E731.7080900@jp.fujitsu.com> <1255404495.6047.298.camel@yhuang-dev.sh.intel.com> <4AD41793.9020400@jp.fujitsu.com> <1255414771.6047.405.camel@yhuang-dev.sh.intel.com> <20091013062939.GA8484@elte.hu> <4AD42A0D.7050104@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AD42A0D.7050104@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 11:24 +0800, Wu Fengguang wrote:
 
-> You are right too :) I followed you and Peter's advice to do the loop
-> and the recheck of stats as follows:
+* Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
 
-> 	This patch slightly changes behavior by replacing clip_bdi_dirty_limit()
->         with the explicit check (nr_reclaimable + nr_writeback >= dirty_thresh)
->         to avoid exceeding the dirty limit. Since the bdi dirty limit is mostly
->         accurate we don't need to do routinely clip. A simple dirty limit check
->         would be enough.
+> Ingo Molnar wrote:
+> > * Huang Ying <ying.huang@intel.com> wrote:
+> > 
+> >> I have talked with Ingo about this patch. But he has different idea 
+> >> about MCE log ring buffer and he didn't want to merge the patch even 
+> >> as an urgent bug fixes. It seems that another re-post can not convince 
+> >> him.
+> > 
+> > Correct. The fixes are beyond what we can do in .32 - and for .33 i 
+> > outlined (with a patch) that we should be using not just the ftrace 
+> > ring-buffer (like your patch did) but perf events to expose MCE events.
+> > 
+> > That brings MCE events to a whole new level of functionality.
+> > 
+> > Event injection support would be an interesting new addition to 
+> > kernel/perf_event.c: non-MCE user-space wants to inject events as well - 
+> > both to simulate rare events, and to define their own user-space events.
+> > 
+> > Is there any technical reason why we wouldnt want to take this far 
+> > superior approach?
+> > 
+> > 	Ingo
 > 
->         The check is necessary because, in principle we should throttle
->         everything calling balance_dirty_pages() when we're over the total
->         limit, as said by Peter.
-> 
->         We now set and clear dirty_exceeded not only based on bdi dirty limits,
->         but also on the global dirty limits. This is a bit counterintuitive, but
->         the global limits are the ultimate goal and shall be always imposed.
-> 
->         We may now start background writeback work based on outdated conditions.
->         That's safe because the bdi flush thread will (and have to) double check
->         the states. It reduces overall overheads because the test based on old
->         states still have good chance to be right.
+> We could have more aggressive discussion if there is a real patch. 
+> This is an example.
 
-> static void balance_dirty_pages(struct address_space *mapping,
-> 				unsigned long write_chunk)
-> {
-> 	long nr_reclaimable, bdi_nr_reclaimable;
-> 	long nr_writeback, bdi_nr_writeback;
-> 	unsigned long background_thresh;
-> 	unsigned long dirty_thresh;
-> 	unsigned long bdi_thresh;
-> 	int dirty_exceeded;
-> 	struct backing_dev_info *bdi = mapping->backing_dev_info;
-> 
-> 	/*
-> 	 * If sync() is in progress, curb the to-be-synced inodes regardless
-> 	 * of dirty limits, so that a fast dirtier won't livelock the sync.
-> 	 */
-> 	if (unlikely(bdi->sync_time &&
-> 		     S_ISREG(mapping->host->i_mode) &&
-> 		     time_after_eq(bdi->sync_time,
-> 				   mapping->host->dirtied_when))) {
-> 		write_chunk *= 2;
-> 		bdi_writeback_wait(bdi, write_chunk);
-> 	}
-> 
-> 	for (;;) {
-> 		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
-> 				 global_page_state(NR_UNSTABLE_NFS);
-> 		nr_writeback = global_page_state(NR_WRITEBACK) +
-> 			       global_page_state(NR_WRITEBACK_TEMP);
-> 
-> 		global_dirty_thresh(&background_thresh, &dirty_thresh);
-> 
-> 		/*
-> 		 * Throttle it only when the background writeback cannot
-> 		 * catch-up. This avoids (excessively) small writeouts
-> 		 * when the bdi limits are ramping up.
-> 		 */
-> 		if (nr_reclaimable + nr_writeback <
-> 		    (background_thresh + dirty_thresh) / 2)
-> 			break;
-> 
-> 		bdi_thresh = bdi_dirty_thresh(bdi, dirty_thresh);
-> 
-> 		/*
-> 		 * In order to avoid the stacked BDI deadlock we need
-> 		 * to ensure we accurately count the 'dirty' pages when
-> 		 * the threshold is low.
-> 		 *
-> 		 * Otherwise it would be possible to get thresh+n pages
-> 		 * reported dirty, even though there are thresh-m pages
-> 		 * actually dirty; with m+n sitting in the percpu
-> 		 * deltas.
-> 		 */
-> 		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
-> 			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
-> 			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
-> 		} else {
-> 			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
-> 			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
-> 		}
-> 
-> 		/*
-> 		 * The bdi thresh is somehow "soft" limit derived from the
-> 		 * global "hard" limit. The former helps to prevent heavy IO
-> 		 * bdi or process from holding back light ones; The latter is
-> 		 * the last resort safeguard.
-> 		 */
-> 		dirty_exceeded =
-> 			(bdi_nr_reclaimable + bdi_nr_writeback >= bdi_thresh)
-> 			|| (nr_reclaimable + nr_writeback >= dirty_thresh);
-> 
-> 		if (!dirty_exceeded)
-> 			break;
-> 
-> 		bdi->dirty_exceed_time = jiffies;
-> 
-> 		bdi_writeback_wait(bdi, write_chunk);
-> 	}
-> 
-> 	/*
-> 	 * In laptop mode, we wait until hitting the higher threshold before
-> 	 * starting background writeout, and then write out all the way down
-> 	 * to the lower threshold.  So slow writers cause minimal disk activity.
-> 	 *
-> 	 * In normal mode, we start background writeout at the lower
-> 	 * background_thresh, to keep the amount of dirty memory low.
-> 	 */
-> 	if (!laptop_mode && (nr_reclaimable > background_thresh) &&
-> 	    can_submit_background_writeback(bdi))
-> 		bdi_start_writeback(bdi, NULL, WB_FOR_BACKGROUND);
-> }
+That's the right attitude :-)
 
-Looks good, Thanks Wu!
+I've created a new topic tree for this approach: tip:perf/mce, and i've 
+committed your patch with a changelog outlining the approach, and pushed 
+it out. Please send delta patches against latest tip:master.
 
+I think the next step should be to determine the rough 'event structure' 
+we want to map out. The mce_record event you added should be split up 
+some more.
+
+For example we definitely want thermal events to be separate. One 
+approach would be the RFC patch i sent in "[PATCH] x86: mce: New MCE 
+logging design" - feel free to pick that up and iterate it.
+
+A question would be whether each MCA/MCE bank should have a separate 
+event enumerated. I.e. right now 'perf list' shows:
+
+  mce:mce_record                             [Tracepoint event]
+
+It might make sense to do something like:
+
+  mce:mce_bank_2                             [Tracepoint event]
+  mce:mce_bank_3                             [Tracepoint event]
+  mce:mce_bank_5                             [Tracepoint event]
+  mce:mce_bank_6                             [Tracepoint event]
+  mce:mce_bank_8                             [Tracepoint event]
+
+But this is pretty static and meaningless - so what i'd like to see is 
+to enumerate the _logical purpose_ of the MCE events, largely driven by 
+the physical source of the event:
+
+  $ perf list 2>&1 | grep mce
+  mce:mce_cpu                                [Tracepoint event]
+  mce:mce_thermal                            [Tracepoint event]
+  mce:mce_cache                              [Tracepoint event]
+  mce:mce_memory                             [Tracepoint event]
+  mce:mce_bus                                [Tracepoint event]
+  mce:mce_device                             [Tracepoint event]
+  mce:mce_other                              [Tracepoint event]
+
+etc. - with a few simple rules about what type of event goes into which 
+category, such as:
+
+ - CPU internal errors go into mce_cpu
+ - memory or L3 cache related errors go into mce_memory
+ - L2 and lower level cache errors go into mce_cache
+ - general IO / bus / interconnect errors go into mce_bus
+ - specific device faults go into mce_device
+ - the rest goes into mce_other
+
+Note - this is just a first rough guesstimate list - more can be added 
+and the definition can be made stricter. (Please suggest modifications 
+to this categorization.) Each event still has finegrained fields that 
+allows further disambiguation of precisely which event the CPU 
+generated.
+
+Note that these categories will be largely CPU independent. Certain 
+models will offer events in all of these categories, some models will 
+only provide events in a very limited subset of these events.
+
+The logical structure remains CPU model independent and tools, admins 
+and users can standardize on this generic 'logical overview' event 
+structure - instead of the current maze of model specific MCE decoding 
+with no real structure over it.
+
+Once we have this higher level logging structure (while still preserving 
+the fine details as well), we can go a step forward and attach things 
+like the ability to panic the box to individual events.
+
+[ Note, we might also still keep a 'generic' event like mce_record as
+  well, if that still makes sense once we've split up the events
+  properly. ]
+
+Then the next step would be clean and generic event injection support 
+that uses perf events.
+
+Hm? Looks like pretty exciting stuff to me - there's a _lot_ of 
+expressive potential in the hardware, we have myriads of interesting 
+details that can be logged - we just need to free it up and make it 
+available properly.
+
+	Ingo
