@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbZJMPPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760231AbZJMPQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760218AbZJMPPr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760201AbZJMPPq
+	id S1760231AbZJMPQm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 11:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760214AbZJMPQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:15:46 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:30496 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760174AbZJMPPp (ORCPT
+	Tue, 13 Oct 2009 11:16:41 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:56063 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760206AbZJMPQk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:15:45 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] pci: increase alignment to make more space for hidden code
-Date: Tue, 13 Oct 2009 09:15:03 -0600
-User-Agent: KMail/1.9.10
-Cc: Yinghai Lu <yinghai@kernel.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Ricardo Jorge da Fonseca Marques Ferreira 
-	<storm@sys49152.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Yannick Roehlly <yannick.roehlly@free.fr>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, x86@kernel.org,
-       andreaorru91@gmail.com, jjorge@free.fr
-References: <200908072333.24631.storm@sys49152.net> <1255414115.14484.47.camel@dc7800.home> <20091013064901.GD9470@elte.hu>
-In-Reply-To: <20091013064901.GD9470@elte.hu>
+	Tue, 13 Oct 2009 11:16:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=eoG2h2DaSoPzuXxBwAR6Zd6CYKfJfJvq/uEB9MIuiGtdAHo+8VT0lgA1gvJA6TWcrM
+         2DBgdnlK0pigX0Gt6jO7eQsEXpKjkrYcDonrdsdSy/3QVeE8FoMf7hQhEYCWAZSltBGd
+         4gLA/L/xLvc0th52+MUw1OtJ9aYAq/ocloa3g=
+Message-ID: <4AD499BA.6030001@gmail.com>
+Date: Tue, 13 Oct 2009 08:16:10 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, Nix <nix@esperi.org.uk>,
+       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Boyan <btanastasov@yahoo.co.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       =?ISO-8859-1?Q?=22Fr=E9d=E9ric_L=2E_W=2E_Meunier=22?= 
+	<fredlwm@gmail.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>	<L6tb-VyKHZK.A.PaB.Ozl0KB@chimera>	<C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com>	<87ljjgfcbu.fsf@spindle.srvr.nix>	<alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>	<alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>	<4AD3F769.5080405@gmail.com> <20091013113434.22f4fcde@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091013113434.22f4fcde@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910130915.04697.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 October 2009 12:49:01 am Ingo Molnar wrote:
-> * Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+Alan Cox wrote:
+>> I can throw your patch in over here for the heck of it.
+>> If there's somebody who's really hitting this bug
+>> then the results would be better  if this is the area that causing
+>> this bug.(from here the only issue I'm seeing is spinning
+>> history commands in the terminal  from time to time,
+>> nothing of any unusable keys like others are reporting).
+>>      
+>
+> That sounds more like a lost key-up event somewhere higher up the stack.
+> USB keyboard ? and does it stop if you take the key in question. Also does
+> it stop if you touch the mouse wheel (assuming you've got mousewheel
+> bound to shell history somewhere ?)
+>
+> Alan
+>
+>    
+This seems like it's a new mechanism with
+fedora/ubuntu, but could be wrong.
+(smart keys or something)
 
-> > In the patch below, I added some extra PCI dumps of the bridge and the 
-> > NIC around the ACPI EC init.  The patch also removes Yinghai's 
-> > workaround so we should see the original failure, just with a little 
-> > more debug.
-> 
-> Btw., i'd _strongly_ suggest to finally add some sort of pci=verbose 
-> easy-to-use debug toggle for users to enable.
-> 
-> Everything that matters to resource allocation. We should print the BIOS 
-> state (Yinghai did a patch for this some time ago and that is upstream 
-> already), we should print quirk execution, we should print ACPI AML 
-> execution - everything that might matter to PCI allocations.
-> 
-> An easy-to-use 'give me all the debug info' feature is really important. 
-> We have apic=verbose for similar reasons.
+It is a usb keyboard using evdev/keyboard
+as the X modules to operate.(imac9,1)
+The way I've been able to get this to stop is
+open another terminal, then when the history starts
+spinning like it does click on the other terminal,
+and everything seems to stop.
+As for reproducing this thing seems to have a mind of it's own, some timers
+firing off to tell it to start searching for the last good word for the 
+"user",
+(but could be wrong)that ends up being something completely wrong,
+although a couple of times it did actually work and go right to the word 
+I had in mind,
+but most of the time this things just causes irritation.
 
-Agreed.  That's why I sent such a huge testing patch -- I think we do
-a poor job of making this stuff debuggable, so I want to use this problem
-as a test case of "what useful stuff can we print to make this easier in
-the future."
 
-Bjorn
+Justin P. Mattock
+
