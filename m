@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbZJMPBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933821AbZJMPBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760157AbZJMPBB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760148AbZJMPBA
+	id S933821AbZJMPBN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 11:01:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760160AbZJMPBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:01:00 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40493 "EHLO
+	Tue, 13 Oct 2009 11:01:12 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40494 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760147AbZJMPBA (ORCPT
+	with ESMTP id S1760159AbZJMPBL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:01:00 -0400
+	Tue, 13 Oct 2009 11:01:11 -0400
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 1/2] sep: Fix build problems from header changes
+Subject: [PATCH 2/2] sep: Fix use of legacy ioctl fop
 To: gregk@kroah.com, linux-kernel@vger.kernel.org, arndbergmann@googlemail.com
-Date: Tue, 13 Oct 2009 15:48:51 +0100
-Message-ID: <20091013144844.31420.88150.stgit@localhost.localdomain>
+Date: Tue, 13 Oct 2009 15:48:58 +0100
+Message-ID: <20091013144856.31420.33386.stgit@localhost.localdomain>
 In-Reply-To: <20091013144716.31420.47979.stgit@localhost.localdomain>
 References: <20091013144716.31420.47979.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,42 +25,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+SEP doesn't need lock_kernel.
+
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/staging/sep/sep_driver.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/staging/sep/sep_driver.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 
 diff --git a/drivers/staging/sep/sep_driver.c b/drivers/staging/sep/sep_driver.c
-index 87f8a11..2ecd62d 100644
+index 2ecd62d..23b4db1 100644
 --- a/drivers/staging/sep/sep_driver.c
 +++ b/drivers/staging/sep/sep_driver.c
-@@ -35,6 +35,7 @@
- #include <linux/cdev.h>
- #include <linux/kdev_t.h>
- #include <linux/mutex.h>
-+#include <linux/sched.h>
- #include <linux/mm.h>
- #include <linux/poll.h>
- #include <linux/wait.h>
-@@ -272,7 +273,8 @@ static dma_addr_t sep_shared_virt_to_bus(struct sep_device *sep,
- 						void *virt_address)
- {
- 	dma_addr_t pa = sep->shared_bus + (virt_address - sep->shared_addr);
--	edbg("sep: virt to bus b %08llx v %p\n", pa, virt_address);
-+	edbg("sep: virt to bus b %08llx v %p\n", (unsigned long long) pa,
-+								virt_address);
- 	return pa;
+@@ -2231,7 +2231,7 @@ static int sep_set_flow_id_handler(struct sep_device *sep,
+ 	return error;
  }
  
-@@ -1769,7 +1771,7 @@ static struct sep_flow_context_t *sep_find_flow_context(struct sep_device *sep,
- static int sep_create_flow_dma_tables_handler(struct sep_device *sep,
- 							unsigned long arg)
+-static int sep_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
++static long sep_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
  {
--	int error;
-+	int error = -ENOENT;
- 	struct sep_driver_build_flow_table_t command_args;
- 	/* first table - output */
- 	struct sep_lli_entry_t first_table_data;
+ 	int error = 0;
+ 	struct sep_device *sep = filp->private_data;
+@@ -2606,7 +2606,7 @@ static dev_t sep_devno;
+ /* the files operations structure of the driver */
+ static struct file_operations sep_file_operations = {
+ 	.owner = THIS_MODULE,
+-	.ioctl = sep_ioctl,
++	.unlocked_ioctl = sep_ioctl,
+ 	.poll = sep_poll,
+ 	.open = sep_open,
+ 	.release = sep_release,
 
