@@ -1,71 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761614AbZJMXfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761623AbZJMXf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761614AbZJMXfB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 19:35:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZJMXfA
+	id S1761623AbZJMXf6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 19:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761495AbZJMXf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 19:35:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37715 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753873AbZJMXe7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 19:34:59 -0400
-Date: Tue, 13 Oct 2009 16:34:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas DuBuisson <thomas.dubuisson@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] Include hrtimer.h for ANSI compliance
-Message-Id: <20091013163414.62ec9244.akpm@linux-foundation.org>
-In-Reply-To: <4c44d90b0910061520o36adc7m50419be3a3d9d0fa@mail.gmail.com>
-References: <4c44d90b0910061520o36adc7m50419be3a3d9d0fa@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Tue, 13 Oct 2009 19:35:57 -0400
+Received: from mail.perches.com ([173.55.12.10]:2115 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761466AbZJMXf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 19:35:57 -0400
+Subject: [PATCH V3] drivers/media/video/uvc: Use %pUl to print UUIDs
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mchehab@infradead.org,
+       Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091013151652.5d2a49b7.akpm@linux-foundation.org>
+References: <1255471594.18975.79.camel@Joe-Laptop.home>
+	 <20091013151652.5d2a49b7.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 13 Oct 2009 16:35:19 -0700
+Message-Id: <1255476919.18975.127.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Oct 2009 15:20:16 -0700
-Thomas DuBuisson <thomas.dubuisson@gmail.com> wrote:
+On Tue, 2009-10-13 at 15:16 -0700, Andrew Morton wrote:
+> Please either send an incremental patch or send a new patch.  Not this.
 
-> Include <linux/hrtimer.h> to make pci.h ansi compliant (it references
-> an hrtimer enum).
+Sure thing.
 
-extern enum hrtimer_restart it_real_fn(struct hrtimer *);
+This patch includes some changes that Laurent originally
+commented on as well as the Buffer[5]/buffer[5] correction.
+
+http://lkml.org/lkml/2009/9/30/399
+
+Signed-off-by: Joe Perches <joe@perches.com>
+
+ drivers/media/video/uvc/uvc_ctrl.c   |   74 +++++++++++++++------------------
+ drivers/media/video/uvc/uvc_driver.c |    9 ++--
+ drivers/media/video/uvc/uvcvideo.h   |   10 -----
+ 3 files changed, 38 insertions(+), 55 deletions(-)
+
+diff --git a/drivers/media/video/uvc/uvc_ctrl.c b/drivers/media/video/uvc/uvc_ctrl.c
+index c3225a5..4536c3e 100644
+--- a/drivers/media/video/uvc/uvc_ctrl.c
++++ b/drivers/media/video/uvc/uvc_ctrl.c
+@@ -1092,10 +1092,9 @@ int uvc_xu_ctrl_query(struct uvc_video_chain *chain,
+ 	}
+ 
+ 	if (!found) {
+-		uvc_trace(UVC_TRACE_CONTROL,
+-			"Control " UVC_GUID_FORMAT "/%u not found.\n",
+-			UVC_GUID_ARGS(entity->extension.guidExtensionCode),
+-			xctrl->selector);
++		uvc_trace(UVC_TRACE_CONTROL, "Control %pUl/%u not found.\n",
++			  entity->extension.guidExtensionCode,
++			  xctrl->selector);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -1171,9 +1170,9 @@ int uvc_ctrl_resume_device(struct uvc_device *dev)
+ 			    (ctrl->info->flags & UVC_CONTROL_RESTORE) == 0)
+ 				continue;
+ 
+-			printk(KERN_INFO "restoring control " UVC_GUID_FORMAT
+-				"/%u/%u\n", UVC_GUID_ARGS(ctrl->info->entity),
+-				ctrl->info->index, ctrl->info->selector);
++			printk(KERN_INFO "restoring control %pUl/%u/%u\n",
++			       ctrl->info->entity,
++			       ctrl->info->index, ctrl->info->selector);
+ 			ctrl->dirty = 1;
+ 		}
+ 
+@@ -1227,47 +1226,44 @@ static void uvc_ctrl_add_ctrl(struct uvc_device *dev,
+ 		ret = uvc_query_ctrl(dev, UVC_GET_LEN, ctrl->entity->id,
+ 			dev->intfnum, info->selector, (__u8 *)&size, 2);
+ 		if (ret < 0) {
+-			uvc_trace(UVC_TRACE_CONTROL, "GET_LEN failed on "
+-				"control " UVC_GUID_FORMAT "/%u (%d).\n",
+-				UVC_GUID_ARGS(info->entity), info->selector,
+-				ret);
++			uvc_trace(UVC_TRACE_CONTROL,
++				  "GET_LEN failed on control %pUl/%u (%d).\n",
++				  info->entity, info->selector, ret);
+ 			return;
+ 		}
+ 
+ 		if (info->size != le16_to_cpu(size)) {
+-			uvc_trace(UVC_TRACE_CONTROL, "Control " UVC_GUID_FORMAT
+-				"/%u size doesn't match user supplied "
+-				"value.\n", UVC_GUID_ARGS(info->entity),
+-				info->selector);
++			uvc_trace(UVC_TRACE_CONTROL,
++				  "Control %pUl/%u size doesn't match user supplied value.\n",
++				  info->entity, info->selector);
+ 			return;
+ 		}
+ 
+ 		ret = uvc_query_ctrl(dev, UVC_GET_INFO, ctrl->entity->id,
+ 			dev->intfnum, info->selector, &inf, 1);
+ 		if (ret < 0) {
+-			uvc_trace(UVC_TRACE_CONTROL, "GET_INFO failed on "
+-				"control " UVC_GUID_FORMAT "/%u (%d).\n",
+-				UVC_GUID_ARGS(info->entity), info->selector,
+-				ret);
++			uvc_trace(UVC_TRACE_CONTROL,
++				  "GET_INFO failed on control %pUl/%u (%d).\n",
++				  info->entity, info->selector, ret);
+ 			return;
+ 		}
+ 
+ 		flags = info->flags;
+ 		if (((flags & UVC_CONTROL_GET_CUR) && !(inf & (1 << 0))) ||
+ 		    ((flags & UVC_CONTROL_SET_CUR) && !(inf & (1 << 1)))) {
+-			uvc_trace(UVC_TRACE_CONTROL, "Control "
+-				UVC_GUID_FORMAT "/%u flags don't match "
+-				"supported operations.\n",
+-				UVC_GUID_ARGS(info->entity), info->selector);
++			uvc_trace(UVC_TRACE_CONTROL,
++				  "Control %pUl/%u flags don't match supported operations.\n",
++				  info->entity, info->selector);
+ 			return;
+ 		}
+ 	}
+ 
+ 	ctrl->info = info;
+ 	ctrl->data = kmalloc(ctrl->info->size * UVC_CTRL_NDATA, GFP_KERNEL);
+-	uvc_trace(UVC_TRACE_CONTROL, "Added control " UVC_GUID_FORMAT "/%u "
+-		"to device %s entity %u\n", UVC_GUID_ARGS(ctrl->info->entity),
+-		ctrl->info->selector, dev->udev->devpath, entity->id);
++	uvc_trace(UVC_TRACE_CONTROL,
++		  "Added control %pUl/%u to device %s entity %u\n",
++		  ctrl->info->entity, ctrl->info->selector,
++		  dev->udev->devpath, entity->id);
+ }
+ 
+ /*
+@@ -1293,17 +1289,16 @@ int uvc_ctrl_add_info(struct uvc_control_info *info)
+ 			continue;
+ 
+ 		if (ctrl->selector == info->selector) {
+-			uvc_trace(UVC_TRACE_CONTROL, "Control "
+-				UVC_GUID_FORMAT "/%u is already defined.\n",
+-				UVC_GUID_ARGS(info->entity), info->selector);
++			uvc_trace(UVC_TRACE_CONTROL,
++				  "Control %pUl/%u is already defined.\n",
++				  info->entity, info->selector);
+ 			ret = -EEXIST;
+ 			goto end;
+ 		}
+ 		if (ctrl->index == info->index) {
+-			uvc_trace(UVC_TRACE_CONTROL, "Control "
+-				UVC_GUID_FORMAT "/%u would overwrite index "
+-				"%d.\n", UVC_GUID_ARGS(info->entity),
+-				info->selector, info->index);
++			uvc_trace(UVC_TRACE_CONTROL,
++				  "Control %pUl/%u would overwrite index %d.\n",
++				  info->entity, info->selector, info->index);
+ 			ret = -EEXIST;
+ 			goto end;
+ 		}
+@@ -1344,10 +1339,9 @@ int uvc_ctrl_add_mapping(struct uvc_control_mapping *mapping)
+ 			continue;
+ 
+ 		if (info->size * 8 < mapping->size + mapping->offset) {
+-			uvc_trace(UVC_TRACE_CONTROL, "Mapping '%s' would "
+-				"overflow control " UVC_GUID_FORMAT "/%u\n",
+-				mapping->name, UVC_GUID_ARGS(info->entity),
+-				info->selector);
++			uvc_trace(UVC_TRACE_CONTROL,
++				  "Mapping '%s' would overflow control %pUl/%u\n",
++				  mapping->name, info->entity, info->selector);
+ 			ret = -EOVERFLOW;
+ 			goto end;
+ 		}
+@@ -1366,9 +1360,9 @@ int uvc_ctrl_add_mapping(struct uvc_control_mapping *mapping)
+ 
+ 		mapping->ctrl = info;
+ 		list_add_tail(&mapping->list, &info->mappings);
+-		uvc_trace(UVC_TRACE_CONTROL, "Adding mapping %s to control "
+-			UVC_GUID_FORMAT "/%u.\n", mapping->name,
+-			UVC_GUID_ARGS(info->entity), info->selector);
++		uvc_trace(UVC_TRACE_CONTROL,
++			  "Adding mapping %s to control %pUl/%u.\n",
++			  mapping->name, info->entity, info->selector);
+ 
+ 		ret = 0;
+ 		break;
+diff --git a/drivers/media/video/uvc/uvc_driver.c b/drivers/media/video/uvc/uvc_driver.c
+index 8756be5..21d5077 100644
+--- a/drivers/media/video/uvc/uvc_driver.c
++++ b/drivers/media/video/uvc/uvc_driver.c
+@@ -328,11 +328,10 @@ static int uvc_parse_format(struct uvc_device *dev,
+ 				sizeof format->name);
+ 			format->fcc = fmtdesc->fcc;
+ 		} else {
+-			uvc_printk(KERN_INFO, "Unknown video format "
+-				UVC_GUID_FORMAT "\n",
+-				UVC_GUID_ARGS(&buffer[5]));
+-			snprintf(format->name, sizeof format->name,
+-				UVC_GUID_FORMAT, UVC_GUID_ARGS(&buffer[5]));
++			uvc_printk(KERN_INFO, "Unknown video format %pUl\n",
++				   &buffer[5]);
++			snprintf(format->name, sizeof format->name, "%pUl",
++				 &buffer[5]);
+ 			format->fcc = 0;
+ 		}
+ 
+diff --git a/drivers/media/video/uvc/uvcvideo.h b/drivers/media/video/uvc/uvcvideo.h
+index e7958aa..9f4a437 100644
+--- a/drivers/media/video/uvc/uvcvideo.h
++++ b/drivers/media/video/uvc/uvcvideo.h
+@@ -555,16 +555,6 @@ extern unsigned int uvc_trace_param;
+ #define uvc_printk(level, msg...) \
+ 	printk(level "uvcvideo: " msg)
+ 
+-#define UVC_GUID_FORMAT "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-" \
+-			"%02x%02x%02x%02x%02x%02x"
+-#define UVC_GUID_ARGS(guid) \
+-	(guid)[3],  (guid)[2],  (guid)[1],  (guid)[0], \
+-	(guid)[5],  (guid)[4], \
+-	(guid)[7],  (guid)[6], \
+-	(guid)[8],  (guid)[9], \
+-	(guid)[10], (guid)[11], (guid)[12], \
+-	(guid)[13], (guid)[14], (guid)[15]
+-
+ /* --------------------------------------------------------------------------
+  * Internal functions.
+  */
 
 
-Perhaps the declaration of it_real_fn() should be moved to hrtimer.h
-instead.  Or perhaps not.
-
-
-Or we could "forward declare" the enum with simply
-
-enum hrtimer_restart;
-
-but given that the compiler works out the storage size of the type at
-compile-time, that looks risky.
-
-
-Or we could not do anything.  Because increasing our inclusion
-complexity for no known gain isn't a bargain.
-
-
-Or is it no known gain?  What prompted you to write this patch?  Some
-error message or warning from some tool?  If so, please describe it
-fully.
-
-> 
-> diff --git a/include/linux/timer.h b/include/linux/timer.h
-> index a2d1eb6..ad2b3cb 100644
-> --- a/include/linux/timer.h
-> +++ b/include/linux/timer.h
-> @@ -6,6 +6,7 @@
-> #include <linux/stddef.h>
-> #include <linux/debugobjects.h>
-> #include <linux/stringify.h>
-> +#include <linux/hrtimer.h>
-> 
-> struct tvec_base;
-
-Your email client mangles whitespace, thus destroying the patch.
