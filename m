@@ -1,147 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933898AbZJMKfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933882AbZJMKeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933898AbZJMKfe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 06:35:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933877AbZJMKfd
+	id S933882AbZJMKeA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 06:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933460AbZJMKd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 06:35:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44143 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933865AbZJMKfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 06:35:32 -0400
-Date: Tue, 13 Oct 2009 10:34:32 GMT
-From: tip-bot for Stefan Assmann <sassmann@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, sassmann@redhat.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, sassmann@redhat.com, rostedt@goodmis.org,
-       tglx@linutronix.de
-In-Reply-To: <4AD2DEB9.2@redhat.com>
-References: <4AD2DEB9.2@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] ftrace: add kernel command line graph function filtering
-Message-ID: <tip-369bc18f9a6c4e2686204c1d7476ab684a720968@git.kernel.org>
-Git-Commit-ID: 369bc18f9a6c4e2686204c1d7476ab684a720968
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Oct 2009 10:34:33 +0000 (UTC)
+	Tue, 13 Oct 2009 06:33:58 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36239 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933487AbZJMKd5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 06:33:57 -0400
+Date: Tue, 13 Oct 2009 11:34:34 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Nix <nix@esperi.org.uk>,
+       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Boyan <btanastasov@yahoo.co.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       " =?ISO-8859-14?B?RnLpZOlyaWM=?= L. W. Meunier" <fredlwm@gmail.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+Message-ID: <20091013113434.22f4fcde@lxorguk.ukuu.org.uk>
+In-Reply-To: <4AD3F769.5080405@gmail.com>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
+	<L6tb-VyKHZK.A.PaB.Ozl0KB@chimera>
+	<C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com>
+	<87ljjgfcbu.fsf@spindle.srvr.nix>
+	<alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>
+	<alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
+	<4AD3F769.5080405@gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  369bc18f9a6c4e2686204c1d7476ab684a720968
-Gitweb:     http://git.kernel.org/tip/369bc18f9a6c4e2686204c1d7476ab684a720968
-Author:     Stefan Assmann <sassmann@redhat.com>
-AuthorDate: Mon, 12 Oct 2009 22:17:21 +0200
-Committer:  Frederic Weisbecker <fweisbec@gmail.com>
-CommitDate: Mon, 12 Oct 2009 22:17:21 +0200
+> I can throw your patch in over here for the heck of it.
+> If there's somebody who's really hitting this bug
+> then the results would be better  if this is the area that causing
+> this bug.(from here the only issue I'm seeing is spinning
+> history commands in the terminal  from time to time,
+> nothing of any unusable keys like others are reporting).
 
-ftrace: add kernel command line graph function filtering
+That sounds more like a lost key-up event somewhere higher up the stack.
+USB keyboard ? and does it stop if you take the key in question. Also does
+it stop if you touch the mouse wheel (assuming you've got mousewheel
+bound to shell history somewhere ?)
 
-Add a command line parameter to allow limiting the function graphs
-that are traced on boot up from the given top-level callers , when
-ftrace=function_graph is specified.
-
-This patch adds the following command line option:
-ftrace_graph_filter=function-list
-
-Where function-list is a comma separated list of functions to filter.
-
-[fweisbec@gmail.com: picked the documentation changes from the v2 patch]
-
-Signed-off-by: Stefan Assmann <sassmann@redhat.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <4AD2DEB9.2@redhat.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- Documentation/kernel-parameters.txt |    7 +++++++
- kernel/trace/ftrace.c               |   34 ++++++++++++++++++++++++++++++++++
- 2 files changed, 41 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 6fa7292..1dc4b9c 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -778,6 +778,13 @@ and is between 256 and 4096 characters. It is defined in the file
- 			by the set_ftrace_notrace file in the debugfs
- 			tracing directory.
- 
-+	ftrace_graph_filter=[function-list]
-+			[FTRACE] Limit the top level callers functions traced
-+			by the function graph tracer at boot up.
-+			function-list is a comma separated list of functions
-+			that can be changed at run time by the
-+			set_graph_function file in the debugfs tracing directory.
-+
- 	gamecon.map[2|3]=
- 			[HW,JOY] Multisystem joystick and NES/SNES/PSX pad
- 			support via parallel port (up to 5 devices per port)
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 9a72853..91283d4 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -78,6 +78,10 @@ ftrace_func_t ftrace_trace_function __read_mostly = ftrace_stub;
- ftrace_func_t __ftrace_trace_function __read_mostly = ftrace_stub;
- ftrace_func_t ftrace_pid_function __read_mostly = ftrace_stub;
- 
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+static int ftrace_set_func(unsigned long *array, int *idx, char *buffer);
-+#endif
-+
- static void ftrace_list_func(unsigned long ip, unsigned long parent_ip)
- {
- 	struct ftrace_ops *op = ftrace_list;
-@@ -2248,6 +2252,7 @@ void ftrace_set_notrace(unsigned char *buf, int len, int reset)
- #define FTRACE_FILTER_SIZE		COMMAND_LINE_SIZE
- static char ftrace_notrace_buf[FTRACE_FILTER_SIZE] __initdata;
- static char ftrace_filter_buf[FTRACE_FILTER_SIZE] __initdata;
-+static char ftrace_graph_buf[FTRACE_FILTER_SIZE] __initdata;
- 
- static int __init set_ftrace_notrace(char *str)
- {
-@@ -2263,6 +2268,31 @@ static int __init set_ftrace_filter(char *str)
- }
- __setup("ftrace_filter=", set_ftrace_filter);
- 
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+static int __init set_graph_function(char *str)
-+{
-+	strncpy(ftrace_graph_buf, str, FTRACE_FILTER_SIZE);
-+	return 1;
-+}
-+__setup("ftrace_graph_filter=", set_graph_function);
-+
-+static void __init set_ftrace_early_graph(char *buf)
-+{
-+	int ret;
-+	char *func;
-+
-+	while (buf) {
-+		func = strsep(&buf, ",");
-+		/* we allow only one expression at a time */
-+		ret = ftrace_set_func(ftrace_graph_funcs, &ftrace_graph_count,
-+				      func);
-+		if (ret)
-+			printk(KERN_DEBUG "ftrace: function %s not "
-+					  "traceable\n", func);
-+	}
-+}
-+#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
-+
- static void __init set_ftrace_early_filter(char *buf, int enable)
- {
- 	char *func;
-@@ -2279,6 +2309,10 @@ static void __init set_ftrace_early_filters(void)
- 		set_ftrace_early_filter(ftrace_filter_buf, 1);
- 	if (ftrace_notrace_buf[0])
- 		set_ftrace_early_filter(ftrace_notrace_buf, 0);
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+	if (ftrace_graph_buf[0])
-+		set_ftrace_early_graph(ftrace_graph_buf);
-+#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
- }
- 
- static int
+Alan
