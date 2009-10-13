@@ -1,55 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933896AbZJMKeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933898AbZJMKfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933896AbZJMKeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 06:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933879AbZJMKeS
+	id S933898AbZJMKfe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 06:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933877AbZJMKfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 06:34:18 -0400
-Received: from mtagate6.de.ibm.com ([195.212.17.166]:44617 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933885AbZJMKeQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 06:34:16 -0400
-Date: Tue, 13 Oct 2009 12:33:35 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, heiko.carstens@de.ibm.com,
-       linux-s390@vger.kernel.org
-Subject: Re: [BUILD-FAILURE] next-20091013 - s390x build breaks at mm/fault
- with !CONFIG_S390_EXEC_PROTECT
-Message-ID: <20091013123335.6d6820b3@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20091013100648.GA7542@linux.vnet.ibm.com>
-References: <20091013162312.8b93998b.sfr@canb.auug.org.au>
-	<20091013100648.GA7542@linux.vnet.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Oct 2009 06:35:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44143 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933865AbZJMKfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 06:35:32 -0400
+Date: Tue, 13 Oct 2009 10:34:32 GMT
+From: tip-bot for Stefan Assmann <sassmann@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, sassmann@redhat.com,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, sassmann@redhat.com, rostedt@goodmis.org,
+       tglx@linutronix.de
+In-Reply-To: <4AD2DEB9.2@redhat.com>
+References: <4AD2DEB9.2@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/core] ftrace: add kernel command line graph function filtering
+Message-ID: <tip-369bc18f9a6c4e2686204c1d7476ab684a720968@git.kernel.org>
+Git-Commit-ID: 369bc18f9a6c4e2686204c1d7476ab684a720968
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Oct 2009 10:34:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009 15:36:48 +0530
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Commit-ID:  369bc18f9a6c4e2686204c1d7476ab684a720968
+Gitweb:     http://git.kernel.org/tip/369bc18f9a6c4e2686204c1d7476ab684a720968
+Author:     Stefan Assmann <sassmann@redhat.com>
+AuthorDate: Mon, 12 Oct 2009 22:17:21 +0200
+Committer:  Frederic Weisbecker <fweisbec@gmail.com>
+CommitDate: Mon, 12 Oct 2009 22:17:21 +0200
 
-> 	next-20091013 randconfig build breaks on s390, with
-> CONFIG_S390_EXEC_PROTECT=y
-> 
-> arch/s390/mm/fault.c: In function 'signal_return':
-> arch/s390/mm/fault.c:221: error: implicit declaration of function 'is_compat_task'
-> make[1]: *** [arch/s390/mm/fault.o] Error 1
-> 
-> is_compat_task is defined at asm/compat.h, including the 
-> header, helps
+ftrace: add kernel command line graph function filtering
 
-I'll merge that info "[PATCH] fault handler performance optimization" if you
-don't mind.
+Add a command line parameter to allow limiting the function graphs
+that are traced on boot up from the given top-level callers , when
+ftrace=function_graph is specified.
 
--- 
-blue skies,
-   Martin.
+This patch adds the following command line option:
+ftrace_graph_filter=function-list
 
-"Reality continues to ruin my life." - Calvin.
+Where function-list is a comma separated list of functions to filter.
 
+[fweisbec@gmail.com: picked the documentation changes from the v2 patch]
+
+Signed-off-by: Stefan Assmann <sassmann@redhat.com>
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <4AD2DEB9.2@redhat.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ Documentation/kernel-parameters.txt |    7 +++++++
+ kernel/trace/ftrace.c               |   34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 41 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 6fa7292..1dc4b9c 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -778,6 +778,13 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			by the set_ftrace_notrace file in the debugfs
+ 			tracing directory.
+ 
++	ftrace_graph_filter=[function-list]
++			[FTRACE] Limit the top level callers functions traced
++			by the function graph tracer at boot up.
++			function-list is a comma separated list of functions
++			that can be changed at run time by the
++			set_graph_function file in the debugfs tracing directory.
++
+ 	gamecon.map[2|3]=
+ 			[HW,JOY] Multisystem joystick and NES/SNES/PSX pad
+ 			support via parallel port (up to 5 devices per port)
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 9a72853..91283d4 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -78,6 +78,10 @@ ftrace_func_t ftrace_trace_function __read_mostly = ftrace_stub;
+ ftrace_func_t __ftrace_trace_function __read_mostly = ftrace_stub;
+ ftrace_func_t ftrace_pid_function __read_mostly = ftrace_stub;
+ 
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++static int ftrace_set_func(unsigned long *array, int *idx, char *buffer);
++#endif
++
+ static void ftrace_list_func(unsigned long ip, unsigned long parent_ip)
+ {
+ 	struct ftrace_ops *op = ftrace_list;
+@@ -2248,6 +2252,7 @@ void ftrace_set_notrace(unsigned char *buf, int len, int reset)
+ #define FTRACE_FILTER_SIZE		COMMAND_LINE_SIZE
+ static char ftrace_notrace_buf[FTRACE_FILTER_SIZE] __initdata;
+ static char ftrace_filter_buf[FTRACE_FILTER_SIZE] __initdata;
++static char ftrace_graph_buf[FTRACE_FILTER_SIZE] __initdata;
+ 
+ static int __init set_ftrace_notrace(char *str)
+ {
+@@ -2263,6 +2268,31 @@ static int __init set_ftrace_filter(char *str)
+ }
+ __setup("ftrace_filter=", set_ftrace_filter);
+ 
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++static int __init set_graph_function(char *str)
++{
++	strncpy(ftrace_graph_buf, str, FTRACE_FILTER_SIZE);
++	return 1;
++}
++__setup("ftrace_graph_filter=", set_graph_function);
++
++static void __init set_ftrace_early_graph(char *buf)
++{
++	int ret;
++	char *func;
++
++	while (buf) {
++		func = strsep(&buf, ",");
++		/* we allow only one expression at a time */
++		ret = ftrace_set_func(ftrace_graph_funcs, &ftrace_graph_count,
++				      func);
++		if (ret)
++			printk(KERN_DEBUG "ftrace: function %s not "
++					  "traceable\n", func);
++	}
++}
++#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
++
+ static void __init set_ftrace_early_filter(char *buf, int enable)
+ {
+ 	char *func;
+@@ -2279,6 +2309,10 @@ static void __init set_ftrace_early_filters(void)
+ 		set_ftrace_early_filter(ftrace_filter_buf, 1);
+ 	if (ftrace_notrace_buf[0])
+ 		set_ftrace_early_filter(ftrace_notrace_buf, 0);
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++	if (ftrace_graph_buf[0])
++		set_ftrace_early_graph(ftrace_graph_buf);
++#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+ }
+ 
+ static int
