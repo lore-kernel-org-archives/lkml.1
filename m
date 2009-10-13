@@ -1,108 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934150AbZJMXUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbZJMXT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934150AbZJMXUF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 19:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761585AbZJMXUD
+	id S1761608AbZJMXT0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 19:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761586AbZJMXTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 19:20:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:35950 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbZJMXUB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 19:20:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mJax19ZDjQjChQheJee80Rq8bxu+LIdB5ltGM2kyl9dD7aHP4SuIgi+e+dh82RGTYr
-         vHrQ2+CGHJDqSJdO8Ybsb1NkB2OHBAjTGTFoY+U6VslLoFj0i3P3LPCh3fCfiofxfzzt
-         l36icUqaJYFupGMFhpF02Fkn6ShwiI9nuPlys=
-Date: Wed, 14 Oct 2009 01:16:41 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-input@vger.kernel.org
-Subject: Re: [bisected regression] Touchpad "paste" stops working after
-	suspend to RAM
-Message-ID: <20091013231641.GA4404@Pilar.aei.mpg.de>
-References: <20091011180134.GA5197@core.coreip.homeip.net> <20091011193100.GA4410@Pilar.aei.mpg.de> <20091012090224.GB7403@core.coreip.homeip.net> <20091012100929.GA4402@Pilar.aei.mpg.de> <20091013032414.GC2887@core.coreip.homeip.net> <20091013121109.GB4619@Pilar.aei.mpg.de> <20091013182643.GC21593@core.coreip.homeip.net> <20091013190819.GA7555@Pilar.aei.mpg.de> <20091013194654.GD21593@core.coreip.homeip.net> <20091013202459.GE21593@core.coreip.homeip.net>
+	Tue, 13 Oct 2009 19:19:24 -0400
+Received: from khc.piap.pl ([195.187.100.11]:56630 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761458AbZJMXTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 19:19:23 -0400
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       Robert Hancock <hancockrwd@gmail.com>
+Subject: Re: sata_via: SError: { UnrecovData Proto TrStaTrns }
+References: <m3my46yo5g.fsf@intrepid.localdomain>
+	<19147.28614.505296.752363@pilspetsen.it.uu.se>
+Date: Wed, 14 Oct 2009 01:18:43 +0200
+In-Reply-To: <19147.28614.505296.752363@pilspetsen.it.uu.se> (Mikael
+	Pettersson's message of "Tue, 6 Oct 2009 18:26:46 +0200")
+Message-ID: <m3vdii51d8.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091013202459.GE21593@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[restoring Cc: list]
+Mikael Pettersson <mikpe@it.uu.se> writes:
 
-On Tue 13.Oct'09 at 13:24:59 -0700, Dmitry Torokhov wrote:
->
-> Could you please try this patch (again if you could post dmesg that
-> would be great). Thank you!
+> I couldn't do much about it other than ask the person to take
+> it to linux-ide (which I don't think he did), but it does make
+> one wonder if there is some issue with the vt6421a when connected
+> to an ixp4xx.
 
-The patch quoted below also fixes the problem. I attached the
-syslog with i8042.debug (with a s2ram in the middle) to the
-bugzilla: 
+I have performed some tests. Is there anything else I can do to fix
+this?
 
-http://bugzilla.kernel.org/show_bug.cgi?id=14392
+VIA VT6421A mini-PCI (Commell MP-6421) card and SATA II SSD from
+Transcend.
 
-(cool! the address above was pasted with the touchpad,
-so it is really working :-)
+Machine A: IXP425 (ARM) CPU, 266 MHz. 64 MB RAM - this time all RAM is
+accessible to VT6421A. PCI 33 MHz (using mini-PCI adapter). Both
+little-endian and big-endian CPU modes exhibit the problems.
 
-Thanks Dmitry!
+Machine B: AMD64 X2, 64-bit kernel, 2 GB RAM. Mini-PCI 33 MHz.
 
-> 
-> Input: atkbd - postpone restoring LED/repeat rate at resume
-> 
-> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> 
-> We need to postpone restoring LED state and typematic settings until
-> keyboard is finished reconnecting upon resume. Normally driver core
-> and PM infrastructure takes care of proper ordering and dependencies,
-> but or case actual reconnect is done asynchronously from kseriod.
-> So while driver core thinks that keyboard was resumed and it is time
-> to let input core run it's resume handlers in reality keyboard is not
-> ready yet. The solution is to keep rescheduling work that adjusts LED
-> and rate settings until keyboard is fully enabled.
-> 
-> Reported-by: Carlos R. Mafra <crmafra2@gmail.com>
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> ---
-> 
->  drivers/input/keyboard/atkbd.c |   19 +++++++++++++++----
->  1 files changed, 15 insertions(+), 4 deletions(-)
-> 
-> 
-> diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
-> index a45157d..022f3cb 100644
-> --- a/drivers/input/keyboard/atkbd.c
-> +++ b/drivers/input/keyboard/atkbd.c
-> @@ -574,11 +574,22 @@ static void atkbd_event_work(struct work_struct *work)
->  
->  	mutex_lock(&atkbd->event_mutex);
->  
-> -	if (test_and_clear_bit(ATKBD_LED_EVENT_BIT, &atkbd->event_mask))
-> -		atkbd_set_leds(atkbd);
-> +	if (!atkbd->enabled) {
-> +		/*
-> +		 * Serio ports are resumed asynchronously so while driver core
-> +		 * thinks that device is already fully operational in reality
-> +		 * it may not be ready yet. In this case we need to keep
-> +		 * rescheduling till reconnect completes.
-> +		 */
-> +		schedule_delayed_work(&atkbd->event_work,
-> +					msecs_to_jiffies(100));
-> +	} else {
-> +		if (test_and_clear_bit(ATKBD_LED_EVENT_BIT, &atkbd->event_mask))
-> +			atkbd_set_leds(atkbd);
->  
-> -	if (test_and_clear_bit(ATKBD_REP_EVENT_BIT, &atkbd->event_mask))
-> -		atkbd_set_repeat_rate(atkbd);
-> +		if (test_and_clear_bit(ATKBD_REP_EVENT_BIT, &atkbd->event_mask))
-> +			atkbd_set_repeat_rate(atkbd);
-> +	}
->  
->  	mutex_unlock(&atkbd->event_mutex);
->  }
+I've written a small program which only reads from disk, using the same
+read pattern that was needed for e2fsck. It constists of about 6500 of
+(quite random) lseek()s, each followed by read() (sizes from 524 to
+32768 bytes). I do ioctl(fd, BLKFLSBUF, 0) first.
+
+It seems I can trigger the problems almost reliably on Machine A with
+rmmod sata_via; modprobe sata_via; test_program. Subsequent runs
+(without rmmod/modprobe usually don't show any issue).
+
+It usually shows up on Machine B but only once after reboot, subsequent
+rmmod + modprobe doesn't seem to trigger it. The test takes about
+4 seconds (if the errors don't show up).
+
+The SSD shows no issues when connected directly to SATA port on the
+machine B motherboard (NVidia MCP-55).
+
+Machine A shows no issues when connected to a SATA disk. However, the
+disk is much slower (seeks are slow, linear transfer from either device
+is way above IXP425 ability). The test takes about 10 seconds with SSD
+and 20 seconds with the disk. I wonder if it could be a factor.
+
+Machine A (IXP425) doesn't obviously use the card's BIOS, so the
+VT6421A is configured a bit differently (ignoring differences in
+addresses etc):
+
+--- Machine A (IXP425)
++++ Machine B (x86-64)
+-RAID bus controller: VT6421 IDE RAID Controller (rev 50)
++IDE interface: VT6421 IDE RAID Controller (rev 50) (prog-if 8f [Master
+         SecP SecO PriP PriO])
+
+-        Control: Mem- FastB2B+ ...
++        Control: Mem+ FastB2B- ...
+
+Mem - I guess x86-64 enables it for BIOS access. This is the only PCI
+device in machine A (ARM).
+
+-        Latency: 32
++        Latency: 64
+
+         Capabilities: [e0] Power Management version 2
+-                Status: ...
++                Status: NoSoftRst- ...
+
+-00: 06 11 49 32 05 02 90 02 50 00 04 01 00 20 00 00
++00: 06 11 49 32 07 00 90 02 50 8f 01 01 00 40 00 00
+-10: 21 14 00 00 31 14 00 00 41 14 00 00 51 14 00 00
++10: 01 dc 00 00 81 d8 00 00 01 d8 00 00 81 d4 00 00
+-20: 01 14 00 00 01 10 00 00 00 00 00 00 06 11 49 32
++20: 01 d4 00 00 01 d0 00 00 00 00 00 00 06 11 49 32
+-30: 00 00 ff ff e0 00 00 00 00 00 00 00 1d 01 00 00
++30: 00 00 af fe e0 00 00 00 00 00 00 00 0b 01 00 00
+-40: 33 03 f1 44 0e af 00 00 00 00 00 03 00 00 00 00
++40: 33 03 f1 44 06 af 00 00 00 00 00 03 00 00 00 00
+
+-70: 00 00 00 00 01 f0 00 00 01 00 01 00 11 00 00 00
++70: 00 00 00 00 01 f0 00 00 01 00 01 00 10 00 00 00
+-80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
++80: 00 00 00 00 00 00 00 00 00 80 c7 7d 00 00 00 00
+
+
+Machine A (IXP425):
+
+RAID bus controller: VIA Technologies, Inc. VT6421 IDE RAID Controller (rev 50)
+        Subsystem: VIA Technologies, Inc. VT6421 IDE RAID Controller
+        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B+ DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 32
+        Interrupt: pin A routed to IRQ 29
+        Region 0: I/O ports at 1420 [size=16]
+        Region 1: I/O ports at 1430 [size=16]
+        Region 2: I/O ports at 1440 [size=16]
+        Region 3: I/O ports at 1450 [size=16]
+        Region 4: I/O ports at 1400 [size=32]
+        Region 5: I/O ports at 1000 [size=256]
+        Expansion ROM at 48000000 [disabled] [size=64K]
+        Capabilities: [e0] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Kernel driver in use: sata_via
+        Kernel modules: sata_via
+00: 06 11 49 32 05 02 90 02 50 00 04 01 00 20 00 00
+10: 21 14 00 00 31 14 00 00 41 14 00 00 51 14 00 00
+20: 01 14 00 00 01 10 00 00 00 00 00 00 06 11 49 32
+30: 00 00 ff ff e0 00 00 00 00 00 00 00 1d 01 00 00
+40: 33 03 f1 44 0e af 00 00 00 00 00 03 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 10 10 00 05 00 10 00
+60: 00 00 ff ff 00 00 00 00 00 00 00 00 00 00 ff ff
+70: 00 00 00 00 01 f0 00 00 01 00 01 00 11 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 0b f2 c9 35 10 ac c0 00 a8 a8 a8 a8 ff 00 b6 b6
+b0: 0f 0f 1f 1f 34 00 00 00 00 00 20 00 00 00 00 00
+c0: 00 02 00 00 00 00 00 00 00 02 00 00 00 00 00 00
+d0: 82 01 00 00 00 00 00 00 02 01 00 00 00 00 00 00
+e0: 01 00 02 00 00 00 00 00 50 01 49 32 06 11 49 32
+f0: 00 00 70 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+ata7: SATA max UDMA/133 port i16@0x1420 bmdma 0x1400 irq 29
+ata8: SATA max UDMA/133 port i16@0x1430 bmdma 0x1408 irq 29
+ata9: PATA max UDMA/133 port i16@0x1440 bmdma 0x1410 irq 29
+ata7: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata7.00: ATA-8: TS32GSSD25S-M, V1210, max UDMA/100
+ata7.00: 62586880 sectors, multi 0: LBA48 NCQ (depth 0/1)
+ata7.00: applying bridge limits
+ata7.00: configured for UDMA/100
+scsi 6:0:0:0: Direct-Access     ATA      TS32GSSD25S-M    V121 PQ: 0 ANSI: 5
+sd 6:0:0:0: [sda] 62586880 512-byte logical blocks: (32.0 GB/29.8 GiB)
+sd 6:0:0:0: [sda] Write Protect is off
+sd 6:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 6:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+sd 6:0:0:0: [sda] Attached SCSI disk
+ata8: SATA link down (SStatus 0 SControl 310)
+
+*** running the test program ***
+
+ata7.00: exception Emask 0x12 SAct 0x0 SErr 0x1000500 action 0x6
+ata7: SError: { UnrecovData Proto TrStaTrns }
+ata7.00: cmd c8/00:98:38:04:74/00:00:00:00:00/e0 tag 0 dma 77824 in
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x32 (host bus error)
+ata7.00: status: { DRDY }
+ata7: hard resetting link
+ata7: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata7.00: configured for UDMA/100
+ata7.00: device reported invalid CHS sector 0
+ata7: EH complete
+ata7.00: exception Emask 0x12 SAct 0x0 SErr 0x1000500 action 0x6
+ata7.00: BMDMA stat 0x65
+ata7: SError: { UnrecovData Proto TrStaTrns }
+ata7.00: cmd c8/00:00:d0:05:a8/00:00:00:00:00/e1 tag 0 dma 131072 in
+         res 51/40:00:d0:05:a8/00:00:00:00:00/e1 Emask 0x12 (ATA bus error)
+ata7.00: status: { DRDY ERR }
+ata7.00: error: { UNC }
+ata7: hard resetting link
+ata7: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata7.00: configured for UDMA/100
+ata7: EH complete
+ata7.00: exception Emask 0x12 SAct 0x0 SErr 0x1000500 action 0x6
+ata7: SError: { UnrecovData Proto TrStaTrns }
+ata7.00: cmd c8/00:40:10:00:2c/00:00:00:00:00/e2 tag 0 dma 32768 in
+         res 40/00:00:d0:05:a8/00:00:00:00:00/e1 Emask 0x32 (host bus error)
+ata7.00: status: { DRDY }
+ata7: hard resetting link
+ata7: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata7.00: configured for UDMA/100
+ata7: EH complete
+ata7.00: limiting speed to UDMA/66:PIO4
+ata7.00: exception Emask 0x12 SAct 0x0 SErr 0x1000500 action 0x6
+ata7: SError: { UnrecovData Proto TrStaTrns }
+ata7.00: cmd c8/00:00:d0:05:30/00:00:00:00:00/e2 tag 0 dma 131072 in
+         res 40/00:00:d0:05:a8/00:00:00:00:00/e1 Emask 0x32 (host bus error)
+ata7.00: status: { DRDY }
+ata7: hard resetting link
+ata7: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata7.00: configured for UDMA/66
+ata7: EH complete
+
+
+
+Machine B (x86-64):
+
+IDE interface: VIA Technologies, Inc. VT6421 IDE RAID Controller (rev 50) (prog-if 8f [Master SecP SecO PriP PriO])
+        Subsystem: VIA Technologies, Inc. VT6421 IDE RAID Controller
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 64
+        Interrupt: pin A routed to IRQ 19
+        Region 0: I/O ports at dc00 [size=16]
+        Region 1: I/O ports at d880 [size=16]
+        Region 2: I/O ports at d800 [size=16]
+        Region 3: I/O ports at d480 [size=16]
+        Region 4: I/O ports at d400 [size=32]
+        Region 5: I/O ports at d000 [size=256]
+        Expansion ROM at 88000000 [disabled] [size=64K]
+        Capabilities: [e0] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+        Kernel driver in use: sata_via
+        Kernel modules: sata_via
+00: 06 11 49 32 07 00 90 02 50 8f 01 01 00 40 00 00
+10: 01 dc 00 00 81 d8 00 00 01 d8 00 00 81 d4 00 00
+20: 01 d4 00 00 01 d0 00 00 00 00 00 00 06 11 49 32
+30: 00 00 af fe e0 00 00 00 00 00 00 00 0b 01 00 00
+40: 33 03 f1 44 06 af 00 00 00 00 00 03 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 10 10 00 05 00 10 00
+60: 00 00 ff ff 00 00 00 00 00 00 00 00 00 00 ff ff
+70: 00 00 00 00 01 f0 00 00 01 00 01 00 10 00 00 00
+80: 00 00 00 00 00 00 00 00 00 80 c7 7d 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 0b f2 c9 35 10 ac c0 00 a8 a8 a8 a8 ff 00 b6 b6
+b0: 0f 0f 1f 1f 34 00 00 00 00 00 20 00 00 00 00 00
+c0: 00 02 00 00 00 00 00 00 00 02 00 00 00 00 00 00
+d0: 82 01 00 00 00 00 00 00 02 01 00 00 00 00 00 00
+e0: 01 00 02 00 00 00 00 00 50 01 49 32 06 11 49 32
+f0: 00 00 70 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+ata5: SATA max UDMA/133 port i16@0xdc00 bmdma 0xd400 irq 19
+ata6: SATA max UDMA/133 port i16@0xd880 bmdma 0xd408 irq 19
+ata7: PATA max UDMA/133 port i16@0xd800 bmdma 0xd410 irq 19
+ata5: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata5.00: ATA-8: TS32GSSD25S-M, V1210, max UDMA/100
+ata5.00: 62586880 sectors, multi 0: LBA48 NCQ (depth 0/1)
+ata5.00: applying bridge limits
+ata5.00: configured for UDMA/100
+scsi 4:0:0:0: Direct-Access     ATA      TS32GSSD25S-M    V121 PQ: 0 ANSI: 5
+sd 4:0:0:0: Attached scsi generic sg2 type 0
+sd 4:0:0:0: [sdb] 62586880 512-byte hardware sectors: (32.0 GB/29.8 GiB)
+sd 4:0:0:0: [sdb] Write Protect is off
+sd 4:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 4:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+sd 4:0:0:0: [sdb] Attached SCSI disk
+ata6: SATA link down (SStatus 0 SControl 310)
+
+*** running the test program ***
+
+ata5.00: exception Emask 0x12 SAct 0x0 SErr 0x1000500 action 0x6 frozen
+ata5: SError: { UnrecovData Proto TrStaTrns }
+ata5.00: cmd c8/00:00:e0:21:00/00:00:00:00:00/e0 tag 0 dma 131072 in
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x16 (ATA bus error)
+ata5.00: status: { DRDY }
+ata5: hard resetting link
+ata5: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata5.00: configured for UDMA/100
+ata5.00: device reported invalid CHS sector 0
+ata5: EH complete
+-- 
+Krzysztof Halasa
