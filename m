@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbZJMRaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760726AbZJMR2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760751AbZJMRaT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 13:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760738AbZJMRaS
+	id S1760726AbZJMR2N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 13:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760647AbZJMR2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 13:30:18 -0400
-Received: from gv-out-0910.google.com ([216.239.58.186]:62043 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753100AbZJMRaR (ORCPT
+	Tue, 13 Oct 2009 13:28:13 -0400
+Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:48539 "EHLO
+	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759817AbZJMR2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 13:30:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=Zxu480+kYs7rR1VDrY1XGsdJfzKgRaK0DTx0xq1ihmCztLS8l0Y8orzr57IBCpgIK7
-         Ki4h8ycGs8HMOxIgoitK29/hUFKaGQXsJmQOT83mxwSsNYo12bUb2ZiSEF0QPOCJQ1sw
-         y5xkg9utmJv0t0Ot/ckI4wobtij/jCIs+oOS4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Subject: Re: Current status of rt2800usb and staging/rt2870
-Date: Tue, 13 Oct 2009 19:27:24 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rc2-00292-g0b20633; KDE/4.3.1; x86_64; ; )
-Cc: Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
-       linux-wireless@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <4AD46380.9020308@pardus.org.tr> <200910131752.52589.IvDoorn@gmail.com>
-In-Reply-To: <200910131752.52589.IvDoorn@gmail.com>
+	Tue, 13 Oct 2009 13:28:12 -0400
+Date: Tue, 13 Oct 2009 11:27:31 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org
+Subject: Re: pci-express hotplug
+Message-ID: <20091013172731.GB22797@ldl.fc.hp.com>
+References: <20091012120620.GG9228@kernel.dk> <20091012145254.GA1517@kroah.com> <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca> <20091012150603.GK9228@kernel.dk> <20091012214854.GA14102@ldl.fc.hp.com> <20091013082903.GQ9228@kernel.dk>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910131927.24136.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091013082903.GQ9228@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 October 2009 17:52:52 Ivo van Doorn wrote:
+* Jens Axboe <jens.axboe@oracle.com>:
+> > > >> On Mon, Oct 12 2009, Greg KH wrote:
+> > > >>> Can you try the acpiphp driver instead?  That's usually the
+> > > >>> driver you want to use for "modern" systems (i.e. anything
+> > > >>> made in the past 5 years.)
+> > > >>
+> > > >> I should have mentioned that I tried that too. It doesn't
+> > > >> complain, but I don't see my cards anywhere afterwards. I'm
+> > > >> a hotplug newbie, do I need to do anything else?
+> > 
+> > Can you modprobe acpiphp with debug=1? And send the output?
+> 
+> acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:05.0
+> acpiphp_glue: found ACPI PCI Hotplug slot 1 at PCI 0000:08:00
+> acpiphp: Slot [1] registered
+> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:07.0
+> acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:0b:00
+> acpiphp: Slot [2] registered
+> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:07.0
+> acpiphp_glue: found ACPI PCI Hotplug slot 6 at PCI 0000:84:00
+> acpiphp: Slot [6] registered
+> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:09.0
+> acpiphp_glue: found ACPI PCI Hotplug slot 7 at PCI 0000:87:00
+> acpiphp: Slot [7] registered
+> acpiphp_glue: Bus 0000:87 has 1 slot
+> acpiphp_glue: Bus 0000:84 has 1 slot
+> acpiphp_glue: Bus 0000:0b has 1 slot
+> acpiphp_glue: Bus 0000:08 has 1 slot
+> acpiphp_glue: Total 4 slots
 
-> I am going to merge rt2800pci soon as well and after that I'll send a patch
+You mentioned in another mail that you echoed 1 into the various
+slots' power files.
 
-Great, I've been waiting for this for a long time.
+Did you do that after modprobing acpiphp with debug=1?
 
-> to remove all Ralink drivers from the staging tree.
+If so, there should be debug output when you try and turn them
+on.
 
-Till new drivers obtain support for all hardware currently covered by
-the unified staging drivers the latter shouldn't be removed as they
-serve well their role as a temporary solution allowing real Linux users
-to user their real hardware and as a reference material for developers
-willing to work on adding the missing bits to new drivers.
+Also, quick dummy check, you are trying to power on populated
+slots, right? :)
 
-Best regards,
-Bartlomiej
+Can you send the output of lspci -vv? And I like the output of
+lspci -vt as well... Both before and after loading acpiphp
+please.
+
+Thanks.
+
+/ac
+
