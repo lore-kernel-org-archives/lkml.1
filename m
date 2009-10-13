@@ -1,183 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbZJMDZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932110AbZJMDYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758835AbZJMDZY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 23:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbZJMDZY
+	id S932110AbZJMDYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 23:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZJMDYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 23:25:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39813 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751745AbZJMDZX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 23:25:23 -0400
-Date: Mon, 12 Oct 2009 20:24:01 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Nix <nix@esperi.org.uk>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Paul Fulghum <paulkf@microgate.com>
-cc: "Justin P. Mattock" <justinmattock@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Boyan <btanastasov@yahoo.co.uk>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?= 
-	<fredlwm@gmail.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 12 Oct 2009 23:24:47 -0400
+Received: from mga14.intel.com ([143.182.124.37]:43921 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751665AbZJMDYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 23:24:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,549,1249282800"; 
+   d="scan'208";a="198187816"
+Date: Tue, 13 Oct 2009 11:24:05 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       Myklebust Trond <Trond.Myklebust@netapp.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Nick Piggin <npiggin@suse.de>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Richard Kennedy <richard@rsk.demon.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
+	balance_dirty_pages()
+Message-ID: <20091013032405.GA20405@localhost>
+References: <20091007073818.318088777@intel.com> <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz> <20091010213339.GA8644@localhost> <20091012211838.GA3965@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012211838.GA3965@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 13, 2009 at 05:18:38AM +0800, Jan Kara wrote:
+> On Sun 11-10-09 05:33:39, Wu Fengguang wrote:
+> > On Fri, Oct 09, 2009 at 11:12:31PM +0800, Jan Kara wrote:
+> > > > +			/* don't wait if we've done enough */
+> > > > +			if (pages_written >= write_chunk)
+> > > > +				break;
+> > > >  		}
+> > > > -
+> > > > -		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+> > > > -			break;
+> > > > -		if (pages_written >= write_chunk)
+> > > > -			break;		/* We've done our duty */
+> > > > -
+> > >   Here, we had an opportunity to break from the loop even if we didn't
+> > > manage to write everything (for example because per-bdi thread managed to
+> > > write enough or because enough IO has completed while we were trying to
+> > > write). After the patch, we will sleep. IMHO that's not good...
+> > 
+> > Note that the pages_written check is moved several lines up in the patch :)
+> > 
+> > >   I'd think that if we did all that work in writeback_inodes_wbc we could
+> > > spend the effort on regetting and rechecking the stats...
+> > 
+> > Yes maybe. I didn't care it because the later throttle queue patch totally
+> > removed the loop and hence to need to reget the stats :)
+>   Yes, since the loop gets removed in the end, this does not matter. You
+> are right.
 
-[ Alan, Paulkf - the tty buffering and locking is originally your code, 
-  although from about three years ago, when it used to be in tty_io.c..
-  Any comment? ]
+You are right too :) I followed you and Peter's advice to do the loop
+and the recheck of stats as follows:
 
-On Mon, 12 Oct 2009, Linus Torvalds wrote:
+static void balance_dirty_pages(struct address_space *mapping,
+				unsigned long write_chunk)
+{
+	long nr_reclaimable, bdi_nr_reclaimable;
+	long nr_writeback, bdi_nr_writeback;
+	unsigned long background_thresh;
+	unsigned long dirty_thresh;
+	unsigned long bdi_thresh;
+	int dirty_exceeded;
+	struct backing_dev_info *bdi = mapping->backing_dev_info;
+
+	/*
+	 * If sync() is in progress, curb the to-be-synced inodes regardless
+	 * of dirty limits, so that a fast dirtier won't livelock the sync.
+	 */
+	if (unlikely(bdi->sync_time &&
+		     S_ISREG(mapping->host->i_mode) &&
+		     time_after_eq(bdi->sync_time,
+				   mapping->host->dirtied_when))) {
+		write_chunk *= 2;
+		bdi_writeback_wait(bdi, write_chunk);
+	}
+
+	for (;;) {
+		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+				 global_page_state(NR_UNSTABLE_NFS);
+		nr_writeback = global_page_state(NR_WRITEBACK) +
+			       global_page_state(NR_WRITEBACK_TEMP);
+
+		global_dirty_thresh(&background_thresh, &dirty_thresh);
+
+		/*
+		 * Throttle it only when the background writeback cannot
+		 * catch-up. This avoids (excessively) small writeouts
+		 * when the bdi limits are ramping up.
+		 */
+		if (nr_reclaimable + nr_writeback <
+		    (background_thresh + dirty_thresh) / 2)
+			break;
+
+		bdi_thresh = bdi_dirty_thresh(bdi, dirty_thresh);
+
+		/*
+		 * In order to avoid the stacked BDI deadlock we need
+		 * to ensure we accurately count the 'dirty' pages when
+		 * the threshold is low.
+		 *
+		 * Otherwise it would be possible to get thresh+n pages
+		 * reported dirty, even though there are thresh-m pages
+		 * actually dirty; with m+n sitting in the percpu
+		 * deltas.
+		 */
+		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
+			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
+			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
+		} else {
+			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+		}
+
+		/*
+		 * The bdi thresh is somehow "soft" limit derived from the
+		 * global "hard" limit. The former helps to prevent heavy IO
+		 * bdi or process from holding back light ones; The latter is
+		 * the last resort safeguard.
+		 */
+		dirty_exceeded =
+			(bdi_nr_reclaimable + bdi_nr_writeback >= bdi_thresh)
+			|| (nr_reclaimable + nr_writeback >= dirty_thresh);
+
+		if (!dirty_exceeded)
+			break;
+
+		bdi->dirty_exceed_time = jiffies;
+
+		bdi_writeback_wait(bdi, write_chunk);
+	}
+
+	/*
+	 * In laptop mode, we wait until hitting the higher threshold before
+	 * starting background writeout, and then write out all the way down
+	 * to the lower threshold.  So slow writers cause minimal disk activity.
+	 *
+	 * In normal mode, we start background writeout at the lower
+	 * background_thresh, to keep the amount of dirty memory low.
+	 */
+	if (!laptop_mode && (nr_reclaimable > background_thresh) &&
+	    can_submit_background_writeback(bdi))
+		bdi_start_writeback(bdi, NULL, WB_FOR_BACKGROUND);
+}
+
+> > > >  		schedule_timeout_interruptible(pause);
+> > > >
+> > > >  		/*
+> > > > @@ -577,8 +547,7 @@ static void balance_dirty_pages(struct a
+> > > >  			pause = HZ / 10;
+> > > >  	}
+> > > >
+> > > > -	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
+> > > > -			bdi->dirty_exceeded)
+> > > > +	if (!dirty_exceeded && bdi->dirty_exceeded)
+> > > >  		bdi->dirty_exceeded = 0;
+> > >   Here we fail to clear dirty_exceeded if we are over global dirty limit
+> > > but not over per-bdi dirty limit...
+> > 
+> > You must be mistaken: dirty_exceeded = (over bdi limit || over global limit),
+> > so !dirty_exceeded = (!over bdi limit && !over global limit).
+>   Exactly. Previously, the check was:
+> if (!over bdi limit)
+>   bdi->dirty_exceeded = 0;
 > 
-> Alan, Ogawa-san, do either of you see some problem in tty_buffer.c, 
-> perhaps?
+>   Now it is
+> if (!over bdi limit && !over global limit)
+>   bdi->dirty_exceeded = 0;
+> 
+>   That's clearly not equivalent which is what I was trying to point out.
+> But looking at where dirty_exceeded is used, your new way is probably more
+> useful. It's just a bit counterintuitive that bdi->dirty_exceeded is set
+> even if the per-bdi limit is not exceeded...
 
-Hmm. I see one, at least.
+Yeah good point. Since the per-bdi limits are more about "soft" limits
+which are derived from the global "hard" limit, the code makes sense
+with some comments and updated changelog :)
 
-The "tty_insert_flip_string()" locking seems totally bogus. 
+        This patch slightly changes behavior by replacing clip_bdi_dirty_limit()
+        with the explicit check (nr_reclaimable + nr_writeback >= dirty_thresh)
+        to avoid exceeding the dirty limit. Since the bdi dirty limit is mostly
+        accurate we don't need to do routinely clip. A simple dirty limit check
+        would be enough.
 
-It does that "tty_buffer_request_room()" call and subsequent copying with 
-no locking at all - sure, the tty_buffer_request_room() function itself 
-locks the buffers, but then unlocks it when returning, so when we actually 
-do the memcpy() etc, we can race with anybody.
+        The check is necessary because, in principle we should throttle
+        everything calling balance_dirty_pages() when we're over the total
+        limit, as said by Peter.
 
-I don't really see who would care, but it does look totally broken.
+        We now set and clear dirty_exceeded not only based on bdi dirty limits,
+        but also on the global dirty limits. This is a bit counterintuitive, but
+        the global limits are the ultimate goal and shall be always imposed.
 
-I dunno, this patch seems to make sense to me. Am I missing something?
+        We may now start background writeback work based on outdated conditions.
+        That's safe because the bdi flush thread will (and have to) double check
+        the states. It reduces overall overheads because the test based on old
+        states still have good chance to be right.
 
-[ NOTE! The patch is totally untested. It compiled for me on x86-64, and
-  apart from that I'm just going to say that it looks obvious, and the old 
-  code looks obviously buggy. Also, any remaining users of
-
-	tty_prepare_flip_string
-	tty_prepare_flip_string_flags
-
-  are still fundamentally broken and buggy, while users of
-
-	tty_buffer_request_room
-
-  are pretty damn odd and suspect (but a lot of them seem to be just 
-  pointless: they then call tty_insert_flip_string(), which means that the 
-  tty_buffer_request_room() call was totally redundant ]
-
-Comments? Does this work? Does it make any difference? It seems fairly 
-unlikely, but it's the only obvious problem I've seen in the tty buffering 
-code so far.
-
-And that code is literally 3 years old, and it seems unlikely that a 
-regular _keyboard_ buffer would be able to hit the (rather small) race 
-condition. But other serialization may have hidden it, and timing 
-differences could certainly have caused it to trigger much more easily.
-
-			Linus
-
----
- drivers/char/tty_buffer.c |   33 +++++++++++++++++++++++++--------
- 1 files changed, 25 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/char/tty_buffer.c b/drivers/char/tty_buffer.c
-index 3108991..25ab538 100644
---- a/drivers/char/tty_buffer.c
-+++ b/drivers/char/tty_buffer.c
-@@ -196,13 +196,10 @@ static struct tty_buffer *tty_buffer_find(struct tty_struct *tty, size_t size)
-  *
-  *	Locking: Takes tty->buf.lock
-  */
--int tty_buffer_request_room(struct tty_struct *tty, size_t size)
-+static int locked_tty_buffer_request_room(struct tty_struct *tty, size_t size)
- {
- 	struct tty_buffer *b, *n;
- 	int left;
--	unsigned long flags;
--
--	spin_lock_irqsave(&tty->buf.lock, flags);
- 
- 	/* OPTIMISATION: We could keep a per tty "zero" sized buffer to
- 	   remove this conditional if its worth it. This would be invisible
-@@ -225,9 +222,20 @@ int tty_buffer_request_room(struct tty_struct *tty, size_t size)
- 			size = left;
- 	}
- 
--	spin_unlock_irqrestore(&tty->buf.lock, flags);
- 	return size;
- }
-+
-+int tty_buffer_request_room(struct tty_struct *tty, size_t size)
-+{
-+	int retval;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&tty->buf.lock, flags);
-+	retval = locked_tty_buffer_request_room(tty, size);
-+	spin_unlock_irqrestore(&tty->buf.lock, flags);
-+	return retval;
-+}
-+
- EXPORT_SYMBOL_GPL(tty_buffer_request_room);
- 
- /**
-@@ -239,16 +247,20 @@ EXPORT_SYMBOL_GPL(tty_buffer_request_room);
-  *	Queue a series of bytes to the tty buffering. All the characters
-  *	passed are marked as without error. Returns the number added.
-  *
-- *	Locking: Called functions may take tty->buf.lock
-+ *	Locking: We take tty->buf.lock
-  */
- 
- int tty_insert_flip_string(struct tty_struct *tty, const unsigned char *chars,
- 				size_t size)
- {
- 	int copied = 0;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&tty->buf.lock, flags);
- 	do {
--		int space = tty_buffer_request_room(tty, size - copied);
-+		int space = locked_tty_buffer_request_room(tty, size - copied);
- 		struct tty_buffer *tb = tty->buf.tail;
-+
- 		/* If there is no space then tb may be NULL */
- 		if (unlikely(space == 0))
- 			break;
-@@ -260,6 +272,7 @@ int tty_insert_flip_string(struct tty_struct *tty, const unsigned char *chars,
- 		/* There is a small chance that we need to split the data over
- 		   several buffers. If this is the case we must loop */
- 	} while (unlikely(size > copied));
-+	spin_unlock_irqrestore(&tty->buf.lock, flags);
- 	return copied;
- }
- EXPORT_SYMBOL(tty_insert_flip_string);
-@@ -282,8 +295,11 @@ int tty_insert_flip_string_flags(struct tty_struct *tty,
- 		const unsigned char *chars, const char *flags, size_t size)
- {
- 	int copied = 0;
-+	unsigned long irqflags;
-+
-+	spin_lock_irqsave(&tty->buf.lock, irqflags);
- 	do {
--		int space = tty_buffer_request_room(tty, size - copied);
-+		int space = locked_tty_buffer_request_room(tty, size - copied);
- 		struct tty_buffer *tb = tty->buf.tail;
- 		/* If there is no space then tb may be NULL */
- 		if (unlikely(space == 0))
-@@ -297,6 +313,7 @@ int tty_insert_flip_string_flags(struct tty_struct *tty,
- 		/* There is a small chance that we need to split the data over
- 		   several buffers. If this is the case we must loop */
- 	} while (unlikely(size > copied));
-+	spin_unlock_irqrestore(&tty->buf.lock, irqflags);
- 	return copied;
- }
- EXPORT_SYMBOL(tty_insert_flip_string_flags);
+Thanks,
+Fengguang
