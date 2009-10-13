@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751803AbZJME1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751718AbZJMEce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751803AbZJME1K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 00:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZJME1J
+	id S1751718AbZJMEce (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 00:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZJMEcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 00:27:09 -0400
-Received: from lennier.cc.vt.edu ([198.82.162.213]:41350 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751540AbZJME1I (ORCPT
+	Tue, 13 Oct 2009 00:32:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:34717 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750808AbZJMEcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 00:27:08 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Oleg Nesterov <onestero@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [resend][PATCH v2] mlock() doesn't wait to finish lru_add_drain_all()
-In-Reply-To: Your message of "Tue, 13 Oct 2009 10:17:48 +0900."
-             <20091013090347.C752.A69D9226@jp.fujitsu.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20091009111709.1291.A69D9226@jp.fujitsu.com> <20091012165747.97f5bd87.akpm@linux-foundation.org>
-            <20091013090347.C752.A69D9226@jp.fujitsu.com>
+	Tue, 13 Oct 2009 00:32:32 -0400
+Date: Mon, 12 Oct 2009 21:32:29 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Siarhei Liakh <sliakh.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
+       Aristeu Rozanski <aris@redhat.com>
+Subject: Re: [PATCH V5] x86: NX protection for kernel data
+Message-ID: <20091012213229.11898c12@infradead.org>
+In-Reply-To: <817ecb6f0910121803p52a4049ep4a712545d28bba76@mail.gmail.com>
+References: <817ecb6f0910121803p52a4049ep4a712545d28bba76@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1255407959_3557P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Tue, 13 Oct 2009 00:25:59 -0400
-Message-ID: <15231.1255407959@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.35.215 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=zidane.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020202.4AD40159.021B,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1255407959_3557P
-Content-Type: text/plain; charset=us-ascii
+On Mon, 12 Oct 2009 21:03:17 -0400
+Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
 
-On Tue, 13 Oct 2009 10:17:48 +0900, KOSAKI Motohiro said:
-
-> > How did you work out why the lru_add_drain_all() is present in
-> > sys_mlock() anyway?  Neither the code nor the original changelog tell
-> > us.  Who do I thwap for that?  Nick and his reviewers.  Sigh.
+> This patch expands functionality of CONFIG_DEBUG_RODATA to set main
+> (static) kernel data area as NX.
+> The following steps are taken to achieve this:
+> 1. Linker script is adjusted so .text always starts and ends on a
+> page boundary 2. Linker script is adjusted so .rodata and .data
+> always start and end on a page boundary
+> 3. void mark_nxdata_nx(void) added to arch/x86/mm/init.c with actual
+> functionality: NX is set for all pages from _etext through _end.
+> 4. mark_nxdata_nx() called from free_initmem() (after init has been
+> released) 5. free_init_pages() sets released memory NX in
+> arch/x86/mm/init.c
 > 
-> [Umm, My dictionaly don't tell me the meaning of "thwap".  An meaning of
-> an imitative word strongly depend on culture. Thus, I probably
-> misunderstand this paragraph.]
+> The patch have been developed for Linux 2.6.31-rc7 x86 by Siarhei
+> Liakh <sliakh.lkml@gmail.com> and Xuxian Jiang <jiang@cs.ncsu.edu>.
+> 
 
-http://ars.userfriendly.org/cartoons/?id=20030210&mode=classic
+I like doing this, but... maybe it is useful to have a diff of the
+pagetable dump (PT_DUMP config option) to show the effect, in the
+changelog. That'd be like the proof on the pudding...
 
-(biff, thwap, it's all the same - the sound of a cluebat impacting somebody ;)
 
---==_Exmh_1255407959_3557P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFK1AFXcC3lWbTT17ARAoeQAKCYdCjq/kfHDCI2Rv34Pm9qNPVH7gCfXh0d
-VHh8gS/i1yh4u1ksCJvnSnY=
-=7xJN
------END PGP SIGNATURE-----
-
---==_Exmh_1255407959_3557P--
-
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
