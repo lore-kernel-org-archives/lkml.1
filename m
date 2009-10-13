@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbZJMDLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbZJMDML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753202AbZJMDLt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 23:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbZJMDLs
+	id S1758816AbZJMDML (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 23:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbZJMDMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 23:11:48 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36057 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967AbZJMDLr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 23:11:47 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 13 Oct 2009 12:08:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: vedran.furac@gmail.com
-Cc: Vedran =?UTF-8?B?RnVyYcSN?= <vedranf@vedranf.mine.nu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Memory overcommit
-Message-Id: <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <hav57c$rso$1@ger.gmane.org>
-References: <hav57c$rso$1@ger.gmane.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 12 Oct 2009 23:12:10 -0400
+Received: from mga09.intel.com ([134.134.136.24]:51459 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751601AbZJMDMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 23:12:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,548,1249282800"; 
+   d="scan'208";a="456874213"
+Subject: Re: hackbench regression with kernel 2.6.32-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>
+In-Reply-To: <1255357264.10420.15.camel@twins>
+References: <1255079943.25078.23.camel@ymzhang>
+	 <1255084986.8802.46.camel@laptop>  <1255331120.3684.43.camel@ymzhang>
+	 <1255357264.10420.15.camel@twins>
+Content-Type: text/plain
+Date: Tue, 13 Oct 2009 11:12:02 +0800
+Message-Id: <1255403522.3684.57.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009 13:51:07 +0200
-Vedran Furač <vedranf@vedranf.mine.nu> wrote:
-> /proc/meminfo
-> MemTotal:        3542532 kB
-> MemFree:          892972 kB
-> Buffers:            2664 kB
-> Cached:           130940 kB
+On Mon, 2009-10-12 at 16:21 +0200, Peter Zijlstra wrote:
+> On Mon, 2009-10-12 at 15:05 +0800, Zhang, Yanmin wrote:
 > 
-> ...that there is almost 900MB free memory. But OK, I can live with it.
+> > > So hackbench is a multi-cast, with one sender spraying multiple
+> > > receivers, who in their turn don't spray back, right?
 > 
-> So, my question is: why today overcommit isn't turned off *by default*?
-> I have it turned off for a few years now and only side effect is that I
-> don't get processes killed randomly anymore, I don't loose valuable time
-> and data.
+> > Right. volanoMark has about 9% regression on stoakley and 50% regression
+> > on tigerton. If I revert the original patches, volanoMark regression on stoakley
+> > disappears, but still has about 45% on tigerton.
 > 
-"isn't turned off" means "vm.overcommit_memory==2" ?
-And...what's version your kernel is ?
-oom-killer still finds "definitely-not-guilty" ones ?
+> > > /me ponders a bit
+> > > 
+> > > Does this make it any better?
+> 
+> > I apply this patch and another one you sent on tbench email thread.
+> > On stoakley, hackbench is recovered. If reverting the original 2 patches,
+> > we get 8% improvement.
+> > On tigerton, with your 2 patches, there is still about 45% regression.
+> 
+> [ and here I got confused because this 45% seemed to match the 45%
+> above, but then I saw it was hackbench vs volano ]
+Sorry for mentioning some data about multiple benchmarks in one email.
 
 
-I guess the reason of default value is that the kernel assume processes will
-not always use all mmaped range. There will be unused range in process's virtual
-memory and it can be big.
+> 
+> > As for volanoMark, with your 2 patches, regression disappears on staokley
+> > and it becomes about 35% on tigerton.
+> 
+> So hackbench on tigerton is worse, but volano on tigerton is better with
+> this patch vs reverting bits?
+Right with your 2 new patches vs reverting the 2 original patches.
 
-For example, typical case in a server, 
-when you run multi-thread program (like java VM),
+> 
+> > The good news is only tbench has about 6% regression on Nehalem machines.
+> > Other regressions such like hackbench/aim7/volanoMark is not clear/big on
+> > Nehalem. But reverting the original 2 patches don't fix the tbench regression
+> > on Nehalem machines.
+> 
+> Right, so Mike's suggestion of doing: 
+>   echo NEXT_BUDDY > /debug/sched_features
+With your 2 new patches plus NEXT_BUDDY configuration, hackbench has
+some improvement instead of regression on tigerton now. So it does work.
 
-  - stack per thread
-  - malloc() arena per thread 
+NEXT_BUDDY has no help on volanoMark and tbench.
 
-can makes difference among size-of-mapped-range v.s. used-pages bigger.
-I saw Gigabytes of unused range on ia64 host,...statck size was big.
-
-IIUC, the size is determined by ulimit's stack size at default. it's 10M on
-my x86-64 host.
-You'll see 1G of commited usage when you run 100 no-op threads.
-
-And if strict check(vm.ovecommit_memory=2) is used, mmap() return -ENOMEM
-whenever it hits limit.
-You have to find "which processs should be killed" by youself, anyway.
-
-
-Against random-kill, you may have 2 choices.
-
-1. use  /proc/<pid>/oom_adj
-2. use  memory cgroup.
-
-Something more easy-to-use method may be appriciated. We have above 2 now.
-
-Thanks,
--Kame
+> 
+> Seems like the next thing to try..
+> 
+> Mike, did we ever figure out _why_ NEXT_BUDDY introduced latencies?
+> 
+> Buddies shouldn't make latencies worse than regular while(1); loops
+> would.
+> 
 
