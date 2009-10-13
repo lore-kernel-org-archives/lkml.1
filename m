@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933714AbZJMHdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933700AbZJMH30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933714AbZJMHdP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 03:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933696AbZJMHdO
+	id S933700AbZJMH30 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 03:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933690AbZJMH30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 03:33:14 -0400
-Received: from relay.atmel.no ([80.232.32.139]:57460 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752532AbZJMHdO convert rfc822-to-8bit (ORCPT
+	Tue, 13 Oct 2009 03:29:26 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55506 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933688AbZJMH3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 03:33:14 -0400
-Date: Tue, 13 Oct 2009 09:26:44 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Jan Beulich <jbeulich@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Alan Cox <alan@linux.intel.com>
-Subject: Re: [PATCH] serial/atmel_serial: Fix another fallout of the change
- to BUILD_BUG_ON
-Message-ID: <20091013092644.72c78334@hskinnemoen-d830>
-In-Reply-To: <1255417680-25609-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1255417680-25609-1-git-send-email-u.kleine-koenig@pengutronix.de>
-Organization: Atmel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 13 Oct 2009 03:29:25 -0400
+Date: Tue, 13 Oct 2009 09:28:41 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] PM / Hibernate: add \n to load_image fail path
+Message-ID: <20091013072841.GD18997@elf.ucw.cz>
+References: <4AD39FBA.6000509@gmail.com>
+ <1255383530-6778-1-git-send-email-jirislaby@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255383530-6778-1-git-send-email-jirislaby@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uwe Kleine-König <u.kleine-koenig@pengutronix.de> wrote:
-> Commit 8c87df457cb5 fixed BUILD_BUG_ON with the result that some
-> expressions (e.g. "not really constant" ones) result in a build failure.
+On Mon 2009-10-12 23:38:50, Jiri Slaby wrote:
+> Finish a line by \n when load_image fails in the middle of loading.
 > 
-> Some of these were fixed in 8c87df457cb5, but not serial/atmel_serial.
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
-This patch fixes the same issue:
-
-http://lkml.org/lkml/2009/10/6/305
-
-> -	BUILD_BUG_ON(!is_power_of_2(ATMEL_SERIAL_RINGSIZE));
-> +	MAYBE_BUILD_BUG_ON(!is_power_of_2(ATMEL_SERIAL_RINGSIZE));
-
-What's the difference between BUILD_BUG_ON() and MAYBE_BUILD_BUG_ON()?
-
-Haavard
+ACK.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
