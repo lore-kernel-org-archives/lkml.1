@@ -1,73 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933591AbZJMHIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933596AbZJMHJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933591AbZJMHIz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 03:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933529AbZJMHIy
+	id S933596AbZJMHJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 03:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbZJMHJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 03:08:54 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:51529 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933373AbZJMHIx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 03:08:53 -0400
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Jan Beulich <jbeulich@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Alan Cox <alan@linux.intel.com>
-Subject: [PATCH] serial/atmel_serial: Fix another fallout of the change to BUILD_BUG_ON
-Date: Tue, 13 Oct 2009 09:08:00 +0200
-Message-Id: <1255417680-25609-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.4.3
+	Tue, 13 Oct 2009 03:09:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36719 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933529AbZJMHJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 03:09:56 -0400
+Date: Tue, 13 Oct 2009 09:08:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       anton@samba.org, linux-kernel@vger.kernel.org, peterz@infradead.org,
+       zhaolei@cn.fujitsu.com, xiaoguangrong@cn.fujitsu.com,
+       fweisbec@gmail.com, tglx@linutronix.de, kosaki.motohiro@jp.fujitsu.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:timers/tracing] hrtimer: Add tracepoint for hrtimers
+Message-ID: <20091013070853.GA13175@elte.hu>
+References: <4A7F8B2B.5020908@cn.fujitsu.com> <tip-c6a2a1770245f654f35f60e1458d4356680f9519@git.kernel.org> <1255404309.7113.948.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255404309.7113.948.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 8c87df457cb5 fixed BUILD_BUG_ON with the result that some
-expressions (e.g. "not really constant" ones) result in a build failure.
 
-Some of these were fixed in 8c87df457cb5, but not serial/atmel_serial.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Jan Beulich <jbeulich@novell.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Alan Cox <alan@linux.intel.com>
----
-Hello,
+> On Wed, 2009-09-02 at 12:18 +0000, tip-bot for Xiao Guangrong wrote:
+> 
+> > +/**
+> > + * hrtimer_start - called when the hrtimer is started
+> > + * @timer: pointer to struct hrtimer
+> > + */
+> > +TRACE_EVENT(hrtimer_start,
+> > +
+> > +	TP_PROTO(struct hrtimer *timer),
+> > +
+> > +	TP_ARGS(timer),
+> > +
+> > +	TP_STRUCT__entry(
+> > +		__field( void *,	timer		)
+> > +		__field( void *,	function	)
+> > +		__field( s64,		expires		)
+> > +		__field( s64,		softexpires	)
+> > +	),
+> > +
+> > +	TP_fast_assign(
+> > +		__entry->timer		= timer;
+> > +		__entry->function	= timer->function;
+> > +		__entry->expires	= hrtimer_get_expires(timer).tv64;
+> > +		__entry->softexpires	= hrtimer_get_softexpires(timer).tv64;
+> > +	),
+> > +
+> > +	TP_printk("hrtimer %p, func %pf, expires %llu, softexpires %llu",
+> > +		  __entry->timer, __entry->function,
+> > +		  (unsigned long long)ktime_to_ns((ktime_t) {
+> > +				  .tv64 = __entry->expires }),
+> > +		  (unsigned long long)ktime_to_ns((ktime_t) {
+> > +				  .tv64 = __entry->softexpires }))
+> > +);
+> > +
+> 
+> I was just fixing up the trace-cmd parser (which is also used for perf)
+> and came across this code. That TP_printk shows up in the format file
+> as:
+> 
+> print fmt: "hrtimer %p, func %pf, expires %llu, softexpires %llu", REC->timer, REC->function, (unsigned long long)(((ktime_t) { .tv64 = REC->expires }).tv64), (unsigned long long)(((ktime_t) { .tv64 = REC->softexpires }).tv64)
+> 
+> Now I'm trying to parse this with a tool so that we can have something
+> that can read the binary output, and be able to easily figure it out by
+> reading the format files. But trying to parse:
+> 
+> (unsigned long long)(((ktime_t) { .tv64 = REC->expires }).tv64)
+> 
+> Is not easy. It's basically implementing a C interpreter :-(
 
-currently 27 arm defconfigs fail because of that error, see
+Btw., what i suggested quite some time ago was that we should bind 
+tracepoints by emitting C source code stubs, which tools can then build 
+and link in, using gcc.
 
-	http://armlinux.simtec.co.uk/kautobuild/2.6.32-rc4-git1/errors.html
-
-Best regards
-Uwe
-
- drivers/serial/atmel_serial.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index 3551c5c..b37d75f 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -1531,7 +1531,7 @@ static int __devinit atmel_serial_probe(struct platform_device *pdev)
- 	void *data;
- 	int ret;
- 
--	BUILD_BUG_ON(!is_power_of_2(ATMEL_SERIAL_RINGSIZE));
-+	MAYBE_BUILD_BUG_ON(!is_power_of_2(ATMEL_SERIAL_RINGSIZE));
- 
- 	port = &atmel_ports[pdev->id];
- 	port->backup_imr = 0;
--- 
-1.6.4.3
-
+	Ingo
