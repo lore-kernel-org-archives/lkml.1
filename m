@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756852AbZJMLEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbZJMLGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756852AbZJMLEy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 07:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbZJMLEx
+	id S1759406AbZJMLGi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 07:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbZJMLGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 07:04:53 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39418 "EHLO
+	Tue, 13 Oct 2009 07:06:38 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39590 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbZJMLEw (ORCPT
+	with ESMTP id S1751049AbZJMLGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 07:04:52 -0400
-Date: Tue, 13 Oct 2009 13:04:08 +0200
+	Tue, 13 Oct 2009 07:06:37 -0400
+Date: Tue, 13 Oct 2009 13:05:52 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
-Subject: Re: 32-rc2: runtime_pm is noisy
-Message-ID: <20091013110407.GC31984@elf.ucw.cz>
-References: <20091006080241.GB1362@ucw.cz>
- <200910062342.20910.rjw@sisk.pl>
+To: Kyungmin Park <kmpark@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       soni.trilok@gmail.com, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Haptic class support (v2)
+Message-ID: <20091013110552.GD31984@elf.ucw.cz>
+References: <20091006074533.GA28889@july>
+ <20091011090549.GE1414@ucw.cz>
+ <9c9fda240910111732x262a9510rf3dd862aa16d0bdf@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200910062342.20910.rjw@sisk.pl>
+In-Reply-To: <9c9fda240910111732x262a9510rf3dd862aa16d0bdf@mail.gmail.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-10-06 23:42:20, Rafael J. Wysocki wrote:
-> On Tuesday 06 October 2009, Pavel Machek wrote:
-> > Hi!
-> > 
-> > Maybe it is my config,
+On Mon 2009-10-12 09:32:28, Kyungmin Park wrote:
+> On Sun, Oct 11, 2009 at 6:05 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Tue 2009-10-06 16:45:33, Kyungmin Park wrote:
+> >> This patch includes two haptic devices, isa1000 and isa1200
+> >> ISA1000 is gpio based haptic, but isa1200 is based on I2C
+> >> Both are working on Samsung SoCs and tested.
+> >>
+> >> To enable the haptic, echo 1 > /sys/class/haptic/${name}/enable
+> >> You can adjust the level by echo ${level} > /sys/class/haptic/${name}/enable
+> >> or
+> >> With oneshot feature, echo ${msec time} > /sys/class/haptic/${name}/oneshot
+> >
+> > New device classes should certainly be documented in Documentation/.
+> >
+> > For example... is level 0-100?
 > 
-> Yes it is.
-> 
-> > but pm_runtime_idle is a bit too noisy on
-> > zaurus... ok, I do have pm_debug & pm_verbose
-> 
-> Exactly.
-> 
-> > set... but still, is it useful to print message about devices that do not
-> > support it?
-> 
-> It may be useful, because, for example, PCI can put devices without drivers
-> into low power states using this mechanism.
-> 
-> Still, perhaps we can drop the debug messages from __pm_runtime_idle().
-> 
-> Care to send a patch?
+> Basically. range from 0 to 255. also each device can set max level in
+> case of isa1000 it's 6.
 
-Yep, something like this?
+How will userspace know the range?
 
----
+> >  Is it valid to change level while 'oneshot' is running?
+> 
+> we usually use it under 1 sec. but I think it's possible to change it
+> but not tried.
 
-pm_runtime_idle is somewhat noisy. Remove debug prints.
+You are specifying interface here. You have to decide if it is valid
+or not, then document it.
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> >  Does oneshot use last level set?
+> 
+> Right. it used last set value.
+> 
+> If you don't mind to update these at Documentation please wait until
+> commit first patches merged.
 
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -51,8 +51,6 @@ static int __pm_runtime_idle(struct device *dev)
- {
- 	int retval = 0;
- 
--	dev_dbg(dev, "__pm_runtime_idle()!\n");
--
- 	if (dev->power.runtime_error)
- 		retval = -EINVAL;
- 	else if (dev->power.idle_notification)
-@@ -93,8 +91,6 @@ static int __pm_runtime_idle(struct device *dev)
- 	wake_up_all(&dev->power.wait_queue);
- 
-  out:
--	dev_dbg(dev, "__pm_runtime_idle() returns %d!\n", retval);
--
- 	return retval;
- }
- 
-
+I'd expect your reply to be merged into the Documentation, and that to
+be merged with the rest of the patches...
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
