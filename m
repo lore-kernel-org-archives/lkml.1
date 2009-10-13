@@ -1,100 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbZJMXiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761617AbZJMXmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752867AbZJMXiM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 19:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZJMXiM
+	id S1761617AbZJMXmJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 19:42:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZJMXmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 19:38:12 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:41604 "EHLO e3.ny.us.ibm.com"
+	Tue, 13 Oct 2009 19:42:09 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47202 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbZJMXiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 19:38:10 -0400
-Date: Tue, 13 Oct 2009 16:38:50 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@librato.com>
-Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, Louis.Rilling@kerlabs.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       kosaki.motohiro@jp.fujitsu.com, hpa@zytor.com, mingo@elte.hu,
-       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v8][PATCH 7/10]: Check invalid clone flags
-Message-ID: <20091013233850.GB24392@us.ibm.com>
-References: <20091013044925.GA28181@us.ibm.com> <20091013045234.GG28435@us.ibm.com> <4AD4C88D.7040008@librato.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD4C88D.7040008@librato.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753403AbZJMXmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 19:42:08 -0400
+Subject: [PATCH] 8250_pci: Add IBM Saturn serial card
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Russell King <linux@arm.linux.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Michael Reed <mreed10@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 14 Oct 2009 10:40:53 +1100
+Message-Id: <1255477253.2347.22.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oren Laadan [orenl@librato.com] wrote:
-| 
-| 
-| Sukadev Bhattiprolu wrote:
-| > 
-| > Subject: [RFC][v8][PATCH 7/10]: Check invalid clone flags
-| > 
-| > As pointed out by Oren Laadan, we want to ensure that unused bits in the
-| > clone-flags remain unused and available for future. To ensure this, define
-| > a mask of clone-flags and check the flags in the clone() system calls.
-| > 
-| > Changelog[v8]:
-| > 	- New patch in set
-| > 
-| > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-| > 
-| > ---
-| >  include/linux/sched.h |   10 ++++++++++
-| >  kernel/fork.c         |    3 +++
-| >  2 files changed, 13 insertions(+)
-| > 
-| > Index: linux-2.6/include/linux/sched.h
-| > ===================================================================
-| > --- linux-2.6.orig/include/linux/sched.h	2009-10-02 18:53:55.000000000 -0700
-| > +++ linux-2.6/include/linux/sched.h	2009-10-02 19:58:21.000000000 -0700
-| > @@ -29,6 +29,16 @@
-| >  #define CLONE_NEWNET		0x40000000	/* New network namespace */
-| >  #define CLONE_IO		0x80000000	/* Clone io context */
-| >  
-| > +#define VALID_CLONE_FLAGS	(CSIGNAL | CLONE_VM | CLONE_FS | CLONE_FILES |\
-| > +				 CLONE_SIGHAND | CLONE_PTRACE | CLONE_VFORK  |\
-| > +				 CLONE_PARENT | CLONE_THREAD | CLONE_NEWNS   |\
-| > +				 CLONE_SYSVSEM | CLONE_SETTLS                |\
-| > +				 CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID  |\
-| > +				 CLONE_DETACHED | CLONE_UNTRACED             |\
-| > +				 CLONE_CHILD_SETTID | CLONE_STOPPED          |\
-| > +				 CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWUSER |\
-| > +				 CLONE_NEWPID | CLONE_NEWNET| CLONE_IO)
-| > +
-| >  /*
-| >   * Scheduling policies
-| >   */
-| > Index: linux-2.6/kernel/fork.c
-| > ===================================================================
-| > --- linux-2.6.orig/kernel/fork.c	2009-10-02 19:00:08.000000000 -0700
-| > +++ linux-2.6/kernel/fork.c	2009-10-02 19:57:36.000000000 -0700
-| > @@ -942,6 +942,9 @@ static struct task_struct *copy_process(
-| >  	struct task_struct *p;
-| >  	int cgroup_callbacks_done = 0;
-| >  
-| 
-| We can safely apply these tests to clone3(), because it is a new syscall.
-| 
-| However, I don't know if applying it to clone() can break existing
-| application that may already be (incorrectly) using invalid flags ?
+The IBM Saturn serial card has only one port. Without that fixup,
+the kernel thinks it has two, which confuses userland setup and
+admin tools as well.
 
-Doing the check in copy_process() seems would apply to all architectures.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-As for breaking an existing app, there is only one unused flag, 0x00001000
-(bw CLONE_SIGHAND and CLONE_PTRACE). If an application could be using that
-and we don't want to break it, maybe we can add following macro to the
-VALID_CLONE_FLAGS list ?
+Andrew & Others on CC... not sure who takes care of patches to
+that driver nowadays. Should I send directly to Linus ?
 
-	#define CLONE_UNUSED_BIT	0x00001000
+diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+index e7108e7..7b5ff09 100644
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -1561,6 +1561,7 @@ enum pci_board_num_t {
+ 	pbn_exar_XR17C152,
+ 	pbn_exar_XR17C154,
+ 	pbn_exar_XR17C158,
++	pbn_exar_ibm_saturn,
+ 	pbn_pasemi_1682M,
+ 	pbn_ni8430_2,
+ 	pbn_ni8430_4,
+@@ -2146,6 +2147,13 @@ static struct pciserial_board pci_boards[] __devinitdata = {
+ 		.base_baud	= 921600,
+ 		.uart_offset	= 0x200,
+ 	},
++	[pbn_exar_ibm_saturn] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 1,
++		.base_baud	= 921600,
++		.uart_offset	= 0x200,
++	},
++
+ 	/*
+ 	 * PA Semi PWRficient PA6T-1682M on-chip UART
+ 	 */
+@@ -2649,6 +2657,9 @@ static struct pci_device_id serial_pci_tbl[] = {
+ 		PCI_SUBVENDOR_ID_CONNECT_TECH,
+ 		PCI_SUBDEVICE_ID_CONNECT_TECH_PCI_UART_8_485, 0, 0,
+ 		pbn_b0_8_1843200_200 },
++	{	PCI_VENDOR_ID_EXAR, PCI_DEVICE_ID_EXAR_XR17C152,
++		PCI_VENDOR_ID_IBM, PCI_SUBDEVICE_ID_IBM_SATURN_SERIAL_ONE_PORT,
++		0, 0, pbn_exar_ibm_saturn },
+ 
+ 	{	PCI_VENDOR_ID_SEALEVEL, PCI_DEVICE_ID_SEALEVEL_U530,
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 0d96be9..06a7b94 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -481,6 +481,8 @@
+ #define PCI_DEVICE_ID_IBM_ICOM_V2_ONE_PORT_RVX_ONE_PORT_MDM	0x0251
+ #define PCI_DEVICE_ID_IBM_ICOM_V2_ONE_PORT_RVX_ONE_PORT_MDM_PCIE 0x0361
+ #define PCI_DEVICE_ID_IBM_ICOM_FOUR_PORT_MODEL	0x252
++#define PCI_SUBVENDOR_ID_IBM		0x1014
++#define PCI_SUBDEVICE_ID_IBM_SATURN_SERIAL_ONE_PORT	0x03d4
+ 
+ #define PCI_VENDOR_ID_UNISYS		0x1018
+ #define PCI_DEVICE_ID_UNISYS_DMA_DIRECTOR 0x001C
+
+
+
+
+
 
