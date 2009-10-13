@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbZJMDha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbZJMDnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758839AbZJMDha (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 23:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZJMDh3
+	id S1758914AbZJMDnJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 23:43:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZJMDnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 23:37:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43062 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752605AbZJMDh2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 23:37:28 -0400
-Date: Mon, 12 Oct 2009 20:35:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Oleg Nesterov <onestero@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [resend][PATCH v2] mlock() doesn't wait to finish
- lru_add_drain_all()
-Message-Id: <20091012203555.405bd9e7.akpm@linux-foundation.org>
-In-Reply-To: <20091013110409.C758.A69D9226@jp.fujitsu.com>
-References: <20091013090347.C752.A69D9226@jp.fujitsu.com>
-	<20091012185139.75c13648.akpm@linux-foundation.org>
-	<20091013110409.C758.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 12 Oct 2009 23:43:08 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55147 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752380AbZJMDnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 23:43:07 -0400
+Date: Tue, 13 Oct 2009 14:42:23 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Stephane Eranian <eranian@googlemail.com>
+Subject: linux-next: tip tree build warning
+Message-Id: <20091013144223.369d616d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__13_Oct_2009_14_42_23_+1100_tJsupIpg72h_.9nt"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009 12:18:17 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+--Signature=_Tue__13_Oct_2009_14_42_23_+1100_tJsupIpg72h_.9nt
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> The problem is in __lru_cache_add().
-> 
-> ============================================================
-> void __lru_cache_add(struct page *page, enum lru_list lru)
-> {
->         struct pagevec *pvec = &get_cpu_var(lru_add_pvecs)[lru];
-> 
->         page_cache_get(page);
->         if (!pagevec_add(pvec, page))
->                 ____pagevec_lru_add(pvec, lru);
->         put_cpu_var(lru_add_pvecs);
-> }
-> ============================================================
-> 
-> current typical scenario is
-> 1. preempt disable
-> 2. assign lru_add_pvec
-> 3. page_cache_get()
-> 4. pvec->pages[pvec->nr++] = page;
-> 5. preempt enable
-> 
-> but the preempt disabling assume drain_cpu_pagevecs() run on process context.
-> we need to convert it with irq_disabling.
+Hi all,
 
-Nope, preempt_disable()/enable() can be performed in hard IRQ context. 
-I see nothing in __lru_cache_add() which would cause problems when run
-from hard IRQ.
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-Apart from latency, of course.  Doing a full smp_call_function() in
-lru_add_drain_all() might get expensive if it's ever called with any
-great frequency.
+arch/x86/kernel/cpu/perf_event.c: In function 'intel_get_event_idx':
+arch/x86/kernel/cpu/perf_event.c:1445: warning: 'event_constraint' is used =
+uninitialized in this function
 
-A smart implementation might take a peek at other cpu's queues and omit
-the cross-CPU call if the queue is empty, for example..
+Introduced by commit b690081d4d3f6a23541493f1682835c3cd5c54a1
+("perf_events: Add event constraints support for Intel processors").
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__13_Oct_2009_14_42_23_+1100_tJsupIpg72h_.9nt
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrT9x8ACgkQjjKRsyhoI8x2vACeMhamiBrRtoCxBPhuq5qjkebp
+37AAn1SrUMkVynwR6Xp5XJR5PVVhAMIy
+=sBuC
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__13_Oct_2009_14_42_23_+1100_tJsupIpg72h_.9nt--
