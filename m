@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933887AbZJMPyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760437AbZJMPyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933887AbZJMPyp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760453AbZJMPyo
+	id S1760437AbZJMPyk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 11:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760281AbZJMPyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:54:44 -0400
-Received: from gv-out-0910.google.com ([216.239.58.188]:58243 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760447AbZJMPyn (ORCPT
+	Tue, 13 Oct 2009 11:54:39 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:49570 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758631AbZJMPyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:54:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=a7nIc853SNH90UTeljbNr/r+IcDrVvVLE3hmHl7jCy5iM2nS+zjKn7LqvCech0C4Az
-         HyRQjJDxk1bZ+wjsP/jg6E2zeFcODwZjQE/w9D/IwlDfctIe/VgxIIcka2xkm8044fjj
-         dZsUJHptQlNQQ91GBEfqti0zOnJoIij2k8wUE=
-From: Ivo van Doorn <ivdoorn@gmail.com>
-To: Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>
-Subject: Re: Current status of rt2800usb and staging/rt2870
-Date: Tue, 13 Oct 2009 17:52:52 +0200
-User-Agent: KMail/1.9.10
-Cc: linux-wireless@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <4AD46380.9020308@pardus.org.tr>
-In-Reply-To: <4AD46380.9020308@pardus.org.tr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910131752.52589.IvDoorn@gmail.com>
+	Tue, 13 Oct 2009 11:54:38 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: linux-kernel@vger.kernel.org
+Cc: Tim Abbott <tabbott@ksplice.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: From: Tim Abbott <tabbott@ksplice.com>
+Date: Tue, 13 Oct 2009 11:53:26 -0400
+Message-Id: <1255449206-16650-1-git-send-email-tabbott@ksplice.com>
+X-Mailer: git-send-email 1.6.4.3
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+There is already an architecture-independent __page_aligned_data macro
+for this purpose, so removing the powerpc-specific macro should be
+harmless.
+
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
+Cc: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/powerpc/include/asm/page_64.h |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index 3f17b83..3c7118f 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -162,14 +162,6 @@ do {						\
  
-> In 2.6.31, there are USB device IDs common between both drivers.
+ #endif /* !CONFIG_HUGETLB_PAGE */
+ 
+-#ifdef MODULE
+-#define __page_aligned __attribute__((__aligned__(PAGE_SIZE)))
+-#else
+-#define __page_aligned \
+-	__attribute__((__aligned__(PAGE_SIZE), \
+-		__section__(".data.page_aligned")))
+-#endif
+-
+ #define VM_DATA_DEFAULT_FLAGS \
+ 	(test_thread_flag(TIF_32BIT) ? \
+ 	 VM_DATA_DEFAULT_FLAGS32 : VM_DATA_DEFAULT_FLAGS64)
+-- 
+1.6.4.3
 
-That is because they are drivers for the same hardware.
-
-> Should  a distribution enable both drivers? What do you suggest? Are there any
-> *known issues* stuff for one of them?
-
-The staging/rt2870 should actually be removed from the kernel tree,
-I am going to merge rt2800pci soon as well and after that I'll send a patch
-to remove all Ralink drivers from the staging tree.
-
-As for known issues:
-- staging/rt2870 is a piece of crap which apparently works for some people
-but isn't generally stable or reliable
-- wireless/rt2800usb follows the kernel coding style/rules and uses mac80211
-but isn't showing a high quality for usability.
-
-Ivo
