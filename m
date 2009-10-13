@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759071AbZJMIZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933773AbZJMIZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759071AbZJMIZN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 04:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758895AbZJMIZL
+	id S933773AbZJMIZa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 04:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759168AbZJMIZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 04:25:11 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:50301 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758227AbZJMIZK (ORCPT
+	Tue, 13 Oct 2009 04:25:29 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:47705 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759166AbZJMIZ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 04:25:10 -0400
-Date: Tue, 13 Oct 2009 09:24:27 +0100
-From: Ben Dooks <ben@fluff.org.uk>
-To: sam@ravnborg.org, linux-kernel@vger.kernel.org
-Cc: spi-devel-general@lists.sourceforge.net
-Subject: changing module from single to multi-file build
-Message-ID: <20091013082427.GC7793@fluff.org.uk>
+	Tue, 13 Oct 2009 04:25:28 -0400
+Date: Tue, 13 Oct 2009 10:24:47 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Jan Beulich <jbeulich@novell.com>, Alan Cox <alan@linux.intel.com>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH] serial/atmel_serial: Fix another fallout of the change
+	to BUILD_BUG_ON
+Message-ID: <20091013082447.GA3194@pengutronix.de>
+References: <1255417680-25609-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091013092644.72c78334@hskinnemoen-d830>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091013092644.72c78334@hskinnemoen-d830>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a driver, drivers/spi/spi_s3c24xx.c in this case that I have
-written an FIQ handler for which requires some assembly code. My attempts
-at trying to change it so that I can build a single module with both the
-C and ASM code linked together have not yet been a success.
+Hello Andrew,
 
-The original makefile bit from drivers/spi/Makefile was:
+On Tue, Oct 13, 2009 at 09:26:44AM +0200, Haavard Skinnemoen wrote:
+> Uwe Kleine-König <u.kleine-koenig@pengutronix.de> wrote:
+> > Commit 8c87df457cb5 fixed BUILD_BUG_ON with the result that some
+> > expressions (e.g. "not really constant" ones) result in a build failure.
+> > 
+> > Some of these were fixed in 8c87df457cb5, but not serial/atmel_serial.
+> 
+> This patch fixes the same issue:
+> 
+> http://lkml.org/lkml/2009/10/6/305
+Can you please take this and add my Ack?
 
- obj-$(CONFIG_SPI_S3C24XX)              += spi_s3c24xx.o
+If you cannot find it anymore in your inbox, you can get it from
+http://article.gmane.org/gmane.linux.kernel/898575/raw
 
-This allows it to work as a kernel builtin:
-
- obj-$(CONFIG_SPI_S3C24XX)              += spi_s3c24xx.o
- obj-$(CONFIG_SPI_S3C24XX_FIQ)          += spi_s3c24xx_fiq.o
-
-I tried adding the following to the file, but this does not make
-the FIQ code, I assume as there is still drivers/spi/spi_s3c24xx.c.
-
- obj-spi_s3c24xx-y                      := spi_s3c24xx.o
- obj-spi_s3c24xx-$(CONFIG_SPI_S3C24XX_FIQ) += spi_s3c24xx_fiq.o
-
-Should I rename drivers/spi/spi_s3c24xx.c to something else to avoid
-changing the module name, change the module name to avoid renaming the .c
-to say  spi_s3c24xx_hw (we have a gpio implementation, but that could easily
-be removed in favour of gpiolib). Or is there something else that could
-be done?
-
-Note, I was initially against renaming the module, but with module autoload
-working so well it seems easier to rename the module than try renaming the
-.c file.
+Best regards
+Uwe
 
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
