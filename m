@@ -1,66 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbZJNSgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbZJNSh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbZJNSgq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 14:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbZJNSgq
+	id S1757122AbZJNSh6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 14:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756860AbZJNSh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 14:36:46 -0400
-Received: from mga02.intel.com ([134.134.136.20]:58899 "EHLO mga02.intel.com"
+	Wed, 14 Oct 2009 14:37:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48164 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751414AbZJNSgp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 14:36:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,560,1249282800"; 
-   d="scan'208";a="457464402"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Tejun Heo <tj@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "rostedt@goodmis.org" <rostedt@goodmis.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "cebbert@redhat.com" <cebbert@redhat.com>
-Date: Wed, 14 Oct 2009 11:36:07 -0700
-Subject: RE: [PATCH 13/16] percpu: remove per_cpu__ prefix.
-Thread-Topic: [PATCH 13/16] percpu: remove per_cpu__ prefix.
-Thread-Index: AcpM/EN9Te4+fY0MTD+Sr05+7vcMiwAAF2aw
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E3226704@orsmsx505.amr.corp.intel.com>
-References: <1255500125-3210-1-git-send-email-tj@kernel.org>
- <1255500125-3210-14-git-send-email-tj@kernel.org>
- <alpine.DEB.1.10.0910141026370.26476@gentwo.org>
- <57C9024A16AD2D4C97DC78E552063EA3E32264A8@orsmsx505.amr.corp.intel.com>
- <alpine.DEB.1.10.0910141420300.9708@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0910141420300.9708@gentwo.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1756429AbZJNShz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 14:37:55 -0400
+Date: Wed, 14 Oct 2009 20:36:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Joe Perches <joe@perches.com>, Greg KH <gregkh@suse.de>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       James Bottomley <James.Bottomley@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jing Huang <huangj@brocade.com>, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for
+	2.6.32-rc3)
+Message-ID: <20091014183657.GB5133@elte.hu>
+References: <1255357148.2850.91.camel@localhost.localdomain> <20091012145453.GD4565@elte.hu> <20091012150911.GB1656@suse.de> <20091012154244.GA13323@elte.hu> <20091012232429.GA24254@suse.de> <43e72e890910131108m789110b4hc35e25601ad67bb7@mail.gmail.com> <20091014044519.GA19199@suse.de> <1255497575.1851.16.camel@Joe-Laptop.home> <20091014063308.GE784@elte.hu> <4AD60FF9.40200@s5r6.in-berlin.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AD60FF9.40200@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> we would still have to use per cpu operations to get to the contents of
-> these variables.
 
-That's good.
+* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-> Hope that addresses your concerns.
+> Ingo Molnar wrote:
+> > * Joe Perches <joe@perches.com> wrote:
+> > 
+> >> On Tue, 2009-10-13 at 21:45 -0700, Greg KH wrote:
+> >> > How about when it was scheduled to be removed, we put it in staging and
+> >> > I'll add it to my announcements about the staging tree every release?
+> >> > Unless you can think of a better way?
+> >> 
+> >> staging/to_be_removed_unless_fixed_by/v.x.y ?
+> > 
+> > Yes, that's a real worry. Some time ago i suggested:
+> > 
+> >   drivers/staging/good/
+> >   drivers/staging/bad/
+> >   drivers/staging/ugly/
+> 
+> How well do "git am", "quilt import" and friends cope with ever 
+> changing directories?
 
-But then I don't understand the original patch that was going to do:
+Once a driver is in a tree it's in Git and git mv is easy. People 
+working with Linux better familiarize themselves with Git workflow - the 
+sooner the better.
 
-> -#define __ia64_per_cpu_var(var)	per_cpu__##var
-> +#define __ia64_per_cpu_var(var)	var
+If it's not in tree then it will adopt to whatever layout there is once 
+it gets into Greg's tree. I dont see the problem.
 
-Presumably all actual use of __ia64_per_cpu_var is being replaced
-by some other "per cpu operations"?
+> How about using drivers/staging/this_driver/TODO and (or) its Kconfig 
+> help text to leave a note about the plans for this driver?
 
--Tony
+Well, the answer is obvious i think. Tell me, at a glance, if you see a 
+patch on lkml, which one is for a staging driver to be obsoleted, and 
+which one is the one going upstream real soon? The patches say:
 
+ +++ a/drivers/staging/foo/x.c
+
+ +++ a/drivers/staging/bar/y.c
+
+Then tell me the same at a glance if you see patches for:
+
+ +++ a/drivers/staging/wip/x.c
+
+ +++ a/drivers/staging/bad/y.c
+
+> The worry that these will be ignored like 
+> Documentation/feature-removal-schedule.txt is being ignored may apply 
+> to the path name based solution too, I'm afraid.
+
+It wont be 'ignored', as it's in every patch, it's in every commit, it's 
+in every substantial communication about that driver.
+
+The problem with feature-removal-schedule.txt is that it's too much out 
+of sight and not part of the regular patch workflow. Same goes for any 
+TODO file. Experience has shown that the actual _path_ were drivers end 
+up does matter quite a bit, to general visibility and to mindset.
+
+That's one of the reasons why we have _half a thousand_ directories in 
+drivers/ to begin with. The directory namespace is very powerful, and we 
+use it to convey all sorts of information about the logical category a 
+driver is in.
+
+Using it in drivers/staging/ instead of the current flat hierarchy would 
+thus be pretty natural.
+
+	Ingo
