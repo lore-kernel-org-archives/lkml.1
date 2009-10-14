@@ -1,73 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZJNGSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754436AbZJNGTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbZJNGSL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 02:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZJNGSK
+	id S1754436AbZJNGTe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 02:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbZJNGTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 02:18:10 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:43446 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751875AbZJNGSJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 02:18:09 -0400
-Date: Wed, 14 Oct 2009 11:47:27 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
-	register a set of idle routines.
-Message-ID: <20091014061727.GA8605@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20091008094828.GA20595@linux.vnet.ibm.com> <20091008095027.GC20595@linux.vnet.ibm.com> <1254998162.26976.270.camel@twins> <20091008104249.GJ20595@linux.vnet.ibm.com> <1254999033.26976.272.camel@twins> <8763akh4re.fsf@basil.nowhere.org>
+	Wed, 14 Oct 2009 02:19:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58421 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753233AbZJNGTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 02:19:33 -0400
+Date: Wed, 14 Oct 2009 08:18:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [GIT PULL v2] tracing/syscalls: Arch code shrinks, easier arch
+	integration
+Message-ID: <20091014061840.GC784@elte.hu>
+References: <1253338757-5918-1-git-send-email-fweisbec@gmail.com> <1253351338-5301-1-git-send-email-fweisbec@gmail.com> <20091013222506.GA4952@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8763akh4re.fsf@basil.nowhere.org>
+In-Reply-To: <20091013222506.GA4952@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen <andi@firstfloor.org> [2009-10-12 20:00:05]:
 
-> Peter Zijlstra <a.p.zijlstra@chello.nl> writes:
-> >
-> > So does it make sense to have a set of sets?
-> >
-> > Why not integrate them all into one set to be ruled by this governor
-> > thing?
-> 
-> cpuidle is currently optional, that is why the two level hierarchy
-> is there so that you can still have simple idle selection without it.
-> 
-> % size drivers/cpuidle/*.o
->    text    data     bss     dec     hex filename
->    5514    1416      44    6974    1b3e drivers/cpuidle/built-in.o
-> 
-> Adding it unconditionally would add ~7k to everyone who wants idle functions.
-> 
-> I think making it unconditional would require putting it on a serious
-> diet first.
-> 
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-Hi Andi,
+> On Sat, Sep 19, 2009 at 11:08:56AM +0200, Frederic Weisbecker wrote:
+> > Ingo, Heiko,
+> > 
+> > I've updated the patches following your reviews.
+> > Please tell me if you see another troubles.
+> > 
+> > The new tree can be pulled from:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> > 	tracing/syscalls-v2
+> > 
+> > Thanks,
+> > 	Frederic.
+> 
+> 
+> Ingo,
+> 
+> I wonder if you have forgotten this pull request, or if there is a
+> problem with it.
+> 
+> It's still cleanly mergeable into tip:/tracing/core.
+> 
+> Thanks.
+> 
+> 
+> 
+>  
+> > Frederic Weisbecker (2):
+> >       tracing: Move syscalls metadata handling from arch to core
+> >       tracing: Document HAVE_SYSCALL_TRACEPOINTS needs
+> > 
+> >  Documentation/trace/ftrace-design.txt |   13 ++++-
+> >  arch/s390/kernel/ftrace.c             |   67 +-------------------------
 
-Yes, this is a valid point.
+I skipped it because the s390 bit needs the ack of at least one of these 
+gents:
 
-How about something like this..
-If the arch does not enable CONFIG_CPU_IDLE, the cpuidle_idle_call
-which is called from cpu_idle() should call default_idle without
-involving the registering cpuidle steps. This should prevent bloating
-up of the kernel for archs which dont want to use cpuidle.
+ S390
+ M:      Martin Schwidefsky <schwidefsky@de.ibm.com>
+ M:      Heiko Carstens <heiko.carstens@de.ibm.com>
 
---arun
-> -Andi
-> -- 
-> ak@linux.intel.com -- Speaking for myself only.
+Thanks,
+
+	Ingo
