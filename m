@@ -1,108 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbZJNTN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbZJNTPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756187AbZJNTN1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 15:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbZJNTN1
+	id S1757908AbZJNTPM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 15:15:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbZJNTPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 15:13:27 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:34735 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751715AbZJNTN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 15:13:26 -0400
-Date: Wed, 14 Oct 2009 16:12:56 -0300
-From: Glauber Costa <glommer@redhat.com>
-To: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: [PATCH] v4: allow userspace to adjust kvmclock offset
-Message-ID: <20091014191256.GE8092@mothafucka.localdomain>
-References: <1255531666-16090-1-git-send-email-glommer@redhat.com> <20091014185327.GD4218@amt.cnet>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091014185327.GD4218@amt.cnet>
-X-ChuckNorris: True
-User-Agent: Jack Bauer
+	Wed, 14 Oct 2009 15:15:10 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:48783 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752337AbZJNTPI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 15:15:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=nCE0LEE51kIU9pZbVo5+nCEzwfc/fjQzNbktRkYqr4LPWQ9i/Xm0F5fIu/vK4yzv2R
+         +7iw/Iga3kdh7EKYPxt/yJpWEBY9PiE3ABWYS2Z1AHRtq7zplQ+S/RY5ziIqd2n2PQ5n
+         P+e1oBplGxUx/+0Vh4oO086m1fyWXXekIs34E=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: [GIT PULL] tracing: Arch syscalls tracing shrinks and fixlets
+Date: Wed, 14 Oct 2009 21:13:14 +0200
+Message-Id: <1255547598-5294-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 03:53:27PM -0300, Marcelo Tosatti wrote:
-> On Wed, Oct 14, 2009 at 10:47:46AM -0400, Glauber Costa wrote:
-> > When we migrate a kvm guest that uses pvclock between two hosts, we may
-> > suffer a large skew. This is because there can be significant differences
-> > between the monotonic clock of the hosts involved. When a new host with
-> > a much larger monotonic time starts running the guest, the view of time
-> > will be significantly impacted.
-> > 
-> > Situation is much worse when we do the opposite, and migrate to a host with
-> > a smaller monotonic clock.
-> > 
-> > This proposed ioctl will allow userspace to inform us what is the monotonic
-> > clock value in the source host, so we can keep the time skew short, and
-> > more importantly, never goes backwards. Userspace may also need to trigger
-> > the current data, since from the first migration onwards, it won't be
-> > reflected by a simple call to clock_gettime() anymore.
-> > 
-> > [ v2: uses a struct with a padding ]
-> > [ v3: provide an ioctl to get clock data too ]
-> > [ v4: used fixed-width signed type for delta ]
-> > 
-> > Signed-off-by: Glauber Costa <glommer@redhat.com>
-> > ---
-> >  arch/x86/include/asm/kvm_host.h |    1 +
-> >  arch/x86/kvm/x86.c              |   35 ++++++++++++++++++++++++++++++++++-
-> >  include/linux/kvm.h             |    7 +++++++
-> >  3 files changed, 42 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> > index 179a919..c9b0d9f 100644
-> > --- a/arch/x86/include/asm/kvm_host.h
-> > +++ b/arch/x86/include/asm/kvm_host.h
-> > @@ -410,6 +410,7 @@ struct kvm_arch{
-> >  
-> >  	unsigned long irq_sources_bitmap;
-> >  	u64 vm_init_tsc;
-> > +	s64 kvmclock_offset;
-> >  };
-> >  
-> >  struct kvm_vm_stat {
-> > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> > index 9601bc6..09f31e2 100644
-> > --- a/arch/x86/kvm/x86.c
-> > +++ b/arch/x86/kvm/x86.c
-> > @@ -699,7 +699,8 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
-> >  	/* With all the info we got, fill in the values */
-> >  
-> >  	vcpu->hv_clock.system_time = ts.tv_nsec +
-> > -				     (NSEC_PER_SEC * (u64)ts.tv_sec);
-> > +				     (NSEC_PER_SEC * (u64)ts.tv_sec) + v->kvm->arch.kvmclock_offset;
-> > +
-> >  	/*
-> >  	 * The interface expects us to write an even number signaling that the
-> >  	 * update is finished. Since the guest won't see the intermediate
-> > @@ -2441,6 +2442,38 @@ long kvm_arch_vm_ioctl(struct file *filp,
-> >  		r = 0;
-> >  		break;
-> >  	}
-> > +	case KVM_SET_CLOCK: {
-> > +		struct timespec now;
-> > +		struct kvm_clock_data user_ns;
-> > +		u64 now_ns;
-> > +		s64 delta;
-> > +
-> > +		r =  -EFAULT;
-> 
-> Extra space :)
-want me to send a new because of that?
+Ingo,
 
-> 
-> >  #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
-> >  #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
-> >  #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
-> > +#define KVM_SET_CLOCK		  _IOW(KVMIO, 0x7a, struct kvm_clock_data)
-> > +#define KVM_GET_CLOCK		  _IOW(KVMIO, 0x7b, struct kvm_clock_data)
-> 					  _IOR
-> 
-> Otherwise looks fine, please send the userspace changes together.
-Note that this changed quite a while in the process already. It only makes sense to implement
-userspace once this is commited, IMHO.
+Please pull the tracing/core branch that can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	tracing/core
+
+Thanks,
+Frederic.
+
+---
+Frederic Weisbecker (4):
+      tracing: Move syscalls metadata handling from arch to core
+      tracing: Document HAVE_SYSCALL_TRACEPOINTS needs
+      ftrace: Copy ftrace_graph_filter boot param using strlcpy
+      ftrace: Rename set_bootup_ftrace into set_cmdline_ftrace
+
+ Documentation/trace/ftrace-design.txt |   13 ++++-
+ arch/s390/kernel/ftrace.c             |   67 +-------------------------
+ arch/x86/kernel/ftrace.c              |   76 +----------------------------
+ include/trace/syscall.h               |    2 +-
+ kernel/trace/ftrace.c                 |    2 +-
+ kernel/trace/trace.c                  |    4 +-
+ kernel/trace/trace_syscalls.c         |   86 +++++++++++++++++++++++++++++++++
+ 7 files changed, 105 insertions(+), 145 deletions(-)
