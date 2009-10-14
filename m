@@ -1,74 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbZJNGjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbZJNGwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755771AbZJNGjI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 02:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbZJNGjI
+	id S1755808AbZJNGwb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 02:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbZJNGwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 02:39:08 -0400
-Received: from k66.ru ([87.224.128.21]:60444 "EHLO k66.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752739AbZJNGjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 02:39:07 -0400
-Date: Wed, 14 Oct 2009 12:38:24 +0600
-From: Andrey Rahmatullin <wrar@altlinux.org>
-To: linux-kernel@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: drivers/staging/rt2860 doesn't compile
-Message-ID: <20091014063824.GD6298@wrars-comp.wrarsdomain>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="sk6NRVTC9kZ6Mrgo"
-Content-Disposition: inline
-X-Operating-System: ALT Linux Sisyphus
-X-Jabber-Id: wrar@altlinux.org
-User-Agent: Mutt/1.5.20 (2009-06-23)
+	Wed, 14 Oct 2009 02:52:30 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:51058 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754255AbZJNGw2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 02:52:28 -0400
+Date: Wed, 14 Oct 2009 15:42:11 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       h-shimamoto@ct.jp.nec.com, linux-kernel@vger.kernel.org,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 2/2] memcg: coalescing charge by percpu (Oct/9)
+Message-Id: <20091014154211.08f33001.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20091013170545.3af1cf7b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091009165826.59c6f6e3.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091009170105.170e025f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091009165002.629a91d2.akpm@linux-foundation.org>
+	<72e9a96ea399491948f396dab01b4c77.squirrel@webmail-b.css.fujitsu.com>
+	<20091013165719.c5781bfa.nishimura@mxp.nes.nec.co.jp>
+	<20091013170545.3af1cf7b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I'm now prepareing slides for JLS (ah, yes, deadline has gone.), so plz give me time..
+I see. I think there is still time left till next merge window, so I'm in no hurry.
+I will go to JLS and am looking forward to attending your session :)
 
---sk6NRVTC9kZ6Mrgo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-drivers/staging/rt2860/common/cmm_info.c: In function
-'RTMPIoctlGetSiteSurvey':                                                  =
-          =20
-drivers/staging/rt2860/common/cmm_info.c:1817: error: 'TASK_INTERRUPTIBLE'
-undeclared (first use in this function)                         =20
-drivers/staging/rt2860/common/cmm_info.c:1817: error: (Each undeclared
-identifier is reported only once                                    =20
-drivers/staging/rt2860/common/cmm_info.c:1817: error: for each function it
-appears in.)                                                    =20
-drivers/staging/rt2860/common/cmm_info.c:1817: error: implicit declaration
-of function 'signal_pending'                                    =20
-drivers/staging/rt2860/common/cmm_info.c:1817: error: implicit declaration
-of function 'schedule_timeout'    =20
+Some comments and a fix about this patch are inlined.
 
-drivers/staging/rt2860/rt_linux.h doesn't include <linux/sched.h>. It
-includes <linux/interrupt.h>, which included <linux/sched.h> until
-d43c36dc6b357fa1806800f18aa30123c747a6d1
+On Tue, 13 Oct 2009 17:05:45 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Tue, 13 Oct 2009 16:57:19 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> 
+> > On Sun, 11 Oct 2009 11:37:35 +0900 (JST), "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > Andrew Morton wrote:
+> > > > On Fri, 9 Oct 2009 17:01:05 +0900
+> > > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > >
+> > > >> +static void drain_all_stock_async(void)
+> > > >> +{
+> > > >> +	int cpu;
+> > > >> +	/* This function is for scheduling "drain" in asynchronous way.
+> > > >> +	 * The result of "drain" is not directly handled by callers. Then,
+> > > >> +	 * if someone is calling drain, we don't have to call drain more.
+> > > >> +	 * Anyway, work_pending() will catch if there is a race. We just do
+> > > >> +	 * loose check here.
+> > > >> +	 */
+> > > >> +	if (atomic_read(&memcg_drain_count))
+> > > >> +		return;
+> > > >> +	/* Notify other cpus that system-wide "drain" is running */
+> > > >> +	atomic_inc(&memcg_drain_count);
+> > Shouldn't we use atomic_inc_not_zero() ?
+> > (Do you mean this problem by "is not very good" below ?)
+> > 
+> As comment says, "we just do loose check". There is no terrible race except
+> for wasting cpu time.
+> 
+Considering more, I think checking loosely itself is not bad, but using INIT_WORK()
+is not a good behavior, as Andrew said.
 
---=20
-WBR, wRAR (ALT Linux Team)
+It clears WORK_STRUCT_PENDING bit and initializes the list_head of the work_struct.
+So I think a following race can happen.
 
---sk6NRVTC9kZ6Mrgo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+    work_pending() ->false
+    INIT_WORK()
+    schedule_work_on()    
+      queue_work_on()        
+                                  work_pending() -> false
+        test_and_seet_bit()
+          -> sets WORK_STRUCT_PENDING
+                                  INIT_WORK() -> clears WORK_STRUCT_PENDING
+                             
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+And actually, I've seen BUG several times in testing mmotm-2009-10-09-01-07 + these 2 patches.
+This seems not to happen on plain mmotm-2009-10-09-01-07.
 
-iQEcBAEBCAAGBQJK1XHfAAoJEOih81koZvPBsvsH/A/F6kxguzVLA18A/vDunFOY
-ZipMyHSrnZq4tPxVeKHAAqGRzHuCNuNXH36tqxUWrBnRr65qIbo+87HnLk4n91VY
-Chzq60Hc/88jRtgnnE7Ji/iOe+nuJUYXUD3bEg/Q9ckxFZhbsI42WsW1DWy2YyNI
-IumF8JFkfOmhE1CEcMtTjRPQzKPtZ0st6JZ008GAyN0eSsp1wnJ2PicH0RM4+UdV
-Xqr9N6KC9UCjg8v3sENqNMjlMWBXOrvrza79uRnbyU/lKIZLC23AKqY0Hjq+Z0ZW
-SuQxFneLsCdsUHh8CIrozPZ7LSmQ7xKiGFHNW2zUfmSeNrh7ZcHnbpt+mFTxClI=
-=sPae
------END PGP SIGNATURE-----
 
---sk6NRVTC9kZ6Mrgo--
+[ 2264.213803] ------------[ cut here ]------------
+[ 2264.214058] WARNING: at lib/list_debug.c:30 __list_add+0x6e/0x87()
+[ 2264.214058] Hardware name: Express5800/140Rd-4 [N8100-1065]
+[ 2264.214058] list_add corruption. prev->next should be next (ffff880029fd8e80), but was
+ffff880029fd36b8. (prev=ffff880029fd36b8).
+[ 2264.214058] Modules linked in: ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables b
+ridge stp autofs4 hidp rfcomm l2cap crc16 bluetooth lockd sunrpc ib_iser rdma_cm ib_cm iw_
+cm ib_sa ib_mad ib_core ib_addr iscsi_tcp bnx2i cnic uio ipv6 cxgb3i cxgb3 mdio libiscsi_t
+cp libiscsi scsi_transport_iscsi dm_mirror dm_multipath scsi_dh video output sbs sbshc bat
+tery ac lp sg ide_cd_mod cdrom serio_raw acpi_memhotplug button parport_pc parport rtc_cmo
+s rtc_core rtc_lib e1000 i2c_i801 i2c_core pata_acpi ata_generic pcspkr dm_region_hash dm_
+log dm_mod ata_piix libata shpchp megaraid_mbox megaraid_mm sd_mod scsi_mod ext3 jbd uhci_
+hcd ohci_hcd ehci_hcd [last unloaded: freq_table]
+[ 2264.214058] Pid: 14398, comm: shmem_test_02 Tainted: G      D W  2.6.32-rc3-mmotm-2009-
+10-09-01-07-00249-g1112566 #2
+[ 2264.214058] Call Trace:
+[ 2264.214058]  [<ffffffff811e0f43>] ? __list_add+0x6e/0x87
+[ 2264.214058]  [<ffffffff8104af21>] warn_slowpath_common+0x7c/0x94
+[ 2264.214058]  [<ffffffff8104afb8>] warn_slowpath_fmt+0x69/0x6b
+[ 2264.214058]  [<ffffffff81077354>] ? print_lock_contention_bug+0x1b/0xe0
+[ 2264.214058]  [<ffffffff810b819d>] ? probe_workqueue_insertion+0x40/0x9f
+[ 2264.214058]  [<ffffffff81076720>] ? trace_hardirqs_off+0xd/0xf
+[ 2264.214058]  [<ffffffff81386bef>] ? _spin_unlock_irqrestore+0x3d/0x4c
+[ 2264.214058]  [<ffffffff811e0f43>] __list_add+0x6e/0x87
+[ 2264.214058]  [<ffffffff81065230>] insert_work+0x78/0x9a
+[ 2264.214058]  [<ffffffff81065c47>] __queue_work+0x2f/0x43
+[ 2264.214058]  [<ffffffff81065cdb>] queue_work_on+0x44/0x50
+[ 2264.214058]  [<ffffffff81065d02>] schedule_work_on+0x1b/0x1d
+[ 2264.214058]  [<ffffffff81104623>] mem_cgroup_hierarchical_reclaim+0x232/0x40e
+[ 2264.214058]  [<ffffffff81077eeb>] ? trace_hardirqs_on+0xd/0xf
+[ 2264.214058]  [<ffffffff81104ec9>] __mem_cgroup_try_charge+0x14c/0x25b
+[ 2264.214058]  [<ffffffff811058df>] mem_cgroup_charge_common+0x55/0x82
+[ 2264.214058]  [<ffffffff810d5f9d>] ? shmem_swp_entry+0x134/0x140
+[ 2264.214058]  [<ffffffff81106a44>] mem_cgroup_cache_charge+0xef/0x118
+[ 2264.214058]  [<ffffffff810f766e>] ? alloc_page_vma+0xe0/0xef
+[ 2264.214058]  [<ffffffff810d689a>] shmem_getpage+0x6a7/0x86b
+[ 2264.214058]  [<ffffffff81077eeb>] ? trace_hardirqs_on+0xd/0xf
+[ 2264.214058]  [<ffffffff810ce1d4>] ? get_page_from_freelist+0x4fc/0x6ce
+[ 2264.214058]  [<ffffffff81386794>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+[ 2264.214058]  [<ffffffff8100e385>] ? do_softirq+0x77/0x86
+[ 2264.214058]  [<ffffffff8100c5bc>] ? restore_args+0x0/0x30
+[ 2264.214058]  [<ffffffff810502bf>] ? current_fs_time+0x27/0x2e
+[ 2264.214058]  [<ffffffff81077354>] ? print_lock_contention_bug+0x1b/0xe0
+[ 2264.214058]  [<ffffffff811236c2>] ? file_update_time+0x44/0x144
+[ 2264.214058]  [<ffffffff810d6b11>] shmem_fault+0x42/0x63
+[ 2264.214058]  [<ffffffff810e07db>] __do_fault+0x55/0x484
+[ 2264.214058]  [<ffffffff81077354>] ? print_lock_contention_bug+0x1b/0xe0
+[ 2264.214058]  [<ffffffff810e28e1>] handle_mm_fault+0x1ea/0x813
+[ 2264.214058]  [<ffffffff81389770>] do_page_fault+0x25a/0x2ea
+[ 2264.214058]  [<ffffffff8138757f>] page_fault+0x1f/0x30
+[ 2264.214058] ---[ end trace d435092dd749cff5 ]---
+[ 2264.538186] ------------[ cut here ]------------
+[ 2264.538219] ------------[ cut here ]------------
+[ 2264.538231] kernel BUG at kernel/workqueue.c:287!
+[ 2264.538240] invalid opcode: 0000 [#2] SMP
+[ 2264.538251] last sysfs file: /sys/devices/system/cpu/cpu15/cache/index1/shared_cpu_map
+[ 2264.538259] CPU 0
+[ 2264.538270] Modules linked in: ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables b
+ridge stp autofs4 hidp rfcomm l2cap crc16 bluetooth lockd sunrpc ib_iser rdma_cm ib_cm iw_
+cm ib_sa ib_mad ib_core ib_addr iscsi_tcp bnx2i cnic uio ipv6 cxgb3i cxgb3 mdio libiscsi_t
+cp libiscsi scsi_transport_iscsi dm_mirror dm_multipath scsi_dh video output sbs sbshc bat
+tery ac lp sg ide_cd_mod cdrom serio_raw acpi_memhotplug button parport_pc parport rtc_cmo
+s rtc_core rtc_lib e1000 i2c_i801 i2c_core pata_acpi ata_generic pcspkr dm_region_hash dm_
+log dm_mod ata_piix libata shpchp megaraid_mbox megaraid_mm sd_mod scsi_mod ext3 jbd uhci_
+hcd ohci_hcd ehci_hcd [last unloaded: freq_table]
+[ 2264.538627] Pid: 51, comm: events/0 Tainted: G      D W  2.6.32-rc3-mmotm-2009-10-09-01
+-07-00249-g1112566 #2 Express5800/140Rd-4 [N8100-1065]
+[ 2264.538638] RIP: 0010:[<ffffffff81065f56>]  [<ffffffff81065f56>] worker_thread+0x157/0x
+2b3
+[ 2264.538663] RSP: 0000:ffff8803a068fe10  EFLAGS: 00010207
+[ 2264.538670] RAX: 0000000000000000 RBX: ffff8803a045a478 RCX: ffff880029fd36b8
+[ 2264.538679] RDX: 0000000000001918 RSI: 00000001a068fdd0 RDI: ffffffff81386bad
+[ 2264.538684] RBP: ffff8803a068feb0 R08: 0000000000000002 R09: 0000000000000001
+[ 2264.538694] R10: ffffffff81389860 R11: ffff880029fd6518 R12: ffff880029fd36b0
+[ 2264.538701] R13: ffff880029fd8e40 R14: ffff8803a067e590 R15: ffffffff811049f3
+[ 2264.538719] FS:  0000000000000000(0000) GS:ffff880029e00000(0000) knlGS:000000000000000
+0
+[ 2264.538734] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+[ 2264.538742] CR2: 00007ffcc30a0001 CR3: 0000000001001000 CR4: 00000000000006f0
+[ 2264.538755] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[ 2264.538766] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[ 2264.538773] Process events/0 (pid: 51, threadinfo ffff8803a068e000, task ffff8803a067e5
+90)
+[ 2264.538783] Stack:
+[ 2264.538788]  ffffffff81065f5a ffffffff813847ec ffffffff827d6a20 0000000000000000
+[ 2264.538807] <0> ffffffff814f5a42 0000000000000002 0000000000000000 ffff8803a067e948
+[ 2264.538835] <0> 0000000000000000 ffff8803a067e590 ffffffff8106a61b ffff8803a068fe68
+[ 2264.538857] Call Trace:
+[ 2264.538868]  [<ffffffff81065f5a>] ? worker_thread+0x15b/0x2b3
+[ 2264.538883]  [<ffffffff813847ec>] ? thread_return+0x3e/0xee
+[ 2264.538887]  [<ffffffff8106a61b>] ? autoremove_wake_function+0x0/0x3d
+[ 2264.538887]  [<ffffffff81065dff>] ? worker_thread+0x0/0x2b3
+[ 2264.538887]  [<ffffffff8106a510>] kthread+0x82/0x8a
+[ 2264.538887]  [<ffffffff8100cc1a>] child_rip+0xa/0x20
+[ 2264.538887]  [<ffffffff8100c5bc>] ? restore_args+0x0/0x30
+[ 2264.538887]  [<ffffffff8106a46d>] ? kthreadd+0xd5/0xf6
+[ 2264.538887]  [<ffffffff8106a48e>] ? kthread+0x0/0x8a
+[ 2264.538887]  [<ffffffff8100cc10>] ? child_rip+0x0/0x20
+[ 2264.538887] Code: 00 4c 89 ef 48 8b 08 48 8b 50 08 48 89 51 08 48 89 0a 48 89 40 08 48
+89 00 e8 34 0c 32 00 49 8b 04 24 48 83 e0 fc 4c 39 e8 74 04 <0f> 0b eb fe f0 41 80 24 24 f
+e 49 8b bd a8 00 00 00 48 8d 9d 70
+[ 2264.538887] RIP  [<ffffffff81065f56>] worker_thread+0x157/0x2b3
+[ 2264.538887]  RSP <ffff8803a068fe10>
+[ 2264.539304] ---[ end trace d435092dd749cff6 ]---
+
+
+How about doing INIT_WORK() once in initialization like this ?
+After this patch, it has survived the same test for more than 6 hours w/o causing the BUG,
+while it survived for only 1 hour at most before.
+
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+Don't do INIT_WORK() repeatedly against the same work_struct.
+Just do it once in initialization.
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ mm/memcontrol.c |   13 ++++++++-----
+ 1 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index bc57916..fd8f65f 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1349,8 +1349,8 @@ static void drain_all_stock_async(void)
+ 	/* This function is for scheduling "drain" in asynchronous way.
+ 	 * The result of "drain" is not directly handled by callers. Then,
+ 	 * if someone is calling drain, we don't have to call drain more.
+-	 * Anyway, work_pending() will catch if there is a race. We just do
+-	 * loose check here.
++	 * Anyway, WORK_STRUCT_PENDING check in queue_work_on() will catch if
++	 * there is a race. We just do loose check here.
+ 	 */
+ 	if (atomic_read(&memcg_drain_count))
+ 		return;
+@@ -1359,9 +1359,6 @@ static void drain_all_stock_async(void)
+ 	get_online_cpus();
+ 	for_each_online_cpu(cpu) {
+ 		struct memcg_stock_pcp *stock = &per_cpu(memcg_stock, cpu);
+-		if (work_pending(&stock->work))
+-			continue;
+-		INIT_WORK(&stock->work, drain_local_stock);
+ 		schedule_work_on(cpu, &stock->work);
+ 	}
+  	put_online_cpus();
+@@ -3327,11 +3324,17 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 
+ 	/* root ? */
+ 	if (cont->parent == NULL) {
++		int cpu;
+ 		enable_swap_cgroup();
+ 		parent = NULL;
+ 		root_mem_cgroup = mem;
+ 		if (mem_cgroup_soft_limit_tree_init())
+ 			goto free_out;
++		for_each_possible_cpu(cpu) {
++			struct memcg_stock_pcp *stock =
++						&per_cpu(memcg_stock, cpu);
++			INIT_WORK(&stock->work, drain_local_stock);
++		}
+ 		hotcpu_notifier(memcg_stock_cpu_callback, 0);
+ 
+ 	} else {
+-- 
+1.5.6.1
+
