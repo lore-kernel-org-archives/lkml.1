@@ -1,403 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761516AbZJNDkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761519AbZJNDmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761516AbZJNDkh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 23:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760189AbZJNDkg
+	id S1761519AbZJNDmT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 23:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbZJNDmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 23:40:36 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:46640 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754660AbZJNDkd (ORCPT
+	Tue, 13 Oct 2009 23:42:18 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:34907 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754653AbZJNDmS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 23:40:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=NsJ686KkMuJQYbEXL8+D7SH9195RL26/osnhzCt7tj7Pa/M1LxcLXTwbt/7OVi1JcR
-         I9DrZH1CqsVTPw7TazqkVRuKVmTr9TSDyYqhhX22vQ+fZ4fXQdIXLih4Kj0GGv8zyNCI
-         rxuLPP0GHSQT7NMwEpryZxRfDC3r2kqZyE4zs=
-Date: Wed, 14 Oct 2009 12:39:39 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Fenghua Yu <fenghua.yu@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-ia64@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
-       x86@kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-altix@sgi.com, Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       linux-usb@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Lothar Wassmann <LW@KARO-electronics.de>
-Subject: Re: [PATCH 2/8] bitmap: Introduce bitmap_set, bitmap_clear,
-	bitmap_find_next_zero_area
-Message-ID: <20091014033939.GB18527@localhost.localdomain>
-References: <1255076961-21325-1-git-send-email-akinobu.mita@gmail.com> <1255076961-21325-2-git-send-email-akinobu.mita@gmail.com> <20091009164100.85a36188.akpm@linux-foundation.org> <20091013021818.GA3898@localhost.localdomain> <20091013091017.GA18431@localhost.localdomain> <1255470887.21871.2.camel@concordia>
+	Tue, 13 Oct 2009 23:42:18 -0400
+Date: Wed, 14 Oct 2009 09:11:22 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v2 PATCH 4/8] sched: Enforce hard limits by throttling
+Message-ID: <20091014034122.GA3568@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20090930124919.GA19951@in.ibm.com> <20090930125252.GE19951@in.ibm.com> <1255444020.8392.362.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1255470887.21871.2.camel@concordia>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1255444020.8392.362.camel@twins>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 08:54:47AM +1100, Michael Ellerman wrote:
-> On Tue, 2009-10-13 at 18:10 +0900, Akinobu Mita wrote:
-> > My user space testing exposed off-by-one error find_next_zero_area
-> > in iommu-helper.
+On Tue, Oct 13, 2009 at 04:27:00PM +0200, Peter Zijlstra wrote:
+> On Wed, 2009-09-30 at 18:22 +0530, Bharata B Rao wrote:
 > 
-> Why not merge those tests into the kernel as a configurable boot-time
-> self-test?
+> > diff --git a/include/linux/sched.h b/include/linux/sched.h
+> > index 0f1ea4a..77ace43 100644
+> > --- a/include/linux/sched.h
+> > +++ b/include/linux/sched.h
+> > @@ -1024,7 +1024,7 @@ struct sched_domain;
+> >  struct sched_class {
+> >  	const struct sched_class *next;
+> >  
+> > -	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
+> > +	int (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
+> >  	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
+> >  	void (*yield_task) (struct rq *rq);
+> >  
+> 
+> I really hate this, it uglfies all the enqueue code in a horrid way
+> (which is most of this patch).
+> 
+> Why can't we simply enqueue the task on a throttled group just like rt?
 
-I send the test program that I used. Obviously it needs
-better diagnostic messages and cleanup to be added into kernel tests.
+We do enqueue a task to its group even if the group is throttled. However such
+throttled groups are not enqueued further. In such scenarios, even though the
+task enqueue to its parent group succeeded, it really didn't add any task to
+the cpu runqueue (rq). So we need to identify this condition and don't
+increment rq->running. That is why this return value is needed.
 
-#include <stdio.h>
-#include <time.h>
-#include <stdlib.h>
-#include <string.h>
+> 
+> > @@ -3414,6 +3443,18 @@ int can_migrate_task(struct task_struct *p, struct rq *rq, int this_cpu,
+> >  	}
+> >  
+> >  	/*
+> > +	 * Don't migrate the task if it belongs to a
+> > +	 * - throttled group on its current cpu
+> > +	 * - throttled group on this_cpu
+> > +	 * - group whose hierarchy is throttled on this_cpu
+> > +	 */
+> > +	if (cfs_rq_throttled(cfs_rq_of(&p->se)) ||
+> > +		task_group_throttled(task_group(p), this_cpu)) {
+> > +		schedstat_inc(p, se.nr_failed_migrations_throttled);
+> > +		return 0;
+> > +	}
+> > +
+> > +	/*
+> >  	 * Aggressive migration if:
+> >  	 * 1) task is cache cold, or
+> >  	 * 2) too many balance attempts have failed.
+> 
+> Simply don't iterate throttled groups?
 
-#if 1 /* Copy and paste from kernel source */
+We already do that by setting the h_load of the throttled cfs_rq to 0 and
+not considering such a cfs_rq for iteration in load_balance_fair(). So I guess
+I can remove the first check in the above code (cfs_rq_throttled(cfs_rq_of(&p->se))).
 
-#define BITS_PER_BYTE  8
-#define BITS_PER_LONG (sizeof(long) * BITS_PER_BYTE)
+However the other check is needed because, we don't want to pull a task
+(whose group is not throttled) from busiest cpu to a target cpu where its
+group or any group in its hierarchy is throttled. This is what the 2nd check
+does (task_group_throttled(task_group(p), this_cpu))).
 
-#define BIT_WORD(nr)	((nr) / BITS_PER_LONG)
-#define BITOP_WORD(nr)	((nr) / BITS_PER_LONG)
+Thanks for looking at the patches!
 
-#define BITMAP_LAST_WORD_MASK(nbits)                                    \
-(                                                                       \
-        ((nbits) % BITS_PER_LONG) ?                                     \
-                (1UL<<((nbits) % BITS_PER_LONG))-1 : ~0UL               \
-)
-
-#define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) % BITS_PER_LONG))
-
-void bitmap_set(unsigned long *map, int start, int nr)
-{
-	unsigned long *p = map + BIT_WORD(start);
-	const int size = start + nr;
-	int bits_to_set = BITS_PER_LONG - (start % BITS_PER_LONG);
-	unsigned long mask_to_set = BITMAP_FIRST_WORD_MASK(start);
-
-	while (nr - bits_to_set >= 0) {
-		*p |= mask_to_set;
-		nr -= bits_to_set;
-		bits_to_set = BITS_PER_LONG;
-		mask_to_set = ~0UL;
-		p++;
-	}
-	if (nr) {
-		mask_to_set &= BITMAP_LAST_WORD_MASK(size);
-		*p |= mask_to_set;
-	}
-}
-
-void bitmap_clear(unsigned long *map, int start, int nr)
-{
-	unsigned long *p = map + BIT_WORD(start);
-	const int size = start + nr;
-	int bits_to_clear = BITS_PER_LONG - (start % BITS_PER_LONG);
-	unsigned long mask_to_clear = BITMAP_FIRST_WORD_MASK(start);
-
-	while (nr - bits_to_clear >= 0) {
-		*p &= ~mask_to_clear;
-		nr -= bits_to_clear;
-		bits_to_clear = BITS_PER_LONG;
-		mask_to_clear = ~0UL;
-		p++;
-	}
-	if (nr) {
-		mask_to_clear &= BITMAP_LAST_WORD_MASK(size);
-		*p &= ~mask_to_clear;
-	}
-}
-
-static unsigned long __ffs(unsigned long word)
-{
-	int num = 0;
-
-	if ((word & 0xffff) == 0) {
-		num += 16;
-		word >>= 16;
-	}
-	if ((word & 0xff) == 0) {
-		num += 8;
-		word >>= 8;
-	}
-	if ((word & 0xf) == 0) {
-		num += 4;
-		word >>= 4;
-	}
-	if ((word & 0x3) == 0) {
-		num += 2;
-		word >>= 2;
-	}
-	if ((word & 0x1) == 0)
-		num += 1;
-	return num;
-}
-
-unsigned long find_next_bit(const unsigned long *addr, unsigned long size,
-			    unsigned long offset)
-{
-	const unsigned long *p = addr + BITOP_WORD(offset);
-	unsigned long result = offset & ~(BITS_PER_LONG-1);
-	unsigned long tmp;
-
-	if (offset >= size)
-		return size;
-	size -= result;
-	offset %= BITS_PER_LONG;
-	if (offset) {
-		tmp = *(p++);
-		tmp &= (~0UL << offset);
-		if (size < BITS_PER_LONG)
-			goto found_first;
-		if (tmp)
-			goto found_middle;
-		size -= BITS_PER_LONG;
-		result += BITS_PER_LONG;
-	}
-	while (size & ~(BITS_PER_LONG-1)) {
-		if ((tmp = *(p++)))
-			goto found_middle;
-		result += BITS_PER_LONG;
-		size -= BITS_PER_LONG;
-	}
-	if (!size)
-		return result;
-	tmp = *p;
-
-found_first:
-	tmp &= (~0UL >> (BITS_PER_LONG - size));
-	if (tmp == 0UL)		/* Are any bits set? */
-		return result + size;	/* Nope. */
-found_middle:
-	return result + __ffs(tmp);
-}
-
-#define ffz(x)  __ffs(~(x))
-
-unsigned long find_next_zero_bit(const unsigned long *addr, unsigned long size,
-				 unsigned long offset)
-{
-	const unsigned long *p = addr + BITOP_WORD(offset);
-	unsigned long result = offset & ~(BITS_PER_LONG-1);
-	unsigned long tmp;
-
-	if (offset >= size)
-		return size;
-	size -= result;
-	offset %= BITS_PER_LONG;
-	if (offset) {
-		tmp = *(p++);
-		tmp |= ~0UL >> (BITS_PER_LONG - offset);
-		if (size < BITS_PER_LONG)
-			goto found_first;
-		if (~tmp)
-			goto found_middle;
-		size -= BITS_PER_LONG;
-		result += BITS_PER_LONG;
-	}
-	while (size & ~(BITS_PER_LONG-1)) {
-		if (~(tmp = *(p++)))
-			goto found_middle;
-		result += BITS_PER_LONG;
-		size -= BITS_PER_LONG;
-	}
-	if (!size)
-		return result;
-	tmp = *p;
-
-found_first:
-	tmp |= ~0UL << size;
-	if (tmp == ~0UL)	/* Are any bits zero? */
-		return result + size;	/* Nope. */
-found_middle:
-	return result + ffz(tmp);
-}
-
-#define __ALIGN_MASK(x,mask) (((x)+(mask))&~(mask))
-
-static inline int test_bit(int nr, const volatile unsigned long *addr)
-{
-	return 1UL & (addr[BIT_WORD(nr)] >> (nr & (BITS_PER_LONG-1)));
-}
-
-unsigned long bitmap_find_next_zero_area(unsigned long *map,
-					 unsigned long size,
-					 unsigned long start,
-					 unsigned int nr,
-					 unsigned long align_mask)
-{
-	unsigned long index, end, i;
-again:
-	index = find_next_zero_bit(map, size, start);
-
-	/* Align allocation */
-	index = __ALIGN_MASK(index, align_mask);
-
-	end = index + nr;
-#ifdef ORIGINAL
-	if (end >= size)
-#else
-	if (end > size)
-#endif
-		return end;
-
-#ifdef ORIGINAL
-	for (i = index; i < end; i++) {
-		if (test_bit(i, map)) {
-			start = i+1;
-			goto again;
-		}
-	}
-#else
-	i = find_next_bit(map, end, index);
-	if (i < end) {
-		start = i + 1;
-		goto again;
-	}
-#endif
-	return index;
-}
-
-#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-#define BITS_TO_LONGS(nr)       DIV_ROUND_UP(nr, BITS_PER_BYTE * sizeof(long))
-#define DECLARE_BITMAP(name,bits) unsigned long name[BITS_TO_LONGS(bits)]
-
-#endif /* Copy and paste from kernel source */
-
-static DECLARE_BITMAP(bitmap, 1000);
-static DECLARE_BITMAP(empty, 1000);
-static DECLARE_BITMAP(full, 1000);
-
-static void bitmap_dump(unsigned long *bitmap, int size)
-{
-	int i;
-
-	for (i = 0; i < size; i++) {
-		if (test_bit(i, bitmap))
-			printf("1 ");
-		else
-			printf("0 ");
-		if (i % 10 == 9)
-			printf("\n");
-	}
-	printf("\n");
-}
-
-static int test1(int size)
-{
-
-	int start = random() % size;
-	int nr = random() % (size - start);
-
-	memset(bitmap, 0x00, BITS_TO_LONGS(size) * sizeof(unsigned long));
-
-	bitmap_set(bitmap, start, nr);
-	bitmap_clear(bitmap, start, nr);
-
-	if (memcmp(empty, bitmap, BITS_TO_LONGS(size) * sizeof(unsigned long)))
-		goto error;
-
-	return 0;
-error:
-	bitmap_dump(bitmap, size);
-	return 1;
-}
-
-int test2(int size)
-{
-	int start = random() % size;
-	int nr = random() % (size - start);
-
-	memset(bitmap, 0xff, BITS_TO_LONGS(size) * sizeof(unsigned long));
-
-	bitmap_clear(bitmap, start, nr);
-	bitmap_set(bitmap, start, nr);
-
-	if (memcmp(full, bitmap, BITS_TO_LONGS(size) * sizeof(unsigned long)))
-		goto error;
-
-	return 0;
-error:
-	bitmap_dump(bitmap, size);
-	return 1;
-}
-
-int test3(int size)
-{
-	int start = random() % size;
-	int nr = random() % (size - start);
-	unsigned long offset;
-
-	memset(bitmap, 0x00, BITS_TO_LONGS(size) * sizeof(unsigned long));
-	bitmap_set(bitmap, start, nr);
-	if (start) {
-		offset = bitmap_find_next_zero_area(bitmap, size, 0, start, 0);
-		if (offset != 0) {
-			printf("start %ld nr %ld\n", start, nr);
-			printf("offset %ld != 0\n", offset);
-			goto error;
-		}
-	}
-	offset = bitmap_find_next_zero_area(bitmap, size, start,
-						size - (start + nr), 0);
-	if (offset != start + nr) {
-		printf("start %ld nr %ld\n", start, nr);
-		printf("offset %ld != size + nr %ld\n", offset, start + nr);
-		goto error;
-	}
-
-	return 0;
-error:
-	bitmap_dump(bitmap, size);
-
-	return 1;
-}
-
-int test4(int size)
-{
-	int start = random() % size;
-	int nr = random() % (size - start);
-	unsigned long offset;
-
-	memset(bitmap, 0xff, BITS_TO_LONGS(size) * sizeof(unsigned long));
-	bitmap_clear(bitmap, start, nr);
-	offset = bitmap_find_next_zero_area(bitmap, size, start, nr, 0);
-	if (nr != 0) {
-		if (offset != start) {
-			printf("start %ld nr %ld\n", start, nr);
-			printf("offset %ld != start %ld\n", offset, start);
-			goto error;
-		}
-	}
-	return 0;
-error:
-	bitmap_dump(bitmap, size);
-
-	return 1;
-}
-
-int main(int argc, char *argv[])
-{
-	int err = 0;
-
-	srandom(time(NULL));
-
-	memset(empty, 0x00, sizeof(empty));
-	memset(full, 0xff, sizeof(full));
-
-	while (!err) {
-		err |= test1(1000);
-		err |= test2(1000);
-		err |= test3(1000);
-		err |= test4(1000);
-	}
-	return 0;
-}
+Regards,
+Bharata.
