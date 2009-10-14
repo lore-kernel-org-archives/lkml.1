@@ -1,100 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbZJNGY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbZJNG3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755231AbZJNGY4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 02:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbZJNGYz
+	id S1754959AbZJNG3R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 02:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbZJNG3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 02:24:55 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:41331 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754737AbZJNGYy (ORCPT
+	Wed, 14 Oct 2009 02:29:16 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:29420 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753211AbZJNG3P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 02:24:54 -0400
-Date: Wed, 14 Oct 2009 11:54:12 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v8 PATCH 1/8]: cpuidle: cleanup drivers/cpuidle/cpuidle.c
-Message-ID: <20091014062412.GB8605@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20091008094828.GA20595@linux.vnet.ibm.com> <20091008094942.GB20595@linux.vnet.ibm.com> <20091012113602.GC3007@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20091012113602.GC3007@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 14 Oct 2009 02:29:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=p0eDMLTpXqFBAK2ByfNl0EAKjZlgUj7jhE1Y7kLlzMDNoXr/RBeFi3fwy+cYJ6k7g3
+         xtj306gCSxOG9qDfTLqfJZULJNQlbeEzWM7ZzUVxyiFcwdR6RobmCQjZQfhJF2qZTDra
+         fShbaCY/UF1WtIxs54MNhnz4z444hF7Bn5QmU=
+Subject: Re: + rtc-disable-hpet-emulation-on-suspend.patch added to -mm tree
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org, david-b@pacbell.net,
+       hpa@zytor.com, rjw@sisk.pl, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+In-Reply-To: <20091014055639.GA784@elte.hu>
+References: <200910132208.n9DM83xa031357@imap1.linux-foundation.org>
+	 <20091014055639.GA784@elte.hu>
+Content-Type: text/plain
+Date: Wed, 14 Oct 2009 08:27:23 +0200
+Message-Id: <1255501643.4484.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-10-12 17:06:02]:
-
-> * Arun R B <arun@linux.vnet.ibm.com> [2009-10-08 15:19:42]:
+On Wed, 2009-10-14 at 07:56 +0200, Ingo Molnar wrote:
+> * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
 > 
-> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-08 15:18:28]:
+> > ------------------------------------------------------
+> > Subject: rtc: disable hpet emulation on suspend
+> > From: Maxim Levitsky <maximlevitsky@gmail.com>
 > > 
-> > This patch cleans up drivers/cpuidle/cpuidle.c
-> > Earlier cpuidle assumed pm_idle as the default idle loop. Break that
-> > assumption and make it more generic. cpuidle_idle_call() which is the
-> > main idle loop of cpuidle is to be called by architectures which have
-> > registered to cpuidle.
+> > I noticed that rtc wont generate interrupts after a resume from disk.
+> > Here hpet rtc emulation is used.
 > > 
-> > Remove routines cpuidle_install/uninstall_idle_handler() which are not
-> > needed anymore.
+> > Problem is that rtc hpet comparator, isn't reinitialized after resume.
+> > Easiest way to solve this, is always mask all hpet interrupts on suspend
+> > This is triggered, when suspending with alarm set.
 > > 
-> >
+> > 
+> > Otherwise, hpet driver will think it doesn't need to reinitialize
+> > the rtc comparator, thus rtc interrupts won't work.
+> > 
+> > This emulation isn't need for wakealarm.
 > 
-> [snip]
+> > -		hpet_mask_rtc_irq_bit(mask);
+> >  
+> > +		/* shut down hpet emulation - we don't need it for alarm */
+> > +		hpet_mask_rtc_irq_bit(RTC_PIE|RTC_AIE|RTC_UIE);
+> >  		cmos_checkintr(cmos, tmp);
 > 
->   /**
-> > - * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
-> > - */
-> > -void cpuidle_install_idle_handler(void)
-> > -{
-> > -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
-> > -		/* Make sure all changes finished before we switch to new idle */
-> > -		smp_wmb();
-> > -		pm_idle = cpuidle_idle_call;
-> > -	}
-> > -}
-> > -
-> > -/**
-> > - * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
-> > - */
-> > -void cpuidle_uninstall_idle_handler(void)
-> > -{
-> > -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
-> > -		pm_idle = pm_idle_old;
-> > -		cpuidle_kick_cpus();
-> > -	}
-> > -}
-> > -
-> 
-> I see the routines above being called in from
-> cpuidle_pause/resume_and_lock/unlock below and they are entries from
-> ACPI on ACPI_PROCESSOR_NOTIFY_POWER and from the hotplug path, could
-> you test them to make sure they are not broken. We also seem to be
-> missing a cpuidle_kick_cpus() in cpuidle_pause_and_lock()
-> 
-> [snip]
-> 
+> Would be nice to also unconditionally reinitialize the hpet/rtc after 
+> resume - regardless of what state we left it in.
 
-Hi Balbir,
+I think this is already done.
+Problem was that rtc driver was leaving the RTC_AIE, thus breaking the
+initialization.
 
-yes, we definitely need a cpuidle_kick_cpus() in
-cpuidle_pause_and_lock() since this is used while disabling the
-cpuidle_device and the cpus need to be kicked out of the idle states.
-I will test this modified code and see if it breaks hotplug.
+If there are no users of hpet on suspend, (periodic,alarm,update), then
+it won't be initialized on resume (only rtc comparator part, other parts
+are initialized correctly nowadays) but as soon as anybody start using
+it, it will be.
+ 
 
-thanks,
-arun
+> 
+> Also, are you sure this does not break things like 
+> CONFIG_PM_TEST_SUSPEND=y which rely on wakealarm?
 
-> -- 
-> 	Balbir
+
+This shouldn't break anything. hpet irqs aren't used for the actual
+alarm.
+
+In fact I used a script to loop over real hibernation cycles, and it
+works with or without this patch.
+
+But with this patch, hwclock works after a resume.
+
+
+Best regards,
+	Maxim Levitsky
+
