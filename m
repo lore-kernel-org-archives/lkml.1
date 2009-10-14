@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752259AbZJNGOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZJNGSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752259AbZJNGOw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 02:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZJNGOv
+	id S1754004AbZJNGSL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 02:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZJNGSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 02:14:51 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:56987 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750881AbZJNGOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 02:14:50 -0400
-Date: Tue, 13 Oct 2009 23:15:33 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Daniel Lezcano <dlezcano@fr.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       andrea@cpushare.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: pidns memory leak
-Message-ID: <20091014061533.GA23569@us.ibm.com>
-References: <4AC5F198.2070407@fr.ibm.com> <20091006040526.GA22923@us.ibm.com> <4ACAFD6A.3060008@fr.ibm.com> <20091008030828.GA18973@us.ibm.com> <4ACD9ECC.90508@fr.ibm.com> <20091009032928.GA2031@us.ibm.com> <4ACF381F.9050808@fr.ibm.com> <20091010013235.GA11904@us.ibm.com> <4AD2EBC7.2020109@fr.ibm.com>
+	Wed, 14 Oct 2009 02:18:10 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:43446 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751875AbZJNGSJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 02:18:09 -0400
+Date: Wed, 14 Oct 2009 11:47:27 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
+	register a set of idle routines.
+Message-ID: <20091014061727.GA8605@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20091008094828.GA20595@linux.vnet.ibm.com> <20091008095027.GC20595@linux.vnet.ibm.com> <1254998162.26976.270.camel@twins> <20091008104249.GJ20595@linux.vnet.ibm.com> <1254999033.26976.272.camel@twins> <8763akh4re.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4AD2EBC7.2020109@fr.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
+In-Reply-To: <8763akh4re.fsf@basil.nowhere.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Lezcano [dlezcano@fr.ibm.com] wrote:
-> Sukadev Bhattiprolu wrote:
->> Ccing  Andrea's new email id:
->>
->> Daniel Lezcano [dlezcano@fr.ibm.com] wrote:
->>   
->>> Following your explanation I was able to reproduce a simple program   
->>> added in attachment. But there is something I do not understand is 
->>> why  the leak does not appear if I do the 'lstat' (cf. test program) 
->>> in the  pid 2 context.
->>>     
->>
->> Hmm, are you sure there is no leak with this test program ? If I put back
->> the commit (7766755a2f249e7), I do see a leak in all three data structures
->> (pid_2, proc_inode, pid_namespace).
->>   
->
-> Let me clarify :)
->
-> The program leaks with the commit 7766755a2f249e7 and does not leak  
-> without this commit.
-> This is the expected behaviour and this simple program spots the problem.
->
-> I tried to modify the program and I moved the lstat to the process 2 in  
-> the child namespace. Conforming your analysis, I was expecting to see a  
-> leak too, but this one didn't occur. I was wondering why, maybe there is  
-> something I didn't understood in the analysis.
+* Andi Kleen <andi@firstfloor.org> [2009-10-12 20:00:05]:
 
-Hmm, There are two separate dentries associated with the processes.
-One in each mount of /proc. The proc dentries in the child container
-are freed when the child container unmounts its /proc so you don't see
-the leak when the lstat() is inside the container.
+> Peter Zijlstra <a.p.zijlstra@chello.nl> writes:
+> >
+> > So does it make sense to have a set of sets?
+> >
+> > Why not integrate them all into one set to be ruled by this governor
+> > thing?
+> 
+> cpuidle is currently optional, that is why the two level hierarchy
+> is there so that you can still have simple idle selection without it.
+> 
+> % size drivers/cpuidle/*.o
+>    text    data     bss     dec     hex filename
+>    5514    1416      44    6974    1b3e drivers/cpuidle/built-in.o
+> 
+> Adding it unconditionally would add ~7k to everyone who wants idle functions.
+> 
+> I think making it unconditional would require putting it on a serious
+> diet first.
+> 
 
-When the lstat() is in the root container, it is accessing proc-dentries
-from the _root container_ - They are supposed to  be flushed when the task
-exits (but the above commit prevents that flush). They should be freed
-when the /proc in root container is unmounted - and leak until then ?
+Hi Andi,
 
-Sukadev
+Yes, this is a valid point.
+
+How about something like this..
+If the arch does not enable CONFIG_CPU_IDLE, the cpuidle_idle_call
+which is called from cpu_idle() should call default_idle without
+involving the registering cpuidle steps. This should prevent bloating
+up of the kernel for archs which dont want to use cpuidle.
+
+--arun
+> -Andi
+> -- 
+> ak@linux.intel.com -- Speaking for myself only.
