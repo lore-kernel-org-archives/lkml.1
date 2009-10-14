@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbZJNHGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZJNHHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756182AbZJNHGE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 03:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbZJNHGD
+	id S1756031AbZJNHHF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 03:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbZJNHHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 03:06:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57922 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755416AbZJNHGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 03:06:01 -0400
-Date: Wed, 14 Oct 2009 09:05:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Avi Kivity <avi@redhat.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH RFC] sched: add notifier for process migration
-Message-ID: <20091014070508.GI784@elte.hu>
-References: <4ACFA4C5.4020607@goop.org> <1255125738.7439.17.camel@laptop> <4ACFBC98.4070701@goop.org> <1255158863.7866.25.camel@twins> <4AD04E50.7060001@redhat.com> <1255166662.7866.28.camel@twins> <4AD055B3.8070705@goop.org> <1255169528.7521.3.camel@laptop> <4AD4F02C.9060203@goop.org>
+	Wed, 14 Oct 2009 03:07:04 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:53569 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752088AbZJNHHD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 03:07:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=AkgLsD/NSluywPOW5AHM3aI5crn+qozntF9EOc12nMyFioGfBrlWBd7n0ZoTpTcVlR
+         9AjKzbu7RdtyrUnKwaykmkBKX3QaU02rlxy3Nnvp22JLaypwog9UuOEFr7j53123lodJ
+         kzi7W6kDK7Sri07pwuWcvoukJBQ9wGMUO7XaE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD4F02C.9060203@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <19f34abd0910020051h5a831729vcfca50b7bd9f9104@mail.gmail.com>
+References: <200909261428.06802.bart.vanassche@gmail.com>
+	 <e2e108260910012341v5eab14c5o29da95ec52e75183@mail.gmail.com>
+	 <19f34abd0910020051h5a831729vcfca50b7bd9f9104@mail.gmail.com>
+Date: Wed, 14 Oct 2009 09:06:25 +0200
+Message-ID: <e2e108260910140006n3c55b3e9h9cb4340a6bec22cc@mail.gmail.com>
+Subject: Re: [PATCH 2.6.31.1] include/linux/kmemcheck.h: fix a sparse warning
+From: Bart Van Assche <bart.vanassche@gmail.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Vegard Nossum <vegardno@ifi.uio.no>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 2, 2009 at 9:51 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>
+> 2009/10/2 Bart Van Assche <bart.vanassche@gmail.com>:
+> > On Sat, Sep 26, 2009 at 2:28 PM, Bart Van Assche
+> > <bart.vanassche@gmail.com> wrote:
+> >>
+> >> Checking a 2.6.31.1 kernel configured with allyesconfig/allmodconfig
+> >> with sparse (make C=2) triggers a sparse warning on code that uses the
+> >> kmemcheck_annotate_bitfield() macro. An example of such a warning:
+> >>
+> >> include/net/inet_sock.h:208:17: warning: do-while statement is not a compound statement
+> >>
+> >> Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
+> >> Cc: Vegard Nossum <vegardno@ifi.uio.no>
+> >> Cc: Andrew Morton <akpm@linux-foundation.org>
+> >>
+> >> --- linux-2.6.31.1/include/linux/kmemcheck-orig.h       2009-09-26 13:53:44.000000000 +0200
+> >> +++ linux-2.6.31.1/include/linux/kmemcheck.h    2009-09-26 13:53:56.000000000 +0200
+> >> @@ -137,13 +137,13 @@ static inline void kmemcheck_mark_initia
+> >>        int name##_end[0];
+> >>
+> >>  #define kmemcheck_annotate_bitfield(ptr, name)                         \
+> >> -       do if (ptr) {                                                   \
+> >> +       do { if (ptr) {                                                 \
+> >>                int _n = (long) &((ptr)->name##_end)                    \
+> >>                        - (long) &((ptr)->name##_begin);                \
+> >>                BUILD_BUG_ON(_n < 0);                                   \
+> >>                                                                        \
+> >>                kmemcheck_mark_initialized(&((ptr)->name##_begin), _n); \
+> >> -       } while (0)
+> >> +       } } while (0)
+> >>
+> >>  #define kmemcheck_annotate_variable(var)                               \
+> >>        do {                                                            \
+> >
+> > (ping)
+> >
+> > Did anyone already have the time to review the patch above ?
+>
+> A patch for this problem has already been applied in latest mainline.
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Unfortunately this issue is still present in 2.6.31.4, which has been
+released on October 12 (yesterday). Is the patch that has been applied
+in the mainline kernel suitable for backporting ?
 
-> @@ -1981,6 +1989,12 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
->  #endif
->  		perf_swcounter_event(PERF_COUNT_SW_CPU_MIGRATIONS,
->  				     1, 1, NULL, 0);
-> +
-> +		tmn.task = p;
-> +		tmn.from_cpu = old_cpu;
-> +		tmn.to_cpu = new_cpu;
-> +
-> +		atomic_notifier_call_chain(&task_migration_notifier, 0, &tmn);
-
-We already have one event notifier there - look at the 
-perf_swcounter_event() callback. Why add a second one for essentially 
-the same thing?
-
-We should only put a single callback there - a tracepoint defined via 
-TRACE_EVENT() - and any secondary users can register a callback to the 
-tracepoint itself.
-
-There's many similar places in the kernel - with notifier chains and 
-also with a need to get tracepoints there. The fastest (and most 
-consistent) solution is to add just a single event callback facility.
-
-	Ingo
+Bart.
