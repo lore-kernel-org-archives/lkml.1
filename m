@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760070AbZJNUop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbZJNUu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760070AbZJNUop (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 16:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759749AbZJNUop
+	id S1760003AbZJNUu5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 16:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757133AbZJNUu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 16:44:45 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:55470 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757204AbZJNUoo (ORCPT
+	Wed, 14 Oct 2009 16:50:56 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:65178 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752991AbZJNUuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 16:44:44 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 14 Oct 2009 22:43:54 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH 3/8] firewire: cdev: reduce stack usage by ioctl_dispatch
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.af1058f9e26f4dba@s5r6.in-berlin.de>
-Message-ID: <tkrat.ec38f27900b7af20@s5r6.in-berlin.de>
-References: <tkrat.27888275592fd267@s5r6.in-berlin.de>
- <tkrat.af1058f9e26f4dba@s5r6.in-berlin.de>
+	Wed, 14 Oct 2009 16:50:55 -0400
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEANDW1UqrR7H+/2dsb2JhbADCAZhkhC4E
+X-IronPort-AV: E=Sophos;i="4.44,561,1249257600"; 
+   d="scan'208";a="409409157"
+From: Roland Dreier <rdreier@cisco.com>
+To: ddutile@redhat.com
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Stefan Assmann <sassmann@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, kaneshige.kenji@jp.fujitsu.com,
+       matthew@wil.cx
+Subject: Re: GT/s vs Gbps for PCIe bus speed
+References: <4AD58EEE.4070405@redhat.com>
+	<m3ljjdstbb.fsf@intrepid.localdomain> <4AD62B52.9060200@redhat.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 14 Oct 2009 13:50:17 -0700
+In-Reply-To: <4AD62B52.9060200@redhat.com> (Don Dutile's message of "Wed, 14
+	Oct 2009 15:49:38 -0400")
+Message-ID: <adapr8p8zue.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 14 Oct 2009 20:50:18.0967 (UTC) FILETIME=[F095AE70:01CA4D0F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> --- linux-2.6.31.orig/drivers/firewire/core-cdev.c
-> +++ linux-2.6.31/drivers/firewire/core-cdev.c
-> @@ -1299,28 +1299,47 @@ static int (* const ioctl_handlers[])(st
->  static int dispatch_ioctl(struct client *client,
->  			  unsigned int cmd, void __user *arg)
->  {
-> -	char buffer[256];
-> +	char buffer[40];
->  	int ret;
->  
-> +#define check_ioctl_size(x) BUILD_BUG_ON(_IOC_SIZE(x) > sizeof(buffer))
-> +
-> +	check_ioctl_size(FW_CDEV_IOC_GET_INFO);
-> +	check_ioctl_size(FW_CDEV_IOC_SEND_REQUEST);
-[...]
+FWIW, I think using the same nomenclature as the PCI-SIG documents is
+probably the least confusing option.  Inventing our own terminology that
+conflicts with the "upstream" PCI specs is just going to confuse things,
+even if the Linux terminology is "better."  With that said:
 
-With linux 2.6.32-rc1's version of BUILD_BUG_ON, this adds sparse
-warnings (seen with sparse 0.4.2):
+>  	"66 MHz PCIX 533",	/* 0x11 */
+>  	"100 MHz PCIX 533",	/* 0x12 */
+>  	"133 MHz PCIX 533",	/* 0x13 */
+> 	"2.5 GT/s PCI-E",	/* 0x14 */
+> 	"5.0 GT/s PCI-E",	/* 0x15 */
 
-drivers/firewire/core-cdev.c:1308:9: error: bad integer constant expression
-drivers/firewire/core-cdev.c:1309:9: error: bad integer constant expression
-[...]
+it is the case that PCI-SIG uses "PCI-X" and "PCIe" rather than "PCIX"
+and "PCI-E".  That naming would make sense to me as something to clean up.
 
-Back to the drawing board.
--- 
-Stefan Richter
--=====-==--= =-=- -===-
-http://arcgraph.de/sr/
+The table of names also seems to be missing entries for PCI-X mode 1
+with ECC, although I don't know if there ever was a system with a
+device that actually used that mode.
 
+ - R.
