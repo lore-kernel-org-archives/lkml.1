@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbZJNAxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761188AbZJNAyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760895AbZJNAxl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 20:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760223AbZJNAxk
+	id S1761188AbZJNAyr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 20:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759057AbZJNAyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 20:53:40 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:45696 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760758AbZJNAxj (ORCPT
+	Tue, 13 Oct 2009 20:54:46 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:3171 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753947AbZJNAyo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 20:53:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=QEkQKH+GJKdvGWo2xmDkC2cTCpjfbwv9hDprGuuXWvvd4urqB9CmQJTYXFrTq27pB5
-         NSFPIRrwamHItGdq975aMTzRebrw9LUpPcNRUHyDMoFQxx1hqj0aGFBRcm+PL9s/nisN
-         6uEPkpJ1Wb/OSYB25FfRa0WQUW/mB4/c1oxhw=
-Date: Wed, 14 Oct 2009 02:51:31 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-input@vger.kernel.org
-Subject: Re: [bisected regression] Touchpad "paste" stops working after
-	suspend to RAM
-Message-ID: <20091014005131.GA4371@Pilar.aei.mpg.de>
-References: <20091012100929.GA4402@Pilar.aei.mpg.de> <20091013032414.GC2887@core.coreip.homeip.net> <20091013121109.GB4619@Pilar.aei.mpg.de> <20091013182643.GC21593@core.coreip.homeip.net> <20091013190819.GA7555@Pilar.aei.mpg.de> <20091013194654.GD21593@core.coreip.homeip.net> <20091013202459.GE21593@core.coreip.homeip.net> <20091013231641.GA4404@Pilar.aei.mpg.de> <20091013235607.GA28819@core.coreip.homeip.net> <20091013235701.GB28819@core.coreip.homeip.net>
+	Tue, 13 Oct 2009 20:54:44 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Qn7s0RxpHw5Nk0YS7Pme5LkXiLwr0dzdm93xu+TEvotKKFhOsnb3xLojErroRF0l1
+	bRAEzT/XOCcTXmnlkesYQ==
+Date: Tue, 13 Oct 2009 17:53:30 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>,
+       scott@ubuntu.com, zbr@ioremap.net, linux-kernel@vger.kernel.org,
+       Matt Helsley <matthltc@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: Re: [PATCH] connector: Fix regression introduced by sid connector
+In-Reply-To: <200910020816.41323.borntraeger@de.ibm.com>
+Message-ID: <alpine.DEB.1.00.0910131740400.14235@chino.kir.corp.google.com>
+References: <200909251123.03482.borntraeger@de.ibm.com> <200909300843.11208.borntraeger@de.ibm.com> <20091001141426.2c1a0139.akpm@linux-foundation.org> <200910020816.41323.borntraeger@de.ibm.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091013235701.GB28819@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 13.Oct'09 at 16:57:01 -0700, Dmitry Torokhov wrote:
-> On Tue, Oct 13, 2009 at 04:56:08PM -0700, Dmitry Torokhov wrote:
-> > On Wed, Oct 14, 2009 at 01:16:41AM +0200, Carlos R. Mafra wrote:
-> > > [restoring Cc: list]
-> > > 
-> > > On Tue 13.Oct'09 at 13:24:59 -0700, Dmitry Torokhov wrote:
-> > > >
-> > > > Could you please try this patch (again if you could post dmesg that
-> > > > would be great). Thank you!
-> > > 
-> > > The patch quoted below also fixes the problem. I attached the
-> > > syslog with i8042.debug (with a s2ram in the middle) to the
-> > > bugzilla: 
-> > > 
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=14392
-> > > 
-> > 
-> > Still not quite happy, although it is better. I don't understand why
-> > your box likes to reply on AUX port when command is sent via keyboard
-> > port.
-> > 
-> > Could you please try booting with atkbd.reset (I assume keyboard is
-> > built in) and send me yet another dmesg.
-> > 
+On Fri, 2 Oct 2009, Christian Borntraeger wrote:
+
+> since commit 02b51df1b07b4e9ca823c89284e704cadb323cd1 (proc connector: add event 
+> for process becoming session leader) we have the following warning:
+> Badness at kernel/softirq.c:143
+> [...]
+> Krnl PSW : 0404c00180000000 00000000001481d4 (local_bh_enable+0xb0/0xe0)
+> [...]
+> Call Trace:
+> ([<000000013fe04100>] 0x13fe04100)
+>  [<000000000048a946>] sk_filter+0x9a/0xd0
+>  [<000000000049d938>] netlink_broadcast+0x2c0/0x53c
+>  [<00000000003ba9ae>] cn_netlink_send+0x272/0x2b0
+>  [<00000000003baef0>] proc_sid_connector+0xc4/0xd4
+>  [<0000000000142604>] __set_special_pids+0x58/0x90
+>  [<0000000000159938>] sys_setsid+0xb4/0xd8
+>  [<00000000001187fe>] sysc_noemu+0x10/0x16
+>  [<00000041616cb266>] 0x41616cb266
 > 
-> Oh, yes, keep the last patch applied. Thanks!
+> The warning is
+> --->    WARN_ON_ONCE(in_irq() || irqs_disabled());
+> 
+> The network code must not be called with disabled interrupts but
+> sys_setsid holds the tasklist_lock with spinlock_irq while calling
+> the connector. 
+> After a discussion we agreed that we can move proc_sid_connector
+> from __set_special_pids to sys_setsid.
+> We also agreed that it is sufficient to change the check from
+> task_session(curr) != pid into err > 0, since if we don't change the
+> session, this means we were already the leader and return -EPERM.
+> 
+> One last thing:
+> There is also daemonize(), and some people might want to get a
+> notification in that case. Since daemonize() is only needed if a user
+> space does kernel_thread this does not look important (and there seems
+> to be no consensus if this connector should be called in daemonize). If
+> we really want this, we can add proc_sid_connector to daemonize() in an
+> additional patch (Scott?)
+> 
+> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+> CCed: Scott James Remnant <scott@ubuntu.com>
+> CCed: Matt Helsley <matthltc@us.ibm.com>
+> CCed: David S. Miller <davem@davemloft.net>
+> Acked-by: Oleg Nesterov <oleg@redhat.com>
+> Acked-by: Evgeniy Polyakov <zbr@ioremap.net>
 
-I uploaded the dmesg with atkbd.reset (and i8042.debug too, btw)
-to the bugzilla.
+Acked-by: David Rientjes <rientjes@google.com>
 
-Thanks for taking care of this, Dmitry!
+I was getting the same softirq warnings and later in slub in slab_alloc() 
+at might_sleep_if(gfpflags & __GFP_WAIT) from __alloc_skb(..., GFP_KERNEL) 
+in this context that would infinitely spam my log.
