@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZJNBVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760852AbZJNBWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754495AbZJNBVM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 21:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbZJNBVL
+	id S1760852AbZJNBWD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 21:22:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbZJNBWC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 21:21:11 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36273 "EHLO smtps.tip.net.au"
+	Tue, 13 Oct 2009 21:22:02 -0400
+Received: from mail.lang.hm ([64.81.33.126]:37536 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751373AbZJNBVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 21:21:10 -0400
-Date: Wed, 14 Oct 2009 12:20:24 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: linux-next: kbuild tree build failure
-Message-Id: <20091014122024.f5fa52a2.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__14_Oct_2009_12_20_24_+1100_Yz=1RTD15DFE9qrN"
+	id S1753486AbZJNBWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 21:22:01 -0400
+Date: Tue, 13 Oct 2009 18:20:37 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?= 
+	<fredlwm@gmail.com>,
+       Boyan <btanastasov@yahoo.co.uk>,
+       "Justin P. Mattock" <justinmattock@gmail.com>, Nix <nix@esperi.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+In-Reply-To: <alpine.LFD.2.01.0910131806310.6146@localhost.localdomain>
+Message-ID: <alpine.DEB.2.00.0910131819260.22169@asgard.lang.hm>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
+ <4AD3F769.5080405@gmail.com> <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net> <4AD437F9.9020708@yahoo.co.uk> <alpine.LFD.2.01.0910130745550.3438@localhost.localdomain> <4AD4DE4C.4010402@yahoo.co.uk> <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
+ <alpine.LFD.2.01.0910131413240.3596@localhost.localdomain> <alpine.LNX.2.01.0910132153221.5212@dyndns.pervalidus.net> <alpine.LFD.2.01.0910131806310.6146@localhost.localdomain>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__14_Oct_2009_12_20_24_+1100_Yz=1RTD15DFE9qrN
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 13 Oct 2009, Linus Torvalds wrote:
 
-Hi Sam,
+> On Tue, 13 Oct 2009, Fr?d?ric L. W. Meunier wrote:
+>>
+>> For now (more than 3h), it isn't doing any harm. And no keyboard lockups.
+>
+> I think it was Boyan who said he could trigger it "easily", and everybody
+> else had a hard time to reproduce the problem, so I'll consider your "good
+> for 3h" to not really be a confirmation either way. But at least it's not
+> totally broken.
+>
+>> BTW, the old version of the patch was funny. It booted, but at the login
+>> prompt I could only enter the first letter.
+>
+> Yeah, each time somebody read from a tty, the reading would also get rid
+> of all the buffers, but would leave buf.tail set to the last one (that had
+> been freed).
+>
+> Which then resulted in all subsequent IO going to that tail buffer, but
+> nobody ever seeing it, because 'head' was NULL, and would stay that way as
+> long as 'tail' existed (which it would until the tty was flushed, which it
+> would never be).
+>
+> So you'd only ever see the first read (which could obviously be more than
+> one character, but you'd have to type REALLY FAST to get there ;^)
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+Interesting, I had a hadful of times in the last several months where I 
+ran into something like this, but switching virtual terminals cleared it 
+up.
 
-In file included from arch/x86/kernel/syscall_64.c:28:
-arch/x86/include/asm/unistd_64.h:665: error: array index in initializer exc=
-eeds array bounds
-arch/x86/include/asm/unistd_64.h:665: error: (near initialization for 'sys_=
-call_table')
-arch/x86/include/asm/unistd_64.h:665: warning: excess elements in array ini=
-tializer
-arch/x86/include/asm/unistd_64.h:665: warning: (near initialization for 'sy=
-s_call_table')
-
-Exposed by commit a2e2725541fad72416326798c2d7fa4dafb7d337 ("net:
-Introduce recvmmsg socket syscall").  include/asm/asm-offsets.h did not
-get updated even though arch/x86/kernel/asm-offsets.s did.  Ah,
-generated/asm-offsets.h has been updated but my build tree still has the
-(generated in a previous build) include/asm/asm-offsets.h which is
-presumably found before the new arch/x86/include/asm/asm-offsets.h
-introduced by commit fe5ff47a5d79ca99ec7e3155eb19469b44905b2c ("kbuild:
-move asm-offsets.h to include/generated").
-
-Sam, can you think of a better migration path?
-
-I removed include/asm/asm_offsets.h from my object tree and everything
-builds ok.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__14_Oct_2009_12_20_24_+1100_Yz=1RTD15DFE9qrN
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrVJ1gACgkQjjKRsyhoI8xV1QCdGTIB5hpulTSyMdnUvY4IVJQd
-LHMAoLTeBWSV9SXNRpKBA4bSJvywsjKb
-=w0HK
------END PGP SIGNATURE-----
-
---Signature=_Wed__14_Oct_2009_12_20_24_+1100_Yz=1RTD15DFE9qrN--
+David Lang
