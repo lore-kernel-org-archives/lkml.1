@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbZJNR7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbZJNSBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755326AbZJNR7f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 13:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZJNR7e
+	id S1755485AbZJNSBV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 14:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbZJNSBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 13:59:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48149 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751457AbZJNR7d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 13:59:33 -0400
-Date: Wed, 14 Oct 2009 19:58:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:bkl/drivers] drivers: Remove BKL from misc_open
-Message-ID: <20091014175846.GA3537@elte.hu>
-References: <20091010153349.237173041@linutronix.de> <tip-40b798efe3460797a4ac928ee2e038774e2758eb@git.kernel.org> <20091014171249.57dcdcfc@lxorguk.ukuu.org.uk>
+	Wed, 14 Oct 2009 14:01:21 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:42801 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753224AbZJNSBU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 14:01:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=opOp2ga50aXWQjKVtDgFFxMJ1A+gt27XS/TZc5Pqx472I57XZdk9KnGDpldd1C3oK9
+         3l/IwpsXSUH2sgGux5NtVDn2nfHIZIgB7tEII4CPu8Ncg4ek+xr9tS/YfGuuOneA1Nch
+         e1ZdWkIrGaGsLnCG+puEZmTk+LwGZQpbm7oz4=
+Date: Wed, 14 Oct 2009 22:00:41 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86@kernel.org, yinghai@kernel.org, macro@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3] x86,apic: limit apic dumping, introduce show_lapic
+	setup option
+Message-ID: <20091014180041.GB5259@lenovo>
+References: <20091013200702.019870576@openvz.org> <20091013201022.926793122@openvz.org> <20091014071217.GL784@elte.hu> <20091014150904.GA5259@lenovo> <20091014175616.GA3403@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091014171249.57dcdcfc@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091014175616.GA3403@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Ingo Molnar - Wed, Oct 14, 2009 at 07:56:16PM +0200]
+...
+| 
+| noop_default_phys_pkg_id() should return 0 i guess, and not generate a 
+| warning?
+| 
+| 	Ingo
+| 
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+hmm, letme check (seems so)...
 
-> On Wed, 14 Oct 2009 15:47:39 GMT
-> tip-bot for Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > Commit-ID:  40b798efe3460797a4ac928ee2e038774e2758eb
-> > Gitweb:     http://git.kernel.org/tip/40b798efe3460797a4ac928ee2e038774e2758eb
-> > Author:     Thomas Gleixner <tglx@linutronix.de>
-> > AuthorDate: Sat, 10 Oct 2009 15:35:43 +0000
-> > Committer:  Thomas Gleixner <tglx@linutronix.de>
-> > CommitDate: Wed, 14 Oct 2009 17:33:32 +0200
-> > 
-> > drivers: Remove BKL from misc_open
-> > 
-> > misc_open() is already serialized with misc_mtx. Remove the BKL
-> > locking which got there via the BKL pushdown.
-> 
-> NAK.
-> 
-> You can't simply assume the mutex is enough - you have to either push 
-> it down or review *every* possible called point below the lock_kernel 
-> take.
-> 
-> In this case the open method of the misc devices below sometimes uses 
-> the BKL.
-
-We did that and it's safe in nvram.c. If you know an unsafe please let 
-us know.
-
-	Ingo
+	-- Cyrill
