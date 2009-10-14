@@ -1,112 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbZJNBKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbZJNBNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754143AbZJNBKh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 21:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZJNBKg
+	id S1760703AbZJNBNf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 21:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760149AbZJNBNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 21:10:36 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:35905 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751404AbZJNBKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 21:10:35 -0400
-Date: Tue, 13 Oct 2009 18:09:56 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
-       mtosatti@redhat.com, torvalds@linux-foundation.org
-Subject: Re: [PATCH RFC tip/core/rcu 1/3] rcu: The Bloatwatch Edition, v7
-Message-ID: <20091014010956.GG6782@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091009224954.GA26516@linux.vnet.ibm.com> <4AD42FF5.2080109@cn.fujitsu.com> <20091013170022.GA6782@linux.vnet.ibm.com> <4AD51D3E.60103@cn.fujitsu.com>
+	Tue, 13 Oct 2009 21:13:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56709 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753070AbZJNBNd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 21:13:33 -0400
+Date: Tue, 13 Oct 2009 18:12:12 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?= 
+	<fredlwm@gmail.com>
+cc: Boyan <btanastasov@yahoo.co.uk>,
+       "Justin P. Mattock" <justinmattock@gmail.com>, Nix <nix@esperi.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+In-Reply-To: <alpine.LNX.2.01.0910132153221.5212@dyndns.pervalidus.net>
+Message-ID: <alpine.LFD.2.01.0910131806310.6146@localhost.localdomain>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
+ <4AD3F769.5080405@gmail.com> <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net> <4AD437F9.9020708@yahoo.co.uk> <alpine.LFD.2.01.0910130745550.3438@localhost.localdomain> <4AD4DE4C.4010402@yahoo.co.uk> <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
+ <alpine.LFD.2.01.0910131413240.3596@localhost.localdomain> <alpine.LNX.2.01.0910132153221.5212@dyndns.pervalidus.net>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD51D3E.60103@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 08:37:18AM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
-> >> It's an old issue.
-> >> It's not only about RCUTINY, it's also about other rcu implementations:
-> >>
-> >> rcu_enter_nohz()/rcu_exit_nohz() are not called in pairs.
-> >>
-> >> irq_exit() calls tick_nohz_stop_sched_tick() which calls rcu_enter_nohz(),
-> >> where is the corresponding rcu_exit_nohz()?
-> >> (or tick_nohz_restart_sched_tick())?
-> > 
-> > The tick_nohz_restart_sched_tick() function is called from the various
-> > per-architecture cpu_idle() functions (or default_idle() or whatever
-> > name that the architecture uses).  For example, in:
-> > 
-> > 	arch/x86/kernel/process_64.c
-> > 
-> > the cpu_idle() function invokes tick_nohz_restart_sched_tick() just
-> > before invoking schedule() to exit the idle loop.
-> > 
-> > And, as you say, tick_nohz_restart_sched_tick() invokes rcu_exit_nohz().
+
+
+On Tue, 13 Oct 2009, Frédéric L. W. Meunier wrote:
 > 
-> These tick_nohz_restart_sched_tick() which are called from the various
-> per-architecture cpu_idle() functions are not the opposite of
-> the tick_nohz_stop_sched_tick() in *irq_exit()*. So I figure that 
-> rcu_enter_nohz()/rcu_exit_nohz() are not called in pairs.
+> For now (more than 3h), it isn't doing any harm. And no keyboard lockups.
 
-OK, let's start with rcu_enter_nohz(), which tells RCU that the running
-CPU is going into dyntick-idle mode, and thus should be ignored by RCU.
-Let's do the idle loop first:
+I think it was Boyan who said he could trigger it "easily", and everybody 
+else had a hard time to reproduce the problem, so I'll consider your "good 
+for 3h" to not really be a confirmation either way. But at least it's not 
+totally broken.
 
-o	Upon entry to the idle() loop (using cpu_idle() in
-	arch/x86/kernel/process_64.c for this exercise),
-	we invoke tick_nohz_stop_sched_tick(1), which says we
-	are in an idle loop.  (This is in contrast to the call
-	from irq_exit(), where we are not in the idle loop.)
+> BTW, the old version of the patch was funny. It booted, but at the login
+> prompt I could only enter the first letter.
 
-o	tick_nohz_stop_sched_tick() invokes rcu_enter_nohz(),
-	does a bunch of timer checking, and returns.  If anything
-	indicated that entering dyntick-idle mode would be bad,
-	we raise TIMER_SOFTIRQ to kick us out of this mode.
+Yeah, each time somebody read from a tty, the reading would also get rid 
+of all the buffers, but would leave buf.tail set to the last one (that had 
+been freed). 
 
-	Either way, we return to the idle loop.
+Which then resulted in all subsequent IO going to that tail buffer, but 
+nobody ever seeing it, because 'head' was NULL, and would stay that way as 
+long as 'tail' existed (which it would until the tty was flushed, which it 
+would never be).
 
-o	The idle loops until need_resched().  Upon exit from the
-	idle loop, we call tick_nohz_restart_sched_tick(), which
-	invokes rcu_exit_nohz(), which tells RCU to start paying
-	attention to this CPU once more.
+So you'd only ever see the first read (which could obviously be more than 
+one character, but you'd have to type REALLY FAST to get there ;^)
 
-OK, now for interrupts.
-
-o	The hardware interrupt handlers invoke irq_enter(), which in
-	turn invokes rcu_irq_enter().  This has no real effect (other
-	than incrementing a counter) if the interrupt did not come
-	from dyntick-idle mode.
-
-	Either way, RCU is now paying attention to RCU read-side
-	critical sections on this CPU.
-
-o	Upon return from interrupt, the hardware interrupt handlers
-	invoke irq_exit(), which in turn invokes rcu_irq_exit().
-	This has no real effect (other than decrementing a counter)
-	if the interrupt is not returning to dyntick-idle mode.
-
-	However, if the interrupt -is- returning to dyntick-idle
-	mode, then RCU will stop paying attention to RCU read-side
-	critical sections on this CPU.
-
-So I do believe that rcu_enter_nohz() and rcu_exit_nohz() are in fact
-invoked in pairs.  One strange thing about this is that the idle loop
-first invokes rcu_enter_nohz(), then invokes rcu_exit_nohz(), while
-an interrupt handler first invokes rcu_irq_enter() and then invokes
-rcu_irq_exit().  So the idle loop enters dyntick-idle mode and then
-leaves it, while an interrupt handler might leave dyntick-idle mode and
-then re-enter it.
-
-Or am I still missing something here?
-
-							Thanx, Paul
+			Linus
