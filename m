@@ -1,91 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761558AbZJNNP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761605AbZJNNRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761558AbZJNNP3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 09:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761534AbZJNNP1
+	id S1761605AbZJNNRe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 09:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761540AbZJNNRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 09:15:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43453 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 09:17:33 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42715 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761252AbZJNNPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 09:15:20 -0400
-Date: Wed, 14 Oct 2009 13:13:54 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, pwil3058@bigpond.net.au, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, pwil3058@bigpond.net.au,
-       mingo@elte.hu
-In-Reply-To: <1253687579.7695.89.camel@twins>
-References: <1253687579.7695.89.camel@twins>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Make sure task has correct sched_class after policy change
-Message-ID: <tip-67d08dfed042855431dc99c9e0e6f6f7e85737ef@git.kernel.org>
-Git-Commit-ID: 67d08dfed042855431dc99c9e0e6f6f7e85737ef
-X-Mailer: tip-git-log-daemon
+	id S1754211AbZJNNRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 09:17:32 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [PATCH] vfs: new O_NODE open flag
+Date: Wed, 14 Oct 2009 15:14:52 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.30-rc6-git3-4-pae; KDE/4.1.3; i686; ; )
+Cc: Andreas Dilger <adilger@sun.com>, Valdis.Kletnieks@vt.edu,
+       linux@treblig.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu> <20090928152128.GA3384@webber.adilger.int> <E1MsIhu-0002AY-F2@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1MsIhu-0002AY-F2@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 13:13:55 +0000 (UTC)
+Message-Id: <200910141514.52811.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  67d08dfed042855431dc99c9e0e6f6f7e85737ef
-Gitweb:     http://git.kernel.org/tip/67d08dfed042855431dc99c9e0e6f6f7e85737ef
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 12 Oct 2009 17:20:54 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 14 Oct 2009 15:02:35 +0200
+On Monday 28 September 2009 18:04:10 Miklos Szeredi wrote:
+> The point of the above example was that reopening a file descriptor
+> with upgraded (or downgraded) access mode is even now possible.  Which
+> either means:
+> 
+>  a) the current permission model under /proc/PID/fd has a security
+>     hole (which Jamie is worried about)
 
-sched: Make sure task has correct sched_class after policy change
+No worries -- access to /proc/PID/fd/* requires ptrace access to PID, so we do 
+not have a security hole here. The ptrace checks were introduced here:
 
->From the code in rt_mutex_setprio(), it is evident that the
-intention is that task's with a RT 'prio' value as a consequence of
-receiving a PI boost also have their 'sched_class' field set to
-'&rt_sched_class'.
+	778c1144771f0064b6f51bee865cceb0d996f2f9
+	df26c40e567356caeefe2861311e19c54444d917
 
-However, Peter noticed that the code in __setscheduler() could
-result in this intention being frustrated. Fix it.
-
-Reported-by: Peter Williams <pwil3058@bigpond.net.au>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1253687579.7695.89.camel@twins>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |   17 ++++-------------
- 1 files changed, 4 insertions(+), 13 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 789001d..2d7a002 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6145,23 +6145,14 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
- {
- 	BUG_ON(p->se.on_rq);
- 
--	p->policy = policy;
--	switch (p->policy) {
--	case SCHED_NORMAL:
--	case SCHED_BATCH:
--	case SCHED_IDLE:
--		p->sched_class = &fair_sched_class;
--		break;
--	case SCHED_FIFO:
--	case SCHED_RR:
--		p->sched_class = &rt_sched_class;
--		break;
--	}
--
- 	p->rt_priority = prio;
- 	p->normal_prio = normal_prio(p);
- 	/* we are holding p->pi_lock already */
- 	p->prio = rt_mutex_getprio(p);
-+	if (rt_prio(p->prio))
-+		p->sched_class = &rt_sched_class;
-+	else
-+		p->sched_class = &fair_sched_class;
- 	set_load_weight(p);
- }
- 
+Cheers,
+Andreas
