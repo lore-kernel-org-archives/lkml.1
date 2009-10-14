@@ -1,102 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934454AbZJNPQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934502AbZJNPRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934454AbZJNPQz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbZJNPQz
+	id S934502AbZJNPRb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934419AbZJNPRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:16:55 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:51811 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753359AbZJNPQy (ORCPT
+	Wed, 14 Oct 2009 11:17:30 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:51540 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934319AbZJNPR2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:16:54 -0400
-Date: Wed, 14 Oct 2009 17:16:16 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: Tim Abbott <tabbott@ksplice.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 6/7] m68knommu: Move __init_end out of the .init
-	section.
-Message-ID: <20091014151616.GA6901@merkur.ravnborg.org>
-References: <4AD3BFD8.90408@snapgear.com> <1255397413-4862-1-git-send-email-tabbott@ksplice.com> <1255397413-4862-2-git-send-email-tabbott@ksplice.com> <1255397413-4862-3-git-send-email-tabbott@ksplice.com> <1255397413-4862-4-git-send-email-tabbott@ksplice.com> <1255397413-4862-5-git-send-email-tabbott@ksplice.com> <1255397413-4862-6-git-send-email-tabbott@ksplice.com> <1255397413-4862-7-git-send-email-tabbott@ksplice.com> <4AD55682.7060502@snapgear.com>
+	Wed, 14 Oct 2009 11:17:28 -0400
+Date: Wed, 14 Oct 2009 16:16:48 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Question regarding i5/i7 CPUs (1156) - Speed Bins
+Message-ID: <20091014151648.GA8598@srcf.ucam.org>
+References: <alpine.DEB.2.00.0910131953520.29143@p34.internal.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AD55682.7060502@snapgear.com>
+In-Reply-To: <alpine.DEB.2.00.0910131953520.29143@p34.internal.lan>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 02:41:38PM +1000, Greg Ungerer wrote:
-> Hi Tim,
+On Tue, Oct 13, 2009 at 07:55:33PM -0400, Justin Piszcz wrote:
+> Hello,
 >
-> Tim Abbott wrote:
->> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
->> ---
->>  arch/m68knommu/kernel/vmlinux.lds.S |    2 ++
->>  1 files changed, 2 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
->> index 73fe172..49d5c4d 100644
->> --- a/arch/m68knommu/kernel/vmlinux.lds.S
->> +++ b/arch/m68knommu/kernel/vmlinux.lds.S
->> @@ -169,6 +169,8 @@ SECTIONS {
->>  		CON_INITCALL
->>  		SECURITY_INITCALL
->>  		INIT_RAM_FS
->> +	} > INIT
->> +	.init_end : {
->>  		. = ALIGN(PAGE_SIZE);
->>  		__init_end = .;
->>  	} > INIT
->
->
-> After applying this I can no longer boot.
->
-> Resulting headers for vmlinux are:
->
-> vmlinux:     file format elf32-m68k
->
-> Sections:
-> Idx Name          Size      VMA       LMA       File off  Algn
->   0 .text         00125ff0  40020000  40020000  00002000  2**4
->                   CONTENTS, ALLOC, LOAD, READONLY, CODE
->   1 .data         00012010  40145ff0  40145ff0  00127ff0  2**4
->                   CONTENTS, ALLOC, LOAD, DATA
->   2 .init         0000b608  40158000  40158000  0013a000  2**2
->                   CONTENTS, ALLOC, LOAD, CODE
->   3 .init_end     000009f8  40163608  40163608  00145608  2**0
->                   ALLOC
->   4 .bss          0000a9ec  40164000  40164000  00145608  2**4
->                   ALLOC
->   5 .comment      00001c56  00000000  00000000  00145608  2**0
->                   CONTENTS, READONLY
+> In order to gain the acceleration e.g. 2.93GHz -> 3.6GHz for a single  
+> thread, does one need to use a cpu daemon?
 
-Took a look at this trying to understand why this
-caused a non-booting system.
+No. If you're in P0, the package will run cores at the highest speed it 
+can given the current constraints.
 
-The previous post should have created a section named "init_begin",
-but it is not present in the above.
-I think this is beacuse the section had a zero size and thus
-got ignored by the linker.
-
-An the linker is allowed to rearrange sections so the concept
-with a init_begin, init_end sections looks wrongs.
-We do not know the order of these sections and they may
-be linked in a different order than what we expect.
-
-I think the better solution is to use the same section name
-several times like this:
-
-	.init : {
-              . = ALIGN(PAGE_SIZE);
-              __init_end = .;
-      } > INIT
-
-We should do this both for begin and end.
-Then the linker will not fool us and try to rearrange stuff.
-And we do not end up with zero sized sections.
-		
-Greg - I assume the boot failed when it tried to free initmem.
-
-	Sam
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
