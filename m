@@ -1,272 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934930AbZJNQew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934541AbZJNPb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934930AbZJNQew (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 12:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932245AbZJNQev
+	id S934541AbZJNPb1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934526AbZJNPb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 12:34:51 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42429 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932207AbZJNQet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 12:34:49 -0400
-Date: Wed, 14 Oct 2009 16:33:42 GMT
-From: tip-bot for Dimitri Sivanich <sivanich@sgi.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, sivanich@sgi.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, sivanich@sgi.com, mingo@elte.hu
-In-Reply-To: <20091014142257.GE11048@sgi.com>
-References: <20091014142257.GE11048@sgi.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/uv] x86: UV RTC: Rename generic_interrupt to x86_platform_ipi
-Message-ID: <tip-4a4de9c7d7111ce4caf422b856756125d8304f9d@git.kernel.org>
-Git-Commit-ID: 4a4de9c7d7111ce4caf422b856756125d8304f9d
-X-Mailer: tip-git-log-daemon
+	Wed, 14 Oct 2009 11:31:26 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:54806
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934416AbZJNPbZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 11:31:25 -0400
+Message-ID: <4AD5FDAC.7080108@microgate.com>
+Date: Wed, 14 Oct 2009 10:34:52 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 16:33:43 +0000 (UTC)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Boyan <btanastasov@yahoo.co.uk>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       "" <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera> <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain> <4AD3F769.5080405@gmail.com> <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net> <4AD437F9.9020708@yahoo.co.uk> <alpine.LFD.2.01.0910130745550.3438@localhost.localdomain> <4AD4DE4C.4010402@yahoo.co.uk> <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain> <4AD4F548.2030506@microgate.com> <alpine.LFD.2.01.0910131514100.3404@localhost.localdomain> <1255478932.19056.24.camel@localhost.localdomain> <4AD51D6B.7010509@microgate.com> <alpine.LFD.2.01.0910131744590.3404@localhost.localdomain> <20091014125846.1a3c8d40@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0910140804180.6146@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0910140804180.6146@localhost.localdomain>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4a4de9c7d7111ce4caf422b856756125d8304f9d
-Gitweb:     http://git.kernel.org/tip/4a4de9c7d7111ce4caf422b856756125d8304f9d
-Author:     Dimitri Sivanich <sivanich@sgi.com>
-AuthorDate: Wed, 14 Oct 2009 09:22:57 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 14 Oct 2009 18:27:11 +0200
+Linus Torvalds wrote:
+> No, the code was clearly _designed_ for it - that's the whole and only 
+> point of the
+> 
+> 	tty->buf.head = NULL;
 
-x86: UV RTC: Rename generic_interrupt to x86_platform_ipi
+I don't know about the original flush_to_ldisc, but
+I designed the above code to protect against parallel calls
+knowing I could not hold a spinlock when calling receive_buf.
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
-LKML-Reference: <20091014142257.GE11048@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/entry_arch.h  |    2 +-
- arch/x86/include/asm/hardirq.h     |    2 +-
- arch/x86/include/asm/hw_irq.h      |    4 ++--
- arch/x86/include/asm/irq.h         |    2 +-
- arch/x86/include/asm/irq_vectors.h |    2 +-
- arch/x86/kernel/entry_64.S         |    4 ++--
- arch/x86/kernel/irq.c              |   20 ++++++++++----------
- arch/x86/kernel/irqinit.c          |    4 ++--
- arch/x86/kernel/uv_time.c          |   10 +++++-----
- 9 files changed, 25 insertions(+), 25 deletions(-)
+TTY_FLUSHING came later. The problem associated
+with that addition proves my code is obscure enough to make
+maintenance difficult. I got confused reviewing my own code
+yesterday.
 
-diff --git a/arch/x86/include/asm/entry_arch.h b/arch/x86/include/asm/entry_arch.h
-index f5693c8..8e8ec66 100644
---- a/arch/x86/include/asm/entry_arch.h
-+++ b/arch/x86/include/asm/entry_arch.h
-@@ -34,7 +34,7 @@ BUILD_INTERRUPT3(invalidate_interrupt7,INVALIDATE_TLB_VECTOR_START+7,
- 		 smp_invalidate_interrupt)
- #endif
- 
--BUILD_INTERRUPT(generic_interrupt, GENERIC_INTERRUPT_VECTOR)
-+BUILD_INTERRUPT(x86_platform_ipi, X86_PLATFORM_IPI_VECTOR)
- 
- /*
-  * every pentium local APIC has two 'local interrupts', with a
-diff --git a/arch/x86/include/asm/hardirq.h b/arch/x86/include/asm/hardirq.h
-index 82e3e8f..beaabd7 100644
---- a/arch/x86/include/asm/hardirq.h
-+++ b/arch/x86/include/asm/hardirq.h
-@@ -12,7 +12,7 @@ typedef struct {
- 	unsigned int apic_timer_irqs;	/* arch dependent */
- 	unsigned int irq_spurious_count;
- #endif
--	unsigned int generic_irqs;	/* arch dependent */
-+	unsigned int x86_platform_ipis;	/* arch dependent */
- 	unsigned int apic_perf_irqs;
- 	unsigned int apic_pending_irqs;
- #ifdef CONFIG_SMP
-diff --git a/arch/x86/include/asm/hw_irq.h b/arch/x86/include/asm/hw_irq.h
-index ba180d9..95207ca 100644
---- a/arch/x86/include/asm/hw_irq.h
-+++ b/arch/x86/include/asm/hw_irq.h
-@@ -27,7 +27,7 @@
- 
- /* Interrupt handlers registered during init_IRQ */
- extern void apic_timer_interrupt(void);
--extern void generic_interrupt(void);
-+extern void x86_platform_ipi(void);
- extern void error_interrupt(void);
- extern void perf_pending_interrupt(void);
- 
-@@ -101,7 +101,7 @@ extern void eisa_set_level_irq(unsigned int irq);
- /* SMP */
- extern void smp_apic_timer_interrupt(struct pt_regs *);
- extern void smp_spurious_interrupt(struct pt_regs *);
--extern void smp_generic_interrupt(struct pt_regs *);
-+extern void smp_x86_platform_ipi(struct pt_regs *);
- extern void smp_error_interrupt(struct pt_regs *);
- #ifdef CONFIG_X86_IO_APIC
- extern asmlinkage void smp_irq_move_cleanup_interrupt(void);
-diff --git a/arch/x86/include/asm/irq.h b/arch/x86/include/asm/irq.h
-index ddda6cb..fcbc6d1 100644
---- a/arch/x86/include/asm/irq.h
-+++ b/arch/x86/include/asm/irq.h
-@@ -36,7 +36,7 @@ static inline int irq_canonicalize(int irq)
- extern void fixup_irqs(void);
- #endif
- 
--extern void (*generic_interrupt_extension)(void);
-+extern void (*x86_platform_ipi_callback)(void);
- extern void native_init_IRQ(void);
- extern bool handle_irq(unsigned irq, struct pt_regs *regs);
- 
-diff --git a/arch/x86/include/asm/irq_vectors.h b/arch/x86/include/asm/irq_vectors.h
-index 5b21f0e..6a635bd 100644
---- a/arch/x86/include/asm/irq_vectors.h
-+++ b/arch/x86/include/asm/irq_vectors.h
-@@ -106,7 +106,7 @@
- /*
-  * Generic system vector for platform specific use
-  */
--#define GENERIC_INTERRUPT_VECTOR	0xed
-+#define X86_PLATFORM_IPI_VECTOR		0xed
- 
- /*
-  * Performance monitoring pending work vector:
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-index b5c061f..6714432 100644
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -969,8 +969,8 @@ apicinterrupt UV_BAU_MESSAGE \
- #endif
- apicinterrupt LOCAL_TIMER_VECTOR \
- 	apic_timer_interrupt smp_apic_timer_interrupt
--apicinterrupt GENERIC_INTERRUPT_VECTOR \
--	generic_interrupt smp_generic_interrupt
-+apicinterrupt X86_PLATFORM_IPI_VECTOR \
-+	x86_platform_ipi smp_x86_platform_ipi
- 
- #ifdef CONFIG_SMP
- apicinterrupt INVALIDATE_TLB_VECTOR_START+0 \
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index 3912061..9375dce 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -18,7 +18,7 @@
- atomic_t irq_err_count;
- 
- /* Function pointer for generic interrupt vector handling */
--void (*generic_interrupt_extension)(void) = NULL;
-+void (*x86_platform_ipi_callback)(void) = NULL;
- 
- /*
-  * 'what should we do if we get a hw irq event on an illegal vector'.
-@@ -72,10 +72,10 @@ static int show_other_interrupts(struct seq_file *p, int prec)
- 		seq_printf(p, "%10u ", irq_stats(j)->apic_pending_irqs);
- 	seq_printf(p, "  Performance pending work\n");
- #endif
--	if (generic_interrupt_extension) {
-+	if (x86_platform_ipi_callback) {
- 		seq_printf(p, "%*s: ", prec, "PLT");
- 		for_each_online_cpu(j)
--			seq_printf(p, "%10u ", irq_stats(j)->generic_irqs);
-+			seq_printf(p, "%10u ", irq_stats(j)->x86_platform_ipis);
- 		seq_printf(p, "  Platform interrupts\n");
- 	}
- #ifdef CONFIG_SMP
-@@ -187,8 +187,8 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
- 	sum += irq_stats(cpu)->apic_perf_irqs;
- 	sum += irq_stats(cpu)->apic_pending_irqs;
- #endif
--	if (generic_interrupt_extension)
--		sum += irq_stats(cpu)->generic_irqs;
-+	if (x86_platform_ipi_callback)
-+		sum += irq_stats(cpu)->x86_platform_ipis;
- #ifdef CONFIG_SMP
- 	sum += irq_stats(cpu)->irq_resched_count;
- 	sum += irq_stats(cpu)->irq_call_count;
-@@ -252,9 +252,9 @@ unsigned int __irq_entry do_IRQ(struct pt_regs *regs)
- }
- 
- /*
-- * Handler for GENERIC_INTERRUPT_VECTOR.
-+ * Handler for X86_PLATFORM_IPI_VECTOR.
-  */
--void smp_generic_interrupt(struct pt_regs *regs)
-+void smp_x86_platform_ipi(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
- 
-@@ -264,10 +264,10 @@ void smp_generic_interrupt(struct pt_regs *regs)
- 
- 	irq_enter();
- 
--	inc_irq_stat(generic_irqs);
-+	inc_irq_stat(x86_platform_ipis);
- 
--	if (generic_interrupt_extension)
--		generic_interrupt_extension();
-+	if (x86_platform_ipi_callback)
-+		x86_platform_ipi_callback();
- 
- 	run_local_timers();
- 	irq_exit();
-diff --git a/arch/x86/kernel/irqinit.c b/arch/x86/kernel/irqinit.c
-index 40f3077..d593222 100644
---- a/arch/x86/kernel/irqinit.c
-+++ b/arch/x86/kernel/irqinit.c
-@@ -200,8 +200,8 @@ static void __init apic_intr_init(void)
- 	/* self generated IPI for local APIC timer */
- 	alloc_intr_gate(LOCAL_TIMER_VECTOR, apic_timer_interrupt);
- 
--	/* generic IPI for platform specific use */
--	alloc_intr_gate(GENERIC_INTERRUPT_VECTOR, generic_interrupt);
-+	/* IPI for X86 platform specific use */
-+	alloc_intr_gate(X86_PLATFORM_IPI_VECTOR, x86_platform_ipi);
- 
- 	/* IPI vectors for APIC spurious and error interrupts */
- 	alloc_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
-diff --git a/arch/x86/kernel/uv_time.c b/arch/x86/kernel/uv_time.c
-index 2556450..3da7b1d 100644
---- a/arch/x86/kernel/uv_time.c
-+++ b/arch/x86/kernel/uv_time.c
-@@ -91,7 +91,7 @@ static void uv_rtc_send_IPI(int cpu)
- 	pnode = uv_apicid_to_pnode(apicid);
- 	val = (1UL << UVH_IPI_INT_SEND_SHFT) |
- 	      (apicid << UVH_IPI_INT_APIC_ID_SHFT) |
--	      (GENERIC_INTERRUPT_VECTOR << UVH_IPI_INT_VECTOR_SHFT);
-+	      (X86_PLATFORM_IPI_VECTOR << UVH_IPI_INT_VECTOR_SHFT);
- 
- 	uv_write_global_mmr64(pnode, UVH_IPI_INT, val);
- }
-@@ -116,7 +116,7 @@ static int uv_setup_intr(int cpu, u64 expires)
- 	uv_write_global_mmr64(pnode, UVH_EVENT_OCCURRED0_ALIAS,
- 		UVH_EVENT_OCCURRED0_RTC1_MASK);
- 
--	val = (GENERIC_INTERRUPT_VECTOR << UVH_RTC1_INT_CONFIG_VECTOR_SHFT) |
-+	val = (X86_PLATFORM_IPI_VECTOR << UVH_RTC1_INT_CONFIG_VECTOR_SHFT) |
- 		((u64)cpu_physical_id(cpu) << UVH_RTC1_INT_CONFIG_APIC_ID_SHFT);
- 
- 	/* Set configuration */
-@@ -364,7 +364,7 @@ static __init int uv_rtc_setup_clock(void)
- {
- 	int rc;
- 
--	if (!uv_rtc_enable || !is_uv_system() || generic_interrupt_extension)
-+	if (!uv_rtc_enable || !is_uv_system() || x86_platform_ipi_callback)
- 		return -ENODEV;
- 
- 	clocksource_uv.mult = clocksource_hz2mult(sn_rtc_cycles_per_second,
-@@ -385,7 +385,7 @@ static __init int uv_rtc_setup_clock(void)
- 	if (rc)
- 		goto error;
- 
--	generic_interrupt_extension = uv_rtc_interrupt;
-+	x86_platform_ipi_callback = uv_rtc_interrupt;
- 
- 	clock_event_device_uv.mult = div_sc(sn_rtc_cycles_per_second,
- 				NSEC_PER_SEC, clock_event_device_uv.shift);
-@@ -398,7 +398,7 @@ static __init int uv_rtc_setup_clock(void)
- 
- 	rc = schedule_on_each_cpu(uv_rtc_register_clockevents);
- 	if (rc) {
--		generic_interrupt_extension = NULL;
-+		x86_platform_ipi_callback = NULL;
- 		uv_rtc_deallocate_timers();
- 		goto error;
- 	}
+Boo hoo, live and learn.
+
+-- 
+Paul Fulghum
+MicroGate Systems, Ltd.
+=Customer Driven, by Design=
+(800)444-1982
+(512)345-7791 (Direct)
+(512)343-9046 (Fax)
+Central Time Zone (GMT -5h)
+www.microgate.com
