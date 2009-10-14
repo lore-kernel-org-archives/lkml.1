@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934786AbZJNPzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934804AbZJNP4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934786AbZJNPzp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934739AbZJNPzn
+	id S934804AbZJNP4O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934790AbZJNP4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:55:43 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:37669 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934737AbZJNPzm (ORCPT
+	Wed, 14 Oct 2009 11:56:13 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:45657 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934749AbZJNP4L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:55:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=P2hc61JZuOJObe933kqDmKwuu/Zcp1jDmWRxYA8F68GPJv0U6eiVDzqh/ktpM4XZSa
-         37M6c9v8kIMvNDJekwjaEs76nkDDsMONxj59GDDCZHijFo3R/j17DKYNAx2xUG+orl/z
-         JAHF/H6ZmTYTFlDVNiEORXd6D5HqgnIRvuCbU=
-From: Arnd Bergmann <arndbergmann@googlemail.com>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, tglx@linutronix.de
-Subject: Re: [tip:bkl/drivers] drivers: Remove BKL from misc_open
-Date: Wed, 14 Oct 2009 17:55:00 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
-Cc: linux-tip-commits@vger.kernel.org
-References: <20091010153349.237173041@linutronix.de> <tip-40b798efe3460797a4ac928ee2e038774e2758eb@git.kernel.org>
-In-Reply-To: <tip-40b798efe3460797a4ac928ee2e038774e2758eb@git.kernel.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Wed, 14 Oct 2009 11:56:11 -0400
+Date: Wed, 14 Oct 2009 08:55:15 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for October 14
+Message-Id: <20091014085515.f40067c1.randy.dunlap@oracle.com>
+In-Reply-To: <20091014163445.f0441473.sfr@canb.auug.org.au>
+References: <20091014163445.f0441473.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910141755.00774.arnd@arndb.de>
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4AD5F46F.00FD:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 October 2009, tip-bot for Thomas Gleixner wrote:
-> Commit-ID:  40b798efe3460797a4ac928ee2e038774e2758eb
-> Gitweb:     http://git.kernel.org/tip/40b798efe3460797a4ac928ee2e038774e2758eb
-> Author:     Thomas Gleixner <tglx@linutronix.de>
-> AuthorDate: Sat, 10 Oct 2009 15:35:43 +0000
-> Committer:  Thomas Gleixner <tglx@linutronix.de>
-> CommitDate: Wed, 14 Oct 2009 17:33:32 +0200
-> 
-> drivers: Remove BKL from misc_open
-> 
-> misc_open() is already serialized with misc_mtx. Remove the BKL
-> locking which got there via the BKL pushdown.
+On Wed, 14 Oct 2009 16:34:45 +1100 Stephen Rothwell wrote:
 
-Did you check the misc drivers to make sure this is not silently
-removing the BKL from drivers that need it?
+> Changes since 20091013:
+> 
+> Undropped tree: i7core_edac
+> 
+> My fixes tree contains a build fix for powerpc/kvm.
+> 
+> The pci tree gained a conflict against Linus' tree.
+> 
+> The kbuild tree gained a build failure that required me to remove
+> include/asm/asm-offsets.h from my object tree.
+> 
+> The net tree lost its build failure.
+> 
+> The percpu tree lost its build failure.
+> 
+> The tty tree still had a build failure for which I reverted a commit.
+> 
+> ----------------------------------------------------------------------------
+> 
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+> (patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+> are tracking the linux-next tree using git, you should not use "git pull"
+> to do so as that will try to merge the new linux-next release with the
+> old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+> (see below).
 
-	Arnd <><
+Hi Stephen,
+
+Where are today's .bz2 file and the .sign files?
+
+and when did pub/kernel/people/sfr/linux-next/ disappear?
+
+The kernel.org/kdist/finger_banner file now reports:
+The latest linux-next version of the Linux kernel is:         next-20091013
+
+instead of 20091014.
+
+---
+~Randy
