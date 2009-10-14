@@ -1,57 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760026AbZJNMpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760238AbZJNMxC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760026AbZJNMpB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 08:45:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZJNMpA
+	id S1760238AbZJNMxC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 08:53:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759645AbZJNMxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 08:45:00 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:46504 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754860AbZJNMpA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 08:45:00 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=w4iE+TBsmj5y1WloLYF40w==:17 a=9_WeqHRTxoWf3U7J4foA:9
- a=fM1cnLxrdrSghlUY40tKnxrDyScA:4
-From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
-Reply-To: tfjellstrom@shaw.ca
-To: linux-kernel@vger.kernel.org
-Subject: XFS cpu use and slowness
-Date: Wed, 14 Oct 2009 06:44:22 -0600
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-git2; KDE/4.3.2; x86_64; ; )
+	Wed, 14 Oct 2009 08:53:01 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47978 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755290AbZJNMxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 08:53:00 -0400
+Message-ID: <4AD5C97B.4080509@garzik.org>
+Date: Wed, 14 Oct 2009 08:52:11 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910140644.22910.tfjellstrom@shaw.ca>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, "Alexandros C. Couloumbis" <alex@ozo.com>,
+       linux-ide@vger.kernel.org, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] pata_sc1200: Fix crash on boot
+References: <20091006150737.9610.81541.stgit@localhost.localdomain> <20091013185637.870369c8.akpm@linux-foundation.org> <20091014130046.0aa13166@lxorguk.ukuu.org.uk> <200910141412.29467.bzolnier@gmail.com>
+In-Reply-To: <200910141412.29467.bzolnier@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------070602080407050403050203"
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've recently had a couple issues with XFS.
+This is a multi-part message in MIME format.
+--------------070602080407050403050203
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-First off I've noticed a few times that XFS becomes VERY slow when its near 
-full (a few GB free), even when it's not fragmented. Reads slow down to 
-something on the order of 1MB/s, when at full speed I can generally pull 
-200MB/s off the raid5 array (its been a long time since I've seen speed 
-anywhere near that off of the file system).
+On 10/14/2009 08:12 AM, Bartlomiej Zolnierkiewicz wrote:
+> On Wednesday 14 October 2009 14:00:46 Alan Cox wrote:
+>>> This patch applies to 2.6.31 and 2.6.30 (at least).  How far back
+>>> should it be ported?
+>>
+>> No idea. I was just getting it fixed for the maintainer while waiting for
+>> something else to build.
+>
+> BTW do you happen to know who is the current maintainer of this driver
+> (ditto for other PATA drivers)?
+>
+> MAINTAINERS lists only:
+>
+> 	SERIAL ATA (SATA) SUBSYSTEM
+> 	P:      Jeff Garzik
+> 	M:      jgarzik@pobox.com
+> 	L:      linux-ide@vger.kernel.org
+> 	T:      git git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+> 	S:      Supported
+> 	F:      drivers/ata/
+> 	F:      include/linux/ata.h
+> 	F:      include/linux/libata.h
+>
+> but this driver surely ain't SATA.
 
-And second, I see one or more of the xfsdatad threads using up a significant 
-amount of CPU time (30%+) when running a test like: `iozone -s 8G -A` on my 
-new 5 disk md raid0 array. Its pretty fast however (570MBs write, 380MB/s 
-read). That said, flush-9:0 and kswapd0* also like to use up a lot of cpu at 
-the same time (10-30% cpu each)
+FWIW, I've been treating Alan as "PATA sub-maintainer", and tend to wait 
+for an Alan review of a PATA driver patch before applying it [unless 
+it's blindingly obvious or Bart chimes etc.].
 
-So it seems xfs is fast when its a fresh file system, but degrades over time 
-(I have xfs_fsr set to run automatically every day on my existing xfs fs, I 
-can't see it being very fragmented).
+But yes, overall, libata is certainly not SATA-only anymore, and 
+MAINTAINERS should reflect that.
 
-* I have no idea why kswapd0 would be using that much cpu, system has 4G ram, 
-and most of it is file/disk cache. Doing the tests however seems to push more 
-and more into swap. Started out as 0M, during the first test it moved up to 
-1MB, and now during a second test its up to 14MB. Not a lot, but more than I 
-expected.
+Maybe a patch like the attached?  (DaveM CC'd, since I modified the 
+old-IDE entry as well)
 
--- 
-Thomas Fjellstrom
-tfjellstrom@shaw.ca
+	Jeff
+
+
+
+--------------070602080407050403050203
+Content-Type: text/plain;
+ name="patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="patch"
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 69e31aa..1a756bd 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2581,7 +2581,7 @@ W:	http://www.developer.ibm.com/welcome/netfinity/serveraid.html
+ S:	Supported
+ F:	drivers/scsi/ips.*
+ 
+-IDE SUBSYSTEM
++Old IDE SUBSYSTEM
+ M:	"David S. Miller" <davem@davemloft.net>
+ L:	linux-ide@vger.kernel.org
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide-2.6.git
+@@ -4644,7 +4644,7 @@ S:	Maintained
+ F:	drivers/misc/phantom.c
+ F:	include/linux/phantom.h
+ 
+-SERIAL ATA (SATA) SUBSYSTEM
++ATA SUBSYSTEM
+ M:	Jeff Garzik <jgarzik@pobox.com>
+ L:	linux-ide@vger.kernel.org
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+
+--------------070602080407050403050203--
