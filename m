@@ -1,52 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761812AbZJNPEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934219AbZJNPO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761812AbZJNPEL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760942AbZJNPEK
+	id S934219AbZJNPO0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761798AbZJNPOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:04:10 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:39977 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761288AbZJNPEJ (ORCPT
+	Wed, 14 Oct 2009 11:14:25 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:51068 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761507AbZJNPOZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:04:09 -0400
-Subject: [BUG] perf top shows no data
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 14 Oct 2009 11:02:10 -0400
-Message-Id: <1255532530.7113.4570.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 11:14:25 -0400
+Date: Wed, 14 Oct 2009 11:06:04 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Tejun Heo <tj@kernel.org>
+cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, mingo@redhat.com,
+       tglx@linutronix.de, akpm@linux-foundation.org, rostedt@goodmis.org,
+       hpa@zytor.com, cebbert@redhat.com, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 01/16] vmalloc: fix use of non-existent percpu variable
+ in put_cpu_var()
+In-Reply-To: <1255500125-3210-2-git-send-email-tj@kernel.org>
+Message-ID: <alpine.DEB.1.10.0910141105360.26476@gentwo.org>
+References: <1255500125-3210-1-git-send-email-tj@kernel.org> <1255500125-3210-2-git-send-email-tj@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-
-I have a box where "perf top" shows no data. I get the header, but it
-never shows anything. I bisected it down to this commit.
-
-42e59d7d19dc4b49feab2a860fd9a8ca3248c833
-perf tools: Default to 1 KHz auto-sampling freq events
-
-Which, besides the whitespace clean ups is simply:
-
--static int                     freq                            =  0;
-+static int                     freq                            =   1000; /* 1 KHz */
-
-Which, BTW, whitespace clean ups would have been nicer in a separate
-patch. It was a bit of a PITA to find what actually changed.
-
-Peter tells me that the freq stuff is a bit fragile. Note, latest pref
-top works on other boxes. Just not this one.
-
--- Steve
+This looks like a candidate for 2.6.32.
 
 
