@@ -1,168 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932490AbZJNWGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbZJNVvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932490AbZJNWGu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 18:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932324AbZJNWGt
+	id S1756219AbZJNVvQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 17:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbZJNVvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 18:06:49 -0400
-Received: from mga09.intel.com ([134.134.136.24]:48240 "EHLO mga09.intel.com"
+	Wed, 14 Oct 2009 17:51:15 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63117 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932289AbZJNWGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 18:06:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,561,1249282800"; 
-   d="scan'208";a="457521986"
-Message-Id: <20091014220254.190119924@sbs-t61.sc.intel.com>
-User-Agent: quilt/0.47-1
-Date: Wed, 14 Oct 2009 14:46:56 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de, arjan@linux.jf.intel.com
-Cc: linux-kernel@vger.kernel.org, chinang.ma@intel.com,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 2/2] x86_64: align RODATA kernel section to 2MB with CONFIG_DEBUG_RODATA
-References: <20091014214654.423040927@sbs-t61.sc.intel.com>
-Content-Disposition: inline; filename=align_rodata_hpage.patch
+	id S1751464AbZJNVvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 17:51:14 -0400
+To: catalin.marinas@arm.com
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.32-rc3 kmemleak] WARNING: at kernel/lockdep.c:3161 check_flags+0xbe/0x180()
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200910140025.CAJ82820.MOtOFOLVFFSHJQ@I-love.SAKURA.ne.jp>
+	<200910142055.HJH56741.FLOFSJOQHtFVMO@I-love.SAKURA.ne.jp>
+	<1255522972.15103.8.camel@pc1117.cambridge.arm.com>
+	<200910142212.IEI69780.MOtQOJHVSLOFFF@I-love.SAKURA.ne.jp>
+	<1255532113.15103.36.camel@pc1117.cambridge.arm.com>
+In-Reply-To: <1255532113.15103.36.camel@pc1117.cambridge.arm.com>
+Message-Id: <200910150650.JFC10892.QVLJMOOOFFSHFt@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Thu, 15 Oct 2009 06:50:36 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_DEBUG_RODATA chops the large pages spanning boundaries of kernel
-text/rodata/data to small 4KB pages as they are mapped with different
-attributes (text as RO, RODATA as RO and NX etc).
+Catalin Marinas wrote:
+> Could you check the object_cache->obj_size/buffer_size and
+> scan_area_cache->obj_size/buffer_size in mm/kmemleak.c? The first
+> impression is that these somehow are too big when they shouldn't.
+OK. I'll check it later.
 
-On x86_64, preserve the large page mappings for kernel text/rodata/data
-boundaries when CONFIG_DEBUG_RODATA is enabled. This is done by allowing the
-RODATA section to be hugepage aligned and having same RWX attributes
-for the 2MB page boundaries
+> >From your .config, you have DEBUG_PAGEALLOC enabled which may set
+> buffer_size to a full PAGE_SIZE. This size also enables the off slab
+> mgmt data.
+> 
+> If that's the case, my patch is still correct to avoid the recursive
+> call but OOM is quite plausible (every object allocated needs another
+> page for the kmemleak metadata).
+Indeed. After applying http://lkml.org/lkml/2009/10/14/235 ,
+I increased RAM from 512MB to 1736MB, and the system booted without OOM.
 
-Extra Memory pages padding the sections will be freed during the end of the boot
-and the kernel identity mappings will have different RWX permissions compared to
-the kernel text mappings.
+[    8.381581] kmemleak: Kernel memory leak detector initialized
+[    8.436724] kmemleak: Automatic memory scanning thread started
+[   88.765791] kmemleak: 275 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
 
-Kernel identity mappings to these physical pages will be mapped with smaller
-pages but large page mappings are still retained for kernel text,rodata,data
-mappings.
+I get some reports from /sys/kernel/debug/kmemleak .
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
- arch/x86/include/asm/sections.h |    6 ++++++
- arch/x86/kernel/vmlinux.lds.S   |   17 +++++++++++++++++
- arch/x86/mm/init_64.c           |   14 +++++++++++++-
- arch/x86/mm/pageattr.c          |   14 ++++++++++++++
- 4 files changed, 50 insertions(+), 1 deletion(-)
+unreferenced object 0xf703a430 (size 24):
+  comm "swapper", pid 0, jiffies 4294892296
+  hex dump (first 24 bytes):
+    00 00 00 00 00 a4 03 f7 00 00 00 00 00 00 00 00  ................
+    00 00 00 00 00 00 00 00                          ........
+  backtrace:
+    [<c10c7260>] create_object+0xe0/0x240
+    [<c13076ba>] kmemleak_alloc+0x6a/0xe0
+    [<c10c25d8>] kmem_cache_alloc+0x138/0x1c0
+    [<c14c42c6>] debug_objects_mem_init+0x86/0x520
+    [<c14a57c2>] start_kernel+0x232/0x340
+    [<c14a507f>] i386_start_kernel+0x7f/0xb0
+    [<ffffffff>] 0xffffffff
 
-Index: tree/arch/x86/include/asm/sections.h
-===================================================================
---- tree.orig/arch/x86/include/asm/sections.h
-+++ tree/arch/x86/include/asm/sections.h
-@@ -2,7 +2,13 @@
- #define _ASM_X86_SECTIONS_H
- 
- #include <asm-generic/sections.h>
-+#include <asm/uaccess.h>
- 
- extern char __brk_base[], __brk_limit[];
-+extern struct exception_table_entry __stop___ex_table[];
-+
-+#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA)
-+extern char __end_rodata_hpage_align[];
-+#endif
- 
- #endif	/* _ASM_X86_SECTIONS_H */
-Index: tree/arch/x86/kernel/vmlinux.lds.S
-===================================================================
---- tree.orig/arch/x86/kernel/vmlinux.lds.S
-+++ tree/arch/x86/kernel/vmlinux.lds.S
-@@ -41,6 +41,21 @@ ENTRY(phys_startup_64)
- jiffies_64 = jiffies;
- #endif
- 
-+#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA)
-+
-+#define X64_ALIGN_DEBUG_RODATA_BEGIN	. = ALIGN(HPAGE_SIZE);
-+
-+#define X64_ALIGN_DEBUG_RODATA_END				\
-+		. = ALIGN(HPAGE_SIZE);				\
-+		__end_rodata_hpage_align = .;
-+
-+#else
-+
-+#define X64_ALIGN_DEBUG_RODATA_BEGIN
-+#define X64_ALIGN_DEBUG_RODATA_END
-+
-+#endif
-+
- PHDRS {
- 	text PT_LOAD FLAGS(5);          /* R_E */
- 	data PT_LOAD FLAGS(7);          /* RWE */
-@@ -90,7 +105,9 @@ SECTIONS
- 
- 	EXCEPTION_TABLE(16) :text = 0x9090
- 
-+	X64_ALIGN_DEBUG_RODATA_BEGIN
- 	RO_DATA(PAGE_SIZE)
-+	X64_ALIGN_DEBUG_RODATA_END
- 
- 	/* Data */
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-Index: tree/arch/x86/mm/init_64.c
-===================================================================
---- tree.orig/arch/x86/mm/init_64.c
-+++ tree/arch/x86/mm/init_64.c
-@@ -726,9 +726,13 @@ void set_kernel_text_ro(void)
- 
- void mark_rodata_ro(void)
- {
--	unsigned long start = PFN_ALIGN(_text), end = PFN_ALIGN(__end_rodata);
-+	unsigned long start = PFN_ALIGN(_text);
- 	unsigned long rodata_start =
- 		((unsigned long)__start_rodata + PAGE_SIZE - 1) & PAGE_MASK;
-+	unsigned long end = (unsigned long) &__end_rodata_hpage_align;
-+	unsigned long text_end = PAGE_ALIGN((unsigned long) &__stop___ex_table);
-+	unsigned long rodata_end = PAGE_ALIGN((unsigned long) &__end_rodata);
-+	unsigned long data_start = (unsigned long) &_sdata;
- 
- 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
- 	       (end - start) >> 10);
-@@ -751,6 +755,14 @@ void mark_rodata_ro(void)
- 	printk(KERN_INFO "Testing CPA: again\n");
- 	set_memory_ro(start, (end-start) >> PAGE_SHIFT);
- #endif
-+
-+	free_init_pages("unused kernel memory",
-+			(unsigned long) page_address(virt_to_page(text_end)),
-+			(unsigned long)
-+				 page_address(virt_to_page(rodata_start)));
-+	free_init_pages("unused kernel memory",
-+			(unsigned long) page_address(virt_to_page(rodata_end)),
-+			(unsigned long) page_address(virt_to_page(data_start)));
- }
- 
- #endif
-Index: tree/arch/x86/mm/pageattr.c
-===================================================================
---- tree.orig/arch/x86/mm/pageattr.c
-+++ tree/arch/x86/mm/pageattr.c
-@@ -279,6 +279,20 @@ static inline pgprot_t static_protection
- 		   __pa((unsigned long)__end_rodata) >> PAGE_SHIFT))
- 		pgprot_val(forbidden) |= _PAGE_RW;
- 
-+#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA)
-+	/*
-+	 * Kernel text mappings for the large page aligned .rodata section
-+	 * will be read-only. For the kernel identity mappings covering
-+	 * the holes caused by this alignment can be anything.
-+	 *
-+	 * This will preserve the large page mappings for kernel text/data
-+	 * at no extra cost.
-+	 */
-+	if (within(address, (unsigned long)_text,
-+		   (unsigned long)__end_rodata_hpage_align))
-+		pgprot_val(forbidden) |= _PAGE_RW;
-+#endif
-+
- 	prot = __pgprot(pgprot_val(prot) & ~pgprot_val(forbidden));
- 
- 	return prot;
+unreferenced object 0xce8d6850 (size 24):
+  comm "hald", pid 3483, jiffies 4294905535
+  hex dump (first 24 bytes):
+    00 00 00 00 f8 74 c4 c1 02 00 00 00 c4 59 49 c1  .....t.......YI.
+    84 95 47 c1 00 00 00 00                          ..G.....
+  backtrace:
+    [<c10c7260>] create_object+0xe0/0x240
+    [<c13076ba>] kmemleak_alloc+0x6a/0xe0
+    [<c10c25d8>] kmem_cache_alloc+0x138/0x1c0
+    [<c11a699d>] __debug_object_init+0x22d/0x2e0
+    [<c11a6a97>] debug_object_init+0x17/0x20
+    [<c1047c74>] init_timer_key+0x24/0x70
+    [<c127c012>] sock_init_data+0xb2/0x220
+    [<c12e6388>] unix_create1+0x78/0x160
+    [<c12e820a>] unix_stream_connect+0x6a/0x3b0
+    [<c1279ef2>] sys_connect+0x62/0x90
+    [<c127a5d8>] sys_socketcall+0xb8/0x270
+    [<c1002d38>] sysenter_do_call+0x12/0x36
+    [<ffffffff>] 0xffffffff
 
+unreferenced object 0xd49e8b78 (size 32):
+  comm "insmod", pid 985, jiffies 4294894679
+  hex dump (first 32 bytes):
+    30 3a 30 3a 31 35 3a 30 00 5a 5a 5a 5a 5a 5a 5a  0:0:15:0.ZZZZZZZ
+    5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a a5  ZZZZZZZZZZZZZZZ.
+  backtrace:
+    [<c10c7260>] create_object+0xe0/0x240
+    [<c13076ba>] kmemleak_alloc+0x6a/0xe0
+    [<c10c3e50>] __kmalloc+0x1c0/0x230
+    [<c1199105>] kvasprintf+0x35/0x60
+    [<c1190f91>] kobject_set_name_vargs+0x21/0x60
+    [<c11e476f>] dev_set_name+0x1f/0x30
+    [<c12161be>] scsi_sysfs_device_initialize+0xbe/0x120
+    [<c1212d39>] scsi_alloc_sdev+0x189/0x210
+    [<c1212e9b>] scsi_probe_and_add_lun+0xdb/0xc10
+    [<c12140dc>] __scsi_scan_target+0xdc/0x680
+    [<c12146fc>] scsi_scan_channel+0x7c/0x90
+    [<c121479b>] scsi_scan_host_selected+0x8b/0x150
+    [<c12148d9>] do_scsi_scan_host+0x79/0x80
+    [<c1214ba3>] scsi_scan_host+0x163/0x200
+    [<f809656c>] mptspi_probe+0x37c/0x400 [mptspi]
+    [<c11b4583>] local_pci_probe+0x13/0x20
 
+Regards.
