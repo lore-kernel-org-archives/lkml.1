@@ -1,65 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762133AbZJNXgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762145AbZJNXhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762133AbZJNXgh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 19:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762019AbZJNXgg
+	id S1762145AbZJNXhT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 19:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762106AbZJNXhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 19:36:36 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:45668 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761613AbZJNXgf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 19:36:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=rNhvJ1gRfHFNXSZRH1RBaZo5RTNYRwhWU8ZkjpODQGhzOWq00BTKkAJOnEme9CnHh+
-         e5Kd3Df10TImID7Ia1U5/QnDV4PptjmHTQUkL+WcwHmv6tV//p8ZDemtgiyjzLwtXCIa
-         dNp+qt7cQnCFcv6lNimuuzL7ZrHuDMx9bim2g=
-Subject: Re: [Intel-gfx] [bisected] i915: linux-2.6.32-rc3+ regression
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Sergei Trofimovich <slyich@gmail.com>
-Cc: Dave Airlie <airlied@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>, intel-gfx@lists.freedesktop.org
-In-Reply-To: <20091011121712.480128d6@mosly>
-References: <20091010213722.051a60dc@mosly>
-	 <1255210017.3692.24.camel@maxim-laptop> <200910102347.04579.rjw@sisk.pl>
-	 <21d7e9970910101456m277a3c31k3a1add039fcae9d6@mail.gmail.com>
-	 <20091011121712.480128d6@mosly>
-Content-Type: text/plain
-Date: Thu, 15 Oct 2009 01:35:53 +0200
-Message-Id: <1255563353.15469.0.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 19:37:18 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:33801 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762061AbZJNXhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 19:37:16 -0400
+Date: Wed, 14 Oct 2009 16:36:38 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Josh Triplett <josh@joshtriplett.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, npiggin@suse.de,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH tip/core/rcu 5/6] rcu: add rnp->blocked_tasks to tracing
+Message-ID: <20091014233638.GE6763@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091014171517.GA13635@linux.vnet.ibm.com> <20091014202649.GC2395@feather>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014202649.GC2395@feather>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-11 at 12:17 +0300, Sergei Trofimovich wrote:
-> On Sun, 11 Oct 2009 07:56:01 +1000
-> Dave Airlie <airlied@gmail.com> wrote:
-> 
-> > Are you running X.org server 1.7 + driver? if so there is a bug in the current
-> > released driver between that combination, the fix is on the intel-gfx
-> > mailing list.
+On Wed, Oct 14, 2009 at 01:26:50PM -0700, Josh Triplett wrote:
+> On Wed, Oct 14, 2009 at 10:15:58AM -0700, Paul E. McKenney wrote:
+> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > > 
-> > The 1.6 X server + same driver doesn't show this problem.
-> Yes, both driver and xorg-server are current -git masters.
-> 
-> Patch http://lists.freedesktop.org/archives/intel-gfx/2009-October/004488.html
-> helped me.
-> 
-> Thanks!
-> 
-> > Dave.
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> >  kernel/rcutree_trace.c |    7 +++++--
+> >  1 files changed, 5 insertions(+), 2 deletions(-)
 > > 
+> > diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
+> > index 4b31c77..f9d01a3 100644
+> > --- a/kernel/rcutree_trace.c
+> > +++ b/kernel/rcutree_trace.c
+> > @@ -155,12 +155,13 @@ static const struct file_operations rcudata_csv_fops = {
+> >  
+> >  static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
+> >  {
+> > +	long gpnum;
+> >  	int level = 0;
+> >  	struct rcu_node *rnp;
+> >  
+> >  	seq_printf(m, "c=%ld g=%ld s=%d jfq=%ld j=%x "
+> >  		      "nfqs=%lu/nfqsng=%lu(%lu) fqlh=%lu oqlen=%ld\n",
+> > -		   rsp->completed, rsp->gpnum, rsp->signaled,
+> > +		   rsp->completed, gpnum = rsp->gpnum, rsp->signaled,
 > 
+> Please don't hide this or any other assignment in the middle of a print
+> statement.  Just put it immediately preceeding the statement.
 
-Works for me too, thanks!
+Good point, here is the updated patch.
 
-Best regards,
-	Maxim Levitsky
+							Thanx, Paul
 
+rcu: add rnp->blocked_tasks to tracing
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+ rcutree_trace.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
+index 4b31c77..1984cdc 100644
+--- a/kernel/rcutree_trace.c
++++ b/kernel/rcutree_trace.c
+@@ -155,12 +155,14 @@ static const struct file_operations rcudata_csv_fops = {
+ 
+ static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
+ {
++	long gpnum;
+ 	int level = 0;
+ 	struct rcu_node *rnp;
+ 
++	gpnum = rsp->gpnum;
+ 	seq_printf(m, "c=%ld g=%ld s=%d jfq=%ld j=%x "
+ 		      "nfqs=%lu/nfqsng=%lu(%lu) fqlh=%lu oqlen=%ld\n",
+-		   rsp->completed, rsp->gpnum, rsp->signaled,
++		   rsp->completed, gpnum, rsp->signaled,
+ 		   (long)(rsp->jiffies_force_qs - jiffies),
+ 		   (int)(jiffies & 0xffff),
+ 		   rsp->n_force_qs, rsp->n_force_qs_ngp,
+@@ -171,8 +173,10 @@ static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
+ 			seq_puts(m, "\n");
+ 			level = rnp->level;
+ 		}
+-		seq_printf(m, "%lx/%lx %d:%d ^%d    ",
++		seq_printf(m, "%lx/%lx %c>%c %d:%d ^%d    ",
+ 			   rnp->qsmask, rnp->qsmaskinit,
++			   "T."[list_empty(&rnp->blocked_tasks[gpnum & 1])],
++			   "T."[list_empty(&rnp->blocked_tasks[!(gpnum & 1)])],
+ 			   rnp->grplo, rnp->grphi, rnp->grpnum);
+ 	}
+ 	seq_puts(m, "\n");
