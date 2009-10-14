@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761842AbZJNNmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933066AbZJNNnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761842AbZJNNmk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 09:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761099AbZJNNmj
+	id S933066AbZJNNnH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 09:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932869AbZJNNnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 09:42:39 -0400
+	Wed, 14 Oct 2009 09:43:05 -0400
 Received: from ernst.netinsight.se ([194.16.221.21]:33706 "HELO
 	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761783AbZJNNmh convert rfc822-to-8bit (ORCPT
+	with SMTP id S932728AbZJNNnE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 09:42:37 -0400
-Date: Wed, 14 Oct 2009 15:41:13 +0200
+	Wed, 14 Oct 2009 09:43:04 -0400
+Date: Wed, 14 Oct 2009 15:41:18 +0200
 From: Simon Kagstrom <simon.kagstrom@netinsight.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Artem Bityutskiy <dedekind1@gmail.com>,
        David Woodhouse <dwmw2@infradead.org>,
        LKML <linux-kernel@vger.kernel.org>,
        "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH v6 3/5]: mtdoops: Make page (record) size configurable
-Message-ID: <20091014154113.11c0837f@marrow.netinsight.se>
+Subject: [PATCH v6 4/5]: core: Add kernel message dumper to call on oopses
+ and panics
+Message-ID: <20091014154118.5c8cc998@marrow.netinsight.se>
 In-Reply-To: <20091014153458.05e31db6@marrow.netinsight.se>
 References: <20091012113758.GB11035@elte.hu>
 	<20091012140149.6789efab@marrow.netinsight.se>
@@ -40,220 +41,230 @@ X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The main justification for this is to allow catching long messages
-during a panic, where the top part might otherwise be lost since moving
-to the next block can require a flash erase.
+The core functionality is implemented as per Linus suggestion from
+
+  http://lists.infradead.org/pipermail/linux-mtd/2009-October/027620.html
+
+(with the dump_kmsg implementation by Linus). A struct kmsg_dumper has
+been added which contains a callback to dump the kernel log buffers on
+crashes. The dump_kmsg function gets called from oops_exit() and panic()
+and invokes this callbacks with the crash reason.
 
 Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
 Reviewed-by: Anders Grafstrom <anders.grafstrom@netinsight.net>
 ---
 ChangeLog:
-Review comments from Anders Grafström and own fixes:
-       * Set record_size parameter permissions to 0400
-       * Don't require power-of-two sizes
+Review comments from Linus Torvalds and Anders Grafström:
+       * Rename structures and file names
+       * Remove setup callback and unify panic/oops callbacks and
+         instead add a reason parameter
+       * Use a regular spinlock and try it when dumping (fail
+         if held)
+       * Check if the dumper is already registered
+       * Various style fixes/cleanup
 
- drivers/mtd/mtdoops.c |   76 ++++++++++++++++++++++++++++--------------------
- 1 files changed, 44 insertions(+), 32 deletions(-)
+ include/linux/kmsg_dump.h |   37 ++++++++++++++++
+ kernel/panic.c            |    3 +
+ kernel/printk.c           |  105 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 145 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/kmsg_dump.h
 
-diff --git a/drivers/mtd/mtdoops.c b/drivers/mtd/mtdoops.c
-index 08627c2..2870a11 100644
---- a/drivers/mtd/mtdoops.c
-+++ b/drivers/mtd/mtdoops.c
-@@ -34,7 +34,11 @@
- #include <linux/mtd/mtd.h>
- 
- #define MTDOOPS_KERNMSG_MAGIC 0x5d005d00
--#define OOPS_PAGE_SIZE 4096
+diff --git a/include/linux/kmsg_dump.h b/include/linux/kmsg_dump.h
+new file mode 100644
+index 0000000..a0d6b55
+--- /dev/null
++++ b/include/linux/kmsg_dump.h
+@@ -0,0 +1,37 @@
++/*
++ * linux/include/kmsg_dump.h
++ *
++ * Copyright (C) 2009 Net Insight AB
++ *
++ * Author: Simon Kagstrom <simon.kagstrom@netinsight.net>
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive
++ * for more details.
++ */
++#ifndef _LINUX_KMSG_DUMP_H
++#define _LINUX_KMSG_DUMP_H
 +
-+static unsigned long record_size = 4096;
-+module_param(record_size, ulong, 0400);
-+MODULE_PARM_DESC(record_size,
-+		"record size for MTD OOPS pages in bytes (default 4096)");
++#include <linux/list.h>
++
++enum kmsg_dump_reason {
++	kmsg_dump_oops,
++	kmsg_dump_panic,
++};
++
++struct kmsg_dumper {
++	void (*dump)(struct kmsg_dumper *dumper, enum kmsg_dump_reason reason,
++			const char *s1, unsigned long l1,
++			const char *s2, unsigned long l2);
++	void *priv;
++	struct list_head list;
++	int registered;
++};
++
++void dump_kmsg(enum kmsg_dump_reason reason);
++
++int register_kmsg_dumper(struct kmsg_dumper *dumper, void *priv);
++
++void unregister_kmsg_dumper(struct kmsg_dumper *dumper);
++
++#endif /* _LINUX_DUMP_DEVICE_H */
+diff --git a/kernel/panic.c b/kernel/panic.c
+index c0b33b8..3a5a93f 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -10,6 +10,7 @@
+  */
+ #include <linux/debug_locks.h>
+ #include <linux/interrupt.h>
++#include <linux/kmsg_dump.h>
+ #include <linux/kallsyms.h>
+ #include <linux/notifier.h>
+ #include <linux/module.h>
+@@ -76,6 +77,7 @@ NORET_TYPE void panic(const char * fmt, ...)
+ 	dump_stack();
+ #endif
  
- static struct mtdoops_context {
- 	int mtd_index;
-@@ -80,8 +84,8 @@ static int mtdoops_erase_block(struct mtdoops_context *cxt, int offset)
++	dump_kmsg(kmsg_dump_panic);
+ 	/*
+ 	 * If we have crashed and we have a crash kernel loaded let it handle
+ 	 * everything else.
+@@ -341,6 +343,7 @@ void oops_exit(void)
  {
- 	struct mtd_info *mtd = cxt->mtd;
- 	u32 start_page_offset = mtd_div_by_eb(offset, mtd) * mtd->erasesize;
--	u32 start_page = start_page_offset / OOPS_PAGE_SIZE;
--	u32 erase_pages = mtd->erasesize / OOPS_PAGE_SIZE;
-+	u32 start_page = start_page_offset / record_size;
-+	u32 erase_pages = mtd->erasesize / record_size;
- 	struct erase_info erase;
- 	DECLARE_WAITQUEUE(wait, current);
- 	wait_queue_head_t wait_q;
-@@ -149,15 +153,15 @@ static void mtdoops_workfunc_erase(struct work_struct *work)
- 	if (!mtd)
- 		return;
- 
--	mod = (cxt->nextpage * OOPS_PAGE_SIZE) % mtd->erasesize;
-+	mod = (cxt->nextpage * record_size) % mtd->erasesize;
- 	if (mod != 0) {
--		cxt->nextpage = cxt->nextpage + ((mtd->erasesize - mod) / OOPS_PAGE_SIZE);
-+		cxt->nextpage = cxt->nextpage + ((mtd->erasesize - mod) / record_size);
- 		if (cxt->nextpage >= cxt->oops_pages)
- 			cxt->nextpage = 0;
- 	}
- 
- 	while (mtd->block_isbad) {
--		ret = mtd->block_isbad(mtd, cxt->nextpage * OOPS_PAGE_SIZE);
-+		ret = mtd->block_isbad(mtd, cxt->nextpage * record_size);
- 		if (!ret)
- 			break;
- 		if (ret < 0) {
-@@ -165,20 +169,20 @@ static void mtdoops_workfunc_erase(struct work_struct *work)
- 			return;
- 		}
- badblock:
--		printk(KERN_WARNING "mtdoops: bad block at %08x\n",
--		       cxt->nextpage * OOPS_PAGE_SIZE);
-+		printk(KERN_WARNING "mtdoops: bad block at %08lx\n",
-+		       cxt->nextpage * record_size);
- 		i++;
--		cxt->nextpage = cxt->nextpage + (mtd->erasesize / OOPS_PAGE_SIZE);
-+		cxt->nextpage = cxt->nextpage + (mtd->erasesize / record_size);
- 		if (cxt->nextpage >= cxt->oops_pages)
- 			cxt->nextpage = 0;
--		if (i == cxt->oops_pages / (mtd->erasesize / OOPS_PAGE_SIZE)) {
-+		if (i == cxt->oops_pages / (mtd->erasesize / record_size)) {
- 			printk(KERN_ERR "mtdoops: all blocks bad!\n");
- 			return;
- 		}
- 	}
- 
- 	for (j = 0, ret = -1; (j < 3) && (ret < 0); j++)
--		ret = mtdoops_erase_block(cxt, cxt->nextpage * OOPS_PAGE_SIZE);
-+		ret = mtdoops_erase_block(cxt, cxt->nextpage * record_size);
- 
- 	if (ret >= 0) {
- 		printk(KERN_DEBUG "mtdoops: ready %d, %d\n",
-@@ -188,7 +192,7 @@ badblock:
- 	}
- 
- 	if (mtd->block_markbad && ret == -EIO) {
--		ret = mtd->block_markbad(mtd, cxt->nextpage * OOPS_PAGE_SIZE);
-+		ret = mtd->block_markbad(mtd, cxt->nextpage * record_size);
- 		if (ret < 0) {
- 			printk(KERN_ERR "mtdoops: block_markbad failed, aborting\n");
- 			return;
-@@ -203,22 +207,22 @@ static void mtdoops_write(struct mtdoops_context *cxt, int panic)
- 	size_t retlen;
- 	int ret;
- 
--	if (cxt->writecount < OOPS_PAGE_SIZE)
-+	if (cxt->writecount < record_size)
- 		memset(cxt->oops_buf + cxt->writecount, 0xff,
--					OOPS_PAGE_SIZE - cxt->writecount);
-+					record_size - cxt->writecount);
- 
- 	if (panic)
--		ret = mtd->panic_write(mtd, cxt->nextpage * OOPS_PAGE_SIZE,
--					OOPS_PAGE_SIZE, &retlen, cxt->oops_buf);
-+		ret = mtd->panic_write(mtd, cxt->nextpage * record_size,
-+					record_size, &retlen, cxt->oops_buf);
- 	else
--		ret = mtd->write(mtd, cxt->nextpage * OOPS_PAGE_SIZE,
--					OOPS_PAGE_SIZE, &retlen, cxt->oops_buf);
-+		ret = mtd->write(mtd, cxt->nextpage * record_size,
-+					record_size, &retlen, cxt->oops_buf);
- 
- 	cxt->writecount = 0;
- 
--	if (retlen != OOPS_PAGE_SIZE || ret < 0)
--		printk(KERN_ERR "mtdoops: write failure at %d (%td of %d written), error %d\n",
--		       cxt->nextpage * OOPS_PAGE_SIZE, retlen, OOPS_PAGE_SIZE, ret);
-+	if (retlen != record_size || ret < 0)
-+		printk(KERN_ERR "mtdoops: write failure at %ld (%td of %ld written), error %d\n",
-+		       cxt->nextpage * record_size, retlen, record_size, ret);
- 	mark_page_used(cxt, cxt->nextpage);
- 
- 	mtdoops_inc_counter(cxt);
-@@ -243,10 +247,10 @@ static void find_next_position(struct mtdoops_context *cxt)
- 	for (page = 0; page < cxt->oops_pages; page++) {
- 		/* Assume the page is used */
- 		mark_page_used(cxt, page);
--		ret = mtd->read(mtd, page * OOPS_PAGE_SIZE, 8, &retlen, (u_char *) &count[0]);
-+		ret = mtd->read(mtd, page * record_size, 8, &retlen, (u_char *) &count[0]);
- 		if (retlen != 8 || (ret < 0 && ret != -EUCLEAN)) {
--			printk(KERN_ERR "mtdoops: read failure at %d (%td of 8 read), err %d\n",
--			       page * OOPS_PAGE_SIZE, retlen, ret);
-+			printk(KERN_ERR "mtdoops: read failure at %ld (%td of 8 read), err %d\n",
-+			       page * record_size, retlen, ret);
- 			continue;
- 		}
- 
-@@ -300,7 +304,7 @@ static void mtdoops_notify_add(struct mtd_info *mtd)
- 	struct mtdoops_context *cxt = &oops_cxt;
- 	u64 mtdoops_pages = mtd->size;
- 
--	do_div(mtdoops_pages, OOPS_PAGE_SIZE);
-+	do_div(mtdoops_pages, record_size);
- 
- 	if (cxt->name && !strcmp(mtd->name, cxt->name))
- 		cxt->mtd_index = mtd->index;
-@@ -314,7 +318,7 @@ static void mtdoops_notify_add(struct mtd_info *mtd)
- 		return;
- 	}
- 
--	if (mtd->erasesize < OOPS_PAGE_SIZE) {
-+	if (mtd->erasesize < record_size) {
- 		printk(KERN_ERR "mtdoops: eraseblock size of MTD partition %d too small\n",
- 		       mtd->index);
- 		return;
-@@ -329,9 +333,9 @@ static void mtdoops_notify_add(struct mtd_info *mtd)
- 	}
- 	cxt->mtd = mtd;
- 	if (mtd->size > INT_MAX)
--		cxt->oops_pages = INT_MAX / OOPS_PAGE_SIZE;
-+		cxt->oops_pages = INT_MAX / record_size;
- 	else
--		cxt->oops_pages = (int)mtd->size / OOPS_PAGE_SIZE;
-+		cxt->oops_pages = (int)mtd->size / record_size;
- 
- 	find_next_position(cxt);
- 
-@@ -408,15 +412,15 @@ mtdoops_console_write(struct console *co, const char *s, unsigned int count)
- 		cxt->writecount = 8;
- 	}
- 
--	if (count + cxt->writecount > OOPS_PAGE_SIZE)
--		count = OOPS_PAGE_SIZE - cxt->writecount;
-+	if (count + cxt->writecount > record_size)
-+		count = record_size - cxt->writecount;
- 
- 	memcpy(cxt->oops_buf + cxt->writecount, s, count);
- 	cxt->writecount += count;
- 
- 	spin_unlock_irqrestore(&cxt->writecount_lock, flags);
- 
--	if (cxt->writecount == OOPS_PAGE_SIZE)
-+	if (cxt->writecount == record_size)
- 		mtdoops_console_sync();
+ 	do_oops_enter_exit();
+ 	print_oops_end_marker();
++	dump_kmsg(kmsg_dump_oops);
  }
  
-@@ -455,8 +459,16 @@ static int __init mtdoops_console_init(void)
- {
- 	struct mtdoops_context *cxt = &oops_cxt;
+ #ifdef WANT_WARN_ON_SLOWPATH
+diff --git a/kernel/printk.c b/kernel/printk.c
+index f38b07f..a97abb0 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -33,6 +33,8 @@
+ #include <linux/bootmem.h>
+ #include <linux/syscalls.h>
+ #include <linux/kexec.h>
++#include <linux/kmsg_dump.h>
++#include <linux/spinlock.h>
  
-+	if ((record_size & 4095) != 0) {
-+		printk(KERN_ERR "mtdoops: record_size must be a multiple of 4096\n");
+ #include <asm/uaccess.h>
+ 
+@@ -1405,3 +1407,106 @@ bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+ }
+ EXPORT_SYMBOL(printk_timed_ratelimit);
+ #endif
++
++static LIST_HEAD(dump_list);
++static DEFINE_SPINLOCK(dump_list_lock);
++
++/**
++ *	register_dump_device - register a kernel log dumper.
++ *	@dump: pointer to the dump structure
++ *	@priv: private data for the structure
++ *
++ *	Adds a kernel log dumper to the system. The dump callback in the
++ *	structure will be called when the kernel oopses or panics and must be
++ *	set. Returns zero on success and -EINVAL or -EBUSY otherwise.
++ */
++int register_kmsg_dumper(struct kmsg_dumper *dumper, void *priv)
++{
++	unsigned long flags;
++
++	/* The dump callback needs to be set */
++	if (!dumper->dump)
 +		return -EINVAL;
++
++	/* Don't allow registering multiple times */
++	if (dumper->registered)
++		return -EBUSY;
++
++	dumper->priv = priv;
++	dumper->registered = 1;
++
++	spin_lock_irqsave(&dump_list_lock, flags);
++	list_add(&dumper->list, &dump_list);
++	spin_unlock_irqrestore(&dump_list_lock, flags);
++	return 0;
++}
++EXPORT_SYMBOL(register_kmsg_dumper);
++
++/**
++ *	unregister_dump_device - unregister a dumpdevice.
++ *	@dump: pointer to the dump structure
++ *
++ *	Removes a dump device from the system.
++ */
++void unregister_kmsg_dumper(struct kmsg_dumper *dumper)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&dump_list_lock, flags);
++	list_del(&dumper->list);
++	spin_unlock_irqrestore(&dump_list_lock, flags);
++}
++EXPORT_SYMBOL(unregister_kmsg_dumper);
++
++static const char *kmsg_reasons[] = {
++	[kmsg_dump_oops]	= "oops",
++	[kmsg_dump_panic]	= "panic",
++};
++
++static const char *kmsg_to_str(enum kmsg_dump_reason reason)
++{
++	if (reason > ARRAY_SIZE(kmsg_reasons) || reason < 0)
++		return "unknown";
++
++	return kmsg_reasons[reason];
++}
++
++/**
++ *	dump_kmsg - dump kernel log to kernel message dumpers.
++ *	@reason: the reason (oops, panic etc) for dumping
++ *
++ *	Iterate through each of the dump devices and call the oops/panic
++ *	callbacks with the log buffer.
++ */
++void dump_kmsg(enum kmsg_dump_reason reason)
++{
++	unsigned long len = ACCESS_ONCE(log_end);
++	struct kmsg_dumper *dumper;
++	const char *s1, *s2;
++	unsigned long l1, l2;
++
++	s1 = "";
++	l1 = 0;
++	s2 = log_buf;
++	l2 = len;
++
++	/* Have we rotated around the circular buffer? */
++	if (len > log_buf_len) {
++		unsigned long pos = len & LOG_BUF_MASK;
++
++		s1 = log_buf + pos;
++		l1 = log_buf_len - pos;
++
++		s2 = log_buf;
++		l2 = pos;
 +	}
-+	if (record_size < 4096) {
-+		printk(KERN_ERR "mtdoops: record_size must be over 4096 bytes\n");
-+		return -EINVAL;
++
++	if (!spin_trylock(&dump_list_lock)) {
++		printk(KERN_ERR "dump_kmsg: dump list lock is held during %s, skipping dump\n",
++				kmsg_to_str(reason));
++		return;
 +	}
- 	cxt->mtd_index = -1;
--	cxt->oops_buf = vmalloc(OOPS_PAGE_SIZE);
-+	cxt->oops_buf = vmalloc(record_size);
- 	if (!cxt->oops_buf) {
- 		printk(KERN_ERR "mtdoops: failed to allocate buffer workspace\n");
- 		return -ENOMEM;
++	list_for_each_entry(dumper, &dump_list, list)
++		dumper->dump(dumper, reason, s1, l1, s2, l2);
++	spin_unlock(&dump_list_lock);
++}
 -- 
 1.6.0.4
 
