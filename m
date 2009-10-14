@@ -1,81 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933987AbZJNUcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934075AbZJNUkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933987AbZJNUcx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 16:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933724AbZJNUcx
+	id S934075AbZJNUkF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 16:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759748AbZJNUkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 16:32:53 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:58196 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933354AbZJNUcw (ORCPT
+	Wed, 14 Oct 2009 16:40:04 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:16445 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759741AbZJNUkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 16:32:52 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Massimo Cetra <mcetra@navynet.it>
-Subject: Re: Bug on barriers for virtio_blk device - end_request: I/O error, dev vda, sector 0
-Date: Wed, 14 Oct 2009 22:32:12 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Mark McLoughlin <markmc@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Mikulas Patocka <mpatocka@redhat.com>,
-       Alasdair G Kergon <agk@redhat.com>, Neil Brown <neilb@suse.de>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       dm-devel <dm-devel@redhat.com>
-References: <4AD5DC1D.9070002@navynet.it> <4AD5DC1D.9070002@navynet.it>=?utf-8?q?=0A1_2?= <4AD62690.9080408@navynet.it>
-In-reply-To: <4AD62690.9080408@navynet.it>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910142232.14837.elendil@planet.nl>
-X-OriginalArrivalTime: 14 Oct 2009 20:32:15.0135 (UTC) FILETIME=[6A920AF0:01CA4D0D]
+	Wed, 14 Oct 2009 16:40:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=XuAbfZtE8QdMsPdHkjW/xk6r3TRO0hlC0IT0fzWu9vuuS+S2FjEyo0QBLm6BGHUeYi
+         Vw/gUvOR5F/T9LEllCdQeD+Wuvmlj68F7fAey8RMAwlImvayhVOC3uRInkb46rYSrG6j
+         rB9eWcoL9H7XNyIdTkRBTA3zmnMTlMT7u9Wiw=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: [GIT PULL] tracing: Fix misuse of strncpy to copy boot params
+Date: Wed, 14 Oct 2009 22:38:52 +0200
+Message-Id: <1255552732-5096-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added CCs for the author of and people CCed on the patch.
+Ingo,
 
-The patch has been submitted twice (6 Aug, 3 Sept), the first time there 
-was one concern voiced which seems to have been addressed in replies. The 
-second time there were no reactions.
+Please pull this fixlet for .32 that can be found at:
 
-The patch seems to work for Massimo...
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	tracing/fixes
 
-Massimo Cetra wrote:
-> Massimo Cetra ha scritto:
->> Hello all,
->>
->> i ended up with some thiusands of errors after upgrading to 2.6.31.2
->> like this one:
->>
->> end_request: I/O error, dev vda, sector 0
->> end_request: I/O error, dev vda, sector 0
->> end_request: I/O error, dev vda, sector 0
->> end_request: I/O error, dev vda, sector 0
->>
->> I am using ocfs2 on top of drbd on top of LVM in a KVM guest that uses
->> virtio_blk.
->>
->> The bug is already known, see here:
->> https://bugzilla.redhat.com/show_bug.cgi?id=514901
->>
->> A patch exists and the problem has already been submitted here in the
->> list.
->> See here: http://lkml.org/lkml/2009/8/6/153
->>
->> That fix is not in 2.6.31 nor in 2.6.32-RCX
->>
->> Could you please consider pulling it and adding this fix for inclusion
->> in 2.6.31.$next and also to mainline?
->>
->> Thanks.
->
-> No one listening here ?
+Frederic Weisbecker (1):
+      tracing: Fix misuse of strncpy to copy boot params
 
-It helps if you CC the people who maintain the relevant code.
+ kernel/trace/ftrace.c |    4 ++--
+ kernel/trace/trace.c  |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+---
+>From f44bec1286f516d921210a1bf843725f5d4b86ef Mon Sep 17 00:00:00 2001
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Date: Wed, 14 Oct 2009 21:17:00 +0200
+Subject: [PATCH] tracing: Fix misuse of strncpy to copy boot params
 
-> This makes virtio_blk on LVM unusable.
+While copying ftrace string boot parameters into buffers, we
+use strncpy by passing the whole buffer size instead of the max
+strlen the buffers can host (which is buffer size - 1), this might
+lead to non-null terminated strings.
 
-Cheers,
-FJP
+Fix that by simply using strlcpy instead.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/trace/ftrace.c |    4 ++--
+ kernel/trace/trace.c  |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 37ba67e..0f4803f 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2300,14 +2300,14 @@ static char ftrace_filter_buf[FTRACE_FILTER_SIZE] __initdata;
+ 
+ static int __init set_ftrace_notrace(char *str)
+ {
+-	strncpy(ftrace_notrace_buf, str, FTRACE_FILTER_SIZE);
++	strlcpy(ftrace_notrace_buf, str, FTRACE_FILTER_SIZE);
+ 	return 1;
+ }
+ __setup("ftrace_notrace=", set_ftrace_notrace);
+ 
+ static int __init set_ftrace_filter(char *str)
+ {
+-	strncpy(ftrace_filter_buf, str, FTRACE_FILTER_SIZE);
++	strlcpy(ftrace_filter_buf, str, FTRACE_FILTER_SIZE);
+ 	return 1;
+ }
+ __setup("ftrace_filter=", set_ftrace_filter);
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 4506826..621d81e 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -131,7 +131,7 @@ static char *default_bootup_tracer;
+ 
+ static int __init set_ftrace(char *str)
+ {
+-	strncpy(bootup_tracer_buf, str, MAX_TRACER_SIZE);
++	strlcpy(bootup_tracer_buf, str, MAX_TRACER_SIZE);
+ 	default_bootup_tracer = bootup_tracer_buf;
+ 	/* We are using ftrace early, expand it */
+ 	ring_buffer_expanded = 1;
+-- 
+1.6.2.3
+
+
