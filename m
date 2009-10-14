@@ -1,44 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbZJNRwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbZJNRww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755123AbZJNRwQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 13:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbZJNRwQ
+	id S1755331AbZJNRww (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 13:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbZJNRwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 13:52:16 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51590 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753303AbZJNRwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 13:52:15 -0400
-Date: Wed, 14 Oct 2009 10:48:44 -0700
-From: Greg KH <gregkh@suse.de>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: torvalds@linux-foundation.org, Bill Pemberton <wfp5p@virginia.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Staging: Comedi: Add missing <linux/sched.h> includes
-Message-ID: <20091014174844.GA3681@suse.de>
-References: <adazl7taok3.fsf@cisco.com>
- <20091014171603.GA28296@suse.de>
- <adak4yxamzj.fsf@cisco.com>
-MIME-Version: 1.0
+	Wed, 14 Oct 2009 13:52:51 -0400
+Received: from straum.hexapodia.org ([64.81.70.185]:6366 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752971AbZJNRwu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 13:52:50 -0400
+Date: Wed, 14 Oct 2009 10:52:14 -0700
+From: Andy Isaacson <adi@hexapodia.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, iommu@lists.linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: DMAR regression in 2.6.31 leads to ext4 corruption?
+Message-ID: <20091014175214.GD6827@hexapodia.org>
+References: <20091009061729.GA31242@hexapodia.org> <20091010000926.GA17547@sequoia.sous-sol.org> <20091010014714.GG30557@hexapodia.org> <1255522166.4523.238.camel@macbook.infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <adak4yxamzj.fsf@cisco.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1255522166.4523.238.camel@macbook.infradead.org>
+User-Agent: Mutt/1.4.2.3i
+X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
+X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
+X-Domestic-Surveillance: money launder bomb tax evasion
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 10:45:04AM -0700, Roland Dreier wrote:
+On Wed, Oct 14, 2009 at 01:09:26PM +0100, David Woodhouse wrote:
+> On Fri, 2009-10-09 at 18:47 -0700, Andy Isaacson wrote:
+> > Well, we don't know for sure what happened on the previous boot where
+> > the filesystem corruption occurred.  I'm imagining a nightmare scenario
+> > where GPU erroneous writes cause DMAR faults and handling them somehow
+> > causes AHCI DMA requests to get lost.
 > 
->  > Already in my tree :(
+> Seems unlikely. The GPU faults happen whenever the GATT changes, because
+> it translates _every_ address in the GATT through the IOMMU right there
+> and then -- so if parts of the table are uninitialised, they'll cause
+> stray write faults. But no writes are actually _happening_.
 > 
-> Any plans to get it upstream?  As far as I can tell, these drivers
-> haven't built since before -rc4, so 4 or 5 days at least.
+> > I'm going to go ahead on the theory that the BIOS needs an update.
+> 
+> I can't really imagine how that would help; how the BIOS would be
+> responsible for this. I'm more inclined to blame the drive. It's not an
+> SSD, is it?
 
-They should go to Linus in a few hours, patience :)
+It's a Fujitsu (now serviced by Toshiba?) MHZ2160BH.  smartctl says:
 
-The patches were also posted to lkml yesterday.
+Device Model:     FUJITSU MHZ2160BH G1
+Serial Number:    K60WT8C2HHRS
+Firmware Version: 0084000A
+User Capacity:    160,041,885,696 bytes
+...
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_
+FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x000f   100   100   046    Pre-fail  Always       -
+       219593
+  2 Throughput_Performance  0x0005   100   100   030    Pre-fail  Offline      -
+       27721728
+  3 Spin_Up_Time            0x0003   100   100   025    Pre-fail  Always       -
+       0
+  4 Start_Stop_Count        0x0032   099   099   000    Old_age   Always       -
+       406
+  5 Reallocated_Sector_Ct   0x0033   100   100   024    Pre-fail  Always       -
+       8589934592000
+  7 Seek_Error_Rate         0x000f   100   100   047    Pre-fail  Always       -
+       112
+  8 Seek_Time_Performance   0x0005   100   100   019    Pre-fail  Offline      -
+       0
+  9 Power_On_Hours          0x0032   097   097   000    Old_age   Always       -
+       1598
+ 10 Spin_Retry_Count        0x0013   100   100   020    Pre-fail  Always       -
+       0
+ 12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -
+       284
+192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always       -
+       78
+193 Load_Cycle_Count        0x0032   100   100   000    Old_age   Always       -
+       1216
+194 Temperature_Celsius     0x0022   100   100   000    Old_age   Always       -
+       38 (Lifetime Min/Max 21/46)
+195 Hardware_ECC_Recovered  0x001a   100   100   000    Old_age   Always       -
+       247
+196 Reallocated_Event_Count 0x0032   100   100   000    Old_age   Always       -
+       457965568
+197 Current_Pending_Sector  0x0012   100   100   000    Old_age   Always       -
+       0
+198 Offline_Uncorrectable   0x0010   100   100   000    Old_age   Offline      -
+       0
+199 UDMA_CRC_Error_Count    0x003e   200   253   000    Old_age   Always       -
+       0
+200 Multi_Zone_Error_Rate   0x000f   100   100   060    Pre-fail  Always       -
+       10448
+203 Run_Out_Cancel          0x0002   100   100   000    Old_age   Always       -
+       1529011503750
+240 Head_Flying_Hours       0x003e   200   200   000    Old_age   Always       -
+       0
 
-thanks,
-
-greg k-h
+-andy
