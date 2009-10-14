@@ -1,106 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934524AbZJNP1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934530AbZJNPbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934524AbZJNP1J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934416AbZJNP1I
+	id S934530AbZJNPbZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934452AbZJNPbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:27:08 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:38889 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756701AbZJNP1G convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:27:06 -0400
-From: Bhavesh Davda <bhavesh@vmware.com>
-To: David Woodhouse <dwmw2@infradead.org>, Andy Isaacson <adi@hexapodia.org>
-CC: Chris Wright <chrisw@sous-sol.org>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 14 Oct 2009 08:26:27 -0700
-Subject: RE: DMAR regression in 2.6.31 leads to ext4 corruption?
-Thread-Topic: DMAR regression in 2.6.31 leads to ext4 corruption?
-Thread-Index: AcpMx5grXx1h/JkhR8uiM7Du6YcVXwAGtCdw
-Message-ID: <8B1F619C9F5F454E81D90D3C161698D7017DD55F68@EXCH-MBX-3.vmware.com>
-References: <20091009061729.GA31242@hexapodia.org>
-	<20091010000926.GA17547@sequoia.sous-sol.org>
-	<20091010014714.GG30557@hexapodia.org>
- <1255522166.4523.238.camel@macbook.infradead.org>
-In-Reply-To: <1255522166.4523.238.camel@macbook.infradead.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
+	Wed, 14 Oct 2009 11:31:25 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:14824 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934311AbZJNPbY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 11:31:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=evsYkHgwd01JdeE5Mb14v0NykearEptwa0Rlf29t7pMLUPbs4Jn64vtzzDLmRQQSLE
+         LMYtfh4aQd0fkjlED5NM6B7PgxvF5P0udv8cQsYbrNNTFfINnHTdtsZ1DvTvxILkNAJp
+         EAAWV3JP/iFHmBV/iSix/2z3xsZNAO//0AWmw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: Current status of rt2800usb and staging/rt2870
+Date: Wed, 14 Oct 2009 17:28:21 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc2-00279-g2ffa5fe; KDE/4.3.1; x86_64; ; )
+Cc: Dan Williams <dcbw@redhat.com>, Ivo van Doorn <ivdoorn@gmail.com>,
+       Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
+       linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <4AD46380.9020308@pardus.org.tr> <200910141652.41041.bzolnier@gmail.com> <20091014145605.GE2890@tuxdriver.com>
+In-Reply-To: <20091014145605.GE2890@tuxdriver.com>
 MIME-Version: 1.0
+Message-Id: <200910141728.21491.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry if this is unrelated, but I'm also seeing a IOMMU PTE Write fault on my Lenovo x200 booted into 2.6.32-rc4 early on boot. I'm just using ext3, and no visible file system corruptioin so far.
+On Wednesday 14 October 2009 16:56:05 John W. Linville wrote:
+> On Wed, Oct 14, 2009 at 04:52:40PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Wednesday 14 October 2009 16:09:24 John W. Linville wrote:
+> > > On Tue, Oct 13, 2009 at 11:57:57PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > > 
+> > > > Several months later (after all current users are happy with the improved
+> > > > drivers) the old drivers will be removed from staging..
+> > > 
+> > > I _really_ hope this isn't the standard.  By that measure, nothing
+> > > will ever leave staging as _someone_ will always have some use case
+> > > that makes the other driver better for them.
+> > 
+> > Doesn't seem to be the case with all other drivers except wireless ones
+> > and the only real reason why wireless ones are so special is because of:
+> > 
+> > "But then there's the users, who bitch about everything and simply do
+> > not understand what it is at stake.
+> > 
+> > And all this is becoming way too messy for us to handle.
+> > 
+> > Personally all I see around me is people bitching and complaining, and
+> > no code being ported."
+> > 
+> > attitude which pretty much explains the problem..
+> > 
+> > Please adjust the process to fix the problem yourself or if you do not
+> > want to do it just make the room for people who do.
+> 
+> Alright Bartlomiej, you've had your say.  Perhaps you should go about
+> your business now.
+> 
+> John
+> 
+> P.S. For the record, the "But then there's the users..." quote is
+> from someone else...
 
-[    0.208727] DMAR: Forcing write-buffer flush capability
-...
-[    0.221299] DMAR: Host address width 36
-[    0.221299] DMAR: DRHD base: 0x000000feb03000 flags: 0x0
-[    0.221299] IOMMU feb03000: ver 1:0 cap c9008020e30260 ecap 1000
-[    0.221299] DMAR: DRHD base: 0x000000feb01000 flags: 0x0
-[    0.221299] IOMMU feb01000: ver 1:0 cap c0000020630260 ecap 1000
-[    0.221299] DMAR: DRHD base: 0x000000feb00000 flags: 0x0
-[    0.221299] IOMMU feb00000: ver 1:0 cap c0000020630270 ecap 1000
-[    0.221299] DMAR: DRHD base: 0x000000feb02000 flags: 0x1
-[    0.221299] IOMMU feb02000: ver 1:0 cap c9008020630260 ecap 1000
-[    0.221299] DMAR: RMRR base: 0x000000f2826c00 end: 0x000000f28273ff
-[    0.221299] DMAR: RMRR base: 0x000000bdc00000 end: 0x000000bfffffff
-[    0.221299] DMAR: No ATSR found
-...
-[    0.224001] DRHD: handling fault status reg 3
-[    0.224003] DMAR:[DMA Write] Request device [00:02.0] fault addr 95e7000
-[    0.224004] DMAR:[fault reason 05] PTE Write access is not set
-[    0.224084] PCI-DMA: Intel(R) Virtualization Technology for Directed I/O
+..but you're still fine with its content, right?
 
-BIOS version 6DET33WW (1.10)
+I also wonder who is really taking advantage of who here (your other mail)..
 
-Thanks
+You're holding users as hostages to pressure vendors to fund your projects
+and try to lure outside developers with the lovely perspective of doing
+the hardest parts of said projects.
 
-- Bhavesh
- 
-Bhavesh P. Davda
-
-> -----Original Message-----
-> From: iommu-bounces@lists.linux-foundation.org [mailto:iommu-
-> bounces@lists.linux-foundation.org] On Behalf Of David Woodhouse
-> Sent: Wednesday, October 14, 2009 5:09 AM
-> To: Andy Isaacson
-> Cc: Chris Wright; iommu@lists.linux-foundation.org; linux-
-> ext4@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: Re: DMAR regression in 2.6.31 leads to ext4 corruption?
-> 
-> On Fri, 2009-10-09 at 18:47 -0700, Andy Isaacson wrote:
-> > Well, we don't know for sure what happened on the previous boot where
-> > the filesystem corruption occurred.  I'm imagining a nightmare
-> scenario
-> > where GPU erroneous writes cause DMAR faults and handling them
-> somehow
-> > causes AHCI DMA requests to get lost.
-> 
-> Seems unlikely. The GPU faults happen whenever the GATT changes,
-> because
-> it translates _every_ address in the GATT through the IOMMU right there
-> and then -- so if parts of the table are uninitialised, they'll cause
-> stray write faults. But no writes are actually _happening_.
-> 
-> > I'm going to go ahead on the theory that the BIOS needs an update.
-> 
-> I can't really imagine how that would help; how the BIOS would be
-> responsible for this. I'm more inclined to blame the drive. It's not an
-> SSD, is it?
-> 
-> --
-> dwmw2
-> 
-> _______________________________________________
-> iommu mailing list
-> iommu@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/iommu
+I don't have a have a problem with it personally as long as people accept
+the competition..  but instead of working on _their_ projects they go around
+screaming at everybody who does not want to spin inside the great process
+designed by them..
