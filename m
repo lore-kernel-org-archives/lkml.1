@@ -1,216 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752375AbZJNGFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZJNGF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752375AbZJNGFI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 02:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbZJNGDc
+	id S1755239AbZJNGF3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 02:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZJNGFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 02:03:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58683 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 02:05:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58689 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753233AbZJNGDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 02:03:30 -0400
+	id S1754449AbZJNGDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 02:03:31 -0400
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
        cl@linux-foundation.org, mingo@redhat.com, tglx@linutronix.de,
        akpm@linux-foundation.org, rostedt@goodmis.org, hpa@zytor.com,
        cebbert@redhat.com
-Cc: Tejun Heo <tj@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 10/16] percpu: make percpu symbols in powerpc unique
-Date: Wed, 14 Oct 2009 15:01:59 +0900
-Message-Id: <1255500125-3210-11-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Tony Luck <tony.luck@intel.com>,
+       Fenghua Yu <fenghua.yu@intel.com>, linux-ia64@vger.kernel.org
+Subject: [PATCH 11/16] percpu: make percpu symbols in ia64 unique
+Date: Wed, 14 Oct 2009 15:02:00 +0900
+Message-Id: <1255500125-3210-12-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1255500125-3210-1-git-send-email-tj@kernel.org>
 References: <1255500125-3210-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 06:02:16 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 06:02:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch updates percpu related symbols in powerpc such that percpu
+This patch updates percpu related symbols in ia64 such that percpu
 symbols are unique and don't clash with local symbols.  This serves
 two purposes of decreasing the possibility of global percpu symbol
 collision and allowing dropping per_cpu__ prefix from percpu symbols.
 
-* arch/powerpc/kernel/perf_callchain.c: s/callchain/cpu_perf_callchain/
-
-* arch/powerpc/kernel/setup-common.c: s/pvr/cpu_pvr/
-
-* arch/powerpc/platforms/pseries/dtl.c: s/dtl/cpu_dtl/
-
-* arch/powerpc/platforms/cell/interrupt.c: s/iic/cpu_iic/
+* arch/ia64/kernel/setup.c: s/cpu_info/ia64_cpu_info/
 
 Partly based on Rusty Russell's "alloc_percpu: rename percpu vars
 which cause name clashes" patch.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: linux-ia64@vger.kernel.org
 ---
- arch/powerpc/include/asm/smp.h          |    2 +-
- arch/powerpc/kernel/perf_callchain.c    |    4 ++--
- arch/powerpc/kernel/setup-common.c      |    4 ++--
- arch/powerpc/kernel/smp.c               |    2 +-
- arch/powerpc/platforms/cell/interrupt.c |   14 +++++++-------
- arch/powerpc/platforms/pseries/dtl.c    |    4 ++--
- 6 files changed, 15 insertions(+), 15 deletions(-)
+ arch/ia64/include/asm/processor.h  |    6 +++---
+ arch/ia64/kernel/head.S            |    4 ++--
+ arch/ia64/kernel/ia64_ksyms.c      |    2 +-
+ arch/ia64/kernel/mca_asm.S         |    2 +-
+ arch/ia64/kernel/relocate_kernel.S |    2 +-
+ arch/ia64/kernel/setup.c           |    4 ++--
+ arch/ia64/mm/discontig.c           |    5 +++--
+ arch/ia64/sn/kernel/sn2/sn2_smp.c  |    8 ++++----
+ 8 files changed, 17 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index d9ea8d3..1d3b270 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -37,7 +37,7 @@ extern void cpu_die(void);
- extern void smp_send_debugger_break(int cpu);
- extern void smp_message_recv(int);
- 
--DECLARE_PER_CPU(unsigned int, pvr);
-+DECLARE_PER_CPU(unsigned int, cpu_pvr);
- 
- #ifdef CONFIG_HOTPLUG_CPU
- extern void fixup_irqs(cpumask_t map);
-diff --git a/arch/powerpc/kernel/perf_callchain.c b/arch/powerpc/kernel/perf_callchain.c
-index 0a03cf7..fe59c44 100644
---- a/arch/powerpc/kernel/perf_callchain.c
-+++ b/arch/powerpc/kernel/perf_callchain.c
-@@ -497,11 +497,11 @@ static void perf_callchain_user_32(struct pt_regs *regs,
-  * Since we can't get PMU interrupts inside a PMU interrupt handler,
-  * we don't need separate irq and nmi entries here.
-  */
--static DEFINE_PER_CPU(struct perf_callchain_entry, callchain);
-+static DEFINE_PER_CPU(struct perf_callchain_entry, cpu_perf_callchain);
- 
- struct perf_callchain_entry *perf_callchain(struct pt_regs *regs)
- {
--	struct perf_callchain_entry *entry = &__get_cpu_var(callchain);
-+	struct perf_callchain_entry *entry = &__get_cpu_var(cpu_perf_callchain);
- 
- 	entry->nr = 0;
- 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 4271f7a..aa5aeb9 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -157,7 +157,7 @@ extern u32 cpu_temp_both(unsigned long cpu);
- #endif /* CONFIG_TAU */
- 
- #ifdef CONFIG_SMP
--DEFINE_PER_CPU(unsigned int, pvr);
-+DEFINE_PER_CPU(unsigned int, cpu_pvr);
+diff --git a/arch/ia64/include/asm/processor.h b/arch/ia64/include/asm/processor.h
+index 3eaeedf..7fa90f7 100644
+--- a/arch/ia64/include/asm/processor.h
++++ b/arch/ia64/include/asm/processor.h
+@@ -229,7 +229,7 @@ struct cpuinfo_ia64 {
  #endif
- 
- static int show_cpuinfo(struct seq_file *m, void *v)
-@@ -209,7 +209,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 	}
- 
- #ifdef CONFIG_SMP
--	pvr = per_cpu(pvr, cpu_id);
-+	pvr = per_cpu(cpu_pvr, cpu_id);
- #else
- 	pvr = mfspr(SPRN_PVR);
- #endif
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 9b86a74..2ebb484 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -232,7 +232,7 @@ struct thread_info *current_set[NR_CPUS];
- 
- static void __devinit smp_store_cpu_info(int id)
- {
--	per_cpu(pvr, id) = mfspr(SPRN_PVR);
-+	per_cpu(cpu_pvr, id) = mfspr(SPRN_PVR);
- }
- 
- static void __init smp_create_idle(unsigned int cpu)
-diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index 882e470..54bad90 100644
---- a/arch/powerpc/platforms/cell/interrupt.c
-+++ b/arch/powerpc/platforms/cell/interrupt.c
-@@ -54,7 +54,7 @@ struct iic {
- 	struct device_node *node;
  };
  
--static DEFINE_PER_CPU(struct iic, iic);
-+static DEFINE_PER_CPU(struct iic, cpu_iic);
- #define IIC_NODE_COUNT	2
- static struct irq_host *iic_host;
- 
-@@ -82,7 +82,7 @@ static void iic_unmask(unsigned int irq)
- 
- static void iic_eoi(unsigned int irq)
- {
--	struct iic *iic = &__get_cpu_var(iic);
-+	struct iic *iic = &__get_cpu_var(cpu_iic);
- 	out_be64(&iic->regs->prio, iic->eoi_stack[--iic->eoi_ptr]);
- 	BUG_ON(iic->eoi_ptr < 0);
- }
-@@ -146,7 +146,7 @@ static unsigned int iic_get_irq(void)
- 	struct iic *iic;
- 	unsigned int virq;
- 
--	iic = &__get_cpu_var(iic);
-+	iic = &__get_cpu_var(cpu_iic);
- 	*(unsigned long *) &pending =
- 		in_be64((u64 __iomem *) &iic->regs->pending_destr);
- 	if (!(pending.flags & CBE_IIC_IRQ_VALID))
-@@ -161,12 +161,12 @@ static unsigned int iic_get_irq(void)
- 
- void iic_setup_cpu(void)
- {
--	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
-+	out_be64(&__get_cpu_var(cpu_iic).regs->prio, 0xff);
- }
- 
- u8 iic_get_target_id(int cpu)
- {
--	return per_cpu(iic, cpu).target_id;
-+	return per_cpu(cpu_iic, cpu).target_id;
- }
- 
- EXPORT_SYMBOL_GPL(iic_get_target_id);
-@@ -181,7 +181,7 @@ static inline int iic_ipi_to_irq(int ipi)
- 
- void iic_cause_IPI(int cpu, int mesg)
- {
--	out_be64(&per_cpu(iic, cpu).regs->generate, (0xf - mesg) << 4);
-+	out_be64(&per_cpu(cpu_iic, cpu).regs->generate, (0xf - mesg) << 4);
- }
- 
- struct irq_host *iic_get_irq_host(int node)
-@@ -348,7 +348,7 @@ static void __init init_one_iic(unsigned int hw_cpu, unsigned long addr,
- 	/* XXX FIXME: should locate the linux CPU number from the HW cpu
- 	 * number properly. We are lucky for now
- 	 */
--	struct iic *iic = &per_cpu(iic, hw_cpu);
-+	struct iic *iic = &per_cpu(cpu_iic, hw_cpu);
- 
- 	iic->regs = ioremap(addr, sizeof(struct cbe_iic_thread_regs));
- 	BUG_ON(iic->regs == NULL);
-diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
-index 937a544..c5f3116 100644
---- a/arch/powerpc/platforms/pseries/dtl.c
-+++ b/arch/powerpc/platforms/pseries/dtl.c
-@@ -54,7 +54,7 @@ struct dtl {
- 	int			buf_entries;
- 	u64			last_idx;
- };
--static DEFINE_PER_CPU(struct dtl, dtl);
-+static DEFINE_PER_CPU(struct dtl, cpu_dtl);
+-DECLARE_PER_CPU(struct cpuinfo_ia64, cpu_info);
++DECLARE_PER_CPU(struct cpuinfo_ia64, ia64_cpu_info);
  
  /*
-  * Dispatch trace log event mask:
-@@ -261,7 +261,7 @@ static int dtl_init(void)
+  * The "local" data variable.  It refers to the per-CPU data of the currently executing
+@@ -237,8 +237,8 @@ DECLARE_PER_CPU(struct cpuinfo_ia64, cpu_info);
+  * Do not use the address of local_cpu_data, since it will be different from
+  * cpu_data(smp_processor_id())!
+  */
+-#define local_cpu_data		(&__ia64_per_cpu_var(cpu_info))
+-#define cpu_data(cpu)		(&per_cpu(cpu_info, cpu))
++#define local_cpu_data		(&__ia64_per_cpu_var(ia64_cpu_info))
++#define cpu_data(cpu)		(&per_cpu(ia64_cpu_info, cpu))
  
- 	/* set up the per-cpu log structures */
- 	for_each_possible_cpu(i) {
--		struct dtl *dtl = &per_cpu(dtl, i);
-+		struct dtl *dtl = &per_cpu(cpu_dtl, i);
- 		dtl->cpu = i;
+ extern void print_cpu_info (struct cpuinfo_ia64 *);
  
- 		rc = dtl_setup_file(dtl);
+diff --git a/arch/ia64/kernel/head.S b/arch/ia64/kernel/head.S
+index 696eff2..17a9fba 100644
+--- a/arch/ia64/kernel/head.S
++++ b/arch/ia64/kernel/head.S
+@@ -1051,7 +1051,7 @@ END(ia64_delay_loop)
+  * intermediate precision so that we can produce a full 64-bit result.
+  */
+ GLOBAL_ENTRY(ia64_native_sched_clock)
+-	addl r8=THIS_CPU(cpu_info) + IA64_CPUINFO_NSEC_PER_CYC_OFFSET,r0
++	addl r8=THIS_CPU(ia64_cpu_info) + IA64_CPUINFO_NSEC_PER_CYC_OFFSET,r0
+ 	mov.m r9=ar.itc		// fetch cycle-counter				(35 cyc)
+ 	;;
+ 	ldf8 f8=[r8]
+@@ -1077,7 +1077,7 @@ sched_clock = ia64_native_sched_clock
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+ GLOBAL_ENTRY(cycle_to_cputime)
+ 	alloc r16=ar.pfs,1,0,0,0
+-	addl r8=THIS_CPU(cpu_info) + IA64_CPUINFO_NSEC_PER_CYC_OFFSET,r0
++	addl r8=THIS_CPU(ia64_cpu_info) + IA64_CPUINFO_NSEC_PER_CYC_OFFSET,r0
+ 	;;
+ 	ldf8 f8=[r8]
+ 	;;
+diff --git a/arch/ia64/kernel/ia64_ksyms.c b/arch/ia64/kernel/ia64_ksyms.c
+index 14d39e3..461b999 100644
+--- a/arch/ia64/kernel/ia64_ksyms.c
++++ b/arch/ia64/kernel/ia64_ksyms.c
+@@ -30,7 +30,7 @@ EXPORT_SYMBOL(max_low_pfn);	/* defined by bootmem.c, but not exported by generic
+ #endif
+ 
+ #include <asm/processor.h>
+-EXPORT_SYMBOL(per_cpu__cpu_info);
++EXPORT_SYMBOL(per_cpu__ia64_cpu_info);
+ #ifdef CONFIG_SMP
+ EXPORT_SYMBOL(per_cpu__local_per_cpu_offset);
+ #endif
+diff --git a/arch/ia64/kernel/mca_asm.S b/arch/ia64/kernel/mca_asm.S
+index 7461d25..d5bdf9d 100644
+--- a/arch/ia64/kernel/mca_asm.S
++++ b/arch/ia64/kernel/mca_asm.S
+@@ -59,7 +59,7 @@
+ ia64_do_tlb_purge:
+ #define O(member)	IA64_CPUINFO_##member##_OFFSET
+ 
+-	GET_THIS_PADDR(r2, cpu_info)	// load phys addr of cpu_info into r2
++	GET_THIS_PADDR(r2, ia64_cpu_info) // load phys addr of cpu_info into r2
+ 	;;
+ 	addl r17=O(PTCE_STRIDE),r2
+ 	addl r2=O(PTCE_BASE),r2
+diff --git a/arch/ia64/kernel/relocate_kernel.S b/arch/ia64/kernel/relocate_kernel.S
+index 32f6fc1..c370e02 100644
+--- a/arch/ia64/kernel/relocate_kernel.S
++++ b/arch/ia64/kernel/relocate_kernel.S
+@@ -61,7 +61,7 @@ GLOBAL_ENTRY(relocate_new_kernel)
+ 
+ 	// purge all TC entries
+ #define O(member)       IA64_CPUINFO_##member##_OFFSET
+-        GET_THIS_PADDR(r2, cpu_info)    // load phys addr of cpu_info into r2
++        GET_THIS_PADDR(r2, ia64_cpu_info) // load phys addr of cpu_info into r2
+         ;;
+         addl r17=O(PTCE_STRIDE),r2
+         addl r2=O(PTCE_BASE),r2
+diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+index bc1ef4a..a1ea879 100644
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -74,7 +74,7 @@ unsigned long __per_cpu_offset[NR_CPUS];
+ EXPORT_SYMBOL(__per_cpu_offset);
+ #endif
+ 
+-DEFINE_PER_CPU(struct cpuinfo_ia64, cpu_info);
++DEFINE_PER_CPU(struct cpuinfo_ia64, ia64_cpu_info);
+ DEFINE_PER_CPU(unsigned long, local_per_cpu_offset);
+ unsigned long ia64_cycles_per_usec;
+ struct ia64_boot_param *ia64_boot_param;
+@@ -967,7 +967,7 @@ cpu_init (void)
+ 	 * depends on the data returned by identify_cpu().  We break the dependency by
+ 	 * accessing cpu_data() through the canonical per-CPU address.
+ 	 */
+-	cpu_info = cpu_data + ((char *) &__ia64_per_cpu_var(cpu_info) - __per_cpu_start);
++	cpu_info = cpu_data + ((char *) &__ia64_per_cpu_var(ia64_cpu_info) - __per_cpu_start);
+ 	identify_cpu(cpu_info);
+ 
+ #ifdef CONFIG_MCKINLEY
+diff --git a/arch/ia64/mm/discontig.c b/arch/ia64/mm/discontig.c
+index 40e4c1f..19c4b21 100644
+--- a/arch/ia64/mm/discontig.c
++++ b/arch/ia64/mm/discontig.c
+@@ -450,7 +450,8 @@ static void __init initialize_pernode_data(void)
+ 	/* Set the node_data pointer for each per-cpu struct */
+ 	for_each_possible_early_cpu(cpu) {
+ 		node = node_cpuid[cpu].nid;
+-		per_cpu(cpu_info, cpu).node_data = mem_data[node].node_data;
++		per_cpu(ia64_cpu_info, cpu).node_data =
++			mem_data[node].node_data;
+ 	}
+ #else
+ 	{
+@@ -458,7 +459,7 @@ static void __init initialize_pernode_data(void)
+ 		cpu = 0;
+ 		node = node_cpuid[cpu].nid;
+ 		cpu0_cpu_info = (struct cpuinfo_ia64 *)(__phys_per_cpu_start +
+-			((char *)&per_cpu__cpu_info - __per_cpu_start));
++			((char *)&per_cpu__ia64_cpu_info - __per_cpu_start));
+ 		cpu0_cpu_info->node_data = mem_data[node].node_data;
+ 	}
+ #endif /* CONFIG_SMP */
+diff --git a/arch/ia64/sn/kernel/sn2/sn2_smp.c b/arch/ia64/sn/kernel/sn2/sn2_smp.c
+index 1176506..e884ba4 100644
+--- a/arch/ia64/sn/kernel/sn2/sn2_smp.c
++++ b/arch/ia64/sn/kernel/sn2/sn2_smp.c
+@@ -496,13 +496,13 @@ static int sn2_ptc_seq_show(struct seq_file *file, void *data)
+ 		seq_printf(file, "cpu %d %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld\n", cpu, stat->ptc_l,
+ 				stat->change_rid, stat->shub_ptc_flushes, stat->nodes_flushed,
+ 				stat->deadlocks,
+-				1000 * stat->lock_itc_clocks / per_cpu(cpu_info, cpu).cyc_per_usec,
+-				1000 * stat->shub_itc_clocks / per_cpu(cpu_info, cpu).cyc_per_usec,
+-				1000 * stat->shub_itc_clocks_max / per_cpu(cpu_info, cpu).cyc_per_usec,
++				1000 * stat->lock_itc_clocks / per_cpu(ia64_cpu_info, cpu).cyc_per_usec,
++				1000 * stat->shub_itc_clocks / per_cpu(ia64_cpu_info, cpu).cyc_per_usec,
++				1000 * stat->shub_itc_clocks_max / per_cpu(ia64_cpu_info, cpu).cyc_per_usec,
+ 				stat->shub_ptc_flushes_not_my_mm,
+ 				stat->deadlocks2,
+ 				stat->shub_ipi_flushes,
+-				1000 * stat->shub_ipi_flushes_itc_clocks / per_cpu(cpu_info, cpu).cyc_per_usec);
++				1000 * stat->shub_ipi_flushes_itc_clocks / per_cpu(ia64_cpu_info, cpu).cyc_per_usec);
+ 	}
+ 	return 0;
+ }
 -- 
 1.6.4.2
 
