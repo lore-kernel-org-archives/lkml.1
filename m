@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbZJNHz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757519AbZJNIAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757480AbZJNHz4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 03:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZJNHz4
+	id S1757519AbZJNIAE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 04:00:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756684AbZJNIAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 03:55:56 -0400
-Received: from mx2.univ-lille2.fr ([194.254.117.6]:47743 "EHLO
-	smtp.univ-lille2.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751790AbZJNHzy (ORCPT
+	Wed, 14 Oct 2009 04:00:03 -0400
+Received: from mail-qy0-f186.google.com ([209.85.221.186]:38932 "EHLO
+	mail-qy0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756254AbZJNIAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 03:55:54 -0400
-Message-ID: <4AD583DB.2070806@univ-lille2.fr>
-Date: Wed, 14 Oct 2009 09:55:07 +0200
-From: Christian Vilhelm <christian.vilhelm@univ-lille2.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Wed, 14 Oct 2009 04:00:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Jd82qe8KbDqiTSO5RkOk27FAsK3e/EXzDGocjCUybNzuz03YIshu2bLWL/avvkrFZE
+         V4pyft+yzcDD1r8Vr6Ho/Fge720M6ucqpaHURIRtPNZgphoxWxG3wv+lbudUuWlFHwrV
+         ZG8p1gq4hTtdWs7gG6PWLZ8fwisaNB3qNH99k=
+Date: Wed, 14 Oct 2009 00:59:19 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Trilok Soni <soni.trilok@gmail.com>
+Cc: Jani Nikula <ext-jani.1.nikula@nokia.com>,
+       Kyungmin Park <kyungmin.park@samsung.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH 1/6] Haptic: add haptic class
+Message-ID: <20091014075919.GD5318@core.coreip.homeip.net>
+References: <20091007061701.GA7567@july> <359ed6810910130335m45919d6ala921d4cbfa5a341a@mail.gmail.com> <5d5443650910130413t6ecd3d54p214d8f80972ed128@mail.gmail.com>
 MIME-Version: 1.0
-To: tfjellstrom@shaw.ca
-CC: andy yan <andyysj@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
-       "James E.J. Bottomley" <James.Bottomley@suse.de>, kewei@marvell.com
-Subject: Re: MVSAS 1669:mvs_abort_task:rc= 5
-References: <200910091141.52303.tfjellstrom@shaw.ca> <200910131939.09039.tfjellstrom@shaw.ca> <e938503f0910132151p20b42459v96800d889f3f63eb@mail.gmail.com> <200910140118.39988.tfjellstrom@shaw.ca>
-In-Reply-To: <200910140118.39988.tfjellstrom@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5d5443650910130413t6ecd3d54p214d8f80972ed128@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Fjellstrom wrote:
-> On Tue October 13 2009, andy yan wrote:
->> I will send you a patch for debugging this issue, please help to try and
->> send back the log, thanks!
+On Tue, Oct 13, 2009 at 04:43:43PM +0530, Trilok Soni wrote:
+> Hi Kyungmin, Dmitry,
 > 
-> I will do whatever I can to help get this resolved :) I have some C skills, 
-> but no kernel/device driver experience, so at the very least I should be able 
-> to do builds and make small changes if needed, in addition to patching and 
-> endless reboots ;D
+> On Tue, Oct 13, 2009 at 4:05 PM, Jani Nikula
+> <ext-jani.1.nikula@nokia.com> wrote:
+> > On Wed, Oct 7, 2009 at 09:17, Kyungmin Park <kyungmin.park@samsung.com> wrote:
+> >> New haptic class support.
+> >> This class handles the haptic devices.
+> >
+> > I'm wondering why a haptic class is needed when there is force
+> > feedback support. Admittedly, I don't know the force feedback
+> > implementation too well, but could someone please enlighten me on
+> > this? Am I missing something here?
+> >
+> > I see haptics as simple force feedback, just with (usually) small
+> > force and short duration. There are devices out there doing haptics
+> > using vibra motors, which I think would be limited if implemented
+> > using this haptics class driver. Would it be somehow problematic
+> > interfacing with the simple haptic hardware using the force feedback
+> > API?
+> 
+> Please share your inputs on ff_device usage instead of haptics class.
+> I think Dmitry could add some points here as I don't see much users of
+> ff_device and I don't see any embedded device (like mobile) using it.
+> 
 
-I'm also willing to help.
-The card is not on a production server and the disks connected to the 
-card do not contain any valuable data so I can make any test wanted.
+Using ff_device was considered when Jiri Slaby was trying to merge
+PHANTOM driver, bit for that device FF infrastructure was too limited
+and this it was decided that phantom would need a special userpsace that
+knows what it is and how to handle it.
 
-When the problem occurs it seems the devices (disks) are hosed. Deleting 
-them from the system (echo 1 > /sys/block/sdh/device/delete), removing 
-the mvsas module (rmmod -f) and reloading it doesn't work. The card 
-seems correctly initialised after reloading the module, it correctly 
-responds to commands (in /sys/class/sas_phy/ and sas_ports, I can reset 
-ports/phys, I can ask for a rescan of disks). But the disks themselves 
-do not seem to answer to the scan and are not detected, all I get is :
-
-Oct 13 15:17:33 almery kernel: [29162.468218] sas: sas_ata_phy_reset: 
-Found ATA device.
-Oct 13 15:17:33 almery kernel: [29162.470279] ata19.00: both IDENTIFYs 
-aborted, assuming NODEV
-Oct 13 15:17:33 almery kernel: [29162.470321] sas: sas_ata_phy_reset: 
-Found ATA device.
-Oct 13 15:17:33 almery kernel: [29162.472391] ata19.00: both IDENTIFYs 
-aborted, assuming NODEV
-Oct 13 15:17:33 almery kernel: [29162.472433] sas: sas_ata_phy_reset: 
-Found ATA device.
-Oct 13 15:17:33 almery kernel: [29162.474492] ata19.00: both IDENTIFYs 
-aborted, assuming NODEV
-Oct 13 15:17:33 almery kernel: [29162.474533] ata19.00: disabled
-Oct 13 15:17:33 almery kernel: [29162.474572] sas: sas_ata_phy_reset: 
-Found ATA device.
-Oct 13 15:17:33 almery kernel: [29162.474627] scsi_alloc_sdev: 
-Allocation failure during SCSI scanning, some SCSI devices might not be 
-configured
- 
- 
-
-Is there a way to get a disk to reinitialize itself without a reboot ?
-
-Drives are SAMSUNG HD501LJ
-Linux almery 2.6.31.1-vs2.3.0.36.14 #7 SMP Mon Oct 12 12:58:07 CEST 2009 
-x86_64 GNU/Linux
-with or withous vserver patch applied : same problem, kernel not tainted.
-
-The problem occurs also when the disks are not in an md array.
-
-Christian Vilhelm.
+The curtrent haptic class seems to be bery limited and may be served via
+FF (constant or other effect in a single direction) but I don't know
+what kind of plans you have to extend it. I guess it warrants another
+discussion.
 
 -- 
-/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-|       Christian Vilhelm : christian.vilhelm@univ-lille2.fr         |
-|            Reality is for people who lack imagination              |
-\____________________________________________________________________/
+Dmitry
