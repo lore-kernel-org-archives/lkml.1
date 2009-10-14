@@ -1,126 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933953AbZJNOS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933530AbZJNOSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933953AbZJNOS0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 10:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbZJNOSZ
+	id S933530AbZJNOSU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 10:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbZJNOST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 10:18:25 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:60295 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754149AbZJNOSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 10:18:21 -0400
-Date: Wed, 14 Oct 2009 09:16:30 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 1/4 v2] X86: UV RTC fix early expiry handling
-Message-ID: <20091014141630.GB11048@sgi.com>
-References: <20091009134727.GB3218@sgi.com> <20091012162317.GC1272@elte.hu> <20091012175233.GA8129@sgi.com> <20091012175920.GB17138@elte.hu> <20091014141438.GA11048@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091014141438.GA11048@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 14 Oct 2009 10:18:19 -0400
+Received: from mba.ocn.ne.jp ([122.28.14.163]:55500 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754149AbZJNOSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 10:18:18 -0400
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: Andrew Sharp <andy.sharp@lsi.com>,
+       Thomas Hommel <thomas.hommel@gefanuc.com>, rtc-linux@googlegroups.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] rtc: Do not use container_of macro as an argument for to_platform_device
+Date: Wed, 14 Oct 2009 23:17:01 +0900
+Message-Id: <1255529821-1377-1-git-send-email-anemo@mba.ocn.ne.jp>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tune/fix early timer expiry handling and return correct early timeout value
-for set_next_event.
+The to_platform_device macro itself uses container_of macro.
+Nested use of container_of macro causes following sparse warnings:
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+rtc-ds1553.c:259:3: warning: symbol '__mptr' shadows an earlier one
+rtc-ds1553.c:259:3: originally declared here
 
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 ---
+ drivers/rtc/rtc-ds1553.c   |    8 ++++----
+ drivers/rtc/rtc-ds1742.c   |    8 ++++----
+ drivers/rtc/rtc-stk17ta8.c |    8 ++++----
+ 3 files changed, 12 insertions(+), 12 deletions(-)
 
- arch/x86/kernel/uv_time.c |   29 +++++++++++++++++------------
- 1 file changed, 17 insertions(+), 12 deletions(-)
+diff --git a/drivers/rtc/rtc-ds1553.c b/drivers/rtc/rtc-ds1553.c
+index dadd0f5..ed1ef7c 100644
+--- a/drivers/rtc/rtc-ds1553.c
++++ b/drivers/rtc/rtc-ds1553.c
+@@ -255,8 +255,8 @@ static ssize_t ds1553_nvram_read(struct kobject *kobj,
+ 				 struct bin_attribute *bin_attr,
+ 				 char *buf, loff_t pos, size_t size)
+ {
+-	struct platform_device *pdev =
+-		to_platform_device(container_of(kobj, struct device, kobj));
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+ 	void __iomem *ioaddr = pdata->ioaddr;
+ 	ssize_t count;
+@@ -270,8 +270,8 @@ static ssize_t ds1553_nvram_write(struct kobject *kobj,
+ 				  struct bin_attribute *bin_attr,
+ 				  char *buf, loff_t pos, size_t size)
+ {
+-	struct platform_device *pdev =
+-		to_platform_device(container_of(kobj, struct device, kobj));
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+ 	void __iomem *ioaddr = pdata->ioaddr;
+ 	ssize_t count;
+diff --git a/drivers/rtc/rtc-ds1742.c b/drivers/rtc/rtc-ds1742.c
+index 19d2f33..a127336 100644
+--- a/drivers/rtc/rtc-ds1742.c
++++ b/drivers/rtc/rtc-ds1742.c
+@@ -131,8 +131,8 @@ static ssize_t ds1742_nvram_read(struct kobject *kobj,
+ 				 struct bin_attribute *bin_attr,
+ 				 char *buf, loff_t pos, size_t size)
+ {
+-	struct platform_device *pdev =
+-		to_platform_device(container_of(kobj, struct device, kobj));
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+ 	void __iomem *ioaddr = pdata->ioaddr_nvram;
+ 	ssize_t count;
+@@ -146,8 +146,8 @@ static ssize_t ds1742_nvram_write(struct kobject *kobj,
+ 				  struct bin_attribute *bin_attr,
+ 				  char *buf, loff_t pos, size_t size)
+ {
+-	struct platform_device *pdev =
+-		to_platform_device(container_of(kobj, struct device, kobj));
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+ 	void __iomem *ioaddr = pdata->ioaddr_nvram;
+ 	ssize_t count;
+diff --git a/drivers/rtc/rtc-stk17ta8.c b/drivers/rtc/rtc-stk17ta8.c
+index df3b6c5..eb486ca 100644
+--- a/drivers/rtc/rtc-stk17ta8.c
++++ b/drivers/rtc/rtc-stk17ta8.c
+@@ -247,8 +247,8 @@ static ssize_t stk17ta8_nvram_read(struct kobject *kobj,
+ 				 struct bin_attribute *attr, char *buf,
+ 				 loff_t pos, size_t size)
+ {
+-	struct platform_device *pdev =
+-		to_platform_device(container_of(kobj, struct device, kobj));
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+ 	void __iomem *ioaddr = pdata->ioaddr;
+ 	ssize_t count;
+@@ -262,8 +262,8 @@ static ssize_t stk17ta8_nvram_write(struct kobject *kobj,
+ 				  struct bin_attribute *attr, char *buf,
+ 				  loff_t pos, size_t size)
+ {
+-	struct platform_device *pdev =
+-		to_platform_device(container_of(kobj, struct device, kobj));
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+ 	void __iomem *ioaddr = pdata->ioaddr;
+ 	ssize_t count;
+-- 
+1.5.6.5
 
-Index: linux/arch/x86/kernel/uv_time.c
-===================================================================
---- linux.orig/arch/x86/kernel/uv_time.c	2009-10-13 08:50:44.000000000 -0500
-+++ linux/arch/x86/kernel/uv_time.c	2009-10-13 10:41:44.000000000 -0500
-@@ -123,7 +123,10 @@ static int uv_setup_intr(int cpu, u64 ex
- 	/* Initialize comparator value */
- 	uv_write_global_mmr64(pnode, UVH_INT_CMPB, expires);
- 
--	return (expires < uv_read_rtc(NULL) && !uv_intr_pending(pnode));
-+	if (uv_read_rtc(NULL) <= expires)
-+		return 0;
-+
-+	return !uv_intr_pending(pnode);
- }
- 
- /*
-@@ -223,6 +226,7 @@ static int uv_rtc_set_timer(int cpu, u64
- 
- 	next_cpu = head->next_cpu;
- 	*t = expires;
-+
- 	/* Will this one be next to go off? */
- 	if (next_cpu < 0 || bcpu == next_cpu ||
- 			expires < head->cpu[next_cpu].expires) {
-@@ -231,7 +235,7 @@ static int uv_rtc_set_timer(int cpu, u64
- 			*t = ULLONG_MAX;
- 			uv_rtc_find_next_timer(head, pnode);
- 			spin_unlock_irqrestore(&head->lock, flags);
--			return 1;
-+			return -ETIME;
- 		}
- 	}
- 
-@@ -244,7 +248,7 @@ static int uv_rtc_set_timer(int cpu, u64
-  *
-  * Returns 1 if this timer was pending.
-  */
--static int uv_rtc_unset_timer(int cpu)
-+static int uv_rtc_unset_timer(int cpu, int force)
- {
- 	int pnode = uv_cpu_to_pnode(cpu);
- 	int bid = uv_cpu_to_blade_id(cpu);
-@@ -256,14 +260,15 @@ static int uv_rtc_unset_timer(int cpu)
- 
- 	spin_lock_irqsave(&head->lock, flags);
- 
--	if (head->next_cpu == bcpu && uv_read_rtc(NULL) >= *t)
-+	if ((head->next_cpu == bcpu && uv_read_rtc(NULL) >= *t) || force)
- 		rc = 1;
- 
--	*t = ULLONG_MAX;
--
--	/* Was the hardware setup for this timer? */
--	if (head->next_cpu == bcpu)
--		uv_rtc_find_next_timer(head, pnode);
-+	if (rc) {
-+		*t = ULLONG_MAX;
-+		/* Was the hardware setup for this timer? */
-+		if (head->next_cpu == bcpu)
-+			uv_rtc_find_next_timer(head, pnode);
-+	}
- 
- 	spin_unlock_irqrestore(&head->lock, flags);
- 
-@@ -310,20 +315,20 @@ static void uv_rtc_timer_setup(enum cloc
- 		break;
- 	case CLOCK_EVT_MODE_UNUSED:
- 	case CLOCK_EVT_MODE_SHUTDOWN:
--		uv_rtc_unset_timer(ced_cpu);
-+		uv_rtc_unset_timer(ced_cpu, 1);
- 		break;
- 	}
- }
- 
- static void uv_rtc_interrupt(void)
- {
--	struct clock_event_device *ced = &__get_cpu_var(cpu_ced);
- 	int cpu = smp_processor_id();
-+	struct clock_event_device *ced = &per_cpu(cpu_ced, cpu);
- 
- 	if (!ced || !ced->event_handler)
- 		return;
- 
--	if (uv_rtc_unset_timer(cpu) != 1)
-+	if (uv_rtc_unset_timer(cpu, 0) != 1)
- 		return;
- 
- 	ced->event_handler(ced);
