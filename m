@@ -1,119 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbZJNLXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932944AbZJNL1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758731AbZJNLXh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 07:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758676AbZJNLXg
+	id S932944AbZJNL1Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 07:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932595AbZJNL1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 07:23:36 -0400
-Received: from viefep14-int.chello.at ([62.179.121.34]:17191 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758670AbZJNLXf (ORCPT
+	Wed, 14 Oct 2009 07:27:23 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:34076 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932574AbZJNL1W convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 07:23:35 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
- balance_dirty_pages()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Peter Staubach <staubach@redhat.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091014013832.GA11882@localhost>
-References: <20091007073818.318088777@intel.com>
-	 <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz>
-	 <20091010213339.GA8644@localhost> <20091012211838.GA3965@duck.suse.cz>
-	 <20091013032405.GA20405@localhost> <20091013181214.GA31440@duck.suse.cz>
-	 <1255458499.8967.711.camel@laptop>  <20091014013832.GA11882@localhost>
-Content-Type: text/plain
-Date: Wed, 14 Oct 2009 13:22:28 +0200
-Message-Id: <1255519348.8392.412.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 07:27:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pSUuDGUiRz5/cqtn23D9D4sTRErWgEfz+nynJTsh+0+oY5UD/p4lUddpqAgXte8pt9
+         AC6dud7rZ2VdxIymZJWmoduElxJubewTKrgBkuHTnca9LNzGFu4GQmmTL+4rbervQr/i
+         F4eO8PAGX4g0FnlvC1dE177g2+/MQs3Wro4x4=
+MIME-Version: 1.0
+In-Reply-To: <e2e108260910140006n3c55b3e9h9cb4340a6bec22cc@mail.gmail.com>
+References: <200909261428.06802.bart.vanassche@gmail.com>
+	 <e2e108260910012341v5eab14c5o29da95ec52e75183@mail.gmail.com>
+	 <19f34abd0910020051h5a831729vcfca50b7bd9f9104@mail.gmail.com>
+	 <e2e108260910140006n3c55b3e9h9cb4340a6bec22cc@mail.gmail.com>
+Date: Wed, 14 Oct 2009 13:26:45 +0200
+Message-ID: <19f34abd0910140426vd9bcb41x460ed8779b7495a5@mail.gmail.com>
+Subject: Re: [PATCH 2.6.31.1] include/linux/kmemcheck.h: fix a sparse warning
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-14 at 09:38 +0800, Wu Fengguang wrote:
-> > >   Hmm, probably you've discussed this in some other email but why do we
-> > > cycle in this loop until we get below dirty limit? We used to leave the
-> > > loop after writing write_chunk... So the time we spend in
-> > > balance_dirty_pages() is no longer limited, right?
-> 
-> Right, this is a legitimate concern.
+2009/10/14 Bart Van Assche <bart.vanassche@gmail.com>:
+> On Fri, Oct 2, 2009 at 9:51 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>>
+>> 2009/10/2 Bart Van Assche <bart.vanassche@gmail.com>:
+>> > On Sat, Sep 26, 2009 at 2:28 PM, Bart Van Assche
+>> > <bart.vanassche@gmail.com> wrote:
+>> >>
+>> >> Checking a 2.6.31.1 kernel configured with allyesconfig/allmodconfig
+>> >> with sparse (make C=2) triggers a sparse warning on code that uses the
+>> >> kmemcheck_annotate_bitfield() macro. An example of such a warning:
+>> >>
+>> >> include/net/inet_sock.h:208:17: warning: do-while statement is not a compound statement
+>> >>
+>> >> Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
+>> >> Cc: Vegard Nossum <vegardno@ifi.uio.no>
+>> >> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> >>
+>> >> --- linux-2.6.31.1/include/linux/kmemcheck-orig.h       2009-09-26 13:53:44.000000000 +0200
+>> >> +++ linux-2.6.31.1/include/linux/kmemcheck.h    2009-09-26 13:53:56.000000000 +0200
+>> >> @@ -137,13 +137,13 @@ static inline void kmemcheck_mark_initia
+>> >>        int name##_end[0];
+>> >>
+>> >>  #define kmemcheck_annotate_bitfield(ptr, name)                         \
+>> >> -       do if (ptr) {                                                   \
+>> >> +       do { if (ptr) {                                                 \
+>> >>                int _n = (long) &((ptr)->name##_end)                    \
+>> >>                        - (long) &((ptr)->name##_begin);                \
+>> >>                BUILD_BUG_ON(_n < 0);                                   \
+>> >>                                                                        \
+>> >>                kmemcheck_mark_initialized(&((ptr)->name##_begin), _n); \
+>> >> -       } while (0)
+>> >> +       } } while (0)
+>> >>
+>> >>  #define kmemcheck_annotate_variable(var)                               \
+>> >>        do {                                                            \
+>> >
+>> > (ping)
+>> >
+>> > Did anyone already have the time to review the patch above ?
+>>
+>> A patch for this problem has already been applied in latest mainline.
+>
+> Unfortunately this issue is still present in 2.6.31.4, which has been
+> released on October 12 (yesterday). Is the patch that has been applied
+> in the mainline kernel suitable for backporting ?
 
-Quite.
+I assumed that this wouldn't be suitable for stable kernels, as the
+change is purely syntactic. Is there a good reason for applying this
+patch to the stable series? Perhaps Greg can answer this (Cced)?
 
-> > Wu was saying that without the loop nr_writeback wasn't limited, but
-> > since bdi_writeback_wakeup() is driven from writeout completion, I'm not
-> > sure how again that was so.
-> 
-> Let me summarize the ideas :)
-> 
-> There are two cases:
-> 
-> - there are no bdi or block io queue to limit nr_writeback
->   This must be fixed. It either let nr_writeback grow to dirty_thresh
->   (with loop) and thus squeeze nr_dirty, or grow out of control
->   totally (without loop). Current state is, the nr_writeback wait
->   queue for NFS is there; the one for btrfs is still missing.
-> 
-> - there is a nr_writeback limit, but is larger than dirty_thresh
->   In this case nr_dirty will be close to 0 regardless of the loop.
->   The loop will help to keep
->           nr_dirty + nr_writeback + nr_unstable < dirty_thresh
->   Without the loop, the "real" dirty threshold would be larger
->   (determined by the nr_writeback limit).
-> 
-> > We can move all of bdi_dirty to bdi_writeout, if the bdi writeout queue
-> > permits, but it cannot grow beyond the total limit, since we're actually
-> > waiting for writeout completion.
-> 
-> Yes, this explains the second case. It's some trade-off like: the
-> nr_writeback limit can not be trusted in small memory systems, so do
-> the loop to impose the dirty_thresh, which unfortunately can hurt
-> responsiveness on all systems with prolonged wait time..
 
-Ok, so I'm still puzzled.
-
-  set_page_dirty()
-  balance_dirty_pages_ratelimited()
-    balance_dirty_pages_ratelimited_nr(1)
-      balance_dirty_pages(nr);
-
-So we call balance_dirty_pages() with an appropriate count for each
-set_page_dirty() successful invocation, right?
-
-balance_dirty_pages() guarantees that:
-
-  nr_dirty + nr_writeback + nr_unstable < dirty_thresh &&
-  (nr_dirty + nr_writeback + nr_unstable < 
-	(dirty_thresh + background_thresh)/2 ||
-   bdi_dirty + bdi_writeback + bdi_unstable < bdi_thresh)
-
-Now without loop, without writeback limit, I still see no way to
-actually generate more 'dirty' pages than dirty_thresh.
-
-As soon as we hit dirty_thresh a process will wait for exactly the same
-amount of pages to get cleaned (writeback completed) as were dirtied
-(+/- the ratelimit fuzz which should even out over processes).
-
-That should bound things to dirty_thresh -- the wait is on writeback
-complete, so nr_writeback is bounded too.
-
-[ I forgot the exact semantics of unstable, if we clear writeback before
-unstable, we need to fix something ]
-
-Now, a nr_writeback queue that limits writeback will still be useful,
-esp for high speed devices. Once they ramp up and bdi_thresh exceeds the
-queue size, it'll take effect. So you reap the benefits when needed.
-
+Vegard
