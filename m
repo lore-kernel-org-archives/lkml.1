@@ -1,107 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933009AbZJNLvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933095AbZJNLvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933009AbZJNLvF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 07:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932786AbZJNLvE
+	id S933095AbZJNLvP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 07:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933033AbZJNLvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 07:51:04 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:34426 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932722AbZJNLvC (ORCPT
+	Wed, 14 Oct 2009 07:51:14 -0400
+Received: from mtagate7.de.ibm.com ([195.212.17.167]:38370 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933017AbZJNLvL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 07:51:02 -0400
-Date: Wed, 14 Oct 2009 17:20:03 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [RFC v2 PATCH 4/8] sched: Enforce hard limits by throttling
-Message-ID: <20091014115003.GA3540@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090930124919.GA19951@in.ibm.com> <20090930125252.GE19951@in.ibm.com> <1255444020.8392.362.camel@twins> <20091014034122.GA3568@in.ibm.com> <1255511864.8392.370.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255511864.8392.370.camel@twins>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 14 Oct 2009 07:51:11 -0400
+Date: Wed, 14 Oct 2009 13:50:31 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [GIT PULL] s390 patches for 2.6.32-rc4
+Message-ID: <20091014135031.780dff6d@mschwide.boeblingen.de.ibm.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 11:17:44AM +0200, Peter Zijlstra wrote:
-> On Wed, 2009-10-14 at 09:11 +0530, Bharata B Rao wrote:
-> > On Tue, Oct 13, 2009 at 04:27:00PM +0200, Peter Zijlstra wrote:
-> > > On Wed, 2009-09-30 at 18:22 +0530, Bharata B Rao wrote:
-> > > 
-> > > > diff --git a/include/linux/sched.h b/include/linux/sched.h
-> > > > index 0f1ea4a..77ace43 100644
-> > > > --- a/include/linux/sched.h
-> > > > +++ b/include/linux/sched.h
-> > > > @@ -1024,7 +1024,7 @@ struct sched_domain;
-> > > >  struct sched_class {
-> > > >     const struct sched_class *next;
-> > > >  
-> > > > -   void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
-> > > > +   int (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
-> > > >     void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
-> > > >     void (*yield_task) (struct rq *rq);
-> > > >  
-> > > 
-> > > I really hate this, it uglfies all the enqueue code in a horrid way
-> > > (which is most of this patch).
-> > > 
-> > > Why can't we simply enqueue the task on a throttled group just like rt?
-> > 
-> > We do enqueue a task to its group even if the group is throttled. However such
-> > throttled groups are not enqueued further. In such scenarios, even though the
-> > task enqueue to its parent group succeeded, it really didn't add any task to
-> > the cpu runqueue (rq). So we need to identify this condition and don't
-> > increment rq->running. That is why this return value is needed.
-> 
-> I would still consider those tasks running, the fact that they don't get
-> to run is a different matter.
+Hi Linus,
 
-Ok, that's how rt also considers them I realize. I thought that we should
-update rq->running when tasks go off the runqueue due to throttling. When a
-task is throttled, it is no doubt present on its group's cfs_rq, but it
-doesn't contribute to the CPU load as the throttled group entity isn't there
-on any cfs_rq. rq->running is used to obtain a few load balancing metrics and
-they might go wrong if rq->running isn't uptodate.
+before everybody gets on the plane to the kernel summit in Tokyo,
+here are the latest bug fixes for s390 that should go into 2.6.32.
 
-Do you still think we shouldn't update rq->running ? If so, I can get rid
-of this return value change.
+Please pull from 'for-linus' branch of
 
-> 
-> This added return value really utterly craps up the code and I'm not
-> going to take it.
+	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
 
-OK :) I will work towards making them more acceptable in future iterations.
+to receive the following updates:
 
-> 
-> What I'm not seeing is why all this code looks so very much different
-> from the rt bits.
+Andreas Krebbel (1):
+      [S390] Add highgprs facility to /proc/cpuinfo
 
-Throttling code here looks different than rt for the following reasons:
+Heiko Carstens (1):
+      [S390] call home support: fix proc handler
 
-- As I mentioned earlier, I update rq->running during throttling which
-is not done in rt afaics.
-- There are special conditions to prevent movement of tasks in and out
-of the throttled groups during load balancing and migration.
-- rt dequeues the throttled entity by walking the entity hierachy from
-update_curr_rt(). But I found it difficult to do the same in cfs because
-update_curr() is called from many different places and from places where
-we are actually walking the entity hiearchy. A second walk (in update_curr)
-of the hiearchy while we are in the middle of a hierarchy walk didn't look
-all that good. So I resorted to just marking the entity as throttled in
-update_curr() and later doing the dequeing from put_prev_entity() ?
-Isn't this acceptable ?
+Michael Holzheu (3):
+      [S390] hypfs: Use subcode 6 if subcode 7 is not available
+      [S390] tape390: Fix request queue handling in block driver
+      [S390] sclp_vt220 build fix
 
-Regards,
-Bharata.
+Peter Oberparleiter (1):
+      [S390] cio: change misleading console logic
+
+Stefan Haberland (2):
+      [S390] dasd: fix locking bug
+      [S390] dasd: use idal for device characteristics
+
+ arch/s390/hypfs/hypfs_diag.c   |    2 +-
+ arch/s390/kernel/processor.c   |    6 +++---
+ drivers/s390/block/dasd.c      |   13 +++++++++++--
+ drivers/s390/block/dasd_eckd.c |    8 +++++---
+ drivers/s390/char/sclp_async.c |    4 ++--
+ drivers/s390/char/sclp_vt220.c |   30 +++++++++++++++---------------
+ drivers/s390/char/tape_block.c |    3 ++-
+ drivers/s390/cio/device.c      |    9 ++++-----
+ 8 files changed, 43 insertions(+), 32 deletions(-)
+
+diff --git a/arch/s390/hypfs/hypfs_diag.c b/arch/s390/hypfs/hypfs_diag.c
+index 704dd39..77df726 100644
+--- a/arch/s390/hypfs/hypfs_diag.c
++++ b/arch/s390/hypfs/hypfs_diag.c
+@@ -438,7 +438,7 @@ static int diag204_probe(void)
+ 		}
+ 		if (diag204((unsigned long)SUBC_STIB6 |
+ 			    (unsigned long)INFO_EXT, pages, buf) >= 0) {
+-			diag204_store_sc = SUBC_STIB7;
++			diag204_store_sc = SUBC_STIB6;
+ 			diag204_info_type = INFO_EXT;
+ 			goto out;
+ 		}
+diff --git a/arch/s390/kernel/processor.c b/arch/s390/kernel/processor.c
+index 802c8ab..0729f36 100644
+--- a/arch/s390/kernel/processor.c
++++ b/arch/s390/kernel/processor.c
+@@ -31,9 +31,9 @@ void __cpuinit print_cpu_info(void)
+ 
+ static int show_cpuinfo(struct seq_file *m, void *v)
+ {
+-	static const char *hwcap_str[9] = {
++	static const char *hwcap_str[10] = {
+ 		"esan3", "zarch", "stfle", "msa", "ldisp", "eimm", "dfp",
+-		"edat", "etf3eh"
++		"edat", "etf3eh", "highgprs"
+ 	};
+ 	struct _lowcore *lc;
+ 	unsigned long n = (unsigned long) v - 1;
+@@ -48,7 +48,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 			   num_online_cpus(), loops_per_jiffy/(500000/HZ),
+ 			   (loops_per_jiffy/(5000/HZ))%100);
+ 		seq_puts(m, "features\t: ");
+-		for (i = 0; i < 9; i++)
++		for (i = 0; i < 10; i++)
+ 			if (hwcap_str[i] && (elf_hwcap & (1UL << i)))
+ 				seq_printf(m, "%s ", hwcap_str[i]);
+ 		seq_puts(m, "\n");
+diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
+index 53b8c25..aaccc8e 100644
+--- a/drivers/s390/block/dasd.c
++++ b/drivers/s390/block/dasd.c
+@@ -2533,6 +2533,7 @@ static struct dasd_ccw_req *dasd_generic_build_rdc(struct dasd_device *device,
+ {
+ 	struct dasd_ccw_req *cqr;
+ 	struct ccw1 *ccw;
++	unsigned long *idaw;
+ 
+ 	cqr = dasd_smalloc_request(magic, 1 /* RDC */, rdc_buffer_size, device);
+ 
+@@ -2546,9 +2547,17 @@ static struct dasd_ccw_req *dasd_generic_build_rdc(struct dasd_device *device,
+ 
+ 	ccw = cqr->cpaddr;
+ 	ccw->cmd_code = CCW_CMD_RDC;
+-	ccw->cda = (__u32)(addr_t)rdc_buffer;
+-	ccw->count = rdc_buffer_size;
++	if (idal_is_needed(rdc_buffer, rdc_buffer_size)) {
++		idaw = (unsigned long *) (cqr->data);
++		ccw->cda = (__u32)(addr_t) idaw;
++		ccw->flags = CCW_FLAG_IDA;
++		idaw = idal_create_words(idaw, rdc_buffer, rdc_buffer_size);
++	} else {
++		ccw->cda = (__u32)(addr_t) rdc_buffer;
++		ccw->flags = 0;
++	}
+ 
++	ccw->count = rdc_buffer_size;
+ 	cqr->startdev = device;
+ 	cqr->memdev = device;
+ 	cqr->expires = 10*HZ;
+diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c
+index 0be7c15..417b97c 100644
+--- a/drivers/s390/block/dasd_eckd.c
++++ b/drivers/s390/block/dasd_eckd.c
+@@ -3216,6 +3216,7 @@ int dasd_eckd_restore_device(struct dasd_device *device)
+ 	struct dasd_eckd_characteristics temp_rdc_data;
+ 	int is_known, rc;
+ 	struct dasd_uid temp_uid;
++	unsigned long flags;
+ 
+ 	private = (struct dasd_eckd_private *) device->private;
+ 
+@@ -3228,7 +3229,8 @@ int dasd_eckd_restore_device(struct dasd_device *device)
+ 	rc = dasd_eckd_generate_uid(device, &private->uid);
+ 	dasd_get_uid(device->cdev, &temp_uid);
+ 	if (memcmp(&private->uid, &temp_uid, sizeof(struct dasd_uid)) != 0)
+-		dev_err(&device->cdev->dev, "The UID of the DASD has changed\n");
++		dev_err(&device->cdev->dev, "The UID of the DASD has "
++			"changed\n");
+ 	if (rc)
+ 		goto out_err;
+ 	dasd_set_uid(device->cdev, &private->uid);
+@@ -3256,9 +3258,9 @@ int dasd_eckd_restore_device(struct dasd_device *device)
+ 			  "device: %s", rc, dev_name(&device->cdev->dev));
+ 		goto out_err;
+ 	}
+-	spin_lock(get_ccwdev_lock(device->cdev));
++	spin_lock_irqsave(get_ccwdev_lock(device->cdev), flags);
+ 	memcpy(&private->rdc_data, &temp_rdc_data, sizeof(temp_rdc_data));
+-	spin_unlock(get_ccwdev_lock(device->cdev));
++	spin_unlock_irqrestore(get_ccwdev_lock(device->cdev), flags);
+ 
+ 	/* add device to alias management */
+ 	dasd_alias_add_device(device);
+diff --git a/drivers/s390/char/sclp_async.c b/drivers/s390/char/sclp_async.c
+index daaec18..a4f68e5 100644
+--- a/drivers/s390/char/sclp_async.c
++++ b/drivers/s390/char/sclp_async.c
+@@ -62,7 +62,7 @@ static struct notifier_block call_home_panic_nb = {
+ 	.priority = INT_MAX,
+ };
+ 
+-static int proc_handler_callhome(ctl_table *ctl, int write, struct file *filp,
++static int proc_handler_callhome(struct ctl_table *ctl, int write,
+ 				 void __user *buffer, size_t *count,
+ 				 loff_t *ppos)
+ {
+@@ -100,7 +100,7 @@ static struct ctl_table callhome_table[] = {
+ 	{
+ 		.procname	= "callhome",
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_handler_callhome,
++		.proc_handler	= proc_handler_callhome,
+ 	},
+ 	{ .ctl_name = 0 }
+ };
+diff --git a/drivers/s390/char/sclp_vt220.c b/drivers/s390/char/sclp_vt220.c
+index 178724f..b9d2a00 100644
+--- a/drivers/s390/char/sclp_vt220.c
++++ b/drivers/s390/char/sclp_vt220.c
+@@ -705,21 +705,6 @@ out_driver:
+ }
+ __initcall(sclp_vt220_tty_init);
+ 
+-#ifdef CONFIG_SCLP_VT220_CONSOLE
+-
+-static void
+-sclp_vt220_con_write(struct console *con, const char *buf, unsigned int count)
+-{
+-	__sclp_vt220_write((const unsigned char *) buf, count, 1, 1, 0);
+-}
+-
+-static struct tty_driver *
+-sclp_vt220_con_device(struct console *c, int *index)
+-{
+-	*index = 0;
+-	return sclp_vt220_driver;
+-}
+-
+ static void __sclp_vt220_flush_buffer(void)
+ {
+ 	unsigned long flags;
+@@ -776,6 +761,21 @@ static void sclp_vt220_pm_event_fn(struct sclp_register *reg,
+ 	}
+ }
+ 
++#ifdef CONFIG_SCLP_VT220_CONSOLE
++
++static void
++sclp_vt220_con_write(struct console *con, const char *buf, unsigned int count)
++{
++	__sclp_vt220_write((const unsigned char *) buf, count, 1, 1, 0);
++}
++
++static struct tty_driver *
++sclp_vt220_con_device(struct console *c, int *index)
++{
++	*index = 0;
++	return sclp_vt220_driver;
++}
++
+ static int
+ sclp_vt220_notify(struct notifier_block *self,
+ 			  unsigned long event, void *data)
+diff --git a/drivers/s390/char/tape_block.c b/drivers/s390/char/tape_block.c
+index 64f57ef..0c0705b 100644
+--- a/drivers/s390/char/tape_block.c
++++ b/drivers/s390/char/tape_block.c
+@@ -162,9 +162,10 @@ tapeblock_requeue(struct work_struct *work) {
+ 	spin_lock_irq(&device->blk_data.request_queue_lock);
+ 	while (
+ 		!blk_queue_plugged(queue) &&
+-		(req = blk_fetch_request(queue)) &&
++		blk_peek_request(queue) &&
+ 		nr_queued < TAPEBLOCK_MIN_REQUEUE
+ 	) {
++		req = blk_fetch_request(queue);
+ 		if (rq_data_dir(req) == WRITE) {
+ 			DBF_EVENT(1, "TBLOCK: Rejecting write request\n");
+ 			spin_unlock_irq(&device->blk_data.request_queue_lock);
+diff --git a/drivers/s390/cio/device.c b/drivers/s390/cio/device.c
+index 2ee093e..2490b74 100644
+--- a/drivers/s390/cio/device.c
++++ b/drivers/s390/cio/device.c
+@@ -1250,8 +1250,7 @@ static int io_subchannel_probe(struct subchannel *sch)
+ 	unsigned long flags;
+ 	struct ccw_dev_id dev_id;
+ 
+-	cdev = sch_get_cdev(sch);
+-	if (cdev) {
++	if (cio_is_console(sch->schid)) {
+ 		rc = sysfs_create_group(&sch->dev.kobj,
+ 					&io_subchannel_attr_group);
+ 		if (rc)
+@@ -1260,13 +1259,13 @@ static int io_subchannel_probe(struct subchannel *sch)
+ 				      "0.%x.%04x (rc=%d)\n",
+ 				      sch->schid.ssid, sch->schid.sch_no, rc);
+ 		/*
+-		 * This subchannel already has an associated ccw_device.
++		 * The console subchannel already has an associated ccw_device.
+ 		 * Throw the delayed uevent for the subchannel, register
+-		 * the ccw_device and exit. This happens for all early
+-		 * devices, e.g. the console.
++		 * the ccw_device and exit.
+ 		 */
+ 		dev_set_uevent_suppress(&sch->dev, 0);
+ 		kobject_uevent(&sch->dev.kobj, KOBJ_ADD);
++		cdev = sch_get_cdev(sch);
+ 		cdev->dev.groups = ccwdev_attr_groups;
+ 		device_initialize(&cdev->dev);
+ 		ccw_device_register(cdev);
