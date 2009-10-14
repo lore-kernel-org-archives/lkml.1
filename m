@@ -1,69 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZJNHxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbZJNHz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbZJNHxd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 03:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZJNHxc
+	id S1757480AbZJNHz4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 03:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZJNHz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 03:53:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:47191 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752579AbZJNHxc (ORCPT
+	Wed, 14 Oct 2009 03:55:56 -0400
+Received: from mx2.univ-lille2.fr ([194.254.117.6]:47743 "EHLO
+	smtp.univ-lille2.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751790AbZJNHzy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 03:53:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=vzchFRtpPmKOFf66sBQmhYFRiebD9XYxUhuI5IyQu86q4DXOgo/uCiBcRK7616E7/f
-         nGP53mWgn70oxcOwgLfNtH9lUV/rX1MGwnDcBcS3eIyPV47bPKV2lZjL29xNlRCgHD3l
-         VKDceZlJG0DnF7/TbDYtb78FQONofJDu5ItCY=
+	Wed, 14 Oct 2009 03:55:54 -0400
+Message-ID: <4AD583DB.2070806@univ-lille2.fr>
+Date: Wed, 14 Oct 2009 09:55:07 +0200
+From: Christian Vilhelm <christian.vilhelm@univ-lille2.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-In-Reply-To: <20091014071217.GL784@elte.hu>
-References: <20091013200702.019870576@openvz.org>
-	 <20091013201022.926793122@openvz.org> <20091014071217.GL784@elte.hu>
-Date: Wed, 14 Oct 2009 11:51:43 +0400
-X-Google-Sender-Auth: 8fa1f57cd877fd2a
-Message-ID: <aa79d98a0910140051k15cbaa42ib82f62e0dd400ed6@mail.gmail.com>
-Subject: Re: [patch 3/3] x86,apic: limit apic dumping, introduce show_lapic 
-	setup option
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: x86@kernel.org, yinghai@kernel.org, macro@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: tfjellstrom@shaw.ca
+CC: andy yan <andyysj@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
+       "James E.J. Bottomley" <James.Bottomley@suse.de>, kewei@marvell.com
+Subject: Re: MVSAS 1669:mvs_abort_task:rc= 5
+References: <200910091141.52303.tfjellstrom@shaw.ca> <200910131939.09039.tfjellstrom@shaw.ca> <e938503f0910132151p20b42459v96800d889f3f63eb@mail.gmail.com> <200910140118.39988.tfjellstrom@shaw.ca>
+In-Reply-To: <200910140118.39988.tfjellstrom@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/14/09, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Cyrill Gorcunov <gorcunov@openvz.org> wrote:
->
->> In case if a system has a large number of cpus printing apics
->> contents may consume a long time period.
->>
->> We limit such an output by 1 apic by default. But to have an
->> ability to see all apics or some part of them we introduce
->> "show_lapic" setup option which allow us to limit/unlimit
->> the number of APICs being dumped.
->>
->> Example: apic=debug show_lapic=5, or apic=debug show_lapic=all
->>
->> Also move apic_verbosity checking upper that way so helper routines
->> do not need to inspect it at all.
->>
->> Suggested-by: Yinghai Lu <yinghai@kernel.org>
->> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
->> ---
->>  arch/x86/kernel/apic/io_apic.c |   47
->> +++++++++++++++++++++++++++--------------
->>  1 file changed, 32 insertions(+), 15 deletions(-)
->
->> +__setup("show_lapic=", setup_show_lapic);
->
-> Note: new __setup() functions need an entry in
-> Documentation/kernel-parameters.txt as well.
->
-> 	Ingo
->
-Will update today evening. Thanks!
+Thomas Fjellstrom wrote:
+> On Tue October 13 2009, andy yan wrote:
+>> I will send you a patch for debugging this issue, please help to try and
+>> send back the log, thanks!
+> 
+> I will do whatever I can to help get this resolved :) I have some C skills, 
+> but no kernel/device driver experience, so at the very least I should be able 
+> to do builds and make small changes if needed, in addition to patching and 
+> endless reboots ;D
+
+I'm also willing to help.
+The card is not on a production server and the disks connected to the 
+card do not contain any valuable data so I can make any test wanted.
+
+When the problem occurs it seems the devices (disks) are hosed. Deleting 
+them from the system (echo 1 > /sys/block/sdh/device/delete), removing 
+the mvsas module (rmmod -f) and reloading it doesn't work. The card 
+seems correctly initialised after reloading the module, it correctly 
+responds to commands (in /sys/class/sas_phy/ and sas_ports, I can reset 
+ports/phys, I can ask for a rescan of disks). But the disks themselves 
+do not seem to answer to the scan and are not detected, all I get is :
+
+Oct 13 15:17:33 almery kernel: [29162.468218] sas: sas_ata_phy_reset: 
+Found ATA device.
+Oct 13 15:17:33 almery kernel: [29162.470279] ata19.00: both IDENTIFYs 
+aborted, assuming NODEV
+Oct 13 15:17:33 almery kernel: [29162.470321] sas: sas_ata_phy_reset: 
+Found ATA device.
+Oct 13 15:17:33 almery kernel: [29162.472391] ata19.00: both IDENTIFYs 
+aborted, assuming NODEV
+Oct 13 15:17:33 almery kernel: [29162.472433] sas: sas_ata_phy_reset: 
+Found ATA device.
+Oct 13 15:17:33 almery kernel: [29162.474492] ata19.00: both IDENTIFYs 
+aborted, assuming NODEV
+Oct 13 15:17:33 almery kernel: [29162.474533] ata19.00: disabled
+Oct 13 15:17:33 almery kernel: [29162.474572] sas: sas_ata_phy_reset: 
+Found ATA device.
+Oct 13 15:17:33 almery kernel: [29162.474627] scsi_alloc_sdev: 
+Allocation failure during SCSI scanning, some SCSI devices might not be 
+configured
+ 
+ 
+
+Is there a way to get a disk to reinitialize itself without a reboot ?
+
+Drives are SAMSUNG HD501LJ
+Linux almery 2.6.31.1-vs2.3.0.36.14 #7 SMP Mon Oct 12 12:58:07 CEST 2009 
+x86_64 GNU/Linux
+with or withous vserver patch applied : same problem, kernel not tainted.
+
+The problem occurs also when the disks are not in an md array.
+
+Christian Vilhelm.
+
+-- 
+/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+|       Christian Vilhelm : christian.vilhelm@univ-lille2.fr         |
+|            Reality is for people who lack imagination              |
+\____________________________________________________________________/
