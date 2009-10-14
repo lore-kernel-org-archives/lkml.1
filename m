@@ -1,492 +1,527 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbZJNGDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZJNGDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924AbZJNGDl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 02:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZJNGDi
+	id S1753128AbZJNGDg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 02:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbZJNGDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 02:03:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58692 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754717AbZJNGDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 14 Oct 2009 02:03:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58681 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754317AbZJNGD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 02:03:29 -0400
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
        cl@linux-foundation.org, mingo@redhat.com, tglx@linutronix.de,
        akpm@linux-foundation.org, rostedt@goodmis.org, hpa@zytor.com,
        cebbert@redhat.com
-Cc: Tejun Heo <tj@kernel.org>, Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: [PATCH 08/16] percpu: make percpu symbols in xen unique
-Date: Wed, 14 Oct 2009 15:01:57 +0900
-Message-Id: <1255500125-3210-9-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Marcelo Tosatti <mtosatti@redhat.com>, x86@kernel.org
+Subject: [PATCH 09/16] percpu: make percpu symbols in x86 unique
+Date: Wed, 14 Oct 2009 15:01:58 +0900
+Message-Id: <1255500125-3210-10-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1255500125-3210-1-git-send-email-tj@kernel.org>
 References: <1255500125-3210-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 06:02:17 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 06:02:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch updates percpu related symbols in xen such that percpu
+This patch updates percpu related symbols in x86 such that percpu
 symbols are unique and don't clash with local symbols.  This serves
 two purposes of decreasing the possibility of global percpu symbol
 collision and allowing dropping per_cpu__ prefix from percpu symbols.
 
-* arch/x86/xen/smp.c, arch/x86/xen/time.c, arch/ia64/xen/irq_xen.c:
-  add xen_ prefix to percpu variables
+* arch/x86/kernel/cpu/common.c: rename local variable to avoid collision
 
-* arch/ia64/xen/time.c: add xen_ prefix to percpu variables, drop
-  processed_ prefix and make them static
+* arch/x86/kvm/svm.c: s/svm_data/sd/ for local variables to avoid collision
+
+* arch/x86/kernel/cpu/cpu_debug.c: s/cpu_arr/cpud_arr/
+  				   s/priv_arr/cpud_priv_arr/
+				   s/cpu_priv_count/cpud_priv_count/
+
+* arch/x86/kernel/cpu/intel_cacheinfo.c: s/cpuid4_info/ici_cpuid4_info/
+  					 s/cache_kobject/ici_cache_kobject/
+					 s/index_kobject/ici_index_kobject/
+
+* arch/x86/kernel/ds.c: s/cpu_context/cpu_ds_context/
 
 Partly based on Rusty Russell's "alloc_percpu: rename percpu vars
 which cause name clashes" patch.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: (kvm) Avi Kivity <avi@redhat.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Chris Wright <chrisw@sous-sol.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: x86@kernel.org
 ---
- arch/ia64/xen/irq_xen.c |  131 ++++++++++++++++++++++++-----------------------
- arch/ia64/xen/time.c    |   22 ++++----
- arch/x86/xen/smp.c      |   41 ++++++++-------
- arch/x86/xen/time.c     |   24 ++++----
- 4 files changed, 111 insertions(+), 107 deletions(-)
+ arch/x86/kernel/cpu/common.c          |    8 ++--
+ arch/x86/kernel/cpu/cpu_debug.c       |   30 ++++++++--------
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   54 ++++++++++++++--------------
+ arch/x86/kernel/ds.c                  |    4 +-
+ arch/x86/kvm/svm.c                    |   63 ++++++++++++++++-----------------
+ 5 files changed, 79 insertions(+), 80 deletions(-)
 
-diff --git a/arch/ia64/xen/irq_xen.c b/arch/ia64/xen/irq_xen.c
-index f042e19..a3fb7cf 100644
---- a/arch/ia64/xen/irq_xen.c
-+++ b/arch/ia64/xen/irq_xen.c
-@@ -63,19 +63,19 @@ xen_free_irq_vector(int vector)
- }
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index cc25c2b..3192f22 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -1093,7 +1093,7 @@ static void clear_all_debug_regs(void)
  
- 
--static DEFINE_PER_CPU(int, timer_irq) = -1;
--static DEFINE_PER_CPU(int, ipi_irq) = -1;
--static DEFINE_PER_CPU(int, resched_irq) = -1;
--static DEFINE_PER_CPU(int, cmc_irq) = -1;
--static DEFINE_PER_CPU(int, cmcp_irq) = -1;
--static DEFINE_PER_CPU(int, cpep_irq) = -1;
-+static DEFINE_PER_CPU(int, xen_timer_irq) = -1;
-+static DEFINE_PER_CPU(int, xen_ipi_irq) = -1;
-+static DEFINE_PER_CPU(int, xen_resched_irq) = -1;
-+static DEFINE_PER_CPU(int, xen_cmc_irq) = -1;
-+static DEFINE_PER_CPU(int, xen_cmcp_irq) = -1;
-+static DEFINE_PER_CPU(int, xen_cpep_irq) = -1;
- #define NAME_SIZE	15
--static DEFINE_PER_CPU(char[NAME_SIZE], timer_name);
--static DEFINE_PER_CPU(char[NAME_SIZE], ipi_name);
--static DEFINE_PER_CPU(char[NAME_SIZE], resched_name);
--static DEFINE_PER_CPU(char[NAME_SIZE], cmc_name);
--static DEFINE_PER_CPU(char[NAME_SIZE], cmcp_name);
--static DEFINE_PER_CPU(char[NAME_SIZE], cpep_name);
-+static DEFINE_PER_CPU(char[NAME_SIZE], xen_timer_name);
-+static DEFINE_PER_CPU(char[NAME_SIZE], xen_ipi_name);
-+static DEFINE_PER_CPU(char[NAME_SIZE], xen_resched_name);
-+static DEFINE_PER_CPU(char[NAME_SIZE], xen_cmc_name);
-+static DEFINE_PER_CPU(char[NAME_SIZE], xen_cmcp_name);
-+static DEFINE_PER_CPU(char[NAME_SIZE], xen_cpep_name);
- #undef NAME_SIZE
- 
- struct saved_irq {
-@@ -144,64 +144,64 @@ __xen_register_percpu_irq(unsigned int cpu, unsigned int vec,
- 	if (xen_slab_ready) {
- 		switch (vec) {
- 		case IA64_TIMER_VECTOR:
--			snprintf(per_cpu(timer_name, cpu),
--				 sizeof(per_cpu(timer_name, cpu)),
-+			snprintf(per_cpu(xen_timer_name, cpu),
-+				 sizeof(per_cpu(xen_timer_name, cpu)),
- 				 "%s%d", action->name, cpu);
- 			irq = bind_virq_to_irqhandler(VIRQ_ITC, cpu,
- 				action->handler, action->flags,
--				per_cpu(timer_name, cpu), action->dev_id);
--			per_cpu(timer_irq, cpu) = irq;
-+				per_cpu(xen_timer_name, cpu), action->dev_id);
-+			per_cpu(xen_timer_irq, cpu) = irq;
- 			break;
- 		case IA64_IPI_RESCHEDULE:
--			snprintf(per_cpu(resched_name, cpu),
--				 sizeof(per_cpu(resched_name, cpu)),
-+			snprintf(per_cpu(xen_resched_name, cpu),
-+				 sizeof(per_cpu(xen_resched_name, cpu)),
- 				 "%s%d", action->name, cpu);
- 			irq = bind_ipi_to_irqhandler(XEN_RESCHEDULE_VECTOR, cpu,
- 				action->handler, action->flags,
--				per_cpu(resched_name, cpu), action->dev_id);
--			per_cpu(resched_irq, cpu) = irq;
-+				per_cpu(xen_resched_name, cpu), action->dev_id);
-+			per_cpu(xen_resched_irq, cpu) = irq;
- 			break;
- 		case IA64_IPI_VECTOR:
--			snprintf(per_cpu(ipi_name, cpu),
--				 sizeof(per_cpu(ipi_name, cpu)),
-+			snprintf(per_cpu(xen_ipi_name, cpu),
-+				 sizeof(per_cpu(xen_ipi_name, cpu)),
- 				 "%s%d", action->name, cpu);
- 			irq = bind_ipi_to_irqhandler(XEN_IPI_VECTOR, cpu,
- 				action->handler, action->flags,
--				per_cpu(ipi_name, cpu), action->dev_id);
--			per_cpu(ipi_irq, cpu) = irq;
-+				per_cpu(xen_ipi_name, cpu), action->dev_id);
-+			per_cpu(xen_ipi_irq, cpu) = irq;
- 			break;
- 		case IA64_CMC_VECTOR:
--			snprintf(per_cpu(cmc_name, cpu),
--				 sizeof(per_cpu(cmc_name, cpu)),
-+			snprintf(per_cpu(xen_cmc_name, cpu),
-+				 sizeof(per_cpu(xen_cmc_name, cpu)),
- 				 "%s%d", action->name, cpu);
- 			irq = bind_virq_to_irqhandler(VIRQ_MCA_CMC, cpu,
--						      action->handler,
--						      action->flags,
--						      per_cpu(cmc_name, cpu),
--						      action->dev_id);
--			per_cpu(cmc_irq, cpu) = irq;
-+						action->handler,
-+						action->flags,
-+						per_cpu(xen_cmc_name, cpu),
-+						action->dev_id);
-+			per_cpu(xen_cmc_irq, cpu) = irq;
- 			break;
- 		case IA64_CMCP_VECTOR:
--			snprintf(per_cpu(cmcp_name, cpu),
--				 sizeof(per_cpu(cmcp_name, cpu)),
-+			snprintf(per_cpu(xen_cmcp_name, cpu),
-+				 sizeof(per_cpu(xen_cmcp_name, cpu)),
- 				 "%s%d", action->name, cpu);
- 			irq = bind_ipi_to_irqhandler(XEN_CMCP_VECTOR, cpu,
--						     action->handler,
--						     action->flags,
--						     per_cpu(cmcp_name, cpu),
--						     action->dev_id);
--			per_cpu(cmcp_irq, cpu) = irq;
-+						action->handler,
-+						action->flags,
-+						per_cpu(xen_cmcp_name, cpu),
-+						action->dev_id);
-+			per_cpu(xen_cmcp_irq, cpu) = irq;
- 			break;
- 		case IA64_CPEP_VECTOR:
--			snprintf(per_cpu(cpep_name, cpu),
--				 sizeof(per_cpu(cpep_name, cpu)),
-+			snprintf(per_cpu(xen_cpep_name, cpu),
-+				 sizeof(per_cpu(xen_cpep_name, cpu)),
- 				 "%s%d", action->name, cpu);
- 			irq = bind_ipi_to_irqhandler(XEN_CPEP_VECTOR, cpu,
--						     action->handler,
--						     action->flags,
--						     per_cpu(cpep_name, cpu),
--						     action->dev_id);
--			per_cpu(cpep_irq, cpu) = irq;
-+						action->handler,
-+						action->flags,
-+						per_cpu(xen_cpep_name, cpu),
-+						action->dev_id);
-+			per_cpu(xen_cpep_irq, cpu) = irq;
- 			break;
- 		case IA64_CPE_VECTOR:
- 		case IA64_MCA_RENDEZ_VECTOR:
-@@ -275,30 +275,33 @@ unbind_evtchn_callback(struct notifier_block *nfb,
- 
- 	if (action == CPU_DEAD) {
- 		/* Unregister evtchn.  */
--		if (per_cpu(cpep_irq, cpu) >= 0) {
--			unbind_from_irqhandler(per_cpu(cpep_irq, cpu), NULL);
--			per_cpu(cpep_irq, cpu) = -1;
-+		if (per_cpu(xen_cpep_irq, cpu) >= 0) {
-+			unbind_from_irqhandler(per_cpu(xen_cpep_irq, cpu),
-+					       NULL);
-+			per_cpu(xen_cpep_irq, cpu) = -1;
- 		}
--		if (per_cpu(cmcp_irq, cpu) >= 0) {
--			unbind_from_irqhandler(per_cpu(cmcp_irq, cpu), NULL);
--			per_cpu(cmcp_irq, cpu) = -1;
-+		if (per_cpu(xen_cmcp_irq, cpu) >= 0) {
-+			unbind_from_irqhandler(per_cpu(xen_cmcp_irq, cpu),
-+					       NULL);
-+			per_cpu(xen_cmcp_irq, cpu) = -1;
- 		}
--		if (per_cpu(cmc_irq, cpu) >= 0) {
--			unbind_from_irqhandler(per_cpu(cmc_irq, cpu), NULL);
--			per_cpu(cmc_irq, cpu) = -1;
-+		if (per_cpu(xen_cmc_irq, cpu) >= 0) {
-+			unbind_from_irqhandler(per_cpu(xen_cmc_irq, cpu), NULL);
-+			per_cpu(xen_cmc_irq, cpu) = -1;
- 		}
--		if (per_cpu(ipi_irq, cpu) >= 0) {
--			unbind_from_irqhandler(per_cpu(ipi_irq, cpu), NULL);
--			per_cpu(ipi_irq, cpu) = -1;
-+		if (per_cpu(xen_ipi_irq, cpu) >= 0) {
-+			unbind_from_irqhandler(per_cpu(xen_ipi_irq, cpu), NULL);
-+			per_cpu(xen_ipi_irq, cpu) = -1;
- 		}
--		if (per_cpu(resched_irq, cpu) >= 0) {
--			unbind_from_irqhandler(per_cpu(resched_irq, cpu),
--						NULL);
--			per_cpu(resched_irq, cpu) = -1;
-+		if (per_cpu(xen_resched_irq, cpu) >= 0) {
-+			unbind_from_irqhandler(per_cpu(xen_resched_irq, cpu),
-+					       NULL);
-+			per_cpu(xen_resched_irq, cpu) = -1;
- 		}
--		if (per_cpu(timer_irq, cpu) >= 0) {
--			unbind_from_irqhandler(per_cpu(timer_irq, cpu), NULL);
--			per_cpu(timer_irq, cpu) = -1;
-+		if (per_cpu(xen_timer_irq, cpu) >= 0) {
-+			unbind_from_irqhandler(per_cpu(xen_timer_irq, cpu),
-+					       NULL);
-+			per_cpu(xen_timer_irq, cpu) = -1;
- 		}
- 	}
- 	return NOTIFY_OK;
-diff --git a/arch/ia64/xen/time.c b/arch/ia64/xen/time.c
-index dbeadb9..c1c5445 100644
---- a/arch/ia64/xen/time.c
-+++ b/arch/ia64/xen/time.c
-@@ -34,15 +34,15 @@
- 
- #include "../kernel/fsyscall_gtod_data.h"
- 
--DEFINE_PER_CPU(struct vcpu_runstate_info, runstate);
--DEFINE_PER_CPU(unsigned long, processed_stolen_time);
--DEFINE_PER_CPU(unsigned long, processed_blocked_time);
-+static DEFINE_PER_CPU(struct vcpu_runstate_info, xen_runstate);
-+static DEFINE_PER_CPU(unsigned long, xen_stolen_time);
-+static DEFINE_PER_CPU(unsigned long, xen_blocked_time);
- 
- /* taken from i386/kernel/time-xen.c */
- static void xen_init_missing_ticks_accounting(int cpu)
+ void __cpuinit cpu_init(void)
  {
- 	struct vcpu_register_runstate_memory_area area;
--	struct vcpu_runstate_info *runstate = &per_cpu(runstate, cpu);
-+	struct vcpu_runstate_info *runstate = &per_cpu(xen_runstate, cpu);
- 	int rc;
+-	struct orig_ist *orig_ist;
++	struct orig_ist *oist;
+ 	struct task_struct *me;
+ 	struct tss_struct *t;
+ 	unsigned long v;
+@@ -1102,7 +1102,7 @@ void __cpuinit cpu_init(void)
  
- 	memset(runstate, 0, sizeof(*runstate));
-@@ -52,8 +52,8 @@ static void xen_init_missing_ticks_accounting(int cpu)
- 				&area);
- 	WARN_ON(rc && rc != -ENOSYS);
+ 	cpu = stack_smp_processor_id();
+ 	t = &per_cpu(init_tss, cpu);
+-	orig_ist = &per_cpu(orig_ist, cpu);
++	oist = &per_cpu(orig_ist, cpu);
  
--	per_cpu(processed_blocked_time, cpu) = runstate->time[RUNSTATE_blocked];
--	per_cpu(processed_stolen_time, cpu) = runstate->time[RUNSTATE_runnable]
-+	per_cpu(xen_blocked_time, cpu) = runstate->time[RUNSTATE_blocked];
-+	per_cpu(xen_stolen_time, cpu) = runstate->time[RUNSTATE_runnable]
- 					    + runstate->time[RUNSTATE_offline];
- }
- 
-@@ -68,7 +68,7 @@ static void get_runstate_snapshot(struct vcpu_runstate_info *res)
- 
- 	BUG_ON(preemptible());
- 
--	state = &__get_cpu_var(runstate);
-+	state = &__get_cpu_var(xen_runstate);
- 
+ #ifdef CONFIG_NUMA
+ 	if (cpu != 0 && percpu_read(node_number) == 0 &&
+@@ -1143,12 +1143,12 @@ void __cpuinit cpu_init(void)
  	/*
- 	 * The runstate info is always updated by the hypervisor on
-@@ -103,12 +103,12 @@ consider_steal_time(unsigned long new_itm)
- 	 * This function just checks and reject this effect.
+ 	 * set up and load the per-CPU TSS
  	 */
- 	if (!time_after_eq(runstate.time[RUNSTATE_blocked],
--			   per_cpu(processed_blocked_time, cpu)))
-+			   per_cpu(xen_blocked_time, cpu)))
- 		blocked = 0;
+-	if (!orig_ist->ist[0]) {
++	if (!oist->ist[0]) {
+ 		char *estacks = per_cpu(exception_stacks, cpu);
  
- 	if (!time_after_eq(runstate.time[RUNSTATE_runnable] +
- 			   runstate.time[RUNSTATE_offline],
--			   per_cpu(processed_stolen_time, cpu)))
-+			   per_cpu(xen_stolen_time, cpu)))
- 		stolen = 0;
- 
- 	if (!time_after(delta_itm + new_itm, ia64_get_itc()))
-@@ -147,8 +147,8 @@ consider_steal_time(unsigned long new_itm)
- 		} else {
- 			local_cpu_data->itm_next = delta_itm + new_itm;
+ 		for (v = 0; v < N_EXCEPTION_STACKS; v++) {
+ 			estacks += exception_stack_sizes[v];
+-			orig_ist->ist[v] = t->x86_tss.ist[v] =
++			oist->ist[v] = t->x86_tss.ist[v] =
+ 					(unsigned long)estacks;
  		}
--		per_cpu(processed_stolen_time, cpu) += NS_PER_TICK * stolen;
--		per_cpu(processed_blocked_time, cpu) += NS_PER_TICK * blocked;
-+		per_cpu(xen_stolen_time, cpu) += NS_PER_TICK * stolen;
-+		per_cpu(xen_blocked_time, cpu) += NS_PER_TICK * blocked;
  	}
- 	return delta_itm;
+diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
+index dca325c..b368cd8 100644
+--- a/arch/x86/kernel/cpu/cpu_debug.c
++++ b/arch/x86/kernel/cpu/cpu_debug.c
+@@ -30,9 +30,9 @@
+ #include <asm/apic.h>
+ #include <asm/desc.h>
+ 
+-static DEFINE_PER_CPU(struct cpu_cpuX_base [CPU_REG_ALL_BIT], cpu_arr);
+-static DEFINE_PER_CPU(struct cpu_private * [MAX_CPU_FILES], priv_arr);
+-static DEFINE_PER_CPU(int, cpu_priv_count);
++static DEFINE_PER_CPU(struct cpu_cpuX_base [CPU_REG_ALL_BIT], cpud_arr);
++static DEFINE_PER_CPU(struct cpu_private * [MAX_CPU_FILES], cpud_priv_arr);
++static DEFINE_PER_CPU(int, cpud_priv_count);
+ 
+ static DEFINE_MUTEX(cpu_debug_lock);
+ 
+@@ -531,7 +531,7 @@ static int cpu_create_file(unsigned cpu, unsigned type, unsigned reg,
+ 
+ 	/* Already intialized */
+ 	if (file == CPU_INDEX_BIT)
+-		if (per_cpu(cpu_arr[type].init, cpu))
++		if (per_cpu(cpud_arr[type].init, cpu))
+ 			return 0;
+ 
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+@@ -543,8 +543,8 @@ static int cpu_create_file(unsigned cpu, unsigned type, unsigned reg,
+ 	priv->reg = reg;
+ 	priv->file = file;
+ 	mutex_lock(&cpu_debug_lock);
+-	per_cpu(priv_arr[type], cpu) = priv;
+-	per_cpu(cpu_priv_count, cpu)++;
++	per_cpu(cpud_priv_arr[type], cpu) = priv;
++	per_cpu(cpud_priv_count, cpu)++;
+ 	mutex_unlock(&cpu_debug_lock);
+ 
+ 	if (file)
+@@ -552,10 +552,10 @@ static int cpu_create_file(unsigned cpu, unsigned type, unsigned reg,
+ 				    dentry, (void *)priv, &cpu_fops);
+ 	else {
+ 		debugfs_create_file(cpu_base[type].name, S_IRUGO,
+-				    per_cpu(cpu_arr[type].dentry, cpu),
++				    per_cpu(cpud_arr[type].dentry, cpu),
+ 				    (void *)priv, &cpu_fops);
+ 		mutex_lock(&cpu_debug_lock);
+-		per_cpu(cpu_arr[type].init, cpu) = 1;
++		per_cpu(cpud_arr[type].init, cpu) = 1;
+ 		mutex_unlock(&cpu_debug_lock);
+ 	}
+ 
+@@ -615,7 +615,7 @@ static int cpu_init_allreg(unsigned cpu, struct dentry *dentry)
+ 		if (!is_typeflag_valid(cpu, cpu_base[type].flag))
+ 			continue;
+ 		cpu_dentry = debugfs_create_dir(cpu_base[type].name, dentry);
+-		per_cpu(cpu_arr[type].dentry, cpu) = cpu_dentry;
++		per_cpu(cpud_arr[type].dentry, cpu) = cpu_dentry;
+ 
+ 		if (type < CPU_TSS_BIT)
+ 			err = cpu_init_msr(cpu, type, cpu_dentry);
+@@ -647,11 +647,11 @@ static int cpu_init_cpu(void)
+ 		err = cpu_init_allreg(cpu, cpu_dentry);
+ 
+ 		pr_info("cpu%d(%d) debug files %d\n",
+-			cpu, nr_cpu_ids, per_cpu(cpu_priv_count, cpu));
+-		if (per_cpu(cpu_priv_count, cpu) > MAX_CPU_FILES) {
++			cpu, nr_cpu_ids, per_cpu(cpud_priv_count, cpu));
++		if (per_cpu(cpud_priv_count, cpu) > MAX_CPU_FILES) {
+ 			pr_err("Register files count %d exceeds limit %d\n",
+-				per_cpu(cpu_priv_count, cpu), MAX_CPU_FILES);
+-			per_cpu(cpu_priv_count, cpu) = MAX_CPU_FILES;
++				per_cpu(cpud_priv_count, cpu), MAX_CPU_FILES);
++			per_cpu(cpud_priv_count, cpu) = MAX_CPU_FILES;
+ 			err = -ENFILE;
+ 		}
+ 		if (err)
+@@ -676,8 +676,8 @@ static void __exit cpu_debug_exit(void)
+ 		debugfs_remove_recursive(cpu_debugfs_dir);
+ 
+ 	for (cpu = 0; cpu <  nr_cpu_ids; cpu++)
+-		for (i = 0; i < per_cpu(cpu_priv_count, cpu); i++)
+-			kfree(per_cpu(priv_arr[i], cpu));
++		for (i = 0; i < per_cpu(cpud_priv_count, cpu); i++)
++			kfree(per_cpu(cpud_priv_arr[i], cpu));
  }
-diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
-index fe03eee..1167d98 100644
---- a/arch/x86/xen/smp.c
-+++ b/arch/x86/xen/smp.c
-@@ -35,10 +35,10 @@
  
- cpumask_var_t xen_cpu_initialized_map;
+ module_init(cpu_debug_init);
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 804c40e..f5ccb4f 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -512,8 +512,8 @@ unsigned int __cpuinit init_intel_cacheinfo(struct cpuinfo_x86 *c)
+ #ifdef CONFIG_SYSFS
  
--static DEFINE_PER_CPU(int, resched_irq);
--static DEFINE_PER_CPU(int, callfunc_irq);
--static DEFINE_PER_CPU(int, callfuncsingle_irq);
--static DEFINE_PER_CPU(int, debug_irq) = -1;
-+static DEFINE_PER_CPU(int, xen_resched_irq);
-+static DEFINE_PER_CPU(int, xen_callfunc_irq);
-+static DEFINE_PER_CPU(int, xen_callfuncsingle_irq);
-+static DEFINE_PER_CPU(int, xen_debug_irq) = -1;
+ /* pointer to _cpuid4_info array (for each cache leaf) */
+-static DEFINE_PER_CPU(struct _cpuid4_info *, cpuid4_info);
+-#define CPUID4_INFO_IDX(x, y)	(&((per_cpu(cpuid4_info, x))[y]))
++static DEFINE_PER_CPU(struct _cpuid4_info *, ici_cpuid4_info);
++#define CPUID4_INFO_IDX(x, y)	(&((per_cpu(ici_cpuid4_info, x))[y]))
  
- static irqreturn_t xen_call_function_interrupt(int irq, void *dev_id);
- static irqreturn_t xen_call_function_single_interrupt(int irq, void *dev_id);
-@@ -103,7 +103,7 @@ static int xen_smp_intr_init(unsigned int cpu)
- 				    NULL);
- 	if (rc < 0)
- 		goto fail;
--	per_cpu(resched_irq, cpu) = rc;
-+	per_cpu(xen_resched_irq, cpu) = rc;
+ #ifdef CONFIG_SMP
+ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
+@@ -526,7 +526,7 @@ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
+ 	if ((index == 3) && (c->x86_vendor == X86_VENDOR_AMD)) {
+ 		struct cpuinfo_x86 *d;
+ 		for_each_online_cpu(i) {
+-			if (!per_cpu(cpuid4_info, i))
++			if (!per_cpu(ici_cpuid4_info, i))
+ 				continue;
+ 			d = &cpu_data(i);
+ 			this_leaf = CPUID4_INFO_IDX(i, index);
+@@ -548,7 +548,7 @@ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
+ 			    c->apicid >> index_msb) {
+ 				cpumask_set_cpu(i,
+ 					to_cpumask(this_leaf->shared_cpu_map));
+-				if (i != cpu && per_cpu(cpuid4_info, i))  {
++				if (i != cpu && per_cpu(ici_cpuid4_info, i))  {
+ 					sibling_leaf =
+ 						CPUID4_INFO_IDX(i, index);
+ 					cpumask_set_cpu(cpu, to_cpumask(
+@@ -587,8 +587,8 @@ static void __cpuinit free_cache_attributes(unsigned int cpu)
+ 	for (i = 0; i < num_cache_leaves; i++)
+ 		cache_remove_shared_cpu_map(cpu, i);
  
- 	callfunc_name = kasprintf(GFP_KERNEL, "callfunc%d", cpu);
- 	rc = bind_ipi_to_irqhandler(XEN_CALL_FUNCTION_VECTOR,
-@@ -114,7 +114,7 @@ static int xen_smp_intr_init(unsigned int cpu)
- 				    NULL);
- 	if (rc < 0)
- 		goto fail;
--	per_cpu(callfunc_irq, cpu) = rc;
-+	per_cpu(xen_callfunc_irq, cpu) = rc;
+-	kfree(per_cpu(cpuid4_info, cpu));
+-	per_cpu(cpuid4_info, cpu) = NULL;
++	kfree(per_cpu(ici_cpuid4_info, cpu));
++	per_cpu(ici_cpuid4_info, cpu) = NULL;
+ }
  
- 	debug_name = kasprintf(GFP_KERNEL, "debug%d", cpu);
- 	rc = bind_virq_to_irqhandler(VIRQ_DEBUG, cpu, xen_debug_interrupt,
-@@ -122,7 +122,7 @@ static int xen_smp_intr_init(unsigned int cpu)
- 				     debug_name, NULL);
- 	if (rc < 0)
- 		goto fail;
--	per_cpu(debug_irq, cpu) = rc;
-+	per_cpu(xen_debug_irq, cpu) = rc;
+ static int
+@@ -627,15 +627,15 @@ static int __cpuinit detect_cache_attributes(unsigned int cpu)
+ 	if (num_cache_leaves == 0)
+ 		return -ENOENT;
  
- 	callfunc_name = kasprintf(GFP_KERNEL, "callfuncsingle%d", cpu);
- 	rc = bind_ipi_to_irqhandler(XEN_CALL_FUNCTION_SINGLE_VECTOR,
-@@ -133,19 +133,20 @@ static int xen_smp_intr_init(unsigned int cpu)
- 				    NULL);
- 	if (rc < 0)
- 		goto fail;
--	per_cpu(callfuncsingle_irq, cpu) = rc;
-+	per_cpu(xen_callfuncsingle_irq, cpu) = rc;
+-	per_cpu(cpuid4_info, cpu) = kzalloc(
++	per_cpu(ici_cpuid4_info, cpu) = kzalloc(
+ 	    sizeof(struct _cpuid4_info) * num_cache_leaves, GFP_KERNEL);
+-	if (per_cpu(cpuid4_info, cpu) == NULL)
++	if (per_cpu(ici_cpuid4_info, cpu) == NULL)
+ 		return -ENOMEM;
+ 
+ 	smp_call_function_single(cpu, get_cpu_leaves, &retval, true);
+ 	if (retval) {
+-		kfree(per_cpu(cpuid4_info, cpu));
+-		per_cpu(cpuid4_info, cpu) = NULL;
++		kfree(per_cpu(ici_cpuid4_info, cpu));
++		per_cpu(ici_cpuid4_info, cpu) = NULL;
+ 	}
+ 
+ 	return retval;
+@@ -647,7 +647,7 @@ static int __cpuinit detect_cache_attributes(unsigned int cpu)
+ extern struct sysdev_class cpu_sysdev_class; /* from drivers/base/cpu.c */
+ 
+ /* pointer to kobject for cpuX/cache */
+-static DEFINE_PER_CPU(struct kobject *, cache_kobject);
++static DEFINE_PER_CPU(struct kobject *, ici_cache_kobject);
+ 
+ struct _index_kobject {
+ 	struct kobject kobj;
+@@ -656,8 +656,8 @@ struct _index_kobject {
+ };
+ 
+ /* pointer to array of kobjects for cpuX/cache/indexY */
+-static DEFINE_PER_CPU(struct _index_kobject *, index_kobject);
+-#define INDEX_KOBJECT_PTR(x, y)		(&((per_cpu(index_kobject, x))[y]))
++static DEFINE_PER_CPU(struct _index_kobject *, ici_index_kobject);
++#define INDEX_KOBJECT_PTR(x, y)		(&((per_cpu(ici_index_kobject, x))[y]))
+ 
+ #define show_one_plus(file_name, object, val)				\
+ static ssize_t show_##file_name						\
+@@ -876,10 +876,10 @@ static struct kobj_type ktype_percpu_entry = {
+ 
+ static void __cpuinit cpuid4_cache_sysfs_exit(unsigned int cpu)
+ {
+-	kfree(per_cpu(cache_kobject, cpu));
+-	kfree(per_cpu(index_kobject, cpu));
+-	per_cpu(cache_kobject, cpu) = NULL;
+-	per_cpu(index_kobject, cpu) = NULL;
++	kfree(per_cpu(ici_cache_kobject, cpu));
++	kfree(per_cpu(ici_index_kobject, cpu));
++	per_cpu(ici_cache_kobject, cpu) = NULL;
++	per_cpu(ici_index_kobject, cpu) = NULL;
+ 	free_cache_attributes(cpu);
+ }
+ 
+@@ -895,14 +895,14 @@ static int __cpuinit cpuid4_cache_sysfs_init(unsigned int cpu)
+ 		return err;
+ 
+ 	/* Allocate all required memory */
+-	per_cpu(cache_kobject, cpu) =
++	per_cpu(ici_cache_kobject, cpu) =
+ 		kzalloc(sizeof(struct kobject), GFP_KERNEL);
+-	if (unlikely(per_cpu(cache_kobject, cpu) == NULL))
++	if (unlikely(per_cpu(ici_cache_kobject, cpu) == NULL))
+ 		goto err_out;
+ 
+-	per_cpu(index_kobject, cpu) = kzalloc(
++	per_cpu(ici_index_kobject, cpu) = kzalloc(
+ 	    sizeof(struct _index_kobject) * num_cache_leaves, GFP_KERNEL);
+-	if (unlikely(per_cpu(index_kobject, cpu) == NULL))
++	if (unlikely(per_cpu(ici_index_kobject, cpu) == NULL))
+ 		goto err_out;
+ 
+ 	return 0;
+@@ -926,7 +926,7 @@ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
+ 	if (unlikely(retval < 0))
+ 		return retval;
+ 
+-	retval = kobject_init_and_add(per_cpu(cache_kobject, cpu),
++	retval = kobject_init_and_add(per_cpu(ici_cache_kobject, cpu),
+ 				      &ktype_percpu_entry,
+ 				      &sys_dev->kobj, "%s", "cache");
+ 	if (retval < 0) {
+@@ -940,12 +940,12 @@ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
+ 		this_object->index = i;
+ 		retval = kobject_init_and_add(&(this_object->kobj),
+ 					      &ktype_cache,
+-					      per_cpu(cache_kobject, cpu),
++					      per_cpu(ici_cache_kobject, cpu),
+ 					      "index%1lu", i);
+ 		if (unlikely(retval)) {
+ 			for (j = 0; j < i; j++)
+ 				kobject_put(&(INDEX_KOBJECT_PTR(cpu, j)->kobj));
+-			kobject_put(per_cpu(cache_kobject, cpu));
++			kobject_put(per_cpu(ici_cache_kobject, cpu));
+ 			cpuid4_cache_sysfs_exit(cpu);
+ 			return retval;
+ 		}
+@@ -953,7 +953,7 @@ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
+ 	}
+ 	cpumask_set_cpu(cpu, to_cpumask(cache_dev_map));
+ 
+-	kobject_uevent(per_cpu(cache_kobject, cpu), KOBJ_ADD);
++	kobject_uevent(per_cpu(ici_cache_kobject, cpu), KOBJ_ADD);
+ 	return 0;
+ }
+ 
+@@ -962,7 +962,7 @@ static void __cpuinit cache_remove_dev(struct sys_device * sys_dev)
+ 	unsigned int cpu = sys_dev->id;
+ 	unsigned long i;
+ 
+-	if (per_cpu(cpuid4_info, cpu) == NULL)
++	if (per_cpu(ici_cpuid4_info, cpu) == NULL)
+ 		return;
+ 	if (!cpumask_test_cpu(cpu, to_cpumask(cache_dev_map)))
+ 		return;
+@@ -970,7 +970,7 @@ static void __cpuinit cache_remove_dev(struct sys_device * sys_dev)
+ 
+ 	for (i = 0; i < num_cache_leaves; i++)
+ 		kobject_put(&(INDEX_KOBJECT_PTR(cpu, i)->kobj));
+-	kobject_put(per_cpu(cache_kobject, cpu));
++	kobject_put(per_cpu(ici_cache_kobject, cpu));
+ 	cpuid4_cache_sysfs_exit(cpu);
+ }
+ 
+diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
+index ef42a03..1c47390 100644
+--- a/arch/x86/kernel/ds.c
++++ b/arch/x86/kernel/ds.c
+@@ -265,13 +265,13 @@ struct ds_context {
+ 	int			cpu;
+ };
+ 
+-static DEFINE_PER_CPU(struct ds_context *, cpu_context);
++static DEFINE_PER_CPU(struct ds_context *, cpu_ds_context);
+ 
+ 
+ static struct ds_context *ds_get_context(struct task_struct *task, int cpu)
+ {
+ 	struct ds_context **p_context =
+-		(task ? &task->thread.ds_ctx : &per_cpu(cpu_context, cpu));
++		(task ? &task->thread.ds_ctx : &per_cpu(cpu_ds_context, cpu));
+ 	struct ds_context *context = NULL;
+ 	struct ds_context *new_context = NULL;
+ 
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 944cc9c..6c79a14 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -319,7 +319,7 @@ static void svm_hardware_disable(void *garbage)
+ static void svm_hardware_enable(void *garbage)
+ {
+ 
+-	struct svm_cpu_data *svm_data;
++	struct svm_cpu_data *sd;
+ 	uint64_t efer;
+ 	struct descriptor_table gdt_descr;
+ 	struct desc_struct *gdt;
+@@ -329,62 +329,61 @@ static void svm_hardware_enable(void *garbage)
+ 		printk(KERN_ERR "svm_cpu_init: err EOPNOTSUPP on %d\n", me);
+ 		return;
+ 	}
+-	svm_data = per_cpu(svm_data, me);
++	sd = per_cpu(svm_data, me);
+ 
+-	if (!svm_data) {
++	if (!sd) {
+ 		printk(KERN_ERR "svm_cpu_init: svm_data is NULL on %d\n",
+ 		       me);
+ 		return;
+ 	}
+ 
+-	svm_data->asid_generation = 1;
+-	svm_data->max_asid = cpuid_ebx(SVM_CPUID_FUNC) - 1;
+-	svm_data->next_asid = svm_data->max_asid + 1;
++	sd->asid_generation = 1;
++	sd->max_asid = cpuid_ebx(SVM_CPUID_FUNC) - 1;
++	sd->next_asid = sd->max_asid + 1;
+ 
+ 	kvm_get_gdt(&gdt_descr);
+ 	gdt = (struct desc_struct *)gdt_descr.base;
+-	svm_data->tss_desc = (struct kvm_ldttss_desc *)(gdt + GDT_ENTRY_TSS);
++	sd->tss_desc = (struct kvm_ldttss_desc *)(gdt + GDT_ENTRY_TSS);
+ 
+ 	rdmsrl(MSR_EFER, efer);
+ 	wrmsrl(MSR_EFER, efer | EFER_SVME);
+ 
+ 	wrmsrl(MSR_VM_HSAVE_PA,
+-	       page_to_pfn(svm_data->save_area) << PAGE_SHIFT);
++	       page_to_pfn(sd->save_area) << PAGE_SHIFT);
+ }
+ 
+ static void svm_cpu_uninit(int cpu)
+ {
+-	struct svm_cpu_data *svm_data
+-		= per_cpu(svm_data, raw_smp_processor_id());
++	struct svm_cpu_data *sd = per_cpu(svm_data, raw_smp_processor_id());
+ 
+-	if (!svm_data)
++	if (!sd)
+ 		return;
+ 
+ 	per_cpu(svm_data, raw_smp_processor_id()) = NULL;
+-	__free_page(svm_data->save_area);
+-	kfree(svm_data);
++	__free_page(sd->save_area);
++	kfree(sd);
+ }
+ 
+ static int svm_cpu_init(int cpu)
+ {
+-	struct svm_cpu_data *svm_data;
++	struct svm_cpu_data *sd;
+ 	int r;
+ 
+-	svm_data = kzalloc(sizeof(struct svm_cpu_data), GFP_KERNEL);
+-	if (!svm_data)
++	sd = kzalloc(sizeof(struct svm_cpu_data), GFP_KERNEL);
++	if (!sd)
+ 		return -ENOMEM;
+-	svm_data->cpu = cpu;
+-	svm_data->save_area = alloc_page(GFP_KERNEL);
++	sd->cpu = cpu;
++	sd->save_area = alloc_page(GFP_KERNEL);
+ 	r = -ENOMEM;
+-	if (!svm_data->save_area)
++	if (!sd->save_area)
+ 		goto err_1;
+ 
+-	per_cpu(svm_data, cpu) = svm_data;
++	per_cpu(svm_data, cpu) = sd;
  
  	return 0;
  
-  fail:
--	if (per_cpu(resched_irq, cpu) >= 0)
--		unbind_from_irqhandler(per_cpu(resched_irq, cpu), NULL);
--	if (per_cpu(callfunc_irq, cpu) >= 0)
--		unbind_from_irqhandler(per_cpu(callfunc_irq, cpu), NULL);
--	if (per_cpu(debug_irq, cpu) >= 0)
--		unbind_from_irqhandler(per_cpu(debug_irq, cpu), NULL);
--	if (per_cpu(callfuncsingle_irq, cpu) >= 0)
--		unbind_from_irqhandler(per_cpu(callfuncsingle_irq, cpu), NULL);
-+	if (per_cpu(xen_resched_irq, cpu) >= 0)
-+		unbind_from_irqhandler(per_cpu(xen_resched_irq, cpu), NULL);
-+	if (per_cpu(xen_callfunc_irq, cpu) >= 0)
-+		unbind_from_irqhandler(per_cpu(xen_callfunc_irq, cpu), NULL);
-+	if (per_cpu(xen_debug_irq, cpu) >= 0)
-+		unbind_from_irqhandler(per_cpu(xen_debug_irq, cpu), NULL);
-+	if (per_cpu(xen_callfuncsingle_irq, cpu) >= 0)
-+		unbind_from_irqhandler(per_cpu(xen_callfuncsingle_irq, cpu),
-+				       NULL);
+ err_1:
+-	kfree(svm_data);
++	kfree(sd);
+ 	return r;
  
- 	return rc;
  }
-@@ -348,10 +349,10 @@ static void xen_cpu_die(unsigned int cpu)
- 		current->state = TASK_UNINTERRUPTIBLE;
- 		schedule_timeout(HZ/10);
+@@ -1094,16 +1093,16 @@ static void save_host_msrs(struct kvm_vcpu *vcpu)
+ #endif
+ }
+ 
+-static void new_asid(struct vcpu_svm *svm, struct svm_cpu_data *svm_data)
++static void new_asid(struct vcpu_svm *svm, struct svm_cpu_data *sd)
+ {
+-	if (svm_data->next_asid > svm_data->max_asid) {
+-		++svm_data->asid_generation;
+-		svm_data->next_asid = 1;
++	if (sd->next_asid > sd->max_asid) {
++		++sd->asid_generation;
++		sd->next_asid = 1;
+ 		svm->vmcb->control.tlb_ctl = TLB_CONTROL_FLUSH_ALL_ASID;
  	}
--	unbind_from_irqhandler(per_cpu(resched_irq, cpu), NULL);
--	unbind_from_irqhandler(per_cpu(callfunc_irq, cpu), NULL);
--	unbind_from_irqhandler(per_cpu(debug_irq, cpu), NULL);
--	unbind_from_irqhandler(per_cpu(callfuncsingle_irq, cpu), NULL);
-+	unbind_from_irqhandler(per_cpu(xen_resched_irq, cpu), NULL);
-+	unbind_from_irqhandler(per_cpu(xen_callfunc_irq, cpu), NULL);
-+	unbind_from_irqhandler(per_cpu(xen_debug_irq, cpu), NULL);
-+	unbind_from_irqhandler(per_cpu(xen_callfuncsingle_irq, cpu), NULL);
- 	xen_uninit_lock_cpu(cpu);
- 	xen_teardown_timer(cpu);
  
-diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
-index 0a5aa44..26e37b7 100644
---- a/arch/x86/xen/time.c
-+++ b/arch/x86/xen/time.c
-@@ -31,14 +31,14 @@
- #define NS_PER_TICK	(1000000000LL / HZ)
- 
- /* runstate info updated by Xen */
--static DEFINE_PER_CPU(struct vcpu_runstate_info, runstate);
-+static DEFINE_PER_CPU(struct vcpu_runstate_info, xen_runstate);
- 
- /* snapshots of runstate info */
--static DEFINE_PER_CPU(struct vcpu_runstate_info, runstate_snapshot);
-+static DEFINE_PER_CPU(struct vcpu_runstate_info, xen_runstate_snapshot);
- 
- /* unused ns of stolen and blocked time */
--static DEFINE_PER_CPU(u64, residual_stolen);
--static DEFINE_PER_CPU(u64, residual_blocked);
-+static DEFINE_PER_CPU(u64, xen_residual_stolen);
-+static DEFINE_PER_CPU(u64, xen_residual_blocked);
- 
- /* return an consistent snapshot of 64-bit time/counter value */
- static u64 get64(const u64 *p)
-@@ -79,7 +79,7 @@ static void get_runstate_snapshot(struct vcpu_runstate_info *res)
- 
- 	BUG_ON(preemptible());
- 
--	state = &__get_cpu_var(runstate);
-+	state = &__get_cpu_var(xen_runstate);
- 
- 	/*
- 	 * The runstate info is always updated by the hypervisor on
-@@ -97,14 +97,14 @@ static void get_runstate_snapshot(struct vcpu_runstate_info *res)
- /* return true when a vcpu could run but has no real cpu to run on */
- bool xen_vcpu_stolen(int vcpu)
- {
--	return per_cpu(runstate, vcpu).state == RUNSTATE_runnable;
-+	return per_cpu(xen_runstate, vcpu).state == RUNSTATE_runnable;
+-	svm->asid_generation = svm_data->asid_generation;
+-	svm->vmcb->control.asid = svm_data->next_asid++;
++	svm->asid_generation = sd->asid_generation;
++	svm->vmcb->control.asid = sd->next_asid++;
  }
  
- static void setup_runstate_info(int cpu)
+ static unsigned long svm_get_dr(struct kvm_vcpu *vcpu, int dr)
+@@ -2377,8 +2376,8 @@ static void reload_tss(struct kvm_vcpu *vcpu)
  {
- 	struct vcpu_register_runstate_memory_area area;
+ 	int cpu = raw_smp_processor_id();
  
--	area.addr.v = &per_cpu(runstate, cpu);
-+	area.addr.v = &per_cpu(xen_runstate, cpu);
- 
- 	if (HYPERVISOR_vcpu_op(VCPUOP_register_runstate_memory_area,
- 			       cpu, &area))
-@@ -122,7 +122,7 @@ static void do_stolen_accounting(void)
- 
- 	WARN_ON(state.state != RUNSTATE_running);
- 
--	snap = &__get_cpu_var(runstate_snapshot);
-+	snap = &__get_cpu_var(xen_runstate_snapshot);
- 
- 	/* work out how much time the VCPU has not been runn*ing*  */
- 	blocked = state.time[RUNSTATE_blocked] - snap->time[RUNSTATE_blocked];
-@@ -133,24 +133,24 @@ static void do_stolen_accounting(void)
- 
- 	/* Add the appropriate number of ticks of stolen time,
- 	   including any left-overs from last time. */
--	stolen = runnable + offline + __get_cpu_var(residual_stolen);
-+	stolen = runnable + offline + __get_cpu_var(xen_residual_stolen);
- 
- 	if (stolen < 0)
- 		stolen = 0;
- 
- 	ticks = iter_div_u64_rem(stolen, NS_PER_TICK, &stolen);
--	__get_cpu_var(residual_stolen) = stolen;
-+	__get_cpu_var(xen_residual_stolen) = stolen;
- 	account_steal_ticks(ticks);
- 
- 	/* Add the appropriate number of ticks of blocked time,
- 	   including any left-overs from last time. */
--	blocked += __get_cpu_var(residual_blocked);
-+	blocked += __get_cpu_var(xen_residual_blocked);
- 
- 	if (blocked < 0)
- 		blocked = 0;
- 
- 	ticks = iter_div_u64_rem(blocked, NS_PER_TICK, &blocked);
--	__get_cpu_var(residual_blocked) = blocked;
-+	__get_cpu_var(xen_residual_blocked) = blocked;
- 	account_idle_ticks(ticks);
+-	struct svm_cpu_data *svm_data = per_cpu(svm_data, cpu);
+-	svm_data->tss_desc->type = 9; /* available 32/64-bit TSS */
++	struct svm_cpu_data *sd = per_cpu(svm_data, cpu);
++	sd->tss_desc->type = 9; /* available 32/64-bit TSS */
+ 	load_TR_desc();
  }
  
+@@ -2386,12 +2385,12 @@ static void pre_svm_run(struct vcpu_svm *svm)
+ {
+ 	int cpu = raw_smp_processor_id();
+ 
+-	struct svm_cpu_data *svm_data = per_cpu(svm_data, cpu);
++	struct svm_cpu_data *sd = per_cpu(svm_data, cpu);
+ 
+ 	svm->vmcb->control.tlb_ctl = TLB_CONTROL_DO_NOTHING;
+ 	/* FIXME: handle wraparound of asid_generation */
+-	if (svm->asid_generation != svm_data->asid_generation)
+-		new_asid(svm, svm_data);
++	if (svm->asid_generation != sd->asid_generation)
++		new_asid(svm, sd);
+ }
+ 
+ static void svm_inject_nmi(struct kvm_vcpu *vcpu)
 -- 
 1.6.4.2
 
