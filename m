@@ -1,90 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760874AbZJNV4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761006AbZJNV4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760874AbZJNV4K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 17:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbZJNV4J
+	id S1761006AbZJNV4j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 17:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759375AbZJNV4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 17:56:09 -0400
-Received: from mga02.intel.com ([134.134.136.20]:40709 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756659AbZJNV4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 17:56:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,561,1249282800"; 
-   d="scan'208";a="559634107"
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-From: reinette chatre <reinette.chatre@intel.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: Mel Gorman <mel@csn.ul.ie>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       "Abbas, Mohamed" <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-In-Reply-To: <200910142333.29625.elendil@planet.nl>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
-	 <20091014165051.GE5027@csn.ul.ie> <1255552911.21134.51.camel@rc-desk>
-	 <200910142333.29625.elendil@planet.nl>
-Content-Type: text/plain
-Date: Wed, 14 Oct 2009 14:55:17 -0700
-Message-Id: <1255557317.21134.82.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Wed, 14 Oct 2009 17:56:39 -0400
+Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:53891 "EHLO
+	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756974AbZJNV4i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 17:56:38 -0400
+From: Frans Pop <elendil@planet.nl>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH, v2] kbuild: Improve version string logic
+Date: Wed, 14 Oct 2009 23:55:58 +0200
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Dirk Hohndel <hohndel@infradead.org>,
+       Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.01.0910131100180.26777@localhost.localdomain> <alpine.DEB.1.00.0910131649280.24112@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.00.0910131649280.24112@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910142356.00895.elendil@planet.nl>
+X-OriginalArrivalTime: 14 Oct 2009 21:56:01.0006 (UTC) FILETIME=[1E3918E0:01CA4D19]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-14 at 14:33 -0700, Frans Pop wrote:
-> On Wednesday 14 October 2009, reinette chatre wrote:
-> > We do queue the GFP_KERNEL allocations when there are only a few buffers
-> > remaining in the queue (8 right now) ...
-> 
-> Are you sure of this? I have zero messages in my logs about allocation 
-> failures with GFP_KERNEL, but I do have plenty with "Only 0 free buffers 
-> remaining" with GFP_ATOMIC.
+On Wednesday 14 October 2009, David Rientjes wrote:
+> On Tue, 13 Oct 2009, Linus Torvalds wrote:
+> > Let's keep the old behavior by making the AUTO option an three-way
+> > choice ("none", "short", "auto"), and making sure that it actually
+> > takes work to choose "none" (and that "make oldconfig" doesn't choose
+> > it unless you explicitly made the choice before - so people who just
+> > re-use old .config files wouldn't get "none" by mistake).
 
-That does make sense to me. We do not expect allocations with GFP_KERNEL
-to fail. Considering how I understand how things work I am considering
-the following scenario:
+I'm working on a patch that implements this; will post it later.
 
-* start with system low on available memory
-* now introduce incoming traffic (causing the RX code to run)
-* upon receipt of frame we attempt an allocation (to reclaim the buffer)
-with GFP_ATOMIC (state: num RX buffer free > watermark)
-  * this fails since memory is not available
-  * num RX buffer free reduces
-  * does _not_ queue replenishment of buffers with GFP_KERNEL
-* repeat above until we hit the watermark (currently 8)
-* upon receipt of frame we attempt an allocation (to reclaim the buffer)
-with GFP_ATOMIC (state: num RX buffer free <= watermark) 
-  * this fails (now user sees big warning)
-  * queue replenishment of buffers with GFP_KERNEL
+> I don't think you want to do that because it would require the .config
+> to be posted on bug reports, for example, to determine the setting of
+> CONFIG_LOCALVERSION_AUTO before you can interpret the kernel version. 
+> In other words, you wouldn't know that "2.6.32-rc4" is actually 200
+> commits beyond the actual release unless you also know that the .config
+> has CONFIG_LOCALVERSION_AUTO="none".
 
-Essentially what I suspect could happen is that
-we do attempt to replenish the buffers with GFP_KERNEL after several
-failures with GFP_ATOMIC, but at that point we have already run out
-completely.
+Even with this patch you can never be 100% sure of that, for example 
+because you cannot be 100% certain that a kernel was built from a tree 
+that's under revision control. The most *any* change can do is increase 
+the likelyhood that we get that information in the version number.
 
-One way to test this theory is to queue the GFP_KERNEL allocation
-earlier (when we still have a significant number of RX buffers
-available), 8 may turn out to be too small.
+Will explain more in a different reply later.
 
-> Does that indicate a bug or could they fall under the ratelimit somehow?
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> ---
+>  Makefile |   32 ++++++++++++++++++++------------
+>  1 files changed, 20 insertions(+), 12 deletions(-)
+>
+> diff --git a/Makefile b/Makefile
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -898,9 +898,13 @@ $(vmlinux-dirs): prepare scripts
+>  #	  $(localver)
+>  #	    localversion*		(files without backups, containing '~')
+>  #	    $(CONFIG_LOCALVERSION)	(from kernel config setting)
+> -#	  $(localver-auto)		(only if CONFIG_LOCALVERSION_AUTO is set)
+> -#	    ./scripts/setlocalversion	(SCM tag, if one exists)
+> -#	    $(LOCALVERSION)		(from make command line if provided)
+> +#	    $(LOCALVERSION)		(from make command line, if provided)
+> +#	  $(localver-extra)
+> +#	    $(scm-identifier)		(unique SCM tag, if one exists)
+> +#	      ./scripts/setlocalversion	(only with CONFIG_LOCALVERSION_AUTO)
+> +#	      .scmversion		(only with CONFIG_LOCALVERSION_AUTO)
+> +#	    +				(only without CONFIG_LOCALVERSION_AUTO
+> +#					 and repository is at non-tagged commit)
+>  #
+>  #  Note how the final $(localver-auto) string is included *only* if the
 
-In your kernel log I do see that the driver's error messages related to
-GFP_ATOMIC are rate limited (we see many more "order-2 allocation
-failure" messages than the "Failed to allocate" messages). All of these
-allocation failures are from the "replenish_now" code though, which is
-GFP_ATOMIC. So even though we do not see the "Failed to allocate" errors
-(which are rate limited) it seems that all allocation failures are from
-that (the GFP_ATOMIC) code.
-
-Reinette
-
-
+You forgot to change the $(localver-auto) here; and maybe also remove that 
+leading space in this line.
