@@ -1,37 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751029AbZJNEUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751211AbZJNEUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751029AbZJNEUA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 00:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZJNET7
+	id S1751211AbZJNEUq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 00:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbZJNEUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 00:19:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55402 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750818AbZJNET6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 00:19:58 -0400
-Date: Tue, 13 Oct 2009 21:19:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dick Hollenbeck <dick@softplc.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 8250 patch status?
-Message-Id: <20091013211920.1e306aa5.akpm@linux-foundation.org>
-In-Reply-To: <4AD11769.1030808@softplc.com>
-References: <4AD11769.1030808@softplc.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 14 Oct 2009 00:20:45 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51465 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750765AbZJNEUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 00:20:44 -0400
+Date: Wed, 14 Oct 2009 15:20:00 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: linux-next: net tree build warnings
+Message-Id: <20091014152000.15312908.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__14_Oct_2009_15_20_00_+1100_KonpCOOA996HHN6Q"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Oct 2009 18:23:21 -0500 Dick Hollenbeck <dick@softplc.com> wrote:
+--Signature=_Wed__14_Oct_2009_15_20_00_+1100_KonpCOOA996HHN6Q
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Did this one get commited?
-> 
-> http://marc.info/?l=linux-serial&m=125399650725534&w=2
+Hi Dave,
 
-Nope.  linux-serial is kind of dead.  Please resend, cc'ing myself and
-linux-kernel.
+Today's linux-next build (powerpc ppc44x_defconfig) produced these
+warnings:
 
+In file included from net/socket.c:94:
+include/net/compat.h:45: warning: 'struct compat_mmsghdr' declared inside p=
+arameter list
+include/net/compat.h:45: warning: its scope is only this definition or decl=
+aration, which is probably not what you want
+In file included from net/core/scm.c:36:
+include/net/compat.h:45: warning: 'struct compat_mmsghdr' declared inside p=
+arameter list
+include/net/compat.h:45: warning: its scope is only this definition or decl=
+aration, which is probably not what you want
+In file included from net/ipv4/ip_sockglue.c:37:
+include/net/compat.h:45: warning: 'struct compat_mmsghdr' declared inside p=
+arameter list
+include/net/compat.h:45: warning: its scope is only this definition or decl=
+aration, which is probably not what you want
+In file included from net/ipv6/ipv6_sockglue.c:53:
+include/net/compat.h:45: warning: 'struct compat_mmsghdr' declared inside p=
+arameter list
+include/net/compat.h:45: warning: its scope is only this definition or decl=
+aration, which is probably not what you want
+
+CONFIG_COMPAT is not set.
+
+Caused by commit a2e2725541fad72416326798c2d7fa4dafb7d337 ("net:
+Introduce recvmmsg socket syscall").
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__14_Oct_2009_15_20_00_+1100_KonpCOOA996HHN6Q
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrVUXAACgkQjjKRsyhoI8yLAACfTxhMS1cfJWwFvR0t3AiL0fae
+64YAn0quNkFMDkp8lnFoYIuZUJvODx8h
+=S7QU
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__14_Oct_2009_15_20_00_+1100_KonpCOOA996HHN6Q--
