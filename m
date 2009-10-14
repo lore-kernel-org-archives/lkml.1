@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934672AbZJNPsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934686AbZJNPsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934672AbZJNPsl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934636AbZJNPsk
+	id S934686AbZJNPsr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934675AbZJNPsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:48:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34064 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 11:48:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34074 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934609AbZJNPsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:48:37 -0400
-Date: Wed, 14 Oct 2009 15:47:39 GMT
+	id S934636AbZJNPsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 11:48:43 -0400
+Date: Wed, 14 Oct 2009 15:47:56 GMT
 From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       gregkh@suse.de, tglx@linutronix.de
+       tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, tglx@linutronix.de
-In-Reply-To: <20091010153349.237173041@linutronix.de>
-References: <20091010153349.237173041@linutronix.de>
+       tglx@linutronix.de
+In-Reply-To: <20091010153349.277882707@linutronix.de>
+References: <20091010153349.277882707@linutronix.de>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:bkl/drivers] drivers: Remove BKL from misc_open
-Message-ID: <tip-40b798efe3460797a4ac928ee2e038774e2758eb@git.kernel.org>
-Git-Commit-ID: 40b798efe3460797a4ac928ee2e038774e2758eb
+Subject: [tip:bkl/drivers] drivers: Remove BKL from cs5535_gpio
+Message-ID: <tip-a7e63bb5f08378620d913824ab42e49027f22194@git.kernel.org>
+Git-Commit-ID: a7e63bb5f08378620d913824ab42e49027f22194
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:47:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:47:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  40b798efe3460797a4ac928ee2e038774e2758eb
-Gitweb:     http://git.kernel.org/tip/40b798efe3460797a4ac928ee2e038774e2758eb
+Commit-ID:  a7e63bb5f08378620d913824ab42e49027f22194
+Gitweb:     http://git.kernel.org/tip/a7e63bb5f08378620d913824ab42e49027f22194
 Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Sat, 10 Oct 2009 15:35:43 +0000
+AuthorDate: Sat, 10 Oct 2009 15:35:48 +0000
 Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Wed, 14 Oct 2009 17:33:32 +0200
+CommitDate: Wed, 14 Oct 2009 17:36:48 +0200
 
-drivers: Remove BKL from misc_open
+drivers: Remove BKL from cs5535_gpio
 
-misc_open() is already serialized with misc_mtx. Remove the BKL
-locking which got there via the BKL pushdown.
+The big BKL pushdown added cycle_kernel_lock(). There is nothing to
+wait for in this driver. Remove it.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-LKML-Reference: <20091010153349.237173041@linutronix.de>
+LKML-Reference: <20091010153349.277882707@linutronix.de>
 ---
- drivers/char/misc.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+ drivers/char/cs5535_gpio.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/char/misc.c b/drivers/char/misc.c
-index 07fa612..96f1cd0 100644
---- a/drivers/char/misc.c
-+++ b/drivers/char/misc.c
-@@ -49,7 +49,6 @@
- #include <linux/device.h>
- #include <linux/tty.h>
- #include <linux/kmod.h>
+diff --git a/drivers/char/cs5535_gpio.c b/drivers/char/cs5535_gpio.c
+index 04ba906..4d830dc 100644
+--- a/drivers/char/cs5535_gpio.c
++++ b/drivers/char/cs5535_gpio.c
+@@ -17,7 +17,7 @@
+ #include <linux/cdev.h>
+ #include <linux/ioport.h>
+ #include <linux/pci.h>
 -#include <linux/smp_lock.h>
- 
- /*
-  * Head entry for the doubly linked miscdevice list
-@@ -118,8 +117,7 @@ static int misc_open(struct inode * inode, struct file * file)
- 	struct miscdevice *c;
- 	int err = -ENODEV;
- 	const struct file_operations *old_fops, *new_fops = NULL;
--	
--	lock_kernel();
 +
- 	mutex_lock(&misc_mtx);
- 	
- 	list_for_each_entry(c, &misc_list, list) {
-@@ -157,7 +155,6 @@ static int misc_open(struct inode * inode, struct file * file)
- 	fops_put(old_fops);
- fail:
- 	mutex_unlock(&misc_mtx);
--	unlock_kernel();
- 	return err;
- }
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
  
+@@ -158,7 +158,6 @@ static int cs5535_gpio_open(struct inode *inode, struct file *file)
+ {
+ 	u32 m = iminor(inode);
+ 
+-	cycle_kernel_lock();
+ 	/* the mask says which pins are usable by this driver */
+ 	if ((mask & (1 << m)) == 0)
+ 		return -EINVAL;
