@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761006AbZJNV4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761932AbZJNWBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761006AbZJNV4j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 17:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759375AbZJNV4j
+	id S1761932AbZJNWBv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 18:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761632AbZJNWBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 17:56:39 -0400
-Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:53891 "EHLO
-	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756974AbZJNV4i (ORCPT
+	Wed, 14 Oct 2009 18:01:50 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:59417 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761592AbZJNWBu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 17:56:38 -0400
-From: Frans Pop <elendil@planet.nl>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH, v2] kbuild: Improve version string logic
-Date: Wed, 14 Oct 2009 23:55:58 +0200
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Dirk Hohndel <hohndel@infradead.org>,
-       Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.01.0910131100180.26777@localhost.localdomain> <alpine.DEB.1.00.0910131649280.24112@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.1.00.0910131649280.24112@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 14 Oct 2009 18:01:50 -0400
+Date: Wed, 14 Oct 2009 14:59:05 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: akpm@linux-foundation.org, netdev <netdev@vger.kernel.org>
+Cc: linux-kernel@vger.kernel.org, David Choi <david.choi@micrel.com>
+Subject: [PATCH -mmotm] net: ks8851_mll uses mii interfaces
+Message-Id: <20091014145905.219416bb.randy.dunlap@oracle.com>
+In-Reply-To: <200910140436.n9E4aF9G001644@imap1.linux-foundation.org>
+References: <200910140436.n9E4aF9G001644@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910142356.00895.elendil@planet.nl>
-X-OriginalArrivalTime: 14 Oct 2009 21:56:01.0006 (UTC) FILETIME=[1E3918E0:01CA4D19]
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4AD64A1A.01AF:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 October 2009, David Rientjes wrote:
-> On Tue, 13 Oct 2009, Linus Torvalds wrote:
-> > Let's keep the old behavior by making the AUTO option an three-way
-> > choice ("none", "short", "auto"), and making sure that it actually
-> > takes work to choose "none" (and that "make oldconfig" doesn't choose
-> > it unless you explicitly made the choice before - so people who just
-> > re-use old .config files wouldn't get "none" by mistake).
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I'm working on a patch that implements this; will post it later.
+ks8851_mll uses mii interfaces so it needs to select MII.
 
-> I don't think you want to do that because it would require the .config
-> to be posted on bug reports, for example, to determine the setting of
-> CONFIG_LOCALVERSION_AUTO before you can interpret the kernel version. 
-> In other words, you wouldn't know that "2.6.32-rc4" is actually 200
-> commits beyond the actual release unless you also know that the .config
-> has CONFIG_LOCALVERSION_AUTO="none".
+ks8851_mll.c:(.text+0xf95ac): undefined reference to `generic_mii_ioctl'
+ks8851_mll.c:(.text+0xf96a0): undefined reference to `mii_ethtool_gset'
+ks8851_mll.c:(.text+0xf96fa): undefined reference to `mii_ethtool_sset'
+ks8851_mll.c:(.text+0xf9754): undefined reference to `mii_link_ok'
+ks8851_mll.c:(.text+0xf97ae): undefined reference to `mii_nway_restart'
 
-Even with this patch you can never be 100% sure of that, for example 
-because you cannot be 100% certain that a kernel was built from a tree 
-that's under revision control. The most *any* change can do is increase 
-the likelyhood that we get that information in the version number.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: David Choi <david.choi@micrel.com>
+---
+ drivers/net/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-Will explain more in a different reply later.
-
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  Makefile |   32 ++++++++++++++++++++------------
->  1 files changed, 20 insertions(+), 12 deletions(-)
->
-> diff --git a/Makefile b/Makefile
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -898,9 +898,13 @@ $(vmlinux-dirs): prepare scripts
->  #	  $(localver)
->  #	    localversion*		(files without backups, containing '~')
->  #	    $(CONFIG_LOCALVERSION)	(from kernel config setting)
-> -#	  $(localver-auto)		(only if CONFIG_LOCALVERSION_AUTO is set)
-> -#	    ./scripts/setlocalversion	(SCM tag, if one exists)
-> -#	    $(LOCALVERSION)		(from make command line if provided)
-> +#	    $(LOCALVERSION)		(from make command line, if provided)
-> +#	  $(localver-extra)
-> +#	    $(scm-identifier)		(unique SCM tag, if one exists)
-> +#	      ./scripts/setlocalversion	(only with CONFIG_LOCALVERSION_AUTO)
-> +#	      .scmversion		(only with CONFIG_LOCALVERSION_AUTO)
-> +#	    +				(only without CONFIG_LOCALVERSION_AUTO
-> +#					 and repository is at non-tagged commit)
->  #
->  #  Note how the final $(localver-auto) string is included *only* if the
-
-You forgot to change the $(localver-auto) here; and maybe also remove that 
-leading space in this line.
+--- mmotm-2009-1013-2113.orig/drivers/net/Kconfig
++++ mmotm-2009-1013-2113/drivers/net/Kconfig
+@@ -1741,6 +1741,7 @@ config KS8851
+ config KS8851_MLL
+ 	tristate "Micrel KS8851 MLL"
+ 	depends on HAS_IOMEM
++	select MII
+ 	help
+ 	  This platform driver is for Micrel KS8851 Address/data bus
+ 	  multiplexed network chip.
