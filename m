@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbZJNMRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759647AbZJNMRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759346AbZJNMRc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 08:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262AbZJNMRb
+	id S1759647AbZJNMRm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 08:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759620AbZJNMRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 08:17:31 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:49092 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755791AbZJNMRa (ORCPT
+	Wed, 14 Oct 2009 08:17:41 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:22709 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759593AbZJNMRl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 08:17:30 -0400
+	Wed, 14 Oct 2009 08:17:41 -0400
 From: Aaro Koskinen <aaro.koskinen@nokia.com>
 To: sameo@linux.intel.com, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] mfd: twl4030-power: do not allow negative or zero length script
-Date: Wed, 14 Oct 2009 15:15:49 +0300
-Message-Id: <1255522550-15199-1-git-send-email-aaro.koskinen@nokia.com>
+Subject: [PATCH 2/2] mfd: twl4030-power: fix undefined resconfig value checks
+Date: Wed, 14 Oct 2009 15:15:50 +0300
+Message-Id: <1255522550-15199-2-git-send-email-aaro.koskinen@nokia.com>
 X-Mailer: git-send-email 1.6.0.4
-X-OriginalArrivalTime: 14 Oct 2009 12:15:55.0508 (UTC) FILETIME=[14879340:01CA4CC8]
+In-Reply-To: <1255522550-15199-1-git-send-email-aaro.koskinen@nokia.com>
+References: <1255522550-15199-1-git-send-email-aaro.koskinen@nokia.com>
+X-OriginalArrivalTime: 14 Oct 2009 12:15:56.0776 (UTC) FILETIME=[15490E80:01CA4CC8]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The script length cannot be negative. If the length is zero, return
-an error.
+The code tries to skip values initialized with -1, but since the values
+are unsigned the comparison is always true.
 
-The patch eliminates the following compiler warning:
+The patch eliminates the following compiler warnings:
 
-drivers/mfd/twl4030-power.c: In function 'twl4030_power_init':
-drivers/mfd/twl4030-power.c:151: warning: 'err' may be used uninitialized in this function
-drivers/mfd/twl4030-power.c:151: note: 'err' was declared here
+drivers/mfd/twl4030-power.c: In function 'twl4030_configure_resource':
+drivers/mfd/twl4030-power.c:338: warning: comparison is always true due to limited range of data type
+drivers/mfd/twl4030-power.c:358: warning: comparison is always true due to limited range of data type
+drivers/mfd/twl4030-power.c:363: warning: comparison is always true due to limited range of data type
 
 Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
 ---
- drivers/mfd/twl4030-power.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/mfd/twl4030-power.c |    6 +++---
+ include/linux/i2c/twl4030.h |    1 +
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
-index d423e0c..eae6cda 100644
+index eae6cda..2f7c805 100644
 --- a/drivers/mfd/twl4030-power.c
 +++ b/drivers/mfd/twl4030-power.c
-@@ -146,9 +146,9 @@ out:
- }
+@@ -335,7 +335,7 @@ static int __init twl4030_configure_resource(struct twl4030_resconfig *rconfig)
+ 		return err;
+ 	}
  
- static int __init twl4030_write_script(u8 address, struct twl4030_ins *script,
--				       int len)
-+				       unsigned len)
- {
--	int err;
-+	int err = EINVAL;
+-	if (rconfig->devgroup >= 0) {
++	if (rconfig->devgroup != TWL4030_RESCONFIG_UNDEF) {
+ 		grp &= ~DEVGROUP_MASK;
+ 		grp |= rconfig->devgroup << DEVGROUP_SHIFT;
+ 		err = twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
+@@ -355,12 +355,12 @@ static int __init twl4030_configure_resource(struct twl4030_resconfig *rconfig)
+ 		return err;
+ 	}
  
- 	for (; len; len--, address++, script++) {
- 		if (len == 1) {
+-	if (rconfig->type >= 0) {
++	if (rconfig->type != TWL4030_RESCONFIG_UNDEF) {
+ 		type &= ~TYPE_MASK;
+ 		type |= rconfig->type << TYPE_SHIFT;
+ 	}
+ 
+-	if (rconfig->type2 >= 0) {
++	if (rconfig->type2 != TWL4030_RESCONFIG_UNDEF) {
+ 		type &= ~TYPE2_MASK;
+ 		type |= rconfig->type2 << TYPE2_SHIFT;
+ 	}
+diff --git a/include/linux/i2c/twl4030.h b/include/linux/i2c/twl4030.h
+index 508824e..99e5d7b 100644
+--- a/include/linux/i2c/twl4030.h
++++ b/include/linux/i2c/twl4030.h
+@@ -391,6 +391,7 @@ struct twl4030_resconfig {
+ 	u8 devgroup;	/* Processor group that Power resource belongs to */
+ 	u8 type;	/* Power resource addressed, 6 / broadcast message */
+ 	u8 type2;	/* Power resource addressed, 3 / broadcast message */
++#define TWL4030_RESCONFIG_UNDEF	((u8)-1)
+ };
+ 
+ struct twl4030_power_data {
 -- 
 1.6.0.4
 
