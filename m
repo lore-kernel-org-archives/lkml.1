@@ -1,289 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933095AbZJNLvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbZJNLwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933095AbZJNLvP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 07:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933033AbZJNLvO
+	id S1756442AbZJNLwj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 07:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZJNLwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 07:51:14 -0400
-Received: from mtagate7.de.ibm.com ([195.212.17.167]:38370 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933017AbZJNLvL (ORCPT
+	Wed, 14 Oct 2009 07:52:38 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:39652 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751269AbZJNLwi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 07:51:11 -0400
-Date: Wed, 14 Oct 2009 13:50:31 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [GIT PULL] s390 patches for 2.6.32-rc4
-Message-ID: <20091014135031.780dff6d@mschwide.boeblingen.de.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 07:52:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=BjlJhDsMvn2qTb06B+DrGvzma31X1yYK7d6S5uh0iky9rp9xe+M3NKxvFVQbr1h91I
+         thY5jvRqFFdshmVk20tFMPSh+gNGQSqpQHXB/scC5ats5v7HbCVOtc12LbVRfAseXh7v
+         qfdm8yAPzSDi2rZIXMTHcYuk4R/tfsl6KB5MY=
+MIME-Version: 1.0
+In-Reply-To: <19f34abd0910140426vd9bcb41x460ed8779b7495a5@mail.gmail.com>
+References: <200909261428.06802.bart.vanassche@gmail.com>
+	 <e2e108260910012341v5eab14c5o29da95ec52e75183@mail.gmail.com>
+	 <19f34abd0910020051h5a831729vcfca50b7bd9f9104@mail.gmail.com>
+	 <e2e108260910140006n3c55b3e9h9cb4340a6bec22cc@mail.gmail.com>
+	 <19f34abd0910140426vd9bcb41x460ed8779b7495a5@mail.gmail.com>
+Date: Wed, 14 Oct 2009 13:52:26 +0200
+Message-ID: <e2e108260910140452j12d437dcm75707bce1bfe4ec1@mail.gmail.com>
+Subject: Re: [PATCH 2.6.31.1] include/linux/kmemcheck.h: fix a sparse warning
+From: Bart Van Assche <bart.vanassche@gmail.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Wed, Oct 14, 2009 at 1:26 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> 2009/10/14 Bart Van Assche <bart.vanassche@gmail.com>:
+>> On Fri, Oct 2, 2009 at 9:51 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>>>
+>>> 2009/10/2 Bart Van Assche <bart.vanassche@gmail.com>:
+>>> > On Sat, Sep 26, 2009 at 2:28 PM, Bart Van Assche
+>>> > <bart.vanassche@gmail.com> wrote:
+>>> >>
+>>> >> Checking a 2.6.31.1 kernel configured with allyesconfig/allmodconfig
+>>> >> with sparse (make C=2) triggers a sparse warning on code that uses the
+>>> >> kmemcheck_annotate_bitfield() macro. An example of such a warning:
+>>> >>
+>>> >> include/net/inet_sock.h:208:17: warning: do-while statement is not a compound statement
+>>> >>
+>>> >> Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
+>>> >> Cc: Vegard Nossum <vegardno@ifi.uio.no>
+>>> >> Cc: Andrew Morton <akpm@linux-foundation.org>
+>>> >>
+>>> >> --- linux-2.6.31.1/include/linux/kmemcheck-orig.h       2009-09-26 13:53:44.000000000 +0200
+>>> >> +++ linux-2.6.31.1/include/linux/kmemcheck.h    2009-09-26 13:53:56.000000000 +0200
+>>> >> @@ -137,13 +137,13 @@ static inline void kmemcheck_mark_initia
+>>> >>        int name##_end[0];
+>>> >>
+>>> >>  #define kmemcheck_annotate_bitfield(ptr, name)                         \
+>>> >> -       do if (ptr) {                                                   \
+>>> >> +       do { if (ptr) {                                                 \
+>>> >>                int _n = (long) &((ptr)->name##_end)                    \
+>>> >>                        - (long) &((ptr)->name##_begin);                \
+>>> >>                BUILD_BUG_ON(_n < 0);                                   \
+>>> >>                                                                        \
+>>> >>                kmemcheck_mark_initialized(&((ptr)->name##_begin), _n); \
+>>> >> -       } while (0)
+>>> >> +       } } while (0)
+>>> >>
+>>> >>  #define kmemcheck_annotate_variable(var)                               \
+>>> >>        do {                                                            \
+>>> >
+>>> > (ping)
+>>> >
+>>> > Did anyone already have the time to review the patch above ?
+>>>
+>>> A patch for this problem has already been applied in latest mainline.
+>>
+>> Unfortunately this issue is still present in 2.6.31.4, which has been
+>> released on October 12 (yesterday). Is the patch that has been applied
+>> in the mainline kernel suitable for backporting ?
+>
+> I assumed that this wouldn't be suitable for stable kernels, as the
+> change is purely syntactic. Is there a good reason for applying this
+> patch to the stable series? Perhaps Greg can answer this (Cced)?
 
-before everybody gets on the plane to the kernel summit in Tokyo,
-here are the latest bug fixes for s390 that should go into 2.6.32.
+Which patch are you referring to (commit ID) ?
 
-Please pull from 'for-linus' branch of
-
-	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
-
-to receive the following updates:
-
-Andreas Krebbel (1):
-      [S390] Add highgprs facility to /proc/cpuinfo
-
-Heiko Carstens (1):
-      [S390] call home support: fix proc handler
-
-Michael Holzheu (3):
-      [S390] hypfs: Use subcode 6 if subcode 7 is not available
-      [S390] tape390: Fix request queue handling in block driver
-      [S390] sclp_vt220 build fix
-
-Peter Oberparleiter (1):
-      [S390] cio: change misleading console logic
-
-Stefan Haberland (2):
-      [S390] dasd: fix locking bug
-      [S390] dasd: use idal for device characteristics
-
- arch/s390/hypfs/hypfs_diag.c   |    2 +-
- arch/s390/kernel/processor.c   |    6 +++---
- drivers/s390/block/dasd.c      |   13 +++++++++++--
- drivers/s390/block/dasd_eckd.c |    8 +++++---
- drivers/s390/char/sclp_async.c |    4 ++--
- drivers/s390/char/sclp_vt220.c |   30 +++++++++++++++---------------
- drivers/s390/char/tape_block.c |    3 ++-
- drivers/s390/cio/device.c      |    9 ++++-----
- 8 files changed, 43 insertions(+), 32 deletions(-)
-
-diff --git a/arch/s390/hypfs/hypfs_diag.c b/arch/s390/hypfs/hypfs_diag.c
-index 704dd39..77df726 100644
---- a/arch/s390/hypfs/hypfs_diag.c
-+++ b/arch/s390/hypfs/hypfs_diag.c
-@@ -438,7 +438,7 @@ static int diag204_probe(void)
- 		}
- 		if (diag204((unsigned long)SUBC_STIB6 |
- 			    (unsigned long)INFO_EXT, pages, buf) >= 0) {
--			diag204_store_sc = SUBC_STIB7;
-+			diag204_store_sc = SUBC_STIB6;
- 			diag204_info_type = INFO_EXT;
- 			goto out;
- 		}
-diff --git a/arch/s390/kernel/processor.c b/arch/s390/kernel/processor.c
-index 802c8ab..0729f36 100644
---- a/arch/s390/kernel/processor.c
-+++ b/arch/s390/kernel/processor.c
-@@ -31,9 +31,9 @@ void __cpuinit print_cpu_info(void)
- 
- static int show_cpuinfo(struct seq_file *m, void *v)
- {
--	static const char *hwcap_str[9] = {
-+	static const char *hwcap_str[10] = {
- 		"esan3", "zarch", "stfle", "msa", "ldisp", "eimm", "dfp",
--		"edat", "etf3eh"
-+		"edat", "etf3eh", "highgprs"
- 	};
- 	struct _lowcore *lc;
- 	unsigned long n = (unsigned long) v - 1;
-@@ -48,7 +48,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 			   num_online_cpus(), loops_per_jiffy/(500000/HZ),
- 			   (loops_per_jiffy/(5000/HZ))%100);
- 		seq_puts(m, "features\t: ");
--		for (i = 0; i < 9; i++)
-+		for (i = 0; i < 10; i++)
- 			if (hwcap_str[i] && (elf_hwcap & (1UL << i)))
- 				seq_printf(m, "%s ", hwcap_str[i]);
- 		seq_puts(m, "\n");
-diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
-index 53b8c25..aaccc8e 100644
---- a/drivers/s390/block/dasd.c
-+++ b/drivers/s390/block/dasd.c
-@@ -2533,6 +2533,7 @@ static struct dasd_ccw_req *dasd_generic_build_rdc(struct dasd_device *device,
- {
- 	struct dasd_ccw_req *cqr;
- 	struct ccw1 *ccw;
-+	unsigned long *idaw;
- 
- 	cqr = dasd_smalloc_request(magic, 1 /* RDC */, rdc_buffer_size, device);
- 
-@@ -2546,9 +2547,17 @@ static struct dasd_ccw_req *dasd_generic_build_rdc(struct dasd_device *device,
- 
- 	ccw = cqr->cpaddr;
- 	ccw->cmd_code = CCW_CMD_RDC;
--	ccw->cda = (__u32)(addr_t)rdc_buffer;
--	ccw->count = rdc_buffer_size;
-+	if (idal_is_needed(rdc_buffer, rdc_buffer_size)) {
-+		idaw = (unsigned long *) (cqr->data);
-+		ccw->cda = (__u32)(addr_t) idaw;
-+		ccw->flags = CCW_FLAG_IDA;
-+		idaw = idal_create_words(idaw, rdc_buffer, rdc_buffer_size);
-+	} else {
-+		ccw->cda = (__u32)(addr_t) rdc_buffer;
-+		ccw->flags = 0;
-+	}
- 
-+	ccw->count = rdc_buffer_size;
- 	cqr->startdev = device;
- 	cqr->memdev = device;
- 	cqr->expires = 10*HZ;
-diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c
-index 0be7c15..417b97c 100644
---- a/drivers/s390/block/dasd_eckd.c
-+++ b/drivers/s390/block/dasd_eckd.c
-@@ -3216,6 +3216,7 @@ int dasd_eckd_restore_device(struct dasd_device *device)
- 	struct dasd_eckd_characteristics temp_rdc_data;
- 	int is_known, rc;
- 	struct dasd_uid temp_uid;
-+	unsigned long flags;
- 
- 	private = (struct dasd_eckd_private *) device->private;
- 
-@@ -3228,7 +3229,8 @@ int dasd_eckd_restore_device(struct dasd_device *device)
- 	rc = dasd_eckd_generate_uid(device, &private->uid);
- 	dasd_get_uid(device->cdev, &temp_uid);
- 	if (memcmp(&private->uid, &temp_uid, sizeof(struct dasd_uid)) != 0)
--		dev_err(&device->cdev->dev, "The UID of the DASD has changed\n");
-+		dev_err(&device->cdev->dev, "The UID of the DASD has "
-+			"changed\n");
- 	if (rc)
- 		goto out_err;
- 	dasd_set_uid(device->cdev, &private->uid);
-@@ -3256,9 +3258,9 @@ int dasd_eckd_restore_device(struct dasd_device *device)
- 			  "device: %s", rc, dev_name(&device->cdev->dev));
- 		goto out_err;
- 	}
--	spin_lock(get_ccwdev_lock(device->cdev));
-+	spin_lock_irqsave(get_ccwdev_lock(device->cdev), flags);
- 	memcpy(&private->rdc_data, &temp_rdc_data, sizeof(temp_rdc_data));
--	spin_unlock(get_ccwdev_lock(device->cdev));
-+	spin_unlock_irqrestore(get_ccwdev_lock(device->cdev), flags);
- 
- 	/* add device to alias management */
- 	dasd_alias_add_device(device);
-diff --git a/drivers/s390/char/sclp_async.c b/drivers/s390/char/sclp_async.c
-index daaec18..a4f68e5 100644
---- a/drivers/s390/char/sclp_async.c
-+++ b/drivers/s390/char/sclp_async.c
-@@ -62,7 +62,7 @@ static struct notifier_block call_home_panic_nb = {
- 	.priority = INT_MAX,
- };
- 
--static int proc_handler_callhome(ctl_table *ctl, int write, struct file *filp,
-+static int proc_handler_callhome(struct ctl_table *ctl, int write,
- 				 void __user *buffer, size_t *count,
- 				 loff_t *ppos)
- {
-@@ -100,7 +100,7 @@ static struct ctl_table callhome_table[] = {
- 	{
- 		.procname	= "callhome",
- 		.mode		= 0644,
--		.proc_handler	= &proc_handler_callhome,
-+		.proc_handler	= proc_handler_callhome,
- 	},
- 	{ .ctl_name = 0 }
- };
-diff --git a/drivers/s390/char/sclp_vt220.c b/drivers/s390/char/sclp_vt220.c
-index 178724f..b9d2a00 100644
---- a/drivers/s390/char/sclp_vt220.c
-+++ b/drivers/s390/char/sclp_vt220.c
-@@ -705,21 +705,6 @@ out_driver:
- }
- __initcall(sclp_vt220_tty_init);
- 
--#ifdef CONFIG_SCLP_VT220_CONSOLE
--
--static void
--sclp_vt220_con_write(struct console *con, const char *buf, unsigned int count)
--{
--	__sclp_vt220_write((const unsigned char *) buf, count, 1, 1, 0);
--}
--
--static struct tty_driver *
--sclp_vt220_con_device(struct console *c, int *index)
--{
--	*index = 0;
--	return sclp_vt220_driver;
--}
--
- static void __sclp_vt220_flush_buffer(void)
- {
- 	unsigned long flags;
-@@ -776,6 +761,21 @@ static void sclp_vt220_pm_event_fn(struct sclp_register *reg,
- 	}
- }
- 
-+#ifdef CONFIG_SCLP_VT220_CONSOLE
-+
-+static void
-+sclp_vt220_con_write(struct console *con, const char *buf, unsigned int count)
-+{
-+	__sclp_vt220_write((const unsigned char *) buf, count, 1, 1, 0);
-+}
-+
-+static struct tty_driver *
-+sclp_vt220_con_device(struct console *c, int *index)
-+{
-+	*index = 0;
-+	return sclp_vt220_driver;
-+}
-+
- static int
- sclp_vt220_notify(struct notifier_block *self,
- 			  unsigned long event, void *data)
-diff --git a/drivers/s390/char/tape_block.c b/drivers/s390/char/tape_block.c
-index 64f57ef..0c0705b 100644
---- a/drivers/s390/char/tape_block.c
-+++ b/drivers/s390/char/tape_block.c
-@@ -162,9 +162,10 @@ tapeblock_requeue(struct work_struct *work) {
- 	spin_lock_irq(&device->blk_data.request_queue_lock);
- 	while (
- 		!blk_queue_plugged(queue) &&
--		(req = blk_fetch_request(queue)) &&
-+		blk_peek_request(queue) &&
- 		nr_queued < TAPEBLOCK_MIN_REQUEUE
- 	) {
-+		req = blk_fetch_request(queue);
- 		if (rq_data_dir(req) == WRITE) {
- 			DBF_EVENT(1, "TBLOCK: Rejecting write request\n");
- 			spin_unlock_irq(&device->blk_data.request_queue_lock);
-diff --git a/drivers/s390/cio/device.c b/drivers/s390/cio/device.c
-index 2ee093e..2490b74 100644
---- a/drivers/s390/cio/device.c
-+++ b/drivers/s390/cio/device.c
-@@ -1250,8 +1250,7 @@ static int io_subchannel_probe(struct subchannel *sch)
- 	unsigned long flags;
- 	struct ccw_dev_id dev_id;
- 
--	cdev = sch_get_cdev(sch);
--	if (cdev) {
-+	if (cio_is_console(sch->schid)) {
- 		rc = sysfs_create_group(&sch->dev.kobj,
- 					&io_subchannel_attr_group);
- 		if (rc)
-@@ -1260,13 +1259,13 @@ static int io_subchannel_probe(struct subchannel *sch)
- 				      "0.%x.%04x (rc=%d)\n",
- 				      sch->schid.ssid, sch->schid.sch_no, rc);
- 		/*
--		 * This subchannel already has an associated ccw_device.
-+		 * The console subchannel already has an associated ccw_device.
- 		 * Throw the delayed uevent for the subchannel, register
--		 * the ccw_device and exit. This happens for all early
--		 * devices, e.g. the console.
-+		 * the ccw_device and exit.
- 		 */
- 		dev_set_uevent_suppress(&sch->dev, 0);
- 		kobject_uevent(&sch->dev.kobj, KOBJ_ADD);
-+		cdev = sch_get_cdev(sch);
- 		cdev->dev.groups = ccwdev_attr_groups;
- 		device_initialize(&cdev->dev);
- 		ccw_device_register(cdev);
+Bart.
