@@ -1,75 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbZJNUcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933987AbZJNUcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757195AbZJNUcJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 16:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZJNUcJ
+	id S933987AbZJNUcx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 16:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933724AbZJNUcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 16:32:09 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:34843 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752183AbZJNUcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 16:32:08 -0400
-Date: Wed, 14 Oct 2009 16:31:39 -0400
-From: Dave Jones <davej@redhat.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [X86] PCI: Use generic cacheline sizing instead of per-vendor
-	tests.
-Message-ID: <20091014203139.GA2336@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+	Wed, 14 Oct 2009 16:32:53 -0400
+Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:58196 "EHLO
+	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933354AbZJNUcw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 16:32:52 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Massimo Cetra <mcetra@navynet.it>
+Subject: Re: Bug on barriers for virtio_blk device - end_request: I/O error, dev vda, sector 0
+Date: Wed, 14 Oct 2009 22:32:12 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Mark McLoughlin <markmc@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Mikulas Patocka <mpatocka@redhat.com>,
+       Alasdair G Kergon <agk@redhat.com>, Neil Brown <neilb@suse.de>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       dm-devel <dm-devel@redhat.com>
+References: <4AD5DC1D.9070002@navynet.it> <4AD5DC1D.9070002@navynet.it>=?utf-8?q?=0A1_2?= <4AD62690.9080408@navynet.it>
+In-reply-To: <4AD62690.9080408@navynet.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200910142232.14837.elendil@planet.nl>
+X-OriginalArrivalTime: 14 Oct 2009 20:32:15.0135 (UTC) FILETIME=[6A920AF0:01CA4D0D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instead of the PCI code needing to have code to determine the 
-cacheline size of each processor, use the data the cpu identification
-code should have already determined during early boot.
+Added CCs for the author of and people CCed on the patch.
 
-(The vendor checks are also incomplete, and don't take into account
- modern CPUs)
+The patch has been submitted twice (6 Aug, 3 Sept), the first time there 
+was one concern voiced which seems to have been addressed in replies. The 
+second time there were no reactions.
 
-I've been carrying a variant of this code in Fedora for a while,
-that prints debug information.  There are a number of cases where we
-are currently setting the PCI cacheline size to 32 bytes, when the CPU
-cacheline size is 64 bytes.  With this patch, we set them both the same.
+The patch seems to work for Massimo...
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+Massimo Cetra wrote:
+> Massimo Cetra ha scritto:
+>> Hello all,
+>>
+>> i ended up with some thiusands of errors after upgrading to 2.6.31.2
+>> like this one:
+>>
+>> end_request: I/O error, dev vda, sector 0
+>> end_request: I/O error, dev vda, sector 0
+>> end_request: I/O error, dev vda, sector 0
+>> end_request: I/O error, dev vda, sector 0
+>>
+>> I am using ocfs2 on top of drbd on top of LVM in a KVM guest that uses
+>> virtio_blk.
+>>
+>> The bug is already known, see here:
+>> https://bugzilla.redhat.com/show_bug.cgi?id=514901
+>>
+>> A patch exists and the problem has already been submitted here in the
+>> list.
+>> See here: http://lkml.org/lkml/2009/8/6/153
+>>
+>> That fix is not in 2.6.31 nor in 2.6.32-RCX
+>>
+>> Could you please consider pulling it and adding this fix for inclusion
+>> in 2.6.31.$next and also to mainline?
+>>
+>> Thanks.
+>
+> No one listening here ?
 
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index 1331fcf..b9f9373 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -422,15 +422,20 @@ int __init pcibios_init(void)
- 	}
- 
- 	/*
--	 * Assume PCI cacheline size of 32 bytes for all x86s except K7/K8
--	 * and P4. It's also good for 386/486s (which actually have 16)
-+	 * Set PCI cacheline size to that of the CPU if the CPU has reported it.
-+	 * (For older CPUs that don't support cpuid, we se it to 32 bytes
-+	 * It's also good for 386/486s (which actually have 16)
- 	 * as quite a few PCI devices do not support smaller values.
- 	 */
--	pci_cache_line_size = 32 >> 2;
--	if (c->x86 >= 6 && c->x86_vendor == X86_VENDOR_AMD)
--		pci_cache_line_size = 64 >> 2;	/* K7 & K8 */
--	else if (c->x86 > 6 && c->x86_vendor == X86_VENDOR_INTEL)
--		pci_cache_line_size = 128 >> 2;	/* P4 */
-+
-+	if (c->x86_clflush_size > 0) {
-+		pci_cache_line_size = c->x86_clflush_size >> 2;
-+		printk(KERN_DEBUG "PCI: pci_cache_line_size set to %d bytes\n",
-+			pci_cache_line_size << 2);
-+	} else {
-+		pci_cache_line_size = 32 >> 2;
-+		printk(KERN_DEBUG "PCI: Unknown cacheline size. Setting to 32 bytes\n");
-+	}
- 
- 	pcibios_resource_survey();
- 
+It helps if you CC the people who maintain the relevant code.
+
+> This makes virtio_blk on LVM unusable.
+
+Cheers,
+FJP
