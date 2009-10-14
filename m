@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751211AbZJNEUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751339AbZJNEW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751211AbZJNEUq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 00:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbZJNEUp
+	id S1751339AbZJNEW1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 00:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZJNEW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 00:20:45 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51465 "EHLO smtps.tip.net.au"
+	Wed, 14 Oct 2009 00:22:26 -0400
+Received: from mail.perches.com ([173.55.12.10]:2127 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750765AbZJNEUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 00:20:44 -0400
-Date: Wed, 14 Oct 2009 15:20:00 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: linux-next: net tree build warnings
-Message-Id: <20091014152000.15312908.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+	id S1750765AbZJNEW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 00:22:26 -0400
+Subject: Re: [PATCH] kernel.h: Add a never optimized away pr_dbg for
+ printk(KERN_DEBUG pr_fmt(fmt)...)
+From: Joe Perches <joe@perches.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.DEB.1.00.0910132031040.1244@chino.kir.corp.google.com>
+References: <1255488982.1909.26.camel@Joe-Laptop.home>
+	 <alpine.DEB.1.00.0910132031040.1244@chino.kir.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 13 Oct 2009 21:21:49 -0700
+Message-Id: <1255494109.1851.7.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__14_Oct_2009_15_20_00_+1100_KonpCOOA996HHN6Q"
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__14_Oct_2009_15_20_00_+1100_KonpCOOA996HHN6Q
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-10-13 at 20:34 -0700, David Rientjes wrote:
+> On Tue, 13 Oct 2009, Joe Perches wrote:
+> > Many developers use a logging message that
+> > is printed at KERN_DEBUG level that is always
+> > printed regardless of #define DEBUG levels.
+> > pr_debug can be optimized away to a null statement.
+> > Add a pr_dbg message that prints at KERN_DEBUG
+> > level that uses pr_fmt() that can not be optimized
+> > to nothing.
+> pr_dbg() is horribly misnamed, it doesn't indicate why it exists vs. 
+> pr_debug() at all.
 
-Hi Dave,
+Partially true, it's reasonably named because it's very short.
 
-Today's linux-next build (powerpc ppc44x_defconfig) produced these
-warnings:
+> Future users will undoubtedly use it by mistake when 
+> they only really mean for the message to be emitted on DEBUG because 
+> they've seen it in other places and haven't checked the implementation.
 
-In file included from net/socket.c:94:
-include/net/compat.h:45: warning: 'struct compat_mmsghdr' declared inside p=
-arameter list
-include/net/compat.h:45: warning: its scope is only this definition or decl=
-aration, which is probably not what you want
-In file included from net/core/scm.c:36:
-include/net/compat.h:45: warning: 'struct compat_mmsghdr' declared inside p=
-arameter list
-include/net/compat.h:45: warning: its scope is only this definition or decl=
-aration, which is probably not what you want
-In file included from net/ipv4/ip_sockglue.c:37:
-include/net/compat.h:45: warning: 'struct compat_mmsghdr' declared inside p=
-arameter list
-include/net/compat.h:45: warning: its scope is only this definition or decl=
-aration, which is probably not what you want
-In file included from net/ipv6/ipv6_sockglue.c:53:
-include/net/compat.h:45: warning: 'struct compat_mmsghdr' declared inside p=
-arameter list
-include/net/compat.h:45: warning: its scope is only this definition or decl=
-aration, which is probably not what you want
+The cost of using pr_dbg instead of pr_debug isn't high.
 
-CONFIG_COMPAT is not set.
+The primary benefit is getting an automatic pr_fmt
+and shorter code.
 
-Caused by commit a2e2725541fad72416326798c2d7fa4dafb7d337 ("net:
-Introduce recvmmsg socket syscall").
+> I'd suggest pr_debug_force(), even though it's much longer (although still 
+> shorter than printk(KERN_DEBUG)).
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+pr_dbg allows longer format strings without exceeding 80 chars.
 
---Signature=_Wed__14_Oct_2009_15_20_00_+1100_KonpCOOA996HHN6Q
-Content-Type: application/pgp-signature
+printk(KERN_DEBUG
+pr_debug_force
+pr_dbg_always
+pr_dbg_noopt
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Other suggestions?
 
-iEYEARECAAYFAkrVUXAACgkQjjKRsyhoI8yLAACfTxhMS1cfJWwFvR0t3AiL0fae
-64YAn0quNkFMDkp8lnFoYIuZUJvODx8h
-=S7QU
------END PGP SIGNATURE-----
-
---Signature=_Wed__14_Oct_2009_15_20_00_+1100_KonpCOOA996HHN6Q--
