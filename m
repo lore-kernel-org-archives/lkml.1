@@ -1,92 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbZJNJD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbZJNJIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbZJNJD1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 05:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbZJNJD0
+	id S932136AbZJNJIO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 05:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757166AbZJNJIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 05:03:26 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:45262 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755427AbZJNJDZ (ORCPT
+	Wed, 14 Oct 2009 05:08:14 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:55311 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755582AbZJNJIN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 05:03:25 -0400
-Date: Wed, 14 Oct 2009 11:02:46 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Peter.Oberparleiter@de.ibm.com, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, heiko.carstens@de.ibm.com,
-       linux-s390@vger.kernel.org
-Subject: Re: [BUILD_FAILURE] next-20091013 s390x - build breaks SCLP VT220
- terminal driver
-Message-ID: <20091014110246.3c76f93f@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20091013162809.GA27977@linux.vnet.ibm.com>
-References: <20091013162312.8b93998b.sfr@canb.auug.org.au>
-	<20091013162809.GA27977@linux.vnet.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 05:08:13 -0400
+Date: Wed, 14 Oct 2009 18:06:31 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.32-rc5
+Message-ID: <20091014090630.GA29807@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009 21:58:09 +0530
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Please pull from:
 
-> 	next-20091013 randconfig build on s390x build breaks with
-> 
-> drivers/s390/built-in.o:(.data+0x3354): undefined reference to `sclp_vt220_pm_event_fn'
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.32
 
-This patch should take care of it:
+Which contains:
 
---
-Subject: [PATCH] sclp_vt220 build fix
+Paul Mundt (8):
+      sh: update die() output.
+      sh: force dcache flush if dcache_dirty bit set.
+      sh: ftrace: Fix up syscall tracepoint support.
+      sh: Use boot_cpu_data for FPU tests in sigcontext paths.
+      sh: Tidy up SMP cpuinfo.
+      sh: Populate initial secondary CPU info from boot_cpu_data.
+      sh: Optimize the setup_rt_frame() I-cache flush.
+      sh: Fix a TRACE_IRQS_OFF typo.
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-
-Fix this build error:
-
-	next-20091013 randconfig build on s390x build breaks with
-
-drivers/s390/built-in.o:(.data+0x3354): undefined reference to `sclp_vt220_pm_event_fn'
-
-Reported-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- drivers/s390/char/sclp_vt220.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
-diff -urpN linux-2.6/drivers/s390/char/sclp_vt220.c linux-2.6-patched/drivers/s390/char/sclp_vt220.c
---- linux-2.6/drivers/s390/char/sclp_vt220.c	2009-09-10 00:13:59.000000000 +0200
-+++ linux-2.6-patched/drivers/s390/char/sclp_vt220.c	2009-10-14 11:00:22.000000000 +0200
-@@ -93,8 +93,10 @@ static int __initdata sclp_vt220_init_co
- static int sclp_vt220_flush_later;
- 
- static void sclp_vt220_receiver_fn(struct evbuf_header *evbuf);
-+#ifdef CONFIG_SCLP_VT220_CONSOLE
- static void sclp_vt220_pm_event_fn(struct sclp_register *reg,
- 				   enum sclp_pm_event sclp_pm_event);
-+#endif
- static int __sclp_vt220_emit(struct sclp_vt220_request *request);
- static void sclp_vt220_emit_current(void);
- 
-@@ -104,7 +106,9 @@ static struct sclp_register sclp_vt220_r
- 	.receive_mask		= EVTYP_VT220MSG_MASK,
- 	.state_change_fn	= NULL,
- 	.receiver_fn		= sclp_vt220_receiver_fn,
-+#ifdef CONFIG_SCLP_VT220_CONSOLE
- 	.pm_event_fn		= sclp_vt220_pm_event_fn,
-+#endif
- };
- 
- 
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+ arch/sh/kernel/entry-common.S |    2 +-
+ arch/sh/kernel/ftrace.c       |   37 +++++++++++++++++++++++++++----------
+ arch/sh/kernel/setup.c        |    2 ++
+ arch/sh/kernel/signal_32.c    |    9 ++++-----
+ arch/sh/kernel/smp.c          |    2 ++
+ arch/sh/kernel/traps_32.c     |    7 ++++---
+ arch/sh/mm/cache.c            |    2 +-
+ 7 files changed, 41 insertions(+), 20 deletions(-)
