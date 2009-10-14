@@ -1,336 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932677AbZJNWZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZJNR5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932677AbZJNWZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 18:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759742AbZJNWZz
+	id S1755448AbZJNR5G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 13:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZJNR5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 18:25:55 -0400
-Received: from 93-97-173-237.zone5.bethere.co.uk ([93.97.173.237]:65012 "EHLO
-	tim.rpsys.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759649AbZJNWZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 18:25:54 -0400
-X-Greylist: delayed 422 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Oct 2009 18:25:53 EDT
-Subject: Re: [PATCH 2/5] LED Support for ADP5520/ADP5501 MFD PMICs
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Mike Frysinger <vapier@gentoo.org>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-In-Reply-To: <20091012163802.GD20786@sortiz.org>
-References: <1255197244-20121-1-git-send-email-vapier@gentoo.org>
-	 <1255197244-20121-2-git-send-email-vapier@gentoo.org>
-	 <20091012163802.GD20786@sortiz.org>
-Content-Type: text/plain
-Date: Wed, 14 Oct 2009 18:53:35 +0100
-Message-Id: <1255542815.5082.59.camel@ted>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 13:57:05 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:19527 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754799AbZJNR5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 13:57:04 -0400
+Date: Wed, 14 Oct 2009 13:55:21 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, Jens Axboe <jens.axboe@oracle.com>,
+       Nauman Rafique <nauman@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
+       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>,
+       Dong-Jae Kang <baramsori72@gmail.com>,
+       Isaku Yamahata <yamahata@valinux.co.jp>,
+       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Akio Takebe <takebe_akio@jp.fujitsu.com>
+Subject: Re: IO controller Mini-Summit 2009
+Message-ID: <20091014175521.GG3528@redhat.com>
+References: <20091014.212444.179938286.ryov@valinux.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014.212444.179938286.ryov@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Samuel,
-
-On Mon, 2009-10-12 at 18:38 +0200, Samuel Ortiz wrote:
-> On Sat, Oct 10, 2009 at 01:54:01PM -0400, Mike Frysinger wrote:
-> > From: Michael Hennerich <michael.hennerich@analog.com>
-> Does this driver look fine to you ?
-
-Yes, looks good to me. Do you want to take it with the others or should
-I put it through the LEDs tree? The latter would avoid conflicts over
-the Kconfig/Makefile I guess?
-
-Cheers,
-
-Richard
-
-> Cheers,
-> Samuel.
-> 
-> 
-> > Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> > Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> > ---
-> >  drivers/leds/Kconfig        |   10 ++
-> >  drivers/leds/Makefile       |    1 +
-> >  drivers/leds/leds-adp5520.c |  230 +++++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 241 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/leds/leds-adp5520.c
-> > 
-> > diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-> > index e4f599f..33ac8dc 100644
-> > --- a/drivers/leds/Kconfig
-> > +++ b/drivers/leds/Kconfig
-> > @@ -236,6 +236,16 @@ config LEDS_BD2802
-> >  	  This option enables support for BD2802GU RGB LED driver chips
-> >  	  accessed via the I2C bus.
-> >  
-> > +config LEDS_ADP5520
-> > +	tristate "LED Support for ADP5520/ADP5501 PMIC"
-> > +	depends on LEDS_CLASS && PMIC_ADP5520
-> > +	help
-> > +	  This option enables support for on-chip LED drivers found
-> > +	  on Analog Devices ADP5520/ADP5501 PMICs.
-> > +
-> > +	  To compile this driver as a module, choose M here: the module will
-> > +	  be called leds-adp5520.
-> > +
-> >  comment "LED Triggers"
-> >  
-> >  config LEDS_TRIGGERS
-> > diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-> > index 46d7270..f7e17f4 100644
-> > --- a/drivers/leds/Makefile
-> > +++ b/drivers/leds/Makefile
-> > @@ -29,6 +29,7 @@ obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
-> >  obj-$(CONFIG_LEDS_WM831X_STATUS)	+= leds-wm831x-status.o
-> >  obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
-> >  obj-$(CONFIG_LEDS_PWM)			+= leds-pwm.o
-> > +obj-$(CONFIG_LEDS_ADP5520)		+= leds-adp5520.o
-> >  
-> >  # LED SPI Drivers
-> >  obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
-> > diff --git a/drivers/leds/leds-adp5520.c b/drivers/leds/leds-adp5520.c
-> > new file mode 100644
-> > index 0000000..a8f3159
-> > --- /dev/null
-> > +++ b/drivers/leds/leds-adp5520.c
-> > @@ -0,0 +1,230 @@
-> > +/*
-> > + * LEDs driver for Analog Devices ADP5520/ADP5501 MFD PMICs
-> > + *
-> > + * Copyright 2009 Analog Devices Inc.
-> > + *
-> > + * Loosely derived from leds-da903x:
-> > + * Copyright (C) 2008 Compulab, Ltd.
-> > + * 	Mike Rapoport <mike@compulab.co.il>
-> > + *
-> > + * Copyright (C) 2006-2008 Marvell International Ltd.
-> > + * 	Eric Miao <eric.miao@marvell.com>
-> > + *
-> > + * Licensed under the GPL-2 or later.
-> > + */
-> > +
-> > +#include <linux/module.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/init.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/leds.h>
-> > +#include <linux/workqueue.h>
-> > +#include <linux/mfd/adp5520.h>
-> > +
-> > +struct adp5520_led {
-> > +	struct led_classdev	cdev;
-> > +	struct work_struct	work;
-> > +	struct device		*master;
-> > +	enum led_brightness	new_brightness;
-> > +	int			id;
-> > +	int			flags;
-> > +};
-> > +
-> > +static void adp5520_led_work(struct work_struct *work)
-> > +{
-> > +	struct adp5520_led *led = container_of(work, struct adp5520_led, work);
-> > +	adp5520_write(led->master, ADP5520_LED1_CURRENT + led->id - 1,
-> > +			 led->new_brightness >> 2);
-> > +}
-> > +
-> > +static void adp5520_led_set(struct led_classdev *led_cdev,
-> > +			   enum led_brightness value)
-> > +{
-> > +	struct adp5520_led *led;
-> > +
-> > +	led = container_of(led_cdev, struct adp5520_led, cdev);
-> > +	led->new_brightness = value;
-> > +	schedule_work(&led->work);
-> > +}
-> > +
-> > +static int adp5520_led_setup(struct adp5520_led *led)
-> > +{
-> > +	struct device *dev = led->master;
-> > +	int flags = led->flags;
-> > +	int ret = 0;
-> > +
-> > +	switch (led->id) {
-> > +	case FLAG_ID_ADP5520_LED1_ADP5501_LED0:
-> > +		ret |= adp5520_set_bits(dev, ADP5520_LED_TIME,
-> > +					(flags >> ADP5520_FLAG_OFFT_SHIFT) &
-> > +					ADP5520_FLAG_OFFT_MASK);
-> > +		ret |= adp5520_set_bits(dev, ADP5520_LED_CONTROL,
-> > +					ADP5520_LED1_EN);
-> > +		break;
-> > +	case FLAG_ID_ADP5520_LED2_ADP5501_LED1:
-> > +		ret |= adp5520_set_bits(dev,  ADP5520_LED_TIME,
-> > +					((flags >> ADP5520_FLAG_OFFT_SHIFT) &
-> > +					ADP5520_FLAG_OFFT_MASK) << 2);
-> > +		ret |= adp5520_clr_bits(dev, ADP5520_LED_CONTROL,
-> > +					 ADP5520_R3_MODE);
-> > +		ret |= adp5520_set_bits(dev, ADP5520_LED_CONTROL,
-> > +					ADP5520_LED2_EN);
-> > +		break;
-> > +	case FLAG_ID_ADP5520_LED3_ADP5501_LED2:
-> > +		ret |= adp5520_set_bits(dev,  ADP5520_LED_TIME,
-> > +					((flags >> ADP5520_FLAG_OFFT_SHIFT) &
-> > +					ADP5520_FLAG_OFFT_MASK) << 4);
-> > +		ret |= adp5520_clr_bits(dev, ADP5520_LED_CONTROL,
-> > +					ADP5520_C3_MODE);
-> > +		ret |= adp5520_set_bits(dev, ADP5520_LED_CONTROL,
-> > +					ADP5520_LED3_EN);
-> > +		break;
-> > +	}
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static int __devinit adp5520_led_prepare(struct platform_device *pdev)
-> > +{
-> > +	struct adp5520_leds_platform_data *pdata = pdev->dev.platform_data;
-> > +	struct device *dev = pdev->dev.parent;
-> > +	int ret = 0;
-> > +
-> > +	ret |= adp5520_write(dev, ADP5520_LED1_CURRENT, 0);
-> > +	ret |= adp5520_write(dev, ADP5520_LED2_CURRENT, 0);
-> > +	ret |= adp5520_write(dev, ADP5520_LED3_CURRENT, 0);
-> > +	ret |= adp5520_write(dev, ADP5520_LED_TIME, pdata->led_on_time << 6);
-> > +	ret |= adp5520_write(dev, ADP5520_LED_FADE, FADE_VAL(pdata->fade_in,
-> > +		 pdata->fade_out));
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static int __devinit adp5520_led_probe(struct platform_device *pdev)
-> > +{
-> > +	struct adp5520_leds_platform_data *pdata = pdev->dev.platform_data;
-> > +	struct adp5520_led *led, *led_dat;
-> > +	struct led_info *cur_led;
-> > +	int ret, i;
-> > +
-> > +	if (pdata == NULL) {
-> > +		dev_err(&pdev->dev, "missing platform data\n");
-> > +		return -ENODEV;
-> > +	}
-> > +
-> > +	if (pdata->num_leds > ADP5520_01_MAXLEDS) {
-> > +		dev_err(&pdev->dev, "can't handle more than %d LEDS\n",
-> > +				 ADP5520_01_MAXLEDS);
-> > +		return -EFAULT;
-> > +	}
-> > +
-> > +	led = kzalloc(sizeof(*led) * pdata->num_leds, GFP_KERNEL);
-> > +	if (led == NULL) {
-> > +		dev_err(&pdev->dev, "failed to alloc memory\n");
-> > +		return -ENOMEM;
-> > +	}
-> > +
-> > +	ret = adp5520_led_prepare(pdev);
-> > +
-> > +	if (ret) {
-> > +		dev_err(&pdev->dev, "failed to write\n");
-> > +		goto err_free;
-> > +	}
-> > +
-> > +	for (i = 0; i < pdata->num_leds; ++i) {
-> > +		cur_led = &pdata->leds[i];
-> > +		led_dat = &led[i];
-> > +
-> > +		led_dat->cdev.name = cur_led->name;
-> > +		led_dat->cdev.default_trigger = cur_led->default_trigger;
-> > +		led_dat->cdev.brightness_set = adp5520_led_set;
-> > +		led_dat->cdev.brightness = LED_OFF;
-> > +
-> > +		if (cur_led->flags & ADP5520_FLAG_LED_MASK)
-> > +			led_dat->flags = cur_led->flags;
-> > +		else
-> > +			led_dat->flags = i + 1;
-> > +
-> > +		led_dat->id = led_dat->flags & ADP5520_FLAG_LED_MASK;
-> > +
-> > +		led_dat->master = pdev->dev.parent;
-> > +		led_dat->new_brightness = LED_OFF;
-> > +
-> > +		INIT_WORK(&led_dat->work, adp5520_led_work);
-> > +
-> > +		ret = led_classdev_register(led_dat->master, &led_dat->cdev);
-> > +		if (ret) {
-> > +			dev_err(&pdev->dev, "failed to register LED %d\n",
-> > +				led_dat->id);
-> > +			goto err;
-> > +		}
-> > +
-> > +		ret = adp5520_led_setup(led_dat);
-> > +		if (ret) {
-> > +			dev_err(&pdev->dev, "failed to write\n");
-> > +			i++;
-> > +			goto err;
-> > +		}
-> > +	}
-> > +
-> > +	platform_set_drvdata(pdev, led);
-> > +	return 0;
-> > +
-> > +err:
-> > +	if (i > 0) {
-> > +		for (i = i - 1; i >= 0; i--) {
-> > +			led_classdev_unregister(&led[i].cdev);
-> > +			cancel_work_sync(&led[i].work);
-> > +		}
-> > +	}
-> > +
-> > +err_free:
-> > +	kfree(led);
-> > +	return ret;
-> > +}
-> > +
-> > +static int __devexit adp5520_led_remove(struct platform_device *pdev)
-> > +{
-> > +	struct adp5520_leds_platform_data *pdata = pdev->dev.platform_data;
-> > +	struct adp5520_led *led;
-> > +	int i;
-> > +
-> > +	led = platform_get_drvdata(pdev);
-> > +
-> > +	adp5520_clr_bits(led->master, ADP5520_LED_CONTROL,
-> > +		 ADP5520_LED1_EN | ADP5520_LED2_EN | ADP5520_LED3_EN);
-> > +
-> > +	for (i = 0; i < pdata->num_leds; i++) {
-> > +		led_classdev_unregister(&led[i].cdev);
-> > +		cancel_work_sync(&led[i].work);
-> > +	}
-> > +
-> > +	kfree(led);
-> > +	return 0;
-> > +}
-> > +
-> > +static struct platform_driver adp5520_led_driver = {
-> > +	.driver	= {
-> > +		.name	= "adp5520-led",
-> > +		.owner	= THIS_MODULE,
-> > +	},
-> > +	.probe		= adp5520_led_probe,
-> > +	.remove		= __devexit_p(adp5520_led_remove),
-> > +};
-> > +
-> > +static int __init adp5520_led_init(void)
-> > +{
-> > +	return platform_driver_register(&adp5520_led_driver);
-> > +}
-> > +module_init(adp5520_led_init);
-> > +
-> > +static void __exit adp5520_led_exit(void)
-> > +{
-> > +	platform_driver_unregister(&adp5520_led_driver);
-> > +}
-> > +module_exit(adp5520_led_exit);
-> > +
-> > +MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
-> > +MODULE_DESCRIPTION("LEDS ADP5520(01) Driver");
-> > +MODULE_LICENSE("GPL");
-> > +MODULE_ALIAS("platform:adp5520-led");
-> > -- 
-> > 1.6.5.rc2
-> > 
+On Wed, Oct 14, 2009 at 09:24:44PM +0900, Ryo Tsuruta wrote:
+> Hello,
 > 
 
+Hi Ryo,
+
+CCing people who are planning to attend the mini summit either in person
+or phone. (As per your list on io mini summit wiki page). Not sure if
+everybody is scanning mailing list for update on mini summit.
+
+I am checking out wiki page for more information like Venue. It says the
+venue is linux foundation office Japan. Hopefully there is no change in
+that information.
+
+What are the conference call details for the people who might want to join
+in over phone? Could not find those. Are you yet to post these?
+
+Thanks
+Vivek
+
+> I have summarized the topics for the IO controller mini-summit and
+> written the ideas seen in the mailing list.
+> 
+> - The place where IO controller should be implemented
+>   - Block layer in conjunction with the IO scheduler
+>   - Common layer right above the IO scheduler
+>   - CFQ enhancement.
+>   - Both block and common layer, users can select whichever controller
+>     they want.
+>   - VFS layer
+> 
+> - What kind of bandwidth control policies are needed?
+>   - Proportional weight
+>   - Enforcing upper limit
+>   - Minimum bandwidth guarantee
+> 
+> - How to handle buffered writes?
+>   - Add dirt-ratio in the memory controller
+>   - Add bufferred-write-cgroup to track buffered writebacks
+>   - A per group per bdi pdflush threads
+> 
+> - Who should be charged for swap activity?
+>   - who requests a page.
+>   - who has a page.
+>   - All swap activities are charged to the root group.
+> 
+> And I would also like to discuss about the followings.
+> 
+> - Extensions of struct bio
+>   - Make a bio point to the io_context of a process which creates the
+>     I/O request. This allows to pass the IO scheduling class and
+>     priority information to IO controller even if the IO is submitted
+>     by another process which does not create the request, such as a
+>     worker thread.
+>   - Add a new flag to struct bio to identify the bio as urgent. This
+>     gives IO controller a chance to handle the bio as high
+>     priority. This flag should be set if the bio is created for the
+>     page-out operation. 
+> 
+> - Common test methods to verify the functionality of IO controller.
+> 
+> Please give me comments and suggestions. I may be missing or
+> misunderstanding something.
+> 
+> Thanks,
+> Ryo Tsuruta
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
