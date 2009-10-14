@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758954AbZJNVky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbZJNViM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758954AbZJNVky (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 17:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZJNVky
+	id S1755807AbZJNViM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 17:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbZJNViM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 17:40:54 -0400
-Received: from lucidpixels.com ([75.144.35.66]:34057 "EHLO lucidpixels.com"
+	Wed, 14 Oct 2009 17:38:12 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:61198 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755065AbZJNVkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 17:40:53 -0400
-Date: Wed, 14 Oct 2009 17:34:46 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31.3: Machine hangs at reboot (Intel DP55KG motherboard)
-In-Reply-To: <alpine.DEB.2.00.0910141441410.5322@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.0910141734310.5568@p34.internal.lan>
-References: <alpine.DEB.2.00.0910131723510.5034@p34.internal.lan> <alpine.DEB.2.00.0910141123280.23631@p34.internal.lan> <alpine.DEB.2.00.0910141441410.5322@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1755183AbZJNViL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 17:38:11 -0400
+Date: Wed, 14 Oct 2009 17:37:42 -0400
+From: Dave Jones <davej@redhat.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [X86] PCI: Use generic cacheline sizing instead of per-vendor
+	tests.
+Message-ID: <20091014213742.GA17311@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20091014203139.GA2336@redhat.com> <20091014143054.76874f30@jbarnes-g45>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014143054.76874f30@jbarnes-g45>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 14, 2009 at 02:30:54PM -0700, Jesse Barnes wrote:
+ > On Wed, 14 Oct 2009 16:31:39 -0400
+ > Dave Jones <davej@redhat.com> wrote:
+ > 
+ > > Instead of the PCI code needing to have code to determine the 
+ > > cacheline size of each processor, use the data the cpu identification
+ > > code should have already determined during early boot.
+ > > 
+ > > (The vendor checks are also incomplete, and don't take into account
+ > >  modern CPUs)
+ > > 
+ > > I've been carrying a variant of this code in Fedora for a while,
+ > > that prints debug information.  There are a number of cases where we
+ > > are currently setting the PCI cacheline size to 32 bytes, when the CPU
+ > > cacheline size is 64 bytes.  With this patch, we set them both the
+ > > same.
+ > > 
+ > > Signed-off-by: Dave Jones <davej@redhat.com>
+ > > 
+ > 
+ > Does this improve performance enough to warrant putting it into the
+ > current cycle?  Or is queuing it for 2.6.33 sufficient?
 
+I haven't done any performance testing with/without. My intentions
+were purely from a correctness standpoint. 
 
-On Wed, 14 Oct 2009, Justin Piszcz wrote:
+It's not critical, and we've lived with this bug for a long time,
+so waiting is fine.
 
->
->
-> On Wed, 14 Oct 2009, Justin Piszcz wrote:
->
->> 
->> 
->> On Tue, 13 Oct 2009, Justin Piszcz wrote:
->> 
->>> Hello,
->>> 
->>> When I reboot my system, it hangs:
->>> http://home.comcast.net/~jpiszcz/20091013/system-hangs-at-reboot.jpg
->>> 
->>> It says...
->>> 
->>> Restarting system.
->>> machine restart
->>> 
->>> Then it sits there and does nothing.
->>> 
->>> Has anyone seen this before?
->>> 
->>> BTW-- Thanks for the INTEL network driver info, running 1.0.15-NAPI and 
->>> its working nicely, can't wait until its included in the upstream release.
->>> 
->>> Justin.
->>> 
->> 
->> Thoughts? Or work-arounds to this problem?
->> 
->> Machine rebooted fine when I used a different motherboard (same 
->> kernel/distro etc).
->> 
->> Justin.
->> 
->
-> Update--
->
-> init 0 shuts the machine off (powers down completely) but reboot hangs..
->
-> Justin.
->
+	Dave
 
-
-I tried the reboot=b kernel parameter-- to no avail either.
-
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/115011
-
-http://lkml.org/lkml/2007/6/5/59
-
-This workaround did not work.
-
-Justin.
