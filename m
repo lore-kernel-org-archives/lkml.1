@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761518AbZJNC5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761612AbZJNDCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761518AbZJNC5B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 22:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760223AbZJNC5A
+	id S1761612AbZJNDCs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 23:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbZJNDCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 22:57:00 -0400
-Received: from mail.perches.com ([173.55.12.10]:2123 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759333AbZJNC5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 22:57:00 -0400
-Subject: [PATCH] kernel.h: Add a never optimized away pr_dbg for
- printk(KERN_DEBUG pr_fmt(fmt)...)
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 13 Oct 2009 19:56:22 -0700
-Message-Id: <1255488982.1909.26.camel@Joe-Laptop.home>
+	Tue, 13 Oct 2009 23:02:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59274 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754251AbZJNDCq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 23:02:46 -0400
+Date: Tue, 13 Oct 2009 20:01:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, bluesmoke-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] edac: Create an unique instance for each kobj
+Message-Id: <20091013200117.895885a6.akpm@linux-foundation.org>
+In-Reply-To: <20091004164354.5ff55ea1@pedra.chehab.org>
+References: <20090924192821.7fcffc80@pedra.chehab.org>
+	<20091004164354.5ff55ea1@pedra.chehab.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Many developers use a logging message that
-is printed at KERN_DEBUG level that is always
-printed regardless of #define DEBUG levels.
+On Sun, 4 Oct 2009 16:43:54 -0300 Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
 
-pr_debug can be optimized away to a null statement.
+> Current code only works when there's just one memory
+> controller, since we need one kobj for each instance.
+> 
+> Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+> ---
+>  drivers/edac/edac_core.h     |   21 ++++++++---
+>  drivers/edac/edac_mc_sysfs.c |   75 +++++++++++++++++++++++++++--------------
+>  2 files changed, 64 insertions(+), 32 deletions(-)
+> 
+> diff --git a/drivers/edac/edac_core.h b/drivers/edac/edac_core.h
+> index d035ee9..f84da6e 100644
+> --- a/drivers/edac/edac_core.h
+> +++ b/drivers/edac/edac_core.h
+> @@ -341,23 +341,29 @@ struct csrow_info {
+>  };
+>  
+>  struct mcidev_sysfs_group {
+> -	const char *name;
+> -	struct mcidev_sysfs_attribute *mcidev_attr;
+> -	struct kobject kobj;
+> +	const char *name;				/* group name */
+> +	struct mcidev_sysfs_attribute *mcidev_attr;	/* group attributes */
+> +};
+> +
+> +struct mcidev_sysfs_group_kobj {
+> +	struct list_head list;		/* list for all instances within a mc */
+> +
+> +	struct kobject kobj;		/* kobj for the group */
+>  
+> +	struct mcidev_sysfs_group *grp;	/* group description table */
+>  	struct mem_ctl_info *mci;	/* the parent */
+>  };
 
-Add a pr_dbg message that prints at KERN_DEBUG
-level that uses pr_fmt() that can not be optimized
-to nothing.
-
-Signed-off-by: Joe Perches <joe@perches.com>
-
- include/linux/kernel.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index f4e3184..2ad0396 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -380,6 +380,8 @@ static inline char *pack_hex_byte(char *buf, u8
-byte)
-         printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
- #define pr_info(fmt, ...) \
-         printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_dbg(fmt, ...) \
-+        printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
- #define pr_cont(fmt, ...) \
- 	printk(KERN_CONT fmt, ##__VA_ARGS__)
- 
-
-
+I don't know which kernel you're patching here, but it doesn't look
+anything like mine...
