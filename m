@@ -1,61 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934872AbZJNQbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934909AbZJNQeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934872AbZJNQbi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 12:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932245AbZJNQbh
+	id S934909AbZJNQeK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 12:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932207AbZJNQeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 12:31:37 -0400
-Received: from mga09.intel.com ([134.134.136.24]:17363 "EHLO mga09.intel.com"
+	Wed, 14 Oct 2009 12:34:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42401 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756221AbZJNQbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 12:31:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,559,1249282800"; 
-   d="scan'208";a="559525105"
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-From: reinette chatre <reinette.chatre@intel.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: Mel Gorman <mel@csn.ul.ie>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       "Abbas, Mohamed" <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Kalle Valo <kalle.valo@iki.fi>
-In-Reply-To: <200910141510.11059.elendil@planet.nl>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
-	 <200910132238.40867.elendil@planet.nl> <20091014103002.GA5027@csn.ul.ie>
-	 <200910141510.11059.elendil@planet.nl>
-Content-Type: text/plain
-Date: Wed, 14 Oct 2009 09:30:59 -0700
-Message-Id: <1255537859.21134.17.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1756221AbZJNQeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 12:34:07 -0400
+Date: Wed, 14 Oct 2009 16:32:57 GMT
+From: tip-bot for Dimitri Sivanich <sivanich@sgi.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, sivanich@sgi.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, sivanich@sgi.com, mingo@elte.hu
+In-Reply-To: <20091014141630.GB11048@sgi.com>
+References: <20091014141630.GB11048@sgi.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/uv] x86: UV RTC: Fix early expiry handling
+Message-ID: <tip-e47938b1faaf9e9041ae842a878901001ce20ea1@git.kernel.org>
+Git-Commit-ID: e47938b1faaf9e9041ae842a878901001ce20ea1
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 16:32:57 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-14 at 06:10 -0700, Frans Pop wrote:
-> On Wednesday 14 October 2009, Mel Gorman wrote:
-> > The majority of the wireless reports have been in 
-> > this driver and I think we have the problem commit there. The only other
-> > is a firmware loading problem in e100 after resume that fails to make an
-> > atomic order-5 fail.
-> 
-> Not exactly true. Bartlomiej's report was about ipw2200, so there are at 
-> least 3 different drivers involved, two wireless and one wired. Besides 
-> that one report is related to heavy swap, one to resume and one to driver 
-> reload.
+Commit-ID:  e47938b1faaf9e9041ae842a878901001ce20ea1
+Gitweb:     http://git.kernel.org/tip/e47938b1faaf9e9041ae842a878901001ce20ea1
+Author:     Dimitri Sivanich <sivanich@sgi.com>
+AuthorDate: Wed, 14 Oct 2009 09:16:30 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 14 Oct 2009 18:27:09 +0200
 
-Another report arrived today. Please see
-http://thread.gmane.org/gmane.linux.kernel.wireless.general/40858 - it
-is an order-5 allocation failure during driver reload.
+x86: UV RTC: Fix early expiry handling
 
-Reinette
+Tune/fix early timer expiry handling and return correct early timeout value
+for set_next_event.
 
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+LKML-Reference: <20091014141630.GB11048@sgi.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/uv_time.c |   29 +++++++++++++++++------------
+ 1 files changed, 17 insertions(+), 12 deletions(-)
+
+diff --git a/arch/x86/kernel/uv_time.c b/arch/x86/kernel/uv_time.c
+index 583f11d..ec14889 100644
+--- a/arch/x86/kernel/uv_time.c
++++ b/arch/x86/kernel/uv_time.c
+@@ -123,7 +123,10 @@ static int uv_setup_intr(int cpu, u64 expires)
+ 	/* Initialize comparator value */
+ 	uv_write_global_mmr64(pnode, UVH_INT_CMPB, expires);
+ 
+-	return (expires < uv_read_rtc(NULL) && !uv_intr_pending(pnode));
++	if (uv_read_rtc(NULL) <= expires)
++		return 0;
++
++	return !uv_intr_pending(pnode);
+ }
+ 
+ /*
+@@ -223,6 +226,7 @@ static int uv_rtc_set_timer(int cpu, u64 expires)
+ 
+ 	next_cpu = head->next_cpu;
+ 	*t = expires;
++
+ 	/* Will this one be next to go off? */
+ 	if (next_cpu < 0 || bcpu == next_cpu ||
+ 			expires < head->cpu[next_cpu].expires) {
+@@ -231,7 +235,7 @@ static int uv_rtc_set_timer(int cpu, u64 expires)
+ 			*t = ULLONG_MAX;
+ 			uv_rtc_find_next_timer(head, pnode);
+ 			spin_unlock_irqrestore(&head->lock, flags);
+-			return 1;
++			return -ETIME;
+ 		}
+ 	}
+ 
+@@ -244,7 +248,7 @@ static int uv_rtc_set_timer(int cpu, u64 expires)
+  *
+  * Returns 1 if this timer was pending.
+  */
+-static int uv_rtc_unset_timer(int cpu)
++static int uv_rtc_unset_timer(int cpu, int force)
+ {
+ 	int pnode = uv_cpu_to_pnode(cpu);
+ 	int bid = uv_cpu_to_blade_id(cpu);
+@@ -256,14 +260,15 @@ static int uv_rtc_unset_timer(int cpu)
+ 
+ 	spin_lock_irqsave(&head->lock, flags);
+ 
+-	if (head->next_cpu == bcpu && uv_read_rtc(NULL) >= *t)
++	if ((head->next_cpu == bcpu && uv_read_rtc(NULL) >= *t) || force)
+ 		rc = 1;
+ 
+-	*t = ULLONG_MAX;
+-
+-	/* Was the hardware setup for this timer? */
+-	if (head->next_cpu == bcpu)
+-		uv_rtc_find_next_timer(head, pnode);
++	if (rc) {
++		*t = ULLONG_MAX;
++		/* Was the hardware setup for this timer? */
++		if (head->next_cpu == bcpu)
++			uv_rtc_find_next_timer(head, pnode);
++	}
+ 
+ 	spin_unlock_irqrestore(&head->lock, flags);
+ 
+@@ -310,20 +315,20 @@ static void uv_rtc_timer_setup(enum clock_event_mode mode,
+ 		break;
+ 	case CLOCK_EVT_MODE_UNUSED:
+ 	case CLOCK_EVT_MODE_SHUTDOWN:
+-		uv_rtc_unset_timer(ced_cpu);
++		uv_rtc_unset_timer(ced_cpu, 1);
+ 		break;
+ 	}
+ }
+ 
+ static void uv_rtc_interrupt(void)
+ {
+-	struct clock_event_device *ced = &__get_cpu_var(cpu_ced);
+ 	int cpu = smp_processor_id();
++	struct clock_event_device *ced = &per_cpu(cpu_ced, cpu);
+ 
+ 	if (!ced || !ced->event_handler)
+ 		return;
+ 
+-	if (uv_rtc_unset_timer(cpu) != 1)
++	if (uv_rtc_unset_timer(cpu, 0) != 1)
+ 		return;
+ 
+ 	ced->event_handler(ced);
