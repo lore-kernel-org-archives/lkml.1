@@ -1,190 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760532AbZJNVX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbZJNV2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760532AbZJNVX5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 17:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758024AbZJNVX4
+	id S1760690AbZJNV2G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 17:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbZJNV2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 17:23:56 -0400
-Received: from outbound-mail-156.bluehost.com ([67.222.39.36]:57013 "HELO
-	outbound-mail-156.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757266AbZJNVXz (ORCPT
+	Wed, 14 Oct 2009 17:28:05 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:55705 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbZJNV2D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 17:23:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:X-Identified-User;
-	b=jPc8B6E4aoZHd7NqyoAQT0SVq5bLVIqVR8ThijOb7dCLjkV2OyegVP96Cdt7iu99VAayTdJc3jr/206o5dhyG/Kvnk2jZIIbDBBpw5oiaD2Ox3PN+XhLycbMT6bCGBFG;
-Date: Wed, 14 Oct 2009 14:22:52 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Theodore Tso <tytso@mit.edu>, "Carlos R. Mafra" <crmafra2@gmail.com>,
-       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
-       Keith Packard <keithp@keithp.com>,
-       Chris Wilson <chris@chris-wilson.co.uk>
-Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with T400
- laptops
-Message-ID: <20091014142252.009d03a5@jbarnes-g45>
-In-Reply-To: <20091013121426.35f409ff@jbarnes-g45>
-References: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
-	<20091008103620.5e5aae66@jbarnes-g45>
-	<20091010204106.GA8251@mit.edu>
-	<20091012095438.1e82b54f@jbarnes-g45>
-	<20091012184651.GA4603@Pilar.aei.mpg.de>
-	<20091012120510.16bd1194@jbarnes-g45>
-	<20091013023146.GA8414@mit.edu>
-	<20091013100135.2b3d914f@jbarnes-g45>
-	<20091013190055.GI8175@mit.edu>
-	<20091013121426.35f409ff@jbarnes-g45>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_/_TvCOQ4bUwcwU6U9aAj5wVz"
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 14 Oct 2009 17:28:03 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 14 Oct 2009 23:26:24 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [git pull] FireWire updates
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.8ed463a294b8d2e4@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---MP_/_TvCOQ4bUwcwU6U9aAj5wVz
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Linus, please pull from the for-linus branch at
 
-On Tue, 13 Oct 2009 12:14:26 -0700
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> According to the chipset team that form of display corruption is
-> likely related to RAM self-refresh... Sounds like the display plane
-> isn't getting its memory requests serviced fast enough when in
-> self-refresh mode, which might mean we have to program the
-> self-refresh watermarks more aggressively on GM45.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-Ok, like any good bug there was more than one thing wrong:
-  - we weren't setting up a fence for the object before enabling FBC.
-    Chris caught this and posted a patch to
-    intel-gfx@lists.freedesktop.org titled "drm/i915: Install a fence
-    register for fbc on g4x" (attached for convenience)
-  - turns out we *do* need to set watermarks on G4x, despite some hw
-    documentation indicating otherwise, patch for that attached
+to receive a documentation update and a driver fix.
 
-Hopefully with these two you'll have a solid display and some power
-saving!
+Justin P. Mattock (1):
+      ieee1394: update URLs in debugging-via-ohci1394.txt
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Stefan Richter (2):
+      ieee1394: add documentation entry to MAINTAINERS
+      firewire: sbp2: provide fallback if mgt_ORB_timeout is missing
 
---MP_/_TvCOQ4bUwcwU6U9aAj5wVz
-Content-Type: text/x-patch
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=i915-g4x-watermarks-hack.patch
+ Documentation/debugging-via-ohci1394.txt |    8 ++--
+ MAINTAINERS                              |    1 +
+ drivers/firewire/sbp2.c                  |   39 ++++++++++-----------
+ 3 files changed, 24 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
-index a0f6bbe..ed11591 100644
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -1047,7 +1047,7 @@ static void g4x_enable_fbc(struct drm_crtc *crtc, unsigned long interval)
- 	dev_priv->cfb_fence = obj_priv->fence_reg;
- 	dev_priv->cfb_plane = intel_crtc->plane;
+Thanks.
+
+
+commit eaf76e0d027a917a013ad8a88a94132d0feab622
+Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date:   Thu Oct 8 00:39:31 2009 +0200
+
+    firewire: sbp2: provide fallback if mgt_ORB_timeout is missing
+    
+    The Unit_Characteristics entry of an SBP-2 unit directory is not
+    mandatory as far as I can tell.  If it is missing, we would probably
+    fail to log in into the target because firewire-sbp2 would not wait for
+    status after it sent the login request.
+    
+    The fix moves the cleanup of tgt->mgt_orb_timeout into a place where it
+    is executed exactly once before login, rather than 0..n times depending
+    on the target's config ROM.  With targets with one or more
+    Unit_Characteristics entries, the result is the same as before.
+    
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+diff --git a/drivers/firewire/sbp2.c b/drivers/firewire/sbp2.c
+index 50f0176..98dbbda 100644
+--- a/drivers/firewire/sbp2.c
++++ b/drivers/firewire/sbp2.c
+@@ -188,14 +188,7 @@ static struct fw_device *target_device(struct sbp2_target *tgt)
+ /* Impossible login_id, to detect logout attempt before successful login */
+ #define INVALID_LOGIN_ID 0x10000
  
--	dpfc_ctl = plane | DPFC_SR_EN | DPFC_CTL_LIMIT_1X;
-+	dpfc_ctl = plane | DPFC_CTL_LIMIT_1X;
- 	if (obj_priv->tiling_mode != I915_TILING_NONE) {
- 		dpfc_ctl |= DPFC_CTL_FENCE_EN | dev_priv->cfb_fence;
- 		I915_WRITE(DPFC_CHICKEN, DPFC_HT_MODIFY);
-@@ -1055,14 +1055,13 @@ static void g4x_enable_fbc(struct drm_crtc *crtc, unsigned long interval)
- 		I915_WRITE(DPFC_CHICKEN, ~DPFC_HT_MODIFY);
- 	}
+-/*
+- * Per section 7.4.8 of the SBP-2 spec, a mgt_ORB_timeout value can be
+- * provided in the config rom. Most devices do provide a value, which
+- * we'll use for login management orbs, but with some sane limits.
+- */
+-#define SBP2_MIN_LOGIN_ORB_TIMEOUT	5000U	/* Timeout in ms */
+-#define SBP2_MAX_LOGIN_ORB_TIMEOUT	40000U	/* Timeout in ms */
+-#define SBP2_ORB_TIMEOUT		2000U	/* Timeout in ms */
++#define SBP2_ORB_TIMEOUT		2000U		/* Timeout in ms */
+ #define SBP2_ORB_NULL			0x80000000
+ #define SBP2_RETRY_LIMIT		0xf		/* 15 retries */
+ #define SBP2_CYCLE_LIMIT		(0xc8 << 12)	/* 200 125us cycles */
+@@ -1034,7 +1027,6 @@ static int sbp2_scan_unit_dir(struct sbp2_target *tgt, u32 *directory,
+ {
+ 	struct fw_csr_iterator ci;
+ 	int key, value;
+-	unsigned int timeout;
  
--	I915_WRITE(DPFC_CONTROL, dpfc_ctl);
- 	I915_WRITE(DPFC_RECOMP_CTL, DPFC_RECOMP_STALL_EN |
- 		   (stall_watermark << DPFC_RECOMP_STALL_WM_SHIFT) |
- 		   (interval << DPFC_RECOMP_TIMER_COUNT_SHIFT));
- 	I915_WRITE(DPFC_FENCE_YOFF, crtc->y);
+ 	fw_csr_iterator_init(&ci, directory);
+ 	while (fw_csr_iterator_next(&ci, &key, &value)) {
+@@ -1059,17 +1051,7 @@ static int sbp2_scan_unit_dir(struct sbp2_target *tgt, u32 *directory,
  
- 	/* enable it... */
--	I915_WRITE(DPFC_CONTROL, I915_READ(DPFC_CONTROL) | DPFC_CTL_EN);
-+	I915_WRITE(DPFC_CONTROL, dpfc_ctl | DPFC_CTL_EN);
+ 		case SBP2_CSR_UNIT_CHARACTERISTICS:
+ 			/* the timeout value is stored in 500ms units */
+-			timeout = ((unsigned int) value >> 8 & 0xff) * 500;
+-			timeout = max(timeout, SBP2_MIN_LOGIN_ORB_TIMEOUT);
+-			tgt->mgt_orb_timeout =
+-				  min(timeout, SBP2_MAX_LOGIN_ORB_TIMEOUT);
+-
+-			if (timeout > tgt->mgt_orb_timeout)
+-				fw_notify("%s: config rom contains %ds "
+-					  "management ORB timeout, limiting "
+-					  "to %ds\n", tgt->bus_id,
+-					  timeout / 1000,
+-					  tgt->mgt_orb_timeout / 1000);
++			tgt->mgt_orb_timeout = (value >> 8 & 0xff) * 500;
+ 			break;
  
- 	DRM_DEBUG("enabled fbc on plane %d\n", intel_crtc->plane);
+ 		case SBP2_CSR_LOGICAL_UNIT_NUMBER:
+@@ -1087,6 +1069,22 @@ static int sbp2_scan_unit_dir(struct sbp2_target *tgt, u32 *directory,
+ 	return 0;
  }
-@@ -2443,6 +2442,10 @@ static void g4x_update_wm(struct drm_device *dev, int unused, int unused2,
- 	else
- 		fw_blc_self &= ~FW_BLC_SELF_EN;
- 	I915_WRITE(FW_BLC_SELF, fw_blc_self);
+ 
++/*
++ * Per section 7.4.8 of the SBP-2 spec, a mgt_ORB_timeout value can be
++ * provided in the config rom. Most devices do provide a value, which
++ * we'll use for login management orbs, but with some sane limits.
++ */
++static void sbp2_clamp_management_orb_timeout(struct sbp2_target *tgt)
++{
++	unsigned int timeout = tgt->mgt_orb_timeout;
 +
-+	I915_WRITE(DSPFW1, (64 << 23) | (32 << 16) | (32 << 8) | (32 << 0));
-+	I915_WRITE(DSPFW2, (32 << 8) | (32 << 0));
-+	I915_WRITE(DSPFW3, 32 << 24);
- }
++	if (timeout > 40000)
++		fw_notify("%s: %ds mgt_ORB_timeout limited to 40s\n",
++			  tgt->bus_id, timeout / 1000);
++
++	tgt->mgt_orb_timeout = clamp_val(timeout, 5000, 40000);
++}
++
+ static void sbp2_init_workarounds(struct sbp2_target *tgt, u32 model,
+ 				  u32 firmware_revision)
+ {
+@@ -1171,6 +1169,7 @@ static int sbp2_probe(struct device *dev)
+ 			       &firmware_revision) < 0)
+ 		goto fail_tgt_put;
  
- static void i965_update_wm(struct drm_device *dev, int unused, int unused2,
-
---MP_/_TvCOQ4bUwcwU6U9aAj5wVz
-Content-Type: text/x-patch
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=i915-install-fence.patch
-
-Received: from virtuous by box514.bluehost.com with local-bsmtp (Exim 4.69)
-	(envelope-from <chris@chris-wilson.co.uk>)
-	id 1My9I5-000222-1X
-	for jbarnes@virtuousgeek.org; Wed, 14 Oct 2009 13:13:41 -0600
-X-Spam-Checker-Version: SpamAssassin 3.2.5 (2008-06-10) on box514.bluehost.com
-X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=5.0 tests=BAYES_00,RCVD_IN_DNSWL_MED
-	shortcircuit=no autolearn=ham version=3.2.5
-Received: from mga05.intel.com ([192.55.52.89] helo=fmsmga101.fm.intel.com)
-	by box514.bluehost.com with esmtp (Exim 4.69)
-	(envelope-from <chris@chris-wilson.co.uk>)
-	id 1My9I4-0001zV-9H
-	for jbarnes@virtuousgeek.org; Wed, 14 Oct 2009 13:13:40 -0600
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga101.fm.intel.com with ESMTP; 14 Oct 2009 12:07:40 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,560,1249282800"; 
-   d="scan'208";a="736384260"
-Received: from unknown (HELO localhost.localdomain) ([10.255.17.79])
-  by fmsmga001.fm.intel.com with ESMTP; 14 Oct 2009 12:16:28 -0700
-From: Chris Wilson <chris@chris-wilson.co.uk>
-To: intel-gfx@lists.freedesktop.org
-Cc: Chris Wilson <chris@chris-wilson.co.uk>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] drm/i915: Install a fence register for fbc on g4x
-Date: Wed, 14 Oct 2009 20:12:46 +0100
-Message-Id: <1255547566-9426-1-git-send-email-chris@chris-wilson.co.uk>
-X-Mailer: git-send-email 1.6.4.3
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:program running on server}
-
-To enable framebuffer compression on a g4x, we not only need the buffer
-to tiled (X only), we also need to hold a fence register for the buffer.
-Currently we only install a fence register for pre-i965s when setting up
-the scanout buffer. Rather than adding some convoluted logic to
-g4x_enable_fbc() to acquire a fence register, and perhaps to
-g4x_disable_fbc() to release it again, we can extend the acquisition
-during setup to all chipsets.
-
-Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
----
- drivers/gpu/drm/i915/intel_display.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
-index 1a40b9a..9dfb82f 100644
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -1262,9 +1262,11 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y,
- 		return ret;
- 	}
++	sbp2_clamp_management_orb_timeout(tgt);
+ 	sbp2_init_workarounds(tgt, model, firmware_revision);
  
--	/* Pre-i965 needs to install a fence for tiled scan-out */
--	if (!IS_I965G(dev) &&
--	    obj_priv->fence_reg == I915_FENCE_REG_NONE &&
-+	/* Install a fence for tiled scan-out. Pre-i965 always needs a fence,
-+	 * whereas 965+ only requires a fence if using framebuffer compression.
-+	 * For simplicity, we always install a fence as the cost is not that onerous.
-+	 */
-+	if (obj_priv->fence_reg == I915_FENCE_REG_NONE &&
- 	    obj_priv->tiling_mode != I915_TILING_NONE) {
- 		ret = i915_gem_object_get_fence_reg(obj);
- 		if (ret != 0) {
+ 	/*
+
+commit 544df55d6c1590bc21c86119b89a1689b1eb5e75
+Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date:   Sat Oct 3 10:17:29 2009 +0200
+
+    ieee1394: add documentation entry to MAINTAINERS
+    
+    Add the file pattern of drivers/ieee1394/init_ohci1394_dma.c's
+    documentation to the maintainers database.  init_ohci1394_dma.c is not
+    really part of the IEEE 1394 subsystem, but this maintainers contact
+    seems to be better than none at all.
+    
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8dca9d8..6a387f6 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2519,6 +2519,7 @@ L:	linux1394-devel@lists.sourceforge.net
+ W:	http://www.linux1394.org/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
+ S:	Maintained
++F:	Documentation/debugging-via-ohci1394.txt
+ F:	drivers/ieee1394/
+ 
+ IEEE 1394 RAW I/O DRIVER
+
+commit 211a641770c2ae191c9589fee69a8fb67f67fffd
+Author: Justin P. Mattock <justinmattock@gmail.com>
+Date:   Tue Sep 29 15:13:58 2009 -0700
+
+    ieee1394: update URLs in debugging-via-ohci1394.txt
+    
+    Update URLs of the userspace tools to use ohci1394_dma=early for
+    debugging.
+    
+    Seems the address ftp://ftp.suse.de/private/bk/firewire/tools/* is not
+    very helpful.  After a quick search, seems this was talked about:
+    http://www.mail-archive.com/kgdb-bugreport@lists.sourceforge.net/msg02761.html
+    (can't find the original thread).
+    
+    Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+diff --git a/Documentation/debugging-via-ohci1394.txt b/Documentation/debugging-via-ohci1394.txt
+index 59a91e5..611f5a5 100644
+--- a/Documentation/debugging-via-ohci1394.txt
++++ b/Documentation/debugging-via-ohci1394.txt
+@@ -64,14 +64,14 @@ be used to view the printk buffer of a remote machine, even with live update.
+ 
+ Bernhard Kaindl enhanced firescope to support accessing 64-bit machines
+ from 32-bit firescope and vice versa:
+-- ftp://ftp.suse.de/private/bk/firewire/tools/firescope-0.2.2.tar.bz2
++- http://halobates.de/firewire/firescope-0.2.2.tar.bz2
+ 
+ and he implemented fast system dump (alpha version - read README.txt):
+-- ftp://ftp.suse.de/private/bk/firewire/tools/firedump-0.1.tar.bz2
++- http://halobates.de/firewire/firedump-0.1.tar.bz2
+ 
+ There is also a gdb proxy for firewire which allows to use gdb to access
+ data which can be referenced from symbols found by gdb in vmlinux:
+-- ftp://ftp.suse.de/private/bk/firewire/tools/fireproxy-0.33.tar.bz2
++- http://halobates.de/firewire/fireproxy-0.33.tar.bz2
+ 
+ The latest version of this gdb proxy (fireproxy-0.34) can communicate (not
+ yet stable) with kgdb over an memory-based communication module (kgdbom).
+@@ -178,7 +178,7 @@ Step-by-step instructions for using firescope with early OHCI initialization:
+ 
+ Notes
+ -----
+-Documentation and specifications: ftp://ftp.suse.de/private/bk/firewire/docs
++Documentation and specifications: http://halobates.de/firewire/
+ 
+ FireWire is a trademark of Apple Inc. - for more information please refer to:
+ http://en.wikipedia.org/wiki/FireWire
+
 -- 
-1.6.4.3
+Stefan Richter
+-=====-==--= =-=- -===-
+http://arcgraph.de/sr/
 
-
-
---MP_/_TvCOQ4bUwcwU6U9aAj5wVz--
