@@ -1,105 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762145AbZJNXhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbZJNXkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762145AbZJNXhT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 19:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762106AbZJNXhS
+	id S1762154AbZJNXkO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 19:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762106AbZJNXkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 19:37:18 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:33801 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762061AbZJNXhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 19:37:16 -0400
-Date: Wed, 14 Oct 2009 16:36:38 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Josh Triplett <josh@joshtriplett.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, npiggin@suse.de,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH tip/core/rcu 5/6] rcu: add rnp->blocked_tasks to tracing
-Message-ID: <20091014233638.GE6763@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091014171517.GA13635@linux.vnet.ibm.com> <20091014202649.GC2395@feather>
+	Wed, 14 Oct 2009 19:40:13 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:35893 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762105AbZJNXkM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 19:40:12 -0400
+Message-ID: <4AD6611D.8040407@snapgear.com>
+Date: Thu, 15 Oct 2009 09:39:09 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091014202649.GC2395@feather>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jonathan Corbet <corbet@lwn.net>, Mike Frysinger <vapier@gentoo.org>,
+       David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+Subject: Re: [PATCH 5/6 RFC] arch/m68knommu/kernel/process.c: Remove the BKL
+ from sys_execve
+References: <alpine.LFD.2.00.0910122350140.3658@localhost.localdomain> <alpine.LFD.2.00.0910130007240.3658@localhost.localdomain> <alpine.LFD.2.00.0910130008320.3658@localhost.localdomain> <alpine.LFD.2.00.0910130010000.3658@localhost.localdomain> <alpine.LFD.2.00.0910130011180.3658@localhost.localdomain> <alpine.LFD.2.00.0910130014520.3658@localhost.localdomain> <4AD45A06.2090606@snapgear.com> <alpine.LFD.2.00.0910141706070.9428@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0910141706070.9428@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 01:26:50PM -0700, Josh Triplett wrote:
-> On Wed, Oct 14, 2009 at 10:15:58AM -0700, Paul E. McKenney wrote:
-> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> >  kernel/rcutree_trace.c |    7 +++++--
-> >  1 files changed, 5 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
-> > index 4b31c77..f9d01a3 100644
-> > --- a/kernel/rcutree_trace.c
-> > +++ b/kernel/rcutree_trace.c
-> > @@ -155,12 +155,13 @@ static const struct file_operations rcudata_csv_fops = {
-> >  
-> >  static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
-> >  {
-> > +	long gpnum;
-> >  	int level = 0;
-> >  	struct rcu_node *rnp;
-> >  
-> >  	seq_printf(m, "c=%ld g=%ld s=%d jfq=%ld j=%x "
-> >  		      "nfqs=%lu/nfqsng=%lu(%lu) fqlh=%lu oqlen=%ld\n",
-> > -		   rsp->completed, rsp->gpnum, rsp->signaled,
-> > +		   rsp->completed, gpnum = rsp->gpnum, rsp->signaled,
+Hi Thomas,
+
+Thomas Gleixner wrote:
+> On Tue, 13 Oct 2009, Greg Ungerer wrote:
+>> On 10/13/2009 08:34 AM, John Kacur wrote:
+>>>> From e36c53d296132bc0ddbf6d9fb43ea5ea56dbd4a2 Mon Sep 17 00:00:00 2001
+>>> From: John Kacur<jkacur@redhat.com>
+>>> Date: Mon, 12 Oct 2009 23:37:28 +0200
+>>> Subject: [PATCH] arch/m68knommu/kernel/process.c: Remove the BKL from
+>>> sys_execve
+>>>
+>>> This looks like a copy-and-paste of functionality that no-longer needs the
+>>> bkl.
+>>> Just remove it.
+>>>
+>>> Signed-off-by: John Kacur<jkacur@redhat.com>
+>> Tested and runs fine on m68knommu.
+>>
+>> Acked-by: Greg Ungerer <gerg@uclinux.org>
+>>
+>> Do you want me to push this into the m68knommu git tree,
+>> for eventual merging into Linus' tree?  Or are you going
+>> to push the whole set of patches together?
 > 
-> Please don't hide this or any other assignment in the middle of a print
-> statement.  Just put it immediately preceeding the statement.
+> I'm collecting and pushing the BKL stuff, but if you want to take it
+> just let me know and I drop it.
 
-Good point, here is the updated patch.
+Would make more sense to keep it all together I think.
+So you take it.
 
-							Thanx, Paul
+Regards
+Greg
 
-rcu: add rnp->blocked_tasks to tracing
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
- rcutree_trace.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
-index 4b31c77..1984cdc 100644
---- a/kernel/rcutree_trace.c
-+++ b/kernel/rcutree_trace.c
-@@ -155,12 +155,14 @@ static const struct file_operations rcudata_csv_fops = {
- 
- static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
- {
-+	long gpnum;
- 	int level = 0;
- 	struct rcu_node *rnp;
- 
-+	gpnum = rsp->gpnum;
- 	seq_printf(m, "c=%ld g=%ld s=%d jfq=%ld j=%x "
- 		      "nfqs=%lu/nfqsng=%lu(%lu) fqlh=%lu oqlen=%ld\n",
--		   rsp->completed, rsp->gpnum, rsp->signaled,
-+		   rsp->completed, gpnum, rsp->signaled,
- 		   (long)(rsp->jiffies_force_qs - jiffies),
- 		   (int)(jiffies & 0xffff),
- 		   rsp->n_force_qs, rsp->n_force_qs_ngp,
-@@ -171,8 +173,10 @@ static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
- 			seq_puts(m, "\n");
- 			level = rnp->level;
- 		}
--		seq_printf(m, "%lx/%lx %d:%d ^%d    ",
-+		seq_printf(m, "%lx/%lx %c>%c %d:%d ^%d    ",
- 			   rnp->qsmask, rnp->qsmaskinit,
-+			   "T."[list_empty(&rnp->blocked_tasks[gpnum & 1])],
-+			   "T."[list_empty(&rnp->blocked_tasks[!(gpnum & 1)])],
- 			   rnp->grplo, rnp->grphi, rnp->grpnum);
- 	}
- 	seq_puts(m, "\n");
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
