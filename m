@@ -1,225 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932499AbZJNKZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932639AbZJNKbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932499AbZJNKZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 06:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758317AbZJNKZ0
+	id S932639AbZJNKbP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 06:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932430AbZJNKbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 06:25:26 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:34773 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758269AbZJNKZZ convert rfc822-to-8bit (ORCPT
+	Wed, 14 Oct 2009 06:31:15 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:4378 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932409AbZJNKbO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 06:25:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UpnP/OYxRQJ3aPu9HgKXLh5ac1NZreJE/ta79eWKNNaA83sOqcr2qexhtZSe0qJrhl
-         buw7Lt+2XQbP5ZdNHASQucNUqgHIcECnr2hRUn/+vPuU+UYoyq5l5RAq7QfSn+ezXkEX
-         8Hp4l/g6xt4Opu4rvJA3eNT9KfR9pA9aVN8nw=
+	Wed, 14 Oct 2009 06:31:14 -0400
+X-IronPort-AV: E=Sophos;i="4.44,556,1249272000"; 
+   d="scan'208";a="7587520"
+From: <graff.yang@gmail.com>
+To: <dhowells@redhat.com>, <linux-kernel@vger.kernel.org>,
+       <gyang@blackfin.uclinux.org>
+CC: <akpm@linux-foundation.org>, <uclinux-dist-devel@blackfin.uclinux.org>,
+       Graff Yang <graf.yang@analog.com>
+Subject: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
+Date: Wed, 14 Oct 2009 18:28:54 +0800
+Message-ID: <1255516134-4838-1-git-send-email-graff.yang@gmail.com>
+X-Mailer: git-send-email 1.6.4.4
 MIME-Version: 1.0
-In-Reply-To: <20091014101336.GA25108@redhat.com>
-References: <f22d86810910132336r1d6f6363qa983b355676dc413@mail.gmail.com>
-	 <f22d86810910140221q7e03e693kad122a37461cea1d@mail.gmail.com>
-	 <20091014101336.GA25108@redhat.com>
-Date: Wed, 14 Oct 2009 03:24:49 -0700
-Message-ID: <f22d86810910140324l7b78ed57v7e7c774d5f8a1bd3@mail.gmail.com>
-Subject: Re: How to check whether executing in atomic context?
-From: "Leonidas ." <leonidas137@gmail.com>
-To: Gleb Natapov <gleb@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 3:13 AM, Gleb Natapov <gleb@redhat.com> wrote:
-> On Wed, Oct 14, 2009 at 02:21:22AM -0700, Leonidas . wrote:
->> On Tue, Oct 13, 2009 at 11:36 PM, Leonidas . <leonidas137@gmail.com> wrote:
->> > Hi List,
->> >
->> > I am working on a profiler kind of module, the exported apis of my
->> > module can be
->> > called from process context and interrupt context as well. Depending on the
->> > context I am called in, I need to call sleepable/nonsleepable variants
->> > of my internal
->> > bookkeeping functions.
->> >
->> > I am aware of in_interrupt() call which can be used to check current
->> > context and take action
->> > accordingly.
->> >
->> > Is there any api which can help figure out whether we are executing
->> > while hold a spinlock? I.e
->> > an api which can help figure out sleepable/nonsleepable context? If it
->> > is not there, what can
->> > be done for writing the same? Any pointers will be helpful.
->> >
->> > -Leo.
->> >
->>
->>   While searching through the sources, I found this,
->>
->>   97/*
->>   98 * Are we running in atomic context?  WARNING: this macro cannot
->>   99 * always detect atomic context; in particular, it cannot know about
->>  100 * held spinlocks in non-preemptible kernels.  Thus it should not be
->>  101 * used in the general case to determine whether sleeping is possible.
->>  102 * Do not use in_atomic() in driver code.
->>  103 */
->>  104#define in_atomic()     ((preempt_count() & ~PREEMPT_ACTIVE) !=
->> PREEMPT_INATOMIC_BASE)
->>  105
->>
->> this just complicates the matter, right? This does not work in general
->> case but I think this
->> will always work if the kernel is preemptible.
->>
->> Is there no way to write a generic macro?
->>
->>
-> Attached patch make in_atomic() to work for non-preemptable kernels too.
-> Doesn't look to big or scary.
->
-> Disclaimer: tested only inside kvm guest 64bit, haven't measured overhead.
->
-> Signed-off-by: Gleb Natapov <gleb@redhat.com>
-> diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
-> index 6d527ee..a6b6040 100644
-> --- a/include/linux/hardirq.h
-> +++ b/include/linux/hardirq.h
-> @@ -92,12 +92,11 @@
->  */
->  #define in_nmi()       (preempt_count() & NMI_MASK)
->
-> +#define PREEMPT_CHECK_OFFSET 1
->  #if defined(CONFIG_PREEMPT)
->  # define PREEMPT_INATOMIC_BASE kernel_locked()
-> -# define PREEMPT_CHECK_OFFSET 1
->  #else
->  # define PREEMPT_INATOMIC_BASE 0
-> -# define PREEMPT_CHECK_OFFSET 0
->  #endif
->
->  /*
-> @@ -116,12 +115,11 @@
->  #define in_atomic_preempt_off() \
->                ((preempt_count() & ~PREEMPT_ACTIVE) != PREEMPT_CHECK_OFFSET)
->
-> +#define IRQ_EXIT_OFFSET (HARDIRQ_OFFSET-1)
->  #ifdef CONFIG_PREEMPT
->  # define preemptible() (preempt_count() == 0 && !irqs_disabled())
-> -# define IRQ_EXIT_OFFSET (HARDIRQ_OFFSET-1)
->  #else
->  # define preemptible() 0
-> -# define IRQ_EXIT_OFFSET HARDIRQ_OFFSET
->  #endif
->
->  #if defined(CONFIG_SMP) || defined(CONFIG_GENERIC_HARDIRQS)
-> diff --git a/include/linux/preempt.h b/include/linux/preempt.h
-> index 72b1a10..7d039ca 100644
-> --- a/include/linux/preempt.h
-> +++ b/include/linux/preempt.h
-> @@ -82,14 +82,24 @@ do { \
->
->  #else
->
-> -#define preempt_disable()              do { } while (0)
-> -#define preempt_enable_no_resched()    do { } while (0)
-> -#define preempt_enable()               do { } while (0)
-> +#define preempt_disable() \
-> +do { \
-> +       inc_preempt_count(); \
-> +       barrier(); \
-> +} while (0)
-> +
-> +#define preempt_enable() \
-> +do { \
-> +       barrier(); \
-> +       dec_preempt_count(); \
-> +} while (0)
-> +
-> +#define preempt_enable_no_resched()    preempt_enable()
->  #define preempt_check_resched()                do { } while (0)
->
-> -#define preempt_disable_notrace()              do { } while (0)
-> -#define preempt_enable_no_resched_notrace()    do { } while (0)
-> -#define preempt_enable_notrace()               do { } while (0)
-> +#define preempt_disable_notrace()              preempt_disable()
-> +#define preempt_enable_no_resched_notrace()    preempt_enable()
-> +#define preempt_enable_notrace()               preempt_enable()
->
->  #endif
->
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 1535f38..841e0d0 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -2556,10 +2556,8 @@ void sched_fork(struct task_struct *p, int clone_flags)
->  #if defined(CONFIG_SMP) && defined(__ARCH_WANT_UNLOCKED_CTXSW)
->        p->oncpu = 0;
->  #endif
-> -#ifdef CONFIG_PREEMPT
->        /* Want to start with kernel preemption disabled. */
->        task_thread_info(p)->preempt_count = 1;
-> -#endif
->        plist_node_init(&p->pushable_tasks, MAX_PRIO);
->
->        put_cpu();
-> @@ -6943,11 +6941,7 @@ void __cpuinit init_idle(struct task_struct *idle, int cpu)
->        spin_unlock_irqrestore(&rq->lock, flags);
->
->        /* Set the preempt count _outside_ the spinlocks! */
-> -#if defined(CONFIG_PREEMPT)
->        task_thread_info(idle)->preempt_count = (idle->lock_depth >= 0);
-> -#else
-> -       task_thread_info(idle)->preempt_count = 0;
-> -#endif
->        /*
->         * The idle tasks have their own, simple scheduling class:
->         */
-> diff --git a/lib/kernel_lock.c b/lib/kernel_lock.c
-> index 39f1029..6e2659d 100644
-> --- a/lib/kernel_lock.c
-> +++ b/lib/kernel_lock.c
-> @@ -93,6 +93,7 @@ static inline void __lock_kernel(void)
->  */
->  static inline void __lock_kernel(void)
->  {
-> +       preempt_disable();
->        _raw_spin_lock(&kernel_flag);
->  }
->  #endif
-> --
->                        Gleb.
->
+From: Graff Yang <graf.yang@analog.com>
 
-Unbelievable! I was just thinking about the logic to achieve the same, and
-someone has already done this. Thanks for the patch.
+The original code calling security_file_mmap() use user's hint address
+as it's 5th argument(addr). This is improper, as the hint address may be
+NULL.
+In this case, the security_file_mmap() may incorrectly return -EPERM.
 
-Actually, in my case, I dont think I will be able to patch and rebuild
-the kernel.
-Also, my use case is also much simpler, I just want to call kmalloc
-depending on
-the context I am running in, by giving appropriate flags.
+This patch moved the calling of security_file_mmap() out of
+validate_mmap_request() to do_mmap_pgoff(), and call this
+security API with the address that attempting to mmap.
 
-So, I am doing something like this:
+Signed-off-by: Graff Yang <graf.yang@analog.com>
+---
+ mm/nommu.c |   18 ++++++++++++------
+ 1 files changed, 12 insertions(+), 6 deletions(-)
 
-if(preemptible())
-    flags = (in_atomic() == 0) ? GFP_KERNEL : GFP_ATOMIC;
-else
-     /*Cant afford failing, dont care abt emergency pool depleting etc*/
-    flags = GFP_ATOMIC
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 3a5e989..fc986d4 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -862,7 +862,6 @@ static int validate_mmap_request(struct file *file,
+ 				 unsigned long *_capabilities)
+ {
+ 	unsigned long capabilities, rlen;
+-	unsigned long reqprot = prot;
+ 	int ret;
+ 
+ 	/* do the simple checks first */
+@@ -1013,11 +1012,6 @@ static int validate_mmap_request(struct file *file,
+ 			prot |= PROT_EXEC;
+ 	}
+ 
+-	/* allow the security API to have its say */
+-	ret = security_file_mmap(file, reqprot, prot, flags, addr, 0);
+-	if (ret < 0)
+-		return ret;
+-
+ 	/* looks okay */
+ 	*_capabilities = capabilities;
+ 	return 0;
+@@ -1231,6 +1225,7 @@ unsigned long do_mmap_pgoff(struct file *file,
+ 	struct vm_area_struct *vma;
+ 	struct vm_region *region;
+ 	struct rb_node *rb;
++	unsigned long reqprot = prot;
+ 	unsigned long capabilities, vm_flags, result;
+ 	int ret;
+ 
+@@ -1327,6 +1322,12 @@ unsigned long do_mmap_pgoff(struct file *file,
+ 				continue;
+ 			}
+ 
++			/* allow the security API to have its say */
++			ret = security_file_mmap(file, reqprot, prot, flags,
++							pregion->vm_start, 0);
++			if (ret < 0)
++				goto error_just_free;
++
+ 			/* we've found a region we can share */
+ 			atomic_inc(&pregion->vm_usage);
+ 			vma->vm_region = pregion;
+@@ -1394,6 +1395,11 @@ unsigned long do_mmap_pgoff(struct file *file,
+ 	if (ret < 0)
+ 		goto error_put_region;
+ 
++	ret = security_file_mmap(file, reqprot, prot, flags,
++					vma->vm_start, 0);
++	if (ret < 0)
++		goto error_put_region;
++
+ 	/* okay... we have a mapping; now we have to register it */
+ 	result = vma->vm_start;
+ 
+-- 
+1.6.4.4
 
-kmalloc(size, flags);
-
-I am aware that, in_atomic() should not be used by drivers/modules
-except core kernel,
-but there is no other provision, I cant change the interfaces of the
-function calls or have
-two copies of functions i.e. sleepable/nonsleepable since the profiler
-I am porting is
-originally written for BSD.
-
--Leo.
