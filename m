@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934686AbZJNPsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934635AbZJNPtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934686AbZJNPsr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934675AbZJNPsq
+	id S934635AbZJNPtR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbZJNPtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:48:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34074 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 11:49:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34102 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934636AbZJNPsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:48:43 -0400
-Date: Wed, 14 Oct 2009 15:47:56 GMT
+	id S1756721AbZJNPtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 11:49:15 -0400
+Date: Wed, 14 Oct 2009 15:48:13 GMT
 From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de
+       dbrownell@users.sourceforge.net, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-In-Reply-To: <20091010153349.277882707@linutronix.de>
-References: <20091010153349.277882707@linutronix.de>
+       dbrownell@users.sourceforge.net, tglx@linutronix.de
+In-Reply-To: <20091010153349.318535932@linutronix.de>
+References: <20091010153349.318535932@linutronix.de>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:bkl/drivers] drivers: Remove BKL from cs5535_gpio
-Message-ID: <tip-a7e63bb5f08378620d913824ab42e49027f22194@git.kernel.org>
-Git-Commit-ID: a7e63bb5f08378620d913824ab42e49027f22194
+Subject: [tip:bkl/drivers] spi: Remove BKL from spidev_open
+Message-ID: <tip-4c2aedc2543248c3fdc8c06c662b589d36c93bbb@git.kernel.org>
+Git-Commit-ID: 4c2aedc2543248c3fdc8c06c662b589d36c93bbb
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:47:56 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:48:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a7e63bb5f08378620d913824ab42e49027f22194
-Gitweb:     http://git.kernel.org/tip/a7e63bb5f08378620d913824ab42e49027f22194
+Commit-ID:  4c2aedc2543248c3fdc8c06c662b589d36c93bbb
+Gitweb:     http://git.kernel.org/tip/4c2aedc2543248c3fdc8c06c662b589d36c93bbb
 Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Sat, 10 Oct 2009 15:35:48 +0000
+AuthorDate: Sat, 10 Oct 2009 15:35:52 +0000
 Committer:  Thomas Gleixner <tglx@linutronix.de>
 CommitDate: Wed, 14 Oct 2009 17:36:48 +0200
 
-drivers: Remove BKL from cs5535_gpio
+spi: Remove BKL from spidev_open
 
-The big BKL pushdown added cycle_kernel_lock(). There is nothing to
-wait for in this driver. Remove it.
+The BKL was added there with the big pushdown. Remove it as the code
+is serialized already.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <20091010153349.277882707@linutronix.de>
+LKML-Reference: <20091010153349.318535932@linutronix.de>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
 ---
- drivers/char/cs5535_gpio.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ drivers/spi/spidev.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/cs5535_gpio.c b/drivers/char/cs5535_gpio.c
-index 04ba906..4d830dc 100644
---- a/drivers/char/cs5535_gpio.c
-+++ b/drivers/char/cs5535_gpio.c
-@@ -17,7 +17,7 @@
- #include <linux/cdev.h>
- #include <linux/ioport.h>
- #include <linux/pci.h>
+diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
+index 5d23983..815a650 100644
+--- a/drivers/spi/spidev.c
++++ b/drivers/spi/spidev.c
+@@ -30,7 +30,6 @@
+ #include <linux/errno.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
 -#include <linux/smp_lock.h>
-+
- #include <asm/uaccess.h>
- #include <asm/io.h>
  
-@@ -158,7 +158,6 @@ static int cs5535_gpio_open(struct inode *inode, struct file *file)
- {
- 	u32 m = iminor(inode);
+ #include <linux/spi/spi.h>
+ #include <linux/spi/spidev.h>
+@@ -477,7 +476,6 @@ static int spidev_open(struct inode *inode, struct file *filp)
+ 	struct spidev_data	*spidev;
+ 	int			status = -ENXIO;
  
--	cycle_kernel_lock();
- 	/* the mask says which pins are usable by this driver */
- 	if ((mask & (1 << m)) == 0)
- 		return -EINVAL;
+-	lock_kernel();
+ 	mutex_lock(&device_list_lock);
+ 
+ 	list_for_each_entry(spidev, &device_list, device_entry) {
+@@ -503,7 +501,6 @@ static int spidev_open(struct inode *inode, struct file *filp)
+ 		pr_debug("spidev: nothing for minor %d\n", iminor(inode));
+ 
+ 	mutex_unlock(&device_list_lock);
+-	unlock_kernel();
+ 	return status;
+ }
+ 
