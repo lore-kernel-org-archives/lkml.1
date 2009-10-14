@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934880AbZJNQJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934822AbZJNQJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934880AbZJNQJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 12:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934829AbZJNQJx
+	id S934822AbZJNQJw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 12:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761977AbZJNQJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 12:09:53 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:38404 "EHLO
+	Wed, 14 Oct 2009 12:09:49 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:36174 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761957AbZJNQJr (ORCPT
+	with ESMTP id S1761920AbZJNQJq (ORCPT
 	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Wed, 14 Oct 2009 12:09:47 -0400
+	Wed, 14 Oct 2009 12:09:46 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [NET PATCH 6/9] venet: add eventq protocol
+Subject: [NET PATCH 7/9] venet: use an skblist for outstanding descriptors
 To: alacrityvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Date: Wed, 14 Oct 2009 11:59:17 -0400
-Message-ID: <20091014155917.18864.75255.stgit@dev.haskins.net>
+Date: Wed, 14 Oct 2009 11:59:22 -0400
+Message-ID: <20091014155922.18864.84913.stgit@dev.haskins.net>
 In-Reply-To: <20091014154457.18864.28382.stgit@dev.haskins.net>
 References: <20091014154457.18864.28382.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -26,317 +26,232 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds an event-channel for passing host->guest messages to the
-guest driver.  We will use this later in the series for linkstate and
-asynchronous transmit-complete events.
+This will be useful later in the series so that we can switch to
+an asynchronous model.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- drivers/net/vbus-enet.c |  203 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/venet.h   |   28 ++++++
- 2 files changed, 229 insertions(+), 2 deletions(-)
+ drivers/net/vbus-enet.c |   59 +++++++++++++++++++++++++++--------------------
+ 1 files changed, 34 insertions(+), 25 deletions(-)
 
 diff --git a/drivers/net/vbus-enet.c b/drivers/net/vbus-enet.c
-index fe9eeca..5fccfd1 100644
+index 5fccfd1..3032169 100644
 --- a/drivers/net/vbus-enet.c
 +++ b/drivers/net/vbus-enet.c
-@@ -66,6 +66,14 @@ struct vbus_enet_priv {
- 		bool               enabled;
- 		char              *pool;
- 	} pmtd; /* pre-mapped transmit descriptors */
+@@ -59,8 +59,11 @@ struct vbus_enet_priv {
+ 	struct vbus_device_proxy  *vdev;
+ 	struct napi_struct         napi;
+ 	struct vbus_enet_queue     rxq;
+-	struct vbus_enet_queue     txq;
+-	struct tasklet_struct      txtask;
 +	struct {
-+		bool                   enabled;
-+		bool                   linkstate;
-+		unsigned long          evsize;
 +		struct vbus_enet_queue veq;
 +		struct tasklet_struct  task;
-+		char                  *pool;
-+	} evq;
++		struct sk_buff_head    outstanding;
++	} tx;
+ 	bool                       sg;
+ 	struct {
+ 		bool               enabled;
+@@ -76,7 +79,7 @@ struct vbus_enet_priv {
+ 	} evq;
  };
  
- static void vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force);
-@@ -331,6 +339,16 @@ tx_teardown(struct vbus_enet_priv *priv)
- 	}
- }
+-static void vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force);
++static void vbus_enet_tx_reap(struct vbus_enet_priv *priv);
  
-+static void
-+evq_teardown(struct vbus_enet_priv *priv)
-+{
-+	if (!priv->evq.enabled)
-+		return;
-+
-+	ioq_put(priv->evq.veq.queue);
-+	kfree(priv->evq.pool);
-+}
-+
- /*
-  * Open and close
-  */
-@@ -741,8 +759,91 @@ tx_isr(struct ioq_notifier *notifier)
-        tasklet_schedule(&priv->txtask);
- }
- 
-+static void
-+evq_linkstate_event(struct vbus_enet_priv *priv,
-+		    struct venet_event_header *header)
-+{
-+	struct venet_event_linkstate *event =
-+		(struct venet_event_linkstate *)header;
-+
-+	switch (event->state) {
-+	case 0:
-+		netif_carrier_off(priv->dev);
-+		break;
-+	case 1:
-+		netif_carrier_on(priv->dev);
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
-+static void
-+deferred_evq_isr(unsigned long data)
-+{
-+	struct vbus_enet_priv *priv = (struct vbus_enet_priv *)data;
-+	int nevents = 0;
-+	struct ioq_iterator iter;
-+	int ret;
-+
-+	PDEBUG(priv->dev, "evq: polling...\n");
-+
-+	/* We want to iterate on the head of the in-use index */
-+	ret = ioq_iter_init(priv->evq.veq.queue, &iter, ioq_idxtype_inuse,
-+			    IOQ_ITER_AUTOUPDATE);
-+	BUG_ON(ret < 0);
-+
-+	ret = ioq_iter_seek(&iter, ioq_seek_head, 0, 0);
-+	BUG_ON(ret < 0);
-+
-+	/*
-+	 * The EOM is indicated by finding a packet that is still owned by
-+	 * the south side
-+	 */
-+	while (!iter.desc->sown) {
-+		struct venet_event_header *header;
-+
-+		header = (struct venet_event_header *)iter.desc->cookie;
-+
-+		switch (header->id) {
-+		case VENET_EVENT_LINKSTATE:
-+			evq_linkstate_event(priv, header);
-+			break;
-+		default:
-+			panic("venet: unexpected event id:%d of size %d\n",
-+			      header->id, header->size);
-+			break;
-+		}
-+
-+		memset((void *)iter.desc->cookie, 0, priv->evq.evsize);
-+
-+		/* Advance the in-use tail */
-+		ret = ioq_iter_pop(&iter, 0);
-+		BUG_ON(ret < 0);
-+
-+		nevents++;
-+	}
-+
-+	PDEBUG(priv->dev, "%d events received\n", nevents);
-+
-+	ioq_notify_enable(priv->evq.veq.queue, 0);
-+}
-+
-+static void
-+evq_isr(struct ioq_notifier *notifier)
-+{
-+       struct vbus_enet_priv *priv;
-+
-+       priv = container_of(notifier, struct vbus_enet_priv, evq.veq.notifier);
-+
-+       PDEBUG(priv->dev, "evq_isr\n");
-+
-+       ioq_notify_disable(priv->evq.veq.queue, 0);
-+       tasklet_schedule(&priv->evq.task);
-+}
-+
+ static struct vbus_enet_priv *
+ napi_to_priv(struct napi_struct *napi)
+@@ -216,7 +219,7 @@ rx_teardown(struct vbus_enet_priv *priv)
  static int
--vbus_enet_negcap(struct vbus_enet_priv *priv)
-+vbus_enet_sg_negcap(struct vbus_enet_priv *priv)
+ tx_setup(struct vbus_enet_priv *priv)
  {
- 	struct net_device *dev = priv->dev;
- 	struct venet_capabilities caps;
-@@ -782,6 +883,103 @@ vbus_enet_negcap(struct vbus_enet_priv *priv)
- 	return 0;
+-	struct ioq *ioq    = priv->txq.queue;
++	struct ioq *ioq    = priv->tx.veq.queue;
+ 	size_t      iovlen = sizeof(struct venet_iov) * (MAX_SKB_FRAGS-1);
+ 	size_t      len    = sizeof(struct venet_sg) + iovlen;
+ 	struct ioq_iterator iter;
+@@ -233,7 +236,7 @@ tx_setup(struct vbus_enet_priv *priv)
+ 	/* pre-allocate our descriptor pool if pmtd is enabled */
+ 	if (priv->pmtd.enabled) {
+ 		struct vbus_device_proxy *dev = priv->vdev;
+-		size_t poollen = len * priv->txq.count;
++		size_t poollen = len * priv->tx.veq.count;
+ 		char *pool;
+ 		int shmid;
+ 
+@@ -262,7 +265,7 @@ tx_setup(struct vbus_enet_priv *priv)
+ 	/*
+ 	 * Now populate each descriptor with an empty SG descriptor
+ 	 */
+-	for (i = 0; i < priv->txq.count; i++) {
++	for (i = 0; i < priv->tx.veq.count; i++) {
+ 		struct venet_sg *vsg;
+ 
+ 		if (priv->pmtd.enabled) {
+@@ -291,12 +294,14 @@ tx_setup(struct vbus_enet_priv *priv)
+ static void
+ tx_teardown(struct vbus_enet_priv *priv)
+ {
+-	struct ioq *ioq = priv->txq.queue;
++	struct ioq *ioq = priv->tx.veq.queue;
+ 	struct ioq_iterator iter;
++	struct sk_buff *skb;
+ 	int ret;
+ 
+ 	/* forcefully free all outstanding transmissions */
+-	vbus_enet_tx_reap(priv, 1);
++	while ((skb = __skb_dequeue(&priv->tx.outstanding)))
++		dev_kfree_skb(skb);
+ 
+ 	if (!priv->sg)
+ 		/*
+@@ -529,7 +534,7 @@ vbus_enet_tx_start(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	spin_lock_irqsave(&priv->lock, flags);
+ 
+-	if (ioq_full(priv->txq.queue, ioq_idxtype_valid)) {
++	if (ioq_full(priv->tx.veq.queue, ioq_idxtype_valid)) {
+ 		/*
+ 		 * We must flow-control the kernel by disabling the
+ 		 * queue
+@@ -544,7 +549,7 @@ vbus_enet_tx_start(struct sk_buff *skb, struct net_device *dev)
+ 	 * We want to iterate on the tail of both the "inuse" and "valid" index
+ 	 * so we specify the "both" index
+ 	 */
+-	ret = ioq_iter_init(priv->txq.queue, &iter, ioq_idxtype_both,
++	ret = ioq_iter_init(priv->tx.veq.queue, &iter, ioq_idxtype_both,
+ 			    IOQ_ITER_AUTOUPDATE);
+ 	BUG_ON(ret < 0);
+ 
+@@ -620,6 +625,8 @@ vbus_enet_tx_start(struct sk_buff *skb, struct net_device *dev)
+ 	priv->dev->stats.tx_packets++;
+ 	priv->dev->stats.tx_bytes += skb->len;
+ 
++	__skb_queue_tail(&priv->tx.outstanding, skb);
++
+ 	/*
+ 	 * This advances both indexes together implicitly, and then
+ 	 * signals the south side to consume the packet
+@@ -629,7 +636,7 @@ vbus_enet_tx_start(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	dev->trans_start = jiffies; /* save the timestamp */
+ 
+-	if (ioq_full(priv->txq.queue, ioq_idxtype_valid)) {
++	if (ioq_full(priv->tx.veq.queue, ioq_idxtype_valid)) {
+ 		/*
+ 		 * If the queue is congested, we must flow-control the kernel
+ 		 */
+@@ -648,7 +655,7 @@ vbus_enet_tx_start(struct sk_buff *skb, struct net_device *dev)
+  * assumes priv->lock held
+  */
+ static void
+-vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force)
++vbus_enet_tx_reap(struct vbus_enet_priv *priv)
+ {
+ 	struct ioq_iterator iter;
+ 	int ret;
+@@ -658,7 +665,7 @@ vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force)
+ 	 * do not want the iter_pop (below) to flip the ownership, so
+ 	 * we set the NOFLIPOWNER option
+ 	 */
+-	ret = ioq_iter_init(priv->txq.queue, &iter, ioq_idxtype_valid,
++	ret = ioq_iter_init(priv->tx.veq.queue, &iter, ioq_idxtype_valid,
+ 			    IOQ_ITER_NOFLIPOWNER);
+ 	BUG_ON(ret < 0);
+ 
+@@ -669,7 +676,7 @@ vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force)
+ 	 * We are done once we find the first packet either invalid or still
+ 	 * owned by the south-side
+ 	 */
+-	while (iter.desc->valid && (!iter.desc->sown || force)) {
++	while (iter.desc->valid && !iter.desc->sown) {
+ 		struct sk_buff *skb;
+ 
+ 		if (priv->sg) {
+@@ -687,6 +694,7 @@ vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force)
+ 		/* Reset the descriptor */
+ 		iter.desc->valid  = 0;
+ 
++		__skb_unlink(skb, &priv->tx.outstanding);
+ 		dev_kfree_skb(skb);
+ 
+ 		/* Advance the valid-index head */
+@@ -699,7 +707,7 @@ vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force)
+ 	 * processing
+ 	 */
+ 	if (netif_queue_stopped(priv->dev)
+-	    && !ioq_full(priv->txq.queue, ioq_idxtype_valid)) {
++	    && !ioq_full(priv->tx.veq.queue, ioq_idxtype_valid)) {
+ 		PDEBUG(priv->dev, "re-enabling tx queue\n");
+ 		netif_wake_queue(priv->dev);
+ 	}
+@@ -714,7 +722,7 @@ vbus_enet_timeout(struct net_device *dev)
+ 	dev_dbg(&dev->dev, "Transmit timeout\n");
+ 
+ 	spin_lock_irqsave(&priv->lock, flags);
+-	vbus_enet_tx_reap(priv, 0);
++	vbus_enet_tx_reap(priv);
+ 	spin_unlock_irqrestore(&priv->lock, flags);
  }
  
-+static int
-+vbus_enet_evq_negcap(struct vbus_enet_priv *priv, unsigned long count)
-+{
-+	struct venet_capabilities caps;
-+	int ret;
-+
-+	memset(&caps, 0, sizeof(caps));
-+
-+	caps.gid = VENET_CAP_GROUP_EVENTQ;
-+	caps.bits |= VENET_CAP_EVQ_LINKSTATE;
-+
-+	ret = devcall(priv, VENET_FUNC_NEGCAP, &caps, sizeof(caps));
-+	if (ret < 0)
-+		return ret;
-+
-+	if (caps.bits) {
-+		struct vbus_device_proxy *dev = priv->vdev;
-+		struct venet_eventq_query query;
-+		size_t                    poollen;
-+		struct ioq_iterator       iter;
-+		char                     *pool;
-+		int                       i;
-+
-+		priv->evq.enabled = true;
-+
-+		if (caps.bits & VENET_CAP_EVQ_LINKSTATE) {
-+			/*
-+			 * We will assume there is no carrier until we get
-+			 * an event telling us otherwise
-+			 */
-+			netif_carrier_off(priv->dev);
-+			priv->evq.linkstate = true;
-+		}
-+
-+		memset(&query, 0, sizeof(query));
-+
-+		ret = devcall(priv, VENET_FUNC_EVQQUERY, &query, sizeof(query));
-+		if (ret < 0)
-+			return ret;
-+
-+		priv->evq.evsize = query.evsize;
-+		poollen = query.evsize * count;
-+
-+		pool = kzalloc(poollen, GFP_KERNEL | GFP_DMA);
-+		if (!pool)
-+			return -ENOMEM;
-+
-+		priv->evq.pool = pool;
-+
-+		ret = dev->ops->shm(dev, query.dpid, 0,
-+				    pool, poollen, 0, NULL, 0);
-+		if (ret < 0)
-+			return ret;
-+
-+		queue_init(priv, &priv->evq.veq, query.qid, count, evq_isr);
-+
-+		ret = ioq_iter_init(priv->evq.veq.queue,
-+				    &iter, ioq_idxtype_valid, 0);
-+		BUG_ON(ret < 0);
-+
-+		ret = ioq_iter_seek(&iter, ioq_seek_set, 0, 0);
-+		BUG_ON(ret < 0);
-+
-+		/* Now populate each descriptor with an empty event */
-+		for (i = 0; i < count; i++) {
-+			size_t offset = (i * query.evsize);
-+			void *addr = &priv->evq.pool[offset];
-+
-+			iter.desc->ptr    = (u64)offset;
-+			iter.desc->cookie = (u64)addr;
-+			iter.desc->len    = query.evsize;
-+
-+			ret = ioq_iter_push(&iter, 0);
-+			BUG_ON(ret < 0);
-+		}
-+
-+		/* Finally, enable interrupts */
-+		tasklet_init(&priv->evq.task, deferred_evq_isr,
-+			     (unsigned long)priv);
-+		ioq_notify_enable(priv->evq.veq.queue, 0);
-+	}
-+
-+	return 0;
-+}
-+
-+static int
-+vbus_enet_negcap(struct vbus_enet_priv *priv)
-+{
-+	int ret;
-+
-+	ret = vbus_enet_sg_negcap(priv);
-+	if (ret < 0)
-+		return ret;
-+
-+	return vbus_enet_evq_negcap(priv, tx_ringlen);
-+}
-+
- static int vbus_enet_set_tx_csum(struct net_device *dev, u32 data)
+@@ -740,10 +748,10 @@ deferred_tx_isr(unsigned long data)
+ 	PDEBUG(priv->dev, "deferred_tx_isr\n");
+ 
+ 	spin_lock_irqsave(&priv->lock, flags);
+-	vbus_enet_tx_reap(priv, 0);
++	vbus_enet_tx_reap(priv);
+ 	spin_unlock_irqrestore(&priv->lock, flags);
+ 
+-	ioq_notify_enable(priv->txq.queue, 0);
++	ioq_notify_enable(priv->tx.veq.queue, 0);
+ }
+ 
+ static void
+@@ -751,12 +759,12 @@ tx_isr(struct ioq_notifier *notifier)
  {
- 	struct vbus_enet_priv *priv = netdev_priv(dev);
-@@ -905,6 +1103,9 @@ vbus_enet_remove(struct vbus_device_proxy *vdev)
+        struct vbus_enet_priv *priv;
+ 
+-       priv = container_of(notifier, struct vbus_enet_priv, txq.notifier);
++       priv = container_of(notifier, struct vbus_enet_priv, tx.veq.notifier);
+ 
+        PDEBUG(priv->dev, "tx_isr\n");
+ 
+-       ioq_notify_disable(priv->txq.queue, 0);
+-       tasklet_schedule(&priv->txtask);
++       ioq_notify_disable(priv->tx.veq.queue, 0);
++       tasklet_schedule(&priv->tx.task);
+ }
+ 
+ static void
+@@ -1043,16 +1051,17 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
+ 		goto out_free;
+ 	}
+ 
+-	tasklet_init(&priv->txtask, deferred_tx_isr, (unsigned long)priv);
++	tasklet_init(&priv->tx.task, deferred_tx_isr, (unsigned long)priv);
++	skb_queue_head_init(&priv->tx.outstanding);
+ 
+ 	queue_init(priv, &priv->rxq, VENET_QUEUE_RX, rx_ringlen, rx_isr);
+-	queue_init(priv, &priv->txq, VENET_QUEUE_TX, tx_ringlen, tx_isr);
++	queue_init(priv, &priv->tx.veq, VENET_QUEUE_TX, tx_ringlen, tx_isr);
+ 
+ 	rx_setup(priv);
+ 	tx_setup(priv);
+ 
+ 	ioq_notify_enable(priv->rxq.queue, 0);  /* enable interrupts */
+-	ioq_notify_enable(priv->txq.queue, 0);
++	ioq_notify_enable(priv->tx.veq.queue, 0);
+ 
+ 	dev->netdev_ops     = &vbus_enet_netdev_ops;
+ 	dev->watchdog_timeo = 5 * HZ;
+@@ -1101,7 +1110,7 @@ vbus_enet_remove(struct vbus_device_proxy *vdev)
+ 	ioq_put(priv->rxq.queue);
+ 
  	tx_teardown(priv);
- 	ioq_put(priv->txq.queue);
+-	ioq_put(priv->txq.queue);
++	ioq_put(priv->tx.veq.queue);
  
-+	if (priv->evq.enabled)
-+		evq_teardown(priv);
-+
- 	dev->ops->close(dev, 0);
- 
- 	free_netdev(priv->dev);
-diff --git a/include/linux/venet.h b/include/linux/venet.h
-index 53b6958..16b0156 100644
---- a/include/linux/venet.h
-+++ b/include/linux/venet.h
-@@ -37,7 +37,8 @@ struct venet_capabilities {
- 	__u32 bits;
- };
- 
--#define VENET_CAP_GROUP_SG 0
-+#define VENET_CAP_GROUP_SG     0
-+#define VENET_CAP_GROUP_EVENTQ 1
- 
- /* CAPABILITIES-GROUP SG */
- #define VENET_CAP_SG     (1 << 0)
-@@ -47,6 +48,9 @@ struct venet_capabilities {
- #define VENET_CAP_UFO    (1 << 4)
- #define VENET_CAP_PMTD   (1 << 5) /* pre-mapped tx desc */
- 
-+/* CAPABILITIES-GROUP EVENTQ */
-+#define VENET_CAP_EVQ_LINKSTATE  (1 << 0)
-+
- struct venet_iov {
- 	__u32 len;
- 	__u64 ptr;
-@@ -76,6 +80,27 @@ struct venet_sg {
- 	struct venet_iov iov[1];
- };
- 
-+struct venet_eventq_query {
-+	__u32 flags;
-+	__u32 evsize;  /* size of each event */
-+	__u32 dpid;    /* descriptor pool-id */
-+	__u32 qid;
-+	__u8  pad[16];
-+};
-+
-+#define VENET_EVENT_LINKSTATE 0
-+
-+struct venet_event_header {
-+	__u32 flags;
-+	__u32 size;
-+	__u32 id;
-+};
-+
-+struct venet_event_linkstate {
-+	struct venet_event_header header;
-+	__u8                      state; /* 0 = down, 1 = up */
-+};
-+
- #define VSG_DESC_SIZE(count) (sizeof(struct venet_sg) + \
- 			      sizeof(struct venet_iov) * ((count) - 1))
- 
-@@ -85,5 +110,6 @@ struct venet_sg {
- #define VENET_FUNC_NEGCAP    3 /* negotiate capabilities */
- #define VENET_FUNC_FLUSHRX   4
- #define VENET_FUNC_PMTDQUERY 5
-+#define VENET_FUNC_EVQQUERY  6
- 
- #endif /* _LINUX_VENET_H */
+ 	if (priv->evq.enabled)
+ 		evq_teardown(priv);
 
