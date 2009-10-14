@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760330AbZJNMxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759717AbZJMM6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760330AbZJNMxs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 08:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760128AbZJNMxr
+	id S1759717AbZJMM6M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 08:58:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZJMM6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 08:53:47 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:59006 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759854AbZJNMxr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 08:53:47 -0400
-Date: Wed, 14 Oct 2009 13:53:04 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Jonathan Corbet <corbet@lwn.net>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2] GPIO: Add gpio_lookup
-Message-ID: <20091014125303.GD24540@sirena.org.uk>
-References: <20091010134814.0bac8624@bike.lwn.net> <200910131410.40305.david-b@pacbell.net> <20091013162819.02f53284@bike.lwn.net> <200910131553.58804.david-b@pacbell.net>
+	Tue, 13 Oct 2009 08:58:12 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54267 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752851AbZJMM6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 08:58:11 -0400
+Message-ID: <4AD5C9EB.50300@cn.fujitsu.com>
+Date: Wed, 14 Oct 2009 20:54:03 +0800
+From: Wei Yongjun <yjwei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910131553.58804.david-b@pacbell.net>
-X-Cookie: Condense soup, not books!
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+To: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] inotify: fix coalesce duplicate events into a single event
+ in special case
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 03:53:58PM -0700, David Brownell wrote:
-> On Tuesday 13 October 2009, Jonathan Corbet wrote:
+If we do rename a dir entry, like this:
 
-> > (I'm less worried about the uniqueness side, BTW; it just means drivers
-> > need to create meaningful names for their GPIOs.)
+  rename("/tmp/ino7UrgoJ.rename1", "/tmp/ino7UrgoJ.rename2")
+  rename("/tmp/ino7UrgoJ.rename2", "/tmp/ino7UrgoJ")
 
-> I don't see how they *can* though ... unless they're dynamically
-> allocated using a scheme like "combine <this device's sysfs name>
-> with <token>".  Consider two PCI cards with two different GPIOs
-> for their "camera_active" LED... "camera_active" is meaningful,
-> but unusable because it's not unique.
+The duplicate events should be coalesced into a single event. But those two
+events do not be coalesced into a single event, due to some bad check in
+event_compare(). It can not match the two NULL inodes as the same event.
 
-I guess the clock API style dev/dev_name based deduping would do the job
-here, though that's a separate question from the general usefulness of
-this sort of lookup framework.
+Signed-off-by: Wei Yongjun <yjwei@cn.fujitsu.com>
+---
+ fs/notify/notification.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/notify/notification.c b/fs/notify/notification.c
+index 3816d57..b8bf53b 100644
+--- a/fs/notify/notification.c
++++ b/fs/notify/notification.c
+@@ -143,7 +143,7 @@ static bool event_compare(struct fsnotify_event *old, struct fsnotify_event *new
+ 			/* remember, after old was put on the wait_q we aren't
+ 			 * allowed to look at the inode any more, only thing
+ 			 * left to check was if the file_name is the same */
+-			if (old->name_len &&
++			if (!old->name_len ||
+ 			    !strcmp(old->file_name, new->file_name))
+ 				return true;
+ 			break;
+-- 
+1.6.2.2
+
+
