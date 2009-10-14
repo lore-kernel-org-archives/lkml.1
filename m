@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933554AbZJNOQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761675AbZJNOW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933554AbZJNOQw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 10:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933496AbZJNOQv
+	id S1761675AbZJNOW0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 10:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758461AbZJNOWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 10:16:51 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:59165 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933478AbZJNOQu (ORCPT
+	Wed, 14 Oct 2009 10:22:25 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:37223 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756415AbZJNOWY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 10:16:50 -0400
-Date: Wed, 14 Oct 2009 10:14:06 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Luis Correia <luis.f.correia@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Dan Williams <dcbw@redhat.com>, Ivo van Doorn <ivdoorn@gmail.com>,
-       Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>,
-       linux-wireless@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Current status of rt2800usb and staging/rt2870
-Message-ID: <20091014141405.GB2890@tuxdriver.com>
-References: <4AD46380.9020308@pardus.org.tr> <200910132121.25743.bzolnier@gmail.com> <1255464940.10798.10.camel@localhost.localdomain> <200910132357.57094.bzolnier@gmail.com> <efe7343f0910131521u608d66f5r670dd1cf00322d0b@mail.gmail.com>
+	Wed, 14 Oct 2009 10:22:24 -0400
+Date: Wed, 14 Oct 2009 10:14:25 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Tejun Heo <tj@kernel.org>
+cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mel Gorman <mel@csn.ul.ie>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [this_cpu_xx V6 3/7] Use this_cpu operations in slub
+In-Reply-To: <4AD53022.2050309@kernel.org>
+Message-ID: <alpine.DEB.1.10.0910141008440.28461@gentwo.org>
+References: <20091007211024.442168959@gentwo.org> <20091007211052.614790286@gentwo.org> <4AD302A8.4010409@kernel.org> <alpine.DEB.1.10.0910121053240.7932@gentwo.org> <4AD3E23B.8020103@kernel.org> <alpine.DEB.1.10.0910131037420.21608@gentwo.org>
+ <4AD4950A.6050201@kernel.org> <alpine.DEB.1.10.0910131117060.8088@gentwo.org> <4AD53022.2050309@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <efe7343f0910131521u608d66f5r670dd1cf00322d0b@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 11:21:53PM +0100, Luis Correia wrote:
+On Wed, 14 Oct 2009, Tejun Heo wrote:
 
-> Since some days now, we have someone in the team which works for
-> Ralink, I'm hopefull that he can find some time to help us make the
-> driver better.
+> > __this_cpu_ptr could be converted to this_cpu_ptr but I think the __ are
+> > useful there too to show that we are in a preempt section.
+>
+> That doesn't make much sense.  __ for this_cpu_ptr() means "bypass
+> sanity check, we're knowingly violating the required conditions" not
+> "we know sanity checks will pass here".
 
-This (I hope) is the future.  If we can get the vendors to cooperate
-with us at this level then we can eliminate the vendor/upstream
-driver distinction.
+Are you defining what __ means for this_cpu_ptr?
 
-While I try to be ambivalent about drivers/staging, I _do_ think that
-it tends to enable vendors to get aways with _less_ support of the
-community by facilitating them in taking advantage of the "pragmatic"
-among us.
+> > The calls to raw_smp_processor_id and smp_processor_id() are only useful
+> > in the fallback case. There is no need for those if the arch has a way to
+> > provide the current percpu offset. So we in effect have two meanings of __
+> > right now.
+> >
+> > 1. We do not care about the preempt state (thus we call
+> > raw_smp_processor_id so that the preempt state does not trigger)
+> >
+> > 2. We do not need to disable preempt before the operation.
+> >
+> > __this_cpu_ptr only implies 1. __this_cpu_add uses 1 and 2.
+>
+> Yeah, we need to clean it up.  The naming is too confusing.
 
-> And now, i'm going back to my lovely hole, having added nothing to
-> this conversation.
+Its consistent if __ means both 1 and 2. If we want to distinguish it then
+we may want to create raw_this_cpu_xx which means that we do not call
+smp_processor_id() on fallback but raw_smp_processor_id(). Does not
+matter if the arch provides a per cpu offset.
 
-I disagree! :-)
+This would mean duplicating all the macros. The use of raw_this_cpu_xx
+should be rare so maybe the best approach is to say that __ means only
+that the macro does not need to disable preempt but it still checks for
+preemption being off. Then audit the __this_cpu_xx uses and see if there
+are any that require a raw_ variant.
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+The vm event counters require both no check and no preempt since they can
+be implemented in a racy way.
+
+
+
+
