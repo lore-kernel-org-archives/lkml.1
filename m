@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934141AbZJNOxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934338AbZJNOyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934141AbZJNOxm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 10:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934018AbZJNOxl
+	id S934338AbZJNOyW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 10:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934251AbZJNOyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 10:53:41 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:52863 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933971AbZJNOxl (ORCPT
+	Wed, 14 Oct 2009 10:54:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42776 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934040AbZJNOyU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 10:53:41 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Earl Chew <earl_chew@agilent.com>
-Subject: Re: fs/pipe.c null pointer dereference
-Date: Wed, 14 Oct 2009 16:53:02 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <4AD5D476.6010103@agilent.com>
-In-reply-To: <4AD5D476.6010103@agilent.com>
+	Wed, 14 Oct 2009 10:54:20 -0400
+Date: Wed, 14 Oct 2009 07:53:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Michael Ellerman <michael@ellerman.id.au>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Boyan <btanastasov@yahoo.co.uk>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>, fredlwm@gmail.com,
+       Ed Tomlinson <edt@aei.ca>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: Characters vanishing in the tty layer? (maybe related to [Bug
+ #14388] keyboard under X with 2.6.31)
+In-Reply-To: <1255501294.21962.24.camel@concordia>
+Message-ID: <alpine.LFD.2.01.0910140748420.6146@localhost.localdomain>
+References: <1255501294.21962.24.camel@concordia>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910141653.03611.elendil@planet.nl>
-X-OriginalArrivalTime: 14 Oct 2009 14:53:03.0949 (UTC) FILETIME=[08517FD0:01CA4CDE]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Earl Chew wrote:
-> I'm working on a 2.6.21 based kernel and received the following
-> oops last tonight:
 
-2.6.21 is really rather ancient for the kernel community and I doubt anyone 
-here will really want to look into issues with it, given that there's a 
-realistic chance it has already been fixed since then. The current stable 
-version is 2.6.31 after all.
 
-Can you reproduce the oops with a current kernel? Have you checked if there 
-have been any changes in the code you identified since 2.6.21?
+On Wed, 14 Oct 2009, Michael Ellerman wrote:
+> 
+> I'm using 80f5069 or thereabouts, plus some powerpc patches. We also see
+> the bug in 31, but not in 27.
 
-Cheers,
-FJP
+Could you bisect it? Even if you don't bisect it _all_ the way, 27..31 is 
+a big range. Doing just a handful of bisections (say six or seven) would 
+cut down the number of commits from 47 thousand to somewhat more 
+manageable "hundreds of commits"... But obviously going all the way would 
+be better.
+
+		Linus
