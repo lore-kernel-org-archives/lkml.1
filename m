@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760905AbZJNVdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760956AbZJNVeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760905AbZJNVdf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 17:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760782AbZJNVde
+	id S1760956AbZJNVeK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 17:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756549AbZJNVeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 17:33:34 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:43457 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760774AbZJNVde (ORCPT
+	Wed, 14 Oct 2009 17:34:09 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:56199 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752790AbZJNVeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 17:33:34 -0400
-Date: Wed, 14 Oct 2009 17:32:57 -0400
-To: Frans Pop <elendil@planet.nl>
-Cc: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>, torvalds@linux-foundation.org,
-       jeff.chua.linux@gmail.com, Valdis.Kletnieks@vt.edu, mangoo@wpkg.org,
-       daniel.blueman@gmail.com, bstanoszek@comtime.com,
-       dave@linux.vnet.ibm.com, hugh.dickins@tiscali.co.uk,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       hugh@veritas.com
-Subject: Re: 2.6.32-rc3: low mem - only 378MB on x86_32 with 64GB. Why?
-Message-ID: <20091014213257.GA5498@csclub.uwaterloo.ca>
-References: <Pine.LNX.4.64.0910052334480.17655@boston.corp.fedex.com> <b6a2187b0910051715y4ee63503y148ba2d7e24cad8e@mail.gmail.com> <alpine.LFD.2.01.0910051727420.3432@localhost.localdomain> <alpine.LFD.2.01.0910051727420.3432@localhost.localdomain> <200910061106.33718.tvrtko.ursulin@sophos.com> <200910061301.39221.elendil@planet.nl>
+	Wed, 14 Oct 2009 17:34:07 -0400
+From: Frans Pop <elendil@planet.nl>
+To: reinette chatre <reinette.chatre@intel.com>
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+Date: Wed, 14 Oct 2009 23:33:26 +0200
+User-Agent: KMail/1.9.9
+Cc: Mel Gorman <mel@csn.ul.ie>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       "Abbas, Mohamed" <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <20091014165051.GE5027@csn.ul.ie> <1255552911.21134.51.camel@rc-desk>
+In-Reply-To: <1255552911.21134.51.camel@rc-desk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200910061301.39221.elendil@planet.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Message-Id: <200910142333.29625.elendil@planet.nl>
+X-OriginalArrivalTime: 14 Oct 2009 21:33:30.0433 (UTC) FILETIME=[F9380310:01CA4D15]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 01:01:35PM +0200, Frans Pop wrote:
-> Tvrtko Ursulin wrote:
-> >> In fact, I wish more people did that, just so that we'd get better
-> >> coverage of the 32-bit compat code. We occasionally find issues there,
-> >> although I think it's getting rarer.
-> > 
-> > Maybe convince some distro to offer this setup as an option at least? I
-> > always wondered why no one has, or maybe I missed it.
-> 
-> Debian has a 64-bit kernel for its 32-bit "i386" architecture (and also for 
-> its 64-bit "amd64" architecture obviously):
-> - for stable: http://packages.debian.org/lenny/linux-image-2.6.26-2-amd64
-> - for unstable: http://packages.debian.org/sid/linux-image-2.6.30-2-amd64
+On Wednesday 14 October 2009, reinette chatre wrote:
+> We do queue the GFP_KERNEL allocations when there are only a few buffers
+> remaining in the queue (8 right now) ...
 
-I have been running that Debian setup for 5 years now.  It's great.
-Other than 32 bit iptables not liking the 64bit kernel, I can't currently
-recall any issues at any point.  Well and configure scripts often have to
-be run with the 'linux32' wrapper to make them not try something stupid.
+Are you sure of this? I have zero messages in my logs about allocation 
+failures with GFP_KERNEL, but I do have plenty with "Only 0 free buffers 
+remaining" with GFP_ATOMIC.
 
--- 
-Len Sorensen
+Does that indicate a bug or could they fall under the ratelimit somehow?
+Or do I misunderstand the logic?
