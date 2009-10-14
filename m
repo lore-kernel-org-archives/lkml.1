@@ -1,118 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZJNGzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932118AbZJNHPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbZJNGzp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 02:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbZJNGzp
+	id S932118AbZJNHPT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 03:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756643AbZJNHPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 02:55:45 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:55362 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755571AbZJNGzn convert rfc822-to-8bit (ORCPT
+	Wed, 14 Oct 2009 03:15:16 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:50211 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755572AbZJNHPN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 02:55:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ihWzgBOUsVbvGrukRx+00WWluiHFewsR0H/9m/uM/QQy4A86MJMuPlu/gpDUtc/vld
-         UECNKsMM7KvawXP/veHGuitgJecIvEDquO6xEyE2T+ZTPWR6NUiAsm4sOlB17gjo0K4U
-         Jwm8e8eb4mzJAGRNo2evtzZvRfFLJNXMucSV8=
+	Wed, 14 Oct 2009 03:15:13 -0400
+X-Greylist: delayed 1113 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Oct 2009 03:15:13 EDT
+Date: Wed, 14 Oct 2009 08:55:55 +0200
+From: Tino Keitel <tino.keitel@tikei.de>
+To: linux-kernel@vger.kernel.org
+Subject: ATA related kernel warning after resume with 2.6.32-rc4
+Message-ID: <20091014065555.GA6968@mac.home>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <20091013120018.GA29395@elf.ucw.cz>
-References: <20091013120018.GA29395@elf.ucw.cz>
-Date: Wed, 14 Oct 2009 14:55:06 +0800
-Message-ID: <a8e1da0910132355g5e2b786p529b4b522c19e75a@mail.gmail.com>
-Subject: Re: 2.6.32-rc3+: bluetooth needs lockdep anotation?
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, marcel@holtmann.org,
-       linux-bluetooth@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 8:00 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
-> I just got this in my dmesg:
->
->                                                        Pavel
->
->
-> drivers/usb/core/inode.c: creating file '005'
-> hub 5-0:1.0: state 7 ports 2 chg 0000 evt 0002
-> hub 1-0:1.0: hub_suspend
-> usb usb1: bus auto-suspend
-> ehci_hcd 0000:00:1d.7: suspend root hub
-> uhci_hcd 0000:00:1d.3: reserve dev 5 ep81-INT, period 1, phase 0, 23 us
-> INFO: trying to register non-static key.
-> the code is fine but needs lockdep annotation.
-> turning off the locking correctness validator.
-> Pid: 1696, comm: udevd Not tainted 2.6.32-rc3-00192-gd33e6ec-dirty #78
-> Call Trace:
->  [<c079e978>] ? printk+0x18/0x1a
->  [<c0256432>] __lock_acquire+0x492/0xac0
->  [<c0256ac8>] lock_acquire+0x68/0x90
->  [<c067e3cd>] ? skb_dequeue+0x1d/0x70
->  [<c07a1a5b>] _spin_lock_irqsave+0x3b/0x50
->  [<c067e3cd>] ? skb_dequeue+0x1d/0x70
->  [<c067e3cd>] skb_dequeue+0x1d/0x70
->  [<c067f084>] skb_queue_purge+0x14/0x30
->  [<c071fe8f>] l2cap_recv_frame+0x5df/0x32c0
->  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
->  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
->  [<c067e2d9>] ? skb_queue_tail+0x39/0x50
->  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
->  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
->  [<c0722d02>] l2cap_recv_acldata+0x192/0x3d0
->  [<c0713d50>] ? hci_rx_task+0x280/0x460
->  [<c0722b70>] ? l2cap_recv_acldata+0x0/0x3d0
->  [<c0713d83>] hci_rx_task+0x2b3/0x460
->  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
->  [<c02362d0>] tasklet_action+0x50/0xb0
->  [<c0236a35>] __do_softirq+0x85/0x110
->  [<c0236aed>] do_softirq+0x2d/0x40
->  [<c0236c55>] irq_exit+0x65/0x90
->  [<c0204c1f>] do_IRQ+0x4f/0xc0
->  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
->  [<c02034a9>] common_interrupt+0x29/0x30
->  [<c07a183a>] ? _spin_unlock_irqrestore+0x2a/0x40
->  [<c0223f00>] __wake_up+0x40/0x50
->  [<c030167e>] journal_stop+0x27e/0x2b0
->  [<c02f4577>] __ext3_journal_stop+0x27/0x50
->  [<c02ecdd9>] ext3_delete_inode+0x99/0xf0
->  [<c02ecd40>] ? ext3_delete_inode+0x0/0xf0
->  [<c02accf2>] generic_delete_inode+0x72/0x110
->  [<c02acddf>] generic_drop_inode+0x4f/0x80
->  [<c02abcf7>] iput+0x47/0x50
->  [<c02a926f>] dentry_iput+0x6f/0xf0
->  [<c02a93a5>] d_kill+0x25/0x50
->  [<c02a9abd>] dput+0x5d/0x110
->  [<c02a4125>] do_rmdir+0xb5/0xe0
->  [<c024a296>] ? up_read+0x16/0x30
->  [<c021c19e>] ? do_page_fault+0x15e/0x250
->  [<c02a41b0>] sys_rmdir+0x10/0x20
->  [<c0202e50>] sysenter_do_call+0x12/0x31
-> Registered led device: iwl-phy0::radio
-> Registered led device: iwl-phy0::assoc
-> Registered led device: iwl-phy0::RX
-> Registered led device: iwl-phy0::TX
-> wlan0: Selected IBSS BSSID 7a:ad:1e:84:b0:4c based on configured SSID
-> Registered led device: iwl-phy0::radio
-> Registered led device: iwl-phy0::assoc
-> Registered led device: iwl-phy0::RX
-> Registered led device: iwl-phy0::TX
-> wlan0: Selected IBSS BSSID 7a:ad:1e:84:b0:4c based on configured SSID
->
->
-
 Hi,
 
-I have a pending patch for this:
-http://marc.info/?l=linux-bluetooth&m=125504924206686&w=2
+I get this warning after resume from suspend to RAM:
 
--- 
-Regards
-dave
+ata1.00: ACPI cmd ef/03:0c:00:00:00:a0 (SET FEATURES) filtered out
+ata1.00: ACPI cmd ef/03:42:00:00:00:a0 (SET FEATURES) filtered out
+ata1.00: configured for UDMA/33
+firewire_core: rediscovered device fw0
+sd 2:0:1:0: [sda] Starting disk
+firewire_core: phy config: card 0, new root=ffc1, gap_count=5
+------------[ cut here ]------------
+WARNING: at drivers/ata/libata-core.c:5039
+ata_qc_complete+0x1ec/0x260()
+Hardware name: Macmini2,1
+Modules linked in: ipv6 fbcon font bitblit softcursor i915
+drm_kms_helper drm fb i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect
+loop btusb bluetooth firewire_sbp2 snd_hda_codec_idt dvb_usb dvb_core
+video backlight output snd_hda_intel firewire_ohci usblp firewire_core
+sky2 snd_hda_codec evdev crc_itu_t snd_pcm snd_timer snd_page_alloc
+[last unloaded: dvb_usb_vp7045]
+Pid: 254, comm: ata/0 Not tainted 2.6.32-rc4-00001-gd93a8f8 #24
+Call Trace:
+ [<ffffffff8130b5ac>] ? ata_qc_complete+0x1ec/0x260
+ [<ffffffff8130b5ac>] ? ata_qc_complete+0x1ec/0x260
+ [<ffffffff8103ceb4>] ? warn_slowpath_common+0x74/0xd0
+ [<ffffffff8130b5ac>] ? ata_qc_complete+0x1ec/0x260
+ [<ffffffff81318100>] ? ata_do_link_abort+0xa0/0xe0
+ [<ffffffff8131b01f>] ? ata_hsm_qc_complete+0x15f/0x170
+ [<ffffffff8131b1ca>] ? ata_sff_hsm_move+0x19a/0x700
+ [<ffffffff8131bacf>] ? ata_pio_task+0x2f/0x110
+ [<ffffffff8131baa0>] ? ata_pio_task+0x0/0x110
+ [<ffffffff8104eb8b>] ? worker_thread+0x12b/0x1f0
+ [<ffffffff81052ee0>] ? autoremove_wake_function+0x0/0x30
+ [<ffffffff8104ea60>] ? worker_thread+0x0/0x1f0
+ [<ffffffff81052b56>] ? kthread+0x96/0xa0
+ [<ffffffff8100cc1a>] ? child_rip+0xa/0x20
+ [<ffffffff81052ac0>] ? kthread+0x0/0xa0
+ [<ffffffff8100cc10>] ? child_rip+0x0/0x20
+---[ end trace 158461bf60ae353f ]---
+ata3.01: NODEV after polling detection
+ata3.01: revalidation failed (errno=-2)
+
+Regards,
+Tino
