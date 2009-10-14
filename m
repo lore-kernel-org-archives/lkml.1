@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934705AbZJNPuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934735AbZJNPvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934705AbZJNPuY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934589AbZJNPuV
+	id S934735AbZJNPvJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934709AbZJNPvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:50:21 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:50998 "EHLO gir.skynet.ie"
+	Wed, 14 Oct 2009 11:51:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34621 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934677AbZJNPuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:50:17 -0400
-Date: Wed, 14 Oct 2009 16:49:44 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: David Rientjes <rientjes@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu
-	operations in the hotpaths
-Message-ID: <20091014154944.GD5027@csn.ul.ie>
-References: <alpine.DEB.1.00.0910130231570.27262@chino.kir.corp.google.com> <alpine.DEB.1.10.0910131041450.21608@gentwo.org> <alpine.DEB.1.10.0910131509170.32394@gentwo.org> <4AD4D8B6.6010700@cs.helsinki.fi> <alpine.DEB.1.10.0910131541290.7246@gentwo.org> <alpine.DEB.1.00.0910131305440.3529@chino.kir.corp.google.com> <alpine.DEB.1.10.0910131625370.13756@gentwo.org> <alpine.DEB.1.00.0910131550050.15347@chino.kir.corp.google.com> <20091014133457.GB5027@csn.ul.ie> <alpine.DEB.1.10.0910141003590.9944@gentwo.org>
+	id S934526AbZJNPvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 11:51:06 -0400
+Date: Wed, 14 Oct 2009 15:49:56 GMT
+From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       geert@linux-m68k.org, dtor@mail.ru, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       geert@linux-m68k.org, dtor@mail.ru, tglx@linutronix.de
+In-Reply-To: <20091010153349.884891604@linutronix.de>
+References: <20091010153349.884891604@linutronix.de>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:bkl/drivers] input: Remove BKL from hp_sdc_rtc
+Message-ID: <tip-d2d23559857e5f34762c61487f8ffb2fa4d7442d@git.kernel.org>
+Git-Commit-ID: d2d23559857e5f34762c61487f8ffb2fa4d7442d
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0910141003590.9944@gentwo.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:49:57 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 10:08:12AM -0400, Christoph Lameter wrote:
-> The test did not include the irqless patch I hope?
-> 
+Commit-ID:  d2d23559857e5f34762c61487f8ffb2fa4d7442d
+Gitweb:     http://git.kernel.org/tip/d2d23559857e5f34762c61487f8ffb2fa4d7442d
+Author:     Thomas Gleixner <tglx@linutronix.de>
+AuthorDate: Sat, 10 Oct 2009 12:41:43 +0200
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Wed, 14 Oct 2009 17:36:51 +0200
 
-Correct. Only the patches in this thread were tested.
+input: Remove BKL from hp_sdc_rtc
 
-> On Wed, 14 Oct 2009, Mel Gorman wrote:
-> 
-> > Small gains in the User, System and Elapsed times with this-cpu patches
-> > applied. It is interest to note for the mean times that the patches more
-> > than close the gap between SLUB and SLAB for the most part - the
-> > exception being User which has marginally better performance. This might
-> > indicate that SLAB is still slightly better at giving back cache-hot
-> > memory but this is speculation.
-> 
-> The queuing in SLAB allows a better cache hot behavior. Without a queue
-> SLUB has a difficult time improvising cache hot behavior based on objects
-> restricted to a slab page. Therefore the size of the slab page will
-> affect how much "queueing" SLUB can do.
-> 
+cycle_kernel_lock() was added during the big BKL pushdown. It should
+ensure the serializiation against driver init code. In this case there
+is nothing to serialize. Remove it.
 
-Ok, so the speculation is a plausible explanation.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+LKML-Reference: <20091010153349.884891604@linutronix.de>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Dmitry Torokhov <dtor@mail.ru>
+---
+ drivers/input/misc/hp_sdc_rtc.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-> > The patches mostly improve the performance of netperf UDP_STREAM by a good
-> > whack so the patches are a plus here. However, it should also be noted that
-> > SLAB was mostly faster than SLUB, particularly for large packet sizes. Refresh
-> > my memory, how do SLUB and SLAB differ in regards to off-loading large
-> > allocations to the page allocator these days?
-> 
-> SLUB offloads allocations > 8k to the page allocator.
-> SLAB does create large slabs.
-> 
-
-Allocations >8k might explain then why 8K and 16K packets for UDP_STREAM
-performance suffers. That can be marked as future possible work to sort
-out within the allocator.
-
-However, does it explain why TCP_STREAM suffers so badly even for packet
-sizes like 2K? It's also important to note in some cases, SLAB was far
-slower even when the packet sizes were greater than 8k so I don't think
-the page allocator is an adequate explanation for TCP_STREAM.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+diff --git a/drivers/input/misc/hp_sdc_rtc.c b/drivers/input/misc/hp_sdc_rtc.c
+index 216a559..4d1aa9a 100644
+--- a/drivers/input/misc/hp_sdc_rtc.c
++++ b/drivers/input/misc/hp_sdc_rtc.c
+@@ -35,7 +35,6 @@
+ 
+ #include <linux/hp_sdc.h>
+ #include <linux/errno.h>
+-#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+@@ -409,7 +408,6 @@ static unsigned int hp_sdc_rtc_poll(struct file *file, poll_table *wait)
+ 
+ static int hp_sdc_rtc_open(struct inode *inode, struct file *file)
+ {
+-	cycle_kernel_lock();
+         return 0;
+ }
+ 
