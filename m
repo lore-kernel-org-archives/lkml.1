@@ -1,57 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbZJNRlC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbZJNRmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbZJNRlC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 13:41:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbZJNRlB
+	id S1754919AbZJNRmQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 13:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbZJNRmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 13:41:01 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:50963 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754401AbZJNRlA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 13:41:00 -0400
-Message-ID: <4AD60C78.1090908@zytor.com>
-Date: Wed, 14 Oct 2009 10:38:00 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
-CC: Christoph Lameter <cl@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "rostedt@goodmis.org" <rostedt@goodmis.org>,
-       "cebbert@redhat.com" <cebbert@redhat.com>
-Subject: Re: [PATCH 13/16] percpu: remove per_cpu__ prefix.
-References: <1255500125-3210-1-git-send-email-tj@kernel.org> <1255500125-3210-14-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0910141026370.26476@gentwo.org> <57C9024A16AD2D4C97DC78E552063EA3E32264A8@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E32264A8@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 13:42:15 -0400
+Received: from kroah.org ([198.145.64.141]:42741 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754592AbZJNRmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 13:42:15 -0400
+Subject: patch staging-more-sched.h-fixes.patch added to gregkh-2.6 tree
+To: jeffm@suse.com, gregkh@suse.de, linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Wed, 14 Oct 2009 10:38:56 -0700
+In-Reply-To: <4AD3C99B.8040507@suse.com>
+Message-ID: <1255541936728@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/14/2009 09:42 AM, Luck, Tony wrote:
->>> -#define __ia64_per_cpu_var(var)	per_cpu__##var
->>> +#define __ia64_per_cpu_var(var)	var
->>
->> IA64 could completely drop the macro? Tony?
-> 
-> A #define that just returns its original argument untouched
-> does seem to be a no-op.  So I suppose we could just fix
-> the dozen or so places where it is used to just use the
-> variable directly.
-> 
 
-Okay... I also don't seem to understand the more fundamental issue here,
-which is:
+This is a note to let you know that I've just added the patch titled
 
-Why are we dropping the prefix?
+    Subject: staging: more sched.h fixes
 
-It may be "insufficient", but at least it stands out like a sore thumb
-and makes mistakes harder.  It would be a different thing if we could
-actually use the TLS ABI, but we really can't.
+to my gregkh-2.6 tree.  Its filename is
 
-	-hpa
+    staging-more-sched.h-fixes.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From jeffm@suse.com  Wed Oct 14 10:18:54 2009
+From: Jeff Mahoney <jeffm@suse.com>
+Date: Mon, 12 Oct 2009 20:28:11 -0400
+Subject: staging: more sched.h fixes
+To: Greg KH <gregkh@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-ID: <4AD3C99B.8040507@suse.com>
+
+
+This patch contains more sched.h additions for drivers that built
+fine under x86_64 but not i386 for some reason.
+
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/staging/rt2860/common/cmm_info.c |    1 +
+ drivers/staging/rt2860/rt_linux.c        |    1 +
+ drivers/staging/rt3090/common/cmm_info.c |    1 +
+ drivers/staging/rt3090/rt_linux.c        |    1 +
+ 4 files changed, 4 insertions(+)
+
+--- a/drivers/staging/rt2860/common/cmm_info.c
++++ b/drivers/staging/rt2860/common/cmm_info.c
+@@ -25,6 +25,7 @@
+  *************************************************************************
+ */
+ 
++#include <linux/sched.h>
+ #include "../rt_config.h"
+ 
+ INT	Show_SSID_Proc(
+--- a/drivers/staging/rt2860/rt_linux.c
++++ b/drivers/staging/rt2860/rt_linux.c
+@@ -25,6 +25,7 @@
+  *************************************************************************
+  */
+ 
++#include <linux/sched.h>
+ #include "rt_config.h"
+ 
+ ULONG	RTDebugLevel = RT_DEBUG_ERROR;
+--- a/drivers/staging/rt3090/common/cmm_info.c
++++ b/drivers/staging/rt3090/common/cmm_info.c
+@@ -34,6 +34,7 @@
+     ---------    ----------    ----------------------------------------------
+  */
+ 
++#include <linux/sched.h>
+ #include "../rt_config.h"
+ 
+ 
+--- a/drivers/staging/rt3090/rt_linux.c
++++ b/drivers/staging/rt3090/rt_linux.c
+@@ -25,6 +25,7 @@
+  *************************************************************************
+  */
+ 
++#include <linux/sched.h>
+ #include "rt_config.h"
+ 
+ ULONG	RTDebugLevel = RT_DEBUG_ERROR;
+
