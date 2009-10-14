@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934502AbZJNPRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934497AbZJNPZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934502AbZJNPRb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934419AbZJNPRa
+	id S934497AbZJNPZw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756697AbZJNPZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:17:30 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:51540 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934319AbZJNPR2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:17:28 -0400
-Date: Wed, 14 Oct 2009 16:16:48 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Question regarding i5/i7 CPUs (1156) - Speed Bins
-Message-ID: <20091014151648.GA8598@srcf.ucam.org>
-References: <alpine.DEB.2.00.0910131953520.29143@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910131953520.29143@p34.internal.lan>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Wed, 14 Oct 2009 11:25:52 -0400
+Received: from lo.gmane.org ([80.91.229.12]:35016 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754476AbZJNPZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 11:25:51 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jonathan Hudson <jh+lkm@daria.co.uk>
+Subject: Cardbus WLAN on PPC32 DMA error 2.6.30+
+Date: Wed, 14 Oct 2009 16:21:12 +0100
+Message-ID: <8s6hq6xepq.ln2@roo.daria.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 82-68-140-1.dsl.in-addr.zen.co.uk
+X-Newsreader: Claws Mail 3.7.3 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 07:55:33PM -0400, Justin Piszcz wrote:
-> Hello,
->
-> In order to gain the acceleration e.g. 2.93GHz -> 3.6GHz for a single  
-> thread, does one need to use a cpu daemon?
+On kernels later than the 2.6.29 series, on inserting a cardbus WLAN
+card, I get DMA error messages (from 2.6.31.4)
 
-No. If you're in P0, the package will run cores at the highest speed it 
-can given the current constraints.
+For a rt2500pci:
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+[  176.881208] pci 0001:11:00.0: reg 10 32bit mmio: [0xffffe000-0xffffffff]
+[  177.040993] rt2500pci 0001:11:00.0: enabling device (0000 -> 0002)
+[  177.041019] rt2x00pci -> rt2x00pci_probe: Error - PCI DMA not supported.
+[  177.041044] rt2500pci: probe of 0001:11:00.0 failed with error -5
+
+For a Broadcom 4306:
+
+[   45.031787] b43 ssb0:0: firmware: requesting b43/ucode5.fw
+[   45.226831] b43 ssb0:0: firmware: requesting b43/pcm5.fw
+[   45.313161] b43 ssb0:0: firmware: requesting b43/b0g0initvals5.fw
+[   45.362739] b43 ssb0:0: firmware: requesting b43/b0g0bsinitvals5.fw
+[   45.527782] b43-phy0: Loading firmware version 478.104 (2008-07-01 00:50:23)
+[   45.595983] b43-phy0 ERROR: The machine/kernel does not support the required 30-bit DMA mask
+[   46.731628] b43-phy0 ERROR: Microcode not responding
+[   46.731642] b43-phy0 ERROR: You must go to http://wireless.kernel.org/en/users/Drivers/b43#devicefirmware and download the correct firmware for this driver version. Please carefully read all instructions on this website.
+
+(similar results with b43legacy).
+
+Both these cards work with 2.6.29.6 and earlier. I don't have any
+architectures other than PPC32 with cardbus to test the cards.
+
+Any advice welcomed.
+
+-jh
+
+
+
+
+
