@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761549AbZJNSqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758628AbZJNLK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761549AbZJNSqe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 14:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757672AbZJNSqd
+	id S1758628AbZJNLK3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 07:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbZJNLK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 14:46:33 -0400
-Received: from aper.net ([207.235.5.169]:52180 "EHLO aper.net"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756641AbZJNSqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 14:46:32 -0400
-Message-ID: <5f591a95fd41abca8415bafce50fd514.squirrel@webmail.aper.net>
-Date: Wed, 14 Oct 2009 08:08:38 -0300 (ART)
-Subject: Attention E-mail Account Holder
-From: "Upgrade Team" <info@upg.com>
-Reply-To: upgrade.team90@9.cn
-User-Agent: SquirrelMail/1.4.15
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
+	Wed, 14 Oct 2009 07:10:29 -0400
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:40834 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755526AbZJNLK2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 07:10:28 -0400
+Subject: bdi_threshold slow to reach steady state
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 14 Oct 2009 12:09:45 +0100
+Message-Id: <1255518586.2360.78.camel@castor>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Attention E-mail Account Holder,
+Hi Peter,
 
- This message is from the Database Information Technology service
-messaging center, to all our e-mail account holders. All Mailhub  systems
-will  undergo regularly scheduled maintenance. Access to your mailbox via
-our  mailportal will be unavailable for some period of time during this 
-maintenanceperiod.
+I've been running simple tests that uses fio to write 2Gb & reading the
+bdi dirty threshold once a second from debugfs. 
 
- We shall be carrying out service maintenance on our database and e- mail
-account center for better online services. We are deleting all
-unusede-mail accounts to create more space for new accounts.
+The graph of bdi dirty threshold is nice and smooth but takes a long
+time to reach a steady state, 60 seconds or more. (run on 2.6.32-rc4)
 
- In order to ensure you do not experience service
-interruptions/possibledeactivation Please you must reply to this  email
-immediately confirming  your stfx.ca email account details below for
-confirmation/identification
+By eye it seems as though a first-order control system is a good model
+for its behavior, so it approximates to 1-e^(-t/T). It just seems too
+heavily damped ( at least on my machine).
 
- 1. First Name & Last Name:
- 2. Full Login Email Address:
- 3. Username & Password:
- 4. Confirm your Current Password:
+For fun, I changed calc_period_shift to
+	return ilog2(dirty_total - 1) - 2;
 
- Failure to do this may automatically render your e-mail account
-deactivated from our emaildatabase/mailserver. to enable us
- upgrade your  email account, please do reply to this mail.
+and it now reaches a steady state much quicker, around 4-5 seconds.
 
- Thanks.
- Upgrade Team
+Tests that write to 2 disks at the same time show no significant
+performance differences but are much more consistent, i.e. the standard
+deviation is lower across multiple runs.
+
+I have noticed that the first test run on a freshly booted machine is
+always the slowest of any sequence of tests, but this change to
+calc_period_shift greatly reduces this effect. 
+
+So I wondered how you chose these values? and are there any other tests
+that are useful to explore this?
+
+I know that my machine is getting a bit old now, it's AMDX2 & only has
+sata 150 drives, so I'm not suggesting that this change is going to be
+correct for all machines but maybe we can set a better default? or take
+more factors in to account other than just memory size. 
+
+BTW why is it ilog2(dirty_total -1) -- what does the -1 do?
+
+regards
+Richard
+
+
