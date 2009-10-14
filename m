@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbZJNFGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbZJNFUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754384AbZJNFGJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 01:06:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZJNFGI
+	id S1754844AbZJNFUP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 01:20:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbZJNFUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 01:06:08 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:48010 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750865AbZJNFGH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 01:06:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=D0lcidRNpdzhAvTai3hrEavL3Pal6C4tzPMIYdU9raQ827+fnGkxCBmSFcSrW4K6+n
-         IejEmeATZofSyYDLrL6L2FB+E1FOCuPT7jdP8x79JquKko2A2hQPV9Z9pYrhyIJAr1rE
-         DN2STKLbc/4wKCRRPYm9H9LomxH/JrGD+itr4=
-Date: Wed, 14 Oct 2009 01:04:56 -0400
-From: tmhikaru@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.31.4
-Message-ID: <20091014050456.GA5954@roll>
-References: <20091012231506.GA23794@kroah.com> <20091014041020.GA4340@roll>
+	Wed, 14 Oct 2009 01:20:14 -0400
+Received: from mail.perches.com ([173.55.12.10]:2135 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751608AbZJNFUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 01:20:12 -0400
+Subject: Re: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for
+ 2.6.32-rc3)
+From: Joe Perches <joe@perches.com>
+To: Greg KH <gregkh@suse.de>
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       James Bottomley <James.Bottomley@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jing Huang <huangj@brocade.com>, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20091014044519.GA19199@suse.de>
+References: <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain>
+	 <20091009091538.GA4154@elte.hu>
+	 <1255097287.2934.21.camel@localhost.localdomain>
+	 <20091012130652.GB25464@elte.hu>
+	 <1255357148.2850.91.camel@localhost.localdomain>
+	 <20091012145453.GD4565@elte.hu> <20091012150911.GB1656@suse.de>
+	 <20091012154244.GA13323@elte.hu> <20091012232429.GA24254@suse.de>
+	 <43e72e890910131108m789110b4hc35e25601ad67bb7@mail.gmail.com>
+	 <20091014044519.GA19199@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 13 Oct 2009 22:19:35 -0700
+Message-Id: <1255497575.1851.16.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091014041020.GA4340@roll>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	I'm experiencing various problems which I'm seeing reproducably in
-both 2.6.31.2 and 2.6.31.4 after upgrading from 2.6.30.8. Most notably, and
-scary to me, is that I'm routinely seeing this I/O error message with
-different sector numbers whenever I try to use my usb hard drive.
+On Tue, 2009-10-13 at 21:45 -0700, Greg KH wrote:
+> How about when it was scheduled to be removed, we put it in staging and
+> I'll add it to my announcements about the staging tree every release?
+> Unless you can think of a better way?
 
-in syslog:
+staging/to_be_removed_unless_fixed_by/v.x.y ?
 
-Oct 13 21:55:49 roll kernel: sd 0:0:0:0: [sda] Assuming drive cache: write
-through
-Oct 13 21:55:49 roll kernel: sd 0:0:0:0: [sda] Assuming drive cache: write
-through
-Oct 13 21:55:49 roll kernel:  sda1
-Oct 13 21:55:49 roll kernel: sd 0:0:0:0: [sda] Assuming drive cache: write
-through
-Oct 13 21:56:20 roll kernel: end_request: I/O error, dev sda, sector
-50334647
 
-in messages:
-Oct 13 21:56:20 roll kernel: sd 0:0:0:0: [sda] Unhandled error code
-Oct 13 21:56:20 roll kernel: sd 0:0:0:0: [sda] Result: hostbyte=0x07
-driverbyte=0x00
-
-	Now, this doesn't appear to affect anything so far as the filesystem
-doesn't even get set readonly. (It's ext4) ... And I just found out that for
-some reason the filesystem is set to continue on errors. I'm surprised, I
-thought the default for mke2fs was to set remount readonly. *sigh* I'm
-changing the settings for the filesystem now.
-
-	In any case, these I/O error messages do *not* appear when I'm doing
-similar things on 2.6.30.8. Given that this usb drive is my backup hard
-drive, I've reason to be concerned - is this an *actual* error with the
-physical disk, is something funky with the kernel, or... what?
-
-	Before I attempt to debug this further, I'd like to know what the
-error messages are being generated by, so I can find out just how concerned I
-should be.
-
-	I'm going to assume, for the moment, that something is wrong with
-2.6.31.2/4's ability to use my usb hard drive and that the backup I have on
-it is likely corrupt since I did not have the filesystem set to remount
-readonly on errors. I'm going to wipe it and remake the backup with
-2.6.30.8.
- 
- 
-Please, let me know what's going on here. I need to know what the error
-messages mean - is this a physical failure of the hard drive, or what?
- 
-Thank you,
-Tim McGrath
