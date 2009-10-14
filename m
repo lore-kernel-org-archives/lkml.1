@@ -1,78 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932683AbZJNNOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933033AbZJNNOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932683AbZJNNOm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 09:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760778AbZJNNOl
+	id S933033AbZJNNOs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 09:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932728AbZJNNOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 09:14:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57443 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 09:14:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57444 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760747AbZJNNOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 09:14:40 -0400
-Date: Wed, 14 Oct 2009 13:13:09 GMT
-From: tip-bot for Li Hong <lihong.hi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, lihong.hi@gmail.com,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, lihong.hi@gmail.com,
-       paulus@samba.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20091014105039.GA22670@uhli>
-References: <20091014105039.GA22670@uhli>
+	id S932724AbZJNNOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 09:14:44 -0400
+Date: Wed, 14 Oct 2009 13:13:25 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, yanmin_zhang@linux.intel.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, yanmin_zhang@linux.intel.com, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1255083400.8802.15.camel@laptop>
+References: <1255083400.8802.15.camel@laptop>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86, perf_event: Rename 'performance counter interrupt'
-Message-ID: <tip-89ccf465abe6b20d804a63ae20307970c441369d@git.kernel.org>
-Git-Commit-ID: 89ccf465abe6b20d804a63ae20307970c441369d
+Subject: [tip:sched/urgent] sched: Disable SD_PREFER_LOCAL for MC/CPU domains
+Message-ID: <tip-799e2205ec65e174f752b558c62a92c4752df313@git.kernel.org>
+Git-Commit-ID: 799e2205ec65e174f752b558c62a92c4752df313
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 13:13:11 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 13:13:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  89ccf465abe6b20d804a63ae20307970c441369d
-Gitweb:     http://git.kernel.org/tip/89ccf465abe6b20d804a63ae20307970c441369d
-Author:     Li Hong <lihong.hi@gmail.com>
-AuthorDate: Wed, 14 Oct 2009 18:50:39 +0800
+Commit-ID:  799e2205ec65e174f752b558c62a92c4752df313
+Gitweb:     http://git.kernel.org/tip/799e2205ec65e174f752b558c62a92c4752df313
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Fri, 9 Oct 2009 12:16:40 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 14 Oct 2009 14:37:24 +0200
+CommitDate: Wed, 14 Oct 2009 15:02:34 +0200
 
-x86, perf_event: Rename 'performance counter interrupt'
+sched: Disable SD_PREFER_LOCAL for MC/CPU domains
 
-In 'cdd6c482c9ff9c55475ee7392ec8f672eddb7be6', we renamed
-Performance Counters -> Performance Events.
+Yanmin reported that both tbench and hackbench were significantly
+hurt by trying to keep tasks local on these domains, esp on small
+cache machines.
 
-The name showed up in /proc/interrupts also needs a change. I use
-PMI (Performance monitoring interrupt) here, since it is the
-official name used in Intel's documents.
+So disable it in order to promote spreading outside of the cache
+domains.
 
-Signed-off-by: Li Hong <lihong.hi@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <20091014105039.GA22670@uhli>
+Reported-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Mike Galbraith <efault@gmx.de>
+LKML-Reference: <1255083400.8802.15.camel@laptop>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/irq.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/topology.h |    1 +
+ include/linux/topology.h        |    4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index 3912061..86fb2c8 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -63,10 +63,10 @@ static int show_other_interrupts(struct seq_file *p, int prec)
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->irq_spurious_count);
- 	seq_printf(p, "  Spurious interrupts\n");
--	seq_printf(p, "%*s: ", prec, "CNT");
-+	seq_printf(p, "%*s: ", prec, "PMI");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->apic_perf_irqs);
--	seq_printf(p, "  Performance counter interrupts\n");
-+	seq_printf(p, "  Performance monitoring interrupts\n");
- 	seq_printf(p, "%*s: ", prec, "PND");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->apic_pending_irqs);
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index 25a9284..d823c24 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -143,6 +143,7 @@ extern unsigned long node_remap_size[];
+ 				| 1*SD_BALANCE_FORK			\
+ 				| 0*SD_BALANCE_WAKE			\
+ 				| 1*SD_WAKE_AFFINE			\
++				| 1*SD_PREFER_LOCAL			\
+ 				| 0*SD_SHARE_CPUPOWER			\
+ 				| 0*SD_POWERSAVINGS_BALANCE		\
+ 				| 0*SD_SHARE_PKG_RESOURCES		\
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index fc0bf3e..57e6357 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -129,7 +129,7 @@ int arch_update_cpu_topology(void);
+ 				| 1*SD_BALANCE_FORK			\
+ 				| 0*SD_BALANCE_WAKE			\
+ 				| 1*SD_WAKE_AFFINE			\
+-				| 1*SD_PREFER_LOCAL			\
++				| 0*SD_PREFER_LOCAL			\
+ 				| 0*SD_SHARE_CPUPOWER			\
+ 				| 1*SD_SHARE_PKG_RESOURCES		\
+ 				| 0*SD_SERIALIZE			\
+@@ -162,7 +162,7 @@ int arch_update_cpu_topology(void);
+ 				| 1*SD_BALANCE_FORK			\
+ 				| 0*SD_BALANCE_WAKE			\
+ 				| 1*SD_WAKE_AFFINE			\
+-				| 1*SD_PREFER_LOCAL			\
++				| 0*SD_PREFER_LOCAL			\
+ 				| 0*SD_SHARE_CPUPOWER			\
+ 				| 0*SD_SHARE_PKG_RESOURCES		\
+ 				| 0*SD_SERIALIZE			\
