@@ -1,67 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761945AbZJNQHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761854AbZJNQCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761945AbZJNQHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 12:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761898AbZJNQHR
+	id S1761854AbZJNQCY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 12:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934797AbZJNQCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 12:07:17 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:39754 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761847AbZJNQHP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 12:07:15 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 2/2] compat_ioctl: do not hold BKL in handlers
-Date: Wed, 14 Oct 2009 18:00:36 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
-       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>,
-       Greg KH <greg@kroah.com>
-References: <20091010153314.827301943@linutronix.de> <200910141759.35162.arnd@arndb.de>
-In-Reply-To: <200910141759.35162.arnd@arndb.de>
+	Wed, 14 Oct 2009 12:02:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33618 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756767AbZJNQCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 12:02:22 -0400
+Date: Wed, 14 Oct 2009 18:01:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/urgent] perf tools: Fix the NO_64BIT build on pure
+	64-bit systems
+Message-ID: <20091014160131.GA25544@elte.hu>
+References: <tip-55621ccf2b7a8afe39df8c80f55b28424fd07d13@git.kernel.org> <20091013140915.96cfe060.randy.dunlap@oracle.com> <20091014062052.GD784@elte.hu> <20091014074404.98577824.randy.dunlap@oracle.com> <20091014155848.GB15193@ghostprotocols.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910141800.36889.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014155848.GB15193@ghostprotocols.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have always called ioctl conversion handlers under the big
-kernel lock, although that is generally not necessary. In particular
-it is not needed for conversion of data structures and for calling
-sys_ioctl or do_vfs_ioctl, which will get the BKL again if needed.
 
-Handlers doing more than those two have been moved out, so we
-can kill off the BKL from compat_sys_ioctl. This may significantly
-improve latencies with 32 bit applications, and it avoids a common
-scenario where a thread acquires the BKL twice.
+* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- fs/compat_ioctl.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+> Em Wed, Oct 14, 2009 at 07:44:04AM -0700, Randy Dunlap escreveu:
+> > On Wed, 14 Oct 2009 08:20:52 +0200 Ingo Molnar wrote:
+> > 
+> > > 
+> > > * Randy Dunlap <randy.dunlap@ORACLE.COM> wrote:
+> > > 
+> > > > On Mon, 12 Oct 2009 08:34:16 GMT tip-bot for Ingo Molnar wrote:
+> > > > 
+> > > > > Commit-ID:  55621ccf2b7a8afe39df8c80f55b28424fd07d13
+> > > > > Gitweb:     http://git.kernel.org/tip/55621ccf2b7a8afe39df8c80f55b28424fd07d13
+> > > > > Author:     Ingo Molnar <mingo@elte.hu>
+> > > > > AuthorDate: Mon, 12 Oct 2009 09:57:25 +0200
+> > > > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > > > CommitDate: Mon, 12 Oct 2009 10:00:27 +0200
+> > > > > 
+> > > > > perf tools: Fix the NO_64BIT build on pure 64-bit systems
+> > > > > 
+> > > > > Randy Dunlap reported that 'make NO_64BIT=1' fails to build
+> > > > > a pure 32-b it binary on 64-bit/64-bit x86 systems.
+> > > > > 
+> > > > > The reason is that we dont pass in the -m32 and GCC defaults
+> > > > > to -m64.
+> > > > > 
+> > > > > So pass it in - and also extend the warning message about libelf
+> > > > > dependencies - glibc-dev[el] is needed as well beyond the libelf
+> > > > > library.
+> > > > 
+> > > > Ingo, thanks, I finally got this working, after installing more 32-bit
+> > > > libs etc., like Kyle said that I would need to do.
+> > > > 
+> > > > The error message is still a little misleading/confusing:
+> > > > Makefile:426: *** No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el].  Stop.
+> > > > 
+> > > > when elfutils-libelf-devel.i586 is installed but glibc-devel.i[56]86 is not
+> > > > installed.  gcc failed with:
+> > > > In file included from /usr/include/features.h:376,
+> > > >                  from /usr/include/sys/types.h:27,
+> > > >                  from /usr/include/libelf.h:53,
+> > > >                  from elfdeveltest.c:1:
+> > > > /usr/include/gnu/stubs.h:7:27: error: gnu/stubs-32.h: No such file or directory
+> > > 
+> > > Why is it misleading? It says it very clearly that you need to install 
+> > > both:
+> > > 
+> > >   please install libelf-dev/elfutils-libelf-devel and glibc-dev[el].  Stop.
+> > 
+> > It also says very clearly:
+> > 
+> > Makefile:426: *** No libelf.h/libelf found
+> > 
+> > which is not correct.
+> 
+> So the correct way is to first look for the presence of glibc-devel, 
+> barf if its not present, then after that, do what is done now and test 
+> for the presence of libelf.h :-\
+> 
+> But if one just follows the suggestion, and installs the suggested 
+> packages, it should work, no?
 
-diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index 40904c6..320786e 100644
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -2663,9 +2663,7 @@ asmlinkage long compat_sys_ioctl(unsigned int fd, unsigned int cmd,
- 
-  found_handler:
- 	if (t->handler) {
--		lock_kernel();
- 		error = t->handler(fd, cmd, arg, filp);
--		unlock_kernel();
- 		goto out_fput;
- 	}
- 
--- 
-1.6.3.3
+well .. send me a patch that makes the message more ambigious, so that 
+we output something like:
 
+> Makefile:426: *** No ELF support found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el].  Stop.
+
+that should make it useful enough, without complicating the make rules.
+
+	Ingo
