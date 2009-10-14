@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbZJNHRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbZJNHTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756469AbZJNHRK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 03:17:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755572AbZJNHRJ
+	id S1756708AbZJNHTT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 03:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZJNHTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 03:17:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33721 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754145AbZJNHRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 03:17:08 -0400
-Date: Wed, 14 Oct 2009 09:16:31 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: iceberg <strakh@ispras.ru>, Vojtech Pavlik <vojtech@suse.cz>,
-       Linux Kernlel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: [BUG] ati_remote2.c: possible mutex_lock without mutex_unlock
-In-Reply-To: <20091014071428.GA5318@core.coreip.homeip.net>
-Message-ID: <alpine.LSU.2.00.0910140915440.8582@wotan.suse.de>
-References: <1255456327.22233.0@pamir> <alpine.LSU.2.00.0910131736571.8582@wotan.suse.de> <20091014062902.GA2971@core.coreip.homeip.net> <alpine.LSU.2.00.0910140906280.8582@wotan.suse.de> <20091014071428.GA5318@core.coreip.homeip.net>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 Oct 2009 03:19:18 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34621 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754170AbZJNHTR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 03:19:17 -0400
+Date: Wed, 14 Oct 2009 09:18:38 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to register a set of idle routines.
+Message-ID: <20091014071838.GE23248@one.firstfloor.org>
+References: <20091008094828.GA20595@linux.vnet.ibm.com> <20091008095027.GC20595@linux.vnet.ibm.com> <1254998162.26976.270.camel@twins> <20091008104249.GJ20595@linux.vnet.ibm.com> <1254999033.26976.272.camel@twins> <8763akh4re.fsf@basil.nowhere.org> <20091014061727.GA8605@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014061727.GA8605@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Oct 2009, Dmitry Torokhov wrote:
+> How about something like this..
+> If the arch does not enable CONFIG_CPU_IDLE, the cpuidle_idle_call
+> which is called from cpu_idle() should call default_idle without
+> involving the registering cpuidle steps. This should prevent bloating
+> up of the kernel for archs which dont want to use cpuidle.
 
-> > > From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> > > 
-> > > input_devices_seq_start() uses mutex_lock_interruptible() to acquire
-> > > the input_mutex, but doesn't properly handle the situation when the
-> > > call fails (for example due to interrupt). Instead of returning NULL
-> > > (which indicates that there is no more data) we should return
-> > > ERR_PTR()-encoded error.
-> > > 
-> > > We also need explicit flag indicating whether input_mutex was acquired
-> > > since input_devices_seq_stop() is called whether input_devices_seq_start()
-> > > was successful or not.
-> > > 
-> > > The same applies to input_handlers_seq_start().
-> > > 
-> > > Reported-by: iceberg <strakh@ispras.ru>
-> > > Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> > 
-> > Yup, looks OK to me.
-> 
-> Putting you as "Reviewed-by.." then, OK?
+On x86 some people want small kernel too, so selecting it on a architecture
+granuality is not good. Also you can make it default, you just need
+to slim it down first.
 
-Sure, feel free to do that.
-
-Thanks,
+-Andi
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+ak@linux.intel.com -- Speaking for myself only.
