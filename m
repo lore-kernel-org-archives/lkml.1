@@ -1,125 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761400AbZJNBGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbZJNBKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761400AbZJNBGq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 21:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761271AbZJNBGq
+	id S1754143AbZJNBKh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 21:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZJNBKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 21:06:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51749 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753754AbZJNBGp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 21:06:45 -0400
-Date: Tue, 13 Oct 2009 18:05:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Paul Fulghum <paulkf@microgate.com>
-cc: Boyan <btanastasov@yahoo.co.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       "OGAWA Hirofumi \"" <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <alpine.LFD.2.01.0910131744590.3404@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0910131804420.6146@localhost.localdomain>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>  <L6tb-VyKHZK.A.PaB.Ozl0KB@chimera>  <C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com>  <87ljjgfcbu.fsf@spindle.srvr.nix>  <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> 
- <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>  <4AD3F769.5080405@gmail.com>  <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net>  <4AD437F9.9020708@yahoo.co.uk>  <alpine.LFD.2.01.0910130745550.3438@localhost.localdomain> 
- <4AD4DE4C.4010402@yahoo.co.uk>  <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>  <4AD4F548.2030506@microgate.com>  <alpine.LFD.2.01.0910131514100.3404@localhost.localdomain> <1255478932.19056.24.camel@localhost.localdomain> <4AD51D6B.7010509@microgate.com>
- <alpine.LFD.2.01.0910131744590.3404@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 13 Oct 2009 21:10:36 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:35905 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751404AbZJNBKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 21:10:35 -0400
+Date: Tue, 13 Oct 2009 18:09:56 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
+       mtosatti@redhat.com, torvalds@linux-foundation.org
+Subject: Re: [PATCH RFC tip/core/rcu 1/3] rcu: The Bloatwatch Edition, v7
+Message-ID: <20091014010956.GG6782@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091009224954.GA26516@linux.vnet.ibm.com> <4AD42FF5.2080109@cn.fujitsu.com> <20091013170022.GA6782@linux.vnet.ibm.com> <4AD51D3E.60103@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AD51D3E.60103@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Oops, you'll probably get this twice, because 'alpine' core-dumped on me 
-and I'm not sure the first one actually made it out. 
-
-		Linus
-
-On Tue, 13 Oct 2009, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 13 Oct 2009, Paul Fulghum wrote:
+On Wed, Oct 14, 2009 at 08:37:18AM +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+> >> It's an old issue.
+> >> It's not only about RCUTINY, it's also about other rcu implementations:
+> >>
+> >> rcu_enter_nohz()/rcu_exit_nohz() are not called in pairs.
+> >>
+> >> irq_exit() calls tick_nohz_stop_sched_tick() which calls rcu_enter_nohz(),
+> >> where is the corresponding rcu_exit_nohz()?
+> >> (or tick_nohz_restart_sched_tick())?
 > > 
-> > This is correct, the last buffer is not passed to tty_buffer_free()
-> > if it is the last in the list so tail is maintained.
-> > There is no free space in it so no new data can be added.
-> > There is no place where tail is null while the spinlock
-> > is released in preparation for calling receive_buf.
-> > I still can't spot any flaw in the current locking.
+> > The tick_nohz_restart_sched_tick() function is called from the various
+> > per-architecture cpu_idle() functions (or default_idle() or whatever
+> > name that the architecture uses).  For example, in:
+> > 
+> > 	arch/x86/kernel/process_64.c
+> > 
+> > the cpu_idle() function invokes tick_nohz_restart_sched_tick() just
+> > before invoking schedule() to exit the idle loop.
+> > 
+> > And, as you say, tick_nohz_restart_sched_tick() invokes rcu_exit_nohz().
 > 
-> Do you even bother reading my emails?
-> 
-> Let me walk through an example of where the locking F*CKS UP, exactly 
-> because it's broken.
-> 
-> 	thread1		thread2		thread3
-> 
-> 	flush_to_ldisc
-> 	set_bit(TTY_FLUSHING)
-> 	buf.head = NULL
-> 	...
-> 	..release lock..
-> 	.. sleep in ->receive_buf ..
-> 
-> 			flush_to_ldisc
-> 			set_bit(TTY_FLUSHING)
-> 			.. head==NULL ..
-> 			clear_bit(TTY_FLUSHING)
-> 			.. release lock ..
-> 
-> 					tty_ldisc_flush()
-> 					-> tty_buffer_flush()
-> 					TTY_FLUSHING not set!
-> 					-> __tty_buffer_flush()
-> 					-> tty->buf.tail = NULL
-> 
-> and now you're screwed. See? You have both 'buf.tail' and 'buf.head' both 
-> being NULL, and look what happens in that case 'tty_buffer_request_room()' 
-> if some new data comes in? Right: it will add the buffer to both tail and 
-> head.
-> 
-> And notice how 'thread1' is still inside flush_to_ldisc()! The buffer that 
-> got added will be overwritten by the old one, and now tail and head no 
-> longer match. Or another flush_to_ldisc() comes in, and now it won't be a 
-> no-op any more, and it will find the new data, and run ->receive_buf 
-> concurrently with the old receive_buf from thread1.
-> 
-> And the whole reason was that there were some very odd locking rules: 
-> buf.head=NULL meant "don't flush", and "TTY_FLUSHING is set" meant "don't 
-> clear 'buf.head'", and but the "don't flush" case still cleared 
-> TTY_FLUSHING (after not flushing), and it all messed up.
-> 
-> I could just have fixed it (move the "clear_bit(TTY_FLUSHING)" but up, but 
-> the fact is, once you fix that, it then becomes obvious that 
-> "buf.head=NULL" really is the wrong thing to test in the first place, and 
-> we should just use TTY_FLUSHING instead, and simply _remove_ the odd 
-> "buf.head=NULL is special" case. Which is what my patch did
-> 
-> > Your statement that the locking is too clever/subtle is
-> > clearly true since I am struggling to work this out again.
-> 
-> I have to say that the only case I could make up that is _clearly_ a bug 
-> is the above very contrieved example. I don't really think something like 
-> the above happens in reality. But it's an example of bad locking, and what 
-> happens when the locking logic isn't obvious.
-> 
-> There may be other cases where the locking fails, and I just didn't find 
-> them. 
-> 
-> Or the patch may simply not fix anything in practice, and nobody has ever 
-> actually triggered the bad locking in real life. I dunno. I just do know 
-> that the locking was too damn subtle.
-> 
-> Any time people do ad-hoc locking with "clever" schemes, it's almost 
-> invariably buggy. So the rule is: just don't do that. Make the locking 
-> rules "obvious".  Don't have subtle rules about "if head is NULL, then 
-> we're not going to add any new buffers to it, except if tail is also 
-> NULL". Because look above what happens, and see how complicated it was to 
-> even see the bug.
-> 
-> 			Linus
-> 
+> These tick_nohz_restart_sched_tick() which are called from the various
+> per-architecture cpu_idle() functions are not the opposite of
+> the tick_nohz_stop_sched_tick() in *irq_exit()*. So I figure that 
+> rcu_enter_nohz()/rcu_exit_nohz() are not called in pairs.
+
+OK, let's start with rcu_enter_nohz(), which tells RCU that the running
+CPU is going into dyntick-idle mode, and thus should be ignored by RCU.
+Let's do the idle loop first:
+
+o	Upon entry to the idle() loop (using cpu_idle() in
+	arch/x86/kernel/process_64.c for this exercise),
+	we invoke tick_nohz_stop_sched_tick(1), which says we
+	are in an idle loop.  (This is in contrast to the call
+	from irq_exit(), where we are not in the idle loop.)
+
+o	tick_nohz_stop_sched_tick() invokes rcu_enter_nohz(),
+	does a bunch of timer checking, and returns.  If anything
+	indicated that entering dyntick-idle mode would be bad,
+	we raise TIMER_SOFTIRQ to kick us out of this mode.
+
+	Either way, we return to the idle loop.
+
+o	The idle loops until need_resched().  Upon exit from the
+	idle loop, we call tick_nohz_restart_sched_tick(), which
+	invokes rcu_exit_nohz(), which tells RCU to start paying
+	attention to this CPU once more.
+
+OK, now for interrupts.
+
+o	The hardware interrupt handlers invoke irq_enter(), which in
+	turn invokes rcu_irq_enter().  This has no real effect (other
+	than incrementing a counter) if the interrupt did not come
+	from dyntick-idle mode.
+
+	Either way, RCU is now paying attention to RCU read-side
+	critical sections on this CPU.
+
+o	Upon return from interrupt, the hardware interrupt handlers
+	invoke irq_exit(), which in turn invokes rcu_irq_exit().
+	This has no real effect (other than decrementing a counter)
+	if the interrupt is not returning to dyntick-idle mode.
+
+	However, if the interrupt -is- returning to dyntick-idle
+	mode, then RCU will stop paying attention to RCU read-side
+	critical sections on this CPU.
+
+So I do believe that rcu_enter_nohz() and rcu_exit_nohz() are in fact
+invoked in pairs.  One strange thing about this is that the idle loop
+first invokes rcu_enter_nohz(), then invokes rcu_exit_nohz(), while
+an interrupt handler first invokes rcu_irq_enter() and then invokes
+rcu_irq_exit().  So the idle loop enters dyntick-idle mode and then
+leaves it, while an interrupt handler might leave dyntick-idle mode and
+then re-enter it.
+
+Or am I still missing something here?
+
+							Thanx, Paul
