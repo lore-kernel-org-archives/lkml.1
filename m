@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933189AbZJNOFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933409AbZJNOQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933189AbZJNOFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 10:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbZJNOFb
+	id S933409AbZJNOQZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 10:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933376AbZJNOQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 10:05:31 -0400
-Received: from viefep15-int.chello.at ([62.179.121.35]:60754 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756318AbZJNOFa (ORCPT
+	Wed, 14 Oct 2009 10:16:24 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:35631 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933221AbZJNOQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 10:05:30 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: bdi_threshold slow to reach steady state
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Richard Kennedy <richard@rsk.demon.co.uk>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       Martin Bligh <mbligh@google.com>
-In-Reply-To: <1255528520.2360.94.camel@castor>
-References: <1255518586.2360.78.camel@castor>
-	 <1255520272.8392.429.camel@twins>  <1255528520.2360.94.camel@castor>
-Content-Type: text/plain
-Date: Wed, 14 Oct 2009 16:04:32 +0200
-Message-Id: <1255529072.8392.436.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 10:16:24 -0400
+Date: Wed, 14 Oct 2009 10:08:12 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mel Gorman <mel@csn.ul.ie>
+cc: David Rientjes <rientjes@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Tejun Heo <tj@kernel.org>,
+       linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu
+ operations in the hotpaths
+In-Reply-To: <20091014133457.GB5027@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0910141003590.9944@gentwo.org>
+References: <4AD307A5.105@kernel.org> <84144f020910120614r529d8e4em9babe83a90e9371f@mail.gmail.com> <alpine.DEB.1.00.0910130231570.27262@chino.kir.corp.google.com> <alpine.DEB.1.10.0910131041450.21608@gentwo.org> <alpine.DEB.1.10.0910131509170.32394@gentwo.org>
+ <4AD4D8B6.6010700@cs.helsinki.fi> <alpine.DEB.1.10.0910131541290.7246@gentwo.org> <alpine.DEB.1.00.0910131305440.3529@chino.kir.corp.google.com> <alpine.DEB.1.10.0910131625370.13756@gentwo.org> <alpine.DEB.1.00.0910131550050.15347@chino.kir.corp.google.com>
+ <20091014133457.GB5027@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-14 at 14:55 +0100, Richard Kennedy wrote:
-> 
-> commit 11735a2336ba08cf21aebf79a706c86aca5e44b2
-> Author: Richard Kennedy <richard@rsk.demon.co.uk>
-> Date:   Wed Oct 14 14:46:21 2009 +0100
-> 
->     mm: speed up per bdi dirty threshold calculations
+The test did not include the irqless patch I hope?
 
-I think the subject is confusing, we don't actually compute things
-faster in the less cycles sense.
+On Wed, 14 Oct 2009, Mel Gorman wrote:
 
-We reduce the dampening for the control system, yielding faster
-convergence.
+> Small gains in the User, System and Elapsed times with this-cpu patches
+> applied. It is interest to note for the mean times that the patches more
+> than close the gap between SLUB and SLAB for the most part - the
+> exception being User which has marginally better performance. This might
+> indicate that SLAB is still slightly better at giving back cache-hot
+> memory but this is speculation.
 
->     Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-> 
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index a3b1409..018024e 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -144,7 +144,7 @@ static int calc_period_shift(void)
->         else
->                 dirty_total = (vm_dirty_ratio *
-> determine_dirtyable_memory()) /
->                                 100;
-> -       return 2 + ilog2(dirty_total - 1);
-> +       return ilog2(dirty_total - 1) - 2;
->  }
+The queuing in SLAB allows a better cache hot behavior. Without a queue
+SLUB has a difficult time improvising cache hot behavior based on objects
+restricted to a slab page. Therefore the size of the slab page will
+affect how much "queueing" SLUB can do.
+
+> The patches mostly improve the performance of netperf UDP_STREAM by a good
+> whack so the patches are a plus here. However, it should also be noted that
+> SLAB was mostly faster than SLUB, particularly for large packet sizes. Refresh
+> my memory, how do SLUB and SLAB differ in regards to off-loading large
+> allocations to the page allocator these days?
+
+SLUB offloads allocations > 8k to the page allocator.
+SLAB does create large slabs.
 
