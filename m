@@ -1,65 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758628AbZJNLK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932833AbZJNLPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758628AbZJNLK3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 07:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbZJNLK3
+	id S932833AbZJNLPZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 07:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932595AbZJNLPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 07:10:29 -0400
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:40834 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755526AbZJNLK2 (ORCPT
+	Wed, 14 Oct 2009 07:15:24 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:35381 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756251AbZJNLPX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 07:10:28 -0400
-Subject: bdi_threshold slow to reach steady state
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 14 Oct 2009 12:09:45 +0100
-Message-Id: <1255518586.2360.78.camel@castor>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 07:15:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Fzm5BYpb15pqMvkjY7RCysVMQiCKLHuqvSLkEYjFLencrtiJ9WQi4IkaB9XgcYDUf+
+         D4SVjueV4bfoa+RnazYax09Qk838pFJX2jrl3hxMxasJulZdhySNA4t10SNW0Lr+Jngh
+         BKwKh475RDLUuwYgZ4gXgc8CUjLhaNSANi+qs=
+Date: Wed, 14 Oct 2009 13:13:25 +0200
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-input@vger.kernel.org
+Subject: Re: [bisected regression] Touchpad "paste" stops working after
+	suspend to RAM
+Message-ID: <20091014111325.GA4586@Pilar.aei.mpg.de>
+References: <20091013121109.GB4619@Pilar.aei.mpg.de> <20091013182643.GC21593@core.coreip.homeip.net> <20091013190819.GA7555@Pilar.aei.mpg.de> <20091013194654.GD21593@core.coreip.homeip.net> <20091013202459.GE21593@core.coreip.homeip.net> <20091013231641.GA4404@Pilar.aei.mpg.de> <20091013235607.GA28819@core.coreip.homeip.net> <20091013235701.GB28819@core.coreip.homeip.net> <20091014005131.GA4371@Pilar.aei.mpg.de> <20091014023008.GA29672@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014023008.GA29672@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+On Tue 13.Oct'09 at 19:30:08 -0700, Dmitry Torokhov wrote:
+> On Wed, Oct 14, 2009 at 02:51:31AM +0200, Carlos R. Mafra wrote:
+> > On Tue 13.Oct'09 at 16:57:01 -0700, Dmitry Torokhov wrote:
+> > > On Tue, Oct 13, 2009 at 04:56:08PM -0700, Dmitry Torokhov wrote:
+> > > > On Wed, Oct 14, 2009 at 01:16:41AM +0200, Carlos R. Mafra wrote:
+> > > > > [restoring Cc: list]
+> > > > > 
+> > > > > On Tue 13.Oct'09 at 13:24:59 -0700, Dmitry Torokhov wrote:
+> > > > > >
+> > > > > > Could you please try this patch (again if you could post dmesg that
+> > > > > > would be great). Thank you!
+> > > > > 
+> > > > > The patch quoted below also fixes the problem. I attached the
+> > > > > syslog with i8042.debug (with a s2ram in the middle) to the
+> > > > > bugzilla: 
+> > > > > 
+> > > > > http://bugzilla.kernel.org/show_bug.cgi?id=14392
+> > > > > 
+> > > > 
+> > > > Still not quite happy, although it is better. I don't understand why
+> > > > your box likes to reply on AUX port when command is sent via keyboard
+> > > > port.
+> > > > 
+> > > > Could you please try booting with atkbd.reset (I assume keyboard is
+> > > > built in) and send me yet another dmesg.
+> > > > 
+> > > 
+> > > Oh, yes, keep the last patch applied. Thanks!
+> > 
+> > I uploaded the dmesg with atkbd.reset (and i8042.debug too, btw)
+> > to the bugzilla.
+> > 
+> 
+> Hmm, this is messed up... For some reason your box insists on replying
+> to reset commands from AUX port, no matter what device we trying to
+> reset. Does your box (Vaio, right?) has external PS/2 ports? I don't
+> believe Vaios have docking stations... 
 
-I've been running simple tests that uses fio to write 2Gb & reading the
-bdi dirty threshold once a second from debugfs. 
+My Vaio has no PS/2 port and no docking station.
 
-The graph of bdi dirty threshold is nice and smooth but takes a long
-time to reach a steady state, 60 seconds or more. (run on 2.6.32-rc4)
+> Also, could you please boot with
+> i8042.nomux and send me yet another dmesg and dmidecode too.
 
-By eye it seems as though a first-order control system is a good model
-for its behavior, so it approximates to 1-e^(-t/T). It just seems too
-heavily damped ( at least on my machine).
+Ok, they are in the kernel bugzilla #14392 now.
 
-For fun, I changed calc_period_shift to
-	return ilog2(dirty_total - 1) - 2;
+> Thanks for your patience.
 
-and it now reaches a steady state much quicker, around 4-5 seconds.
-
-Tests that write to 2 disks at the same time show no significant
-performance differences but are much more consistent, i.e. the standard
-deviation is lower across multiple runs.
-
-I have noticed that the first test run on a freshly booted machine is
-always the slowest of any sequence of tests, but this change to
-calc_period_shift greatly reduces this effect. 
-
-So I wondered how you chose these values? and are there any other tests
-that are useful to explore this?
-
-I know that my machine is getting a bit old now, it's AMDX2 & only has
-sata 150 drives, so I'm not suggesting that this change is going to be
-correct for all machines but maybe we can set a better default? or take
-more factors in to account other than just memory size. 
-
-BTW why is it ilog2(dirty_total -1) -- what does the -1 do?
-
-regards
-Richard
-
-
+I thank _you_ for digging the problem even further. Your proposed patch
+"fixed" it already for me, but you are being honest in saying that
+you are still not happy with your fix and want to do better. I really
+appreciate that and will help you with what I can do. I hope there is
+a way out of my Vaio's oddities.
