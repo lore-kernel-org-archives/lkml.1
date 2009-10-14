@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbZJNCHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761443AbZJNCLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761412AbZJNCHP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 22:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761332AbZJNCHM
+	id S1761443AbZJNCLR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 22:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761355AbZJNCLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 22:07:12 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:40660 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761231AbZJNCHJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 22:07:09 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=aRq4Ow10j4gA:10 a=w4iE+TBsmj5y1WloLYF40w==:17 a=VwQbUJbxAAAA:8
- a=W0vUJOdyAAAA:8 a=6Hhw-4AeoF6RKra1lM4A:9 a=Uq3VrzhYLQvyGs4K2T4A:7
- a=KZjrsIMKP00gJEozHXVr3Wl8iT0A:4 a=x8gzFH9gYPwA:10
-From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
-Reply-To: tfjellstrom@shaw.ca
-To: linux-kernel@vger.kernel.org
-Subject: Re: buffer io error on device sr0?
-Date: Tue, 13 Oct 2009 20:06:16 -0600
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-git2; KDE/4.3.2; x86_64; ; )
-Cc: Robert Hancock <hancockrwd@gmail.com>
-References: <200910130343.32162.tfjellstrom@shaw.ca> <4AD51D3F.2030603@gmail.com>
-In-Reply-To: <4AD51D3F.2030603@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910132006.16747.tfjellstrom@shaw.ca>
+	Tue, 13 Oct 2009 22:11:16 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52421 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761387AbZJNCLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 22:11:15 -0400
+Date: Wed, 14 Oct 2009 13:10:30 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Woodhouse <David.Woodhouse@intel.com>, Tejun Heo <tj@kernel.org>
+Subject: Re: linux-next: manual merge of the pci tree with Linus' tree
+Message-Id: <20091014131030.54cfc37e.sfr@canb.auug.org.au>
+In-Reply-To: <20091013173842.3c926b0c@jbarnes-g45>
+References: <20091014110532.f543b915.sfr@canb.auug.org.au>
+	<20091013173842.3c926b0c@jbarnes-g45>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__14_Oct_2009_13_10_30_+1100_VLS34FieTb9uIOsv"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue October 13 2009, Robert Hancock wrote:
-> On 10/13/2009 03:43 AM, Thomas Fjellstrom wrote:
-> > I'm not sure which version it started, but it seems at least
-> > 2.6.32-rc3-git2 has issues with detecting blank DVDR disks.
-> >
-> > [220595.198654] cdrom: This disc doesn't have any tracks I recognize!
-> > [220595.298488] sr 3:0:0:0: [sr0] Unhandled sense code
-> > [220595.298492] sr 3:0:0:0: [sr0] Result: hostbyte=DID_OK
-> > driverbyte=DRIVER_SENSE
-> > [220595.298496] sr 3:0:0:0: [sr0] Sense Key : Blank Check [current]
-> > [220595.298501] sr 3:0:0:0: [sr0] Add. Sense: No additional sense
-> > information [220595.298505] sr 3:0:0:0: [sr0] CDB: Read(10): 28 00 00 00
-> > 00 00 00 00 01 00 [220595.298514] end_request: I/O error, dev sr0, sector
-> > 0
-> > [220595.298518] Buffer I/O error on device sr0, logical block 0
-> > [220595.304554] sr 3:0:0:0: [sr0] Unhandled sense code
-> > [220595.304562] sr 3:0:0:0: [sr0] Result: hostbyte=DID_OK
-> > driverbyte=DRIVER_SENSE
-> > [220595.304570] sr 3:0:0:0: [sr0] Sense Key : Blank Check [current]
-> > [220595.304579] sr 3:0:0:0: [sr0] Add. Sense: No additional sense
-> > information [220595.304588] sr 3:0:0:0: [sr0] CDB: Read(10): 28 00 00 00
-> > 00 00 00 00 01 00 [220595.304609] end_request: I/O error, dev sr0, sector
-> > 0
-> > [220595.304616] Buffer I/O error on device sr0, logical block 0
-> >
-> > Unless its supposed to be this way. Although I didn't receive any kind of
-> > notification when inserting the disk, as I used to (could be a hal/kde
-> > error, but the logs in dmesg seem to hint otherwise).
-> 
-> Something tried to read off the disk and the drive reported "no way,
-> it's blank". That's all this indicates. Most likely HAL or something is
-> doing the read..
+--Signature=_Wed__14_Oct_2009_13_10_30_+1100_VLS34FieTb9uIOsv
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ah, I was reading it as "Someone is checking for a disk, lets return an error 
-instead of just saying the disk is blank".
+Hi Jesse,
 
-Thanks for the clarification.
+On Tue, 13 Oct 2009 17:38:42 -0700 Jesse Barnes <jbarnes@virtuousgeek.org> =
+wrote:
+>
+> Ah, thanks.  I'll check it out and update my linux-next branch.
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Excellent, thanks.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-Thomas Fjellstrom
-tfjellstrom@shaw.ca
+--Signature=_Wed__14_Oct_2009_13_10_30_+1100_VLS34FieTb9uIOsv
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrVMxYACgkQjjKRsyhoI8ybKQCfXUiMv4bwuy5+DaAn5SjNOhcl
+s0EAn3MqR8H1AlULNewlP9BU3UOBvBfp
+=IFgQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__14_Oct_2009_13_10_30_+1100_VLS34FieTb9uIOsv--
