@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761980AbZJNQJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934880AbZJNQJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761980AbZJNQJt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 12:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761952AbZJNQJr
+	id S934880AbZJNQJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 12:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934829AbZJNQJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 12:09:47 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:51429 "EHLO
+	Wed, 14 Oct 2009 12:09:53 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:38404 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761930AbZJNQJq (ORCPT
+	with ESMTP id S1761957AbZJNQJr (ORCPT
 	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Wed, 14 Oct 2009 12:09:46 -0400
+	Wed, 14 Oct 2009 12:09:47 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [NET PATCH 5/9] venet: cache the ringlen values at init
+Subject: [NET PATCH 6/9] venet: add eventq protocol
 To: alacrityvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Date: Wed, 14 Oct 2009 11:59:12 -0400
-Message-ID: <20091014155912.18864.83106.stgit@dev.haskins.net>
+Date: Wed, 14 Oct 2009 11:59:17 -0400
+Message-ID: <20091014155917.18864.75255.stgit@dev.haskins.net>
 In-Reply-To: <20091014154457.18864.28382.stgit@dev.haskins.net>
 References: <20091014154457.18864.28382.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -26,52 +26,317 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We want to prevent the condition where changes to the module-params
-could affect the run-time validity of the ringstate
+This adds an event-channel for passing host->guest messages to the
+guest driver.  We will use this later in the series for linkstate and
+asynchronous transmit-complete events.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- drivers/net/vbus-enet.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/net/vbus-enet.c |  203 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/venet.h   |   28 ++++++
+ 2 files changed, 229 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/vbus-enet.c b/drivers/net/vbus-enet.c
-index 63237f3..fe9eeca 100644
+index fe9eeca..5fccfd1 100644
 --- a/drivers/net/vbus-enet.c
 +++ b/drivers/net/vbus-enet.c
-@@ -50,6 +50,7 @@ module_param(sg_enabled, int, 0444);
- struct vbus_enet_queue {
- 	struct ioq              *queue;
- 	struct ioq_notifier      notifier;
-+	unsigned long            count;
+@@ -66,6 +66,14 @@ struct vbus_enet_priv {
+ 		bool               enabled;
+ 		char              *pool;
+ 	} pmtd; /* pre-mapped transmit descriptors */
++	struct {
++		bool                   enabled;
++		bool                   linkstate;
++		unsigned long          evsize;
++		struct vbus_enet_queue veq;
++		struct tasklet_struct  task;
++		char                  *pool;
++	} evq;
  };
  
- struct vbus_enet_priv {
-@@ -94,6 +95,8 @@ queue_init(struct vbus_enet_priv *priv,
- 		q->queue->notifier = &q->notifier;
+ static void vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force);
+@@ -331,6 +339,16 @@ tx_teardown(struct vbus_enet_priv *priv)
  	}
+ }
  
-+	q->count = ringsize;
++static void
++evq_teardown(struct vbus_enet_priv *priv)
++{
++	if (!priv->evq.enabled)
++		return;
 +
++	ioq_put(priv->evq.veq.queue);
++	kfree(priv->evq.pool);
++}
++
+ /*
+  * Open and close
+  */
+@@ -741,8 +759,91 @@ tx_isr(struct ioq_notifier *notifier)
+        tasklet_schedule(&priv->txtask);
+ }
+ 
++static void
++evq_linkstate_event(struct vbus_enet_priv *priv,
++		    struct venet_event_header *header)
++{
++	struct venet_event_linkstate *event =
++		(struct venet_event_linkstate *)header;
++
++	switch (event->state) {
++	case 0:
++		netif_carrier_off(priv->dev);
++		break;
++	case 1:
++		netif_carrier_on(priv->dev);
++		break;
++	default:
++		break;
++	}
++}
++
++static void
++deferred_evq_isr(unsigned long data)
++{
++	struct vbus_enet_priv *priv = (struct vbus_enet_priv *)data;
++	int nevents = 0;
++	struct ioq_iterator iter;
++	int ret;
++
++	PDEBUG(priv->dev, "evq: polling...\n");
++
++	/* We want to iterate on the head of the in-use index */
++	ret = ioq_iter_init(priv->evq.veq.queue, &iter, ioq_idxtype_inuse,
++			    IOQ_ITER_AUTOUPDATE);
++	BUG_ON(ret < 0);
++
++	ret = ioq_iter_seek(&iter, ioq_seek_head, 0, 0);
++	BUG_ON(ret < 0);
++
++	/*
++	 * The EOM is indicated by finding a packet that is still owned by
++	 * the south side
++	 */
++	while (!iter.desc->sown) {
++		struct venet_event_header *header;
++
++		header = (struct venet_event_header *)iter.desc->cookie;
++
++		switch (header->id) {
++		case VENET_EVENT_LINKSTATE:
++			evq_linkstate_event(priv, header);
++			break;
++		default:
++			panic("venet: unexpected event id:%d of size %d\n",
++			      header->id, header->size);
++			break;
++		}
++
++		memset((void *)iter.desc->cookie, 0, priv->evq.evsize);
++
++		/* Advance the in-use tail */
++		ret = ioq_iter_pop(&iter, 0);
++		BUG_ON(ret < 0);
++
++		nevents++;
++	}
++
++	PDEBUG(priv->dev, "%d events received\n", nevents);
++
++	ioq_notify_enable(priv->evq.veq.queue, 0);
++}
++
++static void
++evq_isr(struct ioq_notifier *notifier)
++{
++       struct vbus_enet_priv *priv;
++
++       priv = container_of(notifier, struct vbus_enet_priv, evq.veq.notifier);
++
++       PDEBUG(priv->dev, "evq_isr\n");
++
++       ioq_notify_disable(priv->evq.veq.queue, 0);
++       tasklet_schedule(&priv->evq.task);
++}
++
+ static int
+-vbus_enet_negcap(struct vbus_enet_priv *priv)
++vbus_enet_sg_negcap(struct vbus_enet_priv *priv)
+ {
+ 	struct net_device *dev = priv->dev;
+ 	struct venet_capabilities caps;
+@@ -782,6 +883,103 @@ vbus_enet_negcap(struct vbus_enet_priv *priv)
  	return 0;
  }
  
-@@ -222,7 +225,7 @@ tx_setup(struct vbus_enet_priv *priv)
- 	/* pre-allocate our descriptor pool if pmtd is enabled */
- 	if (priv->pmtd.enabled) {
- 		struct vbus_device_proxy *dev = priv->vdev;
--		size_t poollen = len * tx_ringlen;
-+		size_t poollen = len * priv->txq.count;
- 		char *pool;
- 		int shmid;
++static int
++vbus_enet_evq_negcap(struct vbus_enet_priv *priv, unsigned long count)
++{
++	struct venet_capabilities caps;
++	int ret;
++
++	memset(&caps, 0, sizeof(caps));
++
++	caps.gid = VENET_CAP_GROUP_EVENTQ;
++	caps.bits |= VENET_CAP_EVQ_LINKSTATE;
++
++	ret = devcall(priv, VENET_FUNC_NEGCAP, &caps, sizeof(caps));
++	if (ret < 0)
++		return ret;
++
++	if (caps.bits) {
++		struct vbus_device_proxy *dev = priv->vdev;
++		struct venet_eventq_query query;
++		size_t                    poollen;
++		struct ioq_iterator       iter;
++		char                     *pool;
++		int                       i;
++
++		priv->evq.enabled = true;
++
++		if (caps.bits & VENET_CAP_EVQ_LINKSTATE) {
++			/*
++			 * We will assume there is no carrier until we get
++			 * an event telling us otherwise
++			 */
++			netif_carrier_off(priv->dev);
++			priv->evq.linkstate = true;
++		}
++
++		memset(&query, 0, sizeof(query));
++
++		ret = devcall(priv, VENET_FUNC_EVQQUERY, &query, sizeof(query));
++		if (ret < 0)
++			return ret;
++
++		priv->evq.evsize = query.evsize;
++		poollen = query.evsize * count;
++
++		pool = kzalloc(poollen, GFP_KERNEL | GFP_DMA);
++		if (!pool)
++			return -ENOMEM;
++
++		priv->evq.pool = pool;
++
++		ret = dev->ops->shm(dev, query.dpid, 0,
++				    pool, poollen, 0, NULL, 0);
++		if (ret < 0)
++			return ret;
++
++		queue_init(priv, &priv->evq.veq, query.qid, count, evq_isr);
++
++		ret = ioq_iter_init(priv->evq.veq.queue,
++				    &iter, ioq_idxtype_valid, 0);
++		BUG_ON(ret < 0);
++
++		ret = ioq_iter_seek(&iter, ioq_seek_set, 0, 0);
++		BUG_ON(ret < 0);
++
++		/* Now populate each descriptor with an empty event */
++		for (i = 0; i < count; i++) {
++			size_t offset = (i * query.evsize);
++			void *addr = &priv->evq.pool[offset];
++
++			iter.desc->ptr    = (u64)offset;
++			iter.desc->cookie = (u64)addr;
++			iter.desc->len    = query.evsize;
++
++			ret = ioq_iter_push(&iter, 0);
++			BUG_ON(ret < 0);
++		}
++
++		/* Finally, enable interrupts */
++		tasklet_init(&priv->evq.task, deferred_evq_isr,
++			     (unsigned long)priv);
++		ioq_notify_enable(priv->evq.veq.queue, 0);
++	}
++
++	return 0;
++}
++
++static int
++vbus_enet_negcap(struct vbus_enet_priv *priv)
++{
++	int ret;
++
++	ret = vbus_enet_sg_negcap(priv);
++	if (ret < 0)
++		return ret;
++
++	return vbus_enet_evq_negcap(priv, tx_ringlen);
++}
++
+ static int vbus_enet_set_tx_csum(struct net_device *dev, u32 data)
+ {
+ 	struct vbus_enet_priv *priv = netdev_priv(dev);
+@@ -905,6 +1103,9 @@ vbus_enet_remove(struct vbus_device_proxy *vdev)
+ 	tx_teardown(priv);
+ 	ioq_put(priv->txq.queue);
  
-@@ -251,7 +254,7 @@ tx_setup(struct vbus_enet_priv *priv)
- 	/*
- 	 * Now populate each descriptor with an empty SG descriptor
- 	 */
--	for (i = 0; i < tx_ringlen; i++) {
-+	for (i = 0; i < priv->txq.count; i++) {
- 		struct venet_sg *vsg;
++	if (priv->evq.enabled)
++		evq_teardown(priv);
++
+ 	dev->ops->close(dev, 0);
  
- 		if (priv->pmtd.enabled) {
+ 	free_netdev(priv->dev);
+diff --git a/include/linux/venet.h b/include/linux/venet.h
+index 53b6958..16b0156 100644
+--- a/include/linux/venet.h
++++ b/include/linux/venet.h
+@@ -37,7 +37,8 @@ struct venet_capabilities {
+ 	__u32 bits;
+ };
+ 
+-#define VENET_CAP_GROUP_SG 0
++#define VENET_CAP_GROUP_SG     0
++#define VENET_CAP_GROUP_EVENTQ 1
+ 
+ /* CAPABILITIES-GROUP SG */
+ #define VENET_CAP_SG     (1 << 0)
+@@ -47,6 +48,9 @@ struct venet_capabilities {
+ #define VENET_CAP_UFO    (1 << 4)
+ #define VENET_CAP_PMTD   (1 << 5) /* pre-mapped tx desc */
+ 
++/* CAPABILITIES-GROUP EVENTQ */
++#define VENET_CAP_EVQ_LINKSTATE  (1 << 0)
++
+ struct venet_iov {
+ 	__u32 len;
+ 	__u64 ptr;
+@@ -76,6 +80,27 @@ struct venet_sg {
+ 	struct venet_iov iov[1];
+ };
+ 
++struct venet_eventq_query {
++	__u32 flags;
++	__u32 evsize;  /* size of each event */
++	__u32 dpid;    /* descriptor pool-id */
++	__u32 qid;
++	__u8  pad[16];
++};
++
++#define VENET_EVENT_LINKSTATE 0
++
++struct venet_event_header {
++	__u32 flags;
++	__u32 size;
++	__u32 id;
++};
++
++struct venet_event_linkstate {
++	struct venet_event_header header;
++	__u8                      state; /* 0 = down, 1 = up */
++};
++
+ #define VSG_DESC_SIZE(count) (sizeof(struct venet_sg) + \
+ 			      sizeof(struct venet_iov) * ((count) - 1))
+ 
+@@ -85,5 +110,6 @@ struct venet_sg {
+ #define VENET_FUNC_NEGCAP    3 /* negotiate capabilities */
+ #define VENET_FUNC_FLUSHRX   4
+ #define VENET_FUNC_PMTDQUERY 5
++#define VENET_FUNC_EVQQUERY  6
+ 
+ #endif /* _LINUX_VENET_H */
 
