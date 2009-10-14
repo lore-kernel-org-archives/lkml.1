@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934153AbZJNOv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934172AbZJNOyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934153AbZJNOv0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 10:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934112AbZJNOv0
+	id S934172AbZJNOyH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 10:54:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934034AbZJNOyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 10:51:26 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:12953 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934109AbZJNOvZ convert rfc822-to-8bit (ORCPT
+	Wed, 14 Oct 2009 10:54:06 -0400
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:38075 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934172AbZJNOyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 10:51:25 -0400
-From: "Colbert, Rusty" <rusty.colbert@hp.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "bluesmoke-devel@lists.sourceforge.net" 
-	<bluesmoke-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 14 Oct 2009 14:50:10 +0000
-Subject: RE: [PATCH 1/3] edac: Create an unique instance for each kobj
-Thread-Topic: [PATCH 1/3] edac: Create an unique instance for each kobj
-Thread-Index: AcpMsuJyaF6d0jwHSLuwzGACZ2gEQgAKqM7w
-Message-ID: <EC2969A33F12344780D895AFCAA422CE50861619C0@GVW1095EXB.americas.hpqcorp.net>
-References: <20090924192821.7fcffc80@pedra.chehab.org>
-	<20091004164354.5ff55ea1@pedra.chehab.org>
-	<20091013200117.895885a6.akpm@linux-foundation.org>
- <20091014064138.250777cd@pedra.chehab.org>
-In-Reply-To: <20091014064138.250777cd@pedra.chehab.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 14 Oct 2009 10:54:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=tTCkPkAOXWiZQokaZnxIu6FmnSL9wJTnte305wL2YFMnmjAWjDEKXCMXzs3BgZYjaF
+         abLWOxast30fUPqspxDIMLeuGRMF6gj3MUt4i6GnTyDYO4cSrz5NnIlQsU9Nut5DAegC
+         RzvPuw3praTklm4gCAlJzJFq/Vb2gTdaDl0uk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: Current status of rt2800usb and staging/rt2870
+Date: Wed, 14 Oct 2009 16:52:40 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc2-00279-g2ffa5fe; KDE/4.3.1; x86_64; ; )
+Cc: Dan Williams <dcbw@redhat.com>, Ivo van Doorn <ivdoorn@gmail.com>,
+       Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
+       linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <4AD46380.9020308@pardus.org.tr> <200910132357.57094.bzolnier@gmail.com> <20091014140923.GA2890@tuxdriver.com>
+In-Reply-To: <20091014140923.GA2890@tuxdriver.com>
 MIME-Version: 1.0
+Message-Id: <200910141652.41041.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is this all into a dev tree, or are there patches for a SLES 11 (2.6.27) ?
+On Wednesday 14 October 2009 16:09:24 John W. Linville wrote:
+> On Tue, Oct 13, 2009 at 11:57:57PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> 
+> > Several months later (after all current users are happy with the improved
+> > drivers) the old drivers will be removed from staging..
+> 
+> I _really_ hope this isn't the standard.  By that measure, nothing
+> will ever leave staging as _someone_ will always have some use case
+> that makes the other driver better for them.
 
------Original Message-----
-From: Mauro Carvalho Chehab [mailto:mchehab@redhat.com]
-Sent: Wednesday, October 14, 2009 4:42 AM
-To: Andrew Morton
-Cc: Ingo Molnar; bluesmoke-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] edac: Create an unique instance for each kobj
+Doesn't seem to be the case with all other drivers except wireless ones
+and the only real reason why wireless ones are so special is because of:
 
-Hi Andrew,
+"But then there's the users, who bitch about everything and simply do
+not understand what it is at stake.
 
-Em Tue, 13 Oct 2009 20:01:17 -0700
-Andrew Morton <akpm@linux-foundation.org> escreveu:
+And all this is becoming way too messy for us to handle.
 
-> On Sun, 4 Oct 2009 16:43:54 -0300 Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
->
-> > Current code only works when there's just one memory
-> > controller, since we need one kobj for each instance.
->
-> I don't know which kernel you're patching here, but it doesn't look
-> anything like mine...
+Personally all I see around me is people bitching and complaining, and
+no code being ported."
 
-It is on i7core_edac git tree. This tree were added to linux-next. You'll be
-able to see it starting from today's linux-next.
+attitude which pretty much explains the problem..
 
-Cheers,
-Mauro
-
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry(R) Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay
-ahead of the curve. Join us from November 9 - 12, 2009. Register now!
-http://p.sf.net/sfu/devconference
-_______________________________________________
-bluesmoke-devel mailing list
-bluesmoke-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/bluesmoke-devel
+Please adjust the process to fix the problem yourself or if you do not
+want to do it just make the room for people who do.
