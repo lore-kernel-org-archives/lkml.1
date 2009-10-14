@@ -1,56 +1,403 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760543AbZJNDfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761516AbZJNDkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760543AbZJNDfZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 23:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbZJNDfZ
+	id S1761516AbZJNDkh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 23:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760189AbZJNDkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 23:35:25 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:45696 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754636AbZJNDfY (ORCPT
+	Tue, 13 Oct 2009 23:40:36 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:46640 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754660AbZJNDkd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 23:35:24 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=BI8k/722jOaA8HvRPCFjYm8N0XTCcNeduCGi+c7Cl0wjsCgZlgxFNSttAKWFMxjIh
-	8b6Tujb7MltjwT7an4mGw==
-Date: Tue, 13 Oct 2009 20:34:11 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Joe Perches <joe@perches.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kernel.h: Add a never optimized away pr_dbg for
- printk(KERN_DEBUG pr_fmt(fmt)...)
-In-Reply-To: <1255488982.1909.26.camel@Joe-Laptop.home>
-Message-ID: <alpine.DEB.1.00.0910132031040.1244@chino.kir.corp.google.com>
-References: <1255488982.1909.26.camel@Joe-Laptop.home>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Tue, 13 Oct 2009 23:40:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=NsJ686KkMuJQYbEXL8+D7SH9195RL26/osnhzCt7tj7Pa/M1LxcLXTwbt/7OVi1JcR
+         I9DrZH1CqsVTPw7TazqkVRuKVmTr9TSDyYqhhX22vQ+fZ4fXQdIXLih4Kj0GGv8zyNCI
+         rxuLPP0GHSQT7NMwEpryZxRfDC3r2kqZyE4zs=
+Date: Wed, 14 Oct 2009 12:39:39 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Fenghua Yu <fenghua.yu@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-ia64@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+       x86@kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-altix@sgi.com, Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       linux-usb@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Lothar Wassmann <LW@KARO-electronics.de>
+Subject: Re: [PATCH 2/8] bitmap: Introduce bitmap_set, bitmap_clear,
+	bitmap_find_next_zero_area
+Message-ID: <20091014033939.GB18527@localhost.localdomain>
+References: <1255076961-21325-1-git-send-email-akinobu.mita@gmail.com> <1255076961-21325-2-git-send-email-akinobu.mita@gmail.com> <20091009164100.85a36188.akpm@linux-foundation.org> <20091013021818.GA3898@localhost.localdomain> <20091013091017.GA18431@localhost.localdomain> <1255470887.21871.2.camel@concordia>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255470887.21871.2.camel@concordia>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009, Joe Perches wrote:
-
-> Many developers use a logging message that
-> is printed at KERN_DEBUG level that is always
-> printed regardless of #define DEBUG levels.
+On Wed, Oct 14, 2009 at 08:54:47AM +1100, Michael Ellerman wrote:
+> On Tue, 2009-10-13 at 18:10 +0900, Akinobu Mita wrote:
+> > My user space testing exposed off-by-one error find_next_zero_area
+> > in iommu-helper.
 > 
-> pr_debug can be optimized away to a null statement.
-> 
-> Add a pr_dbg message that prints at KERN_DEBUG
-> level that uses pr_fmt() that can not be optimized
-> to nothing.
-> 
+> Why not merge those tests into the kernel as a configurable boot-time
+> self-test?
 
-pr_dbg() is horribly misnamed, it doesn't indicate why it exists vs. 
-pr_debug() at all.  Future users will undoubtedly use it by mistake when 
-they only really mean for the message to be emitted on DEBUG because 
-they've seen it in other places and haven't checked the implementation.
+I send the test program that I used. Obviously it needs
+better diagnostic messages and cleanup to be added into kernel tests.
 
-I'd suggest pr_debug_force(), even though it's much longer (although still 
-shorter than printk(KERN_DEBUG)).
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+#include <string.h>
+
+#if 1 /* Copy and paste from kernel source */
+
+#define BITS_PER_BYTE  8
+#define BITS_PER_LONG (sizeof(long) * BITS_PER_BYTE)
+
+#define BIT_WORD(nr)	((nr) / BITS_PER_LONG)
+#define BITOP_WORD(nr)	((nr) / BITS_PER_LONG)
+
+#define BITMAP_LAST_WORD_MASK(nbits)                                    \
+(                                                                       \
+        ((nbits) % BITS_PER_LONG) ?                                     \
+                (1UL<<((nbits) % BITS_PER_LONG))-1 : ~0UL               \
+)
+
+#define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) % BITS_PER_LONG))
+
+void bitmap_set(unsigned long *map, int start, int nr)
+{
+	unsigned long *p = map + BIT_WORD(start);
+	const int size = start + nr;
+	int bits_to_set = BITS_PER_LONG - (start % BITS_PER_LONG);
+	unsigned long mask_to_set = BITMAP_FIRST_WORD_MASK(start);
+
+	while (nr - bits_to_set >= 0) {
+		*p |= mask_to_set;
+		nr -= bits_to_set;
+		bits_to_set = BITS_PER_LONG;
+		mask_to_set = ~0UL;
+		p++;
+	}
+	if (nr) {
+		mask_to_set &= BITMAP_LAST_WORD_MASK(size);
+		*p |= mask_to_set;
+	}
+}
+
+void bitmap_clear(unsigned long *map, int start, int nr)
+{
+	unsigned long *p = map + BIT_WORD(start);
+	const int size = start + nr;
+	int bits_to_clear = BITS_PER_LONG - (start % BITS_PER_LONG);
+	unsigned long mask_to_clear = BITMAP_FIRST_WORD_MASK(start);
+
+	while (nr - bits_to_clear >= 0) {
+		*p &= ~mask_to_clear;
+		nr -= bits_to_clear;
+		bits_to_clear = BITS_PER_LONG;
+		mask_to_clear = ~0UL;
+		p++;
+	}
+	if (nr) {
+		mask_to_clear &= BITMAP_LAST_WORD_MASK(size);
+		*p &= ~mask_to_clear;
+	}
+}
+
+static unsigned long __ffs(unsigned long word)
+{
+	int num = 0;
+
+	if ((word & 0xffff) == 0) {
+		num += 16;
+		word >>= 16;
+	}
+	if ((word & 0xff) == 0) {
+		num += 8;
+		word >>= 8;
+	}
+	if ((word & 0xf) == 0) {
+		num += 4;
+		word >>= 4;
+	}
+	if ((word & 0x3) == 0) {
+		num += 2;
+		word >>= 2;
+	}
+	if ((word & 0x1) == 0)
+		num += 1;
+	return num;
+}
+
+unsigned long find_next_bit(const unsigned long *addr, unsigned long size,
+			    unsigned long offset)
+{
+	const unsigned long *p = addr + BITOP_WORD(offset);
+	unsigned long result = offset & ~(BITS_PER_LONG-1);
+	unsigned long tmp;
+
+	if (offset >= size)
+		return size;
+	size -= result;
+	offset %= BITS_PER_LONG;
+	if (offset) {
+		tmp = *(p++);
+		tmp &= (~0UL << offset);
+		if (size < BITS_PER_LONG)
+			goto found_first;
+		if (tmp)
+			goto found_middle;
+		size -= BITS_PER_LONG;
+		result += BITS_PER_LONG;
+	}
+	while (size & ~(BITS_PER_LONG-1)) {
+		if ((tmp = *(p++)))
+			goto found_middle;
+		result += BITS_PER_LONG;
+		size -= BITS_PER_LONG;
+	}
+	if (!size)
+		return result;
+	tmp = *p;
+
+found_first:
+	tmp &= (~0UL >> (BITS_PER_LONG - size));
+	if (tmp == 0UL)		/* Are any bits set? */
+		return result + size;	/* Nope. */
+found_middle:
+	return result + __ffs(tmp);
+}
+
+#define ffz(x)  __ffs(~(x))
+
+unsigned long find_next_zero_bit(const unsigned long *addr, unsigned long size,
+				 unsigned long offset)
+{
+	const unsigned long *p = addr + BITOP_WORD(offset);
+	unsigned long result = offset & ~(BITS_PER_LONG-1);
+	unsigned long tmp;
+
+	if (offset >= size)
+		return size;
+	size -= result;
+	offset %= BITS_PER_LONG;
+	if (offset) {
+		tmp = *(p++);
+		tmp |= ~0UL >> (BITS_PER_LONG - offset);
+		if (size < BITS_PER_LONG)
+			goto found_first;
+		if (~tmp)
+			goto found_middle;
+		size -= BITS_PER_LONG;
+		result += BITS_PER_LONG;
+	}
+	while (size & ~(BITS_PER_LONG-1)) {
+		if (~(tmp = *(p++)))
+			goto found_middle;
+		result += BITS_PER_LONG;
+		size -= BITS_PER_LONG;
+	}
+	if (!size)
+		return result;
+	tmp = *p;
+
+found_first:
+	tmp |= ~0UL << size;
+	if (tmp == ~0UL)	/* Are any bits zero? */
+		return result + size;	/* Nope. */
+found_middle:
+	return result + ffz(tmp);
+}
+
+#define __ALIGN_MASK(x,mask) (((x)+(mask))&~(mask))
+
+static inline int test_bit(int nr, const volatile unsigned long *addr)
+{
+	return 1UL & (addr[BIT_WORD(nr)] >> (nr & (BITS_PER_LONG-1)));
+}
+
+unsigned long bitmap_find_next_zero_area(unsigned long *map,
+					 unsigned long size,
+					 unsigned long start,
+					 unsigned int nr,
+					 unsigned long align_mask)
+{
+	unsigned long index, end, i;
+again:
+	index = find_next_zero_bit(map, size, start);
+
+	/* Align allocation */
+	index = __ALIGN_MASK(index, align_mask);
+
+	end = index + nr;
+#ifdef ORIGINAL
+	if (end >= size)
+#else
+	if (end > size)
+#endif
+		return end;
+
+#ifdef ORIGINAL
+	for (i = index; i < end; i++) {
+		if (test_bit(i, map)) {
+			start = i+1;
+			goto again;
+		}
+	}
+#else
+	i = find_next_bit(map, end, index);
+	if (i < end) {
+		start = i + 1;
+		goto again;
+	}
+#endif
+	return index;
+}
+
+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+#define BITS_TO_LONGS(nr)       DIV_ROUND_UP(nr, BITS_PER_BYTE * sizeof(long))
+#define DECLARE_BITMAP(name,bits) unsigned long name[BITS_TO_LONGS(bits)]
+
+#endif /* Copy and paste from kernel source */
+
+static DECLARE_BITMAP(bitmap, 1000);
+static DECLARE_BITMAP(empty, 1000);
+static DECLARE_BITMAP(full, 1000);
+
+static void bitmap_dump(unsigned long *bitmap, int size)
+{
+	int i;
+
+	for (i = 0; i < size; i++) {
+		if (test_bit(i, bitmap))
+			printf("1 ");
+		else
+			printf("0 ");
+		if (i % 10 == 9)
+			printf("\n");
+	}
+	printf("\n");
+}
+
+static int test1(int size)
+{
+
+	int start = random() % size;
+	int nr = random() % (size - start);
+
+	memset(bitmap, 0x00, BITS_TO_LONGS(size) * sizeof(unsigned long));
+
+	bitmap_set(bitmap, start, nr);
+	bitmap_clear(bitmap, start, nr);
+
+	if (memcmp(empty, bitmap, BITS_TO_LONGS(size) * sizeof(unsigned long)))
+		goto error;
+
+	return 0;
+error:
+	bitmap_dump(bitmap, size);
+	return 1;
+}
+
+int test2(int size)
+{
+	int start = random() % size;
+	int nr = random() % (size - start);
+
+	memset(bitmap, 0xff, BITS_TO_LONGS(size) * sizeof(unsigned long));
+
+	bitmap_clear(bitmap, start, nr);
+	bitmap_set(bitmap, start, nr);
+
+	if (memcmp(full, bitmap, BITS_TO_LONGS(size) * sizeof(unsigned long)))
+		goto error;
+
+	return 0;
+error:
+	bitmap_dump(bitmap, size);
+	return 1;
+}
+
+int test3(int size)
+{
+	int start = random() % size;
+	int nr = random() % (size - start);
+	unsigned long offset;
+
+	memset(bitmap, 0x00, BITS_TO_LONGS(size) * sizeof(unsigned long));
+	bitmap_set(bitmap, start, nr);
+	if (start) {
+		offset = bitmap_find_next_zero_area(bitmap, size, 0, start, 0);
+		if (offset != 0) {
+			printf("start %ld nr %ld\n", start, nr);
+			printf("offset %ld != 0\n", offset);
+			goto error;
+		}
+	}
+	offset = bitmap_find_next_zero_area(bitmap, size, start,
+						size - (start + nr), 0);
+	if (offset != start + nr) {
+		printf("start %ld nr %ld\n", start, nr);
+		printf("offset %ld != size + nr %ld\n", offset, start + nr);
+		goto error;
+	}
+
+	return 0;
+error:
+	bitmap_dump(bitmap, size);
+
+	return 1;
+}
+
+int test4(int size)
+{
+	int start = random() % size;
+	int nr = random() % (size - start);
+	unsigned long offset;
+
+	memset(bitmap, 0xff, BITS_TO_LONGS(size) * sizeof(unsigned long));
+	bitmap_clear(bitmap, start, nr);
+	offset = bitmap_find_next_zero_area(bitmap, size, start, nr, 0);
+	if (nr != 0) {
+		if (offset != start) {
+			printf("start %ld nr %ld\n", start, nr);
+			printf("offset %ld != start %ld\n", offset, start);
+			goto error;
+		}
+	}
+	return 0;
+error:
+	bitmap_dump(bitmap, size);
+
+	return 1;
+}
+
+int main(int argc, char *argv[])
+{
+	int err = 0;
+
+	srandom(time(NULL));
+
+	memset(empty, 0x00, sizeof(empty));
+	memset(full, 0xff, sizeof(full));
+
+	while (!err) {
+		err |= test1(1000);
+		err |= test2(1000);
+		err |= test3(1000);
+		err |= test4(1000);
+	}
+	return 0;
+}
