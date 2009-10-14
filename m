@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbZJNTaC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbZJNTbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933079AbZJNTaC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 15:30:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759078AbZJNTaA
+	id S1759268AbZJNTbM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 15:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759068AbZJNTbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 15:30:00 -0400
-Received: from claw.goop.org ([74.207.240.146]:55333 "EHLO claw.goop.org"
+	Wed, 14 Oct 2009 15:31:00 -0400
+Received: from claw.goop.org ([74.207.240.146]:55337 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756276AbZJNT35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 15:29:57 -0400
+	id S1759063AbZJNT36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 15:29:58 -0400
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
@@ -16,10 +16,10 @@ Cc: Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
        Avi Kivity <avi@redhat.com>, the arch/x86 maintainers <x86@kernel.org>,
        Chris Mason <chris.mason@oracle.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Ingo Molnar <mingo@elte.hu>, Gerd Hoffmann <kraxel@redhat.com>
-Subject: [PATCH 07/12] pvclock: there's no need to copy time_info into shadow
-Date: Wed, 14 Oct 2009 12:28:31 -0700
-Message-Id: <1255548516-15260-8-git-send-email-jeremy.fitzhardinge@citrix.com>
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 08/12] x86: create specific X86_VSYSCALL config variable
+Date: Wed, 14 Oct 2009 12:28:32 -0700
+Message-Id: <1255548516-15260-9-git-send-email-jeremy.fitzhardinge@citrix.com>
 X-Mailer: git-send-email 1.6.2.5
 In-Reply-To: <1255548516-15260-1-git-send-email-jeremy.fitzhardinge@citrix.com>
 References: <1255548516-15260-1-git-send-email-jeremy.fitzhardinge@citrix.com>
@@ -27,98 +27,125 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can use the vcpu_time_info as-is, without needing to copy it.  We just
-need to grab a copy of the version number before starting, then we can
-compute the time using the time_info directly.  If things changed under
-our feet, then we just go back and do the whole thing again.
+vsyscalls are only implemented on 64-bit at present, though there's no
+fundimental reason why they couldn't be implemented for 32-bit.  Create
+a new CONFIG_X86_VSYSCALL to control compilation of vsyscall-related
+code and definitions to make it clearer where they are.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Avi Kivity <avi@redhat.com>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Glauber Costa <gcosta@redhat.com>
-Cc: Gerd Hoffmann <kraxel@redhat.com>
 ---
- arch/x86/kernel/pvclock.c |   47 +++++---------------------------------------
- 1 files changed, 6 insertions(+), 41 deletions(-)
+ arch/x86/Kconfig              |    6 +++++-
+ arch/x86/include/asm/fixmap.h |    7 +++++--
+ arch/x86/kernel/Makefile      |    3 ++-
+ arch/x86/kernel/hpet.c        |    4 ++--
+ arch/x86/kernel/tsc.c         |    4 ++--
+ 5 files changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/kernel/pvclock.c b/arch/x86/kernel/pvclock.c
-index 963f349..e43cd78 100644
---- a/arch/x86/kernel/pvclock.c
-+++ b/arch/x86/kernel/pvclock.c
-@@ -20,20 +20,6 @@
- #include <asm/pvclock.h>
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 13ffa5d..7950d54 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -136,7 +136,7 @@ config GENERIC_CALIBRATE_DELAY
  
- /*
-- * These are perodically updated
-- *    xen: magic shared_info page
-- *    kvm: gpa registered via msr
-- * and then copied here.
-- */
--struct pvclock_shadow_time {
--	u64 tsc_timestamp;     /* TSC at last update of time vals.  */
--	u64 system_timestamp;  /* Time, in nanosecs, since boot.    */
--	u32 tsc_to_nsec_mul;
--	int tsc_shift;
--	u32 version;
--};
--
--/*
-  * Scale a 64-bit delta by scaling and multiplying by a 32-bit fraction,
-  * yielding a 64-bit result.
-  */
-@@ -71,30 +57,10 @@ static inline u64 scale_delta(u64 delta, u32 mul_frac, int shift)
- 	return product;
+ config GENERIC_TIME_VSYSCALL
+ 	bool
+-	default X86_64
++	default X86_VSYSCALL
+ 
+ config ARCH_HAS_CPU_RELAX
+ 	def_bool y
+@@ -222,6 +222,10 @@ config X86_32_LAZY_GS
+ 	def_bool y
+ 	depends on X86_32 && !CC_STACKPROTECTOR
+ 
++config X86_VSYSCALL
++       def_bool y
++       depends on X86_64
++
+ config KTIME_SCALAR
+ 	def_bool X86_32
+ source "init/Kconfig"
+diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
+index 7b2d71d..3b63b57 100644
+--- a/arch/x86/include/asm/fixmap.h
++++ b/arch/x86/include/asm/fixmap.h
+@@ -74,12 +74,15 @@ enum fixed_addresses {
+ #ifdef CONFIG_X86_32
+ 	FIX_HOLE,
+ 	FIX_VDSO,
+-#else
++#endif
++
++#ifdef CONFIG_X86_VSYSCALL
+ 	VSYSCALL_LAST_PAGE,
+ 	VSYSCALL_FIRST_PAGE = VSYSCALL_LAST_PAGE
+ 			    + ((VSYSCALL_END-VSYSCALL_START) >> PAGE_SHIFT) - 1,
+ 	VSYSCALL_HPET,
+-#endif
++#endif	/* CONFIG_X86_VSYSCALL */
++
+ 	FIX_DBGP_BASE,
+ 	FIX_EARLYCON_MEM_BASE,
+ #ifdef CONFIG_X86_LOCAL_APIC
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 430d5b2..1c9ec2f 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -37,7 +37,8 @@ obj-$(CONFIG_X86_VISWS)	+= visws_quirks.o
+ obj-$(CONFIG_X86_32)	+= probe_roms_32.o
+ obj-$(CONFIG_X86_32)	+= sys_i386_32.o i386_ksyms_32.o
+ obj-$(CONFIG_X86_64)	+= sys_x86_64.o x8664_ksyms_64.o
+-obj-$(CONFIG_X86_64)	+= syscall_64.o vsyscall_64.o
++obj-$(CONFIG_X86_64)	+= syscall_64.o
++obj-$(CONFIG_X86_VSYSCALL)	+= vsyscall_64.o
+ obj-y			+= bootflag.o e820.o
+ obj-y			+= pci-dma.o quirks.o i8237.o topology.o kdebugfs.o
+ obj-y			+= alternative.o i8253.o pci-nommu.o
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index dedc2bd..2cac930 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -744,7 +744,7 @@ static cycle_t read_hpet(struct clocksource *cs)
+ 	return (cycle_t)hpet_readl(HPET_COUNTER);
  }
  
--static u64 pvclock_get_nsec_offset(struct pvclock_shadow_time *shadow)
--{
--	u64 delta = native_read_tsc() - shadow->tsc_timestamp;
--	return scale_delta(delta, shadow->tsc_to_nsec_mul, shadow->tsc_shift);
--}
--
--/*
-- * Reads a consistent set of time-base values from hypervisor,
-- * into a shadow data area.
-- */
--static unsigned pvclock_get_time_values(struct pvclock_shadow_time *dst,
--					struct pvclock_vcpu_time_info *src)
-+static u64 pvclock_get_nsec_offset(const struct pvclock_vcpu_time_info *src)
+-#ifdef CONFIG_X86_64
++#ifdef CONFIG_X86_VSYSCALL
+ static cycle_t __vsyscall_fn vread_hpet(void)
  {
--	do {
--		dst->version = src->version;
--		rmb();		/* fetch version before data */
--		dst->tsc_timestamp     = src->tsc_timestamp;
--		dst->system_timestamp  = src->system_time;
--		dst->tsc_to_nsec_mul   = src->tsc_to_system_mul;
--		dst->tsc_shift         = src->tsc_shift;
--		rmb();		/* test version after fetching data */
--	} while ((src->version & 1) || (dst->version != src->version));
--
--	return dst->version;
-+	u64 delta = native_read_tsc() - src->tsc_timestamp;
-+	return scale_delta(delta, src->tsc_to_system_mul, src->tsc_shift);
+ 	return readl((const void __iomem *)fix_to_virt(VSYSCALL_HPET) + 0xf0);
+@@ -759,7 +759,7 @@ static struct clocksource clocksource_hpet = {
+ 	.shift		= HPET_SHIFT,
+ 	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
+ 	.resume		= hpet_resume_counter,
+-#ifdef CONFIG_X86_64
++#ifdef CONFIG_X86_VSYSCALL
+ 	.vread		= vread_hpet,
+ #endif
+ };
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 71f4368..fe7174f 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -725,7 +725,7 @@ static cycle_t read_tsc(struct clocksource *cs)
+ 		ret : clocksource_tsc.cycle_last;
  }
  
- unsigned long pvclock_tsc_khz(struct pvclock_vcpu_time_info *src)
-@@ -111,15 +77,14 @@ unsigned long pvclock_tsc_khz(struct pvclock_vcpu_time_info *src)
- 
- cycle_t pvclock_clocksource_read(struct pvclock_vcpu_time_info *src)
+-#ifdef CONFIG_X86_64
++#ifdef CONFIG_X86_VSYSCALL
+ static cycle_t __vsyscall_fn vread_tsc(void)
  {
--	struct pvclock_shadow_time shadow;
- 	unsigned version;
- 	cycle_t ret, offset;
- 
- 	do {
--		version = pvclock_get_time_values(&shadow, src);
-+		version = src->version;
- 		rdtsc_barrier();
--		offset = pvclock_get_nsec_offset(&shadow);
--		ret = shadow.system_timestamp + offset;
-+		offset = pvclock_get_nsec_offset(src);
-+		ret = src->system_time + offset;
- 		rdtsc_barrier();
- 	} while (version != src->version);
- 
+ 	cycle_t ret;
+@@ -752,7 +752,7 @@ static struct clocksource clocksource_tsc = {
+ 	.shift                  = 22,
+ 	.flags                  = CLOCK_SOURCE_IS_CONTINUOUS |
+ 				  CLOCK_SOURCE_MUST_VERIFY,
+-#ifdef CONFIG_X86_64
++#ifdef CONFIG_X86_VSYSCALL
+ 	.vread                  = vread_tsc,
+ #endif
+ };
 -- 
 1.6.2.5
 
