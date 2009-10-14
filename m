@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbZJNViM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbZJNVjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755807AbZJNViM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 17:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbZJNViM
+	id S1757014AbZJNVjU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 17:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbZJNVjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 17:38:12 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:61198 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755183AbZJNViL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 17:38:11 -0400
-Date: Wed, 14 Oct 2009 17:37:42 -0400
-From: Dave Jones <davej@redhat.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [X86] PCI: Use generic cacheline sizing instead of per-vendor
-	tests.
-Message-ID: <20091014213742.GA17311@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20091014203139.GA2336@redhat.com> <20091014143054.76874f30@jbarnes-g45>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091014143054.76874f30@jbarnes-g45>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 14 Oct 2009 17:39:19 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45472 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755327AbZJNVjS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 17:39:18 -0400
+Date: Wed, 14 Oct 2009 22:39:45 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Boyan <btanastasov@yahoo.co.uk>, Oleg Nesterov <oleg@redhat.com>,
+       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       hirofumi@mail.parknet.co.jp
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+Message-ID: <20091014223945.64eaffcf@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.01.0910141356400.6146@localhost.localdomain>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
+	<87ljjgfcbu.fsf@spindle.srvr.nix>
+	<alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>
+	<alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
+	<4AD3F769.5080405@gmail.com>
+	<alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net>
+	<4AD437F9.9020708@yahoo.co.uk>
+	<alpine.LFD.2.01.0910130745550.3438@localhost.localdomain>
+	<4AD4DE4C.4010402@yahoo.co.uk>
+	<alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
+	<4AD4F548.2030506@microgate.com>
+	<alpine.LFD.2.01.0910131514100.3404@localhost.localdomain>
+	<1255478932.19056.24.camel@localhost.localdomain>
+	<4AD51D6B.7010509@microgate.com>
+	<alpine.LFD.2.01.0910131744590.3404@localhost.localdomain>
+	<20091014125846.1a3c8d40@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0910140804180.6146@localhost.localdomain>
+	<alpine.LFD.2.01.0910140925440.6146@localhost.localdomain>
+	<4AD62DAD.9010604@yahoo.co.uk>
+	<alpine.LFD.2.01.0910141356400.6146@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 02:30:54PM -0700, Jesse Barnes wrote:
- > On Wed, 14 Oct 2009 16:31:39 -0400
- > Dave Jones <davej@redhat.com> wrote:
- > 
- > > Instead of the PCI code needing to have code to determine the 
- > > cacheline size of each processor, use the data the cpu identification
- > > code should have already determined during early boot.
- > > 
- > > (The vendor checks are also incomplete, and don't take into account
- > >  modern CPUs)
- > > 
- > > I've been carrying a variant of this code in Fedora for a while,
- > > that prints debug information.  There are a number of cases where we
- > > are currently setting the PCI cacheline size to 32 bytes, when the CPU
- > > cacheline size is 64 bytes.  With this patch, we set them both the
- > > same.
- > > 
- > > Signed-off-by: Dave Jones <davej@redhat.com>
- > > 
- > 
- > Does this improve performance enough to warrant putting it into the
- > current cycle?  Or is queuing it for 2.6.33 sufficient?
+On Wed, 14 Oct 2009 14:02:10 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I haven't done any performance testing with/without. My intentions
-were purely from a correctness standpoint. 
+> 
+> 
+> On Wed, 14 Oct 2009, Boyan wrote:
+> > 
+> > Works for me. I couldn't reproduce the problem with only this patch on
+> > top of  2.6.31.4.
+> 
+> So just to verify: both the flush_to_ldisc() patch _and_ the 
+> "flush_delayed_work()" one fixed the problem for you? And you tested them 
+> independently? And you said you could reliably trigger it before?
+> 
+> Ok, that makes me happy, because it implies that this really is the root 
+> cause, with two different approaches to fixing the same problem both 
+> working independently of each other.
 
-It's not critical, and we've lived with this bug for a long time,
-so waiting is fine.
-
-	Dave
-
+It also seems to fix the "letters leaking across a console switch". Can't
+be sure as its not trivial to reproduce but it seems to have gone too.
