@@ -1,261 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934889AbZJNQXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbZJNQ2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934889AbZJNQXk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 12:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932262AbZJNQXd
+	id S1758501AbZJNQ2n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 12:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756089AbZJNQ2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 12:23:33 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:38045 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762009AbZJNQXb (ORCPT
-	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Wed, 14 Oct 2009 12:23:31 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [ALACRITYVM PATCH 2/2] vbus: register shm-signal events as standard
-	Linux IRQ vectors
-To: alacrityvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Date: Wed, 14 Oct 2009 12:22:41 -0400
-Message-ID: <20091014162241.19298.18475.stgit@dev.haskins.net>
-In-Reply-To: <20091014162030.19298.48508.stgit@dev.haskins.net>
-References: <20091014162030.19298.48508.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 14 Oct 2009 12:28:42 -0400
+Received: from mga09.intel.com ([134.134.136.24]:16783 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751037AbZJNQ2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 12:28:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,559,1249282800"; 
+   d="scan'208";a="457425120"
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+From: reinette chatre <reinette.chatre@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Frans Pop <elendil@planet.nl>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       "Abbas, Mohamed" <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <20091014103002.GA5027@csn.ul.ie>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
+	 <20091012134328.GB8200@csn.ul.ie> <200910121932.14607.elendil@planet.nl>
+	 <200910132238.40867.elendil@planet.nl>  <20091014103002.GA5027@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 14 Oct 2009 09:28:00 -0700
+Message-Id: <1255537680.21134.14.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This will allow us to view the vector statistics in a uniform way, as
-well as pave the way for supporting irqbalance in the future.
+Hi Mel,
 
-The VBUS PCI-BRIDGE will present itself as an irqchip device to the
-kernel proper.  Each shm-signal that is created by a specific driver
-will show up as a "VBUS-edge" IRQ in /proc/interrupts.  For instane,
-here is example output from running a venet device as "eth1" (see
-vectors 28-31):
+On Wed, 2009-10-14 at 03:30 -0700, Mel Gorman wrote:
+> From 5fb9f897117bf2701f9fdebe4d008dbe34358ab9 Mon Sep 17 00:00:00 2001
+> From: Mel Gorman <mel@csn.ul.ie>
+> Date: Wed, 14 Oct 2009 11:19:57 +0100
+> Subject: [PATCH] iwlwifi: Suppress warnings related to GFP_ATOMIC allocations that do not matter
+> 
+> iwlwifi refills RX buffers in two ways - a direct method using GFP_ATOMIC
+> and a tasklet method using GFP_KERNEL. There are a number of RX buffers and
+> there are only serious issues when there are no RX buffers left. The driver
+> explicitly warns when refills are failing and the buffers are low but it
+> always warns when a GFP_ATOMIC allocation fails even when there is no
+> packet loss as a result.
 
-vbus-guest:/home/ghaskins # cat /proc/interrupts
-            CPU0
-   0:         89   IO-APIC-edge      timer
-   1:          6   IO-APIC-edge      i8042
-   4:       1620   IO-APIC-edge      serial
-   6:          2   IO-APIC-edge      floppy
-   7:          0   IO-APIC-edge      parport0
-   8:          0   IO-APIC-edge      rtc0
-   9:          0   IO-APIC-fasteoi   acpi
-  10:          0   IO-APIC-fasteoi   virtio1
-  12:         90   IO-APIC-edge      i8042
-  14:       3474   IO-APIC-edge      ata_piix
-  15:       7778   IO-APIC-edge      ata_piix
-  24:     185849   PCI-MSI-edge      vbus
-  25:          0   PCI-MSI-edge      virtio0-config
-  26:        210   PCI-MSI-edge      virtio0-input
-  27:         28   PCI-MSI-edge      virtio0-output
-  28:     167062      VBUS-edge      eth1-evq
-  29:          0      VBUS-edge      eth1-pageq
-  30:     161593      VBUS-edge      eth1-rx
-  31:          0      VBUS-edge      eth1-tx
- NMI:          0   Non-maskable interrupts
- LOC:      72010   Local timer interrupts
- SPU:          0   Spurious interrupts
- CNT:          0   Performance counter interrupts
- PND:          0   Performance pending work
- RES:          0   Rescheduling interrupts
- CAL:          0   Function call interrupts
- TLB:          0   TLB shootdowns
- TRM:          0   Thermal event interrupts
- THR:          0   Threshold APIC interrupts
- MCE:          0   Machine check exceptions
- MCP:         20   Machine check polls
- ERR:          0
- MIS:          0
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+No, it does not always warn when a GFP_ATOMIC allocation fails. Please
+check earlier in iwl_rx_allocate() we have:
 
- drivers/vbus/Kconfig      |    4 +-
- drivers/vbus/pci-bridge.c |   91 ++++++++++++++++++++++++++++++++++++---------
- 2 files changed, 74 insertions(+), 21 deletions(-)
+if (rxq->free_count > RX_LOW_WATERMARK)
+	priority |= __GFP_NOWARN;
 
-diff --git a/drivers/vbus/Kconfig b/drivers/vbus/Kconfig
-index 08667aa..f51cba1 100644
---- a/drivers/vbus/Kconfig
-+++ b/drivers/vbus/Kconfig
-@@ -3,7 +3,7 @@
- #
- 
- config VBUS_PROXY
--       tristate "Virtual-Bus support"
-+       bool "Virtual-Bus support"
-        select SHM_SIGNAL
-        select IOQ
-        default n
-@@ -14,7 +14,7 @@ config VBUS_PROXY
- 	on the backend, say Y.  If unsure, say N.
- 
- config VBUS_PCIBRIDGE
--       tristate "PCI to Virtual-Bus bridge"
-+       bool "PCI to Virtual-Bus bridge"
-        depends on PCI
-        depends on VBUS_PROXY
-        select IOQ
-diff --git a/drivers/vbus/pci-bridge.c b/drivers/vbus/pci-bridge.c
-index fa77318..fcde495 100644
---- a/drivers/vbus/pci-bridge.c
-+++ b/drivers/vbus/pci-bridge.c
-@@ -147,15 +147,14 @@ _signal_init(struct shm_signal *signal, struct shm_signal_desc *desc,
-  */
- 
- struct _signal {
-+	char               name[64];
- 	struct vbus_pci   *pcivbus;
- 	struct shm_signal  signal;
- 	u32                handle;
- 	struct rb_node     node;
- 	struct list_head   list;
--	struct {
--		int        notify;
--		int        inject;
--	} stats;
-+	int                irq;
-+	struct irq_desc   *desc;
- };
- 
- static struct _signal *
-@@ -170,7 +169,6 @@ _signal_inject(struct shm_signal *signal)
- 	struct _signal *_signal = to_signal(signal);
- 
- 	vbus_pci.stats.inject++;
--	_signal->stats.inject++;
- 	iowrite32(_signal->handle, &vbus_pci.signals->shmsignal);
- 
- 	return 0;
-@@ -236,6 +234,7 @@ vbus_pci_device_close(struct vbus_device_proxy *vdev, int flags)
- 		_signal = list_first_entry(&dev->shms, struct _signal, list);
- 
- 		list_del(&_signal->list);
-+		free_irq(_signal->irq, _signal);
- 
- 		spin_unlock_irqrestore(&vbus_pci.lock, iflags);
- 		shm_signal_put(&_signal->signal);
-@@ -261,6 +260,27 @@ vbus_pci_device_close(struct vbus_device_proxy *vdev, int flags)
- 	return 0;
- }
- 
-+static void vbus_irq_chip_noop(unsigned int irq)
-+{
-+}
-+
-+static struct irq_chip vbus_irq_chip = {
-+	.name		= "VBUS",
-+	.mask		= vbus_irq_chip_noop,
-+	.unmask		= vbus_irq_chip_noop,
-+	.eoi		= vbus_irq_chip_noop,
-+};
-+
-+irqreturn_t
-+shm_signal_intr(int irq, void *dev)
-+{
-+	struct _signal *_signal = (struct _signal *)dev;
-+
-+	_shm_signal_wakeup(&_signal->signal);
-+
-+	return IRQ_HANDLED;
-+}
-+
- static int
- vbus_pci_device_shm(struct vbus_device_proxy *vdev, const char *name,
- 		    int id, int prio,
-@@ -315,24 +335,45 @@ vbus_pci_device_shm(struct vbus_device_proxy *vdev, const char *name,
- 
- 	ret = vbus_pci_buscall(VBUS_PCI_HC_DEVSHM,
- 				 &params, sizeof(params));
--	if (ret < 0) {
--		if (_signal) {
--			/*
--			 * We held two references above, so we need to drop
--			 * both of them
--			 */
--			shm_signal_put(&_signal->signal);
--			shm_signal_put(&_signal->signal);
--		}
--
--		return ret;
--	}
-+	if (ret < 0)
-+		goto fail;
- 
- 	if (signal) {
-+		int irq;
-+
- 		BUG_ON(ret < 0);
- 
- 		_signal->handle = ret;
- 
-+		irq = create_irq();
-+		if (irq < 0) {
-+			printk(KERN_ERR "Failed to create IRQ: %d\n", irq);
-+			ret = -ENOSPC;
-+			goto fail;
-+		}
-+
-+		_signal->irq = irq;
-+		_signal->desc = irq_to_desc(irq);
-+
-+		set_irq_chip_and_handler_name(irq,
-+					      &vbus_irq_chip,
-+					      handle_percpu_irq,
-+					      "edge");
-+
-+		if (!name)
-+			snprintf(_signal->name, sizeof(_signal->name),
-+				"dev%lld-id%d", vdev->id, id);
-+		else
-+			snprintf(_signal->name, sizeof(_signal->name),
-+				"%s", name);
-+
-+		ret = request_irq(irq, shm_signal_intr, 0,
-+				  _signal->name, _signal);
-+		if (ret) {
-+			printk(KERN_ERR "Failed to request irq: %d\n", irq);
-+			goto fail;
-+		}
-+
- 		spin_lock_irqsave(&vbus_pci.lock, iflags);
- 
- 		list_add_tail(&_signal->list, &dev->shms);
-@@ -344,6 +385,18 @@ vbus_pci_device_shm(struct vbus_device_proxy *vdev, const char *name,
- 	}
- 
- 	return 0;
-+
-+fail:
-+	if (_signal) {
-+		/*
-+		 * We held two references above, so we need to drop
-+		 * both of them
-+		 */
-+		shm_signal_put(&_signal->signal);
-+		shm_signal_put(&_signal->signal);
-+	}
-+
-+	return ret;
- }
- 
- static int
-@@ -454,10 +507,10 @@ static void
- event_shmsignal(struct vbus_pci_handle_event *event)
- {
- 	struct _signal *_signal = (struct _signal *)event->handle;
-+	struct irq_desc *desc = _signal->desc;
- 
- 	vbus_pci.stats.notify++;
--	_signal->stats.notify++;
--	_shm_signal_wakeup(&_signal->signal);
-+	desc->handle_irq(_signal->irq, desc);
- }
- 
- static void
+So it will suppress warnings as long as we have buffers available.
+
+We do want to see warnings if memory is below watermark and allocation
+fails - your patch prevents these warnings from appearing.
+
+> This patch specifies __GFP_NOWARN for the direct refill method that uses
+> GFP_ATOMIC. To help identify where allocation failures might be coming
+> from, the stack is dumped when the RX queue is dangerously low.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> --- 
+>  drivers/net/wireless/iwlwifi/iwl-rx.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/trace/postprocess/trace-pagealloc-postprocess.pl b/Documentation/trace/postprocess/trace-pagealloc-postprocess.pl
+> old mode 100644
+> new mode 100755
+> diff --git a/drivers/net/wireless/iwlwifi/iwl-rx.c b/drivers/net/wireless/iwlwifi/iwl-rx.c
+> index 8e1bb53..f91a108 100644
+> --- a/drivers/net/wireless/iwlwifi/iwl-rx.c
+> +++ b/drivers/net/wireless/iwlwifi/iwl-rx.c
+> @@ -260,10 +260,12 @@ void iwl_rx_allocate(struct iwl_priv *priv, gfp_t priority)
+>  			if (net_ratelimit())
+>  				IWL_DEBUG_INFO(priv, "Failed to allocate SKB buffer.\n");
+>  			if ((rxq->free_count <= RX_LOW_WATERMARK) &&
+> -			    net_ratelimit())
+> +			    net_ratelimit()) {
+>  				IWL_CRIT(priv, "Failed to allocate SKB buffer with %s. Only %u free buffers remaining.\n",
+>  					 priority == GFP_ATOMIC ?  "GFP_ATOMIC" : "GFP_KERNEL",
+>  					 rxq->free_count);
+> +				dump_stack();
+> +			}
+>  			/* We don't reschedule replenish work here -- we will
+>  			 * call the restock method and if it still needs
+>  			 * more buffers it will schedule replenish */
+> @@ -320,7 +322,7 @@ EXPORT_SYMBOL(iwl_rx_replenish);
+>  
+>  void iwl_rx_replenish_now(struct iwl_priv *priv)
+>  {
+> -	iwl_rx_allocate(priv, GFP_ATOMIC);
+> +	iwl_rx_allocate(priv, GFP_ATOMIC|__GFP_NOWARN);
+>  
+>  	iwl_rx_queue_restock(priv);
+>  }
 
