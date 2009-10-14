@@ -1,412 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbZJNHAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbZJNHA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756098AbZJNHAK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 03:00:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbZJNHAJ
+	id S1756129AbZJNHA2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 03:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbZJNHA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 03:00:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41045 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 03:00:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37412 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756017AbZJNHAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 03:00:07 -0400
-Date: Wed, 14 Oct 2009 06:58:58 GMT
-From: "tip-bot for jolsa@redhat.com" <jolsa@redhat.com>
+	id S1755281AbZJNHAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 03:00:25 -0400
+Date: Wed, 14 Oct 2009 06:59:13 GMT
+From: tip-bot for Jiri Olsa <jolsa@redhat.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        jolsa@redhat.com, fweisbec@gmail.com, rostedt@goodmis.org,
        tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        jolsa@redhat.com, fweisbec@gmail.com, rostedt@goodmis.org,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20091013203425.565454612@goodmis.org>
-References: <20091013203425.565454612@goodmis.org>
+In-Reply-To: <20091013203425.896285120@goodmis.org>
+References: <20091013203425.896285120@goodmis.org>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing: Support multiple pids in set_pid_ftrace file
-Message-ID: <tip-756d17ee7ee4fbc8238bdf97100af63e6ac441ef@git.kernel.org>
-Git-Commit-ID: 756d17ee7ee4fbc8238bdf97100af63e6ac441ef
+Subject: [tip:tracing/core] tracing: Enable records during the module load
+Message-ID: <tip-5cb084bb1f3fd4dcdaf7e4cf564994346ec8f783@git.kernel.org>
+Git-Commit-ID: 5cb084bb1f3fd4dcdaf7e4cf564994346ec8f783
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 06:58:59 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 06:59:13 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  756d17ee7ee4fbc8238bdf97100af63e6ac441ef
-Gitweb:     http://git.kernel.org/tip/756d17ee7ee4fbc8238bdf97100af63e6ac441ef
-Author:     jolsa@redhat.com <jolsa@redhat.com>
-AuthorDate: Tue, 13 Oct 2009 16:33:52 -0400
+Commit-ID:  5cb084bb1f3fd4dcdaf7e4cf564994346ec8f783
+Gitweb:     http://git.kernel.org/tip/5cb084bb1f3fd4dcdaf7e4cf564994346ec8f783
+Author:     Jiri Olsa <jolsa@redhat.com>
+AuthorDate: Tue, 13 Oct 2009 16:33:53 -0400
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 14 Oct 2009 08:13:53 +0200
+CommitDate: Wed, 14 Oct 2009 08:13:54 +0200
 
-tracing: Support multiple pids in set_pid_ftrace file
+tracing: Enable records during the module load
 
-Adding the possibility to set more than 1 pid in the set_pid_ftrace
-file, thus allowing to trace more than 1 independent processes.
+I was debuging some module using "function" and "function_graph"
+tracers and noticed, that if you load module after you enabled
+tracing, the module's hooks will convert only to NOP instructions.
 
-Usage:
-
- sh-4.0# echo 284 > ./set_ftrace_pid
- sh-4.0# cat ./set_ftrace_pid
- 284
- sh-4.0# echo 1 >> ./set_ftrace_pid
- sh-4.0# echo 0 >> ./set_ftrace_pid
- sh-4.0# cat ./set_ftrace_pid
- swapper tasks
- 1
- 284
- sh-4.0# echo 4 > ./set_ftrace_pid
- sh-4.0# cat ./set_ftrace_pid
- 4
- sh-4.0# echo > ./set_ftrace_pid
- sh-4.0# cat ./set_ftrace_pid
- no pid
- sh-4.0#
+The attached patch enables modules' hooks if there's function trace
+allready on, thus allowing to trace module functions.
 
 Signed-off-by: Jiri Olsa <jolsa@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <20091013203425.565454612@goodmis.org>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <20091013203425.896285120@goodmis.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/trace/ftrace.c |  234 ++++++++++++++++++++++++++++++++++---------------
- kernel/trace/trace.h  |    4 +-
- 2 files changed, 167 insertions(+), 71 deletions(-)
+ kernel/trace/ftrace.c |   38 ++++++++++++++++++++++++++++++--------
+ 1 files changed, 30 insertions(+), 8 deletions(-)
 
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 45c9659..0c799d1 100644
+index 0c799d1..aaea9cd 100644
 --- a/kernel/trace/ftrace.c
 +++ b/kernel/trace/ftrace.c
-@@ -60,6 +60,13 @@ static int last_ftrace_enabled;
- /* Quick disabling of function tracer. */
- int function_trace_stop;
+@@ -1270,12 +1270,34 @@ static int ftrace_update_code(struct module *mod)
+ 		ftrace_new_addrs = p->newlist;
+ 		p->flags = 0L;
  
-+/* List for set_ftrace_pid's pids. */
-+LIST_HEAD(ftrace_pids);
-+struct ftrace_pid {
-+	struct list_head list;
-+	struct pid *pid;
-+};
+-		/* convert record (i.e, patch mcount-call with NOP) */
+-		if (ftrace_code_disable(mod, p)) {
+-			p->flags |= FTRACE_FL_CONVERTED;
+-			ftrace_update_cnt++;
+-		} else
++		/*
++		 * Do the initial record convertion from mcount jump
++		 * to the NOP instructions.
++		 */
++		if (!ftrace_code_disable(mod, p)) {
+ 			ftrace_free_rec(p);
++			continue;
++		}
 +
- /*
-  * ftrace_disabled is set when an anomaly is discovered.
-  * ftrace_disabled is much stronger than ftrace_enabled.
-@@ -159,7 +166,7 @@ static int __register_ftrace_function(struct ftrace_ops *ops)
- 		else
- 			func = ftrace_list_func;
++		p->flags |= FTRACE_FL_CONVERTED;
++		ftrace_update_cnt++;
++
++		/*
++		 * If the tracing is enabled, go ahead and enable the record.
++		 *
++		 * The reason not to enable the record immediatelly is the
++		 * inherent check of ftrace_make_nop/ftrace_make_call for
++		 * correct previous instructions.  Making first the NOP
++		 * conversion puts the module to the correct state, thus
++		 * passing the ftrace_make_call check.
++		 */
++		if (ftrace_start_up) {
++			int failed = __ftrace_replace_code(p, 1);
++			if (failed) {
++				ftrace_bug(failed, p->ip);
++				ftrace_free_rec(p);
++			}
++		}
+ 	}
  
--		if (ftrace_pid_trace) {
-+		if (!list_empty(&ftrace_pids)) {
- 			set_ftrace_pid_function(func);
- 			func = ftrace_pid_func;
- 		}
-@@ -207,7 +214,7 @@ static int __unregister_ftrace_function(struct ftrace_ops *ops)
- 		if (ftrace_list->next == &ftrace_list_end) {
- 			ftrace_func_t func = ftrace_list->func;
- 
--			if (ftrace_pid_trace) {
-+			if (!list_empty(&ftrace_pids)) {
- 				set_ftrace_pid_function(func);
- 				func = ftrace_pid_func;
- 			}
-@@ -235,7 +242,7 @@ static void ftrace_update_pid_func(void)
- 	func = __ftrace_trace_function;
- #endif
- 
--	if (ftrace_pid_trace) {
-+	if (!list_empty(&ftrace_pids)) {
- 		set_ftrace_pid_function(func);
- 		func = ftrace_pid_func;
- 	} else {
-@@ -825,8 +832,6 @@ static __init void ftrace_profile_debugfs(struct dentry *d_tracer)
+ 	stop = ftrace_now(raw_smp_processor_id());
+@@ -2609,7 +2631,7 @@ static __init int ftrace_init_dyn_debugfs(struct dentry *d_tracer)
+ 	return 0;
  }
- #endif /* CONFIG_FUNCTION_PROFILER */
  
--/* set when tracing only a pid */
--struct pid *ftrace_pid_trace;
- static struct pid * const ftrace_swapper_pid = &init_struct_pid;
- 
- #ifdef CONFIG_DYNAMIC_FTRACE
-@@ -2758,23 +2763,6 @@ static inline void ftrace_startup_enable(int command) { }
- # define ftrace_shutdown_sysctl()	do { } while (0)
- #endif /* CONFIG_DYNAMIC_FTRACE */
- 
--static ssize_t
--ftrace_pid_read(struct file *file, char __user *ubuf,
--		       size_t cnt, loff_t *ppos)
--{
--	char buf[64];
--	int r;
--
--	if (ftrace_pid_trace == ftrace_swapper_pid)
--		r = sprintf(buf, "swapper tasks\n");
--	else if (ftrace_pid_trace)
--		r = sprintf(buf, "%u\n", pid_vnr(ftrace_pid_trace));
--	else
--		r = sprintf(buf, "no pid\n");
--
--	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
--}
--
- static void clear_ftrace_swapper(void)
+-static int ftrace_convert_nops(struct module *mod,
++static int ftrace_process_locs(struct module *mod,
+ 			       unsigned long *start,
+ 			       unsigned long *end)
  {
- 	struct task_struct *p;
-@@ -2825,14 +2813,12 @@ static void set_ftrace_pid(struct pid *pid)
- 	rcu_read_unlock();
- }
- 
--static void clear_ftrace_pid_task(struct pid **pid)
-+static void clear_ftrace_pid_task(struct pid *pid)
+@@ -2669,7 +2691,7 @@ static void ftrace_init_module(struct module *mod,
  {
--	if (*pid == ftrace_swapper_pid)
-+	if (pid == ftrace_swapper_pid)
- 		clear_ftrace_swapper();
- 	else
--		clear_ftrace_pid(*pid);
--
--	*pid = NULL;
-+		clear_ftrace_pid(pid);
+ 	if (ftrace_disabled || start == end)
+ 		return;
+-	ftrace_convert_nops(mod, start, end);
++	ftrace_process_locs(mod, start, end);
  }
  
- static void set_ftrace_pid_task(struct pid *pid)
-@@ -2843,11 +2829,140 @@ static void set_ftrace_pid_task(struct pid *pid)
- 		set_ftrace_pid(pid);
- }
+ static int ftrace_module_notify(struct notifier_block *self,
+@@ -2730,7 +2752,7 @@ void __init ftrace_init(void)
  
-+static int ftrace_pid_add(int p)
-+{
-+	struct pid *pid;
-+	struct ftrace_pid *fpid;
-+	int ret = -EINVAL;
-+
-+	mutex_lock(&ftrace_lock);
-+
-+	if (!p)
-+		pid = ftrace_swapper_pid;
-+	else
-+		pid = find_get_pid(p);
-+
-+	if (!pid)
-+		goto out;
-+
-+	ret = 0;
-+
-+	list_for_each_entry(fpid, &ftrace_pids, list)
-+		if (fpid->pid == pid)
-+			goto out_put;
-+
-+	ret = -ENOMEM;
-+
-+	fpid = kmalloc(sizeof(*fpid), GFP_KERNEL);
-+	if (!fpid)
-+		goto out_put;
-+
-+	list_add(&fpid->list, &ftrace_pids);
-+	fpid->pid = pid;
-+
-+	set_ftrace_pid_task(pid);
-+
-+	ftrace_update_pid_func();
-+	ftrace_startup_enable(0);
-+
-+	mutex_unlock(&ftrace_lock);
-+	return 0;
-+
-+out_put:
-+	if (pid != ftrace_swapper_pid)
-+		put_pid(pid);
-+
-+out:
-+	mutex_unlock(&ftrace_lock);
-+	return ret;
-+}
-+
-+static void ftrace_pid_reset(void)
-+{
-+	struct ftrace_pid *fpid, *safe;
-+
-+	mutex_lock(&ftrace_lock);
-+	list_for_each_entry_safe(fpid, safe, &ftrace_pids, list) {
-+		struct pid *pid = fpid->pid;
-+
-+		clear_ftrace_pid_task(pid);
-+
-+		list_del(&fpid->list);
-+		kfree(fpid);
-+	}
-+
-+	ftrace_update_pid_func();
-+	ftrace_startup_enable(0);
-+
-+	mutex_unlock(&ftrace_lock);
-+}
-+
-+static void *fpid_start(struct seq_file *m, loff_t *pos)
-+{
-+	mutex_lock(&ftrace_lock);
-+
-+	if (list_empty(&ftrace_pids) && (!*pos))
-+		return (void *) 1;
-+
-+	return seq_list_start(&ftrace_pids, *pos);
-+}
-+
-+static void *fpid_next(struct seq_file *m, void *v, loff_t *pos)
-+{
-+	if (v == (void *)1)
-+		return NULL;
-+
-+	return seq_list_next(v, &ftrace_pids, pos);
-+}
-+
-+static void fpid_stop(struct seq_file *m, void *p)
-+{
-+	mutex_unlock(&ftrace_lock);
-+}
-+
-+static int fpid_show(struct seq_file *m, void *v)
-+{
-+	const struct ftrace_pid *fpid = list_entry(v, struct ftrace_pid, list);
-+
-+	if (v == (void *)1) {
-+		seq_printf(m, "no pid\n");
-+		return 0;
-+	}
-+
-+	if (fpid->pid == ftrace_swapper_pid)
-+		seq_printf(m, "swapper tasks\n");
-+	else
-+		seq_printf(m, "%u\n", pid_vnr(fpid->pid));
-+
-+	return 0;
-+}
-+
-+static const struct seq_operations ftrace_pid_sops = {
-+	.start = fpid_start,
-+	.next = fpid_next,
-+	.stop = fpid_stop,
-+	.show = fpid_show,
-+};
-+
-+static int
-+ftrace_pid_open(struct inode *inode, struct file *file)
-+{
-+	int ret = 0;
-+
-+	if ((file->f_mode & FMODE_WRITE) &&
-+	    (file->f_flags & O_TRUNC))
-+		ftrace_pid_reset();
-+
-+	if (file->f_mode & FMODE_READ)
-+		ret = seq_open(file, &ftrace_pid_sops);
-+
-+	return ret;
-+}
-+
- static ssize_t
- ftrace_pid_write(struct file *filp, const char __user *ubuf,
- 		   size_t cnt, loff_t *ppos)
- {
--	struct pid *pid;
- 	char buf[64];
- 	long val;
- 	int ret;
-@@ -2860,57 +2975,38 @@ ftrace_pid_write(struct file *filp, const char __user *ubuf,
+ 	last_ftrace_enabled = ftrace_enabled = 1;
  
- 	buf[cnt] = 0;
+-	ret = ftrace_convert_nops(NULL,
++	ret = ftrace_process_locs(NULL,
+ 				  __start_mcount_loc,
+ 				  __stop_mcount_loc);
  
-+	/*
-+	 * Allow "echo > set_ftrace_pid" or "echo -n '' > set_ftrace_pid"
-+	 * to clean the filter quietly.
-+	 */
-+	strstrip(buf);
-+	if (strlen(buf) == 0)
-+		return 1;
-+
- 	ret = strict_strtol(buf, 10, &val);
- 	if (ret < 0)
- 		return ret;
- 
--	mutex_lock(&ftrace_lock);
--	if (val < 0) {
--		/* disable pid tracing */
--		if (!ftrace_pid_trace)
--			goto out;
--
--		clear_ftrace_pid_task(&ftrace_pid_trace);
--
--	} else {
--		/* swapper task is special */
--		if (!val) {
--			pid = ftrace_swapper_pid;
--			if (pid == ftrace_pid_trace)
--				goto out;
--		} else {
--			pid = find_get_pid(val);
--
--			if (pid == ftrace_pid_trace) {
--				put_pid(pid);
--				goto out;
--			}
--		}
--
--		if (ftrace_pid_trace)
--			clear_ftrace_pid_task(&ftrace_pid_trace);
--
--		if (!pid)
--			goto out;
--
--		ftrace_pid_trace = pid;
--
--		set_ftrace_pid_task(ftrace_pid_trace);
--	}
-+	ret = ftrace_pid_add(val);
- 
--	/* update the function call */
--	ftrace_update_pid_func();
--	ftrace_startup_enable(0);
-+	return ret ? ret : cnt;
-+}
- 
-- out:
--	mutex_unlock(&ftrace_lock);
-+static int
-+ftrace_pid_release(struct inode *inode, struct file *file)
-+{
-+	if (file->f_mode & FMODE_READ)
-+		seq_release(inode, file);
- 
--	return cnt;
-+	return 0;
- }
- 
- static const struct file_operations ftrace_pid_fops = {
--	.read = ftrace_pid_read,
--	.write = ftrace_pid_write,
-+	.open		= ftrace_pid_open,
-+	.write		= ftrace_pid_write,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= ftrace_pid_release,
- };
- 
- static __init int ftrace_init_debugfs(void)
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index f22a7ac..acef8b4 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -496,12 +496,12 @@ print_graph_function(struct trace_iterator *iter)
- }
- #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
- 
--extern struct pid *ftrace_pid_trace;
-+extern struct list_head ftrace_pids;
- 
- #ifdef CONFIG_FUNCTION_TRACER
- static inline int ftrace_trace_task(struct task_struct *task)
- {
--	if (!ftrace_pid_trace)
-+	if (list_empty(&ftrace_pids))
- 		return 1;
- 
- 	return test_tsk_trace_trace(task);
