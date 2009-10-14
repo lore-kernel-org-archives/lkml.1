@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbZJNF5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbZJNF6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752140AbZJNF5g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 01:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZJNF5f
+	id S1752666AbZJNF6y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 01:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbZJNF6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 01:57:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58206 "EHLO mx3.mail.elte.hu"
+	Wed, 14 Oct 2009 01:58:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:48684 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751046AbZJNF5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 01:57:34 -0400
-Date: Wed, 14 Oct 2009 07:56:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, maximlevitsky@gmail.com, david-b@pacbell.net,
-       hpa@zytor.com, rjw@sisk.pl, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: + rtc-disable-hpet-emulation-on-suspend.patch added to -mm tree
-Message-ID: <20091014055639.GA784@elte.hu>
-References: <200910132208.n9DM83xa031357@imap1.linux-foundation.org>
+	id S1750925AbZJNF6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 01:58:53 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910132208.n9DM83xa031357@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+Message-ID: <19157.26731.855609.165622@cargo.ozlabs.ibm.com>
+Date: Wed, 14 Oct 2009 16:58:03 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       "Mark W. Krentel" <krentel@cs.rice.edu>
+CC: linux-kernel@vger.kernel.org, Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Subject: [PATCH] perf_event: Adjust frequency and unthrottle for non-group-leader events
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The loop in perf_ctx_adjust_freq checks the frequency of sampling
+event counters, and adjusts the event interval and unthrottles the
+event if required, and resets the interrupt count for the event.
+However, at present it only looks at group leaders.
 
-* akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+This means that a sampling event that is not a group leader will
+eventually get throttled, once its interrupt count reaches
+sysctl_perf_event_sample_rate/HZ --- and that is guaranteed to
+happen, if the event is active for long enough, since the interrupt
+count never gets reset.  Once it is throttled it never gets
+unthrottled, so it basically just stops working at that point.
 
-> ------------------------------------------------------
-> Subject: rtc: disable hpet emulation on suspend
-> From: Maxim Levitsky <maximlevitsky@gmail.com>
-> 
-> I noticed that rtc wont generate interrupts after a resume from disk.
-> Here hpet rtc emulation is used.
-> 
-> Problem is that rtc hpet comparator, isn't reinitialized after resume.
-> Easiest way to solve this, is always mask all hpet interrupts on suspend
-> This is triggered, when suspending with alarm set.
-> 
-> 
-> Otherwise, hpet driver will think it doesn't need to reinitialize
-> the rtc comparator, thus rtc interrupts won't work.
-> 
-> This emulation isn't need for wakealarm.
+This fixes it by making perf_ctx_adjust_freq use ctx->event_list
+rather than ctx->group_list.  The existing spin_lock/spin_unlock
+around the loop makes it unnecessary to put rcu_read_lock/
+rcu_read_unlock around the list_for_each_entry_rcu().
 
-> -		hpet_mask_rtc_irq_bit(mask);
->  
-> +		/* shut down hpet emulation - we don't need it for alarm */
-> +		hpet_mask_rtc_irq_bit(RTC_PIE|RTC_AIE|RTC_UIE);
->  		cmos_checkintr(cmos, tmp);
+Reported-by: Mark W. Krentel <krentel@cs.rice.edu>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+Apparently this bug was only seen on powerpc, and not on x86.  I have
+no idea why.
 
-Would be nice to also unconditionally reinitialize the hpet/rtc after 
-resume - regardless of what state we left it in.
+Looks to me like we want a similar patch for 2.6.31 with some names
+changed (event -> counter etc.).  If people agree with this patch I'll
+do one for stable.
 
-Also, are you sure this does not break things like 
-CONFIG_PM_TEST_SUSPEND=y which rely on wakealarm?
+ kernel/perf_event.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	Ingo
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 76ac4db..1d6b938 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -1368,7 +1368,7 @@ static void perf_ctx_adjust_freq(struct perf_event_context *ctx)
+ 	u64 interrupts, freq;
+ 
+ 	spin_lock(&ctx->lock);
+-	list_for_each_entry(event, &ctx->group_list, group_entry) {
++	list_for_each_entry_rcu(event, &ctx->event_list, event_entry) {
+ 		if (event->state != PERF_EVENT_STATE_ACTIVE)
+ 			continue;
+ 
+-- 
+1.6.0.4
+
