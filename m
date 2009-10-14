@@ -1,59 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934518AbZJNPZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934524AbZJNP1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934518AbZJNPZM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934498AbZJNPZL
+	id S934524AbZJNP1J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934416AbZJNP1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:25:11 -0400
-Received: from trinity.develer.com ([83.149.158.210]:50355 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934421AbZJNPZJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:25:09 -0400
-Subject: [SOLVED] Re: sata_mv 0000:03:06.0: PCI ERROR; PCI IRQ
- cause=0x30000040
-From: Bernie Innocenti <bernie@codewiz.org>
-To: Tony Vroon <tony@linx.net>
-Cc: Mark Lord <liml@rtr.ca>, Harri Olin <harri.olin@gmail.com>,
-       linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       sysadmin <sysadmin@gnu.org>
-In-Reply-To: <1255021787.3386.24.camel@localhost>
-References: <1254546642.1438.135.camel@giskard> <4ACA6904.1060509@rtr.ca>
-	 <4ACB3741.2030101@gmail.com> <1254852272.1471.172.camel@giskard>
-	 <4ACBA33C.7090606@rtr.ca>  <1254873978.1471.463.camel@giskard>
-	 <1254879618.1471.525.camel@giskard>  <4ACC076F.7020000@rtr.ca>
-	 <1255020134.30440.698.camel@giskard>  <1255021787.3386.24.camel@localhost>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Sugar Labs - http://www.sugarlabs.org/
-Date: Wed, 14 Oct 2009 11:24:25 -0400
-Message-Id: <1255533865.19998.214.camel@giskard>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 8bit
+	Wed, 14 Oct 2009 11:27:08 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:38889 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756701AbZJNP1G convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 11:27:06 -0400
+From: Bhavesh Davda <bhavesh@vmware.com>
+To: David Woodhouse <dwmw2@infradead.org>, Andy Isaacson <adi@hexapodia.org>
+CC: Chris Wright <chrisw@sous-sol.org>,
+       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Wed, 14 Oct 2009 08:26:27 -0700
+Subject: RE: DMAR regression in 2.6.31 leads to ext4 corruption?
+Thread-Topic: DMAR regression in 2.6.31 leads to ext4 corruption?
+Thread-Index: AcpMx5grXx1h/JkhR8uiM7Du6YcVXwAGtCdw
+Message-ID: <8B1F619C9F5F454E81D90D3C161698D7017DD55F68@EXCH-MBX-3.vmware.com>
+References: <20091009061729.GA31242@hexapodia.org>
+	<20091010000926.GA17547@sequoia.sous-sol.org>
+	<20091010014714.GG30557@hexapodia.org>
+ <1255522166.4523.238.camel@macbook.infradead.org>
+In-Reply-To: <1255522166.4523.238.camel@macbook.infradead.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Thu, 08-10-2009 a las 18:09 +0100, Tony Vroon escribió:
-> On Thu, 2009-10-08 at 12:42 -0400, Bernie Innocenti wrote:
-> > El Tue, 06-10-2009 a las 23:13 -0400, Mark Lord escribió:
-> > I want to try reducing the frequency of the PCI-X bus, but the BIOS does
-> > not seem to provide a setting for it.  Is there another way?
+Sorry if this is unrelated, but I'm also seeing a IOMMU PTE Write fault on my Lenovo x200 booted into 2.6.32-rc4 early on boot. I'm just using ext3, and no visible file system corruptioin so far.
+
+[    0.208727] DMAR: Forcing write-buffer flush capability
+...
+[    0.221299] DMAR: Host address width 36
+[    0.221299] DMAR: DRHD base: 0x000000feb03000 flags: 0x0
+[    0.221299] IOMMU feb03000: ver 1:0 cap c9008020e30260 ecap 1000
+[    0.221299] DMAR: DRHD base: 0x000000feb01000 flags: 0x0
+[    0.221299] IOMMU feb01000: ver 1:0 cap c0000020630260 ecap 1000
+[    0.221299] DMAR: DRHD base: 0x000000feb00000 flags: 0x0
+[    0.221299] IOMMU feb00000: ver 1:0 cap c0000020630270 ecap 1000
+[    0.221299] DMAR: DRHD base: 0x000000feb02000 flags: 0x1
+[    0.221299] IOMMU feb02000: ver 1:0 cap c9008020630260 ecap 1000
+[    0.221299] DMAR: RMRR base: 0x000000f2826c00 end: 0x000000f28273ff
+[    0.221299] DMAR: RMRR base: 0x000000bdc00000 end: 0x000000bfffffff
+[    0.221299] DMAR: No ATSR found
+...
+[    0.224001] DRHD: handling fault status reg 3
+[    0.224003] DMAR:[DMA Write] Request device [00:02.0] fault addr 95e7000
+[    0.224004] DMAR:[fault reason 05] PTE Write access is not set
+[    0.224084] PCI-DMA: Intel(R) Virtualization Technology for Directed I/O
+
+BIOS version 6DET33WW (1.10)
+
+Thanks
+
+- Bhavesh
+ 
+Bhavesh P. Davda
+
+> -----Original Message-----
+> From: iommu-bounces@lists.linux-foundation.org [mailto:iommu-
+> bounces@lists.linux-foundation.org] On Behalf Of David Woodhouse
+> Sent: Wednesday, October 14, 2009 5:09 AM
+> To: Andy Isaacson
+> Cc: Chris Wright; iommu@lists.linux-foundation.org; linux-
+> ext4@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: Re: DMAR regression in 2.6.31 leads to ext4 corruption?
 > 
-> Generally this is done with a physical jumper on the board instead.
-> You'll find it near to the bridge chip, which is almost always by NEC.
-> Another technique to slow the bridge down is to insert a regular PCI
-> card in the other slot (these bridges tend to offer 2 or 3 slots). As
-> the weakest link, it'll drag everything down to 33MHz.
-> An old PCI-X 66MHz-only card may prove helpful here as well. You don't
-> have to drive it in any way; getting power to it is sufficient.
-
-Hurray! It seems we've fixed our stability issue at last.
-
-We forced the bus speed down to PCI-X 66MHz for both buses by shorting
-pins 1-2 of the on-board jumpers.
-
--- 
-   // Bernie Innocenti - http://codewiz.org/
- \X/  Sugar Labs       - http://sugarlabs.org/
-
+> On Fri, 2009-10-09 at 18:47 -0700, Andy Isaacson wrote:
+> > Well, we don't know for sure what happened on the previous boot where
+> > the filesystem corruption occurred.  I'm imagining a nightmare
+> scenario
+> > where GPU erroneous writes cause DMAR faults and handling them
+> somehow
+> > causes AHCI DMA requests to get lost.
+> 
+> Seems unlikely. The GPU faults happen whenever the GATT changes,
+> because
+> it translates _every_ address in the GATT through the IOMMU right there
+> and then -- so if parts of the table are uninitialised, they'll cause
+> stray write faults. But no writes are actually _happening_.
+> 
+> > I'm going to go ahead on the theory that the BIOS needs an update.
+> 
+> I can't really imagine how that would help; how the BIOS would be
+> responsible for this. I'm more inclined to blame the drive. It's not an
+> SSD, is it?
+> 
+> --
+> dwmw2
+> 
+> _______________________________________________
+> iommu mailing list
+> iommu@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/iommu
