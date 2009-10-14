@@ -1,198 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761063AbZJNB7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761092AbZJNCCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761063AbZJNB7W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 21:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760840AbZJNB7W
+	id S1761092AbZJNCCt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 22:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760863AbZJNCCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 21:59:22 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:11085 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760286AbZJNB7U (ORCPT
+	Tue, 13 Oct 2009 22:02:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60858 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754109AbZJNCCp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 21:59:20 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=OvYTEn3Tt4EA:10 a=w4iE+TBsmj5y1WloLYF40w==:17 a=VwQbUJbxAAAA:8
- a=W0vUJOdyAAAA:8 a=ouuEV9EQBv1GCoX-pv8A:9 a=g7g_p8tvN_-i7v7adF4A:7
- a=NRVkiHbHHOs5LC-G8pNHEPD3mcIA:4 a=x8gzFH9gYPwA:10 a=oBSrtjhj12EQAwrk:21
- a=EdFk7TQ9zwGAg_2x:21
-From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
-Reply-To: tfjellstrom@shaw.ca
-To: linux-kernel@vger.kernel.org
-Subject: Re: Current status of rt2800usb and staging/rt2870
-Date: Tue, 13 Oct 2009 19:58:18 -0600
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-git2; KDE/4.3.2; x86_64; ; )
-References: <4AD46380.9020308@pardus.org.tr> <1255464940.10798.10.camel@localhost.localdomain> <200910132357.57094.bzolnier@gmail.com>
-In-Reply-To: <200910132357.57094.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Tue, 13 Oct 2009 22:02:45 -0400
+Date: Tue, 13 Oct 2009 19:01:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Krauth.Julien" <Krauth.Julien@addi-data.com>
+Cc: <linux-kernel@vger.kernel.org>, linux-serial@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] serial: Add ADDI-DATA GmbH PCI-Express communication
+ cards in 8250_pci.c and pci_ids.h
+Message-Id: <20091013190152.7132cd7b.akpm@linux-foundation.org>
+In-Reply-To: <DD0BA80209AFF04091B518EA708D0A0B013D20F0@ffserver>
+References: <DD0BA80209AFF04091B518EA708D0A0B013D20F0@ffserver>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910131958.18888.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue October 13 2009, Bartlomiej Zolnierkiewicz wrote:
-> On Tuesday 13 October 2009 22:15:40 Dan Williams wrote:
-> > On Tue, 2009-10-13 at 21:21 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > On Tuesday 13 October 2009 20:17:47 Ivo van Doorn wrote:
-> > > > On Tuesday 13 October 2009, Bartlomiej Zolnierkiewicz wrote:
-> > > > > On Tuesday 13 October 2009 17:52:52 Ivo van Doorn wrote:
-> > > > > > I am going to merge rt2800pci soon as well and after that I'll
-> > > > > > send a patch
-> > > > >
-> > > > > Great, I've been waiting for this for a long time.
-> > > > >
-> > > > > > to remove all Ralink drivers from the staging tree.
-> > > > >
-> > > > > Till new drivers obtain support for all hardware currently covered
-> > > > > by the unified staging drivers the latter shouldn't be removed as
-> > > > > they serve well their role as a temporary solution allowing real
-> > > > > Linux users to user their real hardware and as a reference material
-> > > > > for developers willing to work on adding the missing bits to new
-> > > > > drivers.
-> > > >
-> > > > The rt2800pci and rt2800usb drivers cover support for
-> > > > rt2860/rt2870/rt3070 devices, which are present as individual drivers
-> > > > in the staging tree. So far it only managed
-> > >
-> > > There are no longer individual drivers.
-> > >
-> > > Instead there is one shared source code and two device drivers:
-> > >
-> > > - rt2860 covering RT2860 and RT3090 devices
-> > >
-> > > - rt2870 covering RT2870 and RT3070 devices
-> > >
-> > > In comparison rt2800usb currently lacks RT3070 support and rt2800pci's
-> > > RT3090 support is basic at best (not to mention that it didn't work for
-> > > RT2860 last time that I tried)..
-> > >
-> > > > to confuse developers which wanted to work on Ralink support, so I
-> > > > haven't found
-> > >
-> > > I bet they are truly grateful for being shown "the one and only way"..
-> >
-> > There *is* only one way: mac80211.  If the driver is softmac, but does
-> > not use mac82011, then it *is* the wrong way.  We will not have multiple
-> > 802.11 stacks in the mainstream kernel.  If a softmac driver uses
-> > mac80211, hey, that's great!  Lets add it!
-> 
-> Nobody never ever suggested merging Ralink drivers as they are into
-> kernel proper.
-> 
-> > If it doesn't, then that driver needs to be updated to use mac80211.
-> > Period.
-> >
-> > > > a benefit for having those drivers in the staging tree yet. But I am
-> > > > sure there are plenty
-> > >
-> > > I was able to use my Eee 901 successfully with them for a last year and
-> > > I'm pretty sure that I'm not the only.  I understand my sin now -- I
-> > > should have had help in fixing the proper and clean code before using
-> > > my hardware.. [*]
-> >
-> > That's nice, and everyone appreciates the work that you've done.  Nobody
-> > can tell you what to work on, but it would be nice to get more people
-> > working on the *mac80211* versions of the various drivers.  Imagine how
-> > much better rt2x00 would be if all the effort that had gone into cleanup
-> > up the ralink vendor drivers had instead gone into making rt2x00 work on
-> > the new hardware.  Then you'd have cfg80211 support, background
-> > scanning, etc all for free with no effort on your part.
-> 
-> No effort, right.  Debugging things is the hardest part of any project..
-> 
-> > Maybe it would have taken 6 months longer to get good support for your
-> > hardware but at least the work would have a future.  But now we're stuck
-> 
-> You miss one tiny and irrelevant detail.  Until the work is finished
-> I cannot use the hardware and real testers/users are using the vendor
-> driver anyway for the simple fact that it exists and works.
-> 
-> > in a situation where either:
-> >
-> > 1) the vendor driver never gets converted to cfg80211/mac80211, and
-> > stays in staging forever, or finally gets booted out of staging because
-> > nobody is working on converting it to mac80211.  mac80211/cfg80211 is a
-> > hard requirement for being an accepted wireless driver.  And drivers do
-> > have a shelf-life in staging.
-> >
-> > 2) the vendor driver starts getting converted to use mac80211.  But I
-> > would argue that a better use of *anyone's* time is to make rt2x00
-> > better, instead of porting the ralink vendor drivers to mac80211.  It
-> > would probably take less time to fix up rt2x00 for new hardware than to
-> > port the ralink vendor drivers to mac80211.
-> 
-> Nobody is saying anything about porting the vendor drivers to mac80211.
-> 
-> 3) After the vendor driver gets cleaned up to the point that people are
-> able to make any sense out of it the missing bits will get added to rt2x00.
-> Several months later (after all current users are happy with the improved
-> drivers) the old drivers will be removed from staging..
-> 
-> > > > of people who like the idea of having the original Ralink drivers
-> > > > inside the staging tree, so they can continue debugging that, so I
-> > > > won't talk about the staging downsides further.
-> > >
-> > > Well, it would be much more productive if people concentrate on
-> > > improving _their_ projects and looking at downsides of _their_ code
-> > > instead of going around and looking at _obvious_ downsides of other
-> > > people's projects.
-> > >
-> > >
-> > > [*] [Slightly off-topic but it shows the same problem with the
-> > > approach]
-> > >
-> > > I now also see why some distributions keep pushing some known
-> > > non-working things on their users (Fedora maintainers -- I'm talking to
-> > > you), the best example is PulseAudio -- it simply doesn't work reliably
-> > > even on modern hardware and/or using all scheduler tricks (it seems
-> > > that making Linux into full RT OS is a prerequisite for fixing latency
-> > > issues observed)..
-> >
-> > Pulseaudio works for many, many people.  The most productive use of your
-> 
-> Yeah, I trust you on both points..
-> 
-> > time here is to file a bug report with the specific details of your
-> > audio chipset, let upstream diagnose whether it's a Pulseaudio-specific
-> > problem, a codec driver problem, or an ALSA problem.
-> 
-> Right..
-> 
-> I see no point BTW -- time make proper bug-report is much bigger than
-> throwing in few local hacks and since my experience with upstream so far
-> was that my bug-reports end up in some black-hole I deal with issues in
-> the most pragmatic and productive for everybody way..
-> 
-> > You can wait until the cows come home to deploy new technology, and then
-> > of course you'll still have to fix up all the bugs because you waited
-> > too long and nobody was testing it, or you can deploy new technology
-> > that works for most people and fix those bugs much earlier.  Release
-> > early, release often.  The tricky thing is how early.
-> 
-> It was new technology in F8 days..  It was included in F9 (released on
-> 13th May 2008) and the current rawhide is still broken (no chance it will
-> get fixed for F12)..  Getting stereo sound to play skip-lessly on standard
-> AC97 or HDA cards on a freshly installed system is impossible..
+On Tue, 6 Oct 2009 16:21:19 +0200 "Krauth.Julien" <Krauth.Julien@addi-data.com> wrote:
 
-Really? I don't have any problems with HDA audio on any of my systems. Ok, 
-well I used to see some strange storm of intel_hda errors come from one of my  
-systems, but its very rare, and a newer kernel probably fixed it.
-
-> Other distributions are really not that much better (to be honest with
-> Fedora it is the bleeding edge by definition) as their mode of operations
-> sometimes consists of copying features (regardless of the quality and
-> current state) from other distributions just for the sake of to not staying
-> behind eventually..
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Add support for ADDI-DATA GmbH PCI-Express communication cards:
+> 
+> APCIe-7300
+> APCIe-7420
+> APCIe-7500
+> APCIe-7800
+> 
+> Warning: 8250_pci.c depends on pci_ids.h. 8250_pci.c
 > 
 
+I don't understand this warning.  Why are you telling us this?
 
--- 
-Thomas Fjellstrom
-tfjellstrom@shaw.ca
+> Signed-off-by: Krauth Julien <Krauth.Julien@addi-data.com>
+> ---
+> 
+> These patches applies on kernel 2.6.31.1
+> 
+> --- linux-2.6.31.1-vanilla/include/linux/pci_ids.h	2009-09-24
+> 17:45:25.000000000 +0200
+> +++ linux-2.6.31.1/include/linux/pci_ids.h	2009-09-29
+> 11:30:06.000000000 +0200
+
+Your email client wordwraps the patches, thus corrupting them.  Please
+fix that for next time.
+
+I fixed that up and queued the patch with 2.6.32 intent, thanks.
+
+
+From: "Krauth.Julien" <Krauth.Julien@addi-data.com>
+
+Add support for ADDI-DATA GmbH PCI-Express communication cards:
+
+APCIe-7300
+APCIe-7420
+APCIe-7500
+APCIe-7800
+
+Warning: 8250_pci.c depends on pci_ids.h. 8250_pci.c
+
+Signed-off-by: Krauth Julien <Krauth.Julien@addi-data.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/serial/8250_pci.c |   67 ++++++++++++++++++++++++++++++++++++
+ include/linux/pci_ids.h   |    4 ++
+ 2 files changed, 71 insertions(+)
+
+diff -puN drivers/serial/8250_pci.c~serial-add-addi-data-gmbh-pci-express-communication-cards-in-8250_pcic-and-pci_idsh drivers/serial/8250_pci.c
+--- a/drivers/serial/8250_pci.c~serial-add-addi-data-gmbh-pci-express-communication-cards-in-8250_pcic-and-pci_idsh
++++ a/drivers/serial/8250_pci.c
+@@ -1566,6 +1566,10 @@ enum pci_board_num_t {
+ 	pbn_ni8430_4,
+ 	pbn_ni8430_8,
+ 	pbn_ni8430_16,
++	pbn_ADDIDATA_PCIe_1_3906250,
++	pbn_ADDIDATA_PCIe_2_3906250,
++	pbn_ADDIDATA_PCIe_4_3906250,
++	pbn_ADDIDATA_PCIe_8_3906250,
+ };
+ 
+ /*
+@@ -2185,6 +2189,37 @@ static struct pciserial_board pci_boards
+ 		.uart_offset	= 0x10,
+ 		.first_offset	= 0x800,
+ 	},
++	/*
++	 * ADDI-DATA GmbH PCI-Express communication cards <info@addi-data.com>
++	 */
++	[pbn_ADDIDATA_PCIe_1_3906250] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 1,
++		.base_baud	= 3906250,
++		.uart_offset	= 0x200,
++		.first_offset	= 0x1000,
++	},
++	[pbn_ADDIDATA_PCIe_2_3906250] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 2,
++		.base_baud	= 3906250,
++		.uart_offset	= 0x200,
++		.first_offset	= 0x1000,
++	},
++	[pbn_ADDIDATA_PCIe_4_3906250] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 4,
++		.base_baud	= 3906250,
++		.uart_offset	= 0x200,
++		.first_offset	= 0x1000,
++	},
++	[pbn_ADDIDATA_PCIe_8_3906250] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 8,
++		.base_baud	= 3906250,
++		.uart_offset	= 0x200,
++		.first_offset	= 0x1000,
++	},
+ };
+ 
+ static const struct pci_device_id softmodem_blacklist[] = {
+@@ -3556,6 +3591,38 @@ static struct pci_device_id serial_pci_t
+ 		0,
+ 		pbn_b0_8_115200 },
+ 
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCIe7500,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_ADDIDATA_PCIe_4_3906250 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCIe7420,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_ADDIDATA_PCIe_2_3906250 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCIe7300,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_ADDIDATA_PCIe_1_3906250 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCIe7800,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_ADDIDATA_PCIe_8_3906250 },
++
+ 	{	PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9835,
+ 		PCI_VENDOR_ID_IBM, 0x0299,
+ 		0, 0, pbn_b0_bt_2_115200 },
+diff -puN include/linux/pci_ids.h~serial-add-addi-data-gmbh-pci-express-communication-cards-in-8250_pcic-and-pci_idsh include/linux/pci_ids.h
+--- a/include/linux/pci_ids.h~serial-add-addi-data-gmbh-pci-express-communication-cards-in-8250_pcic-and-pci_idsh
++++ a/include/linux/pci_ids.h
+@@ -2162,6 +2162,10 @@
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7420_3      0x700D
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7300_3      0x700E
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7800_3      0x700F
++#define PCI_DEVICE_ID_ADDIDATA_APCIe7300       0x7010
++#define PCI_DEVICE_ID_ADDIDATA_APCIe7420       0x7011
++#define PCI_DEVICE_ID_ADDIDATA_APCIe7500       0x7012
++#define PCI_DEVICE_ID_ADDIDATA_APCIe7800       0x7013
+ 
+ #define PCI_VENDOR_ID_PDC		0x15e9
+ 
+_
+
