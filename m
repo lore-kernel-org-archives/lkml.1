@@ -1,112 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762002AbZJNS4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762032AbZJNS5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762002AbZJNS4W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 14:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757239AbZJNS4V
+	id S1762032AbZJNS5c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 14:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760481AbZJNS5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 14:56:21 -0400
-Received: from vena.lwn.net ([206.168.112.25]:49775 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757152AbZJNS4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 14:56:20 -0400
-Date: Wed, 14 Oct 2009 12:55:42 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Dave Hansen <haveblue@us.ibm.com>, David Rientjes <rientjes@google.com>
-Subject: [PATCH] update flex_array document
-Message-ID: <20091014125542.53dfe602@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Wed, 14 Oct 2009 14:57:31 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:46242 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760275AbZJNS53 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 14:57:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=oboIfuwv3s3BfHfpikQTi/lh4Q2Dn3tah2OT5QVRnE/Ixmt/vxb77VU/zhHnhcUtRZ
+         96kKwCrw9C/6HKjvTOwhTiGC9skuUOWJsm6fW6ZKbC+kTOVP6gbLRLeeMMst8cFfCu8E
+         zrjr0kZEZEWyYoLyOwsJWG0FhBqsCd385Bh8A=
+From: Ivo van Doorn <ivdoorn@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: Current status of rt2800usb and staging/rt2870
+Date: Wed, 14 Oct 2009 20:56:17 +0200
+User-Agent: KMail/1.9.10
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Dan Williams <dcbw@redhat.com>,
+       Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
+       linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <4AD46380.9020308@pardus.org.tr> <20091014164710.GF2890@tuxdriver.com> <200910141933.09374.bzolnier@gmail.com>
+In-Reply-To: <200910141933.09374.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910142056.18295.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I promised I would update this document for the 2.6.32 changes.
-Amazingly enough, I actually did it; results below.  If nobody objects,
-I'll send this upward shortly.
+Hi,
 
-jon
----
-Update flex_arrays.txt
+> > On Wed, Oct 14, 2009 at 05:28:21PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > > I don't have a have a problem with it personally as long as people accept
+> > > the competition..  but instead of working on _their_ projects they go around
+> > > screaming at everybody who does not want to spin inside the great process
+> > > designed by them..
+> > 
+> > Please whine somewhere else.  You have the freedom to work in
+> > drivers/staging all you want.  You do not have the power to force us to
+> > like it -- especially in a case where you are diverting attention from
+> > the community-maintained drivers instead of cooperating with them.
+> 
+> Cooperating you say.
+> 
+> rtl8187 -- before starting the work on rtl8187se I've pinged the maintainer
+> to coordinate the effort and hear his opinion on how to progress..
+> 
+> I've never heard back.
+> 
+> rt2x00 -- I know that people have datasheets for some chipsets but I've
+> never heard "How can we help you" etc. thing.
 
-The 2.6.32 merge window brought a number of changes to the flexible array
-API; this patch updates the documentation to match the new state of
-affairs.
+The rt2x00 members received the specsheets under the condition that we didn't
+distribute them further.
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
----
- Documentation/flexible-arrays.txt |   43 +++++++++++++++++++++++++++---------
- 1 files changed, 32 insertions(+), 11 deletions(-)
+So everybody which requested the datasheets from the rt2x00 project were presented
+with a choice:
+1) We provide the email address of the Ralink contact person which can device if you
+can get the specsheet or not (possibly under NDA, but this isn't always the case).
+2) Specific questions about the registers can be asked and we give all the information we
+know from our work on the rt2x00 project plus additional information from the specsheet.
+Seeing that the specsheet doesn't always match reality, you get the better answers with
+this option, but some people just hate it when they need to ask other people for stuff.
 
-diff --git a/Documentation/flexible-arrays.txt b/Documentation/flexible-arrays.txt
-index 84eb268..cb8a3a0 100644
---- a/Documentation/flexible-arrays.txt
-+++ b/Documentation/flexible-arrays.txt
-@@ -1,5 +1,5 @@
- Using flexible arrays in the kernel
--Last updated for 2.6.31
-+Last updated for 2.6.32
- Jonathan Corbet <corbet@lwn.net>
- 
- Large contiguous memory allocations can be unreliable in the Linux kernel.
-@@ -40,6 +40,13 @@ argument is passed directly to the internal memory allocation calls.  With
- the current code, using flags to ask for high memory is likely to lead to
- notably unpleasant side effects.
- 
-+It is also possible to define flexible arrays at compile time with:
-+
-+    DEFINE_FLEX_ARRAY(name, element_size, total);
-+
-+This macro will result in a definition of an array with the given name; the
-+element size and total will be checked for validity at compile time.
-+
- Storing data into a flexible array is accomplished with a call to:
- 
-     int flex_array_put(struct flex_array *array, unsigned int element_nr,
-@@ -76,16 +83,30 @@ particular element has never been allocated.
- Note that it is possible to get back a valid pointer for an element which
- has never been stored in the array.  Memory for array elements is allocated
- one page at a time; a single allocation could provide memory for several
--adjacent elements.  The flexible array code does not know if a specific
--element has been written; it only knows if the associated memory is
--present.  So a flex_array_get() call on an element which was never stored
--in the array has the potential to return a pointer to random data.  If the
--caller does not have a separate way to know which elements were actually
--stored, it might be wise, at least, to add GFP_ZERO to the flags argument
--to ensure that all elements are zeroed.
--
--There is no way to remove a single element from the array.  It is possible,
--though, to remove all elements with a call to:
-+adjacent elements.  Flexible array elements are normally initialized to the
-+value FLEX_ARRAY_FREE (defined as 0x6c in <linux/poison.h>), so errors
-+involving that number probably result from use of unstored array entries.
-+Note that, if array elements are allocated with __GFP_ZERO, they will be
-+initialized to zero and this poisoning will not happen.
-+
-+Individual elements in the array can be cleared with:
-+
-+    int flex_array_clear(struct flex_array *array, unsigned int element_nr);
-+
-+This function will set the given element to FLEX_ARRAY_FREE and return
-+zero.  If storage for the indicated element is not allocated for the array,
-+flex_array_clear() will return -EINVAL instead.  Note that clearing an
-+element does not release the storage associated with it; to reduce the
-+allocated size of an array, call:
-+
-+    int flex_array_shrink(struct flex_array *array);
-+
-+The return value will be the number of pages of memory actually freed.
-+This function works by scanning the array for pages containing nothing but
-+FLEX_ARRAY_FREE bytes, so (1) it can be expensive, and (2) it will not work
-+if the array's pages are allocated with __GFP_ZERO.
-+
-+It is possible to remove all elements of an array with a call to:
- 
-     void flex_array_free_parts(struct flex_array *array);
- 
--- 
-1.6.2.5
+> All I've ever heard was _lies_ about current state of affairs or that
+> my work is in the way.
 
+I have encounterd your email address in only 2 rt2x00 related discussions
+(yes I have checked my entire email archive). Both cases were regarding
+staging vs rt2x00.
+
+So far I never said rt2800usb or rt2800pci were high quality, I never said they were in a good
+shape. On the other hand, I often talked about the problems with the drivers, requesting help
+to improve the drivers, etc etc.
+
+So are you basing this "I am hearing lies" about a random person talking on the street
+about rt2x00 which is telling the lie?
+
+Ivo
