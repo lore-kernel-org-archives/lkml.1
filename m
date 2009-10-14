@@ -1,89 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbZJNE7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbZJNFGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753292AbZJNE7f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 00:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbZJNE7e
+	id S1754384AbZJNFGJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 01:06:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZJNFGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 00:59:34 -0400
-Received: from mail-qy0-f186.google.com ([209.85.221.186]:62974 "EHLO
-	mail-qy0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751792AbZJNE7d (ORCPT
+	Wed, 14 Oct 2009 01:06:08 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:48010 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750865AbZJNFGH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 00:59:33 -0400
+	Wed, 14 Oct 2009 01:06:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
+        h=date:from:to:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=h/XOxJ4Qy2q3laiOKBkcjiLqv9SSwdRg8hiKeEpN+NByVrlUp7WR/rjdI9/zeSVqQ/
-         Sslmr7tZFfpeCWKvP+Dt2rsYI8UqXuoHQccpW1jxMlOkdeZRTRxsyhJ8kkmu8KapbyA8
-         TCguWcoqqAsGLSBRvXkoAd5Yk5NuWWyzkTMUo=
-Date: Tue, 13 Oct 2009 21:58:51 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, rjw@sisk.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [regression] 2.6.30 leaking keys on console switch
-Message-ID: <20091014045851.GA32413@core.coreip.homeip.net>
-References: <87eiss7uhb.fsf@basil.nowhere.org> <alpine.LNX.2.00.0907071048210.4994@wotan.suse.de> <20090708065325.GE3309@dtor-d630.eng.vmware.com> <alpine.LNX.2.00.0907081317000.27327@wotan.suse.de>
-MIME-Version: 1.0
+        b=D0lcidRNpdzhAvTai3hrEavL3Pal6C4tzPMIYdU9raQ827+fnGkxCBmSFcSrW4K6+n
+         IejEmeATZofSyYDLrL6L2FB+E1FOCuPT7jdP8x79JquKko2A2hQPV9Z9pYrhyIJAr1rE
+         DN2STKLbc/4wKCRRPYm9H9LomxH/JrGD+itr4=
+Date: Wed, 14 Oct 2009 01:04:56 -0400
+From: tmhikaru@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.31.4
+Message-ID: <20091014050456.GA5954@roll>
+References: <20091012231506.GA23794@kroah.com> <20091014041020.GA4340@roll>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0907081317000.27327@wotan.suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091014041020.GA4340@roll>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ressurecting old thread...]
+	I'm experiencing various problems which I'm seeing reproducably in
+both 2.6.31.2 and 2.6.31.4 after upgrading from 2.6.30.8. Most notably, and
+scary to me, is that I'm routinely seeing this I/O error message with
+different sector numbers whenever I try to use my usb hard drive.
 
-On Wed, Jul 08, 2009 at 01:20:23PM +0200, Jiri Kosina wrote:
-> On Tue, 7 Jul 2009, Dmitry Torokhov wrote:
-> 
-> > > > One new issue I see in 2.6.30 (I think I saw it in some rc*s) too is 
-> > > > that console switch often leaks the Fkey of the console switch into the 
-> > > > target console.
-> > > > 
-> > > > The symptome is that e.g. firefox if it was active and you're switching
-> > > > into X displays its help screen (F1 = help). It happens on non X 
-> > > > consoles too, but of course the symptoms are different here.
-> > > > 
-> > > > That's a regression against 2.6.29; I don't remember it in .29
-> > > > 
-> > > > Haven't investigated code.
-> > > 
-> > > Are you seeing with a specific keyboard type(s), or is this a general 
-> > > problem? Could you confirm whether it is specific either 
-> > > to PS2 or USB keyboards only, or it does happen for both?
-> > 
-> > Can't think of any input chnages in this timeftrame that would cause
-> > such effect. Maybe TTY changes?
-> 
-> For completness, Andi sent me the following evtest output off-list 
-> yesterday. The LeftAlt being autorepeated at time 1246964430.448470 is a 
-> little bit suspicious, as it is preceeded by release ... I don't see how 
-> this could be causing the behavior Andi is observing though.
-> 
-> I am not able to reproduce the problem myself.
-> 
+in syslog:
 
-...
+Oct 13 21:55:49 roll kernel: sd 0:0:0:0: [sda] Assuming drive cache: write
+through
+Oct 13 21:55:49 roll kernel: sd 0:0:0:0: [sda] Assuming drive cache: write
+through
+Oct 13 21:55:49 roll kernel:  sda1
+Oct 13 21:55:49 roll kernel: sd 0:0:0:0: [sda] Assuming drive cache: write
+through
+Oct 13 21:56:20 roll kernel: end_request: I/O error, dev sda, sector
+50334647
 
-> Event: time 1246964431.804460, -------------- Report Sync ------------
-> Event: time 1246964431.828598, type 4 (Misc), code 4 (ScanCode), value 70040
-> Event: time 1246964431.828602, type 1 (Key), code 65 (F7), value 1
-> Event: time 1246964431.828604, -------------- Report Sync ------------
-> Event: time 1246964431.832468, type 17 (LED), code 0 (NumLock), value 0
-> Event: time 1246964431.832470, -------------- Report Sync ------------
-> Event: time 1246964431.988595, type 4 (Misc), code 4 (ScanCode), value 700e0
-> Event: time 1246964431.988601, type 1 (Key), code 29 (LeftControl), value 0
-> Event: time 1246964431.988603, type 4 (Misc), code 4 (ScanCode), value 700e2
-> Event: time 1246964431.988605, type 1 (Key), code 56 (LeftAlt), value 0
-> Event: time 1246964431.988608, type 4 (Misc), code 4 (ScanCode), value 70040
-> Event: time 1246964431.988610, type 1 (Key), code 65 (F7), value 0
-> Event: time 1246964431.988611, -------------- Report Sync ------------
+in messages:
+Oct 13 21:56:20 roll kernel: sd 0:0:0:0: [sda] Unhandled error code
+Oct 13 21:56:20 roll kernel: sd 0:0:0:0: [sda] Result: hostbyte=0x07
+driverbyte=0x00
 
-Btw, what kind of keyboard is this? I was playing today but I could not
-get my USB keyboards to report release of more than 1 key per report....
+	Now, this doesn't appear to affect anything so far as the filesystem
+doesn't even get set readonly. (It's ext4) ... And I just found out that for
+some reason the filesystem is set to continue on errors. I'm surprised, I
+thought the default for mke2fs was to set remount readonly. *sigh* I'm
+changing the settings for the filesystem now.
 
--- 
-Dmitry
+	In any case, these I/O error messages do *not* appear when I'm doing
+similar things on 2.6.30.8. Given that this usb drive is my backup hard
+drive, I've reason to be concerned - is this an *actual* error with the
+physical disk, is something funky with the kernel, or... what?
+
+	Before I attempt to debug this further, I'd like to know what the
+error messages are being generated by, so I can find out just how concerned I
+should be.
+
+	I'm going to assume, for the moment, that something is wrong with
+2.6.31.2/4's ability to use my usb hard drive and that the backup I have on
+it is likely corrupt since I did not have the filesystem set to remount
+readonly on errors. I'm going to wipe it and remake the backup with
+2.6.30.8.
+ 
+ 
+Please, let me know what's going on here. I need to know what the error
+messages mean - is this a physical failure of the hard drive, or what?
+ 
+Thank you,
+Tim McGrath
