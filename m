@@ -1,83 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbZJNHaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbZJNHef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbZJNHaQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 03:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755609AbZJNHaO
+	id S1755757AbZJNHef (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 03:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbZJNHee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 03:30:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48847 "EHLO mail.dvmed.net"
+	Wed, 14 Oct 2009 03:34:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33586 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755371AbZJNHaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 03:30:13 -0400
-Message-ID: <4AD57DDD.3040201@garzik.org>
-Date: Wed, 14 Oct 2009 03:29:33 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	id S1751220AbZJNHed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 03:34:33 -0400
+Date: Wed, 14 Oct 2009 09:33:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Rientjes <rientjes@google.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Dirk Hohndel <hohndel@infradead.org>,
+       Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, v2] kbuild: Improve version string logic
+Message-ID: <20091014073306.GB22778@elte.hu>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <200910130004.46388.elendil@planet.nl> <20091013070505.GC31483@elte.hu> <200910131952.01209.elendil@planet.nl> <alpine.LFD.2.01.0910131100180.26777@localhost.localdomain> <alpine.DEB.1.00.0910131649280.24112@chino.kir.corp.google.com> <20091014065941.GH784@elte.hu> <alpine.DEB.1.00.0910140014490.26562@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: tino.keitel@tikei.de
-CC: linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: ATA related kernel warning after resume with 2.6.32-rc4
-References: <20091014065555.GA6968@mac.home>
-In-Reply-To: <20091014065555.GA6968@mac.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.00.0910140014490.26562@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/14/2009 02:55 AM, Tino Keitel wrote:
-> Hi,
->
-> I get this warning after resume from suspend to RAM:
->
-> ata1.00: ACPI cmd ef/03:0c:00:00:00:a0 (SET FEATURES) filtered out
-> ata1.00: ACPI cmd ef/03:42:00:00:00:a0 (SET FEATURES) filtered out
-> ata1.00: configured for UDMA/33
-> firewire_core: rediscovered device fw0
-> sd 2:0:1:0: [sda] Starting disk
-> firewire_core: phy config: card 0, new root=ffc1, gap_count=5
-> ------------[ cut here ]------------
-> WARNING: at drivers/ata/libata-core.c:5039
-> ata_qc_complete+0x1ec/0x260()
-> Hardware name: Macmini2,1
-> Modules linked in: ipv6 fbcon font bitblit softcursor i915
-> drm_kms_helper drm fb i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect
-> loop btusb bluetooth firewire_sbp2 snd_hda_codec_idt dvb_usb dvb_core
-> video backlight output snd_hda_intel firewire_ohci usblp firewire_core
-> sky2 snd_hda_codec evdev crc_itu_t snd_pcm snd_timer snd_page_alloc
-> [last unloaded: dvb_usb_vp7045]
-> Pid: 254, comm: ata/0 Not tainted 2.6.32-rc4-00001-gd93a8f8 #24
-> Call Trace:
->   [<ffffffff8130b5ac>] ? ata_qc_complete+0x1ec/0x260
->   [<ffffffff8130b5ac>] ? ata_qc_complete+0x1ec/0x260
->   [<ffffffff8103ceb4>] ? warn_slowpath_common+0x74/0xd0
->   [<ffffffff8130b5ac>] ? ata_qc_complete+0x1ec/0x260
->   [<ffffffff81318100>] ? ata_do_link_abort+0xa0/0xe0
->   [<ffffffff8131b01f>] ? ata_hsm_qc_complete+0x15f/0x170
->   [<ffffffff8131b1ca>] ? ata_sff_hsm_move+0x19a/0x700
->   [<ffffffff8131bacf>] ? ata_pio_task+0x2f/0x110
->   [<ffffffff8131baa0>] ? ata_pio_task+0x0/0x110
->   [<ffffffff8104eb8b>] ? worker_thread+0x12b/0x1f0
->   [<ffffffff81052ee0>] ? autoremove_wake_function+0x0/0x30
->   [<ffffffff8104ea60>] ? worker_thread+0x0/0x1f0
->   [<ffffffff81052b56>] ? kthread+0x96/0xa0
->   [<ffffffff8100cc1a>] ? child_rip+0xa/0x20
->   [<ffffffff81052ac0>] ? kthread+0x0/0xa0
->   [<ffffffff8100cc10>] ? child_rip+0x0/0x20
-> ---[ end trace 158461bf60ae353f ]---
-> ata3.01: NODEV after polling detection
-> ata3.01: revalidation failed (errno=-2)
 
-Can you email your full dmesg and lspci?
+* David Rientjes <rientjes@google.com> wrote:
 
-Also, note that linux-ide was added to CC.
+> On Wed, 14 Oct 2009, Ingo Molnar wrote:
+> 
+> > > I don't think you want to do that because it would require the .config 
+> > > to be posted on bug reports, for example, to determine the setting of 
+> > > CONFIG_LOCALVERSION_AUTO before you can interpret the kernel version.  
+> > > In other words, you wouldn't know that "2.6.32-rc4" is actually 200 
+> > > commits beyond the actual release unless you also know that the 
+> > > .config has CONFIG_LOCALVERSION_AUTO="none".
+> > 
+> > We've come a full circle ...
+> > 
+> > That's the current !CONFIG_LOCALVERSION_AUTO status quo ... That was 
+> > being asked to be preserved for (unspecified) packaging reasons. So
+> > your suggestion is to do away with that behavior altogether?
+> > 
+> 
+> I don't think it's helpful to specify a version as "2.6.32-rc4" when 
+> in reality it has 200 commits beyond the release and I like the 
+> addition of `+' for !CONFIG_LOCALVERSION_AUTO if we're not at a tagged 
+> commit.  That's what my two patches do so the only time you could get 
+> a "2.6.32-rc4" version string is for when it's the equivalent of 
+> http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc4.tar.bz2 
+> (and you would actually get that regardless of whether you're using 
+> CONFIG_LOCALVERSION_AUTO or not).
+> 
+> There's another possible extension that could be made: we could allow 
+> LOCALVERSION= as passed to "make" to override the added `+' since it 
+> is used to identify kernel versions by a string anyway; so make 
+> LOCALVERSION=-slub_fixes would become v2.6.32-rc4-slub_fixes if 
+> CONFIG_LOCALVERSION_AUTO were disabled, regardless of what commit 
+> we're at, and v2.6.32-rc4-slub_fixes-00094-g80f5069 if it were 
+> enabled.
+> 
+> Regardless of future improvements, I think my two patches allow the 
+> kernel version to more accurately describe what is running.  That is 
+> predicated on my belief that "v2.6.32-rc4", though, should never 
+> describe _anything_ except the kernel.org v2.6.32-rc4 kernel.
 
-	Jeff
+I agree with all that - in fact i started this thread by stating that 
+view and suggesting the '+' extension to the short version name.
 
+But there's been packaging related objections from Frans and others, and 
+i suspect you'll need to answer/address those instead of further 
+detailing the virtues of proper version names (which i still 100% agree 
+with).
 
+Btw., i only minimally agree with the packaging objections: there's 
+certainly no harm in enabling for folks to still keep things as they 
+were for years. But we can definitely change the default and we can make 
+it difficult to choose the faulty short-name scheme.
 
+Thanks,
 
+	Ingo
