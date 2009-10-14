@@ -1,65 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZJNGyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZJNGzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbZJNGyj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 02:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755591AbZJNGyj
+	id S1755979AbZJNGzp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 02:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbZJNGzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 02:54:39 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:46508 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753211AbZJNGyi convert rfc822-to-8bit (ORCPT
+	Wed, 14 Oct 2009 02:55:45 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:55362 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755571AbZJNGzn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 02:54:38 -0400
+	Wed, 14 Oct 2009 02:55:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=juMRtkezXzmyXnE+Be1N7uVv0BuLkRnP98UzB0NuOqUq32+WkYv+y0HttFnKdWGha1
-         Yr13gUJNBnTLAzwaZlBHxGUpsTMPHooaHzOI6ayiViK7h/RifSSSXI0bfVn6FXpzhCzo
-         htxSRXSwgzukJoCzNRGMYUjagom92LPAYUv6Y=
+        b=ihWzgBOUsVbvGrukRx+00WWluiHFewsR0H/9m/uM/QQy4A86MJMuPlu/gpDUtc/vld
+         UECNKsMM7KvawXP/veHGuitgJecIvEDquO6xEyE2T+ZTPWR6NUiAsm4sOlB17gjo0K4U
+         Jwm8e8eb4mzJAGRNo2evtzZvRfFLJNXMucSV8=
 MIME-Version: 1.0
-In-Reply-To: <20091013192040.22336.84876.stgit@bob.kio>
-References: <20091013192040.22336.84876.stgit@bob.kio>
-Date: Tue, 13 Oct 2009 23:47:33 -0700
-Message-ID: <86802c440910132347x1913d2a1taf35f385af50e17c@mail.gmail.com>
-Subject: Re: [PATCH v2 0/9] PCI, PNP: print resources consistently
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Joe Perches <joe@perches.com>, Len Brown <lenb@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20091013120018.GA29395@elf.ucw.cz>
+References: <20091013120018.GA29395@elf.ucw.cz>
+Date: Wed, 14 Oct 2009 14:55:06 +0800
+Message-ID: <a8e1da0910132355g5e2b786p529b4b522c19e75a@mail.gmail.com>
+Subject: Re: 2.6.32-rc3+: bluetooth needs lockdep anotation?
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, marcel@holtmann.org,
+       linux-bluetooth@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 12:21 PM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> These enhance %pR so we can print resource types and flags more easily.
-> This doesn't really add anything (other than a couple new messages
-> about host bridge apertures), but hopefully it will make things more
-> consistent and a bit easier to debug. �Sample change (with "pci=use_crs"):
+On Tue, Oct 13, 2009 at 8:00 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
 >
-> � �-pci 0000:00:03.0: reg 10 32bit mmio: [0xf6000000-0xf6ffffff]
-> � �-pci 0000:00:03.0: reg 14 io port: [0x2400-0x24ff]
-> � �-pci 0000:00:03.0: reg 18 32bit mmio: [0xf5ff0000-0xf5ff0fff]
-> � �-pci 0000:00:03.0: reg 30 32bit mmio pref: [0x000000-0x01ffff]
-> � �+pci_root PNP0A03:00: host bridge window [io �0x0000-0x0cff]
-> � �+pci_root PNP0A03:00: host bridge window [io �0x0000-0x2cfe]
-> � �+pci_root PNP0A03:00: host bridge window [io �0x03b0-0x03bb]
-> � �+pci_root PNP0A03:00: host bridge window [io �0x03c0-0x03df]
-> � �+pci_root PNP0A03:00: host bridge window [mem 0xf5d00000-0xf6ffffff]
-> � �+pci_root PNP0A03:00: host bridge window [mem 0x000a0000-0x000bffff]
-> � �+pci 0000:00:03.0: reg 10: [mem 0xf6000000-0xf6ffffff]
-> � �+pci 0000:00:03.0: reg 14: [io �0x2400-0x24ff]
-> � �+pci 0000:00:03.0: reg 18: [mem 0xf5ff0000-0xf5ff0fff]
-> � �+pci 0000:00:03.0: reg 30: [mem 0x00000000-0x0001ffff pref]
+> I just got this in my dmesg:
+>
+>                                                        Pavel
+>
+>
+> drivers/usb/core/inode.c: creating file '005'
+> hub 5-0:1.0: state 7 ports 2 chg 0000 evt 0002
+> hub 1-0:1.0: hub_suspend
+> usb usb1: bus auto-suspend
+> ehci_hcd 0000:00:1d.7: suspend root hub
+> uhci_hcd 0000:00:1d.3: reserve dev 5 ep81-INT, period 1, phase 0, 23 us
+> INFO: trying to register non-static key.
+> the code is fine but needs lockdep annotation.
+> turning off the locking correctness validator.
+> Pid: 1696, comm: udevd Not tainted 2.6.32-rc3-00192-gd33e6ec-dirty #78
+> Call Trace:
+>  [<c079e978>] ? printk+0x18/0x1a
+>  [<c0256432>] __lock_acquire+0x492/0xac0
+>  [<c0256ac8>] lock_acquire+0x68/0x90
+>  [<c067e3cd>] ? skb_dequeue+0x1d/0x70
+>  [<c07a1a5b>] _spin_lock_irqsave+0x3b/0x50
+>  [<c067e3cd>] ? skb_dequeue+0x1d/0x70
+>  [<c067e3cd>] skb_dequeue+0x1d/0x70
+>  [<c067f084>] skb_queue_purge+0x14/0x30
+>  [<c071fe8f>] l2cap_recv_frame+0x5df/0x32c0
+>  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
+>  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
+>  [<c067e2d9>] ? skb_queue_tail+0x39/0x50
+>  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
+>  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
+>  [<c0722d02>] l2cap_recv_acldata+0x192/0x3d0
+>  [<c0713d50>] ? hci_rx_task+0x280/0x460
+>  [<c0722b70>] ? l2cap_recv_acldata+0x0/0x3d0
+>  [<c0713d83>] hci_rx_task+0x2b3/0x460
+>  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
+>  [<c02362d0>] tasklet_action+0x50/0xb0
+>  [<c0236a35>] __do_softirq+0x85/0x110
+>  [<c0236aed>] do_softirq+0x2d/0x40
+>  [<c0236c55>] irq_exit+0x65/0x90
+>  [<c0204c1f>] do_IRQ+0x4f/0xc0
+>  [<c025617d>] ? __lock_acquire+0x1dd/0xac0
+>  [<c02034a9>] common_interrupt+0x29/0x30
+>  [<c07a183a>] ? _spin_unlock_irqrestore+0x2a/0x40
+>  [<c0223f00>] __wake_up+0x40/0x50
+>  [<c030167e>] journal_stop+0x27e/0x2b0
+>  [<c02f4577>] __ext3_journal_stop+0x27/0x50
+>  [<c02ecdd9>] ext3_delete_inode+0x99/0xf0
+>  [<c02ecd40>] ? ext3_delete_inode+0x0/0xf0
+>  [<c02accf2>] generic_delete_inode+0x72/0x110
+>  [<c02acddf>] generic_drop_inode+0x4f/0x80
+>  [<c02abcf7>] iput+0x47/0x50
+>  [<c02a926f>] dentry_iput+0x6f/0xf0
+>  [<c02a93a5>] d_kill+0x25/0x50
+>  [<c02a9abd>] dput+0x5d/0x110
+>  [<c02a4125>] do_rmdir+0xb5/0xe0
+>  [<c024a296>] ? up_read+0x16/0x30
+>  [<c021c19e>] ? do_page_fault+0x15e/0x250
+>  [<c02a41b0>] sys_rmdir+0x10/0x20
+>  [<c0202e50>] sysenter_do_call+0x12/0x31
+> Registered led device: iwl-phy0::radio
+> Registered led device: iwl-phy0::assoc
+> Registered led device: iwl-phy0::RX
+> Registered led device: iwl-phy0::TX
+> wlan0: Selected IBSS BSSID 7a:ad:1e:84:b0:4c based on configured SSID
+> Registered led device: iwl-phy0::radio
+> Registered led device: iwl-phy0::assoc
+> Registered led device: iwl-phy0::RX
+> Registered led device: iwl-phy0::TX
+> wlan0: Selected IBSS BSSID 7a:ad:1e:84:b0:4c based on configured SSID
+>
+>
 
-can you keep "io port" and "mmio" ?
-so we can use
-grep "io port" dmesg.txt or grep "mmio" dmesg.txt
+Hi,
 
-also put "io" and "mmio" "pref' in the [  ], looks strange.
-[0xf5ff0000-0xf5ff0fff] is correct range expression.
+I have a pending patch for this:
+http://marc.info/?l=linux-bluetooth&m=125504924206686&w=2
 
-YH
+-- 
+Regards
+dave
