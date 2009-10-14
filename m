@@ -1,73 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761675AbZJNOW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933451AbZJNOQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761675AbZJNOW0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 10:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758461AbZJNOWZ
+	id S933451AbZJNOQi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 10:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933411AbZJNOQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 10:22:25 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:37223 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756415AbZJNOWY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 10:22:24 -0400
-Date: Wed, 14 Oct 2009 10:14:25 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Tejun Heo <tj@kernel.org>
-cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mel Gorman <mel@csn.ul.ie>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [this_cpu_xx V6 3/7] Use this_cpu operations in slub
-In-Reply-To: <4AD53022.2050309@kernel.org>
-Message-ID: <alpine.DEB.1.10.0910141008440.28461@gentwo.org>
-References: <20091007211024.442168959@gentwo.org> <20091007211052.614790286@gentwo.org> <4AD302A8.4010409@kernel.org> <alpine.DEB.1.10.0910121053240.7932@gentwo.org> <4AD3E23B.8020103@kernel.org> <alpine.DEB.1.10.0910131037420.21608@gentwo.org>
- <4AD4950A.6050201@kernel.org> <alpine.DEB.1.10.0910131117060.8088@gentwo.org> <4AD53022.2050309@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 14 Oct 2009 10:16:38 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:51764 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933380AbZJNOQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 10:16:37 -0400
+Date: Wed, 14 Oct 2009 09:14:38 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 0/4 v2] X86: UV RTC fixes/cleanup
+Message-ID: <20091014141438.GA11048@sgi.com>
+References: <20091009134727.GB3218@sgi.com> <20091012162317.GC1272@elte.hu> <20091012175233.GA8129@sgi.com> <20091012175920.GB17138@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012175920.GB17138@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Oct 2009, Tejun Heo wrote:
+The following patches provide fixes and cleanup to SGI UV RTC
+clocksource/clockevents code.
 
-> > __this_cpu_ptr could be converted to this_cpu_ptr but I think the __ are
-> > useful there too to show that we are in a preempt section.
->
-> That doesn't make much sense.  __ for this_cpu_ptr() means "bypass
-> sanity check, we're knowingly violating the required conditions" not
-> "we know sanity checks will pass here".
-
-Are you defining what __ means for this_cpu_ptr?
-
-> > The calls to raw_smp_processor_id and smp_processor_id() are only useful
-> > in the fallback case. There is no need for those if the arch has a way to
-> > provide the current percpu offset. So we in effect have two meanings of __
-> > right now.
-> >
-> > 1. We do not care about the preempt state (thus we call
-> > raw_smp_processor_id so that the preempt state does not trigger)
-> >
-> > 2. We do not need to disable preempt before the operation.
-> >
-> > __this_cpu_ptr only implies 1. __this_cpu_add uses 1 and 2.
->
-> Yeah, we need to clean it up.  The naming is too confusing.
-
-Its consistent if __ means both 1 and 2. If we want to distinguish it then
-we may want to create raw_this_cpu_xx which means that we do not call
-smp_processor_id() on fallback but raw_smp_processor_id(). Does not
-matter if the arch provides a per cpu offset.
-
-This would mean duplicating all the macros. The use of raw_this_cpu_xx
-should be rare so maybe the best approach is to say that __ means only
-that the macro does not need to disable preempt but it still checks for
-preemption being off. Then audit the __this_cpu_xx uses and see if there
-are any that require a raw_ variant.
-
-The vm event counters require both no check and no preempt since they can
-be implemented in a racy way.
-
-
-
+Subject: [PATCH 1/4 v2] X86: UV RTC fix early expiry handling
+Subject: [PATCH 2/4 v2] X86: UV RTC add clocksource only boot option
+Subject: [PATCH 3/4 v2] X86: UV RTC cleanup error handling
+Subject: [PATCH 4/4 v2] X86: UV RTC rename generic_interrupt
 
