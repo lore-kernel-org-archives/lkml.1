@@ -1,118 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933530AbZJNOSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760923AbZJNOUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933530AbZJNOSU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 10:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbZJNOST
+	id S1760923AbZJNOUi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 10:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757987AbZJNOUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 10:18:19 -0400
-Received: from mba.ocn.ne.jp ([122.28.14.163]:55500 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754149AbZJNOSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 10:18:18 -0400
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: Andrew Sharp <andy.sharp@lsi.com>,
-       Thomas Hommel <thomas.hommel@gefanuc.com>, rtc-linux@googlegroups.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] rtc: Do not use container_of macro as an argument for to_platform_device
-Date: Wed, 14 Oct 2009 23:17:01 +0900
-Message-Id: <1255529821-1377-1-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: git-send-email 1.5.6.5
+	Wed, 14 Oct 2009 10:20:38 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:43331 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754149AbZJNOUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 10:20:37 -0400
+Date: Wed, 14 Oct 2009 09:18:48 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 2/4 v2] X86: UV RTC add clocksource only boot option
+Message-ID: <20091014141848.GC11048@sgi.com>
+References: <20091009134727.GB3218@sgi.com> <20091012162317.GC1272@elte.hu> <20091012175233.GA8129@sgi.com> <20091012175920.GB17138@elte.hu> <20091014141438.GA11048@sgi.com> <20091014141630.GB11048@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014141630.GB11048@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The to_platform_device macro itself uses container_of macro.
-Nested use of container_of macro causes following sparse warnings:
+Add clocksource only boot option for UV RTC.
 
-rtc-ds1553.c:259:3: warning: symbol '__mptr' shadows an earlier one
-rtc-ds1553.c:259:3: originally declared here
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 ---
- drivers/rtc/rtc-ds1553.c   |    8 ++++----
- drivers/rtc/rtc-ds1742.c   |    8 ++++----
- drivers/rtc/rtc-stk17ta8.c |    8 ++++----
- 3 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/rtc/rtc-ds1553.c b/drivers/rtc/rtc-ds1553.c
-index dadd0f5..ed1ef7c 100644
---- a/drivers/rtc/rtc-ds1553.c
-+++ b/drivers/rtc/rtc-ds1553.c
-@@ -255,8 +255,8 @@ static ssize_t ds1553_nvram_read(struct kobject *kobj,
- 				 struct bin_attribute *bin_attr,
- 				 char *buf, loff_t pos, size_t size)
- {
--	struct platform_device *pdev =
--		to_platform_device(container_of(kobj, struct device, kobj));
-+	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
- 	void __iomem *ioaddr = pdata->ioaddr;
- 	ssize_t count;
-@@ -270,8 +270,8 @@ static ssize_t ds1553_nvram_write(struct kobject *kobj,
- 				  struct bin_attribute *bin_attr,
- 				  char *buf, loff_t pos, size_t size)
- {
--	struct platform_device *pdev =
--		to_platform_device(container_of(kobj, struct device, kobj));
-+	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
- 	void __iomem *ioaddr = pdata->ioaddr;
- 	ssize_t count;
-diff --git a/drivers/rtc/rtc-ds1742.c b/drivers/rtc/rtc-ds1742.c
-index 19d2f33..a127336 100644
---- a/drivers/rtc/rtc-ds1742.c
-+++ b/drivers/rtc/rtc-ds1742.c
-@@ -131,8 +131,8 @@ static ssize_t ds1742_nvram_read(struct kobject *kobj,
- 				 struct bin_attribute *bin_attr,
- 				 char *buf, loff_t pos, size_t size)
- {
--	struct platform_device *pdev =
--		to_platform_device(container_of(kobj, struct device, kobj));
-+	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
- 	void __iomem *ioaddr = pdata->ioaddr_nvram;
- 	ssize_t count;
-@@ -146,8 +146,8 @@ static ssize_t ds1742_nvram_write(struct kobject *kobj,
- 				  struct bin_attribute *bin_attr,
- 				  char *buf, loff_t pos, size_t size)
- {
--	struct platform_device *pdev =
--		to_platform_device(container_of(kobj, struct device, kobj));
-+	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
- 	void __iomem *ioaddr = pdata->ioaddr_nvram;
- 	ssize_t count;
-diff --git a/drivers/rtc/rtc-stk17ta8.c b/drivers/rtc/rtc-stk17ta8.c
-index df3b6c5..eb486ca 100644
---- a/drivers/rtc/rtc-stk17ta8.c
-+++ b/drivers/rtc/rtc-stk17ta8.c
-@@ -247,8 +247,8 @@ static ssize_t stk17ta8_nvram_read(struct kobject *kobj,
- 				 struct bin_attribute *attr, char *buf,
- 				 loff_t pos, size_t size)
- {
--	struct platform_device *pdev =
--		to_platform_device(container_of(kobj, struct device, kobj));
-+	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
- 	void __iomem *ioaddr = pdata->ioaddr;
- 	ssize_t count;
-@@ -262,8 +262,8 @@ static ssize_t stk17ta8_nvram_write(struct kobject *kobj,
- 				  struct bin_attribute *attr, char *buf,
- 				  loff_t pos, size_t size)
- {
--	struct platform_device *pdev =
--		to_platform_device(container_of(kobj, struct device, kobj));
-+	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
- 	void __iomem *ioaddr = pdata->ioaddr;
- 	ssize_t count;
--- 
-1.5.6.5
+ arch/x86/kernel/uv_time.c |   23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
 
+Index: linux/arch/x86/kernel/uv_time.c
+===================================================================
+--- linux.orig/arch/x86/kernel/uv_time.c	2009-10-13 08:50:46.000000000 -0500
++++ linux/arch/x86/kernel/uv_time.c	2009-10-13 08:55:23.000000000 -0500
+@@ -75,6 +75,7 @@ struct uv_rtc_timer_head {
+ static struct uv_rtc_timer_head		**blade_info __read_mostly;
+ 
+ static int				uv_rtc_enable;
++static int				uv_rtc_evt_enable;
+ 
+ /*
+  * Hardware interface routines
+@@ -342,6 +343,14 @@ static int __init uv_enable_rtc(char *st
+ }
+ __setup("uvrtc", uv_enable_rtc);
+ 
++static int __init uv_enable_evt_rtc(char *str)
++{
++	uv_rtc_evt_enable = 1;
++
++	return 1;
++}
++__setup("uvrtcevt", uv_enable_evt_rtc);
++
+ static __init void uv_rtc_register_clockevents(struct work_struct *dummy)
+ {
+ 	struct clock_event_device *ced = &__get_cpu_var(cpu_ced);
+@@ -358,16 +367,20 @@ static __init int uv_rtc_setup_clock(voi
+ 	if (!uv_rtc_enable || !is_uv_system() || generic_interrupt_extension)
+ 		return -ENODEV;
+ 
+-	generic_interrupt_extension = uv_rtc_interrupt;
+-
+ 	clocksource_uv.mult = clocksource_hz2mult(sn_rtc_cycles_per_second,
+ 				clocksource_uv.shift);
+ 
+ 	rc = clocksource_register(&clocksource_uv);
+-	if (rc) {
+-		generic_interrupt_extension = NULL;
++	if (rc)
++		printk(KERN_INFO "UV RTC clocksource failed rc %d\n", rc);
++	else
++		printk(KERN_INFO "UV RTC clocksource registered freq %lu MHz\n",
++			sn_rtc_cycles_per_second/(unsigned long)1E6);
++
++	if (rc || !uv_rtc_evt_enable)
+ 		return rc;
+-	}
++
++	generic_interrupt_extension = uv_rtc_interrupt;
+ 
+ 	/* Setup and register clockevents */
+ 	rc = uv_rtc_allocate_timers();
