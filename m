@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934521AbZJNQXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934889AbZJNQXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934521AbZJNQXd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 12:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762010AbZJNQXc
+	id S934889AbZJNQXk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 12:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932262AbZJNQXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 12:23:32 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:59739 "EHLO
+	Wed, 14 Oct 2009 12:23:33 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:38045 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762007AbZJNQXb (ORCPT
+	with ESMTP id S1762009AbZJNQXb (ORCPT
 	<rfc822;groupwise-GHaskins@novell.com;0:0>);
 	Wed, 14 Oct 2009 12:23:31 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [ALACRITYVM PATCH 1/2] vbus: allow shmsignals to be named
+Subject: [ALACRITYVM PATCH 2/2] vbus: register shm-signal events as standard
+	Linux IRQ vectors
 To: alacrityvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org
-Date: Wed, 14 Oct 2009 12:22:36 -0400
-Message-ID: <20091014162235.19298.99134.stgit@dev.haskins.net>
+Date: Wed, 14 Oct 2009 12:22:41 -0400
+Message-ID: <20091014162241.19298.18475.stgit@dev.haskins.net>
 In-Reply-To: <20091014162030.19298.48508.stgit@dev.haskins.net>
 References: <20091014162030.19298.48508.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -26,203 +27,235 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This will allow the signals to be displayed to the end-user in some
-meaningful way later in the series, such as for statistics, etc.
+This will allow us to view the vector statistics in a uniform way, as
+well as pave the way for supporting irqbalance in the future.
+
+The VBUS PCI-BRIDGE will present itself as an irqchip device to the
+kernel proper.  Each shm-signal that is created by a specific driver
+will show up as a "VBUS-edge" IRQ in /proc/interrupts.  For instane,
+here is example output from running a venet device as "eth1" (see
+vectors 28-31):
+
+vbus-guest:/home/ghaskins # cat /proc/interrupts
+            CPU0
+   0:         89   IO-APIC-edge      timer
+   1:          6   IO-APIC-edge      i8042
+   4:       1620   IO-APIC-edge      serial
+   6:          2   IO-APIC-edge      floppy
+   7:          0   IO-APIC-edge      parport0
+   8:          0   IO-APIC-edge      rtc0
+   9:          0   IO-APIC-fasteoi   acpi
+  10:          0   IO-APIC-fasteoi   virtio1
+  12:         90   IO-APIC-edge      i8042
+  14:       3474   IO-APIC-edge      ata_piix
+  15:       7778   IO-APIC-edge      ata_piix
+  24:     185849   PCI-MSI-edge      vbus
+  25:          0   PCI-MSI-edge      virtio0-config
+  26:        210   PCI-MSI-edge      virtio0-input
+  27:         28   PCI-MSI-edge      virtio0-output
+  28:     167062      VBUS-edge      eth1-evq
+  29:          0      VBUS-edge      eth1-pageq
+  30:     161593      VBUS-edge      eth1-rx
+  31:          0      VBUS-edge      eth1-tx
+ NMI:          0   Non-maskable interrupts
+ LOC:      72010   Local timer interrupts
+ SPU:          0   Spurious interrupts
+ CNT:          0   Performance counter interrupts
+ PND:          0   Performance pending work
+ RES:          0   Rescheduling interrupts
+ CAL:          0   Function call interrupts
+ TLB:          0   TLB shootdowns
+ TRM:          0   Thermal event interrupts
+ THR:          0   Threshold APIC interrupts
+ MCE:          0   Machine check exceptions
+ MCP:         20   Machine check polls
+ ERR:          0
+ MIS:          0
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- drivers/net/vbus-enet.c     |   43 ++++++++++++++++++++++++++++++++++---------
- drivers/vbus/bus-proxy.c    |    6 +++---
- drivers/vbus/pci-bridge.c   |    3 ++-
- include/linux/vbus_driver.h |    7 ++++---
- 4 files changed, 43 insertions(+), 16 deletions(-)
+ drivers/vbus/Kconfig      |    4 +-
+ drivers/vbus/pci-bridge.c |   91 ++++++++++++++++++++++++++++++++++++---------
+ 2 files changed, 74 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/net/vbus-enet.c b/drivers/net/vbus-enet.c
-index 6fe2241..9d48674 100644
---- a/drivers/net/vbus-enet.c
-+++ b/drivers/net/vbus-enet.c
-@@ -101,14 +101,20 @@ napi_to_priv(struct napi_struct *napi)
- static int
- queue_init(struct vbus_enet_priv *priv,
- 	   struct vbus_enet_queue *q,
-+	   const char *name,
- 	   int qid,
- 	   size_t ringsize,
- 	   void (*func)(struct ioq_notifier *))
- {
- 	struct vbus_device_proxy *dev = priv->vdev;
- 	int ret;
-+	char _name[64];
+diff --git a/drivers/vbus/Kconfig b/drivers/vbus/Kconfig
+index 08667aa..f51cba1 100644
+--- a/drivers/vbus/Kconfig
++++ b/drivers/vbus/Kconfig
+@@ -3,7 +3,7 @@
+ #
  
--	ret = vbus_driver_ioq_alloc(dev, qid, 0, ringsize, &q->queue);
-+	if (name)
-+		snprintf(_name, sizeof(_name), "%s-%s", priv->dev->name, name);
-+
-+	ret = vbus_driver_ioq_alloc(dev, name ? _name : NULL, qid, 0,
-+				    ringsize, &q->queue);
- 	if (ret < 0)
- 		panic("ioq_alloc failed: %d\n", ret);
+ config VBUS_PROXY
+-       tristate "Virtual-Bus support"
++       bool "Virtual-Bus support"
+        select SHM_SIGNAL
+        select IOQ
+        default n
+@@ -14,7 +14,7 @@ config VBUS_PROXY
+ 	on the backend, say Y.  If unsure, say N.
  
-@@ -396,7 +402,8 @@ tx_setup(struct vbus_enet_priv *priv)
- 
- 		priv->pmtd.pool = pool;
- 
--		ret = dev->ops->shm(dev, shmid, 0, pool, poollen, 0, NULL, 0);
-+		ret = dev->ops->shm(dev, NULL, shmid, 0, pool, poollen,
-+				    0, NULL, 0);
- 		BUG_ON(ret < 0);
- 	}
- 
-@@ -1227,12 +1234,13 @@ vbus_enet_evq_negcap(struct vbus_enet_priv *priv, unsigned long count)
- 
- 		priv->evq.pool = pool;
- 
--		ret = dev->ops->shm(dev, query.dpid, 0,
-+		ret = dev->ops->shm(dev, NULL, query.dpid, 0,
- 				    pool, poollen, 0, NULL, 0);
- 		if (ret < 0)
- 			return ret;
- 
--		queue_init(priv, &priv->evq.veq, query.qid, count, evq_isr);
-+		queue_init(priv, &priv->evq.veq, "evq",
-+			   query.qid, count, evq_isr);
- 
- 		ret = ioq_iter_init(priv->evq.veq.queue,
- 				    &iter, ioq_idxtype_valid, 0);
-@@ -1302,7 +1310,7 @@ vbus_enet_l4ro_negcap(struct vbus_enet_priv *priv, unsigned long count)
- 		/*
- 		 * pre-mapped descriptor pool
- 		 */
--		ret = dev->ops->shm(dev, query.dpid, 0,
-+		ret = dev->ops->shm(dev, NULL, query.dpid, 0,
- 				    pool, poollen, 0, NULL, 0);
- 		if (ret < 0) {
- 			printk(KERN_ERR "Error registering L4RO pool: %d\n",
-@@ -1317,7 +1325,8 @@ vbus_enet_l4ro_negcap(struct vbus_enet_priv *priv, unsigned long count)
- 		 * one MTU frame.  All we need to do is keep it populated
- 		 * with free pages.
- 		 */
--		queue_init(priv, &priv->l4ro.pageq, query.pqid, count, NULL);
-+		queue_init(priv, &priv->l4ro.pageq, "pageq", query.pqid,
-+			   count, NULL);
- 
- 		priv->l4ro.pool      = pool;
- 		priv->l4ro.available = true;
-@@ -1395,6 +1404,16 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
- 	if (!dev)
- 		return -ENOMEM;
- 
-+	/*
-+	 * establish our device-name early so we can incorporate it into
-+	 * the signal-path names, etc
-+	 */
-+	rtnl_lock();
-+
-+	ret = dev_alloc_name(dev, dev->name);
-+	if (ret < 0)
-+		goto out_free;
-+
- 	priv = netdev_priv(dev);
- 
- 	spin_lock_init(&priv->lock);
-@@ -1416,8 +1435,10 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
- 
- 	skb_queue_head_init(&priv->tx.outstanding);
- 
--	queue_init(priv, &priv->rxq, VENET_QUEUE_RX, rx_ringlen, rx_isr);
--	queue_init(priv, &priv->tx.veq, VENET_QUEUE_TX, tx_ringlen, tx_isr);
-+	queue_init(priv, &priv->rxq, "rx", VENET_QUEUE_RX, rx_ringlen,
-+		   rx_isr);
-+	queue_init(priv, &priv->tx.veq, "tx", VENET_QUEUE_TX, tx_ringlen,
-+		   tx_isr);
- 
- 	rx_setup(priv);
- 	tx_setup(priv);
-@@ -1453,18 +1474,22 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
- 
- 	dev->features |= NETIF_F_HIGHDMA;
- 
--	ret = register_netdev(dev);
-+	ret = register_netdevice(dev);
- 	if (ret < 0) {
- 		printk(KERN_INFO "VENET: error %i registering device \"%s\"\n",
- 		       ret, dev->name);
- 		goto out_free;
- 	}
- 
-+	rtnl_unlock();
-+
- 	vdev->priv = priv;
- 
- 	return 0;
- 
-  out_free:
-+	rtnl_unlock();
-+
- 	free_netdev(dev);
- 
- 	return ret;
-diff --git a/drivers/vbus/bus-proxy.c b/drivers/vbus/bus-proxy.c
-index 88cd904..5d34942 100644
---- a/drivers/vbus/bus-proxy.c
-+++ b/drivers/vbus/bus-proxy.c
-@@ -167,8 +167,8 @@ static struct ioq_ops vbus_driver_ioq_ops = {
- };
- 
- 
--int vbus_driver_ioq_alloc(struct vbus_device_proxy *dev, int id, int prio,
--			  size_t count, struct ioq **ioq)
-+int vbus_driver_ioq_alloc(struct vbus_device_proxy *dev, const char *name,
-+			  int id, int prio, size_t count, struct ioq **ioq)
- {
- 	struct ioq           *_ioq;
- 	struct ioq_ring_head *head = NULL;
-@@ -188,7 +188,7 @@ int vbus_driver_ioq_alloc(struct vbus_device_proxy *dev, int id, int prio,
- 	head->ver	= IOQ_RING_VER;
- 	head->count     = count;
- 
--	ret = dev->ops->shm(dev, id, prio, head, len,
-+	ret = dev->ops->shm(dev, name, id, prio, head, len,
- 			    &head->signal, &signal, 0);
- 	if (ret < 0)
- 		goto error;
+ config VBUS_PCIBRIDGE
+-       tristate "PCI to Virtual-Bus bridge"
++       bool "PCI to Virtual-Bus bridge"
+        depends on PCI
+        depends on VBUS_PROXY
+        select IOQ
 diff --git a/drivers/vbus/pci-bridge.c b/drivers/vbus/pci-bridge.c
-index 80718e6..fa77318 100644
+index fa77318..fcde495 100644
 --- a/drivers/vbus/pci-bridge.c
 +++ b/drivers/vbus/pci-bridge.c
-@@ -262,7 +262,8 @@ vbus_pci_device_close(struct vbus_device_proxy *vdev, int flags)
+@@ -147,15 +147,14 @@ _signal_init(struct shm_signal *signal, struct shm_signal_desc *desc,
+  */
+ 
+ struct _signal {
++	char               name[64];
+ 	struct vbus_pci   *pcivbus;
+ 	struct shm_signal  signal;
+ 	u32                handle;
+ 	struct rb_node     node;
+ 	struct list_head   list;
+-	struct {
+-		int        notify;
+-		int        inject;
+-	} stats;
++	int                irq;
++	struct irq_desc   *desc;
+ };
+ 
+ static struct _signal *
+@@ -170,7 +169,6 @@ _signal_inject(struct shm_signal *signal)
+ 	struct _signal *_signal = to_signal(signal);
+ 
+ 	vbus_pci.stats.inject++;
+-	_signal->stats.inject++;
+ 	iowrite32(_signal->handle, &vbus_pci.signals->shmsignal);
+ 
+ 	return 0;
+@@ -236,6 +234,7 @@ vbus_pci_device_close(struct vbus_device_proxy *vdev, int flags)
+ 		_signal = list_first_entry(&dev->shms, struct _signal, list);
+ 
+ 		list_del(&_signal->list);
++		free_irq(_signal->irq, _signal);
+ 
+ 		spin_unlock_irqrestore(&vbus_pci.lock, iflags);
+ 		shm_signal_put(&_signal->signal);
+@@ -261,6 +260,27 @@ vbus_pci_device_close(struct vbus_device_proxy *vdev, int flags)
+ 	return 0;
+ }
+ 
++static void vbus_irq_chip_noop(unsigned int irq)
++{
++}
++
++static struct irq_chip vbus_irq_chip = {
++	.name		= "VBUS",
++	.mask		= vbus_irq_chip_noop,
++	.unmask		= vbus_irq_chip_noop,
++	.eoi		= vbus_irq_chip_noop,
++};
++
++irqreturn_t
++shm_signal_intr(int irq, void *dev)
++{
++	struct _signal *_signal = (struct _signal *)dev;
++
++	_shm_signal_wakeup(&_signal->signal);
++
++	return IRQ_HANDLED;
++}
++
+ static int
+ vbus_pci_device_shm(struct vbus_device_proxy *vdev, const char *name,
+ 		    int id, int prio,
+@@ -315,24 +335,45 @@ vbus_pci_device_shm(struct vbus_device_proxy *vdev, const char *name,
+ 
+ 	ret = vbus_pci_buscall(VBUS_PCI_HC_DEVSHM,
+ 				 &params, sizeof(params));
+-	if (ret < 0) {
+-		if (_signal) {
+-			/*
+-			 * We held two references above, so we need to drop
+-			 * both of them
+-			 */
+-			shm_signal_put(&_signal->signal);
+-			shm_signal_put(&_signal->signal);
+-		}
+-
+-		return ret;
+-	}
++	if (ret < 0)
++		goto fail;
+ 
+ 	if (signal) {
++		int irq;
++
+ 		BUG_ON(ret < 0);
+ 
+ 		_signal->handle = ret;
+ 
++		irq = create_irq();
++		if (irq < 0) {
++			printk(KERN_ERR "Failed to create IRQ: %d\n", irq);
++			ret = -ENOSPC;
++			goto fail;
++		}
++
++		_signal->irq = irq;
++		_signal->desc = irq_to_desc(irq);
++
++		set_irq_chip_and_handler_name(irq,
++					      &vbus_irq_chip,
++					      handle_percpu_irq,
++					      "edge");
++
++		if (!name)
++			snprintf(_signal->name, sizeof(_signal->name),
++				"dev%lld-id%d", vdev->id, id);
++		else
++			snprintf(_signal->name, sizeof(_signal->name),
++				"%s", name);
++
++		ret = request_irq(irq, shm_signal_intr, 0,
++				  _signal->name, _signal);
++		if (ret) {
++			printk(KERN_ERR "Failed to request irq: %d\n", irq);
++			goto fail;
++		}
++
+ 		spin_lock_irqsave(&vbus_pci.lock, iflags);
+ 
+ 		list_add_tail(&_signal->list, &dev->shms);
+@@ -344,6 +385,18 @@ vbus_pci_device_shm(struct vbus_device_proxy *vdev, const char *name,
+ 	}
+ 
+ 	return 0;
++
++fail:
++	if (_signal) {
++		/*
++		 * We held two references above, so we need to drop
++		 * both of them
++		 */
++		shm_signal_put(&_signal->signal);
++		shm_signal_put(&_signal->signal);
++	}
++
++	return ret;
  }
  
  static int
--vbus_pci_device_shm(struct vbus_device_proxy *vdev, int id, int prio,
-+vbus_pci_device_shm(struct vbus_device_proxy *vdev, const char *name,
-+		    int id, int prio,
- 		    void *ptr, size_t len,
- 		    struct shm_signal_desc *sdesc, struct shm_signal **signal,
- 		    int flags)
-diff --git a/include/linux/vbus_driver.h b/include/linux/vbus_driver.h
-index 9cfbf60..2b1dac4 100644
---- a/include/linux/vbus_driver.h
-+++ b/include/linux/vbus_driver.h
-@@ -34,7 +34,8 @@ struct vbus_driver;
- struct vbus_device_proxy_ops {
- 	int (*open)(struct vbus_device_proxy *dev, int version, int flags);
- 	int (*close)(struct vbus_device_proxy *dev, int flags);
--	int (*shm)(struct vbus_device_proxy *dev, int id, int prio,
-+	int (*shm)(struct vbus_device_proxy *dev, const char *name,
-+		   int id, int prio,
- 		   void *ptr, size_t len,
- 		   struct shm_signal_desc *sigdesc, struct shm_signal **signal,
- 		   int flags);
-@@ -74,7 +75,7 @@ void vbus_driver_unregister(struct vbus_driver *drv);
- /*
-  * driver-side IOQ helper - allocates device-shm and maps an IOQ on it
-  */
--int vbus_driver_ioq_alloc(struct vbus_device_proxy *dev, int id, int prio,
--			  size_t ringsize, struct ioq **ioq);
-+int vbus_driver_ioq_alloc(struct vbus_device_proxy *dev, const char *name,
-+			  int id, int prio, size_t ringsize, struct ioq **ioq);
+@@ -454,10 +507,10 @@ static void
+ event_shmsignal(struct vbus_pci_handle_event *event)
+ {
+ 	struct _signal *_signal = (struct _signal *)event->handle;
++	struct irq_desc *desc = _signal->desc;
  
- #endif /* _LINUX_VBUS_DRIVER_H */
+ 	vbus_pci.stats.notify++;
+-	_signal->stats.notify++;
+-	_shm_signal_wakeup(&_signal->signal);
++	desc->handle_irq(_signal->irq, desc);
+ }
+ 
+ static void
 
