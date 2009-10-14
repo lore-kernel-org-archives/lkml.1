@@ -1,85 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbZJNJ7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbZJNKDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758546AbZJNJ7R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 05:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758226AbZJNJ7Q
+	id S932478AbZJNKDo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 06:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932309AbZJNKDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 05:59:16 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:19373 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755621AbZJNJ7P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 05:59:15 -0400
-From: Joel Becker <joel.becker@ORACLE.COM>
-To: ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       hch@infradead.org, torvalds@linux-foundation.org
-Subject: [PATCH 2/2] ocfs2: Use MAY_CREATE in ocfs2_permission()
-Date: Wed, 14 Oct 2009 02:57:41 -0700
-Message-Id: <1255514261-25823-3-git-send-email-joel.becker@oracle.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1255514261-25823-1-git-send-email-joel.becker@oracle.com>
-References: <1255514261-25823-1-git-send-email-joel.becker@oracle.com>
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4AD5A09C.00F3:SCFMA4539814,ss=1,fgs=0
+	Wed, 14 Oct 2009 06:03:43 -0400
+Received: from www.tglx.de ([62.245.132.106]:58264 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932271AbZJNKDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 06:03:42 -0400
+Date: Wed, 14 Oct 2009 12:02:07 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
+Subject: [ANNOUNCE] 2.6.31.4-rt14
+In-Reply-To: <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
+ <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
+ <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
+ <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain> <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain> <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ocfs2 has a problem with open(O_CREAT|O_EXCL).  Once you've created the
-file, you can't restart the open(), because O_CREAT|O_EXCL will trigger
--EEXIST.
+We are pleased to announce the next update to our new preempt-rt
+series.
 
-The problem is that ocfs2 is catching the signal ->permission(), called
-by may_open().  This happens after ->create() has successfully created
-the file.  ocfs2_permission() has to get a cluster lock, and this is
-what can be interrupted by a signal.  Now, obviously we want to block
-signals in the O_CREAT|O_EXCL case, but ocfs2_permission() has no way of
-knowing it just got called from open_namei_create().
+   - Forward to 2.6.31.4
+   - Handle futex spurious wakeups
+   - slab fixes for NUMA (peterz)
 
-We key on the MAY_CREATE flag passed to permission to block signals.
+The slab problem is still not completely resolved. It's hard to
+reproduce and was only seen on Nehalem dual socket systems so far. If
+you have such a machine you might help providing a back trace, just run
 
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
----
- fs/ocfs2/file.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+ while true; do hackbench N; done
 
-diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
-index 89fc8ee..b8749fa 100644
---- a/fs/ocfs2/file.c
-+++ b/fs/ocfs2/file.c
-@@ -1141,9 +1141,18 @@ bail:
- int ocfs2_permission(struct inode *inode, int mask)
- {
- 	int ret;
-+	sigset_t oldset;
+until it explodes. Adjust N to your system, the larger the
+better. Make sure you have a serial console to capture the oops.
+
+Download locations:
+  
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
+
+Git release branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
+  
+Git development branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
+
+Gitweb:
+    http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
  
- 	mlog_entry_void();
- 
-+	/*
-+	 * If this inode was just created by open(O_CREAT|O_EXCL), we
-+	 * can't allow signal restarting.  So we need to block signals
-+	 * around the cluster locking.
-+	 */
-+	if (mask & MAY_CREATE)
-+		ocfs2_block_signals(&oldset);
-+
- 	ret = ocfs2_inode_lock(inode, NULL, 0);
- 	if (ret) {
- 		if (ret != -ENOENT)
-@@ -1154,7 +1163,11 @@ int ocfs2_permission(struct inode *inode, int mask)
- 	ret = generic_permission(inode, mask, ocfs2_check_acl);
- 
- 	ocfs2_inode_unlock(inode, 0);
-+
- out:
-+	if (mask & MAY_CREATE)
-+		ocfs2_unblock_signals(&oldset);
-+
- 	mlog_exit(ret);
- 	return ret;
- }
--- 
-1.6.3.3
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.31.4-rt14 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.4.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31.4-rt14.bz2
+
+Enjoy !
+
+      tglx
 
