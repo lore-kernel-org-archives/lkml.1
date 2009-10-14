@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934570AbZJNPlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbZJNPpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934570AbZJNPlq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934560AbZJNPlp
+	id S1761910AbZJNPpU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761156AbZJNPpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:41:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51790 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 11:45:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33860 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934558AbZJNPlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:41:44 -0400
-Date: Wed, 14 Oct 2009 15:40:33 GMT
-From: tip-bot for Cyrill Gorcunov <gorcunov@gmail.com>
+	id S1756721AbZJNPpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 11:45:17 -0400
+Date: Wed, 14 Oct 2009 15:44:15 GMT
+From: tip-bot for Jonathan Corbet <corbet@lwn.net>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       gorcunov@openvz.org, tglx@linutronix.de, gorcunov@gmail.com,
-       mingo@elte.hu
+       fweisbec@gmail.com, corbet@lwn.net, tglx@linutronix.de,
+       mgross@linux.intel.com
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, tglx@linutronix.de, gorcunov@gmail.com,
-       mingo@elte.hu
-In-Reply-To: <20091014150904.GA5259@lenovo>
-References: <20091014150904.GA5259@lenovo>
+       fweisbec@gmail.com, tglx@linutronix.de, corbet@lwn.net,
+       mgross@linux.intel.com
+In-Reply-To: <20091010153349.071381158@linutronix.de>
+References: <20091010153349.071381158@linutronix.de>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/apic] x86, apic: Explain show_lapic= in kernel parameters list
-Message-ID: <tip-9636bc0555e3f383c120ddcffe4b7c5c58a10b1a@git.kernel.org>
-Git-Commit-ID: 9636bc0555e3f383c120ddcffe4b7c5c58a10b1a
+Subject: [tip:bkl/core] pm_qos: remove BKL
+Message-ID: <tip-e6fe07a014c7a3466dcd1a387a9ac04d84c2703c@git.kernel.org>
+Git-Commit-ID: e6fe07a014c7a3466dcd1a387a9ac04d84c2703c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:40:35 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:44:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9636bc0555e3f383c120ddcffe4b7c5c58a10b1a
-Gitweb:     http://git.kernel.org/tip/9636bc0555e3f383c120ddcffe4b7c5c58a10b1a
-Author:     Cyrill Gorcunov <gorcunov@gmail.com>
-AuthorDate: Wed, 14 Oct 2009 19:09:04 +0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 14 Oct 2009 17:28:05 +0200
+Commit-ID:  e6fe07a014c7a3466dcd1a387a9ac04d84c2703c
+Gitweb:     http://git.kernel.org/tip/e6fe07a014c7a3466dcd1a387a9ac04d84c2703c
+Author:     Jonathan Corbet <corbet@lwn.net>
+AuthorDate: Thu, 6 Aug 2009 13:22:40 -0600
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Wed, 14 Oct 2009 15:31:10 +0200
 
-x86, apic: Explain show_lapic= in kernel parameters list
+pm_qos: remove BKL
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: yinghai@kernel.org
-Cc: macro@linux-mips.org
-LKML-Reference: <20091014150904.GA5259@lenovo>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+pm_qos_power_open got its lock_kernel() calls from the open() pushdown.  A
+look at the code shows that the only global resources accessed are
+pm_qos_array and "name".  pm_qos_array doesn't change (things pointed to
+therein do change, but they are atomics and/or are protected by
+pm_qos_lock).  Accesses to "name" are totally unprotected with or without
+the BKL; that will be fixed shortly.  The BKL is not helpful here; take it
+out.
+
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+LKML-Reference: <20091010153349.071381158@linutronix.de>
+Acked-by: Mark Gross <mgross@linux.intel.com>
+Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
 ---
- Documentation/kernel-parameters.txt |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ kernel/pm_qos_params.c |    8 +-------
+ 1 files changed, 1 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 9107b38..465a786 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -345,6 +345,15 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Change the amount of debugging information output
- 			when initialising the APIC and IO-APIC components.
+diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+index dfdec52..d96b83e 100644
+--- a/kernel/pm_qos_params.c
++++ b/kernel/pm_qos_params.c
+@@ -29,7 +29,6 @@
  
-+	show_lapic=	[APIC,X86] Advanced Programmable Interrupt Controller
-+			Limit apic dumping. The parameter defines the maximal
-+			number of local apics being dumped. Also it is possible
-+			to set it to "all" by meaning -- no limit here.
-+			Format: { 1 (default) | 2 | ... | all }.
-+			The parameter valid if only apic=debug or
-+			apic=verbose is specified.
-+			Example: apic=debug show_lapic=all
-+
- 	apm=		[APM] Advanced Power Management
- 			See header of arch/x86/kernel/apm_32.c.
+ #include <linux/pm_qos_params.h>
+ #include <linux/sched.h>
+-#include <linux/smp_lock.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/time.h>
+@@ -352,20 +351,15 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+ 	int ret;
+ 	long pm_qos_class;
+ 
+-	lock_kernel();
+ 	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
+ 	if (pm_qos_class >= 0) {
+ 		filp->private_data = (void *)pm_qos_class;
+ 		sprintf(name, "process_%d", current->pid);
+ 		ret = pm_qos_add_requirement(pm_qos_class, name,
+ 					PM_QOS_DEFAULT_VALUE);
+-		if (ret >= 0) {
+-			unlock_kernel();
++		if (ret >= 0)
+ 			return 0;
+-		}
+ 	}
+-	unlock_kernel();
+-
+ 	return -EPERM;
+ }
  
