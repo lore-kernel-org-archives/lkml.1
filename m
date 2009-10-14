@@ -1,91 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933983AbZJNOq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934046AbZJNOsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933983AbZJNOq6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 10:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933867AbZJNOq5
+	id S934046AbZJNOsP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 10:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933956AbZJNOsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 10:46:57 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:26348 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933843AbZJNOq4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 10:46:56 -0400
-Date: Wed, 14 Oct 2009 07:44:04 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perf/urgent] perf tools: Fix the NO_64BIT build on pure
- 64-bit systems
-Message-Id: <20091014074404.98577824.randy.dunlap@oracle.com>
-In-Reply-To: <20091014062052.GD784@elte.hu>
-References: <tip-55621ccf2b7a8afe39df8c80f55b28424fd07d13@git.kernel.org>
-	<20091013140915.96cfe060.randy.dunlap@oracle.com>
-	<20091014062052.GD784@elte.hu>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4AD5E40C.019E:SCFMA4539814,ss=1,fgs=0
+	Wed, 14 Oct 2009 10:48:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:51470 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933940AbZJNOsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 10:48:13 -0400
+From: Glauber Costa <glommer@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: [PATCH] v4: allow userspace to adjust kvmclock offset
+Date: Wed, 14 Oct 2009 10:47:46 -0400
+Message-Id: <1255531666-16090-1-git-send-email-glommer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Oct 2009 08:20:52 +0200 Ingo Molnar wrote:
+When we migrate a kvm guest that uses pvclock between two hosts, we may
+suffer a large skew. This is because there can be significant differences
+between the monotonic clock of the hosts involved. When a new host with
+a much larger monotonic time starts running the guest, the view of time
+will be significantly impacted.
 
-> 
-> * Randy Dunlap <randy.dunlap@ORACLE.COM> wrote:
-> 
-> > On Mon, 12 Oct 2009 08:34:16 GMT tip-bot for Ingo Molnar wrote:
-> > 
-> > > Commit-ID:  55621ccf2b7a8afe39df8c80f55b28424fd07d13
-> > > Gitweb:     http://git.kernel.org/tip/55621ccf2b7a8afe39df8c80f55b28424fd07d13
-> > > Author:     Ingo Molnar <mingo@elte.hu>
-> > > AuthorDate: Mon, 12 Oct 2009 09:57:25 +0200
-> > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > CommitDate: Mon, 12 Oct 2009 10:00:27 +0200
-> > > 
-> > > perf tools: Fix the NO_64BIT build on pure 64-bit systems
-> > > 
-> > > Randy Dunlap reported that 'make NO_64BIT=1' fails to build
-> > > a pure 32-b it binary on 64-bit/64-bit x86 systems.
-> > > 
-> > > The reason is that we dont pass in the -m32 and GCC defaults
-> > > to -m64.
-> > > 
-> > > So pass it in - and also extend the warning message about libelf
-> > > dependencies - glibc-dev[el] is needed as well beyond the libelf
-> > > library.
-> > 
-> > Ingo, thanks, I finally got this working, after installing more 32-bit
-> > libs etc., like Kyle said that I would need to do.
-> > 
-> > The error message is still a little misleading/confusing:
-> > Makefile:426: *** No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el].  Stop.
-> > 
-> > when elfutils-libelf-devel.i586 is installed but glibc-devel.i[56]86 is not
-> > installed.  gcc failed with:
-> > In file included from /usr/include/features.h:376,
-> >                  from /usr/include/sys/types.h:27,
-> >                  from /usr/include/libelf.h:53,
-> >                  from elfdeveltest.c:1:
-> > /usr/include/gnu/stubs.h:7:27: error: gnu/stubs-32.h: No such file or directory
-> 
-> Why is it misleading? It says it very clearly that you need to install 
-> both:
-> 
->   please install libelf-dev/elfutils-libelf-devel and glibc-dev[el].  Stop.
+Situation is much worse when we do the opposite, and migrate to a host with
+a smaller monotonic clock.
 
-It also says very clearly:
+This proposed ioctl will allow userspace to inform us what is the monotonic
+clock value in the source host, so we can keep the time skew short, and
+more importantly, never goes backwards. Userspace may also need to trigger
+the current data, since from the first migration onwards, it won't be
+reflected by a simple call to clock_gettime() anymore.
 
-Makefile:426: *** No libelf.h/libelf found
+[ v2: uses a struct with a padding ]
+[ v3: provide an ioctl to get clock data too ]
+[ v4: used fixed-width signed type for delta ]
 
-which is not correct.
-
+Signed-off-by: Glauber Costa <glommer@redhat.com>
 ---
-~Randy
+ arch/x86/include/asm/kvm_host.h |    1 +
+ arch/x86/kvm/x86.c              |   35 ++++++++++++++++++++++++++++++++++-
+ include/linux/kvm.h             |    7 +++++++
+ 3 files changed, 42 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 179a919..c9b0d9f 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -410,6 +410,7 @@ struct kvm_arch{
+ 
+ 	unsigned long irq_sources_bitmap;
+ 	u64 vm_init_tsc;
++	s64 kvmclock_offset;
+ };
+ 
+ struct kvm_vm_stat {
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 9601bc6..09f31e2 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -699,7 +699,8 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
+ 	/* With all the info we got, fill in the values */
+ 
+ 	vcpu->hv_clock.system_time = ts.tv_nsec +
+-				     (NSEC_PER_SEC * (u64)ts.tv_sec);
++				     (NSEC_PER_SEC * (u64)ts.tv_sec) + v->kvm->arch.kvmclock_offset;
++
+ 	/*
+ 	 * The interface expects us to write an even number signaling that the
+ 	 * update is finished. Since the guest won't see the intermediate
+@@ -2441,6 +2442,38 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 		r = 0;
+ 		break;
+ 	}
++	case KVM_SET_CLOCK: {
++		struct timespec now;
++		struct kvm_clock_data user_ns;
++		u64 now_ns;
++		s64 delta;
++
++		r =  -EFAULT;
++		if (copy_from_user(&user_ns, argp, sizeof(user_ns)))
++			goto out;
++
++		r = 0;
++		ktime_get_ts(&now);
++		now_ns = timespec_to_ns(&now);
++		delta = user_ns.clock - now_ns;
++		kvm->arch.kvmclock_offset = delta;
++		break;	
++	}
++	case KVM_GET_CLOCK: {
++		struct timespec now;
++		struct kvm_clock_data user_ns;
++		u64 now_ns;
++
++		ktime_get_ts(&now);
++		now_ns = timespec_to_ns(&now);
++		user_ns.clock = kvm->arch.kvmclock_offset + now_ns;
++
++		if (copy_to_user(argp, &user_ns, sizeof(user_ns)))
++			r =  -EFAULT;
++
++		break;	
++	}
++
+ 	default:
+ 		;
+ 	}
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index f8f8900..ad0ecbc 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -497,6 +497,11 @@ struct kvm_irqfd {
+ 	__u8  pad[20];
+ };
+ 
++struct kvm_clock_data {
++	__u64 clock;
++	__u64 pad[2];
++};
++
+ /*
+  * ioctls for VM fds
+  */
+@@ -546,6 +551,8 @@ struct kvm_irqfd {
+ #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
+ #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
+ #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
++#define KVM_SET_CLOCK		  _IOW(KVMIO, 0x7a, struct kvm_clock_data)
++#define KVM_GET_CLOCK		  _IOW(KVMIO, 0x7b, struct kvm_clock_data)
+ 
+ /*
+  * ioctls for vcpu fds
+-- 
+1.6.2.2
+
