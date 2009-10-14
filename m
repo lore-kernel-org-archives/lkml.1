@@ -1,89 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932833AbZJNLPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbZJNLWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932833AbZJNLPZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 07:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932595AbZJNLPY
+	id S1758654AbZJNLWp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 07:22:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756342AbZJNLWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 07:15:24 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:35381 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756251AbZJNLPX (ORCPT
+	Wed, 14 Oct 2009 07:22:44 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55584 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756305AbZJNLWo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 07:15:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Fzm5BYpb15pqMvkjY7RCysVMQiCKLHuqvSLkEYjFLencrtiJ9WQi4IkaB9XgcYDUf+
-         D4SVjueV4bfoa+RnazYax09Qk838pFJX2jrl3hxMxasJulZdhySNA4t10SNW0Lr+Jngh
-         BKwKh475RDLUuwYgZ4gXgc8CUjLhaNSANi+qs=
-Date: Wed, 14 Oct 2009 13:13:25 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-input@vger.kernel.org
-Subject: Re: [bisected regression] Touchpad "paste" stops working after
-	suspend to RAM
-Message-ID: <20091014111325.GA4586@Pilar.aei.mpg.de>
-References: <20091013121109.GB4619@Pilar.aei.mpg.de> <20091013182643.GC21593@core.coreip.homeip.net> <20091013190819.GA7555@Pilar.aei.mpg.de> <20091013194654.GD21593@core.coreip.homeip.net> <20091013202459.GE21593@core.coreip.homeip.net> <20091013231641.GA4404@Pilar.aei.mpg.de> <20091013235607.GA28819@core.coreip.homeip.net> <20091013235701.GB28819@core.coreip.homeip.net> <20091014005131.GA4371@Pilar.aei.mpg.de> <20091014023008.GA29672@core.coreip.homeip.net>
+	Wed, 14 Oct 2009 07:22:44 -0400
+Date: Wed, 14 Oct 2009 13:22:00 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com,
+       Eric Miao <eric.y.miao@gmail.com>
+Subject: Spitz battery questions
+Message-ID: <20091014112200.GA16156@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091014023008.GA29672@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 13.Oct'09 at 19:30:08 -0700, Dmitry Torokhov wrote:
-> On Wed, Oct 14, 2009 at 02:51:31AM +0200, Carlos R. Mafra wrote:
-> > On Tue 13.Oct'09 at 16:57:01 -0700, Dmitry Torokhov wrote:
-> > > On Tue, Oct 13, 2009 at 04:56:08PM -0700, Dmitry Torokhov wrote:
-> > > > On Wed, Oct 14, 2009 at 01:16:41AM +0200, Carlos R. Mafra wrote:
-> > > > > [restoring Cc: list]
-> > > > > 
-> > > > > On Tue 13.Oct'09 at 13:24:59 -0700, Dmitry Torokhov wrote:
-> > > > > >
-> > > > > > Could you please try this patch (again if you could post dmesg that
-> > > > > > would be great). Thank you!
-> > > > > 
-> > > > > The patch quoted below also fixes the problem. I attached the
-> > > > > syslog with i8042.debug (with a s2ram in the middle) to the
-> > > > > bugzilla: 
-> > > > > 
-> > > > > http://bugzilla.kernel.org/show_bug.cgi?id=14392
-> > > > > 
-> > > > 
-> > > > Still not quite happy, although it is better. I don't understand why
-> > > > your box likes to reply on AUX port when command is sent via keyboard
-> > > > port.
-> > > > 
-> > > > Could you please try booting with atkbd.reset (I assume keyboard is
-> > > > built in) and send me yet another dmesg.
-> > > > 
-> > > 
-> > > Oh, yes, keep the last patch applied. Thanks!
-> > 
-> > I uploaded the dmesg with atkbd.reset (and i8042.debug too, btw)
-> > to the bugzilla.
-> > 
-> 
-> Hmm, this is messed up... For some reason your box insists on replying
-> to reset commands from AUX port, no matter what device we trying to
-> reset. Does your box (Vaio, right?) has external PS/2 ports? I don't
-> believe Vaios have docking stations... 
+Hi!
 
-My Vaio has no PS/2 port and no docking station.
+I did some measurements of spitz battery subsystem; maybe they are
+useful for someone.
 
-> Also, could you please boot with
-> i8042.nomux and send me yet another dmesg and dmidecode too.
+Unfortunately, concistent numbers are quite hard: longer/thinner
+cables mean lower voltage and also lower currents :-(. I get quite
+consistents 5V at power supply, but it goes down to 4.5..4.2V when it
+reaches zaurus behind ampermeter. (Is zaurus even able to charge
+battery properly from such low voltage?)
 
-Ok, they are in the kernel bugzilla #14392 now.
+One big surprise was wlan CF card, eating +200mA when initialized.
 
-> Thanks for your patience.
+I'm working on drivers/power/spitz_battery driver, and I'll need to
+know conversion between ADC readings and milivolts; does someone have
+those?
 
-I thank _you_ for digging the problem even further. Your proposed patch
-"fixed" it already for me, but you are being honest in saying that
-you are still not happy with your fix and want to do better. I really
-appreciate that and will help you with what I can do. I hope there is
-a way out of my Vaio's oddities.
+Does someone have better/more reliable/other power consumption numbers?
+
+								Pavel
+
+Idle, charging, no backlight, linux 2.6.26: 200mA @ 4.8V
+		bl 1:			310mA
+		bl 10:			315mA
+		bl 20			340mA
+		bl 30:			390mA
+		bl 40:			440mA
+		bl 47:			445mA
+disk is spinning:			+50mA
+find /:				       +200mA
+cat /dev/zero:			       +100mA
+make:				       +240mA
+
+charging, powerdown:		        380mA..440mA
+charging, ROM menu:			550mA
+D+M monitor, not charging:		170mA
+D+M monitor, half charging:		280mA
+D+M monitor, full charging:		480mA..550mA
+
+Charging in ROM, 23:17:			260mA
+	         23:21:			245mA
+		 23:25:			230mA
+		 23:34:			205mA
+		 0:08:			100mA
+		 0:29:			80mA, charger LED is off
+
+Charging in ROM, from empty @ 8:35:	610mA
+		              8:38:	555mA
+			      8:45:	545mA
+			      8:50:	540mA
+			      9:01:	540mA
+			      9:18:	530mA
+			      9:36:	520mA
+			      9:45:	505mA
+			      9:51:	480mA
+			     10:15:	365mA
+			     10:48:	250mA
+			     11:01:	225mA
+			     11:31:	180mA
+			     11:38:	170mA
+			     12:48:	 80mA, charger LED is off.
+
+Measured @ li-ion battery.
+ROM					<7mA
+Linux 2.6.26 suspend:			7.5mA, 10mA?!
+Linux 2.6.26, fully running, charger connected: 50uA :-(
+						100mA charge
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
