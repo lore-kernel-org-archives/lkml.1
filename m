@@ -1,116 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932859AbZJNKqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932994AbZJNKv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932859AbZJNKqd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 06:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932817AbZJNKqc
+	id S932994AbZJNKv0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 06:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756103AbZJNKvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 06:46:32 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:48993 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932687AbZJNKqb (ORCPT
+	Wed, 14 Oct 2009 06:51:25 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:61187 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755946AbZJNKvY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 06:46:31 -0400
-Date: Wed, 14 Oct 2009 12:45:53 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Peter.Oberparleiter@de.ibm.com, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, heiko.carstens@de.ibm.com,
-       linux-s390@vger.kernel.org
-Subject: Re: [BUILD_FAILURE] next-20091013 s390x - build breaks SCLP VT220
- terminal driver
-Message-ID: <20091014124553.596e7f5a@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20091013162809.GA27977@linux.vnet.ibm.com>
-References: <20091013162312.8b93998b.sfr@canb.auug.org.au>
- <20091013162809.GA27977@linux.vnet.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 06:51:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
+         :content-type:content-disposition:x-operating-system:user-agent;
+        b=TjmOoPjnNU9JpX5BW4/345FoyJHfuGESUIHK0rXF8BXSrA2GOYpsehiLOyHjom1bSP
+         zQ+K4Amn3EoPVyMoYLX4bBTF+r1x/PPwcW+HlvjEljAPbbTzKUfb7L0bSIvlKdYHZ4g4
+         sQnfa3odT8aB+tRABst4emOKyeSdjNe5RJj5M=
+Date: Wed, 14 Oct 2009 18:50:39 +0800
+From: Li Hong <lihong.hi@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: irq.c rename 'performance counter interrupt'
+Message-ID: <20091014105039.GA22670@uhli>
+Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Operating-System: Linux uhli 2.6.28-11-generic 
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009 21:58:09 +0530
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+In 'cdd6c482c9ff9c55475ee7392ec8f672eddb7be6', Ingo Molnar has renamed
+Performance Counters -> Performance Events. The name showed up in
+/proc/interrupts also needs a change. I use PMI (Performance monitoring
+interrupt) here, since it is the official name used in Intel's documents.
 
-> 	next-20091013 randconfig build on s390x build breaks with
-> 
-> drivers/s390/built-in.o:(.data+0x3354): undefined reference to `sclp_vt220_pm_event_fn'
-
-Michael pointed out a problem with my fix: suspend/resume of a vt220 console with
-SCLP_VT220_CONSOLE=n doesn't work any more. V2 of the patch:
-
---
-Subject: [PATCH] sclp_vt220 build fix
-
-From: Michael Holzheu <michael.holzheu@linux.vnet.ibm.com>
-
-Fix this build error:
-
-	next-20091013 randconfig build on s390x build breaks with
-
-drivers/s390/built-in.o:(.data+0x3354): undefined reference to `sclp_vt220_pm_event_fn'
-
-Reported-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Signed-off-by: Michael Holzheu <michael.holzheu@linux.vnet.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Li Hong <lihong.hi@gmail.com>
 ---
+ arch/x86/kernel/irq.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- drivers/s390/char/sclp_vt220.c |   30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
-
-diff -urpN linux-2.6/drivers/s390/char/sclp_vt220.c linux-2.6-patched/drivers/s390/char/sclp_vt220.c
---- linux-2.6/drivers/s390/char/sclp_vt220.c	2009-09-10 00:13:59.000000000 +0200
-+++ linux-2.6-patched/drivers/s390/char/sclp_vt220.c	2009-10-14 12:41:48.000000000 +0200
-@@ -705,21 +705,6 @@ out_driver:
- }
- __initcall(sclp_vt220_tty_init);
- 
--#ifdef CONFIG_SCLP_VT220_CONSOLE
--
--static void
--sclp_vt220_con_write(struct console *con, const char *buf, unsigned int count)
--{
--	__sclp_vt220_write((const unsigned char *) buf, count, 1, 1, 0);
--}
--
--static struct tty_driver *
--sclp_vt220_con_device(struct console *c, int *index)
--{
--	*index = 0;
--	return sclp_vt220_driver;
--}
--
- static void __sclp_vt220_flush_buffer(void)
- {
- 	unsigned long flags;
-@@ -776,6 +761,21 @@ static void sclp_vt220_pm_event_fn(struc
- 	}
- }
- 
-+#ifdef CONFIG_SCLP_VT220_CONSOLE
-+
-+static void
-+sclp_vt220_con_write(struct console *con, const char *buf, unsigned int count)
-+{
-+	__sclp_vt220_write((const unsigned char *) buf, count, 1, 1, 0);
-+}
-+
-+static struct tty_driver *
-+sclp_vt220_con_device(struct console *c, int *index)
-+{
-+	*index = 0;
-+	return sclp_vt220_driver;
-+}
-+
- static int
- sclp_vt220_notify(struct notifier_block *self,
- 			  unsigned long event, void *data)
+diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
+index 3912061..86fb2c8 100644
+--- a/arch/x86/kernel/irq.c
++++ b/arch/x86/kernel/irq.c
+@@ -63,10 +63,10 @@ static int show_other_interrupts(struct seq_file *p, int prec)
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->irq_spurious_count);
+ 	seq_printf(p, "  Spurious interrupts\n");
+-	seq_printf(p, "%*s: ", prec, "CNT");
++	seq_printf(p, "%*s: ", prec, "PMI");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->apic_perf_irqs);
+-	seq_printf(p, "  Performance counter interrupts\n");
++	seq_printf(p, "  Performance monitoring interrupts\n");
+ 	seq_printf(p, "%*s: ", prec, "PND");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->apic_pending_irqs);
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+1.6.0.4
 
