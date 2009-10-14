@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934143AbZJNUkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934227AbZJNUkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934143AbZJNUkQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 16:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934087AbZJNUkN
+	id S934227AbZJNUkX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 16:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934155AbZJNUkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 16:40:13 -0400
-Received: from slow3-v.mail.gandi.net ([217.70.178.89]:40972 "EHLO
+	Wed, 14 Oct 2009 16:40:21 -0400
+Received: from slow3-v.mail.gandi.net ([217.70.178.89]:33698 "EHLO
 	slow3-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934085AbZJNUkK (ORCPT
+	with ESMTP id S934087AbZJNUkS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 16:40:10 -0400
-Date: Wed, 14 Oct 2009 13:26:50 -0700
+	Wed, 14 Oct 2009 16:40:18 -0400
+Date: Wed, 14 Oct 2009 13:28:53 -0700
 From: Josh Triplett <josh@joshtriplett.org>
 To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
@@ -19,45 +19,61 @@ Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com, npiggin@suse.de,
        jens.axboe@oracle.com
-Subject: Re: [PATCH tip/core/rcu 5/6] rcu: add rnp->blocked_tasks to tracing
-Message-ID: <20091014202649.GC2395@feather>
+Subject: Re: [PATCH tip/core/rcu 0/6] rcu: fix synchronize_rcu_expedited(),
+ update docs, improve perf
+Message-ID: <20091014202853.GD2395@feather>
 References: <20091014171517.GA13635@linux.vnet.ibm.com>
- <1255540559475-git-send-email->
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1255540559475-git-send-email->
+In-Reply-To: <20091014171517.GA13635@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 10:15:58AM -0700, Paul E. McKenney wrote:
-> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+On Wed, Oct 14, 2009 at 10:15:17AM -0700, Paul E. McKenney wrote:
+> This patchset contains a bug fix, a performance improvement, and
+> documentation updates:
 > 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
->  kernel/rcutree_trace.c |    7 +++++--
->  1 files changed, 5 insertions(+), 2 deletions(-)
+> o	Update Documentation/RCU/trace.txt to reflect recent changes
+> 	(including the removal of rcupreempt.c).
 > 
-> diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
-> index 4b31c77..f9d01a3 100644
-> --- a/kernel/rcutree_trace.c
-> +++ b/kernel/rcutree_trace.c
-> @@ -155,12 +155,13 @@ static const struct file_operations rcudata_csv_fops = {
->  
->  static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
->  {
-> +	long gpnum;
->  	int level = 0;
->  	struct rcu_node *rnp;
->  
->  	seq_printf(m, "c=%ld g=%ld s=%d jfq=%ld j=%x "
->  		      "nfqs=%lu/nfqsng=%lu(%lu) fqlh=%lu oqlen=%ld\n",
-> -		   rsp->completed, rsp->gpnum, rsp->signaled,
-> +		   rsp->completed, gpnum = rsp->gpnum, rsp->signaled,
+> o	Fix to the severe performance problem with excessive IPIs and
+> 	lock contention in presence of very large (but legal) numbers
+> 	of RCU callbacks (reported by Nick Piggin).
+> 
+> o	Stopgap fix for a bug in TREE_PREEMPT_RCU's implementation of
+> 	synchronize_rcu_expedited().  This fix is correct, but no faster
+> 	than synchronize_rcu().
+> 
+> o	Add exports for the updated synchronize_rcu_expedited()
+> 	implementation, which moved from a static inline in
+> 	include/linux/rcupdate.h to a separately compiled function
+> 	in kernel/rcutree_plugin.h.
+> 
+> o	Add the new rnp->blocked_tasks field to the rcuhier trace file
+> 	in debugfs.
+> 
+> o	Update the Documentation/RCU/trace.txt documentation to include
+> 	the rnp->blocked_tasks tracing.
+> 
+> I believe that this is 2.6.32 material.
+> 
+>  Documentation/RCU/trace.txt   |   22 ++-
+>  b/Documentation/RCU/trace.txt |  232 +++++-------------------------------------
+>  b/include/linux/rcutree.h     |    6 -
+>  b/kernel/rcutree.c            |   29 ++++-
+>  b/kernel/rcutree.h            |    5 
+>  b/kernel/rcutree_plugin.h     |   20 +++
+>  b/kernel/rcutree_trace.c      |    8 -
+>  kernel/rcutree_plugin.h       |    3 
+>  8 files changed, 103 insertions(+), 222 deletions(-)
 
-Please don't hide this or any other assignment in the middle of a print
-statement.  Just put it immediately preceeding the statement.
+For all of these patches except 5/6 (commented on separately):
+Acked-by: Josh Triplett <josh@joshtriplett.org>
+
+I agree that these need to go into 2.6.32, to accompany the switch to
+using hierarchical RCU exclusively.
 
 - Josh Triplett
