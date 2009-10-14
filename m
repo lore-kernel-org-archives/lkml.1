@@ -1,112 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934582AbZJNPpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934596AbZJNPpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934582AbZJNPpa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934566AbZJNPp3
+	id S934596AbZJNPpj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934587AbZJNPpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:45:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33867 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 11:45:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33877 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934565AbZJNPp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:45:28 -0400
-Date: Wed, 14 Oct 2009 15:44:31 GMT
-From: tip-bot for Jonathan Corbet <corbet@lwn.net>
+	id S934585AbZJNPph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 11:45:37 -0400
+Date: Wed, 14 Oct 2009 15:44:46 GMT
+From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, corbet@lwn.net, tglx@linutronix.de,
-       mgross@linux.intel.com
+       tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, tglx@linutronix.de, corbet@lwn.net,
-       mgross@linux.intel.com
-In-Reply-To: <20091010153349.113570550@linutronix.de>
-References: <20091010153349.113570550@linutronix.de>
+       tglx@linutronix.de
+In-Reply-To: <20091010153349.405590702@linutronix.de>
+References: <20091010153349.405590702@linutronix.de>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:bkl/core] pm_qos: clean up racy global "name" variable
-Message-ID: <tip-1a6deaea3584fd7af1cad492b1fe0867060b45db@git.kernel.org>
-Git-Commit-ID: 1a6deaea3584fd7af1cad492b1fe0867060b45db
+Subject: [tip:bkl/core] sys: Remove BKL from sys_reboot
+Message-ID: <tip-6f15fa50087c8317e353145319466afbeb27a75d@git.kernel.org>
+Git-Commit-ID: 6f15fa50087c8317e353145319466afbeb27a75d
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:44:32 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:44:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1a6deaea3584fd7af1cad492b1fe0867060b45db
-Gitweb:     http://git.kernel.org/tip/1a6deaea3584fd7af1cad492b1fe0867060b45db
-Author:     Jonathan Corbet <corbet@lwn.net>
-AuthorDate: Thu, 6 Aug 2009 13:35:44 -0600
+Commit-ID:  6f15fa50087c8317e353145319466afbeb27a75d
+Gitweb:     http://git.kernel.org/tip/6f15fa50087c8317e353145319466afbeb27a75d
+Author:     Thomas Gleixner <tglx@linutronix.de>
+AuthorDate: Fri, 9 Oct 2009 20:31:33 +0200
 Committer:  Thomas Gleixner <tglx@linutronix.de>
 CommitDate: Wed, 14 Oct 2009 15:31:10 +0200
 
-pm_qos: clean up racy global "name" variable
+sys: Remove BKL from sys_reboot
 
-"name" is a poor name for a file-global variable.  It was used in three
-different functions, with no mutual exclusion.  But it's just a tiny,
-temporary string; let's just move it onto the stack in the functions that
-need it.  Also use snprintf() just in case.
+Serialization of sys_reboot can be done local. The BKL is not
+protecting anything else.
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-LKML-Reference: <20091010153349.113570550@linutronix.de>
-Acked-by: Mark Gross <mgross@linux.intel.com>
-Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <20091010153349.405590702@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
 ---
- kernel/pm_qos_params.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+ kernel/sys.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index d96b83e..3db49b9 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -343,18 +343,18 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 255475d..22ea955 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -8,7 +8,6 @@
+ #include <linux/mm.h>
+ #include <linux/utsname.h>
+ #include <linux/mman.h>
+-#include <linux/smp_lock.h>
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/prctl.h>
+@@ -349,6 +348,9 @@ void kernel_power_off(void)
+ 	machine_power_off();
  }
- EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
+ EXPORT_SYMBOL_GPL(kernel_power_off);
++
++static DEFINE_MUTEX(reboot_mutex);
++
+ /*
+  * Reboot system call: for obvious reasons only root may call it,
+  * and even root needs to set up some magic numbers in the registers
+@@ -381,7 +383,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+ 	if ((cmd == LINUX_REBOOT_CMD_POWER_OFF) && !pm_power_off)
+ 		cmd = LINUX_REBOOT_CMD_HALT;
  
--#define PID_NAME_LEN sizeof("process_1234567890")
--static char name[PID_NAME_LEN];
-+#define PID_NAME_LEN 32
+-	lock_kernel();
++	mutex_lock(&reboot_mutex);
+ 	switch (cmd) {
+ 	case LINUX_REBOOT_CMD_RESTART:
+ 		kernel_restart(NULL);
+@@ -397,20 +399,18 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
  
- static int pm_qos_power_open(struct inode *inode, struct file *filp)
- {
- 	int ret;
- 	long pm_qos_class;
-+	char name[PID_NAME_LEN];
+ 	case LINUX_REBOOT_CMD_HALT:
+ 		kernel_halt();
+-		unlock_kernel();
+ 		do_exit(0);
+ 		panic("cannot halt");
  
- 	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
- 	if (pm_qos_class >= 0) {
- 		filp->private_data = (void *)pm_qos_class;
--		sprintf(name, "process_%d", current->pid);
-+		snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
- 		ret = pm_qos_add_requirement(pm_qos_class, name,
- 					PM_QOS_DEFAULT_VALUE);
- 		if (ret >= 0)
-@@ -366,9 +366,10 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
- static int pm_qos_power_release(struct inode *inode, struct file *filp)
- {
- 	int pm_qos_class;
-+	char name[PID_NAME_LEN];
+ 	case LINUX_REBOOT_CMD_POWER_OFF:
+ 		kernel_power_off();
+-		unlock_kernel();
+ 		do_exit(0);
+ 		break;
  
- 	pm_qos_class = (long)filp->private_data;
--	sprintf(name, "process_%d", current->pid);
-+	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
- 	pm_qos_remove_requirement(pm_qos_class, name);
+ 	case LINUX_REBOOT_CMD_RESTART2:
+ 		if (strncpy_from_user(&buffer[0], arg, sizeof(buffer) - 1) < 0) {
+-			unlock_kernel();
+-			return -EFAULT;
++			ret = -EFAULT;
++			break;
+ 		}
+ 		buffer[sizeof(buffer) - 1] = '\0';
  
- 	return 0;
-@@ -379,13 +380,14 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
- {
- 	s32 value;
- 	int pm_qos_class;
-+	char name[PID_NAME_LEN];
+@@ -433,7 +433,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+ 		ret = -EINVAL;
+ 		break;
+ 	}
+-	unlock_kernel();
++	mutex_unlock(&reboot_mutex);
+ 	return ret;
+ }
  
- 	pm_qos_class = (long)filp->private_data;
- 	if (count != sizeof(s32))
- 		return -EINVAL;
- 	if (copy_from_user(&value, buf, sizeof(s32)))
- 		return -EFAULT;
--	sprintf(name, "process_%d", current->pid);
-+	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
- 	pm_qos_update_requirement(pm_qos_class, name, value);
- 
- 	return  sizeof(s32);
