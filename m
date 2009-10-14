@@ -1,158 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760877AbZJNCGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbZJNCHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760877AbZJNCGY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 22:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbZJNCGX
+	id S1761412AbZJNCHP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 22:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761332AbZJNCHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 22:06:23 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62389 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753120AbZJNCGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 22:06:22 -0400
-Message-ID: <4AD531E5.6070103@cn.fujitsu.com>
-Date: Wed, 14 Oct 2009 10:05:25 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 13 Oct 2009 22:07:12 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:40660 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761231AbZJNCHJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 22:07:09 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=aRq4Ow10j4gA:10 a=w4iE+TBsmj5y1WloLYF40w==:17 a=VwQbUJbxAAAA:8
+ a=W0vUJOdyAAAA:8 a=6Hhw-4AeoF6RKra1lM4A:9 a=Uq3VrzhYLQvyGs4K2T4A:7
+ a=KZjrsIMKP00gJEozHXVr3Wl8iT0A:4 a=x8gzFH9gYPwA:10
+From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+Reply-To: tfjellstrom@shaw.ca
+To: linux-kernel@vger.kernel.org
+Subject: Re: buffer io error on device sr0?
+Date: Tue, 13 Oct 2009 20:06:16 -0600
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-git2; KDE/4.3.2; x86_64; ; )
+Cc: Robert Hancock <hancockrwd@gmail.com>
+References: <200910130343.32162.tfjellstrom@shaw.ca> <4AD51D3F.2030603@gmail.com>
+In-Reply-To: <4AD51D3F.2030603@gmail.com>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
-       mtosatti@redhat.com, torvalds@linux-foundation.org
-Subject: Re: [PATCH RFC tip/core/rcu 1/3] rcu: The Bloatwatch Edition, v7
-References: <20091009224954.GA26516@linux.vnet.ibm.com> <4AD42FF5.2080109@cn.fujitsu.com> <20091013170022.GA6782@linux.vnet.ibm.com> <4AD51D3E.60103@cn.fujitsu.com> <20091014010956.GG6782@linux.vnet.ibm.com>
-In-Reply-To: <20091014010956.GG6782@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910132006.16747.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Wed, Oct 14, 2009 at 08:37:18AM +0800, Lai Jiangshan wrote:
->> Paul E. McKenney wrote:
->>>> It's an old issue.
->>>> It's not only about RCUTINY, it's also about other rcu implementations:
->>>>
->>>> rcu_enter_nohz()/rcu_exit_nohz() are not called in pairs.
->>>>
->>>> irq_exit() calls tick_nohz_stop_sched_tick() which calls rcu_enter_nohz(),
->>>> where is the corresponding rcu_exit_nohz()?
->>>> (or tick_nohz_restart_sched_tick())?
->>> The tick_nohz_restart_sched_tick() function is called from the various
->>> per-architecture cpu_idle() functions (or default_idle() or whatever
->>> name that the architecture uses).  For example, in:
->>>
->>> 	arch/x86/kernel/process_64.c
->>>
->>> the cpu_idle() function invokes tick_nohz_restart_sched_tick() just
->>> before invoking schedule() to exit the idle loop.
->>>
->>> And, as you say, tick_nohz_restart_sched_tick() invokes rcu_exit_nohz().
->> These tick_nohz_restart_sched_tick() which are called from the various
->> per-architecture cpu_idle() functions are not the opposite of
->> the tick_nohz_stop_sched_tick() in *irq_exit()*. So I figure that 
->> rcu_enter_nohz()/rcu_exit_nohz() are not called in pairs.
+On Tue October 13 2009, Robert Hancock wrote:
+> On 10/13/2009 03:43 AM, Thomas Fjellstrom wrote:
+> > I'm not sure which version it started, but it seems at least
+> > 2.6.32-rc3-git2 has issues with detecting blank DVDR disks.
+> >
+> > [220595.198654] cdrom: This disc doesn't have any tracks I recognize!
+> > [220595.298488] sr 3:0:0:0: [sr0] Unhandled sense code
+> > [220595.298492] sr 3:0:0:0: [sr0] Result: hostbyte=DID_OK
+> > driverbyte=DRIVER_SENSE
+> > [220595.298496] sr 3:0:0:0: [sr0] Sense Key : Blank Check [current]
+> > [220595.298501] sr 3:0:0:0: [sr0] Add. Sense: No additional sense
+> > information [220595.298505] sr 3:0:0:0: [sr0] CDB: Read(10): 28 00 00 00
+> > 00 00 00 00 01 00 [220595.298514] end_request: I/O error, dev sr0, sector
+> > 0
+> > [220595.298518] Buffer I/O error on device sr0, logical block 0
+> > [220595.304554] sr 3:0:0:0: [sr0] Unhandled sense code
+> > [220595.304562] sr 3:0:0:0: [sr0] Result: hostbyte=DID_OK
+> > driverbyte=DRIVER_SENSE
+> > [220595.304570] sr 3:0:0:0: [sr0] Sense Key : Blank Check [current]
+> > [220595.304579] sr 3:0:0:0: [sr0] Add. Sense: No additional sense
+> > information [220595.304588] sr 3:0:0:0: [sr0] CDB: Read(10): 28 00 00 00
+> > 00 00 00 00 01 00 [220595.304609] end_request: I/O error, dev sr0, sector
+> > 0
+> > [220595.304616] Buffer I/O error on device sr0, logical block 0
+> >
+> > Unless its supposed to be this way. Although I didn't receive any kind of
+> > notification when inserting the disk, as I used to (could be a hal/kde
+> > error, but the logs in dmesg seem to hint otherwise).
 > 
-> OK, let's start with rcu_enter_nohz(), which tells RCU that the running
-> CPU is going into dyntick-idle mode, and thus should be ignored by RCU.
-> Let's do the idle loop first:
+> Something tried to read off the disk and the drive reported "no way,
+> it's blank". That's all this indicates. Most likely HAL or something is
+> doing the read..
+
+Ah, I was reading it as "Someone is checking for a disk, lets return an error 
+instead of just saying the disk is blank".
+
+Thanks for the clarification.
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> o	Upon entry to the idle() loop (using cpu_idle() in
-> 	arch/x86/kernel/process_64.c for this exercise),
-> 	we invoke tick_nohz_stop_sched_tick(1), which says we
-> 	are in an idle loop.  (This is in contrast to the call
-> 	from irq_exit(), where we are not in the idle loop.)
-> 
-> o	tick_nohz_stop_sched_tick() invokes rcu_enter_nohz(),
-> 	does a bunch of timer checking, and returns.  If anything
-> 	indicated that entering dyntick-idle mode would be bad,
-> 	we raise TIMER_SOFTIRQ to kick us out of this mode.
-> 
-> 	Either way, we return to the idle loop.
-> 
-> o	The idle loops until need_resched().  Upon exit from the
-> 	idle loop, we call tick_nohz_restart_sched_tick(), which
-> 	invokes rcu_exit_nohz(), which tells RCU to start paying
-> 	attention to this CPU once more.
-> 
-> OK, now for interrupts.
-> 
-> o	The hardware interrupt handlers invoke irq_enter(), which in
-> 	turn invokes rcu_irq_enter().  This has no real effect (other
-> 	than incrementing a counter) if the interrupt did not come
-> 	from dyntick-idle mode.
-> 
-> 	Either way, RCU is now paying attention to RCU read-side
-> 	critical sections on this CPU.
-> 
-> o	Upon return from interrupt, the hardware interrupt handlers
-> 	invoke irq_exit(), which in turn invokes rcu_irq_exit().
-> 	This has no real effect (other than decrementing a counter)
-> 	if the interrupt is not returning to dyntick-idle mode.
-> 
-> 	However, if the interrupt -is- returning to dyntick-idle
-> 	mode, then RCU will stop paying attention to RCU read-side
-> 	critical sections on this CPU.
 
 
-You haven't explain the tick_nohz_stop_sched_tick() in *irq_exit()*.
-(tick_nohz_stop_sched_tick() calls rcu_enter_nohz())
-
-void irq_exit(void)
-{
-	....
-	rcu_irq_exit(); /* This is OK, the opposite is in irq_enter() */
-	if (idle_cpu(smp_processor_id()) && !in_interrupt() && !need_resched())
-		tick_nohz_stop_sched_tick(0); /* where is the opposite ??? */
-	....
-}
-
-This means if the interrupt -is- returning to dyntick-idle mode,
-rcu_enter_nohz() is called again.
-
-Take this flow as example:
-
-cpu_idle():
-while(1) {
-
-  tick_nohz_stop_sched_tick()
-     rcu_enter_nohz()                 *****
-------->interrupt happen
-        irq_enter()
-        irq_exit()
-           tick_nohz_stop_sched_tick()
-              rcu_enter_nohz()       *****
-<-------interrupt returns
-  tick_nohz_restart_sched_tick()
-     rcu_exit_nohz()                  *****
-
-} /* while(1) */
-
-
-You can see that rcu_enter_nohz() is called twice and
-rcu_exit_nohz() is only called once in this flow.
-
-It's because tick_nohz_stop_sched_tick()/tick_nohz_restart_sched_tick()
-are not called in pairs, so rcu_enter_nohz() and rcu_exit_nohz()
-are not called in pairs either.
-
-Lai
-
-> 
-> So I do believe that rcu_enter_nohz() and rcu_exit_nohz() are in fact
-> invoked in pairs.  One strange thing about this is that the idle loop
-> first invokes rcu_enter_nohz(), then invokes rcu_exit_nohz(), while
-> an interrupt handler first invokes rcu_irq_enter() and then invokes
-> rcu_irq_exit().  So the idle loop enters dyntick-idle mode and then
-> leaves it, while an interrupt handler might leave dyntick-idle mode and
-> then re-enter it.
-> 
-> Or am I still missing something here?
-> 
-> 							Thanx, Paul
-> 
-> 
-
+-- 
+Thomas Fjellstrom
+tfjellstrom@shaw.ca
