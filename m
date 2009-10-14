@@ -1,117 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761845AbZJNSwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761429AbZJNSyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761845AbZJNSwy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 14:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756476AbZJNSwx
+	id S1761429AbZJNSyN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 14:54:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756651AbZJNSyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 14:52:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54511 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756416AbZJNSww (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 14:52:52 -0400
-Date: Wed, 14 Oct 2009 11:51:23 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Oleg Nesterov <oleg@redhat.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Paul Fulghum <paulkf@microgate.com>,
-       Boyan <btanastasov@yahoo.co.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <20091014182037.GA10076@redhat.com>
-Message-ID: <alpine.LFD.2.01.0910141131050.6146@localhost.localdomain>
-References: <4AD4DE4C.4010402@yahoo.co.uk> <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain> <4AD4F548.2030506@microgate.com> <alpine.LFD.2.01.0910131514100.3404@localhost.localdomain> <1255478932.19056.24.camel@localhost.localdomain>
- <4AD51D6B.7010509@microgate.com> <alpine.LFD.2.01.0910131744590.3404@localhost.localdomain> <20091014125846.1a3c8d40@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0910140804180.6146@localhost.localdomain> <alpine.LFD.2.01.0910140925440.6146@localhost.localdomain>
- <20091014182037.GA10076@redhat.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 14 Oct 2009 14:54:12 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:16213 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755864AbZJNSyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 14:54:10 -0400
+Date: Wed, 14 Oct 2009 15:53:27 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Glauber Costa <glommer@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: [PATCH] v4: allow userspace to adjust kvmclock offset
+Message-ID: <20091014185327.GD4218@amt.cnet>
+References: <1255531666-16090-1-git-send-email-glommer@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255531666-16090-1-git-send-email-glommer@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 14 Oct 2009, Oleg Nesterov wrote:
+On Wed, Oct 14, 2009 at 10:47:46AM -0400, Glauber Costa wrote:
+> When we migrate a kvm guest that uses pvclock between two hosts, we may
+> suffer a large skew. This is because there can be significant differences
+> between the monotonic clock of the hosts involved. When a new host with
+> a much larger monotonic time starts running the guest, the view of time
+> will be significantly impacted.
 > 
-> >  void tty_flush_to_ldisc(struct tty_struct *tty)
-> >  {
-> > -	flush_to_ldisc(&tty->buf.work.work);
-> > +	flush_delayed_work(&tty->buf.work);
-> >  }
+> Situation is much worse when we do the opposite, and migrate to a host with
+> a smaller monotonic clock.
 > 
-> Can't comment this change because I don't understand the problem.
-
-The work function is "flush_to_ldisc()", and what we want to make sure of 
-is that the work has been called. We used to just call the work function 
-directly - but that meant that now one CPU might be running that "direct" 
-call, while another CPU might be running flush_to_ldisc through keventd.
-
-So this makes the "flush_to_ldisc()" is now instead always called through 
-keventd (but there's still a possibility that two keventd threads run it 
-concurrently - although that is going to be _very_ rare).
-
+> This proposed ioctl will allow userspace to inform us what is the monotonic
+> clock value in the source host, so we can keep the time skew short, and
+> more importantly, never goes backwards. Userspace may also need to trigger
+> the current data, since from the first migration onwards, it won't be
+> reflected by a simple call to clock_gettime() anymore.
 > 
-> > + * flush_delayed_work - block until a dwork_struct's callback has terminated
-> > + * @dwork: the delayed work which is to be flushed
-> > + *
-> > + * Any timeout is cancelled, and any pending work is run immediately.
-> > + */
-> > +void flush_delayed_work(struct delayed_work *dwork)
-> > +{
-> > +	if (del_timer(&dwork->timer)) {
-> > +		struct cpu_workqueue_struct *cwq;
-> > +		cwq = wq_per_cpu(keventd_wq, get_cpu());
-> > +		__queue_work(cwq, &dwork->work);
-> > +		put_cpu();
-> > +	}
-> > +	flush_work(&dwork->work);
-> > +}
+> [ v2: uses a struct with a padding ]
+> [ v3: provide an ioctl to get clock data too ]
+> [ v4: used fixed-width signed type for delta ]
 > 
-> I think this is correct. If del_timer() succeeds, we "own" _PENDING bit and
-> dwork->work must not be queued. But afaics this helper needs del_timer_sync(),
-> otherwise I am not sure about the "flush" part.
+> Signed-off-by: Glauber Costa <glommer@redhat.com>
+> ---
+>  arch/x86/include/asm/kvm_host.h |    1 +
+>  arch/x86/kvm/x86.c              |   35 ++++++++++++++++++++++++++++++++++-
+>  include/linux/kvm.h             |    7 +++++++
+>  3 files changed, 42 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+> index 179a919..c9b0d9f 100644
+> --- a/arch/x86/include/asm/kvm_host.h
+> +++ b/arch/x86/include/asm/kvm_host.h
+> @@ -410,6 +410,7 @@ struct kvm_arch{
+>  
+>  	unsigned long irq_sources_bitmap;
+>  	u64 vm_init_tsc;
+> +	s64 kvmclock_offset;
+>  };
+>  
+>  struct kvm_vm_stat {
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 9601bc6..09f31e2 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -699,7 +699,8 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
+>  	/* With all the info we got, fill in the values */
+>  
+>  	vcpu->hv_clock.system_time = ts.tv_nsec +
+> -				     (NSEC_PER_SEC * (u64)ts.tv_sec);
+> +				     (NSEC_PER_SEC * (u64)ts.tv_sec) + v->kvm->arch.kvmclock_offset;
+> +
+>  	/*
+>  	 * The interface expects us to write an even number signaling that the
+>  	 * update is finished. Since the guest won't see the intermediate
+> @@ -2441,6 +2442,38 @@ long kvm_arch_vm_ioctl(struct file *filp,
+>  		r = 0;
+>  		break;
+>  	}
+> +	case KVM_SET_CLOCK: {
+> +		struct timespec now;
+> +		struct kvm_clock_data user_ns;
+> +		u64 now_ns;
+> +		s64 delta;
+> +
+> +		r =  -EFAULT;
 
-Hmm. I wanted to avoid del_timer_sync(), because it's so expensive for the 
-case when the timer isn't running at all, but I do think you're correct.
+Extra space :)
 
-If the del_timer() fails, the timer might still be running on another CPU 
-right at that moment, but not quite have queued the work yet. And then 
-we'd potentially get the wrong 'cwq' in flush_work() (we'd use the 'saved' 
-work), and not wait for it.
+>  #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
+>  #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
+>  #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
+> +#define KVM_SET_CLOCK		  _IOW(KVMIO, 0x7a, struct kvm_clock_data)
+> +#define KVM_GET_CLOCK		  _IOW(KVMIO, 0x7b, struct kvm_clock_data)
+					  _IOR
 
-I wonder if we could mark the case of "workqueue is on timer" by setting 
-the "work->entry" list to some special value. That way
+Otherwise looks fine, please send the userspace changes together.
 
-	list_empty(&work->entry)
-
-would always mean "it's neither pending _nor_ scheduled", and 
-flush_delayed_work() could have a fast-case check that at the top:
-
-	if (list_empty(&work->entry))
-		return;
-
-or similar. When we do the 'insert_work()' in the timer function, the 
-'list_empty()' invariant wouldn't change, so you could do that locklessly.
-
-Of course, I've just talked about how much I hate subtle locking in the 
-tty layer. This would be subtle, but we could document it, and it would be 
-in the core kernel rather than a driver layer. 
-
-> And just in case... Of course, if dwork was pending and running on another CPU,
-> then flush_delayed_work(dwork) can return before the running callback terminates.
-> But I guess this is what we want.
-
-No, we want to wait for the callback to terminate, so we do want to hit 
-that 'flush_work()' case.
-
-> As for tty_flush_to_ldisc(), what if tty->buf.work.work was not scheduled?
-> In this case flush_delayed_work() does nothing. Is it OK?
-
-Yes. In fact, it would be a bonus over our current "we always call that 
-flush function whether it was scheduled or not" code.
-
-			Linus
