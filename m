@@ -1,97 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbZJNRmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbZJNRl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754919AbZJNRmQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 13:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbZJNRmP
+	id S1755050AbZJNRl0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 13:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbZJNRl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 13:42:15 -0400
-Received: from kroah.org ([198.145.64.141]:42741 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754592AbZJNRmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 13:42:15 -0400
-Subject: patch staging-more-sched.h-fixes.patch added to gregkh-2.6 tree
-To: jeffm@suse.com, gregkh@suse.de, linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Wed, 14 Oct 2009 10:38:56 -0700
-In-Reply-To: <4AD3C99B.8040507@suse.com>
-Message-ID: <1255541936728@kroah.org>
+	Wed, 14 Oct 2009 13:41:26 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:35156 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754591AbZJNRlZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 13:41:25 -0400
+Message-ID: <4AD60CD1.4000804@s5r6.in-berlin.de>
+Date: Wed, 14 Oct 2009 19:39:29 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.22) Gecko/20090605 SeaMonkey/1.1.17
+MIME-Version: 1.0
+To: "Leonidas ." <leonidas137@gmail.com>
+CC: Gleb Natapov <gleb@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: How to check whether executing in atomic context?
+References: <f22d86810910132336r1d6f6363qa983b355676dc413@mail.gmail.com>	 <f22d86810910140221q7e03e693kad122a37461cea1d@mail.gmail.com>	 <20091014101336.GA25108@redhat.com> <f22d86810910140324l7b78ed57v7e7c774d5f8a1bd3@mail.gmail.com>
+In-Reply-To: <f22d86810910140324l7b78ed57v7e7c774d5f8a1bd3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/14/2009 12:24 PM, Leonidas . wrote:
+> On Wed, Oct 14, 2009 at 3:13 AM, Gleb Natapov <gleb@redhat.com> wrote:
+>> On Wed, Oct 14, 2009 at 02:21:22AM -0700, Leonidas . wrote:
+>>> On Tue, Oct 13, 2009 at 11:36 PM, Leonidas . <leonidas137@gmail.com> wrote:
+>>> > Hi List,
+>>> >
+>>> > I am working on a profiler kind of module, the exported apis of my module can be
+>>> > called from process context and interrupt context as well. Depending on the
+>>> > context I am called in, I need to call sleepable/nonsleepable variants
+>>> > of my internal bookkeeping functions.
+>>> >
+>>> > I am aware of in_interrupt() call which can be used to check current
+>>> > context and take action accordingly.
+>>> >
+>>> > Is there any api which can help figure out whether we are executing while hold a spinlock? I.e
+>>> > an api which can help figure out sleepable/nonsleepable context? If it is not there, what can
+>>> > be done for writing the same? Any pointers will be helpful.
+[...]
+>>>   While searching through the sources, I found this,
+>>>
+>>>   97/*
+>>>   98 * Are we running in atomic context?  WARNING: this macro cannot
+>>>   99 * always detect atomic context; in particular, it cannot know about
+>>>  100 * held spinlocks in non-preemptible kernels.  Thus it should not be
+>>>  101 * used in the general case to determine whether sleeping is possible.
+>>>  102 * Do not use in_atomic() in driver code.
+>>>  103 */
+>>>  104#define in_atomic()     ((preempt_count() & ~PREEMPT_ACTIVE) != PREEMPT_INATOMIC_BASE)
+>>>  105
+>>>
+>>> this just complicates the matter, right? This does not work in general case but I think this
+>>> will always work if the kernel is preemptible.
+>>>
+>>> Is there no way to write a generic macro?
+[...]
+>> Attached patch make in_atomic() to work for non-preemptable kernels too.
+>> Doesn't look to big or scary.
+>>
+>> Disclaimer: tested only inside kvm guest 64bit, haven't measured overhead.
+[...]
+> Unbelievable! I was just thinking about the logic to achieve the same, and
+> someone has already done this. Thanks for the patch.
 
-This is a note to let you know that I've just added the patch titled
+I don't know whether Gleb's patch works or doesn't work as you require
+it.  But my opinion is that the recommendation "do not use in_atomic()
+in driver code" is valid nevertheless.
 
-    Subject: staging: more sched.h fixes
+Very often the better course of action is to change your API from
 
-to my gregkh-2.6 tree.  Its filename is
+void my_routine()
+{
+	if (in_atomic())
+		this;
+	else
+		that;
+}
 
-    staging-more-sched.h-fixes.patch
+to either
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+void my_routine(bool can_sleep)
+{
+	if (!can_sleep)
+		this;
+	else
+		that;
+}
 
+or to
 
->From jeffm@suse.com  Wed Oct 14 10:18:54 2009
-From: Jeff Mahoney <jeffm@suse.com>
-Date: Mon, 12 Oct 2009 20:28:11 -0400
-Subject: staging: more sched.h fixes
-To: Greg KH <gregkh@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-ID: <4AD3C99B.8040507@suse.com>
+void my_routine_atomic()
+{
+	this;
+}
 
+void my_routine()
+{
+	that;
+}
 
-This patch contains more sched.h additions for drivers that built
-fine under x86_64 but not i386 for some reason.
+In other words, let the caller of your routine tell it whether it's
+atomic context or not.
 
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Instead of a "bool can_sleep" argument, a "gfp_t flags" argument is
+often used.
 
----
- drivers/staging/rt2860/common/cmm_info.c |    1 +
- drivers/staging/rt2860/rt_linux.c        |    1 +
- drivers/staging/rt3090/common/cmm_info.c |    1 +
- drivers/staging/rt3090/rt_linux.c        |    1 +
- 4 files changed, 4 insertions(+)
-
---- a/drivers/staging/rt2860/common/cmm_info.c
-+++ b/drivers/staging/rt2860/common/cmm_info.c
-@@ -25,6 +25,7 @@
-  *************************************************************************
- */
- 
-+#include <linux/sched.h>
- #include "../rt_config.h"
- 
- INT	Show_SSID_Proc(
---- a/drivers/staging/rt2860/rt_linux.c
-+++ b/drivers/staging/rt2860/rt_linux.c
-@@ -25,6 +25,7 @@
-  *************************************************************************
-  */
- 
-+#include <linux/sched.h>
- #include "rt_config.h"
- 
- ULONG	RTDebugLevel = RT_DEBUG_ERROR;
---- a/drivers/staging/rt3090/common/cmm_info.c
-+++ b/drivers/staging/rt3090/common/cmm_info.c
-@@ -34,6 +34,7 @@
-     ---------    ----------    ----------------------------------------------
-  */
- 
-+#include <linux/sched.h>
- #include "../rt_config.h"
- 
- 
---- a/drivers/staging/rt3090/rt_linux.c
-+++ b/drivers/staging/rt3090/rt_linux.c
-@@ -25,6 +25,7 @@
-  *************************************************************************
-  */
- 
-+#include <linux/sched.h>
- #include "rt_config.h"
- 
- ULONG	RTDebugLevel = RT_DEBUG_ERROR;
-
+Or provide only the my_routine_atomic() variant if the difference to the
+sleeping variant isn't huge.
+-- 
+Stefan Richter
+-=====-==--= =-=- -===-
+http://arcgraph.de/sr/
