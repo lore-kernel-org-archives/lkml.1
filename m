@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762087AbZJNWhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762096AbZJNWlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762087AbZJNWhh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 18:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759254AbZJNWhg
+	id S1762096AbZJNWlr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 18:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761346AbZJNWlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 18:37:36 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:61593 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756715AbZJNWhf (ORCPT
+	Wed, 14 Oct 2009 18:41:46 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:47122 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755469AbZJNWlp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 18:37:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqYEAIvt1UpMRK1g/2dsb2JhbACBUdhfhC4E
-Date: Wed, 14 Oct 2009 18:36:57 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Josh Triplett <josh@joshtriplett.org>, Jon Bernard <jbernard@debian.org>,
-       Jan Blunck <jblunck@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Pierre Habouzit <madcoder@debian.org>,
-       Steven Munroe <munroesj@linux.vnet.ibm.com>,
-       Bert Wesarg <bert.wesarg@googlemail.com>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
-Cc: ltt-dev@lists.casi.polymtl.ca, rp@svcs.cs.pdx.edu,
-       linux-kernel@vger.kernel.org
-Subject: Userspace RCU 0.2.3
-Message-ID: <20091014223657.GC6458@Krystal>
-Mime-Version: 1.0
+	Wed, 14 Oct 2009 18:41:45 -0400
+Date: Wed, 14 Oct 2009 16:41:06 -0600
+From: Alex Chiang <achiang@hp.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       linux-pm@lists.linux-foundation.org, chepioq@gmail.com,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Danny Feng <dfeng@redhat.com>
+Subject: Re: [PATCH] ACPI / PCI: Fix NULL pointer dereference in
+	acpi_get_pci_dev() (rev. 2)
+Message-ID: <20091014224106.GF22797@ldl.fc.hp.com>
+References: <200910060130.43246.rjw@sisk.pl> <200910130101.57595.rjw@sisk.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 18:17:04 up 57 days,  9:06,  2 users,  load average: 0.25, 0.30,
-	0.32
+In-Reply-To: <200910130101.57595.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+* Rafael J. Wysocki <rjw@sisk.pl>:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> acpi_get_pci_dev() may be called for a non-PCI device, in which case
+> it should return NULL.  However, it assumes that every handle it
+> finds in the ACPI CA name space, between given device handle and the
+> PCI root bridge handle, corresponds to a PCI-to-PCI bridge with an
+> existing secondary bus.  For this reason, when it finds a struct
+> pci_dev object corresponding to one of them, it doesn't check if
+> its 'subordinate' field is a valid pointer.  This obviously leads to
+> a NULL pointer dereference if acpi_get_pci_dev() is called for a
+> non-PCI device with a PCI parent which is not a bridge.
+> 
+> To fix this issue make acpi_get_pci_dev() check if pdev->subordinate
+> is not NULL for every device it finds on the path between the root
+> bridge and the device it's supposed to get to and return NULL if the
+> "target" device cannot be found.
+> 
+> Fixes http://bugzilla.kernel.org/show_bug.cgi?id=14129, which is a
+> regression from 2.6.30.
+ 
+Acked-by: Alex Chiang <achiang@hp.com>
 
-I just released lib urcu 0.2.3, which is now using autotools. I also
-integrated automatic architecture detection for old 386 which lack
-cmpxchg (using a fall-back if necessary). I also use a lock; addl
-instead of mfence on x86-32 to support a larger variety of older Intel
-CPUs.
-
-The build system detects if NR_futex is available in the system
-headers. It falls back on a more portable alternative if they are not
-available.
-
-There are also new configuration modes to ./configure for UP-only
-systems.
-
-As always, the tarballs are available at http://www.lttng.org/urcu
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+> 
+> Jesse, Len,
+> 
+> This is a replacement for the original $subject patch (now in the Len's tree
+> as commit 5988eaded02e3cca2702f46efc255143468255bd).
+> 
+> The code was correct, but the comment and the changelog were not.  Please
+> use the one below instead.
+> 
+> Thanks,
+> Rafael
+> 
