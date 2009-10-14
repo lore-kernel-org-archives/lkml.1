@@ -1,176 +1,366 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbZJNISm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbZJNITI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758096AbZJNISm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 04:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758048AbZJNISl
+	id S1758204AbZJNITI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 04:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbZJNITG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 04:18:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41868 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 04:19:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41880 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758041AbZJNISh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 04:18:37 -0400
-Date: Wed, 14 Oct 2009 08:17:35 GMT
-From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
+	id S1756921AbZJNITA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 04:19:00 -0400
+Date: Wed, 14 Oct 2009 08:17:49 GMT
+From: tip-bot for Dimitri Sivanich <sivanich@sgi.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, gorcunov@openvz.org, tglx@linutronix.de,
-       mingo@elte.hu
+       tglx@linutronix.de, sivanich@sgi.com, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, yinghai@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20091013201022.926793122@openvz.org>
-References: <20091013201022.926793122@openvz.org>
+       tglx@linutronix.de, sivanich@sgi.com, mingo@elte.hu
+In-Reply-To: <20090930160259.GA7822@sgi.com>
+References: <20090930160259.GA7822@sgi.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/apic] x86, apic: Limit apic dumping, introduce new show_lapic= setup option
-Message-ID: <tip-2626eb2b2fd958dc0f683126aa84e93b939699a1@git.kernel.org>
-Git-Commit-ID: 2626eb2b2fd958dc0f683126aa84e93b939699a1
+Subject: [tip:x86/apic] x86: SGI UV: Fix irq affinity for hub based interrupts
+Message-ID: <tip-6c2c502910247d2820cb630e7b28fb6bdecdbf45@git.kernel.org>
+Git-Commit-ID: 6c2c502910247d2820cb630e7b28fb6bdecdbf45
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 08:17:35 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 08:17:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2626eb2b2fd958dc0f683126aa84e93b939699a1
-Gitweb:     http://git.kernel.org/tip/2626eb2b2fd958dc0f683126aa84e93b939699a1
-Author:     Cyrill Gorcunov <gorcunov@openvz.org>
-AuthorDate: Wed, 14 Oct 2009 00:07:05 +0400
+Commit-ID:  6c2c502910247d2820cb630e7b28fb6bdecdbf45
+Gitweb:     http://git.kernel.org/tip/6c2c502910247d2820cb630e7b28fb6bdecdbf45
+Author:     Dimitri Sivanich <sivanich@sgi.com>
+AuthorDate: Wed, 30 Sep 2009 11:02:59 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Wed, 14 Oct 2009 09:17:01 +0200
 
-x86, apic: Limit apic dumping, introduce new show_lapic= setup option
+x86: SGI UV: Fix irq affinity for hub based interrupts
 
-In case if a system has a large number of cpus printing apics
-contents may consume a long time period.
+This patch fixes handling of uv hub irq affinity.  IRQs with ALL or
+NODE affinity can be routed to cpus other than their originally
+assigned cpu.  Those with CPU affinity cannot be rerouted.
 
-We limit such an output by 1 apic by default. But to have an
-ability to see all apics or some part of them we introduce
-"show_lapic" setup option which allow us to limit/unlimit the
-number of APICs being dumped.
-
-Example: apic=debug show_lapic=5, or apic=debug show_lapic=all
-
-Also move apic_verbosity checking upper that way so helper routines
-do not need to inspect it at all.
-
-Suggested-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: yinghai@kernel.org
-Cc: macro@linux-mips.org
-LKML-Reference: <20091013201022.926793122@openvz.org>
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+LKML-Reference: <20090930160259.GA7822@sgi.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/apic/io_apic.c |   47 +++++++++++++++++++++++++++------------
- 1 files changed, 32 insertions(+), 15 deletions(-)
+ arch/x86/include/asm/uv/uv_irq.h |   15 ++++-
+ arch/x86/kernel/apic/io_apic.c   |   49 +++++++++++++-
+ arch/x86/kernel/uv_irq.c         |  128 +++++++++++++++++++++++++++++++++++---
+ drivers/misc/sgi-xp/xpc_uv.c     |    5 +-
+ 4 files changed, 180 insertions(+), 17 deletions(-)
 
+diff --git a/arch/x86/include/asm/uv/uv_irq.h b/arch/x86/include/asm/uv/uv_irq.h
+index 9613c8c..5397e12 100644
+--- a/arch/x86/include/asm/uv/uv_irq.h
++++ b/arch/x86/include/asm/uv/uv_irq.h
+@@ -25,12 +25,21 @@ struct uv_IO_APIC_route_entry {
+ 		dest		: 32;
+ };
+ 
++enum {
++	UV_AFFINITY_ALL,
++	UV_AFFINITY_NODE,
++	UV_AFFINITY_CPU
++};
++
+ extern struct irq_chip uv_irq_chip;
+ 
+-extern int arch_enable_uv_irq(char *, unsigned int, int, int, unsigned long);
++extern int
++arch_enable_uv_irq(char *, unsigned int, int, int, unsigned long, int);
+ extern void arch_disable_uv_irq(int, unsigned long);
++extern int uv_set_irq_affinity(unsigned int, const struct cpumask *);
+ 
+-extern int uv_setup_irq(char *, int, int, unsigned long);
+-extern void uv_teardown_irq(unsigned int, int, unsigned long);
++extern int uv_irq_2_mmr_info(int, unsigned long *, int *);
++extern int uv_setup_irq(char *, int, int, unsigned long, int);
++extern void uv_teardown_irq(unsigned int);
+ 
+ #endif /* _ASM_X86_UV_UV_IRQ_H */
 diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index dc69f28..8c718c9 100644
+index 8c718c9..bb52e7f 100644
 --- a/arch/x86/kernel/apic/io_apic.c
 +++ b/arch/x86/kernel/apic/io_apic.c
-@@ -1599,9 +1599,6 @@ __apicdebuginit(void) print_IO_APIC(void)
- 	struct irq_desc *desc;
- 	unsigned int irq;
- 
--	if (apic_verbosity == APIC_QUIET)
--		return;
--
- 	printk(KERN_DEBUG "number of MP IRQ sources: %d.\n", mp_irq_entries);
- 	for (i = 0; i < nr_ioapics; i++)
- 		printk(KERN_DEBUG "number of IO-APIC #%d registers: %d.\n",
-@@ -1708,9 +1705,6 @@ __apicdebuginit(void) print_APIC_field(int base)
+@@ -3731,9 +3731,10 @@ int arch_setup_ht_irq(unsigned int irq, struct pci_dev *dev)
+  * on the specified blade to allow the sending of MSIs to the specified CPU.
+  */
+ int arch_enable_uv_irq(char *irq_name, unsigned int irq, int cpu, int mmr_blade,
+-		       unsigned long mmr_offset)
++		       unsigned long mmr_offset, int restrict)
  {
- 	int i;
+ 	const struct cpumask *eligible_cpu = cpumask_of(cpu);
++	struct irq_desc *desc = irq_to_desc(irq);
+ 	struct irq_cfg *cfg;
+ 	int mmr_pnode;
+ 	unsigned long mmr_value;
+@@ -3749,6 +3750,11 @@ int arch_enable_uv_irq(char *irq_name, unsigned int irq, int cpu, int mmr_blade,
+ 	if (err != 0)
+ 		return err;
  
--	if (apic_verbosity == APIC_QUIET)
--		return;
--
- 	printk(KERN_DEBUG);
- 
- 	for (i = 0; i < 8; i++)
-@@ -1724,9 +1718,6 @@ __apicdebuginit(void) print_local_APIC(void *dummy)
- 	unsigned int i, v, ver, maxlvt;
- 	u64 icr;
- 
--	if (apic_verbosity == APIC_QUIET)
--		return;
--
- 	printk(KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
- 		smp_processor_id(), hard_smp_processor_id());
- 	v = apic_read(APIC_ID);
-@@ -1824,13 +1815,19 @@ __apicdebuginit(void) print_local_APIC(void *dummy)
- 	printk("\n");
- }
- 
--__apicdebuginit(void) print_all_local_APICs(void)
-+__apicdebuginit(void) print_local_APICs(int maxcpu)
- {
- 	int cpu;
- 
-+	if (!maxcpu)
-+		return;
++	if (restrict == UV_AFFINITY_CPU)
++		desc->status |= IRQ_NO_BALANCING;
++	else
++		desc->status |= IRQ_MOVE_PCNTXT;
 +
- 	preempt_disable();
--	for_each_online_cpu(cpu)
-+	for_each_online_cpu(cpu) {
-+		if (cpu >= maxcpu)
-+			break;
- 		smp_call_function_single(cpu, print_local_APIC, NULL, 1);
-+	}
- 	preempt_enable();
+ 	spin_lock_irqsave(&vector_lock, flags);
+ 	set_irq_chip_and_handler_name(irq, &uv_irq_chip, handle_percpu_irq,
+ 				      irq_name);
+@@ -3777,11 +3783,10 @@ int arch_enable_uv_irq(char *irq_name, unsigned int irq, int cpu, int mmr_blade,
+  * Disable the specified MMR located on the specified blade so that MSIs are
+  * longer allowed to be sent.
+  */
+-void arch_disable_uv_irq(int mmr_blade, unsigned long mmr_offset)
++void arch_disable_uv_irq(int mmr_pnode, unsigned long mmr_offset)
+ {
+ 	unsigned long mmr_value;
+ 	struct uv_IO_APIC_route_entry *entry;
+-	int mmr_pnode;
+ 
+ 	BUILD_BUG_ON(sizeof(struct uv_IO_APIC_route_entry) != sizeof(unsigned long));
+ 
+@@ -3789,9 +3794,45 @@ void arch_disable_uv_irq(int mmr_blade, unsigned long mmr_offset)
+ 	entry = (struct uv_IO_APIC_route_entry *)&mmr_value;
+ 	entry->mask = 1;
+ 
+-	mmr_pnode = uv_blade_to_pnode(mmr_blade);
+ 	uv_write_global_mmr64(mmr_pnode, mmr_offset, mmr_value);
  }
- 
-@@ -1839,7 +1836,7 @@ __apicdebuginit(void) print_PIC(void)
- 	unsigned int v;
- 	unsigned long flags;
- 
--	if (apic_verbosity == APIC_QUIET || !nr_legacy_irqs)
-+	if (!nr_legacy_irqs)
- 		return;
- 
- 	printk(KERN_DEBUG "\nprinting PIC contents\n");
-@@ -1866,21 +1863,41 @@ __apicdebuginit(void) print_PIC(void)
- 	printk(KERN_DEBUG "... PIC ELCR: %04x\n", v);
- }
- 
--__apicdebuginit(int) print_all_ICs(void)
-+static int __initdata show_lapic = 1;
-+static __init int setup_show_lapic(char *arg)
++
++int uv_set_irq_affinity(unsigned int irq, const struct cpumask *mask)
 +{
-+	int num = -1;
++	struct irq_desc *desc = irq_to_desc(irq);
++	struct irq_cfg *cfg = desc->chip_data;
++	unsigned int dest;
++	unsigned long mmr_value;
++	struct uv_IO_APIC_route_entry *entry;
++	unsigned long mmr_offset;
++	unsigned mmr_pnode;
 +
-+	if (strcmp(arg, "all") == 0) {
-+		show_lapic = CONFIG_NR_CPUS;
-+	} else {
-+		get_option(&arg, &num);
-+		if (num >= 0)
-+			show_lapic = num;
++	dest = set_desc_affinity(desc, mask);
++	if (dest == BAD_APICID)
++		return -1;
++
++	mmr_value = 0;
++	entry = (struct uv_IO_APIC_route_entry *)&mmr_value;
++
++	entry->vector = cfg->vector;
++	entry->delivery_mode = apic->irq_delivery_mode;
++	entry->dest_mode = apic->irq_dest_mode;
++	entry->polarity = 0;
++	entry->trigger = 0;
++	entry->mask = 0;
++	entry->dest = dest;
++
++	/* Get previously stored MMR and pnode of hub sourcing interrupts */
++	if (uv_irq_2_mmr_info(irq, &mmr_offset, &mmr_pnode))
++		return -1;
++
++	uv_write_global_mmr64(mmr_pnode, mmr_offset, mmr_value);
++
++	if (cfg->move_in_progress)
++		send_cleanup_vector(cfg);
++
++	return 0;
++}
+ #endif /* CONFIG_X86_64 */
+ 
+ int __init io_apic_get_redir_entries (int ioapic)
+diff --git a/arch/x86/kernel/uv_irq.c b/arch/x86/kernel/uv_irq.c
+index aeef529..9a83775 100644
+--- a/arch/x86/kernel/uv_irq.c
++++ b/arch/x86/kernel/uv_irq.c
+@@ -9,10 +9,22 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/rbtree.h>
+ #include <linux/irq.h>
+ 
+ #include <asm/apic.h>
+ #include <asm/uv/uv_irq.h>
++#include <asm/uv/uv_hub.h>
++
++/* MMR offset and pnode of hub sourcing interrupts for a given irq */
++struct uv_irq_2_mmr_pnode{
++	struct rb_node list;
++	unsigned long offset;
++	int pnode;
++	int irq;
++};
++static spinlock_t uv_irq_lock;
++static struct rb_root uv_irq_root;
+ 
+ static void uv_noop(unsigned int irq)
+ {
+@@ -39,25 +51,106 @@ struct irq_chip uv_irq_chip = {
+ 	.unmask		= uv_noop,
+ 	.eoi		= uv_ack_apic,
+ 	.end		= uv_noop,
++	.set_affinity	= uv_set_irq_affinity,
+ };
+ 
+ /*
++ * Add offset and pnode information of the hub sourcing interrupts to the
++ * rb tree for a specific irq.
++ */
++static int uv_set_irq_2_mmr_info(int irq, unsigned long offset, unsigned blade)
++{
++	struct rb_node **link = &uv_irq_root.rb_node;
++	struct rb_node *parent = NULL;
++	struct uv_irq_2_mmr_pnode *n;
++	struct uv_irq_2_mmr_pnode *e;
++	unsigned long irqflags;
++
++	n = kmalloc_node(sizeof(struct uv_irq_2_mmr_pnode), GFP_KERNEL,
++				uv_blade_to_memory_nid(blade));
++	if (!n)
++		return -ENOMEM;
++
++	n->irq = irq;
++	n->offset = offset;
++	n->pnode = uv_blade_to_pnode(blade);
++	spin_lock_irqsave(&uv_irq_lock, irqflags);
++	/* Find the right place in the rbtree: */
++	while (*link) {
++		parent = *link;
++		e = rb_entry(parent, struct uv_irq_2_mmr_pnode, list);
++
++		if (unlikely(irq == e->irq)) {
++			/* irq entry exists */
++			e->pnode = uv_blade_to_pnode(blade);
++			e->offset = offset;
++			spin_unlock_irqrestore(&uv_irq_lock, irqflags);
++			kfree(n);
++			return 0;
++		}
++
++		if (irq < e->irq)
++			link = &(*link)->rb_left;
++		else
++			link = &(*link)->rb_right;
 +	}
 +
-+	return 1;
++	/* Insert the node into the rbtree. */
++	rb_link_node(&n->list, parent, link);
++	rb_insert_color(&n->list, &uv_irq_root);
++
++	spin_unlock_irqrestore(&uv_irq_lock, irqflags);
++	return 0;
 +}
-+__setup("show_lapic=", setup_show_lapic);
 +
-+__apicdebuginit(int) print_ICs(void)
++/* Retrieve offset and pnode information from the rb tree for a specific irq */
++int uv_irq_2_mmr_info(int irq, unsigned long *offset, int *pnode)
++{
++	struct uv_irq_2_mmr_pnode *e;
++	struct rb_node *n;
++	unsigned long irqflags;
++
++	spin_lock_irqsave(&uv_irq_lock, irqflags);
++	n = uv_irq_root.rb_node;
++	while (n) {
++		e = rb_entry(n, struct uv_irq_2_mmr_pnode, list);
++
++		if (e->irq == irq) {
++			*offset = e->offset;
++			*pnode = e->pnode;
++			spin_unlock_irqrestore(&uv_irq_lock, irqflags);
++			return 0;
++		}
++
++		if (irq < e->irq)
++			n = n->rb_left;
++		else
++			n = n->rb_right;
++	}
++	spin_unlock_irqrestore(&uv_irq_lock, irqflags);
++	return -1;
++}
++
++/*
+  * Set up a mapping of an available irq and vector, and enable the specified
+  * MMR that defines the MSI that is to be sent to the specified CPU when an
+  * interrupt is raised.
+  */
+ int uv_setup_irq(char *irq_name, int cpu, int mmr_blade,
+-		 unsigned long mmr_offset)
++		 unsigned long mmr_offset, int restrict)
  {
-+	if (apic_verbosity == APIC_QUIET)
-+		return 0;
+-	int irq;
+-	int ret;
++	int irq, ret;
 +
- 	print_PIC();
++	irq = create_irq_nr(NR_IRQS_LEGACY, uv_blade_to_memory_nid(mmr_blade));
  
- 	/* don't print out if apic is not there */
- 	if (!cpu_has_apic && !apic_from_smp_config())
- 		return 0;
+-	irq = create_irq();
+ 	if (irq <= 0)
+ 		return -EBUSY;
  
--	print_all_local_APICs();
-+	print_local_APICs(show_lapic);
- 	print_IO_APIC();
+-	ret = arch_enable_uv_irq(irq_name, irq, cpu, mmr_blade, mmr_offset);
+-	if (ret != irq)
++	ret = arch_enable_uv_irq(irq_name, irq, cpu, mmr_blade, mmr_offset,
++		restrict);
++	if (ret == irq)
++		uv_set_irq_2_mmr_info(irq, mmr_offset, mmr_blade);
++	else
+ 		destroy_irq(irq);
  
- 	return 0;
+ 	return ret;
+@@ -71,9 +164,28 @@ EXPORT_SYMBOL_GPL(uv_setup_irq);
+  *
+  * Set mmr_blade and mmr_offset to what was passed in on uv_setup_irq().
+  */
+-void uv_teardown_irq(unsigned int irq, int mmr_blade, unsigned long mmr_offset)
++void uv_teardown_irq(unsigned int irq)
+ {
+-	arch_disable_uv_irq(mmr_blade, mmr_offset);
++	struct uv_irq_2_mmr_pnode *e;
++	struct rb_node *n;
++	unsigned long irqflags;
++
++	spin_lock_irqsave(&uv_irq_lock, irqflags);
++	n = uv_irq_root.rb_node;
++	while (n) {
++		e = rb_entry(n, struct uv_irq_2_mmr_pnode, list);
++		if (e->irq == irq) {
++			arch_disable_uv_irq(e->pnode, e->offset);
++			rb_erase(n, &uv_irq_root);
++			kfree(e);
++			break;
++		}
++		if (irq < e->irq)
++			n = n->rb_left;
++		else
++			n = n->rb_right;
++	}
++	spin_unlock_irqrestore(&uv_irq_lock, irqflags);
+ 	destroy_irq(irq);
  }
+ EXPORT_SYMBOL_GPL(uv_teardown_irq);
+diff --git a/drivers/misc/sgi-xp/xpc_uv.c b/drivers/misc/sgi-xp/xpc_uv.c
+index c76677a..b5bbe59 100644
+--- a/drivers/misc/sgi-xp/xpc_uv.c
++++ b/drivers/misc/sgi-xp/xpc_uv.c
+@@ -106,7 +106,8 @@ xpc_get_gru_mq_irq_uv(struct xpc_gru_mq_uv *mq, int cpu, char *irq_name)
+ 	int mmr_pnode = uv_blade_to_pnode(mq->mmr_blade);
  
--fs_initcall(print_all_ICs);
-+fs_initcall(print_ICs);
+ #if defined CONFIG_X86_64
+-	mq->irq = uv_setup_irq(irq_name, cpu, mq->mmr_blade, mq->mmr_offset);
++	mq->irq = uv_setup_irq(irq_name, cpu, mq->mmr_blade, mq->mmr_offset,
++			UV_AFFINITY_CPU);
+ 	if (mq->irq < 0) {
+ 		dev_err(xpc_part, "uv_setup_irq() returned error=%d\n",
+ 			-mq->irq);
+@@ -136,7 +137,7 @@ static void
+ xpc_release_gru_mq_irq_uv(struct xpc_gru_mq_uv *mq)
+ {
+ #if defined CONFIG_X86_64
+-	uv_teardown_irq(mq->irq, mq->mmr_blade, mq->mmr_offset);
++	uv_teardown_irq(mq->irq);
  
- 
- /* Where if anywhere is the i8259 connect in external int mode */
+ #elif defined CONFIG_IA64_GENERIC || defined CONFIG_IA64_SGI_UV
+ 	int mmr_pnode;
