@@ -1,103 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761429AbZJNSyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762002AbZJNS4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761429AbZJNSyN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 14:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756651AbZJNSyM
+	id S1762002AbZJNS4W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 14:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757239AbZJNS4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 14:54:12 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:16213 "EHLO mx1.redhat.com"
+	Wed, 14 Oct 2009 14:56:21 -0400
+Received: from vena.lwn.net ([206.168.112.25]:49775 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755864AbZJNSyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 14:54:10 -0400
-Date: Wed, 14 Oct 2009 15:53:27 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Glauber Costa <glommer@redhat.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: [PATCH] v4: allow userspace to adjust kvmclock offset
-Message-ID: <20091014185327.GD4218@amt.cnet>
-References: <1255531666-16090-1-git-send-email-glommer@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255531666-16090-1-git-send-email-glommer@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1757152AbZJNS4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 14:56:20 -0400
+Date: Wed, 14 Oct 2009 12:55:42 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Dave Hansen <haveblue@us.ibm.com>, David Rientjes <rientjes@google.com>
+Subject: [PATCH] update flex_array document
+Message-ID: <20091014125542.53dfe602@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 10:47:46AM -0400, Glauber Costa wrote:
-> When we migrate a kvm guest that uses pvclock between two hosts, we may
-> suffer a large skew. This is because there can be significant differences
-> between the monotonic clock of the hosts involved. When a new host with
-> a much larger monotonic time starts running the guest, the view of time
-> will be significantly impacted.
-> 
-> Situation is much worse when we do the opposite, and migrate to a host with
-> a smaller monotonic clock.
-> 
-> This proposed ioctl will allow userspace to inform us what is the monotonic
-> clock value in the source host, so we can keep the time skew short, and
-> more importantly, never goes backwards. Userspace may also need to trigger
-> the current data, since from the first migration onwards, it won't be
-> reflected by a simple call to clock_gettime() anymore.
-> 
-> [ v2: uses a struct with a padding ]
-> [ v3: provide an ioctl to get clock data too ]
-> [ v4: used fixed-width signed type for delta ]
-> 
-> Signed-off-by: Glauber Costa <glommer@redhat.com>
-> ---
->  arch/x86/include/asm/kvm_host.h |    1 +
->  arch/x86/kvm/x86.c              |   35 ++++++++++++++++++++++++++++++++++-
->  include/linux/kvm.h             |    7 +++++++
->  3 files changed, 42 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> index 179a919..c9b0d9f 100644
-> --- a/arch/x86/include/asm/kvm_host.h
-> +++ b/arch/x86/include/asm/kvm_host.h
-> @@ -410,6 +410,7 @@ struct kvm_arch{
->  
->  	unsigned long irq_sources_bitmap;
->  	u64 vm_init_tsc;
-> +	s64 kvmclock_offset;
->  };
->  
->  struct kvm_vm_stat {
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 9601bc6..09f31e2 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -699,7 +699,8 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
->  	/* With all the info we got, fill in the values */
->  
->  	vcpu->hv_clock.system_time = ts.tv_nsec +
-> -				     (NSEC_PER_SEC * (u64)ts.tv_sec);
-> +				     (NSEC_PER_SEC * (u64)ts.tv_sec) + v->kvm->arch.kvmclock_offset;
-> +
->  	/*
->  	 * The interface expects us to write an even number signaling that the
->  	 * update is finished. Since the guest won't see the intermediate
-> @@ -2441,6 +2442,38 @@ long kvm_arch_vm_ioctl(struct file *filp,
->  		r = 0;
->  		break;
->  	}
-> +	case KVM_SET_CLOCK: {
-> +		struct timespec now;
-> +		struct kvm_clock_data user_ns;
-> +		u64 now_ns;
-> +		s64 delta;
-> +
-> +		r =  -EFAULT;
+I promised I would update this document for the 2.6.32 changes.
+Amazingly enough, I actually did it; results below.  If nobody objects,
+I'll send this upward shortly.
 
-Extra space :)
+jon
+---
+Update flex_arrays.txt
 
->  #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
->  #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
->  #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
-> +#define KVM_SET_CLOCK		  _IOW(KVMIO, 0x7a, struct kvm_clock_data)
-> +#define KVM_GET_CLOCK		  _IOW(KVMIO, 0x7b, struct kvm_clock_data)
-					  _IOR
+The 2.6.32 merge window brought a number of changes to the flexible array
+API; this patch updates the documentation to match the new state of
+affairs.
 
-Otherwise looks fine, please send the userspace changes together.
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+---
+ Documentation/flexible-arrays.txt |   43 +++++++++++++++++++++++++++---------
+ 1 files changed, 32 insertions(+), 11 deletions(-)
+
+diff --git a/Documentation/flexible-arrays.txt b/Documentation/flexible-arrays.txt
+index 84eb268..cb8a3a0 100644
+--- a/Documentation/flexible-arrays.txt
++++ b/Documentation/flexible-arrays.txt
+@@ -1,5 +1,5 @@
+ Using flexible arrays in the kernel
+-Last updated for 2.6.31
++Last updated for 2.6.32
+ Jonathan Corbet <corbet@lwn.net>
+ 
+ Large contiguous memory allocations can be unreliable in the Linux kernel.
+@@ -40,6 +40,13 @@ argument is passed directly to the internal memory allocation calls.  With
+ the current code, using flags to ask for high memory is likely to lead to
+ notably unpleasant side effects.
+ 
++It is also possible to define flexible arrays at compile time with:
++
++    DEFINE_FLEX_ARRAY(name, element_size, total);
++
++This macro will result in a definition of an array with the given name; the
++element size and total will be checked for validity at compile time.
++
+ Storing data into a flexible array is accomplished with a call to:
+ 
+     int flex_array_put(struct flex_array *array, unsigned int element_nr,
+@@ -76,16 +83,30 @@ particular element has never been allocated.
+ Note that it is possible to get back a valid pointer for an element which
+ has never been stored in the array.  Memory for array elements is allocated
+ one page at a time; a single allocation could provide memory for several
+-adjacent elements.  The flexible array code does not know if a specific
+-element has been written; it only knows if the associated memory is
+-present.  So a flex_array_get() call on an element which was never stored
+-in the array has the potential to return a pointer to random data.  If the
+-caller does not have a separate way to know which elements were actually
+-stored, it might be wise, at least, to add GFP_ZERO to the flags argument
+-to ensure that all elements are zeroed.
+-
+-There is no way to remove a single element from the array.  It is possible,
+-though, to remove all elements with a call to:
++adjacent elements.  Flexible array elements are normally initialized to the
++value FLEX_ARRAY_FREE (defined as 0x6c in <linux/poison.h>), so errors
++involving that number probably result from use of unstored array entries.
++Note that, if array elements are allocated with __GFP_ZERO, they will be
++initialized to zero and this poisoning will not happen.
++
++Individual elements in the array can be cleared with:
++
++    int flex_array_clear(struct flex_array *array, unsigned int element_nr);
++
++This function will set the given element to FLEX_ARRAY_FREE and return
++zero.  If storage for the indicated element is not allocated for the array,
++flex_array_clear() will return -EINVAL instead.  Note that clearing an
++element does not release the storage associated with it; to reduce the
++allocated size of an array, call:
++
++    int flex_array_shrink(struct flex_array *array);
++
++The return value will be the number of pages of memory actually freed.
++This function works by scanning the array for pages containing nothing but
++FLEX_ARRAY_FREE bytes, so (1) it can be expensive, and (2) it will not work
++if the array's pages are allocated with __GFP_ZERO.
++
++It is possible to remove all elements of an array with a call to:
+ 
+     void flex_array_free_parts(struct flex_array *array);
+ 
+-- 
+1.6.2.5
 
