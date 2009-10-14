@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762032AbZJNS5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762043AbZJNTCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762032AbZJNS5c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 14:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760481AbZJNS5b
+	id S1762043AbZJNTCZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 15:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762022AbZJNTCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 14:57:31 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:46242 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760275AbZJNS53 (ORCPT
+	Wed, 14 Oct 2009 15:02:25 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54704 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756429AbZJNTCX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 14:57:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=oboIfuwv3s3BfHfpikQTi/lh4Q2Dn3tah2OT5QVRnE/Ixmt/vxb77VU/zhHnhcUtRZ
-         96kKwCrw9C/6HKjvTOwhTiGC9skuUOWJsm6fW6ZKbC+kTOVP6gbLRLeeMMst8cFfCu8E
-         zrjr0kZEZEWyYoLyOwsJWG0FhBqsCd385Bh8A=
-From: Ivo van Doorn <ivdoorn@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: Current status of rt2800usb and staging/rt2870
-Date: Wed, 14 Oct 2009 20:56:17 +0200
-User-Agent: KMail/1.9.10
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Dan Williams <dcbw@redhat.com>,
-       Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
-       linux-wireless@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <4AD46380.9020308@pardus.org.tr> <20091014164710.GF2890@tuxdriver.com> <200910141933.09374.bzolnier@gmail.com>
-In-Reply-To: <200910141933.09374.bzolnier@gmail.com>
+	Wed, 14 Oct 2009 15:02:23 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 14 Oct 2009 21:00:49 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for
+ 2.6.32-rc3)
+To: Ingo Molnar <mingo@elte.hu>
+cc: Joe Perches <joe@perches.com>, Greg KH <gregkh@suse.de>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       James Bottomley <James.Bottomley@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jing Huang <huangj@brocade.com>, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20091014183657.GB5133@elte.hu>
+Message-ID: <tkrat.88ac5cebebbd9689@s5r6.in-berlin.de>
+References: <1255357148.2850.91.camel@localhost.localdomain>
+ <20091012145453.GD4565@elte.hu> <20091012150911.GB1656@suse.de>
+ <20091012154244.GA13323@elte.hu> <20091012232429.GA24254@suse.de>
+ <43e72e890910131108m789110b4hc35e25601ad67bb7@mail.gmail.com>
+ <20091014044519.GA19199@suse.de> <1255497575.1851.16.camel@Joe-Laptop.home>
+ <20091014063308.GE784@elte.hu> <4AD60FF9.40200@s5r6.in-berlin.de>
+ <20091014183657.GB5133@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910142056.18295.IvDoorn@gmail.com>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 14 Oct, Ingo Molnar wrote:
+> * Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+>> How well do "git am", "quilt import" and friends cope with ever 
+>> changing directories?
 
-> > On Wed, Oct 14, 2009 at 05:28:21PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > > I don't have a have a problem with it personally as long as people accept
-> > > the competition..  but instead of working on _their_ projects they go around
-> > > screaming at everybody who does not want to spin inside the great process
-> > > designed by them..
-> > 
-> > Please whine somewhere else.  You have the freedom to work in
-> > drivers/staging all you want.  You do not have the power to force us to
-> > like it -- especially in a case where you are diverting attention from
-> > the community-maintained drivers instead of cooperating with them.
+[Perhaps the -p option does the trick.  And git-am could be done on a
+temporary branch from before the move of the files.]
+
+> Once a driver is in a tree it's in Git and git mv is easy. People 
+> working with Linux better familiarize themselves with Git workflow - the 
+> sooner the better.
+
+Even if author and committer both work with git, they often use e-mail
+to transfer patches.
+
+> If it's not in tree then it will adopt to whatever layout there is once 
+> it gets into Greg's tree.
+
+Many "good" drivers will start as "ugly" or "bad" ones.
+
+>> How about using drivers/staging/this_driver/TODO and (or) its Kconfig 
+>> help text to leave a note about the plans for this driver?
 > 
-> Cooperating you say.
+> Well, the answer is obvious i think. Tell me, at a glance, if you see a 
+> patch on lkml, which one is for a staging driver to be obsoleted, and 
+> which one is the one going upstream real soon? The patches say:
 > 
-> rtl8187 -- before starting the work on rtl8187se I've pinged the maintainer
-> to coordinate the effort and hear his opinion on how to progress..
+>  +++ a/drivers/staging/foo/x.c
 > 
-> I've never heard back.
+>  +++ a/drivers/staging/bar/y.c
 > 
-> rt2x00 -- I know that people have datasheets for some chipsets but I've
-> never heard "How can we help you" etc. thing.
+> Then tell me the same at a glance if you see patches for:
+> 
+>  +++ a/drivers/staging/wip/x.c
+> 
+>  +++ a/drivers/staging/bad/y.c
 
-The rt2x00 members received the specsheets under the condition that we didn't
-distribute them further.
+Does this information matter much?
 
-So everybody which requested the datasheets from the rt2x00 project were presented
-with a choice:
-1) We provide the email address of the Ralink contact person which can device if you
-can get the specsheet or not (possibly under NDA, but this isn't always the case).
-2) Specific questions about the registers can be asked and we give all the information we
-know from our work on the rt2x00 project plus additional information from the specsheet.
-Seeing that the specsheet doesn't always match reality, you get the better answers with
-this option, but some people just hate it when they need to ask other people for stuff.
+What's more interesting is whether development activity will _lead_ to a
+driver being moved from bad or ugly to good.
+-- 
+Stefan Richter
+-=====-==--= =-=- -===-
+http://arcgraph.de/sr/
 
-> All I've ever heard was _lies_ about current state of affairs or that
-> my work is in the way.
 
-I have encounterd your email address in only 2 rt2x00 related discussions
-(yes I have checked my entire email archive). Both cases were regarding
-staging vs rt2x00.
-
-So far I never said rt2800usb or rt2800pci were high quality, I never said they were in a good
-shape. On the other hand, I often talked about the problems with the drivers, requesting help
-to improve the drivers, etc etc.
-
-So are you basing this "I am hearing lies" about a random person talking on the street
-about rt2x00 which is telling the lie?
-
-Ivo
