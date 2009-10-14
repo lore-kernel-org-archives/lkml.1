@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbZJNC2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZJNBVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbZJNC2p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 22:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbZJNC2p
+	id S1754495AbZJNBVM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 21:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbZJNBVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 22:28:45 -0400
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:46949 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751071AbZJNC2o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 22:28:44 -0400
-X-Greylist: delayed 3608 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Oct 2009 22:28:44 EDT
-Date: Wed, 14 Oct 2009 02:19:22 +0100
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: gregkh@suse.de, stable@kernel.org
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.31, 2.6.32] Staging: rt2860sta: prevent a panic when disabling when associated
-Message-ID: <50AF4AEA98%linux@youmustbejoking.demon.co.uk>
-Mail-Followup-To: gregkh@suse.de, devel@driverdev.osuosl.org, 
- linux-kernel@vger.kernel.org, Darren Salt <linux@youmustbejoking.demon.co.uk>
-User-Agent: Messenger-Pro/2.60.0.3101 (Qt/4.5.2) (Linux-x86_64)
-X-NuLabour-Date: Wed, 9084 Dec 1984 02:19:22 +0100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
+	Tue, 13 Oct 2009 21:21:11 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36273 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751373AbZJNBVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 21:21:10 -0400
+Date: Wed, 14 Oct 2009 12:20:24 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: linux-next: kbuild tree build failure
+Message-Id: <20091014122024.f5fa52a2.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__14_Oct_2009_12_20_24_+1100_Yz=1RTD15DFE9qrN"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a panic which is triggered when the hardware "disappears" from
-beneath the driver, i.e. when wireless is toggled off via Fn-F2 on various
-EeePC models.
+--Signature=_Wed__14_Oct_2009_12_20_24_+1100_Yz=1RTD15DFE9qrN
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ref. bug report http://bugzilla.kernel.org/show_bug.cgi?id=13390
-          panic http://bugzilla.kernel.org/attachment.cgi?id=21928
+Hi Sam,
 
-Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
---- a/drivers/staging/rt2860/common/cmm_data_2860.c	2009-09-09 23:13:59.000000000 +0100
-+++ b/drivers/staging/rt2860/common/cmm_data_2860.c	2009-10-13 02:07:32.136049782 +0100
-@@ -363,6 +363,8 @@ int RtmpPCIMgmtKickOut(
- 	ULONG			SwIdx = pAd->MgmtRing.TxCpuIdx;
- 
- 	pTxD  = (PTXD_STRUC) pAd->MgmtRing.Cell[SwIdx].AllocVa;
-+	if (!pTxD)
-+		return 0;
- 
- 	pAd->MgmtRing.Cell[SwIdx].pNdisPacket = pPacket;
- 	pAd->MgmtRing.Cell[SwIdx].pNextNdisPacket = NULL;
+In file included from arch/x86/kernel/syscall_64.c:28:
+arch/x86/include/asm/unistd_64.h:665: error: array index in initializer exc=
+eeds array bounds
+arch/x86/include/asm/unistd_64.h:665: error: (near initialization for 'sys_=
+call_table')
+arch/x86/include/asm/unistd_64.h:665: warning: excess elements in array ini=
+tializer
+arch/x86/include/asm/unistd_64.h:665: warning: (near initialization for 'sy=
+s_call_table')
 
--- 
-| Darren Salt            | linux at youmustbejoking | nr. Ashington, | Doon
-| using Debian GNU/Linux | or ds    ,demon,co,uk    | Northumberland | Army
-| + Buy local produce. Try to walk or cycle. TRANSPORT CAUSES GLOBAL WARMING.
+Exposed by commit a2e2725541fad72416326798c2d7fa4dafb7d337 ("net:
+Introduce recvmmsg socket syscall").  include/asm/asm-offsets.h did not
+get updated even though arch/x86/kernel/asm-offsets.s did.  Ah,
+generated/asm-offsets.h has been updated but my build tree still has the
+(generated in a previous build) include/asm/asm-offsets.h which is
+presumably found before the new arch/x86/include/asm/asm-offsets.h
+introduced by commit fe5ff47a5d79ca99ec7e3155eb19469b44905b2c ("kbuild:
+move asm-offsets.h to include/generated").
 
-Please do not shoot the pianist. He is doing his best.
+Sam, can you think of a better migration path?
+
+I removed include/asm/asm_offsets.h from my object tree and everything
+builds ok.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__14_Oct_2009_12_20_24_+1100_Yz=1RTD15DFE9qrN
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrVJ1gACgkQjjKRsyhoI8xV1QCdGTIB5hpulTSyMdnUvY4IVJQd
+LHMAoLTeBWSV9SXNRpKBA4bSJvywsjKb
+=w0HK
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__14_Oct_2009_12_20_24_+1100_Yz=1RTD15DFE9qrN--
