@@ -1,122 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbZJNGD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752259AbZJNGOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754271AbZJNGD1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 02:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbZJNGDY
+	id S1752259AbZJNGOw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 02:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZJNGOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 02:03:24 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58671 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 02:14:51 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:56987 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753683AbZJNGDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 02:03:23 -0400
-From: Tejun Heo <tj@kernel.org>
-To: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, mingo@redhat.com, tglx@linutronix.de,
-       akpm@linux-foundation.org, rostedt@goodmis.org, hpa@zytor.com,
-       cebbert@redhat.com
-Cc: Tejun Heo <tj@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 16/16] percpu: make accessors check for percpu pointer in sparse
-Date: Wed, 14 Oct 2009 15:02:05 +0900
-Message-Id: <1255500125-3210-17-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1255500125-3210-1-git-send-email-tj@kernel.org>
-References: <1255500125-3210-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 06:02:19 +0000 (UTC)
+	id S1750881AbZJNGOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 02:14:50 -0400
+Date: Tue, 13 Oct 2009 23:15:33 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Daniel Lezcano <dlezcano@fr.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       andrea@cpushare.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: pidns memory leak
+Message-ID: <20091014061533.GA23569@us.ibm.com>
+References: <4AC5F198.2070407@fr.ibm.com> <20091006040526.GA22923@us.ibm.com> <4ACAFD6A.3060008@fr.ibm.com> <20091008030828.GA18973@us.ibm.com> <4ACD9ECC.90508@fr.ibm.com> <20091009032928.GA2031@us.ibm.com> <4ACF381F.9050808@fr.ibm.com> <20091010013235.GA11904@us.ibm.com> <4AD2EBC7.2020109@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AD2EBC7.2020109@fr.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The previous patch made sparse warn about percpu variables being used
-directly without going through percpu accessors.  This patch
-implements the other half - checking whether non percpu variable is
-passed into percpu accessors.
+Daniel Lezcano [dlezcano@fr.ibm.com] wrote:
+> Sukadev Bhattiprolu wrote:
+>> Ccing  Andrea's new email id:
+>>
+>> Daniel Lezcano [dlezcano@fr.ibm.com] wrote:
+>>   
+>>> Following your explanation I was able to reproduce a simple program   
+>>> added in attachment. But there is something I do not understand is 
+>>> why  the leak does not appear if I do the 'lstat' (cf. test program) 
+>>> in the  pid 2 context.
+>>>     
+>>
+>> Hmm, are you sure there is no leak with this test program ? If I put back
+>> the commit (7766755a2f249e7), I do see a leak in all three data structures
+>> (pid_2, proc_inode, pid_namespace).
+>>   
+>
+> Let me clarify :)
+>
+> The program leaks with the commit 7766755a2f249e7 and does not leak  
+> without this commit.
+> This is the expected behaviour and this simple program spots the problem.
+>
+> I tried to modify the program and I moved the lstat to the process 2 in  
+> the child namespace. Conforming your analysis, I was expecting to see a  
+> leak too, but this one didn't occur. I was wondering why, maybe there is  
+> something I didn't understood in the analysis.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
----
- include/asm-generic/percpu.h |    6 ++++--
- include/linux/percpu-defs.h  |   20 ++++++++++++++++++--
- include/linux/percpu.h       |    2 ++
- 3 files changed, 24 insertions(+), 4 deletions(-)
+Hmm, There are two separate dentries associated with the processes.
+One in each mount of /proc. The proc dentries in the child container
+are freed when the child container unmounts its /proc so you don't see
+the leak when the lstat() is inside the container.
 
-diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
-index fded453..04f91c2 100644
---- a/include/asm-generic/percpu.h
-+++ b/include/asm-generic/percpu.h
-@@ -42,8 +42,10 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
-  */
- #ifndef SHIFT_PERCPU_PTR
- /* Weird cast keeps both GCC and sparse happy. */
--#define SHIFT_PERCPU_PTR(__p, __offset)				\
--	RELOC_HIDE((typeof(*(__p)) __kernel __force *)(__p), (__offset))
-+#define SHIFT_PERCPU_PTR(__p, __offset)	({				\
-+	__verify_pcpu_ptr((__p));					\
-+	RELOC_HIDE((typeof(*(__p)) __kernel __force *)(__p), (__offset)); \
-+})
- #endif
- 
- /*
-diff --git a/include/linux/percpu-defs.h b/include/linux/percpu-defs.h
-index 0fa0cb5..1fa36eb 100644
---- a/include/linux/percpu-defs.h
-+++ b/include/linux/percpu-defs.h
-@@ -19,6 +19,16 @@
- 	__attribute__((section(".discard"), unused))
- 
- /*
-+ * Macro which verifies @ptr is a percpu pointer without evaluating
-+ * @ptr.  This is to be used in percpu accessors to verify that the
-+ * input parameter is a percpu pointer.
-+ */
-+#define __verify_pcpu_ptr(ptr)	do {					\
-+	void __percpu *__vpp_verify = (typeof(ptr))NULL;		\
-+	(void)__vpp_verify;						\
-+} while (0)
-+
-+/*
-  * s390 and alpha modules require percpu variables to be defined as
-  * weak to force the compiler to generate GOT based external
-  * references for them.  This is necessary because percpu sections
-@@ -129,10 +139,16 @@
- 	__aligned(PAGE_SIZE)
- 
- /*
-- * Intermodule exports for per-CPU variables.
-+ * Intermodule exports for per-CPU variables.  sparse forgets about
-+ * address space across EXPORT_SYMBOL(), change EXPORT_SYMBOL() to
-+ * noop if __CHECKER__.
-  */
-+#ifndef __CHECKER__
- #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(var)
- #define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(var)
--
-+#else
-+#define EXPORT_PER_CPU_SYMBOL(var)
-+#define EXPORT_PER_CPU_SYMBOL_GPL(var)
-+#endif
- 
- #endif /* _LINUX_PERCPU_DEFS_H */
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index 2c0d31a..42878f0 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -237,6 +237,7 @@ extern void __bad_size_call_parameter(void);
- 
- #define __pcpu_size_call_return(stem, variable)				\
- ({	typeof(variable) pscr_ret__;					\
-+	__verify_pcpu_ptr(&(variable));					\
- 	switch(sizeof(variable)) {					\
- 	case 1: pscr_ret__ = stem##1(variable);break;			\
- 	case 2: pscr_ret__ = stem##2(variable);break;			\
-@@ -250,6 +251,7 @@ extern void __bad_size_call_parameter(void);
- 
- #define __pcpu_size_call(stem, variable, ...)				\
- do {									\
-+	__verify_pcpu_ptr(&(variable));					\
- 	switch(sizeof(variable)) {					\
- 		case 1: stem##1(variable, __VA_ARGS__);break;		\
- 		case 2: stem##2(variable, __VA_ARGS__);break;		\
--- 
-1.6.4.2
+When the lstat() is in the root container, it is accessing proc-dentries
+from the _root container_ - They are supposed to  be flushed when the task
+exits (but the above commit prevents that flush). They should be freed
+when the /proc in root container is unmounted - and leak until then ?
 
+Sukadev
