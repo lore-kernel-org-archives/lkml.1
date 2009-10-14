@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbZJNVb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760905AbZJNVdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760866AbZJNVb5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 17:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760650AbZJNVb4
+	id S1760905AbZJNVdf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 17:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760782AbZJNVde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 17:31:56 -0400
-Received: from outbound-mail-311.bluehost.com ([67.222.54.4]:53771 "HELO
-	outbound-mail-311.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760638AbZJNVb4 (ORCPT
+	Wed, 14 Oct 2009 17:33:34 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:43457 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760774AbZJNVde (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 17:31:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=FEwumhY2hRQnAvOZ74aYCaIOMmseWmz+I2WwUhz3+iD5pVQsjHlG++LMTyv12WEYMK1TRU4AsLccY164ts55DOqFiFVl6e67hamWrKrdSBpnGknwFx/C0kjT466b7BOH;
-Date: Wed, 14 Oct 2009 14:30:54 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [X86] PCI: Use generic cacheline sizing instead of per-vendor
- tests.
-Message-ID: <20091014143054.76874f30@jbarnes-g45>
-In-Reply-To: <20091014203139.GA2336@redhat.com>
-References: <20091014203139.GA2336@redhat.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 14 Oct 2009 17:33:34 -0400
+Date: Wed, 14 Oct 2009 17:32:57 -0400
+To: Frans Pop <elendil@planet.nl>
+Cc: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>, torvalds@linux-foundation.org,
+       jeff.chua.linux@gmail.com, Valdis.Kletnieks@vt.edu, mangoo@wpkg.org,
+       daniel.blueman@gmail.com, bstanoszek@comtime.com,
+       dave@linux.vnet.ibm.com, hugh.dickins@tiscali.co.uk,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       hugh@veritas.com
+Subject: Re: 2.6.32-rc3: low mem - only 378MB on x86_32 with 64GB. Why?
+Message-ID: <20091014213257.GA5498@csclub.uwaterloo.ca>
+References: <Pine.LNX.4.64.0910052334480.17655@boston.corp.fedex.com> <b6a2187b0910051715y4ee63503y148ba2d7e24cad8e@mail.gmail.com> <alpine.LFD.2.01.0910051727420.3432@localhost.localdomain> <alpine.LFD.2.01.0910051727420.3432@localhost.localdomain> <200910061106.33718.tvrtko.ursulin@sophos.com> <200910061301.39221.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910061301.39221.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Oct 2009 16:31:39 -0400
-Dave Jones <davej@redhat.com> wrote:
+On Tue, Oct 06, 2009 at 01:01:35PM +0200, Frans Pop wrote:
+> Tvrtko Ursulin wrote:
+> >> In fact, I wish more people did that, just so that we'd get better
+> >> coverage of the 32-bit compat code. We occasionally find issues there,
+> >> although I think it's getting rarer.
+> > 
+> > Maybe convince some distro to offer this setup as an option at least? I
+> > always wondered why no one has, or maybe I missed it.
+> 
+> Debian has a 64-bit kernel for its 32-bit "i386" architecture (and also for 
+> its 64-bit "amd64" architecture obviously):
+> - for stable: http://packages.debian.org/lenny/linux-image-2.6.26-2-amd64
+> - for unstable: http://packages.debian.org/sid/linux-image-2.6.30-2-amd64
 
-> Instead of the PCI code needing to have code to determine the 
-> cacheline size of each processor, use the data the cpu identification
-> code should have already determined during early boot.
-> 
-> (The vendor checks are also incomplete, and don't take into account
->  modern CPUs)
-> 
-> I've been carrying a variant of this code in Fedora for a while,
-> that prints debug information.  There are a number of cases where we
-> are currently setting the PCI cacheline size to 32 bytes, when the CPU
-> cacheline size is 64 bytes.  With this patch, we set them both the
-> same.
-> 
-> Signed-off-by: Dave Jones <davej@redhat.com>
-> 
+I have been running that Debian setup for 5 years now.  It's great.
+Other than 32 bit iptables not liking the 64bit kernel, I can't currently
+recall any issues at any point.  Well and configure scripts often have to
+be run with the 'linux32' wrapper to make them not try something stupid.
 
-Does this improve performance enough to warrant putting it into the
-current cycle?  Or is queuing it for 2.6.33 sufficient?
-
-Thanks,
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Len Sorensen
