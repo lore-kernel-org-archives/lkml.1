@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbZJNAiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759766AbZJNAia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753328AbZJNAiR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 20:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZJNAiR
+	id S1759766AbZJNAia (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 20:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbZJNAia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 20:38:17 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58578 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751719AbZJNAiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 20:38:16 -0400
-Message-ID: <4AD51D3E.60103@cn.fujitsu.com>
-Date: Wed, 14 Oct 2009 08:37:18 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 13 Oct 2009 20:38:30 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:43094 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753880AbZJNAi3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 20:38:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ONzQR9Hpje6SHrofRTq/s2dSmSal+LS6FpD6/ToCdpQGY5rBPogX5Z81W2EeFxh/PR
+         gMA/GAIjXTjuUh9uC1PRGZb2IrO8LMHGp+oL28wPSatY34P7nU7UYP5MmNvNhUSDpp/f
+         M8YsyApKG4ffJQDJmZfkuJmpvRUqtCSvHw9i4=
+Message-ID: <4AD51D3F.2030603@gmail.com>
+Date: Tue, 13 Oct 2009 18:37:19 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
-       mtosatti@redhat.com, torvalds@linux-foundation.org
-Subject: Re: [PATCH RFC tip/core/rcu 1/3] rcu: The Bloatwatch Edition, v7
-References: <20091009224954.GA26516@linux.vnet.ibm.com> <4AD42FF5.2080109@cn.fujitsu.com> <20091013170022.GA6782@linux.vnet.ibm.com>
-In-Reply-To: <20091013170022.GA6782@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+To: tfjellstrom@shaw.ca
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: buffer io error on device sr0?
+References: <200910130343.32162.tfjellstrom@shaw.ca>
+In-Reply-To: <200910130343.32162.tfjellstrom@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
->> It's an old issue.
->> It's not only about RCUTINY, it's also about other rcu implementations:
->>
->> rcu_enter_nohz()/rcu_exit_nohz() are not called in pairs.
->>
->> irq_exit() calls tick_nohz_stop_sched_tick() which calls rcu_enter_nohz(),
->> where is the corresponding rcu_exit_nohz()?
->> (or tick_nohz_restart_sched_tick())?
-> 
-> The tick_nohz_restart_sched_tick() function is called from the various
-> per-architecture cpu_idle() functions (or default_idle() or whatever
-> name that the architecture uses).  For example, in:
-> 
-> 	arch/x86/kernel/process_64.c
-> 
-> the cpu_idle() function invokes tick_nohz_restart_sched_tick() just
-> before invoking schedule() to exit the idle loop.
-> 
-> And, as you say, tick_nohz_restart_sched_tick() invokes rcu_exit_nohz().
-> 
-> 							Thanx, Paul
-> 
-> 
+On 10/13/2009 03:43 AM, Thomas Fjellstrom wrote:
+> I'm not sure which version it started, but it seems at least 2.6.32-rc3-git2
+> has issues with detecting blank DVDR disks.
+>
+> [220595.198654] cdrom: This disc doesn't have any tracks I recognize!
+> [220595.298488] sr 3:0:0:0: [sr0] Unhandled sense code
+> [220595.298492] sr 3:0:0:0: [sr0] Result: hostbyte=DID_OK
+> driverbyte=DRIVER_SENSE
+> [220595.298496] sr 3:0:0:0: [sr0] Sense Key : Blank Check [current]
+> [220595.298501] sr 3:0:0:0: [sr0] Add. Sense: No additional sense information
+> [220595.298505] sr 3:0:0:0: [sr0] CDB: Read(10): 28 00 00 00 00 00 00 00 01 00
+> [220595.298514] end_request: I/O error, dev sr0, sector 0
+> [220595.298518] Buffer I/O error on device sr0, logical block 0
+> [220595.304554] sr 3:0:0:0: [sr0] Unhandled sense code
+> [220595.304562] sr 3:0:0:0: [sr0] Result: hostbyte=DID_OK
+> driverbyte=DRIVER_SENSE
+> [220595.304570] sr 3:0:0:0: [sr0] Sense Key : Blank Check [current]
+> [220595.304579] sr 3:0:0:0: [sr0] Add. Sense: No additional sense information
+> [220595.304588] sr 3:0:0:0: [sr0] CDB: Read(10): 28 00 00 00 00 00 00 00 01 00
+> [220595.304609] end_request: I/O error, dev sr0, sector 0
+> [220595.304616] Buffer I/O error on device sr0, logical block 0
+>
+> Unless its supposed to be this way. Although I didn't receive any kind of
+> notification when inserting the disk, as I used to (could be a hal/kde error,
+> but the logs in dmesg seem to hint otherwise).
 
-These tick_nohz_restart_sched_tick() which are called from the various
-per-architecture cpu_idle() functions are not the opposite of
-the tick_nohz_stop_sched_tick() in *irq_exit()*. So I figure that 
-rcu_enter_nohz()/rcu_exit_nohz() are not called in pairs.
+Something tried to read off the disk and the drive reported "no way, 
+it's blank". That's all this indicates. Most likely HAL or something is 
+doing the read..
