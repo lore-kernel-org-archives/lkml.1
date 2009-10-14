@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933387AbZJNOPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933554AbZJNOQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933387AbZJNOPb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 10:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZJNOPb
+	id S933554AbZJNOQw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 10:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933496AbZJNOQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 10:15:31 -0400
-Received: from emulex.emulex.com ([138.239.112.1]:39791 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756426AbZJNOP3 (ORCPT
+	Wed, 14 Oct 2009 10:16:51 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:59165 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933478AbZJNOQu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 10:15:29 -0400
-Message-ID: <4AD5DCA7.5060704@emulex.com>
-Date: Wed, 14 Oct 2009 10:13:59 -0400
-From: James Smart <James.Smart@Emulex.Com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 14 Oct 2009 10:16:50 -0400
+Date: Wed, 14 Oct 2009 10:14:06 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Luis Correia <luis.f.correia@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Dan Williams <dcbw@redhat.com>, Ivo van Doorn <ivdoorn@gmail.com>,
+       Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>,
+       linux-wireless@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Current status of rt2800usb and staging/rt2870
+Message-ID: <20091014141405.GB2890@tuxdriver.com>
+References: <4AD46380.9020308@pardus.org.tr> <200910132121.25743.bzolnier@gmail.com> <1255464940.10798.10.camel@localhost.localdomain> <200910132357.57094.bzolnier@gmail.com> <efe7343f0910131521u608d66f5r670dd1cf00322d0b@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Joe Perches <joe@perches.com>, Greg KH <gregkh@suse.de>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jing Huang <huangj@brocade.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for
- 2.6.32-rc3)
-References: <1255097287.2934.21.camel@localhost.localdomain> <20091012130652.GB25464@elte.hu> <1255357148.2850.91.camel@localhost.localdomain> <20091012145453.GD4565@elte.hu> <20091012150911.GB1656@suse.de> <20091012154244.GA13323@elte.hu> <20091012232429.GA24254@suse.de> <43e72e890910131108m789110b4hc35e25601ad67bb7@mail.gmail.com> <20091014044519.GA19199@suse.de> <1255497575.1851.16.camel@Joe-Laptop.home> <20091014063308.GE784@elte.hu>
-In-Reply-To: <20091014063308.GE784@elte.hu>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Oct 2009 14:14:02.0485 (UTC) FILETIME=[94B27250:01CA4CD8]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <efe7343f0910131521u608d66f5r670dd1cf00322d0b@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 13, 2009 at 11:21:53PM +0100, Luis Correia wrote:
 
+> Since some days now, we have someone in the team which works for
+> Ralink, I'm hopefull that he can find some time to help us make the
+> driver better.
 
-Ingo Molnar wrote:
-> Yes, that's a real worry. Some time ago i suggested:
-> 
->   drivers/staging/good/
->   drivers/staging/bad/
->   drivers/staging/ugly/
-> 
->  good:  drivers that are to go upstream in the next cycle 
->  bad:   outgoing drivers being obsoleted or abandoned
->  ugly:  incoming messy drivers with active developers
-> 
-> The messaging of this looks nice and the names are short and obvious.
-> 
-> An added benefit is that this kind of separation makes it easy for 
-> people interested in drivers/staging to follow the 'status' of drivers. 
-> Once stuff goes into 'good' a different kind of review is needed than if 
-> a driver goes into 'ugly'.
-> 
-> The main disadvantage would be the PR angle: putting new drivers into a 
-> path named 'ugly'. Not something you want to put into a quarterly status 
-> report, right? If we put drivers/staging/ugly/ drivers into 
-> drivers/staging/ itself, we'd solve that problem. I.e. we'd keep the 
-> current scheme, but we'd also add drivers/staging/good/ and 
-> drivers/staging/bad/ as two extra stages for incoming and outgoing 
-> drivers.
+This (I hope) is the future.  If we can get the vendors to cooperate
+with us at this level then we can eliminate the vendor/upstream
+driver distinction.
 
-Change "ugly" to "wip"  (work in progress).  Should remove the negative 
-connotation and keeps things short. Does miss the spaghetti western theme
-though :)
+While I try to be ambivalent about drivers/staging, I _do_ think that
+it tends to enable vendors to get aways with _less_ support of the
+community by facilitating them in taking advantage of the "pragmatic"
+among us.
 
--- james s
+> And now, i'm going back to my lovely hole, having added nothing to
+> this conversation.
+
+I disagree! :-)
+
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
