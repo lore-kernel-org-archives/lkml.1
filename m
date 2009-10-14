@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761901AbZJNPnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761874AbZJNPdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761901AbZJNPnm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761156AbZJNPnm
+	id S1761874AbZJNPdA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:33:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934527AbZJNPdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:43:42 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:44671 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758829AbZJNPnl (ORCPT
+	Wed, 14 Oct 2009 11:33:00 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:57779 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934491AbZJNPc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:43:41 -0400
-Date: Wed, 14 Oct 2009 11:31:29 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: David Rientjes <rientjes@google.com>
-cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Tejun Heo <tj@kernel.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: this_cpu_xx's patchset effect on SLUB cycle counts
-In-Reply-To: <alpine.DEB.1.00.0910131958040.26072@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0910141125040.26476@gentwo.org>
-References: <alpine.DEB.1.10.0910131603380.7246@gentwo.org> <alpine.DEB.1.00.0910131958040.26072@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 14 Oct 2009 11:32:59 -0400
+Subject: [PATCH] kmemleak: Do not use off-slab management with SLAB_NOLEAKTRACE
+To: linux-kernel@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+Date: Wed, 14 Oct 2009 16:31:46 +0100
+Message-ID: <20091014153146.8955.19964.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.15-rc3-10-g00be
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Oct 2009 15:31:46.0992 (UTC) FILETIME=[70F5BB00:01CA4CE3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009, David Rientjes wrote:
+With the slab allocator, if off-slab management is enabled for the
+kmem_caches used by kmemleak, it leads to recursive calls into
+kmemleak_alloc(). Off-slab management can be triggered by other config
+options increasing the slab size, e.g. DEBUG_PAGEALLOC.
 
-> I benchmarked this patchset both with and without the irqless patch from
-> http://marc.info/?l=linux-kernel&m=125503037213262 on several of my
-> machines.  The results were good for the most part, but I found a very
-> reproducible regression on my 4-core 8G Xeon 5500 with HyperThreading for
-> objects of smaller size (8, 16, and 64 bytes) without the irqless patch:
+Reported-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+---
+ mm/slab.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-Hmmm... Strange. Maybe different icache cacheline code placement? There is
-no change in data structures without the irqless patch.
-
-Can you change some kernel config options that impact memory and code
-layout and rerun? Just to make sure that this is not a freak thing due to
-code placement. Are sure sure that the kernel tested had the patches
-applied?
-
-> But "Kernel C" (with the irqless patch) shows a major improvement in the
-> single threaded tests:
-
-C changes per cpu layout a bit as well as does code changes.
-
-> 2. Kmalloc: alloc/free test
-> 10000 times kmalloc(8)/kfree -> 132 cycles
-
-Was the kernel compiled with preemption on? I get cycle numbers with two
-digits on these tests using quad nehalems.
-
-> "Kernel C" hangs on my netserver machine during netperf -t TCP_RR -l 60,
-> though, so hopefully I'll be able to obtain results for that benchmark
-> with the irqless patch and see if there's any noticable improvement once
-> it's debugged.
-
-irqless is a risky patch. There may still be issues there. Thanks for
-testing it.
-
+diff --git a/mm/slab.c b/mm/slab.c
+index 7dfa481..646db30 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2261,9 +2261,11 @@ kmem_cache_create (const char *name, size_t size, size_t align,
+ 	/*
+ 	 * Determine if the slab management is 'on' or 'off' slab.
+ 	 * (bootstrapping cannot cope with offslab caches so don't do
+-	 * it too early on.)
++	 * it too early on. Always use on-slab management when
++	 * SLAB_NOLEAKTRACE to avoid recursive calls into kmemleak)
+ 	 */
+-	if ((size >= (PAGE_SIZE >> 3)) && !slab_early_init)
++	if ((size >= (PAGE_SIZE >> 3)) && !slab_early_init &&
++	    !(flags & SLAB_NOLEAKTRACE))
+ 		/*
+ 		 * Size is large, assume best to place the slab management obj
+ 		 * off-slab (should allow better packing of objs).
 
