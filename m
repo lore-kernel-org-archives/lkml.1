@@ -1,111 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760379AbZJNVPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760344AbZJNVQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760379AbZJNVPR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 17:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760194AbZJNVPQ
+	id S1760344AbZJNVQo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 17:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZJNVQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 17:15:16 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:55667 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760265AbZJNVPP (ORCPT
+	Wed, 14 Oct 2009 17:16:43 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:38544 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752898AbZJNVQm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 17:15:15 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 14 Oct 2009 23:14:13 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH update] firewire: cdev: reduce stack usage by ioctl_dispatch
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.ec38f27900b7af20@s5r6.in-berlin.de>
-Message-ID: <tkrat.fac844bd855a29ff@s5r6.in-berlin.de>
-References: <tkrat.27888275592fd267@s5r6.in-berlin.de>
- <tkrat.af1058f9e26f4dba@s5r6.in-berlin.de>
- <tkrat.ec38f27900b7af20@s5r6.in-berlin.de>
+	Wed, 14 Oct 2009 17:16:42 -0400
+Date: Wed, 14 Oct 2009 16:15:42 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: "Andrew G. Morgan" <morgan@kernel.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: [PATCH v2] define convenient securebits masks for prctl users
+Message-ID: <20091014211542.GA25218@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shrink the stack-allocated ioctl argument buffer from 256 to 40 bytes.
-This is the maximum of what we currently need for all ioctls.
+The securebits are used by passing them to prctl with the
+PR_{S,G}ET_SECUREBITS commands.  But the defines must be
+shifted to be used in prctl, which begs to be confused and
+misused by userspace.  So define some more convenient
+values for userspace to specify.  This way userspace does
 
-Also, turn runtime checks of the buffer size into compile-time checks.
-This involves a few more lines of code but they are all taken care of by
-the compiler's dead code elimination, and this way the buffer size
-should actually be a little easier to update when new ioctls are added.
+	prctl(PR_SET_SECUREBITS, SECBIT_NOROOT);
 
-At first I wanted to define this as
-	 BUILD_BUG_ON(_IOC_SIZE(x) > sizeof(buffer))
-but sparse spews "error: bad integer constant expression" then.
+instead of
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+	prctl(PR_SET_SECUREBITS, 1 << SECURE_NOROOT);
+
+Thanks to Michael for the idea.
+
+This patch also adds include/linux/securebits to the installed headers.
+Then perhaps it can be included by glibc's sys/prctl.h.
+
+Changelog:
+	Oct 14: (Suggestions by Michael Kerrisk):
+		1. spell out SETUID in SECBIT_NO_SETUID*
+		2. SECBIT_X_LOCKED does not imply SECBIT_X
+		3. add definitions for keepcaps
+        Oct 14: As suggested by Michael Kerrisk, don't
+		use SB_* as that convention is already in
+		use.  Use SECBIT_ prefix instead.
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Acked-by: Andrew G. Morgan <morgan@kernel.org>
+Cc: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
 ---
- drivers/firewire/core-cdev.c |   36 ++++++++++++++++++++++++-----------
- 1 file changed, 25 insertions(+), 11 deletions(-)
+ include/linux/Kbuild       |    1 +
+ include/linux/securebits.h |   22 ++++++++++++++++------
+ 2 files changed, 17 insertions(+), 6 deletions(-)
 
-Index: linux-2.6.32-rc1/drivers/firewire/core-cdev.c
-===================================================================
---- linux-2.6.32-rc1.orig/drivers/firewire/core-cdev.c
-+++ linux-2.6.32-rc1/drivers/firewire/core-cdev.c
-@@ -1300,28 +1300,42 @@ static int (* const ioctl_handlers[])(st
- static int dispatch_ioctl(struct client *client,
- 			  unsigned int cmd, void __user *arg)
- {
--	char buffer[256];
-+	char buffer[40];
- 	int ret;
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 3e8bd18..94fe9f7 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -328,6 +328,7 @@ unifdef-y += scc.h
+ unifdef-y += sched.h
+ unifdef-y += screen_info.h
+ unifdef-y += sdla.h
++unifdef-y += securebits.h
+ unifdef-y += selinux_netlink.h
+ unifdef-y += sem.h
+ unifdef-y += serial_core.h
+diff --git a/include/linux/securebits.h b/include/linux/securebits.h
+index d2c5ed8..9ad109e 100644
+--- a/include/linux/securebits.h
++++ b/include/linux/securebits.h
+@@ -1,6 +1,13 @@
+ #ifndef _LINUX_SECUREBITS_H
+ #define _LINUX_SECUREBITS_H 1
  
-+#define check_ioctl_size(x) BUILD_BUG_ON(sizeof(x) > sizeof(buffer))
++/* Each securesetting is implemented using two bits. One bit specifies
++   whether the setting is on or off. The other bit specify whether the
++   setting is locked or not. A setting which is locked cannot be
++   changed from user-level. */
++#define issecure_mask(X)	(1 << (X))
++#define issecure(X)		(issecure_mask(X) & current_cred_xxx(securebits))
 +
-+	check_ioctl_size(struct fw_cdev_get_info);
-+	check_ioctl_size(struct fw_cdev_send_request);
-+	check_ioctl_size(struct fw_cdev_allocate);
-+	check_ioctl_size(struct fw_cdev_deallocate);
-+	check_ioctl_size(struct fw_cdev_send_response);
-+	check_ioctl_size(struct fw_cdev_initiate_bus_reset);
-+	check_ioctl_size(struct fw_cdev_add_descriptor);
-+	check_ioctl_size(struct fw_cdev_remove_descriptor);
-+	check_ioctl_size(struct fw_cdev_create_iso_context);
-+	check_ioctl_size(struct fw_cdev_queue_iso);
-+	check_ioctl_size(struct fw_cdev_start_iso);
-+	check_ioctl_size(struct fw_cdev_stop_iso);
-+	check_ioctl_size(struct fw_cdev_get_cycle_timer);
-+	check_ioctl_size(struct fw_cdev_allocate_iso_resource);
-+	check_ioctl_size(struct fw_cdev_send_stream_packet);
+ #define SECUREBITS_DEFAULT 0x00000000
+ 
+ /* When set UID 0 has no special privileges. When unset, we support
+@@ -12,6 +19,9 @@
+ #define SECURE_NOROOT			0
+ #define SECURE_NOROOT_LOCKED		1  /* make bit-0 immutable */
+ 
++#define SECBIT_NOROOT		(issecure_mask(SECURE_NOROOT))
++#define SECBIT_NOROOT_LOCKED	(issecure_mask(SECURE_NOROOT_LOCKED))
 +
- 	if (_IOC_TYPE(cmd) != '#' ||
- 	    _IOC_NR(cmd) >= ARRAY_SIZE(ioctl_handlers))
- 		return -EINVAL;
+ /* When set, setuid to/from uid 0 does not trigger capability-"fixup".
+    When unset, to provide compatiblility with old programs relying on
+    set*uid to gain/lose privilege, transitions to/from uid 0 cause
+@@ -19,6 +29,10 @@
+ #define SECURE_NO_SETUID_FIXUP		2
+ #define SECURE_NO_SETUID_FIXUP_LOCKED	3  /* make bit-2 immutable */
  
--	if (_IOC_DIR(cmd) & _IOC_WRITE) {
--		if (_IOC_SIZE(cmd) > sizeof(buffer) ||
--		    copy_from_user(buffer, arg, _IOC_SIZE(cmd)))
--			return -EFAULT;
--	}
-+	if (_IOC_DIR(cmd) & _IOC_WRITE &&
-+	    copy_from_user(buffer, arg, _IOC_SIZE(cmd)))
-+		return -EFAULT;
++#define SECBIT_NO_SETUID_FIXUP	(issecure_mask(SECURE_NO_SETUID_FIXUP))
++#define SECBIT_NO_SETUID_FIXUP_LOCKED \
++			(issecure_mask(SECURE_NO_SETUID_FIXUP_LOCKED))
++
+ /* When set, a process can retain its capabilities even after
+    transitioning to a non-root user (the set-uid fixup suppressed by
+    bit 2). Bit-4 is cleared when a process calls exec(); setting both
+@@ -27,12 +41,8 @@
+ #define SECURE_KEEP_CAPS		4
+ #define SECURE_KEEP_CAPS_LOCKED		5  /* make bit-4 immutable */
  
- 	ret = ioctl_handlers[_IOC_NR(cmd)](client, buffer);
- 	if (ret < 0)
- 		return ret;
+-/* Each securesetting is implemented using two bits. One bit specifies
+-   whether the setting is on or off. The other bit specify whether the
+-   setting is locked or not. A setting which is locked cannot be
+-   changed from user-level. */
+-#define issecure_mask(X)	(1 << (X))
+-#define issecure(X)		(issecure_mask(X) & current_cred_xxx(securebits))
++#define SECBIT_KEEP_CAPS	(issecure_mask(SECURE_KEEP_CAPS))
++#define SECBIT_KEEP_CAPS_LOCKED (issecure_mask(SECURE_KEEP_CAPS_LOCKED))
  
--	if (_IOC_DIR(cmd) & _IOC_READ) {
--		if (_IOC_SIZE(cmd) > sizeof(buffer) ||
--		    copy_to_user(arg, buffer, _IOC_SIZE(cmd)))
--			return -EFAULT;
--	}
-+	if (_IOC_DIR(cmd) & _IOC_READ &&
-+	    copy_to_user(arg, buffer, _IOC_SIZE(cmd)))
-+		return -EFAULT;
- 
- 	return ret;
- }
-
+ #define SECURE_ALL_BITS		(issecure_mask(SECURE_NOROOT) | \
+ 				 issecure_mask(SECURE_NO_SETUID_FIXUP) | \
 -- 
-Stefan Richter
--=====-==--= =-=- -===-
-http://arcgraph.de/sr/
+1.6.1
 
