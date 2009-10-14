@@ -1,318 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758747AbZJNLy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbZJNL4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758747AbZJNLy5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 07:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757188AbZJNLy5
+	id S1758786AbZJNL4g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 07:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758662AbZJNL4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 07:54:57 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:45637 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756410AbZJNLyz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 07:54:55 -0400
-Date: Wed, 14 Oct 2009 13:54:13 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH] LED: add driver for LT3593 controlled LEDs
-Message-ID: <20091014115413.GA29459@buzzloop.caiaq.de>
-References: <1254865260-13570-1-git-send-email-daniel@caiaq.de>
-MIME-Version: 1.0
+	Wed, 14 Oct 2009 07:56:35 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:49974 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758370AbZJNL4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 07:56:34 -0400
+To: catalin.marinas@arm.com
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.32-rc3 kmemleak] WARNING: atkernel/lockdep.c:3161check_flags+0xbe/0x180()
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200910082134.EJD35962.HLFSQVFOOFMJOt@I-love.SAKURA.ne.jp>
+	<1255005738.6715.6.camel@pc1117.cambridge.arm.com>
+	<200910130317.n9D3HTOH055400@www262.sakura.ne.jp>
+	<1255435201.9987.22.camel@pc1117.cambridge.arm.com>
+	<200910140025.CAJ82820.MOtOFOLVFFSHJQ@I-love.SAKURA.ne.jp>
+In-Reply-To: <200910140025.CAJ82820.MOtOFOLVFFSHJQ@I-love.SAKURA.ne.jp>
+Message-Id: <200910142055.HJH56741.FLOFSJOQHtFVMO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Wed, 14 Oct 2009 20:55:56 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254865260-13570-1-git-send-email-daniel@caiaq.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ping.
+Tetsuo Handa wrote:
+> > This is the "DEBUG_LOCKS_WARN_ON(current->softirqs_enabled)" warning.
+> > I'm not sure why this happens but from the trace it seems that kmemleak
+> > is being called recursively via alloc_slabmgmt() which is caused by
+> > kmem_cache_alloc() called from create_object() in kmemleak.c.
+> If what my guess shown below is correct,
+> (object_cache->slabp_cache->flags & SLAB_NOLEAKTRACE) == 0
+> is triggering recursive calls.
 
-On Wed, Oct 07, 2009 at 05:41:00AM +0800, Daniel Mack wrote:
-> Date: Wed,  7 Oct 2009 05:41:00 +0800
-> From: Daniel Mack <daniel@caiaq.de>
-> To: linux-kernel@vger.kernel.org
-> Cc: Daniel Mack <daniel@caiaq.de>, Richard Purdie <rpurdie@rpsys.net>
-> Subject: [PATCH] LED: add driver for LT3593 controlled LEDs
-> Message-Id: <1254865260-13570-1-git-send-email-daniel@caiaq.de>
-> X-Mailer: git-send-email 1.6.0.4
-> 
-> The LT3593 is a step-up DC/DC converter designed to drive up to ten
-> white LEDs in series. The current flow can be set with a control pin.
-> 
-> This driver controls any number of such devices connected on generic
-> GPIOs and exports the function as as platform_driver.
-> 
-> The gpio_led platform data struct definition is reused for this purpose.
-> 
-> Successfully tested on a PXA embedded board.
-> 
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Cc: Richard Purdie <rpurdie@rpsys.net>
-> 
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> ---
->  drivers/leds/Kconfig       |    8 ++
->  drivers/leds/Makefile      |    1 +
->  drivers/leds/leds-lt3593.c |  218 ++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 227 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/leds/leds-lt3593.c
-> 
-> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-> index 7c8e712..80a183f 100644
-> --- a/drivers/leds/Kconfig
-> +++ b/drivers/leds/Kconfig
-> @@ -229,6 +229,14 @@ config LEDS_BD2802
->  	  This option enables support for BD2802GU RGB LED driver chips
->  	  accessed via the I2C bus.
->  
-> +config LEDS_LT3593
-> +	tristate "LED driver for LT3593 controllers"
-> +	depends on LEDS_CLASS && GENERIC_GPIO
-> +	help
-> +	  This option enables support for LEDs driven by a Linear Technology
-> +	  LT3593 controller. This controller uses a special one-wire pulse
-> +	  coding protocol to set the brightness.
-> +
->  comment "LED Triggers"
->  
->  config LEDS_TRIGGERS
-> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-> index e8cdcf7..3d79287 100644
-> --- a/drivers/leds/Makefile
-> +++ b/drivers/leds/Makefile
-> @@ -28,6 +28,7 @@ obj-$(CONFIG_LEDS_PCA955X)		+= leds-pca955x.o
->  obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
->  obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
->  obj-$(CONFIG_LEDS_PWM)			+= leds-pwm.o
-> +obj-$(CONFIG_LEDS_LT3593)		+= leds-lt3593.o
->  
->  # LED SPI Drivers
->  obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
-> diff --git a/drivers/leds/leds-lt3593.c b/drivers/leds/leds-lt3593.c
-> new file mode 100644
-> index 0000000..de69a5f
-> --- /dev/null
-> +++ b/drivers/leds/leds-lt3593.c
-> @@ -0,0 +1,218 @@
-> +/*
-> + * LEDs driver for LT3593 controllers
-> + *
-> + * See the datasheet at http://cds.linear.com/docs/Datasheet/3593f.pdf
-> + *
-> + * Copyright (c) 2009 Daniel Mack <daniel@caiaq.de>
-> + *
-> + * Based on leds-gpio.c,
-> + *
-> + *   Copyright (C) 2007 8D Technologies inc.
-> + *   Raphael Assenat <raph@8d.com>
-> + *   Copyright (C) 2008 Freescale Semiconductor, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/leds.h>
-> +#include <linux/workqueue.h>
-> +#include <linux/delay.h>
-> +
-> +#include <asm/gpio.h>
-> +
-> +struct lt3593_led_data {
-> +	struct led_classdev cdev;
-> +	unsigned gpio;
-> +	struct work_struct work;
-> +	u8 new_level;
-> +};
-> +
-> +static void lt3593_led_work(struct work_struct *work)
-> +{
-> +	int pulses;
-> +	struct lt3593_led_data	*led_dat =
-> +		container_of(work, struct lt3593_led_data, work);
-> +
-> +	/*
-> +	 * The LT3593 resets its internal current level register to the maximum
-> +	 * level on the first falling edge on the control pin. Each following
-> +	 * falling edge decreases the current level by 625uA. Up to 32 pulses
-> +	 * can be sent, so the maximum power reduction is 20mA.
-> +	 * After a timeout of 128us, the value is taken from the register and
-> +	 * applied is to the output driver.
-> +	 */
-> +
-> +	if (led_dat->new_level == 0) {
-> +		gpio_set_value_cansleep(led_dat->gpio, 0);
-> +		return;
-> +	}
-> +
-> +	pulses = 32 - (led_dat->new_level * 32) / 255;
-> +
-> +	if (pulses == 0) {
-> +		gpio_set_value_cansleep(led_dat->gpio, 0);
-> +		mdelay(1);
-> +		gpio_set_value_cansleep(led_dat->gpio, 1);
-> +		return;
-> +	}
-> +
-> +	gpio_set_value_cansleep(led_dat->gpio, 1);
-> +
-> +	while (pulses--) {
-> +		gpio_set_value_cansleep(led_dat->gpio, 0);
-> +		udelay(1);
-> +		gpio_set_value_cansleep(led_dat->gpio, 1);
-> +		udelay(1);
-> +	}
-> +}
-> +
-> +static void lt3593_led_set(struct led_classdev *led_cdev,
-> +	enum led_brightness value)
-> +{
-> +	struct lt3593_led_data *led_dat =
-> +		container_of(led_cdev, struct lt3593_led_data, cdev);
-> +
-> +	led_dat->new_level = value;
-> +	schedule_work(&led_dat->work);
-> +}
-> +
-> +static int __devinit create_lt3593_led(const struct gpio_led *template,
-> +	struct lt3593_led_data *led_dat, struct device *parent)
-> +{
-> +	int ret, state;
-> +
-> +	/* skip leds on GPIOs that aren't available */
-> +	if (!gpio_is_valid(template->gpio)) {
-> +		printk(KERN_INFO "%s: skipping unavailable LT3593 LED at gpio %d (%s)\n",
-> +				KBUILD_MODNAME, template->gpio, template->name);
-> +		return 0;
-> +	}
-> +
-> +	ret = gpio_request(template->gpio, template->name);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	led_dat->cdev.name = template->name;
-> +	led_dat->cdev.default_trigger = template->default_trigger;
-> +	led_dat->gpio = template->gpio;
-> +
-> +	led_dat->cdev.brightness_set = lt3593_led_set;
-> +
-> +	state = (template->default_state == LEDS_GPIO_DEFSTATE_ON);
-> +	led_dat->cdev.brightness = state ? LED_FULL : LED_OFF;
-> +
-> +	if (!template->retain_state_suspended)
-> +		led_dat->cdev.flags |= LED_CORE_SUSPENDRESUME;
-> +
-> +	ret = gpio_direction_output(led_dat->gpio, state);
-> +	if (ret < 0)
-> +		goto err;
-> +
-> +	INIT_WORK(&led_dat->work, lt3593_led_work);
-> +
-> +	ret = led_classdev_register(parent, &led_dat->cdev);
-> +	if (ret < 0)
-> +		goto err;
-> +
-> +	printk(KERN_INFO "%s: registered LT3593 LED '%s' at GPIO %d\n",
-> +		KBUILD_MODNAME, template->name, template->gpio);
-> +
-> +	return 0;
-> +
-> +err:
-> +	gpio_free(led_dat->gpio);
-> +	return ret;
-> +}
-> +
-> +static void delete_lt3593_led(struct lt3593_led_data *led)
-> +{
-> +	if (!gpio_is_valid(led->gpio))
-> +		return;
-> +
-> +	led_classdev_unregister(&led->cdev);
-> +	cancel_work_sync(&led->work);
-> +	gpio_free(led->gpio);
-> +}
-> +
-> +static int __devinit lt3593_led_probe(struct platform_device *pdev)
-> +{
-> +	struct gpio_led_platform_data *pdata = pdev->dev.platform_data;
-> +	struct lt3593_led_data *leds_data;
-> +	int i, ret = 0;
-> +
-> +	if (!pdata)
-> +		return -EBUSY;
-> +
-> +	leds_data = kzalloc(sizeof(struct lt3593_led_data) * pdata->num_leds,
-> +				GFP_KERNEL);
-> +	if (!leds_data)
-> +		return -ENOMEM;
-> +
-> +	for (i = 0; i < pdata->num_leds; i++) {
-> +		ret = create_lt3593_led(&pdata->leds[i], &leds_data[i],
-> +				      &pdev->dev);
-> +		if (ret < 0)
-> +			goto err;
-> +	}
-> +
-> +	platform_set_drvdata(pdev, leds_data);
-> +
-> +	return 0;
-> +
-> +err:
-> +	for (i = i - 1; i >= 0; i--)
-> +		delete_lt3593_led(&leds_data[i]);
-> +
-> +	kfree(leds_data);
-> +
-> +	return ret;
-> +}
-> +
-> +static int __devexit lt3593_led_remove(struct platform_device *pdev)
-> +{
-> +	int i;
-> +	struct gpio_led_platform_data *pdata = pdev->dev.platform_data;
-> +	struct lt3593_led_data *leds_data;
-> +
-> +	leds_data = platform_get_drvdata(pdev);
-> +
-> +	for (i = 0; i < pdata->num_leds; i++)
-> +		delete_lt3593_led(&leds_data[i]);
-> +
-> +	kfree(leds_data);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver lt3593_led_driver = {
-> +	.probe		= lt3593_led_probe,
-> +	.remove		= __devexit_p(lt3593_led_remove),
-> +	.driver		= {
-> +		.name	= "leds-lt3593",
-> +		.owner	= THIS_MODULE,
-> +	},
-> +};
-> +
-> +MODULE_ALIAS("platform:leds-lt3593");
-> +
-> +static int __init lt3593_led_init(void)
-> +{
-> +	return platform_driver_register(&lt3593_led_driver);
-> +}
-> +
-> +static void __exit lt3593_led_exit(void)
-> +{
-> +	platform_driver_unregister(&lt3593_led_driver);
-> +}
-> +
-> +module_init(lt3593_led_init);
-> +module_exit(lt3593_led_exit);
-> +
-> +MODULE_AUTHOR("Daniel Mack <daniel@caiaq.de>");
-> +MODULE_DESCRIPTION("LED driver for LT3593 controllers");
-> +MODULE_LICENSE("GPL");
-> -- 
-> 1.6.0.4
-> 
+I applied below patch
+
+--- linux-2.6.32-rc4/mm/slab.c	2009-10-14 16:22:44.962007072 +0900
++++ linux-2.6.32-rc4-ccs/mm/slab.c	2009-10-14 16:08:14.000000000 +0900
+@@ -2573,6 +2573,8 @@
+ 	struct slab *slabp;
+ 
+ 	if (OFF_SLAB(cachep)) {
++		BUG_ON((cachep->flags & SLAB_NOLEAKTRACE) &&
++		       !(cachep->slabp_cache->flags & SLAB_NOLEAKTRACE));
+ 		/* Slab management obj is off-slab. */
+ 		slabp = kmem_cache_alloc_node(cachep->slabp_cache,
+ 					      local_flags, nodeid);
+
+and verified that (cachep->slabp_cache->flags & SLAB_NOLEAKTRACE) == 0 is
+triggering recursive call.
+This is not locking related problem. This is stack overflow problem.
+
+[    0.000000] Linux version 2.6.32-rc4-ccs (root@tomoyo) (gcc version 3.3.5 (Debian 1:3.3.5-13)) #2 SMP Wed Oct 14 16:09:02 JST 2009
+(...snipped...)
+[    0.000000] -------------------------------------------------------
+[    0.000000] Good, all 218 testcases passed! |
+[    0.000000] ---------------------------------
+[    0.000000] ------------[ cut here ]------------
+[    0.000000] kernel BUG at mm/slab.c:2577!
+[    0.000000] invalid opcode: 0000 [#1] SMP DEBUG_PAGEALLOC
+[    0.000000] last sysfs file: 
+[    0.000000] Modules linked in:
+[    0.000000] 
+[    0.000000] Pid: 0, comm: swapper Not tainted (2.6.32-rc4-ccs #2) VMware Virtual Platform
+[    0.000000] EIP: 0060:[<c10cf0b1>] EFLAGS: 00010046 CPU: 0
+[    0.000000] EIP is at alloc_slabmgmt+0x81/0xa0
+[    0.000000] EAX: cf800200 EBX: 00000020 ECX: 00000000 EDX: 00800000
+[    0.000000] ESI: 00000000 EDI: cf837000 EBP: c14c4ec0 ESP: c14c4eb0
+[    0.000000]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[    0.000000] Process swapper (pid: 0, ti=c14c4000 task=c14d7700 task.ti=c14c4000)
+[    0.000000] Stack:
+[    0.000000]  00000000 00000020 cf832bc0 cf804f30 c14c4ef0 c10cf4ee 00000020 00000000
+[    0.000000] <0> 00000000 cf804f54 00000020 00000000 00000000 00000000 cf832bc0 cf804f40
+[    0.000000] <0> c14c4f1c c10cfb0b cf837000 cf804f54 cf833f30 cf804f30 0000000c 00000020
+[    0.000000] Call Trace:
+[    0.000000]  [<c10cf4ee>] ? cache_grow+0xae/0x170
+[    0.000000]  [<c10cfb0b>] ? cache_alloc_refill+0x17b/0x210
+[    0.000000]  [<c10d016a>] ? kmem_cache_alloc+0x1aa/0x1d0
+[    0.000000]  [<c10d3a79>] ? create_object+0x29/0x220
+[    0.000000]  [<c10d3a79>] ? create_object+0x29/0x220
+[    0.000000]  [<c10d409a>] ? early_alloc+0x3a/0xe0
+[    0.000000]  [<c10d40dc>] ? early_alloc+0x7c/0xe0
+[    0.000000]  [<c10d409a>] ? early_alloc+0x3a/0xe0
+[    0.000000]  [<c106e077>] ? trace_hardirqs_on_caller+0xf7/0x160
+[    0.000000]  [<c152ae62>] ? kmemleak_init+0xf2/0x180
+[    0.000000]  [<c151096f>] ? start_kernel+0x18f/0x290
+[    0.000000]  [<c15102c0>] ? unknown_bootoption+0x0/0x150
+[    0.000000]  [<c1510095>] ? i386_start_kernel+0x65/0xa0
+[    0.000000] Code: 36 0f 00 00 89 c3 31 d2 8b 45 08 b9 08 00 00 00 89 04 24 89 d8 e8 60 66 26 00 31 c0 85 db 75 ab eb c9 8b 40 34 f6 40 1e 80 75 d1 <0f> 0b 8d b6 00 00 00 00 8d bc 27 00 00 00 00 eb fe 8d b4 26 00 
+[    0.000000] EIP: [<c10cf0b1>] alloc_slabmgmt+0x81/0xa0 SS:ESP 0068:c14c4eb0
+[    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
+[    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
+[    0.000000] Pid: 0, comm: swapper Tainted: G      D    2.6.32-rc4-ccs #2
+[    0.000000] Call Trace:
+[    0.000000]  [<c10417ed>] ? printk+0x1d/0x30
+[    0.000000]  [<c1040948>] panic+0x48/0x110
+[    0.000000]  [<c1043f12>] do_exit+0x2b2/0x2d0
+[    0.000000]  [<c1040cef>] ? print_oops_end_marker+0x2f/0x40
+[    0.000000]  [<c1007508>] oops_end+0xb8/0xc0
+[    0.000000]  [<c1007670>] die+0x60/0x80
+[    0.000000]  [<c1003b63>] do_trap+0xb3/0xc0
+[    0.000000]  [<c1003d10>] ? do_invalid_op+0x0/0xb0
+[    0.000000]  [<c1003da0>] do_invalid_op+0x90/0xb0
+[    0.000000]  [<c10cf0b1>] ? alloc_slabmgmt+0x81/0xa0
+[    0.000000]  [<c10aa189>] ? get_page_from_freelist+0x139/0x2b0
+[    0.000000]  [<c1349897>] ? error_code+0x67/0x70
+[    0.000000]  [<c1003d10>] ? do_invalid_op+0x0/0xb0
+[    0.000000]  [<c11bd82c>] ? trace_hardirqs_off_thunk+0xc/0x10
+[    0.000000]  [<c134989b>] error_code+0x6b/0x70
+[    0.000000]  [<c1003d10>] ? do_invalid_op+0x0/0xb0
+[    0.000000]  [<c10cf0b1>] ? alloc_slabmgmt+0x81/0xa0
+[    0.000000]  [<c10cf4ee>] cache_grow+0xae/0x170
+[    0.000000]  [<c10cfb0b>] cache_alloc_refill+0x17b/0x210
+[    0.000000]  [<c10d016a>] kmem_cache_alloc+0x1aa/0x1d0
+[    0.000000]  [<c10d3a79>] ? create_object+0x29/0x220
+[    0.000000]  [<c10d3a79>] create_object+0x29/0x220
+[    0.000000]  [<c10d409a>] ? early_alloc+0x3a/0xe0
+[    0.000000]  [<c10d40dc>] early_alloc+0x7c/0xe0
+[    0.000000]  [<c10d409a>] ? early_alloc+0x3a/0xe0
+[    0.000000]  [<c106e077>] ? trace_hardirqs_on_caller+0xf7/0x160
+[    0.000000]  [<c152ae62>] kmemleak_init+0xf2/0x180
+[    0.000000]  [<c151096f>] start_kernel+0x18f/0x290
+[    0.000000]  [<c15102c0>] ? unknown_bootoption+0x0/0x150
+[    0.000000]  [<c1510095>] i386_start_kernel+0x65/0xa0
