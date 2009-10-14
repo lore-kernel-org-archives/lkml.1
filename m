@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751542AbZJNRIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbZJNRYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751542AbZJNRIV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 13:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZJNRIU
+	id S1753675AbZJNRYZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 13:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbZJNRYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 13:08:20 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:58425 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbZJNRIT (ORCPT
+	Wed, 14 Oct 2009 13:24:24 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:45586 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753285AbZJNRYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 13:08:19 -0400
+	Wed, 14 Oct 2009 13:24:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=lFv+k6VCUImX2wjjPJ0vDmjBFp0vPkirkDCXtqPfAN3Gd8wWl8rkJEDLNgVZjMmmlT
-         tEuxRvchd9fkiXc10HVnDKpUJ9X4DyP1m84C1ZMgCghbXziV28qxBMtd1VntFnHLKH47
-         zk4xIilsAQ3h/iwHjktgZrm7qOohyHYVl1+oE=
-Message-ID: <4AD60776.5090404@gmail.com>
-Date: Wed, 14 Oct 2009 19:16:38 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Tg8syfnbvicYY0xlnKpA9RnU8MddhWXtGbocyYOgQQoeBkneY7VFnZkhpvRK3LEoAn
+         sLEZ/3g50bK+cHkezJYOUOIwNmDfLzBmzuvMQgsiRrWEsX2LkMiqcGdVTBh7FchryqGe
+         PoLkWKPa09D4eaTerMJ2gPcM47UVUWhfr1u44=
+Date: Wed, 14 Oct 2009 19:22:13 +0200
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: reinette chatre <reinette.chatre@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       johannes@sipsolutions.net
+Subject: Re: [2.6.32-rc3] iwlagn lost connection after s2ram (with warnings)
+Message-ID: <20091014172213.GA18839@Pilar.aei.mpg.de>
+References: <20091007142031.GA7495@Pilar.aei.mpg.de> <1255023883.26521.13298.camel@rc-desk> <20091014151529.GA6602@Pilar.aei.mpg.de> <43e72e890910140944y23399b71sf20cd37e003c9729@mail.gmail.com>
 MIME-Version: 1.0
-To: "Du, Alek" <alek.du@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gpio: Fix test on unsigned in lnw_irq_type()
-References: <4AD33958.7020900@gmail.com>	 <20091012151127.312c986a.akpm@linux-foundation.org>	 <EADF0A36011179459010BDF5142A457501CEB8C146@pdsmsx502.ccr.corp.intel.com>	 <20091013105901.972f7dbe.akpm@linux-foundation.org>	 <EADF0A36011179459010BDF5142A457501CEC48A68@pdsmsx502.ccr.corp.intel.com> <25e057c00910140850j787e9fd6lcd6ac236a0f4851d@mail.gmail.com> <EADF0A36011179459010BDF5142A457501CEC48E76@pdsmsx502.ccr.corp.intel.com>
-In-Reply-To: <EADF0A36011179459010BDF5142A457501CEC48E76@pdsmsx502.ccr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43e72e890910140944y23399b71sf20cd37e003c9729@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The wrong test was used, gpio is unsigned. Also lnw->chip.ngpio is
-set to 64, so if gpio equals that, then reg (= gpio / 32) becomes 2,
-an index out of bounds for GRER and GFER that have 2 elements.
+On Wed 14.Oct'09 at  9:44:10 -0700, Luis R. Rodriguez wrote:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
->>>> From: Andrew Morton [mailto:akpm@linux-foundation.org]
->>>>> -    if (gpio < 0 || gpio > lnw->chip.ngpio)
->>>>> +    if (gpio > lnw->chip.ngpio)
->>>>>              return -EINVAL;
->>>>
->>>> Should that be >= ?
+> > [15443.032706] ------------[ cut here ]------------
+> > [15443.032723] WARNING: at net/wireless/sme.c:620 __cfg80211_disconnected+0x232/0x240()
+> > [15443.032728] Hardware name: VGN-FZ240E
+> > [15443.032732] deauth failed: -67
+> 
+> Can you reproduce ? 
 
-> Oh, my bad. Andrew is right, should be >=...
+Unfortunately I can not reproduce it reliably (I think today's warning
+was ~4 days after the last one). If I could, I would have bisected it
+already.
 
-Ok, how about this then?
+> If so then please try my patch titled:
+> [PATCH] mac80211: fix SME warning by removing stale BSS upon assoc failure
+> 
+> and see if that still happens.
 
-diff --git a/drivers/gpio/langwell_gpio.c b/drivers/gpio/langwell_gpio.c
-index 5711ce5..72af3fc 100644
---- a/drivers/gpio/langwell_gpio.c
-+++ b/drivers/gpio/langwell_gpio.c
-@@ -123,7 +123,7 @@ static int lnw_irq_type(unsigned irq, unsigned type)
- 	void __iomem *grer = (void __iomem *)(&lnw->reg_base->GRER[reg]);
- 	void __iomem *gfer = (void __iomem *)(&lnw->reg_base->GFER[reg]);
- 
--	if (gpio < 0 || gpio > lnw->chip.ngpio)
-+	if (gpio >= lnw->chip.ngpio)
- 		return -EINVAL;
- 	spin_lock_irqsave(&lnw->lock, flags);
- 	if (type & IRQ_TYPE_EDGE_RISING)
+I will apply it, just in case. Thanks.
