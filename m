@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760974AbZJNVeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758954AbZJNVky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760974AbZJNVeb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 17:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760305AbZJNVe3
+	id S1758954AbZJNVky (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 17:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZJNVky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 17:34:29 -0400
-Received: from khc.piap.pl ([195.187.100.11]:33596 "EHLO khc.piap.pl"
+	Wed, 14 Oct 2009 17:40:54 -0400
+Received: from lucidpixels.com ([75.144.35.66]:34057 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756549AbZJNVe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 17:34:29 -0400
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: ddutile@redhat.com
-Cc: Stefan Assmann <sassmann@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, kaneshige.kenji@jp.fujitsu.com,
-       matthew@wil.cx
-Subject: Re: GT/s vs Gbps for PCIe bus speed
-References: <4AD58EEE.4070405@redhat.com>
-	<m3ljjdstbb.fsf@intrepid.localdomain> <4AD62B52.9060200@redhat.com>
-Date: Wed, 14 Oct 2009 23:33:50 +0200
-In-Reply-To: <4AD62B52.9060200@redhat.com> (Don Dutile's message of "Wed, 14
-	Oct 2009 15:49:38 -0400")
-Message-ID: <m33a5lsls1.fsf@intrepid.localdomain>
+	id S1755065AbZJNVkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 17:40:53 -0400
+Date: Wed, 14 Oct 2009 17:34:46 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.31.3: Machine hangs at reboot (Intel DP55KG motherboard)
+In-Reply-To: <alpine.DEB.2.00.0910141441410.5322@p34.internal.lan>
+Message-ID: <alpine.DEB.2.00.0910141734310.5568@p34.internal.lan>
+References: <alpine.DEB.2.00.0910131723510.5034@p34.internal.lan> <alpine.DEB.2.00.0910141123280.23631@p34.internal.lan> <alpine.DEB.2.00.0910141441410.5322@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don Dutile <ddutile@redhat.com> writes:
 
-> so, maybe the right terms are
->  2.5 GHz PCI-E
->  5.0 GHz PCI-E
 
-I don't thinks so. It would be fine for PCI/PCI-X, as there is a clock
-signal with a given frequency. PCI-E doesn't use a clock signal. Really,
-the meaningful value is a cycle time (or number of cycles per second).
+On Wed, 14 Oct 2009, Justin Piszcz wrote:
 
-Of course one could calculate or measure a frequency (or spectrum) for
-a given code sequence on PCI-E. For example, for something like
-01010101010101 (raw code) the (base) frequency would be 1.25 or 2.5 GHz
-for 2.0. For other patterns it would be lower.
+>
+>
+> On Wed, 14 Oct 2009, Justin Piszcz wrote:
+>
+>> 
+>> 
+>> On Tue, 13 Oct 2009, Justin Piszcz wrote:
+>> 
+>>> Hello,
+>>> 
+>>> When I reboot my system, it hangs:
+>>> http://home.comcast.net/~jpiszcz/20091013/system-hangs-at-reboot.jpg
+>>> 
+>>> It says...
+>>> 
+>>> Restarting system.
+>>> machine restart
+>>> 
+>>> Then it sits there and does nothing.
+>>> 
+>>> Has anyone seen this before?
+>>> 
+>>> BTW-- Thanks for the INTEL network driver info, running 1.0.15-NAPI and 
+>>> its working nicely, can't wait until its included in the upstream release.
+>>> 
+>>> Justin.
+>>> 
+>> 
+>> Thoughts? Or work-arounds to this problem?
+>> 
+>> Machine rebooted fine when I used a different motherboard (same 
+>> kernel/distro etc).
+>> 
+>> Justin.
+>> 
+>
+> Update--
+>
+> init 0 shuts the machine off (powers down completely) but reboot hangs..
+>
+> Justin.
+>
 
-> No matter how many lanes, or how the data is sent (long or short bursts),
-> the frequency rate is a constant.
 
-Actually, this is not the case.
+I tried the reboot=b kernel parameter-- to no avail either.
 
-> So, the data rate is not stated, just the cycle rate.
+https://bugs.launchpad.net/ubuntu/+source/linux/+bug/115011
 
-Cycle rate, sure. Frequency, no.
+http://lkml.org/lkml/2007/6/5/59
 
-> This would follow the PCIX syntax as well, which is
-> void of bandwidth illusions.
+This workaround did not work.
 
-Bandwidth, actually it may make some sense. But it would have to take
-#lanes into account, I'm not sure we want to do it. And it would create
-another confusion - raw vs effective bandwidth (like 125 vs 100 Mbps
-with Ethernet).
--- 
-Krzysztof Halasa
+Justin.
