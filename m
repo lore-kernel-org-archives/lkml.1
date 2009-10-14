@@ -1,111 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934691AbZJNPte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934661AbZJNPuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934691AbZJNPte (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934575AbZJNPtd
+	id S934661AbZJNPuI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757306AbZJNPuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:49:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34115 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 11:50:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34146 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934648AbZJNPtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:49:31 -0400
-Date: Wed, 14 Oct 2009 15:48:34 GMT
+	id S1756649AbZJNPuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 11:50:05 -0400
+Date: Wed, 14 Oct 2009 15:48:53 GMT
 From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, tglx@linutronix.de
+       fweisbec@gmail.com, gregkh@suse.de, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, tglx@linutronix.de
-In-Reply-To: <1255113062-5835-1-git-send-email-fweisbec@gmail.com>
-References: <1255113062-5835-1-git-send-email-fweisbec@gmail.com>
+       fweisbec@gmail.com, gregkh@suse.de, tglx@linutronix.de
+In-Reply-To: <1255116030-6929-1-git-send-email-fweisbec@gmail.com>
+References: <1255116030-6929-1-git-send-email-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:bkl/drivers] mem_class: Drop the bkl from memory_open()
-Message-ID: <tip-205153aa40b7fb36dc7fe76c1798584ace55b288@git.kernel.org>
-Git-Commit-ID: 205153aa40b7fb36dc7fe76c1798584ace55b288
+Subject: [tip:bkl/drivers] nvram: Drop the bkl from nvram_llseek()
+Message-ID: <tip-6783b9cd7104470a3afab51c205c5aea53a2858f@git.kernel.org>
+Git-Commit-ID: 6783b9cd7104470a3afab51c205c5aea53a2858f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:48:35 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:48:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  205153aa40b7fb36dc7fe76c1798584ace55b288
-Gitweb:     http://git.kernel.org/tip/205153aa40b7fb36dc7fe76c1798584ace55b288
+Commit-ID:  6783b9cd7104470a3afab51c205c5aea53a2858f
+Gitweb:     http://git.kernel.org/tip/6783b9cd7104470a3afab51c205c5aea53a2858f
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Fri, 9 Oct 2009 20:31:02 +0200
+AuthorDate: Fri, 9 Oct 2009 21:20:30 +0200
 Committer:  Thomas Gleixner <tglx@linutronix.de>
 CommitDate: Wed, 14 Oct 2009 17:36:49 +0200
 
-mem_class: Drop the bkl from memory_open()
+nvram: Drop the bkl from nvram_llseek()
 
-The generic open callback for the mem class devices is "protected" by
-the bkl.
+There is nothing to protect inside nvram_llseek(), the file
+offset doesn't need to be protected and nvram_len is only
+initialized from an __init path.
 
-Let's look at the datas manipulated inside memory_open:
-
-- inode and file: safe
-- the devlist: safe because it is constant
-- the memdev classes inside this array are safe too (constant)
-
-After we find out which memdev file operation we need to use, we call
-its open callback. Depending on the targeted memdev, we call either
-open_port() that doesn't manipulate any racy data (just a capable()
-check), or we call nothing.
-
-So it's safe to remove the big kernel lock there.
+It's safe to remove the big kernel lock there.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1255113062-5835-1-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1255116030-6929-1-git-send-email-fweisbec@gmail.com>
+Cc: Greg KH <gregkh@suse.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/char/mem.c |   17 +++++------------
- 1 files changed, 5 insertions(+), 12 deletions(-)
+ drivers/char/generic_nvram.c |    9 +++------
+ 1 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-index a074fce..ad82ec9 100644
---- a/drivers/char/mem.c
-+++ b/drivers/char/mem.c
-@@ -26,7 +26,6 @@
- #include <linux/bootmem.h>
- #include <linux/splice.h>
- #include <linux/pfn.h>
+diff --git a/drivers/char/generic_nvram.c b/drivers/char/generic_nvram.c
+index ef31738..fda4181 100644
+--- a/drivers/char/generic_nvram.c
++++ b/drivers/char/generic_nvram.c
+@@ -19,7 +19,6 @@
+ #include <linux/miscdevice.h>
+ #include <linux/fcntl.h>
+ #include <linux/init.h>
 -#include <linux/smp_lock.h>
- 
  #include <asm/uaccess.h>
- #include <asm/io.h>
-@@ -892,29 +891,23 @@ static int memory_open(struct inode *inode, struct file *filp)
+ #include <asm/nvram.h>
+ #ifdef CONFIG_PPC_PMAC
+@@ -32,7 +31,6 @@ static ssize_t nvram_len;
+ 
+ static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
  {
- 	int minor;
- 	const struct memdev *dev;
--	int ret = -ENXIO;
--
 -	lock_kernel();
- 
- 	minor = iminor(inode);
- 	if (minor >= ARRAY_SIZE(devlist))
--		goto out;
-+		return -ENXIO;
- 
- 	dev = &devlist[minor];
- 	if (!dev->fops)
--		goto out;
-+		return -ENXIO;
- 
- 	filp->f_op = dev->fops;
- 	if (dev->dev_info)
- 		filp->f_mapping->backing_dev_info = dev->dev_info;
- 
- 	if (dev->fops->open)
--		ret = dev->fops->open(inode, filp);
--	else
--		ret = 0;
--out:
--	unlock_kernel();
--	return ret;
-+		return dev->fops->open(inode, filp);
+ 	switch (origin) {
+ 	case 1:
+ 		offset += file->f_pos;
+@@ -41,12 +39,11 @@ static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
+ 		offset += nvram_len;
+ 		break;
+ 	}
+-	if (offset < 0) {
+-		unlock_kernel();
++	if (offset < 0)
+ 		return -EINVAL;
+-	}
 +
-+	return 0;
+ 	file->f_pos = offset;
+-	unlock_kernel();
++
+ 	return file->f_pos;
  }
  
- static const struct file_operations memory_fops = {
