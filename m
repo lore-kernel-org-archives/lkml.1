@@ -1,101 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934852AbZJNQMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934811AbZJNQOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934852AbZJNQMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 12:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761960AbZJNQMg
+	id S934811AbZJNQOm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 12:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933402AbZJNQOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 12:12:36 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:21738 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761957AbZJNQMg convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;4:1>);
-	Wed, 14 Oct 2009 12:12:36 -0400
-Message-Id: <4AD614A90200007800019E68@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Wed, 14 Oct 2009 17:12:57 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: <beckyb@kernel.crashing.org>, <fujita.tomonori@lab.ntt.co.jp>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: [PATCH] fix off-by-one error in dma_capable()
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Wed, 14 Oct 2009 12:14:41 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:58332 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932098AbZJNQOk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 12:14:40 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+Date: Wed, 14 Oct 2009 18:13:58 +0200
+User-Agent: KMail/1.9.9
+Cc: David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910141510.11059.elendil@planet.nl> <20091014154026.GC5027@csn.ul.ie>
+In-Reply-To: <20091014154026.GC5027@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200910141814.02744.elendil@planet.nl>
+X-OriginalArrivalTime: 14 Oct 2009 16:14:03.0208 (UTC) FILETIME=[58A99480:01CA4CE9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dma_mask is, when interpreted as address, the last valid byte, and
-hence comparison msut also be done using the last valid of the buffer
-in question.
+On Wednesday 14 October 2009, Mel Gorman wrote:
+> You highlighted the first akpm merge so lets look closer at that as I
+> don't think there is anything more I can do with the wireless driver
+> other than the suggestions made already.
 
-Also fix the open-coded instances in lib/swiotlb.c.
-
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Becky Bruce <beckyb@kernel.crashing.org>
-
----
- arch/ia64/include/asm/dma-mapping.h    |    2 +-
- arch/powerpc/include/asm/dma-mapping.h |    2 +-
- arch/x86/include/asm/dma-mapping.h     |    2 +-
- lib/swiotlb.c                          |    4 ++--
- 4 files changed, 5 insertions(+), 5 deletions(-)
-
---- linux-2.6.32-rc4/arch/ia64/include/asm/dma-mapping.h	2009-10-12 10:07:47.000000000 +0200
-+++ 2.6.32-rc4-dma-capable/arch/ia64/include/asm/dma-mapping.h	2009-10-14 11:58:11.000000000 +0200
-@@ -73,7 +73,7 @@ static inline bool dma_capable(struct de
- 	if (!dev->dma_mask)
- 		return 0;
- 
--	return addr + size <= *dev->dma_mask;
-+	return addr + size - 1 <= *dev->dma_mask;
- }
- 
- static inline dma_addr_t phys_to_dma(struct device *dev, phys_addr_t paddr)
---- linux-2.6.32-rc4/arch/powerpc/include/asm/dma-mapping.h	2009-10-12 10:07:50.000000000 +0200
-+++ 2.6.32-rc4-dma-capable/arch/powerpc/include/asm/dma-mapping.h	2009-10-14 11:58:40.000000000 +0200
-@@ -197,7 +197,7 @@ static inline bool dma_capable(struct de
- 	if (!dev->dma_mask)
- 		return 0;
- 
--	return addr + size <= *dev->dma_mask;
-+	return addr + size - 1 <= *dev->dma_mask;
- }
- 
- static inline dma_addr_t phys_to_dma(struct device *dev, phys_addr_t paddr)
---- linux-2.6.32-rc4/arch/x86/include/asm/dma-mapping.h	2009-10-12 10:07:56.000000000 +0200
-+++ 2.6.32-rc4-dma-capable/arch/x86/include/asm/dma-mapping.h	2009-10-14 11:57:38.000000000 +0200
-@@ -60,7 +60,7 @@ static inline bool dma_capable(struct de
- 	if (!dev->dma_mask)
- 		return 0;
- 
--	return addr + size <= *dev->dma_mask;
-+	return addr + size - 1 <= *dev->dma_mask;
- }
- 
- static inline dma_addr_t phys_to_dma(struct device *dev, phys_addr_t paddr)
---- linux-2.6.32-rc4/lib/swiotlb.c	2009-10-12 10:08:48.000000000 +0200
-+++ 2.6.32-rc4-dma-capable/lib/swiotlb.c	2009-10-14 11:55:26.000000000 +0200
-@@ -517,7 +517,7 @@ swiotlb_alloc_coherent(struct device *hw
- 		dma_mask = hwdev->coherent_dma_mask;
- 
- 	ret = (void *)__get_free_pages(flags, order);
--	if (ret && swiotlb_virt_to_bus(hwdev, ret) + size > dma_mask) {
-+	if (ret && swiotlb_virt_to_bus(hwdev, ret) + size - 1 > dma_mask) {
- 		/*
- 		 * The allocated memory isn't reachable by the device.
- 		 */
-@@ -539,7 +539,7 @@ swiotlb_alloc_coherent(struct device *hw
- 	dev_addr = swiotlb_virt_to_bus(hwdev, ret);
- 
- 	/* Confirm address can be DMA'd by device */
--	if (dev_addr + size > dma_mask) {
-+	if (dev_addr + size - 1 > dma_mask) {
- 		printk("hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
- 		       (unsigned long long)dma_mask,
- 		       (unsigned long long)dev_addr);
-
-
-
+Thanks a lot for that analysis Mel. I'll see if I can come up with 
+additional data based of the info you provide here.
