@@ -1,33 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbZJNGeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbZJNGgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755464AbZJNGeB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 02:34:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZJNGeA
+	id S1755737AbZJNGgT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 02:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZJNGgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 02:34:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42343 "EHLO mx3.mail.elte.hu"
+	Wed, 14 Oct 2009 02:36:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59859 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751220AbZJNGd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 02:33:59 -0400
-Date: Wed, 14 Oct 2009 08:33:08 +0200
+	id S1751456AbZJNGgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 02:36:18 -0400
+Date: Wed, 14 Oct 2009 08:35:16 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Joe Perches <joe@perches.com>
-Cc: Greg KH <gregkh@suse.de>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jing Huang <huangj@brocade.com>, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Re: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for
-	2.6.32-rc3)
-Message-ID: <20091014063308.GE784@elte.hu>
-References: <1255097287.2934.21.camel@localhost.localdomain> <20091012130652.GB25464@elte.hu> <1255357148.2850.91.camel@localhost.localdomain> <20091012145453.GD4565@elte.hu> <20091012150911.GB1656@suse.de> <20091012154244.GA13323@elte.hu> <20091012232429.GA24254@suse.de> <43e72e890910131108m789110b4hc35e25601ad67bb7@mail.gmail.com> <20091014044519.GA19199@suse.de> <1255497575.1851.16.camel@Joe-Laptop.home>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org, david-b@pacbell.net,
+       hpa@zytor.com, rjw@sisk.pl, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: + rtc-disable-hpet-emulation-on-suspend.patch added to -mm tree
+Message-ID: <20091014063516.GF784@elte.hu>
+References: <200910132208.n9DM83xa031357@imap1.linux-foundation.org> <20091014055639.GA784@elte.hu> <1255501643.4484.13.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1255497575.1851.16.camel@Joe-Laptop.home>
+In-Reply-To: <1255501643.4484.13.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -41,46 +37,60 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Joe Perches <joe@perches.com> wrote:
+* Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 
-> On Tue, 2009-10-13 at 21:45 -0700, Greg KH wrote:
-> > How about when it was scheduled to be removed, we put it in staging and
-> > I'll add it to my announcements about the staging tree every release?
-> > Unless you can think of a better way?
+> On Wed, 2009-10-14 at 07:56 +0200, Ingo Molnar wrote:
+> > * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+> > 
+> > > ------------------------------------------------------
+> > > Subject: rtc: disable hpet emulation on suspend
+> > > From: Maxim Levitsky <maximlevitsky@gmail.com>
+> > > 
+> > > I noticed that rtc wont generate interrupts after a resume from disk.
+> > > Here hpet rtc emulation is used.
+> > > 
+> > > Problem is that rtc hpet comparator, isn't reinitialized after resume.
+> > > Easiest way to solve this, is always mask all hpet interrupts on suspend
+> > > This is triggered, when suspending with alarm set.
+> > > 
+> > > 
+> > > Otherwise, hpet driver will think it doesn't need to reinitialize
+> > > the rtc comparator, thus rtc interrupts won't work.
+> > > 
+> > > This emulation isn't need for wakealarm.
+> > 
+> > > -		hpet_mask_rtc_irq_bit(mask);
+> > >  
+> > > +		/* shut down hpet emulation - we don't need it for alarm */
+> > > +		hpet_mask_rtc_irq_bit(RTC_PIE|RTC_AIE|RTC_UIE);
+> > >  		cmos_checkintr(cmos, tmp);
+> > 
+> > Would be nice to also unconditionally reinitialize the hpet/rtc after 
+> > resume - regardless of what state we left it in.
 > 
-> staging/to_be_removed_unless_fixed_by/v.x.y ?
+> I think this is already done.
+> Problem was that rtc driver was leaving the RTC_AIE, thus breaking the
+> initialization.
+> 
+> If there are no users of hpet on suspend, (periodic,alarm,update), then
+> it won't be initialized on resume (only rtc comparator part, other parts
+> are initialized correctly nowadays) but as soon as anybody start using
+> it, it will be.
+>  
+> 
+> > 
+> > Also, are you sure this does not break things like 
+> > CONFIG_PM_TEST_SUSPEND=y which rely on wakealarm?
+> 
+> 
+> This shouldn't break anything. hpet irqs aren't used for the actual
+> alarm.
+> 
+> In fact I used a script to loop over real hibernation cycles, and it 
+> works with or without this patch.
+> 
+> But with this patch, hwclock works after a resume.
 
-Yes, that's a real worry. Some time ago i suggested:
-
-  drivers/staging/good/
-  drivers/staging/bad/
-  drivers/staging/ugly/
-
- good:  drivers that are to go upstream in the next cycle 
- bad:   outgoing drivers being obsoleted or abandoned
- ugly:  incoming messy drivers with active developers
-
-The messaging of this looks nice and the names are short and obvious.
-
-An added benefit is that this kind of separation makes it easy for 
-people interested in drivers/staging to follow the 'status' of drivers. 
-Once stuff goes into 'good' a different kind of review is needed than if 
-a driver goes into 'ugly'.
-
-The main disadvantage would be the PR angle: putting new drivers into a 
-path named 'ugly'. Not something you want to put into a quarterly status 
-report, right? If we put drivers/staging/ugly/ drivers into 
-drivers/staging/ itself, we'd solve that problem. I.e. we'd keep the 
-current scheme, but we'd also add drivers/staging/good/ and 
-drivers/staging/bad/ as two extra stages for incoming and outgoing 
-drivers.
-
-A third version would be a more neutral name:
-
-  drivers/staging/incoming/
-  drivers/staging/outgoing/
-
-I think it has many advantages, but (of course!) it all depends on 
-whether Greg wants to have any separation like this.
+Excellent - thanks!
 
 	Ingo
