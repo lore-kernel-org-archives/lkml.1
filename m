@@ -1,79 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934635AbZJNPtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934691AbZJNPte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934635AbZJNPtR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbZJNPtQ
+	id S934691AbZJNPte (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934575AbZJNPtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:49:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34102 "EHLO hera.kernel.org"
+	Wed, 14 Oct 2009 11:49:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34115 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756721AbZJNPtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:49:15 -0400
-Date: Wed, 14 Oct 2009 15:48:13 GMT
-From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
+	id S934648AbZJNPtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 11:49:31 -0400
+Date: Wed, 14 Oct 2009 15:48:34 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       dbrownell@users.sourceforge.net, tglx@linutronix.de
+       fweisbec@gmail.com, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       dbrownell@users.sourceforge.net, tglx@linutronix.de
-In-Reply-To: <20091010153349.318535932@linutronix.de>
-References: <20091010153349.318535932@linutronix.de>
+       fweisbec@gmail.com, tglx@linutronix.de
+In-Reply-To: <1255113062-5835-1-git-send-email-fweisbec@gmail.com>
+References: <1255113062-5835-1-git-send-email-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:bkl/drivers] spi: Remove BKL from spidev_open
-Message-ID: <tip-4c2aedc2543248c3fdc8c06c662b589d36c93bbb@git.kernel.org>
-Git-Commit-ID: 4c2aedc2543248c3fdc8c06c662b589d36c93bbb
+Subject: [tip:bkl/drivers] mem_class: Drop the bkl from memory_open()
+Message-ID: <tip-205153aa40b7fb36dc7fe76c1798584ace55b288@git.kernel.org>
+Git-Commit-ID: 205153aa40b7fb36dc7fe76c1798584ace55b288
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:48:14 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 15:48:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4c2aedc2543248c3fdc8c06c662b589d36c93bbb
-Gitweb:     http://git.kernel.org/tip/4c2aedc2543248c3fdc8c06c662b589d36c93bbb
-Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Sat, 10 Oct 2009 15:35:52 +0000
+Commit-ID:  205153aa40b7fb36dc7fe76c1798584ace55b288
+Gitweb:     http://git.kernel.org/tip/205153aa40b7fb36dc7fe76c1798584ace55b288
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Fri, 9 Oct 2009 20:31:02 +0200
 Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Wed, 14 Oct 2009 17:36:48 +0200
+CommitDate: Wed, 14 Oct 2009 17:36:49 +0200
 
-spi: Remove BKL from spidev_open
+mem_class: Drop the bkl from memory_open()
 
-The BKL was added there with the big pushdown. Remove it as the code
-is serialized already.
+The generic open callback for the mem class devices is "protected" by
+the bkl.
 
+Let's look at the datas manipulated inside memory_open:
+
+- inode and file: safe
+- the devlist: safe because it is constant
+- the memdev classes inside this array are safe too (constant)
+
+After we find out which memdev file operation we need to use, we call
+its open callback. Depending on the targeted memdev, we call either
+open_port() that doesn't manipulate any racy data (just a capable()
+check), or we call nothing.
+
+So it's safe to remove the big kernel lock there.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <1255113062-5835-1-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <20091010153349.318535932@linutronix.de>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
 ---
- drivers/spi/spidev.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ drivers/char/mem.c |   17 +++++------------
+ 1 files changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
-index 5d23983..815a650 100644
---- a/drivers/spi/spidev.c
-+++ b/drivers/spi/spidev.c
-@@ -30,7 +30,6 @@
- #include <linux/errno.h>
- #include <linux/mutex.h>
- #include <linux/slab.h>
+diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+index a074fce..ad82ec9 100644
+--- a/drivers/char/mem.c
++++ b/drivers/char/mem.c
+@@ -26,7 +26,6 @@
+ #include <linux/bootmem.h>
+ #include <linux/splice.h>
+ #include <linux/pfn.h>
 -#include <linux/smp_lock.h>
  
- #include <linux/spi/spi.h>
- #include <linux/spi/spidev.h>
-@@ -477,7 +476,6 @@ static int spidev_open(struct inode *inode, struct file *filp)
- 	struct spidev_data	*spidev;
- 	int			status = -ENXIO;
- 
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+@@ -892,29 +891,23 @@ static int memory_open(struct inode *inode, struct file *filp)
+ {
+ 	int minor;
+ 	const struct memdev *dev;
+-	int ret = -ENXIO;
+-
 -	lock_kernel();
- 	mutex_lock(&device_list_lock);
  
- 	list_for_each_entry(spidev, &device_list, device_entry) {
-@@ -503,7 +501,6 @@ static int spidev_open(struct inode *inode, struct file *filp)
- 		pr_debug("spidev: nothing for minor %d\n", iminor(inode));
+ 	minor = iminor(inode);
+ 	if (minor >= ARRAY_SIZE(devlist))
+-		goto out;
++		return -ENXIO;
  
- 	mutex_unlock(&device_list_lock);
+ 	dev = &devlist[minor];
+ 	if (!dev->fops)
+-		goto out;
++		return -ENXIO;
+ 
+ 	filp->f_op = dev->fops;
+ 	if (dev->dev_info)
+ 		filp->f_mapping->backing_dev_info = dev->dev_info;
+ 
+ 	if (dev->fops->open)
+-		ret = dev->fops->open(inode, filp);
+-	else
+-		ret = 0;
+-out:
 -	unlock_kernel();
- 	return status;
+-	return ret;
++		return dev->fops->open(inode, filp);
++
++	return 0;
  }
  
+ static const struct file_operations memory_fops = {
