@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbZJNPJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761859AbZJNPNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761918AbZJNPJp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 11:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761906AbZJNPJp
+	id S1761859AbZJNPNf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 11:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756666AbZJNPNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 11:09:45 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:37444 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761909AbZJNPJo (ORCPT
+	Wed, 14 Oct 2009 11:13:35 -0400
+Received: from ernst.netinsight.se ([194.16.221.21]:14761 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753608AbZJNPNe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 11:09:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=un/O+xzrRHIfGm02fU3NRh42pzyZ3+YOhZy8qWYg1X2rIVGCl873zGBfuOmV+bsCKX
-         sSFeuME1IOSt1x//KJi1cQWsehFw0aiey7jC3/u3fomGqEnZFbzBXWbHbDUh2ukjljfl
-         rQqSS7sHVawVDkxYBT1+Vx0z4RNaFjDhbXHfU=
-Date: Wed, 14 Oct 2009 19:09:04 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: x86@kernel.org, yinghai@kernel.org, macro@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] x86,apic: limit apic dumping, introduce show_lapic
-	setup option
-Message-ID: <20091014150904.GA5259@lenovo>
-References: <20091013200702.019870576@openvz.org> <20091013201022.926793122@openvz.org> <20091014071217.GL784@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091014071217.GL784@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 14 Oct 2009 11:13:34 -0400
+Date: Wed, 14 Oct 2009 17:12:40 +0200
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: linux-mtd <linux-mtd@lists.infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Koskinen Aaro \(Nokia-D/Helsinki\)" <aaro.koskinen@nokia.com>,
+       Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH v6 5/5]: mtdoops: refactor as a kmsg_dumper
+Message-ID: <20091014171240.49d0963f@marrow.netinsight.se>
+In-Reply-To: <20091014154124.5d9c366e@marrow.netinsight.se>
+References: <20091012113758.GB11035@elte.hu>
+	<20091012140149.6789efab@marrow.netinsight.se>
+	<20091012120951.GA16799@elte.hu>
+	<1255349748.10605.13.camel@macbook.infradead.org>
+	<20091012122023.GA19365@elte.hu>
+	<20091012150650.51a4b4dc@marrow.netinsight.se>
+	<20091012131528.GC25464@elte.hu>
+	<20091012153937.0dcd73e5@marrow.netinsight.se>
+	<alpine.LFD.2.01.0910120828390.3438@localhost.localdomain>
+	<20091012110954.67d7d8d8.akpm@linux-foundation.org>
+	<20091012182346.GH17138@elte.hu>
+	<alpine.LFD.2.01.0910121130190.3438@localhost.localdomain>
+	<20091014153458.05e31db6@marrow.netinsight.se>
+	<20091014154124.5d9c366e@marrow.netinsight.se>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Wed, Oct 14, 2009 at 09:12:17AM +0200]
-| 
-...
-| Note: new __setup() functions need an entry in 
-| Documentation/kernel-parameters.txt as well.
-| 
-| 	Ingo
-| 
+On Wed, 14 Oct 2009 15:41:24 +0200
+Simon Kagstrom <simon.kagstrom@netinsight.net> wrote:
 
-Here is it.
+> -static void __exit mtdoops_console_exit(void)
+> +static void __exit mtdoops_exit(void)
+>  {
+>  	struct mtdoops_context *cxt = &oops_cxt;
+>  
+>  	unregister_mtd_user(&mtdoops_notifier);
+> -	unregister_console(&mtdoops_console);
+>  	kfree(cxt->name);
 
-	-- Cyrill
----
-x86,apic: explain show_lapic in kernel parameters list
+The kfree should go as well since cxt->name is no longer allocated. I'll
+await further comments and send a new patch tomorrow.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- Documentation/kernel-parameters.txt |    9 +++++++++
- 1 file changed, 9 insertions(+)
-
-Index: linux-2.6.git/Documentation/kernel-parameters.txt
-=====================================================================
---- linux-2.6.git.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6.git/Documentation/kernel-parameters.txt
-@@ -345,6 +345,15 @@ and is between 256 and 4096 characters. 
- 			Change the amount of debugging information output
- 			when initialising the APIC and IO-APIC components.
- 
-+	show_lapic=	[APIC,X86] Advanced Programmable Interrupt Controller
-+			Limit apic dumping. The parameter defines the maximal
-+			number of local apics being dumped. Also it is possible
-+			to set it to "all" by meaning -- no limit here.
-+			Format: { 1 (default) | 2 | ... | all }.
-+			The parameter valid if only apic=debug or
-+			apic=verbose is specified.
-+			Example: apic=debug show_lapic=all
-+
- 	apm=		[APM] Advanced Power Management
- 			See header of arch/x86/kernel/apm_32.c.
- 
+// Simon
