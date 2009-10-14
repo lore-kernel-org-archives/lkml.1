@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbZJNRYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbZJNRpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753675AbZJNRYZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 13:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbZJNRYY
+	id S1755275AbZJNRpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 13:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbZJNRpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 13:24:24 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:45586 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753285AbZJNRYX (ORCPT
+	Wed, 14 Oct 2009 13:45:52 -0400
+Received: from gv-out-0910.google.com ([216.239.58.184]:63424 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755195AbZJNRpv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 13:24:23 -0400
+	Wed, 14 Oct 2009 13:45:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Tg8syfnbvicYY0xlnKpA9RnU8MddhWXtGbocyYOgQQoeBkneY7VFnZkhpvRK3LEoAn
-         sLEZ/3g50bK+cHkezJYOUOIwNmDfLzBmzuvMQgsiRrWEsX2LkMiqcGdVTBh7FchryqGe
-         PoLkWKPa09D4eaTerMJ2gPcM47UVUWhfr1u44=
-Date: Wed, 14 Oct 2009 19:22:13 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: reinette chatre <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       johannes@sipsolutions.net
-Subject: Re: [2.6.32-rc3] iwlagn lost connection after s2ram (with warnings)
-Message-ID: <20091014172213.GA18839@Pilar.aei.mpg.de>
-References: <20091007142031.GA7495@Pilar.aei.mpg.de> <1255023883.26521.13298.camel@rc-desk> <20091014151529.GA6602@Pilar.aei.mpg.de> <43e72e890910140944y23399b71sf20cd37e003c9729@mail.gmail.com>
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=ZUPz/9xW8mOLyjbYX6JsPkc+/qETO0d83l7txCvRt33ZXm3Rclp5JEXHogqjTzhavZ
+         f3HOfpsYtbJP81kGGE4SK2ZS4RXrs3R1XUOCiPldKHp5nQ5LJxX12XTqIBBsWf+5JamX
+         MsE2OtrTf4+3gYdvRNABa1MBSD0DCyuBFFYAU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: Current status of rt2800usb and staging/rt2870
+Date: Wed, 14 Oct 2009 19:33:09 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc2-00279-g2ffa5fe; KDE/4.3.1; x86_64; ; )
+Cc: Dan Williams <dcbw@redhat.com>, Ivo van Doorn <ivdoorn@gmail.com>,
+       Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
+       linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <4AD46380.9020308@pardus.org.tr> <200910141728.21491.bzolnier@gmail.com> <20091014164710.GF2890@tuxdriver.com>
+In-Reply-To: <20091014164710.GF2890@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <43e72e890910140944y23399b71sf20cd37e003c9729@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200910141933.09374.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 14.Oct'09 at  9:44:10 -0700, Luis R. Rodriguez wrote:
-
-> > [15443.032706] ------------[ cut here ]------------
-> > [15443.032723] WARNING: at net/wireless/sme.c:620 __cfg80211_disconnected+0x232/0x240()
-> > [15443.032728] Hardware name: VGN-FZ240E
-> > [15443.032732] deauth failed: -67
+On Wednesday 14 October 2009 18:47:11 John W. Linville wrote:
+> On Wed, Oct 14, 2009 at 05:28:21PM +0200, Bartlomiej Zolnierkiewicz wrote:
 > 
-> Can you reproduce ? 
-
-Unfortunately I can not reproduce it reliably (I think today's warning
-was ~4 days after the last one). If I could, I would have bisected it
-already.
-
-> If so then please try my patch titled:
-> [PATCH] mac80211: fix SME warning by removing stale BSS upon assoc failure
+> > I don't have a have a problem with it personally as long as people accept
+> > the competition..  but instead of working on _their_ projects they go around
+> > screaming at everybody who does not want to spin inside the great process
+> > designed by them..
 > 
-> and see if that still happens.
+> Please whine somewhere else.  You have the freedom to work in
+> drivers/staging all you want.  You do not have the power to force us to
+> like it -- especially in a case where you are diverting attention from
+> the community-maintained drivers instead of cooperating with them.
 
-I will apply it, just in case. Thanks.
+Cooperating you say.
+
+rtl8187 -- before starting the work on rtl8187se I've pinged the maintainer
+to coordinate the effort and hear his opinion on how to progress..
+
+I've never heard back.
+
+rt2x00 -- I know that people have datasheets for some chipsets but I've
+never heard "How can we help you" etc. thing.
+
+All I've ever heard was _lies_ about current state of affairs or that
+my work is in the way.
+
+> Your insults, jeers, and general bad attitude is unlikely to change
+> our mind about it...
+
+Well, when faced with real facts and technical arguments some people
+go into "you are a social problem" mode...  nothing new here..
