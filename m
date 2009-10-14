@@ -1,95 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757947AbZJNINs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbZJNINW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757947AbZJNINs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 04:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbZJNINs
+	id S1757898AbZJNINW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 04:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757660AbZJNINV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 04:13:48 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:43085 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757717AbZJNINq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 04:13:46 -0400
-Date: Wed, 14 Oct 2009 10:13:09 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: pci-express hotplug
-Message-ID: <20091014081309.GM9228@kernel.dk>
-References: <20091012120620.GG9228@kernel.dk> <20091012145254.GA1517@kroah.com> <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca> <20091012150603.GK9228@kernel.dk> <20091012214854.GA14102@ldl.fc.hp.com> <20091013082903.GQ9228@kernel.dk> <20091013172731.GB22797@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 14 Oct 2009 04:13:21 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:32929 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755033AbZJNINU convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;10:1>);
+	Wed, 14 Oct 2009 04:13:20 -0400
+Message-Id: <4AD5A4540200007800019CE9@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Wed, 14 Oct 2009 09:13:40 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Thomas Schlichter" <thomas.schlichter@web.de>
+Cc: "Jeremy Fitzhardinge" <jeremy.fitzhardinge@citrix.com>,
+       "Robert Hancock" <hancockrwd@gmail.com>,
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       "Suresh Siddha" <suresh.b.siddha@intel.com>,
+       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
+       "Tejun Heo" <tj@kernel.org>, <x86@kernel.org>,
+       "Yinghai Lu" <yinghai@kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Arjan van de Ven" <arjan@linux.intel.com>,
+       <dri-devel@lists.sourceforge.net>, "Ingo Molnar" <mingo@redhat.com>,
+       <linux-kernel@vger.kernel.org>, <jbarnes@virtuousgeek.org>,
+       "Thomas Hellstrom" <thellstrom@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
+	 available
+References: <4AD449A702000078000197EE@vpn.id2.novell.com>
+ <200910132329.05152.thomas.schlichter@web.de>
+In-Reply-To: <200910132329.05152.thomas.schlichter@web.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20091013172731.GB22797@ldl.fc.hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13 2009, Alex Chiang wrote:
-> * Jens Axboe <jens.axboe@oracle.com>:
-> > > > >> On Mon, Oct 12 2009, Greg KH wrote:
-> > > > >>> Can you try the acpiphp driver instead?  That's usually the
-> > > > >>> driver you want to use for "modern" systems (i.e. anything
-> > > > >>> made in the past 5 years.)
-> > > > >>
-> > > > >> I should have mentioned that I tried that too. It doesn't
-> > > > >> complain, but I don't see my cards anywhere afterwards. I'm
-> > > > >> a hotplug newbie, do I need to do anything else?
-> > > 
-> > > Can you modprobe acpiphp with debug=1? And send the output?
-> > 
-> > acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
-> > acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:05.0
-> > acpiphp_glue: found ACPI PCI Hotplug slot 1 at PCI 0000:08:00
-> > acpiphp: Slot [1] registered
-> > acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:07.0
-> > acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:0b:00
-> > acpiphp: Slot [2] registered
-> > acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:07.0
-> > acpiphp_glue: found ACPI PCI Hotplug slot 6 at PCI 0000:84:00
-> > acpiphp: Slot [6] registered
-> > acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:09.0
-> > acpiphp_glue: found ACPI PCI Hotplug slot 7 at PCI 0000:87:00
-> > acpiphp: Slot [7] registered
-> > acpiphp_glue: Bus 0000:87 has 1 slot
-> > acpiphp_glue: Bus 0000:84 has 1 slot
-> > acpiphp_glue: Bus 0000:0b has 1 slot
-> > acpiphp_glue: Bus 0000:08 has 1 slot
-> > acpiphp_glue: Total 4 slots
-> 
-> You mentioned in another mail that you echoed 1 into the various
-> slots' power files.
-> 
-> Did you do that after modprobing acpiphp with debug=1?
-> 
-> If so, there should be debug output when you try and turn them
-> on.
+>>> Thomas Schlichter <thomas.schlichter@web.de> 13.10.09 23:29 >>>
+>Jan Beulich wrote:
+>> >>> Thomas Schlichter <thomas.schlichter@web.de> 12.10.09 20:32 >>>
+>> >+	if (!pat_enabled) {
+>> >+		void __iomem *ret = ioremap_nocache(phys_addr, size);
+>> >+		if (ret)
+>> >+			mtrr_add(phys_addr, size, MTRR_TYPE_WRCOMB, false);
+>> 
+>> This won't work if phys_addr or size aren't page aligned, or if size isn't
+>> a power of two.
+>
+>No, at least the comments in mtrr_add and mtrr_check state that it is just 
+>required that phys_addr and size are multiple of PAGE_SIZE. And I'm not sure 
+>if it is always safe to round these up/down to the next PAGE boundary. If it 
+>is not, maybe it is better to fail...
 
-It produces:
+That function isn't the limiting factor, generic_validate_add_page() is
+what you need to look at (plus the spec on how the MTRR ranges are
+calculated by the CPU from the base/mask register pairs).
 
-acpiphp: enable_slot - physical_slot = 1
-acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
-acpiphp: enable_slot - physical_slot = 2
-acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
-acpiphp: enable_slot - physical_slot = 6
-acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
-acpiphp: enable_slot - physical_slot = 7
-acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
-
-I have a card in one of the slots only this time.
-
-> Also, quick dummy check, you are trying to power on populated
-> slots, right? :)
-
-Yes :-)
-
-> Can you send the output of lspci -vv? And I like the output of
-> lspci -vt as well... Both before and after loading acpiphp
-> please.
-
-Send privately.
-
--- 
-Jens Axboe
+Jan
 
