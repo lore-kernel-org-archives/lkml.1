@@ -1,84 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbZJNBqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbZJNBu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755634AbZJNBqI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 21:46:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbZJNBqH
+	id S1760580AbZJNBu3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 21:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759253AbZJNBu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 21:46:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51174 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753118AbZJNBqG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 21:46:06 -0400
-Date: Tue, 13 Oct 2009 18:45:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabe Black <gabe.black@ni.com>
-Cc: jbarnes@virtuousgeek.org, shawn.bohrer@ni.com, mike.hoogendyk@ni.com,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Populate subsystem vendor and device IDs for
- PCI-Bridges
-Message-Id: <20091013184511.c9b67d06.akpm@linux-foundation.org>
-In-Reply-To: <1254843919-13809-1-git-send-email-gabe.black@ni.com>
-References: <1254843919-13809-1-git-send-email-gabe.black@ni.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Oct 2009 21:50:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40789 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758942AbZJNBu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 21:50:28 -0400
+Message-ID: <4AD52E37.80209@kernel.org>
+Date: Wed, 14 Oct 2009 10:49:43 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@lists.ozlabs.org
+Subject: Re: New percpu & ppc64 perfs
+References: <1255478358.2347.28.camel@pasglop>
+In-Reply-To: <1255478358.2347.28.camel@pasglop>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Oct 2009 01:49:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Oct 2009 10:45:19 -0500 Gabe Black <gabe.black@ni.com> wrote:
+Hello, Benjamin.
 
-> Change to populate the subsystem vendor and subsytem device IDs for
-> PCI-PCI bridges that implement the PCI Subsystem Vendor ID capability.
-> Previously bridges left subsystem vendor IDs unpopulated.
+Benjamin Herrenschmidt wrote:
+> So I found (and fixed, though the patch isn't upstream yet) the problem
+> that was causing the new percpu to hang when accessing the top of our
+> vmalloc space.
 > 
-> Signed-off-by: Gabe Black <gabe.black@ni.com>
-> ---
->  drivers/pci/probe.c      |    6 ++++++
->  include/linux/pci_regs.h |    5 +++++
->  2 files changed, 11 insertions(+), 0 deletions(-)
+> However, I have some concerns about that choice of location for the
+> percpu datas.
 > 
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index 8105e32..6d90246 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -731,6 +731,7 @@ int pci_setup_device(struct pci_dev *dev)
->  	u32 class;
->  	u8 hdr_type;
->  	struct pci_slot *slot;
-> +	int pos = 0;
->  
->  	if (pci_read_config_byte(dev, PCI_HEADER_TYPE, &hdr_type))
->  		return -EIO;
-> @@ -822,6 +823,11 @@ int pci_setup_device(struct pci_dev *dev)
->  		dev->transparent = ((dev->class & 0xff) == 1);
->  		pci_read_bases(dev, 2, PCI_ROM_ADDRESS1);
->  		set_pcie_hotplug_bridge(dev);
-> +		pos = pci_find_capability(dev, PCI_CAP_ID_SSVID);
-> +		if (pos) {
-> +			pci_read_config_word(dev, pos + PCI_SSVID_VENDOR_ID, &dev->subsystem_vendor);
-> +			pci_read_config_word(dev, pos + PCI_SSVID_DEVICE_ID, &dev->subsystem_device);
-> +		}
->  		break;
->  
->  	case PCI_HEADER_TYPE_CARDBUS:		    /* CardBus bridge header */
-> diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-> index dd0bed4..d3b0cfb 100644
-> --- a/include/linux/pci_regs.h
-> +++ b/include/linux/pci_regs.h
-> @@ -365,6 +365,11 @@
->  #define  PCI_X_STATUS_266MHZ	0x40000000	/* 266 MHz capable */
->  #define  PCI_X_STATUS_533MHZ	0x80000000	/* 533 MHz capable */
->  
-> +/* PCI Bridge Subsystem ID registers */
-> +
-> +#define PCI_SSVID_VENDOR_ID     4	/* PCI-Bridge subsystem vendor id register */
-> +#define PCI_SSVID_DEVICE_ID     6	/* PCI-Bridge subsystem device id register */
-> +
->  /* PCI Express capability registers */
->  
->  #define PCI_EXP_FLAGS		2	/* Capabilities register */
+> Basically, our MMU divides the address space into "segments" (of 256M or
+> 1T depending on your processor capabilities) and those segments are SW
+> loaded into a relatively small (64 entries) SLB buffer.
+> 
+> Thus, by moving the per-cpu to the end of the vmalloc space, you
+> essentially make it use a different segment from the rest of the vmalloc
+> space, which will overall degrade performances by increasing pressure on
+> the SLB.
+> 
+> It would be nicer if we could provide an arch function to provide a
+> "preferred" location for the per-cpu data.
+> 
+> I can easily cook up a patch but wanted to discuss that with you first.
+> Any reason why we would keep it within vmalloc space for example ? IE. I
+> could move VMALLOC_END to below the per-cpu reserved areas, or are they
+> subject to expansion past boot time ?
+> 
+> Also, how big can they be ? Ie, will the top of the first 256M segment
+> good enough or that will risk blowing out of space ? In general,
+> machines with 256M segments won't have more than 64 or maybe 128 CPUs I
+> believe. Bigger machines will have CPUs that support 1T segments.
 
-What is the reason for making this change?
+Hmm... I don't think 256M segment will be enough.  Percpu area layout
+will follow how numa memory is laidd out.  For example, if a machine
+has 4 nodes (each one with one cpu) and memory for each node is 1G in
+size and 1G apart, the first chunk will be embedded in the linear
+mapping area (normal kernel addressable area) and each unit in the
+chunk will be apart by between 1G and 2G.  As the first chunk is
+embedded in the linear mapped area, this shouldn't cause any extra
+overhead.
+
+The vmalloc area is used when the first chunk is filled and another
+chunk need to be allocated.  From the second chunk on, vmalloc area is
+used to preserve the layout of the first chunk.  ie. Each of them will
+span across 8G bytes (they will overlap tho, so even with many dynamic
+chunks vm usage will only be slightly over 8G).
+
+The reason why vmalloc area from the top is used is that I didn't want
+this congruent allocation to compete with normal vmalloc allocations.
+Depending on the numa layout, competition between linear allocation
+and congruent allocation may create many unnecessary holes.
+
+For 256M segment, I don't think much can be done but for 1T segment,
+just limiting vmalloc area size to 1T should do the trick, no?
+
+Thanks.
+
+-- 
+tejun
