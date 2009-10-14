@@ -1,90 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932944AbZJNL1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbZJNLit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932944AbZJNL1Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 07:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932595AbZJNL1X
+	id S1758604AbZJNLit (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 07:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbZJNLit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 07:27:23 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:34076 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932574AbZJNL1W convert rfc822-to-8bit (ORCPT
+	Wed, 14 Oct 2009 07:38:49 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:40484 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753370AbZJNLis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 07:27:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=pSUuDGUiRz5/cqtn23D9D4sTRErWgEfz+nynJTsh+0+oY5UD/p4lUddpqAgXte8pt9
-         AC6dud7rZ2VdxIymZJWmoduElxJubewTKrgBkuHTnca9LNzGFu4GQmmTL+4rbervQr/i
-         F4eO8PAGX4g0FnlvC1dE177g2+/MQs3Wro4x4=
-MIME-Version: 1.0
-In-Reply-To: <e2e108260910140006n3c55b3e9h9cb4340a6bec22cc@mail.gmail.com>
-References: <200909261428.06802.bart.vanassche@gmail.com>
-	 <e2e108260910012341v5eab14c5o29da95ec52e75183@mail.gmail.com>
-	 <19f34abd0910020051h5a831729vcfca50b7bd9f9104@mail.gmail.com>
-	 <e2e108260910140006n3c55b3e9h9cb4340a6bec22cc@mail.gmail.com>
-Date: Wed, 14 Oct 2009 13:26:45 +0200
-Message-ID: <19f34abd0910140426vd9bcb41x460ed8779b7495a5@mail.gmail.com>
-Subject: Re: [PATCH 2.6.31.1] include/linux/kmemcheck.h: fix a sparse warning
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 14 Oct 2009 07:38:48 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: bdi_threshold slow to reach steady state
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       Martin Bligh <mbligh@google.com>
+In-Reply-To: <1255518586.2360.78.camel@castor>
+References: <1255518586.2360.78.camel@castor>
+Content-Type: text/plain
+Date: Wed, 14 Oct 2009 13:37:52 +0200
+Message-Id: <1255520272.8392.429.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/10/14 Bart Van Assche <bart.vanassche@gmail.com>:
-> On Fri, Oct 2, 2009 at 9:51 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->>
->> 2009/10/2 Bart Van Assche <bart.vanassche@gmail.com>:
->> > On Sat, Sep 26, 2009 at 2:28 PM, Bart Van Assche
->> > <bart.vanassche@gmail.com> wrote:
->> >>
->> >> Checking a 2.6.31.1 kernel configured with allyesconfig/allmodconfig
->> >> with sparse (make C=2) triggers a sparse warning on code that uses the
->> >> kmemcheck_annotate_bitfield() macro. An example of such a warning:
->> >>
->> >> include/net/inet_sock.h:208:17: warning: do-while statement is not a compound statement
->> >>
->> >> Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
->> >> Cc: Vegard Nossum <vegardno@ifi.uio.no>
->> >> Cc: Andrew Morton <akpm@linux-foundation.org>
->> >>
->> >> --- linux-2.6.31.1/include/linux/kmemcheck-orig.h       2009-09-26 13:53:44.000000000 +0200
->> >> +++ linux-2.6.31.1/include/linux/kmemcheck.h    2009-09-26 13:53:56.000000000 +0200
->> >> @@ -137,13 +137,13 @@ static inline void kmemcheck_mark_initia
->> >>        int name##_end[0];
->> >>
->> >>  #define kmemcheck_annotate_bitfield(ptr, name)                         \
->> >> -       do if (ptr) {                                                   \
->> >> +       do { if (ptr) {                                                 \
->> >>                int _n = (long) &((ptr)->name##_end)                    \
->> >>                        - (long) &((ptr)->name##_begin);                \
->> >>                BUILD_BUG_ON(_n < 0);                                   \
->> >>                                                                        \
->> >>                kmemcheck_mark_initialized(&((ptr)->name##_begin), _n); \
->> >> -       } while (0)
->> >> +       } } while (0)
->> >>
->> >>  #define kmemcheck_annotate_variable(var)                               \
->> >>        do {                                                            \
->> >
->> > (ping)
->> >
->> > Did anyone already have the time to review the patch above ?
->>
->> A patch for this problem has already been applied in latest mainline.
->
-> Unfortunately this issue is still present in 2.6.31.4, which has been
-> released on October 12 (yesterday). Is the patch that has been applied
-> in the mainline kernel suitable for backporting ?
+On Wed, 2009-10-14 at 12:09 +0100, Richard Kennedy wrote:
+> Hi Peter,
+> 
+> I've been running simple tests that uses fio to write 2Gb & reading the
+> bdi dirty threshold once a second from debugfs. 
+> 
+> The graph of bdi dirty threshold is nice and smooth but takes a long
+> time to reach a steady state, 60 seconds or more. (run on 2.6.32-rc4)
+> 
+> By eye it seems as though a first-order control system is a good model
+> for its behavior, so it approximates to 1-e^(-t/T). It just seems too
+> heavily damped ( at least on my machine).
+> 
+> For fun, I changed calc_period_shift to
+> 	return ilog2(dirty_total - 1) - 2;
+> 
+> and it now reaches a steady state much quicker, around 4-5 seconds.
+> 
+> Tests that write to 2 disks at the same time show no significant
+> performance differences but are much more consistent, i.e. the standard
+> deviation is lower across multiple runs.
+> 
+> I have noticed that the first test run on a freshly booted machine is
+> always the slowest of any sequence of tests, but this change to
+> calc_period_shift greatly reduces this effect. 
+> 
+> So I wondered how you chose these values? and are there any other tests
+> that are useful to explore this?
 
-I assumed that this wouldn't be suitable for stable kernels, as the
-change is purely syntactic. Is there a good reason for applying this
-patch to the stable series? Perhaps Greg can answer this (Cced)?
+Right, so we measure time in page writeback completions, and the measure
+I used was the round up power of two of the dirty_thresh. We adjust in
+the same time it takes to write out a full dirty_thresh amount of data.
 
+The idea was that people would scale their dirty thesh according to
+their writeout capacity, etc..
 
-Vegard
+Martin J Bligh complained about this very same issue and I told them to
+experiment with that same scale function. But I guess the result of that
+got lost in the google filter (stuff goes in, nothing ever comes back
+out).
+
+Anyway, the dirty_thresh relation seems sensible still, but the exact
+parameters could be poked at. I have no objection to reducing the period
+with a factor of 16 like you did, except that we need some more
+feedback, preferably from people with more than a few spindles.
+
+(The initial ramp will be roughly twice as slow, since the steady state
+of this approximation is half-full).
+
+> I know that my machine is getting a bit old now, it's AMDX2 & only has
+> sata 150 drives, so I'm not suggesting that this change is going to be
+> correct for all machines but maybe we can set a better default? or take
+> more factors in to account other than just memory size. 
+> 
+> BTW why is it ilog2(dirty_total -1) -- what does the -1 do?
+
+http://lkml.org/lkml/2007/1/26/143
+
