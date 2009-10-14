@@ -1,96 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbZJNGgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbZJNGmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755737AbZJNGgT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 02:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZJNGgS
+	id S1755309AbZJNGmV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 02:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbZJNGmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 02:36:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59859 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751456AbZJNGgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 02:36:18 -0400
-Date: Wed, 14 Oct 2009 08:35:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org, david-b@pacbell.net,
-       hpa@zytor.com, rjw@sisk.pl, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: + rtc-disable-hpet-emulation-on-suspend.patch added to -mm tree
-Message-ID: <20091014063516.GF784@elte.hu>
-References: <200910132208.n9DM83xa031357@imap1.linux-foundation.org> <20091014055639.GA784@elte.hu> <1255501643.4484.13.camel@localhost.localdomain>
+	Wed, 14 Oct 2009 02:42:20 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:59273 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753810AbZJNGmT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 02:42:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=Z7NorJzod7ZAM3xBKF9FkI7Mk0UmyFwZ0TbmCsd5/cG76HIjTsvFEIrLXqItgH+NgK
+         8slDES/5xvwyqukPUKOB/6tIxJkYL4/X2vEFl1uiCHd3mbxoAeDa1SwGj6bGpKDcE3YQ
+         L6Y6tgB5mFDD9D1FdYgGOv4eYE7Tea9ltIHQc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255501643.4484.13.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Date: Tue, 13 Oct 2009 23:36:01 -0700
+Message-ID: <f22d86810910132336r1d6f6363qa983b355676dc413@mail.gmail.com>
+Subject: How to check whether executing in atomic context?
+From: "Leonidas ." <leonidas137@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi List,
 
-* Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+I am working on a profiler kind of module, the exported apis of my
+module can be
+called from process context and interrupt context as well. Depending on the
+context I am called in, I need to call sleepable/nonsleepable variants
+of my internal
+bookkeeping functions.
 
-> On Wed, 2009-10-14 at 07:56 +0200, Ingo Molnar wrote:
-> > * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
-> > 
-> > > ------------------------------------------------------
-> > > Subject: rtc: disable hpet emulation on suspend
-> > > From: Maxim Levitsky <maximlevitsky@gmail.com>
-> > > 
-> > > I noticed that rtc wont generate interrupts after a resume from disk.
-> > > Here hpet rtc emulation is used.
-> > > 
-> > > Problem is that rtc hpet comparator, isn't reinitialized after resume.
-> > > Easiest way to solve this, is always mask all hpet interrupts on suspend
-> > > This is triggered, when suspending with alarm set.
-> > > 
-> > > 
-> > > Otherwise, hpet driver will think it doesn't need to reinitialize
-> > > the rtc comparator, thus rtc interrupts won't work.
-> > > 
-> > > This emulation isn't need for wakealarm.
-> > 
-> > > -		hpet_mask_rtc_irq_bit(mask);
-> > >  
-> > > +		/* shut down hpet emulation - we don't need it for alarm */
-> > > +		hpet_mask_rtc_irq_bit(RTC_PIE|RTC_AIE|RTC_UIE);
-> > >  		cmos_checkintr(cmos, tmp);
-> > 
-> > Would be nice to also unconditionally reinitialize the hpet/rtc after 
-> > resume - regardless of what state we left it in.
-> 
-> I think this is already done.
-> Problem was that rtc driver was leaving the RTC_AIE, thus breaking the
-> initialization.
-> 
-> If there are no users of hpet on suspend, (periodic,alarm,update), then
-> it won't be initialized on resume (only rtc comparator part, other parts
-> are initialized correctly nowadays) but as soon as anybody start using
-> it, it will be.
->  
-> 
-> > 
-> > Also, are you sure this does not break things like 
-> > CONFIG_PM_TEST_SUSPEND=y which rely on wakealarm?
-> 
-> 
-> This shouldn't break anything. hpet irqs aren't used for the actual
-> alarm.
-> 
-> In fact I used a script to loop over real hibernation cycles, and it 
-> works with or without this patch.
-> 
-> But with this patch, hwclock works after a resume.
+I am aware of in_interrupt() call which can be used to check current
+context and take action
+accordingly.
 
-Excellent - thanks!
+Is there any api which can help figure out whether we are executing
+while hold a spinlock? I.e
+an api which can help figure out sleepable/nonsleepable context? If it
+is not there, what can
+be done for writing the same? Any pointers will be helpful.
 
-	Ingo
+-Leo.
