@@ -1,47 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbZJNEou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752266AbZJNEqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752118AbZJNEou (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 00:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbZJNEot
+	id S1752266AbZJNEqG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 00:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZJNEqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 00:44:49 -0400
-Received: from mail.perches.com ([173.55.12.10]:2130 "EHLO mail.perches.com"
+	Wed, 14 Oct 2009 00:46:05 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59412 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751675AbZJNEot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 00:44:49 -0400
-Subject: Re: [PATCH] kernel.h: Add a never optimized away pr_dbg for
- printk(KERN_DEBUG pr_fmt(fmt)...)
-From: Joe Perches <joe@perches.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.00.0910132124120.2044@chino.kir.corp.google.com>
-References: <1255488982.1909.26.camel@Joe-Laptop.home>
-	 <alpine.DEB.1.00.0910132031040.1244@chino.kir.corp.google.com>
-	 <1255494109.1851.7.camel@Joe-Laptop.home>
-	 <alpine.DEB.1.00.0910132124120.2044@chino.kir.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 13 Oct 2009 21:44:12 -0700
-Message-Id: <1255495452.1851.13.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	id S1751640AbZJNEqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 00:46:04 -0400
+Date: Tue, 13 Oct 2009 21:45:19 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, James Bottomley <James.Bottomley@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jing Huang <huangj@brocade.com>, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for
+	2.6.32-rc3)
+Message-ID: <20091014044519.GA19199@suse.de>
+References: <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain> <20091009091538.GA4154@elte.hu> <1255097287.2934.21.camel@localhost.localdomain> <20091012130652.GB25464@elte.hu> <1255357148.2850.91.camel@localhost.localdomain> <20091012145453.GD4565@elte.hu> <20091012150911.GB1656@suse.de> <20091012154244.GA13323@elte.hu> <20091012232429.GA24254@suse.de> <43e72e890910131108m789110b4hc35e25601ad67bb7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43e72e890910131108m789110b4hc35e25601ad67bb7@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 21:28 -0700, David Rientjes wrote:
-> The pr_dbg_* variations seem reasonable if the current pr_debug() were 
-> changed to pr_dbg().
+On Tue, Oct 13, 2009 at 11:08:15AM -0700, Luis R. Rodriguez wrote:
+> On Mon, Oct 12, 2009 at 4:24 PM, Greg KH <gregkh@suse.de> wrote:
+> > On Mon, Oct 12, 2009 at 05:42:44PM +0200, Ingo Molnar wrote:
+> >> Hm, i think i even gave drivers/staging/ its name?
+> >
+> > Yes you did, and I appreciate it :)
+> >
+> >> > [...] It seems that I'm the only one that has the ability to drop
+> >> > drivers out of the kernel tree, which is a funny situation :)
+> >>
+> >> You are the only one who has the ability to send a warning shot towards
+> >> drivers _without hurting users_, and by moving it into the focus of a
+> >> team of cleanup oriented developers.
+> >>
+> >> I think that's an important distinction ;-)
+> >
+> > Good point.
+> >
+> >> > In thinking about this a lot more, I don't really mind it. ??If people
+> >> > want to push stuff out of "real" places in the kernel, into
+> >> > drivers/staging/ and give the original authors and maintainers notice
+> >> > about what is going on, _and_ provide a TODO file for what needs to
+> >> > happen to get the code back into the main portion of the kernel tree,
+> >> > then I'll be happy to help out with this and manage it.
+> >> >
+> >> > I think a 6-9 month window (basically 3 kernel releases) should be
+> >> > sufficient time to have a driver that has been in drivers/staging/ be
+> >> > cleaned up enough to move back into the main kernel tree. ??If not, it
+> >> > could be easily dropped.
+> >> >
+> >> > Any objections to this?
+> >>
+> >> Sounds excellent to me!
+> >
+> > Great, I'll await the patches to move stuff to drivers/staging/ now.
+> >
+> > Wireless developers, warm up your editors :)
+> 
+> OK -- prism54 seems like a good candidate, instead of removing it
+> completely as I originally outlined on the feature removal schedule.
+> Do we have a file to give notices to move drivers to staging because
+> they are old as with the feature removal schedule? The more visible
+> these things become the better it is for users.
 
-I think that's unlikely to happen.
+We've found that the feature removal file is also ignored :)
 
-> this discussion is irrelevant if there 
-> are no current use cases (in which case the patch is pointless).
+How about when it was scheduled to be removed, we put it in staging and
+I'll add it to my announcements about the staging tree every release?
 
-Yeah, right.  It's alway irrelevant to add new
-facilities when where are no current use cases.
+Unless you can think of a better way?
 
-I sent a 21 deep patchset over a week ago.
-http://lkml.org/lkml/2009/10/4/198
+thanks,
 
-
+greg k-h
