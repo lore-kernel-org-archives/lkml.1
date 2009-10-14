@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbZJNKzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761549AbZJNSqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbZJNKzK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 06:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758535AbZJNKzJ
+	id S1761549AbZJNSqe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 14:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757672AbZJNSqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 06:55:09 -0400
-Received: from viefep14-int.chello.at ([62.179.121.34]:49747 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758376AbZJNKzI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 06:55:08 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH] perf_event: Adjust frequency and unthrottle for
- non-group-leader events
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "Mark W. Krentel" <krentel@cs.rice.edu>,
-       linux-kernel@vger.kernel.org,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>
-In-Reply-To: <19157.26731.855609.165622@cargo.ozlabs.ibm.com>
-References: <19157.26731.855609.165622@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Wed, 14 Oct 2009 12:54:12 +0200
-Message-Id: <1255517652.8392.378.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 14:46:33 -0400
+Received: from aper.net ([207.235.5.169]:52180 "EHLO aper.net"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756641AbZJNSqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 14:46:32 -0400
+Message-ID: <5f591a95fd41abca8415bafce50fd514.squirrel@webmail.aper.net>
+Date: Wed, 14 Oct 2009 08:08:38 -0300 (ART)
+Subject: Attention E-mail Account Holder
+From: "Upgrade Team" <info@upg.com>
+Reply-To: upgrade.team90@9.cn
+User-Agent: SquirrelMail/1.4.15
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-14 at 16:58 +1100, Paul Mackerras wrote:
-> The loop in perf_ctx_adjust_freq checks the frequency of sampling
-> event counters, and adjusts the event interval and unthrottles the
-> event if required, and resets the interrupt count for the event.
-> However, at present it only looks at group leaders.
-> 
-> This means that a sampling event that is not a group leader will
-> eventually get throttled, once its interrupt count reaches
-> sysctl_perf_event_sample_rate/HZ --- and that is guaranteed to
-> happen, if the event is active for long enough, since the interrupt
-> count never gets reset.  Once it is throttled it never gets
-> unthrottled, so it basically just stops working at that point.
-> 
-> This fixes it by making perf_ctx_adjust_freq use ctx->event_list
-> rather than ctx->group_list.  The existing spin_lock/spin_unlock
-> around the loop makes it unnecessary to put rcu_read_lock/
-> rcu_read_unlock around the list_for_each_entry_rcu().
-> 
-> Reported-by: Mark W. Krentel <krentel@cs.rice.edu>
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+Attention E-mail Account Holder,
 
-Looks good, thanks Paul!
+ This message is from the Database Information Technology service
+messaging center, to all our e-mail account holders. All Mailhub  systems
+will  undergo regularly scheduled maintenance. Access to your mailbox via
+our  mailportal will be unavailable for some period of time during this 
+maintenanceperiod.
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+ We shall be carrying out service maintenance on our database and e- mail
+account center for better online services. We are deleting all
+unusede-mail accounts to create more space for new accounts.
 
-> ---
-> Apparently this bug was only seen on powerpc, and not on x86.  I have
-> no idea why.
+ In order to ensure you do not experience service
+interruptions/possibledeactivation Please you must reply to this  email
+immediately confirming  your stfx.ca email account details below for
+confirmation/identification
 
-Weird, should work the same way on both of them.
+ 1. First Name & Last Name:
+ 2. Full Login Email Address:
+ 3. Username & Password:
+ 4. Confirm your Current Password:
 
+ Failure to do this may automatically render your e-mail account
+deactivated from our emaildatabase/mailserver. to enable us
+ upgrade your  email account, please do reply to this mail.
 
+ Thanks.
+ Upgrade Team
