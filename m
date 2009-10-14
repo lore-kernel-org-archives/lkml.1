@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761667AbZJNOAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933189AbZJNOFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761667AbZJNOAi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 10:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426AbZJNOAh
+	id S933189AbZJNOFb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 10:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbZJNOFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 10:00:37 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:37462 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755933AbZJNOAg (ORCPT
+	Wed, 14 Oct 2009 10:05:31 -0400
+Received: from viefep15-int.chello.at ([62.179.121.35]:60754 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756318AbZJNOFa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 10:00:36 -0400
-Message-ID: <4AD5D943.9020507@gnumonks.org>
-Date: Wed, 14 Oct 2009 15:59:31 +0200
-From: Harald Welte <laforge@gnumonks.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Corentin Chary <corentin.chary@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: VT6421 problems with sata_via (VIA data sheets)
-References: <71cd59b00910110254q2e5318cfw30ac0a4f86770487@mail.gmail.com> <20091011141638.616084c0@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091011141638.616084c0@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 14 Oct 2009 10:05:30 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: bdi_threshold slow to reach steady state
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       Martin Bligh <mbligh@google.com>
+In-Reply-To: <1255528520.2360.94.camel@castor>
+References: <1255518586.2360.78.camel@castor>
+	 <1255520272.8392.429.camel@twins>  <1255528520.2360.94.camel@castor>
+Content-Type: text/plain
+Date: Wed, 14 Oct 2009 16:04:32 +0200
+Message-Id: <1255529072.8392.436.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -0.8 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
-
-Alan Cox wrote:
-
->> I recently needed some more space and bought a Deskstar 7K1000.B for my server.
->> The motherboard is old, and did not have SATA port, so I added a
->> VT6421 PCI SATA controller.
+On Wed, 2009-10-14 at 14:55 +0100, Richard Kennedy wrote:
 > 
-> Lots of 6421 setups do not work on Linux full stop. I've asked VIA
-> several times for the relevant data sheet/info to fix this and they've
-> never done more than acknowledge receipt of the mail.
+> commit 11735a2336ba08cf21aebf79a706c86aca5e44b2
+> Author: Richard Kennedy <richard@rsk.demon.co.uk>
+> Date:   Wed Oct 14 14:46:21 2009 +0100
+> 
+>     mm: speed up per bdi dirty threshold calculations
 
-Whom did you e-mail?
+I think the subject is confusing, we don't actually compute things
+faster in the less cycles sense.
 
-The document is available from
-ftp://ftp.vtbridge.org/Docs/Storage/DS_VT6421A_100_CCPL.PDF
-for almost one year now.
+We reduce the dampening for the control system, yielding faster
+convergence.
 
-If you requested it, maybe it was put there but somebody just forgot to
-send follow-up mail to you.
+>     Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> 
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index a3b1409..018024e 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -144,7 +144,7 @@ static int calc_period_shift(void)
+>         else
+>                 dirty_total = (vm_dirty_ratio *
+> determine_dirtyable_memory()) /
+>                                 100;
+> -       return 2 + ilog2(dirty_total - 1);
+> +       return ilog2(dirty_total - 1) - 2;
+>  }
 
-To anyone working on Linux or other Free Software regarding VIA
-hardware:  If you need documentation, or if you have any other issues,
-please contact me.  I am the Liaison and I can talk with various people
-and departments inside VIA.
-
-There are some things where VIA has no documentation, and there are
-other parts like video acceleration where documentation cannot be
-published due to 3rd party patents and patent licensing schemes.
-
-But for general hardware like storage controller, north/southbridge,
-audio codecs, ... the documentation is possible to be released without NDA.
-
---
-  Harald Welte <laforge@gnumonks.org>
