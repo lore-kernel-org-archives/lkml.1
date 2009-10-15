@@ -1,139 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762827AbZJOPfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762820AbZJOPb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762827AbZJOPfj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 11:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760513AbZJOPfj
+	id S1762820AbZJOPb1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 11:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762796AbZJOPb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 11:35:39 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:23113 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754569AbZJOPfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 11:35:37 -0400
-Date: Thu, 15 Oct 2009 17:29:59 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Paul Fulghum <paulkf@microgate.com>,
-       Boyan <btanastasov@yahoo.co.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-Message-ID: <20091015152959.GA18681@redhat.com>
-References: <4AD51D6B.7010509@microgate.com> <alpine.LFD.2.01.0910131744590.3404@localhost.localdomain> <20091014125846.1a3c8d40@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0910140804180.6146@localhost.localdomain> <alpine.LFD.2.01.0910140925440.6146@localhost.localdomain> <20091014182037.GA10076@redhat.com> <alpine.LFD.2.01.0910141131050.6146@localhost.localdomain> <20091014195215.GA12936@redhat.com> <alpine.LFD.2.01.0910141344250.6146@localhost.localdomain> <20091015124730.GA9398@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091015124730.GA9398@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 15 Oct 2009 11:31:27 -0400
+Received: from outbound-mail-320.bluehost.com ([67.222.54.252]:55084 "HELO
+	outbound-mail-320.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1762231AbZJOPb0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 11:31:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=bw3Dz96Ku2Yk1YhSXifV8GyyzjRoaJrEJps0uSHTR66MvNhSvDVxTW1xDC61zwH0tehjtrqzTIGRQJ5EyqLEvTH3clLra1++SxTXFvxbBzAaL7RI4Se1bXinfamX6NG8;
+Date: Thu, 15 Oct 2009 08:30:23 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Eric Anholt <eric@anholt.net>,
+       linux-kernel@vger.kernel.org, Keith Packard <keithp@keithp.com>,
+       Chris Wilson <chris@chris-wilson.co.uk>
+Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with T400
+ laptops
+Message-ID: <20091015083023.2f389296@jbarnes-g45>
+In-Reply-To: <20091015022645.GA8286@mit.edu>
+References: <20091008103620.5e5aae66@jbarnes-g45>
+	<20091010204106.GA8251@mit.edu>
+	<20091012095438.1e82b54f@jbarnes-g45>
+	<20091012184651.GA4603@Pilar.aei.mpg.de>
+	<20091012120510.16bd1194@jbarnes-g45>
+	<20091013023146.GA8414@mit.edu>
+	<20091013100135.2b3d914f@jbarnes-g45>
+	<20091013190055.GI8175@mit.edu>
+	<20091013121426.35f409ff@jbarnes-g45>
+	<20091014142252.009d03a5@jbarnes-g45>
+	<20091015022645.GA8286@mit.edu>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/15, Oleg Nesterov wrote:
->
-> But, this can race with cpu_down(). I think this is solvable but needs
-> more locking. I mean, the caller of queue_work_xxx() must not use the old
-> get_wq_data(work) if this CPU is already dead, but a simple cpu_online()
-> is not enough, we can race with workqueue_cpu_callback(CPU_POST_DEAD)
-> flushing this cwq, in this case we should carefully insert this work
-> into the almost-dead queue.
->
-> Or, perhaps better, instead of new helper, we can probably use the free
-> bit in work_struct->data to mark this work/dwork as "single-instance-work".
-> In this case __queue_work and queue_delayed_work_on should check this bit.
+On Wed, 14 Oct 2009 22:26:45 -0400
+Theodore Tso <tytso@mit.edu> wrote:
 
-Actually, this looks simple. Please see the patch below.
+> On Wed, Oct 14, 2009 at 02:22:52PM -0700, Jesse Barnes wrote:
+> > On Tue, 13 Oct 2009 12:14:26 -0700
+> > Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > > According to the chipset team that form of display corruption is
+> > > likely related to RAM self-refresh... Sounds like the display
+> > > plane isn't getting its memory requests serviced fast enough when
+> > > in self-refresh mode, which might mean we have to program the
+> > > self-refresh watermarks more aggressively on GM45.
+> > 
+> > Ok, like any good bug there was more than one thing wrong:
+> >   - we weren't setting up a fence for the object before enabling
+> > FBC. Chris caught this and posted a patch to
+> >     intel-gfx@lists.freedesktop.org titled "drm/i915: Install a
+> > fence register for fbc on g4x" (attached for convenience)
+> >   - turns out we *do* need to set watermarks on G4x, despite some hw
+> >     documentation indicating otherwise, patch for that attached
+> > 
+> > Hopefully with these two you'll have a solid display and some power
+> > saving!
+> 
+> With these two patches (and none of your prior ones) applied to
+> 2.6.32-rc3, things are definitely better.  I'm still seeing a few
+> glitches (one as mutt was loading my Maildir inbox) and one as I was
+> typing this message in emacs, but it's at best one minor every 5-10
+> minutes.  It's rare enough to be at most a wee bit distracting (*lots*
+> better than before), and I can see the power savings.
+> 
+> If I need to live with a display glitch every 5-10 minutes or so to
+> get better power savings, I'll take it....
 
-Of course! the horror in __queue_work() should be cleanuped somehow.
-The change queue_delayed_work_on() needs a separate patch probably.
+Oh I think we can do better than that.  The hardcoded values I put in
+for the watermarks are almost certainly wrong.  I should be able to
+reproduce what you're seeing (anything that takes a lot of memory
+bandwidth will probably cause flicker) and adjust the watermarks to the
+correct values to avoid that.  I'll try to find time in Japan to do
+that...
 
-
-All, what do you think? Do we need this?
-
-Oleg.
-
-If the work_struct/delayed_work has WORK_STRUCT_XXX bit set, it can never
-race with itself.
-
-Note: queue_work_on() or queue_delayed_work_on() must not be used if it is
-work_xxx().
-
-Also, we can optimize flush/cancel operations to not scan all CPUs if this
-work is "singlethreaded".
-
-PROBLEM: work_xxx() work can block cpu_down() if it contsantly re-queues
-itself, hopefully we shouldn't have such stupid users.
----
-
---- TTT_32/include/linux/workqueue.h~WORK_XXX	2009-09-23 21:12:03.000000000 +0200
-+++ TTT_32/include/linux/workqueue.h	2009-10-15 16:49:25.000000000 +0200
-@@ -24,7 +24,8 @@ typedef void (*work_func_t)(struct work_
- 
- struct work_struct {
- 	atomic_long_t data;
--#define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
-+#define WORK_STRUCT_PENDING	0	/* T if work item pending execution */
-+#define WORK_STRUCT_XXX		1	/* deny multiple running instances */
- #define WORK_STRUCT_FLAG_MASK (3UL)
- #define WORK_STRUCT_WQ_DATA_MASK (~WORK_STRUCT_FLAG_MASK)
- 	struct list_head entry;
-@@ -148,6 +149,9 @@ struct execute_work {
- #define work_pending(work) \
- 	test_bit(WORK_STRUCT_PENDING, work_data_bits(work))
- 
-+#define work_xxx(work) \
-+	test_bit(WORK_STRUCT_XXX, work_data_bits(work))
-+
- /**
-  * delayed_work_pending - Find out whether a delayable work item is currently
-  * pending
---- TTT_32/kernel/workqueue.c~WORK_XXX	2009-09-12 21:40:11.000000000 +0200
-+++ TTT_32/kernel/workqueue.c	2009-10-15 17:09:51.000000000 +0200
-@@ -145,6 +145,35 @@ static void __queue_work(struct cpu_work
- {
- 	unsigned long flags;
- 
-+	if (work_xxx(work)) {
-+		struct cpu_workqueue_struct *old = get_wq_data(work);
-+		bool done = false;
-+
-+		if (!old)
-+			goto fallback;
-+
-+		// This lockless check is racy. We should either remove it
-+		// or add mb__before_clear_bit() into run_workqueue().
-+		if (old->current_work != work)
-+			goto fallback;
-+
-+		// OK, we should keep this old cwq. But its CPU can be dead,
-+		// we have to recheck under old->lock
-+		spin_lock_irqsave(&old->lock, flags);
-+		if (old->current_work == work) {
-+			// It is stiill running, queue the work here.
-+			// even if this CPU is dead, run_workqueue()
-+			// can't return without noticing this work
-+			insert_work(old, work, &old->worklist);
-+			done = true;
-+		}
-+		spin_unlock_irqrestore(&cwq->lock, flags);
-+
-+		if (done)
-+			return;
-+	}
-+
-+fallback:
- 	spin_lock_irqsave(&cwq->lock, flags);
- 	insert_work(cwq, work, &cwq->worklist);
- 	spin_unlock_irqrestore(&cwq->lock, flags);
-@@ -246,7 +275,8 @@ int queue_delayed_work_on(int cpu, struc
- 		timer_stats_timer_set_start_info(&dwork->timer);
- 
- 		/* This stores cwq for the moment, for the timer_fn */
--		set_wq_data(work, wq_per_cpu(wq, raw_smp_processor_id()));
-+		if (!get_wq_data(work))
-+			set_wq_data(work, wq_per_cpu(wq, raw_smp_processor_id()));
- 		timer->expires = jiffies + delay;
- 		timer->data = (unsigned long)dwork;
- 		timer->function = delayed_work_timer_fn;
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
