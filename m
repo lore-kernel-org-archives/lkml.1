@@ -1,108 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935463AbZJOUUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935461AbZJOUWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935463AbZJOUUN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 16:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935384AbZJOUUM
+	id S935461AbZJOUWD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 16:22:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763019AbZJOUWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 16:20:12 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:7820 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933196AbZJOUUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 16:20:10 -0400
-Date: Thu, 15 Oct 2009 22:19:16 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Joerg.Abraham@alcatel-lucent.de, linux-kernel@vger.kernel.org
-cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-rt-users@vger.kernel.org
-Subject: Re: 2.6.31.4-rt14 posix message queues problem
-In-Reply-To: <alpine.LFD.2.00.0910152105430.8932@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0910152217390.3486@localhost.localdomain>
-References: <4AD76126.1000408@alcatel-lucent.de> <520f0cf10910151202k2ba01453r10e96eeb064232e8@mail.gmail.com> <alpine.LFD.2.00.0910152105430.8932@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Oct 2009 16:22:01 -0400
+Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:52725
+	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756137AbZJOUV7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 16:21:59 -0400
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: trivial@kernel.org
+Cc: linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, users@host1.serialmonkey.com,
+       linux-scsi@vger.kernel.org, devel@driverdev.osuosl.org,
+       linux-ext4@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+       linux-sctp@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH 7/8] trivial: fix many typos s/untill/until/
+Date: Thu, 15 Oct 2009 17:21:12 -0300
+Message-Id: <1255638072-6236-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ drivers/infiniband/ulp/iser/iser_verbs.c |    2 +-
+ drivers/net/bonding/bond_alb.c           |    2 +-
+ drivers/net/wireless/rt2x00/rt2800usb.c  |    2 +-
+ drivers/scsi/bnx2i/bnx2i_iscsi.c         |    2 +-
+ drivers/staging/rtl8187se/r8180.h        |    2 +-
+ fs/ext4/balloc.c                         |    2 +-
+ net/bluetooth/bnep/core.c                |    2 +-
+ net/sctp/sm_statefuns.c                  |    2 +-
+ 8 files changed, 8 insertions(+), 8 deletions(-)
 
-
-On Thu, 15 Oct 2009, John Kacur wrote:
-
-> 
-> > From: Joerg Abraham <Joerg.Abraham@alcatel-lucent.de>
-> > Date: Thu, Oct 15, 2009 at 7:51 PM
-> > Subject: 2.6.31.4-rt14 posix message queues problem
-> > To: LKML <linux-kernel@vger.kernel.org>
-> > 
-> > 
-> > Hi,
-> > 
-> > During some performance measurement I stumbled over unexpected bad
-> > results for a posix message queue test case. Which is not surprising
-> > since the kernel log shows a "BUG: scheduling while atomic:" on every
-> > measurement trigger.
-> > 
-> > Attached is the kernel log for an embedded 8572ds powerpc system and a
-> > condensed user space test appli. The test appli uses 2 processes
-> > (mq_server and mq_client) and pingpongs some messages via posix
-> > message queues. Please see the c-file header for details (the appli
-> > itself makes not much sense but shows the problem).
-> > 
-> > ./mq_server
-> > ./mq_client # just crashes during run
-> > 
-> > The problem does _not_ occur on kernels 2.6.29.6-rt24, 2.6.29.6
-> > vanilla and 2.6.31.4 vanilla. The problem does _also_ show up on an
-> > embedded x86_64 system and a full featured fc11 x86_64 system running
-> > a 2.6.31.4-rt14 based kernel, so I dont think it's arch dependent.
-> > 
-> > Can anybody reproduce the crash ???
-> > 
-> > If you need more info's please let me know.
-> > 
-> > [And if I'm doing stupid things just forgive me]
-> > 
-> > Thanx
-> > 
-> > Joerg
-> 
-> Hello Joerg
-> 
-> Does the following patch solve your problem? 
-> 
-> From 69fde4357db4a054733cbca4158606160e821a3a Mon Sep 17 00:00:00 2001
-> From: John Kacur <jkacur@redhat.com>
-> Date: Thu, 15 Oct 2009 20:52:37 +0200
-> Subject: [PATCH] preempt_disable_rt(); should be paired with preempt_enable_rt()
-> 
-> Signed-off-by: John Kacur <jkacur@redhat.com>
-> ---
->  ipc/mqueue.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-> index 63a47f7..ab4df36 100644
-> --- a/ipc/mqueue.c
-> +++ b/ipc/mqueue.c
-> @@ -830,7 +830,7 @@ static inline void pipelined_send(struct mqueue_inode_info *info,
->  	wake_up_process(receiver->task);
->  	smp_wmb();
->  	receiver->state = STATE_READY;
-> -	preempt_enable_nort();
-> +	preempt_enable_rt();
->  }
->  
->  /* pipelined_receive() - if there is task waiting in sys_mq_timedsend()
-> -- 
-> 1.6.0.6
-> 
->
+diff --git a/drivers/infiniband/ulp/iser/iser_verbs.c b/drivers/infiniband/ulp/iser/iser_verbs.c
+index ea9e155..8579f32 100644
+--- a/drivers/infiniband/ulp/iser/iser_verbs.c
++++ b/drivers/infiniband/ulp/iser/iser_verbs.c
+@@ -499,7 +499,7 @@ void iser_conn_init(struct iser_conn *ib_conn)
  
-fyi: I completed my testing, and  I was able to reproduce your problem on 
-v2.6.31.4-rt14, and it goes away with the above patch.
+  /**
+  * starts the process of connecting to the target
+- * sleeps untill the connection is established or rejected
++ * sleeps until the connection is established or rejected
+  */
+ int iser_connect(struct iser_conn   *ib_conn,
+ 		 struct sockaddr_in *src_addr,
+diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
+index 9b5936f..a1e7eb9 100644
+--- a/drivers/net/bonding/bond_alb.c
++++ b/drivers/net/bonding/bond_alb.c
+@@ -559,7 +559,7 @@ static void rlb_update_rx_clients(struct bonding *bond)
+ 		}
+ 	}
+ 
+-	/* do not update the entries again untill this counter is zero so that
++	/* do not update the entries again until this counter is zero so that
+ 	 * not to confuse the clients.
+ 	 */
+ 	bond_info->rlb_update_delay_counter = RLB_UPDATE_DELAY;
+diff --git a/drivers/net/wireless/rt2x00/rt2800usb.c b/drivers/net/wireless/rt2x00/rt2800usb.c
+index a084077..449886c 100644
+--- a/drivers/net/wireless/rt2x00/rt2800usb.c
++++ b/drivers/net/wireless/rt2x00/rt2800usb.c
+@@ -1257,7 +1257,7 @@ static int rt2800usb_init_registers(struct rt2x00_dev *rt2x00dev)
+ 	unsigned int i;
+ 
+ 	/*
+-	 * Wait untill BBP and RF are ready.
++	 * Wait until BBP and RF are ready.
+ 	 */
+ 	for (i = 0; i < REGISTER_BUSY_COUNT; i++) {
+ 		rt2x00usb_register_read(rt2x00dev, MAC_CSR0, &reg);
+diff --git a/drivers/scsi/bnx2i/bnx2i_iscsi.c b/drivers/scsi/bnx2i/bnx2i_iscsi.c
+index cafb888..10110be 100644
+--- a/drivers/scsi/bnx2i/bnx2i_iscsi.c
++++ b/drivers/scsi/bnx2i/bnx2i_iscsi.c
+@@ -1883,7 +1883,7 @@ static void bnx2i_ep_disconnect(struct iscsi_endpoint *ep)
+ 
+ 	bnx2i_ep = ep->dd_data;
+ 
+-	/* driver should not attempt connection cleanup untill TCP_CONNECT
++	/* driver should not attempt connection cleanup until TCP_CONNECT
+ 	 * completes either successfully or fails. Timeout is 9-secs, so
+ 	 * wait for it to complete
+ 	 */
+diff --git a/drivers/staging/rtl8187se/r8180.h b/drivers/staging/rtl8187se/r8180.h
+index 8216d7e..35ed60b 100644
+--- a/drivers/staging/rtl8187se/r8180.h
++++ b/drivers/staging/rtl8187se/r8180.h
+@@ -521,7 +521,7 @@ typedef struct r8180_priv
+ 	//u32 NumTxOkInPeriod;   //YJ,del,080828
+ 	u8   TxPollingTimes;
+ 
+-	bool	bApBufOurFrame;// TRUE if AP buffer our unicast data , we will keep eAwake untill receive data or timeout.
++	bool	bApBufOurFrame;// TRUE if AP buffer our unicast data , we will keep eAwake until receive data or timeout.
+ 	u8	WaitBufDataBcnCount;
+ 	u8	WaitBufDataTimeOut;
+ 
+diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
+index 1d04189..2565b8c 100644
+--- a/fs/ext4/balloc.c
++++ b/fs/ext4/balloc.c
+@@ -519,7 +519,7 @@ void ext4_free_blocks(handle_t *handle, struct inode *inode,
+ 		metadata = 1;
+ 
+ 	/* We need to make sure we don't reuse
+-	 * block released untill the transaction commit.
++	 * block released until the transaction commit.
+ 	 * writeback mode have weak data consistency so
+ 	 * don't force data as metadata when freeing block
+ 	 * for writeback mode.
+diff --git a/net/bluetooth/bnep/core.c b/net/bluetooth/bnep/core.c
+index 1bd9398..9ac0497 100644
+--- a/net/bluetooth/bnep/core.c
++++ b/net/bluetooth/bnep/core.c
+@@ -629,7 +629,7 @@ int bnep_del_connection(struct bnep_conndel_req *req)
+ 	s = __bnep_get_session(req->dst);
+ 	if (s) {
+ 		/* Wakeup user-space which is polling for socket errors.
+-		 * This is temporary hack untill we have shutdown in L2CAP */
++		 * This is temporary hack until we have shutdown in L2CAP */
+ 		s->sock->sk->sk_err = EUNATCH;
+ 
+ 		/* Kill session thread */
+diff --git a/net/sctp/sm_statefuns.c b/net/sctp/sm_statefuns.c
+index c8fae19..ba2f66d 100644
+--- a/net/sctp/sm_statefuns.c
++++ b/net/sctp/sm_statefuns.c
+@@ -3569,7 +3569,7 @@ sctp_disposition_t sctp_sf_do_asconf(const struct sctp_endpoint *ep,
+ 	 * To do this properly, we'll set the destination address of the chunk
+ 	 * and at the transmit time, will try look up the transport to use.
+ 	 * Since ASCONFs may be bundled, the correct transport may not be
+-	 * created untill we process the entire packet, thus this workaround.
++	 * created until we process the entire packet, thus this workaround.
+ 	 */
+ 	asconf_ack->dest = chunk->source;
+ 	sctp_add_cmd_sf(commands, SCTP_CMD_REPLY, SCTP_CHUNK(asconf_ack));
+-- 
+1.6.3.3
 
-Cheers
-
-John
