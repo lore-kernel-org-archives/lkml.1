@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935270AbZJOSoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935274AbZJOSzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935270AbZJOSoG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 14:44:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935248AbZJOSoE
+	id S935274AbZJOSzb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 14:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbZJOSz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 14:44:04 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55850 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S935139AbZJOSoD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 14:44:03 -0400
-Date: Thu, 15 Oct 2009 19:44:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Thu, 15 Oct 2009 14:55:29 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36500 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756584AbZJOSz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 14:55:28 -0400
+Date: Thu, 15 Oct 2009 11:46:56 -0700
+From: Greg KH <gregkh@suse.de>
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, david@lang.hm,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
+Cc: david@lang.hm, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>
 Subject: Re: removing existing working drivers via staging
-Message-ID: <20091015194434.5b8cef42@lxorguk.ukuu.org.uk>
-In-Reply-To: <200910151942.40259.bzolnier@gmail.com>
+Message-ID: <20091015184656.GA29858@suse.de>
 References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm>
-	<alpine.DEB.2.00.0910150936310.22169@asgard.lang.hm>
-	<20091015164726.GA10125@suse.de>
-	<200910151942.40259.bzolnier@gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ <200910151942.40259.bzolnier@gmail.com>
+ <20091015174932.GA3595@suse.de>
+ <200910152020.13080.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910152020.13080.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009 19:42:40 +0200
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-
-> On Thursday 15 October 2009 18:47:26 Greg KH wrote:
-> > On Thu, Oct 15, 2009 at 09:39:51AM -0700, david@lang.hm wrote:
-> > > however, what I think I saw proposed was to move drivers that need to be 
-> > > 'cleaned up', to staging and then dropping them if they don't get cleaned.
+On Thu, Oct 15, 2009 at 08:20:12PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Thursday 15 October 2009 19:49:32 Greg KH wrote:
+> > On Thu, Oct 15, 2009 at 07:42:40PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > > On Thursday 15 October 2009 18:47:26 Greg KH wrote:
+> > > > On Thu, Oct 15, 2009 at 09:39:51AM -0700, david@lang.hm wrote:
+> > > > > however, what I think I saw proposed was to move drivers that need to be 
+> > > > > 'cleaned up', to staging and then dropping them if they don't get cleaned.
+> > > > 
+> > > > What is "proposed" is the following:
+> > > > 
+> > > > 	- For drivers currently in the kernel tree, that the subsystem
+> > > > 	  maintainer, for whatever reason, feels is obsolete / broken /
+> > > > 	  needs major cleaning / wants to get rid of, can be submitted
+> > > > 	  to the staging maintainer to be moved to the drivers/staging/
+> > > > 	  directory.
+> > > 
+> > > This is insanity and opens a door for various forms of abuse.
 > > 
-> > What is "proposed" is the following:
-> > 
-> > 	- For drivers currently in the kernel tree, that the subsystem
-> > 	  maintainer, for whatever reason, feels is obsolete / broken /
-> > 	  needs major cleaning / wants to get rid of, can be submitted
-> > 	  to the staging maintainer to be moved to the drivers/staging/
-> > 	  directory.
+> > What do you mean by this?  What kind of "abuse"?
 > 
-> This is insanity and opens a door for various forms of abuse.
+> Typical situation:
+> 
+> You have driver for _really_ difficult hardware used by minority of total
+> users of a given subsystem.  Said driver has no major problems except being
+> f*cking complicated (because of hardware) so it stays in the way of future
+> changes.
+> 
+> With the current system people making bigger changes have to comprehend
+> that difficult stuff [*].  This is a good thing in the long-term since it
+> results in the better overall system understanding, better knowledge of
+> "DO's and DON'T's" and better users' experience.
+> 
+> Now with the proposed scheme it is sufficient to throw said driver into
+> staging for few weeks and make future changes.  Before users even notice
+> and complain they are screwed already since bringing the driver back is
+> no longer possible without big effort (+ subsystem is still evolving)..
 
-It seems very sensible to me. It could be abused but that overlooks the
-fact that Greg administers staging, the kernel community sees everything
-and even if Greg doesn't keep things in order Linus would.
+But a driver in staging still has to be able to build, api changes are
+not able to be ignored in it.
 
-There are a pile of serial drivers that I think should get this
-treatement (actually I was simply going to submit removal patches for
-rio, riscom8, esp and a couple of others until this idea occurred)
+> This will result in a "new kernel new hardware" world that some distro
+> people have been silently trying to accomplish and in this brave new world
+> few key people have way too much advantage over everyone else.
+
+I don't understand what you are referring to here.
+
+How about we take it one proposed (real) situation at a time here?  If
+anyone objects to what is going on, please let me know.
+
+thanks,
+
+greg k-h
