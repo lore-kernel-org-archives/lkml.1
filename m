@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935019AbZJOI6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935070AbZJOI77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935019AbZJOI6m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 04:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934171AbZJOI6m
+	id S935070AbZJOI77 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 04:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935061AbZJOI77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 04:58:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45710 "EHLO hera.kernel.org"
+	Thu, 15 Oct 2009 04:59:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55763 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933197AbZJOI6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 04:58:41 -0400
-Message-ID: <4AD6E3EC.8080901@kernel.org>
-Date: Thu, 15 Oct 2009 17:57:16 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S935048AbZJOI76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 04:59:58 -0400
+Date: Thu, 15 Oct 2009 10:59:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Rientjes <rientjes@google.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Dirk Hohndel <hohndel@infradead.org>,
+       Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, v2] kbuild: Improve version string logic
+Message-ID: <20091015085905.GB10546@elte.hu>
+References: <200910130004.46388.elendil@planet.nl> <20091013070505.GC31483@elte.hu> <200910131952.01209.elendil@planet.nl> <alpine.LFD.2.01.0910131100180.26777@localhost.localdomain> <alpine.DEB.1.00.0910131649280.24112@chino.kir.corp.google.com> <20091014065941.GH784@elte.hu> <alpine.DEB.1.00.0910140014490.26562@chino.kir.corp.google.com> <20091014073306.GB22778@elte.hu> <alpine.DEB.1.00.0910140037140.29264@chino.kir.corp.google.com> <alpine.DEB.1.00.0910150100590.10850@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Luck, Tony" <tony.luck@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "rostedt@goodmis.org" <rostedt@goodmis.org>,
-       "cebbert@redhat.com" <cebbert@redhat.com>
-Subject: Re: [PATCH 13/16] percpu: remove per_cpu__ prefix.
-References: <1255500125-3210-1-git-send-email-tj@kernel.org> <1255500125-3210-14-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0910141026370.26476@gentwo.org> <57C9024A16AD2D4C97DC78E552063EA3E32264A8@orsmsx505.amr.corp.intel.com> <4AD60C78.1090908@zytor.com>
-In-Reply-To: <4AD60C78.1090908@zytor.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 15 Oct 2009 08:57:18 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.00.0910150100590.10850@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-H. Peter Anvin wrote:
-> Okay... I also don't seem to understand the more fundamental issue here,
-> which is:
+* David Rientjes <rientjes@google.com> wrote:
+
+> On Wed, 14 Oct 2009, David Rientjes wrote:
 > 
-> Why are we dropping the prefix?
+> > We could easily go with my suggestion of allowing "make LOCALVERSION=" to 
+> > override all additions to the kernel version when CONFIG_LOCALVERSION_AUTO 
+> > is disabled.  For such configurations, kernels would be built with this 
+> > variable to specify how it's different from the vanilla version and would 
+> > suppress the `+'.
+> > 
 > 
-> It may be "insufficient", but at least it stands out like a sore thumb
-> and makes mistakes harder.  It would be a different thing if we could
-> actually use the TLS ABI, but we really can't.
+> The following patch implements this suggestion and folds both of my 
+> proposed patches together.
 
-The reason for actively removing the prefix is because it forces us to
-have two different accessors for static and dynamic ones which is made
-worse by any accessor which will accept dynamic ones will accept
-anything (static ones enclosed by per_cpu_var(), dynamic ones, plain
-wrong random value).  Also, wide spread use of per_cpu_var() in
-generic code will basically circumvent any meaningful protection the
-prefix provided.
+thanks David!
 
-Thanks.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
--- 
-tejun
+	Ingo
