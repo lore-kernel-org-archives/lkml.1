@@ -1,445 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761820AbZJOL06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933892AbZJOL1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761820AbZJOL06 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 07:26:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbZJOL05
+	id S933892AbZJOL1Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 07:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762686AbZJOL1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 07:26:57 -0400
-Received: from ozlabs.org ([203.10.76.45]:45853 "EHLO ozlabs.org"
+	Thu, 15 Oct 2009 07:27:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44374 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756973AbZJOL04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 07:26:56 -0400
-Date: Thu, 15 Oct 2009 22:23:29 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>,
+	id S1758428AbZJOL1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 07:27:22 -0400
+Date: Thu, 15 Oct 2009 13:26:45 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Ian Kent <raven@themaw.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <axboe@kernel.dk>
-Subject: Re: Latest vfs scalability patch
-Message-ID: <20091015112329.GH4808@kryten>
-References: <20091006064919.GB30316@wotan.suse.de> <20091015100854.GA19948@kryten> <20091015105332.GB3127@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="sm4nu43k4a2Rpi4c"
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [rfc][patch 4a/6] brlock: "fast" brlocks
+Message-ID: <20091015112645.GD3127@wotan.suse.de>
+References: <20091015044026.319860788@suse.de> <20091015050048.777261867@suse.de> <20091015065839.GA4262@wotan.suse.de> <1255604722.8392.467.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091015105332.GB3127@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1255604722.8392.467.camel@twins>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 15, 2009 at 01:05:21PM +0200, Peter Zijlstra wrote:
+> On Thu, 2009-10-15 at 08:58 +0200, Nick Piggin wrote:
+> > [Not for merge. Stop reading if you're not interested in locking minutiae.]
+> > 
+> > OK, this is untested but I think the theory is right. Basically it is taking
+> > the idea from Dave M's cool brlock optimisation stuff with one further
+> > optimisation in that the read locker does not check the spinlock but
+> > rather we keep another wlocked variable together inthe same cacheline per
+> > CPU, so the read locker only has to touch one cacheline rather than 2.
+> > 
+> > This actually will reduce the number of atomics by 2 per path lookup,
+> > however we have an smp_mb() there now which is really nasty on some
+> > architectures (like ia64 and ppc64), and not that nice on x86 either.
+> > We can probably do something interesting on ia64 and ppc64 so that we
+> > take advantage of the fact rlocked and wlocked are in the same cacheline
+> > so cache coherency (rather than memory consistency) should always provide
+> > a strict ordering there. We still do need an acquire barrier -- but it is
+> > a much nicer lwsync or st.acq on ppc and ia64.
+> > 
+> > But: is the avoidance of the atomic RMW a big win? On x86 cores I've tested
+> > IIRC mfence is about as costly as a locked instruction which includes the
+> > mfence...
+> > 
+> > So long story short: it might be a small win but it is going to be very
+> > arch specific and will require arch specific code to do the barriers and
+> > things. The generic spinlock brlock isn't bad at all, so I'll just post
+> > this as a curiosity for the time being.
+> >  
+> 
+> fwiw, I rather like this implementation better, and adding lockdep
+> annotations to this one shouldn't be hard.
 
---sm4nu43k4a2Rpi4c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+OK, although there is nothing preventing us from using raw spinlocks
+and a new lockdep object to annotate the other one, right?
 
- 
-Hi Nick,
+The problem with this one is that firstly it is not suitable for a
+generic implementation (see XXX, we technically need smp_mb in the
+unlock rather than smp_wmb -- I don't know if any actual CPUs do
+this but several architectures do allow for stores to pass loads)
 
-> I wonder what other good performance tests you can add to your test
-> framework? creat/unlink is another easy one. And for each case, putting
-> threads in their own cwd versus a common cwd are the variants.
+So we _really_ need to do proper acquire and release barriers both
+here in the unlock and in the lock as well for it to be competitive
+with the spinlocks.
 
-I did try the two combinations of creat/unlink but haven't had a chance to
-digest the profiles yet. I've attached them (taken at 64 cores, ie worst
-case :)
+smp_mb is a nasty hammer especially for release barrier because it
+prevents loads from being started early until the unlock store is
+visible. For acquire barrier it theoretically is not so bad, but in
+practice like on powerpc they do it with an instruction that has to
+apparently go out to the interconnect.
 
-In both cases performance was significantly better than mainline.
-
-> BTW. for these cases in your tests it will be nice if you can run on
-> ramfs because that will isolate purely the vfs. Perhaps also include
-> other filesystems as you get time, but I think ramfs is the most
-> useful for us to start with.
-
-Good point. I'll add that into the setup scripts.
-
-Anton
-
---sm4nu43k4a2Rpi4c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="open_unlink.profile"
-
-# Samples: 82617
-#
-# Overhead          Command                      Shared Object  Symbol
-# ........  ...............  .................................  ......
-#
-    99.16%  unlink1_process  [kernel]                           [k] ._spin_lock
-                |          
-                |--99.98%-- ._spin_lock
-                |          |          
-                |          |--49.80%-- .path_get
-                |          |          (nil)
-                |          |          |          
-                |          |          |--71.62%-- .path_init
-                |          |          |          |          
-                |          |          |          |--51.37%-- .do_path_lookup
-                |          |          |          |          .user_path_parent
-                |          |          |          |          .do_unlinkat
-                |          |          |          |          syscall_exit
-                |          |          |          |          0xfff8e90bd4c
-                |          |          |          |          .testcase
-                |          |          |          |          .affinitize
-                |          |          |          |          .new_task
-                |          |          |          |          .main
-                |          |          |          |          0xfff8e84f33c
-                |          |          |          |          0xfff8e84f55c
-                |          |          |          |          (nil)
-                |          |          |          |          
-                |          |          |           --48.63%-- .do_filp_open
-                |          |          |                     .do_sys_open
-                |          |          |                     syscall_exit
-                |          |          |                     0xfff8e909c7c
-                |          |          |                     .testcase
-                |          |          |                     .affinitize
-                |          |          |                     .new_task
-                |          |          |                     .main
-                |          |          |                     0xfff8e84f33c
-                |          |          |                     0xfff8e84f55c
-                |          |          |                     (nil)
-                |          |          |          
-                |          |           --28.38%-- .path_walk
-                |          |                     |          
-                |          |                     |--50.49%-- .do_filp_open
-                |          |                     |          .do_sys_open
-                |          |                     |          syscall_exit
-                |          |                     |          0xfff8e909c7c
-                |          |                     |          .testcase
-                |          |                     |          .affinitize
-                |          |                     |          .new_task
-                |          |                     |          .main
-                |          |                     |          0xfff8e84f33c
-                |          |                     |          0xfff8e84f55c
-                |          |                     |          (nil)
-                |          |                     |          
-                |          |                      --49.51%-- .do_path_lookup
-                |          |                                .user_path_parent
-                |          |                                .do_unlinkat
-                |          |                                syscall_exit
-                |          |                                0xfff8e90bd4c
-                |          |                                .testcase
-                |          |                                .affinitize
-                |          |                                .new_task
-                |          |                                .main
-                |          |                                0xfff8e84f33c
-                |          |                                0xfff8e84f55c
-                |          |                                (nil)
-                |          |          
-                |          |--49.58%-- .dput
-                |          |          (nil)
-                |          |          |          
-                |          |          |--64.21%-- .path_put
-                |          |          |          |          
-                |          |          |          |--48.48%-- .path_walk
-                |          |          |          |          |          
-                |          |          |          |          |--51.00%-- .do_path_lookup
-                |          |          |          |          |          .user_path_parent
-                |          |          |          |          |          .do_unlinkat
-                |          |          |          |          |          syscall_exit
-                |          |          |          |          |          0xfff8e90bd4c
-                |          |          |          |          |          .testcase
-                |          |          |          |          |          .affinitize
-                |          |          |          |          |          .new_task
-                |          |          |          |          |          .main
-                |          |          |          |          |          0xfff8e84f33c
-                |          |          |          |          |          0xfff8e84f55c
-                |          |          |          |          |          (nil)
-                |          |          |          |          |          
-                |          |          |          |           --49.00%-- .do_filp_open
-                |          |          |          |                     .do_sys_open
-                |          |          |          |                     syscall_exit
-                |          |          |          |                     0xfff8e909c7c
-                |          |          |          |                     .testcase
-                |          |          |          |                     .affinitize
-                |          |          |          |                     .new_task
-                |          |          |          |                     .main
-                |          |          |          |                     0xfff8e84f33c
-                |          |          |          |                     0xfff8e84f55c
-                |          |          |          |                     (nil)
-                |          |          |          |          
-                |          |          |          |--25.79%-- .do_filp_open
-                |          |          |          |          .do_sys_open
-                |          |          |          |          syscall_exit
-                |          |          |          |          0xfff8e909c7c
-                |          |          |          |          .testcase
-                |          |          |          |          .affinitize
-                |          |          |          |          .new_task
-                |          |          |          |          .main
-                |          |          |          |          0xfff8e84f33c
-                |          |          |          |          0xfff8e84f55c
-                |          |          |          |          (nil)
-                |          |          |          |          
-                |          |          |          |--25.72%-- .do_path_lookup
-                |          |          |          |          .user_path_parent
-                |          |          |          |          .do_unlinkat
-                |          |          |          |          syscall_exit
-                |          |          |          |          0xfff8e90bd4c
-                |          |          |          |          .testcase
-                |          |          |          |          .affinitize
-                |          |          |          |          .new_task
-                |          |          |          |          .main
-                |          |          |          |          0xfff8e84f33c
-                |          |          |          |          0xfff8e84f55c
-                |          |          |          |          (nil)
-                |          |          |           --0.00%-- [...]
-                |          |          |          
-                |          |          |--35.78%-- .__link_path_walk
-                |          |          |          .path_walk
-                |          |          |          |          
-                |          |          |          |--50.81%-- .do_path_lookup
-                |          |          |          |          .user_path_parent
-                |          |          |          |          .do_unlinkat
-                |          |          |          |          syscall_exit
-                |          |          |          |          0xfff8e90bd4c
-                |          |          |          |          .testcase
-                |          |          |          |          .affinitize
-                |          |          |          |          .new_task
-                |          |          |          |          .main
-                |          |          |          |          0xfff8e84f33c
-                |          |          |          |          0xfff8e84f55c
-                |          |          |          |          (nil)
-                |          |          |          |          
-                |          |          |           --49.19%-- .do_filp_open
-                |          |          |                     .do_sys_open
-                |          |          |                     syscall_exit
-                |          |          |                     0xfff8e909c7c
-                |          |          |                     .testcase
-                |          |          |                     .affinitize
-                |          |          |                     .new_task
-                |          |          |                     .main
-                |          |          |                     0xfff8e84f33c
-                |          |          |                     0xfff8e84f55c
-                |          |          |                     (nil)
-                |          |           --0.01%-- [...]
-                |           --0.62%-- [...]
-                 --0.02%-- [...]
-
---sm4nu43k4a2Rpi4c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="open_unlink_directories.profile"
-Content-Transfer-Encoding: quoted-printable
-
-# Samples: 101253
-#
-# Overhead          Command                      Shared Object  Symbol
-# ........  ...............  .................................  ......
-#
-=1B[31m    99.15%=1B[m  unlink2_process  [kernel]                          =
- [k] ._spin_lock
-                |         =20
-                |=1B[31m--99.97%-- =1B[m._spin_lock
-                |          |         =20
-                |          |=1B[31m--49.96%-- =1B[m.dput
-                |          |          (nil)
-                |          |          |         =20
-                |          |          |=1B[31m--71.64%-- =1B[m.__link_path_=
-walk
-                |          |          |          .path_walk
-                |          |          |          |         =20
-                |          |          |          |=1B[31m--50.78%-- =1B[m.d=
-o_path_lookup
-                |          |          |          |          .user_path_pare=
-nt
-                |          |          |          |          .do_unlinkat
-                |          |          |          |          syscall_exit
-                |          |          |          |          0xfff86a85d4c
-                |          |          |          |          .testcase
-                |          |          |          |          .affinitize
-                |          |          |          |          .new_task
-                |          |          |          |          .main
-                |          |          |          |          0xfff869c933c
-                |          |          |          |          0xfff869c955c
-                |          |          |          |          (nil)
-                |          |          |          |         =20
-                |          |          |           =1B[31m--49.22%-- =1B[m.d=
-o_filp_open
-                |          |          |                     .do_sys_open
-                |          |          |                     syscall_exit
-                |          |          |                     0xfff86a83c7c
-                |          |          |                     .testcase
-                |          |          |                     .affinitize
-                |          |          |                     .new_task
-                |          |          |                     .main
-                |          |          |                     0xfff869c933c
-                |          |          |                     0xfff869c955c
-                |          |          |                     (nil)
-                |          |          |         =20
-                |          |          |=1B[31m--28.35%-- =1B[m.path_put
-                |          |          |          |         =20
-                |          |          |          |=1B[31m--50.91%-- =1B[m.p=
-ath_walk
-                |          |          |          |          |         =20
-                |          |          |          |          |=1B[31m--53.90=
-%-- =1B[m.do_path_lookup
-                |          |          |          |          |          .use=
-r_path_parent
-                |          |          |          |          |          .do_=
-unlinkat
-                |          |          |          |          |          sysc=
-all_exit
-                |          |          |          |          |          0xff=
-f86a85d4c
-                |          |          |          |          |          .tes=
-tcase
-                |          |          |          |          |          .aff=
-initize
-                |          |          |          |          |          .new=
-_task
-                |          |          |          |          |          .main
-                |          |          |          |          |          0xff=
-f869c933c
-                |          |          |          |          |          0xff=
-f869c955c
-                |          |          |          |          |          (nil)
-                |          |          |          |          |         =20
-                |          |          |          |           =1B[31m--46.10=
-%-- =1B[m.do_filp_open
-                |          |          |          |                     .do_=
-sys_open
-                |          |          |          |                     sysc=
-all_exit
-                |          |          |          |                     0xff=
-f86a83c7c
-                |          |          |          |                     .tes=
-tcase
-                |          |          |          |                     .aff=
-initize
-                |          |          |          |                     .new=
-_task
-                |          |          |          |                     .main
-                |          |          |          |                     0xff=
-f869c933c
-                |          |          |          |                     0xff=
-f869c955c
-                |          |          |          |                     (nil)
-                |          |          |          |         =20
-                |          |          |          |=1B[31m--25.98%-- =1B[m.d=
-o_filp_open
-                |          |          |          |          .do_sys_open
-                |          |          |          |          syscall_exit
-                |          |          |          |          0xfff86a83c7c
-                |          |          |          |          .testcase
-                |          |          |          |          .affinitize
-                |          |          |          |          .new_task
-                |          |          |          |          .main
-                |          |          |          |          0xfff869c933c
-                |          |          |          |          0xfff869c955c
-                |          |          |          |          (nil)
-                |          |          |          |         =20
-                |          |          |          |=1B[31m--23.10%-- =1B[m.d=
-o_path_lookup
-                |          |          |          |          .user_path_pare=
-nt
-                |          |          |          |          .do_unlinkat
-                |          |          |          |          syscall_exit
-                |          |          |          |          0xfff86a85d4c
-                |          |          |          |          .testcase
-                |          |          |          |          .affinitize
-                |          |          |          |          .new_task
-                |          |          |          |          .main
-                |          |          |          |          0xfff869c933c
-                |          |          |          |          0xfff869c955c
-                |          |          |          |          (nil)
-                |          |          |           --0.01%-- [...]
-                |          |           --0.01%-- [...]
-                |          |         =20
-                |          |=1B[31m--28.88%-- =1B[m.__follow_mount
-                |          |          (nil)
-                |          |          .do_lookup
-                |          |          .__link_path_walk
-                |          |          .path_walk
-                |          |          |         =20
-                |          |          |=1B[31m--50.26%-- =1B[m.do_filp_open
-                |          |          |          .do_sys_open
-                |          |          |          syscall_exit
-                |          |          |          0xfff86a83c7c
-                |          |          |          .testcase
-                |          |          |          .affinitize
-                |          |          |          .new_task
-                |          |          |          .main
-                |          |          |          0xfff869c933c
-                |          |          |          0xfff869c955c
-                |          |          |          (nil)
-                |          |          |         =20
-                |          |           =1B[31m--49.74%-- =1B[m.do_path_look=
-up
-                |          |                     .user_path_parent
-                |          |                     .do_unlinkat
-                |          |                     syscall_exit
-                |          |                     0xfff86a85d4c
-                |          |                     .testcase
-                |          |                     .affinitize
-                |          |                     .new_task
-                |          |                     .main
-                |          |                     0xfff869c933c
-                |          |                     0xfff869c955c
-                |          |                     (nil)
-                |          |         =20
-                |          |=1B[31m--20.33%-- =1B[m.path_get
-                |          |          (nil)
-                |          |          |         =20
-                |          |          |=1B[31m--69.39%-- =1B[m.path_init
-                |          |          |          |         =20
-                |          |          |          |=1B[31m--50.78%-- =1B[m.d=
-o_path_lookup
-                |          |          |          |          .user_path_pare=
-nt
-                |          |          |          |          .do_unlinkat
-                |          |          |          |          syscall_exit
-                |          |          |          |          0xfff86a85d4c
-                |          |          |          |          .testcase
-                |          |          |          |          .affinitize
-                |          |          |          |          .new_task
-                |          |          |          |          .main
-                |          |          |          |          0xfff869c933c
-                |          |          |          |          0xfff869c955c
-                |          |          |          |          (nil)
-                |          |          |          |         =20
-                |          |          |           =1B[31m--49.22%-- =1B[m.d=
-o_filp_open
-                |          |          |                     .do_sys_open
-                |          |          |                     syscall_exit
-                |          |          |                     0xfff86a83c7c
-                |          |          |                     .testcase
-                |          |          |                     .affinitize
-                |          |          |                     .new_task
-                |          |          |                     .main
-                |          |          |                     0xfff869c933c
-                |          |          |                     0xfff869c955c
-                |          |          |                     (nil)
-                |          |          |         =20
-                |          |           =1B[31m--30.61%-- =1B[m.path_walk
-                |          |                     |         =20
-                |          |                     |=1B[31m--53.29%-- =1B[m.d=
-o_filp_open
-                |          |                     |          .do_sys_open
-                |          |                     |          syscall_exit
-                |          |                     |          0xfff86a83c7c
-                |          |                     |          .testcase
-                |          |                     |          .affinitize
-                |          |                     |          .new_task
-                |          |                     |          .main
-                |          |                     |          0xfff869c933c
-                |          |                     |          0xfff869c955c
-                |          |                     |          (nil)
-                |          |                     |         =20
-                |          |                      =1B[31m--46.71%-- =1B[m.d=
-o_path_lookup
-                |          |                                .user_path_pare=
-nt
-                |          |                                .do_unlinkat
-                |          |                                syscall_exit
-                |          |                                0xfff86a85d4c
-                |          |                                .testcase
-                |          |                                .affinitize
-                |          |                                .new_task
-                |          |                                .main
-                |          |                                0xfff869c933c
-                |          |                                0xfff869c955c
-                |          |                                (nil)
-                |           =1B[32m--0.83%-- =1B[m[...]
-                 --0.03%-- [...]
-
---sm4nu43k4a2Rpi4c--
