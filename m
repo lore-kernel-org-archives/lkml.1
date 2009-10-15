@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763040AbZJOVPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763056AbZJOVPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763040AbZJOVPq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 17:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757799AbZJOVPq
+	id S1763056AbZJOVPr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 17:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbZJOVPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 17:15:46 -0400
-Received: from kroah.org ([198.145.64.141]:43140 "EHLO coco.kroah.org"
+	Thu, 15 Oct 2009 17:15:47 -0400
+Received: from kroah.org ([198.145.64.141]:43148 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755738AbZJOVPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 17:15:45 -0400
+	id S1757698AbZJOVPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 17:15:46 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct 15 14:10:20 2009
-Message-Id: <20091015211019.922487164@mini.kroah.org>
+Message-Id: <20091015211020.055924387@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 15 Oct 2009 11:54:31 -0700
+Date: Thu, 15 Oct 2009 11:54:32 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [1/3] usb-serial: fix crash when sub-driver updates firmware
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       James Bottomley <James.Bottomley@suse.de>
+Subject: [2/3] SCSI: Fix protection scsi_data_buffer leak
 References: <20091015185430.128674330@mini.kroah.org>
-Content-Disposition: inline; filename=usb-serial-fix-crash-when-sub-driver-updates-firmware.patch
+Content-Disposition: inline; filename=scsi-fix-protection-scsi_data_buffer-leak.patch
 In-Reply-To: <20091015211112.GA5634@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,42 +30,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Martin K. Petersen <martin.petersen@oracle.com>
 
-commit 0a3c8549ea7e94d74a41096d42bc6cdf43d183bf upstream.
+commit b4c2554d40ceac130a8d062eaa8838ed22158c45 upstream.
 
-This patch (as1244) fixes a crash in usb-serial that occurs when a
-sub-driver returns a positive value from its attach method, indicating
-that new firmware was loaded and the device will disconnect and
-reconnect.  The usb-serial core then skips the step of registering the
-port devices; when the disconnect occurs, the attempt to unregister
-the ports fails dramatically.
+We would leak a scsi_data_buffer if the free_list command was of the
+protected variety.
 
-This problem shows up with Keyspan devices and it might affect others
-as well.
-
-When the attach method returns a positive value, the patch sets
-num_ports to 0.  This tells usb_serial_disconnect() not to try
-unregistering any of the ports; instead they are cleaned up by
-destroy_serial().
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Tested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reported-by: Boaz Harrosh <bharrosh@panasas.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/usb-serial.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/scsi/scsi.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
---- a/drivers/usb/serial/usb-serial.c
-+++ b/drivers/usb/serial/usb-serial.c
-@@ -973,6 +973,7 @@ int usb_serial_probe(struct usb_interfac
- 		if (retval > 0) {
- 			/* quietly accept this device, but don't bind to a
- 			   serial port as it's about to disappear */
-+			serial->num_ports = 0;
- 			goto exit;
+--- a/drivers/scsi/scsi.c
++++ b/drivers/scsi/scsi.c
+@@ -243,10 +243,7 @@ scsi_host_alloc_command(struct Scsi_Host
+  */
+ struct scsi_cmnd *__scsi_get_command(struct Scsi_Host *shost, gfp_t gfp_mask)
+ {
+-	struct scsi_cmnd *cmd;
+-	unsigned char *buf;
+-
+-	cmd = scsi_host_alloc_command(shost, gfp_mask);
++	struct scsi_cmnd *cmd = scsi_host_alloc_command(shost, gfp_mask);
+ 
+ 	if (unlikely(!cmd)) {
+ 		unsigned long flags;
+@@ -260,9 +257,15 @@ struct scsi_cmnd *__scsi_get_command(str
+ 		spin_unlock_irqrestore(&shost->free_list_lock, flags);
+ 
+ 		if (cmd) {
++			void *buf, *prot;
++
+ 			buf = cmd->sense_buffer;
++			prot = cmd->prot_sdb;
++
+ 			memset(cmd, 0, sizeof(*cmd));
++
+ 			cmd->sense_buffer = buf;
++			cmd->prot_sdb = prot;
  		}
  	}
+ 
 
 
