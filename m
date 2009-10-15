@@ -1,162 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751660AbZJOEiC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934506AbZJOGFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751660AbZJOEiC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 00:38:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbZJOEiB
+	id S934506AbZJOGFA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 02:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934131AbZJOGE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 00:38:01 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:55137 "EHLO e6.ny.us.ibm.com"
+	Thu, 15 Oct 2009 02:04:58 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35367 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751326AbZJOEiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 00:38:01 -0400
-Date: Wed, 14 Oct 2009 21:37:20 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH tip/core/rcu 2/6] rcu: prevent RCU IPI storms in
-	presence of high call_rcu() load
-Message-ID: <20091015043720.GB6837@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091014171517.GA13635@linux.vnet.ibm.com> <20091015033104.GD9641@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091015033104.GD9641@wotan.suse.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S933759AbZJOGE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 02:04:57 -0400
+Message-Id: <20091015044026.319860788@suse.de>
+User-Agent: quilt/0.46_cvs20080326-19.1
+Date: Thu, 15 Oct 2009 15:40:26 +1100
+From: npiggin@suse.de
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: linux-fsdevel@vger.kernel.org, Ian Kent <raven@themaw.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [patch 0/6] vfsmount scaling and other bits
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 15, 2009 at 05:31:04AM +0200, Nick Piggin wrote:
-> Hi Paul,
-> 
-> I wonder why you don't just use the existing relaxed logic in
-> force_quiescent_state? Is it because you are worried about
-> different granularity of jiffies, and cases where RCU callbacks
-> are being processed much more quickly than 1 jiffy? (this would
-> make sense, I'm just asking because I'm curious as to your
-> thinking behind it).
+Hi Al,
 
-This code is designed to handle the case where the kernel is generating
-callbacks quickly enough that you cannot afford to wait for the normal
-time that force_quiescent_state() would be invoked.  So, if callbacks
-are piling up too quickly, do a force_quiescent_state() -- but only
-one during such an interval in order to keep the IPIs and lock
-contention down to a dull roar.
+Finally got around to some numbers and a few comments with vfsmount scaling.
+Patch looks a bit nicer now, and numbers aren't too bad I think.
 
-Quite possibly in need of further tuning or modification, hence the
-request for testing.
+I also broke the brlock stuff into its own header... it's a bit ugly but I
+couldn't see a nice way to do the per-CPU stuff without adding indirection and
+memory allocation of dynamic per-CPU allocations. Anyone like to yell at me
+for this, or suggest a better approach?
 
-> Thanks, and yes I will give this a test and let you know how
-> it goes.
+I also put some other reasonable looking bits and pieces in there which have
+filtered to the bottom of my vfs stack, as there are some clashes otherwise.
+If you want me to stop sending them to you, could you merge them or tell me why
+I'm an idiot, please?
 
-Look forward to seeing the results!
+Thanks,
+Nick
 
-						Thanx, Paul
 
-> On Wed, Oct 14, 2009 at 10:15:55AM -0700, Paul E. McKenney wrote:
-> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > 
-> > As the number of callbacks on a given CPU rises, invoke
-> > force_quiescent_state() only every blimit number of callbacks
-> > (defaults to 10,000), and even then only if no other CPU has invoked
-> > force_quiescent_state() in the meantime.
-> > 
-> > Reported-by: Nick Piggin <npiggin@suse.de>
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> >  kernel/rcutree.c |   29 ++++++++++++++++++++++++-----
-> >  kernel/rcutree.h |    4 ++++
-> >  2 files changed, 28 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> > index 705f02a..ddbf111 100644
-> > --- a/kernel/rcutree.c
-> > +++ b/kernel/rcutree.c
-> > @@ -958,7 +958,7 @@ static void rcu_offline_cpu(int cpu)
-> >   * Invoke any RCU callbacks that have made it to the end of their grace
-> >   * period.  Thottle as specified by rdp->blimit.
-> >   */
-> > -static void rcu_do_batch(struct rcu_data *rdp)
-> > +static void rcu_do_batch(struct rcu_state *rsp, struct rcu_data *rdp)
-> >  {
-> >  	unsigned long flags;
-> >  	struct rcu_head *next, *list, **tail;
-> > @@ -1011,6 +1011,13 @@ static void rcu_do_batch(struct rcu_data *rdp)
-> >  	if (rdp->blimit == LONG_MAX && rdp->qlen <= qlowmark)
-> >  		rdp->blimit = blimit;
-> >  
-> > +	/* Reset ->qlen_last_fqs_check trigger if enough CBs have drained. */
-> > +	if (rdp->qlen == 0 && rdp->qlen_last_fqs_check != 0) {
-> > +		rdp->qlen_last_fqs_check = 0;
-> > +		rdp->n_force_qs_snap = rsp->n_force_qs;
-> > +	} else if (rdp->qlen < rdp->qlen_last_fqs_check - qhimark)
-> > +		rdp->qlen_last_fqs_check = rdp->qlen;
-> > +
-> >  	local_irq_restore(flags);
-> >  
-> >  	/* Re-raise the RCU softirq if there are callbacks remaining. */
-> > @@ -1224,7 +1231,7 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
-> >  	}
-> >  
-> >  	/* If there are callbacks ready, invoke them. */
-> > -	rcu_do_batch(rdp);
-> > +	rcu_do_batch(rsp, rdp);
-> >  }
-> >  
-> >  /*
-> > @@ -1288,10 +1295,20 @@ __call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu),
-> >  		rcu_start_gp(rsp, nestflag);  /* releases rnp_root->lock. */
-> >  	}
-> >  
-> > -	/* Force the grace period if too many callbacks or too long waiting. */
-> > -	if (unlikely(++rdp->qlen > qhimark)) {
-> > +	/*
-> > +	 * Force the grace period if too many callbacks or too long waiting.
-> > +	 * Enforce hysteresis, and don't invoke force_quiescent_state()
-> > +	 * if some other CPU has recently done so.  Also, don't bother
-> > +	 * invoking force_quiescent_state() if the newly enqueued callback
-> > +	 * is the only one waiting for a grace period to complete.
-> > +	 */
-> > +	if (unlikely(++rdp->qlen > rdp->qlen_last_fqs_check + qhimark)) {
-> >  		rdp->blimit = LONG_MAX;
-> > -		force_quiescent_state(rsp, 0);
-> > +		if (rsp->n_force_qs == rdp->n_force_qs_snap &&
-> > +		    *rdp->nxttail[RCU_DONE_TAIL] != head)
-> > +			force_quiescent_state(rsp, 0);
-> > +		rdp->n_force_qs_snap = rsp->n_force_qs;
-> > +		rdp->qlen_last_fqs_check = rdp->qlen;
-> >  	} else if ((long)(ACCESS_ONCE(rsp->jiffies_force_qs) - jiffies) < 0)
-> >  		force_quiescent_state(rsp, 1);
-> >  	local_irq_restore(flags);
-> > @@ -1523,6 +1540,8 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
-> >  	rdp->beenonline = 1;	 /* We have now been online. */
-> >  	rdp->preemptable = preemptable;
-> >  	rdp->passed_quiesc_completed = lastcomp - 1;
-> > +	rdp->qlen_last_fqs_check = 0;
-> > +	rdp->n_force_qs_snap = rsp->n_force_qs;
-> >  	rdp->blimit = blimit;
-> >  	spin_unlock(&rnp->lock);		/* irqs remain disabled. */
-> >  
-> > diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-> > index b40ac57..599161f 100644
-> > --- a/kernel/rcutree.h
-> > +++ b/kernel/rcutree.h
-> > @@ -167,6 +167,10 @@ struct rcu_data {
-> >  	struct rcu_head *nxtlist;
-> >  	struct rcu_head **nxttail[RCU_NEXT_SIZE];
-> >  	long		qlen;		/* # of queued callbacks */
-> > +	long		qlen_last_fqs_check;
-> > +					/* qlen at last check for QS forcing */
-> > +	unsigned long	n_force_qs_snap;
-> > +					/* did other CPU force QS recently? */
-> >  	long		blimit;		/* Upper limit on a processed batch */
-> >  
-> >  #ifdef CONFIG_NO_HZ
-> > -- 
-> > 1.5.2.5
