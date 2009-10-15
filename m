@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935387AbZJOTr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935399AbZJOTsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935387AbZJOTr4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 15:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935378AbZJOTr4
+	id S935399AbZJOTsN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 15:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935391AbZJOTsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 15:47:56 -0400
-Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:53040
-	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935309AbZJOTrz (ORCPT
+	Thu, 15 Oct 2009 15:48:13 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:35716 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935389AbZJOTsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 15:47:55 -0400
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: trivial@kernel.org
-Cc: akpm@linux-foundation.org, miltonm@austin.ibm.com,
-       manfred@colorfullife.com, penbergs@cs.helsinki.fi,
-       bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: [PATCH 3/8] trivial: fix typo s/ide/id/
-Date: Thu, 15 Oct 2009 16:47:08 -0300
-Message-Id: <1255636028-5779-1-git-send-email-cascardo@holoscopio.com>
-X-Mailer: git-send-email 1.6.3.3
+	Thu, 15 Oct 2009 15:48:12 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4AD77C4F.5010307@s5r6.in-berlin.de>
+Date: Thu, 15 Oct 2009 21:47:27 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090926 SeaMonkey/1.1.17
+MIME-Version: 1.0
+To: david@lang.hm
+CC: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: removing existing working drivers via staging
+References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm> <200910151942.40259.bzolnier@gmail.com> <20091015174932.GA3595@suse.de> <200910152020.13080.bzolnier@gmail.com> <20091015184656.GA29858@suse.de> <alpine.DEB.2.00.0910151200100.22169@asgard.lang.hm> <20091015191641.GB19467@elte.hu> <alpine.DEB.2.00.0910151230560.22169@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.2.00.0910151230560.22169@asgard.lang.hm>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
----
- lib/idr.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+david@lang.hm wrote:
+> it's these users who will discover the missing driver and care about it,
+> not the distros.
 
-diff --git a/lib/idr.c b/lib/idr.c
-index 80ca9ac..1cac726 100644
---- a/lib/idr.c
-+++ b/lib/idr.c
-@@ -281,7 +281,7 @@ static int idr_get_new_above_int(struct idr *idp, void *ptr, int starting_id)
- /**
-  * idr_get_new_above - allocate new idr entry above or equal to a start id
-  * @idp: idr handle
-- * @ptr: pointer you want associated with the ide
-+ * @ptr: pointer you want associated with the id
-  * @start_id: id to start search at
-  * @id: pointer to the allocated handle
-  *
-@@ -313,7 +313,7 @@ EXPORT_SYMBOL(idr_get_new_above);
- /**
-  * idr_get_new - allocate new idr entry
-  * @idp: idr handle
-- * @ptr: pointer you want associated with the ide
-+ * @ptr: pointer you want associated with the id
-  * @id: pointer to the allocated handle
-  *
-  * This is the allocate id function.  It should be called with any
+I think we are talking about stuff of which users will typically
+discover that it plainly doesn't work long before it vanishes from any
+kernel distribution, or of which there is a superior alternative already
+available.
 -- 
-1.6.3.3
-
+Stefan Richter
+-=====-==--= =-=- -====
+http://arcgraph.de/sr/
