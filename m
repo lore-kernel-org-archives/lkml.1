@@ -1,174 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934592AbZJOGH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbZJOGPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934592AbZJOGH6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 02:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbZJOGH5
+	id S1753874AbZJOGPO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 02:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbZJOGPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 02:07:57 -0400
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:46496 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752101AbZJOGHy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 02:07:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Z8Lm9lqnDwaBz3RdmJ4q73v6WnoX2Y1RWkoH2jo73DjdTkR4yAppr3LIjjsF3aKWFt
-         9qbG0go6WPvLHfBA3w+ys+hyU0ewg/Zmw7I+IlVpVv+PIaIHQ0B1dB+sF25zUnDV9Ibj
-         /9I6jJq3jtE4GH4/NMiwHRpGkBpPdVw8ixZYc=
-Date: Thu, 15 Oct 2009 15:07:07 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Lothar Wassmann <LW@KARO-electronics.de>, linux-usb@vger.kernel.org,
-       Roland Dreier <rolandd@cisco.com>,
-       Yevgeny Petrilin <yevgenyp@mellanox.co.il>, netdev@vger.kernel.org,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64@vger.kernel.org, linux-altix@sgi.com,
-       Kyle Hubert <khubert@gmail.com>
-Subject: [PATCH -mmotm -v2] Fix
-	bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area.
-	patch
-Message-ID: <20091015060706.GA26956@localhost.localdomain>
-References: <1255076961-21325-1-git-send-email-akinobu.mita@gmail.com> <1255076961-21325-2-git-send-email-akinobu.mita@gmail.com> <20091009164100.85a36188.akpm@linux-foundation.org> <20091013021818.GA3898@localhost.localdomain> <20091013091017.GA18431@localhost.localdomain> <20091014032258.GA18527@localhost.localdomain>
+	Thu, 15 Oct 2009 02:15:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48442 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752887AbZJOGPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 02:15:11 -0400
+Date: Thu, 15 Oct 2009 06:13:24 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, sam@ravnborg.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org, torvalds@linux-foundation.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <4AD6523D.5030909@zytor.com>
+References: <4AD6523D.5030909@zytor.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] Revert "x86: linker script syntax nits"
+Message-ID: <tip-db8590f5043f3436a65b24155a3a7af2604df876@git.kernel.org>
+Git-Commit-ID: db8590f5043f3436a65b24155a3a7af2604df876
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091014032258.GA18527@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 15 Oct 2009 06:13:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: Fix bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area.patch
+Commit-ID:  db8590f5043f3436a65b24155a3a7af2604df876
+Gitweb:     http://git.kernel.org/tip/db8590f5043f3436a65b24155a3a7af2604df876
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Thu, 15 Oct 2009 08:08:12 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 15 Oct 2009 08:09:55 +0200
 
-- Rewrite bitmap_set and bitmap_clear
+Revert "x86: linker script syntax nits"
 
-  Instead of setting or clearing for each bit.
+This reverts commit e9a63a4e559fbdc522072281d05e6b13c1022f4b.
 
-- Fix off-by-one errors in bitmap_find_next_zero_area
+This breaks older binutils, where sink-less asserts are broken.
 
-  This bug was derived from find_next_zero_area in iommu-helper.
+See this commit for further details:
 
-- Add kerneldoc for bitmap_find_next_zero_area
+  d2ba8b2: x86: Fix assert syntax in vmlinux.lds.S
 
-This patch is supposed to be folded into
-bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area.patch
-
-* -v2
-- Remove an extra test at the "index" value by find_next_bit
-
-Index was just returned by find_next_zero_bit, so we know it's zero.
-
-Noticed-by: Kyle Hubert <khubert@gmail.com>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Acked-by: "H. Peter Anvin" <hpa@zytor.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+LKML-Reference: <4AD6523D.5030909@zytor.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- lib/bitmap.c |   62 ++++++++++++++++++++++++++++++++++++++++++++-------------
- 1 files changed, 48 insertions(+), 14 deletions(-)
+ arch/x86/kernel/acpi/realmode/wakeup.lds.S |    4 ++--
+ arch/x86/kernel/vmlinux.lds.S              |   17 +++++++++--------
+ 2 files changed, 11 insertions(+), 10 deletions(-)
 
-diff --git a/lib/bitmap.c b/lib/bitmap.c
-index 2415da4..962b863 100644
---- a/lib/bitmap.c
-+++ b/lib/bitmap.c
-@@ -271,28 +271,62 @@ int __bitmap_weight(const unsigned long *bitmap, int bits)
- }
- EXPORT_SYMBOL(__bitmap_weight);
- 
--void bitmap_set(unsigned long *map, int i, int len)
--{
--	int end = i + len;
-+#define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) % BITS_PER_LONG))
- 
--	while (i < end) {
--		__set_bit(i, map);
--		i++;
-+void bitmap_set(unsigned long *map, int start, int nr)
-+{
-+	unsigned long *p = map + BIT_WORD(start);
-+	const int size = start + nr;
-+	int bits_to_set = BITS_PER_LONG - (start % BITS_PER_LONG);
-+	unsigned long mask_to_set = BITMAP_FIRST_WORD_MASK(start);
-+
-+	while (nr - bits_to_set >= 0) {
-+		*p |= mask_to_set;
-+		nr -= bits_to_set;
-+		bits_to_set = BITS_PER_LONG;
-+		mask_to_set = ~0UL;
-+		p++;
-+	}
-+	if (nr) {
-+		mask_to_set &= BITMAP_LAST_WORD_MASK(size);
-+		*p |= mask_to_set;
+diff --git a/arch/x86/kernel/acpi/realmode/wakeup.lds.S b/arch/x86/kernel/acpi/realmode/wakeup.lds.S
+index 0e50e1e..7da00b7 100644
+--- a/arch/x86/kernel/acpi/realmode/wakeup.lds.S
++++ b/arch/x86/kernel/acpi/realmode/wakeup.lds.S
+@@ -56,6 +56,6 @@ SECTIONS
+ 	/DISCARD/ : {
+ 		*(.note*)
  	}
- }
- EXPORT_SYMBOL(bitmap_set);
+-}
  
- void bitmap_clear(unsigned long *map, int start, int nr)
- {
--	int end = start + nr;
--
--	while (start < end) {
--		__clear_bit(start, map);
--		start++;
-+	unsigned long *p = map + BIT_WORD(start);
-+	const int size = start + nr;
-+	int bits_to_clear = BITS_PER_LONG - (start % BITS_PER_LONG);
-+	unsigned long mask_to_clear = BITMAP_FIRST_WORD_MASK(start);
+-ASSERT(_end <= WAKEUP_SIZE, "Wakeup too big!");
++	. = ASSERT(_end <= WAKEUP_SIZE, "Wakeup too big!");
++}
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index 8d6001a..92929fb 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -305,8 +305,8 @@ SECTIONS
+ 
+ 
+ #ifdef CONFIG_X86_32
+-ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
+-       "kernel image bigger than KERNEL_IMAGE_SIZE");
++. = ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
++	   "kernel image bigger than KERNEL_IMAGE_SIZE");
+ #else
+ /*
+  * Per-cpu symbols which need to be offset from __per_cpu_load
+@@ -319,12 +319,12 @@ INIT_PER_CPU(irq_stack_union);
+ /*
+  * Build-time check on the image size:
+  */
+-ASSERT((_end - _text <= KERNEL_IMAGE_SIZE),
+-       "kernel image bigger than KERNEL_IMAGE_SIZE");
++. = ASSERT((_end - _text <= KERNEL_IMAGE_SIZE),
++	   "kernel image bigger than KERNEL_IMAGE_SIZE");
+ 
+ #ifdef CONFIG_SMP
+-ASSERT((per_cpu__irq_stack_union == 0),
+-       "irq_stack_union is not at start of per-cpu area");
++. = ASSERT((per_cpu__irq_stack_union == 0),
++           "irq_stack_union is not at start of per-cpu area");
+ #endif
+ 
+ #endif /* CONFIG_X86_32 */
+@@ -332,6 +332,7 @@ ASSERT((per_cpu__irq_stack_union == 0),
+ #ifdef CONFIG_KEXEC
+ #include <asm/kexec.h>
+ 
+-ASSERT(kexec_control_code_size <= KEXEC_CONTROL_CODE_MAX_SIZE,
+-       "kexec control code size is too big");
++. = ASSERT(kexec_control_code_size <= KEXEC_CONTROL_CODE_MAX_SIZE,
++           "kexec control code size is too big");
+ #endif
 +
-+	while (nr - bits_to_clear >= 0) {
-+		*p &= ~mask_to_clear;
-+		nr -= bits_to_clear;
-+		bits_to_clear = BITS_PER_LONG;
-+		mask_to_clear = ~0UL;
-+		p++;
-+	}
-+	if (nr) {
-+		mask_to_clear &= BITMAP_LAST_WORD_MASK(size);
-+		*p &= ~mask_to_clear;
- 	}
- }
- EXPORT_SYMBOL(bitmap_clear);
- 
-+/*
-+ * bitmap_find_next_zero_area - find a contiguous aligned zero area
-+ * @map: The address to base the search on
-+ * @size: The bitmap size in bits
-+ * @start: The bitnumber to start searching at
-+ * @nr: The number of zeroed bits we're looking for
-+ * @align_mask: Alignment mask for zero area
-+ *
-+ * The @align_mask should be one less than a power of 2; the effect is that
-+ * the bit offset of all zero areas this function finds is multiples of that
-+ * power of 2. A @align_mask of 0 means no alignment is required.
-+ */
- unsigned long bitmap_find_next_zero_area(unsigned long *map,
- 					 unsigned long size,
- 					 unsigned long start,
-@@ -304,12 +338,12 @@ again:
- 	index = find_next_zero_bit(map, size, start);
- 
- 	/* Align allocation */
--	index = (index + align_mask) & ~align_mask;
-+	index = __ALIGN_MASK(index, align_mask);
- 
- 	end = index + nr;
--	if (end >= size)
-+	if (end > size)
- 		return end;
--	i = find_next_bit(map, end, index);
-+	i = find_next_bit(map, end, index + 1);
- 	if (i < end) {
- 		start = i + 1;
- 		goto again;
--- 
-1.5.4.3
-
