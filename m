@@ -1,175 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762266AbZJOAq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762283AbZJOArW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762266AbZJOAq5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 20:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZJOAq5
+	id S1762283AbZJOArW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 20:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761730AbZJOArV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 20:46:57 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:3184 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751478AbZJOAq4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 20:46:56 -0400
-X-Trace: 274571342/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.53.219/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.53.219
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvYAACAO1kpPRTXb/2dsb2JhbAAI2kGELgQ
-X-IronPort-AV: E=Sophos;i="4.44,562,1249254000"; 
-   d="scan'208";a="274571342"
-Date: Thu, 15 Oct 2009 01:46:18 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 1/9] swap_info: private to swapfile.c
-In-Reply-To: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
-Message-ID: <Pine.LNX.4.64.0910150144310.3291@sister.anvils>
-References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
+	Wed, 14 Oct 2009 20:47:21 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41029 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762208AbZJOArV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 20:47:21 -0400
+Message-ID: <4AD670FC.7010004@redhat.com>
+Date: Thu, 15 Oct 2009 09:46:52 +0900
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Glauber Costa <glommer@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] allow userspace to adjust kvmclock offset
+References: <1254849896-3947-1-git-send-email-glommer@redhat.com> <4AD2EE86.50807@redhat.com> <20091013122828.GZ8092@mothafucka.localdomain> <4AD4730C.9010305@redhat.com> <20091013124638.GC8092@mothafucka.localdomain>
+In-Reply-To: <20091013124638.GC8092@mothafucka.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The swap_info_struct is mostly private to mm/swapfile.c, with only
-one other in-tree user: get_swap_bio().  Adjust its interface to
-map_swap_page(), so that we can then remove get_swap_info_struct().
+On 10/13/2009 09:46 PM, Glauber Costa wrote:
+> On Tue, Oct 13, 2009 at 03:31:08PM +0300, Avi Kivity wrote:
+>    
+>> On 10/13/2009 03:28 PM, Glauber Costa wrote:
+>>      
+>>>        
+>>>> Do we want an absolute or relative adjustment?
+>>>>
+>>>>          
+>>> What exactly do you mean?
+>>>
+>>>        
+>> Absolute adjustment: clock = t
+>> Relative adjustment: clock += t
+>>      
+> The delta is absolute, but the adjustment in the clock is relative.
+>
+> So we pick the difference between what userspace is passing us and what
+> we currently have, then relatively adds up so we can make sure we won't
+> go back or suffer a too big skew.
+>    
 
-But there is a popular user out-of-tree, TuxOnIce: so leave the
-declaration of swap_info_struct in linux/swap.h.
+The motivation for relative adjustment is when you have a jitter 
+resistant place to gather timing information (like the kernel, which can 
+disable interrupts and preemption), then pass it on to kvm without 
+losing information due to scheduling.  For migration there is no such 
+place since it involves two hosts, but it makes sense to support 
+relative adjustments.
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
- include/linux/swap.h |    3 +--
- mm/page_io.c         |   19 +++++++------------
- mm/swapfile.c        |   29 +++++++++++++++++------------
- 3 files changed, 25 insertions(+), 26 deletions(-)
-
---- 2.6.32-rc4/include/linux/swap.h	2009-09-28 00:28:39.000000000 +0100
-+++ si1/include/linux/swap.h	2009-10-14 21:25:58.000000000 +0100
-@@ -317,9 +317,8 @@ extern void swapcache_free(swp_entry_t,
- extern int free_swap_and_cache(swp_entry_t);
- extern int swap_type_of(dev_t, sector_t, struct block_device **);
- extern unsigned int count_swap_pages(int, int);
--extern sector_t map_swap_page(struct swap_info_struct *, pgoff_t);
-+extern sector_t map_swap_page(swp_entry_t, struct block_device **);
- extern sector_t swapdev_block(int, pgoff_t);
--extern struct swap_info_struct *get_swap_info_struct(unsigned);
- extern int reuse_swap_page(struct page *);
- extern int try_to_free_swap(struct page *);
- struct backing_dev_info;
---- 2.6.32-rc4/mm/page_io.c	2009-09-09 23:13:59.000000000 +0100
-+++ si1/mm/page_io.c	2009-10-14 21:25:58.000000000 +0100
-@@ -19,20 +19,17 @@
- #include <linux/writeback.h>
- #include <asm/pgtable.h>
- 
--static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
-+static struct bio *get_swap_bio(gfp_t gfp_flags,
- 				struct page *page, bio_end_io_t end_io)
- {
- 	struct bio *bio;
- 
- 	bio = bio_alloc(gfp_flags, 1);
- 	if (bio) {
--		struct swap_info_struct *sis;
--		swp_entry_t entry = { .val = index, };
--
--		sis = get_swap_info_struct(swp_type(entry));
--		bio->bi_sector = map_swap_page(sis, swp_offset(entry)) *
--					(PAGE_SIZE >> 9);
--		bio->bi_bdev = sis->bdev;
-+		swp_entry_t entry;
-+		entry.val = page_private(page);
-+		bio->bi_sector = map_swap_page(entry, &bio->bi_bdev);
-+		bio->bi_sector <<= PAGE_SHIFT - 9;
- 		bio->bi_io_vec[0].bv_page = page;
- 		bio->bi_io_vec[0].bv_len = PAGE_SIZE;
- 		bio->bi_io_vec[0].bv_offset = 0;
-@@ -102,8 +99,7 @@ int swap_writepage(struct page *page, st
- 		unlock_page(page);
- 		goto out;
- 	}
--	bio = get_swap_bio(GFP_NOIO, page_private(page), page,
--				end_swap_bio_write);
-+	bio = get_swap_bio(GFP_NOIO, page, end_swap_bio_write);
- 	if (bio == NULL) {
- 		set_page_dirty(page);
- 		unlock_page(page);
-@@ -127,8 +123,7 @@ int swap_readpage(struct page *page)
- 
- 	VM_BUG_ON(!PageLocked(page));
- 	VM_BUG_ON(PageUptodate(page));
--	bio = get_swap_bio(GFP_KERNEL, page_private(page), page,
--				end_swap_bio_read);
-+	bio = get_swap_bio(GFP_KERNEL, page, end_swap_bio_read);
- 	if (bio == NULL) {
- 		unlock_page(page);
- 		ret = -ENOMEM;
---- 2.6.32-rc4/mm/swapfile.c	2009-10-05 04:33:14.000000000 +0100
-+++ si1/mm/swapfile.c	2009-10-14 21:25:58.000000000 +0100
-@@ -1284,12 +1284,22 @@ static void drain_mmlist(void)
- 
- /*
-  * Use this swapdev's extent info to locate the (PAGE_SIZE) block which
-- * corresponds to page offset `offset'.
-+ * corresponds to page offset `offset'.  Note that the type of this function
-+ * is sector_t, but it returns page offset into the bdev, not sector offset.
-  */
--sector_t map_swap_page(struct swap_info_struct *sis, pgoff_t offset)
-+sector_t map_swap_page(swp_entry_t entry, struct block_device **bdev)
- {
--	struct swap_extent *se = sis->curr_swap_extent;
--	struct swap_extent *start_se = se;
-+	struct swap_info_struct *sis;
-+	struct swap_extent *start_se;
-+	struct swap_extent *se;
-+	pgoff_t offset;
-+
-+	sis = swap_info + swp_type(entry);
-+	*bdev = sis->bdev;
-+
-+	offset = swp_offset(entry);
-+	start_se = sis->curr_swap_extent;
-+	se = start_se;
- 
- 	for ( ; ; ) {
- 		struct list_head *lh;
-@@ -1315,12 +1325,14 @@ sector_t map_swap_page(struct swap_info_
- sector_t swapdev_block(int swap_type, pgoff_t offset)
- {
- 	struct swap_info_struct *sis;
-+	struct block_device *bdev;
- 
- 	if (swap_type >= nr_swapfiles)
- 		return 0;
- 
- 	sis = swap_info + swap_type;
--	return (sis->flags & SWP_WRITEOK) ? map_swap_page(sis, offset) : 0;
-+	return (sis->flags & SWP_WRITEOK) ?
-+		map_swap_page(swp_entry(swap_type, offset), &bdev) : 0;
- }
- #endif /* CONFIG_HIBERNATION */
- 
-@@ -2160,13 +2172,6 @@ int swapcache_prepare(swp_entry_t entry)
- 	return __swap_duplicate(entry, SWAP_CACHE);
- }
- 
--
--struct swap_info_struct *
--get_swap_info_struct(unsigned type)
--{
--	return &swap_info[type];
--}
--
- /*
-  * swap_lock prevents swap_map being freed. Don't grab an extra
-  * reference on the swaphandle, it doesn't matter if it becomes unused.
