@@ -1,180 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932684AbZJOCWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762152AbZJOCW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932684AbZJOCWg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 22:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762074AbZJOCW2
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1762152AbZJOCW2 (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 14 Oct 2009 22:22:28 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58368 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761371AbZJOCW0 (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761862AbZJOCW1
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 14 Oct 2009 22:22:27 -0400
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:55344 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760893AbZJOCWZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 22:22:26 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 15 Oct 2009 11:19:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rafael Wysocki <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 4/9] swap_info: miscellaneous minor cleanups
-Message-Id: <20091015111924.01c6b36f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0910150149160.3291@sister.anvils>
-References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
-	<Pine.LNX.4.64.0910150149160.3291@sister.anvils>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 22:22:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=twaijerjoq9xcPShnFWWd4mzsxP+x9bYTF/TIQFyBF1CPr5RJ9LePIEGS4GNXgDmiv
+         sn8ndDnHfHZU/4kFCaM2GUZVD5pLeHq0yJ+ZjDfqt2Z07VUzmVRHb8JMz70xSSwTwGPR
+         RJpo7jrmMdZy4EDFgvdKhKbQqoO+m2gNymmR0=
+MIME-Version: 1.0
+In-Reply-To: <18475.1255529305@redhat.com>
+References: <1255516134-4838-1-git-send-email-graff.yang@gmail.com>
+	 <18475.1255529305@redhat.com>
+Date: Thu, 15 Oct 2009 10:21:49 +0800
+Message-ID: <7d86d44a0910141921j28ddc50cxb2d9386c5ad99db9@mail.gmail.com>
+Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
+From: graff yang <graff.yang@gmail.com>
+To: David Howells <dhowells@redhat.com>
+Cc: linux-kernel@vger.kernel.org, gyang@blackfin.uclinux.org,
+       akpm@linux-foundation.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Graff Yang <graf.yang@analog.com>,
+       linux-security-module@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009 01:50:54 +0100 (BST)
-Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-
-> Move CONFIG_MIGRATION's swapdev_block() into the main CONFIG_MIGRATION
-> block, remove extraneous whitespace and return, fix typo in a comment.
-> 
-CONFIG_HIBERNATION ?
+Hi, David,
+Thanks your patch, I will test it.
 
 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
+On Wed, Oct 14, 2009 at 10:08 PM, David Howells <dhowells@redhat.com> wrote:
+> <graff.yang@gmail.com> wrote:
+>
+>> The original code calling security_file_mmap() use user's hint address
+>> as it's 5th argument(addr). This is improper, as the hint address may be
+>> NULL.
+>> In this case, the security_file_mmap() may incorrectly return -EPERM.
+>>
+>> This patch moved the calling of security_file_mmap() out of
+>> validate_mmap_request() to do_mmap_pgoff(), and call this
+>> security API with the address that attempting to mmap.
+>
+> I think this is the wrong approach.  Firstly, the hint is cleared in NOMMU
+> mode, and secondly, I think that the check against the minimum LSM address is
+> pointless in NOMMU mode too.
+>
+> So I think the attached patch is a better approach.
+>
+> David
 > ---
-> 
->  mm/swapfile.c |   51 ++++++++++++++++++++++--------------------------
->  1 file changed, 24 insertions(+), 27 deletions(-)
-> 
-> --- si3/mm/swapfile.c	2009-10-14 21:26:22.000000000 +0100
-> +++ si4/mm/swapfile.c	2009-10-14 21:26:32.000000000 +0100
-> @@ -519,9 +519,9 @@ swp_entry_t get_swap_page_of_type(int ty
->  	return (swp_entry_t) {0};
->  }
->  
-> -static struct swap_info_struct * swap_info_get(swp_entry_t entry)
-> +static struct swap_info_struct *swap_info_get(swp_entry_t entry)
->  {
-> -	struct swap_info_struct * p;
-> +	struct swap_info_struct *p;
->  	unsigned long offset, type;
->  
->  	if (!entry.val)
-> @@ -599,7 +599,7 @@ static int swap_entry_free(struct swap_i
->   */
->  void swap_free(swp_entry_t entry)
->  {
-> -	struct swap_info_struct * p;
-> +	struct swap_info_struct *p;
->  
->  	p = swap_info_get(entry);
->  	if (p) {
-> @@ -629,7 +629,6 @@ void swapcache_free(swp_entry_t entry, s
->  		}
->  		spin_unlock(&swap_lock);
->  	}
-> -	return;
->  }
->  
->  /*
-> @@ -783,6 +782,21 @@ int swap_type_of(dev_t device, sector_t
->  }
->  
->  /*
-> + * Get the (PAGE_SIZE) block corresponding to given offset on the swapdev
-> + * corresponding to given index in swap_info (swap type).
-> + */
-> +sector_t swapdev_block(int type, pgoff_t offset)
-> +{
-> +	struct block_device *bdev;
-> +
-> +	if ((unsigned int)type >= nr_swapfiles)
-> +		return 0;
-> +	if (!(swap_info[type]->flags & SWP_WRITEOK))
-> +		return 0;
-> +	return map_swap_page(swp_entry(type, offset), &bdev);
-> +}
-> +
-> +/*
->   * Return either the total number of swap pages of given type, or the number
->   * of free pages of that type (depending on @free)
->   *
-> @@ -805,7 +819,7 @@ unsigned int count_swap_pages(int type,
->  	spin_unlock(&swap_lock);
->  	return n;
->  }
-> -#endif
-> +#endif /* CONFIG_HIBERNATION */
->  
->  /*
->   * No need to decide whether this PTE shares the swap entry with others,
-> @@ -1317,23 +1331,6 @@ sector_t map_swap_page(swp_entry_t entry
->  	}
->  }
->  
-> -#ifdef CONFIG_HIBERNATION
-> -/*
-> - * Get the (PAGE_SIZE) block corresponding to given offset on the swapdev
-> - * corresponding to given index in swap_info (swap type).
-> - */
-> -sector_t swapdev_block(int type, pgoff_t offset)
-> -{
-> -	struct block_device *bdev;
-> -
-> -	if ((unsigned int)type >= nr_swapfiles)
-> -		return 0;
-> -	if (!(swap_info[type]->flags & SWP_WRITEOK))
-> -		return 0;
-> -	return map_swap_page(swp_entry(type, offset), &bdev);
-> -}
-> -#endif /* CONFIG_HIBERNATION */
-> -
->  /*
->   * Free all of a swapdev's extent information
->   */
-> @@ -1525,12 +1522,12 @@ bad_bmap:
->  
->  SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
->  {
-> -	struct swap_info_struct * p = NULL;
-> +	struct swap_info_struct *p = NULL;
->  	unsigned short *swap_map;
->  	struct file *swap_file, *victim;
->  	struct address_space *mapping;
->  	struct inode *inode;
-> -	char * pathname;
-> +	char *pathname;
->  	int i, type, prev;
->  	int err;
->  
-> @@ -1782,7 +1779,7 @@ late_initcall(max_swapfiles_check);
->   */
->  SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
->  {
-> -	struct swap_info_struct * p;
-> +	struct swap_info_struct *p;
->  	char *name = NULL;
->  	struct block_device *bdev = NULL;
->  	struct file *swap_file = NULL;
-> @@ -2117,7 +2114,7 @@ void si_swapinfo(struct sysinfo *val)
->   */
->  static int __swap_duplicate(swp_entry_t entry, bool cache)
->  {
-> -	struct swap_info_struct * p;
-> +	struct swap_info_struct *p;
->  	unsigned long offset, type;
->  	int result = -EINVAL;
->  	int count;
-> @@ -2186,7 +2183,7 @@ void swap_duplicate(swp_entry_t entry)
->  /*
->   * @entry: swap entry for which we allocate swap cache.
->   *
-> - * Called when allocating swap cache for exising swap entry,
-> + * Called when allocating swap cache for existing swap entry,
->   * This can return error codes. Returns 0 at success.
->   * -EBUSY means there is a swap cache.
->   * Note: return code is different from swap_duplicate().
-> 
+> From: David Howells <dhowells@redhat.com>
+>
+> NOMMU: Ignore the address parameter in the file_mmap() security check
+>
+> Ignore the address parameter in the various file_mmap() security checks when
+> CONFIG_MMU=n as the address hint is ignored under those circumstances, and in
+> any case the minimum mapping address check is pointless in NOMMU mode.
+>
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
+>
+>  include/linux/security.h |    1 +
+>  mm/nommu.c               |    2 +-
+>  security/commoncap.c     |    2 ++
+>  security/selinux/hooks.c |    2 ++
+>  4 files changed, 6 insertions(+), 1 deletions(-)
+>
+>
+> diff --git a/include/linux/security.h b/include/linux/security.h
+> index 239e40d..0583f16 100644
+> --- a/include/linux/security.h
+> +++ b/include/linux/security.h
+> @@ -593,6 +593,7 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
+>  *     @reqprot contains the protection requested by the application.
+>  *     @prot contains the protection that will be applied by the kernel.
+>  *     @flags contains the operational flags.
+> + *     @addr contains the mapping address, and should be ignored in NOMMU mode.
+>  *     Return 0 if permission is granted.
+>  * @file_mprotect:
+>  *     Check permissions before changing memory access permissions.
+> diff --git a/mm/nommu.c b/mm/nommu.c
+> index 3c3b4b2..cfea46c 100644
+> --- a/mm/nommu.c
+> +++ b/mm/nommu.c
+> @@ -974,7 +974,7 @@ static int validate_mmap_request(struct file *file,
+>        }
+>
+>        /* allow the security API to have its say */
+> -       ret = security_file_mmap(file, reqprot, prot, flags, addr, 0);
+> +       ret = security_file_mmap(file, reqprot, prot, flags, 0, 0);
+>        if (ret < 0)
+>                return ret;
+>
+> diff --git a/security/commoncap.c b/security/commoncap.c
+> index fe30751..ac1f745 100644
+> --- a/security/commoncap.c
+> +++ b/security/commoncap.c
+> @@ -1005,6 +1005,7 @@ int cap_file_mmap(struct file *file, unsigned long reqprot,
+>  {
+>        int ret = 0;
+>
+> +#ifdef CONFIG_MMU
+>        if (addr < dac_mmap_min_addr) {
+>                ret = cap_capable(current, current_cred(), CAP_SYS_RAWIO,
+>                                  SECURITY_CAP_AUDIT);
+> @@ -1012,5 +1013,6 @@ int cap_file_mmap(struct file *file, unsigned long reqprot,
+>                if (ret == 0)
+>                        current->flags |= PF_SUPERPRIV;
+>        }
+> +#endif
+>        return ret;
+>  }
+> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> index bb230d5..93d61f8 100644
+> --- a/security/selinux/hooks.c
+> +++ b/security/selinux/hooks.c
+> @@ -3046,6 +3046,7 @@ static int selinux_file_mmap(struct file *file, unsigned long reqprot,
+>                             unsigned long addr, unsigned long addr_only)
+>  {
+>        int rc = 0;
+> +#ifdef CONFIG_MMU
+>        u32 sid = current_sid();
+>
+>        /*
+> @@ -3060,6 +3061,7 @@ static int selinux_file_mmap(struct file *file, unsigned long reqprot,
+>                if (rc)
+>                        return rc;
+>        }
+> +#endif
+>
+>        /* do DAC check on address space usage */
+>        rc = cap_file_mmap(file, reqprot, prot, flags, addr, addr_only);
+>
 
+
+
+-- 
+-Graff
