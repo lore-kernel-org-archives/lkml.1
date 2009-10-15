@@ -1,82 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763283AbZJOWyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935484AbZJOXAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763283AbZJOWyN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 18:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763219AbZJOWyM
+	id S935484AbZJOXAN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 19:00:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935455AbZJOXAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 18:54:12 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:59785 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763259AbZJOWyK convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 18:54:10 -0400
-From: Bhavesh Davda <bhavesh@vmware.com>
-To: Dmitry Torokhov <dtor@vmware.com>,
-       "pv-drivers@vmware.com" <pv-drivers@vmware.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Date: Thu, 15 Oct 2009 15:53:33 -0700
-Subject: RE: [Pv-drivers] [PATCH -next] vmxnet3: use dev_dbg, fix build for
- CONFIG_BLOCK=n
-Thread-Topic: [Pv-drivers] [PATCH -next] vmxnet3: use dev_dbg, fix build for
- CONFIG_BLOCK=n
-Thread-Index: AcpN6YVrtoiUrtGbQrO+/REYRZcYogAAHQ5Q
-Message-ID: <8B1F619C9F5F454E81D90D3C161698D7017DD5644B@EXCH-MBX-3.vmware.com>
-References: <20091015152538.74a1cb15.sfr@canb.auug.org.au>
- <8B1F619C9F5F454E81D90D3C161698D7017DD56435@EXCH-MBX-3.vmware.com>
- <4AD7A569.1040308@oracle.com> <200910151547.48247.dtor@vmware.com>
-In-Reply-To: <200910151547.48247.dtor@vmware.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
+	Thu, 15 Oct 2009 19:00:12 -0400
+Received: from lucidpixels.com ([75.144.35.66]:38586 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935427AbZJOXAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 19:00:10 -0400
+Date: Thu, 15 Oct 2009 18:59:34 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Bryan Donlan <bdonlan@gmail.com>
+cc: bruce.w.allan@intel.com, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Subject: Re: [PATCH] Add quirk for ACPI reboots on Intel DP55KG boards.
+In-Reply-To: <alpine.DEB.2.00.0910151852510.8329@p34.internal.lan>
+Message-ID: <alpine.DEB.2.00.0910151855320.3244@p34.internal.lan>
+References: <alpine.DEB.2.00.0910151655590.4808@p34.internal.lan> <1255645796-29944-1-git-send-email-bdonlan@gmail.com> <alpine.DEB.2.00.0910151831020.15317@p34.internal.lan> <alpine.DEB.2.00.0910151852510.8329@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Dmitry Torokhov [mailto:dtor@vmware.com]
-> Sent: Thursday, October 15, 2009 3:48 PM
-> To: pv-drivers@vmware.com
-> Cc: Randy Dunlap; Bhavesh Davda; Stephen Rothwell; netdev; LKML; linux-
-> next@vger.kernel.org; David Miller
-> Subject: Re: [Pv-drivers] [PATCH -next] vmxnet3: use dev_dbg, fix build
-> for CONFIG_BLOCK=n
-> 
-> Hi Randy,
-> 
-> On Thursday 15 October 2009 03:42:49 pm Randy Dunlap wrote:
-> > Bhavesh Davda wrote:
-> > > Who ever compiles with CONFIG_BLOCK=n? Just kidding...
-> >
-> > or why does networking need CONFIG_BLOCK at all?  ;)
-> >
-> > > Thanks again for making this change! Ship it!
-> >
-> > So could I have used adapter->netdev->dev or adapter->pdev->dev ?
-> > either of them?  are they the same?
-> >
-> 
-> They are the same.
 
 
-Right:
+On Thu, 15 Oct 2009, Justin Piszcz wrote:
 
-vmxnet3_probe_device(struct pci_dev *pdev,...)
+>
+>
+> On Thu, 15 Oct 2009, Justin Piszcz wrote:
+>
+>> 
+>> 
+>> On Thu, 15 Oct 2009, Bryan Donlan wrote:
+>> 
+>>> Keyboard-based and BIOS-based reboots don't work on Intel DP55KG boards;
+>>> use ACPI reboots instead.
+>>> 
+>>> Reported-By: Justin Piszcz <jpiszcz@lucidpixels.com>
+>>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>>> Cc: Ingo Molnar <mingo@redhat.com>
+>>> Cc: "H. Peter Anvin" <hpa@zytor.com>
+>>> Cc: x86@kernel.org
+>>> Signed-off-by: Bryan Donlan <bdonlan@gmail.com>
+>>> ---
+>>> arch/x86/kernel/reboot.c |   23 +++++++++++++++++++++++
+>>> 1 files changed, 23 insertions(+), 0 deletions(-)
+>>> 
+>>> Justin, could you give this patch a try? It should make the reboot=acpi
+>>> workaround automatic.
+>>> (x86 maintainers CC'd)
+>>> 
+>>> diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+>>> index a1a3cdd..67bfcef 100644
+>>> --- a/arch/x86/kernel/reboot.c
+>>> +++ b/arch/x86/kernel/reboot.c
+>>> @@ -134,6 +134,21 @@ static int __init set_bios_reboot(const struct 
+>>> dmi_system_id *d)
+>>> 	return 0;
+>>> }
+>>> 
+>>> +/*
+>>> + * Some machines require the "reboot=a" commandline option.
+>>> + * This quirk makes that automatic.
+>>> + */
+>>> +static int __init set_acpi_reboot(const struct dmi_system_id *d)
+>>> +{
+>>> +	if (reboot_type != BOOT_ACPI) {
+>>> +		reboot_type = BOOT_ACPI;
+>>> +		printk(KERN_INFO "%s series board detected. Selecting ACPI "
+>>> +				"method for reboots.\n", d->ident);
+>>> +	}
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +
+>>> static struct dmi_system_id __initdata reboot_dmi_table[] = {
+>>> 	{	/* Handle problems with rebooting on Dell E520's */
+>>> 		.callback = set_bios_reboot,
+>>> @@ -259,6 +274,14 @@ static struct dmi_system_id __initdata 
+>>> reboot_dmi_table[] = {
+>>> 			DMI_MATCH(DMI_PRODUCT_NAME, "SBC-FITPC2"),
+>>> 		},
+>>> 	},
+>>> +	{	/* Handle problems with rebooting on Intel DP55KG */
+>>> +		.callback = set_acpi_reboot,
+>>> +		.ident = "Intel DP55KG",
+>>> +		.matches = {
+>>> +			DMI_MATCH(DMI_SYS_VENDOR, "Intel Corporation"),
+>>> +			DMI_MATCH(DMI_PRODUCT_NAME, "DP55KG"),
+>>> +		},
+>>> +	},
+>>> 	{ }
+>>> };
+>>> 
+>>> -- 
+>>> 1.6.3.3
+>>> 
+>> 
+>> Hello,
+>> 
+>> # patch -p1 < /home/jpiszcz/patch patching file arch/x86/kernel/reboot.c
+>> Hunk #1 succeeded at 132 (offset -2 lines).
+>> Hunk #2 succeeded at 272 (offset -2 lines).
+>> 
+>> # uname -a
+>> Linux p34.internal.lan 2.6.31.3 #8 SMP Wed Oct 14 14:37:37 EDT 2009 x86_64 
+>> GNU/Linux
+>> 
+>> # ls -l /usr/src/linux/.config-* | tail -n 1
+>> -rw-r--r-- 1 root root 45762 2009-10-15 18:31 
+>> /usr/src/linux/.config-2.6.31.3-9
+>> 
+>> Hi,
+>> 
+>> Thanks for the patch-- tested, but unfortunately it still hanged at the 
+>> reboot process (when I did not use reboot=a).
+>> 
+>> I see in the patch:
+>>> +             printk(KERN_INFO "%s series board detected. Selecting ACPI
+>> 
+>> But..
+>> 
+>> $ dmesg | grep -i 'series board'
+>> $
+>> 
+>> $ uname -a
+>> Linux p34.internal.lan 2.6.31.3 #9 SMP Thu Oct 15 18:31:29 EDT 2009 x86_64 
+>> GNU/Linux
+>> 
+>> $ cat /proc/cmdline auto BOOT_IMAGE=2.6.31.3-9 ro root=812 
+>> 3w-9xxx.use_msi=1
+>> 
+>>> +			DMI_MATCH(DMI_SYS_VENDOR, "Intel Corporation"),
+>>> +			DMI_MATCH(DMI_PRODUCT_NAME, "DP55KG"),
+>> 
+>> But..
+>> 
+>> # dmidecode|grep -i dp55
+>>        Product Name: DP55KG
+>> 
+>> Stops at Corp.
+>> 
+>> # dmidecode|grep -i vendor
+>>        Vendor: Intel Corp.
+>> 
+>> Changed that line to:
+>> +     DMI_MATCH(DMI_SYS_VENDOR, "Intel Corp."),
+>> 
+>> That did not work either, ideas?
+>> 
+>> Justin.
+>> 
+>
+> Ack, hold a second, I updated the patch/info in the e-mail but did not save 
+> it before I rebooted as I am rebooting every 5 minutes.
+>
+> Trying w/ Intel Corp.
+>
 
-	struct net_device *netdev;
-	...
-	netdev = alloc_etherdev(sizeof(struct vmxnet3_adapter));
-	...
-	pci_set_drvdata(pdev, netdev);
-	adapter = netdev_priv(netdev);
-	adapter->netdev = netdev;
-	adapter->pdev = pdev;
+$ dmesg | grep -i series
+$
 
-- Bhavesh
+Still no match (and still hangs at reboot)...
+
+# cat /usr/src/linux-2.6.31.3/arch/x86/kernel/reboot.c|grep -i intel
+         {       /* Handle problems with rebooting on Intel DP55KG */
+                 .ident = "Intel DP55KG",
+                         DMI_MATCH(DMI_SYS_VENDOR, "Intel Corp."),
+
+Justin.
