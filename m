@@ -1,106 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760803AbZJOIbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762466AbZJOIcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760803AbZJOIbL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 04:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbZJOIbK
+	id S1762466AbZJOIcJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 04:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbZJOIcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 04:31:10 -0400
-Received: from lucidpixels.com ([75.144.35.66]:58735 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752067AbZJOIbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 04:31:08 -0400
-Date: Thu, 15 Oct 2009 04:30:29 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Jean Delvare <khali@linux-fr.org>
-cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [lm-sensors] lm-sensors 3.1.1-3 not detecting sensors on Intel
-  DP55KG motherboard? (chip ID: 0xb473)
-In-Reply-To: <20091015100557.22243433@hyperion.delvare>
-Message-ID: <alpine.DEB.2.00.0910150422400.21030@p34.internal.lan>
-References: <alpine.DEB.2.00.0910131743530.5034@p34.internal.lan> <alpine.DEB.2.00.0910140403150.15961@p34.internal.lan> <alpine.DEB.2.00.0910140856190.19307@p34.internal.lan> <20091015100557.22243433@hyperion.delvare>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 15 Oct 2009 04:32:09 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:42153 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754753AbZJOIcH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 04:32:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ppqK6EGzg0R0RH5ckeD7X3yHYlpGfl6cDYFElJnjMYdQI3URNYI5PnP7AUNA86NY4u
+         +G3ZRh5/K2GAYZ3pHvgk+QIgUzSj6qxV0UYCHo2Aba0vybumVMc/2PQ6ayxNL2kpD/ww
+         rfnMfxbzwQAPLDqL+SGMrK8Mc7+12e6D/UbTs=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+In-Reply-To: <f22d86810910141224i5f5d7725l9aa2b2262dc30ba4@mail.gmail.com>
+References: <f22d86810910132336r1d6f6363qa983b355676dc413@mail.gmail.com>
+	 <f22d86810910140221q7e03e693kad122a37461cea1d@mail.gmail.com>
+	 <20091014101336.GA25108@redhat.com>
+	 <f22d86810910140324l7b78ed57v7e7c774d5f8a1bd3@mail.gmail.com>
+	 <4AD60CD1.4000804@s5r6.in-berlin.de>
+	 <f22d86810910141211u1f83f57fibfaa5ee19a39813f@mail.gmail.com>
+	 <4AD6235B.8090905@s5r6.in-berlin.de>
+	 <f22d86810910141224i5f5d7725l9aa2b2262dc30ba4@mail.gmail.com>
+Date: Thu, 15 Oct 2009 01:31:30 -0700
+Message-ID: <f22d86810910150131l303200bfq952f479b3fbff563@mail.gmail.com>
+Subject: Re: How to check whether executing in atomic context?
+From: "Leonidas ." <leonidas137@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Gleb Natapov <gleb@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 15 Oct 2009, Jean Delvare wrote:
-
-> Hi Justin,
+On Wed, Oct 14, 2009 at 12:24 PM, Leonidas . <leonidas137@gmail.com> wrote:
+> On Thu, Oct 15, 2009 at 12:45 AM, Stefan Richter
+> <stefanr@s5r6.in-berlin.de> wrote:
+>> Leonidas . wrote:
+>>> On Wed, Oct 14, 2009 at 11:09 PM, Stefan Richter
+>>> <stefanr@s5r6.in-berlin.de> wrote:
+>>>> let the caller of your routine tell it whether it's atomic context
+>>>> or not.
+>> [...]
+>>> What makes it more complicated is this, the user might achieve the
+>>> functionality via instrumenting his source code, i.e. something like
+>>> using -finstrument flag of gcc. As per above inferences about
+>>> in_atomic(), in case of instrumentation there is no choice other than
+>>> providing all apis as atomic apis, this might not be the right thing
+>>> to do under all circumstances. Especially, for my code since I do lot
+>>> of allocations for book keeping.
+>>>
+>>> I am not aware of any Linux kernel module which can comply to this
+>>> kind of use case, what would be the most optimal thing to do here?
+>>
+>> And preallocation is not feasible either?
+>> --
+>> Stefan Richter
+>> -=====-==--= =-=- -===-
+>> http://arcgraph.de/sr/
+>>
 >
-> On 13/14 Oct 2009, Justin Piszcz wrote:
->> # uname -a
->> Linux box 2.6.31.3 #2 SMP Wed Oct 14 04:55:36 EDT 2009 x86_64 GNU/Linux
->>
->> I have a DP55KG motherboard, it says Ibex support was added here:
->> http://www.lm-sensors.org/changeset/5375
->>
->> # sensors
->> No sensors found!
->> Make sure you loaded all the kernel drivers you need.
->> Try sensors-detect to find out which these are.
->>
->> I have all of the modules compiled into the kernel and sensors-detect does
->> not find anything.
->>
->> 00:1f.3 SMBus: Intel Corporation Ibex Peak SMBus Controller (rev 05)
->>
->> Any ideas?
+> Yes, I preallocate a buffer at module init time. But assume that, I am
+> profiling kmalloc(),
+> and number of kmallocs() done over time increases rapidly, I need to allocate
+> on demand as well depending on the load. (Actually, I am not profiling kmalloc,
+> it just makes a good example in this case). Currently, I preallocate a
+> large buffer
+> and as I reach the threshold, I try to grab small buffers as needed.
+> Obvious solution
+> here would be to grab a larger buffer, the only issue here would be it
+> might be just wasteful.
 >
-> The "Ibex support" in question only refers to the SMBus controller, not
-> to sensors directly.
+> So, knowing the running context and allocating sounded like a better idea to me.
 >
->> I tried w83627ehf, to no avail:
->>
->> # modprobe w83627ehf
->> FATAL: Error inserting w83627ehf
->> (/lib/modules/2.6.31.3/kernel/drivers/hwmon/w83627ehf.ko): No such device
->>
->> (...)
->> With debugging enabled:
->>
->> [56208.376451] w83627ehf: unsupported chip ID: 0xb473
->>
->> Is there anything else needed from me/info about the board or once this ID
->> is added into the kernel/src/etc it will work properly?
->
-> We have never heard of this chip ID. This must be a brand new
-> Winbond/Nuvoton Super-I/O chip. Please look at the motherboard, search
-> for the Super-I/O and report the top marking. You may also find its
-> name in the user manual (but the top marking is even more reliable.)
->
-> -- 
-> Jean Delvare
+> -Leo.
 >
 
-Hello,
+>Or deferring work to a kernel thread.
 
-A picture of it is available here:
-http://img.hexus.net/v2/cpu/intel/LGA1156/IMG_0831-big.jpg
-Another:
-http://www.overclockersclub.com/vimages/intel_corei5750_corei7870/20.jpg
-Another:
-http://www.hitechlegion.com/images/stories/ici7_870/11.jpg
-A close up of the chip itself!
-http://www.motherboards.org/imageview.html?i=/images/reviews/motherboards/1948_p3_13.jpg
+You mean, have a kernel thread periodically check the memory
+requirements and do allocations in
+kernel thread context? So basically, insuring that all the allocations
+are done outside atomic context
+i.e. either preallocate or use kernel thread.
 
-Is this the chip to which you are referring?
-
-Winbond
-W83677HG-i
-919S9BE918B001FB
-919S9BE918B001FB*typed twice to confirm (same #s on two different 
-board/reviews)
-
-Is there anything else needed?
-
-This site shows a close up of nearly every part of the board:
-http://www.motherboards.org/reviews/motherboards/1948_3.html
-
-Thanks,
-
-Justin.
-
+-Leo.
