@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762720AbZJOTAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762404AbZJOTAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762720AbZJOTAv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 15:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759463AbZJOTAu
+	id S1762404AbZJOTAI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 15:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758608AbZJOTAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 15:00:50 -0400
-Received: from gv-out-0910.google.com ([216.239.58.186]:32660 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758623AbZJOTAt (ORCPT
+	Thu, 15 Oct 2009 15:00:07 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49125 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758606AbZJOTAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 15:00:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=v1RG0AWP8omAcde+VMFMptHJ67m1W3k86Yp8bLQ39oiDD7HAO191owo+PPbkCeBXWR
-         k4KmNPIHFsE/11hFvHXD7nHOrNgQizTvDBVlSll44TVch4yQVuXp/Zo1Rl/sBO/xXVJQ
-         58zPV9wW3y/NfIgOkHAmiUnLrc7Zf7WgXX3KA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: removing existing working drivers via staging
-Date: Thu, 15 Oct 2009 20:58:33 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31.1-56.fc12.x86_64; KDE/4.3.1; x86_64; ; )
-Cc: david@lang.hm, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm> <200910152020.13080.bzolnier@gmail.com> <20091015184656.GA29858@suse.de>
-In-Reply-To: <20091015184656.GA29858@suse.de>
+	Thu, 15 Oct 2009 15:00:06 -0400
+Message-ID: <4AD770FB.5030104@cs.helsinki.fi>
+Date: Thu, 15 Oct 2009 21:59:07 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: linux-kernel@vger.kernel.org,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] kmemleak: Do not use off-slab management with SLAB_NOLEAKTRACE
+References: <20091014153146.8955.19964.stgit@pc1117.cambridge.arm.com>
+In-Reply-To: <20091014153146.8955.19964.stgit@pc1117.cambridge.arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910152058.33114.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 October 2009 20:46:56 Greg KH wrote:
-> On Thu, Oct 15, 2009 at 08:20:12PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > On Thursday 15 October 2009 19:49:32 Greg KH wrote:
-> > > On Thu, Oct 15, 2009 at 07:42:40PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > > On Thursday 15 October 2009 18:47:26 Greg KH wrote:
-> > > > > On Thu, Oct 15, 2009 at 09:39:51AM -0700, david@lang.hm wrote:
-> > > > > > however, what I think I saw proposed was to move drivers that need to be 
-> > > > > > 'cleaned up', to staging and then dropping them if they don't get cleaned.
-> > > > > 
-> > > > > What is "proposed" is the following:
-> > > > > 
-> > > > > 	- For drivers currently in the kernel tree, that the subsystem
-> > > > > 	  maintainer, for whatever reason, feels is obsolete / broken /
-> > > > > 	  needs major cleaning / wants to get rid of, can be submitted
-> > > > > 	  to the staging maintainer to be moved to the drivers/staging/
-> > > > > 	  directory.
-> > > > 
-> > > > This is insanity and opens a door for various forms of abuse.
-> > > 
-> > > What do you mean by this?  What kind of "abuse"?
-> > 
-> > Typical situation:
-> > 
-> > You have driver for _really_ difficult hardware used by minority of total
-> > users of a given subsystem.  Said driver has no major problems except being
-> > f*cking complicated (because of hardware) so it stays in the way of future
-> > changes.
-> > 
-> > With the current system people making bigger changes have to comprehend
-> > that difficult stuff [*].  This is a good thing in the long-term since it
-> > results in the better overall system understanding, better knowledge of
-> > "DO's and DON'T's" and better users' experience.
-> > 
-> > Now with the proposed scheme it is sufficient to throw said driver into
-> > staging for few weeks and make future changes.  Before users even notice
-> > and complain they are screwed already since bringing the driver back is
-> > no longer possible without big effort (+ subsystem is still evolving)..
+Hi Catalin,
+
+Catalin Marinas wrote:
+> With the slab allocator, if off-slab management is enabled for the
+> kmem_caches used by kmemleak, it leads to recursive calls into
+> kmemleak_alloc(). Off-slab management can be triggered by other config
+> options increasing the slab size, e.g. DEBUG_PAGEALLOC.
 > 
-> But a driver in staging still has to be able to build, api changes are
-> not able to be ignored in it.
+> Reported-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+> Cc: Christoph Lameter <cl@linux-foundation.org>
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 
-Sure, it will build at the of being submitted to staging..
+Forcing slabs to use on-slab management is pretty bad from memory 
+consumption point of view. Wouldn't it be better to annotate the 
+recursive calls somehow?
 
-> > This will result in a "new kernel new hardware" world that some distro
-> > people have been silently trying to accomplish and in this brave new world
-> > few key people have way too much advantage over everyone else.
+			Pekka
+
+> ---
+>  mm/slab.c |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
 > 
-> I don't understand what you are referring to here.
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 7dfa481..646db30 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -2261,9 +2261,11 @@ kmem_cache_create (const char *name, size_t size, size_t align,
+>  	/*
+>  	 * Determine if the slab management is 'on' or 'off' slab.
+>  	 * (bootstrapping cannot cope with offslab caches so don't do
+> -	 * it too early on.)
+> +	 * it too early on. Always use on-slab management when
+> +	 * SLAB_NOLEAKTRACE to avoid recursive calls into kmemleak)
+>  	 */
+> -	if ((size >= (PAGE_SIZE >> 3)) && !slab_early_init)
+> +	if ((size >= (PAGE_SIZE >> 3)) && !slab_early_init &&
+> +	    !(flags & SLAB_NOLEAKTRACE))
+>  		/*
+>  		 * Size is large, assume best to place the slab management obj
+>  		 * off-slab (should allow better packing of objs).
+> 
 
-See my PM.
