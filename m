@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbZJOWR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762966AbZJOWYD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762944AbZJOWR7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 18:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758713AbZJOWR6
+	id S1762966AbZJOWYD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 18:24:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758534AbZJOWYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 18:17:58 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:4867 "EHLO
+	Thu, 15 Oct 2009 18:24:03 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:60197 "EHLO
 	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753790AbZJOWR6 (ORCPT
+	by vger.kernel.org with ESMTP id S1756281AbZJOWYB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 18:17:58 -0400
-X-Trace: 275022252/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.3.134/None/hugh.dickins@tiscali.co.uk
+	Thu, 15 Oct 2009 18:24:01 -0400
+X-Trace: 275023207/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.3.134/None/hugh.dickins@tiscali.co.uk
 X-SBRS: None
 X-RemoteIP: 79.69.3.134
 X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
@@ -18,21 +18,21 @@ X-SMTP-AUTH:
 X-MUA: 
 X-IP-BHB: Once
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEAHc810pPRQOG/2dsb2JhbACBUtdFhDAE
+X-IronPort-Anti-Spam-Result: AswEAKM910pPRQOG/2dsb2JhbACBUtdGhDAE
 X-IronPort-AV: E=Sophos;i="4.44,568,1249254000"; 
-   d="scan'208";a="275022252"
-Date: Thu, 15 Oct 2009 23:17:20 +0100 (BST)
+   d="scan'208";a="275023207"
+Date: Thu, 15 Oct 2009 23:23:24 +0100 (BST)
 From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 X-X-Sender: hugh@sister.anvils
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
-Subject: Re: [PATCH 6/9] swap_info: swap_map of chars not shorts
-In-Reply-To: <20091015114435.9470890a.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0910152308490.4447@sister.anvils>
+Subject: Re: [PATCH 8/9] swap_info: note SWAP_MAP_SHMEM
+In-Reply-To: <20091015123219.43cfd7b1.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0910152317290.4447@sister.anvils>
 References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
- <Pine.LNX.4.64.0910150152330.3291@sister.anvils>
- <20091015114435.9470890a.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0910150156060.3291@sister.anvils>
+ <20091015123219.43cfd7b1.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,39 +40,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Thu, 15 Oct 2009, KAMEZAWA Hiroyuki wrote:
-> On Thu, 15 Oct 2009 01:53:52 +0100 (BST)
+> On Thu, 15 Oct 2009 01:57:28 +0100 (BST)
 > Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-> > @@ -1175,6 +1175,12 @@ static int try_to_unuse(unsigned int typ
-> >  		 * If that's wrong, then we should worry more about
-> >  		 * exit_mmap() and do_munmap() cases described above:
-> >  		 * we might be resetting SWAP_MAP_MAX too early here.
-> > +		 *
-> > +		 * Yes, that's wrong: though very unlikely, swap count 0x7ffe
-> > +		 * could surely occur if pid_max raised from PID_MAX_DEFAULT;
 > 
-> Just a nitpick.
+> > While we're fiddling with the swap_map values, let's assign a particular
+> > value to shmem/tmpfs swap pages: their swap counts are never incremented,
+> > and it helps swapoff's try_to_unuse() a little if it can immediately
+> > distinguish those pages from process pages.
+> > 
+> > Since we've no use for SWAP_MAP_BAD | COUNT_CONTINUED,
+> > we might as well use that 0xbf value for SWAP_MAP_SHMEM.
+> > 
+> > Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 > 
-> Hmm, logically, our MAX COUNT is 0x7e after this patch. Then, how about not
-> mentioning to 0x7ffe and PID_MAX ? as..
-> 
-> Yes, that's wrong: we now use SWAP_MAP_MAX as 0x7e, very easy to overflow.
-> next patch will...
+> I welcome this!
 
-Perhaps we're reading it differently: I was there inserting a comment
-on what was already said above (with no wish to change that existing
-comment), then going on (immediately below) to mention how this patch
-is now lowering SWAP_MAP_MAX to 0x7e, making the situation even worse,
-but no worries because the next patch fixes it.
+Ah, I did wonder whether you might find some memcg use for it too:
+I'm guessing your welcome means that you do have some such in mind.
 
-If you are seeing a nit there, I'm afraid it's one too small for my
-eye!  And the lifetime of this comment, in Linus's git history, will
-be (I'm guessing) a fraction of a second - becoming a non-issue, it
-rightly gets deleted in the next patch.
+(By the way, there's no particular need to use that 0xbf value:
+during most of my testing I was using SWAP_MAP_SHMEM 0x3e and
+SWAP_MAP_MAX 0x3d; but then noticed that 0xbf just happened to be
+free, and also happened to sail through the tests in the right way.
+But if it ever becomes a nuisance there, no problem to move it.)
 
 Hugh
-
-> 
-> Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> > +		 * and we are now lowering SWAP_MAP_MAX to 0x7e, making it
-> > +		 * much easier to reach.  But the next patch will fix that.
