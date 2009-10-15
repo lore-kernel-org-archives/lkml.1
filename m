@@ -1,106 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbZJOWul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763112AbZJOWl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763267AbZJOWul (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 18:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762978AbZJOWuk
+	id S1763112AbZJOWl6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 18:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757571AbZJOWl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 18:50:40 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:37480 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763258AbZJOWuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 18:50:40 -0400
-From: Robin Holt <holt@sgi.com>
-Message-Id: <20091015224947.354545000@alcatraz.americas.sgi.com>
-User-Agent: quilt/0.47-1
-Date: Thu, 15 Oct 2009 17:40:01 -0500
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@sgi.com>, Cliff Whickman <cpw@sgi.com>
-Subject: [patch 2/2] x86, UV: Modify bau to use uv_gpa_to_pnode().
-References: <20091015223959.783988000@alcatraz.americas.sgi.com>
-Content-Disposition: inline; filename=bau_use_gpa_to_pnode
+	Thu, 15 Oct 2009 18:41:57 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:14576 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755281AbZJOWl5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 18:41:57 -0400
+X-Trace: 271685631/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.3.134/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.3.134
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEANtB10pPRQOG/2dsb2JhbACBUtdIhDAE
+X-IronPort-AV: E=Sophos;i="4.44,568,1249254000"; 
+   d="scan'208";a="271685631"
+Date: Thu, 15 Oct 2009 23:41:19 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/9] swap_info: change to array of pointers
+In-Reply-To: <20091015111107.b505b676.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0910152324220.4447@sister.anvils>
+References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
+ <Pine.LNX.4.64.0910150146210.3291@sister.anvils>
+ <20091015111107.b505b676.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create an inline function to extract the pnode from a global physical
-address and then convert the broadcast assist unit to use the newly
-created uv_gpa_to_pnode function.
+On Thu, 15 Oct 2009, KAMEZAWA Hiroyuki wrote:
+> On Thu, 15 Oct 2009 01:48:01 +0100 (BST)
+> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+> > --- si1/mm/swapfile.c	2009-10-14 21:25:58.000000000 +0100
+> > +++ si2/mm/swapfile.c	2009-10-14 21:26:09.000000000 +0100
+> > @@ -49,7 +49,7 @@ static const char Unused_offset[] = "Unu
+> >  
+> >  static struct swap_list_t swap_list = {-1, -1};
+> >  
+> > -static struct swap_info_struct swap_info[MAX_SWAPFILES];
+> > +static struct swap_info_struct *swap_info[MAX_SWAPFILES];
+> >  
+> 
+> Could you add some comment like this ?
+> ==
+> nr_swapfile is never decreased.
+> swap_info[type] pointer will never be invalid if it turns to be valid once.
+> 
+> 
+> for (i = 0; i < nr_swapfiles; i++) {
+> 	smp_rmp();
+> 	sis = swap_info[type];
+> 	....
+> } 
+> Then, we can execute above without checking sis is valid or not.
+> smp_rmb() is required when we do above loop without swap_lock().
 
-To: Ingo Molnar <mingo@elte.hu>
-To: tglx@linutronix.de
-Signed-off-by: Robin Holt <holt@sgi.com>
-Acked-by: Cliff Whickman <cpw@sgi.com>
-Cc: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
+I do describe this (too briefly?) in the comment on smp_wmb() where
+swap_info[type] is set and nr_swapfiles raised, in swapon (see below).
+And make a quick same-line comment on the corresponding smp_rmb()s.
 
----
- arch/x86/include/asm/uv/uv_hub.h |    8 +++++++-
- arch/x86/kernel/tlb_uv.c         |    7 ++-----
- 2 files changed, 9 insertions(+), 6 deletions(-)
-Index: linux/arch/x86/include/asm/uv/uv_hub.h
-===================================================================
---- linux.orig/arch/x86/include/asm/uv/uv_hub.h	2009-10-15 17:26:48.000000000 -0500
-+++ linux/arch/x86/include/asm/uv/uv_hub.h	2009-10-15 17:28:46.000000000 -0500
-@@ -114,7 +114,7 @@
- /*
-  * The largest possible NASID of a C or M brick (+ 2)
-  */
--#define UV_MAX_NASID_VALUE	(UV_MAX_NUMALINK_NODES * 2)
-+#define UV_MAX_NASID_VALUE	(UV_MAX_NUMALINK_BLADES * 2)
- 
- struct uv_scir_s {
- 	struct timer_list timer;
-@@ -230,6 +230,12 @@ static inline unsigned long uv_gpa(void 
- 	return uv_soc_phys_ram_to_gpa(__pa(v));
- }
- 
-+/* gpa -> pnode */
-+static inline int uv_gpa_to_pnode(unsigned long gpa)
-+{
-+	return gpa >> uv_hub_info->m_val & ((1UL << uv_hub_info->n_val) - 1);
-+}
-+
- /* pnode, offset --> socket virtual */
- static inline void *uv_pnode_offset_to_vaddr(int pnode, unsigned long offset)
- {
-Index: linux/arch/x86/kernel/tlb_uv.c
-===================================================================
---- linux.orig/arch/x86/kernel/tlb_uv.c	2009-10-15 17:26:48.000000000 -0500
-+++ linux/arch/x86/kernel/tlb_uv.c	2009-10-15 17:28:46.000000000 -0500
-@@ -23,8 +23,6 @@
- static struct bau_control	**uv_bau_table_bases __read_mostly;
- static int			uv_bau_retry_limit __read_mostly;
- 
--/* position of pnode (which is nasid>>1): */
--static int			uv_nshift __read_mostly;
- /* base pnode in this partition */
- static int			uv_partition_base_pnode __read_mostly;
- 
-@@ -723,7 +721,7 @@ uv_activation_descriptor_init(int node, 
- 	BUG_ON(!adp);
- 
- 	pa = uv_gpa(adp); /* need the real nasid*/
--	n = pa >> uv_nshift;
-+	n = uv_gpa_to_pnode(pa);
- 	m = pa & uv_mmask;
- 
- 	uv_write_global_mmr64(pnode, UVH_LB_BAU_SB_DESCRIPTOR_BASE,
-@@ -778,7 +776,7 @@ uv_payload_queue_init(int node, int pnod
- 	 * need the pnode of where the memory was really allocated
- 	 */
- 	pa = uv_gpa(pqp);
--	pn = pa >> uv_nshift;
-+	pn = uv_gpa_to_pnode(pa);
- 	uv_write_global_mmr64(pnode,
- 			      UVH_LB_BAU_INTD_PAYLOAD_QUEUE_FIRST,
- 			      ((unsigned long)pn << UV_PAYLOADQ_PNODE_SHIFT) |
-@@ -843,7 +841,6 @@ static int __init uv_bau_init(void)
- 				       GFP_KERNEL, cpu_to_node(cur_cpu));
- 
- 	uv_bau_retry_limit = 1;
--	uv_nshift = uv_hub_info->m_val;
- 	uv_mmask = (1UL << uv_hub_info->m_val) - 1;
- 	nblades = uv_num_possible_blades();
- 
+Those seem more useful to me than such a comment on the
+static struct swap_info_struct *swap_info[MAX_SWAPFILES];
 
+I was about to add (now, in writing this mail) that /proc/swaps is
+the only thing that reads them without swap_lock; but that's not
+true, of course, swap_duplicate and swap_free (or their helpers)
+make preliminary checks without swap_lock - but the difference
+there is that (unless the pagetable has become corrupted) they're
+dealing with a swap entry which was previously valid, so can by
+this time rely upon swap_info[type] and nr_swapfiles to be safe.
+
+> swapon_mutex() will be no help.
+> 
+> Whether sis is used or not can be detelcted by sis->flags.
+> 
+> > @@ -1675,11 +1674,13 @@ static void *swap_start(struct seq_file
+> >  	if (!l)
+> >  		return SEQ_START_TOKEN;
+> >  
+> > -	for (i = 0; i < nr_swapfiles; i++, ptr++) {
+> > -		if (!(ptr->flags & SWP_USED) || !ptr->swap_map)
+> > +	for (type = 0; type < nr_swapfiles; type++) {
+> > +		smp_rmb();	/* read nr_swapfiles before swap_info[type] */
+> > +		si = swap_info[type];
+> 
+> 		if (!si) ?
+> 
+> > +		if (!(si->flags & SWP_USED) || !si->swap_map)
+> >  			continue;
+> >  		if (!--l)
+> > -			return ptr;
+> > +			return si;
+> >  	}
+...
+> >  static void *swap_next(struct seq_file *swap, void *v, loff_t *pos)
+> >  {
+> > -	struct swap_info_struct *ptr;
+> > -	struct swap_info_struct *endptr = swap_info + nr_swapfiles;
+> > +	struct swap_info_struct *si = v;
+> > +	int type;
+> >  
+> >  	if (v == SEQ_START_TOKEN)
+> > -		ptr = swap_info;
+> > -	else {
+> > -		ptr = v;
+> > -		ptr++;
+> > -	}
+> > +		type = 0;
+> > +	else
+> > +		type = si->type + 1;
+> >  
+> > -	for (; ptr < endptr; ptr++) {
+> > -		if (!(ptr->flags & SWP_USED) || !ptr->swap_map)
+> > +	for (; type < nr_swapfiles; type++) {
+> > +		smp_rmb();	/* read nr_swapfiles before swap_info[type] */
+> > +		si = swap_info[type];
+> > +		if (!(si->flags & SWP_USED) || !si->swap_map)
+...
+> > @@ -1799,23 +1800,45 @@ SYSCALL_DEFINE2(swapon, const char __use
+...
+> > -	if (type >= nr_swapfiles)
+> > -		nr_swapfiles = type+1;
+> > -	memset(p, 0, sizeof(*p));
+> >  	INIT_LIST_HEAD(&p->extent_list);
+> > +	if (type >= nr_swapfiles) {
+> > +		p->type = type;
+> > +		swap_info[type] = p;
+> > +		/*
+> > +		 * Write swap_info[type] before nr_swapfiles, in case a
+> > +		 * racing procfs swap_start() or swap_next() is reading them.
+> > +		 * (We never shrink nr_swapfiles, we never free this entry.)
+> > +		 */
+> > +		smp_wmb();
+> > +		nr_swapfiles++;
+> > +	} else {
+> > +		kfree(p);
+> > +		p = swap_info[type];
+> > +		/*
+> > +		 * Do not memset this entry: a racing procfs swap_next()
+> > +		 * would be relying on p->type to remain valid.
+> > +		 */
+> > +	}
+...
