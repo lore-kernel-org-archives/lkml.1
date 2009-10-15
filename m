@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763286AbZJOXOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763312AbZJOXRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763286AbZJOXOY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 19:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbZJOXOX
+	id S1763312AbZJOXRY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 19:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763303AbZJOXRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 19:14:23 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51979 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756903AbZJOXOW (ORCPT
+	Thu, 15 Oct 2009 19:17:23 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:43514 "EHLO
+	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758113AbZJOXRX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 19:14:22 -0400
-Message-ID: <4AD7AC56.5040806@zytor.com>
-Date: Thu, 15 Oct 2009 16:12:22 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Thu, 15 Oct 2009 19:17:23 -0400
+Date: Thu, 15 Oct 2009 17:16:45 -0600
+From: dougthompson@xmission.com
+To: kmannth@us.ibm.com, iws@ovro.caltech.edu, jroberson@jroberson.net,
+       bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH 1/2] edac: i5400 fix missing CONFIG_PCI define
+Message-ID: <4ad7ad5d.bbMDMCOY1LPNMc5Q%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: Bryan Donlan <bdonlan@gmail.com>, bruce.w.allan@intel.com,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, x86@kernel.org
-Subject: Re: [PATCH] Add quirk for ACPI reboots on Intel DP55KG boards.
-References: <alpine.DEB.2.00.0910151655590.4808@p34.internal.lan> <1255645796-29944-1-git-send-email-bdonlan@gmail.com> <alpine.DEB.2.00.0910151831020.15317@p34.internal.lan> <alpine.DEB.2.00.0910151852510.8329@p34.internal.lan> <alpine.DEB.2.00.0910151855320.3244@p34.internal.lan>
-In-Reply-To: <alpine.DEB.2.00.0910151855320.3244@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The DMI system name seems to actually be blank:
+From: Ira W. Snyder <iws@ovro.caltech.edu>
 
-Handle 0x0006, DMI type 1, 27 bytes
-System Information
-	Manufacturer:
-	Product Name:
-	Version:
-	Serial Number:
+When building without CONFIG_PCI the edac_pci_idx variable is unused,
+causing a build-time warning. Wrap the variable in #ifdef CONFIG_PCI, just
+like the rest of the PCI support.
 
-As such, I suspect you need DMI_BOARD_VENDOR and DMI_BOARD_NAME:
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+---
+drivers/edac/mpc85xx_edac.c |    2 ++
+1 files changed, 2 insertions(+), 0 deletions(-)
 
-Handle 0x0007, DMI type 2, 20 bytes
-Base Board Information
-	Manufacturer: Intel Corporation
-	Product Name: DP55KG
-
-You can double-check by looking at what names Linux uses in
-/sys/class/dmi/id.
-
-	-hpa
+Index: linux-2.6.31/drivers/edac/mpc85xx_edac.c
+===================================================================
+--- linux-2.6.31.orig/drivers/edac/mpc85xx_edac.c
++++ linux-2.6.31/drivers/edac/mpc85xx_edac.c
+@@ -26,7 +26,9 @@
+ #include "mpc85xx_edac.h"
+ 
+ static int edac_dev_idx;
++#ifdef CONFIG_PCI
+ static int edac_pci_idx;
++#endif
+ static int edac_mc_idx;
+ 
+ static u32 orig_ddr_err_disable;
