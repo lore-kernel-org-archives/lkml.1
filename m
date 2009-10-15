@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935117AbZJONCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934563AbZJONBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935117AbZJONCE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 09:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934796AbZJONCD
+	id S934563AbZJONBP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 09:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933129AbZJONBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 09:02:03 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:55481 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933619AbZJONCC (ORCPT
+	Thu, 15 Oct 2009 09:01:14 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:34813 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933090AbZJONBO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 09:02:02 -0400
-Date: Thu, 15 Oct 2009 08:59:33 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Zhu Yi <yi.zhu@intel.com>
-Cc: Frans Pop <elendil@planet.nl>, Ferenc Wagner <wferi@niif.hu>,
-       "ipw2100-devel@lists.sourceforge.net" 
-	<ipw2100-devel@lists.sourceforge.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [Ipw2100-devel] 2.6.32-rc4 ipw2200: oops on missing firmware
-Message-ID: <20091015125933.GA2809@tuxdriver.com>
-References: <87hbu3h023.fsf@tac.ki.iif.hu> <200910131855.25878.elendil@planet.nl> <1255589428.3719.465.camel@debian>
+	Thu, 15 Oct 2009 09:01:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=nGgfBBoThJTPgHPkB/DwzUhOVEzegGyyI7+d9zWB5zo8MnUx5Z6hvOlzFPDhFbR0vC
+         pVL70+IFC/bvljNq6KNH1oFjt65+0PS7jnHMtQuXVKocIO5Gu+agOsMn67+WLDg6tkG2
+         S8647uaH3n2CaXY6I3GD8RBORj6p4bqPAOSWc=
+From: Arnd Bergmann <arndbergmann@googlemail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 6/7] um: Convert mmapper to unlocked_ioctl
+Date: Thu, 15 Oct 2009 15:00:34 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ALan Cox <alan@lxorguk.ukuu.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Jeff Dike <jdike@addtoit.com>
+References: <20091015083906.716130653@linutronix.de> <20091015083933.997426614@linutronix.de>
+In-Reply-To: <20091015083933.997426614@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255589428.3719.465.camel@debian>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910151500.34820.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 15, 2009 at 02:50:28PM +0800, Zhu Yi wrote:
-
-> OK. The rfkill device is removed without being added before! The root
-> cause is, for non-monitor interfaces, the syntax for
-> alloc_ieee80211/free_80211 is wrong. Because alloc_ieee80211 only
-> creates (wiphy_new) a wiphy, but free_80211() does wiphy_unregister()
-> also. This is only correct when the later wiphy_register() is called
-> successfully, which apparently is not the case for your fw doesn't exist
-> one. Please see if this patch fix the problem.
+On Thursday 15 October 2009, Thomas Gleixner wrote:
+> The ioctl is empty and needs no serialization. We might remove it
+> completely but that would change the return value from -ENOIOCTLCMD to
+> -ENOTTY.
 > 
-> Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Jeff Dike <jdike@addtoit.com>
 
-Thanks, Zhu!  That certainly looks better than what I had.
+This one is tricky if you want to get it right according to the
+book. ENOIOCTLCMD is never a valid return code for user space,
+but sys_ioctl passes it down anyway.
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+However, returning -ENOIOCTLCMD from an *unlocked_ioctl* function
+automatically gets turned into -EINVAL. It does this to allow
+the same functions to be used for unlocked_ioctl and compat_ioctl.
+In effect, this patch is functionally identical to removing the
+ioctl function, which I think is what should be done here.
+
+	Arnd <><
