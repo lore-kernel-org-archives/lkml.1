@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbZJOFMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268AbZJOFXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752161AbZJOFMh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 01:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbZJOFMh
+	id S1752268AbZJOFXg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 01:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZJOFXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 01:12:37 -0400
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:42052 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751419AbZJOFMg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 01:12:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=oWl5WyMEc4f0LHXkh3Wdg6VWDWKfOfJFNwc+smLFVRtKqbeQLkqpdvmSXkSqgakKFo
-         7BdSKYOtoSPel/Z9i3BnGrrMianJt73fdr/2ad2ETvXDoNEtfpjj67d0cO4hT+lX4usE
-         GjWF0QjTqIz8vzopSM4I50uT4JIDgF/HyCckc=
-MIME-Version: 1.0
-In-Reply-To: <20091014171240.49d0963f@marrow.netinsight.se>
-References: <20091012113758.GB11035@elte.hu> <20091012131528.GC25464@elte.hu> 
-	<20091012153937.0dcd73e5@marrow.netinsight.se> <alpine.LFD.2.01.0910120828390.3438@localhost.localdomain> 
-	<20091012110954.67d7d8d8.akpm@linux-foundation.org> <20091012182346.GH17138@elte.hu> 
-	<alpine.LFD.2.01.0910121130190.3438@localhost.localdomain> 
-	<20091014153458.05e31db6@marrow.netinsight.se> <20091014154124.5d9c366e@marrow.netinsight.se> 
-	<20091014171240.49d0963f@marrow.netinsight.se>
-From: vimal singh <vimal.newwork@gmail.com>
-Date: Thu, 15 Oct 2009 10:41:39 +0530
-Message-ID: <ce9ab5790910142211v54c70deet8c5732cfccb01914@mail.gmail.com>
-Subject: Re: [PATCH v6 5/5]: mtdoops: refactor as a kmsg_dumper
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 15 Oct 2009 01:23:35 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:33071 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751756AbZJOFXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 01:23:35 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] twl4030-gpio: drop __devexit markings from remove func
+Date: Thu, 15 Oct 2009 01:22:56 -0400
+Message-Id: <1255584176-3457-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 8:42 PM, Simon Kagstrom
-<simon.kagstrom@netinsight.net> wrote:
-> On Wed, 14 Oct 2009 15:41:24 +0200
-> Simon Kagstrom <simon.kagstrom@netinsight.net> wrote:
->
->> -static void __exit mtdoops_console_exit(void)
->> +static void __exit mtdoops_exit(void)
->>  {
->>       struct mtdoops_context *cxt = &oops_cxt;
->>
->>       unregister_mtd_user(&mtdoops_notifier);
->> -     unregister_console(&mtdoops_console);
->>       kfree(cxt->name);
->
-> The kfree should go as well since cxt->name is no longer allocated. I'll
-> await further comments and send a new patch tomorrow.
->
-Help description for 'MTD_OOPS' in Kconfig needs update after this
-patch. Are you planning to add a patch for same in this series?
+The gpio_twl4030_probe() function calls gpio_twl4030_remove(), and the
+former has __devinit, so the latter cannot use __devexit.  Otherwise we
+hit the section mismatch warning:
 
--vimal
+WARNING: drivers/gpio/built-in.o(.devinit.text+0x71a): Section mismatch
+	in reference from the function _gpio_twl4030_probe() to the function
+	.devexit.text:_gpio_twl4030_remove()
+The function __devinit _gpio_twl4030_probe() references a function
+	__devexit _gpio_twl4030_remove().
+This is often seen when error handling in the init function uses
+	functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+	_gpio_twl4030_remove() so it may be used outside an exit section.
 
-> // Simon
->
-> ______________________________________________________
-> Linux MTD discussion mailing list
-> http://lists.infradead.org/mailman/listinfo/linux-mtd/
->
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/gpio/twl4030-gpio.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpio/twl4030-gpio.c b/drivers/gpio/twl4030-gpio.c
+index afad147..49384a7 100644
+--- a/drivers/gpio/twl4030-gpio.c
++++ b/drivers/gpio/twl4030-gpio.c
+@@ -460,7 +460,8 @@ no_irqs:
+ 	return ret;
+ }
+ 
+-static int __devexit gpio_twl4030_remove(struct platform_device *pdev)
++/* Cannot use __devexit as gpio_twl4030_probe() calls us */
++static int gpio_twl4030_remove(struct platform_device *pdev)
+ {
+ 	struct twl4030_gpio_platform_data *pdata = pdev->dev.platform_data;
+ 	int status;
+@@ -493,7 +494,7 @@ static struct platform_driver gpio_twl4030_driver = {
+ 	.driver.name	= "twl4030_gpio",
+ 	.driver.owner	= THIS_MODULE,
+ 	.probe		= gpio_twl4030_probe,
+-	.remove		= __devexit_p(gpio_twl4030_remove),
++	.remove		= gpio_twl4030_remove,
+ };
+ 
+ static int __init gpio_twl4030_init(void)
+-- 
+1.6.5
+
