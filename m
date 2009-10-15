@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762860AbZJOQFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762897AbZJOQYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762860AbZJOQFP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 12:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762228AbZJOQFO
+	id S1762897AbZJOQYY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 12:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762887AbZJOQYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 12:05:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59664 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757636AbZJOQFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 12:05:13 -0400
-Date: Thu, 15 Oct 2009 09:04:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Oleg Nesterov <oleg@redhat.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Paul Fulghum <paulkf@microgate.com>,
-       Boyan <btanastasov@yahoo.co.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-In-Reply-To: <20091015152959.GA18681@redhat.com>
-Message-ID: <alpine.LFD.2.01.0910150901190.6146@localhost.localdomain>
-References: <4AD51D6B.7010509@microgate.com> <alpine.LFD.2.01.0910131744590.3404@localhost.localdomain> <20091014125846.1a3c8d40@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0910140804180.6146@localhost.localdomain> <alpine.LFD.2.01.0910140925440.6146@localhost.localdomain>
- <20091014182037.GA10076@redhat.com> <alpine.LFD.2.01.0910141131050.6146@localhost.localdomain> <20091014195215.GA12936@redhat.com> <alpine.LFD.2.01.0910141344250.6146@localhost.localdomain> <20091015124730.GA9398@redhat.com>
- <20091015152959.GA18681@redhat.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 15 Oct 2009 12:24:23 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:8900 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762884AbZJOQYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 12:24:22 -0400
+Date: Thu, 15 Oct 2009 13:04:23 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Avi Kivity <avi@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       kvm@vger.kernel.org
+Subject: Re: [PATCH] kvm: Prevent kvm_init from corrupting debugfs
+	structures
+Message-ID: <20091015160423.GC9629@amt.cnet>
+References: <20091014232100.GE26149@tux1.beaverton.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014232100.GE26149@tux1.beaverton.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 15 Oct 2009, Oleg Nesterov wrote:
+On Wed, Oct 14, 2009 at 04:21:00PM -0700, Darrick J. Wong wrote:
+> I'm seeing an oops condition when kvm-intel and kvm-amd are modprobe'd
+> during boot (say on an Intel system) and then rmmod'd:
 > 
-> Actually, this looks simple. Please see the patch below.
+>    # modprobe kvm-intel
+>      kvm_init()
+>      kvm_init_debug()
+>      kvm_arch_init()  <-- stores debugfs dentries internally
+>      (success, etc)
+> 
+>    # modprobe kvm-amd
+>      kvm_init()
+>      kvm_init_debug() <-- second initialization clobbers kvm's
+>                           internal pointers to dentries
+>      kvm_arch_init()
+>      kvm_exit_debug() <-- and frees them
+> 
+>    # rmmod kvm-intel
+>      kvm_exit()
+>      kvm_exit_debug() <-- double free of debugfs files!
+> 
+>      *BOOM*
+> 
+> If execution gets to the end of kvm_init(), then the calling module has been
+> established as the kvm provider.  Move the debugfs initialization to the end of
+> the function, and remove the now-unnecessary call to kvm_exit_debug() from the
+> error path.  That way we avoid trampling on the debugfs entries and freeing
+> them twice.
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
 
-Ok, I should have read all my emails before responding to the previous 
-one.
+Applied, thanks.
 
-But my response ends up being the same: I think your patch is fine, and I 
-think you should drop the conditional flag. I don't think anybody _ever_ 
-wants to run the same work entry on multiple CPU's at once. Anybody who 
-wants parallelism needs to use multiple work entries _anyway_ (since the 
-accidental parallelism you *can* get with a single one is really very 
-accidental indeed).
-
-Of course, it should be tested in -next for a while regardless. And talk 
-to the networkng people, who are the main user of workqueues.
-
-			Linus
