@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762986AbZJOTSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbZJOTUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762986AbZJOTSN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 15:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762977AbZJOTSM
+	id S1762943AbZJOTUA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 15:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761693AbZJOTT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 15:18:12 -0400
-Received: from claw.goop.org ([74.207.240.146]:44170 "EHLO claw.goop.org"
+	Thu, 15 Oct 2009 15:19:59 -0400
+Received: from claw.goop.org ([74.207.240.146]:44181 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762976AbZJOTSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 15:18:09 -0400
-Message-ID: <4AD7754B.20701@goop.org>
-Date: Thu, 15 Oct 2009 12:17:31 -0700
+	id S1761606AbZJOTT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 15:19:58 -0400
+Message-ID: <4AD775BA.30704@goop.org>
+Date: Thu, 15 Oct 2009 12:19:22 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Dan Magenheimer <dan.magenheimer@oracle.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+CC: Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
+       arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>,
-       Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@redhat.com>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock:	add	vsyscall	implementation
-References: <1254790211-15416-1-git-send-email-jeremy.fitzhardinge@citrix.com>	<1254790211-15416-4-git-send-email-jeremy.fitzhardinge@citrix.com>	<4ACB0833.2050203@redhat.com>	<4ACB9074.1000804@goop.org>	<4ACC6C9C.7080707@redhat.com>	<4ACFD43E.6000506@goop.org>	<4AD0CDFB.9030704@redhat.com>	<4AD3738B.6050200@goop.org>	<4AD375A5.8050205@redhat.com> <4AD37FE3.1010002@goop.org>	<4AD420A4.7050508@redhat.com> <4AD4DC52.8090508@goop.org> <4AD5C4ED.3050809@redhat.com>
-In-Reply-To: <4AD5C4ED.3050809@redhat.com>
+       Avi Kivity <avi@redhat.com>, chris.mason@oracle.com
+Subject: Re: [Xen-devel] [PATCH 05/12] xen/pvclock: add monotonicity check
+References: <c7f37ead-3cf2-4277-a44e-425a7b940d31@default>
+In-Reply-To: <c7f37ead-3cf2-4277-a44e-425a7b940d31@default>
 X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/14/09 05:32, Avi Kivity wrote:
-> On 10/14/2009 05:00 AM, Jeremy Fitzhardinge wrote:
->>
->>> So it's broken or disabled when that assumption is wrong?  We could
->>> easily fix that now.  Might even reuse the pvclock structures.
->>>      
->> Well, the kernel internally makes more or less the same assumption; the
->> vsyscall clocksource is the same as the kernel's internal one.  I think
->> idea is that it just drops back to something like hpet if the tsc
->> doesn't have very simple SMP characteristics.
->>
->> If the kernel could characterize the per-cpu properties of the tsc more
->> accurately, then it could use the pvclock mechanism on native.
->>    
+On 10/15/09 06:27, Dan Magenheimer wrote:
+> I understand but you are now essentially emulating a
+> reliable platform timer with a potentially unreliable
+> (but still high resolution) per-CPU timer AND probably
+> delivering that result to userland.
 >
-> It does - that's how kvm implements pvclock on the host side.  See
-> kvmclock_cpufreq_notifier() in arch/x86/kvm/x86.c.
+> Read_tsc should only be used if either CONSTANT_TSC
+> or TSC_RELIABLE is true, so read_tsc is guaranteed
+> to be monotonically-strictly-increasing by hardware
+> (and enforced for CONSTANT_TSC by check_tsc_warp
+> at boot).
+>   
 
-The tsc clocksource currently seems a fair bit more picky though; it
-doesn't attempt to sync tscs or work out their relative offsets or
-rates.  Which seems a bit defeatist.
+read_tsc clearly isn't expected to produce absolutely globally monotonic
+results; if it were then the check wouldn't be necessary.
 
     J
