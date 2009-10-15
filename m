@@ -1,145 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762418AbZJODbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762384AbZJODfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762418AbZJODbr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 23:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762411AbZJODbq
+	id S1762384AbZJODfW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 23:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757076AbZJODfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 23:31:46 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33061 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762410AbZJODbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 23:31:45 -0400
-Date: Thu, 15 Oct 2009 05:31:04 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH tip/core/rcu 2/6] rcu: prevent RCU IPI storms in presence of high call_rcu() load
-Message-ID: <20091015033104.GD9641@wotan.suse.de>
-References: <20091014171517.GA13635@linux.vnet.ibm.com> <12555405592133-git-send-email->
+	Wed, 14 Oct 2009 23:35:21 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57425 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756322AbZJODfU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 23:35:20 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 15 Oct 2009 12:32:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 8/9] swap_info: note SWAP_MAP_SHMEM
+Message-Id: <20091015123219.43cfd7b1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0910150156060.3291@sister.anvils>
+References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
+	<Pine.LNX.4.64.0910150156060.3291@sister.anvils>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12555405592133-git-send-email->
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+On Thu, 15 Oct 2009 01:57:28 +0100 (BST)
+Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
 
-I wonder why you don't just use the existing relaxed logic in
-force_quiescent_state? Is it because you are worried about
-different granularity of jiffies, and cases where RCU callbacks
-are being processed much more quickly than 1 jiffy? (this would
-make sense, I'm just asking because I'm curious as to your
-thinking behind it).
-
-Thanks, and yes I will give this a test and let you know how
-it goes.
-
-On Wed, Oct 14, 2009 at 10:15:55AM -0700, Paul E. McKenney wrote:
-> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> While we're fiddling with the swap_map values, let's assign a particular
+> value to shmem/tmpfs swap pages: their swap counts are never incremented,
+> and it helps swapoff's try_to_unuse() a little if it can immediately
+> distinguish those pages from process pages.
 > 
-> As the number of callbacks on a given CPU rises, invoke
-> force_quiescent_state() only every blimit number of callbacks
-> (defaults to 10,000), and even then only if no other CPU has invoked
-> force_quiescent_state() in the meantime.
+> Since we've no use for SWAP_MAP_BAD | COUNT_CONTINUED,
+> we might as well use that 0xbf value for SWAP_MAP_SHMEM.
 > 
-> Reported-by: Nick Piggin <npiggin@suse.de>
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+
+I welcome this!
+
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
 > ---
->  kernel/rcutree.c |   29 ++++++++++++++++++++++++-----
->  kernel/rcutree.h |    4 ++++
->  2 files changed, 28 insertions(+), 5 deletions(-)
 > 
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index 705f02a..ddbf111 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -958,7 +958,7 @@ static void rcu_offline_cpu(int cpu)
->   * Invoke any RCU callbacks that have made it to the end of their grace
->   * period.  Thottle as specified by rdp->blimit.
->   */
-> -static void rcu_do_batch(struct rcu_data *rdp)
-> +static void rcu_do_batch(struct rcu_state *rsp, struct rcu_data *rdp)
->  {
->  	unsigned long flags;
->  	struct rcu_head *next, *list, **tail;
-> @@ -1011,6 +1011,13 @@ static void rcu_do_batch(struct rcu_data *rdp)
->  	if (rdp->blimit == LONG_MAX && rdp->qlen <= qlowmark)
->  		rdp->blimit = blimit;
+>  include/linux/swap.h |    6 +++++
+>  mm/shmem.c           |   11 +++++++--
+>  mm/swapfile.c        |   47 +++++++++++++++++++++++------------------
+>  3 files changed, 42 insertions(+), 22 deletions(-)
+> 
+> --- si7/include/linux/swap.h	2009-10-14 21:26:57.000000000 +0100
+> +++ si8/include/linux/swap.h	2009-10-14 21:27:07.000000000 +0100
+> @@ -157,6 +157,7 @@ enum {
+>  #define SWAP_HAS_CACHE	0x40	/* Flag page is cached, in first swap_map */
+>  #define SWAP_CONT_MAX	0x7f	/* Max count, in each swap_map continuation */
+>  #define COUNT_CONTINUED	0x80	/* See swap_map continuation for full count */
+> +#define SWAP_MAP_SHMEM	0xbf	/* Owned by shmem/tmpfs, in first swap_map */
 >  
-> +	/* Reset ->qlen_last_fqs_check trigger if enough CBs have drained. */
-> +	if (rdp->qlen == 0 && rdp->qlen_last_fqs_check != 0) {
-> +		rdp->qlen_last_fqs_check = 0;
-> +		rdp->n_force_qs_snap = rsp->n_force_qs;
-> +	} else if (rdp->qlen < rdp->qlen_last_fqs_check - qhimark)
-> +		rdp->qlen_last_fqs_check = rdp->qlen;
+>  /*
+>   * The in-memory structure used to track swap areas.
+> @@ -315,6 +316,7 @@ extern swp_entry_t get_swap_page(void);
+>  extern swp_entry_t get_swap_page_of_type(int);
+>  extern int valid_swaphandles(swp_entry_t, unsigned long *);
+>  extern int add_swap_count_continuation(swp_entry_t, gfp_t);
+> +extern void swap_shmem_alloc(swp_entry_t);
+>  extern int swap_duplicate(swp_entry_t);
+>  extern int swapcache_prepare(swp_entry_t);
+>  extern void swap_free(swp_entry_t);
+> @@ -393,6 +395,10 @@ static inline int add_swap_count_continu
+>  	return 0;
+>  }
+>  
+> +static inline void swap_shmem_alloc(swp_entry_t swp)
+> +{
+> +}
 > +
->  	local_irq_restore(flags);
->  
->  	/* Re-raise the RCU softirq if there are callbacks remaining. */
-> @@ -1224,7 +1231,7 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
+>  static inline int swap_duplicate(swp_entry_t swp)
+>  {
+>  	return 0;
+> --- si7/mm/shmem.c	2009-09-28 00:28:41.000000000 +0100
+> +++ si8/mm/shmem.c	2009-10-14 21:27:07.000000000 +0100
+> @@ -1017,7 +1017,14 @@ int shmem_unuse(swp_entry_t entry, struc
+>  			goto out;
 >  	}
->  
->  	/* If there are callbacks ready, invoke them. */
-> -	rcu_do_batch(rdp);
-> +	rcu_do_batch(rsp, rdp);
+>  	mutex_unlock(&shmem_swaplist_mutex);
+> -out:	return found;	/* 0 or 1 or -ENOMEM */
+> +	/*
+> +	 * Can some race bring us here?  We've been holding page lock,
+> +	 * so I think not; but would rather try again later than BUG()
+> +	 */
+> +	unlock_page(page);
+> +	page_cache_release(page);
+> +out:
+> +	return (found < 0) ? found : 0;
 >  }
 >  
 >  /*
-> @@ -1288,10 +1295,20 @@ __call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu),
->  		rcu_start_gp(rsp, nestflag);  /* releases rnp_root->lock. */
->  	}
+> @@ -1080,7 +1087,7 @@ static int shmem_writepage(struct page *
+>  		else
+>  			inode = NULL;
+>  		spin_unlock(&info->lock);
+> -		swap_duplicate(swap);
+> +		swap_shmem_alloc(swap);
+>  		BUG_ON(page_mapped(page));
+>  		page_cache_release(page);	/* pagecache ref */
+>  		swap_writepage(page, wbc);
+> --- si7/mm/swapfile.c	2009-10-14 21:26:57.000000000 +0100
+> +++ si8/mm/swapfile.c	2009-10-14 21:27:07.000000000 +0100
+> @@ -548,6 +548,12 @@ static unsigned char swap_entry_free(str
+>  	if (usage == SWAP_HAS_CACHE) {
+>  		VM_BUG_ON(!has_cache);
+>  		has_cache = 0;
+> +	} else if (count == SWAP_MAP_SHMEM) {
+> +		/*
+> +		 * Or we could insist on shmem.c using a special
+> +		 * swap_shmem_free() and free_shmem_swap_and_cache()...
+> +		 */
+> +		count = 0;
+>  	} else if ((count & ~COUNT_CONTINUED) <= SWAP_MAP_MAX) {
+>  		if (count == COUNT_CONTINUED) {
+>  			if (swap_count_continued(p, offset, count))
+> @@ -1031,7 +1037,6 @@ static int try_to_unuse(unsigned int typ
+>  	swp_entry_t entry;
+>  	unsigned int i = 0;
+>  	int retval = 0;
+> -	int shmem;
 >  
-> -	/* Force the grace period if too many callbacks or too long waiting. */
-> -	if (unlikely(++rdp->qlen > qhimark)) {
-> +	/*
-> +	 * Force the grace period if too many callbacks or too long waiting.
-> +	 * Enforce hysteresis, and don't invoke force_quiescent_state()
-> +	 * if some other CPU has recently done so.  Also, don't bother
-> +	 * invoking force_quiescent_state() if the newly enqueued callback
-> +	 * is the only one waiting for a grace period to complete.
-> +	 */
-> +	if (unlikely(++rdp->qlen > rdp->qlen_last_fqs_check + qhimark)) {
->  		rdp->blimit = LONG_MAX;
-> -		force_quiescent_state(rsp, 0);
-> +		if (rsp->n_force_qs == rdp->n_force_qs_snap &&
-> +		    *rdp->nxttail[RCU_DONE_TAIL] != head)
-> +			force_quiescent_state(rsp, 0);
-> +		rdp->n_force_qs_snap = rsp->n_force_qs;
-> +		rdp->qlen_last_fqs_check = rdp->qlen;
->  	} else if ((long)(ACCESS_ONCE(rsp->jiffies_force_qs) - jiffies) < 0)
->  		force_quiescent_state(rsp, 1);
->  	local_irq_restore(flags);
-> @@ -1523,6 +1540,8 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
->  	rdp->beenonline = 1;	 /* We have now been online. */
->  	rdp->preemptable = preemptable;
->  	rdp->passed_quiesc_completed = lastcomp - 1;
-> +	rdp->qlen_last_fqs_check = 0;
-> +	rdp->n_force_qs_snap = rsp->n_force_qs;
->  	rdp->blimit = blimit;
->  	spin_unlock(&rnp->lock);		/* irqs remain disabled. */
+>  	/*
+>  	 * When searching mms for an entry, a good strategy is to
+> @@ -1107,17 +1112,18 @@ static int try_to_unuse(unsigned int typ
 >  
-> diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-> index b40ac57..599161f 100644
-> --- a/kernel/rcutree.h
-> +++ b/kernel/rcutree.h
-> @@ -167,6 +167,10 @@ struct rcu_data {
->  	struct rcu_head *nxtlist;
->  	struct rcu_head **nxttail[RCU_NEXT_SIZE];
->  	long		qlen;		/* # of queued callbacks */
-> +	long		qlen_last_fqs_check;
-> +					/* qlen at last check for QS forcing */
-> +	unsigned long	n_force_qs_snap;
-> +					/* did other CPU force QS recently? */
->  	long		blimit;		/* Upper limit on a processed batch */
+>  		/*
+>  		 * Remove all references to entry.
+> -		 * Whenever we reach init_mm, there's no address space
+> -		 * to search, but use it as a reminder to search shmem.
+>  		 */
+> -		shmem = 0;
+>  		swcount = *swap_map;
+> -		if (swap_count(swcount)) {
+> -			if (start_mm == &init_mm)
+> -				shmem = shmem_unuse(entry, page);
+> -			else
+> -				retval = unuse_mm(start_mm, entry, page);
+> +		if (swap_count(swcount) == SWAP_MAP_SHMEM) {
+> +			retval = shmem_unuse(entry, page);
+> +			/* page has already been unlocked and released */
+> +			if (retval < 0)
+> +				break;
+> +			continue;
+>  		}
+> +		if (swap_count(swcount) && start_mm != &init_mm)
+> +			retval = unuse_mm(start_mm, entry, page);
+> +
+>  		if (swap_count(*swap_map)) {
+>  			int set_start_mm = (*swap_map >= swcount);
+>  			struct list_head *p = &start_mm->mmlist;
+> @@ -1128,7 +1134,7 @@ static int try_to_unuse(unsigned int typ
+>  			atomic_inc(&new_start_mm->mm_users);
+>  			atomic_inc(&prev_mm->mm_users);
+>  			spin_lock(&mmlist_lock);
+> -			while (swap_count(*swap_map) && !retval && !shmem &&
+> +			while (swap_count(*swap_map) && !retval &&
+>  					(p = p->next) != &start_mm->mmlist) {
+>  				mm = list_entry(p, struct mm_struct, mmlist);
+>  				if (!atomic_inc_not_zero(&mm->mm_users))
+> @@ -1142,10 +1148,9 @@ static int try_to_unuse(unsigned int typ
+>  				swcount = *swap_map;
+>  				if (!swap_count(swcount)) /* any usage ? */
+>  					;
+> -				else if (mm == &init_mm) {
+> +				else if (mm == &init_mm)
+>  					set_start_mm = 1;
+> -					shmem = shmem_unuse(entry, page);
+> -				} else
+> +				else
+>  					retval = unuse_mm(mm, entry, page);
 >  
->  #ifdef CONFIG_NO_HZ
-> -- 
-> 1.5.2.5
+>  				if (set_start_mm &&
+> @@ -1162,13 +1167,6 @@ static int try_to_unuse(unsigned int typ
+>  			mmput(start_mm);
+>  			start_mm = new_start_mm;
+>  		}
+> -		if (shmem) {
+> -			/* page has already been unlocked and released */
+> -			if (shmem > 0)
+> -				continue;
+> -			retval = shmem;
+> -			break;
+> -		}
+>  		if (retval) {
+>  			unlock_page(page);
+>  			page_cache_release(page);
+> @@ -2128,6 +2126,15 @@ bad_file:
+>  }
+>  
+>  /*
+> + * Help swapoff by noting that swap entry belongs to shmem/tmpfs
+> + * (in which case its reference count is never incremented).
+> + */
+> +void swap_shmem_alloc(swp_entry_t entry)
+> +{
+> +	__swap_duplicate(entry, SWAP_MAP_SHMEM);
+> +}
+> +
+> +/*
+>   * increase reference count of swap entry by 1.
+>   */
+>  int swap_duplicate(swp_entry_t entry)
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+
