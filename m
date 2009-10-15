@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbZJOADH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762195AbZJOAJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762171AbZJOADH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 20:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbZJOADG
+	id S1762195AbZJOAJR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 20:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757328AbZJOAJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 20:03:06 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:41393 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbZJOADE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 20:03:04 -0400
-Date: Wed, 14 Oct 2009 17:02:25 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Josh Triplett <josh@joshtriplett.org>, Jon Bernard <jbernard@debian.org>,
-       Jan Blunck <jblunck@suse.de>, Pierre Habouzit <madcoder@debian.org>,
-       Steven Munroe <munroesj@linux.vnet.ibm.com>,
-       Bert Wesarg <bert.wesarg@googlemail.com>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>,
-       ltt-dev@lists.casi.polymtl.ca, rp@svcs.cs.pdx.edu,
-       linux-kernel@vger.kernel.org
-Subject: Re: Userspace RCU 0.2.3
-Message-ID: <20091015000225.GG6763@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091014223657.GC6458@Krystal>
+	Wed, 14 Oct 2009 20:09:16 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:24242 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753291AbZJOAJP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 20:09:15 -0400
+Date: Wed, 14 Oct 2009 20:06:37 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-btrfs@vger.kernel.org
+Subject: [GIT PULL] Btrfs updates
+Message-ID: <20091015000637.GA3004@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-btrfs@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091014223657.GC6458@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4AD667FB.0143:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 06:36:57PM -0400, Mathieu Desnoyers wrote:
-> Hi,
-> 
-> I just released lib urcu 0.2.3, which is now using autotools. I also
-> integrated automatic architecture detection for old 386 which lack
-> cmpxchg (using a fall-back if necessary). I also use a lock; addl
-> instead of mfence on x86-32 to support a larger variety of older Intel
-> CPUs.
+Hello everyone,
 
-!!!
+The master branch of btrfs-unstable:
 
-Is there anyone on these lists other than me who has actually used an
-SMP 80386-based system?
+git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git master
 
-Either way, much appreciated for old time's sake.  The things we used
-to do to avoid the need for cmpxchg!  ;-)
+Has an assortment of bug fixes and performance improvements.  We've
+updated the btrfs fsync code to make sure we don't trigger log commits
+when the file hasn't changed, and also tuned the log commit writeback.
+This makes a pretty big different for rpm and yum.
 
-							Thanx, Paul
+Also, Christoph Hellwig spent some time testing btrfs discard support
+with his qemu code, so I've included his patches to enable that.
 
-> The build system detects if NR_futex is available in the system
-> headers. It falls back on a more portable alternative if they are not
-> available.
-> 
-> There are also new configuration modes to ./configure for UP-only
-> systems.
-> 
-> As always, the tarballs are available at http://www.lttng.org/urcu
-> 
-> Mathieu
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Chris Mason (5) commits (+139/-27):
+    Btrfs: avoid tree log commit when there are no changes (+71/-16)
+    Btrfs: streamline tree-log btree block writeout (+53/-4)
+    Btrfs: only write one super copy during fsync (+1/-1)
+    Btrfs: always pin metadata in discard mode (+8/-0)
+    Btrfs: fix btrfs acl #ifdef checks (+6/-6)
+
+Christoph Hellwig (2) commits (+10/-7):
+    Btrfs: enable discard support (+0/-6)
+    Btrfs: add -o discard option (+10/-1)
+
+Josef Bacik (1) commits (+24/-3):
+    Btrfs: fix possible ENOSPC problems with truncate
+
+Zheng Yan (1) commits (+6/-5):
+    Btrfs: properly wait log writers during log sync
+
+Total: (9) commits
+
+ fs/btrfs/acl.c         |    6 +++---
+ fs/btrfs/btrfs_inode.h |    6 ++++++
+ fs/btrfs/ctree.h       |    4 +++-
+ fs/btrfs/disk-io.c     |    2 ++
+ fs/btrfs/extent-tree.c |   17 +++++++++++------
+ fs/btrfs/file.c        |   41 ++++++++++++++++++++++++++---------------
+ fs/btrfs/inode.c       |   33 +++++++++++++++++++++++++++++----
+ fs/btrfs/super.c       |    9 +++++++--
+ fs/btrfs/transaction.c |   45 ++++++++++++++++++++++++++++++++++++++++++---
+ fs/btrfs/transaction.h |    5 +++++
+ fs/btrfs/tree-log.c    |   48 +++++++++++++++++++++++++++++++++++++++++-------
+ fs/btrfs/tree-log.h    |    3 +++
+ fs/btrfs/xattr.c       |    2 +-
+ 13 files changed, 179 insertions(+), 42 deletions(-)
