@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbZJOOBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751552AbZJOOGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752817AbZJOOBz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 10:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbZJOOBz
+	id S1751552AbZJOOGH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 10:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbZJOOGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 10:01:55 -0400
-Received: from relay3.sgi.com ([192.48.152.1]:45607 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750776AbZJOOBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 10:01:54 -0400
-X-Greylist: delayed 564 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Oct 2009 10:01:54 EDT
-Date: Thu, 15 Oct 2009 08:50:39 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v2] x86/apic: limit irq affinity
-Message-ID: <20091015135039.GA24455@sgi.com>
-References: <20090930160259.GA7822@sgi.com> <20091012193433.GB2691@elte.hu> <20091012193704.GA8708@sgi.com> <20091014071014.GK784@elte.hu> <20091014120225.GA9674@sgi.com> <20091014122653.GA15048@elte.hu> <20091015011339.GA17374@sgi.com> <4AD6B364.2050801@kernel.org>
+	Thu, 15 Oct 2009 10:06:06 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41970 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751191AbZJOOGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 10:06:05 -0400
+Message-ID: <4AD72C27.60006@redhat.com>
+Date: Thu, 15 Oct 2009 10:05:27 -0400
+From: Don Dutile <ddutile@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081113)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD6B364.2050801@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Roland Dreier <rdreier@cisco.com>
+CC: Krzysztof Halasa <khc@pm.waw.pl>, Stefan Assmann <sassmann@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, kaneshige.kenji@jp.fujitsu.com,
+       matthew@wil.cx
+Subject: Re: GT/s vs Gbps for PCIe bus speed
+References: <4AD58EEE.4070405@redhat.com>	<m3ljjdstbb.fsf@intrepid.localdomain> <4AD62B52.9060200@redhat.com>	<m33a5lsls1.fsf@intrepid.localdomain> <4AD655E1.7080005@redhat.com> <adabpk985q9.fsf@cisco.com>
+In-Reply-To: <adabpk985q9.fsf@cisco.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 10:30:12PM -0700, Yinghai Lu wrote:
-> Dimitri Sivanich wrote:
-> > This patch allows for hard restrictions to irq affinity via a new cpumask and
-> > device node value in the irq_cfg structure.
-> > 
-> > The mask forces IRQ affinity to remain within the specified cpu domain.
-> > On some UV systems, this domain will be limited to the nodes accessible
-> > to the given node.  Currently other X86 systems will have all bits in
-> > the cpumask set, so non-UV systems will remain unaffected at this time.
-> > 
+Roland Dreier wrote:
+>  > Yeah, the std nomenclature is PCI-e not PCI-E.
 > 
-> can you check if we can reuse target_cpus for this purpose?
->
- 
-Yinghai,
+> To be pedantic: "PCIe" without the hyphen is correct, cf
+> http://www.pcisig.com/specifications/pciexpress/ (the web page, not any
+> member-only specs) -- "PCIe" is used many times there.
+> 
+agreed.
 
-The 'target_cpus' mask is in struct 'apic'.  It is a platform level mask
-(only one mask per platform).
+>  > Again, trying to generate output that relates
+>  > to what devices are spec to run at: 2.5GHz or 5.0GHz links.
+> 
+> But the spec does not talk about rates in GHz but rather GT/s (since
+> PCIe is not clocked but rather uses a recovered embedded clock).
+Yes, it does in section 2.1, page 38 of base spec:
+   Signaling rate – Once initialized, each Link must only operate at one of the supported signaling
+   levels. For the first generation of PCI Express technology, there is only one signaling rate
+   defined, which provides an effective 2.5 Gigabits/second/Lane/direction of raw bandwidth.
+   The second generation provides an effective 5.0 Gigabits/second/Lane/direction of raw
+   bandwidth. The data rate is expected to increase with technology advances in the future.
 
-The 'allowed' mask that I am adding is a per irq level mask (one mask per irq).
-Each irq might be coming from a device attached to a different node, and each
-of those nodes might require its irqs to have a different mask.
+Additionally, the original specs listed the Link speeds in the Link Capabilities
+register as Gb/s; this is also reflected in MindShare's PCI Express System Architecture
+book (3rd edition; I'm curious to find out if the 4th edition updated this area
+to the GT/s terminology).
 
-For example, say there is a pci device attached to node 2.  Node 2 might only
-want (or be able) to route its interrupts to nodes 0-127.  It would have
-'allowed' mask allowing only processors existing on the first 128 nodes.  A
-pci device attached to node 150 would have a different allowed mask, since it
-would route its interrupts to a different set of nodes.
+> Matching the terminology of the PCIe spec by using GT/s really seems
+> best in terms of clarity, and describes the situation most exactly,
+> since by using GT/s one also sidesteps the issue of having the data rate
+> depend on the link width.
+> 
+>  - R.
 
-Use of something like 'target_cpus' would require recalculating this every
-time someone changes affinity, instead of just 'and'ing in the mask.
+So, the original spec (and for those that worked on it originally), the
+link speeds were stated in Gb/s.
+If GT/s will be the nomenclature used by PCIe vendors
+when they have varying speed devices, then I agree, use the GT/s terminology.
+Doing a number of varying web searches, it appears the hw vendors
+are avoiding which to use: T/s or b/s by using "2.5G" & "5.0G"
+sometimes prefixing with "Gen1-" & "Gen2-" respectively.
 
-Dimitri
+Maybe we should take a hint from the hw folks and drop the use of "T/s" or "b/s"
+and just output "2.5G", "5.0G".... and when it gets here "8.0G".
+
+cheers... Don
+
