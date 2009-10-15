@@ -1,101 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762867AbZJOPy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933003AbZJOQAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762867AbZJOPy4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 11:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761343AbZJOPy4
+	id S933003AbZJOQAO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 12:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932871AbZJOQAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 11:54:56 -0400
-Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:41316 "EHLO
-	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758586AbZJOPyz (ORCPT
+	Thu, 15 Oct 2009 12:00:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:18690 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932666AbZJOQAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 11:54:55 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4AD745B8.3060307@gmail.com>
-Date: Thu, 15 Oct 2009 16:54:32 +0100
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091007)
+	Thu, 15 Oct 2009 12:00:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=CcXy9z1S+cZ0zLfF7mn7jFe1ppLEFcK1QRK3t3Mr7nUDFxzXcptUvjw4S1cNPw1i1u
+         bNid8MfftmpHm0qbd1mfjNs/5TavNtxcEQ8/Ij/vmLNs+eA8P0zmizW8mB+9DJ3oQ5vp
+         tlF2RkeEoyo0FIQ3bCRpG9RpgfbidwZ/ty/Us=
+Message-ID: <4AD7469B.9070907@gmail.com>
+Date: Thu, 15 Oct 2009 11:58:19 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Jonathan Cameron <jic23@cam.ac.uk>, Zhang Rui <rui.zhang@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Jean Delvare <khali@linux-fr.org>,
-       "alan@linux.intel.com" <alan@linux.intel.com>,
-       Len Brown <lenb@kernel.org>,
-       "Cory T. Tusar" <ctusar@videon-central.com>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [RFC] [PATCH 1/2] introduce ALS sysfs class
-References: <1253590755.15763.21.camel@rzhang-dt> <4AB8C62F.5020605@cam.ac.uk> <20090923071857.GC8565@elf.ucw.cz>
-In-Reply-To: <20090923071857.GC8565@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Daniel Walker <dwalker@fifo99.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Tips for module_init() dependencies
+References: <4AD71D12.9060203@gmail.com> <1255621559.22917.35.camel@desktop>
+In-Reply-To: <1255621559.22917.35.camel@desktop>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig4FDD2BA1161FB0A6664911B0"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Tue 2009-09-22 13:42:23, Jonathan Cameron wrote:
->   
->> Zhang Rui wrote:
->>     
->>> Hi, Jonathan,
->>>
->>> this is the refresh ALS sysfs class driver.
->>> I just introduced one sysfs attribute "illuminance", because
->>> I didn't catch the exact meaning of the others like "???infrared".
->>> So it would be great if you can generate an incremental patch
->>> to introduce the other optional attributes needed, and update
->>> the documentation as well. :)
->>>       
->> Will do, though may just leave it out of first pass of drivers
->> (as it may be controversial and it would be nice to get something
->> in place before the arguments begin!)
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4FDD2BA1161FB0A6664911B0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Daniel Walker wrote:
+> On Thu, 2009-10-15 at 09:01 -0400, Gregory Haskins wrote:
+>=20
+>> may break, because the kernel seems to have no concept of
+>> interdependency between foo_init() and bar_init(), and therefore
+>> bar_init() may call foo() before foo_init() has executed.
 >>
->> All looks nice and clean. The only real question is whether
->> we want to standardize naming of devices under sysfs (like hwmon does)
->> or allow the individual drivers to do the naming?
->>     
->
-> Allow the drivers to do the naming. Having useless name like "als0",
-> with als0/name telling me what the driver is is bad.
->   
-This topic came up again in the discussion of the tsl2550 driver port.
+>> There are various ways to solve this problem, such as deferring callin=
+g
+>> foo() with a workqueue or something, but I was wondering if there was =
+a
+>> better/standard way to do this that I am missing?
+>>
+>> The problem I am having specifically is that I am trying to call
+>> configfs_register_subsystem() in a module_init(), but this breaks when=
 
-Jean Delvare raised a point that I'm inclined to agree with (with several
-more ports from elsewhere in the kernel underway).
+>> built into the kernel based on sheer bad luck that configfs gets
+>> initialized after me.  To date I have worked around this by forcing my=
 
-.... (quoted from [PATCH] ALS: TSL2550 driver move from i2c/chips)
+>> code to only support built-in, and using late_initcall() instead or
+>> module_init.  This works, but it only means I am putting the problem o=
+ff
+>> (code that depends on *me* has to use similar tricks, etc.
+>=20
+> You can't modify the build order so your module get "builtin" after
+> configfs?
+>=20
 
-> I'd imaging that als-class devices are simply named als%u. Just like
-> > > hwmon devices are named hwmon%u, input devices are names input%u and
-> > > event%u, etc. I don't know of any class pushing the naming down to its
-> > > drivers, do you? The only example I can remember are i2c drivers back
-> > > in year 1999, when they were part of lm-sensors.I have personally put
-> > > an end to this years ago.
-> >
-> > This debate started in the als thread. Personally I couldn't care less
-> > either way but it does need to be put to bed before that subsystem merges.
-> > To my mind either approach is trivially handled in a userspace library
-> > so it doesn't matter.  I don't suppose you can remember what the original
-> > reasons for squashing this naming approach were?
->
-> Code duplication. Having the same unique-id handling code repeated in
-> 50 drivers was no fun, as it did not add any value compared to a
-> central handling.
->
+Hi Daniel,
 
-So does anyone have a strong objection to moving over the more conventional
-als0/ naming and move the id handling into the als core?
+Possibly.
 
-Note that unless there is a clear reason for doing it any other way it will
-probably meet resistance beyond Jean and myself.
+A) Any suggestions on how? Can I express this in Kconfig or something
+(i.e. "depends on FOO").  I currently have "select FOO" in the BAR
+object, but this doesn't seem to be sufficient to describe the relationsh=
+ip.
 
-Jonathan
+B) Do I have to make the entire chain follow suit? (I have C deps on B,
+B deps on A kind of scenarios)
+
+Kind Regards,
+-Greg
 
 
 
+--------------enig4FDD2BA1161FB0A6664911B0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkrXRpsACgkQP5K2CMvXmqH0AACffvS71ELVyrn5KpEH38LK/3qv
+q34An1u85dAiMIL3sXzTP9XeMzRgLvV3
+=4ZxE
+-----END PGP SIGNATURE-----
+
+--------------enig4FDD2BA1161FB0A6664911B0--
