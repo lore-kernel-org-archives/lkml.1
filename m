@@ -1,674 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762407AbZJODde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762418AbZJODbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762407AbZJODde (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 23:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759788AbZJODdd
+	id S1762418AbZJODbr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 23:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762411AbZJODbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 23:33:33 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55897 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757445AbZJODdc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 23:33:32 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 15 Oct 2009 12:30:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nitin Gupta <ngupta@vflare.org>,
-       hongshin@gmail.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 7/9] swap_info: swap count continuations
-Message-Id: <20091015123024.21ca3ef7.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0910150153560.3291@sister.anvils>
-References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
-	<Pine.LNX.4.64.0910150153560.3291@sister.anvils>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 14 Oct 2009 23:31:46 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33061 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762410AbZJODbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 23:31:45 -0400
+Date: Thu, 15 Oct 2009 05:31:04 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
+       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH tip/core/rcu 2/6] rcu: prevent RCU IPI storms in presence of high call_rcu() load
+Message-ID: <20091015033104.GD9641@wotan.suse.de>
+References: <20091014171517.GA13635@linux.vnet.ibm.com> <12555405592133-git-send-email->
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <12555405592133-git-send-email->
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009 01:56:01 +0100 (BST)
-Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+Hi Paul,
 
-> Swap is duplicated (reference count incremented by one) whenever the same
-> swap page is inserted into another mm (when forking finds a swap entry in
-> place of a pte, or when reclaim unmaps a pte to insert the swap entry).
+I wonder why you don't just use the existing relaxed logic in
+force_quiescent_state? Is it because you are worried about
+different granularity of jiffies, and cases where RCU callbacks
+are being processed much more quickly than 1 jiffy? (this would
+make sense, I'm just asking because I'm curious as to your
+thinking behind it).
+
+Thanks, and yes I will give this a test and let you know how
+it goes.
+
+On Wed, Oct 14, 2009 at 10:15:55AM -0700, Paul E. McKenney wrote:
+> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > 
-> swap_info_struct's vmalloc'ed swap_map is the array of these reference
-> counts: but what happens when the unsigned short (or unsigned char since
-> the preceding patch) is full? (and its high bit is kept for a cache flag)
+> As the number of callbacks on a given CPU rises, invoke
+> force_quiescent_state() only every blimit number of callbacks
+> (defaults to 10,000), and even then only if no other CPU has invoked
+> force_quiescent_state() in the meantime.
 > 
-> We then lose track of it, never freeing, leaving it in use until swapoff:
-> at which point we _hope_ that a single pass will have found all instances,
-> assume there are no more, and will lose user data if we're wrong.
-> 
-> Swapping of KSM pages has not yet been enabled; but it is implemented,
-> and makes it very easy for a user to overflow the maximum swap count:
-> possible with ordinary process pages, but unlikely, even when pid_max
-> has been raised from PID_MAX_DEFAULT.
-> 
-> This patch implements swap count continuations: when the count overflows,
-> a continuation page is allocated and linked to the original vmalloc'ed
-> map page, and this used to hold the continuation counts for that entry
-> and its neighbours.  These continuation pages are seldom referenced:
-> the common paths all work on the original swap_map, only referring to
-> a continuation page when the low "digit" of a count is incremented or
-> decremented through SWAP_MAP_MAX.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-
-Hmm...maybe I don't understand the benefit of this style of data structure.
-
-Do we need fine grain chain ? 
-Is  array of "unsigned long" counter is bad ?  (too big?)
-
-==
-#define EXTENTION_OFFSET_INDEX(offset)	(((offset) & PAGE_MASK)
-#define EXTENTION_OFFSET_MASK		(~(PAGE_SIZE/sizeof(long) - 1))
-struct swapcount_extention_array {
-	unsigned long *map[EXTEND_MAP_SIZE];
-};
-	
-At adding continuation.
-
-int add_swap_count_continuation(swp_entry_t entry, gfp_t gfp_mask)
-{
-	struct page *page;
-	unsigned long *newmap, *map;
-	struct swapcount_extention_array *array;
-
-	newmap = __get_free_page(mask);
-	si = swap_info_get(entry);
-	array = kmalloc(sizeof(swapcount_extention_array);
-
-	....
-	(If overflow)
-	page = vmalloc_to_page(si->swap_map + offset);
-	if (!PagePrivate(page)) {
-		page->praivate = array;
-	} else
-		kfree(array);
-
-	index = EXTENTION_OFFSET_INDEX(offset);
-	pos = EXTENTION_OFFSET_MASK(offset);
-
-	array = page->private;
-	if (!array->map[index]) {
-		array->map[index] = newmap;
-	} else
-		free_page(newmap);
-	map = array->map[index];
-	map[pos] += 1;
-	mappage = vaddr_to_page(map);
-	get_page(mappage); # increment page->count of array.
-==
-
-Hmm? maybe I just don't like chain...
-
-Regards,
--Kame
-
-
+> Reported-by: Nick Piggin <npiggin@suse.de>
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > ---
+>  kernel/rcutree.c |   29 ++++++++++++++++++++++++-----
+>  kernel/rcutree.h |    4 ++++
+>  2 files changed, 28 insertions(+), 5 deletions(-)
 > 
->  include/linux/swap.h |   22 ++
->  mm/memory.c          |   19 ++
->  mm/rmap.c            |    6 
->  mm/swapfile.c        |  304 +++++++++++++++++++++++++++++++++--------
->  4 files changed, 287 insertions(+), 64 deletions(-)
-> 
-> --- si6/include/linux/swap.h	2009-10-14 21:26:49.000000000 +0100
-> +++ si7/include/linux/swap.h	2009-10-14 21:26:57.000000000 +0100
-> @@ -145,15 +145,18 @@ enum {
->  	SWP_DISCARDABLE = (1 << 2),	/* blkdev supports discard */
->  	SWP_DISCARDING	= (1 << 3),	/* now discarding a free cluster */
->  	SWP_SOLIDSTATE	= (1 << 4),	/* blkdev seeks are cheap */
-> +	SWP_CONTINUED	= (1 << 5),	/* swap_map has count continuation */
->  					/* add others here before... */
->  	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
->  };
->  
->  #define SWAP_CLUSTER_MAX 32
->  
-> -#define SWAP_MAP_MAX	0x7e
-> -#define SWAP_MAP_BAD	0x7f
-> -#define SWAP_HAS_CACHE	0x80		/* There is a swap cache of entry. */
-> +#define SWAP_MAP_MAX	0x3e	/* Max duplication count, in first swap_map */
-> +#define SWAP_MAP_BAD	0x3f	/* Note pageblock is bad, in first swap_map */
-> +#define SWAP_HAS_CACHE	0x40	/* Flag page is cached, in first swap_map */
-> +#define SWAP_CONT_MAX	0x7f	/* Max count, in each swap_map continuation */
-> +#define COUNT_CONTINUED	0x80	/* See swap_map continuation for full count */
->  
->  /*
->   * The in-memory structure used to track swap areas.
-> @@ -310,9 +313,10 @@ extern long total_swap_pages;
->  extern void si_swapinfo(struct sysinfo *);
->  extern swp_entry_t get_swap_page(void);
->  extern swp_entry_t get_swap_page_of_type(int);
-> -extern void swap_duplicate(swp_entry_t);
-> -extern int swapcache_prepare(swp_entry_t);
->  extern int valid_swaphandles(swp_entry_t, unsigned long *);
-> +extern int add_swap_count_continuation(swp_entry_t, gfp_t);
-> +extern int swap_duplicate(swp_entry_t);
-> +extern int swapcache_prepare(swp_entry_t);
->  extern void swap_free(swp_entry_t);
->  extern void swapcache_free(swp_entry_t, struct page *page);
->  extern int free_swap_and_cache(swp_entry_t);
-> @@ -384,8 +388,14 @@ static inline void show_swap_cache_info(
->  #define free_swap_and_cache(swp)	is_migration_entry(swp)
->  #define swapcache_prepare(swp)		is_migration_entry(swp)
->  
-> -static inline void swap_duplicate(swp_entry_t swp)
-> +static inline int add_swap_count_continuation(swp_entry_t swp, gfp_t gfp_mask)
->  {
-> +	return 0;
-> +}
-> +
-> +static inline int swap_duplicate(swp_entry_t swp)
-> +{
-> +	return 0;
->  }
->  
->  static inline void swap_free(swp_entry_t swp)
-> --- si6/mm/memory.c	2009-09-28 00:28:41.000000000 +0100
-> +++ si7/mm/memory.c	2009-10-14 21:26:57.000000000 +0100
-> @@ -572,7 +572,7 @@ out:
->   * covered by this vma.
+> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+> index 705f02a..ddbf111 100644
+> --- a/kernel/rcutree.c
+> +++ b/kernel/rcutree.c
+> @@ -958,7 +958,7 @@ static void rcu_offline_cpu(int cpu)
+>   * Invoke any RCU callbacks that have made it to the end of their grace
+>   * period.  Thottle as specified by rdp->blimit.
 >   */
->  
-> -static inline void
-> +static inline unsigned long
->  copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
->  		pte_t *dst_pte, pte_t *src_pte, struct vm_area_struct *vma,
->  		unsigned long addr, int *rss)
-> @@ -586,7 +586,9 @@ copy_one_pte(struct mm_struct *dst_mm, s
->  		if (!pte_file(pte)) {
->  			swp_entry_t entry = pte_to_swp_entry(pte);
->  
-> -			swap_duplicate(entry);
-> +			if (swap_duplicate(entry) < 0)
-> +				return entry.val;
-> +
->  			/* make sure dst_mm is on swapoff's mmlist. */
->  			if (unlikely(list_empty(&dst_mm->mmlist))) {
->  				spin_lock(&mmlist_lock);
-> @@ -635,6 +637,7 @@ copy_one_pte(struct mm_struct *dst_mm, s
->  
->  out_set_pte:
->  	set_pte_at(dst_mm, addr, dst_pte, pte);
-> +	return 0;
->  }
->  
->  static int copy_pte_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
-> @@ -645,6 +648,7 @@ static int copy_pte_range(struct mm_stru
->  	spinlock_t *src_ptl, *dst_ptl;
->  	int progress = 0;
->  	int rss[2];
-> +	swp_entry_t entry = (swp_entry_t){0};
->  
->  again:
->  	rss[1] = rss[0] = 0;
-> @@ -671,7 +675,10 @@ again:
->  			progress++;
->  			continue;
->  		}
-> -		copy_one_pte(dst_mm, src_mm, dst_pte, src_pte, vma, addr, rss);
-> +		entry.val = copy_one_pte(dst_mm, src_mm, dst_pte, src_pte,
-> +							vma, addr, rss);
-> +		if (entry.val)
-> +			break;
->  		progress += 8;
->  	} while (dst_pte++, src_pte++, addr += PAGE_SIZE, addr != end);
->  
-> @@ -681,6 +688,12 @@ again:
->  	add_mm_rss(dst_mm, rss[0], rss[1]);
->  	pte_unmap_unlock(dst_pte - 1, dst_ptl);
->  	cond_resched();
-> +
-> +	if (entry.val) {
-> +		if (add_swap_count_continuation(entry, GFP_KERNEL) < 0)
-> +			return -ENOMEM;
-> +		progress = 0;
-> +	}
->  	if (addr != end)
->  		goto again;
->  	return 0;
-> --- si6/mm/rmap.c	2009-10-05 04:33:14.000000000 +0100
-> +++ si7/mm/rmap.c	2009-10-14 21:26:57.000000000 +0100
-> @@ -822,7 +822,11 @@ static int try_to_unmap_one(struct page
->  			 * Store the swap location in the pte.
->  			 * See handle_pte_fault() ...
->  			 */
-> -			swap_duplicate(entry);
-> +			if (swap_duplicate(entry) < 0) {
-> +				set_pte_at(mm, address, pte, pteval);
-> +				ret = SWAP_FAIL;
-> +				goto out_unmap;
-> +			}
->  			if (list_empty(&mm->mmlist)) {
->  				spin_lock(&mmlist_lock);
->  				if (list_empty(&mm->mmlist))
-> --- si6/mm/swapfile.c	2009-10-14 21:26:49.000000000 +0100
-> +++ si7/mm/swapfile.c	2009-10-14 21:26:57.000000000 +0100
-> @@ -35,11 +35,14 @@
->  #include <linux/swapops.h>
->  #include <linux/page_cgroup.h>
->  
-> +static bool swap_count_continued(struct swap_info_struct *, pgoff_t,
-> +				 unsigned char);
-> +static void free_swap_count_continuations(struct swap_info_struct *);
-> +
->  static DEFINE_SPINLOCK(swap_lock);
->  static unsigned int nr_swapfiles;
->  long nr_swap_pages;
->  long total_swap_pages;
-> -static int swap_overflow;
->  static int least_priority;
->  
->  static const char Bad_file[] = "Bad swap file entry ";
-> @@ -55,7 +58,7 @@ static DEFINE_MUTEX(swapon_mutex);
->  
->  static inline unsigned char swap_count(unsigned char ent)
+> -static void rcu_do_batch(struct rcu_data *rdp)
+> +static void rcu_do_batch(struct rcu_state *rsp, struct rcu_data *rdp)
 >  {
-> -	return ent & ~SWAP_HAS_CACHE;
-> +	return ent & ~SWAP_HAS_CACHE;	/* may include SWAP_HAS_CONT flag */
->  }
+>  	unsigned long flags;
+>  	struct rcu_head *next, *list, **tail;
+> @@ -1011,6 +1011,13 @@ static void rcu_do_batch(struct rcu_data *rdp)
+>  	if (rdp->blimit == LONG_MAX && rdp->qlen <= qlowmark)
+>  		rdp->blimit = blimit;
 >  
->  /* returns 1 if swap entry is freed */
-> @@ -545,8 +548,15 @@ static unsigned char swap_entry_free(str
->  	if (usage == SWAP_HAS_CACHE) {
->  		VM_BUG_ON(!has_cache);
->  		has_cache = 0;
-> -	} else if (count < SWAP_MAP_MAX)
-> -		count--;
-> +	} else if ((count & ~COUNT_CONTINUED) <= SWAP_MAP_MAX) {
-> +		if (count == COUNT_CONTINUED) {
-> +			if (swap_count_continued(p, offset, count))
-> +				count = SWAP_MAP_MAX | COUNT_CONTINUED;
-> +			else
-> +				count = SWAP_MAP_MAX;
-> +		} else
-> +			count--;
-> +	}
+> +	/* Reset ->qlen_last_fqs_check trigger if enough CBs have drained. */
+> +	if (rdp->qlen == 0 && rdp->qlen_last_fqs_check != 0) {
+> +		rdp->qlen_last_fqs_check = 0;
+> +		rdp->n_force_qs_snap = rsp->n_force_qs;
+> +	} else if (rdp->qlen < rdp->qlen_last_fqs_check - qhimark)
+> +		rdp->qlen_last_fqs_check = rdp->qlen;
+> +
+>  	local_irq_restore(flags);
 >  
->  	if (!count)
->  		mem_cgroup_uncharge_swap(entry);
-> @@ -604,6 +614,8 @@ void swapcache_free(swp_entry_t entry, s
->  
->  /*
->   * How many references to page are currently swapped out?
-> + * This does not give an exact answer when swap count is continued,
-> + * but does include the high COUNT_CONTINUED flag to allow for that.
->   */
->  static inline int page_swapcount(struct page *page)
->  {
-> @@ -1019,7 +1031,6 @@ static int try_to_unuse(unsigned int typ
->  	swp_entry_t entry;
->  	unsigned int i = 0;
->  	int retval = 0;
-> -	int reset_overflow = 0;
->  	int shmem;
->  
->  	/*
-> @@ -1034,8 +1045,7 @@ static int try_to_unuse(unsigned int typ
->  	 * together, child after parent.  If we race with dup_mmap(), we
->  	 * prefer to resolve parent before child, lest we miss entries
->  	 * duplicated after we scanned child: using last mm would invert
-> -	 * that.  Though it's only a serious concern when an overflowed
-> -	 * swap count is reset from SWAP_MAP_MAX, preventing a rescan.
-> +	 * that.
->  	 */
->  	start_mm = &init_mm;
->  	atomic_inc(&init_mm.mm_users);
-> @@ -1166,36 +1176,6 @@ static int try_to_unuse(unsigned int typ
->  		}
->  
->  		/*
-> -		 * How could swap count reach 0x7ffe ?
-> -		 * There's no way to repeat a swap page within an mm
-> -		 * (except in shmem, where it's the shared object which takes
-> -		 * the reference count)?
-> -		 * We believe SWAP_MAP_MAX cannot occur.(if occur, unsigned
-> -		 * short is too small....)
-> -		 * If that's wrong, then we should worry more about
-> -		 * exit_mmap() and do_munmap() cases described above:
-> -		 * we might be resetting SWAP_MAP_MAX too early here.
-> -		 *
-> -		 * Yes, that's wrong: though very unlikely, swap count 0x7ffe
-> -		 * could surely occur if pid_max raised from PID_MAX_DEFAULT;
-> -		 * and we are now lowering SWAP_MAP_MAX to 0x7e, making it
-> -		 * much easier to reach.  But the next patch will fix that.
-> -		 *
-> -		 * We know "Undead"s can happen, they're okay, so don't
-> -		 * report them; but do report if we reset SWAP_MAP_MAX.
-> -		 */
-> -		/* We might release the lock_page() in unuse_mm(). */
-> -		if (!PageSwapCache(page) || page_private(page) != entry.val)
-> -			goto retry;
-> -
-> -		if (swap_count(*swap_map) == SWAP_MAP_MAX) {
-> -			spin_lock(&swap_lock);
-> -			*swap_map = SWAP_HAS_CACHE;
-> -			spin_unlock(&swap_lock);
-> -			reset_overflow = 1;
-> -		}
-> -
-> -		/*
->  		 * If a reference remains (rare), we would like to leave
->  		 * the page in the swap cache; but try_to_unmap could
->  		 * then re-duplicate the entry once we drop page lock,
-> @@ -1236,7 +1216,6 @@ static int try_to_unuse(unsigned int typ
->  		 * mark page dirty so shrink_page_list will preserve it.
->  		 */
->  		SetPageDirty(page);
-> -retry:
->  		unlock_page(page);
->  		page_cache_release(page);
->  
-> @@ -1248,10 +1227,6 @@ retry:
+>  	/* Re-raise the RCU softirq if there are callbacks remaining. */
+> @@ -1224,7 +1231,7 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
 >  	}
 >  
->  	mmput(start_mm);
-> -	if (reset_overflow) {
-> -		printk(KERN_WARNING "swapoff: cleared swap entry overflow\n");
-> -		swap_overflow = 0;
-> -	}
->  	return retval;
->  }
->  
-> @@ -1595,6 +1570,9 @@ SYSCALL_DEFINE1(swapoff, const char __us
->  	up_write(&swap_unplug_sem);
->  
->  	destroy_swap_extents(p);
-> +	if (p->flags & SWP_CONTINUED)
-> +		free_swap_count_continuations(p);
-> +
->  	mutex_lock(&swapon_mutex);
->  	spin_lock(&swap_lock);
->  	drain_mmlist();
-> @@ -2080,14 +2058,13 @@ void si_swapinfo(struct sysinfo *val)
->  /*
->   * Verify that a swap entry is valid and increment its swap map count.
->   *
-> - * Note: if swap_map[] reaches SWAP_MAP_MAX the entries are treated as
-> - * "permanent", but will be reclaimed by the next swapoff.
->   * Returns error code in following case.
->   * - success -> 0
->   * - swp_entry is invalid -> EINVAL
->   * - swp_entry is migration entry -> EINVAL
->   * - swap-cache reference is requested but there is already one. -> EEXIST
->   * - swap-cache reference is requested but the entry is not used. -> ENOENT
-> + * - swap-mapped reference requested but needs continued swap count. -> ENOMEM
->   */
->  static int __swap_duplicate(swp_entry_t entry, unsigned char usage)
->  {
-> @@ -2127,15 +2104,14 @@ static int __swap_duplicate(swp_entry_t
->  
->  	} else if (count || has_cache) {
->  
-> -		if (count < SWAP_MAP_MAX - 1)
-> -			count++;
-> -		else if (count <= SWAP_MAP_MAX) {
-> -			if (swap_overflow++ < 5)
-> -				printk(KERN_WARNING
-> -				       "swap_dup: swap entry overflow\n");
-> -			count = SWAP_MAP_MAX;
-> -		} else
-> +		if ((count & ~COUNT_CONTINUED) < SWAP_MAP_MAX)
-> +			count += usage;
-> +		else if ((count & ~COUNT_CONTINUED) > SWAP_MAP_MAX)
->  			err = -EINVAL;
-> +		else if (swap_count_continued(p, offset, count))
-> +			count = COUNT_CONTINUED;
-> +		else
-> +			err = -ENOMEM;
->  	} else
->  		err = -ENOENT;			/* unused swap entry */
->  
-> @@ -2154,9 +2130,13 @@ bad_file:
->  /*
->   * increase reference count of swap entry by 1.
->   */
-> -void swap_duplicate(swp_entry_t entry)
-> +int swap_duplicate(swp_entry_t entry)
->  {
-> -	__swap_duplicate(entry, 1);
-> +	int err = 0;
-> +
-> +	while (!err && __swap_duplicate(entry, 1) == -ENOMEM)
-> +		err = add_swap_count_continuation(entry, GFP_ATOMIC);
-> +	return err;
+>  	/* If there are callbacks ready, invoke them. */
+> -	rcu_do_batch(rdp);
+> +	rcu_do_batch(rsp, rdp);
 >  }
 >  
 >  /*
-> @@ -2223,3 +2203,219 @@ int valid_swaphandles(swp_entry_t entry,
->  	*offset = ++toff;
->  	return nr_pages? ++nr_pages: 0;
->  }
-> +
-> +/*
-> + * add_swap_count_continuation - called when a swap count is duplicated
-> + * beyond SWAP_MAP_MAX, it allocates a new page and links that to the entry's
-> + * page of the original vmalloc'ed swap_map, to hold the continuation count
-> + * (for that entry and for its neighbouring PAGE_SIZE swap entries).  Called
-> + * again when count is duplicated beyond SWAP_MAP_MAX * SWAP_CONT_MAX, etc.
-> + *
-> + * These continuation pages are seldom referenced: the common paths all work
-> + * on the original swap_map, only referring to a continuation page when the
-> + * low "digit" of a count is incremented or decremented through SWAP_MAP_MAX.
-> + *
-> + * add_swap_count_continuation(, GFP_ATOMIC) can be called while holding
-> + * page table locks; if it fails, add_swap_count_continuation(, GFP_KERNEL)
-> + * can be called after dropping locks.
-> + */
-> +int add_swap_count_continuation(swp_entry_t entry, gfp_t gfp_mask)
-> +{
-> +	struct swap_info_struct *si;
-> +	struct page *head;
-> +	struct page *page;
-> +	struct page *list_page;
-> +	pgoff_t offset;
-> +	unsigned char count;
-> +
+> @@ -1288,10 +1295,20 @@ __call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu),
+>  		rcu_start_gp(rsp, nestflag);  /* releases rnp_root->lock. */
+>  	}
+>  
+> -	/* Force the grace period if too many callbacks or too long waiting. */
+> -	if (unlikely(++rdp->qlen > qhimark)) {
 > +	/*
-> +	 * When debugging, it's easier to use __GFP_ZERO here; but it's better
-> +	 * for latency not to zero a page while GFP_ATOMIC and holding locks.
+> +	 * Force the grace period if too many callbacks or too long waiting.
+> +	 * Enforce hysteresis, and don't invoke force_quiescent_state()
+> +	 * if some other CPU has recently done so.  Also, don't bother
+> +	 * invoking force_quiescent_state() if the newly enqueued callback
+> +	 * is the only one waiting for a grace period to complete.
 > +	 */
-> +	page = alloc_page(gfp_mask | __GFP_HIGHMEM);
-> +
-> +	si = swap_info_get(entry);
-> +	if (!si) {
-> +		/*
-> +		 * An acceptable race has occurred since the failing
-> +		 * __swap_duplicate(): the swap entry has been freed,
-> +		 * perhaps even the whole swap_map cleared for swapoff.
-> +		 */
-> +		goto outer;
-> +	}
-> +
-> +	offset = swp_offset(entry);
-> +	count = si->swap_map[offset] & ~SWAP_HAS_CACHE;
-> +
-> +	if ((count & ~COUNT_CONTINUED) != SWAP_MAP_MAX) {
-> +		/*
-> +		 * The higher the swap count, the more likely it is that tasks
-> +		 * will race to add swap count continuation: we need to avoid
-> +		 * over-provisioning.
-> +		 */
-> +		goto out;
-> +	}
-> +
-> +	if (!page) {
-> +		spin_unlock(&swap_lock);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	/*
-> +	 * We are fortunate that although vmalloc_to_page uses pte_offset_map,
-> +	 * no architecture is using highmem pages for kernel pagetables: so it
-> +	 * will not corrupt the GFP_ATOMIC caller's atomic pagetable kmaps.
-> +	 */
-> +	head = vmalloc_to_page(si->swap_map + offset);
-> +	offset &= ~PAGE_MASK;
-> +
-> +	/*
-> +	 * Page allocation does not initialize the page's lru field,
-> +	 * but it does always reset its private field.
-> +	 */
-> +	if (!page_private(head)) {
-> +		BUG_ON(count & COUNT_CONTINUED);
-> +		INIT_LIST_HEAD(&head->lru);
-> +		set_page_private(head, SWP_CONTINUED);
-> +		si->flags |= SWP_CONTINUED;
-> +	}
-> +
-> +	list_for_each_entry(list_page, &head->lru, lru) {
-> +		unsigned char *map;
-> +
-> +		/*
-> +		 * If the previous map said no continuation, but we've found
-> +		 * a continuation page, free our allocation and use this one.
-> +		 */
-> +		if (!(count & COUNT_CONTINUED))
-> +			goto out;
-> +
-> +		map = kmap_atomic(list_page, KM_USER0) + offset;
-> +		count = *map;
-> +		kunmap_atomic(map, KM_USER0);
-> +
-> +		/*
-> +		 * If this continuation count now has some space in it,
-> +		 * free our allocation and use this one.
-> +		 */
-> +		if ((count & ~COUNT_CONTINUED) != SWAP_CONT_MAX)
-> +			goto out;
-> +	}
-> +
-> +	list_add_tail(&page->lru, &head->lru);
-> +	page = NULL;			/* now it's attached, don't free it */
-> +out:
-> +	spin_unlock(&swap_lock);
-> +outer:
-> +	if (page)
-> +		__free_page(page);
-> +	return 0;
-> +}
-> +
-> +/*
-> + * swap_count_continued - when the original swap_map count is incremented
-> + * from SWAP_MAP_MAX, check if there is already a continuation page to carry
-> + * into, carry if so, or else fail until a new continuation page is allocated;
-> + * when the original swap_map count is decremented from 0 with continuation,
-> + * borrow from the continuation and report whether it still holds more.
-> + * Called while __swap_duplicate() or swap_entry_free() holds swap_lock.
-> + */
-> +static bool swap_count_continued(struct swap_info_struct *si,
-> +				 pgoff_t offset, unsigned char count)
-> +{
-> +	struct page *head;
-> +	struct page *page;
-> +	unsigned char *map;
-> +
-> +	head = vmalloc_to_page(si->swap_map + offset);
-> +	if (page_private(head) != SWP_CONTINUED) {
-> +		BUG_ON(count & COUNT_CONTINUED);
-> +		return false;		/* need to add count continuation */
-> +	}
-> +
-> +	offset &= ~PAGE_MASK;
-> +	page = list_entry(head->lru.next, struct page, lru);
-> +	map = kmap_atomic(page, KM_USER0) + offset;
-> +
-> +	if (count == SWAP_MAP_MAX)	/* initial increment from swap_map */
-> +		goto init_map;		/* jump over SWAP_CONT_MAX checks */
-> +
-> +	if (count == (SWAP_MAP_MAX | COUNT_CONTINUED)) { /* incrementing */
-> +		/*
-> +		 * Think of how you add 1 to 999
-> +		 */
-> +		while (*map == (SWAP_CONT_MAX | COUNT_CONTINUED)) {
-> +			kunmap_atomic(map, KM_USER0);
-> +			page = list_entry(page->lru.next, struct page, lru);
-> +			BUG_ON(page == head);
-> +			map = kmap_atomic(page, KM_USER0) + offset;
-> +		}
-> +		if (*map == SWAP_CONT_MAX) {
-> +			kunmap_atomic(map, KM_USER0);
-> +			page = list_entry(page->lru.next, struct page, lru);
-> +			if (page == head)
-> +				return false;	/* add count continuation */
-> +			map = kmap_atomic(page, KM_USER0) + offset;
-> +init_map:		*map = 0;		/* we didn't zero the page */
-> +		}
-> +		*map += 1;
-> +		kunmap_atomic(map, KM_USER0);
-> +		page = list_entry(page->lru.prev, struct page, lru);
-> +		while (page != head) {
-> +			map = kmap_atomic(page, KM_USER0) + offset;
-> +			*map = COUNT_CONTINUED;
-> +			kunmap_atomic(map, KM_USER0);
-> +			page = list_entry(page->lru.prev, struct page, lru);
-> +		}
-> +		return true;			/* incremented */
-> +
-> +	} else {				/* decrementing */
-> +		/*
-> +		 * Think of how you subtract 1 from 1000
-> +		 */
-> +		BUG_ON(count != COUNT_CONTINUED);
-> +		while (*map == COUNT_CONTINUED) {
-> +			kunmap_atomic(map, KM_USER0);
-> +			page = list_entry(page->lru.next, struct page, lru);
-> +			BUG_ON(page == head);
-> +			map = kmap_atomic(page, KM_USER0) + offset;
-> +		}
-> +		BUG_ON(*map == 0);
-> +		*map -= 1;
-> +		if (*map == 0)
-> +			count = 0;
-> +		kunmap_atomic(map, KM_USER0);
-> +		page = list_entry(page->lru.prev, struct page, lru);
-> +		while (page != head) {
-> +			map = kmap_atomic(page, KM_USER0) + offset;
-> +			*map = SWAP_CONT_MAX | count;
-> +			count = COUNT_CONTINUED;
-> +			kunmap_atomic(map, KM_USER0);
-> +			page = list_entry(page->lru.prev, struct page, lru);
-> +		}
-> +		return count == COUNT_CONTINUED;
-> +	}
-> +}
-> +
-> +/*
-> + * free_swap_count_continuations - swapoff free all the continuation pages
-> + * appended to the swap_map, after swap_map is quiesced, before vfree'ing it.
-> + */
-> +static void free_swap_count_continuations(struct swap_info_struct *si)
-> +{
-> +	pgoff_t offset;
-> +
-> +	for (offset = 0; offset < si->max; offset += PAGE_SIZE) {
-> +		struct page *head;
-> +		head = vmalloc_to_page(si->swap_map + offset);
-> +		if (page_private(head)) {
-> +			struct list_head *this, *next;
-> +			list_for_each_safe(this, next, &head->lru) {
-> +				struct page *page;
-> +				page = list_entry(this, struct page, lru);
-> +				list_del(this);
-> +				__free_page(page);
-> +			}
-> +		}
-> +	}
-> +}
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+> +	if (unlikely(++rdp->qlen > rdp->qlen_last_fqs_check + qhimark)) {
+>  		rdp->blimit = LONG_MAX;
+> -		force_quiescent_state(rsp, 0);
+> +		if (rsp->n_force_qs == rdp->n_force_qs_snap &&
+> +		    *rdp->nxttail[RCU_DONE_TAIL] != head)
+> +			force_quiescent_state(rsp, 0);
+> +		rdp->n_force_qs_snap = rsp->n_force_qs;
+> +		rdp->qlen_last_fqs_check = rdp->qlen;
+>  	} else if ((long)(ACCESS_ONCE(rsp->jiffies_force_qs) - jiffies) < 0)
+>  		force_quiescent_state(rsp, 1);
+>  	local_irq_restore(flags);
+> @@ -1523,6 +1540,8 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
+>  	rdp->beenonline = 1;	 /* We have now been online. */
+>  	rdp->preemptable = preemptable;
+>  	rdp->passed_quiesc_completed = lastcomp - 1;
+> +	rdp->qlen_last_fqs_check = 0;
+> +	rdp->n_force_qs_snap = rsp->n_force_qs;
+>  	rdp->blimit = blimit;
+>  	spin_unlock(&rnp->lock);		/* irqs remain disabled. */
+>  
+> diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+> index b40ac57..599161f 100644
+> --- a/kernel/rcutree.h
+> +++ b/kernel/rcutree.h
+> @@ -167,6 +167,10 @@ struct rcu_data {
+>  	struct rcu_head *nxtlist;
+>  	struct rcu_head **nxttail[RCU_NEXT_SIZE];
+>  	long		qlen;		/* # of queued callbacks */
+> +	long		qlen_last_fqs_check;
+> +					/* qlen at last check for QS forcing */
+> +	unsigned long	n_force_qs_snap;
+> +					/* did other CPU force QS recently? */
+>  	long		blimit;		/* Upper limit on a processed batch */
+>  
+>  #ifdef CONFIG_NO_HZ
+> -- 
+> 1.5.2.5
