@@ -1,53 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935425AbZJOUJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763008AbZJOUI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935425AbZJOUJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 16:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935405AbZJOUJX
+	id S1763008AbZJOUI0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 16:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761481AbZJOUIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 16:09:23 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47177 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935391AbZJOUJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 16:09:22 -0400
-Subject: Re: powerpc problem with .data.page_aligned -> __page_aligned_data
- conversion
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: sam@ravnborg.org, linuxppc-dev@lists.ozlabs.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.1.10.0910151229340.25434@dr-wily.mit.edu>
-References: <1255584772.2347.86.camel@pasglop>
-	 <alpine.DEB.1.10.0910151229340.25434@dr-wily.mit.edu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 16 Oct 2009 07:00:09 +1100
-Message-Id: <1255636809.2347.103.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Thu, 15 Oct 2009 16:08:25 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:60789 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751551AbZJOUIX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 16:08:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=UUEphqkxz79mQUSr2zsqJC7PWvsE0L8D+qUmOfkwaUFAMJimMxBso0Ftv/LQYC8PgM
+         pHk9L8ac4p5B/9W80ZJnZ1epNpOeZ7tIC04UYXhvUFfa74dlgfupxuhMZaVMP9/eQcQJ
+         dInEovRuBb82iuuTqNr9LLbrrfR3q/9rWXrvY=
+From: Ivo van Doorn <ivdoorn@gmail.com>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: Re: [PATCH 4/8] trivial: fix some typos and punctuation in comments
+Date: Thu, 15 Oct 2009 22:07:40 +0200
+User-Agent: KMail/1.9.10
+Cc: trivial@kernel.org, linville@tuxdriver.com, johannes@sipsolutions.net,
+       users@host1.serialmonkey.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+References: <1255636103-5817-1-git-send-email-cascardo@holoscopio.com>
+In-Reply-To: <1255636103-5817-1-git-send-email-cascardo@holoscopio.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910152207.41996.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-15 at 12:37 -0400, Tim Abbott wrote:
-> Just to make sure I understand the nature of the problem, is the
-> current 
-> breakage that gcc < 4.3 will _warn_ on any compilation units on ppc64
-> that 
-> use __page_aligned data, or something worse?
+On Thursday 15 October 2009, Thadeu Lima de Souza Cascardo wrote:
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+
+Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+
+> ---
+>  drivers/net/wireless/rt2x00/rt61pci.c |   36 ++++++++++++++++----------------
+>  1 files changed, 18 insertions(+), 18 deletions(-)
 > 
-> The cropping is clearly a potential problem, but I read the rest of
-> your 
-> email as saying that the cropping of the alignment isn't actually a 
-> problem with the current kernel because the kernel is currently only
-> using 
-> the macro with things whose size is divisible by PAGE_SIZE.  However,
-> I am 
-> not sure how to reconcile that with using the word "break" above...
-
-Break is because we use -Werror on arch/powerpc :-)
-
-Ben.
+> diff --git a/drivers/net/wireless/rt2x00/rt61pci.c b/drivers/net/wireless/rt2x00/rt61pci.c
+> index b20e3ea..343e565 100644
+> --- a/drivers/net/wireless/rt2x00/rt61pci.c
+> +++ b/drivers/net/wireless/rt2x00/rt61pci.c
+> @@ -51,7 +51,7 @@ MODULE_PARM_DESC(nohwcrypt, "Disable hardware encryption.");
+>   * These indirect registers work with busy bits,
+>   * and we will try maximal REGISTER_BUSY_COUNT times to access
+>   * the register while taking a REGISTER_BUSY_DELAY us delay
+> - * between each attampt. When the busy bit is still set at that time,
+> + * between each attempt. When the busy bit is still set at that time,
+>   * the access attempt is considered to have failed,
+>   * and we will print an error.
+>   */
+> @@ -386,7 +386,7 @@ static int rt61pci_config_shared_key(struct rt2x00_dev *rt2x00dev,
+>  		 * The driver does not support the IV/EIV generation
+>  		 * in hardware. However it doesn't support the IV/EIV
+>  		 * inside the ieee80211 frame either, but requires it
+> -		 * to be provided seperately for the descriptor.
+> +		 * to be provided separately for the descriptor.
+>  		 * rt2x00lib will cut the IV/EIV data out of all frames
+>  		 * given to us by mac80211, but we must tell mac80211
+>  		 * to generate the IV/EIV data.
+> @@ -397,7 +397,7 @@ static int rt61pci_config_shared_key(struct rt2x00_dev *rt2x00dev,
+>  	/*
+>  	 * SEC_CSR0 contains only single-bit fields to indicate
+>  	 * a particular key is valid. Because using the FIELD32()
+> -	 * defines directly will cause a lot of overhead we use
+> +	 * defines directly will cause a lot of overhead, we use
+>  	 * a calculation to determine the correct bit directly.
+>  	 */
+>  	mask = 1 << key->hw_key_idx;
+> @@ -425,11 +425,11 @@ static int rt61pci_config_pairwise_key(struct rt2x00_dev *rt2x00dev,
+>  		/*
+>  		 * rt2x00lib can't determine the correct free
+>  		 * key_idx for pairwise keys. We have 2 registers
+> -		 * with key valid bits. The goal is simple, read
+> -		 * the first register, if that is full move to
+> +		 * with key valid bits. The goal is simple: read
+> +		 * the first register. If that is full, move to
+>  		 * the next register.
+> -		 * When both registers are full, we drop the key,
+> -		 * otherwise we use the first invalid entry.
+> +		 * When both registers are full, we drop the key.
+> +		 * Otherwise, we use the first invalid entry.
+>  		 */
+>  		rt2x00pci_register_read(rt2x00dev, SEC_CSR2, &reg);
+>  		if (reg && reg == ~0) {
+> @@ -464,8 +464,8 @@ static int rt61pci_config_pairwise_key(struct rt2x00_dev *rt2x00dev,
+>  					      &addr_entry, sizeof(addr_entry));
+>  
+>  		/*
+> -		 * Enable pairwise lookup table for given BSS idx,
+> -		 * without this received frames will not be decrypted
+> +		 * Enable pairwise lookup table for given BSS idx.
+> +		 * Without this, received frames will not be decrypted
+>  		 * by the hardware.
+>  		 */
+>  		rt2x00pci_register_read(rt2x00dev, SEC_CSR4, &reg);
+> @@ -487,7 +487,7 @@ static int rt61pci_config_pairwise_key(struct rt2x00_dev *rt2x00dev,
+>  	/*
+>  	 * SEC_CSR2 and SEC_CSR3 contain only single-bit fields to indicate
+>  	 * a particular key is valid. Because using the FIELD32()
+> -	 * defines directly will cause a lot of overhead we use
+> +	 * defines directly will cause a lot of overhead, we use
+>  	 * a calculation to determine the correct bit directly.
+>  	 */
+>  	if (key->hw_key_idx < 32) {
+> @@ -556,7 +556,7 @@ static void rt61pci_config_intf(struct rt2x00_dev *rt2x00dev,
+>  	if (flags & CONFIG_UPDATE_TYPE) {
+>  		/*
+>  		 * Clear current synchronisation setup.
+> -		 * For the Beacon base registers we only need to clear
+> +		 * For the Beacon base registers, we only need to clear
+>  		 * the first byte since that byte contains the VALID and OWNER
+>  		 * bits which (when set to 0) will invalidate the entire beacon.
+>  		 */
+> @@ -1168,8 +1168,8 @@ static int rt61pci_check_firmware(struct rt2x00_dev *rt2x00dev,
+>  		return FW_BAD_LENGTH;
+>  
+>  	/*
+> -	 * The last 2 bytes in the firmware array are the crc checksum itself,
+> -	 * this means that we should never pass those 2 bytes to the crc
+> +	 * The last 2 bytes in the firmware array are the crc checksum itself.
+> +	 * This means that we should never pass those 2 bytes to the crc
+>  	 * algorithm.
+>  	 */
+>  	fw_crc = (data[len - 2] << 8 | data[len - 1]);
+> @@ -1986,7 +1986,7 @@ static void rt61pci_fill_rxdone(struct queue_entry *entry,
+>  
+>  		/*
+>  		 * Hardware has stripped IV/EIV data from 802.11 frame during
+> -		 * decryption. It has provided the data seperately but rt2x00lib
+> +		 * decryption. It has provided the data separately but rt2x00lib
+>  		 * should decide if it should be reinserted.
+>  		 */
+>  		rxdesc->flags |= RX_FLAG_IV_STRIPPED;
+> @@ -2042,7 +2042,7 @@ static void rt61pci_txdone(struct rt2x00_dev *rt2x00dev)
+>  	 * During each loop we will compare the freshly read
+>  	 * STA_CSR4 register value with the value read from
+>  	 * the previous loop. If the 2 values are equal then
+> -	 * we should stop processing because the chance it
+> +	 * we should stop processing because the chance is
+>  	 * quite big that the device has been unplugged and
+>  	 * we risk going into an endless loop.
+>  	 */
+> @@ -2330,7 +2330,7 @@ static int rt61pci_init_eeprom(struct rt2x00_dev *rt2x00dev)
+>  		__set_bit(CONFIG_FRAME_TYPE, &rt2x00dev->flags);
+>  
+>  	/*
+> -	 * Detect if this device has an hardware controlled radio.
+> +	 * Detect if this device has a hardware controlled radio.
+>  	 */
+>  	if (rt2x00_get_field16(eeprom, EEPROM_ANTENNA_HARDWARE_RADIO))
+>  		__set_bit(CONFIG_SUPPORT_HW_BUTTON, &rt2x00dev->flags);
+> @@ -2355,7 +2355,7 @@ static int rt61pci_init_eeprom(struct rt2x00_dev *rt2x00dev)
+>  		__set_bit(CONFIG_EXTERNAL_LNA_BG, &rt2x00dev->flags);
+>  
+>  	/*
+> -	 * When working with a RF2529 chip without double antenna
+> +	 * When working with a RF2529 chip without double antenna,
+>  	 * the antenna settings should be gathered from the NIC
+>  	 * eeprom word.
+>  	 */
+> @@ -2668,7 +2668,7 @@ static int rt61pci_conf_tx(struct ieee80211_hw *hw, u16 queue_idx,
+>  
+>  	/*
+>  	 * We only need to perform additional register initialization
+> -	 * for WMM queues/
+> +	 * for WMM queues.
+>  	 */
+>  	if (queue_idx >= 4)
+>  		return 0;
 
 
