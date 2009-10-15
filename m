@@ -1,72 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935237AbZJOSmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935261AbZJOSnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935237AbZJOSmu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 14:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757871AbZJOSmu
+	id S935261AbZJOSnG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 14:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935249AbZJOSnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 14:42:50 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:34385 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757629AbZJOSmt (ORCPT
+	Thu, 15 Oct 2009 14:43:05 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:34513 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935242AbZJOSnD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 14:42:49 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Organization: IBM
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] hvc_console: returning 0 from put_chars is not an error
-Date: Thu, 15 Oct 2009 20:41:26 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc4-self-00094-g80f5069-dirty; KDE/4.3.1; i686; ; )
-Cc: Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org,
-       brueckner@linux.vnet.ibm.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <1255557226-4403-1-git-send-email-timur@freescale.com> <200910151305.47100.borntraeger@de.ibm.com> <20091015160906.GA3730@loki.buserror.net>
-In-Reply-To: <20091015160906.GA3730@loki.buserror.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 15 Oct 2009 14:43:03 -0400
+Date: Thu, 15 Oct 2009 11:42:10 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Gregory Haskins <ghaskins@novell.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, sfr@canb.auug.org.au,
+       greg@kroah.com, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+Subject: Re: [BUILD-FAILURE] next-20091015 - vbus_enet driver breaks with
+ allmodconfig
+Message-Id: <20091015114210.65e1be72.randy.dunlap@oracle.com>
+In-Reply-To: <4AD75E60.4020306@gmail.com>
+References: <20091015152538.74a1cb15.sfr@canb.auug.org.au>
+	<20091015104852.GA6740@linux.vnet.ibm.com>
+	<4AD6CD940200005A00056857@sinclair.provo.novell.com>
+	<4AD75E60.4020306@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910152041.26646.borntraeger@de.ibm.com>
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4AD76D07.01DE:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 15 Oktober 2009 18:09:06 schrieb Scott Wood:
-> On Thu, Oct 15, 2009 at 01:05:47PM +0200, Christian Borntraeger wrote:
-> > The fact that struct console->write returns void indicates that the
-> > console layer is not interested in errors. We have two policies we can
-> > implement:
-> >
-> > 1. drop console messages if case of congestion but keep the system going
-> > 2. dont drop messages and wait, even if the system might come to a
-> > complete stop
-> >
-> > Looking at drivers/char/vt.c
-> >         /* console busy or not yet initialized */
-> >         if (!printable)
-> >                 return;
-> >         if (!spin_trylock(&printing_lock))
-> >                 return;
-> > could mean that  Linux consoles should not block.
+On Thu, 15 Oct 2009 13:39:44 -0400 Gregory Haskins wrote:
+
+> Gregory Haskins wrote:
+> >>>> On 10/15/2009 at  6:48 AM, in message
+> > <20091015104852.GA6740@linux.vnet.ibm.com>, Kamalesh Babulal
+> > <kamalesh@linux.vnet.ibm.com> wrote: 
+> >> Hi Gregory,
+> >>
+> >> 	While building next-20091015 with allmodconfig on the powerpc
+> >> vbus-enet driver breaks
+> > 
+> > Hi Kamalesh,
+> > 
+> > I'll take a look at this and get a fix submitted today.
+> > 
+> > Kind Regards,
+> > -Greg
+> > 
+> >> MODPOST 2492 modules
+> >> ERROR: ".vbus_driver_register" [drivers/net/vbus-enet.ko] undefined!
+> >> ERROR: ".vbus_driver_unregister" [drivers/net/vbus-enet.ko] undefined!
+> >> ERROR: ".vbus_driver_ioq_alloc" [drivers/net/vbus-enet.ko] undefined!
+> >>
+> >> CONFIG_VBUS_ENET=m
+> >> CONFIG_VBUS_ENET_DEBUG=y
+> >> CONFIG_VBUS_PROXY=n
 > 
-> That's a bit different -- the code above is testing for potential deadlocks
-> within Linux (or a not-yet-initialized console), not a device that has yet
-> to process the last batch of characters we threw at it.  Plus, given the
-> "console must be locked when we get here" comment, I'm not sure that you'll
-> ever see contention on printing_lock?
+> Hi Kamalesh,
 > 
-> Serial consoles currently block when waiting for the buffer to drain:
+> I am having difficulty reproducing the problem.  When I look at the
+> Kconfig, I see that VBUS_ENET has a "select VBUS_PROXY" as I would
+> expect.  Additionally, if I run allmodconfig I can confirm that I get
+> VBUS_ENET=m, VBUS_PROXY=y:
 
-Right. Looking at more drivers it seems that both ways (waiting and dropping) 
-are used.
+Greg,
 
-Hmmm, if we are ok with having both options, we should let the hvc backend 
-decide if it wants to drain or to discard.
+Did you try to reproduce it with the ppc64 config file?
+allmodconfig on what arch?
 
-If we just busy loop, it actually does not matter how we let hvc_console react 
-on 0, as long as we adopt all backends to use that interface consistent.
+I think the problem is that arch/x86/Kconfig says:
 
-On the other hand, backends might want to do special magic on congestion so I 
-personally tend to let the backend loop instead of hvc_console. But I am really  
-not sure.
+source "drivers/vbus/Kconfig"
 
-Christian
+and that should actually be in drivers/Kconfig, so that it applies
+to ppc64 et al, not just x86.
+
+
+
+> ghaskins@dev:~/sandbox/git/fabric/linux-2.6-next> rm .config
+> ghaskins@dev:~/sandbox/git/fabric/linux-2.6-next> make allmodconfig
+> scripts/kconfig/conf -m arch/x86/Kconfig
+> #
+> # configuration written to .config
+> #
+> ghaskins@dev:~/sandbox/git/fabric/linux-2.6-next> grep -i vbus .config
+> CONFIG_VBUS_PROXY=y
+> CONFIG_VBUS_PCIBRIDGE=y
+> CONFIG_VBUS_ENET=m
+> CONFIG_VBUS_ENET_DEBUG=y
+> CONFIG_USB_GADGET_VBUS_DRAW=2
+> CONFIG_USB_GPIO_VBUS=m
+> 
+> I am not sure how your environment could have generated the VBUS_PROXY=n
+> outcome.  Does anyone have any ideas?
+> 
+> -Greg
+
+
+---
+~Randy
