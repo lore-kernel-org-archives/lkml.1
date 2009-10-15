@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762746AbZJOMyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935117AbZJONCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762746AbZJOMyG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 08:54:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762738AbZJOMyF
+	id S935117AbZJONCE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 09:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934796AbZJONCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 08:54:05 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:49637 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758436AbZJOMyE (ORCPT
+	Thu, 15 Oct 2009 09:02:03 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:55481 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933619AbZJONCC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 08:54:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ABo6HwjDePP/AlQe6vjkVdZ/Ee3NcaN7K9xUeFrs9d3ZWvp+Hbmledh11GbuPLh5s2
-         rZ9UpDsu8334YNOtUSEzNIRO74Hpb09yErLDy1HiXw/iK1Xp81RZqX6rmVXY507c1szY
-         N925zto496Ocrn5R3COd6WcuFkZuf3aGkV6tI=
-Date: Thu, 15 Oct 2009 14:52:13 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] tracing/filters: Use a different op for glob match
-Message-ID: <20091015125207.GC4960@nowhere>
-References: <4AD694B8.2020206@cn.fujitsu.com> <4AD69528.3050309@cn.fujitsu.com>
+	Thu, 15 Oct 2009 09:02:02 -0400
+Date: Thu, 15 Oct 2009 08:59:33 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Zhu Yi <yi.zhu@intel.com>
+Cc: Frans Pop <elendil@planet.nl>, Ferenc Wagner <wferi@niif.hu>,
+       "ipw2100-devel@lists.sourceforge.net" 
+	<ipw2100-devel@lists.sourceforge.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Ipw2100-devel] 2.6.32-rc4 ipw2200: oops on missing firmware
+Message-ID: <20091015125933.GA2809@tuxdriver.com>
+References: <87hbu3h023.fsf@tac.ki.iif.hu> <200910131855.25878.elendil@planet.nl> <1255589428.3719.465.camel@debian>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AD69528.3050309@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1255589428.3719.465.camel@debian>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 15, 2009 at 11:21:12AM +0800, Li Zefan wrote:
-> "==" will always do a full match, and "~" will do a glob match.
+On Thu, Oct 15, 2009 at 02:50:28PM +0800, Zhu Yi wrote:
+
+> OK. The rfkill device is removed without being added before! The root
+> cause is, for non-monitor interfaces, the syntax for
+> alloc_ieee80211/free_80211 is wrong. Because alloc_ieee80211 only
+> creates (wiphy_new) a wiphy, but free_80211() does wiphy_unregister()
+> also. This is only correct when the later wiphy_register() is called
+> successfully, which apparently is not the case for your fw doesn't exist
+> one. Please see if this patch fix the problem.
 > 
-> In the future, we may add "=~" for regex match.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> Signed-off-by: Zhu Yi <yi.zhu@intel.com>
 
+Thanks, Zhu!  That certainly looks better than what I had.
 
-Thanks a lot for doing this. I can then remove it from my
-TODO list :)
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
