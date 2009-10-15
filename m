@@ -1,128 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762793AbZJOPEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762790AbZJOPX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762793AbZJOPEL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 11:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762780AbZJOPEJ
+	id S1762790AbZJOPX3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 11:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762137AbZJOPX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 11:04:09 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49707 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762779AbZJOPEH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 11:04:07 -0400
-Date: Thu, 15 Oct 2009 16:05:01 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: 2.6.31.4: WARNING: at drivers/usb/serial/usb-serial.c:446
- serial_unthrottle
-Message-ID: <20091015160501.36a31973@lxorguk.ukuu.org.uk>
-In-Reply-To: <4AD71FA3.8080801@wpkg.org>
-References: <4AD71FA3.8080801@wpkg.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Oct 2009 11:23:28 -0400
+Received: from [207.36.208.214] ([207.36.208.214]:45774 "EHLO mail.dvmed.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1762103AbZJOPX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 11:23:28 -0400
+Message-ID: <4AD73E40.1010501@garzik.org>
+Date: Thu, 15 Oct 2009 11:22:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [RFC] Remove or convert empty ioctls ?
+References: <alpine.LFD.2.00.0910151113340.9428@localhost.localdomain>	<4AD711BC.2030409@garzik.org> <20091015160109.6d9353e8@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091015160109.6d9353e8@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009 15:12:03 +0200
-Tomasz Chmielewski <mangoo@wpkg.org> wrote:
+On 10/15/2009 11:01 AM, Alan Cox wrote:
+>> "no particular value" is highly subjective, and I think unprovable,
+>> without an exhaustive survey of userland programs interacting with
+>> kernel drivers.  Userland programs often interact with a -class- of
+>> drivers, expecting predictable behavior from a DoThisThing ioctl, with
+>> EINVAL or "other weird error code" returned intentionally.
+>>
+>> Changing the return codes seems quite unwise.
+>
+> We've changed lots of them to -ENOTTY over the past few years, nobody has
+> even noticed (you included ;))
+>
+> SuS says an unknown ioctl code returns -ENOTTY.
 
-> I see my minicom segfaulted for some reason (probably as I closed konsole window without exiting minicom first).
-> 
-> And I see this warning in dmesg - anything useful?
+These are not unknown ioctls; they are ioctls that the driver author 
+close to implement rather than the default (ENOTTY).
 
-Looks like a very very old bug in the tty code. I have a patch for this I'm
-testing for a while and will sort out properly after the kernel summit. In
-the mean time have a play with the patch below which ought to do the trick.
-
-n_tty: fix throttling
-
-From: Alan Cox <alan@linux.intel.com>
-
-n_tty inadevertently calls throttle and unthrottle methods during its init.
-This happens before the tty device is open and causes problems for the
-drivers, in particular they may not have their state and locks even
-initialised at this point.
-
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
-
- drivers/char/n_tty.c |   35 ++++++++++++++++++++++++++---------
- 1 files changed, 26 insertions(+), 9 deletions(-)
+	Jeff
 
 
-diff --git a/drivers/char/n_tty.c b/drivers/char/n_tty.c
-index 2e50f4d..b45170c 100644
---- a/drivers/char/n_tty.c
-+++ b/drivers/char/n_tty.c
-@@ -178,26 +178,23 @@ static void reset_buffer_flags(struct tty_struct *tty)
- 	tty->canon_head = tty->canon_data = tty->erasing = 0;
- 	memset(&tty->read_flags, 0, sizeof tty->read_flags);
- 	n_tty_set_room(tty);
--	check_unthrottle(tty);
- }
- 
- /**
-- *	n_tty_flush_buffer	-	clean input queue
-+ *	n_tty_do_flush		-	clean input queue
-  *	@tty:	terminal device
-  *
-  *	Flush the input buffer. Called when the line discipline is
-- *	being closed, when the tty layer wants the buffer flushed (eg
-- *	at hangup) or when the N_TTY line discipline internally has to
-- *	clean the pending queue (for example some signals).
-+ *	being closed, or indirectly when the tty layer wants the buffer
-+ *	flushed (eg at hangup) or when the N_TTY line discipline internally
-+ *	has to clean the pending queue (for example some signals).
-  *
-  *	Locking: ctrl_lock, read_lock.
-  */
- 
--static void n_tty_flush_buffer(struct tty_struct *tty)
-+static void n_tty_do_flush(struct tty_struct *tty)
- {
- 	unsigned long flags;
--	/* clear everything and unthrottle the driver */
--	reset_buffer_flags(tty);
- 
- 	if (!tty->link)
- 		return;
-@@ -211,6 +208,25 @@ static void n_tty_flush_buffer(struct tty_struct *tty)
- }
- 
- /**
-+ *	n_tty_flush_buffer	-	clean input queue
-+ *	@tty:	terminal device
-+ *
-+ *	Flush the input buffer. Called when the tty layer wants the buffer
-+ *	flushed (eg at hangup) or when the N_TTY line discipline internally
-+ *	has to clean the pending queue (for example some signals).
-+ *
-+ *	Locking: ctrl_lock, read_lock.
-+ */
-+
-+static void n_tty_flush_buffer(struct tty_struct *tty)
-+{
-+	/* clear everything and unthrottle the driver */
-+	reset_buffer_flags(tty);
-+	check_unthrottle(tty);
-+	n_tty_do_flush(tty);
-+}
-+
-+/**
-  *	n_tty_chars_in_buffer	-	report available bytes
-  *	@tty: tty device
-  *
-@@ -1535,7 +1551,8 @@ static void n_tty_set_termios(struct tty_struct *tty, struct ktermios *old)
- 
- static void n_tty_close(struct tty_struct *tty)
- {
--	n_tty_flush_buffer(tty);
-+	reset_buffer_flags(tty);
-+	n_tty_do_flush(tty);
- 	if (tty->read_buf) {
- 		kfree(tty->read_buf);
- 		tty->read_buf = NULL;
+
+
