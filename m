@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935549AbZJOUaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935499AbZJOU3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935549AbZJOUaH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 16:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935541AbZJOUaE
+	id S935499AbZJOU3f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 16:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935478AbZJOU3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 16:30:04 -0400
-Received: from www.tglx.de ([62.245.132.106]:52505 "EHLO www.tglx.de"
+	Thu, 15 Oct 2009 16:29:34 -0400
+Received: from www.tglx.de ([62.245.132.106]:52491 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935540AbZJOUaC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 16:30:02 -0400
-Message-Id: <20091015202758.400949170@linutronix.de>
+	id S935475AbZJOU3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 16:29:33 -0400
+Message-Id: <20091015202758.441681409@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Thu, 15 Oct 2009 20:28:31 -0000
+Date: Thu, 15 Oct 2009 20:28:38 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: ALan Cox <alan@lxorguk.ukuu.org.uk>, Arnd Bergmann <arnd@arndb.de>,
-       lm-sensors@lm-sensors.org
-Subject: [patch 1/5] hwmon: Convert fschmd to unlocked_ioctl
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org
+Subject: [patch 2/5] macintosh: Remove BKL from nvram driver
 References: <20091015202722.372890083@linutronix.de>
-Content-Disposition: inline;
-	filename=hwmon-convert-fschmd-to-unlocked-ioctl.patch
+Content-Disposition: inline; filename=drivers-mac-nvram-remove-bkl.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The conversion of fschmd watchdog ioctl to unlocked_ioctl needs to
-protect the static watchdog_info variable for the WDIOC_GETSUPPORT
-command.
+Drop the bkl from nvram_llseek() as it obviously protects nothing. The
+file offset is safe in essence.
 
-All other commands are safe w/o BKL as the called watchdog functions
-are already serialized with watchdog_lock of the sensor.
+The ioctl can be converted to unlocked_ioctl because it just calls
+pmac_get_partition() which reads a value from an array which was
+initialized at early boot time. No need for serialization.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: lm-sensors@lm-sensors.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 ---
- drivers/hwmon/fschmd.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/macintosh/nvram.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-Index: linux-2.6-tip/drivers/hwmon/fschmd.c
+Index: linux-2.6-tip/drivers/macintosh/nvram.c
 ===================================================================
---- linux-2.6-tip.orig/drivers/hwmon/fschmd.c
-+++ linux-2.6-tip/drivers/hwmon/fschmd.c
-@@ -844,8 +844,8 @@ static ssize_t watchdog_write(struct fil
- 	return count;
+--- linux-2.6-tip.orig/drivers/macintosh/nvram.c
++++ linux-2.6-tip/drivers/macintosh/nvram.c
+@@ -13,7 +13,6 @@
+ #include <linux/fcntl.h>
+ #include <linux/nvram.h>
+ #include <linux/init.h>
+-#include <linux/smp_lock.h>
+ #include <asm/uaccess.h>
+ #include <asm/nvram.h>
+ 
+@@ -21,7 +20,6 @@
+ 
+ static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
+ {
+-	lock_kernel();
+ 	switch (origin) {
+ 	case 1:
+ 		offset += file->f_pos;
+@@ -30,12 +28,10 @@ static loff_t nvram_llseek(struct file *
+ 		offset += NVRAM_SIZE;
+ 		break;
+ 	}
+-	if (offset < 0) {
+-		unlock_kernel();
++	if (offset < 0)
+ 		return -EINVAL;
+-	}
++
+ 	file->f_pos = offset;
+-	unlock_kernel();
+ 	return file->f_pos;
  }
  
--static int watchdog_ioctl(struct inode *inode, struct file *filp,
+@@ -76,8 +72,7 @@ static ssize_t write_nvram(struct file *
+ 	return p - buf;
+ }
+ 
+-static int nvram_ioctl(struct inode *inode, struct file *file,
 -	unsigned int cmd, unsigned long arg)
-+static long watchdog_ioctl(struct file *filp, unsigned int cmd,
-+			   unsigned long arg)
++static long nvram_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
  {
- 	static struct watchdog_info ident = {
- 		.options = WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT |
-@@ -857,11 +857,13 @@ static int watchdog_ioctl(struct inode *
- 
- 	switch (cmd) {
- 	case WDIOC_GETSUPPORT:
-+		mutex_lock(&watchdog_data_mutex);
- 		ident.firmware_version = data->revision;
- 		if (!nowayout)
- 			ident.options |= WDIOF_MAGICCLOSE;
- 		if (copy_to_user((void __user *)arg, &ident, sizeof(ident)))
- 			ret = -EFAULT;
-+		mutex_unlock(&watchdog_data_mutex);
- 		break;
- 
- 	case WDIOC_GETSTATUS:
-@@ -921,7 +923,7 @@ static const struct file_operations watc
- 	.open = watchdog_open,
- 	.release = watchdog_release,
- 	.write = watchdog_write,
--	.ioctl = watchdog_ioctl,
-+	.unlocked_ioctl = watchdog_ioctl,
- };
- 
- 
+ 	switch(cmd) {
+ 		case PMAC_NVRAM_GET_OFFSET:
 
 
