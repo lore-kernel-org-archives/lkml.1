@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932343AbZJOKhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbZJOKh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932343AbZJOKhN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 06:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbZJOKhM
+	id S1761541AbZJOKh5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 06:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbZJOKh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 06:37:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59983 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754309AbZJOKhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 06:37:11 -0400
-Date: Thu, 15 Oct 2009 12:36:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@redhat.com, tzanussi@gmail.com,
-       peterz@infradead.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de
-Subject: Re: [tip:perf/core] tracing/filters: Refactor subsystem filter code
-Message-ID: <20091015103614.GA20291@elte.hu>
-References: <4AD69502.8060903@cn.fujitsu.com> <tip-fce29d15b59245597f7f320db4a9f2be0f5fb512@git.kernel.org>
+	Thu, 15 Oct 2009 06:37:57 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48805 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756908AbZJOKh4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 06:37:56 -0400
+X-Sasl-enc: odWVGrclBTWDtr+u2exPkWbrKuyvaLgdg5cmm2c/f5oH 1255603037
+Date: Thu, 15 Oct 2009 18:37:09 +0800
+From: Ian Kent <raven@themaw.net>
+To: npiggin@suse.de
+Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/6] fs: dcache remove d_mounted
+Message-ID: <20091015103707.GA23837@zeus.themaw.net>
+References: <20091015044026.319860788@suse.de> <20091015050048.435915481@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <tip-fce29d15b59245597f7f320db4a9f2be0f5fb512@git.kernel.org>
+In-Reply-To: <20091015050048.435915481@suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 15, 2009 at 03:40:29PM +1100, npiggin@suse.de wrote:
+> Rather than keep a d_mounted count in the dentry (which is only used to
+> speculatively take a look in the mount hash table if it is non-zero), set a
+> dentry flag instead. The flag can be cleared by checking the hash table to see
+> if there are any mounts left. It is not time critical because it is performed
+> at detach time.
+> 
+> This saves 4 bytes on 32-bit, nothing on 64-bit but it does provide a hole I
+> might use later (and some configs have larger than 32-bit spinlocks which might
+> make use of the hole).
+> 
+> Autofs4 conversion and changelog by Ian Kent <raven@themaw.net>:
+> In autofs4, when expring direct (or offset) mounts we need to ensure that we
+> block user path walks into the autofs mount, which is covered by another mount.
+> To do this we clear the mounted status so that follows stop before walking into
+> the mount and are essentially blocked until the expire is completed. The
+> automount daemon still finds the correct dentry for the umount due to the
+> follow mount logic in fs/autofs4/root.c:autofs4_follow_link(), which is set as
+> an inode operation for direct and offset mounts only and is called following
+> the lookup that stopped at the covered mount.
+> 
+> At the end of the expire the covering mount probably has gone away so the
+> mounted status need not be restored. But we need to check this and only restore
+> the mounted status if the expire failed.
+> 
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-* tip-bot for Li Zefan <lizf@cn.fujitsu.com> wrote:
+For the autofs4 bits.
 
-> Commit-ID:  fce29d15b59245597f7f320db4a9f2be0f5fb512
-> Gitweb:     http://git.kernel.org/tip/fce29d15b59245597f7f320db4a9f2be0f5fb512
-> Author:     Li Zefan <lizf@cn.fujitsu.com>
-> AuthorDate: Thu, 15 Oct 2009 11:20:34 +0800
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Thu, 15 Oct 2009 11:35:22 +0200
+Acked-by: Ian Kent <raven@themaw.net>
 
-the filter variable was not initialized here - i have applied the fix 
-below.
-
-	Ingo
-
-Index: linux/kernel/trace/trace_events_filter.c
-===================================================================
---- linux.orig/kernel/trace/trace_events_filter.c
-+++ linux/kernel/trace/trace_events_filter.c
-@@ -1230,8 +1230,8 @@ static int replace_system_preds(struct e
- 				struct filter_parse_state *ps,
- 				char *filter_string)
- {
-+	struct event_filter *filter = system->filter;
- 	struct ftrace_event_call *call;
--	struct event_filter *filter;
- 	int err;
- 	bool fail = true;
- 
