@@ -1,106 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760745AbZJODZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761264AbZJODaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760745AbZJODZJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 23:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757672AbZJODZI
+	id S1761264AbZJODaY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 23:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757293AbZJODaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 23:25:08 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:46697 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757139AbZJODZH (ORCPT
+	Wed, 14 Oct 2009 23:30:23 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:48008 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993AbZJODaW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 23:25:07 -0400
-Date: Thu, 15 Oct 2009 05:24:29 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de, arjan@linux.jf.intel.com,
-       linux-kernel@vger.kernel.org, chinang.ma@intel.com
-Subject: Re: [patch 2/2] x86_64: align RODATA kernel section to 2MB with
-	CONFIG_DEBUG_RODATA
-Message-ID: <20091015032429.GA10068@merkur.ravnborg.org>
-References: <20091014214654.423040927@sbs-t61.sc.intel.com> <20091014220254.190119924@sbs-t61.sc.intel.com>
+	Wed, 14 Oct 2009 23:30:22 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091014220254.190119924@sbs-t61.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-ID: <0be3e26b-76b6-47c9-b7ab-51ed72b72b69@default>
+Date: Wed, 14 Oct 2009 20:26:48 -0700 (PDT)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Avi Kivity <avi@redhat.com>, chris.mason@oracle.com
+Subject: RE: [Xen-devel] [PATCH 05/12] xen/pvclock: add monotonicity check
+In-Reply-To: <1255548516-15260-6-git-send-email-jeremy.fitzhardinge@citrix.com>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=Windows-1252
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4AD696DA.0087:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Index: tree/arch/x86/include/asm/sections.h
-> ===================================================================
-> --- tree.orig/arch/x86/include/asm/sections.h
-> +++ tree/arch/x86/include/asm/sections.h
-> @@ -2,7 +2,13 @@
->  #define _ASM_X86_SECTIONS_H
+> Other tsc-based clocksources add a monotonicity test to make 
+> sure there's
+> no regression in the returned cycles.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+>  arch/x86/xen/time.c |    7 ++++++-
+>  1 files changed, 6 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
+> index 0a5aa44..00f06cc 100644
+> --- a/arch/x86/xen/time.c
+> +++ b/arch/x86/xen/time.c
+> @@ -213,9 +213,14 @@ cycle_t xen_clocksource_read(void)
+>  	return ret;
+>  }
 >  
->  #include <asm-generic/sections.h>
-> +#include <asm/uaccess.h>
->  
->  extern char __brk_base[], __brk_limit[];
-> +extern struct exception_table_entry __stop___ex_table[];
+> +static struct clocksource xen_clocksource;
 > +
-> +#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA)
-> +extern char __end_rodata_hpage_align[];
-> +#endif
->  
->  #endif	/* _ASM_X86_SECTIONS_H */
-> Index: tree/arch/x86/kernel/vmlinux.lds.S
-> ===================================================================
-> --- tree.orig/arch/x86/kernel/vmlinux.lds.S
-> +++ tree/arch/x86/kernel/vmlinux.lds.S
-> @@ -41,6 +41,21 @@ ENTRY(phys_startup_64)
->  jiffies_64 = jiffies;
->  #endif
->  
-> +#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA)
-> +
-> +#define X64_ALIGN_DEBUG_RODATA_BEGIN	. = ALIGN(HPAGE_SIZE);
-> +
-> +#define X64_ALIGN_DEBUG_RODATA_END				\
-> +		. = ALIGN(HPAGE_SIZE);				\
-> +		__end_rodata_hpage_align = .;
-This symbol is only defined if CONFIG_DEBUG_RODATA is defined, but (see below).
-
-> +
-> +#else
-> +
-> +#define X64_ALIGN_DEBUG_RODATA_BEGIN
-> +#define X64_ALIGN_DEBUG_RODATA_END
-> +
-> +#endif
-
-A coment describing the purpose of
-this would be nice.
-
-> +
->  PHDRS {
->  	text PT_LOAD FLAGS(5);          /* R_E */
->  	data PT_LOAD FLAGS(7);          /* RWE */
-> @@ -90,7 +105,9 @@ SECTIONS
->  
->  	EXCEPTION_TABLE(16) :text = 0x9090
->  
-> +	X64_ALIGN_DEBUG_RODATA_BEGIN
->  	RO_DATA(PAGE_SIZE)
-> +	X64_ALIGN_DEBUG_RODATA_END
->  
->  	/* Data */
->  	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-> Index: tree/arch/x86/mm/init_64.c
-> ===================================================================
-> --- tree.orig/arch/x86/mm/init_64.c
-> +++ tree/arch/x86/mm/init_64.c
-> @@ -726,9 +726,13 @@ void set_kernel_text_ro(void)
->  
->  void mark_rodata_ro(void)
+>  static cycle_t xen_clocksource_get_cycles(struct clocksource *cs)
 >  {
-> -	unsigned long start = PFN_ALIGN(_text), end = PFN_ALIGN(__end_rodata);
-> +	unsigned long start = PFN_ALIGN(_text);
->  	unsigned long rodata_start =
->  		((unsigned long)__start_rodata + PAGE_SIZE - 1) & PAGE_MASK;
-> +	unsigned long end = (unsigned long) &__end_rodata_hpage_align;
-Here the symbol seems to be referenced unconditionally.
+> -	return xen_clocksource_read();
+> +	cycle_t ret = xen_clocksource_read();
+> +
+> +	return ret >= xen_clocksource.cycle_last ?
+> +		ret : xen_clocksource.cycle_last;
 
-	Sam
+As long as we are going through the trouble of making
+this monotonic, shouldn't it be monotonically increasing
+(rather than just monotonically non-decreasing)?  The
+rdtsc instruction and any suitably high-precision
+hardware timer will never return the same value
+on subsequent uses so this might be a reasonable
+precedent to obey.  E.g.
+
++	return ret > xen_clocksource.cycle_last ?
++		ret : ++xen_clocksource.cycle_last;
