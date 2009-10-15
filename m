@@ -1,102 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933003AbZJOQAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbZJOQEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933003AbZJOQAO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 12:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932871AbZJOQAN
+	id S1758679AbZJOQEg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 12:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbZJOQEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 12:00:13 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:18690 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932666AbZJOQAM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 12:00:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=CcXy9z1S+cZ0zLfF7mn7jFe1ppLEFcK1QRK3t3Mr7nUDFxzXcptUvjw4S1cNPw1i1u
-         bNid8MfftmpHm0qbd1mfjNs/5TavNtxcEQ8/Ij/vmLNs+eA8P0zmizW8mB+9DJ3oQ5vp
-         tlF2RkeEoyo0FIQ3bCRpG9RpgfbidwZ/ty/Us=
-Message-ID: <4AD7469B.9070907@gmail.com>
-Date: Thu, 15 Oct 2009 11:58:19 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 15 Oct 2009 12:04:36 -0400
+Received: from [207.36.208.214] ([207.36.208.214]:37293 "EHLO mail.dvmed.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751067AbZJOQEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 12:04:35 -0400
+Message-ID: <4AD747EB.3040008@garzik.org>
+Date: Thu, 15 Oct 2009 12:03:55 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@fifo99.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Tips for module_init() dependencies
-References: <4AD71D12.9060203@gmail.com> <1255621559.22917.35.camel@desktop>
-In-Reply-To: <1255621559.22917.35.camel@desktop>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4FDD2BA1161FB0A6664911B0"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [RFC] Remove or convert empty ioctls ?
+References: <alpine.LFD.2.00.0910151113340.9428@localhost.localdomain>	<4AD711BC.2030409@garzik.org>	<20091015160109.6d9353e8@lxorguk.ukuu.org.uk>	<4AD73E40.1010501@garzik.org>	<20091015163103.5e42fabe@lxorguk.ukuu.org.uk>	<4AD74151.7020306@garzik.org> <20091015164906.5b2c03db@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091015164906.5b2c03db@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4FDD2BA1161FB0A6664911B0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 10/15/2009 11:49 AM, Alan Cox wrote:
+> There are cases where
+>
+> 	case IOCWIBBLE:
+> 		return -EINVAL;
+>
+> is correct but they are unusual - basically the case where the driver
+> author wants to "support" the ioctl but there is no argument that it can
+> be given which is correct.
 
-Daniel Walker wrote:
-> On Thu, 2009-10-15 at 09:01 -0400, Gregory Haskins wrote:
->=20
->> may break, because the kernel seems to have no concept of
->> interdependency between foo_init() and bar_init(), and therefore
->> bar_init() may call foo() before foo_init() has executed.
->>
->> There are various ways to solve this problem, such as deferring callin=
-g
->> foo() with a workqueue or something, but I was wondering if there was =
-a
->> better/standard way to do this that I am missing?
->>
->> The problem I am having specifically is that I am trying to call
->> configfs_register_subsystem() in a module_init(), but this breaks when=
+This is the type of case I was referring to.
 
->> built into the kernel based on sheer bad luck that configfs gets
->> initialized after me.  To date I have worked around this by forcing my=
-
->> code to only support built-in, and using late_initcall() instead or
->> module_init.  This works, but it only means I am putting the problem o=
-ff
->> (code that depends on *me* has to use similar tricks, etc.
->=20
-> You can't modify the build order so your module get "builtin" after
-> configfs?
->=20
-
-Hi Daniel,
-
-Possibly.
-
-A) Any suggestions on how? Can I express this in Kconfig or something
-(i.e. "depends on FOO").  I currently have "select FOO" in the BAR
-object, but this doesn't seem to be sufficient to describe the relationsh=
-ip.
-
-B) Do I have to make the entire chain follow suit? (I have C deps on B,
-B deps on A kind of scenarios)
-
-Kind Regards,
--Greg
+	Jeff
 
 
 
---------------enig4FDD2BA1161FB0A6664911B0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkrXRpsACgkQP5K2CMvXmqH0AACffvS71ELVyrn5KpEH38LK/3qv
-q34An1u85dAiMIL3sXzTP9XeMzRgLvV3
-=4ZxE
------END PGP SIGNATURE-----
-
---------------enig4FDD2BA1161FB0A6664911B0--
