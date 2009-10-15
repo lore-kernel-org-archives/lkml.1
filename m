@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762302AbZJOPA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762756AbZJOPA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762302AbZJOPA2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 11:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757293AbZJOPA2
+	id S1762756AbZJOPA7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 11:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762416AbZJOPA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 11:00:28 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:39945 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755746AbZJOPA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 11:00:27 -0400
-Date: Thu, 15 Oct 2009 10:00:29 -0500
-From: David Teigland <teigland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [GIT PULL][RESEND] dlm fixes for 2.6.32-rc4
-Message-ID: <20091015150029.GB27152@redhat.com>
+	Thu, 15 Oct 2009 11:00:58 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49705 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762297AbZJOPA5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 11:00:57 -0400
+Date: Thu, 15 Oct 2009 16:01:09 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [RFC] Remove or convert empty ioctls ?
+Message-ID: <20091015160109.6d9353e8@lxorguk.ukuu.org.uk>
+In-Reply-To: <4AD711BC.2030409@garzik.org>
+References: <alpine.LFD.2.00.0910151113340.9428@localhost.localdomain>
+	<4AD711BC.2030409@garzik.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+> "no particular value" is highly subjective, and I think unprovable, 
+> without an exhaustive survey of userland programs interacting with 
+> kernel drivers.  Userland programs often interact with a -class- of 
+> drivers, expecting predictable behavior from a DoThisThing ioctl, with 
+> EINVAL or "other weird error code" returned intentionally.
+> 
+> Changing the return codes seems quite unwise.
 
-Please pull two dlm fixes from:
+We've changed lots of them to -ENOTTY over the past few years, nobody has
+even noticed (you included ;))
 
- git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git for-linus
+SuS says an unknown ioctl code returns -ENOTTY.
 
-Both fix bugs in the sctp communication path, which hasn't had as much
-attention as the default tcp path.
-Thanks,
-Dave
-
-David Teigland (2):
-      dlm: fix lowcomms_connect_node for sctp
-      dlm: fix socket fd translation
-
- fs/dlm/lowcomms.c |   36 ++++++++++++++++++++++--------------
- 1 files changed, 22 insertions(+), 14 deletions(-)
-
+Alan
