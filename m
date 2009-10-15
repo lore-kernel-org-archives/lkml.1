@@ -1,110 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935134AbZJOQwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762383AbZJOQyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935134AbZJOQwS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 12:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934935AbZJOQwS
+	id S1762383AbZJOQyA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 12:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758467AbZJOQyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 12:52:18 -0400
-Received: from gv-out-0910.google.com ([216.239.58.185]:42845 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934632AbZJOQwR (ORCPT
+	Thu, 15 Oct 2009 12:54:00 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:49135 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754267AbZJOQx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 12:52:17 -0400
+	Thu, 15 Oct 2009 12:53:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=EdAtpnEcgJCpaosOMRj/Ulw3QKz9SJpE24QNkeH7PIq5Fn35M+rd8OSn7NhEM+oR7j
-         AMvoPH0LZAcC6lcztA1h+S+TRPvMy5SUZJgWutKz1hgG3mTJmJPTjm8zS2ftxwAZ9ffN
-         KxqA/qMhdnVCzSqMl9X2/4O5+dJi607tpKJWE=
-Message-ID: <4AD752CE.5070000@gmail.com>
-Date: Thu, 15 Oct 2009 12:50:22 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uenFXib1m+k7UzIQK61MggLcIsFdD4fgcZGEGeN9C/bC51ILK8CMVPaILrFiSVDELs
+         aR+1wLaJ0xAb306OqoFbnUWhYK30jDExgE3BX5WyxVHssgie3vS8xFOGNY22q4rb/39g
+         2NIGK9SqGumJRMbThgTp9cAEjtOSXBHCoKTYk=
+Date: Thu, 15 Oct 2009 20:53:20 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Dmitry Artamonow <mad_soft@inbox.ru>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Russell King <linux@arm.linux.org.uk>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+       Anton Vorontsov <cbouatmailru@gmail.com>, linux-mtd@lists.infradead.org,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][PATCH] mtd: maps: remove obsolete ipaq-flash driver
+Message-ID: <20091015165320.GA24086@oksana.dev.rtsoft.ru>
+Reply-To: cbouatmailru@gmail.com
+References: <1255433694-26471-1-git-send-email-mad_soft@inbox.ru>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@fifo99.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Tips for module_init() dependencies
-References: <4AD71D12.9060203@gmail.com> <1255621559.22917.35.camel@desktop>	 <4AD7469B.9070907@gmail.com> <1255623129.22917.41.camel@desktop>	 <4AD74B02.1070606@gmail.com> <1255623697.22917.45.camel@desktop>
-In-Reply-To: <1255623697.22917.45.camel@desktop>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig97B4638551CC32F539293F70"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1255433694-26471-1-git-send-email-mad_soft@inbox.ru>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig97B4638551CC32F539293F70
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Oct 13, 2009 at 03:34:54PM +0400, Dmitry Artamonow wrote:
+> This driver seems to be obsolete and broken for a long time.
+> It depends on CONFIG_IPAQ_HANDHELD that simply doesn't exists
+> anywhere in kernel. Also, it seems that none of machines it
+> claims to support have any use of it:
+>  SA11xx-based iPAQs (h3100/h3600) use sa1100-flash
+>  iPAQ h5000 uses physmap-flash
+>  Jornada 720 uses sa1100-flash
+>  Jornada 560 and iPAQ h1910 are not in mainline
+> 
+> Signed-off-by: Dmitry Artamonow <mad_soft@inbox.ru>
 
-Daniel Walker wrote:
-> On Thu, 2009-10-15 at 12:17 -0400, Gregory Haskins wrote:
->> Daniel Walker wrote:
->>> On Thu, 2009-10-15 at 11:58 -0400, Gregory Haskins wrote:
->>>
->>>> Hi Daniel,
->>>>
->>>> Possibly.
->>>>
->>>> A) Any suggestions on how? Can I express this in Kconfig or somethin=
-g
->>>> (i.e. "depends on FOO").  I currently have "select FOO" in the BAR
->>>> object, but this doesn't seem to be sufficient to describe the relat=
-ionship.
->>>>
->>>> B) Do I have to make the entire chain follow suit? (I have C deps on=
- B,
->>>> B deps on A kind of scenarios)
->>> Yeah, what Randy said .. As far as I know it should be just a build
->>> order issue .. In the make file when you specify your new module alon=
-g
->>> with all the others where you put it is actually important .. In
->>> fs/Makefile you have this line,
->>>
->>> obj-$(CONFIG_CONFIGFS_FS)       +=3D configfs/
->>>
->>> and I would guess you want yours after that line if your adding to th=
-at
->>> makefile.
->> Right, that makes sense.  However, the problem is that these
->> dependencies might not have anything to do with ./fs per se and
->> therefore would not necessarily be in the ./fs Makefile.  But I think
->> the Makefile dependency idea in general is the right approach, so I wi=
-ll
->> experiment with this suggestion.
->=20
-> I think the order for the core stuff is,
->=20
-> kernel/ mm/ fs/ ipc/ security/ crypto/ block/
->=20
-> and that all comes before drivers/ , so your adding to kernel/ or mm/ ?=
+Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
 
->=20
-> Daniel
->=20
+Thanks!
 
-Its currently in kernel, though I am not married to this location per se.=
-
-
--Greg
-
-
-
---------------enig97B4638551CC32F539293F70
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkrXUs4ACgkQP5K2CMvXmqHWxQCffbWaIiwr0t1UaFv0s/qqdjlS
-ogYAnjmkRwRMzkniZsEAd8ugyvtUZtwv
-=6Lt8
------END PGP SIGNATURE-----
-
---------------enig97B4638551CC32F539293F70--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
