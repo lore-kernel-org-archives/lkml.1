@@ -1,36 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935305AbZJOSpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935245AbZJOSg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935305AbZJOSpS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 14:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935295AbZJOSpQ
+	id S935245AbZJOSg3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 14:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935232AbZJOSg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 14:45:16 -0400
-Received: from kroah.org ([198.145.64.141]:60267 "EHLO coco.kroah.org"
+	Thu, 15 Oct 2009 14:36:29 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:55925 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935284AbZJOSpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 14:45:15 -0400
-Date: Thu, 15 Oct 2009 11:32:44 -0700
-From: Greg KH <greg@kroah.com>
-To: Tim Gardner <tim.gardner@canonical.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>
-Subject: Re: Candidate for stable: e1000e: swap max hw supported frame size
- between 82574 and 82583
-Message-ID: <20091015183244.GD3921@kroah.com>
-References: <4AD33198.6020704@canonical.com>
+	id S935231AbZJOSg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 14:36:28 -0400
+Date: Thu, 15 Oct 2009 14:35:41 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       esandeen@redhat.com, cebbert@redhat.com
+Subject: Unnecessary overhead with stack protector.
+Message-ID: <20091015183540.GA8098@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	esandeen@redhat.com, cebbert@redhat.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AD33198.6020704@canonical.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 07:39:36AM -0600, Tim Gardner wrote:
-> commit a825e00c98a2ee37eb2a0ad93b352e79d2bc1593 seems like a good
-> candidate for stable (if you've not already been notified).
+113c5413cf9051cc50b88befdc42e3402bb92115 introduced a change that
+made CC_STACKPROTECTOR_ALL not-selectable if someone enables CC_STACKPROTECTOR.
 
-Thanks, I have now queued this up.
+We've noticed in Fedora that this has introduced noticable overhead on
+some functions, including those which don't even have any on-stack variables.
 
-greg k-h
+According to the gcc manpage, -fstack-protector will protect functions with
+as little as 8 bytes of stack usage. So we're introducing a huge amount
+of overhead, to close a small amount of vulnerability (the >0 && <8 case).
+
+The overhead as it stands right now means this whole option is unusable for
+a distro kernel without reverting the above commit.
+
+	Dave
+
