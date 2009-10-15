@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762734AbZJOMFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762736AbZJOMN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762734AbZJOMFT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 08:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762628AbZJOMFS
+	id S1762736AbZJOMN1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 08:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758271AbZJOMN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 08:05:18 -0400
-Received: from bizon.gios.gov.pl ([195.187.34.71]:46096 "EHLO
-	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757499AbZJOMFR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 08:05:17 -0400
-Message-ID: <4AD70FC2.5050302@ans.pl>
-Date: Thu, 15 Oct 2009 14:04:18 +0200
-From: =?ISO-8859-2?Q?Krzysztof_Ol=EAdzki?= <ole@ans.pl>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 15 Oct 2009 08:13:27 -0400
+Received: from [207.36.208.214] ([207.36.208.214]:54558 "EHLO mail.dvmed.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751072AbZJOMN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 08:13:26 -0400
+Message-ID: <4AD711BC.2030409@garzik.org>
+Date: Thu, 15 Oct 2009 08:12:44 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Amerigo Wang <amwang@redhat.com>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, netfilter-devel@vger.kernel.org
-Subject: Re: [Patch] (updated) netfilter: remove deprecated CONFIG_NF_CT_ACCT
-References: <20091015080211.4561.78538.sendpatchset@localhost.localdomain>
-In-Reply-To: <20091015080211.4561.78538.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [RFC] Remove or convert empty ioctls ?
+References: <alpine.LFD.2.00.0910151113340.9428@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0910151113340.9428@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[resend, previously I incorrectly copied netfilter-devel-owner]
-
-Adding CC to netfilter-devel@vger.kernel.org, where netfilter
-related issues are discussed.
-
-On Thu, 15 Oct 2009, Amerigo Wang wrote:
-
+On 10/15/2009 05:20 AM, Thomas Gleixner wrote:
+> Hi,
 >
-> CONFIG_NF_CT_ACCT is scheduled to be removed in 2.6.29.
+> while looking into pushing down BKL to ioctls I noticed that we have a
+> lot of ioctls which simply return -EINVAL or some other fancy error
+> code.
 >
-> Cc: Krzysztof Piotr Oledzki <ole@ans.pl>
-> Signed-off-by: WANG Cong <amwang@redhat.com>
+> The question is whether we should convert them to unlocked_ioctl or
+> simply remove them and let the sys_ioctl code return the default
+> -ENOTTY error code.
+>
+> One could argue that this is a user visible change, but OTOH there is
+> no particular value of EINVAL or any other weird error code when it
+> just says: there is no ioctl for this fd.
 
-This is not so easy - it was decided that we don't want to remove it 
-just that because of connbytes. The final conclusion was to keep it 
-disabled by default (if not enabled by kernel/modules/sysctl option) but 
-enabling it automatically for the current NS if nefilter rules contains 
-"-m connbytes".
+It seems like a mistake to generalize a rule out of this, especially if 
+it leads to error return values changing unexpectedly in years-old code.
 
-Sorry, I should have gotten into this and finished it earlier, my bad. :(
+"no particular value" is highly subjective, and I think unprovable, 
+without an exhaustive survey of userland programs interacting with 
+kernel drivers.  Userland programs often interact with a -class- of 
+drivers, expecting predictable behavior from a DoThisThing ioctl, with 
+EINVAL or "other weird error code" returned intentionally.
 
-Best regards,
+Changing the return codes seems quite unwise.
 
-  				Krzysztof Olêdzki
+	Jeff
+
+
+
+
