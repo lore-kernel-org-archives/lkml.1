@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934908AbZJOI4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935019AbZJOI6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934908AbZJOI4M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 04:56:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932258AbZJOI4L
+	id S935019AbZJOI6m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 04:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934171AbZJOI6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 04:56:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49754 "EHLO mx3.mail.elte.hu"
+	Thu, 15 Oct 2009 04:58:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45710 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932127AbZJOI4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 04:56:10 -0400
-Date: Thu, 15 Oct 2009 10:55:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH 00/13] [GIT PULL] perf tools: updates to parsing events
-Message-ID: <20091015085508.GA10546@elte.hu>
-References: <20091014194330.980165492@goodmis.org>
+	id S933197AbZJOI6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 04:58:41 -0400
+Message-ID: <4AD6E3EC.8080901@kernel.org>
+Date: Thu, 15 Oct 2009 17:57:16 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091014194330.980165492@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Luck, Tony" <tony.luck@intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+       "mingo@redhat.com" <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "rostedt@goodmis.org" <rostedt@goodmis.org>,
+       "cebbert@redhat.com" <cebbert@redhat.com>
+Subject: Re: [PATCH 13/16] percpu: remove per_cpu__ prefix.
+References: <1255500125-3210-1-git-send-email-tj@kernel.org> <1255500125-3210-14-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0910141026370.26476@gentwo.org> <57C9024A16AD2D4C97DC78E552063EA3E32264A8@orsmsx505.amr.corp.intel.com> <4AD60C78.1090908@zytor.com>
+In-Reply-To: <4AD60C78.1090908@zytor.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 15 Oct 2009 08:57:18 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+H. Peter Anvin wrote:
+> Okay... I also don't seem to understand the more fundamental issue here,
+> which is:
+> 
+> Why are we dropping the prefix?
+> 
+> It may be "insufficient", but at least it stands out like a sore thumb
+> and makes mistakes harder.  It would be a different thing if we could
+> actually use the TLS ABI, but we really can't.
 
-> Ingo,
-> 
-> Please pull the latest perf/core tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> perf/core
-> 
-> 
-> Steven Rostedt (13):
->       perf tools: handle print concatinations in event format file
->       perf tools: fix backslash processing on trace print formats
->       perf tools: handle trace parsing of '<' and '>'
->       perf tools: handle arrays in print fields for trace parsing
->       perf tools: handle '*' as typecast in trace parsing
->       perf tools: handle newlines in trace parsing better
->       perf tools: handle the case with and without the "signed" trace field
->       perf tools: still continue on failed parsing of an event
->       perf tools: fix bprintk reading in trace output
->       perf tools: handle both versions of ftrace output
->       perf tools: add latency format to trace output
->       perf tools: handle '-' and '+' in parsing trace print format
->       perf tools: remove all char * typecasts and use const in prototype
-> 
-> ----
->  tools/perf/Makefile                 |    2 +-
->  tools/perf/builtin-trace.c          |    2 +
->  tools/perf/util/trace-event-parse.c |  533 +++++++++++++++++++++++++----------
->  tools/perf/util/trace-event.h       |   25 ++-
->  4 files changed, 405 insertions(+), 157 deletions(-)
+The reason for actively removing the prefix is because it forces us to
+have two different accessors for static and dynamic ones which is made
+worse by any accessor which will accept dynamic ones will accept
+anything (static ones enclosed by per_cpu_var(), dynamic ones, plain
+wrong random value).  Also, wide spread use of per_cpu_var() in
+generic code will basically circumvent any meaningful protection the
+prefix provided.
 
-Applied, thanks Steve! Very nice changes/fixes!
+Thanks.
 
-	Ingo
+-- 
+tejun
