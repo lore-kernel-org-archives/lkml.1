@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934865AbZJOHCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZJOHHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934865AbZJOHCV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 03:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934695AbZJOHCT
+	id S1756916AbZJOHHF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 03:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933325AbZJOHHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 03:02:19 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:36930 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933060AbZJOHCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 03:02:19 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Roel Kluin <roel.kluin@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] mdio-gpio: inline mdio_gpio_bus_deinit to avoid section issues
-Date: Thu, 15 Oct 2009 03:01:41 -0400
-Message-Id: <1255590101-5813-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5
+	Thu, 15 Oct 2009 03:07:04 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35434 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756693AbZJOHHD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 03:07:03 -0400
+Subject: Re: [PATCH 12/13] [PATCH 12/13] perf tools: handle - and + in
+ parsing trace print format
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <20091015064240.GC11645@elte.hu>
+References: <20091014194330.980165492@goodmis.org>
+	 <20091014194400.330843045@goodmis.org>  <20091015064240.GC11645@elte.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 15 Oct 2009 09:05:30 +0200
+Message-Id: <1255590330.8392.446.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mdio_gpio_bus_deinit() code is called from the probe/remove functions
-which accordingly have __devinit/__devexit markings.  Rather than simply
-remove its section marking, inline the code so that it can be freed as
-needed by each function.
+On Thu, 2009-10-15 at 08:42 +0200, Ingo Molnar wrote:
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- drivers/net/phy/mdio-gpio.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> > -CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
+> > +CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
+> 
+> hm, why does this patch change the Makefile?
+> 
+> i've skipped this hunk, it does not appear to be connected to the 
+> commit.
 
-diff --git a/drivers/net/phy/mdio-gpio.c b/drivers/net/phy/mdio-gpio.c
-index 22cdd45..a280224 100644
---- a/drivers/net/phy/mdio-gpio.c
-+++ b/drivers/net/phy/mdio-gpio.c
-@@ -139,7 +139,7 @@ out:
- 	return NULL;
- }
- 
--static void __devinit mdio_gpio_bus_deinit(struct device *dev)
-+static inline void mdio_gpio_bus_deinit(struct device *dev)
- {
- 	struct mii_bus *bus = dev_get_drvdata(dev);
- 	struct mdio_gpio_info *bitbang = bus->priv;
--- 
-1.6.5
-
+Probably because he wanted to debug things and O6 generates crappy gdb
+experience.. and then it slipped into the diff
