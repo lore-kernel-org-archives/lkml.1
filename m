@@ -1,74 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934096AbZJOGHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934592AbZJOGH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934096AbZJOGHh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 02:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbZJOGHg
+	id S934592AbZJOGH6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 02:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbZJOGH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 02:07:36 -0400
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:33828 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752718AbZJOGHe (ORCPT
+	Thu, 15 Oct 2009 02:07:57 -0400
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:46496 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752101AbZJOGHy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 02:07:34 -0400
-Date: Thu, 15 Oct 2009 11:36:52 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Thu, 15 Oct 2009 02:07:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Z8Lm9lqnDwaBz3RdmJ4q73v6WnoX2Y1RWkoH2jo73DjdTkR4yAppr3LIjjsF3aKWFt
+         9qbG0go6WPvLHfBA3w+ys+hyU0ewg/Zmw7I+IlVpVv+PIaIHQ0B1dB+sF25zUnDV9Ibj
+         /9I6jJq3jtE4GH4/NMiwHRpGkBpPdVw8ixZYc=
+Date: Thu, 15 Oct 2009 15:07:07 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
-	register a set of idle routines.
-Message-ID: <20091015060651.GA4569@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20091008094828.GA20595@linux.vnet.ibm.com> <20091008095027.GC20595@linux.vnet.ibm.com> <1254998162.26976.270.camel@twins> <20091008104249.GJ20595@linux.vnet.ibm.com> <1254999033.26976.272.camel@twins> <8763akh4re.fsf@basil.nowhere.org> <20091014061727.GA8605@linux.vnet.ibm.com> <20091014071838.GE23248@one.firstfloor.org>
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Lothar Wassmann <LW@KARO-electronics.de>, linux-usb@vger.kernel.org,
+       Roland Dreier <rolandd@cisco.com>,
+       Yevgeny Petrilin <yevgenyp@mellanox.co.il>, netdev@vger.kernel.org,
+       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64@vger.kernel.org, linux-altix@sgi.com,
+       Kyle Hubert <khubert@gmail.com>
+Subject: [PATCH -mmotm -v2] Fix
+	bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area.
+	patch
+Message-ID: <20091015060706.GA26956@localhost.localdomain>
+References: <1255076961-21325-1-git-send-email-akinobu.mita@gmail.com> <1255076961-21325-2-git-send-email-akinobu.mita@gmail.com> <20091009164100.85a36188.akpm@linux-foundation.org> <20091013021818.GA3898@localhost.localdomain> <20091013091017.GA18431@localhost.localdomain> <20091014032258.GA18527@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091014071838.GE23248@one.firstfloor.org>
+In-Reply-To: <20091014032258.GA18527@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen <andi@firstfloor.org> [2009-10-14 09:18:38]:
+From: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: Fix bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area.patch
 
-> > How about something like this..
-> > If the arch does not enable CONFIG_CPU_IDLE, the cpuidle_idle_call
-> > which is called from cpu_idle() should call default_idle without
-> > involving the registering cpuidle steps. This should prevent bloating
-> > up of the kernel for archs which dont want to use cpuidle.
-> 
-> On x86 some people want small kernel too, so selecting it on a architecture
-> granuality is not good. Also you can make it default, you just need
-> to slim it down first.
-> 
+- Rewrite bitmap_set and bitmap_clear
 
-No, I dont mean selecting it on an architecture granularity.
+  Instead of setting or clearing for each bit.
 
-At compile time, if CONFIG_CPU_IDLE is disabled, the arch can redefine
-cpuidle_idle_call. For e.g. in arch/x86/kernel/process.c
+- Fix off-by-one errors in bitmap_find_next_zero_area
 
-#ifndef CONFIG_CPU_IDLE
-void cpuidle_idle_call(void)
-{
-	if (local_idle)
-		local_idle();
-	else
-		default_idle();
-}
-#endif
+  This bug was derived from find_next_zero_area in iommu-helper.
 
-where local_idle points to the idle routine selected using
-select_idle_routine() which can be poll, mwait, c1e.
+- Add kerneldoc for bitmap_find_next_zero_area
 
-So this way, we still preserve the exact same functionality as before
-and we also remove the ugly pm_idle exported function pointer and we
-avoid unnecessary code bloat for platforms who do not want to use
-cpuidle.
+This patch is supposed to be folded into
+bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area.patch
 
---arun
+* -v2
+- Remove an extra test at the "index" value by find_next_bit
+
+Index was just returned by find_next_zero_bit, so we know it's zero.
+
+Noticed-by: Kyle Hubert <khubert@gmail.com>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+---
+ lib/bitmap.c |   62 ++++++++++++++++++++++++++++++++++++++++++++-------------
+ 1 files changed, 48 insertions(+), 14 deletions(-)
+
+diff --git a/lib/bitmap.c b/lib/bitmap.c
+index 2415da4..962b863 100644
+--- a/lib/bitmap.c
++++ b/lib/bitmap.c
+@@ -271,28 +271,62 @@ int __bitmap_weight(const unsigned long *bitmap, int bits)
+ }
+ EXPORT_SYMBOL(__bitmap_weight);
+ 
+-void bitmap_set(unsigned long *map, int i, int len)
+-{
+-	int end = i + len;
++#define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) % BITS_PER_LONG))
+ 
+-	while (i < end) {
+-		__set_bit(i, map);
+-		i++;
++void bitmap_set(unsigned long *map, int start, int nr)
++{
++	unsigned long *p = map + BIT_WORD(start);
++	const int size = start + nr;
++	int bits_to_set = BITS_PER_LONG - (start % BITS_PER_LONG);
++	unsigned long mask_to_set = BITMAP_FIRST_WORD_MASK(start);
++
++	while (nr - bits_to_set >= 0) {
++		*p |= mask_to_set;
++		nr -= bits_to_set;
++		bits_to_set = BITS_PER_LONG;
++		mask_to_set = ~0UL;
++		p++;
++	}
++	if (nr) {
++		mask_to_set &= BITMAP_LAST_WORD_MASK(size);
++		*p |= mask_to_set;
+ 	}
+ }
+ EXPORT_SYMBOL(bitmap_set);
+ 
+ void bitmap_clear(unsigned long *map, int start, int nr)
+ {
+-	int end = start + nr;
+-
+-	while (start < end) {
+-		__clear_bit(start, map);
+-		start++;
++	unsigned long *p = map + BIT_WORD(start);
++	const int size = start + nr;
++	int bits_to_clear = BITS_PER_LONG - (start % BITS_PER_LONG);
++	unsigned long mask_to_clear = BITMAP_FIRST_WORD_MASK(start);
++
++	while (nr - bits_to_clear >= 0) {
++		*p &= ~mask_to_clear;
++		nr -= bits_to_clear;
++		bits_to_clear = BITS_PER_LONG;
++		mask_to_clear = ~0UL;
++		p++;
++	}
++	if (nr) {
++		mask_to_clear &= BITMAP_LAST_WORD_MASK(size);
++		*p &= ~mask_to_clear;
+ 	}
+ }
+ EXPORT_SYMBOL(bitmap_clear);
+ 
++/*
++ * bitmap_find_next_zero_area - find a contiguous aligned zero area
++ * @map: The address to base the search on
++ * @size: The bitmap size in bits
++ * @start: The bitnumber to start searching at
++ * @nr: The number of zeroed bits we're looking for
++ * @align_mask: Alignment mask for zero area
++ *
++ * The @align_mask should be one less than a power of 2; the effect is that
++ * the bit offset of all zero areas this function finds is multiples of that
++ * power of 2. A @align_mask of 0 means no alignment is required.
++ */
+ unsigned long bitmap_find_next_zero_area(unsigned long *map,
+ 					 unsigned long size,
+ 					 unsigned long start,
+@@ -304,12 +338,12 @@ again:
+ 	index = find_next_zero_bit(map, size, start);
+ 
+ 	/* Align allocation */
+-	index = (index + align_mask) & ~align_mask;
++	index = __ALIGN_MASK(index, align_mask);
+ 
+ 	end = index + nr;
+-	if (end >= size)
++	if (end > size)
+ 		return end;
+-	i = find_next_bit(map, end, index);
++	i = find_next_bit(map, end, index + 1);
+ 	if (i < end) {
+ 		start = i + 1;
+ 		goto again;
+-- 
+1.5.4.3
+
