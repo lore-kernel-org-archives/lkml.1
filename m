@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935210AbZJOSdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935329AbZJOSpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935210AbZJOSdJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 14:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935062AbZJOSdI
+	id S935329AbZJOSpp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 14:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935320AbZJOSpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 14:33:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:40049 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935056AbZJOSdH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 14:33:07 -0400
-Message-ID: <4AD76A5A.4050806@zytor.com>
-Date: Thu, 15 Oct 2009 11:30:50 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Thu, 15 Oct 2009 14:45:44 -0400
+Received: from kroah.org ([198.145.64.141]:60261 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935282AbZJOSpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 14:45:14 -0400
+Date: Thu, 15 Oct 2009 11:31:54 -0700
+From: Greg KH <greg@kroah.com>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: =?iso-8859-1?B?RnLpZOlyaWMgTC4gVy4=?= Meunier <fredlwm@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, edt@aei.ca,
+       hirofumi@mail.parknet.co.jp, alan@linux.intel.com,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: keyboard under X with 2.6.31
+Message-ID: <20091015183154.GC3921@kroah.com>
+References: <4AD17C6A.4030902@yahoo.co.uk>
+ <alpine.LNX.2.01.0910111735140.19647@dyndns.pervalidus.net>
+ <4AD37E05.5010504@gmail.com>
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ian Lance Taylor <iant@google.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] x86: linker script syntax nits
-References: <20091014221024.EFA79E2F@magilla.sf.frob.com>	<20091015033010.GB10068@merkur.ravnborg.org>	<20091015063837.GA11645@elte.hu>	<4AD75920.8000303@zytor.com> <20091015182616.DFD875E6@magilla.sf.frob.com>
-In-Reply-To: <20091015182616.DFD875E6@magilla.sf.frob.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4AD37E05.5010504@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/15/2009 11:26 AM, Roland McGrath wrote:
->> The other -- and somewhat less cantankerous way -- is to use a dummy symbol:
->>
->> #define LINUX_ASSERT(expr, name, string) name = ASSERT(expr, string)
->>
->> "name" would have to be unique for each instance.
-> 
-> I wouldn't like to pollute the symtabs with those useless symbols.
-> 
-> #define LINUX_ASSERT(expr, string) PROVIDE(_assert_bogon = ASSERT(expr, string))
-> 
-> works with a recent ld.  I don't know what the problematic old ld versions
-> were.  Do you have such on hand to test?
-> 
-> Ian may have another suggestion.
-> 
+On Mon, Oct 12, 2009 at 09:05:41PM +0200, Marcin Slusarz wrote:
+> Frédéric L. W. Meunier wrote:
+> > On Sun, 11 Oct 2009, Boyan wrote:
+> > 
+> >> (sending again, sorry about last reply, wrong subject...)
+> >> On Sat, 10 Oct 2009 21:00:05 -0400, Ed Tomlinson wrote:
+> >>> You are not alone with keyboard problems in 31 in X.  In my case I
+> >>> blamed a  new wireless setup.
+> >>> I am building with the the above commit reverted.
+> >>
+> >> Not sure why, but after reverting
+> >> e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
+> >> 'low_latency' tty flag) my analog tv tuner stopped working after booting
+> >> for the first time. It has TV and FM radio, but only radio worked when
+> >> reverted this patch. I saw some EIO errors with strace. Then added again
+> >> the patch and on top of it I've added commit:
+> >>
+> >> 3a54297478e6578f96fd54bf4daa1751130aca86
+> >> pty: quickfix for the pty ENXIO timing problems
+> >>
+> >> Everything was ok.
+> >> Today I've tried to reproduce this and reverted both patches. Recompiled
+> >> and everything is ok. Not sure what happened yesterday.
+> >> So to summarize 2.6.31.3 with reverted commit
+> >> e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
+> >> 'low_latency' tty flag) works for me.
+> > 
+> > Reverting the commit also works for me. Thanks.
+> > 
+> > The direct link, for those not using git:
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e043e42bdb66885b3ac10d27a01ccb9972e2b0a3
+>  
+> CC'ing Greg K-H
 
-I don't remember how old they have to be... I think RHEL 4 timeframe,
-though.
+I've now queued up 3a54297478e6578f96fd54bf4daa1751130aca86 for the next
+.31-stable release.
 
-	-hpa
+thanks for letting me know.
+
+greg k-h
