@@ -1,667 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761404AbZJOIAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761706AbZJOIC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761404AbZJOIAR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 04:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759335AbZJOIAQ
+	id S1761706AbZJOIC6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 04:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760786AbZJOIC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 04:00:16 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:2367 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755653AbZJOIAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 04:00:13 -0400
-Date: Thu, 15 Oct 2009 03:59:30 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, akpm@linux-foundation.org,
-       Krzysztof Piotr Oledzki <ole@ans.pl>, Amerigo Wang <amwang@redhat.com>
-Message-Id: <20091015080211.4561.78538.sendpatchset@localhost.localdomain>
-Subject: [Patch] (updated) netfilter: remove deprecated CONFIG_NF_CT_ACCT
+	Thu, 15 Oct 2009 04:02:56 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:28167 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760526AbZJOICv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 04:02:51 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=kvn3Z5e8MLyWuojpoM7A3LaaW7l7aLAQw90KibMEjyrwvJr4TyQcHJ1z+Oa4/y6OC
+	OMJ0OqpTkCSPB1ywUdUjw==
+Date: Thu, 15 Oct 2009 01:01:37 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Dirk Hohndel <hohndel@infradead.org>,
+       Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, v2] kbuild: Improve version string logic
+In-Reply-To: <alpine.DEB.1.00.0910140037140.29264@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.00.0910150100590.10850@chino.kir.corp.google.com>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <200910130004.46388.elendil@planet.nl> <20091013070505.GC31483@elte.hu> <200910131952.01209.elendil@planet.nl> <alpine.LFD.2.01.0910131100180.26777@localhost.localdomain>
+ <alpine.DEB.1.00.0910131649280.24112@chino.kir.corp.google.com> <20091014065941.GH784@elte.hu> <alpine.DEB.1.00.0910140014490.26562@chino.kir.corp.google.com> <20091014073306.GB22778@elte.hu> <alpine.DEB.1.00.0910140037140.29264@chino.kir.corp.google.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 14 Oct 2009, David Rientjes wrote:
 
-CONFIG_NF_CT_ACCT is scheduled to be removed in 2.6.29.
+> We could easily go with my suggestion of allowing "make LOCALVERSION=" to 
+> override all additions to the kernel version when CONFIG_LOCALVERSION_AUTO 
+> is disabled.  For such configurations, kernels would be built with this 
+> variable to specify how it's different from the vanilla version and would 
+> suppress the `+'.
+> 
 
-Cc: Krzysztof Piotr Oledzki <ole@ans.pl>
-Signed-off-by: WANG Cong <amwang@redhat.com>
+The following patch implements this suggestion and folds both of my 
+proposed patches together.
 
+
+kbuild: improve version string logic
+
+The LOCALVERSION= string passed to "make" will now always be appended to
+the kernel version after CONFIG_LOCALVERSION, if it exists, regardless of
+whether CONFIG_LOCALVERSION_AUTO is set or not.  This allows users to
+uniquely identify their kernel builds with a string.
+
+scripts/setlocalversion will now always be called to determine whether
+the repository is beyond a tagged (release) commit.  When at a tagged
+commit, this script will now suppress all output.
+
+If CONFIG_LOCALVERSION_AUTO is enabled, the unique SCM tag reported by 
+setlocalversion (or .scmversion) is appended to the kernel version, if it 
+exists.  When CONFIG_LOCALVERSION_AUTO is not enabled, a `+' is appended
+to the kernel version to represent that the kernel has been revised since
+the last release unless "make LOCALVERSION=" was used to uniquely identify
+the build.
+
+The end result is this:
+
+ - when LOCALVERSION= is passed to "make", it is appended to the kernel
+   version,
+
+ - when CONFIG_LOCALVERSION_AUTO is enabled, a unique SCM identifier is
+   appended if the respository has been revised beyond a tagged commit,
+   and
+
+ - when CONFIG_LOCALVERSION_AUTO is disabled, a `+' is appended if the 
+   repository has been revised beyond a tagged commit and LOCALVERSION=
+   was not passed to "make".
+
+Examples:
+
+With CONFIG_LOCALVERSION_AUTO: "make" results in
+v2.6.32-rc4-00149-ga3ccf63.  If there are uncommited changes to the
+respository, it results in v2.6.32-rc4-00149-ga3ccf63-dirty.  If
+"make LOCALVERSION=kbuild" were used, it results in
+v2.6.32-rc4-kbuild-00149-ga3ccf63-dirty.
+
+Without CONFIG_LOCALVERSION_AUTO, "make" results in v2.6.32-rc4+
+unless the repository is at the Linux v2.6.32-rc4 commit (in which
+case the version would be v2.6.32-rc4).  If "make LOCALVERSION=kbuild"
+were used, it results in v2.6.32-rc4-kbuild.
+
+Also renames variables such as localver-auto and _localver-auto to more 
+accurately describe what they represent: localver-extra and
+scm-identifier, respectively.
+
+Signed-off-by: David Rientjes <rientjes@google.com>
 ---
+ Makefile                |   43 +++++++++++++++++++++++++++----------------
+ scripts/setlocalversion |    3 ++-
+ 2 files changed, 29 insertions(+), 17 deletions(-)
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 04e6c81..3170c85 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -345,15 +345,6 @@ Who:	Johannes Berg <johannes@sipsolutions.net>
- 
- ---------------------------
- 
--What: CONFIG_NF_CT_ACCT
--When: 2.6.29
--Why:  Accounting can now be enabled/disabled without kernel recompilation.
--      Currently used only to set a default value for a feature that is also
--      controlled by a kernel/module/sysfs/sysctl parameter.
--Who:  Krzysztof Piotr Oledzki <ole@ans.pl>
--
-----------------------------
--
- What:	sysfs ui for changing p4-clockmod parameters
- When:	September 2009
- Why:	See commits 129f8ae9b1b5be94517da76009ea956e89104ce8 and
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 9107b38..722b2be 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1534,8 +1534,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			[NETFILTER] Enable connection tracking flow accounting
- 			0 to disable accounting
- 			1 to enable accounting
--			Default value depends on CONFIG_NF_CT_ACCT that is
--			going to be removed in 2.6.29.
-+			Default value is 1.
- 
- 	nfsaddrs=	[NFS]
- 			See Documentation/filesystems/nfsroot.txt.
-diff --git a/arch/alpha/defconfig b/arch/alpha/defconfig
-index e43f68f..5c98dc1 100644
---- a/arch/alpha/defconfig
-+++ b/arch/alpha/defconfig
-@@ -370,7 +370,6 @@ CONFIG_NETFILTER=y
- # IP: Netfilter Configuration
+diff --git a/Makefile b/Makefile
+--- a/Makefile
++++ b/Makefile
+@@ -898,14 +898,19 @@ $(vmlinux-dirs): prepare scripts
+ #	  $(localver)
+ #	    localversion*		(files without backups, containing '~')
+ #	    $(CONFIG_LOCALVERSION)	(from kernel config setting)
+-#	  $(localver-auto)		(only if CONFIG_LOCALVERSION_AUTO is set)
+-#	    ./scripts/setlocalversion	(SCM tag, if one exists)
+-#	    $(LOCALVERSION)		(from make command line if provided)
++#	    $(LOCALVERSION)		(from make command line, if provided)
++#	  $(localver-extra)
++#	    $(scm-identifier)		(unique SCM tag, if one exists)
++#	      ./scripts/setlocalversion	(only with CONFIG_LOCALVERSION_AUTO)
++#	      .scmversion		(only with CONFIG_LOCALVERSION_AUTO)
++#	    +				(only without CONFIG_LOCALVERSION_AUTO
++#					 and without LOCALVERSION= and 
++#					 repository is at non-tagged commit)
  #
- CONFIG_IP_NF_CONNTRACK=m
--# CONFIG_IP_NF_CT_ACCT is not set
- # CONFIG_IP_NF_CT_PROTO_SCTP is not set
- CONFIG_IP_NF_FTP=m
- CONFIG_IP_NF_IRC=m
-diff --git a/arch/arm/configs/ebsa110_defconfig b/arch/arm/configs/ebsa110_defconfig
-index afcfff6..6faf3ee 100644
---- a/arch/arm/configs/ebsa110_defconfig
-+++ b/arch/arm/configs/ebsa110_defconfig
-@@ -284,7 +284,6 @@ CONFIG_NETFILTER=y
- # IP: Netfilter Configuration
+-#  Note how the final $(localver-auto) string is included *only* if the
+-# kernel config option CONFIG_LOCALVERSION_AUTO is selected.  Also, at the
+-# moment, only git is supported but other SCMs can edit the script
+-# scripts/setlocalversion and add the appropriate checks as needed.
++# For kernels without CONFIG_LOCALVERSION_AUTO compiled from an SCM that has
++# been revised beyond a tagged commit, `+' is appended to the version string
++# when not overridden by using "make LOCALVERSION=".  This indicates that the
++# kernel is not a vanilla release version and has been modified.
+ 
+ pattern = ".*/localversion[^~]*"
+ string  = $(shell cat /dev/null \
+@@ -914,26 +919,32 @@ string  = $(shell cat /dev/null \
+ localver = $(subst $(space),, $(string) \
+ 			      $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
+ 
+-# If CONFIG_LOCALVERSION_AUTO is set scripts/setlocalversion is called
+-# and if the SCM is know a tag from the SCM is appended.
+-# The appended tag is determined by the SCM used.
++# scripts/setlocalversion is called to create a unique identifier if the source
++# is managed by a known SCM and the repository has been revised since the last
++# tagged (release) commit.  The format of the identifier is determined by the
++# SCM's implementation.
  #
- CONFIG_IP_NF_CONNTRACK=y
--# CONFIG_IP_NF_CT_ACCT is not set
- # CONFIG_IP_NF_CONNTRACK_MARK is not set
- # CONFIG_IP_NF_CT_PROTO_SCTP is not set
- CONFIG_IP_NF_FTP=y
-diff --git a/arch/arm/configs/ezx_defconfig b/arch/arm/configs/ezx_defconfig
-index d5ee16e..698de70 100644
---- a/arch/arm/configs/ezx_defconfig
-+++ b/arch/arm/configs/ezx_defconfig
-@@ -376,7 +376,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/arm/configs/netwinder_defconfig b/arch/arm/configs/netwinder_defconfig
-index c1a63a3..7728932 100644
---- a/arch/arm/configs/netwinder_defconfig
-+++ b/arch/arm/configs/netwinder_defconfig
-@@ -345,7 +345,6 @@ CONFIG_NETFILTER=y
- # IP: Netfilter Configuration
- #
- CONFIG_IP_NF_CONNTRACK=y
--# CONFIG_IP_NF_CT_ACCT is not set
- # CONFIG_IP_NF_CONNTRACK_MARK is not set
- # CONFIG_IP_NF_CT_PROTO_SCTP is not set
- CONFIG_IP_NF_FTP=y
-diff --git a/arch/arm/configs/netx_defconfig b/arch/arm/configs/netx_defconfig
-index 61d0fc5..89cb82d 100644
---- a/arch/arm/configs/netx_defconfig
-+++ b/arch/arm/configs/netx_defconfig
-@@ -265,7 +265,6 @@ CONFIG_NETFILTER=y
- # IP: Netfilter Configuration
- #
- CONFIG_IP_NF_CONNTRACK=m
--# CONFIG_IP_NF_CT_ACCT is not set
- # CONFIG_IP_NF_CONNTRACK_MARK is not set
- # CONFIG_IP_NF_CONNTRACK_EVENTS is not set
- # CONFIG_IP_NF_CT_PROTO_SCTP is not set
-diff --git a/arch/arm/configs/pnx4008_defconfig b/arch/arm/configs/pnx4008_defconfig
-index 67b5f1e..f7442d7 100644
---- a/arch/arm/configs/pnx4008_defconfig
-+++ b/arch/arm/configs/pnx4008_defconfig
-@@ -309,7 +309,6 @@ CONFIG_BRIDGE_NETFILTER=y
- # IP: Netfilter Configuration
- #
- CONFIG_IP_NF_CONNTRACK=m
--CONFIG_IP_NF_CT_ACCT=y
- CONFIG_IP_NF_CONNTRACK_MARK=y
- # CONFIG_IP_NF_CONNTRACK_EVENTS is not set
- CONFIG_IP_NF_CT_PROTO_SCTP=m
-diff --git a/arch/arm/configs/s3c2410_defconfig b/arch/arm/configs/s3c2410_defconfig
-index b498104..817c03d 100644
---- a/arch/arm/configs/s3c2410_defconfig
-+++ b/arch/arm/configs/s3c2410_defconfig
-@@ -480,7 +480,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
- CONFIG_NF_CT_PROTO_DCCP=m
-diff --git a/arch/m68k/configs/amiga_defconfig b/arch/m68k/configs/amiga_defconfig
-index 0f69fa5..26a0469 100644
---- a/arch/m68k/configs/amiga_defconfig
-+++ b/arch/m68k/configs/amiga_defconfig
-@@ -251,7 +251,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/m68k/configs/apollo_defconfig b/arch/m68k/configs/apollo_defconfig
-index 5fff581..5b42613 100644
---- a/arch/m68k/configs/apollo_defconfig
-+++ b/arch/m68k/configs/apollo_defconfig
-@@ -246,7 +246,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/m68k/configs/atari_defconfig b/arch/m68k/configs/atari_defconfig
-index d92a90e..5472ec5 100644
---- a/arch/m68k/configs/atari_defconfig
-+++ b/arch/m68k/configs/atari_defconfig
-@@ -247,7 +247,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/m68k/configs/bvme6000_defconfig b/arch/m68k/configs/bvme6000_defconfig
-index 6e6b1aa..a81d838 100644
---- a/arch/m68k/configs/bvme6000_defconfig
-+++ b/arch/m68k/configs/bvme6000_defconfig
-@@ -248,7 +248,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/m68k/configs/hp300_defconfig b/arch/m68k/configs/hp300_defconfig
-index bc0565f..e32903f 100644
---- a/arch/m68k/configs/hp300_defconfig
-+++ b/arch/m68k/configs/hp300_defconfig
-@@ -247,7 +247,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/m68k/configs/mac_defconfig b/arch/m68k/configs/mac_defconfig
-index 9991b64..3554ed6 100644
---- a/arch/m68k/configs/mac_defconfig
-+++ b/arch/m68k/configs/mac_defconfig
-@@ -245,7 +245,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/m68k/configs/multi_defconfig b/arch/m68k/configs/multi_defconfig
-index 69c43e2..56c3f94 100644
---- a/arch/m68k/configs/multi_defconfig
-+++ b/arch/m68k/configs/multi_defconfig
-@@ -258,7 +258,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/m68k/configs/mvme147_defconfig b/arch/m68k/configs/mvme147_defconfig
-index 7dceb5d..607f079 100644
---- a/arch/m68k/configs/mvme147_defconfig
-+++ b/arch/m68k/configs/mvme147_defconfig
-@@ -248,7 +248,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/m68k/configs/mvme16x_defconfig b/arch/m68k/configs/mvme16x_defconfig
-index 890594f..b266c9a 100644
---- a/arch/m68k/configs/mvme16x_defconfig
-+++ b/arch/m68k/configs/mvme16x_defconfig
-@@ -248,7 +248,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/m68k/configs/q40_defconfig b/arch/m68k/configs/q40_defconfig
-index 7cf58c2..c93cd2c 100644
---- a/arch/m68k/configs/q40_defconfig
-+++ b/arch/m68k/configs/q40_defconfig
-@@ -245,7 +245,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/m68k/configs/sun3_defconfig b/arch/m68k/configs/sun3_defconfig
-index f27c1a4..309f8c3 100644
---- a/arch/m68k/configs/sun3_defconfig
-+++ b/arch/m68k/configs/sun3_defconfig
-@@ -243,7 +243,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/m68k/configs/sun3x_defconfig b/arch/m68k/configs/sun3x_defconfig
-index c40edb9..1b8a899 100644
---- a/arch/m68k/configs/sun3x_defconfig
-+++ b/arch/m68k/configs/sun3x_defconfig
-@@ -245,7 +245,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/mips/configs/ar7_defconfig b/arch/mips/configs/ar7_defconfig
-index 3564830..302d99f 100644
---- a/arch/mips/configs/ar7_defconfig
-+++ b/arch/mips/configs/ar7_defconfig
-@@ -359,7 +359,6 @@ CONFIG_NETFILTER_ADVANCED=y
- # CONFIG_NETFILTER_NETLINK_QUEUE is not set
- # CONFIG_NETFILTER_NETLINK_LOG is not set
- CONFIG_NF_CONNTRACK=m
--# CONFIG_NF_CT_ACCT is not set
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/mips/configs/bcm47xx_defconfig b/arch/mips/configs/bcm47xx_defconfig
-index 94b7d57..fb6edc2 100644
---- a/arch/mips/configs/bcm47xx_defconfig
-+++ b/arch/mips/configs/bcm47xx_defconfig
-@@ -401,7 +401,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/db1000_defconfig b/arch/mips/configs/db1000_defconfig
-index dbdf3bb..0c82c42 100644
---- a/arch/mips/configs/db1000_defconfig
-+++ b/arch/mips/configs/db1000_defconfig
-@@ -326,7 +326,6 @@ CONFIG_NF_CONNTRACK_ENABLED=m
- CONFIG_NF_CONNTRACK_SUPPORT=y
- # CONFIG_IP_NF_CONNTRACK_SUPPORT is not set
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/db1100_defconfig b/arch/mips/configs/db1100_defconfig
-index fa68144..0bebb8d 100644
---- a/arch/mips/configs/db1100_defconfig
-+++ b/arch/mips/configs/db1100_defconfig
-@@ -315,7 +315,6 @@ CONFIG_NF_CONNTRACK_ENABLED=m
- CONFIG_NF_CONNTRACK_SUPPORT=y
- # CONFIG_IP_NF_CONNTRACK_SUPPORT is not set
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/db1200_defconfig b/arch/mips/configs/db1200_defconfig
-index d73f1de..4d35b72 100644
---- a/arch/mips/configs/db1200_defconfig
-+++ b/arch/mips/configs/db1200_defconfig
-@@ -320,7 +320,6 @@ CONFIG_NF_CONNTRACK_ENABLED=m
- CONFIG_NF_CONNTRACK_SUPPORT=y
- # CONFIG_IP_NF_CONNTRACK_SUPPORT is not set
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/db1500_defconfig b/arch/mips/configs/db1500_defconfig
-index ec3e028..7e739ba 100644
---- a/arch/mips/configs/db1500_defconfig
-+++ b/arch/mips/configs/db1500_defconfig
-@@ -333,7 +333,6 @@ CONFIG_NF_CONNTRACK_ENABLED=m
- CONFIG_NF_CONNTRACK_SUPPORT=y
- # CONFIG_IP_NF_CONNTRACK_SUPPORT is not set
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/db1550_defconfig b/arch/mips/configs/db1550_defconfig
-index 7631dae..6e7e005 100644
---- a/arch/mips/configs/db1550_defconfig
-+++ b/arch/mips/configs/db1550_defconfig
-@@ -332,7 +332,6 @@ CONFIG_NF_CONNTRACK_ENABLED=m
- CONFIG_NF_CONNTRACK_SUPPORT=y
- # CONFIG_IP_NF_CONNTRACK_SUPPORT is not set
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/ip22_defconfig b/arch/mips/configs/ip22_defconfig
-index f14d38b..29e1aa8 100644
---- a/arch/mips/configs/ip22_defconfig
-+++ b/arch/mips/configs/ip22_defconfig
-@@ -364,7 +364,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/jazz_defconfig b/arch/mips/configs/jazz_defconfig
-index d22df61..feb1c63 100644
---- a/arch/mips/configs/jazz_defconfig
-+++ b/arch/mips/configs/jazz_defconfig
-@@ -341,7 +341,6 @@ CONFIG_NF_CONNTRACK_ENABLED=m
- CONFIG_NF_CONNTRACK_SUPPORT=y
- # CONFIG_IP_NF_CONNTRACK_SUPPORT is not set
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/malta_defconfig b/arch/mips/configs/malta_defconfig
-index 3f01870..a59d654 100644
---- a/arch/mips/configs/malta_defconfig
-+++ b/arch/mips/configs/malta_defconfig
-@@ -397,7 +397,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/markeins_defconfig b/arch/mips/configs/markeins_defconfig
-index d001f7e..004cb26 100644
---- a/arch/mips/configs/markeins_defconfig
-+++ b/arch/mips/configs/markeins_defconfig
-@@ -340,7 +340,6 @@ CONFIG_NF_CONNTRACK_ENABLED=m
- CONFIG_NF_CONNTRACK_SUPPORT=y
- # CONFIG_IP_NF_CONNTRACK_SUPPORT is not set
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/pb1100_defconfig b/arch/mips/configs/pb1100_defconfig
-index be8091e..d1e8642 100644
---- a/arch/mips/configs/pb1100_defconfig
-+++ b/arch/mips/configs/pb1100_defconfig
-@@ -327,7 +327,6 @@ CONFIG_NF_CONNTRACK_ENABLED=m
- CONFIG_NF_CONNTRACK_SUPPORT=y
- # CONFIG_IP_NF_CONNTRACK_SUPPORT is not set
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/pb1500_defconfig b/arch/mips/configs/pb1500_defconfig
-index e74ba79..d14b215 100644
---- a/arch/mips/configs/pb1500_defconfig
-+++ b/arch/mips/configs/pb1500_defconfig
-@@ -332,7 +332,6 @@ CONFIG_NF_CONNTRACK_ENABLED=m
- CONFIG_NF_CONNTRACK_SUPPORT=y
- # CONFIG_IP_NF_CONNTRACK_SUPPORT is not set
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/pb1550_defconfig b/arch/mips/configs/pb1550_defconfig
-index 1d896fd..1d42d40 100644
---- a/arch/mips/configs/pb1550_defconfig
-+++ b/arch/mips/configs/pb1550_defconfig
-@@ -333,7 +333,6 @@ CONFIG_NF_CONNTRACK_ENABLED=m
- CONFIG_NF_CONNTRACK_SUPPORT=y
- # CONFIG_IP_NF_CONNTRACK_SUPPORT is not set
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/mips/configs/rb532_defconfig b/arch/mips/configs/rb532_defconfig
-index f40c3a0..db3a2ee 100644
---- a/arch/mips/configs/rb532_defconfig
-+++ b/arch/mips/configs/rb532_defconfig
-@@ -340,7 +340,6 @@ CONFIG_NETFILTER_ADVANCED=y
- # CONFIG_NETFILTER_NETLINK_QUEUE is not set
- # CONFIG_NETFILTER_NETLINK_LOG is not set
- CONFIG_NF_CONNTRACK=y
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/mips/configs/rm200_defconfig b/arch/mips/configs/rm200_defconfig
-index e53b8d0..efb2bc1 100644
---- a/arch/mips/configs/rm200_defconfig
-+++ b/arch/mips/configs/rm200_defconfig
-@@ -353,7 +353,6 @@ CONFIG_NF_CONNTRACK_ENABLED=m
- CONFIG_NF_CONNTRACK_SUPPORT=y
- # CONFIG_IP_NF_CONNTRACK_SUPPORT is not set
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
-index fc90592..32d5628 100644
---- a/arch/powerpc/configs/g5_defconfig
-+++ b/arch/powerpc/configs/g5_defconfig
-@@ -354,7 +354,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--# CONFIG_NF_CT_ACCT is not set
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/powerpc/configs/iseries_defconfig b/arch/powerpc/configs/iseries_defconfig
-index f925c55..7697f0b 100644
---- a/arch/powerpc/configs/iseries_defconfig
-+++ b/arch/powerpc/configs/iseries_defconfig
-@@ -336,7 +336,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--# CONFIG_NF_CT_ACCT is not set
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/powerpc/configs/linkstation_defconfig b/arch/powerpc/configs/linkstation_defconfig
-index 45671e7..e9be1a6 100644
---- a/arch/powerpc/configs/linkstation_defconfig
-+++ b/arch/powerpc/configs/linkstation_defconfig
-@@ -376,7 +376,6 @@ CONFIG_NETFILTER_ADVANCED=y
- # CONFIG_NETFILTER_NETLINK_QUEUE is not set
- # CONFIG_NETFILTER_NETLINK_LOG is not set
- CONFIG_NF_CONNTRACK=m
--# CONFIG_NF_CT_ACCT is not set
- # CONFIG_NF_CONNTRACK_MARK is not set
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
-index ea8870a..fcb169a 100644
---- a/arch/powerpc/configs/pmac32_defconfig
-+++ b/arch/powerpc/configs/pmac32_defconfig
-@@ -400,7 +400,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--# CONFIG_NF_CT_ACCT is not set
- # CONFIG_NF_CONNTRACK_MARK is not set
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- CONFIG_NF_CT_PROTO_DCCP=m
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 2524018..af11f6e 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -463,7 +463,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index 12dc7c4..44b711e 100644
---- a/arch/powerpc/configs/ppc6xx_defconfig
-+++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -511,7 +511,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_SECMARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index f1889ab..51ddc35 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -371,7 +371,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--CONFIG_NF_CT_ACCT=y
- CONFIG_NF_CONNTRACK_MARK=y
- CONFIG_NF_CONNTRACK_EVENTS=y
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/arch/s390/defconfig b/arch/s390/defconfig
-index ab44644..e9ffa25 100644
---- a/arch/s390/defconfig
-+++ b/arch/s390/defconfig
-@@ -356,7 +356,6 @@ CONFIG_NETFILTER_NETLINK=m
- CONFIG_NETFILTER_NETLINK_QUEUE=m
- CONFIG_NETFILTER_NETLINK_LOG=m
- CONFIG_NF_CONNTRACK=m
--# CONFIG_NF_CT_ACCT is not set
- # CONFIG_NF_CONNTRACK_MARK is not set
- # CONFIG_NF_CONNTRACK_EVENTS is not set
- # CONFIG_NF_CT_PROTO_DCCP is not set
-diff --git a/net/netfilter/Kconfig b/net/netfilter/Kconfig
-index 634d14a..5dfe7ec 100644
---- a/net/netfilter/Kconfig
-+++ b/net/netfilter/Kconfig
-@@ -40,27 +40,6 @@ config NF_CONNTRACK
+ # .scmversion is used when generating rpm packages so we do not loose
+ # the version information from the SCM when we do the build of the kernel
+ # from the copied source
+-ifdef CONFIG_LOCALVERSION_AUTO
+-
+ ifeq ($(wildcard .scmversion),)
+-        _localver-auto = $(shell $(CONFIG_SHELL) \
++        scm-identifier = $(shell $(CONFIG_SHELL) \
+                          $(srctree)/scripts/setlocalversion $(srctree))
+ else
+-        _localver-auto = $(shell cat .scmversion 2> /dev/null)
++        scm-identifier = $(shell cat .scmversion 2> /dev/null)
+ endif
  
- if NF_CONNTRACK
+-	localver-auto  = $(LOCALVERSION)$(_localver-auto)
++ifdef CONFIG_LOCALVERSION_AUTO
++	localver-extra = $(scm-identifier)
++else
++	ifneq ($scm-identifier,)
++		ifeq ($(LOCALVERSION),)
++			localver-extra = +
++		endif
++	endif
+ endif
  
--config NF_CT_ACCT
--	bool "Connection tracking flow accounting"
--	depends on NETFILTER_ADVANCED
--	help
--	  If this option is enabled, the connection tracking code will
--	  keep per-flow packet and byte counters.
--
--	  Those counters can be used for flow-based accounting or the
--	  `connbytes' match.
--
--	  Please note that currently this option only sets a default state.
--	  You may change it at boot time with nf_conntrack.acct=0/1 kernel
--	  parameter or by loading the nf_conntrack module with acct=0/1.
--
--	  You may also disable/enable it on a running system with:
--	   sysctl net.netfilter.nf_conntrack_acct=0/1
--
--	  This option will be removed in 2.6.29.
--
--	  If unsure, say `N'.
--
- config NF_CONNTRACK_MARK
- 	bool  'Connection mark tracking support'
- 	depends on NETFILTER_ADVANCED
-@@ -557,7 +536,6 @@ config NETFILTER_XT_MATCH_CONNBYTES
- 	tristate  '"connbytes" per-connection counter match support'
- 	depends on NF_CONNTRACK
- 	depends on NETFILTER_ADVANCED
--	select NF_CT_ACCT
- 	help
- 	  This option adds a `connbytes' match, which allows you to match the
- 	  number of bytes and/or packets for each direction within a connection.
-diff --git a/net/netfilter/nf_conntrack_acct.c b/net/netfilter/nf_conntrack_acct.c
-index 4a1d94a..2c4464d 100644
---- a/net/netfilter/nf_conntrack_acct.c
-+++ b/net/netfilter/nf_conntrack_acct.c
-@@ -16,13 +16,7 @@
- #include <net/netfilter/nf_conntrack_extend.h>
- #include <net/netfilter/nf_conntrack_acct.h>
+-localver-full = $(localver)$(localver-auto)
++localver-full = $(localver)$(LOCALVERSION)$(localver-extra)
  
--#ifdef CONFIG_NF_CT_ACCT
--#define NF_CT_ACCT_DEFAULT 1
--#else
--#define NF_CT_ACCT_DEFAULT 0
--#endif
--
--static int nf_ct_acct __read_mostly = NF_CT_ACCT_DEFAULT;
-+static int nf_ct_acct __read_mostly = 1;
+ # Store (new) KERNELRELASE string in include/config/kernel.release
+ kernelrelease = $(KERNELVERSION)$(localver-full)
+diff --git a/scripts/setlocalversion b/scripts/setlocalversion
+--- a/scripts/setlocalversion
++++ b/scripts/setlocalversion
+@@ -26,7 +26,8 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
+ 		# If we are past a tagged commit (like "v2.6.30-rc5-302-g72357d5"),
+ 		# we pretty print it.
+ 		if atag="`git describe 2>/dev/null`"; then
+-			echo "$atag" | awk -F- '{printf("-%05d-%s", $(NF-1),$(NF))}'
++			echo "$atag" | awk -F- 'int($(NF-1)) > 0	\
++					{printf("-%05d-%s", $(NF-1),$(NF))}'
  
- module_param_named(acct, nf_ct_acct, bool, 0644);
- MODULE_PARM_DESC(acct, "Enable connection tracking flow accounting.");
-@@ -114,11 +108,6 @@ int nf_conntrack_acct_init(struct net *net)
- 	net->ct.sysctl_acct = nf_ct_acct;
- 
- 	if (net_eq(net, &init_net)) {
--#ifdef CONFIG_NF_CT_ACCT
--	printk(KERN_WARNING "CONFIG_NF_CT_ACCT is deprecated and will be removed soon. Please use\n");
--		printk(KERN_WARNING "nf_conntrack.acct=1 kernel parameter, acct=1 nf_conntrack module option or\n");
--		printk(KERN_WARNING "sysctl net.netfilter.nf_conntrack_acct=1 to enable it.\n");
--#endif
- 
- 		ret = nf_ct_extend_register(&acct_extend);
- 		if (ret < 0) {
-diff --git a/net/netfilter/nf_conntrack_netlink.c b/net/netfilter/nf_conntrack_netlink.c
-index 59d8064..d679562 100644
---- a/net/netfilter/nf_conntrack_netlink.c
-+++ b/net/netfilter/nf_conntrack_netlink.c
-@@ -430,11 +430,9 @@ ctnetlink_nlmsg_size(const struct nf_conn *ct)
- 	       + 3 * nla_total_size(sizeof(u_int8_t)) /* CTA_PROTO_NUM */
- 	       + nla_total_size(sizeof(u_int32_t)) /* CTA_ID */
- 	       + nla_total_size(sizeof(u_int32_t)) /* CTA_STATUS */
--#ifdef CONFIG_NF_CT_ACCT
- 	       + 2 * nla_total_size(0) /* CTA_COUNTERS_ORIG|REPL */
- 	       + 2 * nla_total_size(sizeof(uint64_t)) /* CTA_COUNTERS_PACKETS */
- 	       + 2 * nla_total_size(sizeof(uint64_t)) /* CTA_COUNTERS_BYTES */
--#endif
- 	       + nla_total_size(sizeof(u_int32_t)) /* CTA_TIMEOUT */
- 	       + nla_total_size(0) /* CTA_PROTOINFO */
- 	       + nla_total_size(0) /* CTA_HELP */
+ 		# If we don't have a tag at all we print -g{commitish}.
+ 		else
