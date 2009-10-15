@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbZJOH1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZJOHc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757515AbZJOH1d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 03:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbZJOH1c
+	id S1757562AbZJOHc5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 03:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbZJOHc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 03:27:32 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:33828 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755953AbZJOH1b convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;6:2>);
-	Thu, 15 Oct 2009 03:27:31 -0400
-Message-Id: <4AD6EB17020000780001A050@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Thu, 15 Oct 2009 08:27:51 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Hollis Blanchard" <hollisb@us.ibm.com>
-Cc: <sfr@canb.auug.org.au>, <akpm@linux-foundation.org>,
-       <linuxppc-dev@lists.ozlabs.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>, <kvm-ppc@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linux-next@vger.kernel.org>
-Subject: Re: linux-next: tree build failure
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
- <1254267572.15622.1621.camel@slab.beaverton.ibm.com>
- <4AC318450200007800017355@vpn.id2.novell.com>
- <1254498517.3839.17.camel@slab.beaverton.ibm.com>
- <4AC9B5310200007800017EA1@vpn.id2.novell.com>
- <1255115648.2546.71.camel@slab.beaverton.ibm.com>
- <1255561026.29192.0.camel@slab.beaverton.ibm.com>
-In-Reply-To: <1255561026.29192.0.camel@slab.beaverton.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 15 Oct 2009 03:32:57 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53066 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754317AbZJOHc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 03:32:56 -0400
+Message-ID: <4AD6CF91.8090203@kernel.org>
+Date: Thu, 15 Oct 2009 16:30:25 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+CC: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Frans Pop <elendil@planet.nl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>
+Subject: Re: bisect results of MSI-X related panic (help!)
+References: <1252699744.3877.15.camel@jbrandeb-hc.jf.intel.com>  <200909120623.49764.elendil@planet.nl> <4AAE0F7B.5050203@kernel.org>  <4AAE105E.1080005@kernel.org> <4807377b0910091724k2a332e90i9941971f6032663c@mail.gmail.com> <4AD2E05A.6060700@kernel.org> <alpine.WNT.2.00.0910120907170.11804@jbrandeb-mobl2.amr.corp.intel.com> <4AD3E875.5040800@kernel.org> <alpine.WNT.2.00.0910141527550.3036@jbrandeb-desk1.amr.corp.intel.com>
+In-Reply-To: <alpine.WNT.2.00.0910141527550.3036@jbrandeb-desk1.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 15 Oct 2009 07:30:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Hollis Blanchard <hollisb@us.ibm.com> 15.10.09 00:57 >>>
->On Fri, 2009-10-09 at 12:14 -0700, Hollis Blanchard wrote:
->> Rusty's version of BUILD_BUG_ON() does indeed fix the build break, and
->> also exposes the bug in kvmppc_account_exit_stat(). So to recap:
->> 
->> original: built but didn't work
->> Jan's: doesn't build
->> Rusty's: builds and works
->> 
->> Where do you want to go from here?
->
->Jan, what are your thoughts? Your BUILD_BUG_ON patch has broken the
->build, and we still need to fix it.
+Hello,
 
-My perspective is that it just uncovered already existing brokenness. And
-honestly, I won't be able to get to look into this within the next days. (And
-btw., when I run into issues with other people's code changes, quite
-frequently I'm told to propose a patch, so I'm also having some
-philosophical problem understanding why I can't simply expect the same
-when people run into issues with changes I made, especially in cases like
-this where it wasn't me introducing the broken code.) So, if this can wait
-for a couple of days, I can try to find time to look into this. Otherwise, I'd
-rely on someone running into the actual issue to implement a solution.
+Brandeburg, Jesse wrote:
+> On Mon, 12 Oct 2009, Tejun Heo wrote:
+>> Can you please apply the following patch and try to retrigger the
+>> panic?
+>>
+>> diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+>> index c166019..f5a1482 100644
+>> --- a/kernel/irq/chip.c
+>> +++ b/kernel/irq/chip.c
+>> @@ -63,6 +63,9 @@ void dynamic_irq_cleanup(unsigned int irq)
+>>  	struct irq_desc *desc = irq_to_desc(irq);
+>>  	unsigned long flags;
+>>
+>> +	printk("XXX dynamic_irq_cleanup() called on %u\n", irq);
+>> +	dump_stack();
+>> +
+>>  	if (!desc) {
+>>  		WARN(1, KERN_ERR "Trying to cleanup invalid IRQ%d\n", irq);
+>>  		return;
+> 
+> I'm working on it, but now that I've added a bunch of debug including the 
+> above printk, my system panics (with a stack protector canary overwrite) 
+> when loading the first network adapter with 30+ MSI-X vectors.  I can boot 
+> single user mode and bring up netconsole, but then as soon as I brought up 
+> the first port with lots of MSI-X vectors, the system hard locks, no panic 
+> message.
+>  
+> I have a bit of a theory that the node = -1 (numa_node) stuff might be 
+> playing some havoc with the code in numa_migrate.c.  I'm not sure if that 
+> is contributing, but the code in there doesn't seem written to handle node 
+> = - 1 very well.  As in I never see it do an smp_processor_id at the 
+> bottom before accessing the node value.
+> 
+> Not sure if that is relevant, but I wanted to mention it before I went 
+> home.
+> 
+> What next?  I made it worse so I guess that is something.
 
-Jan
+I don't know.  At this point, I can't think of anything other than
+sprinkling printks and dump_stacks around.  :-(
 
+Thanks.
+
+-- 
+tejun
