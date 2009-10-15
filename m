@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZJOHHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbZJOHJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbZJOHHF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 03:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933325AbZJOHHE
+	id S1756867AbZJOHJu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 03:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbZJOHJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 03:07:04 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35434 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756693AbZJOHHD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 03:07:03 -0400
-Subject: Re: [PATCH 12/13] [PATCH 12/13] perf tools: handle - and + in
- parsing trace print format
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <20091015064240.GC11645@elte.hu>
-References: <20091014194330.980165492@goodmis.org>
-	 <20091014194400.330843045@goodmis.org>  <20091015064240.GC11645@elte.hu>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 15 Oct 2009 09:05:30 +0200
-Message-Id: <1255590330.8392.446.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 15 Oct 2009 03:09:50 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:18137 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750822AbZJOHJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 03:09:49 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <7d86d44a0910142045n585c099l50b1efec12c1db3e@mail.gmail.com>
+References: <7d86d44a0910142045n585c099l50b1efec12c1db3e@mail.gmail.com> <1255516134-4838-1-git-send-email-graff.yang@gmail.com> <18475.1255529305@redhat.com> <7d86d44a0910141921j28ddc50cxb2d9386c5ad99db9@mail.gmail.com>
+To: graff yang <graff.yang@gmail.com>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       gyang@blackfin.uclinux.org, akpm@linux-foundation.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Graff Yang <graf.yang@analog.com>,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
+Date: Thu, 15 Oct 2009 08:07:21 +0100
+Message-ID: <6954.1255590441@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-15 at 08:42 +0200, Ingo Molnar wrote:
+graff yang <graff.yang@gmail.com> wrote:
 
-> > -CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
-> > +CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
-> 
-> hm, why does this patch change the Makefile?
-> 
-> i've skipped this hunk, it does not appear to be connected to the 
-> commit.
+> Your patch works both with SELINUX enabled or disabled.
 
-Probably because he wanted to debug things and O6 generates crappy gdb
-experience.. and then it slipped into the diff
+Thanks.
+
+> But, how to prevent the address that attempting to be mapped to be lower
+> than CONFIG_LSM_MMAP_MIN_ADDR/CONFIG_DEFAULT_MMAP_MIN_ADDR?
+> This is what the security_file_mmap() is doing and mmu's
+> do_mmap_pgoff() has implemented.
+
+You need to ask yourself two questions:
+
+ (1) Does the test make any sense in the NOMMU context?  Given that the
+     userspace program _cannot_ specify that something should be mapped below
+     that address (since MAP_FIXED gives an error and the hint is ignored),
+     I'd say not.
+
+ (2) Is it likely that LSM security would be used with NOMMU anyway, given
+     that there is nothing stopping userspace programs editing the kernel
+     directly?
+
+You need to show that it makes sense to do the test in a NOMMU context.
+Remember, if there is no physical medium at address 0 (RAM, flash, whatever),
+you can't map anything there.  This might best be left to the arch to not
+provide page 0 of RAM to the page allocator during memory initialisation.
+
+David
