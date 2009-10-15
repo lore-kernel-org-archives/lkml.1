@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268AbZJOFXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbZJOFYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752268AbZJOFXg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 01:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZJOFXf
+	id S1752668AbZJOFYj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 01:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZJOFYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 01:23:35 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:33071 "EHLO smtp.gentoo.org"
+	Thu, 15 Oct 2009 01:24:39 -0400
+Received: from claw.goop.org ([74.207.240.146]:47797 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751756AbZJOFXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 01:23:35 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] twl4030-gpio: drop __devexit markings from remove func
-Date: Thu, 15 Oct 2009 01:22:56 -0400
-Message-Id: <1255584176-3457-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5
+	id S1752543AbZJOFYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 01:24:38 -0400
+Message-ID: <4AD6B1F0.6030904@goop.org>
+Date: Wed, 14 Oct 2009 22:24:00 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+CC: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
+       arch/x86 maintainers <x86@kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Avi Kivity <avi@redhat.com>, chris.mason@oracle.com
+Subject: Re: [Xen-devel] [PATCH 05/12] xen/pvclock: add monotonicity check
+References: <0be3e26b-76b6-47c9-b7ab-51ed72b72b69@default>
+In-Reply-To: <0be3e26b-76b6-47c9-b7ab-51ed72b72b69@default>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The gpio_twl4030_probe() function calls gpio_twl4030_remove(), and the
-former has __devinit, so the latter cannot use __devexit.  Otherwise we
-hit the section mismatch warning:
+On 10/14/09 20:26, Dan Magenheimer wrote:
+> As long as we are going through the trouble of making
+> this monotonic, shouldn't it be monotonically increasing
+> (rather than just monotonically non-decreasing)?  The
+> rdtsc instruction and any suitably high-precision
+> hardware timer will never return the same value
+> on subsequent uses so this might be a reasonable
+> precedent to obey.  E.g.
+>
+> +	return ret > xen_clocksource.cycle_last ?
+> +		ret : ++xen_clocksource.cycle_last;
+>   
 
-WARNING: drivers/gpio/built-in.o(.devinit.text+0x71a): Section mismatch
-	in reference from the function _gpio_twl4030_probe() to the function
-	.devexit.text:_gpio_twl4030_remove()
-The function __devinit _gpio_twl4030_probe() references a function
-	__devexit _gpio_twl4030_remove().
-This is often seen when error handling in the init function uses
-	functionality in the exit path.
-The fix is often to remove the __devexit annotation of
-	_gpio_twl4030_remove() so it may be used outside an exit section.
+No, cycle_last isn't updated on every read, only on timer ticks.  This
+test doesn't seem to be intended to make sure that every
+clocksource_read is globally monotonic, but just to avoid some boundary
+conditions in the timer interrupt.  I just copied it directly from
+read_tsc().
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- drivers/gpio/twl4030-gpio.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/gpio/twl4030-gpio.c b/drivers/gpio/twl4030-gpio.c
-index afad147..49384a7 100644
---- a/drivers/gpio/twl4030-gpio.c
-+++ b/drivers/gpio/twl4030-gpio.c
-@@ -460,7 +460,8 @@ no_irqs:
- 	return ret;
- }
- 
--static int __devexit gpio_twl4030_remove(struct platform_device *pdev)
-+/* Cannot use __devexit as gpio_twl4030_probe() calls us */
-+static int gpio_twl4030_remove(struct platform_device *pdev)
- {
- 	struct twl4030_gpio_platform_data *pdata = pdev->dev.platform_data;
- 	int status;
-@@ -493,7 +494,7 @@ static struct platform_driver gpio_twl4030_driver = {
- 	.driver.name	= "twl4030_gpio",
- 	.driver.owner	= THIS_MODULE,
- 	.probe		= gpio_twl4030_probe,
--	.remove		= __devexit_p(gpio_twl4030_remove),
-+	.remove		= gpio_twl4030_remove,
- };
- 
- static int __init gpio_twl4030_init(void)
--- 
-1.6.5
-
+    J
