@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762370AbZJOBYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbZJOBdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762370AbZJOBYE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 21:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760702AbZJOBYE
+	id S1759907AbZJOBdl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 21:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755614AbZJOBdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 21:24:04 -0400
-Received: from thunk.org ([69.25.196.29]:54068 "EHLO thunker.thunk.org"
+	Wed, 14 Oct 2009 21:33:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45364 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755614AbZJOBYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 21:24:03 -0400
-Date: Wed, 14 Oct 2009 21:23:21 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Eric Anholt <eric@anholt.net>,
-       linux-kernel@vger.kernel.org, Keith Packard <keithp@keithp.com>
-Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with
-	T400 laptops
-Message-ID: <20091015012321.GA7472@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	"Carlos R. Mafra" <crmafra2@gmail.com>,
-	Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
-	Keith Packard <keithp@keithp.com>
-References: <E1Mtqnb-0002x7-TJ@closure.thunk.org> <20091008103620.5e5aae66@jbarnes-g45> <20091010204106.GA8251@mit.edu> <20091012095438.1e82b54f@jbarnes-g45> <20091012184651.GA4603@Pilar.aei.mpg.de> <20091012120510.16bd1194@jbarnes-g45> <20091013023146.GA8414@mit.edu> <20091013100135.2b3d914f@jbarnes-g45>
+	id S1751470AbZJOBdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 21:33:39 -0400
+Message-ID: <4AD67C05.2030201@kernel.org>
+Date: Thu, 15 Oct 2009 10:33:57 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091013100135.2b3d914f@jbarnes-g45>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, Jes Sorensen <jes@sgi.com>,
+       linux-ia64@vger.kernel.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] ia64/sn: fix percpu warnings
+References: <20091014163445.f0441473.sfr@canb.auug.org.au> <20091014151003.0ef42973.randy.dunlap@oracle.com>
+In-Reply-To: <20091014151003.0ef42973.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 15 Oct 2009 01:32:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 10:01:35AM -0700, Jesse Barnes wrote:
+Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Arg, I'm running out of ideas...  How about this hack?  I'll chat with
-> the chipset guys to see if we can figure out what's going on here...
+> Fix percpu types warning in ia64/sn:
 > 
+> arch/ia64/sn/kernel/setup.c:74: error: conflicting types for '__pcpu_scope___sn_cnodeid_to_nasid'
+> arch/ia64/include/asm/sn/arch.h:74: error: previous declaration of '__pcpu_scope___sn_cnodeid_to_nasid' was here
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Jes Sorensen <jes@sgi.com>
 
-So the first patch plus this second patch actually made things *worse*
-on the T400.  I'll try adding the 3rd patch now.
+Acked-by: Tejun Heo <tj@kernel.org>
 
-						- Ted
+Can this go through ia64 tree?  If not, I can route it through
+percpu#for-fixes.
+
+Thanks.
+
+-- 
+tejun
