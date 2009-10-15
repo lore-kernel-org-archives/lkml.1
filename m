@@ -1,75 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbZJOO22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757696AbZJOOmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755933AbZJOO22 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 10:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbZJOO21
+	id S1757696AbZJOOmQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 10:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbZJOOmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 10:28:27 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:63740 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753806AbZJOO21 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 10:28:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=OEGLIUd/xwexdZ6kHkvDK6Z7i+O2f/HZOc795NweKGHbw7WP6gMKmmtw0WrzCM+idq
-         wWlAQIf+jNG/PJo3ISJl9hjFxLJQ/9dIYnNrFElYc4KGZJEYZqMIfBiwciKp2Y/Qenbb
-         fO9VWHpu0/5GucgBUOhK1tZFbKpLg7+Mhavn0=
-Date: Thu, 15 Oct 2009 18:27:37 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, x86@kernel.org, yinghai@kernel.org,
-       macro@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] x86,apic: limit apic dumping, introduce show_lapic
-	setup option
-Message-ID: <20091015142737.GB5331@lenovo>
-References: <20091013200702.019870576@openvz.org> <20091013201022.926793122@openvz.org> <20091014071217.GL784@elte.hu> <20091014150904.GA5259@lenovo> <20091014175616.GA3403@elte.hu> <20091014202941.GE5259@lenovo>
-MIME-Version: 1.0
+	Thu, 15 Oct 2009 10:42:16 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51939 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751175AbZJOOmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 10:42:15 -0400
+Date: Thu, 15 Oct 2009 16:41:37 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel@vger.kernel.org, Ian Kent <raven@themaw.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Miklos Szeredi <mszeredi@suse.cz>
+Subject: Re: [patch 2/6] fs: no games with DCACHE_UNHASHED
+Message-ID: <20091015144137.GA30516@wotan.suse.de>
+References: <20091015044026.319860788@suse.de> <20091015050048.165912589@suse.de> <4AD6D2E3.9050105@gmail.com> <20091015081343.GC4262@wotan.suse.de> <20091015082903.GD4262@wotan.suse.de> <20091015132044.GL7545@parisc-linux.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091014202941.GE5259@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091015132044.GL7545@parisc-linux.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Thu, Oct 15, 2009 at 12:29:41AM +0400]
-| [Ingo Molnar - Wed, Oct 14, 2009 at 07:56:16PM +0200]
-| | 
-| | btw., i'm getting this warning on a test-box:
-| ...
-| | 
-| | [    0.400000] Checking 'hlt' instruction... OK.
-| | [    0.440000] SMP alternatives: switching to UP code
-| | [    0.450000] debug: unmapping init memory 79c7a000..79c80000
-| | 
-| | noop_default_phys_pkg_id() should return 0 i guess, and not generate a 
-| | warning?
-| | 
-| | 	Ingo
-| | 
-| 
-| Ingo, I think the better would be to just make NOOP plain
-| NOOP without any kind of checking. Something like below
-| (I still can't fetch last/fresh -tip repo /remote point hangs/
-|  for this so I've used interdiff).
-| 
-| Comments?
-| 
-| Btw, the base problem from dump you posted is that we've been
-| cheking only for read/write operations allowing all other ops
-| be called without any kind of check (and retrieving pkgid happened
-| there all the time just didn't trigger warn until we've substituted
-| apic driver completely). Using NOOP without warn should be more
-| convenient (all previous "dark" places in apic code already covered
-| with cpu_has_apic/disable_apic checks so the only risk we have --
-| is code that will appear in future).
-| 
-| 	-- Cyrill
-| ---
+On Thu, Oct 15, 2009 at 07:20:45AM -0600, Matthew Wilcox wrote:
+> On Thu, Oct 15, 2009 at 10:29:03AM +0200, Nick Piggin wrote:
+> > On Thu, Oct 15, 2009 at 10:13:43AM +0200, Nick Piggin wrote:
+> > > Now both sockets and pipes define a d_dname so they are OK, but anon_inodes
+> > > does not. I think they should probably be made to just provide a d_dname
+> > > anyway so we can have the familiar format of "pseudofs:[ino]" rather than
+> > > "[pseudofs]" that we have now.
+> > > 
+> > > That should make this patch work for anon_inodes.c as well.
+> > 
+> > So what if we were to do this first? Are there any other reasons I've
+> > missed? (btw. this changes the format the link if that is a problem.
+> > Probably if we're going to do this change, we should change things like
+> > [timerfd] to just timerfd while we're there to improve consistency
+> > further.
+> > --
+> > Pipe and socket pseudo filesystems report their file descriptor link
+> > paths as pipe:[ino] and socket:[ino]. anon_inodefs allows subsystems
+> > to specify a name, but it does not report an associated inode number.
+> 
+> I think that's because the inode number is always 0 -- there's just one
+> anonymous inode.
 
-Ingo, please don't apply it yet. I think there is a nit.
-Checking now. Will resend later the proper patch.
+OIC. Hmm, well we could give them a unique number I guess. But anyway
+for now, let's just make anon_inodefs_dname just print dentry->d_name.name.
 
-	-- Cyrill
+> 
+> > Implement this with anon_inodefs_dname in the same way pipefs and sockfs
+> > are.
+> > 
+> > ---
+> >  fs/anon_inodes.c |   10 ++++++++++
+> >  1 file changed, 10 insertions(+)
+> > 
+> > Index: linux-2.6/fs/anon_inodes.c
+> > ===================================================================
+> > --- linux-2.6.orig/fs/anon_inodes.c
+> > +++ linux-2.6/fs/anon_inodes.c
+> > @@ -45,6 +45,15 @@ static int anon_inodefs_delete_dentry(st
+> >  	return 1;
+> >  }
+> >  
+> > +/*
+> > + * anon_inodefs_dname() is called from d_path().
+> > + */
+> > +static char *anon_inodefs_dname(struct dentry *dentry, char *buffer, int buflen)
+> > +{
+> > +	return dynamic_dname(dentry, buffer, buflen, "%s:[%lu]",
+> > +				dentry->d_name.name, dentry->d_inode->i_ino);
+> > +}
+> > +
+> >  static struct file_system_type anon_inode_fs_type = {
+> >  	.name		= "anon_inodefs",
+> >  	.get_sb		= anon_inodefs_get_sb,
+> > @@ -52,6 +61,7 @@ static struct file_system_type anon_inod
+> >  };
+> >  static const struct dentry_operations anon_inodefs_dentry_operations = {
+> >  	.d_delete	= anon_inodefs_delete_dentry,
+> > +	.d_dname	= anon_inodefs_dname,
+> >  };
+> >  
+> >  /*
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> -- 
+> Matthew Wilcox				Intel Open Source Technology Centre
+> "Bill, look, we understand that you're interested in selling us this
+> operating system, but compare it to ours.  We can't possibly take such
+> a retrograde step."
