@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763024AbZJOVFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763025AbZJOVC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763024AbZJOVFW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 17:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbZJOVFW
+	id S1763025AbZJOVC0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 17:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758390AbZJOVC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 17:05:22 -0400
-Received: from foo.birdnet.se ([213.88.146.6]:35190 "HELO foo.birdnet.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758389AbZJOVFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 17:05:21 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Oct 2009 17:05:21 EDT
-Message-ID: <20091015205803.30544.qmail@stuge.se>
-Date: Thu, 15 Oct 2009 22:58:03 +0200
-From: Peter Stuge <peter@stuge.se>
-To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Hardware initialization in line discipline - ldisc_open() ?
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Thu, 15 Oct 2009 17:02:26 -0400
+Received: from lucidpixels.com ([75.144.35.66]:34314 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758002AbZJOVCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 17:02:25 -0400
+Date: Thu, 15 Oct 2009 17:01:49 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Bryan Donlan <bdonlan@gmail.com>
+cc: linux-kernel@vger.kernel.org, bruce.w.allan@intel.com
+Subject: Re: Intel DP55KG BIOS Bug (reboot hangs, is Intel aware of the
+ problem?)
+In-Reply-To: <4AD75A81.90202@zytor.com>
+Message-ID: <alpine.DEB.2.00.0910151655590.4808@p34.internal.lan>
+References: <alpine.DEB.2.00.0910141756440.2653@p34.internal.lan> <4AD75A81.90202@zytor.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm writing a line discipline for a serial port multiplexing hardware
-which turns one "upstream" serial port into 0-8 slower "downstream"
-serial ports, according to the number of modules installed on the
-multiplexer.
-
-The attaching program transfers no data on the upstream port, all
-data will be to/from the ldisc itself, or to/from the downstream
-ports.
-
-To know which modules are installed, and their configuration, the
-ldisc needs to perform a handshake using the same packet format as
-downstream port data transfers.
-
-It would be nice to do this handshake in ldisc_open() so that the
-attach can fail if the hardware is not responding or just not
-connected.
-
-Since the packet format is the same it would be easy to reuse the
-normal ldisc receive path for the handshake, however the ldisc would
-not see the response until after ldisc_open() has succeeded.
-Catch-22!
-
-I'm hoping to use ldattach for attaching the ldisc because it's nice
-to have a standard utility, because it's nice to not duplicate the
-packet formatting/parsing code, and because the ldisc has to know
-which modules are installed in the hardware anyway, to create the
-correct downstream ports.
-
-Can you suggest a solution to this problem? Ideally one that can be
-contained in the ldisc.
 
 
-Thanks
+On Thu, 15 Oct 2009, H. Peter Anvin wrote:
 
-//Peter
+> On 10/14/2009 03:02 PM, Justin Piszcz wrote:
+>> Hi,
+>>
+>> I have tried the following kernel parameters with '*' and reboot=b,
+>> reboot=h and reboot=s.
+>>
+>
+> reboot=t (triple), reboot=p (pci) and reboot=a (acpi) would be useful to
+> test, too.
+>
+> 	-hpa
+>
+
+Thanks,
+
+I find it kind of funny I tried the 4-5 options that didn't work first, 
+bad luck?
+
+Here is what worked and what did not and what I ended up using:
+
+reboot=a * SUCCESS
+reboot=b * FAIL
+reboot=cold * FAIL
+reboot=efi * FAIL
+reboot=force * FAIL
+reboot=h * FAIL
+reboot=p * SUCCESS
+reboot=s * FAIL
+reboot=t * SUCCESS
+reboot=warm * FAIL
+
+I am using reboot=a for now, until INTEL releases a BIOS fix for this bug.
+
+>From Bryan:
+
+Try each of the following in the reboot= parameter: acpi, smp (32-bit
+only), triple, efi, pci, warm, cold, force If one of them works, report 
+it, along with the output from dmidecode and lspci -nn, so a workaround
+entry can be added.
+
+dmidecode & lspci below--
+
+http://home.comcast.net/~jpiszcz/20091015/dmidecode.txt
+http://home.comcast.net/~jpiszcz/20091015/lspci-nn.txt
+
+Justin.
+
+
