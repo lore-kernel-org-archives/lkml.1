@@ -1,89 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbZJOCb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932891AbZJOCdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932832AbZJOCb3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 22:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757396AbZJOCb3
+	id S932891AbZJOCdv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 22:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760893AbZJOCdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 22:31:29 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:62642 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755507AbZJOCb2 (ORCPT
+	Wed, 14 Oct 2009 22:33:50 -0400
+Received: from mga09.intel.com ([134.134.136.24]:50428 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751608AbZJOCdt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 22:31:28 -0400
-Message-Id: <200910150230.n9F2UKgK090342@www262.sakura.ne.jp>
-Subject: Re: [Bug #14258] Memory leak in SCSI initialization
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: James.Bottomley@suse.de, rjw@sisk.pl
-Cc: kernel-testers@vger.kernel.org, michael@ellerman.id.au,
-       linux-kernel@vger.kernel.org
+	Wed, 14 Oct 2009 22:33:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,563,1249282800"; 
+   d="scan'208";a="559697695"
+From: "Zhang, Xiantao" <xiantao.zhang@intel.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "kvm-ia64@vger.kernel.org" <kvm-ia64@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Date: Thu, 15 Oct 2009 10:32:49 +0800
+Subject: RE: [PATCH -next] kvm: fix ia64 printk formats
+Thread-Topic: [PATCH -next] kvm: fix ia64 printk formats
+Thread-Index: AcpNG0neTm85ETrTQTGSmklcx6i3KQAHMyzA
+Message-ID: <706158FABBBA044BAD4FE898A02E4BC201C9B81776@pdsmsx503.ccr.corp.intel.com>
+References: <20091014163445.f0441473.sfr@canb.auug.org.au>
+ <20091014151008.3d48b9fe.randy.dunlap@oracle.com>
+In-Reply-To: <20091014151008.3d48b9fe.randy.dunlap@oracle.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Date: Thu, 15 Oct 2009 11:30:20 +0900
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.HAD.qzl0KB@chimera>
-In-Reply-To: <L6tb-VyKHZK.A.HAD.qzl0KB@chimera>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 15102009 #2761698, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got below messages in 2.6.32-rc4 .
+Seems strict checks are applied to latest kernel. Okay to me.  Thanks!
+Acked-By Xiantao Zhang <xiantao.zhang@intel.com>
+Xiantao
 
-# dmesg | grep kmemleak
-[    7.612391] kmemleak: Kernel memory leak detector initialized
-[    7.615675] kmemleak: Automatic memory scanning thread started
-[   78.641096] kmemleak: 13 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
-# cat /sys/kernel/debug/kmemleak
-unreferenced object 0xdac2c478 (size 32):
-  comm "swapper", pid 1, jiffies 4294894406
-  hex dump (first 32 bytes):
-    30 3a 30 3a 32 3a 30 00 5a 5a 5a 5a 5a 5a 5a 5a  0:0:2:0.ZZZZZZZZ
-    5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a a5  ZZZZZZZZZZZZZZZ.
-  backtrace:
-    [<c10d3944>] create_object+0xe4/0x220
-    [<c1322663>] kmemleak_alloc+0x83/0xd0
-    [<c10d01d4>] __kmalloc+0x1b4/0x220
-    [<c11ab450>] kvasprintf+0x30/0x60
-    [<c11a3131>] kobject_set_name_vargs+0x21/0x60
-    [<c11f8cd9>] dev_set_name+0x19/0x20
-    [<c122c2b3>] scsi_sysfs_device_initialize+0xc3/0x120
-    [<c1228ac4>] scsi_alloc_sdev+0x194/0x230
-    [<c1229b50>] scsi_probe_and_add_lun+0x320/0x340
-    [<c122a477>] __scsi_scan_target+0xb7/0x100
-    [<c122a5f6>] scsi_scan_channel+0x86/0xa0
-    [<c122a6f9>] scsi_scan_host_selected+0xe9/0x150
-    [<c122aabc>] do_scsi_scan_host+0x7c/0x80
-    [<c122ab6d>] scsi_scan_host+0x8d/0x90
-    [<c1520c75>] BusLogic_init+0x355/0x420
-    [<c100105c>] do_one_initcall+0x2c/0x1d0
-(...snipped...)
-unreferenced object 0xdac2cc58 (size 32):
-  comm "swapper", pid 1, jiffies 4294894414
-  hex dump (first 32 bytes):
-    30 3a 30 3a 31 35 3a 30 00 5a 5a 5a 5a 5a 5a 5a  0:0:15:0.ZZZZZZZ
-    5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a a5  ZZZZZZZZZZZZZZZ.
-  backtrace:
-    [<c10d3944>] create_object+0xe4/0x220
-    [<c1322663>] kmemleak_alloc+0x83/0xd0
-    [<c10d01d4>] __kmalloc+0x1b4/0x220
-    [<c11ab450>] kvasprintf+0x30/0x60
-    [<c11a3131>] kobject_set_name_vargs+0x21/0x60
-    [<c11f8cd9>] dev_set_name+0x19/0x20
-    [<c122c2b3>] scsi_sysfs_device_initialize+0xc3/0x120
-    [<c1228ac4>] scsi_alloc_sdev+0x194/0x230
-    [<c1229b50>] scsi_probe_and_add_lun+0x320/0x340
-    [<c122a477>] __scsi_scan_target+0xb7/0x100
-    [<c122a5f6>] scsi_scan_channel+0x86/0xa0
-    [<c122a6f9>] scsi_scan_host_selected+0xe9/0x150
-    [<c122aabc>] do_scsi_scan_host+0x7c/0x80
-    [<c122ab6d>] scsi_scan_host+0x8d/0x90
-    [<c1520c75>] BusLogic_init+0x355/0x420
-    [<c100105c>] do_one_initcall+0x2c/0x1d0
+Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix printk formats in ia64/kvm:
+> 
+> arch/ia64/kvm/kvm-ia64.c:250: warning: format '%lx' expects type
+> 'long unsigned int', but argument 2 has type 'uint64_t'
+> arch/ia64/kvm/kvm-ia64.c:774: warning: format '%lx' expects type
+> 'long unsigned int', but argument 2 has type 'uint64_t'
+> arch/ia64/kvm/kvm_fw.c:151: warning: format '%ld' expects type 'long
+> int', but argument 3 has type 's64' arch/ia64/kvm/kvm_fw.c:151:
+> warning: format '%lx' expects type 'long unsigned int', but argument
+> 4 has type 'u64' arch/ia64/kvm/kvm_fw.c:151: warning: format '%lx'
+> expects type 'long unsigned int', but argument 5 has type 'u64'
+> arch/ia64/kvm/kvm_fw.c:548: warning: format '%lx' expects type 'long
+> unsigned int', but argument 2 has type 'u64'     
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Xiantao Zhang <xiantao.zhang@intel.com>
+> ---
+>  arch/ia64/kvm/kvm-ia64.c |    4 ++--
+>  arch/ia64/kvm/kvm_fw.c   |    9 +++++----
+>  2 files changed, 7 insertions(+), 6 deletions(-)
+> 
+> --- linux-next-20091014.orig/arch/ia64/kvm/kvm-ia64.c
+> +++ linux-next-20091014/arch/ia64/kvm/kvm-ia64.c
+> @@ -247,7 +247,7 @@ mmio:
+>  		r = kvm_io_bus_write(&vcpu->kvm->mmio_bus, p->addr,
+>  				     p->size, &p->data);
+>  	if (r)
+> -		printk(KERN_ERR"kvm: No iodevice found! addr:%lx\n", p->addr);
+> +		printk(KERN_ERR "kvm: No iodevice found! addr:%llx\n", p->addr);
+>  	p->state = STATE_IORESP_READY;
+> 
+>  	return 1;
+> @@ -771,7 +771,7 @@ static struct kvm *kvm_alloc_kvm(void)
+>  	kvm = (struct kvm *)(vm_base +
+>  			offsetof(struct kvm_vm_data, kvm_vm_struct));
+>  	kvm->arch.vm_base = vm_base;
+> -	printk(KERN_DEBUG"kvm: vm's data area:0x%lx\n", vm_base);
+> +	printk(KERN_DEBUG "kvm: vm's data area:0x%llx\n", vm_base);
+> 
+>  	return kvm;
+>  }
+> --- linux-next-20091014.orig/arch/ia64/kvm/kvm_fw.c
+> +++ linux-next-20091014/arch/ia64/kvm/kvm_fw.c
+> @@ -146,9 +146,10 @@ static struct ia64_pal_retval pal_cache_
+>  						&result.v0);
+>  	local_irq_restore(psr);
+>  	if (result.status != 0)
+> -		printk(KERN_ERR"vcpu:%p crashed due to cache_flush err:%ld"
+> +		printk(KERN_ERR "vcpu:%p crashed due to cache_flush err:%ld"
+>  				"in1:%lx,in2:%lx\n",
+> -				vcpu, result.status, gr29, gr30);
+> +				vcpu, (long)result.status,
+> +				(unsigned long)gr29, (unsigned long)gr30);
+> 
+>  #if 0
+>  	if (gr29 == PAL_CACHE_TYPE_COHERENT) {
+> @@ -544,8 +545,8 @@ int kvm_pal_emul(struct kvm_vcpu *vcpu,
+>  		break;
+>  	default:
+>  		INIT_PAL_STATUS_UNIMPLEMENTED(result);
+> -		printk(KERN_WARNING"kvm: Unsupported pal call,"
+> -					" index:0x%lx\n", gr28);
+> +		printk(KERN_WARNING "kvm: Unsupported pal call,"
+> +					" index:0x%lx\n", (unsigned long)gr28);
+>  	}
+>  	set_pal_result(vcpu, result);
+>  	return ret;
 
-In my environment, 0:0:0:0 and 0:0:1:0 are used by SCSI hard disks, 0:0:7:0 is
-reserved. 0:0:X:0 (where X = 2-6, 8-15) are unused and reported as memory leak.
-
-After applying http://patchwork.kernel.org/patch/51412/ , above messages
-no longer appears. Please apply that patch to 2.6.32-rcX as well as 2.6.31.Y .
-
-Regards.
