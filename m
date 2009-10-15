@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932668AbZJOJ0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbZJOJ0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932668AbZJOJ0R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 05:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762563AbZJOJ0Q
+	id S933970AbZJOJ0c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 05:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933205AbZJOJ0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 05:26:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45697 "EHLO hera.kernel.org"
+	Thu, 15 Oct 2009 05:26:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45708 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760650AbZJOJ0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 05:26:13 -0400
-Date: Thu, 15 Oct 2009 09:24:52 GMT
+	id S932361AbZJOJ0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 05:26:30 -0400
+Date: Thu, 15 Oct 2009 09:25:07 GMT
 From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, paulmck@linux.vnet.ibm.com,
-       hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       npiggin@suse.de, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <12555405592133-git-send-email->
-References: <12555405592133-git-send-email->
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <12555405592331-git-send-email->
+References: <12555405592331-git-send-email->
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Prevent RCU IPI storms in presence of high call_rcu() load
-Message-ID: <tip-37c72e56f6b234ea7387ba530434a80abf2658d8@git.kernel.org>
-Git-Commit-ID: 37c72e56f6b234ea7387ba530434a80abf2658d8
+Subject: [tip:core/rcu] rcu: Stopgap fix for synchronize_rcu_expedited() for TREE_PREEMPT_RCU
+Message-ID: <tip-019129d595caaa5bd0b41d128308da1be6a91869@git.kernel.org>
+Git-Commit-ID: 019129d595caaa5bd0b41d128308da1be6a91869
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 15 Oct 2009 09:24:53 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 15 Oct 2009 09:25:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  37c72e56f6b234ea7387ba530434a80abf2658d8
-Gitweb:     http://git.kernel.org/tip/37c72e56f6b234ea7387ba530434a80abf2658d8
+Commit-ID:  019129d595caaa5bd0b41d128308da1be6a91869
+Gitweb:     http://git.kernel.org/tip/019129d595caaa5bd0b41d128308da1be6a91869
 Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Wed, 14 Oct 2009 10:15:55 -0700
+AuthorDate: Wed, 14 Oct 2009 10:15:56 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 15 Oct 2009 11:17:16 +0200
+CommitDate: Thu, 15 Oct 2009 11:17:17 +0200
 
-rcu: Prevent RCU IPI storms in presence of high call_rcu() load
+rcu: Stopgap fix for synchronize_rcu_expedited() for TREE_PREEMPT_RCU
 
-As the number of callbacks on a given CPU rises, invoke
-force_quiescent_state() only every blimit number of callbacks
-(defaults to 10,000), and even then only if no other CPU has
-invoked force_quiescent_state() in the meantime.
+For the short term, map synchronize_rcu_expedited() to
+synchronize_rcu() for TREE_PREEMPT_RCU and to
+synchronize_sched_expedited() for TREE_RCU.
 
-This should fix the performance regression reported by Nick.
+Longer term, there needs to be a real expedited grace period for
+TREE_PREEMPT_RCU, but candidate patches to date are considerably
+more complex and intrusive.
 
-Reported-by: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 Cc: laijs@cn.fujitsu.com
 Cc: dipankar@in.ibm.com
@@ -59,95 +58,68 @@ Cc: peterz@infradead.org
 Cc: rostedt@goodmis.org
 Cc: Valdis.Kletnieks@vt.edu
 Cc: dhowells@redhat.com
+Cc: npiggin@suse.de
 Cc: jens.axboe@oracle.com
-LKML-Reference: <12555405592133-git-send-email->
+LKML-Reference: <12555405592331-git-send-email->
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/rcutree.c |   29 ++++++++++++++++++++++++-----
- kernel/rcutree.h |    4 ++++
- 2 files changed, 28 insertions(+), 5 deletions(-)
+ include/linux/rcutree.h |    6 +-----
+ kernel/rcutree_plugin.h |   21 +++++++++++++++++++++
+ 2 files changed, 22 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 705f02a..ddbf111 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -958,7 +958,7 @@ static void rcu_offline_cpu(int cpu)
-  * Invoke any RCU callbacks that have made it to the end of their grace
-  * period.  Thottle as specified by rdp->blimit.
-  */
--static void rcu_do_batch(struct rcu_data *rdp)
-+static void rcu_do_batch(struct rcu_state *rsp, struct rcu_data *rdp)
+diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+index 46e9ab3..9642c6b 100644
+--- a/include/linux/rcutree.h
++++ b/include/linux/rcutree.h
+@@ -76,11 +76,7 @@ static inline void __rcu_read_unlock_bh(void)
+ 
+ extern void call_rcu_sched(struct rcu_head *head,
+ 			   void (*func)(struct rcu_head *rcu));
+-
+-static inline void synchronize_rcu_expedited(void)
+-{
+-	synchronize_sched_expedited();
+-}
++extern void synchronize_rcu_expedited(void);
+ 
+ static inline void synchronize_rcu_bh_expedited(void)
  {
- 	unsigned long flags;
- 	struct rcu_head *next, *list, **tail;
-@@ -1011,6 +1011,13 @@ static void rcu_do_batch(struct rcu_data *rdp)
- 	if (rdp->blimit == LONG_MAX && rdp->qlen <= qlowmark)
- 		rdp->blimit = blimit;
- 
-+	/* Reset ->qlen_last_fqs_check trigger if enough CBs have drained. */
-+	if (rdp->qlen == 0 && rdp->qlen_last_fqs_check != 0) {
-+		rdp->qlen_last_fqs_check = 0;
-+		rdp->n_force_qs_snap = rsp->n_force_qs;
-+	} else if (rdp->qlen < rdp->qlen_last_fqs_check - qhimark)
-+		rdp->qlen_last_fqs_check = rdp->qlen;
-+
- 	local_irq_restore(flags);
- 
- 	/* Re-raise the RCU softirq if there are callbacks remaining. */
-@@ -1224,7 +1231,7 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
- 	}
- 
- 	/* If there are callbacks ready, invoke them. */
--	rcu_do_batch(rdp);
-+	rcu_do_batch(rsp, rdp);
- }
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index c0cb783..ebd20ee 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -393,6 +393,17 @@ void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
+ EXPORT_SYMBOL_GPL(call_rcu);
  
  /*
-@@ -1288,10 +1295,20 @@ __call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu),
- 		rcu_start_gp(rsp, nestflag);  /* releases rnp_root->lock. */
- 	}
++ * Wait for an rcu-preempt grace period.  We are supposed to expedite the
++ * grace period, but this is the crude slow compatability hack, so just
++ * invoke synchronize_rcu().
++ */
++void synchronize_rcu_expedited(void)
++{
++	synchronize_rcu();
++}
++EXPORT_SYMBOL_GPL(synchronize_rcu_expedited);
++
++/*
+  * Check to see if there is any immediate preemptable-RCU-related work
+  * to be done.
+  */
+@@ -565,6 +576,16 @@ void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
+ EXPORT_SYMBOL_GPL(call_rcu);
  
--	/* Force the grace period if too many callbacks or too long waiting. */
--	if (unlikely(++rdp->qlen > qhimark)) {
-+	/*
-+	 * Force the grace period if too many callbacks or too long waiting.
-+	 * Enforce hysteresis, and don't invoke force_quiescent_state()
-+	 * if some other CPU has recently done so.  Also, don't bother
-+	 * invoking force_quiescent_state() if the newly enqueued callback
-+	 * is the only one waiting for a grace period to complete.
-+	 */
-+	if (unlikely(++rdp->qlen > rdp->qlen_last_fqs_check + qhimark)) {
- 		rdp->blimit = LONG_MAX;
--		force_quiescent_state(rsp, 0);
-+		if (rsp->n_force_qs == rdp->n_force_qs_snap &&
-+		    *rdp->nxttail[RCU_DONE_TAIL] != head)
-+			force_quiescent_state(rsp, 0);
-+		rdp->n_force_qs_snap = rsp->n_force_qs;
-+		rdp->qlen_last_fqs_check = rdp->qlen;
- 	} else if ((long)(ACCESS_ONCE(rsp->jiffies_force_qs) - jiffies) < 0)
- 		force_quiescent_state(rsp, 1);
- 	local_irq_restore(flags);
-@@ -1523,6 +1540,8 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
- 	rdp->beenonline = 1;	 /* We have now been online. */
- 	rdp->preemptable = preemptable;
- 	rdp->passed_quiesc_completed = lastcomp - 1;
-+	rdp->qlen_last_fqs_check = 0;
-+	rdp->n_force_qs_snap = rsp->n_force_qs;
- 	rdp->blimit = blimit;
- 	spin_unlock(&rnp->lock);		/* irqs remain disabled. */
- 
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index b40ac57..599161f 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -167,6 +167,10 @@ struct rcu_data {
- 	struct rcu_head *nxtlist;
- 	struct rcu_head **nxttail[RCU_NEXT_SIZE];
- 	long		qlen;		/* # of queued callbacks */
-+	long		qlen_last_fqs_check;
-+					/* qlen at last check for QS forcing */
-+	unsigned long	n_force_qs_snap;
-+					/* did other CPU force QS recently? */
- 	long		blimit;		/* Upper limit on a processed batch */
- 
- #ifdef CONFIG_NO_HZ
+ /*
++ * Wait for an rcu-preempt grace period, but make it happen quickly.
++ * But because preemptable RCU does not exist, map to rcu-sched.
++ */
++void synchronize_rcu_expedited(void)
++{
++	synchronize_sched_expedited();
++}
++EXPORT_SYMBOL_GPL(synchronize_rcu_expedited);
++
++/*
+  * Because preemptable RCU does not exist, it never has any work to do.
+  */
+ static int rcu_preempt_pending(int cpu)
