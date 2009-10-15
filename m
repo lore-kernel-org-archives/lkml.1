@@ -1,142 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762270AbZJOApk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762266AbZJOAq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762270AbZJOApk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 20:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761469AbZJOApj
+	id S1762266AbZJOAq5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 20:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZJOAq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 20:45:39 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:53785 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbZJOApi (ORCPT
+	Wed, 14 Oct 2009 20:46:57 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:3184 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751478AbZJOAq4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 20:45:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=skm9TEv6KvRvt9Y3tpVp9hBqsv5I4LgCCXcCicLP/Ssl0G7KsnvqnvWa+JTHzIkRSC
-         gQD/2lICZ7NCXvvJk8Uekpe+6CHgbfmPlz0mXIsaM1PEASkDTRNM6j9Pzs14u2IM9VPh
-         4UXwFfitUt7NN1G8dA0kyy9dGBzrqs6UN6sNQ=
-Date: Wed, 14 Oct 2009 17:44:52 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-input@vger.kernel.org
-Subject: Re: [bisected regression] Touchpad "paste" stops working after
-	suspend to RAM
-Message-ID: <20091015004451.GA2872@core.coreip.homeip.net>
-References: <20091013182643.GC21593@core.coreip.homeip.net> <20091013190819.GA7555@Pilar.aei.mpg.de> <20091013194654.GD21593@core.coreip.homeip.net> <20091013202459.GE21593@core.coreip.homeip.net> <20091013231641.GA4404@Pilar.aei.mpg.de> <20091013235607.GA28819@core.coreip.homeip.net> <20091013235701.GB28819@core.coreip.homeip.net> <20091014005131.GA4371@Pilar.aei.mpg.de> <20091014023008.GA29672@core.coreip.homeip.net> <20091014111325.GA4586@Pilar.aei.mpg.de>
+	Wed, 14 Oct 2009 20:46:56 -0400
+X-Trace: 274571342/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.53.219/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.53.219
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvYAACAO1kpPRTXb/2dsb2JhbAAI2kGELgQ
+X-IronPort-AV: E=Sophos;i="4.44,562,1249254000"; 
+   d="scan'208";a="274571342"
+Date: Thu, 15 Oct 2009 01:46:18 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH 1/9] swap_info: private to swapfile.c
+In-Reply-To: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
+Message-ID: <Pine.LNX.4.64.0910150144310.3291@sister.anvils>
+References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091014111325.GA4586@Pilar.aei.mpg.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 01:13:25PM +0200, Carlos R. Mafra wrote:
-> On Tue 13.Oct'09 at 19:30:08 -0700, Dmitry Torokhov wrote:
-> > On Wed, Oct 14, 2009 at 02:51:31AM +0200, Carlos R. Mafra wrote:
-> > > On Tue 13.Oct'09 at 16:57:01 -0700, Dmitry Torokhov wrote:
-> > > > On Tue, Oct 13, 2009 at 04:56:08PM -0700, Dmitry Torokhov wrote:
-> > > > > On Wed, Oct 14, 2009 at 01:16:41AM +0200, Carlos R. Mafra wrote:
-> > > > > > [restoring Cc: list]
-> > > > > > 
-> > > > > > On Tue 13.Oct'09 at 13:24:59 -0700, Dmitry Torokhov wrote:
-> > > > > > >
-> > > > > > > Could you please try this patch (again if you could post dmesg that
-> > > > > > > would be great). Thank you!
-> > > > > > 
-> > > > > > The patch quoted below also fixes the problem. I attached the
-> > > > > > syslog with i8042.debug (with a s2ram in the middle) to the
-> > > > > > bugzilla: 
-> > > > > > 
-> > > > > > http://bugzilla.kernel.org/show_bug.cgi?id=14392
-> > > > > > 
-> > > > > 
-> > > > > Still not quite happy, although it is better. I don't understand why
-> > > > > your box likes to reply on AUX port when command is sent via keyboard
-> > > > > port.
-> > > > > 
-> > > > > Could you please try booting with atkbd.reset (I assume keyboard is
-> > > > > built in) and send me yet another dmesg.
-> > > > > 
-> > > > 
-> > > > Oh, yes, keep the last patch applied. Thanks!
-> > > 
-> > > I uploaded the dmesg with atkbd.reset (and i8042.debug too, btw)
-> > > to the bugzilla.
-> > > 
-> > 
-> > Hmm, this is messed up... For some reason your box insists on replying
-> > to reset commands from AUX port, no matter what device we trying to
-> > reset. Does your box (Vaio, right?) has external PS/2 ports? I don't
-> > believe Vaios have docking stations... 
-> 
-> My Vaio has no PS/2 port and no docking station.
-> 
-> > Also, could you please boot with
-> > i8042.nomux and send me yet another dmesg and dmidecode too.
-> 
-> Ok, they are in the kernel bugzilla #14392 now.
-> 
-> > Thanks for your patience.
-> 
-> I thank _you_ for digging the problem even further. Your proposed patch
-> "fixed" it already for me, but you are being honest in saying that
-> you are still not happy with your fix and want to do better. I really
-> appreciate that and will help you with what I can do. I hope there is
-> a way out of my Vaio's oddities.
+The swap_info_struct is mostly private to mm/swapfile.c, with only
+one other in-tree user: get_swap_bio().  Adjust its interface to
+map_swap_page(), so that we can then remove get_swap_info_struct().
 
-Ok, so here is hopefullt the last patch, it automatically disables MUX
-mode on your Vaio since it is broken (you still need the previous patch
-that changes atkbd since - there are 2 diffrent issues). I'd appreciate
-if you could test it - if it works then you should see mention of only 2
-serio ports in your dmesg and not 5.
+But there is a popular user out-of-tree, TuxOnIce: so leave the
+declaration of swap_info_struct in linux/swap.h.
 
-Thanks!
-
--- 
-Dmitry
-
-
-Input: i8042 - add Sony Vaio VGN-FZ240E to the nomux list
-
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-On this model, when KBD is in active multiplexing mode, acknowledgements
-to reset and get ID commands issued on KBD port sometimes are delivered
-to AUX3 port (touchpad) which messes up device detection. Legacy KBC
-mode works fine and since there are no external PS/2 ports on this laptop
-and no support for docking station we can safely disable active MUX mode.
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 ---
 
- drivers/input/serio/i8042-x86ia64io.h |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+ include/linux/swap.h |    3 +--
+ mm/page_io.c         |   19 +++++++------------
+ mm/swapfile.c        |   29 +++++++++++++++++------------
+ 3 files changed, 25 insertions(+), 26 deletions(-)
 
-
-diff --git a/drivers/input/serio/i8042-x86ia64io.h b/drivers/input/serio/i8042-x86ia64io.h
-index 77ff205..a537925 100644
---- a/drivers/input/serio/i8042-x86ia64io.h
-+++ b/drivers/input/serio/i8042-x86ia64io.h
-@@ -327,6 +327,17 @@ static struct dmi_system_id __initdata i8042_dmi_nomux_table[] = {
- 		},
- 	},
- 	{
-+		/*
-+		 * Reset and GET ID commands issued via KBD port are
-+		 * sometimes being delivered to AUX3.
-+		 */
-+		.ident = "Sony Vaio FZ-240E",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "VGN-FZ240E"),
-+		},
-+	},
-+	{
- 		.ident = "Amoi M636/A737",
- 		.matches = {
- 			DMI_MATCH(DMI_SYS_VENDOR, "Amoi Electronics CO.,LTD."),
+--- 2.6.32-rc4/include/linux/swap.h	2009-09-28 00:28:39.000000000 +0100
++++ si1/include/linux/swap.h	2009-10-14 21:25:58.000000000 +0100
+@@ -317,9 +317,8 @@ extern void swapcache_free(swp_entry_t,
+ extern int free_swap_and_cache(swp_entry_t);
+ extern int swap_type_of(dev_t, sector_t, struct block_device **);
+ extern unsigned int count_swap_pages(int, int);
+-extern sector_t map_swap_page(struct swap_info_struct *, pgoff_t);
++extern sector_t map_swap_page(swp_entry_t, struct block_device **);
+ extern sector_t swapdev_block(int, pgoff_t);
+-extern struct swap_info_struct *get_swap_info_struct(unsigned);
+ extern int reuse_swap_page(struct page *);
+ extern int try_to_free_swap(struct page *);
+ struct backing_dev_info;
+--- 2.6.32-rc4/mm/page_io.c	2009-09-09 23:13:59.000000000 +0100
++++ si1/mm/page_io.c	2009-10-14 21:25:58.000000000 +0100
+@@ -19,20 +19,17 @@
+ #include <linux/writeback.h>
+ #include <asm/pgtable.h>
+ 
+-static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
++static struct bio *get_swap_bio(gfp_t gfp_flags,
+ 				struct page *page, bio_end_io_t end_io)
+ {
+ 	struct bio *bio;
+ 
+ 	bio = bio_alloc(gfp_flags, 1);
+ 	if (bio) {
+-		struct swap_info_struct *sis;
+-		swp_entry_t entry = { .val = index, };
+-
+-		sis = get_swap_info_struct(swp_type(entry));
+-		bio->bi_sector = map_swap_page(sis, swp_offset(entry)) *
+-					(PAGE_SIZE >> 9);
+-		bio->bi_bdev = sis->bdev;
++		swp_entry_t entry;
++		entry.val = page_private(page);
++		bio->bi_sector = map_swap_page(entry, &bio->bi_bdev);
++		bio->bi_sector <<= PAGE_SHIFT - 9;
+ 		bio->bi_io_vec[0].bv_page = page;
+ 		bio->bi_io_vec[0].bv_len = PAGE_SIZE;
+ 		bio->bi_io_vec[0].bv_offset = 0;
+@@ -102,8 +99,7 @@ int swap_writepage(struct page *page, st
+ 		unlock_page(page);
+ 		goto out;
+ 	}
+-	bio = get_swap_bio(GFP_NOIO, page_private(page), page,
+-				end_swap_bio_write);
++	bio = get_swap_bio(GFP_NOIO, page, end_swap_bio_write);
+ 	if (bio == NULL) {
+ 		set_page_dirty(page);
+ 		unlock_page(page);
+@@ -127,8 +123,7 @@ int swap_readpage(struct page *page)
+ 
+ 	VM_BUG_ON(!PageLocked(page));
+ 	VM_BUG_ON(PageUptodate(page));
+-	bio = get_swap_bio(GFP_KERNEL, page_private(page), page,
+-				end_swap_bio_read);
++	bio = get_swap_bio(GFP_KERNEL, page, end_swap_bio_read);
+ 	if (bio == NULL) {
+ 		unlock_page(page);
+ 		ret = -ENOMEM;
+--- 2.6.32-rc4/mm/swapfile.c	2009-10-05 04:33:14.000000000 +0100
++++ si1/mm/swapfile.c	2009-10-14 21:25:58.000000000 +0100
+@@ -1284,12 +1284,22 @@ static void drain_mmlist(void)
+ 
+ /*
+  * Use this swapdev's extent info to locate the (PAGE_SIZE) block which
+- * corresponds to page offset `offset'.
++ * corresponds to page offset `offset'.  Note that the type of this function
++ * is sector_t, but it returns page offset into the bdev, not sector offset.
+  */
+-sector_t map_swap_page(struct swap_info_struct *sis, pgoff_t offset)
++sector_t map_swap_page(swp_entry_t entry, struct block_device **bdev)
+ {
+-	struct swap_extent *se = sis->curr_swap_extent;
+-	struct swap_extent *start_se = se;
++	struct swap_info_struct *sis;
++	struct swap_extent *start_se;
++	struct swap_extent *se;
++	pgoff_t offset;
++
++	sis = swap_info + swp_type(entry);
++	*bdev = sis->bdev;
++
++	offset = swp_offset(entry);
++	start_se = sis->curr_swap_extent;
++	se = start_se;
+ 
+ 	for ( ; ; ) {
+ 		struct list_head *lh;
+@@ -1315,12 +1325,14 @@ sector_t map_swap_page(struct swap_info_
+ sector_t swapdev_block(int swap_type, pgoff_t offset)
+ {
+ 	struct swap_info_struct *sis;
++	struct block_device *bdev;
+ 
+ 	if (swap_type >= nr_swapfiles)
+ 		return 0;
+ 
+ 	sis = swap_info + swap_type;
+-	return (sis->flags & SWP_WRITEOK) ? map_swap_page(sis, offset) : 0;
++	return (sis->flags & SWP_WRITEOK) ?
++		map_swap_page(swp_entry(swap_type, offset), &bdev) : 0;
+ }
+ #endif /* CONFIG_HIBERNATION */
+ 
+@@ -2160,13 +2172,6 @@ int swapcache_prepare(swp_entry_t entry)
+ 	return __swap_duplicate(entry, SWAP_CACHE);
+ }
+ 
+-
+-struct swap_info_struct *
+-get_swap_info_struct(unsigned type)
+-{
+-	return &swap_info[type];
+-}
+-
+ /*
+  * swap_lock prevents swap_map being freed. Don't grab an extra
+  * reference on the swaphandle, it doesn't matter if it becomes unused.
