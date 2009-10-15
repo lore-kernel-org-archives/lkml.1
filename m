@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935375AbZJOTrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935387AbZJOTr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935375AbZJOTrT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 15:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935366AbZJOTrT
+	id S935387AbZJOTr4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 15:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935378AbZJOTr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 15:47:19 -0400
-Received: from claw.goop.org ([74.207.240.146]:48663 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935365AbZJOTrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 15:47:18 -0400
-Message-ID: <4AD77C21.2050506@goop.org>
-Date: Thu, 15 Oct 2009 12:46:41 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [GIT PULL RFC] pvclock cleanups and pvclock vsyscall support
-References: <1255548516-15260-1-git-send-email-jeremy.fitzhardinge@citrix.com> <4AD6C679.3000001@redhat.com>
-In-Reply-To: <4AD6C679.3000001@redhat.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Oct 2009 15:47:56 -0400
+Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:53040
+	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935309AbZJOTrz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 15:47:55 -0400
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: trivial@kernel.org
+Cc: akpm@linux-foundation.org, miltonm@austin.ibm.com,
+       manfred@colorfullife.com, penbergs@cs.helsinki.fi,
+       bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH 3/8] trivial: fix typo s/ide/id/
+Date: Thu, 15 Oct 2009 16:47:08 -0300
+Message-Id: <1255636028-5779-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/14/09 23:51, Avi Kivity wrote:
->>   - Implement a pvclock vread function, so that pvclock-using
->> clocksources can be
->>     used by vsyscall/vdso vgettimeofday and vclock_gettime.
->>
->>   - Use pvclock vread in the Xen clocksource.
->>    
->
->
-> Looks good to me.
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ lib/idr.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Care to cook up a patch to implement the kvm bits to make sure it all
-works OK for you?
+diff --git a/lib/idr.c b/lib/idr.c
+index 80ca9ac..1cac726 100644
+--- a/lib/idr.c
++++ b/lib/idr.c
+@@ -281,7 +281,7 @@ static int idr_get_new_above_int(struct idr *idp, void *ptr, int starting_id)
+ /**
+  * idr_get_new_above - allocate new idr entry above or equal to a start id
+  * @idp: idr handle
+- * @ptr: pointer you want associated with the ide
++ * @ptr: pointer you want associated with the id
+  * @start_id: id to start search at
+  * @id: pointer to the allocated handle
+  *
+@@ -313,7 +313,7 @@ EXPORT_SYMBOL(idr_get_new_above);
+ /**
+  * idr_get_new - allocate new idr entry
+  * @idp: idr handle
+- * @ptr: pointer you want associated with the ide
++ * @ptr: pointer you want associated with the id
+  * @id: pointer to the allocated handle
+  *
+  * This is the allocate id function.  It should be called with any
+-- 
+1.6.3.3
 
-Thanks,
-    J
