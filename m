@@ -1,57 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934801AbZJOR72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933542AbZJOSPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934801AbZJOR72 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 13:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933351AbZJOR71
+	id S933542AbZJOSPo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 14:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757614AbZJOSPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 13:59:27 -0400
-Received: from khc.piap.pl ([195.187.100.11]:49507 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932952AbZJOR71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 13:59:27 -0400
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: ddutile@redhat.com
-Cc: Stefan Assmann <sassmann@redhat.com>,
+	Thu, 15 Oct 2009 14:15:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:15862 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757554AbZJOSPm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 14:15:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=E+ebLzd4vXFiYbQc3NB9+gIBmnzRlhXjD+nYV21LR/biNL4/yj7wGq6Ko+B934BEWF
+         jO2DtEC+Rkb84JG2+sHI6k3MU6y+bCbjSNimf8cLqF1XbbuPyrrRV6uiqLzkCXAGRRFT
+         dKc5VNUF1xr+x+F/FIqLHcAsnyjbQKptws+5I=
+Date: Thu, 15 Oct 2009 11:13:37 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>
+Cc: Greg KH <gregkh@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, kaneshige.kenji@jp.fujitsu.com,
-       matthew@wil.cx
-Subject: Re: GT/s vs Gbps for PCIe bus speed
-References: <4AD58EEE.4070405@redhat.com>
-	<m3ljjdstbb.fsf@intrepid.localdomain> <4AD62B52.9060200@redhat.com>
-	<m33a5lsls1.fsf@intrepid.localdomain> <4AD655E1.7080005@redhat.com>
-Date: Thu, 15 Oct 2009 19:58:49 +0200
-In-Reply-To: <4AD655E1.7080005@redhat.com> (Don Dutile's message of "Wed, 14
-	Oct 2009 18:51:13 -0400")
-Message-ID: <m3y6nc1que.fsf@intrepid.localdomain>
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
+	anymore
+Message-ID: <20091015181336.GB8544@core.coreip.homeip.net>
+References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <4AD75AC0.6020705@tremplin-utc.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4AD75AC0.6020705@tremplin-utc.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don Dutile <ddutile@redhat.com> writes:
+On Thu, Oct 15, 2009 at 07:24:16PM +0200, Éric Piel wrote:
+> Op 14-10-09 04:05, Dmitry Torokhov schreef:
+> > On Tue, Oct 13, 2009 at 11:52:19AM +0200, Éric Piel wrote:
+> >>> Could you please try and let me know if unloading at suspend and
+> >>> reloading after resume atkbd and/or psmouse drivers and leaving i8042
+> >>> alone "fixes" the issue?
+> >>>
+> >> Unloading the modules before suspend and reloading them after works
+> >> around the issue, indeed.
+> >>
+> > 
+> > Do both of them need to be reloaded? Or only one (my guess psmouse) is
+> > enough. Hmm, this is HP laptop so it most likely has Synaptics touchpad.
+> > I wonder what happens if you force it to bare PS/2 protocol (or maybe
+> > Intellimouse)... Try adding "option psmouse proto=imps" and
+> > "option psmouse proto=bare" and suspend/resume.
+> Sorry for taking some time to answer back. The keyboard fails to come
+> back only on the first suspend-resume (the next suspends, the keyboard
+> comes back fine). So I need to reboot the computer for every single test.
+> 
+> So far, what I can tell is that once the keyboard is not working
+> anymore, just unloading and reloading atkbd fixes the problem. Attached
+> is a dmesg log from just before supsending to after resume. The keyboard
+> doesn't work anymore but the touchpad do. The lines at the very end of
+> the log correspond to keypresses: although the keyboard doesn't work,
+> there are still 3 interrupt per keypress generated:
+> 
+> drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [320670]
+> drivers/input/serio/i8042.c: f0 <- i8042 (interrupt, 0, 1) [320751]
+> drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [320753]
+> 
+> That's all the date for now. I'll test your questions about psmouse
+> later on, and report back.
+> 
 
->>> No matter how many lanes, or how the data is sent (long or short bursts),
->>> the frequency rate is a constant.
+It lokks like the keyboard controller switched from translated to
+non-translated mode: '1c' is make code and 'f0 1c' is break (aka
+release) code.
 
-I'm not sure there is such thing as "frequency rate" (but English isn't
-my first language). Rate, yes - symbol rate, clock rate (not used here),
-code rate. Frequency is a clearly defined but different thing.
+Could you tell me how the keyboard indentified (in dmesg) after fresh
+boot and after you do the bind/unbind trick on the older kernel?
 
-> Frequency changing would require link re-synch.
-> This code is dealing w/steady-state frequency.
-
-Believe me or not, there is no single frequency on PCIe link.
-
-Google shows for example:
-http://www.home.agilent.com/upload/cmc_upload/All/PCIe_HighSpeedSymposiumDec2008.pdf
-
-See page 30, it's frequency spectrum for PCIe 3.0 but the idea is the
-same. Also note consistent use of "GT/s" to avoid confusion.
-
-> Again, trying to generate output that relates
-> to what devices are spec to run at: 2.5GHz or 5.0GHz links.
-
-That seems like wifi rather than PCIe.
 -- 
-Krzysztof Halasa
+Dmitry
