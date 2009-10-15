@@ -1,75 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763061AbZJOVe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935281AbZJOVfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763061AbZJOVe1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 17:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757805AbZJOVe0
+	id S935281AbZJOVfx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 17:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935215AbZJOVfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 17:34:26 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:11849 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754925AbZJOVeZ (ORCPT
+	Thu, 15 Oct 2009 17:35:52 -0400
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:55789 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934760AbZJOVfv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 17:34:25 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -11.374
-Message-ID: <4AD7953B.5040506@tremplin-utc.net>
-Date: Thu, 15 Oct 2009 23:33:47 +0200
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090319 Mandriva/2.0.0.21-1mdv2009.1 (2009.1) Thunderbird/2.0.0.21 Mnenhy/0.7.6.666
+	Thu, 15 Oct 2009 17:35:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=DToJRPu99KrpXTO8QaPyH6KGR4cOoJXEN3Zy2oeXx/aeVclwGMuUnMEFGfkKmbD/jU
+         FXESSBwzzH/urgQHYJv/bflnZj559kvUJufHqD4fTNgcCCQ7HivyP4hWIW0rv9fxiINA
+         QXiBmUgHC6OPzXaCfhHiZC2r51r0dLiGrfOvE=
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work	anymore
-References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <4AD75AC0.6020705@tremplin-utc.net> <20091015181336.GB8544@core.coreip.homeip.net> <4AD778C7.4070707@tremplin-utc.net> <20091015195136.GD8544@core.coreip.homeip.net>
-In-Reply-To: <20091015195136.GD8544@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <438397970910151312sc3ce9e9ge844dce0aa364f64@mail.gmail.com>
+References: <438397970910151312sc3ce9e9ge844dce0aa364f64@mail.gmail.com>
+Date: Thu, 15 Oct 2009 14:35:13 -0700
+Message-ID: <438397970910151435m6af98ac1n3272101910a7815@mail.gmail.com>
+Subject: Re: IO error and panic while doing iput(), kernel BUG at 
+	fs/inode.c:1165!
+From: Kallol Biswas <nucleodyne@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 15-10-09 21:51, Dmitry Torokhov schreef:
+The umount is done with -l option (lazy).
+
+On Thu, Oct 15, 2009 at 1:12 PM, Kallol Biswas <nucleodyne@gmail.com> wrote:
+> Hi,
+>   I have been getting a panic while unmounting the ext3 filesystem
+> that is on a partition.
 >
-> No, not the debug.. Just the lines looking like this:
+> The block device is a raid device. When the power to the disk shelf is
+> lost we see a lot of IO errors in the dmesg. These are expected.
 >
-> input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input3
-Ah! This I have! Here is how it looks like at boot:
-Sep 21 14:02:58 dutifh klogd: PNP: PS/2 Controller [PNP0303:C29C,PNP0f13:C29D] at 0x60,0x64 irq 1,12
-Sep 21 14:02:58 dutifh klogd: i8042.c: Detected active multiplexing controller, rev 1.1.
-Sep 21 14:02:58 dutifh klogd: serio: i8042 KBD port at 0x60,0x64 irq 1
-Sep 21 14:02:58 dutifh klogd: serio: i8042 AUX0 port at 0x60,0x64 irq 12
-Sep 21 14:02:58 dutifh klogd: serio: i8042 AUX1 port at 0x60,0x64 irq 12
-Sep 21 14:02:58 dutifh klogd: serio: i8042 AUX2 port at 0x60,0x64 irq 12
-Sep 21 14:02:58 dutifh klogd: serio: i8042 AUX3 port at 0x60,0x64 irq 12
-Sep 21 14:02:58 dutifh klogd: mice: PS/2 mouse device common for all mice
-Sep 21 14:02:58 dutifh klogd: rtc_cmos 00:06: RTC can wake from S4
-Sep 21 14:02:58 dutifh klogd: rtc_cmos 00:06: rtc core: registered rtc_cmos as rtc0
-Sep 21 14:02:58 dutifh klogd: rtc0: alarms up to one month, y3k, 114 bytes nvram, hpet irqs
-Sep 21 14:02:58 dutifh klogd: cpuidle: using governor ladder
-Sep 21 14:02:58 dutifh klogd: cpuidle: using governor menu
-Sep 21 14:02:58 dutifh klogd: TCP cubic registered
-Sep 21 14:02:58 dutifh klogd: input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input0
-:
-Sep 21 14:02:58 dutifh klogd: Synaptics Touchpad, model: 1, fw: 6.3, id: 0x1a0b1, caps: 0xa04713/0x200000
-Sep 21 14:02:58 dutifh klogd: input: SynPS/2 Synaptics TouchPad as /devices/platform/i8042/serio4/input/input2
-
-
-And then after an unbind/bind trick:
-Sep 22 14:15:24 dutifh klogd: i8042.c: Detected active multiplexing controller, rev 1.1.
-Sep 22 14:15:24 dutifh klogd: serio: i8042 KBD port at 0x60,0x64 irq 1
-Sep 22 14:15:24 dutifh klogd: serio: i8042 AUX0 port at 0x60,0x64 irq 12
-Sep 22 14:15:24 dutifh klogd: serio: i8042 AUX1 port at 0x60,0x64 irq 12
-Sep 22 14:15:24 dutifh klogd: serio: i8042 AUX2 port at 0x60,0x64 irq 12
-Sep 22 14:15:24 dutifh klogd: serio: i8042 AUX3 port at 0x60,0x64 irq 12
-Sep 22 14:15:24 dutifh klogd: input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio5/input/input12
-Sep 22 14:15:25 dutifh pulseaudio[3737]: sap.c: sendmsg() failed: Ongeldig argument
-Sep 22 14:15:25 dutifh klogd: input: PS/2 Generic Mouse as /devices/platform/i8042/serio6/input/input13
-Sep 22 14:15:26 dutifh klogd: Synaptics Touchpad, model: 1, fw: 6.3, id: 0x1a0b1, caps: 0xa04713/0x200000
-Sep 22 14:15:26 dutifh klogd: input: SynPS/2 Synaptics TouchPad as /devices/platform/i8042/serio9/input/input14
-
-(pasting only the parts which seem relevant)
-
-See you,
-Eric
+> Our application then tries to unmount the filesystem that has been
+> created on a partition.
+>
+> At the end of __blkdev_put() on the partition the same routine is
+> invoked in recursion on the whole disk.
+>
+> Since the whole disk's i_state is already I_CLEAR the system panics.
+>
+> Is this a known issue? Who release the reference to the whole device?
+> udev/hotplug handler?
+>
+> I am running 2.6.23 kernel and did not see this problem on 2.6.12 kernel.
+>
+> Kallol
+>
+> g directory #2 offset 0
+> (E3)[1255107782.100033] Buffer I/O error on device dd_dg10p1, logical block 0
+> (E4)[1255107782.100120] lost page write due to I/O error on dd_dg10p1
+> (E2)[1255107782.100221] EXT3-fs error (device dd_dg10p1):
+> read_inode_bitmap: Cannot read inode bitmap - block_group = 3,
+> inode_bitmap = 99377
+> (E4)[1255107782.100462] WARNING: at fs/buffer.c:1154 mark_buffer_dirty()
+> (E4)[1255107782.100544]
+> (E4)[1255107782.100544] Call Trace:
+> (E4)[1255107782.100720]  [<ffffffff802b2185>] mark_buffer_dirty+0xc5/0xd0
+> (E4)[1255107782.100803]  [<ffffffff802e5bc7>] ext3_commit_super+0x57/0xa0
+> (E4)[1255107782.100881]  [<ffffffff802e6064>] ext3_handle_error+0x54/0xe0
+> (E4)[1255107782.100959]  [<ffffffff802e628d>] ext3_error+0xcd/0xe0
+> (E4)[1255107782.101039]  [<ffffffff8034ff7e>] submit_bio+0x5e/0xe0
+> (E4)[1255107782.101118]  [<ffffffff802b2f35>] submit_bh+0xf5/0x130
+> (E4)[1255107782.101231]  [<ffffffff802dbae6>] read_inode_bitmap+0x86/0x90
+> (E4)[1255107782.101340]  [<ffffffff802dc1fa>] ext3_new_inode+0x46a/0xac0
+> (E4)[1255107782.101421]  [<ffffffff802e374e>] ext3_create+0x6e/0x100
+> (E4)[1255107782.101499]  [<ffffffff802983dc>] vfs_create+0xac/0xf0
+> (E4)[1255107782.101574]  [<ffffffff80298c47>] open_namei+0x617/0x680
+> (E4)[1255107782.101653]  [<ffffffff8028d7bc>] do_filp_open+0x1c/0x50
+> (E4)[1255107782.101733]  [<ffffffff8028d94f>] get_unused_fd_flags+0x3f/0x120
+> (E4)[1255107782.101809]  [<ffffffff8028db9a>] do_sys_open+0x5a/0xf0
+> (E4)[1255107782.101885]  [<ffffffff8020beb2>] system_call+0x82/0x87
+> (E4)[1255107782.101962]
+> (E3)[1255107782.102036] Buffer I/O error on device dd_dg10p1, logical block 0
+> (E4)[1255107782.102143] lost page write due to I/O error on dd_dg10p1
+> (E2)[1255107782.102251] EXT3-fs error (device dd_dg10p1) in
+> ext3_new_inode: IO failure
+> (E3)[1255107782.102342] Buffer I/O error on device dd_dg10p1, logical block 0
+> (E4)[1255107782.102419] lost page write due to I/O error on dd_dg10p1
+> (E2)[1255107782.106154] EXT3-fs error (device dd_dg10p3):
+> ext3_find_entry: reading directory #2 offset 0
+> (E3)[1255107782.106402] Buffer I/O error on device dd_dg10p3, logical block 0
+> (E4)[1255107782.106487] lost page write due to I/O error on dd_dg10p3
+> (E2)[1255107782.106589] EXT3-fs error (device dd_dg10p3):
+> read_inode_bitmap: Cannot read inode bitmap - block_group = 3,
+> inode_bitmap = 99377
+> (E3)[1255107782.106867] Buffer I/O error on device dd_dg10p3, logical
+>
+> ....................
+> .....................
+> (E0)[1255107782.258305] ------------[ cut here ]------------
+> (E2)[1255107782.322915] kernel BUG at fs/inode.c:1165!
+> (U0)(MSG-KERN-00005):[1255107782.381327] invalid opcode: 0000 [1] SMP
+> (E4)[1255107782.456956] CPU 10
+> (E4)[1255107782.491713] Modules linked in: msr mptctl ipmi_watchdog
+> ipmi_si ipmi_devintf ipmi_msghandler ipv6 dd_iosched(P) usbkbd usbhid
+> uhci_hcd ehci_hcd i2c_i801 i2c_core 8021q t3_tom toecore cxgb3 usbcore
+> dd_raid_driver(P) e1000e qla2xxx firmware_class scsi_transport_fc
+> dm_round_robin dm_emc dm_mpath_rdac dm_multipath dm_mod scsi_dump
+> diskdump elog mptsas mptscsih mptbase sg dd_qoskcm(P)
+> (E4)[1255107782.912981] Pid: 24783, comm: umount Tainted: P
+> 2.6.23-ddr133064 #1
+> (E4)[1255107783.004615] RIP: 0010:[<ffffffff802a2f92>]
+> [<ffffffff802a2f92>] iput+0x72/0x80
+> (E4)[1255107783.101728] RSP: 0018:ffff8107e36f9df8  EFLAGS: 00010246
+> (E4)[1255107783.174675] RAX: ffffffff804e7b40 RBX: ffff811029162188
+> RCX: ffff81105e5ea300
+> (E4)[1255107783.269410] RDX: ffff810820b68820 RSI: 0000000000000001
+> RDI: ffff811029162188
+> (E4)[1255107783.364185] RBP: ffff8110291620c0 R08: 0000000000000000
+> R09: 0000000000000001
+> (E4)[1255107783.458956] R10: 0000000000000000 R11: ffffffff802b6d10
+> R12: 0000000000000000
+> (E4)[1255107783.553760] R13: ffff8110291620d8 R14: 0000000000000000
+> R15: ffff811029162188
+> (E4)[1255107783.648604] FS:  00002b8099549f80(0000)
+> GS:ffff811037fae0c0(0000) knlGS:0000000000000000
+> (E4)[1255107783.754854] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> (E4)[1255107783.833014] CR2: 00002b809936716c CR3: 00000007fa6b1000
+> CR4: 00000000000006e0
+> (E4)[1255107783.927814] DR0: 0000000000000000 DR1: 0000000000000000
+> DR2: 0000000000000000
+> (E4)[1255107784.022652] DR3: 0000000000000000 DR6: 00000000ffff0ff0
+> DR7: 0000000000000400
+> (E4)[1255107784.117494] Process umount (pid: 24783, threadinfo
+> ffff8107e36f8000, task ffff810820b68820)
+> (E4)[1255107784.226857] Stack:  0000000000000001 ffffffff802b77f1
+> 0000000017a8cf40 ffffffff88274780
+> (E4)[1255107784.333431]  ffff810817a8cc80 ffff810810cadc00
+> ffff810817a8cc98 ffff8110291620c0
+> (E4)[1255107784.432516]  ffff810817a8cd48 ffffffff802b7803
+> 0000000080610680 ffff810817114800
+> (E4)[1255107784.529221] Call Trace:
+> (E4)[1255107784.570325]  [<ffffffff802b77f1>] __blkdev_put+0x91/0x190
+> (E4)[1255107784.644300]  [<ffffffff802b7803>] __blkdev_put+0xa3/0x190
+> (E4)[1255107784.718282]  [<ffffffff8028fbe3>] deactivate_super+0x63/0x90
+> (E4)[1255107784.795376]  [<ffffffff802a655e>] sys_umount+0x6e/0x280
+> (E4)[1255107784.867282]  [<ffffffff80291f67>] sys_newstat+0x27/0x70
+> (E4)[1255107784.939183]  [<ffffffff8027553e>] do_munmap+0x26e/0x310
+> (E4)[1255107785.011087]  [<ffffffff8036d371>] __up_write+0x31/0x150
+> (E4)[1255107785.082985]  [<ffffffff8020beb2>] system_call+0x82/0x87
+> (E4)[1255107785.154883]
+> (E4)[1255107785.182193]
+> (E4)[1255107785.182193] Code: 0f 0b eb fe 66 66 66 90 66 66 90 66 66
+> 90 48 83 ec 08 48 8b
+> (U1)(MSG-KERN-00005):[1255107785.310184] RIP  [<ffffffff802a2f92>]
+> iput+0x72/0x80
+> (E4)[1255107785.397005]  RSP <ffff8107e36f9df8>
+>
