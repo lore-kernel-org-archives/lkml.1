@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZJOGl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934740AbZJOGtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbZJOGl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 02:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbZJOGl1
+	id S934740AbZJOGtc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 02:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755948AbZJOGta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 02:41:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53325 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751498AbZJOGl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 02:41:27 -0400
-Date: Thu, 15 Oct 2009 08:40:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [GIT PULL] tracing: Arch syscalls tracing shrinks and fixlets
-Message-ID: <20091015064043.GB11645@elte.hu>
-References: <1255547598-5294-1-git-send-email-fweisbec@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255547598-5294-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 15 Oct 2009 02:49:30 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:41596 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754833AbZJOGt3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 02:49:29 -0400
+From: Vishnu Suresh <Vishnu@freescale.com>
+To: linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       herbert@gondor.apana.org.au, dan.j.williams@intel.com
+Cc: Vishnu Suresh <Vishnu@freescale.com>
+Subject: [PATCH v0 1/2] DMA: fsldma: Disable DMA_INTERRUPT when Async_tx enabled
+Date: Thu, 15 Oct 2009 12:11:05 +0530
+Message-Id: <1255588866-4133-1-git-send-email-Vishnu@freescale.com>
+X-Mailer: git-send-email 1.6.4.2
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch disables the use of DMA_INTERRUPT capability with Async_tx
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+The fsldma produces a null transfer with DMA_INTERRUPT
+capability when used with Async_tx. When RAID devices queue
+a transaction via Async_tx, this  results in a hang.
 
-> Ingo,
-> 
-> Please pull the tracing/core branch that can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> 	tracing/core
-> 
-> Thanks,
-> Frederic.
-> 
-> ---
-> Frederic Weisbecker (4):
->       tracing: Move syscalls metadata handling from arch to core
->       tracing: Document HAVE_SYSCALL_TRACEPOINTS needs
->       ftrace: Copy ftrace_graph_filter boot param using strlcpy
->       ftrace: Rename set_bootup_ftrace into set_cmdline_ftrace
-> 
->  Documentation/trace/ftrace-design.txt |   13 ++++-
->  arch/s390/kernel/ftrace.c             |   67 +-------------------------
->  arch/x86/kernel/ftrace.c              |   76 +----------------------------
->  include/trace/syscall.h               |    2 +-
->  kernel/trace/ftrace.c                 |    2 +-
->  kernel/trace/trace.c                  |    4 +-
->  kernel/trace/trace_syscalls.c         |   86 +++++++++++++++++++++++++++++++++
->  7 files changed, 105 insertions(+), 145 deletions(-)
+Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
+---
+ drivers/dma/fsldma.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-Pulled, thanks a lot Frederic!
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 296f9e7..66d9b39 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -1200,7 +1200,13 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
+ 						- fdev->reg.start + 1);
+ 
+ 	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
++#ifndef CONFIG_ASYNC_CORE
++	/*
++	 * The DMA_INTERRUPT async_tx is a NULL transfer, which will
++	 * triger a PE interrupt.
++	 */
+ 	dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
++#endif
+ 	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
+ 	fdev->common.device_alloc_chan_resources = fsl_dma_alloc_chan_resources;
+ 	fdev->common.device_free_chan_resources = fsl_dma_free_chan_resources;
+-- 
+1.6.4.2
 
-	Ingo
