@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933163AbZJONMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762740AbZJONVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933163AbZJONMs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 09:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932628AbZJONMr
+	id S1762740AbZJONVY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 09:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758386AbZJONVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 09:12:47 -0400
-Received: from mx03.syneticon.net ([78.111.66.105]:37411 "EHLO
-	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932576AbZJONMq (ORCPT
+	Thu, 15 Oct 2009 09:21:23 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:51858 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758362AbZJONVW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 09:12:46 -0400
-Message-ID: <4AD71FA3.8080801@wpkg.org>
-Date: Thu, 15 Oct 2009 15:12:03 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091009)
+	Thu, 15 Oct 2009 09:21:22 -0400
+Date: Thu, 15 Oct 2009 07:20:45 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel@vger.kernel.org, Ian Kent <raven@themaw.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Miklos Szeredi <mszeredi@suse.cz>
+Subject: Re: [patch 2/6] fs: no games with DCACHE_UNHASHED
+Message-ID: <20091015132044.GL7545@parisc-linux.org>
+References: <20091015044026.319860788@suse.de> <20091015050048.165912589@suse.de> <4AD6D2E3.9050105@gmail.com> <20091015081343.GC4262@wotan.suse.de> <20091015082903.GD4262@wotan.suse.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.31.4: WARNING: at drivers/usb/serial/usb-serial.c:446 serial_unthrottle
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091015082903.GD4262@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I see my minicom segfaulted for some reason (probably as I closed konsole window without exiting minicom first).
+On Thu, Oct 15, 2009 at 10:29:03AM +0200, Nick Piggin wrote:
+> On Thu, Oct 15, 2009 at 10:13:43AM +0200, Nick Piggin wrote:
+> > Now both sockets and pipes define a d_dname so they are OK, but anon_inodes
+> > does not. I think they should probably be made to just provide a d_dname
+> > anyway so we can have the familiar format of "pseudofs:[ino]" rather than
+> > "[pseudofs]" that we have now.
+> > 
+> > That should make this patch work for anon_inodes.c as well.
+> 
+> So what if we were to do this first? Are there any other reasons I've
+> missed? (btw. this changes the format the link if that is a problem.
+> Probably if we're going to do this change, we should change things like
+> [timerfd] to just timerfd while we're there to improve consistency
+> further.
+> --
+> Pipe and socket pseudo filesystems report their file descriptor link
+> paths as pipe:[ino] and socket:[ino]. anon_inodefs allows subsystems
+> to specify a name, but it does not report an associated inode number.
 
-And I see this warning in dmesg - anything useful?
+I think that's because the inode number is always 0 -- there's just one
+anonymous inode.
 
-
-[12966.137519] minicom[16738]: segfault at 624fff ip 00000000004174d9 sp 00007ffff5e81b30 error 4 in minicom[400000+26000]
-[12966.512773] ------------[ cut here ]------------
-[12966.512785] WARNING: at drivers/usb/serial/usb-serial.c:446 serial_unthrottle+0xab/0xb0 [usbserial]()
-[12966.512787] Hardware name:
-[12966.512788] Modules linked in: bridge stp tun af_packet radeon drm ipv6 coretemp binfmt_misc loop dm_mod cpufreq_ondemand cpufreq_conservative cpufreq_powersave acpi_cpufreq freq_table kvm_intel kvm snd_hda_codec_atihdmi snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_seq_dummy snd_hwdep snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device e1000e pl2303 snd_pcm_oss i2c_i801 snd_pcm usbserial serio_raw pcspkr snd_timer sr_mod sg joydev i2c_core wmi snd_mixer_oss evdev thermal processor button snd iTCO_wdt iTCO_vendor_support soundcore snd_page_alloc ata_piix ahci libata sd_mod scsi_mod crc_t10dif raid1 ext4 jbd2 crc16 uhci_hcd ohci_hcd ehci_hcd usbhid hid usbcore [last unloaded: scsi_wait_scan]
-[12966.512818] Pid: 16738, comm: minicom Not tainted 2.6.31.4-server-0.rc2.1mnb #1
-[12966.512819] Call Trace:
-[12966.512825]  [<ffffffff8106cc95>] warn_slowpath_common+0x85/0xd0
-[12966.512828]  [<ffffffff8106cd07>] warn_slowpath_null+0x27/0x50
-[12966.512832]  [<ffffffffa02444bb>] serial_unthrottle+0xab/0xb0 [usbserial]
-[12966.512835]  [<ffffffff812d3ce4>] tty_unthrottle+0x54/0x80
-[12966.512838]  [<ffffffff812d2024>] reset_buffer_flags+0xe4/0x120
-[12966.512841]  [<ffffffff812d208c>] n_tty_flush_buffer+0x2c/0xb0
-[12966.512843]  [<ffffffff812d4f6d>] ? tty_ldisc_try+0x5d/0x80
-[12966.512845]  [<ffffffff812d5715>] tty_ldisc_flush+0x45/0x80
-[12966.512847]  [<ffffffff812d6d3a>] tty_port_close_end+0x3a/0x120
-[12966.512851]  [<ffffffffa0244a91>] serial_close+0xa1/0xe0 [usbserial]
-[12966.512854]  [<ffffffff812ceb93>] tty_release_dev+0x163/0x600
-[12966.512858]  [<ffffffff81235f78>] ? _atomic_dec_and_lock+0x78/0xa0
-[12966.512860]  [<ffffffff81235f78>] ? _atomic_dec_and_lock+0x78/0xa0
-[12966.512862]  [<ffffffff812cf05d>] tty_release+0x2d/0x50
-[12966.512866]  [<ffffffff81151ace>] __fput+0xee/0x220
-[12966.512868]  [<ffffffff81151c2d>] fput+0x2d/0x50
-[12966.512870]  [<ffffffff8114d3cc>] filp_close+0x6c/0xb0
-[12966.512873]  [<ffffffff8106f52f>] put_files_struct+0x8f/0x110
-[12966.512875]  [<ffffffff8106f608>] exit_files+0x58/0x80
-[12966.512877]  [<ffffffff81070141>] do_exit+0x161/0x7d0
-[12966.512880]  [<ffffffff81081003>] ? __dequeue_signal+0xf3/0x220
-[12966.512882]  [<ffffffff81070810>] do_group_exit+0x60/0xe0
-[12966.512884]  [<ffffffff8108174c>] get_signal_to_deliver+0x1bc/0x3c0
-[12966.512888]  [<ffffffff8101268b>] do_notify_resume+0xeb/0x7f0
-[12966.512890]  [<ffffffff8123cb88>] ? rb_erase+0x1e8/0x350
-[12966.512894]  [<ffffffff81043226>] ? bad_area+0x26/0x50
-[12966.512898]  [<ffffffff81430799>] ? do_page_fault+0x379/0x3a0
-[12966.512901]  [<ffffffff81013e1c>] retint_signal+0x48/0x8c
-[12966.512903] ---[ end trace 9324d74be25813f7 ]---
-
-
+> Implement this with anon_inodefs_dname in the same way pipefs and sockfs
+> are.
+> 
+> ---
+>  fs/anon_inodes.c |   10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> Index: linux-2.6/fs/anon_inodes.c
+> ===================================================================
+> --- linux-2.6.orig/fs/anon_inodes.c
+> +++ linux-2.6/fs/anon_inodes.c
+> @@ -45,6 +45,15 @@ static int anon_inodefs_delete_dentry(st
+>  	return 1;
+>  }
+>  
+> +/*
+> + * anon_inodefs_dname() is called from d_path().
+> + */
+> +static char *anon_inodefs_dname(struct dentry *dentry, char *buffer, int buflen)
+> +{
+> +	return dynamic_dname(dentry, buffer, buflen, "%s:[%lu]",
+> +				dentry->d_name.name, dentry->d_inode->i_ino);
+> +}
+> +
+>  static struct file_system_type anon_inode_fs_type = {
+>  	.name		= "anon_inodefs",
+>  	.get_sb		= anon_inodefs_get_sb,
+> @@ -52,6 +61,7 @@ static struct file_system_type anon_inod
+>  };
+>  static const struct dentry_operations anon_inodefs_dentry_operations = {
+>  	.d_delete	= anon_inodefs_delete_dentry,
+> +	.d_dname	= anon_inodefs_dname,
+>  };
+>  
+>  /*
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
-Tomasz Chmielewski
-http://wpkg.org
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
