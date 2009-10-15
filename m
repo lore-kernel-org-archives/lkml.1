@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760797AbZJOS56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762720AbZJOTAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760797AbZJOS56 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 14:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbZJOS55
+	id S1762720AbZJOTAv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 15:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759463AbZJOTAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 14:57:57 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:50111 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758564AbZJOS55 (ORCPT
+	Thu, 15 Oct 2009 15:00:50 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:32660 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758623AbZJOTAt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 14:57:57 -0400
-Message-ID: <4AD770A9.6070509@freescale.com>
-Date: Thu, 15 Oct 2009 13:57:45 -0500
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Thu, 15 Oct 2009 15:00:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=v1RG0AWP8omAcde+VMFMptHJ67m1W3k86Yp8bLQ39oiDD7HAO191owo+PPbkCeBXWR
+         k4KmNPIHFsE/11hFvHXD7nHOrNgQizTvDBVlSll44TVch4yQVuXp/Zo1Rl/sBO/xXVJQ
+         58zPV9wW3y/NfIgOkHAmiUnLrc7Zf7WgXX3KA=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: removing existing working drivers via staging
+Date: Thu, 15 Oct 2009 20:58:33 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31.1-56.fc12.x86_64; KDE/4.3.1; x86_64; ; )
+Cc: david@lang.hm, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm> <200910152020.13080.bzolnier@gmail.com> <20091015184656.GA29858@suse.de>
+In-Reply-To: <20091015184656.GA29858@suse.de>
 MIME-Version: 1.0
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-CC: Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org,
-       brueckner@linux.vnet.ibm.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] hvc_console: returning 0 from put_chars is not an error
-References: <1255557226-4403-1-git-send-email-timur@freescale.com> <200910151305.47100.borntraeger@de.ibm.com> <20091015160906.GA3730@loki.buserror.net> <200910152041.26646.borntraeger@de.ibm.com>
-In-Reply-To: <200910152041.26646.borntraeger@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Oct 2009 18:57:19.0456 (UTC) FILETIME=[52182600:01CA4DC9]
-X-Brightmail-Tracker: AAAAAQAAAWE=
+Message-Id: <200910152058.33114.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Borntraeger wrote:
-> Right. Looking at more drivers it seems that both ways (waiting and dropping) 
-> are used.
+On Thursday 15 October 2009 20:46:56 Greg KH wrote:
+> On Thu, Oct 15, 2009 at 08:20:12PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Thursday 15 October 2009 19:49:32 Greg KH wrote:
+> > > On Thu, Oct 15, 2009 at 07:42:40PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > > > On Thursday 15 October 2009 18:47:26 Greg KH wrote:
+> > > > > On Thu, Oct 15, 2009 at 09:39:51AM -0700, david@lang.hm wrote:
+> > > > > > however, what I think I saw proposed was to move drivers that need to be 
+> > > > > > 'cleaned up', to staging and then dropping them if they don't get cleaned.
+> > > > > 
+> > > > > What is "proposed" is the following:
+> > > > > 
+> > > > > 	- For drivers currently in the kernel tree, that the subsystem
+> > > > > 	  maintainer, for whatever reason, feels is obsolete / broken /
+> > > > > 	  needs major cleaning / wants to get rid of, can be submitted
+> > > > > 	  to the staging maintainer to be moved to the drivers/staging/
+> > > > > 	  directory.
+> > > > 
+> > > > This is insanity and opens a door for various forms of abuse.
+> > > 
+> > > What do you mean by this?  What kind of "abuse"?
+> > 
+> > Typical situation:
+> > 
+> > You have driver for _really_ difficult hardware used by minority of total
+> > users of a given subsystem.  Said driver has no major problems except being
+> > f*cking complicated (because of hardware) so it stays in the way of future
+> > changes.
+> > 
+> > With the current system people making bigger changes have to comprehend
+> > that difficult stuff [*].  This is a good thing in the long-term since it
+> > results in the better overall system understanding, better knowledge of
+> > "DO's and DON'T's" and better users' experience.
+> > 
+> > Now with the proposed scheme it is sufficient to throw said driver into
+> > staging for few weeks and make future changes.  Before users even notice
+> > and complain they are screwed already since bringing the driver back is
+> > no longer possible without big effort (+ subsystem is still evolving)..
 > 
-> Hmmm, if we are ok with having both options, we should let the hvc backend 
-> decide if it wants to drain or to discard.
+> But a driver in staging still has to be able to build, api changes are
+> not able to be ignored in it.
 
-I'd say the dropping approach is quite undesirable (significant 
-potential for output loss unless the buffer is huge), unless there's 
-simply no way to safely spin.  Hopefully there are no such backends, but 
-if there are perhaps we can have them return some special code to 
-indicate that.
+Sure, it will build at the of being submitted to staging..
 
-> If we just busy loop, it actually does not matter how we let hvc_console react 
-> on 0, as long as we adopt all backends to use that interface consistent.
+> > This will result in a "new kernel new hardware" world that some distro
+> > people have been silently trying to accomplish and in this brave new world
+> > few key people have way too much advantage over everyone else.
 > 
-> On the other hand, backends might want to do special magic on congestion so I 
-> personally tend to let the backend loop instead of hvc_console. But I am really  
-> not sure.
+> I don't understand what you are referring to here.
 
-Doing it in the backend requires the backend to know whether it's being 
-called for printk or for user I/O.  In the latter case, we don't want to 
-spin, but rather wait for an IRQ (or poll with a timer if there's no IRQ).
-
--Scott
+See my PM.
