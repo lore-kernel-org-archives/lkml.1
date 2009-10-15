@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761220AbZJOCB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762127AbZJOCDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761220AbZJOCB0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 22:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757229AbZJOCBZ
+	id S1762127AbZJOCDD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 22:03:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760893AbZJOCDC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 22:01:25 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:46008 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754735AbZJOCBY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 22:01:24 -0400
-From: Bhavesh Davda <bhavesh@vmware.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, netdev <netdev@vger.kernel.org>,
-       Shreyas Bhatewara <sbhatewara@vmware.com>,
-       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "davem@davemloft.net" <davem@davemloft.net>
-Date: Wed, 14 Oct 2009 19:00:45 -0700
-Subject: Re: [Pv-drivers] [PATCH -next] vmxnet: fix 2 build problems
-Thread-Topic: [Pv-drivers] [PATCH -next] vmxnet: fix 2 build problems
-Thread-Index: AcpNO1CLyYhEFGurRF67wCSrpf8VVA==
-Message-ID: <06257446-AA46-489A-80D7-D7C70096A744@vmware.com>
-References: <20091014163445.f0441473.sfr@canb.auug.org.au>
- <20091014181715.09a82630.randy.dunlap@oracle.com>
-In-Reply-To: <20091014181715.09a82630.randy.dunlap@oracle.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Wed, 14 Oct 2009 22:03:02 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63150 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1760702AbZJOCDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 22:03:01 -0400
+Message-ID: <4AD68269.50701@cn.fujitsu.com>
+Date: Thu, 15 Oct 2009 10:01:13 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [GIT PULL] tracing: Fix misuse of strncpy to copy boot params
+References: <1255552732-5096-1-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1255552732-5096-1-git-send-email-fweisbec@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n9F21r16027920
 
-Looks great! Thanks for making this change!
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 4506826..621d81e 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -131,7 +131,7 @@ static char *default_bootup_tracer;
+>  
+>  static int __init set_ftrace(char *str)
+>  {
+> -	strncpy(bootup_tracer_buf, str, MAX_TRACER_SIZE);
+> +	strlcpy(bootup_tracer_buf, str, MAX_TRACER_SIZE);
 
-Signed-off-by: Bhavesh davda <bhavesh@vmware.com<mailto:bhavesh@vmware.com>>
+Actually using strncpy() here is fine.
 
-- Bhavesh
+See how the str buf is used:
 
-I'm usually not as bad with my spelling as my iPhone makes it appear.
+int register_tracer(struct tracer *type)
+{
+	...
+	if (strncmp(default_bootup_tracer, type->name, MAX_TRACER_SIZE))
+	...
+}
 
-
-On Oct 14, 2009, at 6:18 PM, "Randy Dunlap" <randy.dunlap@oracle.com<mailto:randy.dunlap@oracle.com>> wrote:
-
-Signed-off-by: Randy Dunlap <<mailto:randy.dunlap@oracle.com>randy.dunlap@oracle.com<mailto:randy.dunlap@oracle.com>>
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+>  	default_bootup_tracer = bootup_tracer_buf;
+>  	/* We are using ftrace early, expand it */
+>  	ring_buffer_expanded = 1;
