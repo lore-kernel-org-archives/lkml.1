@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762724AbZJOMCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762734AbZJOMFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762724AbZJOMCv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 08:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762628AbZJOMCu
+	id S1762734AbZJOMFT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 08:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762628AbZJOMFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 08:02:50 -0400
-Received: from smtpd3.aruba.it ([62.149.128.208]:49700 "HELO smtp4.aruba.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1758158AbZJOMCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 08:02:49 -0400
-Date: Thu, 15 Oct 2009 14:04:08 +0200
-From: Daniele Calore <orkaan@orkaan.org>
-To: rth@twiddle.net, linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ink@jurassic.park.msu.ru
-Cc: orkaan@orkaan.org
-Subject: [PATCH 2.6.32-rc4] alpha: fix build after vmlinux.lds.S cleanup
- (really)
-Message-ID: <20091015140408.21e901b1@buddha>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Spam-Rating: smtp4.aruba.it 1.6.2 0/1000/N
+	Thu, 15 Oct 2009 08:05:18 -0400
+Received: from bizon.gios.gov.pl ([195.187.34.71]:46096 "EHLO
+	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757499AbZJOMFR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 08:05:17 -0400
+Message-ID: <4AD70FC2.5050302@ans.pl>
+Date: Thu, 15 Oct 2009 14:04:18 +0200
+From: =?ISO-8859-2?Q?Krzysztof_Ol=EAdzki?= <ole@ans.pl>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Amerigo Wang <amwang@redhat.com>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, netfilter-devel@vger.kernel.org
+Subject: Re: [Patch] (updated) netfilter: remove deprecated CONFIG_NF_CT_ACCT
+References: <20091015080211.4561.78538.sendpatchset@localhost.localdomain>
+In-Reply-To: <20091015080211.4561.78538.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix Build error on alpha:
-arch/alpha/kernel/vmlinux.lds:235: undefined symbol `THREAD_SIZE' referenced in expression
-make: *** [.tmp_vmlinux1] Error 1
+[resend, previously I incorrectly copied netfilter-devel-owner]
 
-THREAD_SIZE is defined under: "asm/thread_info.h", but
-inside an "#ifndef __ASSEMBLY__" directive.
-To solve the build, just move the define outside the #ifndef.
+Adding CC to netfilter-devel@vger.kernel.org, where netfilter
+related issues are discussed.
 
-Signed-off-by: Daniele Calore <orkaan@orkaan.org>
+On Thu, 15 Oct 2009, Amerigo Wang wrote:
 
----
-diff --git a/arch/alpha/include/asm/thread_info.h b/arch/alpha/include/asm/thread_info.h
-index 5076a88..e7a07f6 100644
---- a/arch/alpha/include/asm/thread_info.h
-+++ b/arch/alpha/include/asm/thread_info.h
-@@ -50,12 +50,12 @@ struct thread_info {
- register struct thread_info *__current_thread_info __asm__("$8");
- #define current_thread_info()  __current_thread_info
- 
-+#endif /* !__ASSEMBLY__ */
-+
- /* Thread information allocation.  */
- #define THREAD_SIZE_ORDER 1
- #define THREAD_SIZE (2*PAGE_SIZE)
- 
--#endif /* __ASSEMBLY__ */
--
- #define PREEMPT_ACTIVE		0x40000000
- 
- /*
+>
+> CONFIG_NF_CT_ACCT is scheduled to be removed in 2.6.29.
+>
+> Cc: Krzysztof Piotr Oledzki <ole@ans.pl>
+> Signed-off-by: WANG Cong <amwang@redhat.com>
 
+This is not so easy - it was decided that we don't want to remove it 
+just that because of connbytes. The final conclusion was to keep it 
+disabled by default (if not enabled by kernel/modules/sysctl option) but 
+enabling it automatically for the current NS if nefilter rules contains 
+"-m connbytes".
+
+Sorry, I should have gotten into this and finished it earlier, my bad. :(
+
+Best regards,
+
+  				Krzysztof Olêdzki
