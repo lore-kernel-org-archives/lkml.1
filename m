@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762673AbZJOLM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762694AbZJOL3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762673AbZJOLM6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 07:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761460AbZJOLM6
+	id S1762694AbZJOL3m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 07:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758428AbZJOL3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 07:12:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44036 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757766AbZJOLM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 07:12:57 -0400
-From: "NeilBrown" <neilb@suse.de>
-To: "Massimo Cetra" <mcetra@navynet.it>
-Date: Thu, 15 Oct 2009 22:12:05 +1100
-Message-ID: <9a9a41fd6c04a891d8b3c4279903edd9.squirrel@neil.brown.name>
-In-Reply-To: <4AD6FF9B.6060109@navynet.it>
-References: <4AD5DC1D.9070002@navynet.it> <4AD5DC1D.9070002@navynet.it>1 2
-    <4AD62690.9080408@navynet.it> <200910142232.14837.elendil@planet.nl>
-    <4AD6FF9B.6060109@navynet.it>
-Subject: Re: Bug on barriers for virtio_blk device - end_request: I/O error,
-  dev vda, sector 0
-Cc: "Frans Pop" <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       "Mark McLoughlin" <markmc@redhat.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Mikulas Patocka" <mpatocka@redhat.com>,
-       "Alasdair G Kergon" <agk@redhat.com>,
-       "virtualization" <virtualization@lists.linux-foundation.org>,
-       "dm-devel" <dm-devel@redhat.com>
-User-Agent: SquirrelMail/1.4.19
+	Thu, 15 Oct 2009 07:29:41 -0400
+Received: from bizon.gios.gov.pl ([195.187.34.71]:39217 "EHLO
+	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757819AbZJOL3k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 07:29:40 -0400
+X-Greylist: delayed 614 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Oct 2009 07:29:40 EDT
+Date: Thu, 15 Oct 2009 13:18:23 +0200 (CEST)
+From: Krzysztof Oledzki <ole@ans.pl>
+X-X-Sender: ole@bizon.gios.gov.pl
+To: Amerigo Wang <amwang@redhat.com>
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, netfilter-devel-owner@vger.kernel.org
+Subject: Re: [Patch] (updated) netfilter: remove deprecated
+ CONFIG_NF_CT_ACCT
+In-Reply-To: <20091015080211.4561.78538.sendpatchset@localhost.localdomain>
+Message-ID: <alpine.LNX.1.10.0910151307260.27202@bizon.gios.gov.pl>
+References: <20091015080211.4561.78538.sendpatchset@localhost.localdomain>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1144830174-1116381015-1255605504=:27202"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, October 15, 2009 9:55 pm, Massimo Cetra wrote:
-> Frans Pop ha scritto:
->> Added CCs for the author of and people CCed on the patch.
->>
->> The patch has been submitted twice (6 Aug, 3 Sept), the first time there
->> was one concern voiced which seems to have been addressed in replies.
->> The
->> second time there were no reactions.
->>
->> The patch seems to work for Massimo...
->
-> [CUT]
->
->>> No one listening here ?
->>
->> It helps if you CC the people who maintain the relevant code.
->
-> Thanks, Frans.
->
-> By the way, where can i find a list of the mantainers of the various areas
-> ?
-> I found it some years ago, but it seems i can't find it anymore.
-> It's probably under my eyes... but i'm blind.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-See http://lwn.net/Articles/356890/
-     "Ask a kernel developer, part 2"
-(you'll have to wait a week if you aren't a subscriber).
+---1144830174-1116381015-1255605504=:27202
+Content-Type: TEXT/PLAIN; charset=iso-8859-2; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-(or try ./scripts/get_maintainer.pl)
 
-NeilBrown
+Adding CC to netfilter-devel-owner@vger.kernel.org, where netfilter 
+related issues are discussed.
+
+On Thu, 15 Oct 2009, Amerigo Wang wrote:
 
 >
-> Thanks again
-> Massimo
+> CONFIG_NF_CT_ACCT is scheduled to be removed in 2.6.29.
 >
+> Cc: Krzysztof Piotr Oledzki <ole@ans.pl>
+> Signed-off-by: WANG Cong <amwang@redhat.com>
 
+This is not so easy - it was decided that we don't want to remove it just 
+that because of connbytes. The final conclusion was to keep it disabled by 
+default (if not enabled by kernel/modules/sysctl option) but enabling it 
+automatically for the current NS if nefilter rules contains "-m 
+connbytes".
+
+Sorry, I should have gotten into this and finished it earlier, my bad. :(
+
+Best regards,
+
+ 				Krzysztof Olêdzki
+---1144830174-1116381015-1255605504=:27202--
