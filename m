@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbZJOHMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbZJOHZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757284AbZJOHMe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 03:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZJOHMe
+	id S1756759AbZJOHZF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 03:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbZJOHZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 03:12:34 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:45270 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752251AbZJOHMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 03:12:33 -0400
-Message-ID: <4AD6CB42.5040006@redhat.com>
-Date: Thu, 15 Oct 2009 16:12:02 +0900
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Thu, 15 Oct 2009 03:25:04 -0400
+Received: from smtp108.mail.ukl.yahoo.com ([77.238.184.40]:27765 "HELO
+	smtp108.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752150AbZJOHZD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 03:25:03 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.uk;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=VMKzY8dNWJGjZQ4GjKSx+kYOJ7njxMMlisTQ1M+ouYQlR3OF9FYYg85NUSIsvdFTNEgf6ApOg5eTa6PpAuRSNfvES9A2FRLFemZK2glPmA2E54AjxnWVVa7Qkg2shDsFzG6nv5X7UmOmkt/2nkWLVmDokdtQNEgvJekRxssjRL4=  ;
+X-Yahoo-SMTP: dGJefyiswBAq8gjvkVdDD_Aeiz1oX_mV
+X-YMail-OSG: .COi2gMVM1nXzyjax11T9SC3x6JANMKn7e_6p2Kp8HXPprBhmCJuzbdxMtD6KkugGuawyBleswjFxWsuNCmmSAN5MBhQiZg7Kc32cwId.ocsrQ6mchL63aP7Fxoykp4XvmoLn5GlyYxeLJLn3PYkDy6X_siVjXuMERiN4mJi7dFCqTz8d0rQL7CEZK7uFyMSZ9ugWFzQ_Osi8o6HqFReNr0m0OnsiIMp9HQspBKMmc_tOtkfKEUkm3RK29SuXu74
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4AD6CE3C.1050504@yahoo.co.uk>
+Date: Thu, 15 Oct 2009 10:24:44 +0300
+From: Boyan <btanastasov@yahoo.co.uk>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.23) Gecko/20090823 SeaMonkey/1.1.18
 MIME-Version: 1.0
-To: djwong@us.ibm.com
-CC: Marcelo Tosatti <mtosatti@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org
-Subject: Re: [PATCH] kvm: Prevent kvm_init from corrupting debugfs structures
-References: <20091014232100.GE26149@tux1.beaverton.ibm.com>
-In-Reply-To: <20091014232100.GE26149@tux1.beaverton.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Oleg Nesterov <oleg@redhat.com>,
+       Paul Fulghum <paulkf@microgate.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       hirofumi@mail.parknet.co.jp
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <87ljjgfcbu.fsf@spindle.srvr.nix> <alpine.LFD.2.01.0910121703390.3438@localhost.localdomain> <alpine.LFD.2.01.0910122004200.3438@localhost.localdomain> <4AD3F769.5080405@gmail.com> <alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net> <4AD437F9.9020708@yahoo.co.uk> <alpine.LFD.2.01.0910130745550.3438@localhost.localdomain> <4AD4DE4C.4010402@yahoo.co.uk> <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain> <4AD4F548.2030506@microgate.com> <alpine.LFD.2.01.0910131514100.3404@localhost.localdomain> <1255478932.19056.24.camel@localhost.localdomain> <4AD51D6B.7010509@microgate.com> <alpine.LFD.2.01.0910131744590.3404@localhost.localdomain> <20091014125846.1a3c8d40@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0910140804180.6146@localhost.localdomain> <alpine.LFD.2.01.0910140925440.6146@localhost.localdomain> <4AD62DAD.9010604@yahoo.co.uk> <alpine.LFD.2.01.0910141356400.6146@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0910141356400.6146@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/15/2009 08:21 AM, Darrick J. Wong wrote:
-> I'm seeing an oops condition when kvm-intel and kvm-amd are modprobe'd
-> during boot (say on an Intel system) and then rmmod'd:
->
->     # modprobe kvm-intel
->       kvm_init()
->       kvm_init_debug()
->       kvm_arch_init()<-- stores debugfs dentries internally
->       (success, etc)
->
->     # modprobe kvm-amd
->       kvm_init()
->       kvm_init_debug()<-- second initialization clobbers kvm's
->                            internal pointers to dentries
->       kvm_arch_init()
->       kvm_exit_debug()<-- and frees them
->
->     # rmmod kvm-intel
->       kvm_exit()
->       kvm_exit_debug()<-- double free of debugfs files!
->
->       *BOOM*
->
-> If execution gets to the end of kvm_init(), then the calling module has been
-> established as the kvm provider.  Move the debugfs initialization to the end of
-> the function, and remove the now-unnecessary call to kvm_exit_debug() from the
-> error path.  That way we avoid trampling on the debugfs entries and freeing
-> them twice.
->
->    
+Linus Torvalds wrote:
+> 
+> On Wed, 14 Oct 2009, Boyan wrote:
+>> Works for me. I couldn't reproduce the problem with only this patch on
+>> top of  2.6.31.4.
+> 
+> So just to verify: both the flush_to_ldisc() patch _and_ the 
+> "flush_delayed_work()" one fixed the problem for you? And you tested them 
+> independently? And you said you could reliably trigger it before?
 
-Looks good.
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+Yes, both patches independently fix the problem for me.
+I've tested with both patches applied too and couldn't trigger the
+problem.
 
