@@ -1,59 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762936AbZJOTIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762946AbZJOTKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762936AbZJOTIT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 15:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762924AbZJOTIS
+	id S1762946AbZJOTKc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 15:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762931AbZJOTKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 15:08:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56511 "EHLO mx3.mail.elte.hu"
+	Thu, 15 Oct 2009 15:10:31 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:57000 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758593AbZJOTIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 15:08:18 -0400
-Date: Thu, 15 Oct 2009 21:07:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, esandeen@redhat.com,
-       cebbert@redhat.com, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Unnecessary overhead with stack protector.
-Message-ID: <20091015190720.GA19467@elte.hu>
-References: <20091015183540.GA8098@redhat.com>
+	id S1762916AbZJOTKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 15:10:31 -0400
+Date: Thu, 15 Oct 2009 21:09:32 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: Joerg.Abraham@alcatel-lucent.de, linux-kernel@vger.kernel.org
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.31.4-rt14 posix message queues problem
+In-Reply-To: <520f0cf10910151202k2ba01453r10e96eeb064232e8@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0910152105430.8932@localhost.localdomain>
+References: <4AD76126.1000408@alcatel-lucent.de> <520f0cf10910151202k2ba01453r10e96eeb064232e8@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091015183540.GA8098@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-(Cc:-ed Arjan too.)
-
-* Dave Jones <davej@redhat.com> wrote:
-
-> 113c5413cf9051cc50b88befdc42e3402bb92115 introduced a change that made 
-> CC_STACKPROTECTOR_ALL not-selectable if someone enables 
-> CC_STACKPROTECTOR.
+> From: Joerg Abraham <Joerg.Abraham@alcatel-lucent.de>
+> Date: Thu, Oct 15, 2009 at 7:51 PM
+> Subject: 2.6.31.4-rt14 posix message queues problem
+> To: LKML <linux-kernel@vger.kernel.org>
 > 
-> We've noticed in Fedora that this has introduced noticable overhead on 
-> some functions, including those which don't even have any on-stack 
-> variables.
 > 
-> According to the gcc manpage, -fstack-protector will protect functions 
-> with as little as 8 bytes of stack usage. So we're introducing a huge 
-> amount of overhead, to close a small amount of vulnerability (the >0 
-> && <8 case).
+> Hi,
 > 
-> The overhead as it stands right now means this whole option is 
-> unusable for a distro kernel without reverting the above commit.
+> During some performance measurement I stumbled over unexpected bad
+> results for a posix message queue test case. Which is not surprising
+> since the kernel log shows a "BUG: scheduling while atomic:" on every
+> measurement trigger.
+> 
+> Attached is the kernel log for an embedded 8572ds powerpc system and a
+> condensed user space test appli. The test appli uses 2 processes
+> (mq_server and mq_client) and pingpongs some messages via posix
+> message queues. Please see the c-file header for details (the appli
+> itself makes not much sense but shows the problem).
+> 
+> ./mq_server
+> ./mq_client # just crashes during run
+> 
+> The problem does _not_ occur on kernels 2.6.29.6-rt24, 2.6.29.6
+> vanilla and 2.6.31.4 vanilla. The problem does _also_ show up on an
+> embedded x86_64 system and a full featured fc11 x86_64 system running
+> a 2.6.31.4-rt14 based kernel, so I dont think it's arch dependent.
+> 
+> Can anybody reproduce the crash ???
+> 
+> If you need more info's please let me know.
+> 
+> [And if I'm doing stupid things just forgive me]
+> 
+> Thanx
+> 
+> Joerg
 
-Exactly what workload showed overhead, and how much?
+Hello Joerg
 
-	Ingo
+Does the following patch solve your problem? 
+
+>From 69fde4357db4a054733cbca4158606160e821a3a Mon Sep 17 00:00:00 2001
+From: John Kacur <jkacur@redhat.com>
+Date: Thu, 15 Oct 2009 20:52:37 +0200
+Subject: [PATCH] preempt_disable_rt(); should be paired with preempt_enable_rt()
+
+Signed-off-by: John Kacur <jkacur@redhat.com>
+---
+ ipc/mqueue.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/ipc/mqueue.c b/ipc/mqueue.c
+index 63a47f7..ab4df36 100644
+--- a/ipc/mqueue.c
++++ b/ipc/mqueue.c
+@@ -830,7 +830,7 @@ static inline void pipelined_send(struct mqueue_inode_info *info,
+ 	wake_up_process(receiver->task);
+ 	smp_wmb();
+ 	receiver->state = STATE_READY;
+-	preempt_enable_nort();
++	preempt_enable_rt();
+ }
+ 
+ /* pipelined_receive() - if there is task waiting in sys_mq_timedsend()
+-- 
+1.6.0.6
+
