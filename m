@@ -1,249 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932796AbZJOPMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762793AbZJOPEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932796AbZJOPMP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 11:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932130AbZJOPMO
+	id S1762793AbZJOPEL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 11:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762780AbZJOPEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 11:12:14 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:56352 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758527AbZJOPMN (ORCPT
+	Thu, 15 Oct 2009 11:04:09 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49707 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762779AbZJOPEH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 11:12:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=W2GXXUBL9pi9EK1aNeaKv2Agr4hs2bGsS8DWqlg07akt0bXUAXsG7JrN38iTXUVI4m
-         i3GyiNunjMK+JH4Ul2vnhvamp+lBrKSkwDl/uaKRXtxdkCthuf5oH9hySgv65ha+s0v4
-         RkNvNVIOzkOIjxLFtb3WKe6iOjOADes/fqkeA=
-Date: Thu, 15 Oct 2009 19:04:16 +0400
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, x86team <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip] x86,apic: allow noop operations to be called almost
-	at any time
-Message-ID: <20091015150416.GC5331@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 15 Oct 2009 11:04:07 -0400
+Date: Thu, 15 Oct 2009 16:05:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: 2.6.31.4: WARNING: at drivers/usb/serial/usb-serial.c:446
+ serial_unthrottle
+Message-ID: <20091015160501.36a31973@lxorguk.ukuu.org.uk>
+In-Reply-To: <4AD71FA3.8080801@wpkg.org>
+References: <4AD71FA3.8080801@wpkg.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As only apic noop is used we allow to use almost any operation
-caller wants (and which of them noop driver supports of
-course).
+On Thu, 15 Oct 2009 15:12:03 +0200
+Tomasz Chmielewski <mangoo@wpkg.org> wrote:
 
-Initially it was reported by Ingo Molnar that apic noop
-issue a warning for pkg id (which is actually false positive
-and should be eliminated).
+> I see my minicom segfaulted for some reason (probably as I closed konsole window without exiting minicom first).
+> 
+> And I see this warning in dmesg - anything useful?
 
-So we save checking (and warning issue) for read/write
-operations while allow any other ops to be freely used.
+Looks like a very very old bug in the tty code. I have a patch for this I'm
+testing for a while and will sort out properly after the kernel summit. In
+the mean time have a play with the patch below which ought to do the trick.
 
-Also:
- - fix noop_cpu_to_logical_apicid, it should be 0.
- - rename noop_default_phys_pkg_id to noop_phys_pkg_id
-   (we use default_ prefix for more general routines
-    in apic subsystem).
+n_tty: fix throttling
 
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+From: Alan Cox <alan@linux.intel.com>
+
+n_tty inadevertently calls throttle and unthrottle methods during its init.
+This happens before the tty device is open and causes problems for the
+drivers, in particular they may not have their state and locks even
+initialised at this point.
+
+Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
- arch/x86/kernel/apic/apic.c      |    1 
- arch/x86/kernel/apic/apic_noop.c |  103 +++++++++++++++++++++------------------
- 2 files changed, 58 insertions(+), 46 deletions(-)
 
-Index: linux-2.6.git/arch/x86/kernel/apic/apic.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/apic.c
-+++ linux-2.6.git/arch/x86/kernel/apic/apic.c
-@@ -246,6 +246,7 @@ static int modern_apic(void)
-  */
- void apic_disable(void)
- {
-+	pr_info("APIC: switched to apic NOOP\n");
- 	apic = &apic_noop;
+ drivers/char/n_tty.c |   35 ++++++++++++++++++++++++++---------
+ 1 files changed, 26 insertions(+), 9 deletions(-)
+
+
+diff --git a/drivers/char/n_tty.c b/drivers/char/n_tty.c
+index 2e50f4d..b45170c 100644
+--- a/drivers/char/n_tty.c
++++ b/drivers/char/n_tty.c
+@@ -178,26 +178,23 @@ static void reset_buffer_flags(struct tty_struct *tty)
+ 	tty->canon_head = tty->canon_data = tty->erasing = 0;
+ 	memset(&tty->read_flags, 0, sizeof tty->read_flags);
+ 	n_tty_set_room(tty);
+-	check_unthrottle(tty);
  }
  
-Index: linux-2.6.git/arch/x86/kernel/apic/apic_noop.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/apic_noop.c
-+++ linux-2.6.git/arch/x86/kernel/apic/apic_noop.c
-@@ -6,7 +6,7 @@
+ /**
+- *	n_tty_flush_buffer	-	clean input queue
++ *	n_tty_do_flush		-	clean input queue
+  *	@tty:	terminal device
   *
-  * Though in case if apic is disabled (for some reason) we try
-  * to not uglify the caller's code and allow to call (some) apic routines
-- * like self-ipi, etc... and issue a warning if an operation is not allowed
-+ * like self-ipi, etc...
+  *	Flush the input buffer. Called when the line discipline is
+- *	being closed, when the tty layer wants the buffer flushed (eg
+- *	at hangup) or when the N_TTY line discipline internally has to
+- *	clean the pending queue (for example some signals).
++ *	being closed, or indirectly when the tty layer wants the buffer
++ *	flushed (eg at hangup) or when the N_TTY line discipline internally
++ *	has to clean the pending queue (for example some signals).
+  *
+  *	Locking: ctrl_lock, read_lock.
   */
  
- #include <linux/threads.h>
-@@ -30,76 +30,88 @@
- #include <asm/acpi.h>
- #include <asm/e820.h>
- 
--/*
-- * some operations should never be reached with
-- * noop apic if it's not turned off, this mostly
-- * means the caller forgot to disable apic (or
-- * check the apic presence) before doing a call
-- */
--static void warn_apic_enabled(void)
-+static void noop_init_apic_ldr(void) { }
-+static void noop_send_IPI_mask(const struct cpumask *cpumask, int vector) { }
-+static void noop_send_IPI_mask_allbutself(const struct cpumask *cpumask, int vector) { }
-+static void noop_send_IPI_allbutself(int vector) { }
-+static void noop_send_IPI_all(int vector) { }
-+static void noop_send_IPI_self(int vector) { }
-+static void noop_apic_wait_icr_idle(void) { }
-+static void noop_apic_icr_write(u32 low, u32 id) { }
-+
-+static int noop_wakeup_secondary_cpu(int apicid, unsigned long start_eip)
+-static void n_tty_flush_buffer(struct tty_struct *tty)
++static void n_tty_do_flush(struct tty_struct *tty)
  {
--	WARN_ONCE((cpu_has_apic || !disable_apic),
--		"APIC: Called for NOOP operation with apic enabled\n");
-+	return -1;
+ 	unsigned long flags;
+-	/* clear everything and unthrottle the driver */
+-	reset_buffer_flags(tty);
+ 
+ 	if (!tty->link)
+ 		return;
+@@ -211,6 +208,25 @@ static void n_tty_flush_buffer(struct tty_struct *tty)
  }
  
--/*
-- * To check operations but do not bloat source code
-- */
--#define NOOP_FUNC(func)			func { warn_apic_enabled(); }
--#define NOOP_FUNC_RET(func, ret)	func { warn_apic_enabled(); return ret; }
-+static u32 noop_safe_apic_wait_icr_idle(void)
+ /**
++ *	n_tty_flush_buffer	-	clean input queue
++ *	@tty:	terminal device
++ *
++ *	Flush the input buffer. Called when the tty layer wants the buffer
++ *	flushed (eg at hangup) or when the N_TTY line discipline internally
++ *	has to clean the pending queue (for example some signals).
++ *
++ *	Locking: ctrl_lock, read_lock.
++ */
++
++static void n_tty_flush_buffer(struct tty_struct *tty)
 +{
-+	return 0;
++	/* clear everything and unthrottle the driver */
++	reset_buffer_flags(tty);
++	check_unthrottle(tty);
++	n_tty_do_flush(tty);
 +}
 +
-+static u64 noop_apic_icr_read(void)
-+{
-+	return 0;
-+}
++/**
+  *	n_tty_chars_in_buffer	-	report available bytes
+  *	@tty: tty device
+  *
+@@ -1535,7 +1551,8 @@ static void n_tty_set_termios(struct tty_struct *tty, struct ktermios *old)
  
--NOOP_FUNC(static void noop_init_apic_ldr(void))
--NOOP_FUNC(static void noop_send_IPI_mask(const struct cpumask *cpumask, int vector))
--NOOP_FUNC(static void noop_send_IPI_mask_allbutself(const struct cpumask *cpumask, int vector))
--NOOP_FUNC(static void noop_send_IPI_allbutself(int vector))
--NOOP_FUNC(static void noop_send_IPI_all(int vector))
--NOOP_FUNC(static void noop_send_IPI_self(int vector))
--NOOP_FUNC_RET(static int noop_wakeup_secondary_cpu(int apicid, unsigned long start_eip), -1)
--NOOP_FUNC(static void noop_apic_write(u32 reg, u32 v))
--NOOP_FUNC(void noop_apic_wait_icr_idle(void))
--NOOP_FUNC_RET(static u32 noop_safe_apic_wait_icr_idle(void), 0)
--NOOP_FUNC_RET(static u64 noop_apic_icr_read(void), 0)
--NOOP_FUNC(static void noop_apic_icr_write(u32 low, u32 id))
--NOOP_FUNC_RET(static physid_mask_t noop_ioapic_phys_id_map(physid_mask_t phys_map), phys_map)
--NOOP_FUNC_RET(static int noop_cpu_to_logical_apicid(int cpu), 1)
--NOOP_FUNC_RET(static int noop_default_phys_pkg_id(int cpuid_apic, int index_msb), 0)
--NOOP_FUNC_RET(static unsigned int noop_get_apic_id(unsigned long x), 0)
-+static physid_mask_t noop_ioapic_phys_id_map(physid_mask_t phys_map)
-+{
-+	return phys_map;
-+}
-+
-+static int noop_cpu_to_logical_apicid(int cpu)
-+{
-+	return 0;
-+}
-+
-+static int noop_phys_pkg_id(int cpuid_apic, int index_msb)
-+{
-+	return 0;
-+}
-+
-+static unsigned int noop_get_apic_id(unsigned long x)
-+{
-+	return 0;
-+}
- 
- static int noop_probe(void)
+ static void n_tty_close(struct tty_struct *tty)
  {
--	/* should not ever be enabled this way */
-+	/*
-+	 * NOOP apic should not ever be
-+	 * enabled via probe routine
-+	 */
- 	return 0;
- }
- 
- static int noop_apic_id_registered(void)
- {
--	warn_apic_enabled();
--	return physid_isset(read_apic_id(), phys_cpu_present_map);
-+	/*
-+	 * if we would be really "pedantic"
-+	 * we should pass read_apic_id() here
-+	 * but since NOOP suppose APIC ID = 0
-+	 * lets save a few cycles
-+	 */
-+	return physid_isset(0, phys_cpu_present_map);
- }
- 
- static const struct cpumask *noop_target_cpus(void)
- {
--	warn_apic_enabled();
--
- 	/* only BSP here */
- 	return cpumask_of(0);
- }
- 
- static unsigned long noop_check_apicid_used(physid_mask_t bitmap, int apicid)
- {
--	warn_apic_enabled();
- 	return physid_isset(apicid, bitmap);
- }
- 
- static unsigned long noop_check_apicid_present(int bit)
- {
--	warn_apic_enabled();
- 	return physid_isset(bit, phys_cpu_present_map);
- }
- 
- static void noop_vector_allocation_domain(int cpu, struct cpumask *retmask)
- {
--	warn_apic_enabled();
- 	if (cpu != 0)
- 		pr_warning("APIC: Vector allocated for non-BSP cpu\n");
- 	cpumask_clear(retmask);
-@@ -108,22 +120,21 @@ static void noop_vector_allocation_domai
- 
- int noop_apicid_to_node(int logical_apicid)
- {
--	warn_apic_enabled();
--
- 	/* we're always on node 0 */
- 	return 0;
- }
- 
- static u32 noop_apic_read(u32 reg)
- {
--	/*
--	 * noop-read is always safe until we have
--	 * non-disabled unit
--	 */
- 	WARN_ON_ONCE((cpu_has_apic && !disable_apic));
- 	return 0;
- }
- 
-+static void noop_apic_write(u32 reg, u32 v)
-+{
-+	WARN_ON_ONCE((cpu_has_apic || !disable_apic));
-+}
-+
- struct apic apic_noop = {
- 	.name				= "noop",
- 	.probe				= noop_probe,
-@@ -157,7 +168,7 @@ struct apic apic_noop = {
- 	.check_phys_apicid_present	= default_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 
--	.phys_pkg_id			= noop_default_phys_pkg_id,
-+	.phys_pkg_id			= noop_phys_pkg_id,
- 
- 	.mps_oem_check			= NULL,
- 
+-	n_tty_flush_buffer(tty);
++	reset_buffer_flags(tty);
++	n_tty_do_flush(tty);
+ 	if (tty->read_buf) {
+ 		kfree(tty->read_buf);
+ 		tty->read_buf = NULL;
