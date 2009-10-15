@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932861AbZJOCXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932985AbZJOCus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932861AbZJOCXn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 22:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932546AbZJOCXm
+	id S932985AbZJOCus (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 22:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758804AbZJOCus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 22:23:42 -0400
-Received: from mail-qy0-f172.google.com ([209.85.221.172]:37894 "EHLO
-	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932521AbZJOCXl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 22:23:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=LL6ee+Rmi7H34F85yPZsUMhQfwNP7HtHiv/EB/0rO4bs8RsYwZMCHOm/t0h9ma8+jF
-         ubPQiLT7WQ8q3//lQ2QrOFOzdkGVfTF32vLHHhkXgkihS7pI2+qiDC6afhwseYS0F8DR
-         hPSiu8i2LwtnrJ/8cl9Gs/hJAKif/2bSrOP8I=
-Subject: [PATCH] SND_CS5535AUDIO: Remove the X86 platform dependency
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mips <linux-mips@linux-mips.org>, loongson-dev@googlegroups.com
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Wu Zhangjin <wuzhangjin@gmail.com>, Takashi Iwai <tiwai@suse.de>,
-       linux-sound@vger.kernel.org
-In-Reply-To: <1255190029-17584-1-git-send-email-wuzhangjin@gmail.com>
-References: <1255190029-17584-1-git-send-email-wuzhangjin@gmail.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Thu, 15 Oct 2009 10:22:54 +0800
-Message-Id: <1255573374.7638.22.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Oct 2009 22:50:48 -0400
+Received: from thunk.org ([69.25.196.29]:51700 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754615AbZJOCur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 22:50:47 -0400
+Date: Wed, 14 Oct 2009 22:26:45 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Eric Anholt <eric@anholt.net>,
+       linux-kernel@vger.kernel.org, Keith Packard <keithp@keithp.com>,
+       Chris Wilson <chris@chris-wilson.co.uk>
+Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with
+	T400 laptops
+Message-ID: <20091015022645.GA8286@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	"Carlos R. Mafra" <crmafra2@gmail.com>,
+	Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+	Keith Packard <keithp@keithp.com>,
+	Chris Wilson <chris@chris-wilson.co.uk>
+References: <20091008103620.5e5aae66@jbarnes-g45> <20091010204106.GA8251@mit.edu> <20091012095438.1e82b54f@jbarnes-g45> <20091012184651.GA4603@Pilar.aei.mpg.de> <20091012120510.16bd1194@jbarnes-g45> <20091013023146.GA8414@mit.edu> <20091013100135.2b3d914f@jbarnes-g45> <20091013190055.GI8175@mit.edu> <20091013121426.35f409ff@jbarnes-g45> <20091014142252.009d03a5@jbarnes-g45>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014142252.009d03a5@jbarnes-g45>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add CC to: Takashi Iwai <tiwai@suse.de>, linux-sound@vger.kernel.org
+On Wed, Oct 14, 2009 at 02:22:52PM -0700, Jesse Barnes wrote:
+> On Tue, 13 Oct 2009 12:14:26 -0700
+> Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > According to the chipset team that form of display corruption is
+> > likely related to RAM self-refresh... Sounds like the display plane
+> > isn't getting its memory requests serviced fast enough when in
+> > self-refresh mode, which might mean we have to program the
+> > self-refresh watermarks more aggressively on GM45.
+> 
+> Ok, like any good bug there was more than one thing wrong:
+>   - we weren't setting up a fence for the object before enabling FBC.
+>     Chris caught this and posted a patch to
+>     intel-gfx@lists.freedesktop.org titled "drm/i915: Install a fence
+>     register for fbc on g4x" (attached for convenience)
+>   - turns out we *do* need to set watermarks on G4x, despite some hw
+>     documentation indicating otherwise, patch for that attached
+> 
+> Hopefully with these two you'll have a solid display and some power
+> saving!
 
-SND_CS5535AUDIO is available on Loongson(MIPS compatible) family
-machines, and checked it with ARCH=x86_64, no relative compiling
-warnings & errors, so, remove the platform dependency directly.
+With these two patches (and none of your prior ones) applied to
+2.6.32-rc3, things are definitely better.  I'm still seeing a few
+glitches (one as mutt was loading my Maildir inbox) and one as I was
+typing this message in emacs, but it's at best one minor every 5-10
+minutes.  It's rare enough to be at most a wee bit distracting (*lots*
+better than before), and I can see the power savings.
 
-Reported-by: rixed@happyleptic.org
-Acked-by: Andres Salomon <dilinger@collabora.co.uk>
-Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
----
- sound/pci/Kconfig |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+If I need to live with a display glitch every 5-10 minutes or so to
+get better power savings, I'll take it....
 
-diff --git a/sound/pci/Kconfig b/sound/pci/Kconfig
-index fb5ee3c..75c602b 100644
---- a/sound/pci/Kconfig
-+++ b/sound/pci/Kconfig
-@@ -259,7 +259,6 @@ config SND_CS5530
- 
- config SND_CS5535AUDIO
- 	tristate "CS5535/CS5536 Audio"
--	depends on X86 && !X86_64
- 	select SND_PCM
- 	select SND_AC97_CODEC
- 	help
--- 
-1.6.2.1
-
-
+						- Ted
