@@ -1,89 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbZJOOmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762183AbZJOOtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758775AbZJOOmn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 10:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758073AbZJOOmn
+	id S1762183AbZJOOtX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 10:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761948AbZJOOtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 10:42:43 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:65381 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757351AbZJOOmm (ORCPT
+	Thu, 15 Oct 2009 10:49:22 -0400
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:61844 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761902AbZJOOtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 10:42:42 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH, v2] kbuild: Improve version string logic
-Date: Thu, 15 Oct 2009 16:42:03 +0200
-User-Agent: KMail/1.9.9
-Cc: David Rientjes <rientjes@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <200910150143.18755.elendil@planet.nl> <20091015090301.GC10546@elte.hu>
-In-Reply-To: <20091015090301.GC10546@elte.hu>
+	Thu, 15 Oct 2009 10:49:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=hCkOcEKV+qa5bTqyhJBQYcuXJHyu5/vZJ/Lqp8x74RYVKbUuleRT1xlm8evuh1AJOV
+         2dzLVW7d8VYL53w1mu/4x+LQsns9f/XT7V6Zcw063jSu2U7wy1kLUCduoxO+W0ZuP9VR
+         4rojWuZHdOFc1Av7Edhiz6HoglAiTuyLWz1ZQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: Current status of rt2800usb and staging/rt2870
+Date: Thu, 15 Oct 2009 16:47:48 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc5-01839-gebb8e1d; KDE/4.3.1; x86_64; ; )
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Dan Williams <dcbw@redhat.com>, Ivo van Doorn <ivdoorn@gmail.com>,
+       Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
+       linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <4AD46380.9020308@pardus.org.tr> <200910141728.21491.bzolnier@gmail.com> <43e72e890910140955n295ef8d1m185592af63bc895b@mail.gmail.com>
+In-Reply-To: <43e72e890910140955n295ef8d1m185592af63bc895b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Message-Id: <200910151647.49050.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910151642.05276.elendil@planet.nl>
-X-OriginalArrivalTime: 15 Oct 2009 14:42:05.0668 (UTC) FILETIME=[AA5D8A40:01CA4DA5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 October 2009, Ingo Molnar wrote:
-> > Distro kernels generally have their own naming schemes.
-> > Debian uses: 2.6.30-2-amd64 (<version>-<ABI>-<flavor>)
-> > Fedora uses: 2.6.30.5-43.fc11.i586
+On Wednesday 14 October 2009 18:55:23 Luis R. Rodriguez wrote:
+> On Wed, Oct 14, 2009 at 8:28 AM, Bartlomiej Zolnierkiewicz
+> <bzolnier@gmail.com> wrote:
+> > On Wednesday 14 October 2009 16:56:05 John W. Linville wrote:
+> >> On Wed, Oct 14, 2009 at 04:52:40PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> >> > On Wednesday 14 October 2009 16:09:24 John W. Linville wrote:
+> >> > > On Tue, Oct 13, 2009 at 11:57:57PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> >> > >
+> >> > > > Several months later (after all current users are happy with the improved
+> >> > > > drivers) the old drivers will be removed from staging..
+> >> > >
+> >> > > I _really_ hope this isn't the standard.  By that measure, nothing
+> >> > > will ever leave staging as _someone_ will always have some use case
+> >> > > that makes the other driver better for them.
+> >> >
+> >> > Doesn't seem to be the case with all other drivers except wireless ones
+> >> > and the only real reason why wireless ones are so special is because of:
+> >> >
+> >> > "But then there's the users, who bitch about everything and simply do
+> >> > not understand what it is at stake.
+> >> >
+> >> > And all this is becoming way too messy for us to handle.
+> >> >
+> >> > Personally all I see around me is people bitching and complaining, and
+> >> > no code being ported."
+> >> >
+> >> > attitude which pretty much explains the problem..
+> >> >
+> >> > Please adjust the process to fix the problem yourself or if you do not
+> >> > want to do it just make the room for people who do.
+> >>
+> >> Alright Bartlomiej, you've had your say.  Perhaps you should go about
+> >> your business now.
+> >>
+> >> John
+> >>
+> >> P.S. For the record, the "But then there's the users..." quote is
+> >> from someone else...
 > >
-> > And those kernel versions implicitly already contain the information
-> > that they are not vanilla kernels. So a "+" suffix is totally
-> > redundant.
->
-> It's not "totally redundant" _AT ALL_.
->
-> "2.6.30+-2-amd64" tells us that not only do we have the usual per distro
+> > ..but you're still fine with its content, right?
+> >
+> > I also wonder who is really taking advantage of who here (your other mail)..
+> >
+> > You're holding users as hostages to pressure vendors to fund your projects
+> > and try to lure outside developers with the lovely perspective of doing
+> > the hardest parts of said projects.
+> >
+> > I don't have a have a problem with it personally as long as people accept
+> > the competition..  but instead of working on _their_ projects they go around
+> > screaming at everybody who does not want to spin inside the great process
+> > designed by them..
+> 
+> I hear fishing in Poland is great this time of year.
 
-But it would not be "2.6.30+-2-amd64"; it would become "2.6.30-2-amd64+", 
-which IMO sucks.
+It got quite cold this week so I thought that I would try to fish
+the commit that broke Atheros AR9285 in Linus' tree (works in 2.6.31)
+and make recent kernels finally work on my laptop..
 
-> patches on top of vanilla .30 (which patches can be found in the deb or
-> src.rpm), but we _ALSO_ have extra _vanilla kernel_ commits since
-> v2.6.30.
+Seems like there are two regressions actually:
 
-This is where you are wrong. Yes, the patches are in the deb [1], but how 
-do they end up there? The distro patches themselves are also maintained in 
-an SCM, quite possibly as a branch from mainline, and the package 
-maintainers will build *from* that SCM. So *the distro patches themselves* 
-will trigger the "+".
+- later one making association/authentication impossible
 
-You simply cannot distinguish between "extra vanilla kernel commits" 
-and "distro commits" in a tree. Both are changes since the tagged release; 
-both will trigger the "+", which makes the "+" meaningless.
+- earlier one making transfers stall
 
-Also, any distro cherry-picks upstream patches from later versions 
-as "distro patches" (at least, that's the case for over 90% of the patches 
-in Debian stable kernels). And we already know such patches are included 
-whenever we see a distro kernel version, so I still think having the "+" 
-does not add any meaningful information.
+There is also a ton of unrelated and related (mac80211) problems in
+between so the whole experience to trace regressions down is a real
+hell (I went through like 40 kernels already)..
 
-> Besides, distros building on kernels inbetween -rc's is very rare.
+Oh, there is also an ath9k slab corruption already in 2.6.31 (I got
+it debugged initially though)..
 
-True. Which is why we shouldn't be adding the "+".
+However today it got a bit warmer and the snow is almost gone so
+I think that I'm going to take your advice after using the shortcut
+solution for my wireless problems..
 
-> If it happens it's sufficiently unusual to alert users to that fact via
-> the '+' sign. The '+' sign will go away if a distro uses a precise
-> upstream version.
-
-But that's the whole point. It does not!
-Even if they _only_ add their packaging infrastructure on top and have no 
-patches that affect the the kernel itself (which is unlikely), they would 
-still end up with the "+" because the commit(s) that add the packaging 
-infrastructure make the tree unequal to the tagged release.
-
-Cheers,
-FJP
-
-[1] Actually they are in the .diff.gz, which contains all changes relative 
-to the original tarball, but I understand what you mean.
+I'll just plug that cheap rt3070 stick laying around and modprobe
+that crappy rt2870sta..
