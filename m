@@ -1,77 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763022AbZJOUT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935463AbZJOUUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763022AbZJOUT1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 16:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763005AbZJOUT0
+	id S935463AbZJOUUN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 16:20:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935384AbZJOUUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 16:19:26 -0400
-Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:39614
-	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761537AbZJOUTZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 16:19:25 -0400
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: trivial@kernel.org
-Cc: Len Brown <lenb@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Thomas Renninger <trenn@suse.de>, Andi Kleen <ak@linux.intel.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: [PATCH 8/8] trivial: typo and grammar fixes in comments
-Date: Thu, 15 Oct 2009 17:18:39 -0300
-Message-Id: <1255637919-6178-1-git-send-email-cascardo@holoscopio.com>
-X-Mailer: git-send-email 1.6.3.3
+	Thu, 15 Oct 2009 16:20:12 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:7820 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933196AbZJOUUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 16:20:10 -0400
+Date: Thu, 15 Oct 2009 22:19:16 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: Joerg.Abraham@alcatel-lucent.de, linux-kernel@vger.kernel.org
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-rt-users@vger.kernel.org
+Subject: Re: 2.6.31.4-rt14 posix message queues problem
+In-Reply-To: <alpine.LFD.2.00.0910152105430.8932@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0910152217390.3486@localhost.localdomain>
+References: <4AD76126.1000408@alcatel-lucent.de> <520f0cf10910151202k2ba01453r10e96eeb064232e8@mail.gmail.com> <alpine.LFD.2.00.0910152105430.8932@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
----
- drivers/acpi/video_detect.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/acpi/video_detect.c b/drivers/acpi/video_detect.c
-index 575593a..27c7772 100644
---- a/drivers/acpi/video_detect.c
-+++ b/drivers/acpi/video_detect.c
-@@ -7,7 +7,7 @@
-  * video_detect.c:
-  * Provides acpi_is_video_device() for early scanning of ACPI devices in scan.c
-  * There a Linux specific (Spec does not provide a HID for video devices) is
-- * assinged
-+ * assigned
-  *
-  * After PCI devices are glued with ACPI devices
-  * acpi_get_pci_dev() can be called to identify ACPI graphics
-@@ -83,16 +83,16 @@ long acpi_is_video_device(struct acpi_device *device)
- 	if (!device)
- 		return 0;
- 
--	/* Does this device able to support video switching ? */
-+	/* Is this device able to support video switching ? */
- 	if (ACPI_SUCCESS(acpi_get_handle(device->handle, "_DOD", &h_dummy)) ||
- 	    ACPI_SUCCESS(acpi_get_handle(device->handle, "_DOS", &h_dummy)))
- 		video_caps |= ACPI_VIDEO_OUTPUT_SWITCHING;
- 
--	/* Does this device able to retrieve a video ROM ? */
-+	/* Is this device able to retrieve a video ROM ? */
- 	if (ACPI_SUCCESS(acpi_get_handle(device->handle, "_ROM", &h_dummy)))
- 		video_caps |= ACPI_VIDEO_ROM_AVAILABLE;
- 
--	/* Does this device able to configure which video head to be POSTed ? */
-+	/* Is this device able to configure which video head to be POSTed ? */
- 	if (ACPI_SUCCESS(acpi_get_handle(device->handle, "_VPO", &h_dummy)) &&
- 	    ACPI_SUCCESS(acpi_get_handle(device->handle, "_GPD", &h_dummy)) &&
- 	    ACPI_SUCCESS(acpi_get_handle(device->handle, "_SPD", &h_dummy)))
-@@ -137,7 +137,7 @@ find_video(acpi_handle handle, u32 lvl, void *context, void **rv)
-  *
-  * if NULL is passed as argument all ACPI devices are enumerated and
-  * all graphics capabilities of physically present devices are
-- * summerized and returned. This is cached and done only once.
-+ * summarized and returned. This is cached and done only once.
-  */
- long acpi_video_get_capabilities(acpi_handle graphics_handle)
- {
--- 
-1.6.3.3
 
+On Thu, 15 Oct 2009, John Kacur wrote:
+
+> 
+> > From: Joerg Abraham <Joerg.Abraham@alcatel-lucent.de>
+> > Date: Thu, Oct 15, 2009 at 7:51 PM
+> > Subject: 2.6.31.4-rt14 posix message queues problem
+> > To: LKML <linux-kernel@vger.kernel.org>
+> > 
+> > 
+> > Hi,
+> > 
+> > During some performance measurement I stumbled over unexpected bad
+> > results for a posix message queue test case. Which is not surprising
+> > since the kernel log shows a "BUG: scheduling while atomic:" on every
+> > measurement trigger.
+> > 
+> > Attached is the kernel log for an embedded 8572ds powerpc system and a
+> > condensed user space test appli. The test appli uses 2 processes
+> > (mq_server and mq_client) and pingpongs some messages via posix
+> > message queues. Please see the c-file header for details (the appli
+> > itself makes not much sense but shows the problem).
+> > 
+> > ./mq_server
+> > ./mq_client # just crashes during run
+> > 
+> > The problem does _not_ occur on kernels 2.6.29.6-rt24, 2.6.29.6
+> > vanilla and 2.6.31.4 vanilla. The problem does _also_ show up on an
+> > embedded x86_64 system and a full featured fc11 x86_64 system running
+> > a 2.6.31.4-rt14 based kernel, so I dont think it's arch dependent.
+> > 
+> > Can anybody reproduce the crash ???
+> > 
+> > If you need more info's please let me know.
+> > 
+> > [And if I'm doing stupid things just forgive me]
+> > 
+> > Thanx
+> > 
+> > Joerg
+> 
+> Hello Joerg
+> 
+> Does the following patch solve your problem? 
+> 
+> From 69fde4357db4a054733cbca4158606160e821a3a Mon Sep 17 00:00:00 2001
+> From: John Kacur <jkacur@redhat.com>
+> Date: Thu, 15 Oct 2009 20:52:37 +0200
+> Subject: [PATCH] preempt_disable_rt(); should be paired with preempt_enable_rt()
+> 
+> Signed-off-by: John Kacur <jkacur@redhat.com>
+> ---
+>  ipc/mqueue.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/ipc/mqueue.c b/ipc/mqueue.c
+> index 63a47f7..ab4df36 100644
+> --- a/ipc/mqueue.c
+> +++ b/ipc/mqueue.c
+> @@ -830,7 +830,7 @@ static inline void pipelined_send(struct mqueue_inode_info *info,
+>  	wake_up_process(receiver->task);
+>  	smp_wmb();
+>  	receiver->state = STATE_READY;
+> -	preempt_enable_nort();
+> +	preempt_enable_rt();
+>  }
+>  
+>  /* pipelined_receive() - if there is task waiting in sys_mq_timedsend()
+> -- 
+> 1.6.0.6
+> 
+>
+ 
+fyi: I completed my testing, and  I was able to reproduce your problem on 
+v2.6.31.4-rt14, and it goes away with the above patch.
+
+Cheers
+
+John
