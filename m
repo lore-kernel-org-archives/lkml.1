@@ -1,251 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbZJOOLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbZJOOOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752230AbZJOOLu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 10:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZJOOLu
+	id S1755232AbZJOOOM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 10:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbZJOOOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 10:11:50 -0400
-Received: from ernst.netinsight.se ([194.16.221.21]:62161 "HELO
-	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751476AbZJOOLt (ORCPT
+	Thu, 15 Oct 2009 10:14:11 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:54613 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752158AbZJOOOK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 10:11:49 -0400
-Date: Thu, 15 Oct 2009 16:10:52 +0200
-From: Simon Kagstrom <simon.kagstrom@netinsight.net>
-To: Ingo Molnar <mingo@elte.hu>, linux-mtd <linux-mtd@lists.infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH v8 4/5] core: Add kernel message dumper to call on oopses
- and panics
-Message-ID: <20091015161052.0752208e@marrow.netinsight.se>
-In-Reply-To: <20091015093133.GF10546@elte.hu>
-References: <20091015094057.7298e0d7@marrow.netinsight.se>
-	<20091015094805.754461fa@marrow.netinsight.se>
-	<20091015093133.GF10546@elte.hu>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Oct 2009 10:14:10 -0400
+From: Frans Pop <elendil@planet.nl>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH, v2] kbuild: Improve version string logic
+Date: Thu, 15 Oct 2009 16:13:07 +0200
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <200910150143.18755.elendil@planet.nl> <alpine.DEB.1.00.0910150029450.10850@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.00.0910150029450.10850@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910151613.10334.elendil@planet.nl>
+X-OriginalArrivalTime: 15 Oct 2009 14:13:33.0385 (UTC) FILETIME=[ADC3E390:01CA4DA1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The core functionality is implemented as per Linus suggestion from
+On Thursday 15 October 2009, David Rientjes wrote:
+> And that's why I suggested, in addition to my patch, that we allow "make
+> LOCALVERSION=" to override the `+' suffix for kernels compiled without
+> CONFIG_LOCALVERSION_AUTO.  In your examples, they would pass
+> LOCALVERSION=-2-amd64 or LOCALVERSION=-43.fc11.i586, respectively, to
+> make.
 
-  http://lists.infradead.org/pipermail/linux-mtd/2009-October/027620.html
+Who says they are using LOCALVERSION to add the suffix?
 
-(with the kmsg_dump implementation by Linus). A struct kmsg_dumper has
-been added which contains a callback to dump the kernel log buffers on
-crashes. The kmsg_dump function gets called from oops_exit() and panic()
-and invokes this callbacks with the crash reason.
+> > My main argument is that if they build kernels from an SCM, which is
+> > quite likely, they should not suddenly get a "+" appended to those
+> > versions. And IMO they should also not have to patch the Makefile to
+> > avoid it. If this change is made, it should be made in such a way that
+> > old version naming schemes are still possible.
+>
+> They are, with my suggestion to allow make LOCALVERSION= to override the
+> `+'.  The question I posed directly to you was this: how does adding a
+> unique string passed by the user for a more descriptive kernel version
+> interact poorly with certain packaging requirements?  You've given two
+> examples that are _perfect_ use cases for my suggestion.
 
-Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Reviewed-by: Anders Grafstrom <anders.grafstrom@netinsight.net>
----
-ChangeLog:
-        * (Ingo Molnar) rename functions to new standard
-	* (Ingo Molnar) use capitals for constants
+I'm not a Debian kernel maintainer, so I cannot answer that question. I 
+will alert the Debian kernel team to this discussion so they can respond 
+for themselves.
 
- include/linux/kmsg_dump.h |   36 +++++++++++++++
- kernel/panic.c            |    3 +
- kernel/printk.c           |  104 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 143 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/kmsg_dump.h
+The thing is that you are assuming people do things in a certain way and 
+your patches will break existing naming schemes for anybody who happens to 
+do things slightly differently. My proposal offered full backwards 
+compatibility for people who know what they are doing.
 
-diff --git a/include/linux/kmsg_dump.h b/include/linux/kmsg_dump.h
-new file mode 100644
-index 0000000..4fb9d29
---- /dev/null
-+++ b/include/linux/kmsg_dump.h
-@@ -0,0 +1,36 @@
-+/*
-+ * linux/include/kmsg_dump.h
-+ *
-+ * Copyright (C) 2009 Net Insight AB
-+ *
-+ * Author: Simon Kagstrom <simon.kagstrom@netinsight.net>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file COPYING in the main directory of this archive
-+ * for more details.
-+ */
-+#ifndef _LINUX_KMSG_DUMP_H
-+#define _LINUX_KMSG_DUMP_H
-+
-+#include <linux/list.h>
-+
-+enum kmsg_dump_reason {
-+	KMSG_DUMP_OOPS,
-+	KMSG_DUMP_PANIC,
-+};
-+
-+struct kmsg_dumper {
-+	void (*dump)(struct kmsg_dumper *dumper, enum kmsg_dump_reason reason,
-+			const char *s1, unsigned long l1,
-+			const char *s2, unsigned long l2);
-+	struct list_head list;
-+	int registered;
-+};
-+
-+void kmsg_dump(enum kmsg_dump_reason reason);
-+
-+int kmsg_dump_register(struct kmsg_dumper *dumper);
-+
-+void kmsg_dump_unregister(struct kmsg_dumper *dumper);
-+
-+#endif /* _LINUX_DUMP_DEVICE_H */
-diff --git a/kernel/panic.c b/kernel/panic.c
-index c0b33b8..763296d 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -10,6 +10,7 @@
-  */
- #include <linux/debug_locks.h>
- #include <linux/interrupt.h>
-+#include <linux/kmsg_dump.h>
- #include <linux/kallsyms.h>
- #include <linux/notifier.h>
- #include <linux/module.h>
-@@ -76,6 +77,7 @@ NORET_TYPE void panic(const char * fmt, ...)
- 	dump_stack();
- #endif
- 
-+	kmsg_dump(KMSG_DUMP_PANIC);
- 	/*
- 	 * If we have crashed and we have a crash kernel loaded let it handle
- 	 * everything else.
-@@ -341,6 +343,7 @@ void oops_exit(void)
- {
- 	do_oops_enter_exit();
- 	print_oops_end_marker();
-+	kmsg_dump(KMSG_DUMP_OOPS);
- }
- 
- #ifdef WANT_WARN_ON_SLOWPATH
-diff --git a/kernel/printk.c b/kernel/printk.c
-index f38b07f..960406a 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -33,6 +33,8 @@
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
- #include <linux/kexec.h>
-+#include <linux/kmsg_dump.h>
-+#include <linux/spinlock.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -1405,3 +1407,105 @@ bool printk_timed_ratelimit(unsigned long *caller_jiffies,
- }
- EXPORT_SYMBOL(printk_timed_ratelimit);
- #endif
-+
-+static LIST_HEAD(dump_list);
-+static DEFINE_SPINLOCK(dump_list_lock);
-+
-+/**
-+ *	kmsg_dump_register - register a kernel log dumper.
-+ *	@dump: pointer to the kmsg_dumper structure
-+ *	@priv: private data for the structure
-+ *
-+ *	Adds a kernel log dumper to the system. The dump callback in the
-+ *	structure will be called when the kernel oopses or panics and must be
-+ *	set. Returns zero on success and -EINVAL or -EBUSY otherwise.
-+ */
-+int kmsg_dump_register(struct kmsg_dumper *dumper)
-+{
-+	unsigned long flags;
-+
-+	/* The dump callback needs to be set */
-+	if (!dumper->dump)
-+		return -EINVAL;
-+
-+	/* Don't allow registering multiple times */
-+	if (dumper->registered)
-+		return -EBUSY;
-+
-+	dumper->registered = 1;
-+
-+	spin_lock_irqsave(&dump_list_lock, flags);
-+	list_add(&dumper->list, &dump_list);
-+	spin_unlock_irqrestore(&dump_list_lock, flags);
-+	return 0;
-+}
-+EXPORT_SYMBOL(kmsg_dump_register);
-+
-+/**
-+ *	kmsg_dump_unregister - unregister a kmsg dumper.
-+ *	@dump: pointer to the kmsg_dumper structure
-+ *
-+ *	Removes a dump device from the system.
-+ */
-+void kmsg_dump_unregister(struct kmsg_dumper *dumper)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&dump_list_lock, flags);
-+	list_del(&dumper->list);
-+	spin_unlock_irqrestore(&dump_list_lock, flags);
-+}
-+EXPORT_SYMBOL(kmsg_dump_unregister);
-+
-+static const char *kmsg_reasons[] = {
-+	[KMSG_DUMP_OOPS]	= "oops",
-+	[KMSG_DUMP_PANIC]	= "panic",
-+};
-+
-+static const char *kmsg_to_str(enum kmsg_dump_reason reason)
-+{
-+	if (reason > ARRAY_SIZE(kmsg_reasons) || reason < 0)
-+		return "unknown";
-+
-+	return kmsg_reasons[reason];
-+}
-+
-+/**
-+ *	dump_kmsg - dump kernel log to kernel message dumpers.
-+ *	@reason: the reason (oops, panic etc) for dumping
-+ *
-+ *	Iterate through each of the dump devices and call the oops/panic
-+ *	callbacks with the log buffer.
-+ */
-+void kmsg_dump(enum kmsg_dump_reason reason)
-+{
-+	unsigned long len = ACCESS_ONCE(log_end);
-+	struct kmsg_dumper *dumper;
-+	const char *s1, *s2;
-+	unsigned long l1, l2;
-+
-+	s1 = "";
-+	l1 = 0;
-+	s2 = log_buf;
-+	l2 = len;
-+
-+	/* Have we rotated around the circular buffer? */
-+	if (len > log_buf_len) {
-+		unsigned long pos = len & LOG_BUF_MASK;
-+
-+		s1 = log_buf + pos;
-+		l1 = log_buf_len - pos;
-+
-+		s2 = log_buf;
-+		l2 = pos;
-+	}
-+
-+	if (!spin_trylock(&dump_list_lock)) {
-+		printk(KERN_ERR "dump_kmsg: dump list lock is held during %s, skipping dump\n",
-+				kmsg_to_str(reason));
-+		return;
-+	}
-+	list_for_each_entry(dumper, &dump_list, list)
-+		dumper->dump(dumper, reason, s1, l1, s2, l2);
-+	spin_unlock(&dump_list_lock);
-+}
--- 
-1.6.0.4
+> > Using LOCALVERSION= for that would be wrong as it is on a different
+> > level from AUTOVERSION. They should be independent. However, that
+> > basic approach of using an environment variable is certainly an
+> > option.
+>
+> Now I'm confused, because currently LOCALVERSION= can only be used when
+> CONFIG_LOCALVERSION_AUTO is defined; in other words, it's completely
+> dependent on it.  My patch changes that and seems to be your desire as
+> well?
 
+That change seemed logical to me. And I did say my patch was on top of 
+yours, so yes, my comment was based on that change being implemented.
+
+> > So I propose the following patch on top of the patch proposed by
+> > David. It offers a clean out for users who explicitly do not want
+> > *any* SCM-based suffix added to their kernel version, and is IMO both
+> > 1) obvious enough for expert users and 2) obscure enough that regular
+> > users are unlikely to abuse it. Is that acceptable?
+>
+> No, it actually makes things much worse because now instead of forcing
+> the user to post his .config to determine the setting of
+> CONFIG_LOCALVERSION_AUTO to intepret the version string, it forces them
+> to recall what their KBUILD_NO_LOCALVERSION_EXTRA environment variable
+> happened to be at the time of build.
+
+As I've already said, I think that build variable is sufficiently obscure 
+that I expect it will only be used by people who know what they are doing.
+
+And I can only repeat that even with your patch you will never get 100% 
+coverage. People who really don't want the "+" will simply patch it out. 
+Why not give them a clean way to avoid it?
