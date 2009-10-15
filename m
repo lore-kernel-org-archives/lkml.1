@@ -1,136 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763082AbZJOVRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964802AbZJOVS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763082AbZJOVRI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 17:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbZJOVRH
+	id S964802AbZJOVS4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 17:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935276AbZJOVSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 17:17:07 -0400
-Received: from ns.penguin.cz ([84.21.108.25]:42120 "EHLO ns.penguin.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758673AbZJOVRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 17:17:06 -0400
-Subject: Re: spitz: add gpio button support (fixes regression)
-From: Stanislav Brabec <utx@penguin.cz>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>, rpurdie@rpsys.net,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com
-In-Reply-To: <20091006200933.GA1606@ucw.cz>
-References: <20091006074635.GA2775@ucw.cz>
-	 <1254829732.3546.35.camel@utx.utx.cz> <20091007085806.GB28807@elf.ucw.cz>
-	 <1254914991.4213.80.camel@hammer.suse.cz>
-	 <20091007120643.GA17069@rakim.wolfsonmicro.main>
-	 <f17812d70910070727x47b2a22h8e9f9304740d5abf@mail.gmail.com>
-	 <20091006200933.GA1606@ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 15 Oct 2009 23:16:25 +0200
-Message-Id: <1255641385.3985.55.camel@utx.utx.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
+	Thu, 15 Oct 2009 17:18:55 -0400
+Received: from aglcosbs02.cos.agilent.com ([192.25.218.39]:60895 "EHLO
+	aglcosbs02.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935256AbZJOVSy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 17:18:54 -0400
+Message-ID: <4AD7916A.2080200@agilent.com>
+Date: Thu, 15 Oct 2009 14:17:30 -0700
+From: Earl Chew <earl_chew@agilent.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Using remap_pfn_range() to increase total_vm beyond RLIMIT_AS
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Oct 2009 21:17:49.0770 (UTC) FILETIME=[F2F3FAA0:01CA4DDC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> > So what's the conclusion of the patch? Any ACK/NAK or patch needs updating?
+remap_pfn_range() is defined in mm/memory.c and as far as I
+can tell, does _not_ cause total_vm or reserved_vm to be updated.
 
-Well, AK_INT as it is implemented does not give any useful information,
-but it does not break anything. When inserting or removing remote, or
-(any) remote key is pressed, it generates one or more switch events.
-This code will have to be removed after implementing full remote support
-(turning pull-up resistor may cause false events, ﻿insert/remove needs
-more aggressive debounce), so I would prefer not adding AK_INT support.
-(See patch below.)
-
-> Please take this updated version.
-
-> Spitz switched to generic matrix-gpio keyboard driver in 2.6.32-rc0,
-> but that means that support for power button and lid switches was
-> lost. This restores it, using button-gpio code.
-
-I just tested it. It returns keys function, but suspend button does not
-cause suspend. Just an input event occurs, see below for output from
-evtest. Resume after "echo mem >/sys/power/state" is impossible. I think
-it is not intended behavior.
-﻿
-Event: time 1255640047.262125, type 1 (Key), code 205 (Suspend), value 1
-Event: time 1255640047.262173, -------------- Report Sync ------------
-Event: time 1255640047.813401, type 1 (Key), code 205 (Suspend), value 0
-Event: time 1255640047.813446, -------------- Report Sync ------------
-
-diff --git a/arch/arm/mach-pxa/spitz.c b/arch/arm/mach-pxa/spitz.c
-index ee8d603..a8ef058 100644
---- a/arch/arm/mach-pxa/spitz.c
-+++ b/arch/arm/mach-pxa/spitz.c
-@@ -15,6 +15,7 @@
- #include <linux/kernel.h>
- #include <linux/platform_device.h>
- #include <linux/delay.h>
-+#include <linux/gpio_keys.h>
- #include <linux/gpio.h>
- #include <linux/leds.h>
- #include <linux/mtd/physmap.h>
-@@ -375,6 +376,43 @@ static struct platform_device spitzkbd_device = {
- };
- 
- 
-+static struct gpio_keys_button spitz_gpio_keys[] = {
-+	{
-+		.type	= EV_KEY,
-+		.code	= KEY_SUSPEND,
-+		.gpio	= SPITZ_GPIO_ON_KEY,
-+		.desc	= "Power button",
-+		.wakeup	= 1,
-+	},
-+	/* Two buttons detecting the LID state */
-+	{
-+		.type	= EV_SW,
-+		.code	= 0,
-+		.gpio	= SPITZ_GPIO_SWA,
-+		.desc	= "Lid SWA",
-+	},
-+	{
-+		.type	= EV_SW,
-+		.code	= 1,
-+		.gpio	= SPITZ_GPIO_SWB,
-+		.desc	= "Lid SWB",
-+	},
-+};
-+
-+static struct gpio_keys_platform_data spitz_gpio_keys_platform_data = {
-+	.buttons	= spitz_gpio_keys,
-+	.nbuttons	= ARRAY_SIZE(spitz_gpio_keys),
-+};
-+
-+static struct platform_device spitz_gpio_keys_device = {
-+	.name	= "gpio-keys",
-+	.id	= -1,
-+	.dev	= {
-+		.platform_data	= &spitz_gpio_keys_platform_data,
-+	},
-+};
-+
-+
- /*
-  * Spitz LEDs
-  */
-@@ -689,6 +727,7 @@ static struct platform_device sharpsl_rom_device = {
- static struct platform_device *devices[] __initdata = {
- 	&spitzscoop_device,
- 	&spitzkbd_device,
-+	&spitz_gpio_keys_device,
- 	&spitzled_device,
- 	&sharpsl_nand_device,
- 	&sharpsl_rom_device,
+Is this right?
 
 
+RLIMIT_AS is only checked against total_vm in mm/mmap.c in the function
+may_expand_vm().
 
-________________________________________________________________________
-Stanislav Brabec
-http://www.penguin.cz/~utx/zaurus
+I think this means that a device driver can map pages into
+a process and thus effectively increase address space of
+a process above and beyond the limit set by RLIMIT_AS.
+
+Am I reading the code correctly?
+
+
+Earl
+
 
