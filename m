@@ -1,68 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935129AbZJOLnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935113AbZJOLmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935129AbZJOLnS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 07:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935120AbZJOLnR
+	id S935113AbZJOLmt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 07:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934726AbZJOLms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 07:43:17 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:59881 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935119AbZJOLnR (ORCPT
+	Thu, 15 Oct 2009 07:42:48 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:38184 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935010AbZJOLmr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 07:43:17 -0400
-From: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-To: linux-kernel@vger.kernel.org
-Cc: davinci-linux-open-source@linux.davincidsp.com, vipin.bhandari@ti.com,
-       akpm@linux-foundation.org, Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-Subject: [PATCH] DaVinci: MMC: Modify data types of EDMA related variables
-Date: Thu, 15 Oct 2009 17:07:57 +0530
-Message-Id: <1255606677-30219-1-git-send-email-sudhakar.raj@ti.com>
-X-Mailer: git-send-email 1.5.6
+	Thu, 15 Oct 2009 07:42:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=EMraRXuFwD8qFp75VJN3iPTmkJQ0TUcaC2fb2BfDT7xavJn5ZAuZjLbtYXzzAXcmAP
+         hzmWFYUyAX3zx050DCwP53vP1HdPGCc7goUiQ1KO0GBSOsaSzZHgj1SOrfLLXCymwg3C
+         N2cddtRFrg0FWSDq2T6KatW5YpECT2LWDRTd0=
+Date: Thu, 15 Oct 2009 11:40:52 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless@vger.kernel.org,
+       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org
+Subject: Re: NOHZ: local_softirq_pending 08
+Message-ID: <20091015114052.GA9870@ff.dom.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AD31213.6020006@imap.cc>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sudhakar Rajashekhara <sudhakar.raj@ti.com> 
+On 12-10-2009 13:25, Tilman Schmidt wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> On Mon, 12 Oct 2009 03:32:46 -0700 (PDT), David Miller wrote:
+>> The PPP receive paths in ppp_generic.c do a local_bh_disable()/
+>> local_bh_enable() around packet receiving (via ppp_recv_lock()/
+>> ppp_recv_unlock() in ppp_do_recv).
+>>
+>> So at least that part is perfectly fine.
+>>
+>> ppp_input(), as called from ppp_sync_process(), also disables BH's
+>> around ppp_do_recv() calls (via read_lock_bh()/read_unlock_bh()).
+>>
+>> So that's fine too.
+>>
+>> Do you have a bug report or are you just scanning around looking
+>> for trouble? :-)
+> 
+> I have encountered the message in the subject during a test of
+> the Gigaset CAPI driver, and would like to determine whether
+> it's a bug in the driver, a bug somewhere else, or no bug at
+> all. The test scenario was PPP over ISDN with pppd+capiplugin.
+> In an alternative scenario, also PPP over ISDN but with
+> smpppd+capidrv, the message did not occur.
+> 
+> Johannes' answer pointed me to the netif_rx() function.
+> The Gigaset driver itself doesn't call that function at all.
+> In the scenario where I saw the message, it was the SYNC_PPP
+> line discipline that did. But from your explanation I gather
+> that the cause cannot lie there.
+> 
+> So now I'm looking for other possible causes of that message.
 
-Currently DaVinci EDMA driver supports multiple EDMA channel
-controller instances. edma_alloc_channel() api returns a 32
-bit value which has the channel controller number in MSB and
-the EDMA channel number in LSB. The variables which store the
-value returned by edma_alloc_channel() have to be 32 bit wide
-now.
+Anyway, I agree with Michael Buesch there is no reason to waste time
+for tracking all netif_rx vs netif_rx_ni uses, and it seems we could
+avoid it by using the "proper" version of raise_softirq_irqoff() in
+__napi_schedule(). Could anybody try if I'm not wrong?
 
-Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-Acked-by: Vipin Bhandari <vipin.bhandari@ti.com>
+Thanks,
+Jarek P.
 ---
- This patch applies on top of the following patch submitted by
- Vipin Bhandari <vipin.bhandari@ti.com>,
- http://patchwork.kernel.org/patch/50914/.
 
- drivers/mmc/host/davinci_mmc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ net/core/dev.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
-index fe8f613..6c76f64 100644
---- a/drivers/mmc/host/davinci_mmc.c
-+++ b/drivers/mmc/host/davinci_mmc.c
-@@ -178,7 +178,7 @@ struct mmc_davinci_host {
- 	u32 buffer_bytes_left;
- 	u32 bytes_left;
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 28b0b9e..7fc4009 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2728,7 +2728,7 @@ void __napi_schedule(struct napi_struct *n)
  
--	u8 rxdma, txdma;
-+	u32 rxdma, txdma;
- 	bool use_dma;
- 	bool do_dma;
- 
-@@ -190,7 +190,7 @@ struct mmc_davinci_host {
- 	struct edmacc_param	tx_template;
- 	struct edmacc_param	rx_template;
- 	unsigned		n_link;
--	u8			links[NR_SG - 1];
-+	u32			links[NR_SG - 1];
- 
- 	/* For PIO we walk scatterlists one segment at a time. */
- 	unsigned int		sg_len;
--- 
-1.5.6
-
+ 	local_irq_save(flags);
+ 	list_add_tail(&n->poll_list, &__get_cpu_var(softnet_data).poll_list);
+-	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
++	raise_softirq_irqoff(NET_RX_SOFTIRQ);
+ 	local_irq_restore(flags);
+ }
+ EXPORT_SYMBOL(__napi_schedule);
