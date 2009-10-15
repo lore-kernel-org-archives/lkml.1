@@ -1,58 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbZJOHlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbZJOHpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473AbZJOHlZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 03:41:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934760AbZJOHlY
+	id S1758570AbZJOHpX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 03:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757928AbZJOHpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 03:41:24 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:22189 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934112AbZJOHlX (ORCPT
+	Thu, 15 Oct 2009 03:45:23 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:40182 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757869AbZJOHpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 03:41:23 -0400
-Authentication-Results: sj-iport-2.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAOtu1kqrR7Hu/2dsb2JhbADAXZhthDAE
-X-IronPort-AV: E=Sophos;i="4.44,565,1249257600"; 
-   d="scan'208";a="214687999"
-From: Roland Dreier <rdreier@cisco.com>
-To: ddutile@redhat.com
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Stefan Assmann <sassmann@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, kaneshige.kenji@jp.fujitsu.com,
-       matthew@wil.cx
-Subject: Re: GT/s vs Gbps for PCIe bus speed
-References: <4AD58EEE.4070405@redhat.com>
-	<m3ljjdstbb.fsf@intrepid.localdomain> <4AD62B52.9060200@redhat.com>
-	<m33a5lsls1.fsf@intrepid.localdomain> <4AD655E1.7080005@redhat.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 15 Oct 2009 00:40:46 -0700
-In-Reply-To: <4AD655E1.7080005@redhat.com> (Don Dutile's message of "Wed, 14
-	Oct 2009 18:51:13 -0400")
-Message-ID: <adabpk985q9.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Thu, 15 Oct 2009 03:45:22 -0400
+Message-ID: <4AD6D2E3.9050105@gmail.com>
+Date: Thu, 15 Oct 2009 09:44:35 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 15 Oct 2009 07:40:47.0122 (UTC) FILETIME=[CF2D8720:01CA4D6A]
+To: npiggin@suse.de
+CC: Al Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       Ian Kent <raven@themaw.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Miklos Szeredi <mszeredi@suse.cz>
+Subject: Re: [patch 2/6] fs: no games with DCACHE_UNHASHED
+References: <20091015044026.319860788@suse.de> <20091015050048.165912589@suse.de>
+In-Reply-To: <20091015050048.165912589@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 15 Oct 2009 09:44:36 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+npiggin@suse.de a écrit :
+> (this is in -mm)
+> 
+> Filesystems outside the regular namespace do not have to clear DCACHE_UNHASHED
+> in order to have a working /proc/$pid/fd/XXX. Nothing in proc prevents the
+> fd link from being used if its dentry is not in the hash.
+> 
+> Also, it does not get put into the dcache hash if DCACHE_UNHASHED is clear;
+> that depends on the filesystem calling d_add or d_rehash.
+> 
+> So delete the misleading comments and needless code.
+> 
 
- > Yeah, the std nomenclature is PCI-e not PCI-E.
+This was added in commit 304e61e6fbadec586dfe002b535f169a04248e49
 
-To be pedantic: "PCIe" without the hyphen is correct, cf
-http://www.pcisig.com/specifications/pciexpress/ (the web page, not any
-member-only specs) -- "PCIe" is used many times there.
+    [PATCH] net: don't insert socket dentries into dentry_hashtable
+    
+    We currently insert socket dentries into the global dentry hashtable.  This
+    is suboptimal because there is currently no way these entries can be used
+    for a lookup().  (/proc/xxx/fd/xxx uses a different mechanism).  Inserting
+    them in dentry hashtable slows dcache lookups.
+    
+    To let __dpath() still work correctly (ie not adding a " (deleted)") after
+    dentry name, we do :
+    
+    - Right after d_alloc(), pretend they are hashed by clearing the
+      DCACHE_UNHASHED bit.
+    
+    - Call d_instantiate() instead of d_add() : dentry is not inserted in
+      hash table.
+    
+      __dpath() & friends work as intended during dentry lifetime.
+    
+    - At dismantle time, once dput() must clear the dentry, setting again
+      DCACHE_UNHASHED bit inside the custom d_delete() function provided by
+      socket code, so that dput() can just kill_it.
+    
+    Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+    Cc: Al Viro <viro@zeniv.linux.org.uk>
+    Acked-by: "David S. Miller" <davem@davemloft.net>
+    Signed-off-by: Andrew Morton <akpm@osdl.org>
+    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
 
- > Again, trying to generate output that relates
- > to what devices are spec to run at: 2.5GHz or 5.0GHz links.
 
-But the spec does not talk about rates in GHz but rather GT/s (since
-PCIe is not clocked but rather uses a recovered embedded clock).
-Matching the terminology of the PCIe spec by using GT/s really seems
-best in terms of clarity, and describes the situation most exactly,
-since by using GT/s one also sidesteps the issue of having the data rate
-depend on the link width.
 
- - R.
+Back in 2006, we had to perform this hack in order to not leak '(deleted)' in __d_path()
+
+if (!IS_ROOT(dentry) && d_unhashed(dentry) &&
+	(prepend(&end, &buflen, " (deleted)", 10) != 0)) 
+		goto Elong;
+
+In current kernel this part became :
+
+if (d_unlinked(dentry) &&
+	(prepend(&end, &buflen, " (deleted)", 10) != 0))
+		goto Elong;
+
+
+So your cleanup seems good, thanks !
+
+Acked-by: Eric Dumazet <dada1@cosmosbay.com>
