@@ -1,165 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbZJOFb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbZJOFdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752930AbZJOFb1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 01:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZJOFb0
+	id S932247AbZJOFdz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 01:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbZJOFdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 01:31:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55596 "EHLO hera.kernel.org"
+	Thu, 15 Oct 2009 01:33:54 -0400
+Received: from gate.crashing.org ([63.228.1.57]:41844 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752219AbZJOFbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 01:31:25 -0400
-Message-ID: <4AD6B364.2050801@kernel.org>
-Date: Wed, 14 Oct 2009 22:30:12 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Dimitri Sivanich <sivanich@sgi.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v2] x86/apic: limit irq affinity
-References: <20090930160259.GA7822@sgi.com> <20091012193433.GB2691@elte.hu> <20091012193704.GA8708@sgi.com> <20091014071014.GK784@elte.hu> <20091014120225.GA9674@sgi.com> <20091014122653.GA15048@elte.hu> <20091015011339.GA17374@sgi.com>
-In-Reply-To: <20091015011339.GA17374@sgi.com>
-Content-Type: text/plain; charset=us-ascii
+	id S1752712AbZJOFdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 01:33:53 -0400
+Subject: powerpc problem with .data.page_aligned -> __page_aligned_data
+ conversion
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: tabbott@ksplice.com
+Cc: sam@ravnborg.org, linuxppc-dev@lists.ozlabs.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 15 Oct 2009 16:32:52 +1100
+Message-Id: <1255584772.2347.86.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dimitri Sivanich wrote:
-> This patch allows for hard restrictions to irq affinity via a new cpumask and
-> device node value in the irq_cfg structure.
-> 
-> The mask forces IRQ affinity to remain within the specified cpu domain.
-> On some UV systems, this domain will be limited to the nodes accessible
-> to the given node.  Currently other X86 systems will have all bits in
-> the cpumask set, so non-UV systems will remain unaffected at this time.
-> 
-> Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
-> 
-> ---
-> 
-> Removed UV specific code from generic IO APIC code.
-> 
->  arch/x86/Kconfig                   |    1 
->  arch/x86/include/asm/hw_irq.h      |    3 
->  arch/x86/include/asm/uv/uv_irq.h   |    1 
->  arch/x86/include/asm/uv/uv_mmrs.h  |   25 +++++
->  arch/x86/kernel/apic/io_apic.c     |  144 ++++++++++++++++++++++++++-------
->  arch/x86/kernel/apic/x2apic_uv_x.c |    2 
->  arch/x86/kernel/uv_irq.c           |   77 +++++++++++++++++
->  7 files changed, 225 insertions(+), 28 deletions(-)
-> 
-> Index: linux/arch/x86/kernel/apic/io_apic.c
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/apic/io_apic.c	2009-10-14 12:48:50.000000000 -0500
-> +++ linux/arch/x86/kernel/apic/io_apic.c	2009-10-14 15:04:23.000000000 -0500
-> @@ -168,6 +168,19 @@ void __init io_apic_disable_legacy(void)
->  	nr_irqs_gsi = 0;
->  }
->  
-> +void (*set_irq_cfg_allowed)(cpumask_var_t, int) = NULL;
-> +/*
-> + * Setup IRQ affinity restriction.
-> + */
-> +static void set_irq_cfg_cpus_allowed(struct irq_cfg *irq_cfg)
-> +{
-> +	if (set_irq_cfg_allowed)
-> +		set_irq_cfg_allowed(irq_cfg->allowed, irq_cfg->node);
-> +	else
-> +		/* Default to allow anything */
-> +		cpumask_setall(irq_cfg->allowed);
-> +}
-> +
->  int __init arch_early_irq_init(void)
->  {
->  	struct irq_cfg *cfg;
-> @@ -183,8 +196,11 @@ int __init arch_early_irq_init(void)
->  	for (i = 0; i < count; i++) {
->  		desc = irq_to_desc(i);
->  		desc->chip_data = &cfg[i];
-> +		cfg->node = node;
->  		zalloc_cpumask_var_node(&cfg[i].domain, GFP_NOWAIT, node);
->  		zalloc_cpumask_var_node(&cfg[i].old_domain, GFP_NOWAIT, node);
-> +		zalloc_cpumask_var_node(&cfg[i].allowed, GFP_NOWAIT, node);
-> +		set_irq_cfg_cpus_allowed(&cfg[i]);
->  		if (i < nr_legacy_irqs)
->  			cpumask_setall(cfg[i].domain);
->  	}
-> @@ -213,12 +229,19 @@ static struct irq_cfg *get_one_free_irq_
->  	if (cfg) {
->  		if (!zalloc_cpumask_var_node(&cfg->domain, GFP_ATOMIC, node)) {
->  			kfree(cfg);
-> -			cfg = NULL;
-> -		} else if (!zalloc_cpumask_var_node(&cfg->old_domain,
-> +			return NULL;
-> +		}
-> +		if (!zalloc_cpumask_var_node(&cfg->old_domain,
->  							  GFP_ATOMIC, node)) {
->  			free_cpumask_var(cfg->domain);
->  			kfree(cfg);
-> -			cfg = NULL;
-> +			return NULL;
-> +		}
-> +		if (!zalloc_cpumask_var_node(&cfg->allowed, GFP_ATOMIC, node)) {
-> +			free_cpumask_var(cfg->old_domain);
-> +			free_cpumask_var(cfg->domain);
-> +			kfree(cfg);
-> +			return NULL;
->  		}
->  	}
->  
-> @@ -231,12 +254,14 @@ int arch_init_chip_data(struct irq_desc 
->  
->  	cfg = desc->chip_data;
->  	if (!cfg) {
-> -		desc->chip_data = get_one_free_irq_cfg(node);
-> +		cfg = desc->chip_data = get_one_free_irq_cfg(node);
->  		if (!desc->chip_data) {
->  			printk(KERN_ERR "can not alloc irq_cfg\n");
->  			BUG_ON(1);
->  		}
->  	}
-> +	cfg->node = node;
-> +	set_irq_cfg_cpus_allowed(cfg);
->  
->  	return 0;
->  }
-> @@ -318,6 +343,10 @@ void arch_init_copy_chip_data(struct irq
->  
->  	memcpy(cfg, old_cfg, sizeof(struct irq_cfg));
->  
-> +	cfg->node = node;
-> +
-> +	set_irq_cfg_cpus_allowed(cfg);
-> +
->  	init_copy_irq_2_pin(old_cfg, cfg, node);
->  }
->  
-> @@ -1428,16 +1457,23 @@ static void setup_IO_APIC_irq(int apic_i
->  	struct irq_cfg *cfg;
->  	struct IO_APIC_route_entry entry;
->  	unsigned int dest;
-> +	cpumask_var_t tmp_mask;
->  
->  	if (!IO_APIC_IRQ(irq))
->  		return;
->  
->  	cfg = desc->chip_data;
->  
-> -	if (assign_irq_vector(irq, cfg, apic->target_cpus()))
-> +	if (!alloc_cpumask_var(&tmp_mask, GFP_ATOMIC))
->  		return;
->  
-> -	dest = apic->cpu_mask_to_apicid_and(cfg->domain, apic->target_cpus());
-> +	if (!cpumask_and(tmp_mask, apic->target_cpus(), cfg->allowed))
-> +		goto error;
-> +
-> +	if (assign_irq_vector(irq, cfg, tmp_mask))
-> +		goto error;
-> +
-> +	dest = apic->cpu_mask_to_apicid_and(cfg->domain, tmp_mask);
+Hi folks !
 
-can you check if we can reuse target_cpus for this purpose?
+So I have a problem ... :-)
 
-YH
+For some weird reason, our gcc until 4.3 (fixed in 4.3) had the weird
+idea that the alignment attribute should not be allowed to force an
+alignment greater than 32k. If attempted, it would warn -and- crop the
+alignment to 32k.
+
+As you can imagine, this doesn't play terribly well with 64K page size,
+which is (sadly) our default on ppc64 on distros nowadays. I know it's
+insane but that's what I have to live with...
+
+And of course, our current distros (well, at least RHEL5 which is pretty
+common) don't have a fixed gcc.
+
+Until recently, we got away with it because very few people used
+__page_aligned and those who did always did it on something that is
+naturally a PAGE_SIZE multiple in size. So we just stick the thing into
+the appropriate section and that's it.
+
+The new generic macros __page_aligned_data/bss now always add the
+alignment directive generically.
+
+This has a few issues for us:
+
+	- The patch that converted bits of powerpc to the new macro break since
+it now hits that bug
+
+	- We can't trivially change the macros to not to the align directive on
+powerpc, but that's taking the risk that drivers or other pieces of
+generic code now assume that they can use __page_aligned_* on a data
+structure whose size isn't a multiple of _PAGE_SIZE, since that would
+work on all architectures ... except powerpc where it would silently
+break by shifting everybody else alignment in that section.
+
+As of today, nothing seems to do that (unless I mis-grepped) though.
+
+What do you recommend I do ? I can ban gcc < 4.3 but that's a bit
+harsh :-) I know a few people that won't be happy to be unable to build
+newer kernels with current distro gccs.
+
+Or can do the above making the macro definition drop the alignment part
+on powerpc. Will work for now, but will require great care to avoid
+subtle and nasty breakage (basically same as before)
+
+Or maybe I can do the above but only when using gcc < 4.3 so at least if
+the breakage happen, that will only be with older gccs ...
+
+Unless somebody has a better idea ?
+
+Cheers,
+Ben.
+
+
