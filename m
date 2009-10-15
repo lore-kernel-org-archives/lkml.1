@@ -1,141 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762257AbZJOAjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbZJOAou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762257AbZJOAjn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 20:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762208AbZJOAjm
+	id S1762263AbZJOAou (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 20:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761714AbZJOAou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 20:39:42 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:45817 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757334AbZJOAjm (ORCPT
+	Wed, 14 Oct 2009 20:44:50 -0400
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:20661 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761637AbZJOAot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 20:39:42 -0400
-Message-ID: <4AD66F28.9030607@oss.ntt.co.jp>
-Date: Thu, 15 Oct 2009 09:39:04 +0900
-From: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Wed, 14 Oct 2009 20:44:49 -0400
+X-Trace: 274112631/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.53.219/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.53.219
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgYBAC8N1kpPRTXb/2dsb2JhbAAIj28Byk6ELgQ
+X-IronPort-AV: E=Sophos;i="4.44,562,1249254000"; 
+   d="scan'208";a="274112631"
+Date: Thu, 15 Oct 2009 01:44:10 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH 0/9] swap_info and swap_map patches
+Message-ID: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, Jens Axboe <jens.axboe@oracle.com>,
-       Nauman Rafique <nauman@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
-       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>,
-       Dong-Jae Kang <baramsori72@gmail.com>,
-       Isaku Yamahata <yamahata@valinux.co.jp>,
-       Akio Takebe <takebe_akio@jp.fujitsu.com>
-Subject: Re: IO controller Mini-Summit 2009
-References: <20091014.212444.179938286.ryov@valinux.co.jp> <20091014175521.GG3528@redhat.com>
-In-Reply-To: <20091014175521.GG3528@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+Here's a series of nine patches around the swap_info_struct: against
+2.6.32-rc4, but intended for mmotm, which is currently similar here.
 
-Thank you for CCing me.
+They start out with some old and not very important cleanups, but get
+around to solving the swap count overflow problem: our handling above
+32765 has depended on hoping that it won't coincide with other races.
 
-I just wanted to let you know that Ted Tso was kind enough to let
-us give a readout for the mini-summit at the kernel summit.
+That problem exists in theory today (when pid_max is raised from its
+default), though never reported in practice; but the motivation for
+solving it now comes from the impending KSM swapping patches - it
+becomes very easy for anyone to overflow the maximum that way.
 
-There will be other mini-summits sharing 50 minutes so we need to
-keep each mini-summit readout to 5-6 minutes of presentation and
-4-5 minutes of questions/discussions.
+But most people will never have a swap count overflow in their life:
+the benefit for them is that the vmalloc'ed swap_map halves in size.
 
-Yoshikawa-san and myself were planning to take notes of the
-mini-summit, but it would be great if you could share yours.  The
-idea is to use those to prepare a brief mini-summit report (4-5
-slides) that we can show at the kernel summit.
+This is all internal housekeeping: no change to actual swapping and
+page reclaim.
 
-Later in the day, after the mini-summit, we would be sending a
-draft version of the slides to the relevant mailing lists for you
-to review. Since the mini-summit readouts will take place on
-Monday I would appreciate it if you could comment on them before
-Sunday night the latest.
+ include/linux/swap.h |   66 ++-
+ mm/memory.c          |   19 
+ mm/page_io.c         |   19 
+ mm/rmap.c            |    6 
+ mm/shmem.c           |   11 
+ mm/swapfile.c        |  834 +++++++++++++++++++++++++----------------
+ 6 files changed, 599 insertions(+), 356 deletions(-)
 
-Thanks,
-
-Fernando
-
-Vivek Goyal wrote:
-> On Wed, Oct 14, 2009 at 09:24:44PM +0900, Ryo Tsuruta wrote:
->> Hello,
->>
-> 
-> Hi Ryo,
-> 
-> CCing people who are planning to attend the mini summit either in person
-> or phone. (As per your list on io mini summit wiki page). Not sure if
-> everybody is scanning mailing list for update on mini summit.
-> 
-> I am checking out wiki page for more information like Venue. It says the
-> venue is linux foundation office Japan. Hopefully there is no change in
-> that information.
-> 
-> What are the conference call details for the people who might want to join
-> in over phone? Could not find those. Are you yet to post these?
-> 
-> Thanks
-> Vivek
-> 
->> I have summarized the topics for the IO controller mini-summit and
->> written the ideas seen in the mailing list.
->>
->> - The place where IO controller should be implemented
->>   - Block layer in conjunction with the IO scheduler
->>   - Common layer right above the IO scheduler
->>   - CFQ enhancement.
->>   - Both block and common layer, users can select whichever controller
->>     they want.
->>   - VFS layer
->>
->> - What kind of bandwidth control policies are needed?
->>   - Proportional weight
->>   - Enforcing upper limit
->>   - Minimum bandwidth guarantee
->>
->> - How to handle buffered writes?
->>   - Add dirt-ratio in the memory controller
->>   - Add bufferred-write-cgroup to track buffered writebacks
->>   - A per group per bdi pdflush threads
->>
->> - Who should be charged for swap activity?
->>   - who requests a page.
->>   - who has a page.
->>   - All swap activities are charged to the root group.
->>
->> And I would also like to discuss about the followings.
->>
->> - Extensions of struct bio
->>   - Make a bio point to the io_context of a process which creates the
->>     I/O request. This allows to pass the IO scheduling class and
->>     priority information to IO controller even if the IO is submitted
->>     by another process which does not create the request, such as a
->>     worker thread.
->>   - Add a new flag to struct bio to identify the bio as urgent. This
->>     gives IO controller a chance to handle the bio as high
->>     priority. This flag should be set if the bio is created for the
->>     page-out operation. 
->>
->> - Common test methods to verify the functionality of IO controller.
->>
->> Please give me comments and suggestions. I may be missing or
->> misunderstanding something.
->>
->> Thanks,
->> Ryo Tsuruta
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
-
+Hugh
