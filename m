@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934983AbZJOQrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935166AbZJORLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934983AbZJOQrh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 12:47:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933351AbZJOQrh
+	id S935166AbZJORLl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 13:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935146AbZJORLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 12:47:37 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:59751 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933344AbZJOQrg (ORCPT
+	Thu, 15 Oct 2009 13:11:40 -0400
+Received: from mail.plurk.com ([216.86.152.127]:15222 "EHLO mail.plurk.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935144AbZJORLk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 12:47:36 -0400
-Date: Thu, 15 Oct 2009 12:46:13 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: sam@ravnborg.org, linuxppc-dev@lists.ozlabs.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: powerpc problem with .data.page_aligned -> __page_aligned_data
- conversion
-In-Reply-To: <1255584772.2347.86.camel@pasglop>
-Message-ID: <alpine.DEB.1.10.0910150832290.27415@dr-wily.mit.edu>
-References: <1255584772.2347.86.camel@pasglop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Thu, 15 Oct 2009 13:11:40 -0400
+X-Greylist: delayed 1429 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Oct 2009 13:11:39 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=plurk.com; h=mime-version
+	:content-type:from:subject:to:content-transfer-encoding:reply-to
+	:message-id:date; q=dns; s=test; b=oSHEuXSTmYOE3SsAKYUbiwi1OuvtC
+	6NIJr2GjuA47OilVFIQAcJnIylH6KxiSnYPAkCGXVJcOESbVOscAC21yAaQ5X0th
+	Bdm5f9cMDcpcuAhbCcuMcwOlao8NHzsC/f7NBQqsXf9IvaYEqGkx7+byRDVBQODY
+	DZbWBOW1eXsSsc=
+Mime-version: 1.0
+Content-type: text/plain; charset="utf8"
+From: Plurk <plurk_noreply@plurk.com>
+Subject: =?utf-8?b?6K6T5aSn6IWm5b+r6YCf5YuV6LW35L6G55qE5pa55rOV5Y+q6KaBMTYw?=
+	=?utf-8?b?MOWFgyDpgoDoq4vmgqjliLAgUGx1cmsuY29tIOiou+WGiuW4s+iZnw==?=
+To: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Reply-To: plurk_noreply@plurk.com
+Accreditor: Habeas
+X: -
+Message-Id: <20091015164713.5FE37A653C@mail.plurk.com>
+Date: Thu, 15 Oct 2009 16:47:13 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009, Benjamin Herrenschmidt wrote:
+學習記憶法真的很便宜1600元不出門也可以學習 快來試試看喔。請按下面plurk(噗浪)的連結，就可以知道詳情了
 
-> What do you recommend I do ? 
-> I can ban gcc < 4.3 but that's a bit harsh :-) 
+---
 
-Yeah, let's try to avoid that.
+到底下的鏈結來瞧瞧 讓大腦快速動起來的方法只要1600元 的 Plurk 頁面：
+http://www.plurk.com/pbms1/invite/2
 
-> I know a few people that won't be happy to be unable to build newer 
-> kernels with current distro gccs.
-> 
-> Or can do the above making the macro definition drop the alignment part
-> on powerpc. Will work for now, but will require great care to avoid
-> subtle and nasty breakage (basically same as before)
+Plurk.com 是一個讓保持聯繫變得十分容易且有趣的社交日誌。 
 
-Yeah, I'd be afraid that changing the generic __page_aligned_data might 
-cause unexpected problems on some other architecture.
+_________________________________
+Opt Out of Plurk emails:
+This email was sent in connection with you Plurk.com membership.
+To stop receiving emails from Plurk, click this link:
+http://www.plurk.com/unsubscribe?bemail=bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw%3D%3D&key=bfd1ca659738eb0702e706690bf3d4bf
 
-> Or maybe I can do the above but only when using gcc < 4.3 so at least if
-> the breakage happen, that will only be with older gccs ...
+You can contact us at
+http://www.plurk.com/contact
 
-It sounds like from your grepping, you don't believe that dropping the 
-alignment part will actually cause any problems on powerpc currently?
-
-If so, dropping the alignment part on powerpc with gcc < 4.3 seems best to 
-me.  It limits the workaround in time (eventually gcc < 4.3 will be 
-history).  It also limits it in scope (to powerpc), where at least you're 
-well aware of the issue and can pay attention to new code being added that 
-uses __page_aligned_data.  Since most code that has page-aligned data 
-structures is architecture-specific, there's a good chance that any new 
-code that would break will be at least looked at by you (and given how few 
-places it is used currently, this seems pretty unlikely to actually come 
-up).
-
-	-Tim Abbott
-
-
+Plurk.com, 2425 Matheson Blvd  8th Floor, Suite 813  Mississauga, Ontario  L4W 5K4  Canada
