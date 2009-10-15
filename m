@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935058AbZJOIxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934908AbZJOI4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935058AbZJOIxO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 04:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935042AbZJOIxN
+	id S934908AbZJOI4M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 04:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932258AbZJOI4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 04:53:13 -0400
-Received: from poutre.nerim.net ([62.4.16.124]:62136 "EHLO poutre.nerim.net"
+	Thu, 15 Oct 2009 04:56:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49754 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935007AbZJOIxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 04:53:09 -0400
-Date: Thu, 15 Oct 2009 10:52:20 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [lm-sensors] lm-sensors 3.1.1-3 not detecting sensors on Intel
-   DP55KG motherboard? (chip ID: 0xb473)
-Message-ID: <20091015105220.09d0dddf@hyperion.delvare>
-In-Reply-To: <alpine.DEB.2.00.0910150422400.21030@p34.internal.lan>
-References: <alpine.DEB.2.00.0910131743530.5034@p34.internal.lan>
-	<alpine.DEB.2.00.0910140403150.15961@p34.internal.lan>
-	<alpine.DEB.2.00.0910140856190.19307@p34.internal.lan>
-	<20091015100557.22243433@hyperion.delvare>
-	<alpine.DEB.2.00.0910150422400.21030@p34.internal.lan>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S932127AbZJOI4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 04:56:10 -0400
+Date: Thu, 15 Oct 2009 10:55:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH 00/13] [GIT PULL] perf tools: updates to parsing events
+Message-ID: <20091015085508.GA10546@elte.hu>
+References: <20091014194330.980165492@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014194330.980165492@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009 04:30:29 -0400 (EDT), Justin Piszcz wrote:
-> A picture of it is available here:
-> http://img.hexus.net/v2/cpu/intel/LGA1156/IMG_0831-big.jpg
-> Another:
-> http://www.overclockersclub.com/vimages/intel_corei5750_corei7870/20.jpg
-> Another:
-> http://www.hitechlegion.com/images/stories/ici7_870/11.jpg
-> A close up of the chip itself!
-> http://www.motherboards.org/imageview.html?i=/images/reviews/motherboards/1948_p3_13.jpg
-> 
-> Is this the chip to which you are referring?
-> 
-> Winbond
-> W83677HG-i
-> 919S9BE918B001FB
-> 919S9BE918B001FB*typed twice to confirm (same #s on two different 
-> board/reviews)
-> 
-> Is there anything else needed?
 
-No, for now it's enough. This would indeed be a new chip, not even
-listed on Novoton's site yet. I'll ask our contact at Nuvoton about it.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
--- 
-Jean Delvare
+> Ingo,
+> 
+> Please pull the latest perf/core tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> perf/core
+> 
+> 
+> Steven Rostedt (13):
+>       perf tools: handle print concatinations in event format file
+>       perf tools: fix backslash processing on trace print formats
+>       perf tools: handle trace parsing of '<' and '>'
+>       perf tools: handle arrays in print fields for trace parsing
+>       perf tools: handle '*' as typecast in trace parsing
+>       perf tools: handle newlines in trace parsing better
+>       perf tools: handle the case with and without the "signed" trace field
+>       perf tools: still continue on failed parsing of an event
+>       perf tools: fix bprintk reading in trace output
+>       perf tools: handle both versions of ftrace output
+>       perf tools: add latency format to trace output
+>       perf tools: handle '-' and '+' in parsing trace print format
+>       perf tools: remove all char * typecasts and use const in prototype
+> 
+> ----
+>  tools/perf/Makefile                 |    2 +-
+>  tools/perf/builtin-trace.c          |    2 +
+>  tools/perf/util/trace-event-parse.c |  533 +++++++++++++++++++++++++----------
+>  tools/perf/util/trace-event.h       |   25 ++-
+>  4 files changed, 405 insertions(+), 157 deletions(-)
+
+Applied, thanks Steve! Very nice changes/fixes!
+
+	Ingo
