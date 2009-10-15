@@ -1,176 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935484AbZJOXAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763294AbZJOXEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935484AbZJOXAN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 19:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935455AbZJOXAM
+	id S1763294AbZJOXEx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 19:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763264AbZJOXEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 19:00:12 -0400
-Received: from lucidpixels.com ([75.144.35.66]:38586 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935427AbZJOXAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 19:00:10 -0400
-Date: Thu, 15 Oct 2009 18:59:34 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Bryan Donlan <bdonlan@gmail.com>
-cc: bruce.w.allan@intel.com, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Subject: Re: [PATCH] Add quirk for ACPI reboots on Intel DP55KG boards.
-In-Reply-To: <alpine.DEB.2.00.0910151852510.8329@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.0910151855320.3244@p34.internal.lan>
-References: <alpine.DEB.2.00.0910151655590.4808@p34.internal.lan> <1255645796-29944-1-git-send-email-bdonlan@gmail.com> <alpine.DEB.2.00.0910151831020.15317@p34.internal.lan> <alpine.DEB.2.00.0910151852510.8329@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 15 Oct 2009 19:04:53 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:29111 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763263AbZJOXEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 19:04:52 -0400
+X-Trace: 275031517/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.3.134/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.3.134
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEAANH10pPRQOG/2dsb2JhbACBUtdOhDAE
+X-IronPort-AV: E=Sophos;i="4.44,568,1249254000"; 
+   d="scan'208";a="275031517"
+Date: Fri, 16 Oct 2009 00:04:14 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/9] swap_info: change to array of pointers
+In-Reply-To: <Pine.LNX.4.64.0910152324220.4447@sister.anvils>
+Message-ID: <Pine.LNX.4.64.0910152356110.9759@sister.anvils>
+References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
+ <Pine.LNX.4.64.0910150146210.3291@sister.anvils>
+ <20091015111107.b505b676.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0910152324220.4447@sister.anvils>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 15 Oct 2009, Hugh Dickins wrote:
+> On Thu, 15 Oct 2009, KAMEZAWA Hiroyuki wrote:
+> > On Thu, 15 Oct 2009 01:48:01 +0100 (BST)
+> > Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+> > > @@ -1675,11 +1674,13 @@ static void *swap_start(struct seq_file
+> > >  	if (!l)
+> > >  		return SEQ_START_TOKEN;
+> > >  
+> > > -	for (i = 0; i < nr_swapfiles; i++, ptr++) {
+> > > -		if (!(ptr->flags & SWP_USED) || !ptr->swap_map)
+> > > +	for (type = 0; type < nr_swapfiles; type++) {
+> > > +		smp_rmb();	/* read nr_swapfiles before swap_info[type] */
+> > > +		si = swap_info[type];
+> > 
+> > 		if (!si) ?
 
+Re-reading, I see that I missed your interjection there.
 
-On Thu, 15 Oct 2009, Justin Piszcz wrote:
+Precisely because we read swap_info[type] after reading nr_swapfiles,
+with smp_rmb() here to enforce that, and smp_wmb() where they're set
+in swapon, there is no way for si to be seen as NULL here.  Is there?
 
->
->
-> On Thu, 15 Oct 2009, Justin Piszcz wrote:
->
->> 
->> 
->> On Thu, 15 Oct 2009, Bryan Donlan wrote:
->> 
->>> Keyboard-based and BIOS-based reboots don't work on Intel DP55KG boards;
->>> use ACPI reboots instead.
->>> 
->>> Reported-By: Justin Piszcz <jpiszcz@lucidpixels.com>
->>> Cc: Thomas Gleixner <tglx@linutronix.de>
->>> Cc: Ingo Molnar <mingo@redhat.com>
->>> Cc: "H. Peter Anvin" <hpa@zytor.com>
->>> Cc: x86@kernel.org
->>> Signed-off-by: Bryan Donlan <bdonlan@gmail.com>
->>> ---
->>> arch/x86/kernel/reboot.c |   23 +++++++++++++++++++++++
->>> 1 files changed, 23 insertions(+), 0 deletions(-)
->>> 
->>> Justin, could you give this patch a try? It should make the reboot=acpi
->>> workaround automatic.
->>> (x86 maintainers CC'd)
->>> 
->>> diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
->>> index a1a3cdd..67bfcef 100644
->>> --- a/arch/x86/kernel/reboot.c
->>> +++ b/arch/x86/kernel/reboot.c
->>> @@ -134,6 +134,21 @@ static int __init set_bios_reboot(const struct 
->>> dmi_system_id *d)
->>> 	return 0;
->>> }
->>> 
->>> +/*
->>> + * Some machines require the "reboot=a" commandline option.
->>> + * This quirk makes that automatic.
->>> + */
->>> +static int __init set_acpi_reboot(const struct dmi_system_id *d)
->>> +{
->>> +	if (reboot_type != BOOT_ACPI) {
->>> +		reboot_type = BOOT_ACPI;
->>> +		printk(KERN_INFO "%s series board detected. Selecting ACPI "
->>> +				"method for reboots.\n", d->ident);
->>> +	}
->>> +	return 0;
->>> +}
->>> +
->>> +
->>> static struct dmi_system_id __initdata reboot_dmi_table[] = {
->>> 	{	/* Handle problems with rebooting on Dell E520's */
->>> 		.callback = set_bios_reboot,
->>> @@ -259,6 +274,14 @@ static struct dmi_system_id __initdata 
->>> reboot_dmi_table[] = {
->>> 			DMI_MATCH(DMI_PRODUCT_NAME, "SBC-FITPC2"),
->>> 		},
->>> 	},
->>> +	{	/* Handle problems with rebooting on Intel DP55KG */
->>> +		.callback = set_acpi_reboot,
->>> +		.ident = "Intel DP55KG",
->>> +		.matches = {
->>> +			DMI_MATCH(DMI_SYS_VENDOR, "Intel Corporation"),
->>> +			DMI_MATCH(DMI_PRODUCT_NAME, "DP55KG"),
->>> +		},
->>> +	},
->>> 	{ }
->>> };
->>> 
->>> -- 
->>> 1.6.3.3
->>> 
->> 
->> Hello,
->> 
->> # patch -p1 < /home/jpiszcz/patch patching file arch/x86/kernel/reboot.c
->> Hunk #1 succeeded at 132 (offset -2 lines).
->> Hunk #2 succeeded at 272 (offset -2 lines).
->> 
->> # uname -a
->> Linux p34.internal.lan 2.6.31.3 #8 SMP Wed Oct 14 14:37:37 EDT 2009 x86_64 
->> GNU/Linux
->> 
->> # ls -l /usr/src/linux/.config-* | tail -n 1
->> -rw-r--r-- 1 root root 45762 2009-10-15 18:31 
->> /usr/src/linux/.config-2.6.31.3-9
->> 
->> Hi,
->> 
->> Thanks for the patch-- tested, but unfortunately it still hanged at the 
->> reboot process (when I did not use reboot=a).
->> 
->> I see in the patch:
->>> +             printk(KERN_INFO "%s series board detected. Selecting ACPI
->> 
->> But..
->> 
->> $ dmesg | grep -i 'series board'
->> $
->> 
->> $ uname -a
->> Linux p34.internal.lan 2.6.31.3 #9 SMP Thu Oct 15 18:31:29 EDT 2009 x86_64 
->> GNU/Linux
->> 
->> $ cat /proc/cmdline auto BOOT_IMAGE=2.6.31.3-9 ro root=812 
->> 3w-9xxx.use_msi=1
->> 
->>> +			DMI_MATCH(DMI_SYS_VENDOR, "Intel Corporation"),
->>> +			DMI_MATCH(DMI_PRODUCT_NAME, "DP55KG"),
->> 
->> But..
->> 
->> # dmidecode|grep -i dp55
->>        Product Name: DP55KG
->> 
->> Stops at Corp.
->> 
->> # dmidecode|grep -i vendor
->>        Vendor: Intel Corp.
->> 
->> Changed that line to:
->> +     DMI_MATCH(DMI_SYS_VENDOR, "Intel Corp."),
->> 
->> That did not work either, ideas?
->> 
->> Justin.
->> 
->
-> Ack, hold a second, I updated the patch/info in the e-mail but did not save 
-> it before I rebooted as I am rebooting every 5 minutes.
->
-> Trying w/ Intel Corp.
->
+Or are you asking for a further comment here on why that's so?
+I think I'd rather just switch to taking swap_lock in swap_start()
+and swap_next(), than be adding comments on why we don't need it.
 
-$ dmesg | grep -i series
-$
-
-Still no match (and still hangs at reboot)...
-
-# cat /usr/src/linux-2.6.31.3/arch/x86/kernel/reboot.c|grep -i intel
-         {       /* Handle problems with rebooting on Intel DP55KG */
-                 .ident = "Intel DP55KG",
-                         DMI_MATCH(DMI_SYS_VENDOR, "Intel Corp."),
-
-Justin.
+Hugh
