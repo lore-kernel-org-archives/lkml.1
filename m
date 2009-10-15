@@ -1,552 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934806AbZJOGtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbZJOGne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934806AbZJOGtf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 02:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934752AbZJOGtd
+	id S1755410AbZJOGne (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 02:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZJOGne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 02:49:33 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:41597 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755728AbZJOGt3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 02:49:29 -0400
-From: Vishnu Suresh <Vishnu@freescale.com>
-To: linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       herbert@gondor.apana.org.au, dan.j.williams@intel.com
-Cc: Vishnu Suresh <Vishnu@freescale.com>,
-       Kim Phillips <kim.phillips@freescale.com>,
-       Dipen Dudhat <Dipen.Dudhat@freescale.com>,
-       Maneesh Gupta <Maneesh.Gupta@freescale.com>
-Subject: [PATCH v0 2/2] Crypto: Talitos: Support for Async_tx XOR offload
-Date: Thu, 15 Oct 2009 12:11:06 +0530
-Message-Id: <1255588866-4133-2-git-send-email-Vishnu@freescale.com>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1255588866-4133-1-git-send-email-Vishnu@freescale.com>
-References: <1255588866-4133-1-git-send-email-Vishnu@freescale.com>
-X-Brightmail-Tracker: AAAAAQAAAWE=
+	Thu, 15 Oct 2009 02:43:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46901 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752511AbZJOGnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 02:43:33 -0400
+Date: Thu, 15 Oct 2009 08:42:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 12/13] [PATCH 12/13] perf tools: handle - and + in
+	parsing trace print format
+Message-ID: <20091015064240.GC11645@elte.hu>
+References: <20091014194330.980165492@goodmis.org> <20091014194400.330843045@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014194400.330843045@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Expose Talitos's XOR functionality to be used for
-RAID Parity calculation via the Async_tx layer.
 
-Thanks to Surender Kumar and Lee Nipper for their help in
-realising this driver
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-Signed-off-by: Dipen Dudhat <Dipen.Dudhat@freescale.com>
-Signed-off-by: Maneesh Gupta <Maneesh.Gupta@freescale.com>
-Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
----
- drivers/crypto/Kconfig   |    2 +
- drivers/crypto/talitos.c |  423 +++++++++++++++++++++++++++++++++++++++++++++-
- drivers/crypto/talitos.h |    2 +
- 3 files changed, 426 insertions(+), 1 deletions(-)
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> The opterators '-' and '+' are not handled in the trace print format.
+> 
+> To do: '++' and '--'.
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  tools/perf/Makefile                 |    2 +-
+>  tools/perf/util/trace-event-parse.c |    6 ++++++
+>  2 files changed, 7 insertions(+), 1 deletions(-)
+> 
+> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+> index 495eb6d..1172aa7 100644
+> --- a/tools/perf/Makefile
+> +++ b/tools/perf/Makefile
+> @@ -194,7 +194,7 @@ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wold-style-definition
+>  EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wstrict-prototypes
+>  EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wdeclaration-after-statement
+>  
+> -CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
+> +CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
 
-diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
-index b08403d..343e578 100644
---- a/drivers/crypto/Kconfig
-+++ b/drivers/crypto/Kconfig
-@@ -192,6 +192,8 @@ config CRYPTO_DEV_TALITOS
- 	select CRYPTO_ALGAPI
- 	select CRYPTO_AUTHENC
- 	select HW_RANDOM
-+	select DMA_ENGINE
-+	select ASYNC_XOR
- 	depends on FSL_SOC
- 	help
- 	  Say 'Y' here to use the Freescale Security Engine (SEC)
-diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index c47ffe8..84819d4 100644
---- a/drivers/crypto/talitos.c
-+++ b/drivers/crypto/talitos.c
-@@ -1,7 +1,7 @@
- /*
-  * talitos - Freescale Integrated Security Engine (SEC) device driver
-  *
-- * Copyright (c) 2008 Freescale Semiconductor, Inc.
-+ * Copyright (c) 2008-2009 Freescale Semiconductor, Inc.
-  *
-  * Scatterlist Crypto API glue code copied from files with the following:
-  * Copyright (c) 2006-2007 Herbert Xu <herbert@gondor.apana.org.au>
-@@ -37,6 +37,8 @@
- #include <linux/io.h>
- #include <linux/spinlock.h>
- #include <linux/rtnetlink.h>
-+#include <linux/dmaengine.h>
-+#include <linux/raid/xor.h>
- 
- #include <crypto/algapi.h>
- #include <crypto/aes.h>
-@@ -140,6 +142,9 @@ struct talitos_private {
- 
- 	/* hwrng device */
- 	struct hwrng rng;
-+
-+	/* XOR Device */
-+	struct dma_device dma_dev_common;
- };
- 
- /* .features flag */
-@@ -685,6 +690,401 @@ static void talitos_unregister_rng(struct device *dev)
- }
- 
- /*
-+ * async_tx interface for XOR-capable SECs
-+ *
-+ * Dipen Dudhat <Dipen.Dudhat@freescale.com>
-+ * Maneesh Gupta <Maneesh.Gupta@freescale.com>
-+ * Vishnu Suresh <Vishnu@freescale.com>
-+ */
-+
-+/**
-+ * talitos_xor_chan - context management for the async_tx channel
-+ * @completed_cookie: the last completed cookie
-+ * @desc_lock: lock for tx queue
-+ * @total_desc: number of descriptors allocated
-+ * @submit_q: queue of submitted descriptors
-+ * @pending_q: queue of pending descriptors
-+ * @in_progress_q: queue of descriptors in progress
-+ * @free_desc: queue of unused descriptors
-+ * @dev: talitos device implementing this channel
-+ * @common: the corresponding xor channel in async_tx
-+ */
-+struct talitos_xor_chan {
-+	dma_cookie_t completed_cookie;
-+	spinlock_t desc_lock;
-+	unsigned int total_desc;
-+	struct list_head submit_q;
-+	struct list_head pending_q;
-+	struct list_head in_progress_q;
-+	struct list_head free_desc;
-+	struct device *dev;
-+	struct dma_chan common;
-+};
-+
-+/**
-+ * talitos_xor_desc - software xor descriptor
-+ * @async_tx: the referring async_tx descriptor
-+ * @node:
-+ * @hwdesc: h/w descriptor
-+ */
-+struct talitos_xor_desc {
-+	struct dma_async_tx_descriptor async_tx;
-+	struct list_head tx_list;
-+	struct list_head node;
-+	struct talitos_desc hwdesc;
-+};
-+
-+static void talitos_release_xor(struct device *dev, struct talitos_desc *hwdesc,
-+				void *context, int error);
-+
-+static enum dma_status talitos_is_tx_complete(struct dma_chan *chan,
-+					      dma_cookie_t cookie,
-+					      dma_cookie_t *done,
-+					      dma_cookie_t *used)
-+{
-+	struct talitos_xor_chan *xor_chan;
-+	dma_cookie_t last_used;
-+	dma_cookie_t last_complete;
-+
-+	xor_chan = container_of(chan, struct talitos_xor_chan, common);
-+
-+	last_used = chan->cookie;
-+	last_complete = xor_chan->completed_cookie;
-+
-+	if (done)
-+		*done = last_complete;
-+
-+	if (used)
-+		*used = last_used;
-+
-+	return dma_async_is_complete(cookie, last_complete, last_used);
-+}
-+
-+static void talitos_process_pending(struct talitos_xor_chan *xor_chan)
-+{
-+	struct talitos_xor_desc *desc, *_desc;
-+	unsigned long flags;
-+	int status;
-+
-+	spin_lock_irqsave(&xor_chan->desc_lock, flags);
-+
-+	list_for_each_entry_safe(desc, _desc, &xor_chan->pending_q, node) {
-+		status = talitos_submit(xor_chan->dev, &desc->hwdesc,
-+					talitos_release_xor, desc);
-+		if (status != -EINPROGRESS)
-+			break;
-+
-+		list_del(&desc->node);
-+		list_add_tail(&desc->node, &xor_chan->in_progress_q);
-+	}
-+
-+	spin_unlock_irqrestore(&xor_chan->desc_lock, flags);
-+}
-+
-+static void talitos_release_xor(struct device *dev, struct talitos_desc *hwdesc,
-+				void *context, int error)
-+{
-+	struct talitos_xor_desc *desc = context;
-+	struct talitos_xor_chan *xor_chan;
-+	dma_async_tx_callback callback;
-+	void *callback_param;
-+
-+	if (unlikely(error)) {
-+		dev_err(dev, "xor operation: talitos error %d\n", error);
-+		BUG();
-+	}
-+
-+	xor_chan = container_of(desc->async_tx.chan, struct talitos_xor_chan,
-+				common);
-+	spin_lock_bh(&xor_chan->desc_lock);
-+	if (xor_chan->completed_cookie < desc->async_tx.cookie)
-+		xor_chan->completed_cookie = desc->async_tx.cookie;
-+
-+	callback = desc->async_tx.callback;
-+	callback_param = desc->async_tx.callback_param;
-+
-+	if (callback) {
-+		spin_unlock_bh(&xor_chan->desc_lock);
-+		callback(callback_param);
-+		spin_lock_bh(&xor_chan->desc_lock);
-+	}
-+
-+	list_del(&desc->node);
-+	list_add_tail(&desc->node, &xor_chan->free_desc);
-+	spin_unlock_bh(&xor_chan->desc_lock);
-+	if (!list_empty(&xor_chan->pending_q))
-+		talitos_process_pending(xor_chan);
-+}
-+
-+/**
-+ * talitos_issue_pending - move the descriptors in submit
-+ * queue to pending queue and submit them for processing
-+ * @chan: DMA channel
-+ */
-+static void talitos_issue_pending(struct dma_chan *chan)
-+{
-+	struct talitos_xor_chan *xor_chan;
-+
-+	xor_chan = container_of(chan, struct talitos_xor_chan, common);
-+	spin_lock_bh(&xor_chan->desc_lock);
-+	list_splice_tail_init(&xor_chan->submit_q,
-+				 &xor_chan->pending_q);
-+	spin_unlock_bh(&xor_chan->desc_lock);
-+	talitos_process_pending(xor_chan);
-+}
-+
-+static dma_cookie_t talitos_async_tx_submit(struct dma_async_tx_descriptor *tx)
-+{
-+	struct talitos_xor_desc *desc;
-+	struct talitos_xor_chan *xor_chan;
-+	dma_cookie_t cookie;
-+
-+	desc = container_of(tx, struct talitos_xor_desc, async_tx);
-+	xor_chan = container_of(tx->chan, struct talitos_xor_chan, common);
-+
-+	spin_lock_bh(&xor_chan->desc_lock);
-+
-+	cookie = xor_chan->common.cookie + 1;
-+	if (cookie < 0)
-+		cookie = 1;
-+
-+	desc->async_tx.cookie = cookie;
-+	xor_chan->common.cookie = desc->async_tx.cookie;
-+
-+	list_splice_tail_init(&desc->tx_list,
-+				 &xor_chan->submit_q);
-+
-+	spin_unlock_bh(&xor_chan->desc_lock);
-+
-+	return cookie;
-+}
-+
-+static struct talitos_xor_desc *talitos_xor_alloc_descriptor(
-+				struct talitos_xor_chan *xor_chan, gfp_t flags)
-+{
-+	struct talitos_xor_desc *desc;
-+
-+	desc = kmalloc(sizeof(*desc), flags);
-+	if (desc) {
-+		xor_chan->total_desc++;
-+		desc->async_tx.tx_submit = talitos_async_tx_submit;
-+	}
-+
-+	return desc;
-+}
-+
-+static void talitos_free_chan_resources(struct dma_chan *chan)
-+{
-+	struct talitos_xor_chan *xor_chan;
-+	struct talitos_xor_desc *desc, *_desc;
-+
-+	xor_chan = container_of(chan, struct talitos_xor_chan, common);
-+
-+	spin_lock_bh(&xor_chan->desc_lock);
-+
-+	list_for_each_entry_safe(desc, _desc, &xor_chan->submit_q, node) {
-+		list_del(&desc->node);
-+		xor_chan->total_desc--;
-+		kfree(desc);
-+	}
-+	list_for_each_entry_safe(desc, _desc, &xor_chan->pending_q, node) {
-+		list_del(&desc->node);
-+		xor_chan->total_desc--;
-+		kfree(desc);
-+	}
-+	list_for_each_entry_safe(desc, _desc, &xor_chan->in_progress_q, node) {
-+		list_del(&desc->node);
-+		xor_chan->total_desc--;
-+		kfree(desc);
-+	}
-+	list_for_each_entry_safe(desc, _desc, &xor_chan->free_desc, node) {
-+		list_del(&desc->node);
-+		xor_chan->total_desc--;
-+		kfree(desc);
-+	}
-+	BUG_ON(unlikely(xor_chan->total_desc));	/* Some descriptor not freed? */
-+
-+	spin_unlock_bh(&xor_chan->desc_lock);
-+}
-+
-+static int talitos_alloc_chan_resources(struct dma_chan *chan)
-+{
-+	struct talitos_xor_chan *xor_chan;
-+	struct talitos_xor_desc *desc;
-+	LIST_HEAD(tmp_list);
-+	int i;
-+
-+	xor_chan = container_of(chan, struct talitos_xor_chan, common);
-+
-+	if (!list_empty(&xor_chan->free_desc))
-+		return xor_chan->total_desc;
-+
-+	/* 256 initial descriptors */
-+	for (i = 0; i < 256; i++) {
-+		desc = talitos_xor_alloc_descriptor(xor_chan, GFP_KERNEL);
-+		if (!desc) {
-+			dev_err(xor_chan->common.device->dev,
-+				"Only %d initial descriptors\n", i);
-+			break;
-+		}
-+		list_add_tail(&desc->node, &tmp_list);
-+	}
-+
-+	if (!i)
-+		return -ENOMEM;
-+
-+	/* At least one desc is allocated */
-+	spin_lock_bh(&xor_chan->desc_lock);
-+	list_splice_init(&tmp_list, &xor_chan->free_desc);
-+	spin_unlock_bh(&xor_chan->desc_lock);
-+
-+	return xor_chan->total_desc;
-+}
-+
-+static struct dma_async_tx_descriptor * talitos_prep_dma_xor(
-+			struct dma_chan *chan, dma_addr_t dest, dma_addr_t *src,
-+			unsigned int src_cnt, size_t len, unsigned long flags)
-+{
-+	struct talitos_xor_chan *xor_chan;
-+	struct talitos_xor_desc *new;
-+	struct talitos_desc *desc;
-+	int i, j;
-+
-+	BUG_ON(unlikely(len > TALITOS_MAX_DATA_LEN));
-+
-+	xor_chan = container_of(chan, struct talitos_xor_chan, common);
-+
-+	spin_lock_bh(&xor_chan->desc_lock);
-+	if (!list_empty(&xor_chan->free_desc)) {
-+		new = container_of(xor_chan->free_desc.next,
-+				   struct talitos_xor_desc, node);
-+		list_del(&new->node);
-+	} else {
-+		new = talitos_xor_alloc_descriptor(xor_chan, GFP_KERNEL);
-+	}
-+	spin_unlock_bh(&xor_chan->desc_lock);
-+
-+	if (!new) {
-+		dev_err(xor_chan->common.device->dev,
-+			"No free memory for XOR DMA descriptor\n");
-+		return NULL;
-+	}
-+	dma_async_tx_descriptor_init(&new->async_tx, &xor_chan->common);
-+
-+	INIT_LIST_HEAD(&new->node);
-+	INIT_LIST_HEAD(&new->tx_list);
-+
-+	desc = &new->hwdesc;
-+	/* Set destination: Last pointer pair */
-+	to_talitos_ptr(&desc->ptr[6], dest);
-+	desc->ptr[6].len = cpu_to_be16(len);
-+	desc->ptr[6].j_extent = 0;
-+
-+	/* Set Sources: End loading from second-last pointer pair */
-+	for (i = 5, j = 0; (j < src_cnt) && (i > 0); i--, j++) {
-+		to_talitos_ptr(&desc->ptr[i], src[j]);
-+		desc->ptr[i].len = cpu_to_be16(len);
-+		desc->ptr[i].j_extent = 0;
-+	}
-+
-+	/*
-+	 * documentation states first 0 ptr/len combo marks end of sources
-+	 * yet device produces scatter boundary error unless all subsequent
-+	 * sources are zeroed out
-+	 */
-+	for (; i >= 0; i--) {
-+		to_talitos_ptr(&desc->ptr[i], 0);
-+		desc->ptr[i].len = 0;
-+		desc->ptr[i].j_extent = 0;
-+	}
-+
-+	desc->hdr = DESC_HDR_SEL0_AESU | DESC_HDR_MODE0_AESU_XOR
-+		    | DESC_HDR_TYPE_RAID_XOR;
-+
-+	new->async_tx.parent = NULL;
-+	new->async_tx.next = NULL;
-+	new->async_tx.cookie = 0;
-+	async_tx_ack(&new->async_tx);
-+
-+	list_add_tail(&new->node, &new->tx_list);
-+
-+	new->async_tx.flags = flags;
-+	new->async_tx.cookie = -EBUSY;
-+
-+	return &new->async_tx;
-+}
-+
-+static void talitos_unregister_async_xor(struct device *dev)
-+{
-+	struct talitos_private *priv = dev_get_drvdata(dev);
-+	struct talitos_xor_chan *xor_chan;
-+	struct dma_chan *chan;
-+
-+	if (priv->dma_dev_common.chancnt)
-+		dma_async_device_unregister(&priv->dma_dev_common);
-+
-+	list_for_each_entry(chan, &priv->dma_dev_common.channels, device_node) {
-+		xor_chan = container_of(chan, struct talitos_xor_chan, common);
-+		list_del(&chan->device_node);
-+		priv->dma_dev_common.chancnt--;
-+		kfree(xor_chan);
-+	}
-+}
-+
-+/**
-+ * talitos_register_dma_async - Initialize the Freescale XOR ADMA device
-+ * It is registered as a DMA device with the capability to perform
-+ * XOR operation with the Async_tx layer.
-+ * The various queues and channel resources are also allocated.
-+ */
-+static int talitos_register_async_tx(struct device *dev, int max_xor_srcs)
-+{
-+	struct talitos_private *priv = dev_get_drvdata(dev);
-+	struct dma_device *dma_dev = &priv->dma_dev_common;
-+	struct talitos_xor_chan *xor_chan;
-+	int err;
-+
-+	xor_chan = kzalloc(sizeof(struct talitos_xor_chan), GFP_KERNEL);
-+	if (!xor_chan) {
-+		dev_err(dev, "unable to allocate xor channel\n");
-+		return -ENOMEM;
-+	}
-+
-+	dma_dev->dev = dev;
-+	dma_dev->device_alloc_chan_resources = talitos_alloc_chan_resources;
-+	dma_dev->device_free_chan_resources = talitos_free_chan_resources;
-+	dma_dev->device_prep_dma_xor = talitos_prep_dma_xor;
-+	dma_dev->max_xor = max_xor_srcs;
-+	dma_dev->device_is_tx_complete = talitos_is_tx_complete;
-+	dma_dev->device_issue_pending = talitos_issue_pending;
-+	INIT_LIST_HEAD(&dma_dev->channels);
-+	dma_cap_set(DMA_XOR, dma_dev->cap_mask);
-+
-+	xor_chan->dev = dev;
-+	xor_chan->common.device = dma_dev;
-+	xor_chan->total_desc = 0;
-+	INIT_LIST_HEAD(&xor_chan->submit_q);
-+	INIT_LIST_HEAD(&xor_chan->pending_q);
-+	INIT_LIST_HEAD(&xor_chan->in_progress_q);
-+	INIT_LIST_HEAD(&xor_chan->free_desc);
-+	spin_lock_init(&xor_chan->desc_lock);
-+
-+	list_add_tail(&xor_chan->common.device_node, &dma_dev->channels);
-+	dma_dev->chancnt++;
-+
-+	err = dma_async_device_register(dma_dev);
-+	if (err) {
-+		dev_err(dev, "Unable to register XOR with Async_tx\n");
-+		goto err_out;
-+	}
-+
-+	return err;
-+
-+err_out:
-+	talitos_unregister_async_xor(dev);
-+	return err;
-+}
-+/*
-  * crypto alg
-  */
- #define TALITOS_CRA_PRIORITY		3000
-@@ -1768,6 +2168,8 @@ static int talitos_remove(struct of_device *ofdev)
- 	tasklet_kill(&priv->done_task);
- 
- 	iounmap(priv->reg);
-+	if (priv->dma_dev_common.chancnt)
-+		talitos_unregister_async_xor(dev);
- 
- 	dev_set_drvdata(dev, NULL);
- 
-@@ -1926,6 +2328,25 @@ static int talitos_probe(struct of_device *ofdev,
- 			dev_info(dev, "hwrng\n");
- 	}
- 
-+	/*
-+	 * register with async_tx xor, if capable
-+	 * SEC 2.x support up to 3 RAID sources,
-+	 * SEC 3.x support up to 6
-+	 */
-+	if (hw_supports(dev, DESC_HDR_SEL0_AESU | DESC_HDR_TYPE_RAID_XOR)) {
-+		int max_xor_srcs = 3;
-+		if (of_device_is_compatible(np, "fsl,sec3.0"))
-+			max_xor_srcs = 6;
-+
-+		err = talitos_register_async_tx(dev, max_xor_srcs);
-+		if (err) {
-+			dev_err(dev, "failed to register async_tx xor: %d\n",
-+				err);
-+			goto err_out;
-+		}
-+		dev_info(dev, "max_xor_srcs %d\n", max_xor_srcs);
-+	}
-+
- 	/* register crypto algorithms the device supports */
- 	for (i = 0; i < ARRAY_SIZE(driver_algs); i++) {
- 		if (hw_supports(dev, driver_algs[i].desc_hdr_template)) {
-diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
-index ff5a145..b6197bc 100644
---- a/drivers/crypto/talitos.h
-+++ b/drivers/crypto/talitos.h
-@@ -155,6 +155,7 @@
- /* primary execution unit mode (MODE0) and derivatives */
- #define	DESC_HDR_MODE0_ENCRYPT		cpu_to_be32(0x00100000)
- #define	DESC_HDR_MODE0_AESU_CBC		cpu_to_be32(0x00200000)
-+#define	DESC_HDR_MODE0_AESU_XOR		cpu_to_be32(0x0c600000)
- #define	DESC_HDR_MODE0_DEU_CBC		cpu_to_be32(0x00400000)
- #define	DESC_HDR_MODE0_DEU_3DES		cpu_to_be32(0x00200000)
- #define	DESC_HDR_MODE0_MDEU_INIT	cpu_to_be32(0x01000000)
-@@ -202,6 +203,7 @@
- #define DESC_HDR_TYPE_IPSEC_ESP			cpu_to_be32(1 << 3)
- #define DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU	cpu_to_be32(2 << 3)
- #define DESC_HDR_TYPE_HMAC_SNOOP_NO_AFEU	cpu_to_be32(4 << 3)
-+#define DESC_HDR_TYPE_RAID_XOR			cpu_to_be32(21 << 3)
- 
- /* link table extent field bits */
- #define DESC_PTR_LNKTBL_JUMP			0x80
--- 
-1.6.4.2
+hm, why does this patch change the Makefile?
 
+i've skipped this hunk, it does not appear to be connected to the 
+commit.
+
+	Ingo
