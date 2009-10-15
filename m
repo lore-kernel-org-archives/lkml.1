@@ -1,67 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762966AbZJOWYD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763016AbZJOW0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762966AbZJOWYD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 18:24:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758534AbZJOWYD
+	id S1763016AbZJOW0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 18:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758713AbZJOW0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 18:24:03 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:60197 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756281AbZJOWYB (ORCPT
+	Thu, 15 Oct 2009 18:26:18 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:33262 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757786AbZJOW0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 18:24:01 -0400
-X-Trace: 275023207/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.3.134/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.3.134
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEAKM910pPRQOG/2dsb2JhbACBUtdGhDAE
-X-IronPort-AV: E=Sophos;i="4.44,568,1249254000"; 
-   d="scan'208";a="275023207"
-Date: Thu, 15 Oct 2009 23:23:24 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 8/9] swap_info: note SWAP_MAP_SHMEM
-In-Reply-To: <20091015123219.43cfd7b1.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0910152317290.4447@sister.anvils>
-References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
- <Pine.LNX.4.64.0910150156060.3291@sister.anvils>
- <20091015123219.43cfd7b1.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 15 Oct 2009 18:26:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=RwMnbrgjKTKfrH2rQGDOjG3Sca2vKYGkRCgaoW+wfRumHzWDoVX1ej6z5e1Dgc7rG2
+         8iywlsEc7yKg7S0Qe5OUHLycSvYsUJyj92bnc7505YghHqcEfVcNR0yoFJEKp1DWG3uM
+         J8ZvzLMRbNUXZabH4PNSeNYpgmSb9SoWv6RLw=
+Message-ID: <4AD7A141.3060102@gmail.com>
+Date: Thu, 15 Oct 2009 18:25:05 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Gregory Haskins <ghaskins@novell.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, sfr@canb.auug.org.au,
+       greg@kroah.com, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+Subject: Re: [BUILD-FAILURE] next-20091015 - vbus_enet driver breaks with
+ allmodconfig
+References: <20091015152538.74a1cb15.sfr@canb.auug.org.au>	<20091015104852.GA6740@linux.vnet.ibm.com>	<4AD6CD940200005A00056857@sinclair.provo.novell.com>	<4AD75E60.4020306@gmail.com> <20091015114210.65e1be72.randy.dunlap@oracle.com>
+In-Reply-To: <20091015114210.65e1be72.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigF135C229963BF58A4FFDD8B8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009, KAMEZAWA Hiroyuki wrote:
-> On Thu, 15 Oct 2009 01:57:28 +0100 (BST)
-> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-> 
-> > While we're fiddling with the swap_map values, let's assign a particular
-> > value to shmem/tmpfs swap pages: their swap counts are never incremented,
-> > and it helps swapoff's try_to_unuse() a little if it can immediately
-> > distinguish those pages from process pages.
-> > 
-> > Since we've no use for SWAP_MAP_BAD | COUNT_CONTINUED,
-> > we might as well use that 0xbf value for SWAP_MAP_SHMEM.
-> > 
-> > Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> 
-> I welcome this!
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigF135C229963BF58A4FFDD8B8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Ah, I did wonder whether you might find some memcg use for it too:
-I'm guessing your welcome means that you do have some such in mind.
+Randy Dunlap wrote:
+> On Thu, 15 Oct 2009 13:39:44 -0400 Gregory Haskins wrote:
+>=20
+>>
+>> I am having difficulty reproducing the problem.  When I look at the
+>> Kconfig, I see that VBUS_ENET has a "select VBUS_PROXY" as I would
+>> expect.  Additionally, if I run allmodconfig I can confirm that I get
+>> VBUS_ENET=3Dm, VBUS_PROXY=3Dy:
+>=20
+> Greg,
+>=20
+> Did you try to reproduce it with the ppc64 config file?
+> allmodconfig on what arch?
+>=20
+> I think the problem is that arch/x86/Kconfig says:
+>=20
+> source "drivers/vbus/Kconfig"
+>=20
+> and that should actually be in drivers/Kconfig, so that it applies
+> to ppc64 et al, not just x86.
 
-(By the way, there's no particular need to use that 0xbf value:
-during most of my testing I was using SWAP_MAP_SHMEM 0x3e and
-SWAP_MAP_MAX 0x3d; but then noticed that 0xbf just happened to be
-free, and also happened to sail through the tests in the right way.
-But if it ever becomes a nuisance there, no problem to move it.)
+Ah, indeed.  I only have/tried x86, and that is the issue.  I will have
+to fix this (and the create_irq() dependency you mention in the next mail=
+).
 
-Hugh
+Thanks Randy.
+
+-Greg
+
+
+--------------enigF135C229963BF58A4FFDD8B8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkrXoUEACgkQP5K2CMvXmqHjPwCdGjUZb1/Cutbea5ZkZYkYI832
++x0Ani3clRM6y9kcGDoZouUZb4weaht/
+=OVu/
+-----END PGP SIGNATURE-----
+
+--------------enigF135C229963BF58A4FFDD8B8--
