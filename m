@@ -1,156 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763112AbZJOWl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763153AbZJOWm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763112AbZJOWl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 18:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757571AbZJOWl5
+	id S1763153AbZJOWm4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 18:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756387AbZJOWmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 18:41:57 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:14576 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755281AbZJOWl5 (ORCPT
+	Thu, 15 Oct 2009 18:42:55 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:53513 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752532AbZJOWmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 18:41:57 -0400
-X-Trace: 271685631/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.3.134/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.3.134
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEANtB10pPRQOG/2dsb2JhbACBUtdIhDAE
-X-IronPort-AV: E=Sophos;i="4.44,568,1249254000"; 
-   d="scan'208";a="271685631"
-Date: Thu, 15 Oct 2009 23:41:19 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2/9] swap_info: change to array of pointers
-In-Reply-To: <20091015111107.b505b676.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0910152324220.4447@sister.anvils>
-References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
- <Pine.LNX.4.64.0910150146210.3291@sister.anvils>
- <20091015111107.b505b676.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 15 Oct 2009 18:42:54 -0400
+Message-ID: <4AD7A569.1040308@oracle.com>
+Date: Thu, 15 Oct 2009 15:42:49 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bhavesh Davda <bhavesh@vmware.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
+       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [Pv-drivers] [PATCH -next] vmxnet3: use dev_dbg,	fix build for
+ CONFIG_BLOCK=n
+References: <20091015152538.74a1cb15.sfr@canb.auug.org.au> <4AD7A24F.6000900@oracle.com> <8B1F619C9F5F454E81D90D3C161698D7017DD56435@EXCH-MBX-3.vmware.com>
+In-Reply-To: <8B1F619C9F5F454E81D90D3C161698D7017DD56435@EXCH-MBX-3.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4AD7A53F.010A:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009, KAMEZAWA Hiroyuki wrote:
-> On Thu, 15 Oct 2009 01:48:01 +0100 (BST)
-> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-> > --- si1/mm/swapfile.c	2009-10-14 21:25:58.000000000 +0100
-> > +++ si2/mm/swapfile.c	2009-10-14 21:26:09.000000000 +0100
-> > @@ -49,7 +49,7 @@ static const char Unused_offset[] = "Unu
-> >  
-> >  static struct swap_list_t swap_list = {-1, -1};
-> >  
-> > -static struct swap_info_struct swap_info[MAX_SWAPFILES];
-> > +static struct swap_info_struct *swap_info[MAX_SWAPFILES];
-> >  
-> 
-> Could you add some comment like this ?
-> ==
-> nr_swapfile is never decreased.
-> swap_info[type] pointer will never be invalid if it turns to be valid once.
-> 
-> 
-> for (i = 0; i < nr_swapfiles; i++) {
-> 	smp_rmp();
-> 	sis = swap_info[type];
-> 	....
-> } 
-> Then, we can execute above without checking sis is valid or not.
-> smp_rmb() is required when we do above loop without swap_lock().
+Bhavesh Davda wrote:
+> Who ever compiles with CONFIG_BLOCK=n? Just kidding...
 
-I do describe this (too briefly?) in the comment on smp_wmb() where
-swap_info[type] is set and nr_swapfiles raised, in swapon (see below).
-And make a quick same-line comment on the corresponding smp_rmb()s.
+or why does networking need CONFIG_BLOCK at all?  ;)
 
-Those seem more useful to me than such a comment on the
-static struct swap_info_struct *swap_info[MAX_SWAPFILES];
+> Thanks again for making this change! Ship it!
 
-I was about to add (now, in writing this mail) that /proc/swaps is
-the only thing that reads them without swap_lock; but that's not
-true, of course, swap_duplicate and swap_free (or their helpers)
-make preliminary checks without swap_lock - but the difference
-there is that (unless the pagetable has become corrupted) they're
-dealing with a swap entry which was previously valid, so can by
-this time rely upon swap_info[type] and nr_swapfiles to be safe.
+So could I have used adapter->netdev->dev or adapter->pdev->dev ?
+either of them?  are they the same?
 
-> swapon_mutex() will be no help.
+
+> Signed-off-by: Bhavesh Davda <bhavesh@vmware.com>
 > 
-> Whether sis is used or not can be detelcted by sis->flags.
+> - Bhavesh
 > 
-> > @@ -1675,11 +1674,13 @@ static void *swap_start(struct seq_file
-> >  	if (!l)
-> >  		return SEQ_START_TOKEN;
-> >  
-> > -	for (i = 0; i < nr_swapfiles; i++, ptr++) {
-> > -		if (!(ptr->flags & SWP_USED) || !ptr->swap_map)
-> > +	for (type = 0; type < nr_swapfiles; type++) {
-> > +		smp_rmb();	/* read nr_swapfiles before swap_info[type] */
-> > +		si = swap_info[type];
-> 
-> 		if (!si) ?
-> 
-> > +		if (!(si->flags & SWP_USED) || !si->swap_map)
-> >  			continue;
-> >  		if (!--l)
-> > -			return ptr;
-> > +			return si;
-> >  	}
-...
-> >  static void *swap_next(struct seq_file *swap, void *v, loff_t *pos)
-> >  {
-> > -	struct swap_info_struct *ptr;
-> > -	struct swap_info_struct *endptr = swap_info + nr_swapfiles;
-> > +	struct swap_info_struct *si = v;
-> > +	int type;
-> >  
-> >  	if (v == SEQ_START_TOKEN)
-> > -		ptr = swap_info;
-> > -	else {
-> > -		ptr = v;
-> > -		ptr++;
-> > -	}
-> > +		type = 0;
-> > +	else
-> > +		type = si->type + 1;
-> >  
-> > -	for (; ptr < endptr; ptr++) {
-> > -		if (!(ptr->flags & SWP_USED) || !ptr->swap_map)
-> > +	for (; type < nr_swapfiles; type++) {
-> > +		smp_rmb();	/* read nr_swapfiles before swap_info[type] */
-> > +		si = swap_info[type];
-> > +		if (!(si->flags & SWP_USED) || !si->swap_map)
-...
-> > @@ -1799,23 +1800,45 @@ SYSCALL_DEFINE2(swapon, const char __use
-...
-> > -	if (type >= nr_swapfiles)
-> > -		nr_swapfiles = type+1;
-> > -	memset(p, 0, sizeof(*p));
-> >  	INIT_LIST_HEAD(&p->extent_list);
-> > +	if (type >= nr_swapfiles) {
-> > +		p->type = type;
-> > +		swap_info[type] = p;
-> > +		/*
-> > +		 * Write swap_info[type] before nr_swapfiles, in case a
-> > +		 * racing procfs swap_start() or swap_next() is reading them.
-> > +		 * (We never shrink nr_swapfiles, we never free this entry.)
-> > +		 */
-> > +		smp_wmb();
-> > +		nr_swapfiles++;
-> > +	} else {
-> > +		kfree(p);
-> > +		p = swap_info[type];
-> > +		/*
-> > +		 * Do not memset this entry: a racing procfs swap_next()
-> > +		 * would be relying on p->type to remain valid.
-> > +		 */
-> > +	}
-...
+>> -----Original Message-----
+>> From: pv-drivers-bounces@vmware.com [mailto:pv-drivers-
+>> bounces@vmware.com] On Behalf Of Randy Dunlap
+>> Sent: Thursday, October 15, 2009 3:30 PM
+>> To: Stephen Rothwell
+>> Cc: pv-drivers@vmware.com; netdev; LKML; linux-next@vger.kernel.org;
+>> David Miller
+>> Subject: [Pv-drivers] [PATCH -next] vmxnet3: use dev_dbg, fix build for
+>> CONFIG_BLOCK=n
+>>
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>
+>> vmxnet3 was using dprintk() for debugging output.  This was
+>> defined in <linux/dst.h> and was the only thing that was
+>> used from that header file.  This caused compile errors
+>> when CONFIG_BLOCK was not enabled due to bio* and BIO*
+>> uses in the header file, so change this driver to use
+>> dev_dbg() for debugging output.
+>>
+>> include/linux/dst.h:520: error: dereferencing pointer to incomplete
+>> type
+>> include/linux/dst.h:520: error: 'BIO_POOL_BITS' undeclared (first use
+>> in this function)
+>> include/linux/dst.h:521: error: dereferencing pointer to incomplete
+>> type
+>> include/linux/dst.h:522: error: dereferencing pointer to incomplete
+>> type
+>> include/linux/dst.h:525: error: dereferencing pointer to incomplete
+>> type
+>> make[4]: *** [drivers/net/vmxnet3/vmxnet3_drv.o] Error 1
+>>
+>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>> ---
+>>  drivers/net/vmxnet3/vmxnet3_drv.c |   27 ++++++++++++++++++---------
+>>  drivers/net/vmxnet3/vmxnet3_int.h |    2 +-
+>>  2 files changed, 19 insertions(+), 10 deletions(-)
+>>
+>> --- linux-next-20091015.orig/drivers/net/vmxnet3/vmxnet3_int.h
+>> +++ linux-next-20091015/drivers/net/vmxnet3/vmxnet3_int.h
+>> @@ -30,6 +30,7 @@
+>>  #include <linux/types.h>
+>>  #include <linux/ethtool.h>
+>>  #include <linux/delay.h>
+>> +#include <linux/device.h>
+>>  #include <linux/netdevice.h>
+>>  #include <linux/pci.h>
+>>  #include <linux/ethtool.h>
+>> @@ -59,7 +60,6 @@
+>>  #include <linux/if_vlan.h>
+>>  #include <linux/if_arp.h>
+>>  #include <linux/inetdevice.h>
+>> -#include <linux/dst.h>
+>>
+>>  #include "vmxnet3_defs.h"
+>>
+>> --- linux-next-20091015.orig/drivers/net/vmxnet3/vmxnet3_drv.c
+>> +++ linux-next-20091015/drivers/net/vmxnet3/vmxnet3_drv.c
+>> @@ -481,7 +481,8 @@ vmxnet3_rq_alloc_rx_buf(struct vmxnet3_r
+>>  	}
+>>  	rq->uncommitted[ring_idx] += num_allocated;
+>>
+>> -	dprintk(KERN_ERR "alloc_rx_buf: %d allocated, next2fill %u,
+>> next2comp "
+>> +	dev_dbg(&adapter->netdev->dev,
+>> +		"alloc_rx_buf: %d allocated, next2fill %u, next2comp "
+>>  		"%u, uncommited %u\n", num_allocated, ring->next2fill,
+>>  		ring->next2comp, rq->uncommitted[ring_idx]);
+>>
+>> @@ -539,7 +540,8 @@ vmxnet3_map_pkt(struct sk_buff *skb, str
+>>  		tbi = tq->buf_info + tq->tx_ring.next2fill;
+>>  		tbi->map_type = VMXNET3_MAP_NONE;
+>>
+>> -		dprintk(KERN_ERR "txd[%u]: 0x%Lx 0x%x 0x%x\n",
+>> +		dev_dbg(&adapter->netdev->dev,
+>> +			"txd[%u]: 0x%Lx 0x%x 0x%x\n",
+>>  			tq->tx_ring.next2fill, ctx->sop_txd->txd.addr,
+>>  			ctx->sop_txd->dword[2], ctx->sop_txd->dword[3]);
+>>  		vmxnet3_cmd_ring_adv_next2fill(&tq->tx_ring);
+>> @@ -572,7 +574,8 @@ vmxnet3_map_pkt(struct sk_buff *skb, str
+>>  		gdesc->dword[2] = dw2 | buf_size;
+>>  		gdesc->dword[3] = 0;
+>>
+>> -		dprintk(KERN_ERR "txd[%u]: 0x%Lx 0x%x 0x%x\n",
+>> +		dev_dbg(&adapter->netdev->dev,
+>> +			"txd[%u]: 0x%Lx 0x%x 0x%x\n",
+>>  			tq->tx_ring.next2fill, gdesc->txd.addr,
+>>  			gdesc->dword[2], gdesc->dword[3]);
+>>  		vmxnet3_cmd_ring_adv_next2fill(&tq->tx_ring);
+>> @@ -600,7 +603,8 @@ vmxnet3_map_pkt(struct sk_buff *skb, str
+>>  		gdesc->dword[2] = dw2 | frag->size;
+>>  		gdesc->dword[3] = 0;
+>>
+>> -		dprintk(KERN_ERR "txd[%u]: 0x%llu %u %u\n",
+>> +		dev_dbg(&adapter->netdev->dev,
+>> +			"txd[%u]: 0x%llu %u %u\n",
+>>  			tq->tx_ring.next2fill, gdesc->txd.addr,
+>>  			gdesc->dword[2], gdesc->dword[3]);
+>>  		vmxnet3_cmd_ring_adv_next2fill(&tq->tx_ring);
+>> @@ -697,7 +701,8 @@ vmxnet3_parse_and_copy_hdr(struct sk_buf
+>>  	tdd = tq->data_ring.base + tq->tx_ring.next2fill;
+>>
+>>  	memcpy(tdd->data, skb->data, ctx->copy_size);
+>> -	dprintk(KERN_ERR "copy %u bytes to dataRing[%u]\n",
+>> +	dev_dbg(&adapter->netdev->dev,
+>> +		"copy %u bytes to dataRing[%u]\n",
+>>  		ctx->copy_size, tq->tx_ring.next2fill);
+>>  	return 1;
+>>
+>> @@ -808,7 +813,8 @@ vmxnet3_tq_xmit(struct sk_buff *skb, str
+>>
+>>  	if (count > vmxnet3_cmd_ring_desc_avail(&tq->tx_ring)) {
+>>  		tq->stats.tx_ring_full++;
+>> -		dprintk(KERN_ERR "tx queue stopped on %s, next2comp %u"
+>> +		dev_dbg(&adapter->netdev->dev,
+>> +			"tx queue stopped on %s, next2comp %u"
+>>  			" next2fill %u\n", adapter->netdev->name,
+>>  			tq->tx_ring.next2comp, tq->tx_ring.next2fill);
+>>
+>> @@ -853,7 +859,8 @@ vmxnet3_tq_xmit(struct sk_buff *skb, str
+>>
+>>  	/* finally flips the GEN bit of the SOP desc */
+>>  	gdesc->dword[2] ^= VMXNET3_TXD_GEN;
+>> -	dprintk(KERN_ERR "txd[%u]: SOP 0x%Lx 0x%x 0x%x\n",
+>> +	dev_dbg(&adapter->netdev->dev,
+>> +		"txd[%u]: SOP 0x%Lx 0x%x 0x%x\n",
+>>  		(u32)((union Vmxnet3_GenericDesc *)ctx.sop_txd -
+>>  		tq->tx_ring.base), gdesc->txd.addr, gdesc->dword[2],
+>>  		gdesc->dword[3]);
+>> @@ -990,7 +997,8 @@ vmxnet3_rq_rx_complete(struct vmxnet3_rx
+>>  			if (unlikely(rcd->len == 0)) {
+>>  				/* Pretend the rx buffer is skipped. */
+>>  				BUG_ON(!(rcd->sop && rcd->eop));
+>> -				dprintk(KERN_ERR "rxRing[%u][%u] 0 length\n",
+>> +				dev_dbg(&adapter->netdev->dev,
+>> +					"rxRing[%u][%u] 0 length\n",
+>>  					ring_idx, idx);
+>>  				goto rcd_done;
+>>  			}
+>> @@ -1676,7 +1684,8 @@ vmxnet3_activate_dev(struct vmxnet3_adap
+>>  	int err;
+>>  	u32 ret;
+>>
+>> -	dprintk(KERN_ERR "%s: skb_buf_size %d, rx_buf_per_pkt %d, ring
+>> sizes"
+>> +	dev_dbg(&adapter->netdev->dev,
+>> +		"%s: skb_buf_size %d, rx_buf_per_pkt %d, ring sizes"
+>>  		" %u %u %u\n", adapter->netdev->name, adapter-
+>>> skb_buf_size,
+>>  		adapter->rx_buf_per_pkt, adapter->tx_queue.tx_ring.size,
+>>  		adapter->rx_queue.rx_ring[0].size,
+>> _______________________________________________
+
