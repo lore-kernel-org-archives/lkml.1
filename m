@@ -1,361 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935050AbZJOSBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934912AbZJORxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935050AbZJOSBs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 14:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095AbZJOSBs
+	id S934912AbZJORxz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 13:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934612AbZJORxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 14:01:48 -0400
-Received: from smail6.alcatel.fr ([64.208.49.42]:59462 "EHLO smail6.alcatel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754962AbZJOSBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 14:01:46 -0400
-X-Greylist: delayed 559 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Oct 2009 14:01:46 EDT
-Message-ID: <4AD76126.1000408@alcatel-lucent.de>
-Date: Thu, 15 Oct 2009 19:51:34 +0200
-From: Joerg Abraham <Joerg.Abraham@alcatel-lucent.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 15 Oct 2009 13:53:54 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:59711 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934526AbZJORxw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 13:53:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=c949HthCGYYbiU/GX64dnDQoKpybkBfsv9e1lVwJeQ/RDVR6yjhmNtzBY2Bq9RFQpH
+         BnxZWOwmnDNSbnpTCyK9DH/2W0GOjPro0DXdqUSeUTXP0B4mBM+gqmFxYfMe9CbSRtGQ
+         racMF5+QH/bwYkwMVDnaRircftaCLH/eIEeaU=
+Message-ID: <4AD76184.6030900@gmail.com>
+Date: Thu, 15 Oct 2009 19:53:08 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.31.4-rt14 posix message queues problem
-Content-Type: multipart/mixed;
-	boundary="------------060601000705060302040908"
+To: Tilman Schmidt <tilman@imap.cc>
+CC: David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless@vger.kernel.org,
+       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org
+Subject: Re: NOHZ: local_softirq_pending 08
+References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local>
+In-Reply-To: <20091015114052.GA9870@ff.dom.local>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---------------060601000705060302040908
-Content-Type: text/plain; charset="ISO-8859-15"; format=flowed
-Content-Transfer-Encoding: 7bit
+Jarek Poplawski wrote, On 10/15/2009 01:40 PM:
 
-Hi,
-
-During some performance measurement I stumbled over unexpected bad results for 
-a posix message queue test case. Which is not surprising since the kernel log 
-shows a "BUG: scheduling while atomic:" on every measurement trigger.
-
-Attached is the kernel log for an embedded 8572ds powerpc system and a 
-condensed user space test appli. The test appli uses 2 processes (mq_server 
-and mq_client) and pingpongs some messages via posix message queues. Please 
-see the c-file header for details (the appli itself makes not much sense but 
-shows the problem).
-
-./mq_server
-./mq_client # just crashes during run
-
-The problem does _not_ occur on kernels 2.6.29.6-rt24, 2.6.29.6 vanilla and 
-2.6.31.4 vanilla. The problem does _also_ show up on an embedded x86_64 system 
-and a full featured fc11 x86_64 system running a 2.6.31.4-rt14 based kernel, 
-so I dont think it's arch dependent.
-
-Can anybody reproduce the crash ???
-
-If you need more info's please let me know.
-
-[And if I'm doing stupid things just forgive me]
-
-Thanx
-
-Joerg
-
-
---------------060601000705060302040908
-Content-Type: text/plain; name="2.6.31.4-rt14_posix_mq.crash"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline; filename="2.6.31.4-rt14_posix_mq.crash"
-
-[    1.106260] NET: Registered protocol family 17
-[    1.110896] RPC: Registered udp transport module.
-[    1.115600] RPC: Registered tcp transport module.
-[    1.120324] 802.1Q VLAN Support v1.8 Ben Greear <greearb@candelatech.com>
-[    1.127113] All bugs added by David S. Miller <davem@redhat.com>
-[    1.133717] drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
-[    1.140006] Freeing unused kernel memory: 180k init
-[    6.931612] PHY: mdio@ffe24520:00 - Link is Up - 1000/Full
-[  394.113565] BUG: scheduling while atomic: mq_client/0x00000001/1039, CPU#1
-[  394.113572] Modules linked in:
-[  394.113575] Call Trace:
-[  394.113586] [ee8bddb0] [c00074d8] show_stack+0x4c/0x16c (unreliable)
-[  394.113596] [ee8bdde0] [c0037918] __schedule_bug+0x84/0x88
-[  394.113606] [ee8bddf0] [c02f4828] __schedule+0x338/0x778
-[  394.113611] [ee8bde60] [c02f4f14] schedule+0x20/0x44
-[  394.113617] [ee8bde70] [c02f520c] schedule_timeout+0x1c4/0x204
-[  394.113629] [ee8bdec0] [c0170b84] wq_sleep+0xb8/0x1a0
-[  394.113635] [ee8bdee0] [c0170d34] sys_mq_timedreceive+0xc8/0x388
-[  394.113644] [ee8bdf40] [c0010428] ret_from_syscall+0x0/0x3c
-[  394.113692] BUG: scheduling while atomic: mq_server/0x00000001/1038, CPU#1
-[  394.113696] Modules linked in:
-[  394.113699] Call Trace:
-[  394.113704] [ee8b9db0] [c00074d8] show_stack+0x4c/0x16c (unreliable)
-[  394.113711] [ee8b9de0] [c0037918] __schedule_bug+0x84/0x88
-[  394.113717] [ee8b9df0] [c02f4828] __schedule+0x338/0x778
-[  394.113723] [ee8b9e60] [c02f4f14] schedule+0x20/0x44
-[  394.113728] [ee8b9e70] [c02f520c] schedule_timeout+0x1c4/0x204
-[  394.113735] [ee8b9ec0] [c0170b84] wq_sleep+0xb8/0x1a0
-[  394.113741] [ee8b9ee0] [c0170d34] sys_mq_timedreceive+0xc8/0x388
-[  394.113747] [ee8b9f40] [c0010428] ret_from_syscall+0x0/0x3c
-[  394.113758] Page fault in user mode with in_atomic() = 1 mm = eee98c00
-[  394.113762] NIP = fec2d98  MSR = 202d000
-[  394.113766] Oops: Weird page fault, sig: 11 [#1]
-[  394.118382] PREEMPT SMP NR_CPUS=2 MPC8572 DS
-[  394.122657] Modules linked in:
-[  394.125710] NIP: 0fec2d98 LR: 0fec5278 CTR: 0fec51d8
-[  394.130673] REGS: ee8bdf50 TRAP: 0301   Not tainted  (2.6.31.4-rt14-chja)
-[  394.137461] MSR: 0202d000 <EE,PR,VEC,ME,CE>  CR: 44000422  XER: 20000000
-[  394.144197] DEAR: 0ff96df8, ESR: 00000000
-[  394.148203] TASK = eee48050[1039] 'mq_client' THREAD: ee8bc000 CPU: 1
-[  394.154473] GPR00: 00000000 bff7fd50 48027cb0 bff8025c 0000000a bff8025c 0ff97010 00020cd9 
-[  394.162866] GPR08: 00000001 00000001 00000001 00000064 0ff96df4 
-[  394.169076] NIP [0fec2d98] 0xfec2d98
-[  394.172647] LR [0fec5278] 0xfec5278
-[  394.176130] Call Trace:
-[  394.178583] ---[ end trace 5ca40653fb3fed3b ]---
-[  394.183199] note: mq_client[1039] exited with preempt_count 1
-[  394.189022] BUG: scheduling while atomic: mq_client/0x10000001/1039, CPU#1
-[  394.195897] Modules linked in:
-[  394.198950] Call Trace:
-[  394.201394] [ee8bdd30] [c00074d8] show_stack+0x4c/0x16c (unreliable)
-[  394.207758] [ee8bdd60] [c0037918] __schedule_bug+0x84/0x88
-[  394.213250] [ee8bdd70] [c02f4828] __schedule+0x338/0x778
-[  394.218567] [ee8bdde0] [c0039f84] __cond_resched+0x2c/0x50
-[  394.224057] [ee8bddf0] [c02f4dbc] _cond_resched+0x40/0x54
-[  394.229463] [ee8bde00] [c003fd00] put_files_struct+0xf8/0x110
-[  394.235214] [ee8bde20] [c00419f8] do_exit+0x540/0x654
-[  394.240269] [ee8bde70] [c000d98c] kernel_bad_stack+0x0/0x50
-[  394.245850] [ee8bde90] [c001422c] do_page_fault+0x30c/0x4e8
-[  394.251427] [ee8bdf40] [c0010868] handle_page_fault+0xc/0x80
+> On 12-10-2009 13:25, Tilman Schmidt wrote:
+>> -----BEGIN PGP SIGNED MESSAGE-----
+>> Hash: SHA1
+>>
+>> On Mon, 12 Oct 2009 03:32:46 -0700 (PDT), David Miller wrote:
+>>> The PPP receive paths in ppp_generic.c do a local_bh_disable()/
+>>> local_bh_enable() around packet receiving (via ppp_recv_lock()/
+>>> ppp_recv_unlock() in ppp_do_recv).
+>>>
+>>> So at least that part is perfectly fine.
+>>>
+>>> ppp_input(), as called from ppp_sync_process(), also disables BH's
+>>> around ppp_do_recv() calls (via read_lock_bh()/read_unlock_bh()).
+>>>
+>>> So that's fine too.
+>>>
+>>> Do you have a bug report or are you just scanning around looking
+>>> for trouble? :-)
+>> I have encountered the message in the subject during a test of
+>> the Gigaset CAPI driver, and would like to determine whether
+>> it's a bug in the driver, a bug somewhere else, or no bug at
+>> all. The test scenario was PPP over ISDN with pppd+capiplugin.
+>> In an alternative scenario, also PPP over ISDN but with
+>> smpppd+capidrv, the message did not occur.
+>>
+>> Johannes' answer pointed me to the netif_rx() function.
+>> The Gigaset driver itself doesn't call that function at all.
+>> In the scenario where I saw the message, it was the SYNC_PPP
+>> line discipline that did. But from your explanation I gather
+>> that the cause cannot lie there.
+>>
+>> So now I'm looking for other possible causes of that message.
 
 
---------------060601000705060302040908
-Content-Type: text/plain; name="mq.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline; filename="mq.c"
+BTW, it seems calling napi_schedule() from process context should
+trigger such a warning too.
 
-/*
- * =====================================================================================
- *
- *       Filename:  mq.c
- *
- *    Description:  posix message test case
- *
- *    compile server:
- *        gcc -DMQ_SERVER -g -O2 -o mq_server mq.c -lrt
- *
- *    compile client:
- *        gcc -DMQ_CLIENT -g -O2 -o mq_client mq.c -lrt
- *
- * =====================================================================================
- */
+Jarek P.
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <limits.h>
-#include <linux/unistd.h>
-#include <time.h>
-#include <malloc.h>
-#include <mqueue.h>
-#define _GNU_SOURCE
-#include <sched.h>
-
-#define MQ_SERVER_SIZE             (64)
-#define MQ_SERVER_PATH             "/server_mq.1234"
-#define MQ_SERVER_RES_PATH         "/server_mq_res.1234"
-
-typedef struct mq_server_s
-{
-    unsigned long long int send_stamp;
-    unsigned long long int rcvd_stamp;
-    unsigned int cmd;
-    unsigned int unused0;
-    unsigned long long int unused1;
-} mq_server_t;
-
-typedef enum mq_cmd_s
-{
-    MQ_CMD_NOTHING = 0,
-    MQ_CMD_GET_TS,
-    MQ_CMD_EXIT
-} mq_cmd_t;
+> 
+> Anyway, I agree with Michael Buesch there is no reason to waste time
+> for tracking all netif_rx vs netif_rx_ni uses, and it seems we could
+> avoid it by using the "proper" version of raise_softirq_irqoff() in
+> __napi_schedule(). Could anybody try if I'm not wrong?
+> 
+> Thanks,
+> Jarek P.
+> ---
+> 
+>  net/core/dev.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/core/dev.c b/net/core/dev.c
+> index 28b0b9e..7fc4009 100644
+> --- a/net/core/dev.c
+> +++ b/net/core/dev.c
+> @@ -2728,7 +2728,7 @@ void __napi_schedule(struct napi_struct *n)
+>  
+>  	local_irq_save(flags);
+>  	list_add_tail(&n->poll_list, &__get_cpu_var(softnet_data).poll_list);
+> -	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
+> +	raise_softirq_irqoff(NET_RX_SOFTIRQ);
+>  	local_irq_restore(flags);
+>  }
+>  EXPORT_SYMBOL(__napi_schedule);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ppp" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
 
-static unsigned long long int get_current_timestamp(void)
-{
-    struct timespec ts;
-	
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-
-    return(((unsigned long long)ts.tv_sec) * 1000000000ULL + ((unsigned long long)ts.tv_nsec));
-}
-
-static int priority = 10; /* for FIFO scheduling class */
-
-
-#if defined(MQ_SERVER)
-/* 
- * ===  FUNCTION  ======================================================================
- *         Name:  mq_server 
- *  Description:  creates 2 posix message queue, waits for msgs on one of them
- *                executes what is received, sends back the result via the other mq
- * =====================================================================================
- */
-int main(int argc, char **argv)
-{
-    mqd_t mq_fd, mq_res_fd;
-    struct mq_attr mq_attributes;
-    mq_server_t mq_msg;
-    int len;
-    struct sched_param schedp;
-    unsigned int mq_msg_prio = 1;
-    /* int policy = SCHED_FIFO; */
-
-    if (geteuid())
-    {
-	fprintf(stderr, "you should be root\n");
-	exit(-1);
-    }
-
-    /* the server has higher prio */
-    priority++;
-
-    /* create 2 posix message queues */
-    mq_attributes.mq_flags = 0;
-    mq_attributes.mq_maxmsg = MQ_SERVER_SIZE;
-    mq_attributes.mq_msgsize = sizeof(mq_server_t);
-    mq_attributes.mq_curmsgs = 0;
-
-    mq_fd = mq_open(MQ_SERVER_PATH, O_RDWR | O_CREAT,  S_IWUSR | S_IRUSR, &mq_attributes);
-    mq_res_fd = mq_open(MQ_SERVER_RES_PATH, O_RDWR | O_CREAT,  S_IWUSR | S_IRUSR, &mq_attributes);
-
-    memset(&schedp, 0, sizeof(schedp));
-    /*
-     * schedp.sched_priority = priority;
-     * sched_setscheduler(0, policy, &schedp);	
-     */
-    
-    fprintf(stderr, "mq_server started (pid: %d prio: %d)\n", getpid(), schedp.sched_priority);
-    
-    while(1)
-    {
-	len = mq_receive(mq_fd, (char *) &mq_msg, sizeof(mq_msg), &mq_msg_prio);
-	    
-	if(len == sizeof(mq_msg))
-	{
-	    switch(mq_msg.cmd)
-	    {
-		case MQ_CMD_NOTHING:
-		    break;
-		case MQ_CMD_GET_TS:
-		    mq_msg.rcvd_stamp = get_current_timestamp();
-		    /* send with received  prio */
-		    mq_send(mq_res_fd, (char *) &mq_msg, sizeof(mq_msg), mq_msg_prio);
-		    /* printf("got ts req send: 0x%016llx now: 0x%016llx \n", mq_msg.send_stamp, now ); */
-		    break;
-		case MQ_CMD_EXIT:
-		    goto OUT;
-		default:
-		    break;
-	    }
-	}
-    }
-
-OUT:
-    /* let the client finish */
-    sleep(1);
-
-    fprintf(stderr, "mq_server exiting\n");
-
-    mq_close(mq_fd);
-    mq_unlink(MQ_SERVER_PATH);
-    mq_close(mq_res_fd);
-    mq_unlink(MQ_SERVER_RES_PATH);
-
-    return 0;
-}
-
-
-#elif defined(MQ_CLIENT)
-
-static int timeout = 1000000; /* usec;  1 sec as default */
-
-/* 
- * ===  FUNCTION  ======================================================================
- *         Name:  mq_client
- *  Description:  opens 2 posix message queue, send out jobs on one mq
- *                collects the result via the other mq and prints the result
- * =====================================================================================
- */
-int main(int argc, char **argv)
-{
-    int i, len;
-    mqd_t mq_fd, mq_res_fd;
-    struct mq_attr mq_attributes;
-    unsigned int mq_msg_prio = 1;
-    mq_server_t mq_msg;
-    struct sched_param schedp;
-    /* int policy = SCHED_FIFO; */
-    struct timespec ts_wait;
-
-    if (geteuid())
-    {
-	fprintf(stderr, "you should be root\n");
-	exit(-1);
-    }
-
-    ts_wait.tv_sec  =  timeout / 1000000;
-    ts_wait.tv_nsec = (timeout % 1000000) * 1000;
-
-    fprintf(stderr, "wait time: %ld seconds %ld nsec\n",  ts_wait.tv_sec,  ts_wait.tv_nsec);
-
-    mq_fd = mq_open(MQ_SERVER_PATH, O_RDWR,  S_IWUSR | S_IRUSR, &mq_attributes);
-    mq_res_fd = mq_open(MQ_SERVER_RES_PATH, O_RDWR,  S_IWUSR | S_IRUSR, &mq_attributes);
-    
-    memset(&schedp, 0, sizeof(schedp));
-    /*
-     * schedp.sched_priority = priority;
-     * sched_setscheduler(0, policy, &schedp);	
-     */
-
-    fprintf(stderr, "mq_test started (pid: %d prio: %d)\n", getpid(), schedp.sched_priority);
-
-    for(i = 0; i < 3; i++)
-    {
-	nanosleep(&ts_wait, NULL);
-	/* sleep(1); */
-
-	/* query ts service from server */
-	mq_msg.cmd = MQ_CMD_GET_TS;
-	mq_msg.send_stamp = get_current_timestamp();
-	mq_send(mq_fd, (char *) &mq_msg, sizeof(mq_msg), mq_msg_prio);
-
-	/* got response */
-	len = mq_receive(mq_res_fd, (char *) &mq_msg, sizeof(mq_msg), &mq_msg_prio);
-
-	if (len == sizeof(mq_msg))
-	{
-	    if(mq_msg.cmd == MQ_CMD_GET_TS)
-	    {
-		fprintf(stderr, "measured mq latency %lld nsec (i: %d)\n",
-			mq_msg.rcvd_stamp - mq_msg.send_stamp, i);
-	    }
-	}
-    } /* while (true) */
-
-    fprintf(stderr, "measure loop exited\n");
-
-    /* shut down server */
-    mq_msg.cmd = MQ_CMD_EXIT;
-    mq_send(mq_fd, (char *) &mq_msg, sizeof(mq_msg), mq_msg_prio);
-
-    mq_close(mq_res_fd);
-    mq_close(mq_fd);
-
-    return 0;
-}
-#else
-#error "MQ_SERVER or MQ_CLIENT should be defined"
-#endif  /* MQ_SERVER */
-
---------------060601000705060302040908--
