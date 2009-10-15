@@ -1,24 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762946AbZJOTKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762955AbZJOTMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762946AbZJOTKc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 15:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762931AbZJOTKb
+	id S1762955AbZJOTMN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 15:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762940AbZJOTMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 15:10:31 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:57000 "EHLO mx1.redhat.com"
+	Thu, 15 Oct 2009 15:12:13 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:49581 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762916AbZJOTKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 15:10:31 -0400
-Date: Thu, 15 Oct 2009 21:09:32 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Joerg.Abraham@alcatel-lucent.de, linux-kernel@vger.kernel.org
-cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.31.4-rt14 posix message queues problem
-In-Reply-To: <520f0cf10910151202k2ba01453r10e96eeb064232e8@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0910152105430.8932@localhost.localdomain>
-References: <4AD76126.1000408@alcatel-lucent.de> <520f0cf10910151202k2ba01453r10e96eeb064232e8@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1762932AbZJOTMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 15:12:12 -0400
+Date: Thu, 15 Oct 2009 15:11:00 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Alasdair G Kergon <agk@redhat.com>
+cc: Jens Axboe <jens.axboe@oracle.com>, Mark McLoughlin <markmc@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       device-mapper development <dm-devel@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [dm-devel] [PATCH resend] block: silently error unsupported
+ empty barriers too
+In-Reply-To: <20091015002350.GV16950@agk-dp.fab.redhat.com>
+Message-ID: <Pine.LNX.4.64.0910151510340.22075@hs20-bc2-1.build.redhat.com>
+References: <1251992870.3084.125.camel@blaa> <20091015002350.GV16950@agk-dp.fab.redhat.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,70 +31,13 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> From: Joerg Abraham <Joerg.Abraham@alcatel-lucent.de>
-> Date: Thu, Oct 15, 2009 at 7:51 PM
-> Subject: 2.6.31.4-rt14 posix message queues problem
-> To: LKML <linux-kernel@vger.kernel.org>
-> 
-> 
-> Hi,
-> 
-> During some performance measurement I stumbled over unexpected bad
-> results for a posix message queue test case. Which is not surprising
-> since the kernel log shows a "BUG: scheduling while atomic:" on every
-> measurement trigger.
-> 
-> Attached is the kernel log for an embedded 8572ds powerpc system and a
-> condensed user space test appli. The test appli uses 2 processes
-> (mq_server and mq_client) and pingpongs some messages via posix
-> message queues. Please see the c-file header for details (the appli
-> itself makes not much sense but shows the problem).
-> 
-> ./mq_server
-> ./mq_client # just crashes during run
-> 
-> The problem does _not_ occur on kernels 2.6.29.6-rt24, 2.6.29.6
-> vanilla and 2.6.31.4 vanilla. The problem does _also_ show up on an
-> embedded x86_64 system and a full featured fc11 x86_64 system running
-> a 2.6.31.4-rt14 based kernel, so I dont think it's arch dependent.
-> 
-> Can anybody reproduce the crash ???
-> 
-> If you need more info's please let me know.
-> 
-> [And if I'm doing stupid things just forgive me]
-> 
-> Thanx
-> 
-> Joerg
 
-Hello Joerg
+On Thu, 15 Oct 2009, Alasdair G Kergon wrote:
 
-Does the following patch solve your problem? 
+> On Thu, Sep 03, 2009 at 04:47:50PM +0100, Mark McLoughlin wrote:
+> > We should error all barriers, even empty barriers, on devices like
+> > virtio_blk which don't support them.
+> 
+> Acked-by: Alasdair G Kergon <agk@redhat.com>
 
->From 69fde4357db4a054733cbca4158606160e821a3a Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Thu, 15 Oct 2009 20:52:37 +0200
-Subject: [PATCH] preempt_disable_rt(); should be paired with preempt_enable_rt()
-
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- ipc/mqueue.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index 63a47f7..ab4df36 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -830,7 +830,7 @@ static inline void pipelined_send(struct mqueue_inode_info *info,
- 	wake_up_process(receiver->task);
- 	smp_wmb();
- 	receiver->state = STATE_READY;
--	preempt_enable_nort();
-+	preempt_enable_rt();
- }
- 
- /* pipelined_receive() - if there is task waiting in sys_mq_timedsend()
--- 
-1.6.0.6
-
+Acked-by: Mikulas Patocka <mpatocka@redhat.com>
