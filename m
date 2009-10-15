@@ -1,87 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935499AbZJOU3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935538AbZJOU36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935499AbZJOU3f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 16:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935478AbZJOU3e
+	id S935538AbZJOU36 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 16:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935527AbZJOU35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 16:29:34 -0400
-Received: from www.tglx.de ([62.245.132.106]:52491 "EHLO www.tglx.de"
+	Thu, 15 Oct 2009 16:29:57 -0400
+Received: from www.tglx.de ([62.245.132.106]:52503 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935475AbZJOU3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 16:29:33 -0400
-Message-Id: <20091015202758.441681409@linutronix.de>
+	id S935525AbZJOU3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 16:29:55 -0400
+Message-Id: <20091015202758.481789582@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Thu, 15 Oct 2009 20:28:38 -0000
+Date: Thu, 15 Oct 2009 20:28:43 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: ALan Cox <alan@lxorguk.ukuu.org.uk>, Arnd Bergmann <arnd@arndb.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org
-Subject: [patch 2/5] macintosh: Remove BKL from nvram driver
+       "David S. Miller" <davem@davemloft.net>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>, netdev@vger.kernel.org
+Subject: [patch 3/5] sunrpc: Convert to unlocked_ioctl and remove stray
+	smp_lock.h
 References: <20091015202722.372890083@linutronix.de>
-Content-Disposition: inline; filename=drivers-mac-nvram-remove-bkl.patch
+Content-Disposition: inline;
+	filename=net-sunrpc-convert-to-unlocked-ioctl.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Drop the bkl from nvram_llseek() as it obviously protects nothing. The
-file offset is safe in essence.
+The ioctls in sunrpc/cache.c can be converted to unlocked_ioctl safely
+because the operation is already protected by queue_lock.
 
-The ioctl can be converted to unlocked_ioctl because it just calls
-pmac_get_partition() which reads a value from an array which was
-initialized at early boot time. No need for serialization.
+The ioctl in rpc_pipe.c can be converted by serializing via
+inode->i_mutex.
+
+Remove the stray smp_lock.h include in svc_xprt.c which was not
+removed when the BKL was replaced in commit ed2d8aed
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: netdev@vger.kernel.org
 ---
- drivers/macintosh/nvram.c |   11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ net/sunrpc/cache.c    |   25 ++++++++++++-------------
+ net/sunrpc/rpc_pipe.c |   16 ++++++++++------
+ net/sunrpc/svc_xprt.c |    1 -
+ 3 files changed, 22 insertions(+), 20 deletions(-)
 
-Index: linux-2.6-tip/drivers/macintosh/nvram.c
+Index: linux-2.6-tip/net/sunrpc/cache.c
 ===================================================================
---- linux-2.6-tip.orig/drivers/macintosh/nvram.c
-+++ linux-2.6-tip/drivers/macintosh/nvram.c
-@@ -13,7 +13,6 @@
- #include <linux/fcntl.h>
- #include <linux/nvram.h>
- #include <linux/init.h>
--#include <linux/smp_lock.h>
- #include <asm/uaccess.h>
- #include <asm/nvram.h>
+--- linux-2.6-tip.orig/net/sunrpc/cache.c
++++ linux-2.6-tip/net/sunrpc/cache.c
+@@ -815,9 +815,8 @@ static unsigned int cache_poll(struct fi
+ 	return mask;
+ }
  
-@@ -21,7 +20,6 @@
- 
- static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
+-static int cache_ioctl(struct inode *ino, struct file *filp,
+-		       unsigned int cmd, unsigned long arg,
+-		       struct cache_detail *cd)
++static long cache_ioctl(struct file *filp, unsigned int cmd, unsigned long arg,
++			struct cache_detail *cd)
  {
--	lock_kernel();
- 	switch (origin) {
- 	case 1:
- 		offset += file->f_pos;
-@@ -30,12 +28,10 @@ static loff_t nvram_llseek(struct file *
- 		offset += NVRAM_SIZE;
- 		break;
- 	}
--	if (offset < 0) {
--		unlock_kernel();
-+	if (offset < 0)
+ 	int len = 0;
+ 	struct cache_reader *rp = filp->private_data;
+@@ -1332,12 +1331,12 @@ static unsigned int cache_poll_procfs(st
+ 	return cache_poll(filp, wait, cd);
+ }
+ 
+-static int cache_ioctl_procfs(struct inode *inode, struct file *filp,
+-			      unsigned int cmd, unsigned long arg)
++static long cache_ioctl_procfs(struct file *filp, unsigned int cmd,
++			       unsigned long arg)
+ {
+-	struct cache_detail *cd = PDE(inode)->data;
++	struct cache_detail *cd = PDE(filp->f_path.dentry->d_inode)->data;
+ 
+-	return cache_ioctl(inode, filp, cmd, arg, cd);
++	return cache_ioctl(filp, cmd, arg, cd);
+ }
+ 
+ static int cache_open_procfs(struct inode *inode, struct file *filp)
+@@ -1360,7 +1359,7 @@ static const struct file_operations cach
+ 	.read		= cache_read_procfs,
+ 	.write		= cache_write_procfs,
+ 	.poll		= cache_poll_procfs,
+-	.ioctl		= cache_ioctl_procfs, /* for FIONREAD */
++	.unlocked_ioctl	= cache_ioctl_procfs, /* for FIONREAD */
+ 	.open		= cache_open_procfs,
+ 	.release	= cache_release_procfs,
+ };
+@@ -1526,12 +1525,12 @@ static unsigned int cache_poll_pipefs(st
+ 	return cache_poll(filp, wait, cd);
+ }
+ 
+-static int cache_ioctl_pipefs(struct inode *inode, struct file *filp,
+-			      unsigned int cmd, unsigned long arg)
++static long cache_ioctl_pipefs(struct file *filp, unsigned int cmd,
++			       unsigned long arg)
+ {
+-	struct cache_detail *cd = RPC_I(inode)->private;
++	struct cache_detail *cd = RPC_I(filp->f_path.dentry->d_inode)->private;
+ 
+-	return cache_ioctl(inode, filp, cmd, arg, cd);
++	return cache_ioctl(filp, cmd, arg, cd);
+ }
+ 
+ static int cache_open_pipefs(struct inode *inode, struct file *filp)
+@@ -1554,7 +1553,7 @@ const struct file_operations cache_file_
+ 	.read		= cache_read_pipefs,
+ 	.write		= cache_write_pipefs,
+ 	.poll		= cache_poll_pipefs,
+-	.ioctl		= cache_ioctl_pipefs, /* for FIONREAD */
++	.unlocked_ioctl	= cache_ioctl_pipefs, /* for FIONREAD */
+ 	.open		= cache_open_pipefs,
+ 	.release	= cache_release_pipefs,
+ };
+Index: linux-2.6-tip/net/sunrpc/rpc_pipe.c
+===================================================================
+--- linux-2.6-tip.orig/net/sunrpc/rpc_pipe.c
++++ linux-2.6-tip/net/sunrpc/rpc_pipe.c
+@@ -308,23 +308,27 @@ rpc_pipe_poll(struct file *filp, struct 
+ 	return mask;
+ }
+ 
+-static int
+-rpc_pipe_ioctl(struct inode *ino, struct file *filp,
+-		unsigned int cmd, unsigned long arg)
++static long
++rpc_pipe_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ {
+-	struct rpc_inode *rpci = RPC_I(filp->f_path.dentry->d_inode);
++	struct inode *inode = filp->f_path.dentry->d_inode;
++	struct rpc_inode *rpci = RPC_I(inode);
+ 	int len;
+ 
+ 	switch (cmd) {
+ 	case FIONREAD:
+-		if (rpci->ops == NULL)
++		mutex_lock(&inode->i_mutex);
++		if (rpci->ops == NULL) {
++			mutex_unlock(&inode->i_mutex);
+ 			return -EPIPE;
++		}
+ 		len = rpci->pipelen;
+ 		if (filp->private_data) {
+ 			struct rpc_pipe_msg *msg;
+ 			msg = (struct rpc_pipe_msg *)filp->private_data;
+ 			len += msg->len - msg->copied;
+ 		}
++		mutex_unlock(&inode->i_mutex);
+ 		return put_user(len, (int __user *)arg);
+ 	default:
  		return -EINVAL;
--	}
-+
- 	file->f_pos = offset;
--	unlock_kernel();
- 	return file->f_pos;
- }
+@@ -337,7 +341,7 @@ static const struct file_operations rpc_
+ 	.read		= rpc_pipe_read,
+ 	.write		= rpc_pipe_write,
+ 	.poll		= rpc_pipe_poll,
+-	.ioctl		= rpc_pipe_ioctl,
++	.unlocked_ioctl	= rpc_pipe_ioctl,
+ 	.open		= rpc_pipe_open,
+ 	.release	= rpc_pipe_release,
+ };
+Index: linux-2.6-tip/net/sunrpc/svc_xprt.c
+===================================================================
+--- linux-2.6-tip.orig/net/sunrpc/svc_xprt.c
++++ linux-2.6-tip/net/sunrpc/svc_xprt.c
+@@ -5,7 +5,6 @@
+  */
  
-@@ -76,8 +72,7 @@ static ssize_t write_nvram(struct file *
- 	return p - buf;
- }
- 
--static int nvram_ioctl(struct inode *inode, struct file *file,
--	unsigned int cmd, unsigned long arg)
-+static long nvram_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	switch(cmd) {
- 		case PMAC_NVRAM_GET_OFFSET:
+ #include <linux/sched.h>
+-#include <linux/smp_lock.h>
+ #include <linux/errno.h>
+ #include <linux/freezer.h>
+ #include <linux/kthread.h>
 
 
