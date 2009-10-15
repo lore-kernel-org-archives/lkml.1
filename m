@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762214AbZJOAMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762225AbZJOAOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762214AbZJOAMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 20:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761700AbZJOAMV
+	id S1762225AbZJOAOe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 20:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761715AbZJOAOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 20:12:21 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:61659 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761685AbZJOAMU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 20:12:20 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Earl Chew <earl_chew@agilent.com>
-Subject: Re: fs/pipe.c null pointer dereference
-Date: Thu, 15 Oct 2009 02:11:42 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <4AD5D476.6010103@agilent.com> <200910141653.03611.elendil@planet.nl> <4AD655C0.2030202@agilent.com>
-In-Reply-To: <4AD655C0.2030202@agilent.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910150211.43532.elendil@planet.nl>
-X-OriginalArrivalTime: 15 Oct 2009 00:11:43.0986 (UTC) FILETIME=[13D13D20:01CA4D2C]
+	Wed, 14 Oct 2009 20:14:34 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34731 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750809AbZJOAOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 20:14:33 -0400
+Date: Thu, 15 Oct 2009 11:13:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@linux.intel.com>
+Subject: Re: linux-next: staging tree build failure
+Message-Id: <20091015111351.8cea4030.sfr@canb.auug.org.au>
+In-Reply-To: <20091014235449.GA9709@kroah.com>
+References: <20091013150753.f738576e.sfr@canb.auug.org.au>
+	<20091014235449.GA9709@kroah.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__15_Oct_2009_11_13_51_+1100_f4kP.1a1PUAtOmXX"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 October 2009, Earl Chew wrote:
-> Frans Pop wrote:
-> > 2.6.21 is really rather ancient for the kernel community and I doubt
-> > anyone here will really want to look into issues with it, given that
-> > there's a realistic chance it has already been fixed since then. The
-> > current stable version is 2.6.31 after all.
-> >
-> > Can you reproduce the oops with a current kernel? Have you checked if
-> > there have been any changes in the code you identified since 2.6.21?
+--Signature=_Thu__15_Oct_2009_11_13_51_+1100_f4kP.1a1PUAtOmXX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Greg,
+
+On Wed, 14 Oct 2009 16:54:49 -0700 Greg KH <greg@kroah.com> wrote:
 >
-> I was mostly after some guidance. I'm happy to dig around to figure
-> out what the problem is and log a bug if indeed I find one.
+> I've now fixed this up, it needed to be removed from
+> include/linux/Kbuild file.
 
-OK. I'm afraid I can't help you there myself, but maybe with this 
-additional info someone else will.
+Thanks.
 
-Good luck with the hunt.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__15_Oct_2009_11_13_51_+1100_f4kP.1a1PUAtOmXX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrWaT8ACgkQjjKRsyhoI8wk4ACfd3JCbllP08mCKjdCOhY7ae25
+He4An3lIV2feZh9zprSiUhHKwoS/cwJW
+=zmHL
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__15_Oct_2009_11_13_51_+1100_f4kP.1a1PUAtOmXX--
