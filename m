@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935414AbZJOVxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760823AbZJOV6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935414AbZJOVxB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 17:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935347AbZJOVxB
+	id S1760823AbZJOV6a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 17:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758327AbZJOV63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 17:53:01 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34432 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935320AbZJOVxA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 17:53:00 -0400
-Date: Thu, 15 Oct 2009 23:52:15 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>, rpurdie@rpsys.net,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com
-Subject: Re: spitz: add gpio button support (fixes regression)
-Message-ID: <20091015215215.GG15898@elf.ucw.cz>
-References: <20091006074635.GA2775@ucw.cz>
- <1254829732.3546.35.camel@utx.utx.cz>
- <20091007085806.GB28807@elf.ucw.cz>
- <1254914991.4213.80.camel@hammer.suse.cz>
- <20091007120643.GA17069@rakim.wolfsonmicro.main>
- <f17812d70910070727x47b2a22h8e9f9304740d5abf@mail.gmail.com>
- <20091006200933.GA1606@ucw.cz>
- <1255641385.3985.55.camel@utx.utx.cz>
- <20091015212024.GC15898@elf.ucw.cz>
- <1255643252.3985.63.camel@utx.utx.cz>
+	Thu, 15 Oct 2009 17:58:29 -0400
+Received: from cantor.suse.de ([195.135.220.2]:38832 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758144AbZJOV63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 17:58:29 -0400
+Date: Thu, 15 Oct 2009 14:54:59 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: alan@linux.intel.com, stable@kernel.org, stable-commits@vger.kernel.org,
+       fredlwm@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: patch pty-quickfix-for-the-pty-enxio-timing-problems.patch
+ added to 2.6.31-stable tree
+Message-ID: <20091015215459.GA11142@suse.de>
+References: <20091015184454.5BEDB48B35@coco.kroah.org>
+ <alpine.LFD.2.01.0910151450420.6146@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1255643252.3985.63.camel@utx.utx.cz>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <alpine.LFD.2.01.0910151450420.6146@localhost.localdomain>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-10-15 23:47:32, Stanislav Brabec wrote:
-> Pavel Machek wrote:
-> >Well, resume is hit by second regression.
-> >
-> >Suspend key.... I restored it to the level of functionality in
-> >2.6.31 :-).
+On Thu, Oct 15, 2009 at 02:52:01PM -0700, Linus Torvalds wrote:
 > 
-> > > +		.type	= EV_KEY,
-> > > +		.code	= KEY_SUSPEND,
 > 
-> I guess it should be EV_PWR. Then it will at least go to suspend.
+> On Thu, 15 Oct 2009, gregkh@suse.de wrote:
+> > 
+> > This is a note to let you know that we have just queued up the patch titled
+> > 
+> >     Subject: pty: quickfix for the pty ENXIO timing problems
+> 
+> No. This is incorrect. It got reverted in mainline (commit e043e42bdb6).
 
-Does it actually go to suspend with that change?
+Hm, ok, Marcin asked that I include this patch as it fixed his keyboard
+problems with X on 2.6.31.
 
-(Actually, I wonder how it could have ever worked: userspace should
-certainly be in a loop there; kernel should not suspend machine on its
-own. In -rp kernels, kernel _does_ suspend on its own, but... I'm not
-sure if that's suitable for mainline).
-								Pavel
+Marcin, any ideas?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'll go drop this from the .31-stable queue.
+
+thanks,
+
+greg k-h
