@@ -1,93 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762461AbZJOTF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762884AbZJOTDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762461AbZJOTF5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 15:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758834AbZJOTF4
+	id S1762884AbZJOTDd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 15:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758632AbZJOTDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 15:05:56 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:1893 "EHLO mx1.redhat.com"
+	Thu, 15 Oct 2009 15:03:33 -0400
+Received: from mail.lang.hm ([64.81.33.126]:45818 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758572AbZJOTFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 15:05:55 -0400
-Date: Thu, 15 Oct 2009 21:00:24 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Paul Fulghum <paulkf@microgate.com>, Boyan <btanastasov@yahoo.co.uk>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-Message-ID: <20091015190024.GA31559@redhat.com>
-References: <alpine.LFD.2.01.0910131317360.26777@localhost.localdomain> <4AD4F548.2030506@microgate.com> <alpine.LFD.2.01.0910131514100.3404@localhost.localdomain> <1255478932.19056.24.camel@localhost.localdomain> <4AD51D6B.7010509@microgate.com> <alpine.LFD.2.01.0910131744590.3404@localhost.localdomain> <20091014125846.1a3c8d40@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0910140804180.6146@localhost.localdomain> <alpine.LFD.2.01.0910140925440.6146@localhost.localdomain> <87aazsh80x.fsf@devron.myhome.or.jp>
+	id S1755161AbZJOTDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 15:03:32 -0400
+Date: Thu, 15 Oct 2009 12:02:28 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Greg KH <gregkh@suse.de>
+cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: removing existing working drivers via staging
+In-Reply-To: <20091015184656.GA29858@suse.de>
+Message-ID: <alpine.DEB.2.00.0910151200100.22169@asgard.lang.hm>
+References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm> <200910151942.40259.bzolnier@gmail.com> <20091015174932.GA3595@suse.de> <200910152020.13080.bzolnier@gmail.com> <20091015184656.GA29858@suse.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87aazsh80x.fsf@devron.myhome.or.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/16, OGAWA Hirofumi wrote:
+On Thu, 15 Oct 2009, Greg KH wrote:
+
+> On Thu, Oct 15, 2009 at 08:20:12PM +0200, Bartlomiej Zolnierkiewicz wrote:
+>> On Thursday 15 October 2009 19:49:32 Greg KH wrote:
+>>> On Thu, Oct 15, 2009 at 07:42:40PM +0200, Bartlomiej Zolnierkiewicz wrote:
+>>>> On Thursday 15 October 2009 18:47:26 Greg KH wrote:
+>>>>> On Thu, Oct 15, 2009 at 09:39:51AM -0700, david@lang.hm wrote:
+>>>>>> however, what I think I saw proposed was to move drivers that need to be
+>>>>>> 'cleaned up', to staging and then dropping them if they don't get cleaned.
+>>>>>
+>>>>> What is "proposed" is the following:
+>>>>>
+>>>>> 	- For drivers currently in the kernel tree, that the subsystem
+>>>>> 	  maintainer, for whatever reason, feels is obsolete / broken /
+>>>>> 	  needs major cleaning / wants to get rid of, can be submitted
+>>>>> 	  to the staging maintainer to be moved to the drivers/staging/
+>>>>> 	  directory.
+>>>>
+>>>> This is insanity and opens a door for various forms of abuse.
+>>>
+>>> What do you mean by this?  What kind of "abuse"?
+>>
+>> Typical situation:
+>>
+>> You have driver for _really_ difficult hardware used by minority of total
+>> users of a given subsystem.  Said driver has no major problems except being
+>> f*cking complicated (because of hardware) so it stays in the way of future
+>> changes.
+>>
+>> With the current system people making bigger changes have to comprehend
+>> that difficult stuff [*].  This is a good thing in the long-term since it
+>> results in the better overall system understanding, better knowledge of
+>> "DO's and DON'T's" and better users' experience.
+>>
+>> Now with the proposed scheme it is sufficient to throw said driver into
+>> staging for few weeks and make future changes.  Before users even notice
+>> and complain they are screwed already since bringing the driver back is
+>> no longer possible without big effort (+ subsystem is still evolving)..
 >
-> > +void flush_delayed_work(struct delayed_work *dwork)
-> > +{
-> > +	if (del_timer(&dwork->timer)) {
-> > +		struct cpu_workqueue_struct *cwq;
-> > +		cwq = wq_per_cpu(keventd_wq, get_cpu());
-> > +		__queue_work(cwq, &dwork->work);
-> > +		put_cpu();
-> > +	}
-> > +	flush_work(&dwork->work);
-> > +}
-> > +EXPORT_SYMBOL(flush_delayed_work);
-> > +
-> > +/**
->
-> Sorry if I'm missing the point. Doesn't this have (possible) race with
-> schedule_delayed_work() (i.e. by tty writer)?
->
->              cpu0                                      cpu1
->
->     if (del_timer(&dwork->timer)) {
+> But a driver in staging still has to be able to build, api changes are
+> not able to be ignored in it.
 
-If dwork->timer is pending - _PENDING must be set.
-If del_timer() succeeds, nobody else can clear this bit.
+a driver in staging will be able to build, but a driver that was removed 
+after 6-9 months that a user discovered the removal of a year later when 
+they upgraded to a new distro release (say a normal ubuntu release after 
+staying on the old one for the 18 month support period) is likely to need 
+significant work to catch up with kernel changes in the meanwhile.
 
->                                             // cpu0 doesn't set _PENDING
->                                             schedule_delayed_work()
-
-and in this case schedule_delayed_work()->queue_delayed_work_on()
-can't succeed because it does test_and_set_bit(_PENDING).
-
-
-But. Since this helper was merged, I think it should use del_timer_sync()
-to be correct. Yes, it is slower, but otherwise flush is racy.
-
-And I think it should return a bolean to match flush_work(). IOW,
-
-	int flush_delayed_work(struct delayed_work *dwork)
-	{
-		int requeued = false;
-
-		if (del_timer(&dwork->timer)) {
-			struct cpu_workqueue_struct *cwq;
-			cwq = wq_per_cpu(keventd_wq, get_cpu());
-			__queue_work(cwq, &dwork->work);
-			put_cpu();
-
-			requeued = true;
-		}
-
-		return flush_work(&dwork->work) || requeued;
-	}
-
-Not that I think this is terribly important, but still.
-
-I'll send the patch.
-
-Oleg.
-
+David Lang
