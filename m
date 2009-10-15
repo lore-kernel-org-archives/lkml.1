@@ -1,108 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762253AbZJOAh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762257AbZJOAjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762253AbZJOAh6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 20:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758513AbZJOAh5
+	id S1762257AbZJOAjn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 20:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762208AbZJOAjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 20:37:57 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:60504 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754660AbZJOAh4 (ORCPT
+	Wed, 14 Oct 2009 20:39:42 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:45817 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757334AbZJOAjm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 20:37:56 -0400
-Message-ID: <4AD66E9B.2020803@gmail.com>
-Date: Thu, 15 Oct 2009 02:36:43 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 14 Oct 2009 20:39:42 -0400
+Message-ID: <4AD66F28.9030607@oss.ntt.co.jp>
+Date: Thu, 15 Oct 2009 09:39:04 +0900
+From: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-To: Massimo Cetra <mcetra@navynet.it>
-CC: Massimo Cetra <ctrixk@navynet.it>, David Miller <davem@davemloft.net>,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] virtio_net: use dev_kfree_skb_any() in free_old_xmit_skbs()
-References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>	<r-4Wjt4coy.A.CwC.Wal0KB@chimera> <20091012.034224.64980795.davem@davemloft.net> <4AD44435.3050703@navynet.it> <4AD45447.7030705@gmail.com> <4AD455E4.2070105@navynet.it> <4AD62626.6010709@navynet.it>
-In-Reply-To: <4AD62626.6010709@navynet.it>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 15 Oct 2009 02:36:45 +0200 (CEST)
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, Jens Axboe <jens.axboe@oracle.com>,
+       Nauman Rafique <nauman@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
+       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>,
+       Dong-Jae Kang <baramsori72@gmail.com>,
+       Isaku Yamahata <yamahata@valinux.co.jp>,
+       Akio Takebe <takebe_akio@jp.fujitsu.com>
+Subject: Re: IO controller Mini-Summit 2009
+References: <20091014.212444.179938286.ryov@valinux.co.jp> <20091014175521.GG3528@redhat.com>
+In-Reply-To: <20091014175521.GG3528@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Massimo Cetra a écrit :
-> Eric,
-> thanks for the patch.
-> The problem didn't arise again and i haven't seen any warning like that
-> on both servers where that problem was happening more frequently.
+Hi Vivek,
+
+Thank you for CCing me.
+
+I just wanted to let you know that Ted Tso was kind enough to let
+us give a readout for the mini-summit at the kernel summit.
+
+There will be other mini-summits sharing 50 minutes so we need to
+keep each mini-summit readout to 5-6 minutes of presentation and
+4-5 minutes of questions/discussions.
+
+Yoshikawa-san and myself were planning to take notes of the
+mini-summit, but it would be great if you could share yours.  The
+idea is to use those to prepare a brief mini-summit report (4-5
+slides) that we can show at the kernel summit.
+
+Later in the day, after the mini-summit, we would be sending a
+draft version of the slides to the relevant mailing lists for you
+to review. Since the mini-summit readouts will take place on
+Monday I would appreciate it if you could comment on them before
+Sunday night the latest.
+
+Thanks,
+
+Fernando
+
+Vivek Goyal wrote:
+> On Wed, Oct 14, 2009 at 09:24:44PM +0900, Ryo Tsuruta wrote:
+>> Hello,
+>>
 > 
-> I would say that it's fixed and if it's not, i'll let you know as soon
-> as it happens again.
+> Hi Ryo,
 > 
-
-Thanks Massimo, I think patch is reasonably safe and should be taken as is :
-
-
-[PATCH] virtio_net: use dev_kfree_skb_any() in free_old_xmit_skbs()
-
-Because netpoll can call netdevice start_xmit() method with
-irqs disabled, drivers should not call kfree_skb() from
-their start_xmit(), but use dev_kfree_skb_any() instead.
-
-Oct  8 11:16:52 172.30.1.31 [113074.791813] ------------[ cut here ]------------
-Oct  8 11:16:52 172.30.1.31 [113074.791813] WARNING: at net/core/skbuff.c:398 \
-                skb_release_head_state+0x64/0xc8()
-Oct  8 11:16:52 172.30.1.31 [113074.791813] Hardware name: 
-Oct  8 11:16:52 172.30.1.31 [113074.791813] Modules linked in: netconsole ocfs2 jbd2 quota_tree \
-ocfs2_dlmfs ocfs2_stack_o2cb ocfs2_dlm ocfs2_nodemanager ocfs2_stackglue configfs crc32c drbd cn loop \
-serio_raw psmouse snd_pcm snd_timer snd soundcore snd_page_alloc virtio_net pcspkr parport_pc parport \
-i2c_piix4 i2c_core button processor evdev ext3 jbd mbcache dm_mirror dm_region_hash dm_log dm_snapshot \
-dm_mod ide_cd_mod cdrom ata_generic ata_piix virtio_blk libata scsi_mod piix ide_pci_generic ide_core \
-                virtio_pci virtio_ring virtio floppy thermal fan thermal_sys [last unloaded: netconsole]
-Oct  8 11:16:52 172.30.1.31 [113074.791813] Pid: 11132, comm: php5-cgi Tainted: G        W  \
-                2.6.31.2-vserver #1
-Oct  8 11:16:52 172.30.1.31 [113074.791813] Call Trace:
-Oct  8 11:16:52 172.30.1.31 [113074.791813] <IRQ>  [<ffffffff81253cd5>] ? \
-                skb_release_head_state+0x64/0xc8
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff81253cd5>] ? skb_release_head_state+0x64/0xc8
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff81049ae1>] ? warn_slowpath_common+0x77/0xa3
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff81253cd5>] ? skb_release_head_state+0x64/0xc8
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff81253a1a>] ? __kfree_skb+0x9/0x7d
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffffa01cb139>] ? free_old_xmit_skbs+0x51/0x6e \
-                [virtio_net]
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffffa01cbc85>] ? start_xmit+0x26/0xf2 [virtio_net]
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff8126934f>] ? netpoll_send_skb+0xd2/0x205
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffffa0429216>] ? write_msg+0x90/0xeb [netconsole]
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff81049f06>] ? __call_console_drivers+0x5e/0x6f
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff8102b49d>] ? kvm_clock_read+0x4d/0x52
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff8104a082>] ? release_console_sem+0x115/0x1ba
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff8104a632>] ? vprintk+0x2f2/0x34b
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff8106b142>] ? vx_update_load+0x18/0x13e
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff81308309>] ? printk+0x4e/0x5d
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff8102b49d>] ? kvm_clock_read+0x4d/0x52
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff81070b62>] ? getnstimeofday+0x55/0xaf
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff81062683>] ? ktime_get_ts+0x21/0x49
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff810626b7>] ? ktime_get+0xc/0x41
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff81062788>] ? hrtimer_interrupt+0x9c/0x146
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff81024a4b>] ? smp_apic_timer_interrupt+0x80/0x93
-Oct  8 11:16:52 172.30.1.31 [113074.791813] [<ffffffff81011663>] ? apic_timer_interrupt+0x13/0x20
-Oct  8 11:16:52 172.30.1.31 [113074.791813] <EOI>  [<ffffffff8130a9eb>] ? _spin_unlock_irq+0xd/0x31
-
-Reported-and-tested-by: Massimo Cetra <mcetra@navynet.it>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Bug-Entry: http://bugzilla.kernel.org/show_bug.cgi?id=14378
----
-
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 8d00976..54bf091 100644
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -454,7 +454,7 @@ static unsigned int free_old_xmit_skbs(struct virtnet_info *vi)
- 		vi->dev->stats.tx_bytes += skb->len;
- 		vi->dev->stats.tx_packets++;
- 		tot_sgs += skb_vnet_hdr(skb)->num_sg;
--		kfree_skb(skb);
-+		dev_kfree_skb_any(skb);
- 	}
- 	return tot_sgs;
- }
+> CCing people who are planning to attend the mini summit either in person
+> or phone. (As per your list on io mini summit wiki page). Not sure if
+> everybody is scanning mailing list for update on mini summit.
+> 
+> I am checking out wiki page for more information like Venue. It says the
+> venue is linux foundation office Japan. Hopefully there is no change in
+> that information.
+> 
+> What are the conference call details for the people who might want to join
+> in over phone? Could not find those. Are you yet to post these?
+> 
+> Thanks
+> Vivek
+> 
+>> I have summarized the topics for the IO controller mini-summit and
+>> written the ideas seen in the mailing list.
+>>
+>> - The place where IO controller should be implemented
+>>   - Block layer in conjunction with the IO scheduler
+>>   - Common layer right above the IO scheduler
+>>   - CFQ enhancement.
+>>   - Both block and common layer, users can select whichever controller
+>>     they want.
+>>   - VFS layer
+>>
+>> - What kind of bandwidth control policies are needed?
+>>   - Proportional weight
+>>   - Enforcing upper limit
+>>   - Minimum bandwidth guarantee
+>>
+>> - How to handle buffered writes?
+>>   - Add dirt-ratio in the memory controller
+>>   - Add bufferred-write-cgroup to track buffered writebacks
+>>   - A per group per bdi pdflush threads
+>>
+>> - Who should be charged for swap activity?
+>>   - who requests a page.
+>>   - who has a page.
+>>   - All swap activities are charged to the root group.
+>>
+>> And I would also like to discuss about the followings.
+>>
+>> - Extensions of struct bio
+>>   - Make a bio point to the io_context of a process which creates the
+>>     I/O request. This allows to pass the IO scheduling class and
+>>     priority information to IO controller even if the IO is submitted
+>>     by another process which does not create the request, such as a
+>>     worker thread.
+>>   - Add a new flag to struct bio to identify the bio as urgent. This
+>>     gives IO controller a chance to handle the bio as high
+>>     priority. This flag should be set if the bio is created for the
+>>     page-out operation. 
+>>
+>> - Common test methods to verify the functionality of IO controller.
+>>
+>> Please give me comments and suggestions. I may be missing or
+>> misunderstanding something.
+>>
+>> Thanks,
+>> Ryo Tsuruta
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
 
