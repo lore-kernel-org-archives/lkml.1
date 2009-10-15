@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935359AbZJOTwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935381AbZJOTyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935359AbZJOTwb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 15:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759355AbZJOTwa
+	id S935381AbZJOTyR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 15:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935348AbZJOTyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 15:52:30 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:61357 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758635AbZJOTw3 (ORCPT
+	Thu, 15 Oct 2009 15:54:16 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33703 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935335AbZJOTyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 15:52:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=md39B13lam+BvKWFyhmRghcJ1p7ux2JQHUgciocxPamVLB5U+VLO9fehKeod4aJ9ly
-         DtdqUkCR8kO25S7aiUmtCeKxOQ2yKRd5cTd2+io1oqNMqhmFrNfQQGLaR63AbVcwhT2d
-         WRkGM3e+rbjYYZUbMxwUeR+nWRsBumfaFl/6M=
-Date: Thu, 15 Oct 2009 12:51:37 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: =?iso-8859-1?Q?=C9ric?= Piel <Eric.Piel@tremplin-utc.net>
-Cc: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
-	anymore
-Message-ID: <20091015195136.GD8544@core.coreip.homeip.net>
-References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <4AD75AC0.6020705@tremplin-utc.net> <20091015181336.GB8544@core.coreip.homeip.net> <4AD778C7.4070707@tremplin-utc.net>
+	Thu, 15 Oct 2009 15:54:15 -0400
+Message-ID: <4AD77DAD.4070004@cs.helsinki.fi>
+Date: Thu, 15 Oct 2009 22:53:17 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4AD778C7.4070707@tremplin-utc.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: David Rientjes <rientjes@google.com>
+CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] slub: allow stats to be cleared
+References: <alpine.DEB.1.00.0910150215320.1551@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.00.0910150215320.1551@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 15, 2009 at 09:32:23PM +0200, Éric Piel wrote:
-> Op 15-10-09 20:13, Dmitry Torokhov schreef:
->> It lokks like the keyboard controller switched from translated to
->> non-translated mode: '1c' is make code and 'f0 1c' is break (aka
->> release) code.
->>
->> Could you tell me how the keyboard indentified (in dmesg) after fresh
->> boot and after you do the bind/unbind trick on the older kernel?
->>
-> What do you mean by "how the keyboard indentified"? Are you asking for  
-> the debug trace in dmesg? I have the beginning of a boot with the debug  
-> trace to see after a fresh boot. I don't have dmesg history with  
-> i8042.debug of the bind/unbind trick, so I'll reboot in an old kernel  
-> and do it again (but I cannot do this before tuesday, when i have  
-> physical access to the machine).
+David Rientjes wrote:
+> When collecting slub stats for particular workloads, it's necessary to
+> collect each statistic for all caches before the job is even started
+> because the counters are usually greater than zero just from boot and
+> initialization.
+> 
+> This allows a statistic to be cleared on each cpu by writing '0' to its
+> sysfs file.  This creates a baseline for statistics of interest before
+> the workload is started.
+> 
+> Setting a statistic to a particular value is not supported, so all values
+> written to these files other than '0' returns -EINVAL.
+> 
+> Cc: Christoph Lameter <cl@linux-foundation.org>
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
-No, not the debug.. Just the lines looking like this:
-
-input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input3
-
-
-You should have at leat 2 - one uping initial boot and one after
-rebinding i8042 upon resume.
-
--- 
-Dmitry
+Applied, thanks!
