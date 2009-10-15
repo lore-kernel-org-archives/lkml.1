@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762195AbZJOAJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762219AbZJOAJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762195AbZJOAJR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 20:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757328AbZJOAJQ
+	id S1762219AbZJOAJZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 20:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762208AbZJOAJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 20:09:16 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:24242 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753291AbZJOAJP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 20:09:15 -0400
-Date: Wed, 14 Oct 2009 20:06:37 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-btrfs@vger.kernel.org
-Subject: [GIT PULL] Btrfs updates
-Message-ID: <20091015000637.GA3004@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-btrfs@vger.kernel.org
+	Wed, 14 Oct 2009 20:09:24 -0400
+Received: from tac.ki.iif.hu ([193.6.222.43]:59558 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762205AbZJOAJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 20:09:22 -0400
+From: Ferenc Wagner <wferi@niif.hu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Staubach <staubach@redhat.com>, Miklos Szeredi <mszeredi@suse.cz>,
+       xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: mmap vs mtime in 2.6.26 and up
+References: <20090518114305.GA6303@infradead.org>
+	<87vdj742dt.fsf@tac.ki.iif.hu> <20090926131043.GA25204@infradead.org>
+Date: Thu, 15 Oct 2009 02:08:22 +0200
+In-Reply-To: <20090926131043.GA25204@infradead.org> (Christoph Hellwig's
+	message of "Sat, 26 Sep 2009 09:10:43 -0400")
+Message-ID: <87oco94iyx.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4AD667FB.0143:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+Christoph Hellwig <hch@infradead.org> writes:
 
-The master branch of btrfs-unstable:
+> On Fri, Sep 25, 2009 at 02:47:42PM +0200, Ferenc Wagner wrote:
+>
+>> I added some fresh test results to
+>> http://bugzilla.kernel.org/show_bug.cgi?id=2645.  In short, under
+>> 2.6.30-rc8 the test program reports full failure on XFS and RAMFS,
+>> full success on EXT3, VFAT and ReiserFS, and mixed results on TMPFS:
+>
+> There's a patch queued up for inclusion in 2.6.32 to work around this
+> issue in XFS.  The lack of a proper callout from the VFS still makes
+> this a much less than ideal solution.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git master
-
-Has an assortment of bug fixes and performance improvements.  We've
-updated the btrfs fsync code to make sure we don't trigger log commits
-when the file hasn't changed, and also tuned the log commit writeback.
-This makes a pretty big different for rpm and yum.
-
-Also, Christoph Hellwig spent some time testing btrfs discard support
-with his qemu code, so I've included his patches to enable that.
-
-Chris Mason (5) commits (+139/-27):
-    Btrfs: avoid tree log commit when there are no changes (+71/-16)
-    Btrfs: streamline tree-log btree block writeout (+53/-4)
-    Btrfs: only write one super copy during fsync (+1/-1)
-    Btrfs: always pin metadata in discard mode (+8/-0)
-    Btrfs: fix btrfs acl #ifdef checks (+6/-6)
-
-Christoph Hellwig (2) commits (+10/-7):
-    Btrfs: enable discard support (+0/-6)
-    Btrfs: add -o discard option (+10/-1)
-
-Josef Bacik (1) commits (+24/-3):
-    Btrfs: fix possible ENOSPC problems with truncate
-
-Zheng Yan (1) commits (+6/-5):
-    Btrfs: properly wait log writers during log sync
-
-Total: (9) commits
-
- fs/btrfs/acl.c         |    6 +++---
- fs/btrfs/btrfs_inode.h |    6 ++++++
- fs/btrfs/ctree.h       |    4 +++-
- fs/btrfs/disk-io.c     |    2 ++
- fs/btrfs/extent-tree.c |   17 +++++++++++------
- fs/btrfs/file.c        |   41 ++++++++++++++++++++++++++---------------
- fs/btrfs/inode.c       |   33 +++++++++++++++++++++++++++++----
- fs/btrfs/super.c       |    9 +++++++--
- fs/btrfs/transaction.c |   45 ++++++++++++++++++++++++++++++++++++++++++---
- fs/btrfs/transaction.h |    5 +++++
- fs/btrfs/tree-log.c    |   48 +++++++++++++++++++++++++++++++++++++++++-------
- fs/btrfs/tree-log.h    |    3 +++
- fs/btrfs/xattr.c       |    2 +-
- 13 files changed, 179 insertions(+), 42 deletions(-)
+Great, anyway!  Somehow I managed to gloss over this mail until now,
+but happened to test 2.6.32-rc4 and found the issue fixed.  At least
+for XFS, as my latest addition to the bug report details it.  Thank
+you very much for taking care of this issue!
+-- 
+Regards,
+Feri.
