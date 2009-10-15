@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934057AbZJOGEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934096AbZJOGHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934057AbZJOGEE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 02:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933754AbZJOGED
+	id S934096AbZJOGHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 02:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbZJOGHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 02:04:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36795 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933619AbZJOGEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 02:04:01 -0400
-Date: Thu, 15 Oct 2009 08:03:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Joe Perches <joe@perches.com>, Greg KH <gregkh@suse.de>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jing Huang <huangj@brocade.com>, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Re: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for
-	2.6.32-rc3)
-Message-ID: <20091015060303.GA32415@elte.hu>
-References: <20091012150911.GB1656@suse.de> <20091012154244.GA13323@elte.hu> <20091012232429.GA24254@suse.de> <43e72e890910131108m789110b4hc35e25601ad67bb7@mail.gmail.com> <20091014044519.GA19199@suse.de> <1255497575.1851.16.camel@Joe-Laptop.home> <20091014063308.GE784@elte.hu> <4AD60FF9.40200@s5r6.in-berlin.de> <20091014183657.GB5133@elte.hu> <tkrat.88ac5cebebbd9689@s5r6.in-berlin.de>
+	Thu, 15 Oct 2009 02:07:36 -0400
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:33828 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752718AbZJOGHe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 02:07:34 -0400
+Date: Thu, 15 Oct 2009 11:36:52 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
+	register a set of idle routines.
+Message-ID: <20091015060651.GA4569@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20091008094828.GA20595@linux.vnet.ibm.com> <20091008095027.GC20595@linux.vnet.ibm.com> <1254998162.26976.270.camel@twins> <20091008104249.GJ20595@linux.vnet.ibm.com> <1254999033.26976.272.camel@twins> <8763akh4re.fsf@basil.nowhere.org> <20091014061727.GA8605@linux.vnet.ibm.com> <20091014071838.GE23248@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <tkrat.88ac5cebebbd9689@s5r6.in-berlin.de>
+In-Reply-To: <20091014071838.GE23248@one.firstfloor.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Andi Kleen <andi@firstfloor.org> [2009-10-14 09:18:38]:
 
-* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-
-> > Well, the answer is obvious i think. Tell me, at a glance, if you 
-> > see a patch on lkml, which one is for a staging driver to be 
-> > obsoleted, and which one is the one going upstream real soon? The 
-> > patches say:
-> > 
-> >  +++ a/drivers/staging/foo/x.c
-> > 
-> >  +++ a/drivers/staging/bar/y.c
-> > 
-> > Then tell me the same at a glance if you see patches for:
-> > 
-> >  +++ a/drivers/staging/wip/x.c
-> > 
-> >  +++ a/drivers/staging/bad/y.c
+> > How about something like this..
+> > If the arch does not enable CONFIG_CPU_IDLE, the cpuidle_idle_call
+> > which is called from cpu_idle() should call default_idle without
+> > involving the registering cpuidle steps. This should prevent bloating
+> > up of the kernel for archs which dont want to use cpuidle.
 > 
-> Does this information matter much?
+> On x86 some people want small kernel too, so selecting it on a architecture
+> granuality is not good. Also you can make it default, you just need
+> to slim it down first.
+> 
 
-Yes. You might not appreciate it as you are active in a relatively 
-narrow field (so all patches in your world have an 'obvious' place) - 
-but i for example take most of the context of a change from the email 
-itself and the more self-descriptive it is, the better. I would be more 
-likely to review work-in-progress patches while not bother about 
-obsolete drivers on the way out. YMMV.
+No, I dont mean selecting it on an architecture granularity.
 
-> What's more interesting is whether development activity will _lead_ to 
-> a driver being moved from bad or ugly to good.
+At compile time, if CONFIG_CPU_IDLE is disabled, the arch can redefine
+cpuidle_idle_call. For e.g. in arch/x86/kernel/process.c
 
-... a prerequisite of which is for more developers to be accutely aware 
-of in what state a driver is.
+#ifndef CONFIG_CPU_IDLE
+void cpuidle_idle_call(void)
+{
+	if (local_idle)
+		local_idle();
+	else
+		default_idle();
+}
+#endif
 
-Anyway ... it's all up to Greg and he indicated that he wants the 
-simplest structure, which is fair enough.
+where local_idle points to the idle routine selected using
+select_idle_routine() which can be poll, mwait, c1e.
 
-	Ingo
+So this way, we still preserve the exact same functionality as before
+and we also remove the ugly pm_idle exported function pointer and we
+avoid unnecessary code bloat for platforms who do not want to use
+cpuidle.
+
+--arun
