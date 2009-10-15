@@ -1,91 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933122AbZJOInh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933647AbZJOIss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933122AbZJOInh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 04:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933133AbZJOIng
+	id S933647AbZJOIss (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 04:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757875AbZJOIsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 04:43:36 -0400
-Received: from www.tglx.de ([62.245.132.106]:55049 "EHLO www.tglx.de"
+	Thu, 15 Oct 2009 04:48:47 -0400
+Received: from www.tglx.de ([62.245.132.106]:34187 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933121AbZJOIne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 04:43:34 -0400
-Message-Id: <20091015083933.897280001@linutronix.de>
+	id S1755467AbZJOIsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 04:48:47 -0400
+Message-Id: <20091015083933.942440598@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Thu, 15 Oct 2009 08:42:33 -0000
+Date: Thu, 15 Oct 2009 08:42:40 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Arnd Bergmann <arnd@arndb.de>,
        ALan Cox <alan@lxorguk.ukuu.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: [patch 4/7] sh: Remove BKL from landisk gio
+       Frederic Weisbecker <fweisbec@gmail.com>, Jeff Dike <jdike@addtoit.com>
+Subject: [patch 5/7] um: Convert hostaudio to unlocked ioctl
 References: <20091015083906.716130653@linutronix.de>
-Content-Disposition: inline; filename=sh-remove-bkl-from-landisk-gio.patch
+Content-Disposition: inline;
+	filename=um-convert-hostaudio-to-unlocked-ioctl.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The open function got the BKL via the big push down. Replace it by
-preempt_enable/disable as this is sufficient for an UP machine.
+The hostaudio ioctls can be converted to unlocked ioctls for the
+following reasons:
 
-The ioctl can be unlocked because there is no functionality which
-requires serialization. The usage by multiple callers is broken with
-and without the BKL due to the local static variable addr.
+  - get/put_user do not require the BKL
+  - os_ioctl_generic() passes the ioctl to the host and does not
+    need serialization.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Jeff Dike <jdike@addtoit.com>
 ---
- arch/sh/boards/mach-landisk/gio.c |   10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ arch/um/drivers/hostaudio_kern.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Index: linux-2.6-tip/arch/sh/boards/mach-landisk/gio.c
+Index: linux-2.6-tip/arch/um/drivers/hostaudio_kern.c
 ===================================================================
---- linux-2.6-tip.orig/arch/sh/boards/mach-landisk/gio.c
-+++ linux-2.6-tip/arch/sh/boards/mach-landisk/gio.c
-@@ -14,7 +14,6 @@
-  */
- #include <linux/module.h>
- #include <linux/init.h>
--#include <linux/smp_lock.h>
- #include <linux/kdev_t.h>
- #include <linux/cdev.h>
- #include <linux/fs.h>
-@@ -35,7 +34,7 @@ static int gio_open(struct inode *inode,
- 	int minor;
- 	int ret = -ENOENT;
- 
--	lock_kernel();
-+	preempt_disable();
- 	minor = MINOR(inode->i_rdev);
- 	if (minor < DEVCOUNT) {
- 		if (openCnt > 0) {
-@@ -45,7 +44,7 @@ static int gio_open(struct inode *inode,
- 			ret = 0;
- 		}
- 	}
--	unlock_kernel();
-+	preempt_enable();
- 	return ret;
+--- linux-2.6-tip.orig/arch/um/drivers/hostaudio_kern.c
++++ linux-2.6-tip/arch/um/drivers/hostaudio_kern.c
+@@ -136,8 +136,8 @@ static unsigned int hostaudio_poll(struc
+ 	return mask;
  }
  
-@@ -60,8 +59,7 @@ static int gio_close(struct inode *inode
- 	return 0;
- }
- 
--static int gio_ioctl(struct inode *inode, struct file *filp,
--			     unsigned int cmd, unsigned long arg)
-+static long gio_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+-static int hostaudio_ioctl(struct inode *inode, struct file *file,
+-			   unsigned int cmd, unsigned long arg)
++static long hostaudio_ioctl(struct file *file, unsigned int cmd,
++			    unsigned long arg)
  {
- 	unsigned int data;
- 	static unsigned int addr = 0;
-@@ -129,7 +127,7 @@ static const struct file_operations gio_
- 	.owner = THIS_MODULE,
- 	.open = gio_open,	/* open */
- 	.release = gio_close,	/* release */
--	.ioctl = gio_ioctl,	/* ioctl */
-+	.unlocked_ioctl = gio_ioctl,
- };
+ 	struct hostaudio_state *state = file->private_data;
+ 	unsigned long data = 0;
+@@ -223,8 +223,8 @@ static int hostaudio_release(struct inod
  
- static int __init gio_init(void)
+ /* /dev/mixer file operations */
+ 
+-static int hostmixer_ioctl_mixdev(struct inode *inode, struct file *file,
+-				  unsigned int cmd, unsigned long arg)
++static long hostmixer_ioctl_mixdev(struct file *file, unsigned int cmd,
++				   unsigned long arg)
+ {
+ 	struct hostmixer_state *state = file->private_data;
+ 
+@@ -289,7 +289,7 @@ static const struct file_operations host
+ 	.read           = hostaudio_read,
+ 	.write          = hostaudio_write,
+ 	.poll           = hostaudio_poll,
+-	.ioctl          = hostaudio_ioctl,
++	.unlocked_ioctl = hostaudio_ioctl,
+ 	.mmap           = NULL,
+ 	.open           = hostaudio_open,
+ 	.release        = hostaudio_release,
+@@ -298,7 +298,7 @@ static const struct file_operations host
+ static const struct file_operations hostmixer_fops = {
+ 	.owner          = THIS_MODULE,
+ 	.llseek         = no_llseek,
+-	.ioctl          = hostmixer_ioctl_mixdev,
++	.unlocked_ioctl = hostmixer_ioctl_mixdev,
+ 	.open           = hostmixer_open_mixdev,
+ 	.release        = hostmixer_release,
+ };
 
 
