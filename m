@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762934AbZJOWI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762167AbZJOWIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762934AbZJOWI6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 18:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762156AbZJOWI5
+	id S1762167AbZJOWIB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 18:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758701AbZJOWIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 18:08:57 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:63416 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761645AbZJOWI5 (ORCPT
+	Thu, 15 Oct 2009 18:08:00 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40759 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758407AbZJOWH7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 18:08:57 -0400
-X-Trace: 271678836/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.3.134/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.3.134
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEAKc510pPRQOG/2dsb2JhbACBUtdIhDAE
-X-IronPort-AV: E=Sophos;i="4.44,568,1249254000"; 
-   d="scan'208";a="271678836"
-Date: Thu, 15 Oct 2009 23:08:19 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 5/9] swap_info: SWAP_HAS_CACHE cleanups
-In-Reply-To: <20091015113736.d46a6a8a.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0910152301550.4447@sister.anvils>
-References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
- <Pine.LNX.4.64.0910150150570.3291@sister.anvils>
- <20091015113736.d46a6a8a.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Oct 2009 18:07:59 -0400
+Date: Thu, 15 Oct 2009 23:08:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Peter Stuge <peter@stuge.se>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Hardware initialization in line discipline - ldisc_open() ?
+Message-ID: <20091015230853.44fb10c1@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091015214642.6208.qmail@stuge.se>
+References: <20091015205803.30544.qmail@stuge.se>
+	<20091015223137.6b9fb55a@lxorguk.ukuu.org.uk>
+	<20091015214642.6208.qmail@stuge.se>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009, KAMEZAWA Hiroyuki wrote:
-> On Thu, 15 Oct 2009 01:52:27 +0100 (BST)
-> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-> 
-> > Though swap_count() is useful, I'm finding that swap_has_cache() and
-> > encode_swapmap() obscure what happens in the swap_map entry, just at
-> > those points where I need to understand it.  Remove them, and pass
-> > more usable "usage" values to scan_swap_map(), swap_entry_free() and
-> > __swap_duplicate(), instead of the SWAP_MAP and SWAP_CACHE enum.
+On Thu, 15 Oct 2009 23:46:42 +0200
+Peter Stuge <peter@stuge.se> wrote:
+
+> Alan Cox wrote:
+> > > Can you suggest a solution to this problem? Ideally one that can be
+> > > contained in the ldisc.
 > > 
-> > Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> > Similar problem with the GSM mux I've been working on. I've gone for
+> > making the ldisc attach always work and then kicking things off via an
+> > ioctl which sets the desired mode/parameters/encoding.
 > 
-> I have no objectios to above.
+> I'll do the same. Did you add a new ioctl for this, or use an
+> existing one?
 
-Phew!  Thanks.  I particularly had this one in mind when I Cc'ed you
-on them all, because we do have a clash of styles or habits there.
-
-My view is, the next time you or someone else is at work in there,
-okay to reintroduce such things if they make it easier for you to
-work on the code; but for me they made it harder.
-
-> I'll test, later. maybe no troubles.
-
-Thanks, yes, testing is the most important.
-
-Hugh
+I added a private one - given I needed to pass the adaption layer code,
+gsm mux level and whether we were initiator or not it didn't really fit
+anything generic in the tty layer.
