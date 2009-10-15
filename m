@@ -1,165 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762156AbZJOWaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763104AbZJOWa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762156AbZJOWaK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 18:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758683AbZJOWaJ
+	id S1763104AbZJOWa2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 18:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763079AbZJOWa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 18:30:09 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:23073 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757720AbZJOWaH (ORCPT
+	Thu, 15 Oct 2009 18:30:27 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:52177 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763027AbZJOWaY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 18:30:07 -0400
-Message-ID: <4AD7A24F.6000900@oracle.com>
-Date: Thu, 15 Oct 2009 15:29:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 15 Oct 2009 18:30:24 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Oleg Nesterov <oleg@redhat.com>,
+       Paul Fulghum <paulkf@microgate.com>, Boyan <btanastasov@yahoo.co.uk>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
+	<C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com>
+	<87ljjgfcbu.fsf@spindle.srvr.nix>
+	<alpine.LFD.2.01.0910121703390.3438@localhost.localdomain>
+	<alpine.LFD.2.01.0910122004200.3438@localhost.localdomain>
+	<4AD3F769.5080405@gmail.com>
+	<alpine.LNX.2.01.0910130405200.9297@dyndns.pervalidus.net>
+	<4AD437F9.9020708@yahoo.co.uk>
+	<alpine.LFD.2.01.0910130745550.3438@localhost.localdomain>
+	<4AD4DE4C.4010402@yahoo.co.uk>
+	<alpine.LFD.2.01.0910131317360.26777@localhost.localdomain>
+	<4AD4F548.2030506@microgate.com>
+	<alpine.LFD.2.01.0910131514100.3404@localhost.localdomain>
+	<1255478932.19056.24.camel@localhost.localdomain>
+	<4AD51D6B.7010509@microgate.com>
+	<alpine.LFD.2.01.0910131744590.3404@localhost.localdomain>
+	<20091014125846.1a3c8d40@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0910140804180.6146@localhost.localdomain>
+	<alpine.LFD.2.01.0910140925440.6146@localhost.localdomain>
+	<87aazsh80x.fsf@devron.myhome.or.jp>
+	<alpine.LFD.2.01.0910151447440.6146@localhost.localdomain>
+Date: Fri, 16 Oct 2009 07:29:41 +0900
+In-Reply-To: <alpine.LFD.2.01.0910151447440.6146@localhost.localdomain> (Linus
+	Torvalds's message of "Thu, 15 Oct 2009 14:49:56 -0700 (PDT)")
+Message-ID: <87ljjce1ey.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Shreyas Bhatewara <sbhatewara@vmware.com>, pv-drivers@vmware.com
-Subject: [PATCH -next] vmxnet3: use dev_dbg, fix build for CONFIG_BLOCK=n
-References: <20091015152538.74a1cb15.sfr@canb.auug.org.au>
-In-Reply-To: <20091015152538.74a1cb15.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4AD7A243.0122:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-vmxnet3 was using dprintk() for debugging output.  This was
-defined in <linux/dst.h> and was the only thing that was
-used from that header file.  This caused compile errors
-when CONFIG_BLOCK was not enabled due to bio* and BIO*
-uses in the header file, so change this driver to use
-dev_dbg() for debugging output.
+> On Fri, 16 Oct 2009, OGAWA Hirofumi wrote:
+>> 
+>> I.e. the following or something,
+>> 
+>> static inline int input_available_p(struct tty_struct *tty, int amt)
+>> {
+>> 	int try = 0;
+>> 
+>> retry:
+>> 	if (tty->icanon) {
+>> 		if (tty->canon_data)
+>> 			return 1;
+>> 	} else if (tty->read_cnt >= (amt ? amt : 1))
+>> 		return 1;
+>> 
+>> 	if (!checked) {
+>> 		tty_flush_to_ldisc(tty);
+>> 		try = 1;
+>> 		goto retry;
+>> 	}
+>> 
+>> 	return 0;
+>> }
+>
+> Yeah, we could do that. Especially if we ever see this in any profiles. I 
+> doubt we do, but..
 
-include/linux/dst.h:520: error: dereferencing pointer to incomplete type
-include/linux/dst.h:520: error: 'BIO_POOL_BITS' undeclared (first use in this function)
-include/linux/dst.h:521: error: dereferencing pointer to incomplete type
-include/linux/dst.h:522: error: dereferencing pointer to incomplete type
-include/linux/dst.h:525: error: dereferencing pointer to incomplete type
-make[4]: *** [drivers/net/vmxnet3/vmxnet3_drv.o] Error 1
+Yes.  Or, FWIW, I was thinking to delete schedule_delayed_work() for
+n_tty with flag or something at previous time.  I.e. disable background
+flush_to_ldisc() by writer for n_tty, only n_tty_read() will check
+tty.buf synchronously.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/net/vmxnet3/vmxnet3_drv.c |   27 ++++++++++++++++++---------
- drivers/net/vmxnet3/vmxnet3_int.h |    2 +-
- 2 files changed, 19 insertions(+), 10 deletions(-)
+So, with it, unnecessary flush_to_ldisc() is removed completely... Well...
 
---- linux-next-20091015.orig/drivers/net/vmxnet3/vmxnet3_int.h
-+++ linux-next-20091015/drivers/net/vmxnet3/vmxnet3_int.h
-@@ -30,6 +30,7 @@
- #include <linux/types.h>
- #include <linux/ethtool.h>
- #include <linux/delay.h>
-+#include <linux/device.h>
- #include <linux/netdevice.h>
- #include <linux/pci.h>
- #include <linux/ethtool.h>
-@@ -59,7 +60,6 @@
- #include <linux/if_vlan.h>
- #include <linux/if_arp.h>
- #include <linux/inetdevice.h>
--#include <linux/dst.h>
- 
- #include "vmxnet3_defs.h"
- 
---- linux-next-20091015.orig/drivers/net/vmxnet3/vmxnet3_drv.c
-+++ linux-next-20091015/drivers/net/vmxnet3/vmxnet3_drv.c
-@@ -481,7 +481,8 @@ vmxnet3_rq_alloc_rx_buf(struct vmxnet3_r
- 	}
- 	rq->uncommitted[ring_idx] += num_allocated;
- 
--	dprintk(KERN_ERR "alloc_rx_buf: %d allocated, next2fill %u, next2comp "
-+	dev_dbg(&adapter->netdev->dev,
-+		"alloc_rx_buf: %d allocated, next2fill %u, next2comp "
- 		"%u, uncommited %u\n", num_allocated, ring->next2fill,
- 		ring->next2comp, rq->uncommitted[ring_idx]);
- 
-@@ -539,7 +540,8 @@ vmxnet3_map_pkt(struct sk_buff *skb, str
- 		tbi = tq->buf_info + tq->tx_ring.next2fill;
- 		tbi->map_type = VMXNET3_MAP_NONE;
- 
--		dprintk(KERN_ERR "txd[%u]: 0x%Lx 0x%x 0x%x\n",
-+		dev_dbg(&adapter->netdev->dev,
-+			"txd[%u]: 0x%Lx 0x%x 0x%x\n",
- 			tq->tx_ring.next2fill, ctx->sop_txd->txd.addr,
- 			ctx->sop_txd->dword[2], ctx->sop_txd->dword[3]);
- 		vmxnet3_cmd_ring_adv_next2fill(&tq->tx_ring);
-@@ -572,7 +574,8 @@ vmxnet3_map_pkt(struct sk_buff *skb, str
- 		gdesc->dword[2] = dw2 | buf_size;
- 		gdesc->dword[3] = 0;
- 
--		dprintk(KERN_ERR "txd[%u]: 0x%Lx 0x%x 0x%x\n",
-+		dev_dbg(&adapter->netdev->dev,
-+			"txd[%u]: 0x%Lx 0x%x 0x%x\n",
- 			tq->tx_ring.next2fill, gdesc->txd.addr,
- 			gdesc->dword[2], gdesc->dword[3]);
- 		vmxnet3_cmd_ring_adv_next2fill(&tq->tx_ring);
-@@ -600,7 +603,8 @@ vmxnet3_map_pkt(struct sk_buff *skb, str
- 		gdesc->dword[2] = dw2 | frag->size;
- 		gdesc->dword[3] = 0;
- 
--		dprintk(KERN_ERR "txd[%u]: 0x%llu %u %u\n",
-+		dev_dbg(&adapter->netdev->dev,
-+			"txd[%u]: 0x%llu %u %u\n",
- 			tq->tx_ring.next2fill, gdesc->txd.addr,
- 			gdesc->dword[2], gdesc->dword[3]);
- 		vmxnet3_cmd_ring_adv_next2fill(&tq->tx_ring);
-@@ -697,7 +701,8 @@ vmxnet3_parse_and_copy_hdr(struct sk_buf
- 	tdd = tq->data_ring.base + tq->tx_ring.next2fill;
- 
- 	memcpy(tdd->data, skb->data, ctx->copy_size);
--	dprintk(KERN_ERR "copy %u bytes to dataRing[%u]\n",
-+	dev_dbg(&adapter->netdev->dev,
-+		"copy %u bytes to dataRing[%u]\n",
- 		ctx->copy_size, tq->tx_ring.next2fill);
- 	return 1;
- 
-@@ -808,7 +813,8 @@ vmxnet3_tq_xmit(struct sk_buff *skb, str
- 
- 	if (count > vmxnet3_cmd_ring_desc_avail(&tq->tx_ring)) {
- 		tq->stats.tx_ring_full++;
--		dprintk(KERN_ERR "tx queue stopped on %s, next2comp %u"
-+		dev_dbg(&adapter->netdev->dev,
-+			"tx queue stopped on %s, next2comp %u"
- 			" next2fill %u\n", adapter->netdev->name,
- 			tq->tx_ring.next2comp, tq->tx_ring.next2fill);
- 
-@@ -853,7 +859,8 @@ vmxnet3_tq_xmit(struct sk_buff *skb, str
- 
- 	/* finally flips the GEN bit of the SOP desc */
- 	gdesc->dword[2] ^= VMXNET3_TXD_GEN;
--	dprintk(KERN_ERR "txd[%u]: SOP 0x%Lx 0x%x 0x%x\n",
-+	dev_dbg(&adapter->netdev->dev,
-+		"txd[%u]: SOP 0x%Lx 0x%x 0x%x\n",
- 		(u32)((union Vmxnet3_GenericDesc *)ctx.sop_txd -
- 		tq->tx_ring.base), gdesc->txd.addr, gdesc->dword[2],
- 		gdesc->dword[3]);
-@@ -990,7 +997,8 @@ vmxnet3_rq_rx_complete(struct vmxnet3_rx
- 			if (unlikely(rcd->len == 0)) {
- 				/* Pretend the rx buffer is skipped. */
- 				BUG_ON(!(rcd->sop && rcd->eop));
--				dprintk(KERN_ERR "rxRing[%u][%u] 0 length\n",
-+				dev_dbg(&adapter->netdev->dev,
-+					"rxRing[%u][%u] 0 length\n",
- 					ring_idx, idx);
- 				goto rcd_done;
- 			}
-@@ -1676,7 +1684,8 @@ vmxnet3_activate_dev(struct vmxnet3_adap
- 	int err;
- 	u32 ret;
- 
--	dprintk(KERN_ERR "%s: skb_buf_size %d, rx_buf_per_pkt %d, ring sizes"
-+	dev_dbg(&adapter->netdev->dev,
-+		"%s: skb_buf_size %d, rx_buf_per_pkt %d, ring sizes"
- 		" %u %u %u\n", adapter->netdev->name, adapter->skb_buf_size,
- 		adapter->rx_buf_per_pkt, adapter->tx_queue.tx_ring.size,
- 		adapter->rx_queue.rx_ring[0].size,
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
