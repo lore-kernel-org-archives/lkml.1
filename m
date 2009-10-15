@@ -1,56 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761996AbZJOKkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762622AbZJOKki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761996AbZJOKkP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 06:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbZJOKkO
+	id S1762622AbZJOKki (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 06:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbZJOKkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 06:40:14 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:62159 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756594AbZJOKkN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 06:40:13 -0400
-To: Peter Teoh <htmldeveloper@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kmemleak errors
-References: <804dabb00910142027r7f771ee4n2855fef7dcffbacc@mail.gmail.com>
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Thu, 15 Oct 2009 11:39:30 +0100
-In-Reply-To: <804dabb00910142027r7f771ee4n2855fef7dcffbacc@mail.gmail.com> (Peter Teoh's message of "Thu\, 15 Oct 2009 11\:27\:34 +0800")
-Message-ID: <tnxfx9l9c0t.fsf@pc1117.cambridge.arm.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 15 Oct 2009 06:40:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45521 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756643AbZJOKkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 06:40:36 -0400
+Date: Thu, 15 Oct 2009 12:39:58 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Anton Blanchard <anton@samba.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <axboe@kernel.dk>
+Subject: Re: Latest vfs scalability patch
+Message-ID: <20091015103958.GA3127@wotan.suse.de>
+References: <20091006064919.GB30316@wotan.suse.de> <20091015100854.GA19948@kryten>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 15 Oct 2009 10:39:35.0101 (UTC) FILETIME=[C98D36D0:01CA4D83]
+Content-Disposition: inline
+In-Reply-To: <20091015100854.GA19948@kryten>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Teoh <htmldeveloper@gmail.com> wrote:
-> cat /sys/kernel/debug/kmemleak gave:
->
-> unreferenced object 0xffff8800bd864000 (size 40):
->   comm "swapper", pid 0, jiffies 4294937296
->   hex dump (first 32 bytes):
->     00 00 00 00 00 00 00 00 70 40 86 bd 00 88 ff ff  ........p@......
->     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
->   backtrace:
->     [<ffffffff81ef55b6>] kmemleak_alloc+0x73/0xd8
->     [<ffffffff81154d66>] kmem_cache_alloc+0xf7/0x15a
->     [<ffffffff82b2b88a>] debug_objects_mem_init+0x71/0x234
->     [<ffffffff82afef26>] start_kernel+0x356/0x414
->     [<ffffffff82afe2a9>] x86_64_start_reservations+0xb9/0xd4
->     [<ffffffff82afe3b2>] x86_64_start_kernel+0xee/0x109
->     [<ffffffffffffffff>] 0xffffffffffffffff
+Hi Anton,
 
-If run
+On Thu, Oct 15, 2009 at 09:08:54PM +1100, Anton Blanchard wrote:
+> 
+> Hi Nick,
+> 
+> > Several people have been interested to test my vfs patches, so rather
+> > than resend patches I have uploaded a rollup against Linus's current
+> > head.
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/npiggin/patches/fs-scale/
+> > 
+> > I have used ext2,ext3,autofs4,nfs as well as in-memory filesystems
+> > OK (although this doesn't mean there are no bugs!). Otherwise, if your
+> > filesystem compiles, then there is a reasonable chance of it working,
+> > or ask me and I can try updating it for the new locking.
+> > 
+> > I would be interested in seeing any numbers people might come up with,
+> > including single-threaded performance.
+> 
+> Thanks for doing a rollup patch, it made it easy to test. I gave it a spin on
+> a 64 core (128 thread) POWER5+ box. I started simple by looking at open/close
+> performance, eg:
+> 
+> void testcase(void)
+> {
+> 	char tmpfile[] = "/tmp/testfile.XXXXXX";
+> 
+> 	mkstemp(tmpfile);
+> 
+> 	while (1) {
+> 		int fd = open(tmpfile, O_RDWR);
+> 		close(fd);
+> 	}
+> }
+> 
+> At first the results were 10x slower. I took a look and it appears the
+> MNT_MOUNTED flag is getting cleared by a remount (I'm testing on the root
+> filesystem). This fixed it:
 
-  echo scan > /sys/kernel/debug/kmemleak
+Oh dear, thanks for that. That bugfix is needed for the patchset
+I just sent to be merged.
 
-a few times, do they disappear? I think the debug_objects reports are
-false positives but couldn't figure why kmemleak cannot track
-them. I'll look again at them and maybe add an annotation
-(kmemleak_not_leak).
+ 
+> --- fs/namespace.c~	2009-10-15 04:34:02.000000000 -0500
+> +++ fs/namespace.c	2009-10-15 04:35:00.000000000 -0500
+> @@ -1711,7 +1711,8 @@ static int do_remount(struct path *path,
+>  	else
+>  		err = do_remount_sb(sb, flags, data, 0);
+>  	if (!err)
+> -		path->mnt->mnt_flags = mnt_flags;
+> +		path->mnt->mnt_flags = mnt_flags |
+> +			(path->mnt->mnt_flags & MNT_MOUNTED);
+>  	up_write(&sb->s_umount);
+>  	if (!err) {
+>  		security_sb_post_remount(path->mnt, flags, data);
+> 
+> Attached is a before and after graph. Single thread performance is 20%
+> faster, and we go from hitting a wall at 2 cores to scaling all the way
+> to 64 cores. Nice work!!!
 
--- 
-Catalin
+Nice looking graph, thanks! Did you use the rcu patch there as
+well? (my open-close testing chokes RCU but your system might
+be managing to keep outstanding callbacks below the threshold)
+ 
