@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760423AbZJOBzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbZJOB4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760423AbZJOBzO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 21:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932510AbZJOBzN
+	id S1760927AbZJOB4T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 21:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757199AbZJOB4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 21:55:13 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56805 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754100AbZJOBzM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 21:55:12 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] mm: move inc_zone_page_state(NR_ISOLATED) to just isolated place
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>, stable@kernel.org
-In-Reply-To: <20091013115957.e2871557.akpm@linux-foundation.org>
-References: <20091009100527.1284.A69D9226@jp.fujitsu.com> <20091013115957.e2871557.akpm@linux-foundation.org>
-Message-Id: <20091015105154.C76A.A69D9226@jp.fujitsu.com>
+	Wed, 14 Oct 2009 21:56:18 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:10576 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756832AbZJOB4S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 21:56:18 -0400
+Date: Wed, 14 Oct 2009 22:55:41 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: David Miller <davem@davemloft.net>
+Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: net tree build warnings
+Message-ID: <20091015015541.GC25141@ghostprotocols.net>
+References: <20091014152000.15312908.sfr@canb.auug.org.au> <20091014153450.3110e34c.sfr@canb.auug.org.au> <20091014.151137.30359959.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 15 Oct 2009 10:54:32 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091014.151137.30359959.davem@davemloft.net>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri,  9 Oct 2009 10:06:58 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Em Wed, Oct 14, 2009 at 03:11:37PM -0700, David Miller escreveu:
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Wed, 14 Oct 2009 15:34:50 +1100
 > 
-> > This patch series is trivial cleanup and fix of page migration.
+> > On Wed, 14 Oct 2009 15:20:00 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >>
+> >> Today's linux-next build (powerpc ppc44x_defconfig) produced these
+> >> warnings:
+> >> 
+> >> In file included from net/socket.c:94:
+> >> include/net/compat.h:45: warning: 'struct compat_mmsghdr' declared inside parameter list
+> >> 
+> >> CONFIG_COMPAT is not set.
+> >> 
+> >> Caused by commit a2e2725541fad72416326798c2d7fa4dafb7d337 ("net:
+> >> Introduce recvmmsg socket syscall").
+>  ...
 > > 
-> > 
-> > ==========================================================
-> > 
-> > Christoph pointed out inc_zone_page_state(NR_ISOLATED) should be placed
-> > in right after isolate_page().
+> > I also get these for i386 and sparc32 defconfig builds.
 > 
-> The bugfixes are appropriate for 2.6.32 and should be backported into
-> -stable too, I think.  I haven't checked to see how long those bugs
-> have been present.
-> 
-> The cleanup is more appropriate for 2.6.33 so I had to switch the order
-> of these patches.  Hopefully the bugfixes were not dependent on the
-> cleanup.  
+> I've asked Arnaldo to work on fixing this.
 
-Yes, each patches are independent.
-[1/3] is cleanup.
-[2/3] and [3/3] are bugfixes.
+I'll fix that early tomorrow.
 
-I'm sorry for lack of prudence of patch order.
-
-
-
+- Arnaldo
