@@ -1,117 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759929AbZJOSzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763040AbZJOVPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759929AbZJOSzc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 14:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756584AbZJOSzb
+	id S1763040AbZJOVPq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 17:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757799AbZJOVPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 14:55:31 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:22153 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758073AbZJOSz3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 14:55:29 -0400
-Date: Thu, 15 Oct 2009 11:54:11 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>,
-       Gregory Haskins <ghaskins@novell.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, sfr@canb.auug.org.au,
-       greg@kroah.com, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-Subject: Re: [BUILD-FAILURE] next-20091015 - vbus_enet driver breaks with
- allmodconfig
-Message-Id: <20091015115411.5b556047.randy.dunlap@oracle.com>
-In-Reply-To: <20091015114210.65e1be72.randy.dunlap@oracle.com>
-References: <20091015152538.74a1cb15.sfr@canb.auug.org.au>
-	<20091015104852.GA6740@linux.vnet.ibm.com>
-	<4AD6CD940200005A00056857@sinclair.provo.novell.com>
-	<4AD75E60.4020306@gmail.com>
-	<20091015114210.65e1be72.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4AD76FF3.012F:SCFMA4539814,ss=1,fgs=0
+	Thu, 15 Oct 2009 17:15:46 -0400
+Received: from kroah.org ([198.145.64.141]:43140 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755738AbZJOVPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 17:15:45 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct 15 14:10:20 2009
+Message-Id: <20091015211019.922487164@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 15 Oct 2009 11:54:31 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [1/3] usb-serial: fix crash when sub-driver updates firmware
+References: <20091015185430.128674330@mini.kroah.org>
+Content-Disposition: inline; filename=usb-serial-fix-crash-when-sub-driver-updates-firmware.patch
+In-Reply-To: <20091015211112.GA5634@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009 11:42:10 -0700 Randy Dunlap wrote:
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-> On Thu, 15 Oct 2009 13:39:44 -0400 Gregory Haskins wrote:
-> 
-> > Gregory Haskins wrote:
-> > >>>> On 10/15/2009 at  6:48 AM, in message
-> > > <20091015104852.GA6740@linux.vnet.ibm.com>, Kamalesh Babulal
-> > > <kamalesh@linux.vnet.ibm.com> wrote: 
-> > >> Hi Gregory,
-> > >>
-> > >> 	While building next-20091015 with allmodconfig on the powerpc
-> > >> vbus-enet driver breaks
-> > > 
-> > > Hi Kamalesh,
-> > > 
-> > > I'll take a look at this and get a fix submitted today.
-> > > 
-> > > Kind Regards,
-> > > -Greg
-> > > 
-> > >> MODPOST 2492 modules
-> > >> ERROR: ".vbus_driver_register" [drivers/net/vbus-enet.ko] undefined!
-> > >> ERROR: ".vbus_driver_unregister" [drivers/net/vbus-enet.ko] undefined!
-> > >> ERROR: ".vbus_driver_ioq_alloc" [drivers/net/vbus-enet.ko] undefined!
-> > >>
-> > >> CONFIG_VBUS_ENET=m
-> > >> CONFIG_VBUS_ENET_DEBUG=y
-> > >> CONFIG_VBUS_PROXY=n
-> > 
-> > Hi Kamalesh,
-> > 
-> > I am having difficulty reproducing the problem.  When I look at the
-> > Kconfig, I see that VBUS_ENET has a "select VBUS_PROXY" as I would
-> > expect.  Additionally, if I run allmodconfig I can confirm that I get
-> > VBUS_ENET=m, VBUS_PROXY=y:
-> 
-> Greg,
-> 
-> Did you try to reproduce it with the ppc64 config file?
-> allmodconfig on what arch?
-> 
-> I think the problem is that arch/x86/Kconfig says:
-> 
-> source "drivers/vbus/Kconfig"
-> 
-> and that should actually be in drivers/Kconfig, so that it applies
-> to ppc64 et al, not just x86.
-> 
+------------------
+From: Alan Stern <stern@rowland.harvard.edu>
 
-OTOH, drivers/vbus/pci-bridge.c uses create_irq(), which is implemented
-only on x86 and ia64 and one ARM platform, so all of this ppc testing
-seems to be invalid...  ?
+commit 0a3c8549ea7e94d74a41096d42bc6cdf43d183bf upstream.
 
+This patch (as1244) fixes a crash in usb-serial that occurs when a
+sub-driver returns a positive value from its attach method, indicating
+that new firmware was loaded and the device will disconnect and
+reconnect.  The usb-serial core then skips the step of registering the
+port devices; when the disconnect occurs, the attempt to unregister
+the ports fails dramatically.
 
-> 
-> > ghaskins@dev:~/sandbox/git/fabric/linux-2.6-next> rm .config
-> > ghaskins@dev:~/sandbox/git/fabric/linux-2.6-next> make allmodconfig
-> > scripts/kconfig/conf -m arch/x86/Kconfig
-> > #
-> > # configuration written to .config
-> > #
-> > ghaskins@dev:~/sandbox/git/fabric/linux-2.6-next> grep -i vbus .config
-> > CONFIG_VBUS_PROXY=y
-> > CONFIG_VBUS_PCIBRIDGE=y
-> > CONFIG_VBUS_ENET=m
-> > CONFIG_VBUS_ENET_DEBUG=y
-> > CONFIG_USB_GADGET_VBUS_DRAW=2
-> > CONFIG_USB_GPIO_VBUS=m
-> > 
-> > I am not sure how your environment could have generated the VBUS_PROXY=n
-> > outcome.  Does anyone have any ideas?
-> > 
-> > -Greg
+This problem shows up with Keyspan devices and it might affect others
+as well.
 
+When the attach method returns a positive value, the patch sets
+num_ports to 0.  This tells usb_serial_disconnect() not to try
+unregistering any of the ports; instead they are cleaned up by
+destroy_serial().
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
-~Randy
+ drivers/usb/serial/usb-serial.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/drivers/usb/serial/usb-serial.c
++++ b/drivers/usb/serial/usb-serial.c
+@@ -973,6 +973,7 @@ int usb_serial_probe(struct usb_interfac
+ 		if (retval > 0) {
+ 			/* quietly accept this device, but don't bind to a
+ 			   serial port as it's about to disappear */
++			serial->num_ports = 0;
+ 			goto exit;
+ 		}
+ 	}
+
+
