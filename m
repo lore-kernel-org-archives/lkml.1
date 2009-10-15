@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935125AbZJOQr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761456AbZJOQuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935125AbZJOQr5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 12:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933392AbZJOQr4
+	id S1761456AbZJOQuv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 12:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757242AbZJOQuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 12:47:56 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:31821 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932988AbZJOQrz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 12:47:55 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Amerigo Wang <amwang@redhat.com>
-Subject: Re: [Patch] kallsyms: remove deprecated print_fn_descriptor_symbol()
-Date: Thu, 15 Oct 2009 10:47:17 -0600
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20091015062942.4391.22306.sendpatchset@localhost.localdomain>
-In-Reply-To: <20091015062942.4391.22306.sendpatchset@localhost.localdomain>
+	Thu, 15 Oct 2009 12:50:50 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:32781 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755460AbZJOQuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 12:50:50 -0400
+Date: Thu, 15 Oct 2009 09:47:26 -0700
+From: Greg KH <gregkh@suse.de>
+To: david@lang.hm
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: removing existing working drivers via staging
+Message-ID: <20091015164726.GA10125@suse.de>
+References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm>
+ <4AD74ED7.9070501@s5r6.in-berlin.de>
+ <alpine.DEB.2.00.0910150936310.22169@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910151047.17998.bjorn.helgaas@hp.com>
+In-Reply-To: <alpine.DEB.2.00.0910150936310.22169@asgard.lang.hm>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 October 2009 12:27:00 am Amerigo Wang wrote:
-> 
-> According to feature-removal-schedule.txt, it is the time
-> to remove print_fn_descriptor_symbol().
-> 
-> And a quick grep shows that it no longer has any callers.
-> 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+On Thu, Oct 15, 2009 at 09:39:51AM -0700, david@lang.hm wrote:
+> however, what I think I saw proposed was to move drivers that need to be 
+> 'cleaned up', to staging and then dropping them if they don't get cleaned.
 
-Thanks!
+What is "proposed" is the following:
 
-Acked-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+	- For drivers currently in the kernel tree, that the subsystem
+	  maintainer, for whatever reason, feels is obsolete / broken /
+	  needs major cleaning / wants to get rid of, can be submitted
+	  to the staging maintainer to be moved to the drivers/staging/
+	  directory.
+	- For a file to be moved into this directory, all of the normal
+	  staging rules apply, including most importantly, a TODO file
+	  listing what needs to be done to the driver in order for it to
+	  be moved back into the main portion of the kernel tree.
+	- If, after a period of 3 releases, no work has been done on the
+	  driver by anyone, the driver will be removed from the staging
+	  tree, just like all drivers in the staging tree.
 
-> ---
-> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-> index 04e6c81..42ba573 100644
-> --- a/Documentation/feature-removal-schedule.txt
-> +++ b/Documentation/feature-removal-schedule.txt
-> @@ -283,15 +283,6 @@ Who:	Glauber Costa <gcosta@redhat.com>
->  
->  ---------------------------
->  
-> -What: print_fn_descriptor_symbol()
-> -When: October 2009
-> -Why:  The %pF vsprintf format provides the same functionality in a
-> -      simpler way.  print_fn_descriptor_symbol() is deprecated but
-> -      still present to give out-of-tree modules time to change.
-> -Who:  Bjorn Helgaas <bjorn.helgaas@hp.com>
-> -
-> ----------------------------
-> -
->  What:	/sys/o2cb symlink
->  When:	January 2010
->  Why:	/sys/fs/o2cb is the proper location for this information - /sys/o2cb
-> diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-> index 7922742..d8e9b3d 100644
-> --- a/include/linux/kallsyms.h
-> +++ b/include/linux/kallsyms.h
-> @@ -107,18 +107,6 @@ static inline void print_symbol(const char *fmt, unsigned long addr)
->  		       __builtin_extract_return_addr((void *)addr));
->  }
->  
-> -/*
-> - * Pretty-print a function pointer.  This function is deprecated.
-> - * Please use the "%pF" vsprintf format instead.
-> - */
-> -static inline void __deprecated print_fn_descriptor_symbol(const char *fmt, void *addr)
-> -{
-> -#if defined(CONFIG_IA64) || defined(CONFIG_PPC64)
-> -	addr = *(void **)addr;
-> -#endif
-> -	print_symbol(fmt, (unsigned long)addr);
-> -}
-> -
->  static inline void print_ip_sym(unsigned long ip)
->  {
->  	printk("[<%p>] %pS\n", (void *) ip, (void *) ip);
-> 
+Note, as always, if a driver wants to come back from removal of the
+staging tree, a simple email to the staging maintainer, along with the
+promise that work will be done, is all it takes to resurrect it.
 
+Sound good?
 
+Now, where to put these "rules"?  Any suggestions?
+
+thanks,
+
+greg k-h
