@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935070AbZJOI77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935055AbZJOI7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935070AbZJOI77 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 04:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935061AbZJOI77
+	id S935055AbZJOI7v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 04:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935030AbZJOI7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 04:59:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55763 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935048AbZJOI76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 04:59:58 -0400
-Date: Thu, 15 Oct 2009 10:59:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Rientjes <rientjes@google.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Dirk Hohndel <hohndel@infradead.org>,
-       Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH, v2] kbuild: Improve version string logic
-Message-ID: <20091015085905.GB10546@elte.hu>
-References: <200910130004.46388.elendil@planet.nl> <20091013070505.GC31483@elte.hu> <200910131952.01209.elendil@planet.nl> <alpine.LFD.2.01.0910131100180.26777@localhost.localdomain> <alpine.DEB.1.00.0910131649280.24112@chino.kir.corp.google.com> <20091014065941.GH784@elte.hu> <alpine.DEB.1.00.0910140014490.26562@chino.kir.corp.google.com> <20091014073306.GB22778@elte.hu> <alpine.DEB.1.00.0910140037140.29264@chino.kir.corp.google.com> <alpine.DEB.1.00.0910150100590.10850@chino.kir.corp.google.com>
+	Thu, 15 Oct 2009 04:59:51 -0400
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:43978 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935024AbZJOI7u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 04:59:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=hPUmtgC65mTBqC3U5Tb3WLP4OIzH60z247UZQ4ZFUp2VBPId0IkzsS/kRknwJRTsJi
+         hhR67mVIly8md2EYU8NeuGl86HQMXcFQu5JdDoXtg4YhEGihPiccj1O8oZjABelaDywg
+         e84SRt7YzCs4TAf827ob7rHlh/GNr+2hAqlCo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0910150100590.10850@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Date: Thu, 15 Oct 2009 10:59:13 +0200
+Message-ID: <c4e36d110910150159j6092d0d1lb20434bd9d43d8ce@mail.gmail.com>
+Subject: Leaks in trace reported by kmemleak
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: lizf@cn.fujitsu.com
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I've noticed your latest patch for memory leak in filter setting
+(8ad807318fcd...) - but even with this patch - kmemleak seems to still
+report  lots  (~900) of following leaks - note - they come only from
+i915 and kvm module - so I'm not sure if these two modules are doing
+something wrong or the problem is in trace code.
 
-* David Rientjes <rientjes@google.com> wrote:
+It looks like whole directory is somehow forgotten.
 
-> On Wed, 14 Oct 2009, David Rientjes wrote:
-> 
-> > We could easily go with my suggestion of allowing "make LOCALVERSION=" to 
-> > override all additions to the kernel version when CONFIG_LOCALVERSION_AUTO 
-> > is disabled.  For such configurations, kernels would be built with this 
-> > variable to specify how it's different from the vanilla version and would 
-> > suppress the `+'.
-> > 
-> 
-> The following patch implements this suggestion and folds both of my 
-> proposed patches together.
+nreferenced object 0xffff880134b21268 (size 8):
+  comm "modprobe", pid 1099, jiffies 4294881626
+  hex dump (first 8 bytes):
+    69 6e 74 00 01 88 ff ff                          int.....
+  backtrace:
+    [<ffffffff8140e986>] kmemleak_alloc+0x26/0x60
+    [<ffffffff81127943>] __kmalloc_track_caller+0x143/0x230
+    [<ffffffff81104385>] kstrdup+0x45/0x80
+    [<ffffffff810dd5c9>] trace_define_field+0x89/0x1b0
+    [<ffffffff810dd7bc>] trace_define_common_fields+0xcc/0x110
+    [<ffffffffa0370426>]
+ftrace_define_fields_i915_ring_wait_end+0x16/0x50 [i915]
+    [<ffffffff810dcc53>] event_create_dir+0x93/0x480
+    [<ffffffff810dd13f>] trace_module_notify+0xff/0x500
+    [<ffffffff814247e8>] notifier_call_chain+0x78/0xb0
+    [<ffffffff8107f190>] __blocking_notifier_call_chain+0x60/0x90
+    [<ffffffff8107f1d6>] blocking_notifier_call_chain+0x16/0x20
+    [<ffffffff810a0bfa>] sys_init_module+0xaa/0x260
+    [<ffffffff8100c11b>] system_call_fastpath+0x16/0x1b
+    [<ffffffffffffffff>] 0xffffffffffffffff
 
-thanks David!
+...
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+unreferenced object 0xffff880134b21a78 (size 8):
+  comm "modprobe", pid 1106, jiffies 4294881716
+  hex dump (first 8 bytes):
+    5f 5f 75 33 32 00 ff ff                          __u32...
+  backtrace:
+    [<ffffffff8140e986>] kmemleak_alloc+0x26/0x60
+    [<ffffffff81127943>] __kmalloc_track_caller+0x143/0x230
+    [<ffffffff81104385>] kstrdup+0x45/0x80
+    [<ffffffff810dd5c9>] trace_define_field+0x89/0x1b0
+    [<ffffffffa03cf802>]
+ftrace_define_fields_kvm_mmu_pagetable_walk+0x82/0x90 [kvm]
+    [<ffffffff810dcc53>] event_create_dir+0x93/0x480
+    [<ffffffff810dd13f>] trace_module_notify+0xff/0x500
+    [<ffffffff814247e8>] notifier_call_chain+0x78/0xb0
+    [<ffffffff8107f190>] __blocking_notifier_call_chain+0x60/0x90
+    [<ffffffff8107f1d6>] blocking_notifier_call_chain+0x16/0x20
+    [<ffffffff810a0bfa>] sys_init_module+0xaa/0x260
+    [<ffffffff8100c11b>] system_call_fastpath+0x16/0x1b
+    [<ffffffffffffffff>] 0xffffffffffffffff
