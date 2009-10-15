@@ -1,177 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762995AbZJOUCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935416AbZJOT6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762995AbZJOUCP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 16:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760894AbZJOUCP
+	id S935416AbZJOT6u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 15:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935391AbZJOT6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 16:02:15 -0400
-Received: from smtp103.biz.mail.mud.yahoo.com ([68.142.200.238]:24578 "HELO
-	smtp103.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759355AbZJOUCO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 16:02:14 -0400
-X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
-X-YMail-OSG: Otym2SkVM1lF7Nawu1sgAvt1prNu3uEF1tEaLeHqZCv5dpKKloFGtSvCs3i.QFDVAAzzYcMXQG51G5YTYGXt5DNQ_59aDOuba6ps.nAiDQbWEgba4UYFSdkJo.VOi2OK9DrxkDwv1LPRlmV_WGENfLiV.kgSq.o6qpQOpnmh6fEEzoXzMmJC8MKaYFZUCU9mcPB_ZxdlO6YeRQHfmoykrE6pNdQHURC75siFwCq.VrLQYzjki9zLtTbbmYFg8sprliKdZI12Ns1BtGNFLmmldxjgWo614bU4E33XYA2DoMtfI_Njxa1avRQ13ka8wNZ.bP07g3W4pnB3iFKEeU.DRR2brTi1B9uj4Zan5EPqTugMVyGePBKiB0JeL_H7szLuh3hYbcSuKd0XBTaH1IEM
-X-Yahoo-Newman-Property: ymail-3
-From: Steven King <sfking@fdwdc.com>
-Organization: fdwdc.com
-To: uclinux-dev@uclinux.org
-Subject: [PATCH] Coldfire GPIO corrections
-Date: Thu, 15 Oct 2009 12:54:41 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
-       Greg Ungerer <gerg@snapgear.com>
+	Thu, 15 Oct 2009 15:58:49 -0400
+Received: from mail.lang.hm ([64.81.33.126]:41571 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935368AbZJOT6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 15:58:49 -0400
+Date: Thu, 15 Oct 2009 12:57:49 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: removing existing working drivers via staging
+In-Reply-To: <4AD77C4F.5010307@s5r6.in-berlin.de>
+Message-ID: <alpine.DEB.2.00.0910151250480.22169@asgard.lang.hm>
+References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm> <200910151942.40259.bzolnier@gmail.com> <20091015174932.GA3595@suse.de> <200910152020.13080.bzolnier@gmail.com> <20091015184656.GA29858@suse.de> <alpine.DEB.2.00.0910151200100.22169@asgard.lang.hm>
+ <20091015191641.GB19467@elte.hu> <alpine.DEB.2.00.0910151230560.22169@asgard.lang.hm> <4AD77C4F.5010307@s5r6.in-berlin.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_B431KZsrqVNC2i7"
-Message-Id: <200910151254.41599.sfking@fdwdc.com>
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_B431KZsrqVNC2i7
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thu, 15 Oct 2009, Stefan Richter wrote:
 
-Pin 0 of the EPORT is not connected on the 523x, 5271, 5275 and 528x and the 
-TIMER on the 523x has 8 pins, not 4.
--- 
-Steven King -- sfking at fdwdc dot com
+> david@lang.hm wrote:
+>> it's these users who will discover the missing driver and care about it,
+>> not the distros.
+>
+> I think we are talking about stuff of which users will typically
+> discover that it plainly doesn't work long before it vanishes from any
+> kernel distribution, or of which there is a superior alternative already
+> available.
 
-Signed-off-by: Steven King <sfking@fdwdc.com>
+if there's a superior alternative already available staging isn't needed 
+(like the e1000 split), but I have also seen many new systems added to the 
+kernel that the author thinks covers all the old ones, only to find out 
+when people get it in the real world that it doesn't cover all existing 
+hardware. but this is an existing problem that is already being handled.
 
-diff --git a/arch/m68knommu/platform/523x/gpio.c b/arch/m68knommu/platform/523x/gpio.c
-index f02840d..a8842dc 100644
---- a/arch/m68knommu/platform/523x/gpio.c
-+++ b/arch/m68knommu/platform/523x/gpio.c
-@@ -30,7 +30,8 @@ static struct mcf_gpio_chip mcf_gpio_chips[] = {
- 			.direction_output	= mcf_gpio_direction_output,
- 			.get			= mcf_gpio_get_value,
- 			.set			= mcf_gpio_set_value,
--			.ngpio			= 8,
-+			.base			= 1,
-+			.ngpio			= 7,
- 		},
- 		.pddr				= MCFEPORT_EPDDR,
- 		.podr				= MCFEPORT_EPDR,
-@@ -244,7 +245,7 @@ static struct mcf_gpio_chip mcf_gpio_chips[] = {
- 			.get			= mcf_gpio_get_value,
- 			.set			= mcf_gpio_set_value_fast,
- 			.base			= 96,
--			.ngpio			= 4,
-+			.ngpio			= 8,
- 		},
- 		.pddr				= MCFGPIO_PDDR_TIMER,
- 		.podr				= MCFGPIO_PODR_TIMER,
-diff --git a/arch/m68knommu/platform/527x/gpio.c b/arch/m68knommu/platform/527x/gpio.c
-index 1028142..0b56e19 100644
---- a/arch/m68knommu/platform/527x/gpio.c
-+++ b/arch/m68knommu/platform/527x/gpio.c
-@@ -31,7 +31,8 @@ static struct mcf_gpio_chip mcf_gpio_chips[] = {
- 			.direction_output	= mcf_gpio_direction_output,
- 			.get			= mcf_gpio_get_value,
- 			.set			= mcf_gpio_set_value,
--			.ngpio			= 8,
-+			.base			= 1,
-+			.ngpio			= 7,
- 		},
- 		.pddr				= MCFEPORT_EPDDR,
- 		.podr				= MCFEPORT_EPDR,
-@@ -263,7 +264,8 @@ static struct mcf_gpio_chip mcf_gpio_chips[] = {
- 			.direction_output	= mcf_gpio_direction_output,
- 			.get			= mcf_gpio_get_value,
- 			.set			= mcf_gpio_set_value,
--			.ngpio			= 8,
-+			.base			= 1,
-+			.ngpio			= 7,
- 		},
- 		.pddr				= MCFEPORT_EPDDR,
- 		.podr				= MCFEPORT_EPDR,
-diff --git a/arch/m68knommu/platform/528x/gpio.c b/arch/m68knommu/platform/528x/gpio.c
-index ec59395..eedaf0a 100644
---- a/arch/m68knommu/platform/528x/gpio.c
-+++ b/arch/m68knommu/platform/528x/gpio.c
-@@ -31,7 +31,7 @@ static struct mcf_gpio_chip mcf_gpio_chips[] = {
- 			.get			= mcf_gpio_get_value,
- 			.set			= mcf_gpio_set_value,
- 			.base			= 1,
--			.ngpio			= 8,
-+			.ngpio			= 7,
- 		},
- 		.pddr				= MCFEPORT_EPDDR,
- 		.podr				= MCFEPORT_EPDR,
 
---Boundary-00=_B431KZsrqVNC2i7
-Content-Type: text/x-diff;
-  charset="iso 8859-15";
-  name="foo"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="foo"
 
-Signed-off-by: Steven King <sfking@fdwdc.com>
+if it clearly doesn't work that is also fine with me.
 
-diff --git a/arch/m68knommu/platform/523x/gpio.c b/arch/m68knommu/platform/523x/gpio.c
-index f02840d..a8842dc 100644
---- a/arch/m68knommu/platform/523x/gpio.c
-+++ b/arch/m68knommu/platform/523x/gpio.c
-@@ -30,7 +30,8 @@ static struct mcf_gpio_chip mcf_gpio_chips[] = {
- 			.direction_output	= mcf_gpio_direction_output,
- 			.get			= mcf_gpio_get_value,
- 			.set			= mcf_gpio_set_value,
--			.ngpio			= 8,
-+			.base			= 1,
-+			.ngpio			= 7,
- 		},
- 		.pddr				= MCFEPORT_EPDDR,
- 		.podr				= MCFEPORT_EPDR,
-@@ -244,7 +245,7 @@ static struct mcf_gpio_chip mcf_gpio_chips[] = {
- 			.get			= mcf_gpio_get_value,
- 			.set			= mcf_gpio_set_value_fast,
- 			.base			= 96,
--			.ngpio			= 4,
-+			.ngpio			= 8,
- 		},
- 		.pddr				= MCFGPIO_PDDR_TIMER,
- 		.podr				= MCFGPIO_PODR_TIMER,
-diff --git a/arch/m68knommu/platform/527x/gpio.c b/arch/m68knommu/platform/527x/gpio.c
-index 1028142..0b56e19 100644
---- a/arch/m68knommu/platform/527x/gpio.c
-+++ b/arch/m68knommu/platform/527x/gpio.c
-@@ -31,7 +31,8 @@ static struct mcf_gpio_chip mcf_gpio_chips[] = {
- 			.direction_output	= mcf_gpio_direction_output,
- 			.get			= mcf_gpio_get_value,
- 			.set			= mcf_gpio_set_value,
--			.ngpio			= 8,
-+			.base			= 1,
-+			.ngpio			= 7,
- 		},
- 		.pddr				= MCFEPORT_EPDDR,
- 		.podr				= MCFEPORT_EPDR,
-@@ -263,7 +264,8 @@ static struct mcf_gpio_chip mcf_gpio_chips[] = {
- 			.direction_output	= mcf_gpio_direction_output,
- 			.get			= mcf_gpio_get_value,
- 			.set			= mcf_gpio_set_value,
--			.ngpio			= 8,
-+			.base			= 1,
-+			.ngpio			= 7,
- 		},
- 		.pddr				= MCFEPORT_EPDDR,
- 		.podr				= MCFEPORT_EPDR,
-diff --git a/arch/m68knommu/platform/528x/gpio.c b/arch/m68knommu/platform/528x/gpio.c
-index ec59395..eedaf0a 100644
---- a/arch/m68knommu/platform/528x/gpio.c
-+++ b/arch/m68knommu/platform/528x/gpio.c
-@@ -31,7 +31,7 @@ static struct mcf_gpio_chip mcf_gpio_chips[] = {
- 			.get			= mcf_gpio_get_value,
- 			.set			= mcf_gpio_set_value,
- 			.base			= 1,
--			.ngpio			= 8,
-+			.ngpio			= 7,
- 		},
- 		.pddr				= MCFEPORT_EPDDR,
- 		.podr				= MCFEPORT_EPDR,
+however, that is not the criteria that has been expressed.
 
---Boundary-00=_B431KZsrqVNC2i7--
+from earlier in this thread
+
+         - For drivers currently in the kernel tree, that the subsystem
+           maintainer, for whatever reason, feels is obsolete / broken /
+           needs major cleaning / wants to get rid of, can be submitted
+           to the staging maintainer to be moved to the drivers/staging/
+           directory.
+
+it's the 'needs major cleaning' and 'wants to get rid of' portions that 
+concern me the most.
+
+'obsolete' can mean that there is a superior alternative available, or it 
+could mean that the hardware the driver supports has not been manufactured 
+in several years (or, depending who you ask, several weeks ;-)
+
+David Lang
