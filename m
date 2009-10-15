@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935157AbZJORBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935177AbZJORNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935157AbZJORBv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 13:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935096AbZJORBv
+	id S935177AbZJORNB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 13:13:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935161AbZJORNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 13:01:51 -0400
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:54051 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933058AbZJORBu convert rfc822-to-8bit (ORCPT
+	Thu, 15 Oct 2009 13:13:00 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:64137 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935159AbZJORNA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 13:01:50 -0400
+	Thu, 15 Oct 2009 13:13:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=HHygkxTP6GIa4LILC5896mSOgseogmPbZu8K4pNi2wrYqa2yD2Fu0/J1JgtSiccZ/A
-         hhbB4zFO6fhT0EchL53dqJNidsZiiEW34q6q/nURtj2xBL8PN43rcBc8MaQZShOzIqeT
-         YAkY9rWl+kpCPDnueBrWi0u7RLd/y5h2Qjpuc=
-MIME-Version: 1.0
-In-Reply-To: <200910151251.57306.toralf.foerster@gmx.de>
-References: <200910151251.57306.toralf.foerster@gmx.de>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 15 Oct 2009 13:00:54 -0400
-Message-ID: <8bd0f97a0910151000ta7db2cau46f2f8ad065e70a6@mail.gmail.com>
-Subject: Re: build issue #29 for v2.6.32-rc4-149-ga3ccf63 :gpio.h:171: error: 
-	implicit declaration of function 'gpio_get_value'
-To: =?UTF-8?Q?Toralf_F=C3=B6rster?= <toralf.foerster@gmx.de>
-Cc: David Woodhouse <dwmw2@infradead.org>, Bryan Wu <cooloney@kernel.org>,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=fcON5Ig51OOfscdrj6s4cGyvPS1QmtuvNLqrMP2P2RZkiEv24SjBcU/gE0aupMud7F
+         CMfTW3WLm3FBr/yahrghNzbFB5Zz2oahbbDxu7KGYTtIymu4fkhnVP8/jADuYdebDsRo
+         7PMjJAwsueg6TruuvVQAGJoIOCbY73RxdP59k=
+Date: Thu, 15 Oct 2009 19:13:46 +0200
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+To: cbouatmailru@gmail.com
+Cc: Dmitry Artamonow <mad_soft@inbox.ru>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Russell King <linux@arm.linux.org.uk>,
+       Eric Miao <eric.y.miao@gmail.com>, linux-mtd@lists.infradead.org,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][PATCH] mtd: maps: remove obsolete ipaq-flash driver
+Message-Id: <20091015191346.39750c54.kristoffer.ericson@gmail.com>
+In-Reply-To: <20091015165320.GA24086@oksana.dev.rtsoft.ru>
+References: <1255433694-26471-1-git-send-email-mad_soft@inbox.ru>
+	<20091015165320.GA24086@oksana.dev.rtsoft.ru>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/10/15 Toralf Förster <toralf.foerster@gmx.de>:
-> Hello,
->
-> the build (.config attached) failed, make ends with :
-> ...
->  CC      drivers/mtd/maps/gpio-addr-flash.o
-> In file included from /home/tfoerste/devel/linux-2.6/arch/x86/include/asm/gpio.h:19,
->                 from drivers/mtd/maps/gpio-addr-flash.c:26:
-> include/asm-generic/gpio.h: In function 'gpio_get_value_cansleep':
-> include/asm-generic/gpio.h:171: error: implicit declaration of function 'gpio_get_value'
-> include/asm-generic/gpio.h: In function 'gpio_set_value_cansleep':
-> include/asm-generic/gpio.h:177: error: implicit declaration of function 'gpio_set_value'
-> drivers/mtd/maps/gpio-addr-flash.c: In function 'gpio_flash_probe':
-> drivers/mtd/maps/gpio-addr-flash.c:232: error: implicit declaration of function 'gpio_request'
-> drivers/mtd/maps/gpio-addr-flash.c:236: error: implicit declaration of function 'gpio_free'
-> drivers/mtd/maps/gpio-addr-flash.c:240: error: implicit declaration of function 'gpio_direction_output'
-> make[3]: *** [drivers/mtd/maps/gpio-addr-flash.o] Error 1
-> make[2]: *** [drivers/mtd/maps] Error 2
-> make[1]: *** [drivers/mtd] Error 2
-> make: *** [drivers] Error 2
->
-> The build was made with :
-> $>make randconfig; make clean; make
->
-> Here's the config:
+On Thu, 15 Oct 2009 20:53:20 +0400
+Anton Vorontsov <cbouatmailru@gmail.com> wrote:
 
-patches for this have been posted already, but no one has merged them.
- search recent lkml please.
--mike
+> On Tue, Oct 13, 2009 at 03:34:54PM +0400, Dmitry Artamonow wrote:
+> > This driver seems to be obsolete and broken for a long time.
+> > It depends on CONFIG_IPAQ_HANDHELD that simply doesn't exists
+> > anywhere in kernel. Also, it seems that none of machines it
+> > claims to support have any use of it:
+> >  SA11xx-based iPAQs (h3100/h3600) use sa1100-flash
+> >  iPAQ h5000 uses physmap-flash
+> >  Jornada 720 uses sa1100-flash
+> >  Jornada 560 and iPAQ h1910 are not in mainline
+> > 
+> > Signed-off-by: Dmitry Artamonow <mad_soft@inbox.ru>
+> 
+> Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
+
+Same here.
+
+> 
+> Thanks!
+> 
+> -- 
+> Anton Vorontsov
+> email: cbouatmailru@gmail.com
+> irc://irc.freenode.net/bd2
+
+
+-- 
+Kristoffer Ericson <kristoffer.ericson@gmail.com>
