@@ -1,107 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932633AbZJOFiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932937AbZJOFmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932633AbZJOFiF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 01:38:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbZJOFiE
+	id S932937AbZJOFmg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 01:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbZJOFmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 01:38:04 -0400
-Received: from aa.81.b6.static.xlhost.com ([207.182.129.170]:53907 "EHLO
-	wombat.diezmil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbZJOFiD (ORCPT
+	Thu, 15 Oct 2009 01:42:36 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38755 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752511AbZJOFme (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 01:38:03 -0400
-Date: Thu, 15 Oct 2009 01:37:00 -0400
-From: dtslinux@hotmail.com
-Reply-To: dtslinux@hotmail.com
-To: linux-kernel@vger.kernel.org
-Message-ID: <14962053.21255585019872.JavaMail.root@wombat>
-Subject: pdflush bug in rt27 patch for 2.6.24.7
+	Thu, 15 Oct 2009 01:42:34 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AD6B612.2030506@jp.fujitsu.com>
+Date: Thu, 15 Oct 2009 14:41:38 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org
+Subject: Re: pci-express hotplug
+References: <20091012120620.GG9228@kernel.dk> <4AD3F1D4.1000006@jp.fujitsu.com> <20091013083152.GR9228@kernel.dk> <4AD45B1B.8000609@jp.fujitsu.com> <20091013112525.GX9228@kernel.dk> <4AD5611F.6010907@jp.fujitsu.com> <20091014084713.GO9228@kernel.dk>
+In-Reply-To: <20091014084713.GO9228@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Jens Axboe wrote:
+> On Wed, Oct 14 2009, Kenji Kaneshige wrote:
+>> Jens Axboe wrote:
+>>> On Tue, Oct 13 2009, Kenji Kaneshige wrote:
+>>>> Jens Axboe wrote:
+>>>>> On Tue, Oct 13 2009, Kenji Kaneshige wrote:
+>>>>>> Jens Axboe wrote:
+>>>>>>> Hi,
+>>>>>>>
+>>>>>>> I'm trying to get pci-express hotplug working in a box here. I don't
+>>>>>>> really care about the hotplug aspect, I just want the darn pci-e slots
+>>>>>>> that are designated hotplug slots to actually WORK. When I load pciehp,
+>>>>>>> I get:
+>>>>>>>
+>>>>>>> Firmware did not grant requested _OSC control
+>>>>>>> Firmware did not grant requested _OSC control
+>>>>>>> Firmware did not grant requested _OSC control
+>>>>>>> Firmware did not grant requested _OSC control
+>>>>>>> pciehp 0000:00:05.0:pcie04: HPC vendor_id 8086 device_id 340c ss_vid 0 ss_did 0
+>>>>>>> pciehp 0000:00:05.0:pcie04: service driver pciehp loaded
+>>>>>>> Firmware did not grant requested _OSC control
+>>>>>>> pciehp 0000:00:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
+>>>>>>> pciehp 0000:00:07.0:pcie04: service driver pciehp loaded
+>>>>>>> Firmware did not grant requested _OSC control
+>>>>>>> pciehp 0000:80:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
+>>>>>>> pciehp 0000:80:07.0:pcie04: service driver pciehp loaded
+>>>>>>> pciehp 0000:80:09.0:pcie04: HPC vendor_id 8086 device_id 3410 ss_vid 0 ss_did 0
+>>>>>>> pciehp 0000:80:09.0:pcie04: service driver pciehp loaded
+>>>>>>> pciehp: PCI Express Hot Plug Controller Driver version: 0.4
+>>>>>>>
+>>>>>>> and the devices in the hotplug slots stay off. Is this an ACPI/bios
+>>>>>>> issue? How can I debug this?
+>>>>>>>
+>>>>>> Could you give me the result of "ls -lR /sys/bus/pci/slots/"
+>>>>>> after loading pciehp?
+>>>>> I have attached the result of that ls prior to loading pciehp/acpiphp
+>>>>> (pre-load), after loading pciehp (pciehp-load), and with acpiphp loaded
+>>>>> only as well (acpiphp-load).
+>>>>>
+>>>> Thank you for the info. From the information, I confirmed that hotplug
+>>>> slots are detected by pciehp even though _OSC evaluation failed. There
+>>>> are two ways to take control from the firmware through ACPI control
+>>>> method. One is _OSC control method, and the other is OSHP control method.
+>>>> I guess your ACPI fimware has both _OSC and OSHP on DSDT (ACPI Namespace),
+>>>> and pciehp assumes that it took control through OSHP after the _OSC
+>>>> evaluation failure. I think this pciehp's behavior is wrong because of
+>>>> the following reasons and I think pciehp driver mis-detected the hotplug
+>>>> slots on your environment because of this.
+>>>>
+>>>> - According to the PCI firmware specification, pciehp driver must use the
+>>>>  result of _OSC, if the platform implements both _OSC and OSHP.
+>>>> - OSHP control method seems only for SHPC, not for PCI Express native hot-
+>>>>  plug. So pciehp must not evaluate OSHP to take control from firmware.
+>>>>
+>>>> To confirm this, could you send me the dmesg output after loading pciehp
+>>>> with 'debug_acpi' of pci_hotplug (PCI hotplug core driver) enabled?
+>>>> For example,
+>>>>
+>>>>    $ su
+>>>>    # echo Y > /sys/module/pci_hotplug/parameters/debug_acpi
+>>>>    # modprobe pciehp
+>>>>    # dmesg
+>>> See below.
+>>>
+>>>> And if it is possible, could you send me DSDT of your platform?
+>>> Not sure I can do that, I'll check.
+>>>
+>>>> Anyway, my recommendation is using acpiphp on your environment because
+>>>> your firmware didn't grant control over hotplug control through _OSC.
+>>>> From the information, acpiphp also detects the hotplug slots successfully.
+>>>> Please try "echo 1 > /sys/bus/pci/slots/<slot#>/power". It would turn on
+>>>> the slot and initialize adapter card on the slot.
+>>> It does find the 4 slots correctly. But if I try to turn on the power,
+>>> nothing happens and 'power' stays at 0. If I do the same with pciehp, I
+>>> get the same hang as described when using pciehp with pciehp_force=1.
+>>> But apparently this machine is getting a board replacement very soon, so
+>>> it may solve itself. Unless you think it should work and there's
+>>> something I can try to check, then lets just leave this issue until I
+>>> get it upgraded and return from kernel summit / JLS.
+>>>
+>> Could you try pciehp with "pciehp_debug" option enabled(*), and give me
+>> the following information?
+> 
+> I've attached the output of loading pciehp with the debug option
+> enabled.
+> 
+>>  - "cat /sys/bus/pci/slots/*/*" output
+> 
+> Attached as slots
+> 
+>>  - dmesg output after "echo 1 > /sys/bus/pci/slots/<slot#>/power"
+> 
+> # echo 1 > /sys/bus/pci/slots/1/power
+> pciehp 0000:00:05.0:pcie04: Power fault on Slot(1)
+> pciehp 0000:00:05.0:pcie04: Power fault bit 0 set
+> pciehp 0000:00:05.0:pcie04: pcie_isr: intr_loc 2
+> [...]
+> 
+> That last line repeats infinitely.
 
-I am having an issue in kernel 2.6.24.7 with RT-27 patch. I am using a block device driver that is doing I/O operations on a virtual device. The driver is using separate kernel threads to perform read and write operations. The driver is working fine in the normal kernels, it is also working fine in RT-27 patch with 2.6.24.7 kernel, but some times I am getting following bug when performing write test with xdd benchmark (in RT-27 patch with 2.6.24.7 kernel)  :
+Thank you very much for information.
 
-WARNING: at kernel/rtmutex.c:979 rt_spin_lock()
-Pid: 12634, comm: pdflush Tainted: GF       2.6.24.7-rt27 #9
- [<c04046b8>] show_trace_log_lvl+0x1f/0x34
- [<c0404f67>] show_trace+0x17/0x19
- [<c04052e2>] dump_stack+0x6f/0x75
- [<c063ac74>] rt_spin_lock+0x4a/0xa2
- [<c04f33a4>] cfq_exit_io_context+0x30/0x56
- [<c04ed88f>] exit_io_context+0x68/0x72
- [<c04206c1>] do_exit+0x6c2/0x739
- [<c040432d>] kernel_thread_helper+0xd/0x10
- =======================
+The direct cause of the problem that your slot was not turned on
+is power fault. I guess acpiphp is suffering the same problem.
+Unfortunately, it's difficult for me to analyze the root cause
+of this power fault. Please ask the hardware vendor about it. I
+hope board replacement will fix the problem.
 
-<1>BUG: unable to handle kernel NULL pointer dereference at virtual address 0000003d
-printing eip: c043d18a *pdpt = 00000000349dd001 *pde = 0000000000000000
+By the way, thanks to your report, I noticed the several points
+that might need to be fixed as follows. I'll try to improve that.
 
-<0>Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
-Modules linked in: sysfs_driver(F) regularcache(F) dts nls_utf8 hfsplus ramdisk_driver bridge autofs4 hidp rfcomm l2cap bluetooth sunrpc ib_iser libiscsi scsi_transport_iscsi ib_srp scsi_transport_srp ib_ipoib ipv6 rdma_ucm ib_ucm ib_uverbs ib_umad rdma_cm ib_cm iw_cm ib_addr ib_sa ib_mad ib_core dm_mirror dm_multipath dm_mod sbs sbshc battery ac lp floppy sg serio_raw parport_pc parport snd_intel8x0 snd_ac97_codec 8250_pnp ac97_bus snd_seq_dummy 8250 serial_core snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss button snd_pcm e1000 snd_timer snd soundcore i2c_i801 snd_page_alloc i2c_core pcspkr ata_piix libata sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd
+- The message "Firmware did not grant requested _OSC control" is
+  confusing and similar message is already displayed by the caller
+  of acpi_pci_osc_control_set(). Therefore, it should be removed.
 
-Pid: 12634, comm: pdflush Tainted: GF       (2.6.24.7-rt27 #9)
-EIP: 0060:[<c043d18a>] EFLAGS: 00010016 CPU: 0
-EIP is at task_blocks_on_rt_mutex+0xf8/0x240
-EAX: ef42406c EBX: 0000001a ECX: ef424044 EDX: ef424044
-ESI: ef424044 EDI: 00000009 EBP: e7ba7eec ESP: e7ba7ebc
- DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068 preempt:00000003
-Process pdflush (pid: 12634, ti=e7ba7000 task=e5268060 task.ti=e7ba7000)
-Stack: 00000001 ef424054 ef424044 00000296 00000000 e7ba7f04 ef424044 00000009
-       e7ba7f1c 00000296 ef424044 00000296 e7ba7f58 c063a57e 00000296 00000046
-       00000000 ffffffff 00000078 e7ba7f08 e7ba7f08 e7ba7f10 e7ba7f10 00000000
-Call Trace:
- [<c04046b8>] show_trace_log_lvl+0x1f/0x34
- [<c0404772>] show_stack_log_lvl+0xa5/0xb9
- [<c040483a>] show_registers+0xb4/0x1b8
- [<c0404a5e>] die+0x120/0x21b
- [<c063ddfc>] do_page_fault+0x845/0xa07
- [<c063c29a>] error_code+0x6a/0x70
- [<c063a57e>] rt_spin_lock_slowlock+0xc5/0x1b7
- [<c063a9d4>] __rt_spin_lock+0x48/0x4b
- [<c063acbe>] rt_spin_lock+0x94/0xa2
- [<c04f33a4>] cfq_exit_io_context+0x30/0x56
- [<c04ed88f>] exit_io_context+0x68/0x72
- [<c04206c1>] do_exit+0x6c2/0x739
- [<c040432d>] kernel_thread_helper+0xd/0x10
- =======================
-INFO: lockdep is turned off.
-Code: 24 08 4c 00 00 00 c7 44 24 04 83 42 6e c0 c7 04 24 b6 78 6d c0 e8 c0 0d fe ff e8 f5 80 fc ff 8b 7f 08 8b 4d e8 83 ef 0c 89 7d ec <39> 4f 34 74 04 0f 0b eb fe 8b 7d e8 8b 45 e4 83 c7 20 89 fa e8
+- If the platform has _OSC control method, OSHP should not be
+  evaluated.
 
-<0>EIP: [<c043d18a>] task_blocks_on_rt_mutex+0xf8/0x240 SS:ESP 0068:e7ba7ebc
----[ end trace 432e3e53cc0cfa18 ]---
-Fixing recursive fault but reboot is needed!
-BUG: scheduling with irqs disabled: pdflush/0x00000002/12634
-caller is do_exit+0xcc/0x739
-Pid: 12634, comm: pdflush Tainted: GF     D 2.6.24.7-rt27 #9
- [<c04046b8>] show_trace_log_lvl+0x1f/0x34
- [<c0404f67>] show_trace+0x17/0x19
- [<c04052e2>] dump_stack+0x6f/0x75
- [<c0638e41>] schedule+0x8a/0x105
- [<c04200cb>] do_exit+0xcc/0x739
- [<c0404b51>] die+0x213/0x21b
- [<c063ddfc>] do_page_fault+0x845/0xa07
- [<c063c29a>] error_code+0x6a/0x70
- [<c063a57e>] rt_spin_lock_slowlock+0xc5/0x1b7
- [<c063a9d4>] __rt_spin_lock+0x48/0x4b
- [<c063acbe>] rt_spin_lock+0x94/0xa2
- [<c04f33a4>] cfq_exit_io_context+0x30/0x56
- [<c04ed88f>] exit_io_context+0x68/0x72
- [<c04206c1>] do_exit+0x6c2/0x739
- [<c040432d>] kernel_thread_helper+0xd/0x10
- =======================
+- (maybe) pciehp must not evaluate OSHP (But your platform seems
+  to provide OSHP for several PCIe hotplug slots because your
+  platform provides OSHP even though it doesn't have any SHPC
+  based PCI/PCI-X hot-plug slots. I need to check PCI firmware
+  spec again).
 
-I am confuse whether my driver is causing this problem or not as in the trace above I cannot find any function of my driver. All the functions are of kernel and pdflush is causing this problem.  In the above trace "Modules linked in: sysfs_driver(F) regularcache(F) dts "     are my modules.
-I am using CentOS 5 with 1GB RAM on  "Intel(R) Pentium(R) 4 CPU 2.80GHz".  Please guide me if I am doing any mistake
+- pciehp needs something to prevent power fault interrupt storm.
 
-Thanks!
-Furahm
+Thanks,
+Kenji Kaneshige
 
---
-This message was sent on behalf of dtslinux@hotmail.com at openSubscriber.com
-http://www.opensubscriber.com/messages/linux-kernel@vger.kernel.org/topic.html
+
