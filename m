@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763066AbZJOVPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761809AbZJOSzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763066AbZJOVPt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 17:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbZJOVPs
+	id S1761809AbZJOSzp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 14:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761330AbZJOSzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 17:15:48 -0400
-Received: from kroah.org ([198.145.64.141]:43154 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757799AbZJOVPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 17:15:47 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct 15 14:10:20 2009
-Message-Id: <20091015211020.207764920@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 15 Oct 2009 11:54:33 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Johan Hovold <jhovold@gmail.com>, Oliver Neukum <oliver@neukum.org>
-Subject: [3/3] USB: digi_acceleport: Fix broken unthrottle.
-References: <20091015185430.128674330@mini.kroah.org>
-Content-Disposition: inline; filename=usb-digi_acceleport-fix-broken-unthrottle.patch
-In-Reply-To: <20091015211112.GA5634@kroah.com>
+	Thu, 15 Oct 2009 14:55:44 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:49824 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760826AbZJOSzn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 14:55:43 -0400
+Message-ID: <4AD77007.2070706@freescale.com>
+Date: Thu, 15 Oct 2009 13:55:03 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090504 SeaMonkey/2.0a3
+MIME-Version: 1.0
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+CC: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+       brueckner@linux.vnet.ibm.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] hvc_console: returning 0 from put_chars is not an error
+References: <1255557226-4403-1-git-send-email-timur@freescale.com> <200910151305.47100.borntraeger@de.ibm.com> <20091015160906.GA3730@loki.buserror.net> <200910152041.26646.borntraeger@de.ibm.com>
+In-Reply-To: <200910152041.26646.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Oct 2009 18:55:04.0405 (UTC) FILETIME=[01990050:01CA4DC9]
+X-Brightmail-Tracker: AAAAAQAAAWE=
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+Christian Borntraeger wrote:
+> Hmmm, if we are ok with having both options, we should let the hvc backend 
+> decide if it wants to drain or to discard.
+> 
+> If we just busy loop, it actually does not matter how we let hvc_console react 
+> on 0, as long as we adopt all backends to use that interface consistent.
+> 
+> On the other hand, backends might want to do special magic on congestion so I 
+> personally tend to let the backend loop instead of hvc_console. But I am really  
+> not sure.
 
-------------------
-From: Johan Hovold <jhovold@gmail.com>
+The reason that we're asking for this change is that I have an hvc client driver that drops characters during heavy printk() output.  hvc calls my driver, but the output buffer is still full, so the driver just returns 0.
 
-commit ba6b702f85a61561d329c4c11d3ed95604924f9a upstream.
+If I add a spin-loop in the driver, then we don't need to change hvc, but now the driver is blocking during user-space print operations (via hvc_write and hvc_push).  
 
-This patch fixes a regression introduced in
-39892da44b21b5362eb848ca424d73a25ccc488f.
-
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
-Acked-by: Oliver Neukum <oliver@neukum.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/usb/serial/digi_acceleport.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
---- a/drivers/usb/serial/digi_acceleport.c
-+++ b/drivers/usb/serial/digi_acceleport.c
-@@ -892,16 +892,16 @@ static void digi_rx_unthrottle(struct tt
- 
- 	spin_lock_irqsave(&priv->dp_port_lock, flags);
- 
--	/* turn throttle off */
--	priv->dp_throttled = 0;
--	priv->dp_throttle_restart = 0;
--
- 	/* restart read chain */
- 	if (priv->dp_throttle_restart) {
- 		port->read_urb->dev = port->serial->dev;
- 		ret = usb_submit_urb(port->read_urb, GFP_ATOMIC);
- 	}
- 
-+	/* turn throttle off */
-+	priv->dp_throttled = 0;
-+	priv->dp_throttle_restart = 0;
-+
- 	spin_unlock_irqrestore(&priv->dp_port_lock, flags);
- 
- 	if (ret)
-
-
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
