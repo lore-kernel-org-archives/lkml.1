@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbZJOHJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbZJOHMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756867AbZJOHJu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 03:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbZJOHJu
+	id S1757284AbZJOHMe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 03:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZJOHMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 03:09:50 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:18137 "EHLO mx1.redhat.com"
+	Thu, 15 Oct 2009 03:12:34 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:45270 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbZJOHJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 03:09:49 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <7d86d44a0910142045n585c099l50b1efec12c1db3e@mail.gmail.com>
-References: <7d86d44a0910142045n585c099l50b1efec12c1db3e@mail.gmail.com> <1255516134-4838-1-git-send-email-graff.yang@gmail.com> <18475.1255529305@redhat.com> <7d86d44a0910141921j28ddc50cxb2d9386c5ad99db9@mail.gmail.com>
-To: graff yang <graff.yang@gmail.com>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       gyang@blackfin.uclinux.org, akpm@linux-foundation.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Graff Yang <graf.yang@analog.com>,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
-Date: Thu, 15 Oct 2009 08:07:21 +0100
-Message-ID: <6954.1255590441@redhat.com>
+	id S1752251AbZJOHMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 03:12:33 -0400
+Message-ID: <4AD6CB42.5040006@redhat.com>
+Date: Thu, 15 Oct 2009 16:12:02 +0900
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: djwong@us.ibm.com
+CC: Marcelo Tosatti <mtosatti@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org
+Subject: Re: [PATCH] kvm: Prevent kvm_init from corrupting debugfs structures
+References: <20091014232100.GE26149@tux1.beaverton.ibm.com>
+In-Reply-To: <20091014232100.GE26149@tux1.beaverton.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-graff yang <graff.yang@gmail.com> wrote:
+On 10/15/2009 08:21 AM, Darrick J. Wong wrote:
+> I'm seeing an oops condition when kvm-intel and kvm-amd are modprobe'd
+> during boot (say on an Intel system) and then rmmod'd:
+>
+>     # modprobe kvm-intel
+>       kvm_init()
+>       kvm_init_debug()
+>       kvm_arch_init()<-- stores debugfs dentries internally
+>       (success, etc)
+>
+>     # modprobe kvm-amd
+>       kvm_init()
+>       kvm_init_debug()<-- second initialization clobbers kvm's
+>                            internal pointers to dentries
+>       kvm_arch_init()
+>       kvm_exit_debug()<-- and frees them
+>
+>     # rmmod kvm-intel
+>       kvm_exit()
+>       kvm_exit_debug()<-- double free of debugfs files!
+>
+>       *BOOM*
+>
+> If execution gets to the end of kvm_init(), then the calling module has been
+> established as the kvm provider.  Move the debugfs initialization to the end of
+> the function, and remove the now-unnecessary call to kvm_exit_debug() from the
+> error path.  That way we avoid trampling on the debugfs entries and freeing
+> them twice.
+>
+>    
 
-> Your patch works both with SELINUX enabled or disabled.
+Looks good.
 
-Thanks.
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
-> But, how to prevent the address that attempting to be mapped to be lower
-> than CONFIG_LSM_MMAP_MIN_ADDR/CONFIG_DEFAULT_MMAP_MIN_ADDR?
-> This is what the security_file_mmap() is doing and mmu's
-> do_mmap_pgoff() has implemented.
-
-You need to ask yourself two questions:
-
- (1) Does the test make any sense in the NOMMU context?  Given that the
-     userspace program _cannot_ specify that something should be mapped below
-     that address (since MAP_FIXED gives an error and the hint is ignored),
-     I'd say not.
-
- (2) Is it likely that LSM security would be used with NOMMU anyway, given
-     that there is nothing stopping userspace programs editing the kernel
-     directly?
-
-You need to show that it makes sense to do the test in a NOMMU context.
-Remember, if there is no physical medium at address 0 (RAM, flash, whatever),
-you can't map anything there.  This might best be left to the arch to not
-provide page 0 of RAM to the page allocator during memory initialisation.
-
-David
