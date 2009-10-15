@@ -1,76 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933029AbZJOQHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935229AbZJOSgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933029AbZJOQHX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 12:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760264AbZJOQHX
+	id S935229AbZJOSgV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 14:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935122AbZJOSgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 12:07:23 -0400
-Received: from xenotime.net ([72.52.64.118]:41109 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758037AbZJOQHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 12:07:22 -0400
-Date: Thu, 15 Oct 2009 09:06:45 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Daniel Walker <dwalker@fifo99.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Tips for module_init() dependencies
-Message-Id: <20091015090645.140e04f4.rdunlap@xenotime.net>
-In-Reply-To: <4AD7469B.9070907@gmail.com>
-References: <4AD71D12.9060203@gmail.com>
-	<1255621559.22917.35.camel@desktop>
-	<4AD7469B.9070907@gmail.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Oct 2009 14:36:20 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:58218 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932262AbZJOSgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 14:36:19 -0400
+Date: Thu, 15 Oct 2009 09:07:17 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
+       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH tip/core/rcu 2/6] rcu: prevent RCU IPI storms in
+	presence of high call_rcu() load
+Message-ID: <20091015160717.GB6706@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091014171517.GA13635@linux.vnet.ibm.com> <20091015110404.GC3127@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091015110404.GC3127@wotan.suse.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009 11:58:19 -0400 Gregory Haskins wrote:
+On Thu, Oct 15, 2009 at 01:04:04PM +0200, Nick Piggin wrote:
+> Testing this on top of my vfs-scale patches, a 64-way 32-node ia64
+> system runs the parallel open/close microbenchmark ~30 times faster
+> and is scaling linearly now. Single thread performance is not
+> noticably changed. Thanks very much Paul.
 
-> Daniel Walker wrote:
-> > On Thu, 2009-10-15 at 09:01 -0400, Gregory Haskins wrote:
+Good to hear, thank you for giving it a go!
+
+						Thanx, Paul
+
+> On Wed, Oct 14, 2009 at 10:15:55AM -0700, Paul E. McKenney wrote:
+> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > > 
-> >> may break, because the kernel seems to have no concept of
-> >> interdependency between foo_init() and bar_init(), and therefore
-> >> bar_init() may call foo() before foo_init() has executed.
-> >>
-> >> There are various ways to solve this problem, such as deferring calling
-> >> foo() with a workqueue or something, but I was wondering if there was a
-> >> better/standard way to do this that I am missing?
-> >>
-> >> The problem I am having specifically is that I am trying to call
-> >> configfs_register_subsystem() in a module_init(), but this breaks when
-> >> built into the kernel based on sheer bad luck that configfs gets
-> >> initialized after me.  To date I have worked around this by forcing my
-> >> code to only support built-in, and using late_initcall() instead or
-> >> module_init.  This works, but it only means I am putting the problem off
-> >> (code that depends on *me* has to use similar tricks, etc.
+> > As the number of callbacks on a given CPU rises, invoke
+> > force_quiescent_state() only every blimit number of callbacks
+> > (defaults to 10,000), and even then only if no other CPU has invoked
+> > force_quiescent_state() in the meantime.
 > > 
-> > You can't modify the build order so your module get "builtin" after
-> > configfs?
+> > Reported-by: Nick Piggin <npiggin@suse.de>
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> >  kernel/rcutree.c |   29 ++++++++++++++++++++++++-----
+> >  kernel/rcutree.h |    4 ++++
+> >  2 files changed, 28 insertions(+), 5 deletions(-)
 > > 
-> 
-> Hi Daniel,
-> 
-> Possibly.
-> 
-> A) Any suggestions on how? Can I express this in Kconfig or something
-> (i.e. "depends on FOO").  I currently have "select FOO" in the BAR
-> object, but this doesn't seem to be sufficient to describe the relationship.
-
-Not in Kconfig, only in Makefile(s).
-and please put #comments in them explaining the ordering requirements/needs.
-
-> B) Do I have to make the entire chain follow suit? (I have C deps on B,
-> B deps on A kind of scenarios)
-> 
-> Kind Regards,
-> -Greg
-
-
----
-~Randy
+> > diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+> > index 705f02a..ddbf111 100644
+> > --- a/kernel/rcutree.c
+> > +++ b/kernel/rcutree.c
+> > @@ -958,7 +958,7 @@ static void rcu_offline_cpu(int cpu)
+> >   * Invoke any RCU callbacks that have made it to the end of their grace
+> >   * period.  Thottle as specified by rdp->blimit.
+> >   */
+> > -static void rcu_do_batch(struct rcu_data *rdp)
+> > +static void rcu_do_batch(struct rcu_state *rsp, struct rcu_data *rdp)
+> >  {
+> >  	unsigned long flags;
+> >  	struct rcu_head *next, *list, **tail;
+> > @@ -1011,6 +1011,13 @@ static void rcu_do_batch(struct rcu_data *rdp)
+> >  	if (rdp->blimit == LONG_MAX && rdp->qlen <= qlowmark)
+> >  		rdp->blimit = blimit;
+> >  
+> > +	/* Reset ->qlen_last_fqs_check trigger if enough CBs have drained. */
+> > +	if (rdp->qlen == 0 && rdp->qlen_last_fqs_check != 0) {
+> > +		rdp->qlen_last_fqs_check = 0;
+> > +		rdp->n_force_qs_snap = rsp->n_force_qs;
+> > +	} else if (rdp->qlen < rdp->qlen_last_fqs_check - qhimark)
+> > +		rdp->qlen_last_fqs_check = rdp->qlen;
+> > +
+> >  	local_irq_restore(flags);
+> >  
+> >  	/* Re-raise the RCU softirq if there are callbacks remaining. */
+> > @@ -1224,7 +1231,7 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
+> >  	}
+> >  
+> >  	/* If there are callbacks ready, invoke them. */
+> > -	rcu_do_batch(rdp);
+> > +	rcu_do_batch(rsp, rdp);
+> >  }
+> >  
+> >  /*
+> > @@ -1288,10 +1295,20 @@ __call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu),
+> >  		rcu_start_gp(rsp, nestflag);  /* releases rnp_root->lock. */
+> >  	}
+> >  
+> > -	/* Force the grace period if too many callbacks or too long waiting. */
+> > -	if (unlikely(++rdp->qlen > qhimark)) {
+> > +	/*
+> > +	 * Force the grace period if too many callbacks or too long waiting.
+> > +	 * Enforce hysteresis, and don't invoke force_quiescent_state()
+> > +	 * if some other CPU has recently done so.  Also, don't bother
+> > +	 * invoking force_quiescent_state() if the newly enqueued callback
+> > +	 * is the only one waiting for a grace period to complete.
+> > +	 */
+> > +	if (unlikely(++rdp->qlen > rdp->qlen_last_fqs_check + qhimark)) {
+> >  		rdp->blimit = LONG_MAX;
+> > -		force_quiescent_state(rsp, 0);
+> > +		if (rsp->n_force_qs == rdp->n_force_qs_snap &&
+> > +		    *rdp->nxttail[RCU_DONE_TAIL] != head)
+> > +			force_quiescent_state(rsp, 0);
+> > +		rdp->n_force_qs_snap = rsp->n_force_qs;
+> > +		rdp->qlen_last_fqs_check = rdp->qlen;
+> >  	} else if ((long)(ACCESS_ONCE(rsp->jiffies_force_qs) - jiffies) < 0)
+> >  		force_quiescent_state(rsp, 1);
+> >  	local_irq_restore(flags);
+> > @@ -1523,6 +1540,8 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
+> >  	rdp->beenonline = 1;	 /* We have now been online. */
+> >  	rdp->preemptable = preemptable;
+> >  	rdp->passed_quiesc_completed = lastcomp - 1;
+> > +	rdp->qlen_last_fqs_check = 0;
+> > +	rdp->n_force_qs_snap = rsp->n_force_qs;
+> >  	rdp->blimit = blimit;
+> >  	spin_unlock(&rnp->lock);		/* irqs remain disabled. */
+> >  
+> > diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+> > index b40ac57..599161f 100644
+> > --- a/kernel/rcutree.h
+> > +++ b/kernel/rcutree.h
+> > @@ -167,6 +167,10 @@ struct rcu_data {
+> >  	struct rcu_head *nxtlist;
+> >  	struct rcu_head **nxttail[RCU_NEXT_SIZE];
+> >  	long		qlen;		/* # of queued callbacks */
+> > +	long		qlen_last_fqs_check;
+> > +					/* qlen at last check for QS forcing */
+> > +	unsigned long	n_force_qs_snap;
+> > +					/* did other CPU force QS recently? */
+> >  	long		blimit;		/* Upper limit on a processed batch */
+> >  
+> >  #ifdef CONFIG_NO_HZ
+> > -- 
+> > 1.5.2.5
