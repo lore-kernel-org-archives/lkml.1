@@ -1,126 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762366AbZJOBSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762370AbZJOBYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762366AbZJOBSJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Oct 2009 21:18:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762274AbZJOBSI
+	id S1762370AbZJOBYE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Oct 2009 21:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760702AbZJOBYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 21:18:08 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:30455 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755959AbZJOBSH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 21:18:07 -0400
-Date: Wed, 14 Oct 2009 18:17:15 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, netdev <netdev@vger.kernel.org>,
-       Shreyas Bhatewara <sbhatewara@vmware.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       davem@davemloft.net, <pv-drivers@vmware.com>
-Subject: [PATCH -next] vmxnet: fix 2 build problems
-Message-Id: <20091014181715.09a82630.randy.dunlap@oracle.com>
-In-Reply-To: <20091014163445.f0441473.sfr@canb.auug.org.au>
-References: <20091014163445.f0441473.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4AD67820.015B:SCFMA4539814,ss=1,fgs=0
+	Wed, 14 Oct 2009 21:24:04 -0400
+Received: from thunk.org ([69.25.196.29]:54068 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755614AbZJOBYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Oct 2009 21:24:03 -0400
+Date: Wed, 14 Oct 2009 21:23:21 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Eric Anholt <eric@anholt.net>,
+       linux-kernel@vger.kernel.org, Keith Packard <keithp@keithp.com>
+Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with
+	T400 laptops
+Message-ID: <20091015012321.GA7472@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	"Carlos R. Mafra" <crmafra2@gmail.com>,
+	Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+	Keith Packard <keithp@keithp.com>
+References: <E1Mtqnb-0002x7-TJ@closure.thunk.org> <20091008103620.5e5aae66@jbarnes-g45> <20091010204106.GA8251@mit.edu> <20091012095438.1e82b54f@jbarnes-g45> <20091012184651.GA4603@Pilar.aei.mpg.de> <20091012120510.16bd1194@jbarnes-g45> <20091013023146.GA8414@mit.edu> <20091013100135.2b3d914f@jbarnes-g45>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091013100135.2b3d914f@jbarnes-g45>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Tue, Oct 13, 2009 at 10:01:35AM -0700, Jesse Barnes wrote:
+> 
+> Arg, I'm running out of ideas...  How about this hack?  I'll chat with
+> the chipset guys to see if we can figure out what's going on here...
+> 
 
-vmxnet3 uses in_dev* interfaces so it should depend on INET.
-Also fix so that the driver builds when CONFIG_PCI_MSI is disabled.
+So the first patch plus this second patch actually made things *worse*
+on the T400.  I'll try adding the 3rd patch now.
 
-vmxnet3_drv.c:(.text+0x2a88cb): undefined reference to `in_dev_finish_destroy'
-
-drivers/net/vmxnet3/vmxnet3_drv.c:1335: error: 'struct vmxnet3_intr' has no member named 'msix_entries'
-drivers/net/vmxnet3/vmxnet3_drv.c:1384: error: 'struct vmxnet3_intr' has no member named 'msix_entries'
-drivers/net/vmxnet3/vmxnet3_drv.c:2137: error: 'struct vmxnet3_intr' has no member named 'msix_entries'
-drivers/net/vmxnet3/vmxnet3_drv.c:2138: error: 'struct vmxnet3_intr' has no member named 'msix_entries'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/net/Kconfig               |    2 +-
- drivers/net/vmxnet3/vmxnet3_drv.c |   11 ++++++++++-
- 2 files changed, 11 insertions(+), 2 deletions(-)
-
---- linux-next-20091014.orig/drivers/net/vmxnet3/vmxnet3_drv.c
-+++ linux-next-20091014/drivers/net/vmxnet3/vmxnet3_drv.c
-@@ -1314,9 +1314,11 @@ vmxnet3_netpoll(struct net_device *netde
- 	struct vmxnet3_adapter *adapter = netdev_priv(netdev);
- 	int irq;
- 
-+#ifdef CONFIG_PCI_MSI
- 	if (adapter->intr.type == VMXNET3_IT_MSIX)
- 		irq = adapter->intr.msix_entries[0].vector;
- 	else
-+#endif
- 		irq = adapter->pdev->irq;
- 
- 	disable_irq(irq);
-@@ -1330,12 +1332,15 @@ vmxnet3_request_irqs(struct vmxnet3_adap
- {
- 	int err;
- 
-+#ifdef CONFIG_PCI_MSI
- 	if (adapter->intr.type == VMXNET3_IT_MSIX) {
- 		/* we only use 1 MSI-X vector */
- 		err = request_irq(adapter->intr.msix_entries[0].vector,
- 				  vmxnet3_intr, 0, adapter->netdev->name,
- 				  adapter->netdev);
--	} else if (adapter->intr.type == VMXNET3_IT_MSI) {
-+	} else
-+#endif
-+	if (adapter->intr.type == VMXNET3_IT_MSI) {
- 		err = request_irq(adapter->pdev->irq, vmxnet3_intr, 0,
- 				  adapter->netdev->name, adapter->netdev);
- 	} else {
-@@ -1376,6 +1381,7 @@ vmxnet3_free_irqs(struct vmxnet3_adapter
- 	       adapter->intr.num_intrs <= 0);
- 
- 	switch (adapter->intr.type) {
-+#ifdef CONFIG_PCI_MSI
- 	case VMXNET3_IT_MSIX:
- 	{
- 		int i;
-@@ -1385,6 +1391,7 @@ vmxnet3_free_irqs(struct vmxnet3_adapter
- 				 adapter->netdev);
- 		break;
- 	}
-+#endif
- 	case VMXNET3_IT_MSI:
- 		free_irq(adapter->pdev->irq, adapter->netdev);
- 		break;
-@@ -2134,6 +2141,7 @@ vmxnet3_alloc_intr_resources(struct vmxn
- 	if (adapter->intr.type == VMXNET3_IT_AUTO) {
- 		int err;
- 
-+#ifdef CONFIG_PCI_MSI
- 		adapter->intr.msix_entries[0].entry = 0;
- 		err = pci_enable_msix(adapter->pdev, adapter->intr.msix_entries,
- 				      VMXNET3_LINUX_MAX_MSIX_VECT);
-@@ -2142,6 +2150,7 @@ vmxnet3_alloc_intr_resources(struct vmxn
- 			adapter->intr.type = VMXNET3_IT_MSIX;
- 			return;
- 		}
-+#endif
- 
- 		err = pci_enable_msi(adapter->pdev);
- 		if (!err) {
---- linux-next-20091014.orig/drivers/net/Kconfig
-+++ linux-next-20091014/drivers/net/Kconfig
-@@ -3232,7 +3232,7 @@ config VIRTIO_NET
- 
- config VMXNET3
-        tristate "VMware VMXNET3 ethernet driver"
--       depends on PCI && X86
-+       depends on PCI && X86 && INET
-        help
-          This driver supports VMware's vmxnet3 virtual ethernet NIC.
-          To compile this driver as a module, choose M here: the
+						- Ted
