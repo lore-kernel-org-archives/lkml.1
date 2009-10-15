@@ -1,183 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763008AbZJOUI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935436AbZJOUMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763008AbZJOUI0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 16:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761481AbZJOUIZ
+	id S935436AbZJOUMu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 16:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935406AbZJOUMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 16:08:25 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:60789 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbZJOUIX (ORCPT
+	Thu, 15 Oct 2009 16:12:50 -0400
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:39002 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935204AbZJOUMs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 16:08:23 -0400
+	Thu, 15 Oct 2009 16:12:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=UUEphqkxz79mQUSr2zsqJC7PWvsE0L8D+qUmOfkwaUFAMJimMxBso0Ftv/LQYC8PgM
-         pHk9L8ac4p5B/9W80ZJnZ1epNpOeZ7tIC04UYXhvUFfa74dlgfupxuhMZaVMP9/eQcQJ
-         dInEovRuBb82iuuTqNr9LLbrrfR3q/9rWXrvY=
-From: Ivo van Doorn <ivdoorn@gmail.com>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: Re: [PATCH 4/8] trivial: fix some typos and punctuation in comments
-Date: Thu, 15 Oct 2009 22:07:40 +0200
-User-Agent: KMail/1.9.10
-Cc: trivial@kernel.org, linville@tuxdriver.com, johannes@sipsolutions.net,
-       users@host1.serialmonkey.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-References: <1255636103-5817-1-git-send-email-cascardo@holoscopio.com>
-In-Reply-To: <1255636103-5817-1-git-send-email-cascardo@holoscopio.com>
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=wxAYzO7Xfx0zOeqn7+0zLXpm7oWEcOuoF9B1Yrre9pF0gr6+CcIQEL4J0WjdpX0ftW
+         OoNddVixvbO9bMlIgCCwjC6IbQJ/yEecrypmE86jwje9ukU9MRp1NR++LqkupYOziZWH
+         YCmFF8cXlua+gzSCZhWwnDb9POAl3+ZSY0/3A=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910152207.41996.IvDoorn@gmail.com>
+Date: Thu, 15 Oct 2009 13:12:12 -0700
+Message-ID: <438397970910151312sc3ce9e9ge844dce0aa364f64@mail.gmail.com>
+Subject: IO error and panic while doing iput(), kernel BUG at fs/inode.c:1165!
+From: Kallol Biswas <nucleodyne@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 October 2009, Thadeu Lima de Souza Cascardo wrote:
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Hi,
+   I have been getting a panic while unmounting the ext3 filesystem
+that is on a partition.
 
-Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+The block device is a raid device. When the power to the disk shelf is
+lost we see a lot of IO errors in the dmesg. These are expected.
 
-> ---
->  drivers/net/wireless/rt2x00/rt61pci.c |   36 ++++++++++++++++----------------
->  1 files changed, 18 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/net/wireless/rt2x00/rt61pci.c b/drivers/net/wireless/rt2x00/rt61pci.c
-> index b20e3ea..343e565 100644
-> --- a/drivers/net/wireless/rt2x00/rt61pci.c
-> +++ b/drivers/net/wireless/rt2x00/rt61pci.c
-> @@ -51,7 +51,7 @@ MODULE_PARM_DESC(nohwcrypt, "Disable hardware encryption.");
->   * These indirect registers work with busy bits,
->   * and we will try maximal REGISTER_BUSY_COUNT times to access
->   * the register while taking a REGISTER_BUSY_DELAY us delay
-> - * between each attampt. When the busy bit is still set at that time,
-> + * between each attempt. When the busy bit is still set at that time,
->   * the access attempt is considered to have failed,
->   * and we will print an error.
->   */
-> @@ -386,7 +386,7 @@ static int rt61pci_config_shared_key(struct rt2x00_dev *rt2x00dev,
->  		 * The driver does not support the IV/EIV generation
->  		 * in hardware. However it doesn't support the IV/EIV
->  		 * inside the ieee80211 frame either, but requires it
-> -		 * to be provided seperately for the descriptor.
-> +		 * to be provided separately for the descriptor.
->  		 * rt2x00lib will cut the IV/EIV data out of all frames
->  		 * given to us by mac80211, but we must tell mac80211
->  		 * to generate the IV/EIV data.
-> @@ -397,7 +397,7 @@ static int rt61pci_config_shared_key(struct rt2x00_dev *rt2x00dev,
->  	/*
->  	 * SEC_CSR0 contains only single-bit fields to indicate
->  	 * a particular key is valid. Because using the FIELD32()
-> -	 * defines directly will cause a lot of overhead we use
-> +	 * defines directly will cause a lot of overhead, we use
->  	 * a calculation to determine the correct bit directly.
->  	 */
->  	mask = 1 << key->hw_key_idx;
-> @@ -425,11 +425,11 @@ static int rt61pci_config_pairwise_key(struct rt2x00_dev *rt2x00dev,
->  		/*
->  		 * rt2x00lib can't determine the correct free
->  		 * key_idx for pairwise keys. We have 2 registers
-> -		 * with key valid bits. The goal is simple, read
-> -		 * the first register, if that is full move to
-> +		 * with key valid bits. The goal is simple: read
-> +		 * the first register. If that is full, move to
->  		 * the next register.
-> -		 * When both registers are full, we drop the key,
-> -		 * otherwise we use the first invalid entry.
-> +		 * When both registers are full, we drop the key.
-> +		 * Otherwise, we use the first invalid entry.
->  		 */
->  		rt2x00pci_register_read(rt2x00dev, SEC_CSR2, &reg);
->  		if (reg && reg == ~0) {
-> @@ -464,8 +464,8 @@ static int rt61pci_config_pairwise_key(struct rt2x00_dev *rt2x00dev,
->  					      &addr_entry, sizeof(addr_entry));
->  
->  		/*
-> -		 * Enable pairwise lookup table for given BSS idx,
-> -		 * without this received frames will not be decrypted
-> +		 * Enable pairwise lookup table for given BSS idx.
-> +		 * Without this, received frames will not be decrypted
->  		 * by the hardware.
->  		 */
->  		rt2x00pci_register_read(rt2x00dev, SEC_CSR4, &reg);
-> @@ -487,7 +487,7 @@ static int rt61pci_config_pairwise_key(struct rt2x00_dev *rt2x00dev,
->  	/*
->  	 * SEC_CSR2 and SEC_CSR3 contain only single-bit fields to indicate
->  	 * a particular key is valid. Because using the FIELD32()
-> -	 * defines directly will cause a lot of overhead we use
-> +	 * defines directly will cause a lot of overhead, we use
->  	 * a calculation to determine the correct bit directly.
->  	 */
->  	if (key->hw_key_idx < 32) {
-> @@ -556,7 +556,7 @@ static void rt61pci_config_intf(struct rt2x00_dev *rt2x00dev,
->  	if (flags & CONFIG_UPDATE_TYPE) {
->  		/*
->  		 * Clear current synchronisation setup.
-> -		 * For the Beacon base registers we only need to clear
-> +		 * For the Beacon base registers, we only need to clear
->  		 * the first byte since that byte contains the VALID and OWNER
->  		 * bits which (when set to 0) will invalidate the entire beacon.
->  		 */
-> @@ -1168,8 +1168,8 @@ static int rt61pci_check_firmware(struct rt2x00_dev *rt2x00dev,
->  		return FW_BAD_LENGTH;
->  
->  	/*
-> -	 * The last 2 bytes in the firmware array are the crc checksum itself,
-> -	 * this means that we should never pass those 2 bytes to the crc
-> +	 * The last 2 bytes in the firmware array are the crc checksum itself.
-> +	 * This means that we should never pass those 2 bytes to the crc
->  	 * algorithm.
->  	 */
->  	fw_crc = (data[len - 2] << 8 | data[len - 1]);
-> @@ -1986,7 +1986,7 @@ static void rt61pci_fill_rxdone(struct queue_entry *entry,
->  
->  		/*
->  		 * Hardware has stripped IV/EIV data from 802.11 frame during
-> -		 * decryption. It has provided the data seperately but rt2x00lib
-> +		 * decryption. It has provided the data separately but rt2x00lib
->  		 * should decide if it should be reinserted.
->  		 */
->  		rxdesc->flags |= RX_FLAG_IV_STRIPPED;
-> @@ -2042,7 +2042,7 @@ static void rt61pci_txdone(struct rt2x00_dev *rt2x00dev)
->  	 * During each loop we will compare the freshly read
->  	 * STA_CSR4 register value with the value read from
->  	 * the previous loop. If the 2 values are equal then
-> -	 * we should stop processing because the chance it
-> +	 * we should stop processing because the chance is
->  	 * quite big that the device has been unplugged and
->  	 * we risk going into an endless loop.
->  	 */
-> @@ -2330,7 +2330,7 @@ static int rt61pci_init_eeprom(struct rt2x00_dev *rt2x00dev)
->  		__set_bit(CONFIG_FRAME_TYPE, &rt2x00dev->flags);
->  
->  	/*
-> -	 * Detect if this device has an hardware controlled radio.
-> +	 * Detect if this device has a hardware controlled radio.
->  	 */
->  	if (rt2x00_get_field16(eeprom, EEPROM_ANTENNA_HARDWARE_RADIO))
->  		__set_bit(CONFIG_SUPPORT_HW_BUTTON, &rt2x00dev->flags);
-> @@ -2355,7 +2355,7 @@ static int rt61pci_init_eeprom(struct rt2x00_dev *rt2x00dev)
->  		__set_bit(CONFIG_EXTERNAL_LNA_BG, &rt2x00dev->flags);
->  
->  	/*
-> -	 * When working with a RF2529 chip without double antenna
-> +	 * When working with a RF2529 chip without double antenna,
->  	 * the antenna settings should be gathered from the NIC
->  	 * eeprom word.
->  	 */
-> @@ -2668,7 +2668,7 @@ static int rt61pci_conf_tx(struct ieee80211_hw *hw, u16 queue_idx,
->  
->  	/*
->  	 * We only need to perform additional register initialization
-> -	 * for WMM queues/
-> +	 * for WMM queues.
->  	 */
->  	if (queue_idx >= 4)
->  		return 0;
+Our application then tries to unmount the filesystem that has been
+created on a partition.
 
+At the end of __blkdev_put() on the partition the same routine is
+invoked in recursion on the whole disk.
 
+Since the whole disk's i_state is already I_CLEAR the system panics.
+
+Is this a known issue? Who release the reference to the whole device?
+udev/hotplug handler?
+
+I am running 2.6.23 kernel and did not see this problem on 2.6.12 kernel.
+
+Kallol
+
+g directory #2 offset 0
+(E3)[1255107782.100033] Buffer I/O error on device dd_dg10p1, logical block 0
+(E4)[1255107782.100120] lost page write due to I/O error on dd_dg10p1
+(E2)[1255107782.100221] EXT3-fs error (device dd_dg10p1):
+read_inode_bitmap: Cannot read inode bitmap - block_group = 3,
+inode_bitmap = 99377
+(E4)[1255107782.100462] WARNING: at fs/buffer.c:1154 mark_buffer_dirty()
+(E4)[1255107782.100544]
+(E4)[1255107782.100544] Call Trace:
+(E4)[1255107782.100720]  [<ffffffff802b2185>] mark_buffer_dirty+0xc5/0xd0
+(E4)[1255107782.100803]  [<ffffffff802e5bc7>] ext3_commit_super+0x57/0xa0
+(E4)[1255107782.100881]  [<ffffffff802e6064>] ext3_handle_error+0x54/0xe0
+(E4)[1255107782.100959]  [<ffffffff802e628d>] ext3_error+0xcd/0xe0
+(E4)[1255107782.101039]  [<ffffffff8034ff7e>] submit_bio+0x5e/0xe0
+(E4)[1255107782.101118]  [<ffffffff802b2f35>] submit_bh+0xf5/0x130
+(E4)[1255107782.101231]  [<ffffffff802dbae6>] read_inode_bitmap+0x86/0x90
+(E4)[1255107782.101340]  [<ffffffff802dc1fa>] ext3_new_inode+0x46a/0xac0
+(E4)[1255107782.101421]  [<ffffffff802e374e>] ext3_create+0x6e/0x100
+(E4)[1255107782.101499]  [<ffffffff802983dc>] vfs_create+0xac/0xf0
+(E4)[1255107782.101574]  [<ffffffff80298c47>] open_namei+0x617/0x680
+(E4)[1255107782.101653]  [<ffffffff8028d7bc>] do_filp_open+0x1c/0x50
+(E4)[1255107782.101733]  [<ffffffff8028d94f>] get_unused_fd_flags+0x3f/0x120
+(E4)[1255107782.101809]  [<ffffffff8028db9a>] do_sys_open+0x5a/0xf0
+(E4)[1255107782.101885]  [<ffffffff8020beb2>] system_call+0x82/0x87
+(E4)[1255107782.101962]
+(E3)[1255107782.102036] Buffer I/O error on device dd_dg10p1, logical block 0
+(E4)[1255107782.102143] lost page write due to I/O error on dd_dg10p1
+(E2)[1255107782.102251] EXT3-fs error (device dd_dg10p1) in
+ext3_new_inode: IO failure
+(E3)[1255107782.102342] Buffer I/O error on device dd_dg10p1, logical block 0
+(E4)[1255107782.102419] lost page write due to I/O error on dd_dg10p1
+(E2)[1255107782.106154] EXT3-fs error (device dd_dg10p3):
+ext3_find_entry: reading directory #2 offset 0
+(E3)[1255107782.106402] Buffer I/O error on device dd_dg10p3, logical block 0
+(E4)[1255107782.106487] lost page write due to I/O error on dd_dg10p3
+(E2)[1255107782.106589] EXT3-fs error (device dd_dg10p3):
+read_inode_bitmap: Cannot read inode bitmap - block_group = 3,
+inode_bitmap = 99377
+(E3)[1255107782.106867] Buffer I/O error on device dd_dg10p3, logical
+
+....................
+.....................
+(E0)[1255107782.258305] ------------[ cut here ]------------
+(E2)[1255107782.322915] kernel BUG at fs/inode.c:1165!
+(U0)(MSG-KERN-00005):[1255107782.381327] invalid opcode: 0000 [1] SMP
+(E4)[1255107782.456956] CPU 10
+(E4)[1255107782.491713] Modules linked in: msr mptctl ipmi_watchdog
+ipmi_si ipmi_devintf ipmi_msghandler ipv6 dd_iosched(P) usbkbd usbhid
+uhci_hcd ehci_hcd i2c_i801 i2c_core 8021q t3_tom toecore cxgb3 usbcore
+dd_raid_driver(P) e1000e qla2xxx firmware_class scsi_transport_fc
+dm_round_robin dm_emc dm_mpath_rdac dm_multipath dm_mod scsi_dump
+diskdump elog mptsas mptscsih mptbase sg dd_qoskcm(P)
+(E4)[1255107782.912981] Pid: 24783, comm: umount Tainted: P
+2.6.23-ddr133064 #1
+(E4)[1255107783.004615] RIP: 0010:[<ffffffff802a2f92>]
+[<ffffffff802a2f92>] iput+0x72/0x80
+(E4)[1255107783.101728] RSP: 0018:ffff8107e36f9df8  EFLAGS: 00010246
+(E4)[1255107783.174675] RAX: ffffffff804e7b40 RBX: ffff811029162188
+RCX: ffff81105e5ea300
+(E4)[1255107783.269410] RDX: ffff810820b68820 RSI: 0000000000000001
+RDI: ffff811029162188
+(E4)[1255107783.364185] RBP: ffff8110291620c0 R08: 0000000000000000
+R09: 0000000000000001
+(E4)[1255107783.458956] R10: 0000000000000000 R11: ffffffff802b6d10
+R12: 0000000000000000
+(E4)[1255107783.553760] R13: ffff8110291620d8 R14: 0000000000000000
+R15: ffff811029162188
+(E4)[1255107783.648604] FS:  00002b8099549f80(0000)
+GS:ffff811037fae0c0(0000) knlGS:0000000000000000
+(E4)[1255107783.754854] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+(E4)[1255107783.833014] CR2: 00002b809936716c CR3: 00000007fa6b1000
+CR4: 00000000000006e0
+(E4)[1255107783.927814] DR0: 0000000000000000 DR1: 0000000000000000
+DR2: 0000000000000000
+(E4)[1255107784.022652] DR3: 0000000000000000 DR6: 00000000ffff0ff0
+DR7: 0000000000000400
+(E4)[1255107784.117494] Process umount (pid: 24783, threadinfo
+ffff8107e36f8000, task ffff810820b68820)
+(E4)[1255107784.226857] Stack:  0000000000000001 ffffffff802b77f1
+0000000017a8cf40 ffffffff88274780
+(E4)[1255107784.333431]  ffff810817a8cc80 ffff810810cadc00
+ffff810817a8cc98 ffff8110291620c0
+(E4)[1255107784.432516]  ffff810817a8cd48 ffffffff802b7803
+0000000080610680 ffff810817114800
+(E4)[1255107784.529221] Call Trace:
+(E4)[1255107784.570325]  [<ffffffff802b77f1>] __blkdev_put+0x91/0x190
+(E4)[1255107784.644300]  [<ffffffff802b7803>] __blkdev_put+0xa3/0x190
+(E4)[1255107784.718282]  [<ffffffff8028fbe3>] deactivate_super+0x63/0x90
+(E4)[1255107784.795376]  [<ffffffff802a655e>] sys_umount+0x6e/0x280
+(E4)[1255107784.867282]  [<ffffffff80291f67>] sys_newstat+0x27/0x70
+(E4)[1255107784.939183]  [<ffffffff8027553e>] do_munmap+0x26e/0x310
+(E4)[1255107785.011087]  [<ffffffff8036d371>] __up_write+0x31/0x150
+(E4)[1255107785.082985]  [<ffffffff8020beb2>] system_call+0x82/0x87
+(E4)[1255107785.154883]
+(E4)[1255107785.182193]
+(E4)[1255107785.182193] Code: 0f 0b eb fe 66 66 66 90 66 66 90 66 66
+90 48 83 ec 08 48 8b
+(U1)(MSG-KERN-00005):[1255107785.310184] RIP  [<ffffffff802a2f92>]
+iput+0x72/0x80
+(E4)[1255107785.397005]  RSP <ffff8107e36f9df8>
