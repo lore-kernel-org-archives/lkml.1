@@ -1,84 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935274AbZJOSzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759929AbZJOSzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935274AbZJOSzb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 14:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbZJOSz3
+	id S1759929AbZJOSzc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 14:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756584AbZJOSzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 15 Oct 2009 14:55:31 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:22153 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758073AbZJOSz3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Oct 2009 14:55:29 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36500 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756584AbZJOSz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 14:55:28 -0400
-Date: Thu, 15 Oct 2009 11:46:56 -0700
-From: Greg KH <gregkh@suse.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: david@lang.hm, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: removing existing working drivers via staging
-Message-ID: <20091015184656.GA29858@suse.de>
-References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm>
- <200910151942.40259.bzolnier@gmail.com>
- <20091015174932.GA3595@suse.de>
- <200910152020.13080.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910152020.13080.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Date: Thu, 15 Oct 2009 11:54:11 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>,
+       Gregory Haskins <ghaskins@novell.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, sfr@canb.auug.org.au,
+       greg@kroah.com, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+Subject: Re: [BUILD-FAILURE] next-20091015 - vbus_enet driver breaks with
+ allmodconfig
+Message-Id: <20091015115411.5b556047.randy.dunlap@oracle.com>
+In-Reply-To: <20091015114210.65e1be72.randy.dunlap@oracle.com>
+References: <20091015152538.74a1cb15.sfr@canb.auug.org.au>
+	<20091015104852.GA6740@linux.vnet.ibm.com>
+	<4AD6CD940200005A00056857@sinclair.provo.novell.com>
+	<4AD75E60.4020306@gmail.com>
+	<20091015114210.65e1be72.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4AD76FF3.012F:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 15, 2009 at 08:20:12PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 15 October 2009 19:49:32 Greg KH wrote:
-> > On Thu, Oct 15, 2009 at 07:42:40PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > On Thursday 15 October 2009 18:47:26 Greg KH wrote:
-> > > > On Thu, Oct 15, 2009 at 09:39:51AM -0700, david@lang.hm wrote:
-> > > > > however, what I think I saw proposed was to move drivers that need to be 
-> > > > > 'cleaned up', to staging and then dropping them if they don't get cleaned.
-> > > > 
-> > > > What is "proposed" is the following:
-> > > > 
-> > > > 	- For drivers currently in the kernel tree, that the subsystem
-> > > > 	  maintainer, for whatever reason, feels is obsolete / broken /
-> > > > 	  needs major cleaning / wants to get rid of, can be submitted
-> > > > 	  to the staging maintainer to be moved to the drivers/staging/
-> > > > 	  directory.
+On Thu, 15 Oct 2009 11:42:10 -0700 Randy Dunlap wrote:
+
+> On Thu, 15 Oct 2009 13:39:44 -0400 Gregory Haskins wrote:
+> 
+> > Gregory Haskins wrote:
+> > >>>> On 10/15/2009 at  6:48 AM, in message
+> > > <20091015104852.GA6740@linux.vnet.ibm.com>, Kamalesh Babulal
+> > > <kamalesh@linux.vnet.ibm.com> wrote: 
+> > >> Hi Gregory,
+> > >>
+> > >> 	While building next-20091015 with allmodconfig on the powerpc
+> > >> vbus-enet driver breaks
 > > > 
-> > > This is insanity and opens a door for various forms of abuse.
+> > > Hi Kamalesh,
+> > > 
+> > > I'll take a look at this and get a fix submitted today.
+> > > 
+> > > Kind Regards,
+> > > -Greg
+> > > 
+> > >> MODPOST 2492 modules
+> > >> ERROR: ".vbus_driver_register" [drivers/net/vbus-enet.ko] undefined!
+> > >> ERROR: ".vbus_driver_unregister" [drivers/net/vbus-enet.ko] undefined!
+> > >> ERROR: ".vbus_driver_ioq_alloc" [drivers/net/vbus-enet.ko] undefined!
+> > >>
+> > >> CONFIG_VBUS_ENET=m
+> > >> CONFIG_VBUS_ENET_DEBUG=y
+> > >> CONFIG_VBUS_PROXY=n
 > > 
-> > What do you mean by this?  What kind of "abuse"?
+> > Hi Kamalesh,
+> > 
+> > I am having difficulty reproducing the problem.  When I look at the
+> > Kconfig, I see that VBUS_ENET has a "select VBUS_PROXY" as I would
+> > expect.  Additionally, if I run allmodconfig I can confirm that I get
+> > VBUS_ENET=m, VBUS_PROXY=y:
 > 
-> Typical situation:
+> Greg,
 > 
-> You have driver for _really_ difficult hardware used by minority of total
-> users of a given subsystem.  Said driver has no major problems except being
-> f*cking complicated (because of hardware) so it stays in the way of future
-> changes.
+> Did you try to reproduce it with the ppc64 config file?
+> allmodconfig on what arch?
 > 
-> With the current system people making bigger changes have to comprehend
-> that difficult stuff [*].  This is a good thing in the long-term since it
-> results in the better overall system understanding, better knowledge of
-> "DO's and DON'T's" and better users' experience.
+> I think the problem is that arch/x86/Kconfig says:
 > 
-> Now with the proposed scheme it is sufficient to throw said driver into
-> staging for few weeks and make future changes.  Before users even notice
-> and complain they are screwed already since bringing the driver back is
-> no longer possible without big effort (+ subsystem is still evolving)..
+> source "drivers/vbus/Kconfig"
+> 
+> and that should actually be in drivers/Kconfig, so that it applies
+> to ppc64 et al, not just x86.
+> 
 
-But a driver in staging still has to be able to build, api changes are
-not able to be ignored in it.
+OTOH, drivers/vbus/pci-bridge.c uses create_irq(), which is implemented
+only on x86 and ia64 and one ARM platform, so all of this ppc testing
+seems to be invalid...  ?
 
-> This will result in a "new kernel new hardware" world that some distro
-> people have been silently trying to accomplish and in this brave new world
-> few key people have way too much advantage over everyone else.
 
-I don't understand what you are referring to here.
+> 
+> > ghaskins@dev:~/sandbox/git/fabric/linux-2.6-next> rm .config
+> > ghaskins@dev:~/sandbox/git/fabric/linux-2.6-next> make allmodconfig
+> > scripts/kconfig/conf -m arch/x86/Kconfig
+> > #
+> > # configuration written to .config
+> > #
+> > ghaskins@dev:~/sandbox/git/fabric/linux-2.6-next> grep -i vbus .config
+> > CONFIG_VBUS_PROXY=y
+> > CONFIG_VBUS_PCIBRIDGE=y
+> > CONFIG_VBUS_ENET=m
+> > CONFIG_VBUS_ENET_DEBUG=y
+> > CONFIG_USB_GADGET_VBUS_DRAW=2
+> > CONFIG_USB_GPIO_VBUS=m
+> > 
+> > I am not sure how your environment could have generated the VBUS_PROXY=n
+> > outcome.  Does anyone have any ideas?
+> > 
+> > -Greg
 
-How about we take it one proposed (real) situation at a time here?  If
-anyone objects to what is going on, please let me know.
 
-thanks,
-
-greg k-h
+---
+~Randy
