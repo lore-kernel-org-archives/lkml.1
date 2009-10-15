@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760317AbZJOJXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762566AbZJOJXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760317AbZJOJXP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 05:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbZJOJXO
+	id S1762566AbZJOJXW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 05:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762555AbZJOJXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 05:23:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56872 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754608AbZJOJXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 05:23:13 -0400
-Date: Thu, 15 Oct 2009 11:21:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, npiggin@suse.de,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH tip/core/rcu 0/6] rcu: fix synchronize_rcu_expedited(),
-	update docs, improve perf
-Message-ID: <20091015092155.GD10546@elte.hu>
-References: <20091014171517.GA13635@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091014171517.GA13635@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Thu, 15 Oct 2009 05:23:20 -0400
+Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:44730 "EHLO
+	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762542AbZJOJXT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 05:23:19 -0400
+Subject: Re: bdi_threshold slow to reach steady state
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       Martin Bligh <mbligh@google.com>
+In-Reply-To: <1255529072.8392.436.camel@twins>
+References: <1255518586.2360.78.camel@castor>
+	 <1255520272.8392.429.camel@twins>  <1255528520.2360.94.camel@castor>
+	 <1255529072.8392.436.camel@twins>
+Content-Type: text/plain
+Date: Thu, 15 Oct 2009 10:22:34 +0100
+Message-Id: <1255598554.2304.1.camel@castor>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-
-> This patchset contains a bug fix, a performance improvement, and 
-> documentation updates:
+On Wed, 2009-10-14 at 16:04 +0200, Peter Zijlstra wrote:
+> On Wed, 2009-10-14 at 14:55 +0100, Richard Kennedy wrote:
+> > 
+> > commit 11735a2336ba08cf21aebf79a706c86aca5e44b2
+> > Author: Richard Kennedy <richard@rsk.demon.co.uk>
+> > Date:   Wed Oct 14 14:46:21 2009 +0100
+> > 
+> >     mm: speed up per bdi dirty threshold calculations
 > 
-> o	Update Documentation/RCU/trace.txt to reflect recent changes
-> 	(including the removal of rcupreempt.c).
-
-i've applied this to the .33 queue.
-
+> I think the subject is confusing, we don't actually compute things
+> faster in the less cycles sense.
 > 
-> o	Fix to the severe performance problem with excessive IPIs and
-> 	lock contention in presence of very large (but legal) numbers
-> 	of RCU callbacks (reported by Nick Piggin).
+> We reduce the dampening for the control system, yielding faster
+> convergence.
+Ah yes, sorry about that. That was a bit of a placeholder.
 
-i've applied this to the .32 queue.
+I'll write a proper change log & re-post.
+regards
+Richard 
 
-> o	Stopgap fix for a bug in TREE_PREEMPT_RCU's implementation of
-> 	synchronize_rcu_expedited().  This fix is correct, but no faster
-> 	than synchronize_rcu().
-> 
-> o	Add exports for the updated synchronize_rcu_expedited()
-> 	implementation, which moved from a static inline in
-> 	include/linux/rcupdate.h to a separately compiled function
-> 	in kernel/rcutree_plugin.h.
-
-i've merged these two into the same commit and applied it to the .32 
-queue.
-
-> o	Add the new rnp->blocked_tasks field to the rcuhier trace file
-> 	in debugfs.
-> 
-> o	Update the Documentation/RCU/trace.txt documentation to include
-> 	the rnp->blocked_tasks tracing.
-
-i've applied these to the .33 queue as well. (both tracing and 
-documentation is not urgent material.) I also did minor edits to the 
-changelogs.
-
-Thanks Paul!
-
-	Ingo
