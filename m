@@ -1,95 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758498AbZJPL1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbZJPLaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758498AbZJPL1N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 07:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758006AbZJPL1N
+	id S1758783AbZJPLaP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 07:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758411AbZJPLaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 07:27:13 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:60683 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbZJPL1M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 07:27:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=sahZiPLuvjzUIX9fjSuC+9vHleJY2ln7xA21+cWPAQwgc1ZBERiZT3scLIepfEliVc
-         F+uZQ7ko0MZlu7XGHJrmczm/o0i3h68nFYXEJXxyHhvzA+SA/qPacrnt8pY+Zyh5rGK/
-         f3scNfcX4gF15pgIt3yqioaslBfaDvAbW5rfo=
-Date: Fri, 16 Oct 2009 15:26:03 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org
-Cc: jack@suse.cz, linux-kernel@vger.kernel.org
-Subject: [PATCH] const: struct quota_format_ops
-Message-ID: <20091016112603.GA32474@x200>
+	Fri, 16 Oct 2009 07:30:14 -0400
+Received: from relay3.sgi.com ([192.48.152.1]:35609 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758398AbZJPLaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 07:30:13 -0400
+Date: Fri, 16 Oct 2009 06:29:20 -0500
+From: Robin Holt <holt@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Robin Holt <holt@sgi.com>, tglx@linutronix.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>,
+       Cliff Whickman <cpw@sgi.com>
+Subject: Re: [patch 0/2] x86, UV: fixups for configurations with a large
+	number of nodes.
+Message-ID: <20091016112920.GZ8903@sgi.com>
+References: <20091015223959.783988000@alcatraz.americas.sgi.com> <20091016063405.GB20388@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091016063405.GB20388@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+On Fri, Oct 16, 2009 at 08:34:05AM +0200, Ingo Molnar wrote:
+> 
+> * Robin Holt <holt@sgi.com> wrote:
+> 
+> > We need the __uv_hub_info structure to contain the correct values for 
+> > n_val, gpa_mask, and lowmem_remap_*.  The first patch in the series 
+> > accomplishes this.  Could this be included in the stable tree as well. 
+> > Without this patch, booting a large configuration hits a problem where 
+> > the upper bits of the gnode affect the pnode and the bau will not 
+> > operate.
+> 
+> i've applied this one.
+
+Thank you for applying this one.
+
+> > The second patch cleans up the broadcast assist unit code a small bit.
+> 
+> Seems to be more than just a 'cleanup'. It changes:
+
+I am going to rearrange a bit:
+
+> +       return gpa >> uv_hub_info->m_val & ((1UL << uv_hub_info->n_val) - 1);
+> 
+> note that >> has higher priority than bitwise & - is that intended? I 
+> think the intention was:
+> 
+> +       return gpa >> (uv_hub_info->m_val & ((1UL << uv_hub_info->n_val) - 1));
+
+The intention was (gpa >> m_val) & (n_mask);  I love the clarity of
+making it an explicitly stated mask.  Much more readable.
+
+> 
+>   uv_nshift = uv_hub_info->m_val;
+> 
+> to (in essence):
+> 
+>               uv_hub_info->m_val & ((1UL << uv_hub_info->n_val) - 1)
+> 
+> which is not the same. Furthermore, the new inline is:
+
+You have an excellent point there.  That was a bug as well.  That may
+explain a few of our currently unexplained bau hangs.  The value is
+supposed to be a pnode instead of the current gnode.
+
+Robin
+
 ---
 
- fs/ocfs2/quota_local.c |    2 +-
- fs/quota/quota_v1.c    |    2 +-
- fs/quota/quota_v2.c    |    2 +-
- include/linux/quota.h  |    4 ++--
- 4 files changed, 5 insertions(+), 5 deletions(-)
+Create an inline function to extract the pnode from a global physical
+address and then convert the broadcast assist unit to use the newly
+created uv_gpa_to_pnode function.
 
---- a/fs/ocfs2/quota_local.c
-+++ b/fs/ocfs2/quota_local.c
-@@ -1325,7 +1325,7 @@ out:
- 	return status;
+To: Ingo Molnar <mingo@elte.hu>
+To: tglx@linutronix.de
+Signed-off-by: Robin Holt <holt@sgi.com>
+Acked-by: Cliff Whickman <cpw@sgi.com>
+Cc: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org
+
+---
+ arch/x86/include/asm/uv/uv_hub.h |   16 +++++++++++++++-
+ arch/x86/kernel/tlb_uv.c         |    7 ++-----
+ 2 files changed, 17 insertions(+), 6 deletions(-)
+Index: linux/arch/x86/include/asm/uv/uv_hub.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/uv/uv_hub.h	2009-10-16 06:02:23.000000000 -0500
++++ linux/arch/x86/include/asm/uv/uv_hub.h	2009-10-16 06:07:52.000000000 -0500
+@@ -114,7 +114,7 @@
+ /*
+  * The largest possible NASID of a C or M brick (+ 2)
+  */
+-#define UV_MAX_NASID_VALUE	(UV_MAX_NUMALINK_NODES * 2)
++#define UV_MAX_NASID_VALUE	(UV_MAX_NUMALINK_BLADES * 2)
+ 
+ struct uv_scir_s {
+ 	struct timer_list timer;
+@@ -230,6 +230,20 @@ static inline unsigned long uv_gpa(void 
+ 	return uv_soc_phys_ram_to_gpa(__pa(v));
  }
  
--static struct quota_format_ops ocfs2_format_ops = {
-+static const struct quota_format_ops ocfs2_format_ops = {
- 	.check_quota_file	= ocfs2_local_check_quota_file,
- 	.read_file_info		= ocfs2_local_read_info,
- 	.write_file_info	= ocfs2_global_write_info,
---- a/fs/quota/quota_v1.c
-+++ b/fs/quota/quota_v1.c
-@@ -204,7 +204,7 @@ out:
- 	return ret;
- }
++/* gnode -> pnode */
++static inline unsigned long uv_gpa_to_gnode(unsigned long gpa)
++{
++	return gpa >> uv_hub_info->m_val;
++}
++
++/* gpa -> pnode */
++static inline int uv_gpa_to_pnode(unsigned long gpa)
++{
++	unsigned long n_mask = (1UL << uv_hub_info->n_val) - 1;
++
++	return uv_gpa_to_gnode(gpa) & n_mask;
++}
++
+ /* pnode, offset --> socket virtual */
+ static inline void *uv_pnode_offset_to_vaddr(int pnode, unsigned long offset)
+ {
+Index: linux/arch/x86/kernel/tlb_uv.c
+===================================================================
+--- linux.orig/arch/x86/kernel/tlb_uv.c	2009-10-16 06:02:27.000000000 -0500
++++ linux/arch/x86/kernel/tlb_uv.c	2009-10-16 06:02:28.000000000 -0500
+@@ -23,8 +23,6 @@
+ static struct bau_control	**uv_bau_table_bases __read_mostly;
+ static int			uv_bau_retry_limit __read_mostly;
  
--static struct quota_format_ops v1_format_ops = {
-+static const struct quota_format_ops v1_format_ops = {
- 	.check_quota_file	= v1_check_quota_file,
- 	.read_file_info		= v1_read_file_info,
- 	.write_file_info	= v1_write_file_info,
---- a/fs/quota/quota_v2.c
-+++ b/fs/quota/quota_v2.c
-@@ -207,7 +207,7 @@ static int v2_free_file_info(struct super_block *sb, int type)
- 	return 0;
- }
+-/* position of pnode (which is nasid>>1): */
+-static int			uv_nshift __read_mostly;
+ /* base pnode in this partition */
+ static int			uv_partition_base_pnode __read_mostly;
  
--static struct quota_format_ops v2_format_ops = {
-+static const struct quota_format_ops v2_format_ops = {
- 	.check_quota_file	= v2_check_quota_file,
- 	.read_file_info		= v2_read_file_info,
- 	.write_file_info	= v2_write_file_info,
---- a/include/linux/quota.h
-+++ b/include/linux/quota.h
-@@ -334,7 +334,7 @@ struct quotactl_ops {
+@@ -723,7 +721,7 @@ uv_activation_descriptor_init(int node, 
+ 	BUG_ON(!adp);
  
- struct quota_format_type {
- 	int qf_fmt_id;	/* Quota format id */
--	struct quota_format_ops *qf_ops;	/* Operations of format */
-+	const struct quota_format_ops *qf_ops;	/* Operations of format */
- 	struct module *qf_owner;		/* Module implementing quota format */
- 	struct quota_format_type *qf_next;
- };
-@@ -383,7 +383,7 @@ struct quota_info {
- 	struct rw_semaphore dqptr_sem;		/* serialize ops using quota_info struct, pointers from inode to dquots */
- 	struct inode *files[MAXQUOTAS];		/* inodes of quotafiles */
- 	struct mem_dqinfo info[MAXQUOTAS];	/* Information for each quota type */
--	struct quota_format_ops *ops[MAXQUOTAS];	/* Operations for each type */
-+	const struct quota_format_ops *ops[MAXQUOTAS];	/* Operations for each type */
- };
+ 	pa = uv_gpa(adp); /* need the real nasid*/
+-	n = pa >> uv_nshift;
++	n = uv_gpa_to_pnode(pa);
+ 	m = pa & uv_mmask;
  
- int register_quota_format(struct quota_format_type *fmt);
+ 	uv_write_global_mmr64(pnode, UVH_LB_BAU_SB_DESCRIPTOR_BASE,
+@@ -778,7 +776,7 @@ uv_payload_queue_init(int node, int pnod
+ 	 * need the pnode of where the memory was really allocated
+ 	 */
+ 	pa = uv_gpa(pqp);
+-	pn = pa >> uv_nshift;
++	pn = uv_gpa_to_pnode(pa);
+ 	uv_write_global_mmr64(pnode,
+ 			      UVH_LB_BAU_INTD_PAYLOAD_QUEUE_FIRST,
+ 			      ((unsigned long)pn << UV_PAYLOADQ_PNODE_SHIFT) |
+@@ -843,7 +841,6 @@ static int __init uv_bau_init(void)
+ 				       GFP_KERNEL, cpu_to_node(cur_cpu));
+ 
+ 	uv_bau_retry_limit = 1;
+-	uv_nshift = uv_hub_info->m_val;
+ 	uv_mmask = (1UL << uv_hub_info->m_val) - 1;
+ 	nblades = uv_num_possible_blades();
+ 
