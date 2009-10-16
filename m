@@ -1,56 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbZJPHSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbZJPHTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937AbZJPHSN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 03:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZJPHSM
+	id S1756029AbZJPHTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 03:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbZJPHTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 03:18:12 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:43458 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753427AbZJPHSL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 03:18:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=MLTCBPEorG1c5YpgymEyg+j3UB66BoyNXDkKYGOjswH/+L6BCrR/BiQsfC1vCsycAZ
-         v81McY6Ci3B3Qi5icK6AUB4SdVLKzfF8yxtjVxDWtSa+l/qIsis63TlMjoR42QW0Wwhp
-         4MBxHzi9o0I7d4OlFZX2G66DyNyaYmslupgog=
+	Fri, 16 Oct 2009 03:19:43 -0400
+Received: from dwdmx5.dwd.de ([141.38.3.242]:50807 "EHLO dwdmx5.dwd.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753427AbZJPHTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 03:19:42 -0400
+Date: Fri, 16 Oct 2009 07:17:40 +0000 (GMT)
+From: Holger Kiehl <Holger.Kiehl@dwd.de>
+X-X-Sender: kiehl@praktifix.dwd.de
+To: linux-raid <linux-raid@vger.kernel.org>
+cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Raid reconstructing and process hanging in D state
+Message-ID: <Pine.LNX.4.64.0910160703260.2463@praktifix.dwd.de>
 MIME-Version: 1.0
-In-Reply-To: <4AD7F633.4070507@agilent.com>
-References: <4AD5D476.6010103@agilent.com>
-	 <200910141653.03611.elendil@planet.nl> <4AD655C0.2030202@agilent.com>
-	 <200910150211.43532.elendil@planet.nl> <4AD7F633.4070507@agilent.com>
-Date: Fri, 16 Oct 2009 10:16:23 +0300
-X-Google-Sender-Auth: 0a54e56e47d945d3
-Message-ID: <84144f020910160016r125e2cbrf2fae48f168db79c@mail.gmail.com>
-Subject: Re: fs/pipe.c null pointer dereference
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Earl Chew <earl_chew@agilent.com>
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Earl,
+Hello
 
-On Fri, Oct 16, 2009 at 7:27 AM, Earl Chew <earl_chew@agilent.com> wrote:
-> Frans Pop wrote:
->>
->> Good luck with the hunt.
->
-> I've logged a defect:
->
-> http://bugzilla.kernel.org/show_bug.cgi?id=14416
->
-> which includes a proposed fix and script to reproduce.
+I have a SW Raid6 over 8 disk with a plain 2.6.31.4 kernel. When the
+raid is reconstructed I get a lot of process hanging for a long time
+in D-state. In fact /var/log/messages shows the following errors:
 
-Can you please send the patch to LKML so your fix doesn't get lost in
-the noise? See Documentation/SubmittingPatches for details.
+    Oct 16 04:09:01 hermes kernel: md: data-check of RAID array md3
+    Oct 16 04:09:01 hermes kernel: md: minimum _guaranteed_  speed: 1000 KB/sec/disk.
+    Oct 16 04:09:01 hermes kernel: md: data-check of RAID array md1
+    Oct 16 04:09:01 hermes kernel: md: minimum _guaranteed_  speed: 1000 KB/sec/disk.
+    Oct 16 04:09:01 hermes kernel: md: using maximum available idle IO bandwidth (but not more than 200000 KB/sec) for data-check.
+    Oct 16 04:09:01 hermes kernel: md: using maximum available idle IO bandwidth (but not more than 200000 KB/sec) for data-check.
+    Oct 16 04:09:01 hermes kernel: md: using 128k window, over a total of 70613632 blocks.
+    Oct 16 04:09:01 hermes kernel: md: using 128k window, over a total of 70613632 blocks.
+    Oct 16 04:09:01 hermes kernel: md: delaying data-check of md0 until md3 has finished (they share one or more physical units)
+    Oct 16 04:09:01 hermes kernel: md: delaying data-check of md2 until md0 has finished (they share one or more physical units)
+    Oct 16 04:09:01 hermes kernel: md: delaying data-check of md0 until md3 has finished (they share one or more physical units)
+    Oct 16 04:09:01 hermes kernel: md: data-check of RAID array md4
+    Oct 16 04:09:01 hermes kernel: md: minimum _guaranteed_  speed: 1000 KB/sec/disk.
+    Oct 16 04:09:01 hermes kernel: md: using maximum available idle IO bandwidth (but not more than 200000 KB/sec) for data-check.
+    Oct 16 04:09:01 hermes kernel: md: using 128k window, over a total of 292413440 blocks.
+    Oct 16 04:12:06 hermes kernel: INFO: task pdflush:409 blocked for more than 120 seconds.
+    Oct 16 04:12:06 hermes kernel: "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+    Oct 16 04:12:06 hermes kernel: pdflush       D ffff8800280910e8     0   409      2 0x00000000
+    Oct 16 04:12:06 hermes kernel: ffff88083ced7aa0 0000000000000046 0000000000000000 ffffea001cc87148
+    Oct 16 04:12:06 hermes kernel: ffff88083ced7a80 ffffffff81107530 ffff88083c57e6f8 000000000000e0e8
+    Oct 16 04:12:06 hermes kernel: ffff88083c57e6f8 0000000000011c80 0000000000011c80 00000001037141e6
+    Oct 16 04:12:06 hermes kernel: Call Trace:
+    Oct 16 04:12:06 hermes kernel: [<ffffffff81107530>] ? __block_write_full_page+0x200/0x2f2
+    Oct 16 04:12:06 hermes kernel: [<ffffffff81182376>] start_this_handle+0x2dc/0x3b1
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8107fb43>] ? autoremove_wake_function+0x0/0x5a
+    Oct 16 04:12:06 hermes kernel: [<ffffffff811825ee>] jbd2_journal_start+0xb2/0x101
+    Oct 16 04:12:06 hermes kernel: [<ffffffff81167fe5>] ext4_journal_start_sb+0x62/0xa1
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8115c051>] ext4_da_writepages+0x1f1/0x430
+    Oct 16 04:12:06 hermes kernel: [<ffffffff810734d5>] ? lock_timer_base+0x3a/0x78
+    Oct 16 04:12:06 hermes kernel: [<ffffffff810b3816>] do_writepages+0x35/0x5b
+    Oct 16 04:12:06 hermes kernel: [<ffffffff810fec80>] writeback_single_inode+0x17c/0x37e
+    Oct 16 04:12:06 hermes kernel: [<ffffffff810a30b4>] ? delayacct_end+0x8c/0xad
+    Oct 16 04:12:06 hermes kernel: [<ffffffff810ff366>] generic_sync_sb_inodes+0x2b4/0x451
+    Oct 16 04:12:06 hermes kernel: [<ffffffff810ff644>] writeback_inodes+0x95/0xfe
+    Oct 16 04:12:06 hermes kernel: [<ffffffff810b3a36>] wb_kupdate+0xbb/0x142
+    Oct 16 04:12:06 hermes kernel: [<ffffffff810b4917>] ? pdflush+0x0/0x22b
+    Oct 16 04:12:06 hermes kernel: [<ffffffff810b4a47>] pdflush+0x130/0x22b
+    Oct 16 04:12:06 hermes kernel: [<ffffffff810b397b>] ? wb_kupdate+0x0/0x142
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8107f71f>] kthread+0x9b/0xa3
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8102ccaa>] child_rip+0xa/0x20
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8107f684>] ? kthread+0x0/0xa3
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8102cca0>] ? child_rip+0x0/0x20
+    Oct 16 04:12:06 hermes kernel: INFO: task kjournald2:2166 blocked for more than 120 seconds.
+    Oct 16 04:12:06 hermes kernel: "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+    Oct 16 04:12:06 hermes kernel: kjournald2    D ffff8800280c50e8     0  2166      2 0x00000000
+    Oct 16 04:12:06 hermes kernel: ffff8808392cdcd0 0000000000000046 0000000000000000 ffffffff81058376
+    Oct 16 04:12:06 hermes kernel: 0000000000000000 ffff88083930b0a0 ffff88083a2b4a38 000000000000e0e8
+    Oct 16 04:12:06 hermes kernel: ffff88083a2b4a38 0000000000011c80 0000000000011c80 0000000103713338
+    Oct 16 04:12:06 hermes kernel: Call Trace:
+    Oct 16 04:12:06 hermes kernel: [<ffffffff81058376>] ? __wake_up_common+0x58/0xa2
+    Oct 16 04:12:06 hermes kernel: [<ffffffff811829f3>] jbd2_journal_commit_transaction+0x189/0x10e6
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8105aee5>] ? __dequeue_entity+0x41/0x5d
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8102a527>] ? __switch_to+0xce/0x2af
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8106118d>] ? finish_task_switch+0x6d/0x116
+    Oct 16 04:12:06 hermes kernel: [<ffffffff810734d5>] ? lock_timer_base+0x3a/0x78
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8107fb43>] ? autoremove_wake_function+0x0/0x5a
+    Oct 16 04:12:06 hermes kernel: [<ffffffff81073577>] ? try_to_del_timer_sync+0x64/0x82
+    Oct 16 04:12:06 hermes kernel: [<ffffffff81187505>] kjournald2+0x10e/0x23f
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8107fb43>] ? autoremove_wake_function+0x0/0x5a
+    Oct 16 04:12:06 hermes kernel: [<ffffffff811873f7>] ? kjournald2+0x0/0x23f
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8107f71f>] kthread+0x9b/0xa3
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8102ccaa>] child_rip+0xa/0x20
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8107f684>] ? kthread+0x0/0xa3
+    Oct 16 04:12:06 hermes kernel: [<ffffffff8102cca0>] ? child_rip+0x0/0x20
 
-                        Pekka
+Lowering the reconstruction rate to 10000 in
+/proc/sys/dev/raid/speed_limit_max solved the problem. But I was under
+the impression that the raid code would lower this speed (to speed_limit_min?)
+automatically when there are other process trying to access the device.
+Are the other parameters one can tune so that the reconstruction does
+not eat all the IO?
+
+Thanks,
+Holger
