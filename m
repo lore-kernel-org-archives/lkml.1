@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbZJPHLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbZJPHSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755829AbZJPHLn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 03:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbZJPHLm
+	id S1755937AbZJPHSN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 03:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZJPHSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 03:11:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54072 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752692AbZJPHLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 03:11:41 -0400
-Date: Fri, 16 Oct 2009 09:10:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] perf tools: Add a new generic section in perf.data
-Message-ID: <20091016071046.GD20388@elte.hu>
-References: <1255641017-13958-1-git-send-email-fweisbec@gmail.com>
+	Fri, 16 Oct 2009 03:18:12 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:43458 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753427AbZJPHSL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 03:18:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=MLTCBPEorG1c5YpgymEyg+j3UB66BoyNXDkKYGOjswH/+L6BCrR/BiQsfC1vCsycAZ
+         v81McY6Ci3B3Qi5icK6AUB4SdVLKzfF8yxtjVxDWtSa+l/qIsis63TlMjoR42QW0Wwhp
+         4MBxHzi9o0I7d4OlFZX2G66DyNyaYmslupgog=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255641017-13958-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <4AD7F633.4070507@agilent.com>
+References: <4AD5D476.6010103@agilent.com>
+	 <200910141653.03611.elendil@planet.nl> <4AD655C0.2030202@agilent.com>
+	 <200910150211.43532.elendil@planet.nl> <4AD7F633.4070507@agilent.com>
+Date: Fri, 16 Oct 2009 10:16:23 +0300
+X-Google-Sender-Auth: 0a54e56e47d945d3
+Message-ID: <84144f020910160016r125e2cbrf2fae48f168db79c@mail.gmail.com>
+Subject: Re: fs/pipe.c null pointer dereference
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Earl Chew <earl_chew@agilent.com>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Earl,
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+On Fri, Oct 16, 2009 at 7:27 AM, Earl Chew <earl_chew@agilent.com> wrote:
+> Frans Pop wrote:
+>>
+>> Good luck with the hunt.
+>
+> I've logged a defect:
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=14416
+>
+> which includes a proposed fix and script to reproduce.
 
-> +/*
-> + * Version 0: contains trace_info section only
-> + */
-> +struct perf_file_additionals {
-> +	u64				version;
-> +	struct perf_file_section	trace_info;
-> +};
+Can you please send the patch to LKML so your fix doesn't get lost in
+the noise? See Documentation/SubmittingPatches for details.
 
-i dont disagree with the change - but it would be even nicer to simply 
-define a features bitmask, instead of a flat version - and add the 
-trace_info section as a feature.
-
-That way it's all a lot more manageable: we dont know about versions per 
-se, we know about features. Individual features could be developed (and 
-backported) in a distributed way - without having to worry about a flat 
-version model.
-
-So i'd suggest something like a bitmask in the perf.data file header:
-
-	DECLARE_BITMAP(features, 256);
-
-Plus every perf version knows about the features it supports:
-
-	DECLARE_BITMAP(features_supported, 256);
-
-The compatibility rule is: perf only touches attributes that belong to 
-features it knows about.
-
-	Ingo
+                        Pekka
