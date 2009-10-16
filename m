@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbZJPVPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZJPVQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754769AbZJPVPG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 17:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZJPVPF
+	id S1755217AbZJPVQi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 17:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbZJPVQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 17:15:05 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:12291 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754429AbZJPVPA (ORCPT
+	Fri, 16 Oct 2009 17:16:36 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:29109 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754615AbZJPVPF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 17:15:00 -0400
-Subject: [PATCH v3 2/6] ACPI: dock: combine add|alloc_dock_dependent_device
+	Fri, 16 Oct 2009 17:15:05 -0400
+Subject: [PATCH v3 3/6] ACPI: dock: remove global 'dock_device_name'
 To: lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
 Cc: shaohua.li@intel.com, linux-kernel@vger.kernel.org,
        linux-acpi@vger.kernel.org
-Date: Fri, 16 Oct 2009 15:15:04 -0600
-Message-ID: <20091016211504.12126.5960.stgit@bob.kio>
+Date: Fri, 16 Oct 2009 15:15:09 -0600
+Message-ID: <20091016211509.12126.7985.stgit@bob.kio>
 In-Reply-To: <20091016211323.12126.58457.stgit@bob.kio>
 References: <20091016211323.12126.58457.stgit@bob.kio>
 User-Agent: StGit/0.14.3.386.gb02d
@@ -27,120 +27,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's no real need to have a separate allocation step when adding
-a dock dependent device.
-
-Combining the two functions is both logical and helps with legibility.
+We only use it in one spot, so it probably gets optimized out, but there's
+still no need to use a global variable for this.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/acpi/dock.c |   55 ++++++++++++++++++---------------------------------
- 1 files changed, 19 insertions(+), 36 deletions(-)
+ drivers/acpi/dock.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-index 3f71f0a..7a95113 100644
+index 7a95113..766eccb 100644
 --- a/drivers/acpi/dock.c
 +++ b/drivers/acpi/dock.c
-@@ -93,40 +93,30 @@ struct dock_dependent_device {
-  *                         Dock Dependent device functions                   *
-  *****************************************************************************/
- /**
-- *  alloc_dock_dependent_device - allocate and init a dependent device
-- *  @handle: the acpi_handle of the dependent device
-+ * add_dock_dependent_device - associate a device with the dock station
-+ * @handle: handle of the dependent device
-+ * @ds: The dock station
-  *
-- *  Allocate memory for a dependent device structure for a device referenced
-- *  by the acpi handle
-+ * Add the dependent device to the dock's dependent device list.
-  */
--static struct dock_dependent_device *
--alloc_dock_dependent_device(acpi_handle handle)
-+static int
-+add_dock_dependent_device(acpi_handle handle, struct dock_station *ds)
- {
- 	struct dock_dependent_device *dd;
+@@ -50,7 +50,6 @@ MODULE_PARM_DESC(immediate_undock, "1 (default) will cause the driver to "
+ 	" before undocking");
  
- 	dd = kzalloc(sizeof(*dd), GFP_KERNEL);
--	if (dd) {
--		dd->handle = handle;
--		INIT_LIST_HEAD(&dd->list);
--		INIT_LIST_HEAD(&dd->hotplug_list);
--	}
--	return dd;
--}
-+	if (!dd)
-+		return -ENOMEM;
-+
-+	dd->handle = handle;
-+	INIT_LIST_HEAD(&dd->list);
-+	INIT_LIST_HEAD(&dd->hotplug_list);
+ static struct atomic_notifier_head dock_notifier_list;
+-static char dock_device_name[] = "dock";
  
--/**
-- * add_dock_dependent_device - associate a device with the dock station
-- * @ds: The dock station
-- * @dd: The dependent device
-- *
-- * Add the dependent device to the dock's dependent device list.
-- */
--static void
--add_dock_dependent_device(struct dock_station *ds,
--			  struct dock_dependent_device *dd)
--{
- 	spin_lock(&ds->dd_lock);
- 	list_add_tail(&dd->list, &ds->dependent_devices);
- 	spin_unlock(&ds->dd_lock);
-+
-+	return 0;
- }
+ static const struct acpi_device_id dock_device_ids[] = {
+ 	{"LNXDOCK", 0},
+@@ -964,7 +963,7 @@ static int dock_add(acpi_handle handle)
  
- /**
-@@ -826,7 +816,6 @@ find_dock_devices(acpi_handle handle, u32 lvl, void *context, void **rv)
- 	acpi_status status;
- 	acpi_handle tmp, parent;
- 	struct dock_station *ds = context;
--	struct dock_dependent_device *dd;
- 
- 	status = acpi_bus_get_ejd(handle, &tmp);
- 	if (ACPI_FAILURE(status)) {
-@@ -840,11 +829,9 @@ find_dock_devices(acpi_handle handle, u32 lvl, void *context, void **rv)
- 			goto fdd_out;
- 	}
- 
--	if (tmp == ds->handle) {
--		dd = alloc_dock_dependent_device(handle);
--		if (dd)
--			add_dock_dependent_device(ds, dd);
--	}
-+	if (tmp == ds->handle)
-+		add_dock_dependent_device(ds, handle);
-+
- fdd_out:
- 	return AE_OK;
- }
-@@ -959,7 +946,6 @@ static struct attribute_group dock_attribute_group = {
- static int dock_add(acpi_handle handle)
- {
- 	int ret;
--	struct dock_dependent_device *dd;
- 	struct dock_station *dock_station;
- 	struct platform_device *dock_device;
- 
-@@ -1008,12 +994,9 @@ static int dock_add(acpi_handle handle)
- 			    NULL);
- 
- 	/* add the dock station as a device dependent on itself */
--	dd = alloc_dock_dependent_device(handle);
--	if (!dd) {
--		ret = -ENOMEM;
-+	ret = add_dock_dependent_device(dock_station, handle);
-+	if (ret)
- 		goto err_unregister;
--	}
--	add_dock_dependent_device(dock_station, dd);
- 
- 	dock_station_count++;
- 	list_add(&dock_station->sibling, &dock_stations);
+ 	/* initialize platform device stuff */
+ 	dock_station->dock_device =
+-		platform_device_register_simple(dock_device_name,
++		platform_device_register_simple("dock",
+ 			dock_station_count, NULL, 0);
+ 	dock_device = dock_station->dock_device;
+ 	if (IS_ERR(dock_device)) {
 
