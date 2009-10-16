@@ -1,85 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935638AbZJPAwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763347AbZJPAx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935638AbZJPAwn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 20:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758849AbZJPAwn
+	id S1763347AbZJPAx4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 20:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758863AbZJPAx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 20:52:43 -0400
-Received: from ozlabs.org ([203.10.76.45]:39707 "EHLO ozlabs.org"
+	Thu, 15 Oct 2009 20:53:56 -0400
+Received: from the.earth.li ([217.147.81.2]:41886 "EHLO the.earth.li"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751068AbZJPAwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 20:52:42 -0400
-Subject: Re: [PATCH 5/5 v2] kernel handling of CPU DLPAR
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <4AD74261.9040504@austin.ibm.com>
-References: <4AB39FB3.1020608@austin.ibm.com>
-	 <4AB3A172.4090601@austin.ibm.com>  <4AD4C3A3.5050103@austin.ibm.com>
-	 <1255473054.21871.39.camel@concordia>  <4AD74261.9040504@austin.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-LiCUG5fWpGldCZ7cbDZY"
-Date: Fri, 16 Oct 2009 11:52:04 +1100
-Message-Id: <1255654324.5626.53.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1758850AbZJPAxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 20:53:55 -0400
+Date: Thu, 15 Oct 2009 17:53:19 -0700
+From: Jonathan McDowell <noodles@earth.li>
+To: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: X hangs with blank screen on 2.6.32-rc4 / Intel 915GM
+Message-ID: <20091016005319.GC5658@earth.li>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
---=-LiCUG5fWpGldCZ7cbDZY
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Trying 2.6.32-rc4 on my Toshiba R200 laptop running Debian Squeeze leads
+to a blank screen with a flashing cursor in the top left when X starts.
+If startup in such a way that X isn't automatically started the console
+is fine, but starting X manually still leads to the hang. The machine
+seems unresponsive at this point - I can't switch to a normal console
+and the laptop fan comes on in a manner that suggests the CPU is
+chugging away.
 
-On Thu, 2009-10-15 at 10:40 -0500, Nathan Fontenot wrote:
-> Michael Ellerman wrote:
-> > On Tue, 2009-10-13 at 13:14 -0500, Nathan Fontenot wrote:
-> >> This adds the capability to DLPAR add and remove CPUs from the kernel.=
- The
-> >> creates two new files /sys/devices/system/cpu/probe and
-> >> /sys/devices/system/cpu/release to handle the DLPAR addition and remov=
-al of
-> >> CPUs respectively.
-> >=20
-> > How does this relate to the existing cpu hotplug mechanism? Or is this
-> > making the cpu exist (possible), vs marking it as online?
->=20
-> This update makes the cpu exist, it does not mark the cpu online.
->=20
-> >=20
-> > Is some other platform going to want to do the same? ie. should the
-> > probe/release part be in generic code?
->=20
-> I thought about making this generic code, perhaps a follow-on patch to mo=
-ve
-> the creation of the probe/release files to generic code to see what the
-> community thinks.  I would assume there would still need to be a arch and=
-/or
-> platforms specific callout to do the real work.
+2.6.31.4 works fine.
 
-I'm not so worried about the code being generic, there's not much that
-would be generic. More the mechanism. We don't want to add probe/release
-to powerpc, and then have a different mechanism get added later by some
-other platform, or generically.
+X versions are as per up-to-date Squeeze - Xorg 7.4 with Intel 2.9.0.
 
-But I guess you CC'ed lkml and there's not much more to do, I don't know
-specifically who'd care about it.
+I tried without VGA_ARB as that seemed to be the largest related change
+that might affect X but not the console, but it didn't make a
+difference.
 
-cheers
+dmesg from non X boot, Kernel config and lspci -vv output at:
 
+http://the.earth.li/~noodles/i915-32-rc-x-broken/
 
---=-LiCUG5fWpGldCZ7cbDZY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+I don't really have time at present to get involved in a full bisect,
+but I can potentially try over the weekend if there's nothing more
+obvious to try first.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+J.
 
-iEYEABECAAYFAkrXw7QACgkQdSjSd0sB4dLuBQCfcDS+jmkHlLnWg2pgCNz6nFOB
-2KoAmgPG7D5Rl2pPRvPTaafaJJssS3Di
-=1D4M
------END PGP SIGNATURE-----
-
---=-LiCUG5fWpGldCZ7cbDZY--
-
+-- 
+"The actual chances of it blowing are about one in...one." - Lister
