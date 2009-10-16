@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZJPT26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751859AbZJPTnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256AbZJPT26 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 15:28:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZJPT25
+	id S1751859AbZJPTnE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 15:43:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbZJPTnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 15:28:57 -0400
-Received: from mail.lang.hm ([64.81.33.126]:45956 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753224AbZJPT25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 15:28:57 -0400
-Date: Fri, 16 Oct 2009 12:28:49 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Holger Kiehl <Holger.Kiehl@dwd.de>
-cc: Justin Piszcz <jpiszcz@lucidpixels.com>,
-       linux-raid <linux-raid@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Raid reconstructing and process hanging in D state
-In-Reply-To: <Pine.LNX.4.64.0910160840400.2463@praktifix.dwd.de>
-Message-ID: <alpine.DEB.2.00.0910161226170.22169@asgard.lang.hm>
-References: <Pine.LNX.4.64.0910160703260.2463@praktifix.dwd.de> <alpine.DEB.2.00.0910160436160.2841@p34.internal.lan> <Pine.LNX.4.64.0910160840400.2463@praktifix.dwd.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 16 Oct 2009 15:43:03 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:60659 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750918AbZJPTnB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 15:43:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=wv1A+gNw0Sni1ofpZoCJ+m2hjtOl9sh5bbATEYGIeqmsrqBvCA2/WyBnSBMCAVu2On
+         GxyfCTg3JG9qQ0Z1swn7c6mBRYId/Lp+2TB+TFedhA8RB4y6dpad+V3+6K/IIKQ3hmyu
+         6NkVWw033o7gVJvuh34lzdixVDyncQ9UTzIBI=
+From: Arnd Bergmann <arndbergmann@googlemail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch 6/7] um: Convert mmapper to unlocked_ioctl
+Date: Fri, 16 Oct 2009 21:42:50 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
+Cc: Arnd Bergmann <arndbergmann@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Jeff Dike <jdike@addtoit.com>
+References: <20091015083906.716130653@linutronix.de> <200910151500.34820.arnd@arndb.de> <20091015162926.25a99cab@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091015162926.25a99cab@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910162142.50618.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Oct 2009, Holger Kiehl wrote:
-
-> On Fri, 16 Oct 2009, Justin Piszcz wrote:
->> Hi,
->> 
->> I have the same problem with mdadm/raid-1, if you do not limit the speed in 
->> the speed_limit_min paramter, it will starve the I/O from all other 
->> processes and result in the same problem you are having.
->> 
-> But in my case speed_limit_min was set to 1000 and speed_limit_max was 200000
-> (ie. the default) and this still caused all process to hang in D-state. Only
-> lowering speed_limit_max helped to make the system responsive again.
-
-yep, MD raid will use every bit of disk bandwidth there is.
-
-even worse, the speed_limit_* appears to be per-drive, not per array 
-(although the /proc/mdstat info is per array), so if you have lots of 
-drives on one controller card it will kill the system and still think that 
-it's not maxed out.
-
-I did a 45 disk array hooked into two PCI slots and found that I needed to 
-set speed_limit_max _very_ low to avoid this sort of problem.
-
-David Lang
-
->> But for me I'm not sure about the reconstruction-- this happens for me 
->> during a raid verify/check.
->> 
-> This was also the case for me, during a raid verify/check.
+On Thursday 15 October 2009, Alan Cox wrote:
+> On Thu, 15 Oct 2009 15:00:34 +0200
+> Arnd Bergmann <arndbergmann@googlemail.com> wrote:
 >
-> Holger
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> > However, returning -ENOIOCTLCMD from an *unlocked_ioctl* function
+> > automatically gets turned into -EINVAL. It does this to allow
+> > the same functions to be used for unlocked_ioctl and compat_ioctl.
+> > In effect, this patch is functionally identical to removing the
+> > ioctl function, which I think is what should be done here.
+> 
+> That is wrong.
+> 
+> SuS requires an unknown ioctl code returns -ENOTTY. If the code is
+> currently remapping it to EINVAL then it wants fixing.
+
+Right, I forgot about the EINVAL/ENOTTY difference. The code currently
+returns -ENOIOCTLCMD, which is worse. Thomas' patch makes it return
+-EINVAL, which as you said is still wrong. Removing the ioctl function
+will do the right thing and return -ENOTTY, so that should be done
+here in um/mmapper, with an appropriate changelog.
+
+For the common code in fs/ioctl.c, I think the current behaviour is
+correct. It returns -EINVAL if the driver returns -ENOIOCTLCMD, iow
+"the request [...] argument is not valid for this device", as specified
+by http://www.opengroup.org/onlinepubs/009695399/functions/ioctl.html.
+
+Drivers returning ENOIOCTLCMD for every request are broken and should
+be changed to have no ioctl function.
+	
+	Arnd <><
