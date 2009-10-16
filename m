@@ -1,110 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbZJPLEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbZJPLHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756810AbZJPLEA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 07:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbZJPLD7
+	id S1758672AbZJPLHY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 07:07:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbZJPLHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 07:03:59 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:19564 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754576AbZJPLD6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 07:03:58 -0400
-Subject: Re: [PATCH v10 4/5] core: Add kernel message dumper to call on
- oopses and panics
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091016101045.GA3263@elte.hu>
-References: <20091015094057.7298e0d7@marrow.netinsight.se>
-	 <20091015094805.754461fa@marrow.netinsight.se>
-	 <20091015093133.GF10546@elte.hu>
-	 <20091015161052.0752208e@marrow.netinsight.se>
-	 <20091015154640.GA11408@elte.hu>
-	 <20091016094601.4e2c2d3e@marrow.netinsight.se>
-	 <20091016080935.GA3895@elte.hu> <1255681467.32489.360.camel@localhost>
-	 <20091016112556.6902b2dc@marrow.netinsight.se>
-	 <20091016101045.GA3263@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 16 Oct 2009 14:00:28 +0300
-Message-Id: <1255690828.32489.368.camel@localhost>
+	Fri, 16 Oct 2009 07:07:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55134 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753425AbZJPLHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 07:07:22 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19FoaI3YfJFUfSt+VvK0nW3Hvet7grwAQMKKEvoua
+	KsuP3K6o4q30sj
+Subject: Re: hackbench regression with kernel 2.6.32-rc1
+From: Mike Galbraith <efault@gmx.de>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1255403522.3684.57.camel@ymzhang>
+References: <1255079943.25078.23.camel@ymzhang>
+	 <1255084986.8802.46.camel@laptop>  <1255331120.3684.43.camel@ymzhang>
+	 <1255357264.10420.15.camel@twins>  <1255403522.3684.57.camel@ymzhang>
+Content-Type: text/plain
+Date: Fri, 16 Oct 2009 13:06:32 +0200
+Message-Id: <1255691192.7029.13.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 16 Oct 2009 11:00:32.0336 (UTC) FILETIME=[E155CD00:01CA4E4F]
-X-Nokia-AV: Clean
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.46
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-16 at 12:10 +0200, Ingo Molnar wrote:
-> * Simon Kagstrom <simon.kagstrom@netinsight.net> wrote:
-> 
-> > +int kmsg_dump_register(struct kmsg_dumper *dumper)
-> > +{
-> > +	unsigned long flags;
-> > +
-> > +	/* The dump callback needs to be set */
-> > +	if (!dumper->dump)
-> > +		return -EINVAL;
-> > +
-> > +	spin_lock_irqsave(&dump_list_lock, flags);
-> > +
-> > +	/* Don't allow registering multiple times */
-> > +	if (dumper->registered) {
-> > +		spin_unlock_irqrestore(&dump_list_lock, flags);
-> > +
-> > +		return -EBUSY;
-> > +	}
-> > +
-> > +	dumper->registered = 1;
-> > +	list_add(&dumper->list, &dump_list);
-> > +	spin_unlock_irqrestore(&dump_list_lock, flags);
-> > +
-> > +	return 0;
-> > +}
-> > +EXPORT_SYMBOL_GPL(kmsg_dump_register);
-> 
-> 
-> i dont want to bikeshed paint this but this sequence caught my eyes. We 
-> generally do flatter and clearer locking sequences:
-> 
-> int kmsg_dump_register(struct kmsg_dumper *dumper)
-> {
-> 	unsigned long flags;
-> 	int err = -EBUSY;
-> 
-> 	/* The dump callback needs to be set */
-> 	if (!dumper->dump)
-> 		return -EINVAL;
-> 
-> 	spin_lock_irqsave(&dump_list_lock, flags);
-> 
-> 	/* Don't allow registering multiple times */
-> 	if (!dumper->registered) {
-> 		dumper->registered = 1;
-> 		list_add_tail(&dumper->list, &dump_list);
-> 		err = 0;
-> 	}
-> 
-> 	spin_unlock_irqrestore(&dump_list_lock, flags);
-> 
-> 	return err;
-> }
-> EXPORT_SYMBOL_GPL(kmsg_dump_register);
+On Tue, 2009-10-13 at 11:12 +0800, Zhang, Yanmin wrote:
 
-And while we are on it, I think these extra lines before and after
-spinlocks are unneeded and even a bit annoying :-)
+> NEXT_BUDDY has no help on volanoMark and tbench.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Can you try the patch below please?  It does tries to preserve buddy
+affinity where possible, and mitigates over-preemption by strengthening
+buddies a bit.  It improves vmark here by ~7%.
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 00f9e71..fb025d4 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2007,8 +2007,12 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
+ 
+ 	/*
+ 	 * Buddy candidates are cache hot:
++	 *
++	 * Do not honor buddies if there may be nothing else to
++	 * prevent us from becoming idle.
+ 	 */
+ 	if (sched_feat(CACHE_HOT_BUDDY) &&
++			task_rq(p)->nr_running >= sched_nr_latency &&
+ 			(&p->se == cfs_rq_of(&p->se)->next ||
+ 			 &p->se == cfs_rq_of(&p->se)->last))
+ 		return 1;
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index c32c3e6..428bf55 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -863,18 +863,20 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
+ 	struct sched_entity *se = __pick_next_entity(cfs_rq);
+ 	struct sched_entity *buddy;
+ 
+-	if (cfs_rq->next) {
++	if (cfs_rq->next && sched_feat(NEXT_BUDDY)) {
+ 		buddy = cfs_rq->next;
+-		cfs_rq->next = NULL;
+-		if (wakeup_preempt_entity(buddy, se) < 1)
++		if (wakeup_preempt_entity(buddy, se) < 1) {
++			cfs_rq->next = NULL;
+ 			return buddy;
++		}
+ 	}
+ 
+-	if (cfs_rq->last) {
++	if (cfs_rq->last && sched_feat(LAST_BUDDY)) {
+ 		buddy = cfs_rq->last;
+-		cfs_rq->last = NULL;
+-		if (wakeup_preempt_entity(buddy, se) < 1)
++		if (wakeup_preempt_entity(buddy, se) < 1) {
++			cfs_rq->last = NULL;
+ 			return buddy;
++		}
+ 	}
+ 
+ 	return se;
+@@ -1600,9 +1602,9 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
+ 	 * Also, during early boot the idle thread is in the fair class, for
+ 	 * obvious reasons its a bad idea to schedule back to the idle thread.
+ 	 */
+-	if (sched_feat(LAST_BUDDY) && likely(se->on_rq && curr != rq->idle))
++	if (!(wake_flags & WF_FORK) && likely(se->on_rq && curr != rq->idle))
+ 		set_last_buddy(se);
+-	if (sched_feat(NEXT_BUDDY) && !(wake_flags & WF_FORK))
++	if (!(wake_flags & WF_FORK))
+ 		set_next_buddy(pse);
+ 
+ 	/*
+
 
