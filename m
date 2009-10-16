@@ -1,74 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbZJPMSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758957AbZJPMXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757986AbZJPMSH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 08:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbZJPMSG
+	id S1758957AbZJPMXL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 08:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758585AbZJPMXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 08:18:06 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:46026 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248AbZJPMSF (ORCPT
+	Fri, 16 Oct 2009 08:23:10 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:64991 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753089AbZJPMXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 08:18:05 -0400
+	Fri, 16 Oct 2009 08:23:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=Mq9frXRfsCJocL0NWvtKsGhMb7Kgwv7epr4MAcftFR9ctqlafVlVFgA3IOVo/NxJfb
-         3vkZ3qyJwU6eWfkHUqXE7LcyP5xJOdkorwf/62ZqT0MXWcNbT2UH5ZlRXBsSjP7GQ8dn
-         1Igmw0RhtwmG69D4jnokgNIlJ2w2rHlsVIMrc=
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=AcTA4uZO/Ikko+HrZQP+1K7/ig1iKufNIwTyp0HS4D7WqvyKazpK3sUo2vtGV5eG7F
+         QknzHyqpcHtfqs7C4r5XCg6Vo72t1XTJSTZ8oNPCS0cYyckjT/Emgj9oUmuF8RuMR9k5
+         0n457yqB6cO9QVFFyO71z3EiG8ZifAyBGaKC0=
+Date: Fri, 16 Oct 2009 14:22:29 +0200
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: x86, amd: Get multi-node CPU info from NodeId MSR instead of PCI
+ config space
+Message-ID: <20091016122229.GB8387@alberich.amd.com>
 MIME-Version: 1.0
-In-Reply-To: <1255694894.3008.40.camel@pc1117.cambridge.arm.com>
-References: <20091014153146.8955.19964.stgit@pc1117.cambridge.arm.com>
-	 <4AD770FB.5030104@cs.helsinki.fi>
-	 <1255694894.3008.40.camel@pc1117.cambridge.arm.com>
-Date: Fri, 16 Oct 2009 15:17:28 +0300
-X-Google-Sender-Auth: 9367b6c57e60b881
-Message-ID: <84144f020910160517t5247f49dpefcd58f5058fa153@mail.gmail.com>
-Subject: Re: [PATCH] kmemleak: Do not use off-slab management with 
-	SLAB_NOLEAKTRACE
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-kernel@vger.kernel.org,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Christoph Lameter <cl@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 16, 2009 at 3:08 PM, Catalin Marinas
-<catalin.marinas@arm.com> wrote:
-> On Thu, 2009-10-15 at 21:59 +0300, Pekka Enberg wrote:
->> Catalin Marinas wrote:
->> > With the slab allocator, if off-slab management is enabled for the
->> > kmem_caches used by kmemleak, it leads to recursive calls into
->> > kmemleak_alloc(). Off-slab management can be triggered by other config
->> > options increasing the slab size, e.g. DEBUG_PAGEALLOC.
->> >
->> > Reported-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
->> > Cc: Pekka Enberg <penberg@cs.helsinki.fi>
->> > Cc: Christoph Lameter <cl@linux-foundation.org>
->> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
->>
->> Forcing slabs to use on-slab management is pretty bad from memory
->> consumption point of view. Wouldn't it be better to annotate the
->> recursive calls somehow?
->
-> The are annotated using SLAB_NOLEAKTRACE but off-slab management uses a
-> general cachep and we cannot use this flag on them as we end up ignoring
-> kmalloc allocations. An alternative is to use GFP_ flag rather than a
-> SLAB_ one to track the recursive calls.
->
-> I could also rework the way hooks were added to slab.c but currently
-> they follow the same places as kmemcheck_slab_alloc and
-> lockdep_trace_alloc.
->
-> Anyway, the kmemleak caches only need off-slab management when
-> DEBUG_PAGEALLOC is enabled but in this case the memory consumption is
-> high anyway.
+Use newly introduced NodeId MSR to get NodeId and number of nodes per
+processor.
 
-Oh, right, I misread the patch, sorry. Please feel free to put the
-patch in kmemleak.git:
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/include/asm/cpufeature.h |    1 +
+ arch/x86/kernel/cpu/amd.c         |   53 ++++++++++--------------------------
+ 2 files changed, 16 insertions(+), 38 deletions(-)
 
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Hi,
+
+this is .32 material.
+Diffed against .32-rc5.
+Please apply.
+
+Thanks,
+Andreas
+
+
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index 9cfc88b..2cbf0a2 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -153,6 +153,7 @@
+ #define X86_FEATURE_SSE5	(6*32+11) /* SSE-5 */
+ #define X86_FEATURE_SKINIT	(6*32+12) /* SKINIT/STGI instructions */
+ #define X86_FEATURE_WDT		(6*32+13) /* Watchdog timer */
++#define X86_FEATURE_NODEID_MSR	(6*32+19) /* NodeId MSR */
+ 
+ /*
+  * Auxiliary flags: Linux defined - For features scattered in various
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index c910a71..85ee6c3 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -254,59 +254,36 @@ static int __cpuinit nearby_node(int apicid)
+ 
+ /*
+  * Fixup core topology information for AMD multi-node processors.
+- * Assumption 1: Number of cores in each internal node is the same.
+- * Assumption 2: Mixed systems with both single-node and dual-node
+- *               processors are not supported.
++ * Assumption: Number of cores in each internal node is the same.
+  */
+ #ifdef CONFIG_X86_HT
+ static void __cpuinit amd_fixup_dcm(struct cpuinfo_x86 *c)
+ {
+-#ifdef CONFIG_PCI
+-	u32 t, cpn;
+-	u8 n, n_id;
++	unsigned long long value;
++	u32 nodes, cores_per_node;
+ 	int cpu = smp_processor_id();
+ 
++	if (!cpu_has(c, X86_FEATURE_NODEID_MSR))
++		return;
++
+ 	/* fixup topology information only once for a core */
+ 	if (cpu_has(c, X86_FEATURE_AMD_DCM))
+ 		return;
+ 
+-	/* check for multi-node processor on boot cpu */
+-	t = read_pci_config(0, 24, 3, 0xe8);
+-	if (!(t & (1 << 29)))
++	rdmsrl(0xc001100c, value);
++
++	nodes = ((value >> 3) & 7) + 1;
++	if (nodes == 1)
+ 		return;
+ 
+ 	set_cpu_cap(c, X86_FEATURE_AMD_DCM);
++	cores_per_node = c->x86_max_cores / nodes;
+ 
+-	/* cores per node: each internal node has half the number of cores */
+-	cpn = c->x86_max_cores >> 1;
++	/* store NodeID, use llc_shared_map to store sibling info */
++	per_cpu(cpu_llc_id, cpu) = value & 7;
+ 
+-	/* even-numbered NB_id of this dual-node processor */
+-	n = c->phys_proc_id << 1;
+-
+-	/*
+-	 * determine internal node id and assign cores fifty-fifty to
+-	 * each node of the dual-node processor
+-	 */
+-	t = read_pci_config(0, 24 + n, 3, 0xe8);
+-	n = (t>>30) & 0x3;
+-	if (n == 0) {
+-		if (c->cpu_core_id < cpn)
+-			n_id = 0;
+-		else
+-			n_id = 1;
+-	} else {
+-		if (c->cpu_core_id < cpn)
+-			n_id = 1;
+-		else
+-			n_id = 0;
+-	}
+-
+-	/* compute entire NodeID, use llc_shared_map to store sibling info */
+-	per_cpu(cpu_llc_id, cpu) = (c->phys_proc_id << 1) + n_id;
+-
+-	/* fixup core id to be in range from 0 to cpn */
+-	c->cpu_core_id = c->cpu_core_id % cpn;
+-#endif
++	/* fixup core id to be in range from 0 to (cores_per_node - 1) */
++	c->cpu_core_id = c->cpu_core_id % cores_per_node;
+ }
+ #endif
+ 
+-- 
+1.6.5
+
