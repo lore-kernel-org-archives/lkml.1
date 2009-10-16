@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbZJPS6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932406AbZJPTH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754798AbZJPS6U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 14:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZJPS6T
+	id S932406AbZJPTH2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 15:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932380AbZJPTH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 14:58:19 -0400
-Received: from fifo99.com ([67.223.236.141]:50117 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751039AbZJPS6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 14:58:18 -0400
-Subject: Re: [PATCH 6/7] checkpatch: fix false EXPORT_SYMBOL warning
-From: Daniel Walker <dwalker@fifo99.com>
-To: Andy Whitcroft <apw@canonical.com>
-Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <1255718372-22805-7-git-send-email-apw@canonical.com>
-References: <1255718372-22805-1-git-send-email-apw@canonical.com>
-	 <1255718372-22805-7-git-send-email-apw@canonical.com>
-Content-Type: text/plain
-Date: Fri, 16 Oct 2009 11:58:21 -0700
-Message-Id: <1255719501.22917.54.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Oct 2009 15:07:26 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:21414 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932384AbZJPTHX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 15:07:23 -0400
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEADNh2EqrR7Ht/2dsb2JhbADBGZgfhDAE
+X-IronPort-AV: E=Sophos;i="4.44,574,1249257600"; 
+   d="scan'208";a="411061412"
+From: Roland Dreier <rdreier@cisco.com>
+To: landman@scalableinformatics.com
+Cc: linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
+       Anand Babu Periasamy <ab@gluster.com>
+Subject: Re: kernel BUG at drivers/pci/intel-iommu.c:1278
+References: <4AD8A393.3040907@scalableinformatics.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 16 Oct 2009 11:58:36 -0700
+In-Reply-To: <4AD8A393.3040907@scalableinformatics.com> (Joe Landman's message
+	of "Fri, 16 Oct 2009 12:47:15 -0400")
+Message-ID: <ada63afxj1f.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Oct 2009 18:58:36.0752 (UTC) FILETIME=[AA945500:01CA4E92]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-16 at 19:39 +0100, Andy Whitcroft wrote:
 
-> -				WARN("EXPORT_SYMBOL(foo); should immediately follow its function/variable\n" . $herecurr);
-> +#print "FOO A<$lines[$realline_next - 1]> stat<$stat> name<$name>\n";
-> +				$suppress_export{$realline_next} = 2;
-> +			} else {
-> +				$suppress_export{$realline_next} = 1;
->  			}
->  		}
-> +		if (!defined $suppress_export{$linenr} &&
-> +		    $prevline =~ /^.\s*$/ &&
-> +                    ($line =~ /EXPORT_SYMBOL.*\((.*)\)/ ||
-> +		     $line =~ /EXPORT_UNUSED_SYMBOL.*\((.*)\)/)) {
+ > Anything I should look for?  I know 2.6.28 is not being developed any
+ > further.  Should I start looking at 2.6.31 to help with this?
 
-ERROR: code indent should use tabs where possible
-#148: FILE: scripts/checkpatch.pl:1734:
-+                    ($line =~ /EXPORT_SYMBOL.*\((.*)\)/ ||$
+Definitely looking at 2.6.31 or even 2.6.32-rc kernels to see if this
+still happens would be a good idea.  I've not done much IB work with
+VT-d enabled, but the fact that the BUG() is in drivers/pci seems to
+indicate that the problem is fairly likely to be some internal
+corruption in the intel_iommu code, caused by a bug there, rather than
+anything IB related.
 
-This one line is spaced over instead of tabbed.. I guess checkpatch can
-even check itself, which is nice .. I'm not sure this matters since this
-it's perl tho..
-
-Do you apply any kind of coding style to checkpatch itself ?
-
-Daniel
-
-
-
-
+ - R.
