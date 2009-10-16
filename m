@@ -1,105 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbZJPLHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbZJPL2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbZJPLHY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 07:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbZJPLHX
+	id S1758738AbZJPL2o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 07:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758621AbZJPL2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 07:07:23 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55134 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753425AbZJPLHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 07:07:22 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19FoaI3YfJFUfSt+VvK0nW3Hvet7grwAQMKKEvoua
-	KsuP3K6o4q30sj
-Subject: Re: hackbench regression with kernel 2.6.32-rc1
-From: Mike Galbraith <efault@gmx.de>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1255403522.3684.57.camel@ymzhang>
-References: <1255079943.25078.23.camel@ymzhang>
-	 <1255084986.8802.46.camel@laptop>  <1255331120.3684.43.camel@ymzhang>
-	 <1255357264.10420.15.camel@twins>  <1255403522.3684.57.camel@ymzhang>
-Content-Type: text/plain
-Date: Fri, 16 Oct 2009 13:06:32 +0200
-Message-Id: <1255691192.7029.13.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Fri, 16 Oct 2009 07:28:43 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:21714 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758189AbZJPL2n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 07:28:43 -0400
+Message-ID: <4AD85842.9090800@nokia.com>
+Date: Fri, 16 Oct 2009 14:25:54 +0300
+From: Aaro Koskinen <aaro.koskinen@nokia.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: ext Simon Kagstrom <simon.kagstrom@netinsight.net>
+CC: "dedekind1@gmail.com" <dedekind1@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH v10 4/5] core: Add kernel message dumper to call on oopses
+ and panics
+References: <20091015094057.7298e0d7@marrow.netinsight.se>	<20091015094805.754461fa@marrow.netinsight.se>	<20091015093133.GF10546@elte.hu>	<20091015161052.0752208e@marrow.netinsight.se>	<20091015154640.GA11408@elte.hu>	<20091016094601.4e2c2d3e@marrow.netinsight.se>	<20091016080935.GA3895@elte.hu>	<1255681467.32489.360.camel@localhost> <20091016112556.6902b2dc@marrow.netinsight.se>
+In-Reply-To: <20091016112556.6902b2dc@marrow.netinsight.se>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
+X-OriginalArrivalTime: 16 Oct 2009 11:25:55.0766 (UTC) FILETIME=[6D5EC560:01CA4E53]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-13 at 11:12 +0800, Zhang, Yanmin wrote:
+Hello,
 
-> NEXT_BUDDY has no help on volanoMark and tbench.
+Simon Kagstrom wrote:
+> +#ifndef _LINUX_KMSG_DUMP_H
+> +#define _LINUX_KMSG_DUMP_H
+> +
+> +#include <linux/list.h>
+> +
+> +enum kmsg_dump_reason {
+> +	KMSG_DUMP_OOPS,
+> +	KMSG_DUMP_PANIC,
+> +};
+> +
+> +/**
+> + * struct kmsg_dumper - kernel crash message dumper structure
+> + * @dump:	The callback which gets called on crashes. The buffer is passed
+> + * 		as two sections, where s1 (length l1) contains the older
+> + * 		messages and s2 (length l2) contains the newer.
+> + * @list:	Entry in the dumper list (private)
+> + * @registered:	Flag that specifies if this is already registered
+> + */
+> +struct kmsg_dumper {
+> +	void (*dump)(struct kmsg_dumper *dumper, enum kmsg_dump_reason reason,
+> +			const char *s1, unsigned long l1,
+> +			const char *s2, unsigned long l2);
+> +	struct list_head list;
+> +	int registered;
+> +};
+> +
+> +void kmsg_dump(enum kmsg_dump_reason reason);
+> +
+> +int kmsg_dump_register(struct kmsg_dumper *dumper);
+> +
+> +int kmsg_dump_unregister(struct kmsg_dumper *dumper);
+> +
+> +#endif /* _LINUX_DUMP_DEVICE_H */
 
-Can you try the patch below please?  It does tries to preserve buddy
-affinity where possible, and mitigates over-preemption by strengthening
-buddies a bit.  It improves vmark here by ~7%.
+If you still make a new version of the patch, please correct the
+"_LINUX_DUMP_DEVICE_H" comment.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 00f9e71..fb025d4 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2007,8 +2007,12 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
- 
- 	/*
- 	 * Buddy candidates are cache hot:
-+	 *
-+	 * Do not honor buddies if there may be nothing else to
-+	 * prevent us from becoming idle.
- 	 */
- 	if (sched_feat(CACHE_HOT_BUDDY) &&
-+			task_rq(p)->nr_running >= sched_nr_latency &&
- 			(&p->se == cfs_rq_of(&p->se)->next ||
- 			 &p->se == cfs_rq_of(&p->se)->last))
- 		return 1;
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index c32c3e6..428bf55 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -863,18 +863,20 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
- 	struct sched_entity *se = __pick_next_entity(cfs_rq);
- 	struct sched_entity *buddy;
- 
--	if (cfs_rq->next) {
-+	if (cfs_rq->next && sched_feat(NEXT_BUDDY)) {
- 		buddy = cfs_rq->next;
--		cfs_rq->next = NULL;
--		if (wakeup_preempt_entity(buddy, se) < 1)
-+		if (wakeup_preempt_entity(buddy, se) < 1) {
-+			cfs_rq->next = NULL;
- 			return buddy;
-+		}
- 	}
- 
--	if (cfs_rq->last) {
-+	if (cfs_rq->last && sched_feat(LAST_BUDDY)) {
- 		buddy = cfs_rq->last;
--		cfs_rq->last = NULL;
--		if (wakeup_preempt_entity(buddy, se) < 1)
-+		if (wakeup_preempt_entity(buddy, se) < 1) {
-+			cfs_rq->last = NULL;
- 			return buddy;
-+		}
- 	}
- 
- 	return se;
-@@ -1600,9 +1602,9 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
- 	 * Also, during early boot the idle thread is in the fair class, for
- 	 * obvious reasons its a bad idea to schedule back to the idle thread.
- 	 */
--	if (sched_feat(LAST_BUDDY) && likely(se->on_rq && curr != rq->idle))
-+	if (!(wake_flags & WF_FORK) && likely(se->on_rq && curr != rq->idle))
- 		set_last_buddy(se);
--	if (sched_feat(NEXT_BUDDY) && !(wake_flags & WF_FORK))
-+	if (!(wake_flags & WF_FORK))
- 		set_next_buddy(pse);
- 
- 	/*
-
-
+A.
