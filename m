@@ -1,42 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbZJPS6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751458AbZJPS4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755185AbZJPS6p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 14:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbZJPS6o
+	id S1751458AbZJPS4h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 14:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZJPS4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 14:58:44 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:32896 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752962AbZJPS6n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 14:58:43 -0400
-Date: Fri, 16 Oct 2009 14:50:58 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: David Rientjes <rientjes@google.com>
-cc: Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu
- operations in the hotpaths
-In-Reply-To: <alpine.DEB.1.00.0910161141280.21328@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0910161450110.14329@gentwo.org>
-References: <4AD307A5.105@kernel.org> <84144f020910120614r529d8e4em9babe83a90e9371f@mail.gmail.com> <alpine.DEB.1.00.0910130231570.27262@chino.kir.corp.google.com> <alpine.DEB.1.10.0910131041450.21608@gentwo.org> <alpine.DEB.1.10.0910131509170.32394@gentwo.org>
- <4AD4D8B6.6010700@cs.helsinki.fi> <alpine.DEB.1.10.0910131541290.7246@gentwo.org> <alpine.DEB.1.00.0910131305440.3529@chino.kir.corp.google.com> <alpine.DEB.1.10.0910131625370.13756@gentwo.org> <alpine.DEB.1.00.0910131550050.15347@chino.kir.corp.google.com>
- <20091014133457.GB5027@csn.ul.ie> <alpine.DEB.1.00.0910150157250.20184@chino.kir.corp.google.com> <alpine.DEB.1.10.0910161244400.6120@gentwo.org> <alpine.DEB.1.00.0910161141280.21328@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 16 Oct 2009 14:56:37 -0400
+Received: from mail.perches.com ([173.55.12.10]:2226 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751515AbZJPS4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 14:56:36 -0400
+Subject: Re: [PATCH 0/7] update checkpatch to v0.30
+From: Joe Perches <joe@perches.com>
+To: Andy Whitcroft <apw@canonical.com>
+Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1255718372-22805-1-git-send-email-apw@canonical.com>
+References: <1255718372-22805-1-git-send-email-apw@canonical.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 16 Oct 2009 11:56:39 -0700
+Message-Id: <1255719399.2267.92.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Oct 2009, David Rientjes wrote:
+On Fri, 2009-10-16 at 19:39 +0100, Andy Whitcroft wrote:
+> Here is a batch of checkpatch updates.  The second of which should fix
+> akpm's issue triggering perl warnings on some patches.  The rest are the
+> normal slew of little fixes.  These have passed testing here.
 
-> Sure, but it would be even more inexpensive if we can figure out why the
-> irqless patch is hanging my netserver machine within the first 60 seconds
-> on the TCP_RR benchmark.  I guess nobody else has reproduced that yet.
+Andy, did you get my patches to checkpatch
+or did you decide not to apply them?
 
-Nope. Sorry. I have tried running some tests but so far nothing.
+http://patchwork.kernel.org/patch/51566/
+http://patchwork.kernel.org/patch/51486/
+
 
