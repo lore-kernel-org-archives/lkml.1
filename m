@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbZJPN0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759757AbZJPN1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759598AbZJPN0F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 09:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759538AbZJPN0E
+	id S1759757AbZJPN1l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 09:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759451AbZJPN1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 09:26:04 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37180 "EHLO mx1.suse.de"
+	Fri, 16 Oct 2009 09:27:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37258 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759545AbZJPN0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 09:26:02 -0400
-Date: Fri, 16 Oct 2009 15:25:24 +0200 (CEST)
+	id S1759424AbZJPN1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 09:27:39 -0400
+Date: Fri, 16 Oct 2009 15:26:58 +0200 (CEST)
 From: Jiri Kosina <jkosina@suse.cz>
 X-X-Sender: jkosina@wotan.suse.de
 To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Bob Copeland <me@bobcopeland.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/8] trivial: fix typo s/assocate/associate/ in comment
-In-Reply-To: <1255637738-6069-1-git-send-email-cascardo@holoscopio.com>
-Message-ID: <alpine.LSU.2.00.0910161525190.8582@wotan.suse.de>
-References: <1255637738-6069-1-git-send-email-cascardo@holoscopio.com>
+Cc: akpm@linux-foundation.org, miltonm@austin.ibm.com,
+       manfred@colorfullife.com, penbergs@cs.helsinki.fi,
+       bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/8] trivial: fix typo s/ide/id/
+In-Reply-To: <1255636028-5779-1-git-send-email-cascardo@holoscopio.com>
+Message-ID: <alpine.LSU.2.00.0910161526510.8582@wotan.suse.de>
+References: <1255636028-5779-1-git-send-email-cascardo@holoscopio.com>
 User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -34,21 +31,8 @@ On Thu, 15 Oct 2009, Thadeu Lima de Souza Cascardo wrote:
 
 > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 > ---
->  drivers/net/wireless/ath/ath5k/base.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/wireless/ath/ath5k/base.h b/drivers/net/wireless/ath/ath5k/base.h
-> index b14ba07..b73e7d3 100644
-> --- a/drivers/net/wireless/ath/ath5k/base.h
-> +++ b/drivers/net/wireless/ath/ath5k/base.h
-> @@ -192,7 +192,7 @@ struct ath5k_softc {
->  	struct ath5k_txq	*cabq;		/* content after beacon */
->  
->  	int 			power_level;	/* Requested tx power in dbm */
-> -	bool			assoc;		/* assocate state */
-> +	bool			assoc;		/* associate state */
->  	bool			enable_beacon;	/* true if beacons are on */
->  };
+>  lib/idr.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 
 Merged together with patches 2-8 from your series and applied to trivial
 queue.
