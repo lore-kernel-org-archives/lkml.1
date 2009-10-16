@@ -1,114 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760414AbZJPO3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760497AbZJPOi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760414AbZJPO3Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 10:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760215AbZJPO3Y
+	id S1760497AbZJPOi4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 10:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbZJPOiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 10:29:24 -0400
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:55074 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753431AbZJPO3X convert rfc822-to-8bit (ORCPT
+	Fri, 16 Oct 2009 10:38:55 -0400
+Received: from aglcosbs04.cos.agilent.com ([192.25.218.38]:40701 "EHLO
+	aglcosbs04.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754078AbZJPOiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 10:29:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vyvFwCx+/SbpAqhQqT9dxFWyMHDZQ08bvoVRJFrgqRORjMfwTl+uuNPuqpxKMxhV6G
-         UCuGYeMEaX/xOVtoLVxn7VTFXxyTlDoKzpukzxG7zPRUmg3ODDm2GvhQeaGcA9vzL6NI
-         MCDQ2dDj7i/gy2PXD0zgDzBBlUyZAarIvErtM=
+	Fri, 16 Oct 2009 10:38:55 -0400
+Message-ID: <4AD8852E.2090302@agilent.com>
+Date: Fri, 16 Oct 2009 07:37:34 -0700
+From: Earl Chew <earl_chew@agilent.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <tnxbpk7a0ok.fsf@pc1117.cambridge.arm.com>
-References: <c4e36d110910150159j6092d0d1lb20434bd9d43d8ce@mail.gmail.com>
-	 <4AD6EF65.6080602@cn.fujitsu.com>
-	 <1255605778.10164.49.camel@pc1117.cambridge.arm.com>
-	 <c4e36d110910160045y52d80450g1d803dd2090a2bd8@mail.gmail.com>
-	 <1255690674.3008.24.camel@pc1117.cambridge.arm.com>
-	 <c4e36d110910160632y4448475dp1ae66dfc01ff8448@mail.gmail.com>
-	 <tnxbpk7a0ok.fsf@pc1117.cambridge.arm.com>
-Date: Fri, 16 Oct 2009 16:28:47 +0200
-Message-ID: <c4e36d110910160728n5ceefaa8u6b9989aec0564628@mail.gmail.com>
-Subject: Re: Leaks in trace reported by kmemleak
-From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v1 1/1]: fs: pipe.c null pointer dereference
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Oct 2009 14:37:47.0613 (UTC) FILETIME=[3AF738D0:01CA4E6E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/10/16 Catalin Marinas <catalin.marinas@arm.com>:
-> Zdenek Kabelac <zdenek.kabelac@gmail.com> wrote:
->> Yes -same - though I forget to mention that log contained these two
->> extra messages:
->> (got lost in other debug stuff :( )...
->>
->> So it could be the parameters in your first patch were not correct ?
->>
->> [drm] Initialized drm 1.1.0 20060810
->> kmemleak: Scan area larger than object 0xffffffffa033b000
->
-> Ah, I forgot that kmemleak_scan_area takes an offset inside an object
-> rather than an absolute address. Something like below (I should
-> actually change this prototype of this function, it doesn't need to be
-> so complex):
->
-> diff --git a/kernel/module.c b/kernel/module.c
-> index 8b7d880..8cc4406 100644
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -2383,6 +2383,10 @@ static noinline struct module *load_module(void __user *umod,
->                                         "_ftrace_events",
->                                         sizeof(*mod->trace_events),
->                                         &mod->num_trace_events);
-> +       kmemleak_scan_area(mod->module_core, (unsigned long)mod->trace_events -
-> +                          (unsigned long)mod->module_core,
-> +                          sizeof(*mod->trace_events) * mod->num_trace_events,
-> +                          GFP_KERNEL);
->  #endif
->  #ifdef CONFIG_FTRACE_MCOUNT_RECORD
->        /* sechdrs[0].sh_size is always zero */
-
-Hmm - ok I'll retest this one - meanwhile here is my observation from
-your previous post
-
-It looks like this remove leaks from  i915 & kvm
-But on the other hand there are ~4 other leaks now reported from
-various kernel parts.
+This patch fixes a null pointer exception in pipe_rdwr_open() which
+generates the stack trace:
 
 
->
->> BTW - it's kind of ugly - that module removal destroys stack trace -
->> it would be nice to see some hook for module unload - to eventually
->> create a permanent stack trace for this occasion??
->
-> Kmemleak only uses whatever stacktrace mechanism is available in the
-> kernel. Resolving the symbol names when objects are allocated would
-> slow it down and it takes up more space in the traces. I don't have a
-> proper solution.
->
+ > Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
+ >  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
+ >  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
+ >  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
+ >  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
+ >  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
 
-I think that no drastic solutions would need to be deployed in my case.
-I would propose something like this:
+This defect is also described in:
+   http://lkml.org/lkml/2009/10/14/184
+   http://bugzilla.kernel.org/show_bug.cgi?id=14416
 
-When you display/resolve  stacktrace  with  cat
-/sys/kernel/debug/kmemleak - you could remember decoded stacktraces in
-some given buffer - and so next time - you would not need to decode
-this stacktrace - and when the module is removed the stacktrace could
-be displayed properly.
 
-It's already time costly to keep stacktrace (very noticeable in drm -
-where there is permanently something being allocated and deallocated)
+The failure mode is triggered by an attempt to open an anonymous
+pipe via /proc/pid/fd/* as exemplified by this script:
 
-IMHO it wouldn't be too time consuming to resolve traces even right
-after scan command - as only new objects would need to be decoded.
+=============================================================
+#!/bin/sh
+while : ; do
+    { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
+    PID=$!
+    OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
+         { read PID REST ; echo $PID; } )
+    OUT="${OUT%% *}"
+    DELAY=$((RANDOM * 1000 / 32768))
+    usleep $((DELAY * 1000 + RANDOM % 1000 ))
+    echo n > /proc/$OUT/fd/1                 # Trigger defect
+done
+=============================================================
 
-Obviously it would cost slightly more memory to keep this string
-output somewhere - but I think my machine will not miss that much 0.5M
-for this purpose.
+Note that the failure window is quite small and I could only
+reliably reproduce the defect by inserting a small delay
+in pipe_rdwr_open(). For example:
 
-Zdenek
+  static int
+  pipe_rdwr_open(struct inode *inode, struct file *filp)
+  {
+        msleep(100);
+        mutex_lock(&inode->i_mutex);
+
+
+Although the defect was observed in pipe_rdwr_open(), I think it
+makes sense to replicate the change through all the pipe_*_open()
+functions.
+
+The core of the change is to verify that inode->i_pipe has not
+been released before attempting to manipulate it. If inode->i_pipe
+is no longer present, return ENOENT to indicate so.
+
+The comment about potentially using atomic_t for i_pipe->readers
+and i_pipe->writers has also been removed because it is no longer
+relevant in this context. The inode->i_mutex lock must be used so
+that inode->i_pipe can be dealt with correctly.
+
+
+
+--- linux-2.6.21_mvlcge500/fs/pipe.c.orig	2009-10-15 20:33:53.000000000 
+-0700
++++ linux-2.6.21_mvlcge500/fs/pipe.c	2009-10-15 21:21:25.000000000 -0700
+@@ -712,36 +712,55 @@ pipe_rdwr_release(struct inode *inode, s
+  static int
+  pipe_read_open(struct inode *inode, struct file *filp)
+  {
+-	/* We could have perhaps used atomic_t, but this and friends
+-	   below are the only places.  So it doesn't seem worthwhile.  */
++	int ret = -ENOENT;
++
+  	mutex_lock(&inode->i_mutex);
+-	inode->i_pipe->readers++;
++
++	if (inode->i_pipe) {
++		ret = 0;
++		inode->i_pipe->readers++;
++	}
++
+  	mutex_unlock(&inode->i_mutex);
+
+-	return 0;
++	return ret;
+  }
+
+  static int
+  pipe_write_open(struct inode *inode, struct file *filp)
+  {
++	int ret = -ENOENT;
++
+  	mutex_lock(&inode->i_mutex);
+-	inode->i_pipe->writers++;
++
++	if (inode->i_pipe) {
++		ret = 0;
++		inode->i_pipe->writers++;
++	}
++
+  	mutex_unlock(&inode->i_mutex);
+
+-	return 0;
++	return ret;
+  }
+
+  static int
+  pipe_rdwr_open(struct inode *inode, struct file *filp)
+  {
++	int ret = -ENOENT;
++
+  	mutex_lock(&inode->i_mutex);
+-	if (filp->f_mode & FMODE_READ)
+-		inode->i_pipe->readers++;
+-	if (filp->f_mode & FMODE_WRITE)
+-		inode->i_pipe->writers++;
++
++	if (inode->i_pipe) {
++		ret = 0;
++		if (filp->f_mode & FMODE_READ)
++			inode->i_pipe->readers++;
++		if (filp->f_mode & FMODE_WRITE)
++			inode->i_pipe->writers++;
++	}
++
+  	mutex_unlock(&inode->i_mutex);
+
+-	return 0;
++	return ret;
+  }
+
+  /*
+
+
+
