@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751346AbZJPWq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbZJPW40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751346AbZJPWq3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 18:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbZJPWq2
+	id S1751882AbZJPW40 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 18:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbZJPW4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 18:46:28 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:34027 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbZJPWq2 (ORCPT
+	Fri, 16 Oct 2009 18:56:25 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:33198 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbZJPW4Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 18:46:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=s68sjxaBjvwwQG+UieSsZj5NYYs4F6tz5NygU/EqR7ve1cQFUI/8OTggr/UpJFu5OG
-         z+9ahywZutlewPBve3xP6eXUF4TKxV2BLe/qMWUK7R7iWDRQoh1KBFvExbEBjuo/NLnJ
-         dw2EGc8AcsrDPPlGxnkAN8WeaUhxdWW3icKEw=
+	Fri, 16 Oct 2009 18:56:25 -0400
+Message-ID: <4AD8F971.2090805@nortel.com>
+Date: Fri, 16 Oct 2009 16:53:37 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Date: Fri, 16 Oct 2009 23:46:31 +0100
-Message-ID: <f1ac5a50910161546t6eeef710q6d40f22a61d15d1a@mail.gmail.com>
-Subject: [kernel 2.6.31.4] backlight controls gone mad
-From: =?ISO-8859-1?Q?N=E9lson_=ABVuDu=BB_Cunha?= <vudu.curse@gmail.com>
-To: linux-kernel@vger.kernel.org
+To: Con Kolivas <kernel@kolivas.org>
+CC: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: BFS cpu scheduler v0.304 stable release
+References: <200910162158.58054.kernel@kolivas.org>
+In-Reply-To: <200910162158.58054.kernel@kolivas.org>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Oct 2009 22:56:24.0576 (UTC) FILETIME=[E2DD8000:01CA4EB3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 10/16/2009 04:58 AM, Con Kolivas wrote:
 
-I'm using ArchLinux (here's the "downstream" bug report:
-http://bugs.archlinux.org/task/16698) and with the last update to
-kernel 2.6.31.4 my backlight/brightness controls have gone mad.
+> to this, BFS also uses sub-tick accounting. What BFS does _not_ now feature is
+> support for CGROUPS. The average user should neither need to know what these
+> are, nor should they need to be using them to have good desktop behaviour.
 
-My laptop's screen keeps blinking, slowly increasing or decreasing its
-luminosity randomly. Sometimes it stays still for a couple of minutes
-at any random brightness level, but it's very uncomfortable for the
-eyes when it's blinking.
-Here's a video of what's happening:
-http://www.mediafire.com/download.php?z4mi4uzidjn
+That said, it's useful for embedded purposes and I could see some use in
+that area for your BFS scheduler since they often care about latency and
+tend to use low numbers of cpus.
 
-I've tried to use /proc/acpi/video/VGA/LCDD/brightness and
-/sys/class/backlight/acpi_video0/brightness but with no luck, because
-they make no changes and when I cat them I get wrong values.
+> It is surprisingly difficult to get accurate CPU accounting, and in many cases,
+> the accounting is done by simply determining what is happening at the precise
+> moment a timer tick fires off.
 
-I tried using xbacklight but it gives me "No outputs have backlight property".
+With sched_clock() it would seem that this is not as applicable as it
+used to be.
 
-With the previous (2.6.30.6) version I had no problems and after
-getting this problem I installed Arch's "kernel26-lts" package
-(2.6.27.37) and I'm having no issues with that kernel.
+Chris
 
-My laptop is an ASUS M51VA with an Intel C2D and an ATI HD 3650. I
-tried fglrx, radeon and radeonhd and it made no difference.
-
-If you need more details, please say so.
-
-Best Regards.
