@@ -1,199 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759111AbZJPM4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759167AbZJPM5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759111AbZJPM4d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 08:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756927AbZJPM4c
+	id S1759167AbZJPM5F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 08:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756927AbZJPM5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 08:56:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50598 "EHLO hera.kernel.org"
+	Fri, 16 Oct 2009 08:57:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50614 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751154AbZJPM4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 08:56:31 -0400
-Date: Fri, 16 Oct 2009 12:55:19 GMT
+	id S1755563AbZJPM5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 08:57:02 -0400
+Date: Fri, 16 Oct 2009 12:55:34 GMT
 From: tip-bot for Borislav Petkov <borislav.petkov@amd.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, mingo@elte.hu, borislav.petkov@amd.com
+       andi@firstfloor.org, tglx@linutronix.de, mingo@elte.hu,
+       borislav.petkov@amd.com
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, borislav.petkov@amd.com, mingo@elte.hu
-In-Reply-To: <20091003065752.GA8935@liondog.tnic>
-References: <20091003065752.GA8935@liondog.tnic>
+       andi@firstfloor.org, tglx@linutronix.de, borislav.petkov@amd.com,
+       mingo@elte.hu
+In-Reply-To: <1255689093-26921-1-git-send-email-borislav.petkov@amd.com>
+References: <1255689093-26921-1-git-send-email-borislav.petkov@amd.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/mce] mce, edac: Use an atomic notifier for MCEs decoding
-Message-ID: <tip-fb2531953fd8855abdcf458459020fd382c5deca@git.kernel.org>
-Git-Commit-ID: fb2531953fd8855abdcf458459020fd382c5deca
+Subject: [tip:perf/mce] x86, mce: Fix up MCE naming nomenclature
+Message-ID: <tip-5e09954a9acc3b435ffe318b95afd3c02fae069f@git.kernel.org>
+Git-Commit-ID: 5e09954a9acc3b435ffe318b95afd3c02fae069f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 16 Oct 2009 12:55:20 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 16 Oct 2009 12:55:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fb2531953fd8855abdcf458459020fd382c5deca
-Gitweb:     http://git.kernel.org/tip/fb2531953fd8855abdcf458459020fd382c5deca
+Commit-ID:  5e09954a9acc3b435ffe318b95afd3c02fae069f
+Gitweb:     http://git.kernel.org/tip/5e09954a9acc3b435ffe318b95afd3c02fae069f
 Author:     Borislav Petkov <borislav.petkov@amd.com>
-AuthorDate: Wed, 7 Oct 2009 13:20:38 +0200
+AuthorDate: Fri, 16 Oct 2009 12:31:32 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 12 Oct 2009 12:24:45 +0200
+CommitDate: Fri, 16 Oct 2009 14:46:49 +0200
 
-mce, edac: Use an atomic notifier for MCEs decoding
+x86, mce: Fix up MCE naming nomenclature
 
-Add an atomic notifier which ensures proper locking when conveying
-MCE info to EDAC for decoding. The actual notifier call overrides a
-default, negative priority notifier.
+Prefix global/setup routines with "mcheck_" thus differentiating
+from the internal facilities prefixed with "mce_". Also, prefix
+the per cpu calls with mcheck_cpu and rename them to reflect the
+MCE setup hierarchy of calls better.
 
-Note: make sure we register the default decoder only once since
-mcheck_init() runs on each CPU.
+There should be no functionality change resulting from this
+patch.
 
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-LKML-Reference: <20091003065752.GA8935@liondog.tnic>
+Cc: Andi Kleen <andi@firstfloor.org>
+LKML-Reference: <1255689093-26921-1-git-send-email-borislav.petkov@amd.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/include/asm/mce.h       |    3 ++-
- arch/x86/kernel/cpu/mcheck/mce.c |   29 ++++++++++++++++++++---------
- drivers/edac/edac_mce_amd.c      |   21 ++++++++++++---------
- 3 files changed, 34 insertions(+), 19 deletions(-)
+ arch/x86/include/asm/mce.h       |    4 +-
+ arch/x86/kernel/cpu/common.c     |    2 +-
+ arch/x86/kernel/cpu/mcheck/mce.c |   52 +++++++++++++++++++-------------------
+ 3 files changed, 29 insertions(+), 29 deletions(-)
 
 diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
-index f1363b7..227a72d 100644
+index 227a72d..161485d 100644
 --- a/arch/x86/include/asm/mce.h
 +++ b/arch/x86/include/asm/mce.h
-@@ -108,6 +108,8 @@ struct mce_log {
- #define K8_MCE_THRESHOLD_BANK_5    (MCE_THRESHOLD_BASE + 5 * 9)
- #define K8_MCE_THRESHOLD_DRAM_ECC  (MCE_THRESHOLD_BANK_4 + 0)
+@@ -120,9 +120,9 @@ extern int mce_disabled;
+ extern int mce_p5_enabled;
  
-+extern struct atomic_notifier_head x86_mce_decoder_chain;
-+
- #ifdef __KERNEL__
+ #ifdef CONFIG_X86_MCE
+-void mcheck_init(struct cpuinfo_x86 *c);
++void mcheck_cpu_init(struct cpuinfo_x86 *c);
+ #else
+-static inline void mcheck_init(struct cpuinfo_x86 *c) {}
++static inline void mcheck_cpu_init(struct cpuinfo_x86 *c) {}
+ #endif
  
- #include <linux/percpu.h>
-@@ -213,6 +215,5 @@ extern void (*threshold_cpu_callback)(unsigned long action, unsigned int cpu);
- void intel_init_thermal(struct cpuinfo_x86 *c);
+ #ifdef CONFIG_X86_ANCIENT_MCE
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index cc25c2b..4df69a3 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -839,7 +839,7 @@ static void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
  
- void mce_log_therm_throt_event(__u64 status);
--
- #endif /* __KERNEL__ */
- #endif /* _ASM_X86_MCE_H */
+ #ifdef CONFIG_X86_MCE
+ 	/* Init Machine Check Exception if available. */
+-	mcheck_init(c);
++	mcheck_cpu_init(c);
+ #endif
+ 
+ 	select_idle_routine(c);
 diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index b1598a9..15ba9c9 100644
+index 0fb9dc5..68d968e 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -85,18 +85,26 @@ static DECLARE_WAIT_QUEUE_HEAD(mce_wait);
- static DEFINE_PER_CPU(struct mce, mces_seen);
- static int			cpu_missing;
+@@ -1136,7 +1136,7 @@ static int check_interval = 5 * 60; /* 5 minutes */
+ static DEFINE_PER_CPU(int, mce_next_interval); /* in jiffies */
+ static DEFINE_PER_CPU(struct timer_list, mce_timer);
  
--static void default_decode_mce(struct mce *m)
-+/*
-+ * CPU/chipset specific EDAC code can register a notifier call here to print
-+ * MCE errors in a human-readable form.
-+ */
-+ATOMIC_NOTIFIER_HEAD(x86_mce_decoder_chain);
-+EXPORT_SYMBOL_GPL(x86_mce_decoder_chain);
-+
-+static int default_decode_mce(struct notifier_block *nb, unsigned long val,
-+			       void *data)
+-static void mcheck_timer(unsigned long data)
++static void mce_start_timer(unsigned long data)
  {
- 	pr_emerg("No human readable MCE decoding support on this CPU type.\n");
- 	pr_emerg("Run the message through 'mcelog --ascii' to decode.\n");
-+
-+	return NOTIFY_STOP;
+ 	struct timer_list *t = &per_cpu(mce_timer, data);
+ 	int *n;
+@@ -1220,7 +1220,7 @@ static int mce_banks_init(void)
+ /*
+  * Initialize Machine Checks for a CPU.
+  */
+-static int __cpuinit mce_cap_init(void)
++static int __cpuinit __mcheck_cpu_cap_init(void)
+ {
+ 	unsigned b;
+ 	u64 cap;
+@@ -1258,7 +1258,7 @@ static int __cpuinit mce_cap_init(void)
+ 	return 0;
  }
  
--/*
-- * CPU/chipset specific EDAC code can register a callback here to print
-- * MCE errors in a human-readable form:
-- */
--void (*x86_mce_decode_callback)(struct mce *m) = default_decode_mce;
--EXPORT_SYMBOL(x86_mce_decode_callback);
-+static struct notifier_block mce_dec_nb = {
-+	.notifier_call = default_decode_mce,
-+	.priority      = -1,
-+};
- 
- /* MCA banks polled by the period polling timer for corrected events */
- DEFINE_PER_CPU(mce_banks_t, mce_poll_banks) = {
-@@ -204,9 +212,9 @@ static void print_mce(struct mce *m)
- 
- 	/*
- 	 * Print out human-readable details about the MCE error,
--	 * (if the CPU has an implementation for that):
-+	 * (if the CPU has an implementation for that)
- 	 */
--	x86_mce_decode_callback(m);
-+	atomic_notifier_call_chain(&x86_mce_decoder_chain, 0, m);
+-static void mce_init(void)
++static void __mcheck_cpu_init_generic(void)
+ {
+ 	mce_banks_t all_banks;
+ 	u64 cap;
+@@ -1287,7 +1287,7 @@ static void mce_init(void)
  }
  
- static void print_mce_head(void)
-@@ -1420,6 +1428,9 @@ void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
- 	mce_cpu_features(c);
- 	mce_init_timer();
+ /* Add per CPU specific workarounds here */
+-static int __cpuinit mce_cpu_quirks(struct cpuinfo_x86 *c)
++static int __cpuinit __mcheck_cpu_apply_quirks(struct cpuinfo_x86 *c)
+ {
+ 	if (c->x86_vendor == X86_VENDOR_UNKNOWN) {
+ 		pr_info("MCE: unknown CPU type - not enabling MCE support.\n");
+@@ -1355,7 +1355,7 @@ static int __cpuinit mce_cpu_quirks(struct cpuinfo_x86 *c)
+ 	return 0;
+ }
+ 
+-static void __cpuinit mce_ancient_init(struct cpuinfo_x86 *c)
++static void __cpuinit __mcheck_cpu_ancient_init(struct cpuinfo_x86 *c)
+ {
+ 	if (c->x86 != 5)
+ 		return;
+@@ -1369,7 +1369,7 @@ static void __cpuinit mce_ancient_init(struct cpuinfo_x86 *c)
+ 	}
+ }
+ 
+-static void mce_cpu_features(struct cpuinfo_x86 *c)
++static void __mcheck_cpu_init_vendor(struct cpuinfo_x86 *c)
+ {
+ 	switch (c->x86_vendor) {
+ 	case X86_VENDOR_INTEL:
+@@ -1383,7 +1383,7 @@ static void mce_cpu_features(struct cpuinfo_x86 *c)
+ 	}
+ }
+ 
+-static void mce_init_timer(void)
++static void __mcheck_cpu_init_timer(void)
+ {
+ 	struct timer_list *t = &__get_cpu_var(mce_timer);
+ 	int *n = &__get_cpu_var(mce_next_interval);
+@@ -1394,7 +1394,7 @@ static void mce_init_timer(void)
+ 	*n = check_interval * HZ;
+ 	if (!*n)
+ 		return;
+-	setup_timer(t, mcheck_timer, smp_processor_id());
++	setup_timer(t, mce_start_timer, smp_processor_id());
+ 	t->expires = round_jiffies(jiffies + *n);
+ 	add_timer_on(t, smp_processor_id());
+ }
+@@ -1414,26 +1414,26 @@ void (*machine_check_vector)(struct pt_regs *, long error_code) =
+  * Called for each booted CPU to set up machine checks.
+  * Must be called with preempt off:
+  */
+-void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
++void __cpuinit mcheck_cpu_init(struct cpuinfo_x86 *c)
+ {
+ 	if (mce_disabled)
+ 		return;
+ 
+-	mce_ancient_init(c);
++	__mcheck_cpu_ancient_init(c);
+ 
+ 	if (!mce_available(c))
+ 		return;
+ 
+-	if (mce_cap_init() < 0 || mce_cpu_quirks(c) < 0) {
++	if (__mcheck_cpu_cap_init() < 0 || __mcheck_cpu_apply_quirks(c) < 0) {
+ 		mce_disabled = 1;
+ 		return;
+ 	}
+ 
+ 	machine_check_vector = do_machine_check;
+ 
+-	mce_init();
+-	mce_cpu_features(c);
+-	mce_init_timer();
++	__mcheck_cpu_init_generic();
++	__mcheck_cpu_init_vendor(c);
++	__mcheck_cpu_init_timer();
  	INIT_WORK(&__get_cpu_var(mce_work), mce_process_work);
-+
-+	if (raw_smp_processor_id() == 0)
-+		atomic_notifier_chain_register(&x86_mce_decoder_chain, &mce_dec_nb);
+ 
+ 	if (raw_smp_processor_id() == 0)
+@@ -1665,7 +1665,7 @@ __setup("mce", mcheck_enable);
+  * Disable machine checks on suspend and shutdown. We can't really handle
+  * them later.
+  */
+-static int mce_disable(void)
++static int mce_disable_error_reporting(void)
+ {
+ 	int i;
+ 
+@@ -1680,12 +1680,12 @@ static int mce_disable(void)
+ 
+ static int mce_suspend(struct sys_device *dev, pm_message_t state)
+ {
+-	return mce_disable();
++	return mce_disable_error_reporting();
+ }
+ 
+ static int mce_shutdown(struct sys_device *dev)
+ {
+-	return mce_disable();
++	return mce_disable_error_reporting();
  }
  
  /*
-diff --git a/drivers/edac/edac_mce_amd.c b/drivers/edac/edac_mce_amd.c
-index 713ed7d..689cc6a 100644
---- a/drivers/edac/edac_mce_amd.c
-+++ b/drivers/edac/edac_mce_amd.c
-@@ -3,7 +3,6 @@
- 
- static bool report_gart_errors;
- static void (*nb_bus_decoder)(int node_id, struct err_regs *regs);
--static void (*orig_mce_callback)(struct mce *m);
- 
- void amd_report_gart_errors(bool v)
+@@ -1695,8 +1695,8 @@ static int mce_shutdown(struct sys_device *dev)
+  */
+ static int mce_resume(struct sys_device *dev)
  {
-@@ -363,8 +362,10 @@ static inline void amd_decode_err_code(unsigned int ec)
- 		pr_warning("Huh? Unknown MCE error 0x%x\n", ec);
- }
- 
--static void amd_decode_mce(struct mce *m)
-+static int amd_decode_mce(struct notifier_block *nb, unsigned long val,
-+			   void *data)
- {
-+	struct mce *m = (struct mce *)data;
- 	struct err_regs regs;
- 	int node, ecc;
- 
-@@ -420,20 +421,22 @@ static void amd_decode_mce(struct mce *m)
- 	}
- 
- 	amd_decode_err_code(m->status & 0xffff);
-+
-+	return NOTIFY_STOP;
- }
- 
-+static struct notifier_block amd_mce_dec_nb = {
-+	.notifier_call	= amd_decode_mce,
-+};
-+
- static int __init mce_amd_init(void)
- {
- 	/*
- 	 * We can decode MCEs for Opteron and later CPUs:
- 	 */
- 	if ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
--	    (boot_cpu_data.x86 >= 0xf)) {
--		/* safe the default decode mce callback */
--		orig_mce_callback = x86_mce_decode_callback;
--
--		x86_mce_decode_callback = amd_decode_mce;
--	}
-+	    (boot_cpu_data.x86 >= 0xf))
-+		atomic_notifier_chain_register(&x86_mce_decoder_chain, &amd_mce_dec_nb);
+-	mce_init();
+-	mce_cpu_features(&current_cpu_data);
++	__mcheck_cpu_init_generic();
++	__mcheck_cpu_init_vendor(&current_cpu_data);
  
  	return 0;
  }
-@@ -442,7 +445,7 @@ early_initcall(mce_amd_init);
- #ifdef MODULE
- static void __exit mce_amd_exit(void)
- {
--	x86_mce_decode_callback = orig_mce_callback;
-+	atomic_notifier_chain_unregister(&x86_mce_decoder_chain, &amd_mce_dec_nb);
+@@ -1706,8 +1706,8 @@ static void mce_cpu_restart(void *data)
+ 	del_timer_sync(&__get_cpu_var(mce_timer));
+ 	if (!mce_available(&current_cpu_data))
+ 		return;
+-	mce_init();
+-	mce_init_timer();
++	__mcheck_cpu_init_generic();
++	__mcheck_cpu_init_timer();
  }
  
- MODULE_DESCRIPTION("AMD MCE decoder");
+ /* Reinit MCEs after user configuration changes */
+@@ -1733,7 +1733,7 @@ static void mce_enable_ce(void *all)
+ 	cmci_reenable();
+ 	cmci_recheck();
+ 	if (all)
+-		mce_init_timer();
++		__mcheck_cpu_init_timer();
+ }
+ 
+ static struct sysdev_class mce_sysclass = {
+@@ -2042,7 +2042,7 @@ static __init void mce_init_banks(void)
+ 	}
+ }
+ 
+-static __init int mce_init_device(void)
++static __init int mcheck_init_device(void)
+ {
+ 	int err;
+ 	int i = 0;
+@@ -2070,7 +2070,7 @@ static __init int mce_init_device(void)
+ 	return err;
+ }
+ 
+-device_initcall(mce_init_device);
++device_initcall(mcheck_init_device);
+ 
+ /*
+  * Old style boot options parsing. Only for compatibility.
+@@ -2118,7 +2118,7 @@ static int fake_panic_set(void *data, u64 val)
+ DEFINE_SIMPLE_ATTRIBUTE(fake_panic_fops, fake_panic_get,
+ 			fake_panic_set, "%llu\n");
+ 
+-static int __init mce_debugfs_init(void)
++static int __init mcheck_debugfs_init(void)
+ {
+ 	struct dentry *dmce, *ffake_panic;
+ 
+@@ -2132,5 +2132,5 @@ static int __init mce_debugfs_init(void)
+ 
+ 	return 0;
+ }
+-late_initcall(mce_debugfs_init);
++late_initcall(mcheck_debugfs_init);
+ #endif
