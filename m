@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbZJPR0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbZJPRZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932855AbZJPR0V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbZJPRS0
+	id S1758168AbZJPRZX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZJPRS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:18:26 -0400
-Received: from kroah.org ([198.145.64.141]:48498 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:18:27 -0400
+Received: from kroah.org ([198.145.64.141]:48503 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753674AbZJPRSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 13:18:24 -0400
-X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:11:55 2009
-Message-Id: <20091016171155.269801577@linux.site>
+	id S1753789AbZJPRSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 13:18:25 -0400
+X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:11:56 2009
+Message-Id: <20091016171155.847930984@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:10 -0700
+Date: Fri, 16 Oct 2009 10:10:11 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Joris van Rantwijk <jorispubl@xs4all.nl>,
-       Johan Hovold <jhovold@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [17/46] USB: Fix throttling in generic usbserial driver
+       Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [18/46] USB: storage: When a device returns no sense data, call it a Hardware Error
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=usb-fix-throttling-in-generic-usbserial-driver.patch
+Content-Disposition: inline; filename=usb-storage-when-a-device-returns-no-sense-data-call-it-a-hardware-error.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,33 +30,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Joris van Rantwijk <jorispubl@xs4all.nl>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 63a9609513007537a0b23ac511fd73f9bd609ea0 upstream.
+commit f1a0743bc0e7a30c032b1eb78f6a2b0f805b4597 upstream.
 
-The generic usbserial driver in Linux 2.6.31 halts its receiving
-channel in response to throttle requests from the line discipline.
-Unfortunately it drops the contents of the first URB received after
-throttling takes effect. This patch corrects that problem.
+This patch (as1294) fixes a problem that has plagued users for several
+kernel releases.  Some USB mass-storage devices don't return any sense
+data when they encounter certain kinds of errors.  The SCSI layer
+interprets this to mean that the operation should be retried, and the
+same thing happens -- over and over again with no limit.  In some
+circumstances (such as when a bus reset occurs) that is the right
+thing to do, but not here.
 
-Signed-off-by: Joris van Rantwijk <jorispubl@xs4all.nl>
-Acked-by: Johan Hovold <jhovold@gmail.com>
+The patch checks for this condition (a transport failure with no sense
+data) and changes the result code to DID_ERROR and the sense code to
+Hardware Error.  This does get only a limited number of retries, and
+so the command will fail relatively quickly instead of getting stuck
+in an infinite loop.
+
+This fixes a large part of Bugzilla #14118.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Mantas Mikulenas <grawity@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/generic.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/storage/transport.c |   29 ++++++++++++++++++++++-------
+ 1 file changed, 22 insertions(+), 7 deletions(-)
 
---- a/drivers/usb/serial/generic.c
-+++ b/drivers/usb/serial/generic.c
-@@ -530,7 +530,7 @@ void usb_serial_generic_unthrottle(struc
+--- a/drivers/usb/storage/transport.c
++++ b/drivers/usb/storage/transport.c
+@@ -768,17 +768,32 @@ void usb_stor_invoke_transport(struct sc
+ 		/* set the result so the higher layers expect this data */
+ 		srb->result = SAM_STAT_CHECK_CONDITION;
  
- 	if (was_throttled) {
- 		/* Resume reading from device */
--		usb_serial_generic_resubmit_read_urb(port, GFP_KERNEL);
-+		flush_and_resubmit_read_urb(port);
+-		/* If things are really okay, then let's show that.  Zero
+-		 * out the sense buffer so the higher layers won't realize
+-		 * we did an unsolicited auto-sense. */
+-		if (result == USB_STOR_TRANSPORT_GOOD &&
+-			/* Filemark 0, ignore EOM, ILI 0, no sense */
++		/* We often get empty sense data.  This could indicate that
++		 * everything worked or that there was an unspecified
++		 * problem.  We have to decide which.
++		 */
++		if (	/* Filemark 0, ignore EOM, ILI 0, no sense */
+ 				(srb->sense_buffer[2] & 0xaf) == 0 &&
+ 			/* No ASC or ASCQ */
+ 				srb->sense_buffer[12] == 0 &&
+ 				srb->sense_buffer[13] == 0) {
+-			srb->result = SAM_STAT_GOOD;
+-			srb->sense_buffer[0] = 0x0;
++
++			/* If things are really okay, then let's show that.
++			 * Zero out the sense buffer so the higher layers
++			 * won't realize we did an unsolicited auto-sense.
++			 */
++			if (result == USB_STOR_TRANSPORT_GOOD) {
++				srb->result = SAM_STAT_GOOD;
++				srb->sense_buffer[0] = 0x0;
++
++			/* If there was a problem, report an unspecified
++			 * hardware error to prevent the higher layers from
++			 * entering an infinite retry loop.
++			 */
++			} else {
++				srb->result = DID_ERROR << 16;
++				srb->sense_buffer[2] = HARDWARE_ERROR;
++			}
+ 		}
  	}
- }
  
 
 
