@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbZJPHYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbZJPH0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756792AbZJPHYY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 03:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbZJPHYX
+	id S1756827AbZJPH0n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 03:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbZJPH0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 03:24:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38834 "EHLO hera.kernel.org"
+	Fri, 16 Oct 2009 03:26:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50695 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756055AbZJPHYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 03:24:21 -0400
-Date: Fri, 16 Oct 2009 07:22:27 GMT
-From: tip-bot for Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rdreier@cisco.com, rolandd@cisco.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rdreier@cisco.com, tglx@linutronix.de, rolandd@cisco.com, mingo@elte.hu
-In-Reply-To: <adaeip473qt.fsf@cisco.com>
-References: <adaeip473qt.fsf@cisco.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Don't print number of MCE banks for every CPU
-Message-ID: <tip-93ae5012a79b11e7fc855b52c7ce1e16fe1540b0@git.kernel.org>
-Git-Commit-ID: 93ae5012a79b11e7fc855b52c7ce1e16fe1540b0
-X-Mailer: tip-git-log-daemon
+	id S1756622AbZJPH0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 03:26:42 -0400
+Date: Fri, 16 Oct 2009 09:25:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: david@lang.hm
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Greg KH <gregkh@suse.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: removing existing working drivers via staging
+Message-ID: <20091016072555.GB30019@elte.hu>
+References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm> <200910151942.40259.bzolnier@gmail.com> <20091015174932.GA3595@suse.de> <200910152020.13080.bzolnier@gmail.com> <20091015184656.GA29858@suse.de> <alpine.DEB.2.00.0910151200100.22169@asgard.lang.hm> <4AD77AC3.7040905@s5r6.in-berlin.de> <alpine.DEB.2.00.0910151244561.22169@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 16 Oct 2009 07:22:27 +0000 (UTC)
+In-Reply-To: <alpine.DEB.2.00.0910151244561.22169@asgard.lang.hm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  93ae5012a79b11e7fc855b52c7ce1e16fe1540b0
-Gitweb:     http://git.kernel.org/tip/93ae5012a79b11e7fc855b52c7ce1e16fe1540b0
-Author:     Roland Dreier <rdreier@cisco.com>
-AuthorDate: Thu, 15 Oct 2009 14:21:14 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 16 Oct 2009 09:20:03 +0200
 
-x86: Don't print number of MCE banks for every CPU
+* david@lang.hm <david@lang.hm> wrote:
 
-The MCE initialization code explicitly says it doesn't handle
-asymmetric configurations where different CPUs support different
-numbers of MCE banks, and it prints a big warning in that case.
+>> Hence the timeline of 3 releases per <20091015164726.GA10125@suse.de>
+>> affects developers/ janitors much more than end users.
+>
+> it may be that I've jumped the gun here with my concerns, and should 
+> just wait until something actually gets moved to staging to see what 
+> the actual policies are going to be in practice, but the policies as 
+> written seem to be very loose.
 
-Therefore, printing the "mce: CPU supports <x> MCE banks"
-message into the kernel log for every CPU is pure redundancy
-that clutters the log significantly for systems with lots of
-CPUs.
+Note that nothing has changed: the same fine folks who worked for 15+ 
+years to give you the OS with the most built-in drivers on this planet 
+(more than 3000 drivers today and counting) are handling this too.
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
-LKML-Reference: <adaeip473qt.fsf@cisco.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/cpu/mcheck/mce.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Please dont assume that this trend is now being reversed - to the 
+contrary - Linux being able to boot out of box on 99% of the systems
+out there is one of our biggest strengths.
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index b1598a9..721a77c 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -1214,7 +1214,8 @@ static int __cpuinit mce_cap_init(void)
- 	rdmsrl(MSR_IA32_MCG_CAP, cap);
- 
- 	b = cap & MCG_BANKCNT_MASK;
--	printk(KERN_INFO "mce: CPU supports %d MCE banks\n", b);
-+	if (!banks)
-+		printk(KERN_INFO "mce: CPU supports %d MCE banks\n", b);
- 
- 	if (b > MAX_NR_BANKS) {
- 		printk(KERN_WARNING
+	Ingo
