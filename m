@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZJPRVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbZJPRVD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756199AbZJPRVg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZJPRVe
+	id S1756819AbZJPRVD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:21:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbZJPRVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:21:34 -0400
-Received: from kroah.org ([198.145.64.141]:48632 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:21:00 -0400
+Received: from kroah.org ([198.145.64.141]:48660 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755171AbZJPRSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 13:18:41 -0400
-X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:06 2009
-Message-Id: <20091016171206.189773932@linux.site>
+	id S1755235AbZJPRSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 13:18:43 -0400
+X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:07 2009
+Message-Id: <20091016171206.776466941@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:30 -0700
+Date: Fri, 16 Oct 2009 10:10:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>, Colin Leroy <colin@colino.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [37/46] macintosh: Dont assume i2c device probing always succeeds
+       Jean Delvare <khali@linux-fr.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [38/46] i2c: Hide probe errors caused by ACPI resource conflicts
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=macintosh-don-t-assume-i2c-device-probing-always-succeeds.patch
+Content-Disposition: inline; filename=i2c-hide-probe-errors-caused-by-acpi-resource-conflicts.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,125 +31,120 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Jean Delvare <khali@linux-fr.org>
 
-commit 6f6b35e133fe4313277b30fc1a7ea313875ea6c9 upstream.
+commit 18669eabde2ff5fc446e72e043f0539059763438 upstream.
 
-If i2c device probing fails, then there is no driver to dereference
-after calling i2c_new_device(). Stop assuming that probing will always
-succeed, to avoid NULL pointer dereferences. We have an easier access
-to the driver anyway.
+When an ACPI resource conflict is detected, error messages are already
+printed by ACPI. There's no point in causing the driver core to print
+more error messages, so return one of the error codes for which no
+message is printed.
+
+This fixes bug #14293:
+http://bugzilla.kernel.org/show_bug.cgi?id=14293
 
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Tested-by: Tim Shepard <shep@alum.mit.edu>
-Cc: Colin Leroy <colin@colino.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/macintosh/therm_adt746x.c           |    4 +++-
- drivers/macintosh/therm_pm72.c              |    4 +++-
- drivers/macintosh/windfarm_lm75_sensor.c    |    4 +++-
- drivers/macintosh/windfarm_max6690_sensor.c |    4 +++-
- drivers/macintosh/windfarm_smu_sat.c        |    4 +++-
- 5 files changed, 15 insertions(+), 5 deletions(-)
+ drivers/i2c/busses/i2c-amd756.c  |    2 +-
+ drivers/i2c/busses/i2c-amd8111.c |    4 +++-
+ drivers/i2c/busses/i2c-i801.c    |    4 +++-
+ drivers/i2c/busses/i2c-isch.c    |    2 +-
+ drivers/i2c/busses/i2c-piix4.c   |    4 ++--
+ drivers/i2c/busses/i2c-sis96x.c  |    2 +-
+ drivers/i2c/busses/i2c-viapro.c  |    2 +-
+ 7 files changed, 12 insertions(+), 8 deletions(-)
 
---- a/drivers/macintosh/therm_adt746x.c
-+++ b/drivers/macintosh/therm_adt746x.c
-@@ -124,6 +124,8 @@ read_reg(struct thermostat* th, int reg)
- 	return data;
- }
+--- a/drivers/i2c/busses/i2c-amd756.c
++++ b/drivers/i2c/busses/i2c-amd756.c
+@@ -364,7 +364,7 @@ static int __devinit amd756_probe(struct
+ 	error = acpi_check_region(amd756_ioport, SMB_IOSIZE,
+ 				  amd756_driver.name);
+ 	if (error)
+-		return error;
++		return -ENODEV;
  
-+static struct i2c_driver thermostat_driver;
-+
- static int
- attach_thermostat(struct i2c_adapter *adapter)
- {
-@@ -148,7 +150,7 @@ attach_thermostat(struct i2c_adapter *ad
- 	 * Let i2c-core delete that device on driver removal.
- 	 * This is safe because i2c-core holds the core_lock mutex for us.
- 	 */
--	list_add_tail(&client->detected, &client->driver->clients);
-+	list_add_tail(&client->detected, &thermostat_driver.clients);
- 	return 0;
- }
+ 	if (!request_region(amd756_ioport, SMB_IOSIZE, amd756_driver.name)) {
+ 		dev_err(&pdev->dev, "SMB region 0x%x already in use!\n",
+--- a/drivers/i2c/busses/i2c-amd8111.c
++++ b/drivers/i2c/busses/i2c-amd8111.c
+@@ -376,8 +376,10 @@ static int __devinit amd8111_probe(struc
+ 	smbus->size = pci_resource_len(dev, 0);
  
---- a/drivers/macintosh/therm_pm72.c
-+++ b/drivers/macintosh/therm_pm72.c
-@@ -286,6 +286,8 @@ struct fcu_fan_table	fcu_fans[] = {
- 	},
- };
+ 	error = acpi_check_resource_conflict(&dev->resource[0]);
+-	if (error)
++	if (error) {
++		error = -ENODEV;
+ 		goto out_kfree;
++	}
  
-+static struct i2c_driver therm_pm72_driver;
-+
- /*
-  * Utility function to create an i2c_client structure and
-  * attach it to one of u3 adapters
-@@ -318,7 +320,7 @@ static struct i2c_client *attach_i2c_chi
- 	 * Let i2c-core delete that device on driver removal.
- 	 * This is safe because i2c-core holds the core_lock mutex for us.
- 	 */
--	list_add_tail(&clt->detected, &clt->driver->clients);
-+	list_add_tail(&clt->detected, &therm_pm72_driver.clients);
- 	return clt;
- }
+ 	if (!request_region(smbus->base, smbus->size, amd8111_driver.name)) {
+ 		error = -EBUSY;
+--- a/drivers/i2c/busses/i2c-i801.c
++++ b/drivers/i2c/busses/i2c-i801.c
+@@ -732,8 +732,10 @@ static int __devinit i801_probe(struct p
+ 	}
  
---- a/drivers/macintosh/windfarm_lm75_sensor.c
-+++ b/drivers/macintosh/windfarm_lm75_sensor.c
-@@ -115,6 +115,8 @@ static int wf_lm75_probe(struct i2c_clie
- 	return rc;
- }
+ 	err = acpi_check_resource_conflict(&dev->resource[SMBBAR]);
+-	if (err)
++	if (err) {
++		err = -ENODEV;
+ 		goto exit;
++	}
  
-+static struct i2c_driver wf_lm75_driver;
-+
- static struct i2c_client *wf_lm75_create(struct i2c_adapter *adapter,
- 					     u8 addr, int ds1775,
- 					     const char *loc)
-@@ -157,7 +159,7 @@ static struct i2c_client *wf_lm75_create
- 	 * Let i2c-core delete that device on driver removal.
- 	 * This is safe because i2c-core holds the core_lock mutex for us.
- 	 */
--	list_add_tail(&client->detected, &client->driver->clients);
-+	list_add_tail(&client->detected, &wf_lm75_driver.clients);
- 	return client;
-  fail:
- 	return NULL;
---- a/drivers/macintosh/windfarm_max6690_sensor.c
-+++ b/drivers/macintosh/windfarm_max6690_sensor.c
-@@ -88,6 +88,8 @@ static int wf_max6690_probe(struct i2c_c
- 	return rc;
- }
+ 	err = pci_request_region(dev, SMBBAR, i801_driver.name);
+ 	if (err) {
+--- a/drivers/i2c/busses/i2c-isch.c
++++ b/drivers/i2c/busses/i2c-isch.c
+@@ -281,7 +281,7 @@ static int __devinit sch_probe(struct pc
+ 		return -ENODEV;
+ 	}
+ 	if (acpi_check_region(sch_smba, SMBIOSIZE, sch_driver.name))
+-		return -EBUSY;
++		return -ENODEV;
+ 	if (!request_region(sch_smba, SMBIOSIZE, sch_driver.name)) {
+ 		dev_err(&dev->dev, "SMBus region 0x%x already in use!\n",
+ 			sch_smba);
+--- a/drivers/i2c/busses/i2c-piix4.c
++++ b/drivers/i2c/busses/i2c-piix4.c
+@@ -168,7 +168,7 @@ static int __devinit piix4_setup(struct 
+ 	}
  
-+static struct i2c_driver wf_max6690_driver;
-+
- static struct i2c_client *wf_max6690_create(struct i2c_adapter *adapter,
- 					    u8 addr, const char *loc)
- {
-@@ -119,7 +121,7 @@ static struct i2c_client *wf_max6690_cre
- 	 * Let i2c-core delete that device on driver removal.
- 	 * This is safe because i2c-core holds the core_lock mutex for us.
- 	 */
--	list_add_tail(&client->detected, &client->driver->clients);
-+	list_add_tail(&client->detected, &wf_max6690_driver.clients);
- 	return client;
+ 	if (acpi_check_region(piix4_smba, SMBIOSIZE, piix4_driver.name))
+-		return -EBUSY;
++		return -ENODEV;
  
-  fail:
---- a/drivers/macintosh/windfarm_smu_sat.c
-+++ b/drivers/macintosh/windfarm_smu_sat.c
-@@ -194,6 +194,8 @@ static struct wf_sensor_ops wf_sat_ops =
- 	.owner		= THIS_MODULE,
- };
+ 	if (!request_region(piix4_smba, SMBIOSIZE, piix4_driver.name)) {
+ 		dev_err(&PIIX4_dev->dev, "SMBus region 0x%x already in use!\n",
+@@ -259,7 +259,7 @@ static int __devinit piix4_setup_sb800(s
  
-+static struct i2c_driver wf_sat_driver;
-+
- static void wf_sat_create(struct i2c_adapter *adapter, struct device_node *dev)
- {
- 	struct i2c_board_info info;
-@@ -222,7 +224,7 @@ static void wf_sat_create(struct i2c_ada
- 	 * Let i2c-core delete that device on driver removal.
- 	 * This is safe because i2c-core holds the core_lock mutex for us.
- 	 */
--	list_add_tail(&client->detected, &client->driver->clients);
-+	list_add_tail(&client->detected, &wf_sat_driver.clients);
- }
+ 	piix4_smba = ((smba_en_hi << 8) | smba_en_lo) & 0xffe0;
+ 	if (acpi_check_region(piix4_smba, SMBIOSIZE, piix4_driver.name))
+-		return -EBUSY;
++		return -ENODEV;
  
- static int wf_sat_probe(struct i2c_client *client,
+ 	if (!request_region(piix4_smba, SMBIOSIZE, piix4_driver.name)) {
+ 		dev_err(&PIIX4_dev->dev, "SMBus region 0x%x already in use!\n",
+--- a/drivers/i2c/busses/i2c-sis96x.c
++++ b/drivers/i2c/busses/i2c-sis96x.c
+@@ -280,7 +280,7 @@ static int __devinit sis96x_probe(struct
+ 
+ 	retval = acpi_check_resource_conflict(&dev->resource[SIS96x_BAR]);
+ 	if (retval)
+-		return retval;
++		return -ENODEV;
+ 
+ 	/* Everything is happy, let's grab the memory and set things up. */
+ 	if (!request_region(sis96x_smbus_base, SMB_IOSIZE,
+--- a/drivers/i2c/busses/i2c-viapro.c
++++ b/drivers/i2c/busses/i2c-viapro.c
+@@ -365,7 +365,7 @@ static int __devinit vt596_probe(struct 
+ found:
+ 	error = acpi_check_region(vt596_smba, 8, vt596_driver.name);
+ 	if (error)
+-		return error;
++		return -ENODEV;
+ 
+ 	if (!request_region(vt596_smba, 8, vt596_driver.name)) {
+ 		dev_err(&pdev->dev, "SMBus region 0x%x already in use!\n",
 
 
