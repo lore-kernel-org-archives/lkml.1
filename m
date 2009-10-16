@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbZJPPgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbZJPPjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932649AbZJPPgR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 11:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760713AbZJPPgP
+	id S1760713AbZJPPjh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 11:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760567AbZJPPjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 11:36:15 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:37452 "EHLO sssup.it"
+	Fri, 16 Oct 2009 11:39:37 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:49526 "EHLO sssup.it"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760698AbZJPPgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 11:36:10 -0400
-Subject: [RFC 0/12][PATCH] SCHED_DEADLINE (new version of SCHED_EDF)
+	id S1760431AbZJPPjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 11:39:36 -0400
+Subject: [RFC 1/12][PATCH] Extended scheduling parameters structure added.
 From: Raistlin <raistlin@linux.it>
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: raistlin@linux.it, linux-kernel <linux-kernel@vger.kernel.org>,
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        michael trimarchi <michael@evidence.eu.com>,
        Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>,
@@ -27,9 +27,11 @@ Cc: raistlin@linux.it, linux-kernel <linux-kernel@vger.kernel.org>,
        Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
        "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
        Juri Lelli <juri.lelli@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-2olyLWlhUBPiVLQjzAMB"
-Date: Fri, 16 Oct 2009 17:35:24 +0200
-Message-Id: <1255707324.6228.448.camel@Palantir>
+In-Reply-To: <1255707324.6228.448.camel@Palantir>
+References: <1255707324.6228.448.camel@Palantir>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-fSQKiV1GCtjJhkK/lUqv"
+Date: Fri, 16 Oct 2009 17:38:55 +0200
+Message-Id: <1255707535.6228.451.camel@Palantir>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,95 +39,73 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-2olyLWlhUBPiVLQjzAMB
+--=-fSQKiV1GCtjJhkK/lUqv
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi Peter, Hi all,
+An extended scheduling parameter structure, sched_param_ex, is defined in
+this commit, as the starting point for supporting task models more
+sophisticated than fixed-priority.
 
-Given all the comments and feedback we got, here it is the new version
-of our EDF patch, this time in a split series. :-)
+One that is both popular and (hopefully!) general enough is the so-called
+sporadic task model, in which tasks' computation is divided into instances,
+each one with:
+ * a (maximum/typical) execution time,
+ * a minimum interval between the activation of two consecutive instances,
+ * a time instant by which the computation of the instance must be complete=
+d.
 
-Special thanks to all the one that gave us any kind of suggestion,
-especially during last RTLWS in Dresden.
+The new sched_param_ex reflects this model, and thus allows for better
+specification of time sensitive workloads typical, for example, in real-tim=
+e,
+control and/or continuous media applications.
 
-The rationale/motivation for the new scheduler is the same of the first
-e-mail (http://lwn.net/Articles/353797/), thus I only add some new and
-(I think) interesting links:
- - Ericsson posting about SCHED_EDF/DEADLINE
-    https://labs.ericsson.com/blog/making-linux-more-real-time
+Signed-off-by: Raistlin <raistlin@linux.it>
+---
+ include/linux/sched.h |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
- - The slides we presented at RTLWS in Dresden:
-    http://retis.sssup.it/people/faggioli/sched_deadline/rtlw_EDF.pdf
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 75e6e60..ac9837c 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -94,6 +94,14 @@ struct sched_param {
+=20
+ #include <asm/processor.h>
+=20
++struct sched_param_ex {
++	int sched_priority;
++	struct timespec sched_runtime;
++	struct timespec sched_deadline;
++	struct timespec sched_period;
++	int sched_flags;
++};
++
+ struct exec_domain;
+ struct futex_pi_state;
+ struct robust_list_head;
+--=20
+1.6.0.4
 
- - Luca Abeni's presentation about using deadline based reservation=20
-   schedulers for IRQ-Threads:
-    http://www.disi.unitn.it/~abeni/rtlws-slides.pdf
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
 
-Moreover, we moved the project on gitorious.org, therefore:
- http://gitorious.org/sched_deadline
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
 
-I am also setting up right now the Wiki section, where you can find some
-more detailed usage instructions, examples and overhead estimation:
- http://gitorious.org/sched_deadline/pages/Home
-
-Git repositories are up and running, and ready at:
-(mainline)
- git://gitorious.org/sched_deadline/linux-deadline.git sched-deadline=20
-
-(sched-devel)
- git://gitorious.org/sched_deadline/linux-deadline.git sched-devel-deadline
-
-(preempt-rt [*])
- git://gitorious.org/sched_deadline/linux-deadline.git rt-deadline
-
-The new project homepage is
- http://www.evidence.eu.com/sched_deadline.html
-
-Here the main changes we did, following what many of you --and mainly
-Peter-- suggested:
-- name changed from SCHED_EDF to SCHED_DEADLINE
-
-- SCHED_DEADLINE has higher priority than SCHED_FIFO/SCHED_RR
-
-- flags added in sched_param_ex to signal deadline misses
-  (in case of utilization > 100%) and/or budget overruns
-
-- new sched_*_ex prototypes, with a len field to accomodate the size of
-  sched_param_ex, trying to avoid further ABI issues if it changes
-
-- new syscall sched_wait_interval added. It behaves like clock_nanosleep
-  but, for a SCHED_DEADLINE task, it also represent the end of the
-  current instance (sched_yield no longer needed)
-
-- on fork, child starts but with 0 bandwidth (i.e., it does not start! :-D)
-
-- bug fixing :)
-
-Any feedback and contribution is welcome.
-
-Many thanks,
-
-             Dario Faggioli
-             Claudio Scordino
-             Michael Trimarchi
-
-[*] porting toward preempt-rt is work in progress. Code is there, but we
-are testing and fixing it, with the help of Luca and Nicola from
-Trento... So don't consider it as the final version!
-
-
---=-2olyLWlhUBPiVLQjzAMB
+--=-fSQKiV1GCtjJhkK/lUqv
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkrYkrwACgkQk4XaBE3IOsS/TQCcCBFlsWazx60DmP5hPOuqvnF5
-UnEAn25uvjprv5Pf+GCWVlX8yM3bRS9t
-=//gZ
+iEYEABECAAYFAkrYk48ACgkQk4XaBE3IOsRbJgCfVSe9I2hkbsPgIRtmWI/LsikX
+yYcAn0r5dsx8Qaaq3k1pnjVHCRj4/aTH
+=lop9
 -----END PGP SIGNATURE-----
 
---=-2olyLWlhUBPiVLQjzAMB--
+--=-fSQKiV1GCtjJhkK/lUqv--
 
