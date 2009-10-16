@@ -1,203 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbZJPT2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZJPT26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754472AbZJPT2e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 15:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbZJPT2d
+	id S1755256AbZJPT26 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 15:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZJPT25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 15:28:33 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:32106 "EHLO mx1.redhat.com"
+	Fri, 16 Oct 2009 15:28:57 -0400
+Received: from mail.lang.hm ([64.81.33.126]:45956 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752374AbZJPT2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 15:28:32 -0400
-From: Glauber Costa <glommer@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: [PATCH] v5: allow userspace to adjust kvmclock offset
-Date: Fri, 16 Oct 2009 15:28:36 -0400
-Message-Id: <1255721316-11777-1-git-send-email-glommer@redhat.com>
+	id S1753224AbZJPT25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 15:28:57 -0400
+Date: Fri, 16 Oct 2009 12:28:49 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+cc: Justin Piszcz <jpiszcz@lucidpixels.com>,
+       linux-raid <linux-raid@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Raid reconstructing and process hanging in D state
+In-Reply-To: <Pine.LNX.4.64.0910160840400.2463@praktifix.dwd.de>
+Message-ID: <alpine.DEB.2.00.0910161226170.22169@asgard.lang.hm>
+References: <Pine.LNX.4.64.0910160703260.2463@praktifix.dwd.de> <alpine.DEB.2.00.0910160436160.2841@p34.internal.lan> <Pine.LNX.4.64.0910160840400.2463@praktifix.dwd.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we migrate a kvm guest that uses pvclock between two hosts, we may
-suffer a large skew. This is because there can be significant differences
-between the monotonic clock of the hosts involved. When a new host with
-a much larger monotonic time starts running the guest, the view of time
-will be significantly impacted.
+On Fri, 16 Oct 2009, Holger Kiehl wrote:
 
-Situation is much worse when we do the opposite, and migrate to a host with
-a smaller monotonic clock.
+> On Fri, 16 Oct 2009, Justin Piszcz wrote:
+>> Hi,
+>> 
+>> I have the same problem with mdadm/raid-1, if you do not limit the speed in 
+>> the speed_limit_min paramter, it will starve the I/O from all other 
+>> processes and result in the same problem you are having.
+>> 
+> But in my case speed_limit_min was set to 1000 and speed_limit_max was 200000
+> (ie. the default) and this still caused all process to hang in D-state. Only
+> lowering speed_limit_max helped to make the system responsive again.
 
-This proposed ioctl will allow userspace to inform us what is the monotonic
-clock value in the source host, so we can keep the time skew short, and
-more importantly, never goes backwards. Userspace may also need to trigger
-the current data, since from the first migration onwards, it won't be
-reflected by a simple call to clock_gettime() anymore.
+yep, MD raid will use every bit of disk bandwidth there is.
 
-[ v2: uses a struct with a padding ]
-[ v3: provide an ioctl to get clock data too ]
-[ v4: used fixed-width signed type for delta ]
-[ v5: nitpick fixes, documentation update, and capability bit ]
+even worse, the speed_limit_* appears to be per-drive, not per array 
+(although the /proc/mdstat info is per array), so if you have lots of 
+drives on one controller card it will kill the system and still think that 
+it's not maxed out.
 
-Signed-off-by: Glauber Costa <glommer@redhat.com>
----
- Documentation/kvm/api.txt       |   34 ++++++++++++++++++++++++++++++++++
- arch/x86/include/asm/kvm_host.h |    1 +
- arch/x86/kvm/x86.c              |   36 +++++++++++++++++++++++++++++++++++-
- include/linux/kvm.h             |    8 ++++++++
- 4 files changed, 78 insertions(+), 1 deletions(-)
+I did a 45 disk array hooked into two PCI slots and found that I needed to 
+set speed_limit_max _very_ low to avoid this sort of problem.
 
-diff --git a/Documentation/kvm/api.txt b/Documentation/kvm/api.txt
-index 5a4bc8c..2353c4b 100644
---- a/Documentation/kvm/api.txt
-+++ b/Documentation/kvm/api.txt
-@@ -593,6 +593,40 @@ struct kvm_irqchip {
- 	} chip;
- };
- 
-+4.27 KVM_GET_CLOCK
-+
-+Capability: KVM_CAP_ADJUST_CLOCK
-+Architectures: x86
-+Type: vm ioctl
-+Parameters: struct kvm_clock_data (out)
-+Returns: 0 on success, -1 on error
-+
-+Gets the current timestamp of kvmclock as seen by the current guest. In
-+conjunction with KVM_SET_CLOCK, it is used to ensure monotonicity on scenarios
-+such as migration.
-+
-+struct kvm_clock_data {
-+	__u64 clock;  /* kvmclock current value */
-+	__u64 pad[2];
-+};
-+
-+4.28 KVM_SET_CLOCK
-+
-+Capability: KVM_CAP_ADJUST_CLOCK
-+Architectures: x86
-+Type: vm ioctl
-+Parameters: struct kvm_clock_data (in)
-+Returns: 0 on success, -1 on error
-+
-+Sets the current timestamp of kvmclock to the valued specific in its parameter.
-+In conjunction with KVM_GET_CLOCK, it is used to ensure monotonicity on scenarios
-+such as migration.
-+
-+struct kvm_clock_data {
-+	__u64 clock;  /* kvmclock current value */
-+	__u64 pad[2];
-+};
-+
- 5. The kvm_run structure
- 
- Application code obtains a pointer to the kvm_run structure by
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index d838922..d759a1f 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -412,6 +412,7 @@ struct kvm_arch{
- 	unsigned long irq_sources_bitmap;
- 	unsigned long irq_states[KVM_IOAPIC_NUM_PINS];
- 	u64 vm_init_tsc;
-+	s64 kvmclock_offset;
- };
- 
- struct kvm_vm_stat {
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 9b96953..a6fc13a 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -677,7 +677,8 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
- 	/* With all the info we got, fill in the values */
- 
- 	vcpu->hv_clock.system_time = ts.tv_nsec +
--				     (NSEC_PER_SEC * (u64)ts.tv_sec);
-+				     (NSEC_PER_SEC * (u64)ts.tv_sec) + v->kvm->arch.kvmclock_offset;
-+
- 	/*
- 	 * The interface expects us to write an even number signaling that the
- 	 * update is finished. Since the guest won't see the intermediate
-@@ -1224,6 +1225,7 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_PIT2:
- 	case KVM_CAP_PIT_STATE2:
- 	case KVM_CAP_SET_IDENTITY_MAP_ADDR:
-+	case KVM_CAP_ADJUST_CLOCK:
- 		r = 1;
- 		break;
- 	case KVM_CAP_COALESCED_MMIO:
-@@ -2421,6 +2423,38 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 		r = 0;
- 		break;
- 	}
-+	case KVM_SET_CLOCK: {
-+		struct timespec now;
-+		struct kvm_clock_data user_ns;
-+		u64 now_ns;
-+		s64 delta;
-+
-+		r = -EFAULT;
-+		if (copy_from_user(&user_ns, argp, sizeof(user_ns)))
-+			goto out;
-+
-+		r = 0;
-+		ktime_get_ts(&now);
-+		now_ns = timespec_to_ns(&now);
-+		delta = user_ns.clock - now_ns;
-+		kvm->arch.kvmclock_offset = delta;
-+		break;
-+	}
-+	case KVM_GET_CLOCK: {
-+		struct timespec now;
-+		struct kvm_clock_data user_ns;
-+		u64 now_ns;
-+
-+		ktime_get_ts(&now);
-+		now_ns = timespec_to_ns(&now);
-+		user_ns.clock = kvm->arch.kvmclock_offset + now_ns;
-+
-+		if (copy_to_user(argp, &user_ns, sizeof(user_ns)))
-+			r =  -EFAULT;
-+
-+		break;
-+	}
-+
- 	default:
- 		;
- 	}
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index f8f8900..7fb04a9 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -436,6 +436,7 @@ struct kvm_ioeventfd {
- #endif
- #define KVM_CAP_IOEVENTFD 36
- #define KVM_CAP_SET_IDENTITY_MAP_ADDR 37
-+#define KVM_CAP_ADJUST_CLOCK 38
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
-@@ -497,6 +498,11 @@ struct kvm_irqfd {
- 	__u8  pad[20];
- };
- 
-+struct kvm_clock_data {
-+	__u64 clock;
-+	__u64 pad[2];
-+};
-+
- /*
-  * ioctls for VM fds
-  */
-@@ -546,6 +552,8 @@ struct kvm_irqfd {
- #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
- #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
- #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
-+#define KVM_SET_CLOCK		  _IOW(KVMIO, 0x7a, struct kvm_clock_data)
-+#define KVM_GET_CLOCK		  _IOR(KVMIO, 0x7b, struct kvm_clock_data)
- 
- /*
-  * ioctls for vcpu fds
--- 
-1.6.2.2
+David Lang
 
+>> But for me I'm not sure about the reconstruction-- this happens for me 
+>> during a raid verify/check.
+>> 
+> This was also the case for me, during a raid verify/check.
+>
+> Holger
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
