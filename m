@@ -1,179 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932686AbZJPAlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935624AbZJPAua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932686AbZJPAlj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 20:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbZJPAlj
+	id S935624AbZJPAua (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 20:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762705AbZJPAu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 20:41:39 -0400
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:21240 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755361AbZJPAli (ORCPT
+	Thu, 15 Oct 2009 20:50:29 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:35967 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758836AbZJPAu2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 20:41:38 -0400
-X-Trace: 274578987/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.89.236/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.89.236
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEAIhd10pPRVns/2dsb2JhbACBUtc8hDAE
-X-IronPort-AV: E=Sophos;i="4.44,569,1249254000"; 
-   d="scan'208";a="274578987"
-Date: Fri, 16 Oct 2009 01:41:01 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Rafael Wysocki <rjw@sisk.pl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 4/9 v2] swap_info: miscellaneous minor cleanups
-In-Reply-To: <Pine.LNX.4.64.0910150149160.3291@sister.anvils>
-Message-ID: <Pine.LNX.4.64.0910160137060.15411@sister.anvils>
-References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
- <Pine.LNX.4.64.0910150149160.3291@sister.anvils>
+	Thu, 15 Oct 2009 20:50:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=YfeC/LQlil3ShOdsSkYZb3PdakGv2xH98V+rh6pE0Q5zEW4X+x8rkhbZ4+71mqludz
+         0Wh/1Ooz0zLsypLl6518KoBNmrNH4iK66+E20/ZYZnaRaH2Hf0RFFg/+bUL1E7/DV9/P
+         smYCat8chgXkeLqd57rtK+KCQ+Lw8ID3Z45yo=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <alpine.DEB.2.00.0910151911490.10951@p34.internal.lan>
+References: <alpine.DEB.2.00.0910151655590.4808@p34.internal.lan> 
+	<1255645796-29944-1-git-send-email-bdonlan@gmail.com> <alpine.DEB.2.00.0910151831020.15317@p34.internal.lan> 
+	<alpine.DEB.2.00.0910151852510.8329@p34.internal.lan> <alpine.DEB.2.00.0910151855320.3244@p34.internal.lan> 
+	<3e8340490910151605j357b303btb26505a2c04cf2d4@mail.gmail.com> 
+	<alpine.DEB.2.00.0910151911490.10951@p34.internal.lan>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Thu, 15 Oct 2009 20:49:32 -0400
+Message-ID: <3e8340490910151749r583d46c0o212e1f4ff7eac955@mail.gmail.com>
+Subject: Re: [PATCH] Add quirk for ACPI reboots on Intel DP55KG boards.
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: bruce.w.allan@intel.com, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move CONFIG_HIBERNATION's swapdev_block() into the main CONFIG_HIBERNATION
-block, remove extraneous whitespace and return, fix typo in a comment.
+On Thu, Oct 15, 2009 at 7:30 PM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
-v2 fixes mistaken description above, thank you KAMEZAWA-san.
+> Same, all methods fail, :(
+>
+> Justin.
 
- mm/swapfile.c |   51 ++++++++++++++++++++++--------------------------
- 1 file changed, 24 insertions(+), 27 deletions(-)
+Was there a message on dmesg about setting the reboot type?
+dmesg | grep 'series board detected'
 
---- si3/mm/swapfile.c	2009-10-14 21:26:22.000000000 +0100
-+++ si4/mm/swapfile.c	2009-10-14 21:26:32.000000000 +0100
-@@ -519,9 +519,9 @@ swp_entry_t get_swap_page_of_type(int ty
- 	return (swp_entry_t) {0};
- }
- 
--static struct swap_info_struct * swap_info_get(swp_entry_t entry)
-+static struct swap_info_struct *swap_info_get(swp_entry_t entry)
- {
--	struct swap_info_struct * p;
-+	struct swap_info_struct *p;
- 	unsigned long offset, type;
- 
- 	if (!entry.val)
-@@ -599,7 +599,7 @@ static int swap_entry_free(struct swap_i
-  */
- void swap_free(swp_entry_t entry)
- {
--	struct swap_info_struct * p;
-+	struct swap_info_struct *p;
- 
- 	p = swap_info_get(entry);
- 	if (p) {
-@@ -629,7 +629,6 @@ void swapcache_free(swp_entry_t entry, s
- 		}
- 		spin_unlock(&swap_lock);
- 	}
--	return;
- }
- 
- /*
-@@ -783,6 +782,21 @@ int swap_type_of(dev_t device, sector_t
- }
- 
- /*
-+ * Get the (PAGE_SIZE) block corresponding to given offset on the swapdev
-+ * corresponding to given index in swap_info (swap type).
-+ */
-+sector_t swapdev_block(int type, pgoff_t offset)
-+{
-+	struct block_device *bdev;
-+
-+	if ((unsigned int)type >= nr_swapfiles)
-+		return 0;
-+	if (!(swap_info[type]->flags & SWP_WRITEOK))
-+		return 0;
-+	return map_swap_page(swp_entry(type, offset), &bdev);
-+}
-+
-+/*
-  * Return either the total number of swap pages of given type, or the number
-  * of free pages of that type (depending on @free)
-  *
-@@ -805,7 +819,7 @@ unsigned int count_swap_pages(int type,
- 	spin_unlock(&swap_lock);
- 	return n;
- }
--#endif
-+#endif /* CONFIG_HIBERNATION */
- 
- /*
-  * No need to decide whether this PTE shares the swap entry with others,
-@@ -1317,23 +1331,6 @@ sector_t map_swap_page(swp_entry_t entry
- 	}
- }
- 
--#ifdef CONFIG_HIBERNATION
--/*
-- * Get the (PAGE_SIZE) block corresponding to given offset on the swapdev
-- * corresponding to given index in swap_info (swap type).
-- */
--sector_t swapdev_block(int type, pgoff_t offset)
--{
--	struct block_device *bdev;
--
--	if ((unsigned int)type >= nr_swapfiles)
--		return 0;
--	if (!(swap_info[type]->flags & SWP_WRITEOK))
--		return 0;
--	return map_swap_page(swp_entry(type, offset), &bdev);
--}
--#endif /* CONFIG_HIBERNATION */
--
- /*
-  * Free all of a swapdev's extent information
-  */
-@@ -1525,12 +1522,12 @@ bad_bmap:
- 
- SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
- {
--	struct swap_info_struct * p = NULL;
-+	struct swap_info_struct *p = NULL;
- 	unsigned short *swap_map;
- 	struct file *swap_file, *victim;
- 	struct address_space *mapping;
- 	struct inode *inode;
--	char * pathname;
-+	char *pathname;
- 	int i, type, prev;
- 	int err;
- 
-@@ -1782,7 +1779,7 @@ late_initcall(max_swapfiles_check);
-  */
- SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
- {
--	struct swap_info_struct * p;
-+	struct swap_info_struct *p;
- 	char *name = NULL;
- 	struct block_device *bdev = NULL;
- 	struct file *swap_file = NULL;
-@@ -2117,7 +2114,7 @@ void si_swapinfo(struct sysinfo *val)
-  */
- static int __swap_duplicate(swp_entry_t entry, bool cache)
- {
--	struct swap_info_struct * p;
-+	struct swap_info_struct *p;
- 	unsigned long offset, type;
- 	int result = -EINVAL;
- 	int count;
-@@ -2186,7 +2183,7 @@ void swap_duplicate(swp_entry_t entry)
- /*
-  * @entry: swap entry for which we allocate swap cache.
-  *
-- * Called when allocating swap cache for exising swap entry,
-+ * Called when allocating swap cache for existing swap entry,
-  * This can return error codes. Returns 0 at success.
-  * -EBUSY means there is a swap cache.
-  * Note: return code is different from swap_duplicate().
+If not, please dump the DMI identification values Linux is using like so:
+for i in /sys/class/dmi/id/*; do if [ -f $i ]; then echo -n "$i \"";
+cat $i | tr -d '\n'; echo '"'; fi; done
