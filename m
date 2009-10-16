@@ -1,67 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbZJPI6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757657AbZJPJBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757644AbZJPI6Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 04:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757598AbZJPI6Z
+	id S1757657AbZJPJBh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 05:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbZJPJBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 04:58:25 -0400
-Received: from k66.ru ([87.224.128.21]:49854 "EHLO k66.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757516AbZJPI6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 04:58:17 -0400
-Date: Fri, 16 Oct 2009 14:57:39 +0600
-From: Andrey Rahmatullin <wrar@altlinux.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: drivers/staging/rt2860 doesn't compile
-Message-ID: <20091016085738.GG19095@wrars-comp.wrarsdomain>
-References: <20091014063824.GD6298@wrars-comp.wrarsdomain>
- <20091014182729.GC19095@wrars-comp.wrarsdomain>
+	Fri, 16 Oct 2009 05:01:36 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:56186 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbZJPJBf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 05:01:35 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Huang Ying <ying.huang@intel.com>
+Subject: Re: [RFC 1/2] Unified UUID/GUID definition
+Date: Fri, 16 Oct 2009 11:03:40 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.31.1; KDE/4.3.2; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1255501805.6047.1192.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1255501805.6047.1192.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="DNUSDXU7R7AVVM8C"
-Content-Disposition: inline
-In-Reply-To: <20091014182729.GC19095@wrars-comp.wrarsdomain>
-X-Operating-System: ALT Linux Sisyphus
-X-Jabber-Id: wrar@altlinux.org
-User-Agent: Mutt/1.5.20 (2009-06-23)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910161103.40689.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Huang,
 
---DNUSDXU7R7AVVM8C
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+thanks for having incorporated my comments into this second round of patches. 
+A one more comment inline.
 
-On Thu, Oct 15, 2009 at 12:27:29AM +0600, Andrey Rahmatullin wrote:
-> Even after trivial fix (including <linux/sched.h> into
-> drivers/staging/rt2860/rt_linux.h) the driver doesn't compile:
->=20
-> drivers/staging/rt2860/rt_main_dev.c: In function 'rt_ieee80211_if_setup':
-> drivers/staging/rt2860/rt_main_dev.c:691: error: 'struct net_device' has
-> no member named 'wireless_handlers'
-For the archives: it just means that CONFIG_WIRELESS_EXT should be enabled.
+On Wednesday 14 October 2009 08:30:05 Huang Ying wrote:
+> There are many different UUID/GUID definitions in kernel, such as that
+> in EFI, many file systems, some drivers, etc. Every kernel components
+> need UUID/GUID has its own definition. This patch provides a unified
+> definition for UUID/GUID.
+> 
+> UUID is defined via typedef. This makes that UUID appears more like a
+> preliminary type, and makes the data type explicit (comparing with
+> implicit "u8 uuid[16]").
+> 
+> The binary representation of UUID/GUID can be little-endian (used by
+> EFI, etc) or big-endian (defined by RFC4122), so both is defined.
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> ---
+>  include/linux/uuid.h |   59
+>  +++++++++++++++++++++++++++++++++++++++++++++++++++ lib/Makefile         |
+>     2 -
+>  lib/uuid.c           |   36 +++++++++++++++++++++++++++++++
+>  3 files changed, 96 insertions(+), 1 deletion(-)
+>  create mode 100644 include/linux/uuid.h
+>  create mode 100644 lib/uuid.c
+> 
+> --- /dev/null
+> +++ b/include/linux/uuid.h
+> @@ -0,0 +1,59 @@
+> +/*
+> + * Unified UUID/GUID definition
+> + *
+> + * Copyright (C) 2009, Intel Corp.
+> + *	Huang Ying <ying.huang@intel.com>
+> + *
+> + * This file is released under the GPLv2.
+> + */
+> +
+> +#ifndef _LINUX_UUID_H_
+> +#define _LINUX_UUID_H_
+> +
+> +#include <linux/types.h>
+> +#include <linux/string.h>
+> +
+> +typedef struct {
+> +	__u8 b[16];
+> +} uuid_le;
+> +
+> +typedef struct {
+> +	__u8 b[16];
+> +} uuid_be;
+> +
+> +#define UUID_LE(a, b, c, d0, d1, d2, d3, d4, d5, d6, d7)		\
+> +((uuid_le)								\
+> +{{ (a) & 0xff, ((a) >> 8) & 0xff, ((a) >> 16) & 0xff, ((a) >> 24) & 0xff,
+>  \ +   (b) & 0xff, ((b) >> 8) & 0xff,					\
+> +   (c) & 0xff, ((c) >> 8) & 0xff,					\
+> +   (d0), (d1), (d2), (d3), (d4), (d5), (d6), (d7) }})
+> +
+> +#define UUID_BE(a, b, c, d0, d1, d2, d3, d4, d5, d6, d7)		\
+> +((uuid_be)								\
+> +{{ ((a) >> 24) & 0xff, ((a) >> 16) & 0xff, ((a) >> 8) & 0xff, (a) & 0xff,
+>  \ +   ((b) >> 8) & 0xff, (b) & 0xff,					\
+> +   ((c) >> 8) & 0xff, (c) & 0xff,					\
+> +   (d0), (d1), (d2), (d3), (d4), (d5), (d6), (d7) }})
+> +
+> +#define NULL_UUID_LE							\
+> +	UUID_LE(0x00000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00,	\
+> +		0x00, 0x00, 0x00, 0x00)
+> +
+> +#define NULL_UUID_BE							\
+> +	UUID_BE(0x00000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00,	\
+> +		0x00, 0x00, 0x00, 0x00)
+> +
+> +static inline int uuid_le_cmp(const uuid_le u1, const uuid_le u2)
+> +{
+> +	return memcmp(&u1, &u2, sizeof(uuid_le));
+> +}
+> +
+> +static inline int uuid_be_cmp(const uuid_be u1, const uuid_be u2)
+> +{
+> +	return memcmp(&u1, &u2, sizeof(uuid_be));
+> +}
 
+Shouldn't you pass pointers to those functions instead ?
 
---=20
-WBR, wRAR (ALT Linux Team)
+It would also be nice to have a single uuid_cmp function. Would it be possible 
+to use typeof(), __builtin_types_compatible_p() and BUILD_BUG_ON_ZERO magic to 
+make sure both arguments are of the same type and one of uuid_be and uuid_le ? 
+It might no work with the Intel compiler though.
 
---DNUSDXU7R7AVVM8C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+> +extern void uuid_le_gen(uuid_le *u);
+> +extern void uuid_be_gen(uuid_be *u);
+> +
+> +#endif
+> --- a/lib/Makefile
+> +++ b/lib/Makefile
+> @@ -21,7 +21,7 @@ lib-y	+= kobject.o kref.o klist.o
+> 
+>  obj-y += bcd.o div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o
+>  \ bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o \ -	
+>  string_helpers.o gcd.o
+> +	 string_helpers.o gcd.o uuid.o
+> 
+>  ifeq ($(CONFIG_DEBUG_KOBJECT),y)
+>  CFLAGS_kobject.o += -DDEBUG
+> --- /dev/null
+> +++ b/lib/uuid.c
+> @@ -0,0 +1,36 @@
+> +/*
+> + * Unified UUID/GUID definition
+> + *
+> + * Copyright (C) 2009, Intel Corp.
+> + *	Huang Ying <ying.huang@intel.com>
+> + *
+> + * This file is released under the GPLv2.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/uuid.h>
+> +#include <linux/random.h>
+> +
+> +static void __uuid_gen_common(__u8 b[16])
+> +{
+> +	get_random_bytes(b, 16);
+> +	/* reversion 0b10 */
+> +	b[8] = (b[8] & 0x3F) | 0x80;
+> +}
+> +
+> +void uuid_le_gen(uuid_le *lu)
+> +{
+> +	__uuid_gen_common(lu->b);
+> +	/* version 4 : random generation */
+> +	lu->b[7] = (lu->b[7] & 0x0F) | 0x40;
+> +}
+> +EXPORT_SYMBOL_GPL(uuid_le_gen);
+> +
+> +void uuid_be_gen(uuid_be *bu)
+> +{
+> +	__uuid_gen_common(bu->b);
+> +	/* version 4 : random generation */
+> +	bu->b[6] = (bu->b[6] & 0x0F) | 0x40;
+> +}
+> +EXPORT_SYMBOL_GPL(uuid_be_gen);
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBCAAGBQJK2DWCAAoJEOih81koZvPBDrUH+QE1w3IBWXNDAT/WqgG4Y/KU
-9ApUFWCPNKHCBd611aatXt5jJ66V1U+WFM7QpmsgSEpflHXNWpE1WU3F/+oy33Im
-wfuMaye3I1+0PYK8sjpRhKdSPAyWHT2H73BHsea4cZB7NGECQ7//Anwx8injxod9
-e6SfPVbTJQOoT7kMVf614HLAfbBAV+UrpMbZt/k+k5EyngEgJUbzwlYpRHFexREQ
-EalM6IF2ZghLknAwxMrVguijVF7VeGdI0kV/QAhOhD3idm6FIgYRqGwk0vscMHVm
-K88c2Tc7USCBIwaqsfHq3ymVKQbhi2iauEFAQZmDnUKI9JdlsqSs1of2zAb8Zbs=
-=k33L
------END PGP SIGNATURE-----
-
---DNUSDXU7R7AVVM8C--
+-- 
+Laurent Pinchart
