@@ -1,133 +1,290 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbZJPJtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZJPJyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758649AbZJPJtf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 05:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758581AbZJPJte
+	id S1753711AbZJPJyt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 05:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbZJPJys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 05:49:34 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:54124 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758579AbZJPJtc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 05:49:32 -0400
-Subject: Re: kmemleak errors
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Peter Teoh <htmldeveloper@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, David Howells <dhowells@redhat.com>
-In-Reply-To: <804dabb00910152239m735708fai520abf6a39ab77e2@mail.gmail.com>
-References: <804dabb00910142027r7f771ee4n2855fef7dcffbacc@mail.gmail.com>
-	 <tnxfx9l9c0t.fsf@pc1117.cambridge.arm.com>
-	 <804dabb00910152239m735708fai520abf6a39ab77e2@mail.gmail.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 16 Oct 2009 10:48:36 +0100
-Message-Id: <1255686516.3008.15.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Oct 2009 09:48:37.0415 (UTC) FILETIME=[D5711B70:01CA4E45]
+	Fri, 16 Oct 2009 05:54:48 -0400
+Received: from lucidpixels.com ([75.144.35.66]:38581 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751346AbZJPJyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 05:54:47 -0400
+Date: Fri, 16 Oct 2009 05:54:10 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Jean Delvare <khali@linux-fr.org>
+cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: Re: [lm-sensors] lm-sensors 3.1.1-3 not detecting sensors on Intel
+   DP55KG motherboard? (chip ID: 0xb473)
+In-Reply-To: <20091016111504.5d9cb0ba@hyperion.delvare>
+Message-ID: <alpine.DEB.2.00.0910160553221.2841@p34.internal.lan>
+References: <alpine.DEB.2.00.0910131743530.5034@p34.internal.lan> <alpine.DEB.2.00.0910140403150.15961@p34.internal.lan> <alpine.DEB.2.00.0910140856190.19307@p34.internal.lan> <20091015100557.22243433@hyperion.delvare> <alpine.DEB.2.00.0910150422400.21030@p34.internal.lan>
+ <20091016111504.5d9cb0ba@hyperion.delvare>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-16 at 13:39 +0800, Peter Teoh wrote:
-> sorry, i have overwritten the kernel image to follow up on another
-> kernel bugzilla report.   but on another (32bit Fedora Core10) the
-> following is the kmemleak output (scan > /sys/kernel/debug/kmemleak is
-> done at least thrice) and the following output remained exactly not
-> changed - not even a single byte modified:
-> 
-> unreferenced object 0xf70320a0 (size 32):
->   comm "swapper", pid 0, jiffies 4294667388
->   hex dump (first 32 bytes):
->     01 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00  ................
->     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
->   backtrace:
->     [<c08aa375>] kmemleak_alloc+0x100/0x13e
->     [<c0525ea9>] __kmalloc_track_caller+0x29f/0x315
->     [<c04ff1a8>] kmemdup+0x22/0x5a
->     [<c0624ad2>] selinux_cred_prepare+0x18/0x41
->     [<c0613437>] security_prepare_creds+0x15/0x18
->     [<c047af05>] prepare_creds+0xc4/0xeb
->     [<c047b537>] copy_creds+0x8a/0x2c5
->     [<c044eff6>] copy_process+0x31e/0x17bf
->     [<c04506ed>] do_fork+0x256/0x556
->     [<c04024d1>] kernel_thread+0x85/0x8d
->     [<c08a85ea>] rest_init+0x1e/0x5a
->     [<c0d34b5c>] start_kernel+0x383/0x388
->     [<c0d340ae>] i386_start_kernel+0xae/0xb3
->     [<ffffffff>] 0xffffffff
 
-Possibly real leak. I cc'ed David Howells since he seems to be touching
-this code more frequently.
 
-> unreferenced object 0xf7253200 (size 32):
->   comm "swapper", pid 1, jiffies 4294669642
->   hex dump (first 32 bytes):
->     a0 36 25 f7 00 00 00 00 00 00 00 00 00 00 00 00  .6%.............
->     00 00 00 00 44 5f 25 f6 72 b7 47 c0 00 00 00 00  ....D_%.r.G.....
->   backtrace:
->     [<c08aa375>] kmemleak_alloc+0x100/0x13e
->     [<c0525147>] kmem_cache_alloc+0x184/0x20a
->     [<c0d5cb39>] kmemleak_test_init+0x25/0x6e8
->     [<c040116a>] do_one_initcall+0x78/0x1fb
->     [<c0d343e6>] kernel_init+0x160/0x1dd
->     [<c0404e33>] kernel_thread_helper+0x7/0x10
->     [<ffffffff>] 0xffffffff
+On Fri, 16 Oct 2009, Jean Delvare wrote:
 
-Please disable the kmemleak testing module as it introduces leaks
-explicitly for testing kmemleak.
+> On Thu, 15 Oct 2009 04:30:29 -0400 (EDT), Justin Piszcz wrote:
+>> A picture of it is available here:
+>> http://img.hexus.net/v2/cpu/intel/LGA1156/IMG_0831-big.jpg
+>> Another:
+>> http://www.overclockersclub.com/vimages/intel_corei5750_corei7870/20.jpg
+>> Another:
+>> http://www.hitechlegion.com/images/stories/ici7_870/11.jpg
+>> A close up of the chip itself!
+>> http://www.motherboards.org/imageview.html?i=/images/reviews/motherboards/1948_p3_13.jpg
+>>
+>> Is this the chip to which you are referring?
+>>
+>> Winbond
+>> W83677HG-i
+>> 919S9BE918B001FB
+>> 919S9BE918B001FB*typed twice to confirm (same #s on two different
+>> board/reviews)
+>>
+>> Is there anything else needed?
+>
+> Please give a try to the latest version of sensors-detect:
+>
+> http://dl.lm-sensors.org/lm-sensors/files/sensors-detect
+>
+> It should find your chip now. Next step is to actually add support for
+> it, but it will take more time and efforts.
+>
+> -- 
+> Jean Delvare
+> http://khali.linux-fr.org/wishlist.html
+>
 
-> unreferenced object 0xf5c16270 (size 16):
->   comm "swapper", pid 1, jiffies 4294673952
->   hex dump (first 16 bytes):
->     01 00 00 00 01 00 00 00 03 00 00 00 00 00 00 00  ................
->   backtrace:
->     [<c08aa375>] kmemleak_alloc+0x100/0x13e
->     [<c0525147>] kmem_cache_alloc+0x184/0x20a
->     [<c0620df4>] selinux_file_alloc_security+0x34/0xdd
->     [<c06132ed>] security_file_alloc+0x14/0x16
->     [<c0530b97>] get_empty_filp+0x10d/0x21d
->     [<c053f964>] do_filp_open+0x15d/0xebc
->     [<c052c10e>] do_sys_open+0x93/0x16a
->     [<c052c231>] sys_open+0x23/0x2b
->     [<c0401322>] init_post+0x35/0x18f
->     [<c0d34459>] kernel_init+0x1d3/0x1dd
->     [<c0404e33>] kernel_thread_helper+0x7/0x10
->     [<ffffffff>] 0xffffffff
+Hello,
 
-Some of these could be triggered by an earlier leak, so resolving the
-first one would automatically make the rest disappear. It could also be
-that they are just false positive - pointers to them are stored in an
-area not scanned by kmemleak (like the one below).
+Output from run:
 
-> unreferenced object 0xf58067c0 (size 32):
->   comm "modprobe", pid 2123, jiffies 4294698474
->   hex dump (first 32 bytes):
->     34 7e 60 f8 c0 6f 80 f5 50 d5 da f5 60 d5 da f5  4~`..o..P...`...
->     00 00 00 00 00 00 00 00 02 00 00 00 00 00 00 00  ................
->   backtrace:
->     [<c08aa375>] kmemleak_alloc+0x100/0x13e
->     [<c0525147>] kmem_cache_alloc+0x184/0x20a
->     [<c04d3973>] trace_define_field+0x23/0x192
->     [<c04d3aff>] trace_define_common_fields+0x1d/0x12a
->     [<f85d3c7e>] ftrace_define_fields_i915_ring_wait_end+0x10/0x67 [i915]
->     [<c04d3069>] event_create_dir+0x3d7/0x45a
->     [<c04d33f3>] trace_module_notify+0x307/0x568
->     [<c08c89d8>] notifier_call_chain+0x30/0x7f
->     [<c0479958>] __blocking_notifier_call_chain+0x52/0x67
->     [<c047997e>] blocking_notifier_call_chain+0x11/0x13
->     [<c0493009>] sys_init_module+0xd9/0x273
->     [<c04041d8>] sysenter_do_call+0x12/0x2d
->     [<ffffffff>] 0xffffffff
+# wget http://dl.lm-sensors.org/lm-sensors/files/sensors-detect
+--2009-10-16 05:48:29--  http://dl.lm-sensors.org/lm-sensors/files/sensors-detect
+Resolving dl.lm-sensors.org... 160.45.254.26
+Connecting to dl.lm-sensors.org|160.45.254.26|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 165197 (161K) [text/plain]
+Saving to: `sensors-detect'
 
-These look like false positives since kmemleak doesn't scan all the
-sections in a module. I proposed a patch here:
+100%[======================================>] 165,197      193K/s   in 0.8s
 
-http://lkml.org/lkml/2009/10/15/155
+2009-10-16 05:48:30 (193 KB/s) - `sensors-detect' saved [165197/165197]
 
-But it doesn't seem to fix it. I'll send another.
+# ./sensors-detect 
+# sensors-detect revision 5782 (2009-10-16 10:59:16 +0200)
+# Board: Intel Corporation DP55KG
 
--- 
-Catalin
+This program will help you determine which kernel modules you need
+to load to use lm_sensors most effectively. It is generally safe
+and recommended to accept the default answers to all questions,
+unless you know what you're doing.
+
+Some south bridges, CPUs or memory controllers contain embedded sensors.
+Do you want to scan for them? This is totally safe. (YES/no): 
+Silicon Integrated Systems SIS5595...                       No
+VIA VT82C686 Integrated Sensors...                          No
+VIA VT8231 Integrated Sensors...                            No
+AMD K8 thermal sensors...                                   No
+AMD Family 11h thermal sensors...                           No
+Intel Core family thermal sensor...                         No
+Intel AMB FB-DIMM thermal sensor...                         No
+VIA C7 thermal and voltage sensors...                       No
+
+Some Super I/O chips contain embedded sensors. We have to write to
+standard I/O ports to probe them. This is usually safe.
+Do you want to scan for Super I/O sensors? (YES/no): 
+Probing for Super-I/O at 0x2e/0x2f
+Trying family `National Semiconductor'...                   No
+Trying family `SMSC'...                                     No
+Trying family `VIA/Winbond/Nuvoton/Fintek'...               Yes
+Found `Nuvoton W83677HG-I Super IO Sensors'
+     (but no address specified)
+Probing for Super-I/O at 0x4e/0x4f
+Trying family `National Semiconductor'...                   No
+Trying family `SMSC'...                                     No
+Trying family `VIA/Winbond/Nuvoton/Fintek'...               No
+Trying family `ITE'...                                      No
+
+Some systems (mainly servers) implement IPMI, a set of common interfaces
+through which system health data may be retrieved, amongst other things.
+We first try to get the information from SMBIOS. If we don't find it
+there, we have to read from arbitrary I/O ports to probe for such
+interfaces. This is normally safe. Do you want to scan for IPMI
+interfaces? (YES/no): 
+Probing for `IPMI BMC KCS' at 0xca0...                      No
+Probing for `IPMI BMC SMIC' at 0xca8...                     No
+
+Some hardware monitoring chips are accessible through the ISA I/O ports.
+We have to write to arbitrary I/O ports to probe them. This is usually
+safe though. Yes, you do have ISA I/O ports even if you do not have any
+ISA slots! Do you want to scan the ISA I/O ports? (YES/no): 
+Probing for `National Semiconductor LM78' at 0x290...       No
+Probing for `National Semiconductor LM79' at 0x290...       No
+Probing for `Winbond W83781D' at 0x290...                   No
+Probing for `Winbond W83782D' at 0x290...                   No
+
+Lastly, we can probe the I2C/SMBus adapters for connected hardware
+monitoring devices. This is the most risky part, and while it works
+reasonably well on most systems, it has been reported to cause trouble
+on some systems.
+Do you want to probe the I2C/SMBus adapters now? (YES/no): 
+Found unknown SMBus adapter 8086:3b30 at 0000:00:1f.3.
+Sorry, no supported PCI bus adapters found.
+
+Next adapter: SMBus I801 adapter at 7000 (i2c-0)
+Do you want to scan it? (YES/no/selectively): 
+Client found at address 0x2c
+Probing for `Myson MTP008'...                               No
+Probing for `National Semiconductor LM78'...                No
+Probing for `National Semiconductor LM79'...                No
+Probing for `National Semiconductor LM80'...                No
+Probing for `National Semiconductor LM85'...                No
+Probing for `National Semiconductor LM96000 or PC8374L'...  No
+Probing for `Analog Devices ADM1027'...                     No
+Probing for `Analog Devices ADT7460 or ADT7463'...          No
+Probing for `SMSC EMC6D100 or EMC6D101'...                  No
+Probing for `SMSC EMC6D102'...                              No
+Probing for `SMSC EMC6D103'...                              No
+Probing for `Winbond WPCD377I'...                           No
+Probing for `Analog Devices ADT7470'...                     No
+Probing for `Analog Devices ADT7476'...                     No
+Probing for `Andigilog aSC7611'...                          No
+Probing for `Andigilog aSC7621'...                          No
+Probing for `National Semiconductor LM87'...                No
+Probing for `Analog Devices ADM1024'...                     No
+Probing for `National Semiconductor LM93'...                No
+Probing for `Winbond W83781D'...                            No
+Probing for `Winbond W83782D'...                            No
+Probing for `Winbond W83791D'...                            No
+Probing for `Winbond W83792D'...                            No
+Probing for `Winbond W83793R/G'...                          No
+Probing for `Nuvoton W83795G/ADG'...                        No
+Probing for `Winbond W83627HF'...                           No
+Probing for `Winbond W83627EHF'...                          No
+Probing for `Winbond W83627DHG'...                          No
+Probing for `Asus AS99127F (rev.1)'...                      No
+Probing for `Asus AS99127F (rev.2)'...                      No
+Probing for `Asus ASB100 Bach'...                           No
+Probing for `Genesys Logic GL518SM'...                      No
+Probing for `Genesys Logic GL520SM'...                      No
+Probing for `Analog Devices ADM9240'...                     No
+Probing for `Dallas Semiconductor DS1780'...                No
+Probing for `National Semiconductor LM81'...                No
+Probing for `Analog Devices ADM1026'...                     No
+Probing for `Analog Devices ADM1025'...                     No
+Probing for `Philips NE1619'...                             No
+Probing for `Analog Devices ADM1029'...                     No
+Probing for `Analog Devices ADM1030'...                     No
+Probing for `Analog Devices ADM1031'...                     No
+Probing for `Analog Devices ADM1022'...                     No
+Probing for `Texas Instruments THMC50'...                   No
+Probing for `ITE IT8712F'...                                No
+Probing for `ALi M5879'...                                  No
+Probing for `SMSC LPC47M15x/192/292/997'...                 No
+Probing for `SMSC DME1737'...                               No
+Probing for `SMSC SCH5027D-NW'...                           No
+Probing for `Winbond W83791SD'...                           No
+Client found at address 0x2d
+Probing for `Myson MTP008'...                               No
+Probing for `National Semiconductor LM78'...                No
+Probing for `National Semiconductor LM79'...                No
+Probing for `National Semiconductor LM80'...                No
+Probing for `National Semiconductor LM85'...                No
+Probing for `National Semiconductor LM96000 or PC8374L'...  No
+Probing for `Analog Devices ADM1027'...                     No
+Probing for `Analog Devices ADT7460 or ADT7463'...          No
+Probing for `SMSC EMC6D100 or EMC6D101'...                  No
+Probing for `SMSC EMC6D102'...                              No
+Probing for `SMSC EMC6D103'...                              No
+Probing for `Winbond WPCD377I'...                           No
+Probing for `Analog Devices ADT7476'...                     No
+Probing for `Andigilog aSC7611'...                          No
+Probing for `Andigilog aSC7621'...                          No
+Probing for `National Semiconductor LM87'...                No
+Probing for `Analog Devices ADM1024'...                     No
+Probing for `National Semiconductor LM93'...                No
+Probing for `Winbond W83781D'...                            No
+Probing for `Winbond W83782D'...                            No
+Probing for `Winbond W83783S'...                            No
+Probing for `Winbond W83791D'...                            No
+Probing for `Winbond W83792D'...                            No
+Probing for `Winbond W83793R/G'...                          No
+Probing for `Nuvoton W83795G/ADG'...                        No
+Probing for `Winbond W83627HF'...                           No
+Probing for `Winbond W83627EHF'...                          No
+Probing for `Winbond W83627DHG'...                          Success!
+     (confidence 8, driver `use-isa-instead')
+Probing for `Asus AS99127F (rev.1)'...                      No
+Probing for `Asus AS99127F (rev.2)'...                      No
+Probing for `Asus ASB100 Bach'...                           No
+Probing for `Winbond W83L784R/AR/G'...                      No
+Probing for `Winbond W83L785R/G'...                         No
+Probing for `Genesys Logic GL518SM'...                      No
+Probing for `Genesys Logic GL520SM'...                      No
+Probing for `Genesys Logic GL525SM'...                      No
+Probing for `Analog Devices ADM9240'...                     No
+Probing for `Dallas Semiconductor DS1780'...                No
+Probing for `National Semiconductor LM81'...                No
+Probing for `Analog Devices ADM1026'...                     No
+Probing for `Analog Devices ADM1025'...                     No
+Probing for `Philips NE1619'...                             No
+Probing for `Analog Devices ADM1029'...                     No
+Probing for `Analog Devices ADM1030'...                     No
+Probing for `Analog Devices ADM1031'...                     No
+Probing for `Analog Devices ADM1022'...                     No
+Probing for `Texas Instruments THMC50'...                   No
+Probing for `VIA VT1211 (I2C)'...                           No
+Probing for `ITE IT8712F'...                                No
+Probing for `ALi M5879'...                                  No
+Probing for `SMSC LPC47M15x/192/292/997'...                 No
+Probing for `SMSC DME1737'...                               No
+Probing for `SMSC SCH5027D-NW'...                           No
+Probing for `Fintek F75373S/SG'...                          No
+Probing for `Fintek F75375S/SP'...                          No
+Probing for `Fintek F75387SG/RG'...                         No
+Probing for `Winbond W83791SD'...                           No
+Client found at address 0x48
+Probing for `National Semiconductor LM75'...                No
+Probing for `Dallas Semiconductor DS75'...                  No
+Probing for `National Semiconductor LM77'...                No
+Probing for `Dallas Semiconductor DS1621/DS1631'...         No
+Probing for `Maxim MAX6650/MAX6651'...                      No
+Probing for `National Semiconductor LM73'...                No
+Probing for `National Semiconductor LM92'...                No
+Probing for `National Semiconductor LM76'...                No
+Probing for `Maxim MAX6633/MAX6634/MAX6635'...              No
+Client found at address 0x50
+Probing for `Analog Devices ADM1033'...                     No
+Probing for `Analog Devices ADM1034'...                     No
+Probing for `SPD EEPROM'...                                 No
+Probing for `EDID EEPROM'...                                No
+Client found at address 0x51
+Probing for `Analog Devices ADM1033'...                     No
+Probing for `Analog Devices ADM1034'...                     No
+Probing for `SPD EEPROM'...                                 No
+Client found at address 0x52
+Probing for `Analog Devices ADM1033'...                     No
+Probing for `Analog Devices ADM1034'...                     No
+Probing for `SPD EEPROM'...                                 No
+Client found at address 0x53
+Probing for `Analog Devices ADM1033'...                     No
+Probing for `Analog Devices ADM1034'...                     No
+Probing for `SPD EEPROM'...                                 No
+
+Sorry, no sensors were detected.
+Either your system has no sensors, or they are not supported, or
+they are connected to an I2C or SMBus adapter that is not
+supported. If you find out what chips are on your board, check
+http://www.lm-sensors.org/wiki/Devices for driver status.
+
+#
+
 
