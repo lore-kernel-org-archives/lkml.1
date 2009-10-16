@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758357AbZJPJqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbZJPJrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758357AbZJPJqp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 05:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbZJPJqo
+	id S1757256AbZJPJrg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 05:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbZJPJrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 05:46:44 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:50555 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758136AbZJPJqn (ORCPT
+	Fri, 16 Oct 2009 05:47:35 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:32959 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751118AbZJPJre (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 05:46:43 -0400
-From: amit.kucheria@canonical.com
-To: List Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: len.brown@intel.com, Amit Kucheria <amit.kucheria@canonical.com>
-Subject: [PATCH] acpi: thermal: [TRIVIAL] Add EOL to the trip_point_N_type strings
-Date: Fri, 16 Oct 2009 12:46:02 +0300
-Message-Id: <1255686362-30022-1-git-send-email-amit.kucheria@canonical.com>
-X-Mailer: git-send-email 1.6.3.3
+	Fri, 16 Oct 2009 05:47:34 -0400
+Date: Fri, 16 Oct 2009 15:16:46 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: [v9 PATCH 7/9]: POWER: add a default_idle idle loop for POWER.
+Message-ID: <20091016094646.GI27350@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20091016093850.GB27350@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091016093850.GB27350@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Amit Kucheria <amit.kucheria@canonical.com>
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-16 15:08:50]:
 
-Make the trip_point_N_type sysfs files return a string ending in EOL for
-consistency with other sysfs files.
+In arch/powerpc/kernel/idle.c create a default_idle() routine by moving
+the failover condition of the cpu_idle() idle loop. This is needed by
+cpuidle infrastructure to call default_idle when other idle routines
+are not yet registered. Functionality remains the same, but the code is
+slightly moved around.
 
-Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- drivers/thermal/thermal_sys.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/Kconfig              |    3 +++
+ arch/powerpc/include/asm/system.h |    1 +
+ arch/powerpc/kernel/idle.c        |    6 ++++++
+ 3 files changed, 10 insertions(+)
 
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index 4e83c29..6f8d8f9 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -180,15 +180,15 @@ trip_point_type_show(struct device *dev, struct device_attribute *attr,
+Index: linux.trees.git/arch/powerpc/Kconfig
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/Kconfig
++++ linux.trees.git/arch/powerpc/Kconfig
+@@ -94,6 +94,9 @@ config ARCH_HAS_ILOG2_U64
+ config ARCH_HAS_CPU_IDLE_WAIT
+ 	def_bool y
  
- 	switch (type) {
- 	case THERMAL_TRIP_CRITICAL:
--		return sprintf(buf, "critical");
-+		return sprintf(buf, "critical\n");
- 	case THERMAL_TRIP_HOT:
--		return sprintf(buf, "hot");
-+		return sprintf(buf, "hot\n");
- 	case THERMAL_TRIP_PASSIVE:
--		return sprintf(buf, "passive");
-+		return sprintf(buf, "passive\n");
- 	case THERMAL_TRIP_ACTIVE:
--		return sprintf(buf, "active");
-+		return sprintf(buf, "active\n");
- 	default:
--		return sprintf(buf, "unknown");
-+		return sprintf(buf, "unknown\n");
- 	}
++config ARCH_HAS_DEFAULT_IDLE
++	def_bool y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+Index: linux.trees.git/arch/powerpc/include/asm/system.h
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/include/asm/system.h
++++ linux.trees.git/arch/powerpc/include/asm/system.h
+@@ -218,6 +218,7 @@ extern unsigned long klimit;
+ extern void *alloc_maybe_bootmem(size_t size, gfp_t mask);
+ extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+ 
++extern void default_idle(void);
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+ 
+ /*
+Index: linux.trees.git/arch/powerpc/kernel/idle.c
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/kernel/idle.c
++++ linux.trees.git/arch/powerpc/kernel/idle.c
+@@ -121,6 +121,12 @@ void cpu_idle_wait(void)
  }
+ EXPORT_SYMBOL_GPL(cpu_idle_wait);
  
--- 
-1.6.3.3
-
++void default_idle(void)
++{
++	HMT_low();
++	HMT_very_low();
++}
++
+ int powersave_nap;
+ 
+ #ifdef CONFIG_SYSCTL
