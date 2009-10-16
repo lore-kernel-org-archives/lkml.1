@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752887AbZJPT6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbZJPT6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752887AbZJPT6F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 15:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZJPT6F
+	id S1753660AbZJPT6m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 15:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZJPT6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 15:58:05 -0400
-Received: from waste.org ([173.11.57.241]:37348 "EHLO waste.org"
+	Fri, 16 Oct 2009 15:58:41 -0400
+Received: from poutre.nerim.net ([62.4.16.124]:52937 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbZJPT6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 15:58:04 -0400
-Subject: Re: Keeping network device renaming working in the presence of
- netconsole?
-From: Matt Mackall <mpm@selenic.com>
-To: Nix <nix@esperi.org.uk>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <87zl7rp1jy.fsf@spindle.srvr.nix>
-References: <87zl7rp1jy.fsf@spindle.srvr.nix>
-Content-Type: text/plain
-Date: Fri, 16 Oct 2009 14:57:58 -0500
-Message-Id: <1255723078.14249.16.camel@calx>
+	id S1751131AbZJPT6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 15:58:41 -0400
+Date: Fri, 16 Oct 2009 21:58:42 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] lm-sensors 3.1.1-3 not detecting sensors on Intel
+  DP55KG motherboard? (chip ID: 0xb473)
+Message-ID: <20091016215842.4573e816@hyperion.delvare>
+In-Reply-To: <20091016204155.377fe67d@hyperion.delvare>
+References: <alpine.DEB.2.00.0910131743530.5034@p34.internal.lan>
+	<alpine.DEB.2.00.0910140403150.15961@p34.internal.lan>
+	<alpine.DEB.2.00.0910140856190.19307@p34.internal.lan>
+	<20091015100557.22243433@hyperion.delvare>
+	<alpine.DEB.2.00.0910150422400.21030@p34.internal.lan>
+	<20091016111504.5d9cb0ba@hyperion.delvare>
+	<alpine.DEB.2.00.0910160553221.2841@p34.internal.lan>
+	<20091016125353.1c8795f4@hyperion.delvare>
+	<alpine.DEB.2.00.0910160838500.31450@p34.internal.lan>
+	<20091016204155.377fe67d@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-16 at 20:43 +0100, Nix wrote:
-> So I'm testing suspend/resume and getting a lot of wildly variable
-> panics on resume. I'd like to report them, so I need to capture them
-> somehow.
+On Fri, 16 Oct 2009 20:41:55 +0200, Jean Delvare wrote:
+> On Fri, 16 Oct 2009 09:40:51 -0400 (EDT), Justin Piszcz wrote:
+> > Ok, luckily it does not appear to have caused any issues:
+> > 
+> > # i2cdump 0 0x2c b
+> > WARNING! This program can confuse your I2C bus, cause data loss and worse!
+> > I will probe file /dev/i2c-0, address 0x2c, mode byte
+> > Continue? [Y/n] y
+> >       0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
+> > 00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> > 10: 00 00 00 00 00 00 00 00 00 00 80 80 80 04 7e 10    ..........????~?
+> > 20: 75 51 c0 c3 c3 80 28 2d bd 0f de 0f 3b 1d a9 16    uQ????(-????;???
+> > 30: 33 4d 4d c2 81 00 c2 00 ff ff ff e6 7b fb 41 6f    3MM??.?....?{?Ao
+> > 40: 35 90 40 00 00 ff 00 ff 00 ff 00 ff 00 ff 81 7f    5?@...........??
+> > 50: 81 7f 81 7f ff ff ff ff ff ff ff ff 0a a2 a2 ca    ????........????
+> > 60: 8a 8a e0 aa 33 4c 4c 5a 2d 2d 64 41 41 04 42 00    ????3LLZ--dAA?B.
+> > 70: 00 00 00 00 00 00 6c 60 f0 00 00 55 01 00 00 00    ......l`?..U?...
+> > 80: 00 00 00 00 00 00 ff ff 00 00 fb 64 64 64 00 00    ..........?ddd..
+> > 90: 00 59 59 59 00 00 00 00 00 00 00 00 00 00 00 00    .YYY............
+> > a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> > b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> > c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> > d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> > e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> > f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> > #
 > 
-> Netconsole looks like just the thing: it even says it's nonintrusive.
-> 
-> Unfortunately it intrudes in one very unfortunate way: if netconsole is
-> jabbering out of some network interface, that interface is up, so you
-> can't rename it: and because (to catch early panics) netconsole has to
-> start before userspace kicks up, this means that there is *no*
-> opportunity to rename network interfaces that netconsole is operating
-> over.
-> 
-> This breaks userspace more than slightly if you rely on udev's
-> persistent net generator rules to keep network interface names constant,
-> or if you rename the lot to something more memorable than ethN. Any
-> userspace setup of that interface, assignment of additional addresses,
-> routing, MTU setting et al is all toast: and you can't stop using
-> interface renaming unless you like your interfaces to change identities
-> intermittently (but we've had that flamewar).
+> Smells like an Analog Devices chip, but not one we know... And I can't
+> see it on the web site you mentioned. Please search for a small-size
+> chip named ADTxxxx (more likely ADT74xx).
 
-A device definitely does have to be up for netconsole to work.
+Ah, ADT7490. Please try:
 
-But as far as I know, there's no good reason you can't rename an
-interface that's up.
+http://dl.lm-sensors.org/lm-sensors/files/sensors-detect
 
-But back to your original problem: netconsole is actually probably a
-poor match for debugging suspend/resume as getting from an off state to
-a working state in the network driver takes a non-trivial amount of
-code.
+We don't have support for that chip, but the datasheet suggests some
+form of compatibility with the ADT7473 and ADT7475, which we do have
+support for. So support for the ADT7490 is probably not too far away.
 
-A useful technique here is capturing kernel message buffers in RAM
-across resets, something that can be done on most systems (provided you
-can disable memory test). Alternately, you might look at firewire
-techniques.
+The presence of this monitoring ASIC explains why the hardware
+monitoring features of the W83677HG super-I/O are disabled.
 
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+Jean Delvare
+http://khali.linux-fr.org/wishlist.html
