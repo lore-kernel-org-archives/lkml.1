@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbZJPTxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752887AbZJPT6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753786AbZJPTxf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 15:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZJPTxe
+	id S1752887AbZJPT6F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 15:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZJPT6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 15:53:34 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:59668 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753236AbZJPTxd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 15:53:33 -0400
-Date: Fri, 16 Oct 2009 21:53:35 +0200
-From: Heinz Diehl <htd@fancy-poultry.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Haster!
-Message-ID: <20091016195335.GA16626@fancy-poultry.org>
-References: <c04542aeb33b23bc0abc73e8072e9dd7.squirrel@webmail01.one.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <c04542aeb33b23bc0abc73e8072e9dd7.squirrel@webmail01.one.com>
-X-Accept-Language: no,dk,se,en,de
-Organization: private site
-X-OpenPGP-KeyID: 0x3FAF957D
-X-OpenPGP-Fingerprint: 0BAE BB83 8B8A 3DE4 08F3  CEB9 DA0F CCBB 3FAF 957D
-X-OpenPGP-URL: http://www.fritha.org/htd.asc
-User-Agent: Mutt/1.5.20+20091011 (GNU/Linux 2.6.31.4 x86_64)
-Content-Transfer-Encoding: 8BIT
-X-Provags-ID: V01U2FsdGVkX19BqkxzKUo8zVU+invN9AhY2I7bIdzPFtGq586
- 8yIWAtID4QbL1Ipiz01AzVkjOIRkEbC4PWv8dyvjpYAn1B4//T
- OdMbazqEeUAwBgyb21r6w==
+	Fri, 16 Oct 2009 15:58:05 -0400
+Received: from waste.org ([173.11.57.241]:37348 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750774AbZJPT6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 15:58:04 -0400
+Subject: Re: Keeping network device renaming working in the presence of
+ netconsole?
+From: Matt Mackall <mpm@selenic.com>
+To: Nix <nix@esperi.org.uk>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <87zl7rp1jy.fsf@spindle.srvr.nix>
+References: <87zl7rp1jy.fsf@spindle.srvr.nix>
+Content-Type: text/plain
+Date: Fri, 16 Oct 2009 14:57:58 -0500
+Message-Id: <1255723078.14249.16.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16.10.2009, Webmail Messaging Center wrote: 
+On Fri, 2009-10-16 at 20:43 +0100, Nix wrote:
+> So I'm testing suspend/resume and getting a lot of wildly variable
+> panics on resume. I'd like to report them, so I need to capture them
+> somehow.
+> 
+> Netconsole looks like just the thing: it even says it's nonintrusive.
+> 
+> Unfortunately it intrudes in one very unfortunate way: if netconsole is
+> jabbering out of some network interface, that interface is up, so you
+> can't rename it: and because (to catch early panics) netconsole has to
+> start before userspace kicks up, this means that there is *no*
+> opportunity to rename network interfaces that netconsole is operating
+> over.
+> 
+> This breaks userspace more than slightly if you rely on udev's
+> persistent net generator rules to keep network interface names constant,
+> or if you rename the lot to something more memorable than ethN. Any
+> userspace setup of that interface, assignment of additional addresses,
+> routing, MTU setting et al is all toast: and you can't stop using
+> interface renaming unless you like your interfaces to change identities
+> intermittently (but we've had that flamewar).
 
-> 1.Username :....................................
-> 2.Password :...................................
-> 3. Date of Birth :...............................
+A device definitely does have to be up for netconsole to work.
 
-Jåda, claus, skriv passordet ditt i feltet ovenfor, vi er grådig snille alle
-sammen og skal behandle det fortrolig, selvsagt. Heilt sant, det!
+But as far as I know, there's no good reason you can't rename an
+interface that's up.
 
-[SNCR]
+But back to your original problem: netconsole is actually probably a
+poor match for debugging suspend/resume as getting from an off state to
+a working state in the network driver takes a non-trivial amount of
+code.
+
+A useful technique here is capturing kernel message buffers in RAM
+across resets, something that can be done on most systems (provided you
+can disable memory test). Alternately, you might look at firewire
+techniques.
+
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
 
