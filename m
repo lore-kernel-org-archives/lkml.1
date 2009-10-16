@@ -1,94 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbZJPILK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbZJPIXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757418AbZJPILK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 04:11:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbZJPILJ
+	id S1756670AbZJPIXa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 04:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZJPIX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 04:11:09 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:58548 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757364AbZJPILG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 04:11:06 -0400
-From: Juergen Beisert <jbe@pengutronix.de>
-Organization: Pengutronix - Linux Solutions for Science and Industry
-To: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Date: Fri, 16 Oct 2009 10:10:15 +0200
-User-Agent: KMail/1.9.9
-References: <200908111830.03224.jbe@pengutronix.de> <20090813083910.GA27006@csn.ul.ie> <200908131122.40423.jbe@pengutronix.de>
-In-Reply-To: <200908131122.40423.jbe@pengutronix.de>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+	Fri, 16 Oct 2009 04:23:29 -0400
+Received: from lucidpixels.com ([75.144.35.66]:51417 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751934AbZJPIX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 04:23:28 -0400
+Date: Fri, 16 Oct 2009 04:22:51 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Bryan Donlan <bdonlan@gmail.com>
+cc: bruce.w.allan@intel.com, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Subject: Re: [PATCH] Add quirk for ACPI reboots on Intel DP55KG boards.
+In-Reply-To: <3e8340490910151749r583d46c0o212e1f4ff7eac955@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0910160421390.2841@p34.internal.lan>
+References: <alpine.DEB.2.00.0910151655590.4808@p34.internal.lan>  <1255645796-29944-1-git-send-email-bdonlan@gmail.com> <alpine.DEB.2.00.0910151831020.15317@p34.internal.lan>  <alpine.DEB.2.00.0910151852510.8329@p34.internal.lan>
+ <alpine.DEB.2.00.0910151855320.3244@p34.internal.lan>  <3e8340490910151605j357b303btb26505a2c04cf2d4@mail.gmail.com>  <alpine.DEB.2.00.0910151911490.10951@p34.internal.lan> <3e8340490910151749r583d46c0o212e1f4ff7eac955@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910161010.15864.jbe@pengutronix.de>
-X-SA-Exim-Connect-IP: 92.198.50.58
-X-SA-Exim-Mail-From: jbe@pengutronix.de
-Subject: Re: Patch "page-allocator: preserve PFN ordering when __GFP_COLD is set" fails on my system
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Donnerstag, 13. August 2009, Juergen Beisert wrote:
-> On Donnerstag, 13. August 2009, Mel Gorman wrote:
-> > On Wed, Aug 12, 2009 at 02:40:30PM -0400, Arnaud Faucher wrote:
-> > > I have a rather similar problem on a driver that I try to keep
-> > > up-to-date with recent kernel versions
-> > > (http://code.ximeta.com/trac-ndas/ticket/1110#comment:30). The NDAS
-> > > hardware is an ethernet-enabled disk controller on one chip, kind of a
-> > > cheap iSCSI.
-> > >
-> > > In my case there is no oops: the symptoms are that the read blocks seem
-> > > to be swapped or full of garbage.
-> > >
-> > > After investigation in the NDAS code, the bug triggers when the driver
-> > > tries to merge adjacent requests before sending them to the controller.
-> > > I had to disable this merge in order to restore normal behavior, at the
-> > > expense of a reduced efficiency.
-> >
-> > That is a very interesting point and one I hadn't considered. The point
-> > of the patch was to help drivers that merge adjacent requests if they
-> > happen to be physically contiguous. The reported bug that led to the
-> > patch was a regression of memory not being physically contiguous and
-> > requests not being merged.
-> >
-> > > > After this oops, system startup continues. Then the next oops occurs:
-> > > >
-> > > > This one is new, since I try to mount the connected SD card.
-> > >
-> > > Mel's buffer overrun theory seems to apply in the NDAS driver case,
-> > > where the original requests adjacency test seems faulty.
-> > >
-> > > May it also be the cause of the SD mounting crash ?
-> >
-> > It's a possibility. If it's not an overrun, it's possible that the
-> > automatic merging code is buggy as well.
-> >
-> > Juergen, is the disk controller on your machine capable of merging
-> > requests? If so, can you disable it and see if the bug still occurs
-> > please?
+
+
+On Thu, 15 Oct 2009, Bryan Donlan wrote:
+
+> On Thu, Oct 15, 2009 at 7:30 PM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
 >
-> Hmmm, hard to say. Maybe the author of this driver can say more.
+>> Same, all methods fail, :(
+>>
+>> Justin.
 >
-> @Ben: MMC/SD/SDHC driver for the s3c2440-CPU. Can you answer Mel's
-> question?
+> Was there a message on dmesg about setting the reboot type?
+> dmesg | grep 'series board detected'
+>
+> If not, please dump the DMI identification values Linux is using like so:
+> for i in /sys/class/dmi/id/*; do if [ -f $i ]; then echo -n "$i \"";
+> cat $i | tr -d '\n'; echo '"'; fi; done
+>
+Here you go:
 
-For the records: A wrong __initdata at the MMC/SD/SDHC platform structure 
-causes this failure to happen. I copied it from a broken implementation in 
-mach-mini2440.c.
+# for i in /sys/class/dmi/id/*; do if [ -f $i ]; then echo -n "$i \"";  cat $i | tr -d '\n'; echo '"'; fi; done
+/sys/class/dmi/id/bios_date "09/28/2009"
+/sys/class/dmi/id/bios_vendor "Intel Corp."
+/sys/class/dmi/id/bios_version "KGIBX10J.86A.3822.2009.0928.1349"
+/sys/class/dmi/id/board_asset_tag "Base Board Asset Tag"
+/sys/class/dmi/id/board_name "DP55KG"
+/sys/class/dmi/id/board_serial "XXXXXXXXXXXX"
+/sys/class/dmi/id/board_vendor "Intel Corporation"
+/sys/class/dmi/id/board_version "AAE47218-403"
+/sys/class/dmi/id/chassis_asset_tag "        "
+/sys/class/dmi/id/chassis_serial "        "
+/sys/class/dmi/id/chassis_type "2"
+/sys/class/dmi/id/chassis_vendor "        "
+/sys/class/dmi/id/chassis_version "        "
+/sys/class/dmi/id/modalias "dmi:bvnIntelCorp.:bvrKGIBX10J.86A.3822.2009.0928.1349:bd09/28/2009:svn:pn:pvr:rvnIntelCorporation:rnDP55KG:rvrAAE47218-403:cvn:ct2:cvr:"
+/sys/class/dmi/id/product_name "        "
+/sys/class/dmi/id/product_serial "        "
+/sys/class/dmi/id/product_uuid "81BCB172-8BB9-11DE-B5DA-001CC0C81E6F"
+/sys/class/dmi/id/product_version "        "
+/sys/class/dmi/id/sys_vendor "        "
+/sys/class/dmi/id/uevent "MODALIAS=dmi:bvnIntelCorp.:bvrKGIBX10J.86A.3822.2009.0928.1349:bd09/28/2009:svn:pn:pvr:rvnIntelCorporation:rnDP55KG:rvrAAE47218-403:cvn:ct2:cvr:"
 
-Regards,
-Juergen
+Justin.
 
-
-
--- 
-Pengutronix e.K.                              | Juergen Beisert             |
-Linux Solutions for Science and Industry      | Phone: +49-8766-939 228     |
-Vertretung Sued/Muenchen, Germany             | Fax:   +49-5121-206917-5555 |
-Amtsgericht Hildesheim, HRA 2686              | http://www.pengutronix.de/  |
