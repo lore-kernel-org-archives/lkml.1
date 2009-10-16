@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761029AbZJPPoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762210AbZJPPpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761029AbZJPPoR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 11:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758270AbZJPPoQ
+	id S1762210AbZJPPpA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 11:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761159AbZJPPpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 11:44:16 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:54361 "EHLO sssup.it"
+	Fri, 16 Oct 2009 11:45:00 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:54421 "EHLO sssup.it"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753977AbZJPPoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 11:44:15 -0400
-Subject: [RFC 6/12][PATCH] SCHED_DEADLINE: added scheduling latency tracer
+	id S1761348AbZJPPo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 11:44:58 -0400
+Subject: [RFC 7/12][PATCH] SCHED_DEADLINE: signal delivery when overrunning
 From: Raistlin <raistlin@linux.it>
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
@@ -29,9 +29,9 @@ Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        Juri Lelli <juri.lelli@gmail.com>
 In-Reply-To: <1255707324.6228.448.camel@Palantir>
 References: <1255707324.6228.448.camel@Palantir>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-ME1Af5xhCfypVEcN9yjB"
-Date: Fri, 16 Oct 2009 17:43:35 +0200
-Message-Id: <1255707815.6228.460.camel@Palantir>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-yi4i88eMERXYpC4he7Np"
+Date: Fri, 16 Oct 2009 17:44:16 +0200
+Message-Id: <1255707856.6228.461.camel@Palantir>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,103 +39,175 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-ME1Af5xhCfypVEcN9yjB
+--=-yi4i88eMERXYpC4he7Np
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-This commit adds a new ftrace tracer 'wakeup_deadline', to trace the maximu=
-m
-wakeup latency of SCHED_DEADLINE tasks.
+Starting from this commit, the user can ask to receive a SIGXCPU signal
+every time the task runtime is overrun or a scheduling deadline is missed.
+This is done by means of the sched_flags field already present in
+sched_param_ex.
+
+A runtime overrun will be quite common, e.g. due to coarse execution time
+accounting, wrong parameter assignement, etc.
+A deadline miss --since the deadlines the scheduler sees are ``scheduling
+deadlines'' which have not necessarily to be equal to task's deadlines-- is
+much more unlikely, and should only happen in an overloaded system.
 
 Signed-off-by: Raistlin <raistlin@linux.it>
 ---
- kernel/trace/trace_sched_wakeup.c |   31 +++++++++++++++++++++++++++++++
- 1 files changed, 31 insertions(+), 0 deletions(-)
+ include/linux/sched.h     |    5 ++++
+ kernel/posix-cpu-timers.c |   52 +++++++++++++++++++++++++++++++++++++++++=
+++-
+ kernel/sched_deadline.c   |   18 +++++++++++++++
+ 3 files changed, 73 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_w=
-akeup.c
-index 26185d7..180948c 100644
---- a/kernel/trace/trace_sched_wakeup.c
-+++ b/kernel/trace/trace_sched_wakeup.c
-@@ -27,6 +27,7 @@ static int			wakeup_cpu;
- static int			wakeup_current_cpu;
- static unsigned			wakeup_prio =3D -1;
- static int			wakeup_rt;
-+static int			wakeup_deadline;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index fac928a..16668f9 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -95,6 +95,9 @@ struct sched_param {
 =20
- static raw_spinlock_t wakeup_lock =3D
- 	(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
-@@ -214,6 +215,9 @@ probe_wakeup(struct rq *rq, struct task_struct *p, int =
-success)
- 	tracing_record_cmdline(p);
- 	tracing_record_cmdline(current);
+ #include <asm/processor.h>
 =20
-+	if (wakeup_deadline && !deadline_task(p))
-+		return;
++#define SCHED_SIG_RORUN		0x80000000
++#define SCHED_SIG_DMISS		0x40000000
 +
- 	if ((wakeup_rt && !rt_task(p)) ||
- 			p->prio >=3D wakeup_prio ||
- 			p->prio >=3D current->prio)
-@@ -340,16 +344,25 @@ static int __wakeup_tracer_init(struct trace_array *t=
-r)
+ struct sched_param_ex {
+ 	int sched_priority;
+ 	struct timespec sched_runtime;
+@@ -1229,6 +1232,8 @@ struct sched_rt_entity {
+ #define DL_NEW			0x00000001
+ #define DL_THROTTLED		0x00000002
+ #define DL_BOOSTED		0x00000004
++#define DL_RORUN		0x00000008
++#define DL_DMISS		0x00000010
 =20
- static int wakeup_tracer_init(struct trace_array *tr)
- {
-+	wakeup_deadline =3D 0;
- 	wakeup_rt =3D 0;
- 	return __wakeup_tracer_init(tr);
+ struct sched_dl_entity {
+ 	struct rb_node	rb_node;
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index 5c9dc22..4caa5bf 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -1029,8 +1029,28 @@ static void check_thread_timers(struct task_struct *=
+tsk,
+ 	}
+=20
+ 	/*
+-	 * Check for the special case thread timers.
++	 * Check for the special case thread timers:
++	 *  - sched_deadline runtime/deadline overrun notification
++	 *  - sched_rt rlimit overrun notification
+ 	 */
++	if (deadline_task(tsk) && (tsk->dl.flags & SCHED_SIG_RORUN ||
++	    tsk->dl.flags & SCHED_SIG_DMISS)) {
++		if (tsk->dl.flags & SCHED_SIG_RORUN &&
++		    tsk->dl.flags & DL_RORUN) {
++			tsk->dl.flags &=3D ~DL_RORUN;
++			printk(KERN_INFO "runtime overrun: %s[%d]\n",
++			       tsk->comm, task_pid_nr(tsk));
++			__group_send_sig_info(SIGXCPU, SEND_SIG_PRIV, tsk);
++		}
++		if (tsk->dl.flags & SCHED_SIG_DMISS &&
++		    tsk->dl.flags & DL_DMISS) {
++			tsk->dl.flags &=3D ~DL_DMISS;
++			printk(KERN_INFO "scheduling deadline miss: %s[%d]\n",
++			       tsk->comm, task_pid_nr(tsk));
++			__group_send_sig_info(SIGXCPU, SEND_SIG_PRIV, tsk);
++		}
++	}
++
+ 	if (sig->rlim[RLIMIT_RTTIME].rlim_cur !=3D RLIM_INFINITY) {
+ 		unsigned long hard =3D sig->rlim[RLIMIT_RTTIME].rlim_max;
+ 		unsigned long *soft =3D &sig->rlim[RLIMIT_RTTIME].rlim_cur;
+@@ -1129,6 +1149,9 @@ static void check_process_timers(struct task_struct *=
+tsk,
+ 	if (list_empty(&timers[CPUCLOCK_PROF]) &&
+ 	    cputime_eq(sig->it[CPUCLOCK_PROF].expires, cputime_zero) &&
+ 	    sig->rlim[RLIMIT_CPU].rlim_cur =3D=3D RLIM_INFINITY &&
++	    !(deadline_task(tsk) && ((tsk->dl.flags & SCHED_SIG_RORUN &&
++	    tsk->dl.flags & DL_RORUN) || (tsk->dl.flags & SCHED_SIG_DMISS &&
++	    tsk->dl.flags & DL_DMISS))) &&
+ 	    list_empty(&timers[CPUCLOCK_VIRT]) &&
+ 	    cputime_eq(sig->it[CPUCLOCK_VIRT].expires, cputime_zero) &&
+ 	    list_empty(&timers[CPUCLOCK_SCHED])) {
+@@ -1188,8 +1211,28 @@ static void check_process_timers(struct task_struct =
+*tsk,
+ 	}
+=20
+ 	/*
+-	 * Check for the special case process timers.
++	 * Check for the special case thread timers:
++	 *  - sched_deadline runtime/deadline overrun notification
++	 *  - sched_rt rlimit overrun notification
+ 	 */
++	if (deadline_task(tsk) && (tsk->dl.flags & SCHED_SIG_RORUN ||
++	    tsk->dl.flags & SCHED_SIG_DMISS)) {
++		if (tsk->dl.flags & SCHED_SIG_RORUN &&
++		    tsk->dl.flags & DL_RORUN) {
++			tsk->dl.flags &=3D ~DL_RORUN;
++			printk(KERN_INFO "runtime overrun: %s[%d]\n",
++			       tsk->comm, task_pid_nr(tsk));
++			__group_send_sig_info(SIGXCPU, SEND_SIG_PRIV, tsk);
++		}
++		if (tsk->dl.flags & SCHED_SIG_DMISS &&
++		    tsk->dl.flags & DL_DMISS) {
++			tsk->dl.flags &=3D ~DL_DMISS;
++			printk(KERN_INFO "scheduling deadline miss: %s[%d]\n",
++			       tsk->comm, task_pid_nr(tsk));
++			__group_send_sig_info(SIGXCPU, SEND_SIG_PRIV, tsk);
++		}
++	}
++
+ 	check_cpu_itimer(tsk, &sig->it[CPUCLOCK_PROF], &prof_expires, ptime,
+ 			 SIGPROF);
+ 	check_cpu_itimer(tsk, &sig->it[CPUCLOCK_VIRT], &virt_expires, utime,
+@@ -1383,6 +1426,11 @@ static inline int fastpath_timer_check(struct task_s=
+truct *tsk)
+ 			return 1;
+ 	}
+=20
++	if (deadline_task(tsk) &&
++	    ((tsk->dl.flags & SCHED_SIG_RORUN && tsk->dl.flags & DL_RORUN) ||
++	    (tsk->dl.flags & SCHED_SIG_DMISS && tsk->dl.flags & DL_DMISS)))
++		return 1;
++
+ 	return sig->rlim[RLIMIT_CPU].rlim_cur !=3D RLIM_INFINITY;
  }
 =20
- static int wakeup_rt_tracer_init(struct trace_array *tr)
+diff --git a/kernel/sched_deadline.c b/kernel/sched_deadline.c
+index f2c1b6e..7b57bb0 100644
+--- a/kernel/sched_deadline.c
++++ b/kernel/sched_deadline.c
+@@ -236,9 +236,27 @@ static void init_deadline_task(struct task_struct *p)
+ static
+ int deadline_runtime_exceeded(struct rq *rq, struct sched_dl_entity *dl_se=
+)
  {
-+	wakeup_deadline =3D 0;
- 	wakeup_rt =3D 1;
- 	return __wakeup_tracer_init(tr);
- }
-=20
-+static int wakeup_deadline_tracer_init(struct trace_array *tr)
-+{
-+	wakeup_deadline =3D 1;
-+	wakeup_rt =3D 0;
-+	return __wakeup_tracer_init(tr);
-+}
++	/*
++	 * if the user asked for that, we have to inform him about
++	 * a (scheduling) deadline miss ...
++	 */
++	if (unlikely(dl_se->flags & SCHED_SIG_DMISS &&
++	    deadline_time_before(dl_se->deadline, rq->clock)))
++		dl_se->flags |=3D DL_DMISS;
 +
- static void wakeup_tracer_reset(struct trace_array *tr)
- {
- 	stop_wakeup_tracer(tr);
-@@ -398,6 +411,20 @@ static struct tracer wakeup_rt_tracer __read_mostly =
-=3D
- #endif
- };
+ 	if (dl_se->runtime >=3D 0 || deadline_se_boosted(dl_se))
+ 		return 0;
 =20
-+static struct tracer wakeup_deadline_tracer __read_mostly =3D
-+{
-+	.name		=3D "wakeup_deadline",
-+	.init		=3D wakeup_deadline_tracer_init,
-+	.reset		=3D wakeup_tracer_reset,
-+	.start		=3D wakeup_tracer_start,
-+	.stop		=3D wakeup_tracer_stop,
-+	.wait_pipe	=3D poll_wait_pipe,
-+	.print_max	=3D 1,
-+#ifdef CONFIG_FTRACE_SELFTEST
-+	.selftest    =3D trace_selftest_startup_wakeup,
-+#endif
-+};
++	/*
++	 * ... and the same appies to runtime overruns.
++	 *
++	 * Note that (hopefully small) runtime overruns are very likely
++	 * to occur, mainly due to accounting resolution, while missing a
++	 * scheduling deadline should happen only on oversubscribed systems.
++	 */
++	if (dl_se->flags & SCHED_SIG_RORUN)
++		dl_se->flags |=3D DL_RORUN;
 +
- __init static int init_wakeup_tracer(void)
- {
- 	int ret;
-@@ -410,6 +437,10 @@ __init static int init_wakeup_tracer(void)
- 	if (ret)
- 		return ret;
-=20
-+	ret =3D register_tracer(&wakeup_deadline_tracer);
-+	if (ret)
-+		return ret;
-+
- 	return 0;
- }
- device_initcall(init_wakeup_tracer);
+ 	dequeue_deadline_entity(dl_se);
+ 	if (!start_deadline_timer(dl_se, dl_se->deadline)) {
+ 		replenish_deadline_entity(dl_se);
 --=20
 1.6.0.4
 
@@ -148,17 +220,17 @@ Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
 http://blog.linux.it/raistlin / raistlin@ekiga.net /
 dario.faggioli@jabber.org
 
---=-ME1Af5xhCfypVEcN9yjB
+--=-yi4i88eMERXYpC4he7Np
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkrYlKcACgkQk4XaBE3IOsSOnACfWg4NZXsbUCzX/ZVoBjJRMEDR
-dq0AnR8Yak9ev8ELX3a+JQBJgyiADE0i
-=Z7QR
+iEYEABECAAYFAkrYlNAACgkQk4XaBE3IOsQuIACeOfthAU7fgPUO8y8paC9WMB9g
+Q9wAmwbiS61hRfyyuy0oxk8Zd1ca+goA
+=5WeL
 -----END PGP SIGNATURE-----
 
---=-ME1Af5xhCfypVEcN9yjB--
+--=-yi4i88eMERXYpC4he7Np--
 
