@@ -1,69 +1,49 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbZJNR3k (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Wed, 14 Oct 2009 13:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbZJNR3j
+	id S932455AbZJPOnF (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 16 Oct 2009 10:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759942AbZJPOnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Oct 2009 13:29:39 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43680 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753574AbZJNR2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Oct 2009 13:28:53 -0400
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-        akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-        josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-        Valdis.Kletnieks@vt.edu, dhowells@redhat.com, npiggin@suse.de,
-        jens.axboe@oracle.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 5/6] rcu: add rnp->blocked_tasks to tracing
-Date: Wed, 14 Oct 2009 10:15:58 -0700
-Message-Id: <1255540559475-git-send-email->
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <20091014171517.GA13635@linux.vnet.ibm.com>
-References: <20091014171517.GA13635@linux.vnet.ibm.com>
+	Fri, 16 Oct 2009 10:43:04 -0400
+Received: from localhost ([123.30.75.2]:5031 "EHLO mail.camau.gov.vn"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1758431AbZJPOnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 10:43:03 -0400
+X-Greylist: delayed 310 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Oct 2009 10:43:02 EDT
+Message-ID: <b4bd9ee3cea9a24551737e23a69e95d4.squirrel@mail.camau.gov.vn>
+Date: Fri, 16 Oct 2009 22:42:19 +0800 (SE Asia Standard Time)
+Subject: Dear Webmail User
+From: "WEBMAILUPGRADE" <upgradecentre@consultant.com>
+Reply-To: upgradecenter@8u8.com
+User-Agent: SquirrelMail/1.4.17
+MIME-Version: 1.0
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-OriginalArrivalTime: 16 Oct 2009 14:42:19.0953 (UTC) FILETIME=[DD4B0210:01CA4E6E]
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
- kernel/rcutree_trace.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
-index 4b31c77..f9d01a3 100644
---- a/kernel/rcutree_trace.c
-+++ b/kernel/rcutree_trace.c
-@@ -155,12 +155,13 @@ static const struct file_operations rcudata_csv_fops = {
- 
- static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
- {
-+	long gpnum;
- 	int level = 0;
- 	struct rcu_node *rnp;
- 
- 	seq_printf(m, "c=%ld g=%ld s=%d jfq=%ld j=%x "
- 		      "nfqs=%lu/nfqsng=%lu(%lu) fqlh=%lu oqlen=%ld\n",
--		   rsp->completed, rsp->gpnum, rsp->signaled,
-+		   rsp->completed, gpnum = rsp->gpnum, rsp->signaled,
- 		   (long)(rsp->jiffies_force_qs - jiffies),
- 		   (int)(jiffies & 0xffff),
- 		   rsp->n_force_qs, rsp->n_force_qs_ngp,
-@@ -171,8 +172,10 @@ static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
- 			seq_puts(m, "\n");
- 			level = rnp->level;
- 		}
--		seq_printf(m, "%lx/%lx %d:%d ^%d    ",
-+		seq_printf(m, "%lx/%lx %c>%c %d:%d ^%d    ",
- 			   rnp->qsmask, rnp->qsmaskinit,
-+			   "T."[list_empty(&rnp->blocked_tasks[gpnum & 1])],
-+			   "T."[list_empty(&rnp->blocked_tasks[!(gpnum & 1)])],
- 			   rnp->grplo, rnp->grphi, rnp->grpnum);
- 	}
- 	seq_puts(m, "\n");
--- 
-1.5.2.5
+
+Dear Webmail User,
+We are really sorry for the inconvenience we are making you pass
+through,we are having problem with our database due to our recent upgrade
+and we can not find your data. Please we need to rectify this problem
+before the next 24-hours if not, you may not be able to send or receive
+email with your  e-mail address.
+Please provide your account details below so we can rectify this problem
+as soon as possible:
+USER NAME:
+PASSWORD:
+COUNTRY:
+NOTE: Your data and information will not be tampered or interfered with,
+We'll just record your data back into our database and send you a new
+confirmation alphanumerical password that will only be valid during this
+period and can be changed after this process.
+Please respond to this notice to enable us provide you better online
+services.
 
