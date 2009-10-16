@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759244AbZJPNFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbZJPOOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759244AbZJPNFv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 09:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759157AbZJPNFu
+	id S1760048AbZJPOOK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 10:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760012AbZJPOOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 09:05:50 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:50706 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757980AbZJPNFt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 09:05:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Z1UzBCm7kh/WfNxa6/40vOigac79Wz/wI0hmQTcH5N6WRRLK7OK/MBiWvmvDNvc5CU
-         chq5CGN3JJNb5U8mObsS+RQKIMaDJ/XG2IpTTLe2ejlb4tJ8226HHybakvHwGVWAdCrh
-         LdjQl9QmUhUS3YI0PXvuQ+7BJ27FoVlhtBClU=
-Date: Fri, 16 Oct 2009 15:05:10 +0200
-From: Andreas Herrmann <herrmann.der.user@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: x86, amd: Get multi-node CPU info from NodeId MSR instead of
- PCI config space
-Message-ID: <20091016130510.GF8387@alberich.amd.com>
-References: <20091016122229.GB8387@alberich.amd.com>
- <20091016123853.GA15393@elte.hu>
- <20091016125700.GD8387@alberich.amd.com>
- <20091016130000.GC24518@elte.hu>
+	Fri, 16 Oct 2009 10:14:09 -0400
+Received: from thunk.org ([69.25.196.29]:54436 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759613AbZJPOOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 10:14:08 -0400
+Date: Fri, 16 Oct 2009 09:06:38 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Parag Warudkar <parag.lkml@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, bugzilla-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
+Message-ID: <20091016130638.GA8196@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Parag Warudkar <parag.lkml@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+	bugzilla-daemon@bugzilla.kernel.org
+References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com> <20091016091558.GA10184@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091016130000.GC24518@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091016091558.GA10184@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 16, 2009 at 03:00:00PM +0200, Ingo Molnar wrote:
-> 
-> * Andreas Herrmann <herrmann.der.user@googlemail.com> wrote:
-> 
-> > > are there any such CPUs?
-> > 
-> > Only Magny-Cours so far.
-> > 
-> > > I.e. we want to know the effect of this patch on various models of 
-> > > AMD CPUs - is the change really .32 safe? Does it solve any problem 
-> > > that makes it .32 material versus being for .33?
-> > 
-> > IMHO getting rid of the PCI config space accesses as soon as possible 
-> > is a benefit, I think.
-> 
-> Agreed.
-> 
-> Is the patch an identity transformation? Or are there CPUs where the 
-> information from the PCI config space is different from the MSR derived 
-> one?
+On Fri, Oct 16, 2009 at 05:15:58AM -0400, Theodore Tso wrote:
+> These are three commits that seem most likely, but there are
+> only 93 ext4-related commits, so doing a "git bisect start v2.6.31
+> v2.6.32-rc5 -- fs/ext4 fs/jbd2" 
 
-On production hardware it's an identity transformation.
+One correction.  The git bsect start usage is:
 
+     git bisect start [<bad> [<good>...]] [--] [<paths>...]
 
-Regards,
-Andreas
+So the correct git bisect start command should be:
+
+     git bisect start v2.6.32-rc5 v2.6.31 -- fs/ext4 fs/jbd2
+
+And similarly, "git bisect start v2.6.31 v2.6.31-rc3" should have been:
+
+     git bisect start v2.6.31-rc3 v2.6.31
+
+My apologies for any confusion.
+
+						- Ted
