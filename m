@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754331AbZJPRSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZJPRSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754331AbZJPRSd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbZJPRSa
+	id S1754156AbZJPRSe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZJPRSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:18:30 -0400
-Received: from kroah.org ([198.145.64.141]:48525 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:18:31 -0400
+Received: from kroah.org ([198.145.64.141]:48537 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754156AbZJPRS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 13:18:28 -0400
-X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:11:57 2009
-Message-Id: <20091016171157.469811828@linux.site>
+	id S1754172AbZJPRS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 13:18:29 -0400
+X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:11:58 2009
+Message-Id: <20091016171158.014986323@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:14 -0700
+Date: Fri, 16 Oct 2009 10:10:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Darren Hart <dvhltc@us.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>, John Kacur <jkacur@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
        Dinakar Guniguntala <dino@in.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       John Stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [21/46] futex: Detect mismatched requeue targets
+Subject: [22/46] futex: Fix wakeup race by setting TASK_INTERRUPTIBLE before queue_me()
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=futex-detect-mismatched-requeue-targets.patch
+Content-Disposition: inline; filename=futex-fix-wakeup-race-by-setting-task_interruptible-before-queue_me.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -35,107 +36,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Darren Hart <dvhltc@us.ibm.com>
 
-commit 84bc4af59081ee974dd80210e694ab59ebe51ce8 upstream.
+commit 0729e196147692d84d4c099fcff056eba2ed61d8 upstream.
 
-There is currently no check to ensure that userspace uses the same
-futex requeue target (uaddr2) in futex_requeue() that the waiter used
-in futex_wait_requeue_pi().  A mismatch here could very unexpected
-results as the waiter assumes it either wakes on uaddr1 or uaddr2. We
-could detect this on wakeup in the waiter, but the cleanup is more
-intense after the improper requeue has occured.
+PI futexes do not use the same plist_node_empty() test for wakeup.
+It was possible for the waiter (in futex_wait_requeue_pi()) to set
+TASK_INTERRUPTIBLE after the waker assigned the rtmutex to the
+waiter. The waiter would then note the plist was not empty and call
+schedule(). The task would not be found by any subsequeuent futex
+wakeups, resulting in a userspace hang.
 
-This patch stores the waiter's expected requeue target in a new
-requeue_pi_key pointer in the futex_q which futex_requeue() checks
-prior to attempting to do a proxy lock acquistion or a requeue when
-requeue_pi=1. If they don't match, return -EINVAL from futex_requeue,
-aborting the requeue of any remaining waiters.
+By moving the setting of TASK_INTERRUPTIBLE to before the call to
+queue_me(), the race with the waker is eliminated. Since we no
+longer call get_user() from within queue_me(), there is no need to
+delay the setting of TASK_INTERRUPTIBLE until after the call to
+queue_me().
+
+The FUTEX_LOCK_PI operation is not affected as futex_lock_pi()
+relies entirely on the rtmutex code to handle schedule() and
+wakeup.  The requeue PI code is affected because the waiter starts
+as a non-PI waiter and is woken on a PI futex.
+
+Remove the crusty old comment about holding spinlocks() across
+get_user() as we no longer do that. Correct the locking statement
+with a description of why the test is performed.
 
 Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: John Kacur <jkacur@redhat.com>
 Cc: Dinakar Guniguntala <dino@in.ibm.com>
 Cc: John Stultz <johnstul@us.ibm.com>
-LKML-Reference: <20090814003650.14634.63916.stgit@Aeon>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+LKML-Reference: <20090922053038.8717.97838.stgit@Aeon>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/futex.c |   24 ++++++++++++++++++++----
- 1 file changed, 20 insertions(+), 4 deletions(-)
+ kernel/futex.c |   15 +++------------
+ 1 file changed, 3 insertions(+), 12 deletions(-)
 
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -115,6 +115,9 @@ struct futex_q {
- 	/* rt_waiter storage for requeue_pi: */
- 	struct rt_mutex_waiter *rt_waiter;
- 
-+	/* The expected requeue pi target futex key: */
-+	union futex_key *requeue_pi_key;
-+
- 	/* Bitset for the optional bitmasked wakeup */
- 	u32 bitset;
- };
-@@ -1089,6 +1092,10 @@ static int futex_proxy_trylock_atomic(u3
- 	if (!top_waiter)
- 		return 0;
- 
-+	/* Ensure we requeue to the expected futex. */
-+	if (!match_futex(top_waiter->requeue_pi_key, key2))
-+		return -EINVAL;
-+
- 	/*
- 	 * Try to take the lock for top_waiter.  Set the FUTEX_WAITERS bit in
- 	 * the contended case or if set_waiters is 1.  The pi_state is returned
-@@ -1276,6 +1283,12 @@ retry_private:
- 			continue;
- 		}
- 
-+		/* Ensure we requeue to the expected futex for requeue_pi. */
-+		if (requeue_pi && !match_futex(this->requeue_pi_key, &key2)) {
-+			ret = -EINVAL;
-+			break;
-+		}
-+
- 		/*
- 		 * Requeue nr_requeue waiters and possibly one more in the case
- 		 * of requeue_pi if we couldn't acquire the lock atomically.
-@@ -1751,6 +1764,7 @@ static int futex_wait(u32 __user *uaddr,
- 	q.pi_state = NULL;
- 	q.bitset = bitset;
- 	q.rt_waiter = NULL;
-+	q.requeue_pi_key = NULL;
- 
- 	if (abs_time) {
- 		to = &timeout;
-@@ -1858,6 +1872,7 @@ static int futex_lock_pi(u32 __user *uad
- 
- 	q.pi_state = NULL;
- 	q.rt_waiter = NULL;
-+	q.requeue_pi_key = NULL;
- retry:
- 	q.key = FUTEX_KEY_INIT;
- 	ret = get_futex_key(uaddr, fshared, &q.key, VERIFY_WRITE);
-@@ -2168,15 +2183,16 @@ static int futex_wait_requeue_pi(u32 __u
- 	debug_rt_mutex_init_waiter(&rt_waiter);
- 	rt_waiter.task = NULL;
- 
--	q.pi_state = NULL;
--	q.bitset = bitset;
--	q.rt_waiter = &rt_waiter;
+@@ -1638,17 +1638,8 @@ out:
+ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
+ 				struct hrtimer_sleeper *timeout)
+ {
+-	queue_me(q, hb);
 -
- 	key2 = FUTEX_KEY_INIT;
- 	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
- 	if (unlikely(ret != 0))
- 		goto out;
+-	/*
+-	 * There might have been scheduling since the queue_me(), as we
+-	 * cannot hold a spinlock across the get_user() in case it
+-	 * faults, and we cannot just set TASK_INTERRUPTIBLE state when
+-	 * queueing ourselves into the futex hash. This code thus has to
+-	 * rely on the futex_wake() code removing us from hash when it
+-	 * wakes us up.
+-	 */
+ 	set_current_state(TASK_INTERRUPTIBLE);
++	queue_me(q, hb);
  
-+	q.pi_state = NULL;
-+	q.bitset = bitset;
-+	q.rt_waiter = &rt_waiter;
-+	q.requeue_pi_key = &key2;
-+
- 	/* Prepare to wait on uaddr. */
- 	ret = futex_wait_setup(uaddr, val, fshared, &q, &hb);
- 	if (ret)
+ 	/* Arm the timer */
+ 	if (timeout) {
+@@ -1658,8 +1649,8 @@ static void futex_wait_queue_me(struct f
+ 	}
+ 
+ 	/*
+-	 * !plist_node_empty() is safe here without any lock.
+-	 * q.lock_ptr != 0 is not safe, because of ordering against wakeup.
++	 * If we have been removed from the hash list, then another task
++	 * has tried to wake us, and we can skip the call to schedule().
+ 	 */
+ 	if (likely(!plist_node_empty(&q->list))) {
+ 		/*
 
 
