@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbZJPVQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbZJPVM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755497AbZJPVQN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 17:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZJPVQL
+	id S1751954AbZJPVM0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 17:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbZJPVMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 17:16:11 -0400
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:22280 "EHLO
-	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753806AbZJPVQH (ORCPT
+	Fri, 16 Oct 2009 17:12:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57686 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751067AbZJPVMY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 17:16:07 -0400
-X-IMAP-Sender: achiang
-Date: Fri, 16 Oct 2009 14:50:13 -0600
-X-OfflineIMAP-1086817885-6c646c-494e424f582e4f7574626f78: 1255727771-0932179550876-v6.0.3
-From: Alex Chiang <achiang@hp.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: lenb@kernel.org, shaohua.li@intel.com, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH v2 1/6] ACPI: dock: clean up error handling paths in
-	dock_add()
-Message-ID: <20091016205013.GA24292@grease.lan>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, lenb@kernel.org,
-	shaohua.li@intel.com, linux-kernel@vger.kernel.org,
-	linux-acpi@vger.kernel.org
-References: <20091014224415.18044.88208.stgit@bob.kio> <20091014224616.18044.45719.stgit@bob.kio> <20091016043618.GB11582@core.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091016043618.GB11582@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 16 Oct 2009 17:12:24 -0400
+Date: Fri, 16 Oct 2009 14:11:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, khilman@deeprootsystems.com,
+       venkatesh.pallipadi@intel.com, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       lenb@kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] CPUidle: always return with interrupts enabled
+Message-Id: <20091016141104.d794f2c4.akpm@linux-foundation.org>
+In-Reply-To: <20091016162504.GC1391@deprecation.cyrius.com>
+References: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
+	<200909302321.33088.rjw@sisk.pl>
+	<20091006133456.5177a32a.akpm@linux-foundation.org>
+	<20091016162504.GC1391@deprecation.cyrius.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> Hi Alex,
+On Fri, 16 Oct 2009 17:25:04 +0100
+Martin Michlmayr <tbm@cyrius.com> wrote:
+
+> * Andrew Morton <akpm@linux-foundation.org> [2009-10-06 13:34]:
+> > Rigor mortis is setting in on this one.
 > 
-> On Wed, Oct 14, 2009 at 04:46:16PM -0600, Alex Chiang wrote:
-> > Remove some copy/paste code in our error handling paths, which makes
-> > the function smaller and slightly easier to read.
+> > The patch seems correct to me.
 > 
-> Changing individual attributes into attribute_group would greatly
-> simplify the code.
-
-Good advice, I'll do this, thanks.
-
-> > @@ -968,11 +968,9 @@ static int dock_add(acpi_handle handle)
-> >  		platform_device_register_simple(dock_device_name,
-> >  			dock_station_count, NULL, 0);
-> >  	dock_device = dock_station->dock_device;
-> > -	if (IS_ERR(dock_device)) {
-> > -		kfree(dock_station);
-> > -		dock_station = NULL;
-> > -		return PTR_ERR(dock_device);
-> > -	}
-> > +	ret = IS_ERR(dock_device) ? PTR_ERR(dock_device) : 0;
-> > +	if (ret)
-> > +		goto out;
+> Can someone put this patch in now?  The problem has also been reported
+> on Marvell's Kirkwood platform (ARM) by a number of users and the
+> patch fixes it.
 > 
-> I think
-> 
-> 	if (IS_ERR(dock_device)) {
-> 		ret = PTR_ERR(dock_device);
-> 		goto out;
-> 	}
-> 
-> is more commonly used form.
+> Tested-by: Martin Michlmayr <tbm@cyrius.com>
 
-Ok, I'll change to the more idiomatic form.
+I have it in my for-2.6.32 queue.
 
-Thanks for the review.
+> Please CC stable when you commit the patch since it also needs to go
+> in for 2.6.31.
 
-/ac
-
+hm, I didn't know that.  So noted, thanks.
