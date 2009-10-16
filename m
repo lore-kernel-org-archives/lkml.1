@@ -1,101 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752605AbZJPIl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbZJPIlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752605AbZJPIl4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 04:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZJPIlz
+	id S1751893AbZJPIlj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 04:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZJPIli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 04:41:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43623 "EHLO hera.kernel.org"
+	Fri, 16 Oct 2009 04:41:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43612 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751382AbZJPIly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 04:41:54 -0400
-Date: Fri, 16 Oct 2009 08:40:06 GMT
-From: tip-bot for Darren Hart <dvhltc@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, jkacur@redhat.com, johnstul@linux.vnet.ibm.com,
-       eric.dumazet@gmail.com, peterz@infradead.org, dino@in.ibm.com,
-       sdietrich@novell.com, stable@kernel.org, tglx@linutronix.de,
+	id S1751011AbZJPIlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 04:41:37 -0400
+Date: Fri, 16 Oct 2009 08:40:22 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
        mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
-       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
-       johnstul@linux.vnet.ibm.com, jkacur@redhat.com, peterz@infradead.org,
-       dino@in.ibm.com, sdietrich@novell.com, stable@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4AD7A298.5040802@us.ibm.com>
-References: <4AD7A298.5040802@us.ibm.com>
+In-Reply-To: <new-submission>
+References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/urgent] futex: Move drop_futex_key_refs out of spinlock'ed region
-Message-ID: <tip-89061d3d58e1f0742139605dc6a7950aa1ecc019@git.kernel.org>
-Git-Commit-ID: 89061d3d58e1f0742139605dc6a7950aa1ecc019
+Subject: [tip:perf/urgent] perf tools: Bump version to 0.0.2
+Message-ID: <tip-210f9cb2cf2effca690271085f4bd6a3ea286e6c@git.kernel.org>
+Git-Commit-ID: 210f9cb2cf2effca690271085f4bd6a3ea286e6c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 16 Oct 2009 08:40:20 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 16 Oct 2009 08:40:22 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  89061d3d58e1f0742139605dc6a7950aa1ecc019
-Gitweb:     http://git.kernel.org/tip/89061d3d58e1f0742139605dc6a7950aa1ecc019
-Author:     Darren Hart <dvhltc@us.ibm.com>
-AuthorDate: Thu, 15 Oct 2009 15:30:48 -0700
+Commit-ID:  210f9cb2cf2effca690271085f4bd6a3ea286e6c
+Gitweb:     http://git.kernel.org/tip/210f9cb2cf2effca690271085f4bd6a3ea286e6c
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Fri, 16 Oct 2009 10:34:28 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 16 Oct 2009 10:19:18 +0200
+CommitDate: Fri, 16 Oct 2009 10:34:28 +0200
 
-futex: Move drop_futex_key_refs out of spinlock'ed region
+perf tools: Bump version to 0.0.2
 
-When requeuing tasks from one futex to another, the reference held
-by the requeued task to the original futex location needs to be
-dropped eventually.
+We released the first version of perf with 0.0.1 in v2.6.31,
+time to double our version number to 0.0.2 ;-)
 
-Dropping the reference may ultimately lead to a call to
-"iput_final" and subsequently call into filesystem- specific code -
-which may be non-atomic.
-
-It is therefore safer to defer this drop operation until after the
-futex_hash_bucket spinlock has been dropped.
-
-Originally-From: Helge Bahmann <hcb@chaoticmind.net>
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-Cc: <stable@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Dinakar Guniguntala <dino@in.ibm.com>
-Cc: John Stultz <johnstul@linux.vnet.ibm.com>
-Cc: Sven-Thorsten Dietrich <sdietrich@novell.com>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <4AD7A298.5040802@us.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/futex.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ tools/perf/util/PERF-VERSION-GEN |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 06938e5..642f3bb 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1029,7 +1029,6 @@ static inline
- void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key,
- 			   struct futex_hash_bucket *hb)
- {
--	drop_futex_key_refs(&q->key);
- 	get_futex_key_refs(key);
- 	q->key = *key;
+diff --git a/tools/perf/util/PERF-VERSION-GEN b/tools/perf/util/PERF-VERSION-GEN
+index c561d15..54552a0 100755
+--- a/tools/perf/util/PERF-VERSION-GEN
++++ b/tools/perf/util/PERF-VERSION-GEN
+@@ -1,7 +1,7 @@
+ #!/bin/sh
  
-@@ -1227,6 +1226,7 @@ retry_private:
- 		 */
- 		if (ret == 1) {
- 			WARN_ON(pi_state);
-+			drop_count++;
- 			task_count++;
- 			ret = get_futex_value_locked(&curval2, uaddr2);
- 			if (!ret)
-@@ -1305,6 +1305,7 @@ retry_private:
- 			if (ret == 1) {
- 				/* We got the lock. */
- 				requeue_pi_wake_futex(this, &key2, hb2);
-+				drop_count++;
- 				continue;
- 			} else if (ret) {
- 				/* -EDEADLK */
+ GVF=PERF-VERSION-FILE
+-DEF_VER=v0.0.1.PERF
++DEF_VER=v0.0.2.PERF
+ 
+ LF='
+ '
