@@ -1,33 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbZJPR0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbZJPRZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754452AbZJPR0E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbZJPR0B
+	id S1757017AbZJPRZW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbZJPRZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:26:01 -0400
-Received: from kroah.org ([198.145.64.141]:48506 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:25:19 -0400
+Received: from kroah.org ([198.145.64.141]:48519 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753970AbZJPRS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 13:18:26 -0400
-X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:11:56 2009
-Message-Id: <20091016171156.344026469@linux.site>
+	id S1754081AbZJPRS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 13:18:27 -0400
+X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:11:57 2009
+Message-Id: <20091016171156.879737124@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:12 -0700
+Date: Fri, 16 Oct 2009 10:10:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Albin Tonnerre <albin.tonnerre@free-electrons.com>,
-       Mikael Starvik <starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>, Jeff Dike <jdike@addtoit.com>,
-       Chris Zankel <chris@zankel.net>, Sam Ravnborg <sam@ravnborg.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [19/46] arm, cris, mips, sparc, powerpc, um, xtensa: fix build with bash 4.0
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Arto Jantunen <viiru@debian.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [20/46] intel-iommu: Cope with broken HP DC7900 BIOS
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=arm-cris-mips-sparc-powerpc-um-xtensa-fix-build-with-bash-4.0.patch
+Content-Disposition: inline; filename=intel-iommu-cope-with-broken-hp-dc7900-bios.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -36,316 +30,80 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Sam Ravnborg <sam@ravnborg.org>
+From: David Woodhouse <David.Woodhouse@intel.com>
 
-commit 51b563fc93c8cb5bff1d67a0a71c374e4a4ea049 upstream.
+commit 0815565adfe3f4c369110c57d8ffe83caefeed68 upstream.
 
-Albin Tonnerre <albin.tonnerre@free-electrons.com> reported:
+Yet another reason why trusting this stuff to the BIOS was a bad idea.
+The HP DC7900 BIOS reports an iommu at an address which just returns all
+ones, when VT-d is disabled in the BIOS.
 
-    Bash 4 filters out variables which contain a dot in them.
-    This happends to be the case of CPPFLAGS_vmlinux.lds.
-    This is rather unfortunate, as it now causes
-    build failures when using SHELL=/bin/bash to compile,
-    or when bash happens to be used by make (eg when it's /bin/sh)
+Fix up the missing iounmap in the error paths while we're at it.
 
-Remove the common definition of CPPFLAGS_vmlinux.lds by
-pushing relevant stuff to either Makefile.build or the
-arch specific kernel/Makefile where we build the linker script.
-
-This is also nice cleanup as we move the information out where
-it is used.
-
-Notes for the different architectures touched:
-
-arm - we use an already exported symbol
-cris - we use a config symbol aleady available
-       [Not build tested]
-mips - the jiffies complexity has moved to vmlinux.lds.S where we need it.
-       Added a few variables to CPPFLAGS - they are only used by
-       the linker script.
-       [Not build tested]
-powerpc - removed assignment that is not needed
-          [not build tested]
-sparc - simplified it using $(BITS)
-um - introduced a few new exported variables to deal with this
-xtensa - added options to CPP invocation
-         [not build tested]
-
-Cc: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Jeff Dike <jdike@addtoit.com>
-Cc: Chris Zankel <chris@zankel.net>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Cc: Arto Jantunen <viiru@debian.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Makefile                       |    5 -----
- arch/arm/Makefile              |    2 +-
- arch/arm/kernel/Makefile       |    3 ++-
- arch/cris/Makefile             |    2 --
- arch/cris/kernel/Makefile      |    1 +
- arch/mips/Makefile             |   27 +++------------------------
- arch/mips/kernel/vmlinux.lds.S |   13 +++++++++++--
- arch/powerpc/Makefile          |    2 --
- arch/sparc/Makefile            |    4 ----
- arch/sparc/kernel/Makefile     |    6 +++++-
- arch/um/Makefile               |    9 ++++-----
- arch/um/kernel/Makefile        |    3 +++
- arch/um/kernel/vmlinux.lds.S   |    3 +++
- arch/xtensa/kernel/Makefile    |    3 ++-
- scripts/Makefile.build         |    3 ++-
- 15 files changed, 37 insertions(+), 49 deletions(-)
+ drivers/pci/dmar.c |   22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
 
---- a/arch/arm/kernel/Makefile
-+++ b/arch/arm/kernel/Makefile
-@@ -2,7 +2,8 @@
- # Makefile for the linux kernel.
- #
+--- a/drivers/pci/dmar.c
++++ b/drivers/pci/dmar.c
+@@ -632,20 +632,31 @@ int alloc_iommu(struct dmar_drhd_unit *d
+ 	iommu->cap = dmar_readq(iommu->reg + DMAR_CAP_REG);
+ 	iommu->ecap = dmar_readq(iommu->reg + DMAR_ECAP_REG);
  
--AFLAGS_head.o := -DTEXT_OFFSET=$(TEXT_OFFSET)
-+CPPFLAGS_vmlinux.lds := -DTEXT_OFFSET=$(TEXT_OFFSET)
-+AFLAGS_head.o        := -DTEXT_OFFSET=$(TEXT_OFFSET)
- 
- ifdef CONFIG_DYNAMIC_FTRACE
- CFLAGS_REMOVE_ftrace.o = -pg
---- a/arch/arm/Makefile
-+++ b/arch/arm/Makefile
-@@ -14,7 +14,7 @@ LDFLAGS_vmlinux	:=-p --no-undefined -X
- ifeq ($(CONFIG_CPU_ENDIAN_BE8),y)
- LDFLAGS_vmlinux	+= --be8
- endif
--CPPFLAGS_vmlinux.lds = -DTEXT_OFFSET=$(TEXT_OFFSET)
++	if (iommu->cap == (uint64_t)-1 && iommu->ecap == (uint64_t)-1) {
++		/* Promote an attitude of violence to a BIOS engineer today */
++		WARN(1, "Your BIOS is broken; DMAR reported at address %llx returns all ones!\n"
++		     "BIOS vendor: %s; Ver: %s; Product Version: %s\n",
++		     drhd->reg_base_addr,
++		     dmi_get_system_info(DMI_BIOS_VENDOR),
++		     dmi_get_system_info(DMI_BIOS_VERSION),
++		     dmi_get_system_info(DMI_PRODUCT_VERSION));
++		goto err_unmap;
++	}
 +
- OBJCOPYFLAGS	:=-O binary -R .note -R .note.gnu.build-id -R .comment -S
- GZFLAGS		:=-9
- #KBUILD_CFLAGS	+=-pipe
---- a/arch/cris/kernel/Makefile
-+++ b/arch/cris/kernel/Makefile
-@@ -3,6 +3,7 @@
- # Makefile for the linux kernel.
- #
- 
-+CPPFLAGS_vmlinux.lds := -DDRAM_VIRTUAL_BASE=0x$(CONFIG_ETRAX_DRAM_VIRTUAL_BASE)
- extra-y	:= vmlinux.lds
- 
- obj-y   := process.o traps.o irq.o ptrace.o setup.o time.o sys_cris.o
---- a/arch/cris/Makefile
-+++ b/arch/cris/Makefile
-@@ -42,8 +42,6 @@ LD = $(CROSS_COMPILE)ld -mcrislinux
- 
- OBJCOPYFLAGS := -O binary -R .note -R .comment -S
- 
--CPPFLAGS_vmlinux.lds = -DDRAM_VIRTUAL_BASE=0x$(CONFIG_ETRAX_DRAM_VIRTUAL_BASE)
--
- KBUILD_AFLAGS += -mlinux -march=$(arch-y) $(inc)
- KBUILD_CFLAGS += -mlinux -march=$(arch-y) -pipe $(inc)
- KBUILD_CPPFLAGS += $(inc)
---- a/arch/mips/kernel/vmlinux.lds.S
-+++ b/arch/mips/kernel/vmlinux.lds.S
-@@ -9,7 +9,16 @@ PHDRS {
- 	text PT_LOAD FLAGS(7);	/* RWX */
- 	note PT_NOTE FLAGS(4);	/* R__ */
- }
--jiffies = JIFFIES;
-+
-+ifdef CONFIG_32BIT
-+	ifdef CONFIG_CPU_LITTLE_ENDIAN
-+		jiffies  = jiffies_64;
-+	else
-+		jiffies  = jiffies_64 + 4;
-+	endif
-+else
-+	jiffies  = jiffies_64;
-+endif
- 
- SECTIONS
- {
-@@ -28,7 +37,7 @@ SECTIONS
- 	/* . = 0xa800000000300000; */
- 	. = 0xffffffff80300000;
+ #ifdef CONFIG_DMAR
+ 	agaw = iommu_calculate_agaw(iommu);
+ 	if (agaw < 0) {
+ 		printk(KERN_ERR
+ 		       "Cannot get a valid agaw for iommu (seq_id = %d)\n",
+ 		       iommu->seq_id);
+-		goto error;
++		goto err_unmap;
+ 	}
+ 	msagaw = iommu_calculate_max_sagaw(iommu);
+ 	if (msagaw < 0) {
+ 		printk(KERN_ERR
+ 			"Cannot get a valid max agaw for iommu (seq_id = %d)\n",
+ 			iommu->seq_id);
+-		goto error;
++		goto err_unmap;
+ 	}
  #endif
--	. = LOADADDR;
-+	. = VMLINUX_LOAD_ADDRESS;
- 	/* read-only */
- 	_text = .;	/* Text and read-only data */
- 	.text : {
---- a/arch/mips/Makefile
-+++ b/arch/mips/Makefile
-@@ -615,16 +615,6 @@ endif
- cflags-y			+= -I$(srctree)/arch/mips/include/asm/mach-generic
- drivers-$(CONFIG_PCI)		+= arch/mips/pci/
+ 	iommu->agaw = agaw;
+@@ -665,7 +676,7 @@ int alloc_iommu(struct dmar_drhd_unit *d
+ 	}
  
--ifdef CONFIG_32BIT
--ifdef CONFIG_CPU_LITTLE_ENDIAN
--JIFFIES			= jiffies_64
--else
--JIFFIES			= jiffies_64 + 4
--endif
--else
--JIFFIES			= jiffies_64
--endif
--
- #
- # Automatically detect the build format. By default we choose
- # the elf format according to the load address.
-@@ -648,8 +638,9 @@ ifdef CONFIG_64BIT
- endif
+ 	ver = readl(iommu->reg + DMAR_VER_REG);
+-	pr_debug("IOMMU %llx: ver %d:%d cap %llx ecap %llx\n",
++	pr_info("IOMMU %llx: ver %d:%d cap %llx ecap %llx\n",
+ 		(unsigned long long)drhd->reg_base_addr,
+ 		DMAR_VER_MAJOR(ver), DMAR_VER_MINOR(ver),
+ 		(unsigned long long)iommu->cap,
+@@ -675,7 +686,10 @@ int alloc_iommu(struct dmar_drhd_unit *d
  
- KBUILD_AFLAGS	+= $(cflags-y)
--KBUILD_CFLAGS	+= $(cflags-y) \
--			-D"VMLINUX_LOAD_ADDRESS=$(load-y)"
-+KBUILD_CFLAGS	+= $(cflags-y)
-+KBUILD_CPPFLAGS += -D"VMLINUX_LOAD_ADDRESS=$(load-y)"
-+KBUILD_CPPFLAGS += -D"DATAOFFSET=$(if $(dataoffset-y),$(dataoffset-y),0)"
- 
- LDFLAGS			+= -m $(ld-emul)
- 
-@@ -664,18 +655,6 @@ endif
- 
- OBJCOPYFLAGS		+= --remove-section=.reginfo
- 
--#
--# Choosing incompatible machines durings configuration will result in
--# error messages during linking.  Select a default linkscript if
--# none has been choosen above.
--#
--
--CPPFLAGS_vmlinux.lds := \
--	$(KBUILD_CFLAGS) \
--	-D"LOADADDR=$(load-y)" \
--	-D"JIFFIES=$(JIFFIES)" \
--	-D"DATAOFFSET=$(if $(dataoffset-y),$(dataoffset-y),0)"
--
- head-y := arch/mips/kernel/head.o arch/mips/kernel/init_task.o
- 
- libs-y			+= arch/mips/lib/
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -158,8 +158,6 @@ drivers-$(CONFIG_OPROFILE)	+= arch/power
- # Default to zImage, override when needed
- all: zImage
- 
--CPPFLAGS_vmlinux.lds	:= -Upowerpc
--
- BOOT_TARGETS = zImage zImage.initrd uImage zImage% dtbImage% treeImage.% cuImage.% simpleImage.%
- 
- PHONY += $(BOOT_TARGETS)
---- a/arch/sparc/kernel/Makefile
-+++ b/arch/sparc/kernel/Makefile
-@@ -7,7 +7,11 @@ ccflags-y := -Werror
- 
- extra-y     := head_$(BITS).o
- extra-y     += init_task.o
--extra-y     += vmlinux.lds
+ 	drhd->iommu = iommu;
+ 	return 0;
+-error:
 +
-+# Undefine sparc when processing vmlinux.lds - it is used
-+# And teach CPP we are doing $(BITS) builds (for this case)
-+CPPFLAGS_vmlinux.lds := -Usparc -m$(BITS)
-+extra-y              += vmlinux.lds
- 
- obj-$(CONFIG_SPARC32)   += entry.o wof.o wuf.o
- obj-$(CONFIG_SPARC32)   += etrap_32.o
---- a/arch/sparc/Makefile
-+++ b/arch/sparc/Makefile
-@@ -31,7 +31,6 @@ export BITS    := 32
- #KBUILD_CFLAGS += -g -pipe -fcall-used-g5 -fcall-used-g7
- KBUILD_CFLAGS += -m32 -pipe -mno-fpu -fcall-used-g5 -fcall-used-g7
- KBUILD_AFLAGS += -m32
--CPPFLAGS_vmlinux.lds += -m32
- 
- #LDFLAGS_vmlinux = -N -Ttext 0xf0004000
- #  Since 2.5.40, the first stage is left not btfix-ed.
-@@ -49,9 +48,6 @@ else
- 
- CHECKFLAGS      += -D__sparc__ -D__sparc_v9__ -D__arch64__ -m64
- 
--# Undefine sparc when processing vmlinux.lds - it is used
--# And teach CPP we are doing 64 bit builds (for this case)
--CPPFLAGS_vmlinux.lds += -m64 -Usparc
- LDFLAGS              := -m elf64_sparc
- export BITS          := 64
- 
---- a/arch/um/kernel/Makefile
-+++ b/arch/um/kernel/Makefile
-@@ -3,6 +3,9 @@
- # Licensed under the GPL
- #
- 
-+CPPFLAGS_vmlinux.lds := -U$(SUBARCH) -DSTART=$(LDS_START) \
-+                        -DELF_ARCH=$(LDS_ELF_ARCH)        \
-+                        -DELF_FORMAT=$(LDS_ELF_FORMAT)
- extra-y := vmlinux.lds
- clean-files :=
- 
---- a/arch/um/kernel/vmlinux.lds.S
-+++ b/arch/um/kernel/vmlinux.lds.S
-@@ -1,3 +1,6 @@
-+
-+KERNEL_STACK_SIZE = 4096 * (1 << CONFIG_KERNEL_STACK_ORDER);
-+
- #ifdef CONFIG_LD_SCRIPT_STATIC
- #include "uml.lds.S"
- #else
---- a/arch/um/Makefile
-+++ b/arch/um/Makefile
-@@ -96,11 +96,10 @@ CFLAGS_NO_HARDENING := $(call cc-option,
- 	$(call cc-option, -fno-stack-protector,) \
- 	$(call cc-option, -fno-stack-protector-all,)
- 
--CONFIG_KERNEL_STACK_ORDER ?= 2
--STACK_SIZE := $(shell echo $$[ 4096 * (1 << $(CONFIG_KERNEL_STACK_ORDER)) ] )
--
--CPPFLAGS_vmlinux.lds = -U$(SUBARCH) -DSTART=$(START) -DELF_ARCH=$(ELF_ARCH) \
--	-DELF_FORMAT="$(ELF_FORMAT)" -DKERNEL_STACK_SIZE=$(STACK_SIZE)
-+# Options used by linker script
-+export LDS_START      := $(START)
-+export LDS_ELF_ARCH   := $(ELF_ARCH)
-+export LDS_ELF_FORMAT := $(ELF_FORMAT)
- 
- # The wrappers will select whether using "malloc" or the kernel allocator.
- LINK_WRAPS = -Wl,--wrap,malloc -Wl,--wrap,free -Wl,--wrap,calloc
---- a/arch/xtensa/kernel/Makefile
-+++ b/arch/xtensa/kernel/Makefile
-@@ -27,7 +27,8 @@ sed-y = -e 's/(\(\.[a-z]*it\|\.ref\|\)\.
- 	-e 's/(\(\.text\.[a-z]*\))/(\1.literal \1)/g'
- 
- quiet_cmd__cpp_lds_S = LDS     $@
--      cmd__cpp_lds_S = $(CPP) $(cpp_flags) -D__ASSEMBLY__ $< | sed $(sed-y) >$@
-+      cmd__cpp_lds_S = $(CPP) $(cpp_flags) -P -C -Uxtensa -D__ASSEMBLY__ $< \
-+                       | sed $(sed-y) >$@
- 
- $(obj)/vmlinux.lds: $(src)/vmlinux.lds.S FORCE
- 	$(call if_changed_dep,_cpp_lds_S)
---- a/Makefile
-+++ b/Makefile
-@@ -980,11 +980,6 @@ prepare0: archprepare FORCE
- # All the preparing..
- prepare: prepare0
- 
--# Leave this as default for preprocessing vmlinux.lds.S, which is now
--# done in arch/$(ARCH)/kernel/Makefile
--
--export CPPFLAGS_vmlinux.lds += -P -C -U$(ARCH)
--
- # The asm symlink changes when $(ARCH) changes.
- # Detect this and ask user to run make mrproper
- # If asm is a stale symlink (point to dir that does not exist) remove it
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -269,7 +269,8 @@ targets += $(extra-y) $(MAKECMDGOALS) $(
- # Linker scripts preprocessor (.lds.S -> .lds)
- # ---------------------------------------------------------------------------
- quiet_cmd_cpp_lds_S = LDS     $@
--      cmd_cpp_lds_S = $(CPP) $(cpp_flags) -D__ASSEMBLY__ -o $@ $<
-+      cmd_cpp_lds_S = $(CPP) $(cpp_flags) -P -C -U$(ARCH) \
-+	                     -D__ASSEMBLY__ -o $@ $<
- 
- $(obj)/%.lds: $(src)/%.lds.S FORCE
- 	$(call if_changed_dep,cpp_lds_S)
++ err_unmap:
++	iounmap(iommu->reg);
++ error:
+ 	kfree(iommu);
+ 	return -1;
+ }
 
 
