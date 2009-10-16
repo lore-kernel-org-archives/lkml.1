@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763308AbZJPAHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763170AbZJPAV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763308AbZJPAHt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 20:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758849AbZJPAHt
+	id S1763170AbZJPAV5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 20:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758838AbZJPAV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 20:07:49 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38229 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758847AbZJPAHs (ORCPT
+	Thu, 15 Oct 2009 20:21:56 -0400
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:37274 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758822AbZJPAV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 20:07:48 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 16 Oct 2009 09:04:46 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 8/9] swap_info: note SWAP_MAP_SHMEM
-Message-Id: <20091016090446.824292c4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0910152317290.4447@sister.anvils>
+	Thu, 15 Oct 2009 20:21:56 -0400
+X-Trace: 274576163/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.89.236/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.89.236
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEANNY10pPRVns/2dsb2JhbACBUtc3hDAE
+X-IronPort-AV: E=Sophos;i="4.44,568,1249254000"; 
+   d="scan'208";a="274576163"
+Date: Fri, 16 Oct 2009 01:21:14 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: David Rientjes <rientjes@google.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nitin Gupta <ngupta@vflare.org>, hongshin@gmail.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 7/9] swap_info: swap count continuations
+In-Reply-To: <alpine.DEB.1.00.0910151414570.25796@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0910160106580.14004@sister.anvils>
 References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
-	<Pine.LNX.4.64.0910150156060.3291@sister.anvils>
-	<20091015123219.43cfd7b1.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0910152317290.4447@sister.anvils>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ <Pine.LNX.4.64.0910150153560.3291@sister.anvils>
+ <20091015123024.21ca3ef7.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.1.00.0910151414570.25796@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009 23:23:24 +0100 (BST)
-Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-
+On Thu, 15 Oct 2009, David Rientjes wrote:
 > On Thu, 15 Oct 2009, KAMEZAWA Hiroyuki wrote:
-> > On Thu, 15 Oct 2009 01:57:28 +0100 (BST)
-> > Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+> > Hmm...maybe I don't understand the benefit of this style of data structure.
 > > 
-> > > While we're fiddling with the swap_map values, let's assign a particular
-> > > value to shmem/tmpfs swap pages: their swap counts are never incremented,
-> > > and it helps swapoff's try_to_unuse() a little if it can immediately
-> > > distinguish those pages from process pages.
-> > > 
-> > > Since we've no use for SWAP_MAP_BAD | COUNT_CONTINUED,
-> > > we might as well use that 0xbf value for SWAP_MAP_SHMEM.
-> > > 
-> > > Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> > 
-> > I welcome this!
+> > Do we need fine grain chain ? 
+> > Is  array of "unsigned long" counter is bad ?  (too big?)
 > 
-> Ah, I did wonder whether you might find some memcg use for it too:
-> I'm guessing your welcome means that you do have some such in mind.
-> 
-yes, I'm thinking I can use this or not on memcg for simplifying memcg's hooks
-for shmem. It's complicated ;)
-I have to test memcg+shmem carefully again after this patch but I think
-there will be no trouble, now.
+> I'm wondering if flex_array can be used for this purpose, which can store 
+> up to 261632 elements of size unsigned long with 4K pages, or whether 
+> finding the first available bit or weight would be too expensive.
 
-> (By the way, there's no particular need to use that 0xbf value:
-> during most of my testing I was using SWAP_MAP_SHMEM 0x3e and
-> SWAP_MAP_MAX 0x3d; but then noticed that 0xbf just happened to be
-> free, and also happened to sail through the tests in the right way.
-> But if it ever becomes a nuisance there, no problem to move it.)
-> 
+When flex_arrays were first mooted, I did briefly wonder if we could
+use them instead of vmalloc for the swap_map; but no, their interface
+would slow down scan_swap_map() unacceptably.
 
-Hmm. I myself have no troubles whatever free vaule is used. 
-let me clarify..
+Extensions of the swap_map are a different matter, they are seldom
+referenced, and referenced just an item at a time: much better suited
+to a flex_array.  And looking at Jon's Doc, I see they're good for
+sparse arrays, that would suit swap_map extensions very well.
 
-  xx00 0000
-  xx11 1110 - swap count max
-  01xx xxxx - swap has cache
-  1xxx xxxx - swap count has continuation
-  1x11 1111 - swap for shmem
+However... that limit of 261632 elements rules them out here (or can
+we have a flex_array of flex_arrays?), and the lack of support for
+__GFP_HIGHMEM is disappointing - the current implementation of swap
+count continuations does use highmem (though perhaps these pages
+are so rarely needed that it actually doesn't matter).
 
-seems not very bad.
+It seems that the flex_array is a solution in search of a problem,
+and that the swap_map extension is not the right problem for it.
 
-Regards,
--Kame
-
+Hugh
