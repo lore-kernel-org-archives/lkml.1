@@ -1,162 +1,399 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbZJPK6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757258AbZJPK7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756602AbZJPK6r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 06:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbZJPK6q
+	id S1757258AbZJPK7j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 06:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756364AbZJPK7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 06:58:46 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:59318 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752539AbZJPK6p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 06:58:45 -0400
-Subject: Re: Leaks in trace reported by kmemleak
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <c4e36d110910160045y52d80450g1d803dd2090a2bd8@mail.gmail.com>
-References: <c4e36d110910150159j6092d0d1lb20434bd9d43d8ce@mail.gmail.com>
-	 <4AD6EF65.6080602@cn.fujitsu.com>
-	 <1255605778.10164.49.camel@pc1117.cambridge.arm.com>
-	 <c4e36d110910160045y52d80450g1d803dd2090a2bd8@mail.gmail.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 16 Oct 2009 11:57:54 +0100
-Message-Id: <1255690674.3008.24.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 16 Oct 2009 06:59:38 -0400
+Received: from home.kolivas.org ([59.167.196.135]:34854 "EHLO home.kolivas.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755830AbZJPK7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 06:59:36 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: linux-kernel@vger.kernel.org
+Subject: BFS cpu scheduler v0.304 stable release
+Date: Fri, 16 Oct 2009 21:58:57 +1100
+User-Agent: KMail/1.9.9
+MIME-Version: 1.0
+Content-Disposition: inline
+X-Length: 1746
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Oct 2009 10:57:55.0619 (UTC) FILETIME=[83ECAF30:01CA4E4F]
+Message-Id: <200910162158.58054.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-16 at 09:45 +0200, Zdenek Kabelac wrote:
-> 2009/10/15 Catalin Marinas <catalin.marinas@arm.com>:
-> >> Zdenek Kabelac wrote:
-> >> > I've noticed your latest patch for memory leak in filter setting
-> >> > (8ad807318fcd...) - but even with this patch - kmemleak seems to still
-> >> > report  lots  (~900) of following leaks - note - they come only from
-> >> > i915 and kvm module - so I'm not sure if these two modules are doing
-> >> > something wrong or the problem is in trace code.
-> > 
-> > It is probably caused by the fact that kmemleak doesn't scan the
-> > mod->trace_events data in a module (the _ftrace_events section). It only
-> > scans those sections beginning with .data and .bss in a module. Maybe we
-> > should add "_ftrace_events" as well or just prefix it with ".data".
-> >
-> > Something like below may fix this (untested):
-> >
-> > diff --git a/kernel/module.c b/kernel/module.c
-> > index 8b7d880..1449691 100644
-> > --- a/kernel/module.c
-> > +++ b/kernel/module.c
-> > @@ -2383,6 +2383,9 @@ static noinline struct module *load_module(void __user *umod,
-> >                                         "_ftrace_events",
-> >                                         sizeof(*mod->trace_events),
-> >                                         &mod->num_trace_events);
-> > +       kmemleak_scan_area(mod->module_core, mod->trace_events,
-> > +                          sizeof(*mod->trace_events) * mod->num_trace_events,
-> > +                          GFP_KERNEL);
-> >  #endif
-> >  #ifdef CONFIG_FTRACE_MCOUNT_RECORD
-> >        /* sechdrs[0].sh_size is always zero */
-> 
-> Yep - I've assume it could be also a problem of missing memory segment
-> in kmemleak scanning routine - but it was weird that just these two
-> modules (i915 & kvm) are doing such strange thing.
-> 
-> I've tested patch above with added cast  ( (unsigned
-> long)mod->trace_events) to pacify warning - but it did not helped -
-> leaks are still printed.
+A lot of people have been wanting to know when BFS, the Brain Fuck Scheduler 
+had reached a stable version, so as requested, I'm announcing the first known 
+stable release of the Brain Fuck Scheduler, version 0.304. The goals and 
+purpose of this patch should be well known by now. It is aimed at end users
+and for comparison purposes, though constructive developer input is welcome.
 
-Same trace-related leaks?
+Since the patch is quite large, here is a URL:
 
-Do any of the leaks disappear with subsequent memory scans (echo scan >
-debug/kmemleak)?
+http://ck.kolivas.org/patches/bfs/2.6.31-sched-bfs-304.patch
 
-Could you try the patch below? It ensures that all the module memory is
-scanned:
+Significant improvements have been made since the earlier development version, 
+including substantial scalability improvements, so please feel free to 
+conduct whatever tests, real world or benchmark, on this version. This patch
+does not remove the CFS code for simplicity of patching, but that would
+change the delta to a net removal of ~9000 lines.
 
-diff --git a/kernel/module.c b/kernel/module.c
-index 8b7d880..fc6ef3a 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2036,36 +2036,6 @@ static void *module_alloc_update_bounds(unsigned long size)
- 	return ret;
- }
- 
--#ifdef CONFIG_DEBUG_KMEMLEAK
--static void kmemleak_load_module(struct module *mod, Elf_Ehdr *hdr,
--				 Elf_Shdr *sechdrs, char *secstrings)
--{
--	unsigned int i;
--
--	/* only scan the sections containing data */
--	kmemleak_scan_area(mod->module_core, (unsigned long)mod -
--			   (unsigned long)mod->module_core,
--			   sizeof(struct module), GFP_KERNEL);
--
--	for (i = 1; i < hdr->e_shnum; i++) {
--		if (!(sechdrs[i].sh_flags & SHF_ALLOC))
--			continue;
--		if (strncmp(secstrings + sechdrs[i].sh_name, ".data", 5) != 0
--		    && strncmp(secstrings + sechdrs[i].sh_name, ".bss", 4) != 0)
--			continue;
--
--		kmemleak_scan_area(mod->module_core, sechdrs[i].sh_addr -
--				   (unsigned long)mod->module_core,
--				   sechdrs[i].sh_size, GFP_KERNEL);
--	}
--}
--#else
--static inline void kmemleak_load_module(struct module *mod, Elf_Ehdr *hdr,
--					Elf_Shdr *sechdrs, char *secstrings)
--{
--}
--#endif
--
- /* Allocate and load the module: note that size of section 0 is always
-    zero, and we rely on this for optional sections. */
- static noinline struct module *load_module(void __user *umod,
-@@ -2293,7 +2263,6 @@ static noinline struct module *load_module(void __user *umod,
- 	}
- 	/* Module has been moved. */
- 	mod = (void *)sechdrs[modindex].sh_addr;
--	kmemleak_load_module(mod, hdr, sechdrs, secstrings);
- 
- #if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
- 	mod->refptr = percpu_modalloc(sizeof(local_t), __alignof__(local_t),
+While coming with the usual warnings about development code, the following 
+patch, for 2.6.31, is known to be quite stable, and the only known issue is 
+that it is very easy to trigger the well known keyboard+Xorg failure that has 
+recently been discussed on this mailing list so it is assumed not to be a BFS 
+issue.
 
-> And I add another leak - which might be from the same range of problem :
-> (it's also present many times - and it even looks like hex dump is
-> changing so it's probably even frequently used memory region - at
-> least in few such objects)
-> 
-> unreferenced object 0xffff88013aa4ad80 (size 192):
->   comm "swapper", pid 1, jiffies 4294877809
->   hex dump (first 32 bytes):
->     c0 dc a4 3a 01 88 ff ff 00 0c 79 39 01 88 ff ff  ...:......y9....
->     90 00 cf 3a 01 88 ff ff 02 00 00 00 00 00 00 00  ...:............
->   backtrace:
->     [<ffffffff8140e9a6>] kmemleak_alloc+0x26/0x60
->     [<ffffffff81126a01>] kmem_cache_alloc_notrace+0xc1/0x140
->     [<ffffffff8127256a>] dma_debug_init+0x23a/0x3a0
->     [<ffffffff81864a37>] pci_iommu_init+0xe/0x28
->     [<ffffffff8100904c>] do_one_initcall+0x3c/0x1d0
->     [<ffffffff8185f4e6>] kernel_init+0x150/0x1a6
->     [<ffffffff8100d21a>] child_rip+0xa/0x20
->     [<ffffffffffffffff>] 0xffffffffffffffff
+FAQs related to BFS can be read here:
 
-Same as above, does it disappear with subsequent scans? This doesn't
-look immediately like a false positive, it needs a bit more
-investigation.
+http://ck.kolivas.org/patches/bfs/bfs-faq.txt
 
-Thanks.
+But more comprehensive documentation, which is included in the patch under 
+Documentation/scheduler, is also attached for convenience to this email 
+below.
+
+Enjoy!
+
+---
+
+BFS - The Brain Fuck Scheduler by Con Kolivas.
+
+Goals.
+
+The goal of the Brain Fuck Scheduler, referred to as BFS from here on, is to
+completely do away with the complex designs of the past for the cpu process
+scheduler and instead implement one that is very simple in basic design.
+The main focus of BFS is to achieve excellent desktop interactivity and
+responsiveness without heuristics and tuning knobs that are difficult to
+understand, impossible to model and predict the effect of, and when tuned to
+one workload cause massive detriment to another.
+
+
+Design summary.
+
+BFS is best described as a single runqueue, O(n) lookup, earliest effective
+virtual deadline first design, loosely based on EEVDF (earliest eligible virtual
+deadline first) and my previous Staircase Deadline scheduler. Each component
+shall be described in order to understand the significance of, and reasoning for
+it. The codebase when the first stable version was released was approximately
+9000 lines less code than the existing mainline linux kernel scheduler (in
+2.6.31). This does not even take into account the removal of documentation and
+the cgroups code that is not used.
+
+Design reasoning.
+
+The single runqueue refers to the queued but not running processes for the
+entire system, regardless of the number of CPUs. The reason for going back to
+a single runqueue design is that once multiple runqueues are introduced,
+per-CPU or otherwise, there will be complex interactions as each runqueue will
+be responsible for the scheduling latency and fairness of the tasks only on its
+own runqueue, and to achieve fairness and low latency across multiple CPUs, any
+advantage in throughput of having CPU local tasks causes other disadvantages.
+This is due to requiring a very complex balancing system to at best achieve some
+semblance of fairness across CPUs and can only maintain relatively low latency
+for tasks bound to the same CPUs, not across them. To increase said fairness
+and latency across CPUs, the advantage of local runqueue locking, which makes
+for better scalability, is lost due to having to grab multiple locks.
+
+A significant feature of BFS is that all accounting is done purely based on CPU
+used and nowhere is sleep time used in any way to determine entitlement or
+interactivity. Interactivity "estimators" that use some kind of sleep/run
+algorithm are doomed to fail to detect all interactive tasks, and to falsely tag
+tasks that aren't interactive as being so. The reason for this is that it is
+close to impossible to determine that when a task is sleeping, whether it is
+doing it voluntarily, as in a userspace application waiting for input in the
+form of a mouse click or otherwise, or involuntarily, because it is waiting for
+another thread, process, I/O, kernel activity or whatever. Thus, such an
+estimator will introduce corner cases, and more heuristics will be required to
+cope with those corner cases, introducing more corner cases and failed
+interactivity detection and so on. Interactivity in BFS is built into the design
+by virtue of the fact that tasks that are waking up have not used up their quota
+of CPU time, and have earlier effective deadlines, thereby making it very likely
+they will preempt any CPU bound task of equivalent nice level. See below for
+more information on the virtual deadline mechanism. Even if they do not preempt
+a running task, because the rr interval is guaranteed to have a bound upper
+limit on how long a task will wait for, it will be scheduled within a timeframe
+that will not cause visible interface jitter.
+
+
+Design details.
+
+Task insertion.
+
+BFS inserts tasks into each relevant queue as an O(1) insertion into a double
+linked list. On insertion, *every* running queue is checked to see if the newly
+queued task can run on any idle queue, or preempt the lowest running task on the
+system. This is how the cross-CPU scheduling of BFS achieves significantly lower
+latency per extra CPU the system has. In this case the lookup is, in the worst
+case scenario, O(n) where n is the number of CPUs on the system.
+
+Data protection.
+
+BFS has one single lock protecting the process local data of every task in the
+global queue. Thus every insertion, removal and modification of task data in the
+global runqueue needs to grab the global lock. However, once a task is taken by
+a CPU, the CPU has its own local data copy of the running process' accounting
+information which only that CPU accesses and modifies (such as during a
+timer tick) thus allowing the accounting data to be updated lockless. Once a
+CPU has taken a task to run, it removes it from the global queue. Thus the
+global queue only ever has, at most,
+
+	(number of tasks requesting cpu time) - (number of logical CPUs) + 1
+
+tasks in the global queue. This value is relevant for the time taken to look up
+tasks during scheduling. This will increase if many tasks with CPU affinity set
+in their policy to limit which CPUs they're allowed to run on if they outnumber
+the number of CPUs. The +1 is because when rescheduling a task, the CPU's
+currently running task is put back on the queue. Lookup will be described after
+the virtual deadline mechanism is explained.
+
+Virtual deadline.
+
+The key to achieving low latency, scheduling fairness, and "nice level"
+distribution in BFS is entirely in the virtual deadline mechanism. The one
+tunable in BFS is the rr_interval, or "round robin interval". This is the
+maximum time two SCHED_OTHER (or SCHED_NORMAL, the common scheduling policy)
+tasks of the same nice level will be running for, or looking at it the other
+way around, the longest duration two tasks of the same nice level will be
+delayed for. When a task requests cpu time, it is given a quota (time_slice)
+equal to the rr_interval and a virtual deadline. The virtual deadline is
+offset from the current time in jiffies by this equation:
+
+	jiffies + (prio_ratio * rr_interval)
+
+The prio_ratio is determined as a ratio compared to the baseline of nice -20
+and increases by 10% per nice level. The deadline is a virtual one only in that
+no guarantee is placed that a task will actually be scheduled by this time, but
+it is used to compare which task should go next. There are three components to
+how a task is next chosen. First is time_slice expiration. If a task runs out
+of its time_slice, it is descheduled, the time_slice is refilled, and the
+deadline reset to that formula above. Second is sleep, where a task no longer
+is requesting CPU for whatever reason. The time_slice and deadline are _not_
+adjusted in this case and are just carried over for when the task is next
+scheduled. Third is preemption, and that is when a newly waking task is deemed
+higher priority than a currently running task on any cpu by virtue of the fact
+that it has an earlier virtual deadline than the currently running task. The
+earlier deadline is the key to which task is next chosen for the first and
+second cases. Once a task is descheduled, it is put back on the queue, and an
+O(n) lookup of all queued-but-not-running tasks is done to determine which has
+the earliest deadline and that task is chosen to receive CPU next. The one
+caveat to this is that if a deadline has already passed (jiffies is greater
+than the deadline), the tasks are chosen in FIFO (first in first out) order as
+the deadlines are old and their absolute value becomes decreasingly relevant
+apart from being a flag that they have been asleep and deserve CPU time ahead
+of all later deadlines.
+
+The CPU proportion of different nice tasks works out to be approximately the
+
+	(prio_ratio difference)^2
+
+The reason it is squared is that a task's deadline does not change while it is
+running unless it runs out of time_slice. Thus, even if the time actually
+passes the deadline of another task that is queued, it will not get CPU time
+unless the current running task deschedules, and the time "base" (jiffies) is
+constantly moving.
+
+Task lookup.
+
+BFS has 103 priority queues. 100 of these are dedicated to the static priority
+of realtime tasks, and the remaining 3 are, in order of best to worst priority,
+SCHED_ISO (isochronous), SCHED_NORMAL, and SCHED_IDLEPRIO (idle priority
+scheduling). When a task of these priorities is queued, a bitmap of running
+priorities is set showing which of these priorities has tasks waiting for CPU
+time. When a CPU is made to reschedule, the lookup for the next task to get
+CPU time is performed in the following way:
+
+First the bitmap is checked to see what static priority tasks are queued. If
+any realtime priorities are found, the corresponding queue is checked and the
+first task listed there is taken (provided CPU affinity is suitable) and lookup
+is complete. If the priority corresponds to a SCHED_ISO task, they are also
+taken in FIFO order (as they behave like SCHED_RR). If the priority corresponds
+to either SCHED_NORMAL or SCHED_IDLEPRIO, then the lookup becomes O(n). At this
+stage, every task in the runlist that corresponds to that priority is checked
+to see which has the earliest set deadline, and (provided it has suitable CPU
+affinity) it is taken off the runqueue and given the CPU. If a task has an
+expired deadline, it is taken and the rest of the lookup aborted (as they are
+chosen in FIFO order).
+
+Thus, the lookup is O(n) in the worst case only, where n is as described
+earlier, as tasks may be chosen before the whole task list is looked over.
+
+
+Scalability.
+
+The major limitations of BFS will be that of scalability, as the separate
+runqueue designs will have less lock contention as the number of CPUs rises.
+However they do not scale linearly even with separate runqueues as multiple
+runqueues will need to be locked concurrently on such designs to be able to
+achieve fair CPU balancing, to try and achieve some sort of nice-level fairness
+across CPUs, and to achieve low enough latency for tasks on a busy CPU when
+other CPUs would be more suited. BFS has the advantage that it requires no
+balancing algorithm whatsoever, as balancing occurs by proxy simply because
+all CPUs draw off the global runqueue, in priority and deadline order. Despite
+the fact that scalability is _not_ the prime concern of BFS, it both shows very
+good scalability to smaller numbers of CPUs and is likely a more scalable design
+at these numbers of CPUs.
+
+It also has some very low overhead scalability features built into the design
+when it has been deemed their overhead is so marginal that they're worth adding.
+The first is the local copy of the running process' data to the CPU it's running
+on to allow that data to be updated lockless where possible. Then there is
+deference paid to the last CPU a task was running on, by trying that CPU first
+when looking for an idle CPU to use the next time it's scheduled. Finally there
+is the notion of cache locality beyond the last running CPU. The sched_domains
+information is used to determine the relative virtual "cache distance" that
+other CPUs have from the last CPU a task was running on. CPUs with shared
+caches, such as SMT siblings, or multicore CPUs with shared caches, are treated
+as cache local. CPUs without shared caches are treated as not cache local, and
+CPUs on different NUMA nodes are treated as very distant. This "relative cache
+distance" is used by modifying the virtual deadline value when doing lookups.
+Effectively, the deadline is unaltered between "cache local" CPUs, doubled for
+"cache distant" CPUs, and quadrupled for "very distant" CPUs. The reasoning
+behind the doubling of deadlines is as follows. The real cost of migrating a
+task from one CPU to another is entirely dependant on the cache footprint of
+the task, how cache intensive the task is, how long it's been running on that
+CPU to take up the bulk of its cache, how big the CPU cache is, how fast and
+how layered the CPU cache is, how fast a context switch is... and so on. In
+other words, it's close to random in the real world where we do more than just
+one sole workload. The only thing we can be sure of is that it's not free. So
+BFS uses the principle that an idle CPU is a wasted CPU and utilising idle CPUs
+is more important than cache locality, and cache locality only plays a part
+after that. Doubling the effective deadline is based on the premise that the
+"cache local" CPUs will tend to work on the same tasks up to double the number
+of cache local CPUs, and once the workload is beyond that amount, it is likely
+that none of the tasks are cache warm anywhere anyway. The quadrupling for NUMA
+is a value I pulled out of my arse.
+
+Early benchmarking of BFS suggested scalability dropped off at the 16 CPU mark.
+However this benchmarking was performed on an earlier design that was far less
+scalable than the current one so it's hard to know how scalable it is in terms
+of both CPUs (due to the global runqueue) and heavily loaded machines (due to
+O(n) lookup) at this stage. Note that in terms of scalability, the number of
+_logical_ CPUs matters, not the number of _physical_ CPUs. Thus, a dual (2x)
+quad core (4X) hyperthreaded (2X) machine is effectively a 16X. Newer benchmark
+results are very promising indeed, without needing to tweak any knobs, features
+or options. Benchmark contributions are most welcome.
+
+
+Features
+
+As the initial prime target audience for BFS was the average desktop user, it
+was designed to not need tweaking, tuning or have features set to obtain benefit
+from it. Thus the number of knobs and features has been kept to an absolute
+minimum and should not require extra user input for the vast majority of cases.
+There are precisely 2 tunables, and 2 extra scheduling policies. The rr_interval
+and iso_cpu tunables, and the SCHED_ISO and SCHED_IDLEPRIO policies. In addition
+to this, BFS also uses sub-tick accounting. What BFS does _not_ now feature is
+support for CGROUPS. The average user should neither need to know what these
+are, nor should they need to be using them to have good desktop behaviour.
+
+rr_interval
+
+There is only one "scheduler" tunable, the round robin interval. This can be
+accessed in
+
+	/proc/sys/kernel/rr_interval
+
+The value is in milliseconds, and the default value is set to 6 on a
+uniprocessor machine, and automatically set to a progressively higher value on
+multiprocessor machines. The reasoning behind increasing the value on more CPUs
+is that the effective latency is decreased by virtue of there being more CPUs on
+BFS (for reasons explained above), and increasing the value allows for less
+cache contention and more throughput. Valid values are from 1 to 5000
+Decreasing the value will decrease latencies at the cost of decreasing
+throughput, while increasing it will improve throughput, but at the cost of
+worsening latencies. The accuracy of the rr interval is limited by HZ resolution
+of the kernel configuration. Thus, the worst case latencies are usually slightly
+higher than this actual value. The default value of 6 is not an arbitrary one.
+It is based on the fact that humans can detect jitter at approximately 7ms, so
+aiming for much lower latencies is pointless under most circumstances. It is
+worth noting this fact when comparing the latency performance of BFS to other
+schedulers. Worst case latencies being higher than 7ms are far worse than
+average latencies not being in the microsecond range.
+
+Isochronous scheduling.
+
+Isochronous scheduling is a unique scheduling policy designed to provide
+near-real-time performance to unprivileged (ie non-root) users without the
+ability to starve the machine indefinitely. Isochronous tasks (which means
+"same time") are set using, for example, the schedtool application like so:
+
+	schedtool -I -e amarok
+
+This will start the audio application "amarok" as SCHED_ISO. How SCHED_ISO works
+is that it has a priority level between true realtime tasks and SCHED_NORMAL
+which would allow them to preempt all normal tasks, in a SCHED_RR fashion (ie,
+if multiple SCHED_ISO tasks are running, they purely round robin at rr_interval
+rate). However if ISO tasks run for more than a tunable finite amount of time,
+they are then demoted back to SCHED_NORMAL scheduling. This finite amount of
+time is the percentage of _total CPU_ available across the machine, configurable
+as a percentage in the following "resource handling" tunable (as opposed to a
+scheduler tunable):
+
+	/proc/sys/kernel/iso_cpu
+
+and is set to 70% by default. It is calculated over a rolling 5 second average
+Because it is the total CPU available, it means that on a multi CPU machine, it
+is possible to have an ISO task running as realtime scheduling indefinitely on
+just one CPU, as the other CPUs will be available. Setting this to 100 is the
+equivalent of giving all users SCHED_RR access and setting it to 0 removes the
+ability to run any pseudo-realtime tasks.
+
+A feature of BFS is that it detects when an application tries to obtain a
+realtime policy (SCHED_RR or SCHED_FIFO) and the caller does not have the
+appropriate privileges to use those policies. When it detects this, it will
+give the task SCHED_ISO policy instead. Thus it is transparent to the user.
+Because some applications constantly set their policy as well as their nice
+level, there is potential for them to undo the override specified by the user
+on the command line of setting the policy to SCHED_ISO. To counter this, once
+a task has been set to SCHED_ISO policy, it needs superuser privileges to set
+it back to SCHED_NORMAL. This will ensure the task remains ISO and all child
+processes and threads will also inherit the ISO policy.
+
+Idleprio scheduling.
+
+Idleprio scheduling is a scheduling policy designed to give out CPU to a task
+_only_ when the CPU would be otherwise idle. The idea behind this is to allow
+ultra low priority tasks to be run in the background that have virtually no
+effect on the foreground tasks. This is ideally suited to distributed computing
+clients (like setiathome, folding, mprime etc) but can also be used to start
+a video encode or so on without any slowdown of other tasks. To avoid this
+policy from grabbing shared resources and holding them indefinitely, if it
+detects a state where the task is waiting on I/O, the machine is about to
+suspend to ram and so on, it will transiently schedule them as SCHED_NORMAL. As
+per the Isochronous task management, once a task has been scheduled as IDLEPRIO,
+it cannot be put back to SCHED_NORMAL without superuser privileges. Tasks can
+be set to start as SCHED_IDLEPRIO with the schedtool command like so:
+
+	schedtool -D -e ./mprime
+
+Subtick accounting.
+
+It is surprisingly difficult to get accurate CPU accounting, and in many cases,
+the accounting is done by simply determining what is happening at the precise
+moment a timer tick fires off. This becomes increasingly inaccurate as the
+timer tick frequency (HZ) is lowered. It is possible to create an application
+which uses almost 100% CPU, yet by being descheduled at the right time, records
+zero CPU usage. While the main problem with this is that there are possible
+security implications, it is also difficult to determine how much CPU a task
+really does use. BFS tries to use the sub-tick accounting from the TSC clock,
+where possible, to determine real CPU usage. This is not entirely reliable, but
+is far more likely to produce accurate CPU usage data than the existing designs
+and will not show tasks as consuming no CPU usage when they actually are. Thus,
+the amount of CPU reported as being used by BFS will more accurately represent
+how much CPU the task itself is using (as is shown for example by the 'time'
+application), so the reported values may be quite different to other schedulers.
+Values reported as the 'load' are more prone to problems with this design, but
+per process values are closer to real usage. When comparing throughput of BFS
+to other designs, it is important to compare the actual completed work in terms
+of total wall clock time taken and total work done, rather than the reported
+"cpu usage".
+
+
+Regards,
 
 -- 
-Catalin
-
+-ck
