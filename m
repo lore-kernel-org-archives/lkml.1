@@ -1,33 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762572AbZJPPvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932893AbZJPP5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762572AbZJPPvW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 11:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZJPPvV
+	id S932893AbZJPP5b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 11:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932637AbZJPP5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 11:51:21 -0400
-Received: from mx3.aus.edu ([195.229.157.91]:12700 "EHLO mx3.aus.edu"
+	Fri, 16 Oct 2009 11:57:30 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:60031 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762251AbZJPPvV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 11:51:21 -0400
-X-IronPort-AV: E=McAfee;i="5300,2777,5772"; a="1322300"
-Date: Fri, 16 Oct 2009 17:50:36 +0200
-From: infolit infolit <infolit@aus.edu>
-Subject: =?iso-8859-1?Q?=A31=2C000=2C000_Jackpot_Winner?=
-Reply-to: cgnlpaycenter@9.cn
-Message-id: <f779eb5910ff1.4ad8b26c@aus.edu>
-MIME-version: 1.0
-X-Mailer: Sun Java(tm) System Messenger Express 6.2-8.04 (built Feb 28 2007)
-Content-type: text/plain; charset=iso-8859-1
-Content-language: en
-Content-transfer-encoding: 8BIT
-Content-disposition: inline
-X-Accept-Language: en
-To: unlisted-recipients:; (no To-header on input)
+	id S932613AbZJPP53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 11:57:29 -0400
+Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
+From: Eric Paris <eparis@redhat.com>
+To: David Howells <dhowells@redhat.com>
+Cc: graff.yang@gmail.com, linux-kernel@vger.kernel.org,
+       gyang@blackfin.uclinux.org, akpm@linux-foundation.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Graff Yang <graf.yang@analog.com>,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <23382.1255707790@redhat.com>
+References: <1255706463.15182.84.camel@dhcp231-106.rdu.redhat.com>
+	 <7e0fb38c0910160801o50346a5cm763d79cab98272a5@mail.gmail.com>
+	 <1255516134-4838-1-git-send-email-graff.yang@gmail.com>
+	 <18475.1255529305@redhat.com> <6207.1255706090@redhat.com>
+	 <23382.1255707790@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 16 Oct 2009 11:55:29 -0400
+Message-Id: <1255708529.15182.95.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-10-16 at 16:43 +0100, David Howells wrote:
+> Eric Paris <eparis@redhat.com> wrote:
+> 
+> > That would still call cap_file_mmap() and wouldn't solve your problem.
+> 
+> Hmmm...  I guess I don't see the problem occur because I always run the
+> programs as root.
 
+most likely yes, your processes are going to have CAP_SYS_RAWIO and will
+happily sail through the cap_file_mmap().
 
-£1,000,000 Pound Sterlings has been credited to your E-mail. For Info and claims contact Mr Micheal Smith, Tel :+447031958599 Email: cgnlpaycenter@9.cn. Send your Name:___ Address:___ Age:___ Sex:___ Occupation:___Tel/Cellphone:___Country.
+> I would guess that cap_file_mmap() and selinux_file_mmap() are, perhaps, too
+> strict.  The hint shouldn't be rejected unless MAP_FIXED is also set, surely,
+> but should rather be revised upwards.
+
+On the mmu side we don't check until the kernel has turned the hint into
+a real address.  Which is apparently different then where the hook was
+originally placed in the nommu side.
+
+> Certainly, addr==NULL and !MAP_FIXED is a reasonable case to permit, even in
+> tightly secured MMU and SELinux mode...  After all, the manual page says:
+> 
+> 	If addr is NULL, then the kernel chooses the address at which to create
+> 	the mapping; this is the most portable method of creating  a  new  map-
+> 	ping.
+
+I agree, I think the choices are
+
+A) agree that we just shouldn't check the address on nommu
+   A1) change kconfig to not allow the setting of these
+	(easy to do for the LSM check, but not easy as it stands today
+	 for the cap_file_mmap() check)
+   A2) change the addr_only to be a flags which indicate not to check
+	(my original suggestion)
+   A3) push the config_nommu down into the security code
+	(your patch)
+B) actually check the address, which requires moving the hook to a
+location where it has been resolved.
+	(graff yang's patch)
+
+I'll leave it up to you to determine which you like the best since you
+know the implications of nommu.
+
+-Eric
+
