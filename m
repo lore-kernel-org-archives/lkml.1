@@ -1,101 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933858AbZJPBdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbZJPBje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933858AbZJPBdF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 21:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759377AbZJPBdF
+	id S1758267AbZJPBje (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 21:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbZJPBje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 21:33:05 -0400
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:45467 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759478AbZJPBdD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 21:33:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=P/5v6cXVaCxqlKvhjlvVrHtofDuTfC1i8jJ8dSSP9DuXJkXYgbCr/Xw51NKL5n6Evi
-         6hvqs67xFsfICmUxdj0HoXs9N+49IO4o6y1/Rqp4nsiKOT+Jzc5Vqk0+UVbhAXjoqpaJ
-         fgVLvYiZmZOWTrW/ECq7Mv7LLEb6wQbts2gs8=
-MIME-Version: 1.0
-In-Reply-To: <c7f37ead-3cf2-4277-a44e-425a7b940d31@default>
-References: <4AD6B1F0.6030904@goop.org>
-	 <c7f37ead-3cf2-4277-a44e-425a7b940d31@default>
-Date: Thu, 15 Oct 2009 18:32:26 -0700
-X-Google-Sender-Auth: d19240301a3078e7
-Message-ID: <1f1b08da0910151832m59d14ac2i4add6555d6a1208a@mail.gmail.com>
-Subject: Re: [Xen-devel] [PATCH 05/12] xen/pvclock: add monotonicity check
-From: john stultz <johnstul@us.ibm.com>
-To: Dan Magenheimer <dan.magenheimer@oracle.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
-       "arch/x86 maintainers" <x86@kernel.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Avi Kivity <avi@redhat.com>, chris.mason@oracle.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 15 Oct 2009 21:39:34 -0400
+Received: from mga14.intel.com ([143.182.124.37]:65172 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752131AbZJPBjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 21:39:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,569,1249282800"; 
+   d="scan'208";a="199574460"
+Subject: Re: [PATCH] ALS: TSL2550 driver move from i2c/chips
+From: Zhang Rui <rui.zhang@intel.com>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       "Michele De Candia (VT)" <michele.decandia@valueteam.com>,
+       Linux I2C <linux-i2c@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       "corentin.chary@gmail.com" <corentin.chary@gmail.com>
+In-Reply-To: <4AD36114.50108@cam.ac.uk>
+References: <4ACF4AC6.7070802@cam.ac.uk>
+	 <20091010185200.671846c5@hyperion.delvare>	<4AD33ADB.4000500@cam.ac.uk>
+	 <20091012175216.6d844623@hyperion.delvare>  <4AD36114.50108@cam.ac.uk>
+Content-Type: text/plain
+Date: Fri, 16 Oct 2009 09:37:18 +0800
+Message-Id: <1255657038.3838.17.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 15, 2009 at 6:27 AM, Dan Magenheimer
-<dan.magenheimer@oracle.com> wrote:
->> On 10/14/09 20:26, Dan Magenheimer wrote:
->> > As long as we are going through the trouble of making
->> > this monotonic, shouldn't it be monotonically increasing
->> > (rather than just monotonically non-decreasing)?  The
->> > rdtsc instruction and any suitably high-precision
->> > hardware timer will never return the same value
->> > on subsequent uses so this might be a reasonable
->> > precedent to obey.  E.g.
->> >
->> > +   return ret > xen_clocksource.cycle_last ?
->> > +           ret : ++xen_clocksource.cycle_last;
+On Tue, 2009-10-13 at 01:02 +0800, Jonathan Cameron wrote:
+> Jean Delvare wrote:
+> > Hi Jonathan,
+> > 
+> > On Mon, 12 Oct 2009 15:19:07 +0100, Jonathan Cameron wrote:
+> >>>> @@ -60,9 +65,41 @@ static const u8 TSL2550_MODE_RANGE[2] = {
+> >>>>  };
+> >>>>  
+> >>>>  /*
+> >>>> + * IDR to assign each registered device a unique id
+> >>>> + */
+> >>>> +static DEFINE_IDR(tsl2550_idr);
+> >>>> +static DEFINE_SPINLOCK(tsl2550_idr_lock);
+> >>>> +#define TSL2550_DEV_MAX 9
+> >>> Such an arbitrary limit is simply not acceptable.
+> >> Fair enough, but it is based on restricting the size
+> >> of the char array needed for the name when registering
+> >> with als.  Hence single digit decimal maximum.
+> >> Do you suggest leaving it unrestricted (which makes code
+> >> a little fiddly given variable size of max idr) or some other
+> >> limit?
+> > 
+> > The name size really isn't an issue. You won't notice 16 bytes instead
+> > of 9. And it's not like we'll have millions of these devices.
+> I agree, it's merely a question of picking some suitable limit. IDR's
+> on a 64 bit box will do something in the ball park of 2e18 which might
+> be an excessive limit ;) I'll leave this be for next version on basis
+> I'm in favour of moving this into the core and hence as you said this
+> will be irrelevant here anyway.
+> >>>> +static int tsl2550_get_id(void)
+> >>>> +{
+> >>>> +	int ret, val;
+> >>>> +
+> >>>> +idr_again:
+> >>>> +	if (unlikely(idr_pre_get(&tsl2550_idr, GFP_KERNEL) == 0))
+> >>>> +		return -ENOMEM;
+> >>>> +	spin_lock(&tsl2550_idr_lock);
+> >>>> +	ret = idr_get_new(&tsl2550_idr, NULL, &val);
+> >>>> +	if (unlikely(ret == -EAGAIN))
+> >>>> +		goto idr_again;
+> >>>> +	else if (unlikely(ret))
+> >>>> +		return ret;
+> >>>> +	if (val > TSL2550_DEV_MAX)
+> >>>> +		return -ENOMEM;
+> >>>> +	return val;
+> >>>> +}
+> >>>> +
+> >>>> +static void tsl2550_free_id(int val)
+> >>>> +{
+> >>>> +	spin_lock(&tsl2550_idr_lock);
+> >>>> +	idr_remove(&tsl2550_idr, val);
+> >>>> +	spin_unlock(&tsl2550_idr_lock);
+> >>>> +}
+> >>> Having to implement this in _every_ ALS driver sounds wrong and
+> >>> painful. If uniqueness of any kind must be provided, it should be
+> >>> handled by the ALS core and not by individual drivers, otherwise you
+> >>> can be certain that at least one driver will get it wrong someday.
+> >> I agree. The reason this originally occurred is that the acpi layer
+> >> apparently doesn't allow for simultaneous probing of multiple drivers
+> >> and hence can get away with a simple counter and no locking.
+> >>
+> >>> I'd imaging that als-class devices are simply named als%u. Just like
+> >>> hwmon devices are named hwmon%u, input devices are names input%u and
+> >>> event%u, etc. I don't know of any class pushing the naming down to its
+> >>> drivers, do you? The only example I can remember are i2c drivers back
+> >>> in year 1999, when they were part of lm-sensors.I have personally put
+> >>> an end to this years ago.
+> >> This debate started in the als thread. Personally I couldn't care less
+> >> either way but it does need to be put to bed before that subsystem merges.
+> >> To my mind either approach is trivially handled in a userspace library
+> >> so it doesn't matter.  I don't suppose you can remember what the original
+> >> reasons for squashing this naming approach were?
+> > 
+> > Code duplication. Having the same unique-id handling code repeated in
+> > 50 drivers was no fun, as it did not add any value compared to a
+> > central handling.
+> Counter argument placed (cc'd Pavel and Corentin for this point)
+> is that having a generic name, e.g. hwmon0 and a name field in sysfs
+> is superfluous when we can combine the two.
+> > 
+> >>>> @@ -296,13 +333,13 @@ static ssize_t tsl2550_show_lux1_input(struct device *dev,
+> >>>>  	return ret;
+> >>>>  }
+> >>>>  
+> >>>> -static DEVICE_ATTR(lux1_input, S_IRUGO,
+> >>>> +static DEVICE_ATTR(illuminance, S_IRUGO,
+> >>>>  		   tsl2550_show_lux1_input, NULL);
+> >>> Question: if I have a light sensing chip with two sensors, how are we
+> >>> going to handle it? Will we register 2 als class devices? The initial
+> >>> naming convention had the advantage that you could have more than one
+> >>> sensor per device, but I don't know if it is desirable in practice.
+> >> This only becomes and issue if we have two sensors measuring illuminance
+> >> (or approximation of it).  The only two sensor chips I know of have one
+> >> broadband and one in the infrared tsl2561 and I think the isl chip with
+> >> a driver currently in misc.  The combination of these two are needed to
+> >> calculate illuminance.  Some of the original discussion went into how
+> >> to support separate access to the individual sensors.  Decision was to
+> >> leave that question until it becomes relevant.  Basically we would put
+> >> the current drivers in just supporting illuminance and see if anyone asked
+> >> for furthers support.  One tricky aspect is what the units should be for
+> >> particular frequency ranges. At least illuminance is cleanly defined
+> >> (even if chips are only fairly coarsely approximating it. 
+> > 
+> > Hmm, this isn't the point I was raising. I was thinking of a light
+> > sensor chip which would sense light in different locations. Think chip
+> > with remote sensors. This is done frequently for thermal sensors, so I
+> > guess it could be done for light sensors as well. A practical
+> > application could be sensing the ambient light on two sides of an
+> > object, so that you get the correct measurement regardless of the
+> > position.
+> > 
+> > I'm not saying such chips exist, I really don't know. I am just raising
+> > the question of how we'd handle them if they do. The current naming
+> > scheme implies that we'd need a separate als instance for each sensor,
+> > and I want you to be aware of this.
+> I agree with this being a possible issue. Zhang, what do you think to changing
+> the acpi driver to use luminance0 and documentation to match?  Seems like
+> a cost free way of avoiding possible problems down the line.
+> > 
+I don't have any objections to this.
+I think we should push the generic ALS patch upstream first and I'll
+refresh the ACPI ALS patch later.
 
-Oof. Modifying .cycle_last will cause timekeeping wreckage.  Please don't.
-Also the above would break on SMP.
+thanks,
+rui
 
-Ideally we would have moved cycle_last to the timekeeper structure,
-since its a timekeeping specific value, not really clocksource
-related.
-
-However, there is the situation where we have don't have perfectly
-synced TSCs, but TSCs that are very very close. In this case, the only
-time we might see skew is if update_wall time were to run on the
-slightly faster TSC, and then immediately after the gettimeofday()
-code runs and sees the cycle_last value ahead of the rdtsc.
-
-So the cycle_last check is hackish, but it lets folks use the much
-faster TSC when we'd have to otherwise throw it out.
-
-If you wanted something like this, a global last_tsc value could be
-used and cmpxchged to ensure you always have an increasing TSC value.
-However I suspect the performance hit there would be painful.
-
->> No, cycle_last isn't updated on every read, only on timer ticks.  This
->> test doesn't seem to be intended to make sure that every
->> clocksource_read is globally monotonic, but just to avoid
->> some boundary
->> conditions in the timer interrupt.  I just copied it directly from
->> read_tsc().
->
-> I understand but you are now essentially emulating a
-> reliable platform timer with a potentially unreliable
-> (but still high resolution) per-CPU timer AND probably
-> delivering that result to userland.
->
-> Read_tsc should only be used if either CONSTANT_TSC
-> or TSC_RELIABLE is true, so read_tsc is guaranteed
-> to be monotonically-strictly-increasing by hardware
-> (and enforced for CONSTANT_TSC by check_tsc_warp
-> at boot).
-
-Ideally, yes, only perfect TSCs should be used.
-
-But in reality, its a big performance win for folks who can get away
-with just slightly offset TSCs.
-
-thanks
--john
