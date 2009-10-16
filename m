@@ -1,76 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbZJPTHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZJPTOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932358AbZJPTHP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 15:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932128AbZJPTHO
+	id S1754365AbZJPTOc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 15:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZJPTO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 15:07:14 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:28070 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932096AbZJPTHN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 15:07:13 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Z/eEyW1TNsgPiURWZfKujvCYm2V4pjO+Qe5jC0EooMawjafwhMXezl+eU4i0Sc5n8
-	zQMfwAKE9vE1iIXx1Rr2w==
-Date: Fri, 16 Oct 2009 12:07:07 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>, stable <stable@kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
-       Frans Pop <elendil@planet.nl>,
-       reinette chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org\"" <linux-mm@kvack.org>
-Subject: Re: [PATCH 2/2] page allocator: Direct reclaim should always obey
- watermarks
-In-Reply-To: <1255689446-3858-3-git-send-email-mel@csn.ul.ie>
-Message-ID: <alpine.DEB.1.00.0910161204140.21328@chino.kir.corp.google.com>
-References: <1255689446-3858-1-git-send-email-mel@csn.ul.ie> <1255689446-3858-3-git-send-email-mel@csn.ul.ie>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 16 Oct 2009 15:14:29 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:23603 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751035AbZJPTO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 15:14:28 -0400
+Message-ID: <4AD8C679.3030300@redhat.com>
+Date: Fri, 16 Oct 2009 15:16:09 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Theodore Tso <tytso@mit.edu>, Parag Warudkar <parag.lkml@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       bugzilla-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
+References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com> <20091016091558.GA10184@mit.edu>
+In-Reply-To: <20091016091558.GA10184@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Oct 2009, Mel Gorman wrote:
+On 10/16/2009 05:15 AM, Theodore Tso wrote:
+> On Fri, Oct 16, 2009 at 12:28:18AM -0400, Parag Warudkar wrote:
+>    
+>> So I have been experimenting with various root file systems on my
+>> laptop running latest git. This laptop some times has problems waking
+>> up from sleep and that results in it needing a hard reset and
+>> subsequently unclean file system.
+>>      
+> A number of people have reported this, and there is some discussion
+> and some suggestions that I've made here:
+>
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=14354
+>
+> It's been very frustrating because I have not been able to replicate
+> it myself; I've been very much looking for someone who is (a) willing
+> to work with me on this, and perhaps willing to risk running fsck
+> frequently, perhaps after every single unclean shutdown, and (b) who
+> can reliably reproduce this problem.  On my system, which is a T400
+> running 9.04 with the latest git kernels, I've not been able to
+> reproduce it, despite many efforts to try to reproduce it.  (i.e.,
+> suspend the machine and then pull the battery and power; pulling the
+> battery and power, "echo c>  /proc/sysrq-trigger", etc., while
+> doing "make -j4" when the system is being uncleanly shutdown)
+>    
 
-> ALLOC_NO_WATERMARKS should be cleared when trying to allocate from the
-> free-lists after a direct reclaim. If it's not, __GFP_NOFAIL allocations
-> from a process that is exiting can ignore watermarks. __GFP_NOFAIL is not
-> often used but the journal layer is one of those places. This is suspected of
-> causing an increase in the number of GFP_ATOMIC allocation failures reported.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> ---
->  mm/page_alloc.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index dfa4362..a3e5fed 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1860,7 +1860,8 @@ rebalance:
->  	page = __alloc_pages_direct_reclaim(gfp_mask, order,
->  					zonelist, high_zoneidx,
->  					nodemask,
-> -					alloc_flags, preferred_zone,
-> +					alloc_flags & ~ALLOC_NO_WATERMARKS,
-> +					preferred_zone,
->  					migratetype, &did_some_progress);
->  	if (page)
->  		goto got_pg;
+I wonder if we might have better luck if we tested using an external 
+(e-sata or USB connected) S-ATA drive.
 
-I don't get it.  __alloc_pages_high_priority() will already loop 
-indefinitely if ALLOC_NO_WATERMARKS is set and its a __GFP_NOFAIL 
-allocation.  How do we even reach this code in such a condition?
+Instead of pulling the drive's data connection, most of these have an 
+external power source that could be turned off so the drive firmware 
+won't have a chance to flush the volatile write cache. Note that some 
+drives automatically write back the cache if they have power and see a 
+bus disconnect, so hot unplugging just the e-sata or usb cable does not 
+do the trick.
+
+Given the number of cheap external drives, this should be easy to test 
+at home....
+
+Ric
+
+
+
+> So if you can come up with a reliable reproduction case, and don't
+> mind doing some experiments and/or exchanging debugging correspondance
+> with me, please let me know.  I'd **really** appreciate the help.
+>
+> Information that would be helpful to me would be:
+>
+> a) Detailed hardware information (what type of disk/SSD, what type of
+> laptop, hardware configuration, etc.)
+>
+> b) Detailed software information (what version of the kernel are you
+> using including any special patches, what distro and version are you
+> using, are you using LVM or dm-crypt, what partition or partitions did
+> you have mounted, was the failing partition a root partition or some
+> other mounted partition, etc.)
+>
+> c) Detailed reproduction recipe (what programs were you running before
+> the crash/failed suspend/resume, etc.)
+>
+>
+> If you do decide to go hunting this problem, one thing I would
+> strongly suggest is that either to use "tune2fs -c 1 /dev/XXX" to
+> force a fsck after every reboot, or if you are using LVM, to use the
+> e2croncheck script (found as an attachment in the above bugzilla entry
+> or in the e2fsprogs sources in the contrib directory) to take a
+> snapshot and then check the snapshot right after you reboot and login
+> to your system.  The reported file system corruptions seem to involve
+> the block allocation bitmaps getting corrupted, and so you will
+> significantly reduce the chances of data loss if you run e2fsck as
+> soon as possible after the file system corruption happens.  This helps
+> you not lose data, and it also helps us find the bug, since it helps
+> pinpoint the earliest possible point where the file system is getting
+> corrupted.
+>
+> (I suspect that some bug reporters had their file system get corrupted
+> one or more boot sessions earlier, and by the time the corruption was
+> painfully obvious, they had lost data.  Mercifully, running fsck
+> frequently is much less painful on a freshly created ext4 filesystem,
+> and of course if you are using an SSD.)
+>
+> If you can reliably reproduce the problem, it would be great to get a
+> bisection, or at least a confirmation that the problem doesn't exist
+> on 2.6.31, but does exist on 2.6.32-rcX kernels.  At this point I'm
+> reasonably sure it's a post-2.6.31 regression, but it would be good to
+> get a hard confirmation of that fact.
+>
+> For people with a reliable reproduction case, one possible experiment
+> can be found here:
+>
+>     http://bugzilla.kernel.org/show_bug.cgi?id=14354#c18
+>
+> Another thing you might try is to try reverting these commits one at a
+> time, and see if they make the problem go away: d0646f7, 5534fb5,
+> 7178057.  These are three commits that seem most likely, but there are
+> only 93 ext4-related commits, so doing a "git bisect start v2.6.31
+> v2.6.32-rc5 -- fs/ext4 fs/jbd2" should only take at most seven compile
+> tests --- assuming this is indeed a 2.6.31 regression and the problem
+> is an ext4-specific code change, as opposed to some other recent
+> change in the writeback code or some device driver which is
+> interacting badly with ext4.
+>
+> If that assumption isn't true and so a git bisect limited to fs/ext4
+> and fs/jbd2 doesn't find a bad commit which when reverted makes the
+> problem go away, we could try a full bisection search via "git bisect
+> start v2.6.31 v2.6.31-rc3", which would take approximately 14 compile
+> tests, but hopefully that wouldn't be necessary.
+>
+> I'm going to be at the kernel summit in Tokyo next week, so my e-mail
+> latency will be a bit longer than normal, which is one of the reason
+> why I've left a goodly list of potential experiments for people to
+> try.  If you can come up with a reliable regression, and are willing
+> to work with me or to try some of the above mentioned tests, I'll
+> definitely buy you a real (or virtual) beer.
+>
+> Given that a number of people have reported losing data as a result,
+> it would **definitely** be a good thing to get this fixed before
+> 2.6.32 is released.
+>
+> Thanks,
+>
+> 						- Ted
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>    
+
