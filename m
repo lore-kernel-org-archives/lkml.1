@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbZJPSl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbZJPSn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755116AbZJPSl4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 14:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbZJPSlz
+	id S1754415AbZJPSn1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 14:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbZJPSn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 14:41:55 -0400
-Received: from bamako.nerim.net ([62.4.17.28]:64672 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751665AbZJPSly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 14:41:54 -0400
-Date: Fri, 16 Oct 2009 20:41:55 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [lm-sensors] lm-sensors 3.1.1-3 not detecting sensors on Intel
-     DP55KG motherboard? (chip ID: 0xb473)
-Message-ID: <20091016204155.377fe67d@hyperion.delvare>
-In-Reply-To: <alpine.DEB.2.00.0910160838500.31450@p34.internal.lan>
-References: <alpine.DEB.2.00.0910131743530.5034@p34.internal.lan>
-	<alpine.DEB.2.00.0910140403150.15961@p34.internal.lan>
-	<alpine.DEB.2.00.0910140856190.19307@p34.internal.lan>
-	<20091015100557.22243433@hyperion.delvare>
-	<alpine.DEB.2.00.0910150422400.21030@p34.internal.lan>
-	<20091016111504.5d9cb0ba@hyperion.delvare>
-	<alpine.DEB.2.00.0910160553221.2841@p34.internal.lan>
-	<20091016125353.1c8795f4@hyperion.delvare>
-	<alpine.DEB.2.00.0910160838500.31450@p34.internal.lan>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Oct 2009 14:43:26 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:22522 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751556AbZJPSn0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 14:43:26 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=QyUMPu3nZTbMB1Qj7Qx2J9ekKscsXyHko3GbENL5mfuFcU93g3WRUi9dN3e0SR66z
+	3SX+lM9SC3gVGviECqcgQ==
+Date: Fri, 16 Oct 2009 11:43:23 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu
+ operations in the hotpaths
+In-Reply-To: <alpine.DEB.1.10.0910161244400.6120@gentwo.org>
+Message-ID: <alpine.DEB.1.00.0910161141280.21328@chino.kir.corp.google.com>
+References: <4AD307A5.105@kernel.org> <84144f020910120614r529d8e4em9babe83a90e9371f@mail.gmail.com> <alpine.DEB.1.00.0910130231570.27262@chino.kir.corp.google.com> <alpine.DEB.1.10.0910131041450.21608@gentwo.org> <alpine.DEB.1.10.0910131509170.32394@gentwo.org>
+ <4AD4D8B6.6010700@cs.helsinki.fi> <alpine.DEB.1.10.0910131541290.7246@gentwo.org> <alpine.DEB.1.00.0910131305440.3529@chino.kir.corp.google.com> <alpine.DEB.1.10.0910131625370.13756@gentwo.org> <alpine.DEB.1.00.0910131550050.15347@chino.kir.corp.google.com>
+ <20091014133457.GB5027@csn.ul.ie> <alpine.DEB.1.00.0910150157250.20184@chino.kir.corp.google.com> <alpine.DEB.1.10.0910161244400.6120@gentwo.org>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Oct 2009 09:40:51 -0400 (EDT), Justin Piszcz wrote:
-> On Fri, 16 Oct 2009, Jean Delvare wrote:
-> > If you want me to investigate this, you can provide an I2C dump of the
-> > chip. Get i2cdump from the i2c-tools package, and then:
-> >
-> > # i2cdump 0 0x2c b
-> >
-> > This might confuse the chip in question though, so only try it if you
-> > are ready to trigger a cold reboot.
-> 
-> Ok, luckily it does not appear to have caused any issues:
-> 
-> # i2cdump 0 0x2c b
-> WARNING! This program can confuse your I2C bus, cause data loss and worse!
-> I will probe file /dev/i2c-0, address 0x2c, mode byte
-> Continue? [Y/n] y
->       0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
-> 00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-> 10: 00 00 00 00 00 00 00 00 00 00 80 80 80 04 7e 10    ..........????~?
-> 20: 75 51 c0 c3 c3 80 28 2d bd 0f de 0f 3b 1d a9 16    uQ????(-????;???
-> 30: 33 4d 4d c2 81 00 c2 00 ff ff ff e6 7b fb 41 6f    3MM??.?....?{?Ao
-> 40: 35 90 40 00 00 ff 00 ff 00 ff 00 ff 00 ff 81 7f    5?@...........??
-> 50: 81 7f 81 7f ff ff ff ff ff ff ff ff 0a a2 a2 ca    ????........????
-> 60: 8a 8a e0 aa 33 4c 4c 5a 2d 2d 64 41 41 04 42 00    ????3LLZ--dAA?B.
-> 70: 00 00 00 00 00 00 6c 60 f0 00 00 55 01 00 00 00    ......l`?..U?...
-> 80: 00 00 00 00 00 00 ff ff 00 00 fb 64 64 64 00 00    ..........?ddd..
-> 90: 00 59 59 59 00 00 00 00 00 00 00 00 00 00 00 00    .YYY............
-> a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-> b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-> c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-> d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-> e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-> f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-> #
+On Fri, 16 Oct 2009, Christoph Lameter wrote:
 
-Smells like an Analog Devices chip, but not one we know... And I can't
-see it on the web site you mentioned. Please search for a small-size
-chip named ADTxxxx (more likely ADT74xx).
+> > TCP_STREAM stresses a few specific caches:
+> >
+> > 		ALLOC_FASTPATH	ALLOC_SLOWPATH	FREE_FASTPATH	FREE_SLOWPATH
+> > kmalloc-256	3868530		3450592		95628		7223491
+> > kmalloc-1024	2440434		429		2430825		10034
+> > kmalloc-4096	3860625		1036723		85571		4811779
+> >
+> > This demonstrates that freeing to full (or partial) slabs causes a lot of
+> > pain since the fastpath normally can't be utilized and that's probably
+> > beyond the scope of this patchset.
+> >
+> > It's also different from the cpu slab thrashing issue I identified with
+> > the TCP_RR benchmark and had a patchset to somewhat improve.  The
+> > criticism was the addition of an increment to a fastpath counter in struct
+> > kmem_cache_cpu which could probably now be much cheaper with these
+> > optimizations.
+> 
+> Can you redo the patch?
+> 
 
--- 
-Jean Delvare
+Sure, but it would be even more inexpensive if we can figure out why the 
+irqless patch is hanging my netserver machine within the first 60 seconds 
+on the TCP_RR benchmark.  I guess nobody else has reproduced that yet.
