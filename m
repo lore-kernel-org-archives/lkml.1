@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756527AbZJPRUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZJPRVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756527AbZJPRUd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZJPRSo
+	id S1756199AbZJPRVg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZJPRVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:18:44 -0400
-Received: from kroah.org ([198.145.64.141]:48649 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:21:34 -0400
+Received: from kroah.org ([198.145.64.141]:48632 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754561AbZJPRSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755171AbZJPRSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Oct 2009 13:18:41 -0400
 X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:06 2009
-Message-Id: <20091016171205.629484075@linux.site>
+Message-Id: <20091016171206.189773932@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:29 -0700
+Date: Fri, 16 Oct 2009 10:10:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>, Riku Voipio <riku.voipio@iki.fi>,
+       Jean Delvare <khali@linux-fr.org>, Colin Leroy <colin@colino.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [36/46] MAINTAINERS: Fix Riku Voipios address
+Subject: [37/46] macintosh: Dont assume i2c device probing always succeeds
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=maintainers-fix-riku-voipio-s-address.patch
+Content-Disposition: inline; filename=macintosh-don-t-assume-i2c-device-probing-always-succeeds.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,26 +32,125 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Jean Delvare <khali@linux-fr.org>
 
-commit 05576a1e38e2d06dece32974c5218528d3fbc6e2 upstream.
+commit 6f6b35e133fe4313277b30fc1a7ea313875ea6c9 upstream.
+
+If i2c device probing fails, then there is no driver to dereference
+after calling i2c_new_device(). Stop assuming that probing will always
+succeed, to avoid NULL pointer dereferences. We have an easier access
+to the driver anyway.
 
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Acked-by: Riku Voipio <riku.voipio@iki.fi>
+Tested-by: Tim Shepard <shep@alum.mit.edu>
+Cc: Colin Leroy <colin@colino.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- MAINTAINERS |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/macintosh/therm_adt746x.c           |    4 +++-
+ drivers/macintosh/therm_pm72.c              |    4 +++-
+ drivers/macintosh/windfarm_lm75_sensor.c    |    4 +++-
+ drivers/macintosh/windfarm_max6690_sensor.c |    4 +++-
+ drivers/macintosh/windfarm_smu_sat.c        |    4 +++-
+ 5 files changed, 15 insertions(+), 5 deletions(-)
 
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1992,7 +1992,7 @@ S:	Maintained
- F:	fs/*
+--- a/drivers/macintosh/therm_adt746x.c
++++ b/drivers/macintosh/therm_adt746x.c
+@@ -124,6 +124,8 @@ read_reg(struct thermostat* th, int reg)
+ 	return data;
+ }
  
- FINTEK F75375S HARDWARE MONITOR AND FAN CONTROLLER DRIVER
--M:	Riku Voipio <riku.vipio@iki.fi>
-+M:	Riku Voipio <riku.voipio@iki.fi>
- L:	lm-sensors@lm-sensors.org
- S:	Maintained
- F:	drivers/hwmon/f75375s.c
++static struct i2c_driver thermostat_driver;
++
+ static int
+ attach_thermostat(struct i2c_adapter *adapter)
+ {
+@@ -148,7 +150,7 @@ attach_thermostat(struct i2c_adapter *ad
+ 	 * Let i2c-core delete that device on driver removal.
+ 	 * This is safe because i2c-core holds the core_lock mutex for us.
+ 	 */
+-	list_add_tail(&client->detected, &client->driver->clients);
++	list_add_tail(&client->detected, &thermostat_driver.clients);
+ 	return 0;
+ }
+ 
+--- a/drivers/macintosh/therm_pm72.c
++++ b/drivers/macintosh/therm_pm72.c
+@@ -286,6 +286,8 @@ struct fcu_fan_table	fcu_fans[] = {
+ 	},
+ };
+ 
++static struct i2c_driver therm_pm72_driver;
++
+ /*
+  * Utility function to create an i2c_client structure and
+  * attach it to one of u3 adapters
+@@ -318,7 +320,7 @@ static struct i2c_client *attach_i2c_chi
+ 	 * Let i2c-core delete that device on driver removal.
+ 	 * This is safe because i2c-core holds the core_lock mutex for us.
+ 	 */
+-	list_add_tail(&clt->detected, &clt->driver->clients);
++	list_add_tail(&clt->detected, &therm_pm72_driver.clients);
+ 	return clt;
+ }
+ 
+--- a/drivers/macintosh/windfarm_lm75_sensor.c
++++ b/drivers/macintosh/windfarm_lm75_sensor.c
+@@ -115,6 +115,8 @@ static int wf_lm75_probe(struct i2c_clie
+ 	return rc;
+ }
+ 
++static struct i2c_driver wf_lm75_driver;
++
+ static struct i2c_client *wf_lm75_create(struct i2c_adapter *adapter,
+ 					     u8 addr, int ds1775,
+ 					     const char *loc)
+@@ -157,7 +159,7 @@ static struct i2c_client *wf_lm75_create
+ 	 * Let i2c-core delete that device on driver removal.
+ 	 * This is safe because i2c-core holds the core_lock mutex for us.
+ 	 */
+-	list_add_tail(&client->detected, &client->driver->clients);
++	list_add_tail(&client->detected, &wf_lm75_driver.clients);
+ 	return client;
+  fail:
+ 	return NULL;
+--- a/drivers/macintosh/windfarm_max6690_sensor.c
++++ b/drivers/macintosh/windfarm_max6690_sensor.c
+@@ -88,6 +88,8 @@ static int wf_max6690_probe(struct i2c_c
+ 	return rc;
+ }
+ 
++static struct i2c_driver wf_max6690_driver;
++
+ static struct i2c_client *wf_max6690_create(struct i2c_adapter *adapter,
+ 					    u8 addr, const char *loc)
+ {
+@@ -119,7 +121,7 @@ static struct i2c_client *wf_max6690_cre
+ 	 * Let i2c-core delete that device on driver removal.
+ 	 * This is safe because i2c-core holds the core_lock mutex for us.
+ 	 */
+-	list_add_tail(&client->detected, &client->driver->clients);
++	list_add_tail(&client->detected, &wf_max6690_driver.clients);
+ 	return client;
+ 
+  fail:
+--- a/drivers/macintosh/windfarm_smu_sat.c
++++ b/drivers/macintosh/windfarm_smu_sat.c
+@@ -194,6 +194,8 @@ static struct wf_sensor_ops wf_sat_ops =
+ 	.owner		= THIS_MODULE,
+ };
+ 
++static struct i2c_driver wf_sat_driver;
++
+ static void wf_sat_create(struct i2c_adapter *adapter, struct device_node *dev)
+ {
+ 	struct i2c_board_info info;
+@@ -222,7 +224,7 @@ static void wf_sat_create(struct i2c_ada
+ 	 * Let i2c-core delete that device on driver removal.
+ 	 * This is safe because i2c-core holds the core_lock mutex for us.
+ 	 */
+-	list_add_tail(&client->detected, &client->driver->clients);
++	list_add_tail(&client->detected, &wf_sat_driver.clients);
+ }
+ 
+ static int wf_sat_probe(struct i2c_client *client,
 
 
