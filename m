@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbZJPSL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbZJPSde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309AbZJPSL3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 14:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbZJPSL3
+	id S1754057AbZJPSde (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 14:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZJPSde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 14:11:29 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:65208 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbZJPSL2 (ORCPT
+	Fri, 16 Oct 2009 14:33:34 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:20210 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751335AbZJPSdd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 14:11:28 -0400
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for October 16
-References: <20091016170112.71ec36c7.sfr@canb.auug.org.au>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Fri, 16 Oct 2009 11:11:31 -0700
-In-Reply-To: <20091016170112.71ec36c7.sfr@canb.auug.org.au> (Stephen Rothwell's message of "Fri\, 16 Oct 2009 17\:01\:12 +1100")
-Message-ID: <87zl7rw6ng.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 16 Oct 2009 14:33:33 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=M18OWYsJg+mBM6WnBlj4JFf7K+m+7iCkD8h2w+pBnOUpaACnPR6BsQY0rPAgkqS1F
+	vKwl8/CJZQcIY/EhhwDjQ==
+Date: Fri, 16 Oct 2009 11:33:28 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] slub: allow stats to be cleared
+In-Reply-To: <alpine.DEB.1.10.0910161249100.6120@gentwo.org>
+Message-ID: <alpine.DEB.1.00.0910161129320.21328@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0910150215320.1551@chino.kir.corp.google.com> <alpine.DEB.1.10.0910161249100.6120@gentwo.org>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
+On Fri, 16 Oct 2009, Christoph Lameter wrote:
 
-I've changed the branch names slightly for the davinci tree (patch
-below against todays next/master branch.)  Both branches will remain
-for a few days, then I'll drop the old one.
+> 
+> So writing to any file clears all counters? The documentation does not say
+> so.
+> 
 
-Thanks,
+No, it just clears that particular statistic.
 
-Kevin
-
-
-
-diff --git a/Next/Trees b/Next/Trees
-index 0474f35..b644233 100644
---- a/Next/Trees
-+++ b/Next/Trees
-@@ -26,7 +26,7 @@ crypto-current	git	git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-
- ide-curent	git	git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide-2.6.git#master
- dwmw2		git	git://git.infradead.org/users/dwmw2/random-2.6.git#master
- arm		git	ssh://master.kernel.org/home/rmk/linux-2.6-arm.git#devel
--davinci		git	git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-davinci.git#for-next
-+davinci		git	git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-davinci.git#davinci-next
- pxa		git	git://git.kernel.org/pub/scm/linux/kernel/git/ycmiao/pxa-linux-2.6.git#for-next
- avr32		git	git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git#avr32-arch
- blackfin	git	git://git.kernel.org/pub/scm/linux/kernel/git/vapier/blackfin.git#for-linus
+On a semi-related topic, it would have been nice to isolate all statistic 
+files to its own directory: /sys/kernel/slab/kmalloc-256/stats/..., for 
+example.  It would have made collecting (and now clearing) all statistics 
+much easier since userspace wouldn't need a predefined list of stat file 
+names to scan.  I wonder if Pekka would allow them to be moved...
