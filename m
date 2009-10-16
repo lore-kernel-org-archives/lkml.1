@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbZJPRTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932146AbZJPRS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756940AbZJPRTa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZJPRT1
+	id S932146AbZJPRS6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756517AbZJPRSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:19:27 -0400
-Received: from kroah.org ([198.145.64.141]:48696 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:18:52 -0400
+Received: from kroah.org ([198.145.64.141]:48706 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756009AbZJPRSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 13:18:48 -0400
-X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:10 2009
-Message-Id: <20091016171210.469831545@linux.site>
+	id S1756285AbZJPRSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 13:18:49 -0400
+X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:11 2009
+Message-Id: <20091016171210.987917756@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:38 -0700
+Date: Fri, 16 Oct 2009 10:10:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
+       Paul Fulghum <paulkf@microgate.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [45/46] mac80211: fix vlan and optimise RX
+Subject: [46/46] tty: Make flush_to_ldisc() locking more robust
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=mac80211-fix-vlan-and-optimise-rx.patch
+Content-Disposition: inline; filename=tty-make-flush_to_ldisc-locking-more-robust.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,87 +30,121 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit fbc44bf7177dfd61381da55405550b693943a432 upstream.
+commit c8e33141911bf8fe87dc6c92793b9a59b2be0130 upstream.
 
-When receiving data frames, we can send them only to
-the interface they belong to based on transmitting
-station (this doesn't work for probe requests). Also,
-don't try to handle other frames for AP_VLAN at all
-since those interface should only receive data.
+The locking logic in this function is extremely subtle, and it broke
+when we started doing potentially concurrent 'flush_to_ldisc()' calls in
+commit e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 ("pty: avoid forcing
+'low_latency' tty flag").
 
-Additionally, the transmit side must check that the
-station we're sending a frame to is actually on the
-interface we're transmitting on, and not transmit
-packets to functions that live on other interfaces,
-so validate that as well.
+The code in flush_to_ldisc() used to set 'tty->buf.head' to NULL, with
+the intention that this would then cause any other concurrent calls to
+not do anything (locking note: we have to drop the buf.lock over the
+call to ->receive_buf that can block, which is why we can have
+concurrency here at all in the first place).
 
-Another bug fix is needed in sta_info.c where in the
-VLAN case when adding/removing stations we overwrite
-the sdata variable we still need.
+It also used to set the TTY_FLUSHING bit, which would then cause any
+concurrent 'tty_buffer_flush()' to not free all the tty buffers and
+clear 'tty->buf.tail'.  And with 'buf.head' being NULL, and 'buf.tail'
+being non-NULL, new data would never touch 'buf.head'.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Does that sound a bit too subtle? It was.  If another concurrent call to
+'flush_to_ldisc()' were to come in, the NULL buf.head would indeed cause
+it to not process the buffer list, but it would still clear TTY_FLUSHING
+afterwards, making the buffer protection against 'tty_buffer_flush()' no
+longer work.
+
+So this clears it all up.  We depend purely on TTY_FLUSHING for handling
+re-entrancy, and stop playing games with the buffer list entirely.  In
+fact, the buffer list handling is now robust enough that we could
+probably stop doing the whole "protect against 'tty_buffer_flush()'"
+thing entirely.
+
+However, Alan also points out that we would probably be better off
+simplifying the locking even further, and just take the tty ldisc_mutex
+around all the buffer flushing calls.  That seems like a good idea, but
+in the meantime this is a conceptually minimal fix (with the patch
+itself being bigger than required just to clean the code up and make it
+readable).
+
+This fixes keyboard trouble under X:
+
+	http://bugzilla.kernel.org/show_bug.cgi?id=14388
+
+Reported-and-tested-by: Frédéric Meunier <fredlwm@gmail.com>
+Reported-and-tested-by: Boyan <btanastasov@yahoo.co.uk>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Paul Fulghum <paulkf@microgate.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/mac80211/rx.c       |   10 ++++++++--
- net/mac80211/sta_info.c |    2 ++
- net/mac80211/tx.c       |    3 ++-
- 3 files changed, 12 insertions(+), 3 deletions(-)
+ drivers/char/tty_buffer.c |   29 +++++++++++++----------------
+ 1 file changed, 13 insertions(+), 16 deletions(-)
 
---- a/net/mac80211/rx.c
-+++ b/net/mac80211/rx.c
-@@ -2155,11 +2155,17 @@ static void __ieee80211_rx_handle_packet
+--- a/drivers/char/tty_buffer.c
++++ b/drivers/char/tty_buffer.c
+@@ -402,28 +402,26 @@ static void flush_to_ldisc(struct work_s
+ 		container_of(work, struct tty_struct, buf.work.work);
+ 	unsigned long 	flags;
+ 	struct tty_ldisc *disc;
+-	struct tty_buffer *tbuf, *head;
+-	char *char_buf;
+-	unsigned char *flag_buf;
  
- 	skb = rx.skb;
+ 	disc = tty_ldisc_ref(tty);
+ 	if (disc == NULL)	/*  !TTY_LDISC */
+ 		return;
  
--	list_for_each_entry_rcu(sdata, &local->interfaces, list) {
-+	if (rx.sdata && ieee80211_is_data(hdr->frame_control)) {
-+		rx.flags |= IEEE80211_RX_RA_MATCH;
-+		prepares = prepare_for_handlers(rx.sdata, &rx, hdr);
-+		if (prepares)
-+			prev = rx.sdata;
-+	} else list_for_each_entry_rcu(sdata, &local->interfaces, list) {
- 		if (!netif_running(sdata->dev))
- 			continue;
- 
--		if (sdata->vif.type == NL80211_IFTYPE_MONITOR)
-+		if (sdata->vif.type == NL80211_IFTYPE_MONITOR ||
-+		    sdata->vif.type == NL80211_IFTYPE_AP_VLAN)
- 			continue;
- 
- 		rx.flags |= IEEE80211_RX_RA_MATCH;
---- a/net/mac80211/sta_info.c
-+++ b/net/mac80211/sta_info.c
-@@ -360,6 +360,7 @@ int sta_info_insert(struct sta_info *sta
- 					     u.ap);
- 
- 		drv_sta_notify(local, &sdata->vif, STA_NOTIFY_ADD, &sta->sta);
-+		sdata = sta->sdata;
+ 	spin_lock_irqsave(&tty->buf.lock, flags);
+-	/* So we know a flush is running */
+-	set_bit(TTY_FLUSHING, &tty->flags);
+-	head = tty->buf.head;
+-	if (head != NULL) {
+-		tty->buf.head = NULL;
+-		for (;;) {
+-			int count = head->commit - head->read;
++
++	if (!test_and_set_bit(TTY_FLUSHING, &tty->flags)) {
++		struct tty_buffer *head;
++		while ((head = tty->buf.head) != NULL) {
++			int count;
++			char *char_buf;
++			unsigned char *flag_buf;
++
++			count = head->commit - head->read;
+ 			if (!count) {
+ 				if (head->next == NULL)
+ 					break;
+-				tbuf = head;
+-				head = head->next;
+-				tty_buffer_free(tty, tbuf);
++				tty->buf.head = head->next;
++				tty_buffer_free(tty, head);
+ 				continue;
+ 			}
+ 			/* Ldisc or user is trying to flush the buffers
+@@ -445,9 +443,9 @@ static void flush_to_ldisc(struct work_s
+ 							flag_buf, count);
+ 			spin_lock_irqsave(&tty->buf.lock, flags);
+ 		}
+-		/* Restore the queue head */
+-		tty->buf.head = head;
++		clear_bit(TTY_FLUSHING, &tty->flags);
  	}
- 
- #ifdef CONFIG_MAC80211_VERBOSE_DEBUG
-@@ -494,6 +495,7 @@ static void __sta_info_unlink(struct sta
- 
- 		drv_sta_notify(local, &sdata->vif, STA_NOTIFY_REMOVE,
- 			       &(*sta)->sta);
-+		sdata = (*sta)->sdata;
++
+ 	/* We may have a deferred request to flush the input buffer,
+ 	   if so pull the chain under the lock and empty the queue */
+ 	if (test_bit(TTY_FLUSHPENDING, &tty->flags)) {
+@@ -455,7 +453,6 @@ static void flush_to_ldisc(struct work_s
+ 		clear_bit(TTY_FLUSHPENDING, &tty->flags);
+ 		wake_up(&tty->read_wait);
  	}
+-	clear_bit(TTY_FLUSHING, &tty->flags);
+ 	spin_unlock_irqrestore(&tty->buf.lock, flags);
  
- 	if (ieee80211_vif_is_mesh(&sdata->vif)) {
---- a/net/mac80211/tx.c
-+++ b/net/mac80211/tx.c
-@@ -1736,7 +1736,8 @@ int ieee80211_subif_start_xmit(struct sk
- 	if (!is_multicast_ether_addr(hdr.addr1)) {
- 		rcu_read_lock();
- 		sta = sta_info_get(local, hdr.addr1);
--		if (sta)
-+		/* XXX: in the future, use sdata to look up the sta */
-+		if (sta && sta->sdata == sdata)
- 			sta_flags = get_sta_flags(sta);
- 		rcu_read_unlock();
- 	}
+ 	tty_ldisc_deref(disc);
 
 
