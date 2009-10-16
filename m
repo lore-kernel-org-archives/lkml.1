@@ -1,166 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbZJPBoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbZJPCZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758912AbZJPBoZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 21:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbZJPBoY
+	id S1753211AbZJPCZk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 22:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbZJPCZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 21:44:24 -0400
-Received: from mga11.intel.com ([192.55.52.93]:58695 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754914AbZJPBoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 21:44:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,569,1249282800"; 
-   d="scan'208";a="736903586"
-Subject: Re: [PATCH] ALS: TSL2550 driver move from i2c/chips
-From: Zhang Rui <rui.zhang@intel.com>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       "Michele De Candia (VT)" <michele.decandia@valueteam.com>,
-       Linux I2C <linux-i2c@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       "corentin.chary@gmail.com" <corentin.chary@gmail.com>
-In-Reply-To: <1255657038.3838.17.camel@rzhang-dt>
-References: <4ACF4AC6.7070802@cam.ac.uk>
-	 <20091010185200.671846c5@hyperion.delvare>	<4AD33ADB.4000500@cam.ac.uk>
-	 <20091012175216.6d844623@hyperion.delvare>  <4AD36114.50108@cam.ac.uk>
-	 <1255657038.3838.17.camel@rzhang-dt>
-Content-Type: text/plain
-Date: Fri, 16 Oct 2009 09:42:07 +0800
-Message-Id: <1255657327.3838.19.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Oct 2009 22:25:40 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:10257 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750911AbZJPCZj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 22:25:39 -0400
+X-Trace: 275064393/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.81.180/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.81.180
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEAO9110pPRVG0/2dsb2JhbACBU9cqhDAE
+X-IronPort-AV: E=Sophos;i="4.44,569,1249254000"; 
+   d="scan'208";a="275064393"
+Date: Fri, 16 Oct 2009 03:24:57 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Nitin Gupta <ngupta@vflare.org>,
+       hongshin@gmail.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 7/9] swap_info: swap count continuations
+In-Reply-To: <20091016102951.a4f66a19.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0910160314310.2993@sister.anvils>
+References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
+ <Pine.LNX.4.64.0910150153560.3291@sister.anvils>
+ <20091015123024.21ca3ef7.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0910160016160.11643@sister.anvils>
+ <20091016102951.a4f66a19.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-update Pavel's email address.
-
-On Fri, 2009-10-16 at 09:37 +0800, Zhang Rui wrote:
-> On Tue, 2009-10-13 at 01:02 +0800, Jonathan Cameron wrote:
-> > Jean Delvare wrote:
-> > > Hi Jonathan,
-> > > 
-> > > On Mon, 12 Oct 2009 15:19:07 +0100, Jonathan Cameron wrote:
-> > >>>> @@ -60,9 +65,41 @@ static const u8 TSL2550_MODE_RANGE[2] = {
-> > >>>>  };
-> > >>>>  
-> > >>>>  /*
-> > >>>> + * IDR to assign each registered device a unique id
-> > >>>> + */
-> > >>>> +static DEFINE_IDR(tsl2550_idr);
-> > >>>> +static DEFINE_SPINLOCK(tsl2550_idr_lock);
-> > >>>> +#define TSL2550_DEV_MAX 9
-> > >>> Such an arbitrary limit is simply not acceptable.
-> > >> Fair enough, but it is based on restricting the size
-> > >> of the char array needed for the name when registering
-> > >> with als.  Hence single digit decimal maximum.
-> > >> Do you suggest leaving it unrestricted (which makes code
-> > >> a little fiddly given variable size of max idr) or some other
-> > >> limit?
-> > > 
-> > > The name size really isn't an issue. You won't notice 16 bytes instead
-> > > of 9. And it's not like we'll have millions of these devices.
-> > I agree, it's merely a question of picking some suitable limit. IDR's
-> > on a 64 bit box will do something in the ball park of 2e18 which might
-> > be an excessive limit ;) I'll leave this be for next version on basis
-> > I'm in favour of moving this into the core and hence as you said this
-> > will be irrelevant here anyway.
-> > >>>> +static int tsl2550_get_id(void)
-> > >>>> +{
-> > >>>> +	int ret, val;
-> > >>>> +
-> > >>>> +idr_again:
-> > >>>> +	if (unlikely(idr_pre_get(&tsl2550_idr, GFP_KERNEL) == 0))
-> > >>>> +		return -ENOMEM;
-> > >>>> +	spin_lock(&tsl2550_idr_lock);
-> > >>>> +	ret = idr_get_new(&tsl2550_idr, NULL, &val);
-> > >>>> +	if (unlikely(ret == -EAGAIN))
-> > >>>> +		goto idr_again;
-> > >>>> +	else if (unlikely(ret))
-> > >>>> +		return ret;
-> > >>>> +	if (val > TSL2550_DEV_MAX)
-> > >>>> +		return -ENOMEM;
-> > >>>> +	return val;
-> > >>>> +}
-> > >>>> +
-> > >>>> +static void tsl2550_free_id(int val)
-> > >>>> +{
-> > >>>> +	spin_lock(&tsl2550_idr_lock);
-> > >>>> +	idr_remove(&tsl2550_idr, val);
-> > >>>> +	spin_unlock(&tsl2550_idr_lock);
-> > >>>> +}
-> > >>> Having to implement this in _every_ ALS driver sounds wrong and
-> > >>> painful. If uniqueness of any kind must be provided, it should be
-> > >>> handled by the ALS core and not by individual drivers, otherwise you
-> > >>> can be certain that at least one driver will get it wrong someday.
-> > >> I agree. The reason this originally occurred is that the acpi layer
-> > >> apparently doesn't allow for simultaneous probing of multiple drivers
-> > >> and hence can get away with a simple counter and no locking.
-> > >>
-> > >>> I'd imaging that als-class devices are simply named als%u. Just like
-> > >>> hwmon devices are named hwmon%u, input devices are names input%u and
-> > >>> event%u, etc. I don't know of any class pushing the naming down to its
-> > >>> drivers, do you? The only example I can remember are i2c drivers back
-> > >>> in year 1999, when they were part of lm-sensors.I have personally put
-> > >>> an end to this years ago.
-> > >> This debate started in the als thread. Personally I couldn't care less
-> > >> either way but it does need to be put to bed before that subsystem merges.
-> > >> To my mind either approach is trivially handled in a userspace library
-> > >> so it doesn't matter.  I don't suppose you can remember what the original
-> > >> reasons for squashing this naming approach were?
-> > > 
-> > > Code duplication. Having the same unique-id handling code repeated in
-> > > 50 drivers was no fun, as it did not add any value compared to a
-> > > central handling.
-> > Counter argument placed (cc'd Pavel and Corentin for this point)
-> > is that having a generic name, e.g. hwmon0 and a name field in sysfs
-> > is superfluous when we can combine the two.
-> > > 
-> > >>>> @@ -296,13 +333,13 @@ static ssize_t tsl2550_show_lux1_input(struct device *dev,
-> > >>>>  	return ret;
-> > >>>>  }
-> > >>>>  
-> > >>>> -static DEVICE_ATTR(lux1_input, S_IRUGO,
-> > >>>> +static DEVICE_ATTR(illuminance, S_IRUGO,
-> > >>>>  		   tsl2550_show_lux1_input, NULL);
-> > >>> Question: if I have a light sensing chip with two sensors, how are we
-> > >>> going to handle it? Will we register 2 als class devices? The initial
-> > >>> naming convention had the advantage that you could have more than one
-> > >>> sensor per device, but I don't know if it is desirable in practice.
-> > >> This only becomes and issue if we have two sensors measuring illuminance
-> > >> (or approximation of it).  The only two sensor chips I know of have one
-> > >> broadband and one in the infrared tsl2561 and I think the isl chip with
-> > >> a driver currently in misc.  The combination of these two are needed to
-> > >> calculate illuminance.  Some of the original discussion went into how
-> > >> to support separate access to the individual sensors.  Decision was to
-> > >> leave that question until it becomes relevant.  Basically we would put
-> > >> the current drivers in just supporting illuminance and see if anyone asked
-> > >> for furthers support.  One tricky aspect is what the units should be for
-> > >> particular frequency ranges. At least illuminance is cleanly defined
-> > >> (even if chips are only fairly coarsely approximating it. 
-> > > 
-> > > Hmm, this isn't the point I was raising. I was thinking of a light
-> > > sensor chip which would sense light in different locations. Think chip
-> > > with remote sensors. This is done frequently for thermal sensors, so I
-> > > guess it could be done for light sensors as well. A practical
-> > > application could be sensing the ambient light on two sides of an
-> > > object, so that you get the correct measurement regardless of the
-> > > position.
-> > > 
-> > > I'm not saying such chips exist, I really don't know. I am just raising
-> > > the question of how we'd handle them if they do. The current naming
-> > > scheme implies that we'd need a separate als instance for each sensor,
-> > > and I want you to be aware of this.
-> > I agree with this being a possible issue. Zhang, what do you think to changing
-> > the acpi driver to use luminance0 and documentation to match?  Seems like
-> > a cost free way of avoiding possible problems down the line.
-> > > 
-> I don't have any objections to this.
-> I think we should push the generic ALS patch upstream first and I'll
-> refresh the ACPI ALS patch later.
+On Fri, 16 Oct 2009, KAMEZAWA Hiroyuki wrote:
+> > 
+> My concern is that small numbers of swap_map[] which has too much refcnt
+> can consume too much pages.
 > 
-> thanks,
-> rui
+> If an entry is shared by 65535, 65535/128 = 512 page will be used.
+> (I'm sorry if I don't undestand implementation correctly.)
 
+Ah, you're thinking it's additive: perhaps because I use the name
+"continuation", which may give that impression - maybe there's a
+better name I can give it.
+
+No, it's multiplicative - just like 999 is almost a thousand, not 27.
+
+If an entry is shared by 65535, then it needs its original swap_map
+page (0 to 0x3e) and a continuation page (0 to 0x7f) and another
+continuation page (0 to 0x7f): if I've got my arithmetic right,
+those three pages can hold a shared count up to 1032191, for
+every one of that group of PAGE_SIZE neighbouring pages.
+
+Hugh
