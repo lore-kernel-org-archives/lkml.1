@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751822AbZJPX0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751072AbZJPX21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751822AbZJPX0M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 19:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZJPX0L
+	id S1751072AbZJPX21 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 19:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbZJPX20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 19:26:11 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:57110 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbZJPX0L (ORCPT
+	Fri, 16 Oct 2009 19:28:26 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:64730 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750765AbZJPX20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 19:26:11 -0400
-Date: Sat, 17 Oct 2009 00:26:12 +0100
-From: Andy Whitcroft <apw@canonical.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 6/7] checkpatch: fix false EXPORT_SYMBOL warning
-Message-ID: <20091016232612.GA23876@penfold>
-References: <1255718372-22805-1-git-send-email-apw@canonical.com>
- <1255718372-22805-7-git-send-email-apw@canonical.com>
- <1255719501.22917.54.camel@desktop>
+	Fri, 16 Oct 2009 19:28:26 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 2/2] page allocator: Direct reclaim should always obey watermarks
+Date: Sat, 17 Oct 2009 01:28:26 +0200
+User-Agent: KMail/1.9.9
+Cc: David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, stable <stable@kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
+       reinette chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+References: <1255689446-3858-1-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.00.0910161204140.21328@chino.kir.corp.google.com> <20091016223237.GE32397@csn.ul.ie>
+In-Reply-To: <20091016223237.GE32397@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1255719501.22917.54.camel@desktop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200910170128.29086.elendil@planet.nl>
+X-OriginalArrivalTime: 16 Oct 2009 23:28:29.0710 (UTC) FILETIME=[5E55A2E0:01CA4EB8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 16, 2009 at 11:58:21AM -0700, Daniel Walker wrote:
-> On Fri, 2009-10-16 at 19:39 +0100, Andy Whitcroft wrote:
-> 
-> > -				WARN("EXPORT_SYMBOL(foo); should immediately follow its function/variable\n" . $herecurr);
-> > +#print "FOO A<$lines[$realline_next - 1]> stat<$stat> name<$name>\n";
-> > +				$suppress_export{$realline_next} = 2;
-> > +			} else {
-> > +				$suppress_export{$realline_next} = 1;
-> >  			}
-> >  		}
-> > +		if (!defined $suppress_export{$linenr} &&
-> > +		    $prevline =~ /^.\s*$/ &&
-> > +                    ($line =~ /EXPORT_SYMBOL.*\((.*)\)/ ||
-> > +		     $line =~ /EXPORT_UNUSED_SYMBOL.*\((.*)\)/)) {
-> 
-> ERROR: code indent should use tabs where possible
-> #148: FILE: scripts/checkpatch.pl:1734:
-> +                    ($line =~ /EXPORT_SYMBOL.*\((.*)\)/ ||$
-> 
-> This one line is spaced over instead of tabbed.. I guess checkpatch can
-> even check itself, which is nice .. I'm not sure this matters since this
-> it's perl tho..
-> 
-> Do you apply any kind of coding style to checkpatch itself ?
+On Saturday 17 October 2009, Mel Gorman wrote:
+> Frans, you reported that both patches in combination reduced the number
+> of failures. Was it in fact just the kswapd change that made the
+> difference?
 
-Yeah normally I checkpatch it, and ignore the width issues as the long
-regexps are not always sensibly wrappable.  I rushed this lot out as I
-am travelling tommorrow.  Sigh.  Never rush out a set of patches.
+I will retest both patches (as I already mailed you privately yesterday), 
+but not today. The improvement with the combination was real, but I'm not 
+sure which patch is the reason. I think the second, but I need to verify.
 
--apw
+I've done another 30 boots or so today, mainly in the "akpm" merge, and 
+I've found new patterns that will help me nail down the regression. But 
+ATM I can't see straight anymore, so it will have to wait until tomorrow.
+
+I'd suggest to delay merging any patches for now. There are still too many 
+open ends.
+
+Cheers,
+FJP
