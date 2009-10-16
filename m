@@ -1,273 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbZJPHqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbZJPH7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbZJPHqx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 03:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZJPHqx
+	id S1757297AbZJPH7p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 03:59:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbZJPH7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 03:46:53 -0400
-Received: from ernst.netinsight.se ([194.16.221.21]:49621 "HELO
-	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755879AbZJPHqw convert rfc822-to-8bit (ORCPT
+	Fri, 16 Oct 2009 03:59:44 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:47169 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756125AbZJPH7n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 03:46:52 -0400
-Date: Fri, 16 Oct 2009 09:46:01 +0200
-From: Simon Kagstrom <simon.kagstrom@netinsight.net>
-To: Ingo Molnar <mingo@elte.hu>, linux-mtd <linux-mtd@lists.infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH v9 4/5] core: Add kernel message dumper to call on oopses
- and panics
-Message-ID: <20091016094601.4e2c2d3e@marrow.netinsight.se>
-In-Reply-To: <20091015154640.GA11408@elte.hu>
-References: <20091015094057.7298e0d7@marrow.netinsight.se>
-	<20091015094805.754461fa@marrow.netinsight.se>
-	<20091015093133.GF10546@elte.hu>
-	<20091015161052.0752208e@marrow.netinsight.se>
-	<20091015154640.GA11408@elte.hu>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 16 Oct 2009 03:59:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ark8jfX1ZZZ5pQrp8WJBI3oNAm0XCW2tw1GoJHZDsayB7XpQHa2gxG6e/x6ENbbWvL
+         rgKD8osvNcsqJyvpQg7eysbAUxMvtxpf7rHGD51oNt+FsEEYhCjKORWS5qxDNoUjgF0o
+         xyNJonTori1qH/rtFyQ+sFkkc+iZewMdCPZmc=
+Message-ID: <4AD827B2.1080204@gmail.com>
+Date: Fri, 16 Oct 2009 00:58:42 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: david@lang.hm, Greg KH <gregkh@suse.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: removing existing working drivers via staging
+References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm> <200910151942.40259.bzolnier@gmail.com> <20091015174932.GA3595@suse.de> <200910152020.13080.bzolnier@gmail.com> <20091015184656.GA29858@suse.de> <alpine.DEB.2.00.0910151200100.22169@asgard.lang.hm> <20091015191641.GB19467@elte.hu> <alpine.DEB.2.00.0910151230560.22169@asgard.lang.hm> <20091016074039.GC30019@elte.hu>
+In-Reply-To: <20091016074039.GC30019@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The core functionality is implemented as per Linus suggestion from
+Ingo Molnar wrote:
+> * david@lang.hm<david@lang.hm>  wrote:
+>
+>    
+>> On Thu, 15 Oct 2009, Ingo Molnar wrote:
+>>
+>>      
+>>> * david@lang.hm<david@lang.hm>  wrote:
+>>>
+>>>        
+>>>>> But a driver in staging still has to be able to build, api changes
+>>>>> are not able to be ignored in it.
+>>>>>            
+>>>> a driver in staging will be able to build, but a driver that was
+>>>> removed after 6-9 months that a user discovered the removal of a year
+>>>> later when they upgraded to a new distro release (say a normal ubuntu
+>>>> release after staying on the old one for the 18 month support period)
+>>>> is likely to need significant work to catch up with kernel changes in
+>>>> the meanwhile.
+>>>>          
+>>> Where do you get the 6-9 months from? Greg said he'll wait 3 kernel
+>>> releases. Here's the timeline of that:
+>>>        
+>> that was the timeframe listed in the prior discussion, 3 kernel releases
+>> * 2-3 months/release works out to this
+>>      
+>
+> We do 4 kernel releases a year - that's almost exactly 3 months per
+> release - not 2-3 months.
+>
+> It's one release per season / per quarter. That is a very natural
+> frequency for releases: both in the biological and in the socio/economic
+> spectrum.
+>
+> Look at the release dates for version x, x-4 and x-8, they line up very
+> nicely:
+>
+>    v2.6.31: Date:   Wed Sep 9 15:13:59 2009 -0700
+>    v2.6.27: Date:   Thu Oct 9 15:13:53 2008 -0700
+>    v2.6.23: Date:   Tue Oct 9 13:31:38 2007 -0700
+>
+> And that kind of release date reliability is intentional and i think can
+> be expected to continue in the future as well. If you want to base
+> products on Linux you really want to know the latencies of upstreaming
+> and what to know when a driver or a kernel feature you'll rely on will
+> be released.
+>
+> [ .31 was a bit earlier - partly due to the KS (which always delays the
+>    cycle a tiny bit so it's good to save up for it) - and i'd personally
+>    not mind if we did the .33 merge window before Christmas, to avoid the
+>    distraction right in the middle of the holliday season. ]
+>
+> Plus the inevitable fuzz of 1-2 weeks depending on the momentary QA
+> situation.
+>
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>    
+man!! well put ingo,well put..
+like I like to do:
+CONFIG_INGO=y
+regardless of what people say, the cycle is
+perfect, as for the staging tough to say, I haven't found
+anything in there yet that I need, but can only image I would..
 
-  http://lists.infradead.org/pipermail/linux-mtd/2009-October/027620.html
+Hope you guys enjoy japan for the kernel summit,
+and BTW: please checkout "if you have time":
+sasuke or "ninja warriror"....
 
-(with the kmsg_dump implementation by Linus). A struct kmsg_dumper has
-been added which contains a callback to dump the kernel log buffers on
-crashes. The kmsg_dump function gets called from oops_exit() and panic()
-and invokes this callbacks with the crash reason.
 
-Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Reviewed-by: Anders Grafstrom <anders.grafstrom@netinsight.net>
-Reviewed-by: Ingo Molnar <mingo@elte.hu>
----
-ChangeLog:
-	* (Arjan van de Ven): Use EXPORT_SYMBOL_GPL
-	* (Ingo Molnar): Switch list/spinlock definition order
-	* (Ingo Molnar): Set/check ->registered within spinlocked region
-	* (Ingo Molnar): Return error from unregister and check that the
-	  dumper really is registered
-	* (Ingo Molnar): Maximise constness and correct array check
-	* (Ingo Molnar): Use _irqsave/_irqrestore also in kmsg_dump
-	* (Ingo Molnar): Style fixes
-	* (Anders Grafström): Correct kerneldoc names
-
- include/linux/kmsg_dump.h |   36 ++++++++++++++
- kernel/panic.c            |    3 +
- kernel/printk.c           |  116 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 155 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/kmsg_dump.h
-
-diff --git a/include/linux/kmsg_dump.h b/include/linux/kmsg_dump.h
-new file mode 100644
-index 0000000..64296f3
---- /dev/null
-+++ b/include/linux/kmsg_dump.h
-@@ -0,0 +1,36 @@
-+/*
-+ * linux/include/kmsg_dump.h
-+ *
-+ * Copyright (C) 2009 Net Insight AB
-+ *
-+ * Author: Simon Kagstrom <simon.kagstrom@netinsight.net>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file COPYING in the main directory of this archive
-+ * for more details.
-+ */
-+#ifndef _LINUX_KMSG_DUMP_H
-+#define _LINUX_KMSG_DUMP_H
-+
-+#include <linux/list.h>
-+
-+enum kmsg_dump_reason {
-+	KMSG_DUMP_OOPS,
-+	KMSG_DUMP_PANIC,
-+};
-+
-+struct kmsg_dumper {
-+	void (*dump)(struct kmsg_dumper *dumper, enum kmsg_dump_reason reason,
-+			const char *s1, unsigned long l1,
-+			const char *s2, unsigned long l2);
-+	struct list_head list;
-+	int registered;
-+};
-+
-+void kmsg_dump(enum kmsg_dump_reason reason);
-+
-+int kmsg_dump_register(struct kmsg_dumper *dumper);
-+
-+int kmsg_dump_unregister(struct kmsg_dumper *dumper);
-+
-+#endif /* _LINUX_DUMP_DEVICE_H */
-diff --git a/kernel/panic.c b/kernel/panic.c
-index c0b33b8..763296d 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -10,6 +10,7 @@
-  */
- #include <linux/debug_locks.h>
- #include <linux/interrupt.h>
-+#include <linux/kmsg_dump.h>
- #include <linux/kallsyms.h>
- #include <linux/notifier.h>
- #include <linux/module.h>
-@@ -76,6 +77,7 @@ NORET_TYPE void panic(const char * fmt, ...)
- 	dump_stack();
- #endif
- 
-+	kmsg_dump(KMSG_DUMP_PANIC);
- 	/*
- 	 * If we have crashed and we have a crash kernel loaded let it handle
- 	 * everything else.
-@@ -341,6 +343,7 @@ void oops_exit(void)
- {
- 	do_oops_enter_exit();
- 	print_oops_end_marker();
-+	kmsg_dump(KMSG_DUMP_OOPS);
- }
- 
- #ifdef WANT_WARN_ON_SLOWPATH
-diff --git a/kernel/printk.c b/kernel/printk.c
-index f38b07f..d363306 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -33,6 +33,7 @@
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
- #include <linux/kexec.h>
-+#include <linux/kmsg_dump.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -1405,3 +1406,118 @@ bool printk_timed_ratelimit(unsigned long *caller_jiffies,
- }
- EXPORT_SYMBOL(printk_timed_ratelimit);
- #endif
-+
-+static DEFINE_SPINLOCK(dump_list_lock);
-+static LIST_HEAD(dump_list);
-+
-+/**
-+ *	kmsg_dump_register - register a kernel log dumper.
-+ *	@dump: pointer to the kmsg_dumper structure
-+ *
-+ *	Adds a kernel log dumper to the system. The dump callback in the
-+ *	structure will be called when the kernel oopses or panics and must be
-+ *	set. Returns zero on success and -EINVAL or -EBUSY otherwise.
-+ */
-+int kmsg_dump_register(struct kmsg_dumper *dumper)
-+{
-+	unsigned long flags;
-+
-+	/* The dump callback needs to be set */
-+	if (!dumper->dump)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&dump_list_lock, flags);
-+
-+	/* Don't allow registering multiple times */
-+	if (dumper->registered) {
-+		spin_unlock_irqrestore(&dump_list_lock, flags);
-+
-+		return -EBUSY;
-+	}
-+
-+	dumper->registered = 1;
-+	list_add(&dumper->list, &dump_list);
-+	spin_unlock_irqrestore(&dump_list_lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(kmsg_dump_register);
-+
-+/**
-+ *	kmsg_dump_unregister - unregister a kmsg dumper.
-+ *	@dump: pointer to the kmsg_dumper structure
-+ *
-+ *	Removes a dump device from the system.
-+ */
-+int kmsg_dump_unregister(struct kmsg_dumper *dumper)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&dump_list_lock, flags);
-+	if (!dumper->registered) {
-+		spin_unlock_irqrestore(&dump_list_lock, flags);
-+
-+		return -EINVAL;
-+	}
-+
-+	dumper->registered = 0;
-+	list_del(&dumper->list);
-+	spin_unlock_irqrestore(&dump_list_lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(kmsg_dump_unregister);
-+
-+static const char const *kmsg_reasons[] = {
-+	[KMSG_DUMP_OOPS]	= "oops",
-+	[KMSG_DUMP_PANIC]	= "panic",
-+};
-+
-+static const char *kmsg_to_str(enum kmsg_dump_reason reason)
-+{
-+	if (reason >= ARRAY_SIZE(kmsg_reasons) || reason < 0)
-+		return "unknown";
-+
-+	return kmsg_reasons[reason];
-+}
-+
-+/**
-+ *	kmsg_dump - dump kernel log to kernel message dumpers.
-+ *	@reason: the reason (oops, panic etc) for dumping
-+ *
-+ *	Iterate through each of the dump devices and call the oops/panic
-+ *	callbacks with the log buffer.
-+ */
-+void kmsg_dump(enum kmsg_dump_reason reason)
-+{
-+	unsigned long len = ACCESS_ONCE(log_end);
-+	struct kmsg_dumper *dumper;
-+	const char *s1, *s2;
-+	unsigned long l1, l2;
-+	unsigned long flags;
-+
-+	s1 = "";
-+	l1 = 0;
-+	s2 = log_buf;
-+	l2 = len;
-+
-+	/* Have we rotated around the circular buffer? */
-+	if (len > log_buf_len) {
-+		unsigned long pos = len & LOG_BUF_MASK;
-+
-+		s1 = log_buf + pos;
-+		l1 = log_buf_len - pos;
-+
-+		s2 = log_buf;
-+		l2 = pos;
-+	}
-+
-+	if (!spin_trylock_irqsave(&dump_list_lock, flags)) {
-+		printk(KERN_ERR "dump_kmsg: dump list lock is held during %s, skipping dump\n",
-+				kmsg_to_str(reason));
-+		return;
-+	}
-+	list_for_each_entry(dumper, &dump_list, list)
-+		dumper->dump(dumper, reason, s1, l1, s2, l2);
-+	spin_unlock_irqrestore(&dump_list_lock, flags);
-+}
--- 
-1.6.0.4
+Justin P. Mattock
 
