@@ -1,61 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756963AbZJPJkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbZJPJlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756963AbZJPJkh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 05:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbZJPJkg
+	id S1757701AbZJPJlO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 05:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbZJPJlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 05:40:36 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40231 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752653AbZJPJkg (ORCPT
+	Fri, 16 Oct 2009 05:41:13 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:36881 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757132AbZJPJlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 05:40:36 -0400
-Date: Fri, 16 Oct 2009 11:39:51 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>, rpurdie@rpsys.net,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com
-Subject: Re: spitz: add gpio button support (fixes regression)
-Message-ID: <20091016093950.GI15898@elf.ucw.cz>
-References: <20091007085806.GB28807@elf.ucw.cz>
- <1254914991.4213.80.camel@hammer.suse.cz>
- <20091007120643.GA17069@rakim.wolfsonmicro.main>
- <f17812d70910070727x47b2a22h8e9f9304740d5abf@mail.gmail.com>
- <20091006200933.GA1606@ucw.cz>
- <1255641385.3985.55.camel@utx.utx.cz>
- <20091015212024.GC15898@elf.ucw.cz>
- <1255643252.3985.63.camel@utx.utx.cz>
- <20091015215215.GG15898@elf.ucw.cz>
- <1255685315.5470.3.camel@hammer.suse.cz>
+	Fri, 16 Oct 2009 05:41:12 -0400
+Date: Fri, 16 Oct 2009 15:10:17 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: [v9 PATCH 1/9]: cpuidle: Design documentation patch
+Message-ID: <20091016094017.GC27350@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20091016093850.GB27350@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1255685315.5470.3.camel@hammer.suse.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091016093850.GB27350@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > (Actually, I wonder how it could have ever worked: userspace should
-> > certainly be in a loop there; kernel should not suspend machine on its
-> > own. In -rp kernels, kernel _does_ suspend on its own, but... I'm not
-> > sure if that's suitable for mainline).
-> 
-> At least userspace apmd should be able to enter into suspend process
-> (tested in 2.6.26-RP, not yet verified in 2.6.32-rc*).
-> 
-> I don't know, what is the preferred way in recent days, but Tosa does
-> the same.
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-16 15:08:50]:
 
-Ok, lets do it that way, then. I guess you need to post patch with
-your signed-off-by, and you can add my acked-by.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This patch adds a little information about the redesigned cpuidle
+infrastructure in Documentation/cpuidle/core.txt
+
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ Documentation/cpuidle/core.txt |   35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+Index: linux.trees.git/Documentation/cpuidle/core.txt
+===================================================================
+--- linux.trees.git.orig/Documentation/cpuidle/core.txt
++++ linux.trees.git/Documentation/cpuidle/core.txt
+@@ -21,3 +21,38 @@ which can be used to switch governors at
+ is meant for developer testing only. In normal usage, kernel picks the
+ best governor based on governor ratings.
+ SEE ALSO: sysfs.txt in this directory.
++
++Design:
++
++Cpuidle allows for registration of multiple sets of idle routines.
++The latest registered set is used by cpuidle governors as the current
++active set to choose the right idle state. This set is managed as a
++list and each time the newly registered set is added to the head of the
++list and made the current active set.
++
++An example of how this would work on x86 is shown below.
++
++-----------------					-----------------
++|		|					|		|
++| choose b/w	|	mwait is chosen			|    mwait	|
++| mwait, poll,	|-------------------------------------> |(current active|
++| default, c1e	|	register to cpuidle		|    set)	|
++|		|	with mwait as the idle routine	|		|
++-----------------					-----------------
++
++
++-----------------					-----------------
++|		|					|  c1, c2, c3	|
++|     ACPI	|	register to cpuidle		|   (current)	|
++|   discovery	|-------------------------------------> |---------------|
++|		|	with c1, c2, c3			|     mwait	|
++|		|	as set of idle routines		|		|
++-----------------					-----------------
++
++With this mechanism, a module can register and unregister its set of
++idle routines at run time in a clean manner.
++
++The main idle routine called inside cpu_idle() of every arch is defined in
++driver/cpuidle/cpuidle.c which would in turn call the idle routine selected
++by the governor. If the CONFIG_CPU_IDLE is disabled, the arch needs to
++provide an alternate definition for cpuidle_idle_call().
