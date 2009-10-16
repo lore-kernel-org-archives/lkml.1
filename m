@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbZJPMhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbZJPMjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932179AbZJPMhl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 08:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759022AbZJPMhk
+	id S1759086AbZJPMjt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 08:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759066AbZJPMjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 08:37:40 -0400
-Received: from lucidpixels.com ([75.144.35.66]:50699 "EHLO lucidpixels.com"
+	Fri, 16 Oct 2009 08:39:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53850 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759019AbZJPMhk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 08:37:40 -0400
-Date: Fri, 16 Oct 2009 08:37:03 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: xfs@oss.sgi.com, linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-cc: Alan Piszcz <ap@solarrain.com>
-Subject: 2.6.31: xfs or md/raid1 bug in 2.6.31?
-Message-ID: <alpine.DEB.2.00.0910160832290.31450@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1759062AbZJPMjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 08:39:48 -0400
+Date: Fri, 16 Oct 2009 14:38:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann <herrmann.der.user@googlemail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
+Subject: Re: x86, amd: Get multi-node CPU info from NodeId MSR instead of
+	PCI config space
+Message-ID: <20091016123853.GA15393@elte.hu>
+References: <20091016122229.GB8387@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091016122229.GB8387@alberich.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-Does anyone recall if there was a serious xfs bug in 2.6.31?
+* Andreas Herrmann <herrmann.der.user@googlemail.com> wrote:
 
-I saw xfsbufd/pdflush etc locked up and local file system access hung 
-whenever I tried to write a file to the filesystem, I ran a sysrq-t but 
-could not capture the output nor did I see anything obvious.
+> Use newly introduced NodeId MSR to get NodeId and number of nodes per 
+> processor.
 
-System runs a md/raid1+xfs.
+What will happen on CPUs that dont have this MSR and got this info from 
+the PCI config space:
 
-Upgraded to 2.6.31.4, will have to see if it happens again.
+>  static void __cpuinit amd_fixup_dcm(struct cpuinfo_x86 *c)
+>  {
+> -#ifdef CONFIG_PCI
+> -	u32 t, cpn;
+> -	u8 n, n_id;
+>  	int cpu = smp_processor_id();
+>  
+>  	/* fixup topology information only once for a core */
+>  	if (cpu_has(c, X86_FEATURE_AMD_DCM))
+>  		return;
+>  
+> -	/* check for multi-node processor on boot cpu */
+> -	t = read_pci_config(0, 24, 3, 0xe8);
+> -	if (!(t & (1 << 29)))
+>  		return;
+>  
+>  	set_cpu_cap(c, X86_FEATURE_AMD_DCM);
 
-Was curious though if anyone recalled problems with this kernel 
-release/combination?
+are there any such CPUs? I.e. we want to know the effect of this patch 
+on various models of AMD CPUs - is the change really .32 safe? Does it 
+solve any problem that makes it .32 material versus being for .33?
 
-Thanks,
-
-Justin.
+	Ingo
