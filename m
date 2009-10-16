@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbZJPFuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751837AbZJPEvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbZJPFuU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 01:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZJPFuT
+	id S1751837AbZJPEvU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 00:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbZJPEvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 01:50:19 -0400
-Received: from bgo1smout1.broadpark.no ([217.13.4.94]:55960 "EHLO
-	bgo1smout1.broadpark.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbZJPFuS (ORCPT
+	Fri, 16 Oct 2009 00:51:18 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:33637 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbZJPEvS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 01:50:18 -0400
-X-Greylist: delayed 3641 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Oct 2009 01:50:18 EDT
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=us-ascii
-From: Kjetil Barvik <barvik@broadpark.no>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.32-rc5
-Organization: private
-References: <alpine.LFD.2.01.0910151756550.4017@localhost.localdomain>
-Date: Fri, 16 Oct 2009 06:48:13 +0200
-In-reply-to: <alpine.LFD.2.01.0910151756550.4017@localhost.localdomain>
-Message-id: <86aazsx7ua.fsf@broadpark.no>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Fri, 16 Oct 2009 00:51:18 -0400
+Message-ID: <4AD7FB57.2030403@vflare.org>
+Date: Fri, 16 Oct 2009 10:19:27 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, hongshin@gmail.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 7/9] swap_info: swap count continuations
+References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils> <Pine.LNX.4.64.0910150153560.3291@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0910150153560.3291@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On 10/15/2009 06:26 AM, Hugh Dickins wrote:
+> Swap is duplicated (reference count incremented by one) whenever the same
+> swap page is inserted into another mm (when forking finds a swap entry in
+> place of a pte, or when reclaim unmaps a pte to insert the swap entry).
+> 
+> swap_info_struct's vmalloc'ed swap_map is the array of these reference
+> counts: but what happens when the unsigned short (or unsigned char since
+> the preceding patch) is full? (and its high bit is kept for a cache flag)
+> 
+> We then lose track of it, never freeing, leaving it in use until swapoff:
+> at which point we _hope_ that a single pass will have found all instances,
+> assume there are no more, and will lose user data if we're wrong.
+> 
+> Swapping of KSM pages has not yet been enabled; but it is implemented,
+> and makes it very easy for a user to overflow the maximum swap count:
+> possible with ordinary process pages, but unlikely, even when pid_max
+> has been raised from PID_MAX_DEFAULT.
+> 
+> This patch implements swap count continuations: when the count overflows,
+> a continuation page is allocated and linked to the original vmalloc'ed
+> map page, and this used to hold the continuation counts for that entry
+> and its neighbours.  These continuation pages are seldom referenced:
+> the common paths all work on the original swap_map, only referring to
+> a continuation page when the low "digit" of a count is incremented or
+> decremented through SWAP_MAP_MAX.
+> 
 
-> 90% of the bulk of the changes since -rc4 are in drivers, with most of 
-> it coming from two new network drivers (stmmac and vmxnet3). But apart 
-> from the new drivers, there's almost 300 commits in there, 
 
-  some more statistics(1):
+I think the patch can be simplified a lot if we have just 2 levels (hard-coded)
+of swap_map, each level having 16-bit count -- combined 32-bit count should be
+sufficient for about anything. Saving 1-byte for level-1 swap_map and then having
+arbitrary levels of swap_map doesn't look like its worth the complexity.
 
-        243 "real" commits
-      +  46 merge-commits (34 by Linus)
-      = 289 total commits (almost 300)
+Nitin
 
-  -- kjetil
-
-  1) from the following git commands (git version 1.6.4.4)
-        git log --oneline -M v2.6.32-rc4..v2.6.32-rc5 | wc -l
-        git log --no-merges --oneline -M v2.6.32-rc4..v2.6.32-rc5 | wc -l
-        git log --merges --oneline -M v2.6.32-rc4..v2.6.32-rc5 | wc -l
-        git log --merges --author="Linus Torvalds" --oneline -M v2.6.32-rc4..v2.6.32-rc5 | wc -l
