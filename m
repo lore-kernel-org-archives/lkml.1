@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932406AbZJPTH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbZJPU3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932406AbZJPTH2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 15:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932380AbZJPTH0
+	id S1753704AbZJPU3o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 16:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbZJPU3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 15:07:26 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:21414 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932384AbZJPTHX (ORCPT
+	Fri, 16 Oct 2009 16:29:43 -0400
+Received: from rcpt-mqugw.biglobe.ne.jp ([133.205.19.70]:41457 "EHLO
+	rcpt-mqugw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751389AbZJPU3n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 15:07:23 -0400
-Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEADNh2EqrR7Ht/2dsb2JhbADBGZgfhDAE
-X-IronPort-AV: E=Sophos;i="4.44,574,1249257600"; 
-   d="scan'208";a="411061412"
-From: Roland Dreier <rdreier@cisco.com>
-To: landman@scalableinformatics.com
-Cc: linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
-       Anand Babu Periasamy <ab@gluster.com>
-Subject: Re: kernel BUG at drivers/pci/intel-iommu.c:1278
-References: <4AD8A393.3040907@scalableinformatics.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 16 Oct 2009 11:58:36 -0700
-In-Reply-To: <4AD8A393.3040907@scalableinformatics.com> (Joe Landman's message
-	of "Fri, 16 Oct 2009 12:47:15 -0400")
-Message-ID: <ada63afxj1f.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Fri, 16 Oct 2009 16:29:43 -0400
+X-Greylist: delayed 3093 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Oct 2009 16:29:42 EDT
+X-Biglobe-Sender: <hideo.akahori@kfd.biglobe.ne.jp>
+Reply-To: <info@a-a-corp.com>
+From: "Wilson Chung" <hideo.akahori@kfd.biglobe.ne.jp>
+Subject: Request For Legal Services
+Date: Fri, 16 Oct 2009 12:00:00 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 16 Oct 2009 18:58:36.0752 (UTC) FILETIME=[AA945500:01CA4E92]
+Content-Type: text/plain;
+	charset="Windows-1251"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2600.0000
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
+Message-Id: <20091017041948.EBDVAC15AFD5.FA5DCA51@mail.biglobe.ne.jp>
+To: undisclosed-recipients:;
+X-Biglobe-VirusCheck: Sat, 17 Oct 2009 04:19:48 +0900
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+A&A Corporation Limited
+Rm.503, China Insurance Group
+141 Des Voeux Road Central,
+Hong Kong, Hong Kong, NIL
+Hong Kong
 
- > Anything I should look for?  I know 2.6.28 is not being developed any
- > further.  Should I start looking at 2.6.31 to help with this?
 
-Definitely looking at 2.6.31 or even 2.6.32-rc kernels to see if this
-still happens would be a good idea.  I've not done much IB work with
-VT-d enabled, but the fact that the BUG() is in drivers/pci seems to
-indicate that the problem is fairly likely to be some internal
-corruption in the intel_iommu code, caused by a bug there, rather than
-anything IB related.
 
- - R.
+Attention Counsel,
+
+A&A CORPORATION LIMITED is a manufacturing company with its head office in, Hong Kong, with branches all over Asian continent. The management of A&A CORPORATION LIMITED requires your legal representation for our American delinquent customers.
+
+
+We are looking for a reputable attorney to represent us in America in order for us to recover money due to our organization by overseas customers,and as well follow up with these accounts. In order to achieve these objectives a good and reputable law firm will be required to handle this service.
+
+We understand that a proper Attorney client agreement must be entered into by both parties.Your consideration of our request is highly anticipated and we look forward to your prompt response.
+
+Yours Faithfully,
+
+Wilson Chung.
