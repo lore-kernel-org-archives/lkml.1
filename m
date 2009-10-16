@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932673AbZJPOwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbZJPO4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932673AbZJPOwR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 10:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932583AbZJPOwQ
+	id S1760060AbZJPO4L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 10:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759378AbZJPO4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 10:52:16 -0400
-Received: from aglcosbs02.cos.agilent.com ([192.25.218.39]:53852 "EHLO
-	aglcosbs02.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932611AbZJPOwQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 10:52:16 -0400
-Message-ID: <4AD88854.20807@agilent.com>
-Date: Fri, 16 Oct 2009 07:51:00 -0700
-From: Earl Chew <earl_chew@agilent.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 16 Oct 2009 10:56:10 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:51198 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759312AbZJPO4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 10:56:10 -0400
+Date: Fri, 16 Oct 2009 09:55:26 -0500
+From: Robin Holt <holt@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Robin Holt <holt@sgi.com>, tglx@linutronix.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>,
+       Cliff Whickman <cpw@sgi.com>
+Subject: Re: [patch 0/2] x86, UV: fixups for configurations with a large
+	number of nodes.
+Message-ID: <20091016145526.GA8903@sgi.com>
+References: <20091015223959.783988000@alcatraz.americas.sgi.com> <20091016063405.GB20388@elte.hu> <20091016112920.GZ8903@sgi.com> <20091016125313.GB15393@elte.hu>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: fs/pipe.c null pointer dereference
-References: <4AD5D476.6010103@agilent.com>	 <200910141653.03611.elendil@planet.nl> <4AD655C0.2030202@agilent.com>	 <200910150211.43532.elendil@planet.nl> <4AD7F633.4070507@agilent.com> <84144f020910160016r125e2cbrf2fae48f168db79c@mail.gmail.com>
-In-Reply-To: <84144f020910160016r125e2cbrf2fae48f168db79c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Oct 2009 14:51:04.0124 (UTC) FILETIME=[15B927C0:01CA4E70]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091016125313.GB15393@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> Can you please send the patch to LKML so your fix doesn't get lost in
-> the noise? See Documentation/SubmittingPatches for details.
+On Fri, Oct 16, 2009 at 02:53:13PM +0200, Ingo Molnar wrote:
+...
+> So ... is the commit log message i've put into the commit below correct, 
+> or is it still only a cleanup patch? You really need to put that kind of 
+> info into your changelogs - it helps maintainers put it into the right 
+> kernel release.
+> 
+> 	Ingo
 
-Done.
+...
 
-http://lkml.org/lkml/2009/10/16/146
+> The open-coded code was wrong as well - it might explain a
+> few of our unexplained bau hangs.
 
-Earl
+Terrific.  Thank you for fixing up my commit message.  I will try to be
+more complete next time.
 
-
-
+Robin
