@@ -1,150 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932146AbZJPRS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752165AbZJPRPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932146AbZJPRS6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756517AbZJPRSw
+	id S1752165AbZJPRPb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZJPRPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:18:52 -0400
-Received: from kroah.org ([198.145.64.141]:48706 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756285AbZJPRSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 13:18:49 -0400
-X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:11 2009
-Message-Id: <20091016171210.987917756@linux.site>
-User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:39 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Paul Fulghum <paulkf@microgate.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [46/46] tty: Make flush_to_ldisc() locking more robust
-References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=tty-make-flush_to_ldisc-locking-more-robust.patch
-In-Reply-To: <20091016171422.GA13339@kroah.com>
+	Fri, 16 Oct 2009 13:15:30 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:33615 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbZJPRP3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 13:15:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=BZX2eBYNRJTGOtWvDz9IK6dEjwZk8GCGQVIzLssigj2MLg/deeHu4OII7lwYhU7D2d
+         8IoUCCCFRtr+uOmFRrgCtps+7yZI8NLaViVDKO3usNINoaFvxsf5uJ4/Sd4xIuFnR2ar
+         tL74kWX4HQiewtu8TC40Uuc2dZVimtWjns77k=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: Current status of rt2800usb and staging/rt2870
+Date: Fri, 16 Oct 2009 19:13:43 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31.1-56.fc12.x86_64; KDE/4.3.1; x86_64; ; )
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Dan Williams <dcbw@redhat.com>, Ivo van Doorn <ivdoorn@gmail.com>,
+       Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
+       linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <4AD46380.9020308@pardus.org.tr> <200910151647.49050.bzolnier@gmail.com> <43e72e890910151206y59353608p5065f72eebd72ab@mail.gmail.com>
+In-Reply-To: <43e72e890910151206y59353608p5065f72eebd72ab@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910161913.44109.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.31-stable review patch.  If anyone has any objections, please let us know.
+On Thursday 15 October 2009 21:06:55 Luis R. Rodriguez wrote:
+> On Thu, Oct 15, 2009 at 7:47 AM, Bartlomiej Zolnierkiewicz
+> <bzolnier@gmail.com> wrote:
+> > On Wednesday 14 October 2009 18:55:23 Luis R. Rodriguez wrote:
+> >
+> >> I hear fishing in Poland is great this time of year.
+> >
+> > It got quite cold this week so I thought that I would try to fish
+> > the commit that broke Atheros AR9285 in Linus' tree (works in 2.6.31)
+> > and make recent kernels finally work on my laptop..
+> >
+> > Seems like there are two regressions actually:
+> >
+> > - later one making association/authentication impossible
+> 
+> And you reported this when and where?
+> 
+> > - earlier one making transfers stall
+> 
+> And you reported this when and where?
+> 
+> Curious how the issues you mention now spreading across sound and
+> wireless do not get fixed or seriously addressed. Have you considered
+> your tactics are perhaps not the best?
 
-------------------
-From: Linus Torvalds <torvalds@linux-foundation.org>
+Please look closely at chosen examples and you'll see a lot of insight
+telling you that users' experience is not granted by having clean code
+or by having features which are not consider crucial instead of reliable
+basic functionality.
 
-commit c8e33141911bf8fe87dc6c92793b9a59b2be0130 upstream.
+I'm pretty sure that if you try F12 w/ AR9285 you will be able to reproduce
+and fix at least some of above mentioned problems.  I just used the occasion
+to raise them and make people aware of bugs before they hit users in final
+2.6.32.
 
-The locking logic in this function is extremely subtle, and it broke
-when we started doing potentially concurrent 'flush_to_ldisc()' calls in
-commit e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 ("pty: avoid forcing
-'low_latency' tty flag").
+I'm not as much interested in fixing existing problems as in seeing why
+they happened in the first place and how the process can be improved to
+prevent them / making tracking of them easy for non-developers (so more
+people can contribute to the project and developers have more time to
+add new features).  I also don't have time to care about every single
+Linux bug that I encounter (I hit quite a lot of them), bug-reporting
+is a thankless and very time consuming work.
 
-The code in flush_to_ldisc() used to set 'tty->buf.head' to NULL, with
-the intention that this would then cause any other concurrent calls to
-not do anything (locking note: we have to drop the buf.lock over the
-call to ->receive_buf that can block, which is why we can have
-concurrency here at all in the first place).
+This is in no means trying to implicit that you're doing bad job.  Quite
+the contrary -- I think that your work on Atheros support is much needed.
 
-It also used to set the TTY_FLUSHING bit, which would then cause any
-concurrent 'tty_buffer_flush()' to not free all the tty buffers and
-clear 'tty->buf.tail'.  And with 'buf.head' being NULL, and 'buf.tail'
-being non-NULL, new data would never touch 'buf.head'.
+The point is that there is a lot of room for in release management process
+of wireless/networking (it has been more-or-less unchanged for a long time
+while other subsystems, i.e. x86, are constantly looking into improvements).
 
-Does that sound a bit too subtle? It was.  If another concurrent call to
-'flush_to_ldisc()' were to come in, the NULL buf.head would indeed cause
-it to not process the buffer list, but it would still clear TTY_FLUSHING
-afterwards, making the buffer protection against 'tty_buffer_flush()' no
-longer work.
-
-So this clears it all up.  We depend purely on TTY_FLUSHING for handling
-re-entrancy, and stop playing games with the buffer list entirely.  In
-fact, the buffer list handling is now robust enough that we could
-probably stop doing the whole "protect against 'tty_buffer_flush()'"
-thing entirely.
-
-However, Alan also points out that we would probably be better off
-simplifying the locking even further, and just take the tty ldisc_mutex
-around all the buffer flushing calls.  That seems like a good idea, but
-in the meantime this is a conceptually minimal fix (with the patch
-itself being bigger than required just to clean the code up and make it
-readable).
-
-This fixes keyboard trouble under X:
-
-	http://bugzilla.kernel.org/show_bug.cgi?id=14388
-
-Reported-and-tested-by: Frédéric Meunier <fredlwm@gmail.com>
-Reported-and-tested-by: Boyan <btanastasov@yahoo.co.uk>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Paul Fulghum <paulkf@microgate.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/char/tty_buffer.c |   29 +++++++++++++----------------
- 1 file changed, 13 insertions(+), 16 deletions(-)
-
---- a/drivers/char/tty_buffer.c
-+++ b/drivers/char/tty_buffer.c
-@@ -402,28 +402,26 @@ static void flush_to_ldisc(struct work_s
- 		container_of(work, struct tty_struct, buf.work.work);
- 	unsigned long 	flags;
- 	struct tty_ldisc *disc;
--	struct tty_buffer *tbuf, *head;
--	char *char_buf;
--	unsigned char *flag_buf;
- 
- 	disc = tty_ldisc_ref(tty);
- 	if (disc == NULL)	/*  !TTY_LDISC */
- 		return;
- 
- 	spin_lock_irqsave(&tty->buf.lock, flags);
--	/* So we know a flush is running */
--	set_bit(TTY_FLUSHING, &tty->flags);
--	head = tty->buf.head;
--	if (head != NULL) {
--		tty->buf.head = NULL;
--		for (;;) {
--			int count = head->commit - head->read;
-+
-+	if (!test_and_set_bit(TTY_FLUSHING, &tty->flags)) {
-+		struct tty_buffer *head;
-+		while ((head = tty->buf.head) != NULL) {
-+			int count;
-+			char *char_buf;
-+			unsigned char *flag_buf;
-+
-+			count = head->commit - head->read;
- 			if (!count) {
- 				if (head->next == NULL)
- 					break;
--				tbuf = head;
--				head = head->next;
--				tty_buffer_free(tty, tbuf);
-+				tty->buf.head = head->next;
-+				tty_buffer_free(tty, head);
- 				continue;
- 			}
- 			/* Ldisc or user is trying to flush the buffers
-@@ -445,9 +443,9 @@ static void flush_to_ldisc(struct work_s
- 							flag_buf, count);
- 			spin_lock_irqsave(&tty->buf.lock, flags);
- 		}
--		/* Restore the queue head */
--		tty->buf.head = head;
-+		clear_bit(TTY_FLUSHING, &tty->flags);
- 	}
-+
- 	/* We may have a deferred request to flush the input buffer,
- 	   if so pull the chain under the lock and empty the queue */
- 	if (test_bit(TTY_FLUSHPENDING, &tty->flags)) {
-@@ -455,7 +453,6 @@ static void flush_to_ldisc(struct work_s
- 		clear_bit(TTY_FLUSHPENDING, &tty->flags);
- 		wake_up(&tty->read_wait);
- 	}
--	clear_bit(TTY_FLUSHING, &tty->flags);
- 	spin_unlock_irqrestore(&tty->buf.lock, flags);
- 
- 	tty_ldisc_deref(disc);
-
-
+This is not something that you can change alone so please do not hesitate
+to give feedback about this to your upstream maintainers so they are aware
+of the need for improvements.
