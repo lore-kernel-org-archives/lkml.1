@@ -1,52 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751657AbZJPXFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751335AbZJPXXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751657AbZJPXFg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 19:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbZJPXFf
+	id S1751335AbZJPXXN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 19:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbZJPXXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 19:05:35 -0400
-Received: from exprod6ob111.obsmtp.com ([64.18.1.26]:46287 "HELO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1750722AbZJPXFf convert rfc822-to-8bit (ORCPT
+	Fri, 16 Oct 2009 19:23:12 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40373 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750771AbZJPXXL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 19:05:35 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 16 Oct 2009 19:23:11 -0400
+Message-Id: <1255735395.30097.1340523469@webmail.messagingengine.com>
+X-Sasl-Enc: jNV33CL/rZ8n5pI7V1i5xnX/JO++GWivhgLdmmAhy29L 1255735395
+From: myuboot@fastmail.fm
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] drivers/usb/core/hcd.c: quiet NULL pointer sparse noise
-Date: Fri, 16 Oct 2009 19:05:37 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901E24562@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] drivers/usb/core/hcd.c: quiet NULL pointer sparse noise
-Thread-Index: AcpOtSySSoRorNueTXq4s/gbfik+yg==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 16 Oct 2009 23:05:38.0299 (UTC) FILETIME=[2CE8ECB0:01CA4EB5]
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: 2.6.31 kernel for mips compile failure - war.h:12:17: error: war.h: No
+ such file or directory
+Date: Fri, 16 Oct 2009 18:23:15 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quiet the following sparse noise:
+I am trying to use buildroot 2009.08 to compile kernel 2.6.31 for mips,
+but it fails to error -" war.h can't be found". I used the same
+buildroot to build kernel version 2.6.29 with no problem. 
 
-  warning: Using plain integer as NULL pointer
+Please give me some suggestion on how to fix this issue. The file 
+./arch/mips/include/asm/war.h is there with no problem. Thanks a lot.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-
----
-
-diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index 34de475..5ca109a 100644
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1601,7 +1601,7 @@ int usb_hcd_check_bandwidth(struct usb_device *udev,
- {
- 	int num_intfs, i, j;
- 	struct usb_interface_cache *intf_cache;
--	struct usb_host_interface *alt = 0;
-+	struct usb_host_interface *alt = NULL;
- 	int ret = 0;
- 	struct usb_hcd *hcd;
- 	struct usb_host_endpoint *ep; 
+cp
+/home/root123/sources/buildroot-2009.08-k/build_mips/staging_dir/usr/bin/mkimage
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/u-boot-tools
+mkdir -p
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/root/boot
+mv
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/localversion*
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/root/boot
+mv: cannot stat
+`/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/localversion*':
+No such file or directory
+make:
+[/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/.depend_done]
+Error 1 (ignored)
+/usr/bin/make -j1 HOSTCC="/usr/bin/gcc" HOSTCFLAGS="" ARCH=mips
+INSTALL_MOD_PATH=/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/root
+CROSS_COMPILE=/home/root123/sources/buildroot-2009.08-k/build_mips/staging_dir/usr/bin/mips-linux-uclibc-
+LDFLAGS="-L/home/root123/sources/buildroot-2009.08-k/build_mips/staging_dir/lib
+-L/home/root123/sources/buildroot-2009.08-k/build_mips/staging_dir/usr/lib
+--sysroot=/home/root123/sources/buildroot-2009.08-k/build_mips/staging_dir/"
+LZMA="/home/root123/sources/buildroot-2009.08-k/toolchain_build_mips/bin/lzma"
+PATH=/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/u-boot-tools:/home/root123/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/stuff/bitbake/bin
+-C
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31
+prepare
+make[1]: Entering directory
+`/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31'
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-mips
+  CC      arch/mips/kernel/asm-offsets.s
+In file included from
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/arch/mips/include/asm/bitops.h:24,
+                 from include/linux/bitops.h:17,
+                 from include/linux/kernel.h:15,
+                 from include/linux/sched.h:52,
+                 from arch/mips/kernel/asm-offsets.c:13:
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/arch/mips/include/asm/war.h:12:17:
+error: war.h: No such file or directory
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/arch/mips/include/asm/war.h:82:2:
+error: #error Check setting of R4600_V1_INDEX_ICACHEOP_WAR for your
+platform
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/arch/mips/include/asm/war.h:112:2:
+error: #error Check setting of R4600_V1_HIT_CACHEOP_WAR for your
+platform
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/arch/mips/include/asm/war.h:128:2:
+error: #error Check setting of R4600_V2_HIT_CACHEOP_WAR for your
+platform
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/arch/mips/include/asm/war.h:141:2:
+error: #error Check setting of R5432_CP0_INTERRUPT_WAR foryour platform
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/arch/mips/include/asm/war.h:155:2:
+error: #error Check setting of BCM1250_M3_WAR for your platform
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/arch/mips/include/asm/war.h:162:2:
+error: #error Check setting of SIBYTE_1956_WAR for your platform
+/home/root123/sources/buildroot-2009.08-k/project_build_mips/f1/linux-2.6.31/arch/mips/include/asm/war.h:178:2:
+error: #error Check setting of MIPS4K_ICACHE_REFILL_WAR for your
+platform
