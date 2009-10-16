@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZJPIKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757459AbZJPILT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757362AbZJPIKj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 04:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZJPIKi
+	id S1757459AbZJPILT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 04:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757345AbZJPILP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 04:10:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34083 "EHLO mx3.mail.elte.hu"
+	Fri, 16 Oct 2009 04:11:15 -0400
+Received: from smail2.alcatel.fr ([64.208.49.57]:34643 "EHLO smail2.alcatel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751934AbZJPIKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 04:10:36 -0400
-Date: Fri, 16 Oct 2009 10:09:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v9 4/5] core: Add kernel message dumper to call on
-	oopses and panics
-Message-ID: <20091016080935.GA3895@elte.hu>
-References: <20091015094057.7298e0d7@marrow.netinsight.se> <20091015094805.754461fa@marrow.netinsight.se> <20091015093133.GF10546@elte.hu> <20091015161052.0752208e@marrow.netinsight.se> <20091015154640.GA11408@elte.hu> <20091016094601.4e2c2d3e@marrow.netinsight.se>
+	id S1757241AbZJPILN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 04:11:13 -0400
+Message-ID: <4AD82A4A.9060006@alcatel-lucent.de>
+Date: Fri, 16 Oct 2009 10:09:46 +0200
+From: Joerg Abraham <Joerg.Abraham@alcatel-lucent.de>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091016094601.4e2c2d3e@marrow.netinsight.se>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: John Kacur <jkacur@redhat.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.31.4-rt14 posix message queues problem (solved)
+References: <4AD76126.1000408@alcatel-lucent.de> <520f0cf10910151202k2ba01453r10e96eeb064232e8@mail.gmail.com> <alpine.LFD.2.00.0910152105430.8932@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0910152105430.8932@localhost.localdomain>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi John,
 
-* Simon Kagstrom <simon.kagstrom@netinsight.net> wrote:
+> Hello Joerg
+> 
+> Does the following patch solve your problem? 
 
-/**
- *	kmsg_dump_register - register a kernel log dumper.
- *	@dump: pointer to the kmsg_dumper structure
- *
- *	Adds a kernel log dumper to the system. The dump callback in the
- *	structure will be called when the kernel oopses or panics and must be
- *	set. Returns zero on success and -EINVAL or -EBUSY otherwise.
- */
+yes, (verified on powerpc and x86_64)
 
-Small detail - please use the KernelDoc style used in existing printk.c 
-facilities, i.e. use a single space instead of a tab:
+so it may be save to include your patch into the next rt release.
 
-/**
- * kmsg_dump_register - register a kernel log dumper.
- * @dump: pointer to the kmsg_dumper structure
- *
- * Adds a kernel log dumper to the system. The dump callback in the
- * structure will be called when the kernel oopses or panics and must be
- * set. Returns zero on success and -EINVAL or -EBUSY otherwise.
- */
+Thanx,
 
-(in the other functions as well)
+Joerg
 
-	Ingo
+
+> 
+> From 69fde4357db4a054733cbca4158606160e821a3a Mon Sep 17 00:00:00 2001
+> From: John Kacur <jkacur@redhat.com>
+> Date: Thu, 15 Oct 2009 20:52:37 +0200
+> Subject: [PATCH] preempt_disable_rt(); should be paired with preempt_enable_rt()
+> 
+> Signed-off-by: John Kacur <jkacur@redhat.com>
+> ---
+>  ipc/mqueue.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/ipc/mqueue.c b/ipc/mqueue.c
+> index 63a47f7..ab4df36 100644
+> --- a/ipc/mqueue.c
+> +++ b/ipc/mqueue.c
+> @@ -830,7 +830,7 @@ static inline void pipelined_send(struct mqueue_inode_info *info,
+>  	wake_up_process(receiver->task);
+>  	smp_wmb();
+>  	receiver->state = STATE_READY;
+> -	preempt_enable_nort();
+> +	preempt_enable_rt();
+>  }
+>  
+>  /* pipelined_receive() - if there is task waiting in sys_mq_timedsend()
+
