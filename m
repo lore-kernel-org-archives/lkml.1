@@ -1,166 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbZJPLaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbZJPLjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758783AbZJPLaP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 07:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758411AbZJPLaO
+	id S1758898AbZJPLjR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 07:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758868AbZJPLjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 07:30:14 -0400
-Received: from relay3.sgi.com ([192.48.152.1]:35609 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758398AbZJPLaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 07:30:13 -0400
-Date: Fri, 16 Oct 2009 06:29:20 -0500
-From: Robin Holt <holt@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Robin Holt <holt@sgi.com>, tglx@linutronix.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>,
-       Cliff Whickman <cpw@sgi.com>
-Subject: Re: [patch 0/2] x86, UV: fixups for configurations with a large
-	number of nodes.
-Message-ID: <20091016112920.GZ8903@sgi.com>
-References: <20091015223959.783988000@alcatraz.americas.sgi.com> <20091016063405.GB20388@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091016063405.GB20388@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 16 Oct 2009 07:39:16 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:50379 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758864AbZJPLjP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 07:39:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=BDT8mK4bOnvB+QbLgtuEnq8/qgU/J2zhRdblv7+6nPfefN9hRH4KImeOp/ucA26lFk
+         iC96s/2xNAbatELeUQIN3r/Yjp12+lQb3C+mGRv7BhZK9+DzIlfPpVdmwM+8yn6rsrvZ
+         uBQQ9Yt8NUSYsjgkshcuEYzl8i/DsmTV96s3I=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-mips <linux-mips@linux-mips.org>
+Cc: Ralf Baechle <ralf@linux-mips.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Manuel Lauss <manuel.lauss@googlemail.com>,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: [PATCH 1/2] tracing: convert trace_clock_local() as weak function
+Date: Fri, 16 Oct 2009 19:38:24 +0800
+Message-Id: <4205779ae74d7c4144ee6cbf4e3f15f833646356.1255692619.git.wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 16, 2009 at 08:34:05AM +0200, Ingo Molnar wrote:
-> 
-> * Robin Holt <holt@sgi.com> wrote:
-> 
-> > We need the __uv_hub_info structure to contain the correct values for 
-> > n_val, gpa_mask, and lowmem_remap_*.  The first patch in the series 
-> > accomplishes this.  Could this be included in the stable tree as well. 
-> > Without this patch, booting a large configuration hits a problem where 
-> > the upper bits of the gnode affect the pnode and the bau will not 
-> > operate.
-> 
-> i've applied this one.
+trace_clock_local() is based on the arch-specific sched_clock(), in X86,
+it is tsc(64bit) based, which can give very high precision(about 1ns
+with 1GHz). but in MIPS, the sched_clock() is jiffies based, which can
+give only 10ms precison with 1000 HZ. which is not enough for tracing,
+especially for Real Time system.
 
-Thank you for applying this one.
+so, we need to implement a MIPS specific sched_clock() to get higher
+precision. There is a tsc like clock counter register in MIPS, whose
+frequency is half of the processor, so, if the cpu frequency is 800MHz,
+the time precision reaches 2.5ns, which is very good for tracing, even
+for Real Time system.
 
-> > The second patch cleans up the broadcast assist unit code a small bit.
-> 
-> Seems to be more than just a 'cleanup'. It changes:
+but 'Cause it is only 32bit long, which will rollover quickly, so, such
+a sched_clock() will bring with extra load, which is not good for the
+whole system. so, we only need to implement a arch-specific
+trace_clock_local() for tracing. as a preparation, we convert it as a
+weak function.
 
-I am going to rearrange a bit:
+The MIPS specific trace_clock_local() is coming in the next patch.
 
-> +       return gpa >> uv_hub_info->m_val & ((1UL << uv_hub_info->n_val) - 1);
-> 
-> note that >> has higher priority than bitwise & - is that intended? I 
-> think the intention was:
-> 
-> +       return gpa >> (uv_hub_info->m_val & ((1UL << uv_hub_info->n_val) - 1));
-
-The intention was (gpa >> m_val) & (n_mask);  I love the clarity of
-making it an explicitly stated mask.  Much more readable.
-
-> 
->   uv_nshift = uv_hub_info->m_val;
-> 
-> to (in essence):
-> 
->               uv_hub_info->m_val & ((1UL << uv_hub_info->n_val) - 1)
-> 
-> which is not the same. Furthermore, the new inline is:
-
-You have an excellent point there.  That was a bug as well.  That may
-explain a few of our currently unexplained bau hangs.  The value is
-supposed to be a pnode instead of the current gnode.
-
-Robin
-
+Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
 ---
+ kernel/trace/trace_clock.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Create an inline function to extract the pnode from a global physical
-address and then convert the broadcast assist unit to use the newly
-created uv_gpa_to_pnode function.
-
-To: Ingo Molnar <mingo@elte.hu>
-To: tglx@linutronix.de
-Signed-off-by: Robin Holt <holt@sgi.com>
-Acked-by: Cliff Whickman <cpw@sgi.com>
-Cc: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-
----
- arch/x86/include/asm/uv/uv_hub.h |   16 +++++++++++++++-
- arch/x86/kernel/tlb_uv.c         |    7 ++-----
- 2 files changed, 17 insertions(+), 6 deletions(-)
-Index: linux/arch/x86/include/asm/uv/uv_hub.h
-===================================================================
---- linux.orig/arch/x86/include/asm/uv/uv_hub.h	2009-10-16 06:02:23.000000000 -0500
-+++ linux/arch/x86/include/asm/uv/uv_hub.h	2009-10-16 06:07:52.000000000 -0500
-@@ -114,7 +114,7 @@
- /*
-  * The largest possible NASID of a C or M brick (+ 2)
+diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
+index 20c5f92..a04dc18 100644
+--- a/kernel/trace/trace_clock.c
++++ b/kernel/trace/trace_clock.c
+@@ -26,7 +26,7 @@
+  * Useful for tracing that does not cross to other CPUs nor
+  * does it go through idle events.
   */
--#define UV_MAX_NASID_VALUE	(UV_MAX_NUMALINK_NODES * 2)
-+#define UV_MAX_NASID_VALUE	(UV_MAX_NUMALINK_BLADES * 2)
- 
- struct uv_scir_s {
- 	struct timer_list timer;
-@@ -230,6 +230,20 @@ static inline unsigned long uv_gpa(void 
- 	return uv_soc_phys_ram_to_gpa(__pa(v));
- }
- 
-+/* gnode -> pnode */
-+static inline unsigned long uv_gpa_to_gnode(unsigned long gpa)
-+{
-+	return gpa >> uv_hub_info->m_val;
-+}
-+
-+/* gpa -> pnode */
-+static inline int uv_gpa_to_pnode(unsigned long gpa)
-+{
-+	unsigned long n_mask = (1UL << uv_hub_info->n_val) - 1;
-+
-+	return uv_gpa_to_gnode(gpa) & n_mask;
-+}
-+
- /* pnode, offset --> socket virtual */
- static inline void *uv_pnode_offset_to_vaddr(int pnode, unsigned long offset)
+-u64 notrace trace_clock_local(void)
++u64 __attribute__((weak)) notrace trace_clock_local(void)
  {
-Index: linux/arch/x86/kernel/tlb_uv.c
-===================================================================
---- linux.orig/arch/x86/kernel/tlb_uv.c	2009-10-16 06:02:27.000000000 -0500
-+++ linux/arch/x86/kernel/tlb_uv.c	2009-10-16 06:02:28.000000000 -0500
-@@ -23,8 +23,6 @@
- static struct bau_control	**uv_bau_table_bases __read_mostly;
- static int			uv_bau_retry_limit __read_mostly;
- 
--/* position of pnode (which is nasid>>1): */
--static int			uv_nshift __read_mostly;
- /* base pnode in this partition */
- static int			uv_partition_base_pnode __read_mostly;
- 
-@@ -723,7 +721,7 @@ uv_activation_descriptor_init(int node, 
- 	BUG_ON(!adp);
- 
- 	pa = uv_gpa(adp); /* need the real nasid*/
--	n = pa >> uv_nshift;
-+	n = uv_gpa_to_pnode(pa);
- 	m = pa & uv_mmask;
- 
- 	uv_write_global_mmr64(pnode, UVH_LB_BAU_SB_DESCRIPTOR_BASE,
-@@ -778,7 +776,7 @@ uv_payload_queue_init(int node, int pnod
- 	 * need the pnode of where the memory was really allocated
- 	 */
- 	pa = uv_gpa(pqp);
--	pn = pa >> uv_nshift;
-+	pn = uv_gpa_to_pnode(pa);
- 	uv_write_global_mmr64(pnode,
- 			      UVH_LB_BAU_INTD_PAYLOAD_QUEUE_FIRST,
- 			      ((unsigned long)pn << UV_PAYLOADQ_PNODE_SHIFT) |
-@@ -843,7 +841,6 @@ static int __init uv_bau_init(void)
- 				       GFP_KERNEL, cpu_to_node(cur_cpu));
- 
- 	uv_bau_retry_limit = 1;
--	uv_nshift = uv_hub_info->m_val;
- 	uv_mmask = (1UL << uv_hub_info->m_val) - 1;
- 	nblades = uv_num_possible_blades();
- 
+ 	unsigned long flags;
+ 	u64 clock;
+-- 
+1.6.2.1
+
