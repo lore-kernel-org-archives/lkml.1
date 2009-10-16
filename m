@@ -1,250 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbZJPJqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758357AbZJPJqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757968AbZJPJqd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 05:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbZJPJqc
+	id S1758357AbZJPJqp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 05:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbZJPJqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 05:46:32 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:39377 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750771AbZJPJqa (ORCPT
+	Fri, 16 Oct 2009 05:46:44 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:50555 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758136AbZJPJqn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 05:46:30 -0400
-Date: Fri, 16 Oct 2009 15:15:48 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: [v9 PATCH 6/9]: pSeries/cpuidle: refactor pseries idle loops
-Message-ID: <20091016094548.GH27350@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20091016093850.GB27350@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20091016093850.GB27350@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 16 Oct 2009 05:46:43 -0400
+From: amit.kucheria@canonical.com
+To: List Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: len.brown@intel.com, Amit Kucheria <amit.kucheria@canonical.com>
+Subject: [PATCH] acpi: thermal: [TRIVIAL] Add EOL to the trip_point_N_type strings
+Date: Fri, 16 Oct 2009 12:46:02 +0300
+Message-Id: <1255686362-30022-1-git-send-email-amit.kucheria@canonical.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-16 15:08:50]:
+From: Amit Kucheria <amit.kucheria@canonical.com>
 
-This patch removes the routines, pseries_shared_idle_sleep and
-pseries_dedicated_idle_sleep, since this is implemented as a part
-of arch/powerpc/platform/pseries/processor_idle.c
+Make the trip_point_N_type sysfs files return a string ending in EOL for
+consistency with other sysfs files.
 
-Also, similar to x86, call cpuidle_idle_call from cpu_idle() idle
-loop instead of ppc_md.power_save.
-
-
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
 ---
- arch/powerpc/kernel/idle.c             |   58 ++++++++++-----------
- arch/powerpc/platforms/pseries/setup.c |   89 ---------------------------------
- 2 files changed, 30 insertions(+), 117 deletions(-)
+ drivers/thermal/thermal_sys.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Index: linux.trees.git/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/setup.c
-+++ linux.trees.git/arch/powerpc/platforms/pseries/setup.c
-@@ -75,9 +75,6 @@ EXPORT_SYMBOL(CMO_PageSize);
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 4e83c29..6f8d8f9 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -180,15 +180,15 @@ trip_point_type_show(struct device *dev, struct device_attribute *attr,
  
- int fwnmi_active;  /* TRUE if an FWNMI handler is present */
- 
--static void pseries_shared_idle_sleep(void);
--static void pseries_dedicated_idle_sleep(void);
--
- static struct device_node *pSeries_mpic_node;
- 
- static void pSeries_show_cpuinfo(struct seq_file *m)
-@@ -297,18 +294,8 @@ static void __init pSeries_setup_arch(vo
- 	pSeries_nvram_init();
- 
- 	/* Choose an idle loop */
--	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
-+	if (firmware_has_feature(FW_FEATURE_SPLPAR))
- 		vpa_init(boot_cpuid);
--		if (get_lppaca()->shared_proc) {
--			printk(KERN_DEBUG "Using shared processor idle loop\n");
--			ppc_md.power_save = pseries_shared_idle_sleep;
--		} else {
--			printk(KERN_DEBUG "Using dedicated idle loop\n");
--			ppc_md.power_save = pseries_dedicated_idle_sleep;
--		}
--	} else {
--		printk(KERN_DEBUG "Using default idle loop\n");
--	}
- 
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		ppc_md.enable_pmcs = pseries_lpar_enable_pmcs;
-@@ -496,80 +483,6 @@ static int __init pSeries_probe(void)
- 	return 1;
+ 	switch (type) {
+ 	case THERMAL_TRIP_CRITICAL:
+-		return sprintf(buf, "critical");
++		return sprintf(buf, "critical\n");
+ 	case THERMAL_TRIP_HOT:
+-		return sprintf(buf, "hot");
++		return sprintf(buf, "hot\n");
+ 	case THERMAL_TRIP_PASSIVE:
+-		return sprintf(buf, "passive");
++		return sprintf(buf, "passive\n");
+ 	case THERMAL_TRIP_ACTIVE:
+-		return sprintf(buf, "active");
++		return sprintf(buf, "active\n");
+ 	default:
+-		return sprintf(buf, "unknown");
++		return sprintf(buf, "unknown\n");
+ 	}
  }
  
--
--DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
--
--static void pseries_dedicated_idle_sleep(void)
--{ 
--	unsigned int cpu = smp_processor_id();
--	unsigned long start_snooze;
--	unsigned long in_purr, out_purr;
--
--	/*
--	 * Indicate to the HV that we are idle. Now would be
--	 * a good time to find other work to dispatch.
--	 */
--	get_lppaca()->idle = 1;
--	get_lppaca()->donate_dedicated_cpu = 1;
--	in_purr = mfspr(SPRN_PURR);
--
--	/*
--	 * We come in with interrupts disabled, and need_resched()
--	 * has been checked recently.  If we should poll for a little
--	 * while, do so.
--	 */
--	if (__get_cpu_var(smt_snooze_delay)) {
--		start_snooze = get_tb() +
--			__get_cpu_var(smt_snooze_delay) * tb_ticks_per_usec;
--		local_irq_enable();
--		set_thread_flag(TIF_POLLING_NRFLAG);
--
--		while (get_tb() < start_snooze) {
--			if (need_resched() || cpu_is_offline(cpu))
--				goto out;
--			ppc64_runlatch_off();
--			HMT_low();
--			HMT_very_low();
--		}
--
--		HMT_medium();
--		clear_thread_flag(TIF_POLLING_NRFLAG);
--		smp_mb();
--		local_irq_disable();
--		if (need_resched() || cpu_is_offline(cpu))
--			goto out;
--	}
--
--	cede_processor();
--
--out:
--	HMT_medium();
--	out_purr = mfspr(SPRN_PURR);
--	get_lppaca()->wait_state_cycles += out_purr - in_purr;
--	get_lppaca()->donate_dedicated_cpu = 0;
--	get_lppaca()->idle = 0;
--}
--
--static void pseries_shared_idle_sleep(void)
--{
--	/*
--	 * Indicate to the HV that we are idle. Now would be
--	 * a good time to find other work to dispatch.
--	 */
--	get_lppaca()->idle = 1;
--
--	/*
--	 * Yield the processor to the hypervisor.  We return if
--	 * an external interrupt occurs (which are driven prior
--	 * to returning here) or if a prod occurs from another
--	 * processor. When returning here, external interrupts
--	 * are enabled.
--	 */
--	cede_processor();
--
--	get_lppaca()->idle = 0;
--}
--
- static int pSeries_pci_probe_mode(struct pci_bus *bus)
- {
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
-Index: linux.trees.git/arch/powerpc/kernel/idle.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/idle.c
-+++ linux.trees.git/arch/powerpc/kernel/idle.c
-@@ -25,6 +25,7 @@
- #include <linux/cpu.h>
- #include <linux/sysctl.h>
- #include <linux/tick.h>
-+#include <linux/cpuidle.h>
- 
- #include <asm/system.h>
- #include <asm/processor.h>
-@@ -46,6 +47,14 @@ static int __init powersave_off(char *ar
- }
- __setup("powersave=off", powersave_off);
- 
-+#ifndef CONFIG_CPU_IDLE
-+void cpuidle_idle_call(void)
-+{
-+	local_irq_enable();
-+	cpu_relax();
-+}
-+#endif
-+
- /*
-  * The body of the idle task.
-  */
-@@ -60,35 +69,26 @@ void cpu_idle(void)
- 		while (!need_resched() && !cpu_should_die()) {
- 			ppc64_runlatch_off();
- 
--			if (ppc_md.power_save) {
--				clear_thread_flag(TIF_POLLING_NRFLAG);
--				/*
--				 * smp_mb is so clearing of TIF_POLLING_NRFLAG
--				 * is ordered w.r.t. need_resched() test.
--				 */
--				smp_mb();
--				local_irq_disable();
--
--				/* Don't trace irqs off for idle */
--				stop_critical_timings();
--
--				/* check again after disabling irqs */
--				if (!need_resched() && !cpu_should_die())
--					ppc_md.power_save();
--
--				start_critical_timings();
--
--				local_irq_enable();
--				set_thread_flag(TIF_POLLING_NRFLAG);
--
--			} else {
--				/*
--				 * Go into low thread priority and possibly
--				 * low power mode.
--				 */
--				HMT_low();
--				HMT_very_low();
--			}
-+			clear_thread_flag(TIF_POLLING_NRFLAG);
-+			/*
-+			 * smp_mb is so clearing of TIF_POLLING_NRFLAG
-+			 * is ordered w.r.t. need_resched() test.
-+			 */
-+			smp_mb();
-+			local_irq_disable();
-+
-+			/* Don't trace irqs off for idle */
-+			stop_critical_timings();
-+
-+			/* check again after disabling irqs */
-+			if (!need_resched() && !cpu_should_die())
-+				cpuidle_idle_call();
-+
-+			start_critical_timings();
-+
-+			local_irq_enable();
-+			set_thread_flag(TIF_POLLING_NRFLAG);
-+
- 		}
- 
- 		HMT_medium();
+-- 
+1.6.3.3
+
