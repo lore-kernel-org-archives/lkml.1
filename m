@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbZJPRT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbZJPRTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756890AbZJPRT1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZJPRSt
+	id S932293AbZJPRTu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbZJPRTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:18:49 -0400
-Received: from kroah.org ([198.145.64.141]:48687 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:19:48 -0400
+Received: from kroah.org ([198.145.64.141]:48692 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755203AbZJPRSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755861AbZJPRSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Oct 2009 13:18:47 -0400
-X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:09 2009
-Message-Id: <20091016171209.422018881@linux.site>
+X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:10 2009
+Message-Id: <20091016171209.947222482@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:36 -0700
+Date: Fri, 16 Oct 2009 10:10:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
+       Jay Sternberg <jay.e.sternberg@intel.com>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [43/46] usb-storage: Workaround devices with bogus sense size
+Subject: [44/46] iwlwifi: incorrect method used for finding valid OTP blocks
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=usb-storage-workaround-devices-with-bogus-sense-size.patch
+Content-Disposition: inline; filename=iwlwifi-incorrect-method-used-for-finding-valid-otp-blocks.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,64 +32,85 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Jay Sternberg <jay.e.sternberg@intel.com>
 
-commit b8430e1b82b7e514d76a88eb70a7d8831d50df1e upstream.
+commit 2facba769d7f9e563cf706de709074a2d20f1bba upstream.
 
-usb-storage: Workaround devices with bogus sense size
+The address stored in the next link address is a word address but when
+reading the OTP blocks, a byte address is used. Also if the blocks are
+full and the last link pointer is not zero, then none of the blocks are
+valid so return an error.
 
-Some devices, such as Huawei E169, advertise more than the standard
-amount of sense data, causing us to set US_FL_SANE_SENSE, assuming
-they support it. However, they subsequently fail the request sense
-with that size.
+The algorithm is simply valid blocks have a next address and that
+address's contents is zero.
 
-This works around it generically. When a sense request fails due to
-a device returning an error, US_FL_SANE_SENSE was set, and that sense
-request used a larger sense size, we retry with a smaller size before
-giving up.
+Using the wrong address for the next link address gets arbitrary data,
+obviously. In cases seen, the first block is considered valid when it is not.
 
-Based on an original patch by Ben Efros <ben@pc-doctor.com>
+If the block has in fact been invalidated there may be old data or
+there may be no data, bad data, or partial data, there is no way of
+telling. Without this patch it is possible that a device with valid OTP data
+is unable to work.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Jay Sternberg <jay.e.sternberg@intel.com>
+Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/transport.c |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+ drivers/net/wireless/iwlwifi/iwl-eeprom.c |   23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
---- a/drivers/usb/storage/transport.c
-+++ b/drivers/usb/storage/transport.c
-@@ -696,7 +696,7 @@ void usb_stor_invoke_transport(struct sc
- 		/* device supports and needs bigger sense buffer */
- 		if (us->fflags & US_FL_SANE_SENSE)
- 			sense_size = ~0;
--
-+Retry_Sense:
- 		US_DEBUGP("Issuing auto-REQUEST_SENSE\n");
+--- a/drivers/net/wireless/iwlwifi/iwl-eeprom.c
++++ b/drivers/net/wireless/iwlwifi/iwl-eeprom.c
+@@ -335,7 +335,6 @@ static int iwl_find_otp_image(struct iwl
+ 					u16 *validblockaddr)
+ {
+ 	u16 next_link_addr = 0, link_value = 0, valid_addr;
+-	int ret = 0;
+ 	int usedblocks = 0;
  
- 		scsi_eh_prep_cmnd(srb, &ses, NULL, 0, sense_size);
-@@ -720,6 +720,21 @@ void usb_stor_invoke_transport(struct sc
- 			srb->result = DID_ABORT << 16;
- 			goto Handle_Errors;
+ 	/* set addressing mode to absolute to traverse the link list */
+@@ -355,29 +354,29 @@ static int iwl_find_otp_image(struct iwl
+ 		 * check for more block on the link list
+ 		 */
+ 		valid_addr = next_link_addr;
+-		next_link_addr = link_value;
++		next_link_addr = link_value * sizeof(u16);
+ 		IWL_DEBUG_INFO(priv, "OTP blocks %d addr 0x%x\n",
+ 			       usedblocks, next_link_addr);
+ 		if (iwl_read_otp_word(priv, next_link_addr, &link_value))
+ 			return -EINVAL;
+ 		if (!link_value) {
+ 			/*
+-			 * reach the end of link list,
++			 * reach the end of link list, return success and
+ 			 * set address point to the starting address
+ 			 * of the image
+ 			 */
+-			goto done;
++			*validblockaddr = valid_addr;
++			/* skip first 2 bytes (link list pointer) */
++			*validblockaddr += 2;
++			return 0;
  		}
+ 		/* more in the link list, continue */
+ 		usedblocks++;
+-	} while (usedblocks < priv->cfg->max_ll_items);
+-	/* OTP full, use last block */
+-	IWL_DEBUG_INFO(priv, "OTP is full, use last block\n");
+-done:
+-	*validblockaddr = valid_addr;
+-	/* skip first 2 bytes (link list pointer) */
+-	*validblockaddr += 2;
+-	return ret;
++	} while (usedblocks <= priv->cfg->max_ll_items);
 +
-+		/* Some devices claim to support larger sense but fail when
-+		 * trying to request it. When a transport failure happens
-+		 * using US_FS_SANE_SENSE, we always retry with a standard
-+		 * (small) sense request. This fixes some USB GSM modems
-+		 */
-+		if (temp_result == USB_STOR_TRANSPORT_FAILED &&
-+		    (us->fflags & US_FL_SANE_SENSE) &&
-+		    sense_size != US_SENSE_SIZE) {
-+			US_DEBUGP("-- auto-sense failure, retry small sense\n");
-+			sense_size = US_SENSE_SIZE;
-+			goto Retry_Sense;
-+		}
-+
-+		/* Other failures */
- 		if (temp_result != USB_STOR_TRANSPORT_GOOD) {
- 			US_DEBUGP("-- auto-sense failure\n");
++	/* OTP has no valid blocks */
++	IWL_DEBUG_INFO(priv, "OTP has no valid blocks\n");
++	return -EINVAL;
+ }
  
+ /**
 
 
