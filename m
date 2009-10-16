@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbZJPU3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751685AbZJPT0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753704AbZJPU3o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 16:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbZJPU3n
+	id S1751685AbZJPT0K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 15:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZJPT0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 16:29:43 -0400
-Received: from rcpt-mqugw.biglobe.ne.jp ([133.205.19.70]:41457 "EHLO
-	rcpt-mqugw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751389AbZJPU3n (ORCPT
+	Fri, 16 Oct 2009 15:26:09 -0400
+Received: from webmail1.b-one.net ([195.47.247.29]:48792 "EHLO
+	webmail1.one.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbZJPT0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 16:29:43 -0400
-X-Greylist: delayed 3093 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Oct 2009 16:29:42 EDT
-X-Biglobe-Sender: <hideo.akahori@kfd.biglobe.ne.jp>
-Reply-To: <info@a-a-corp.com>
-From: "Wilson Chung" <hideo.akahori@kfd.biglobe.ne.jp>
-Subject: Request For Legal Services
-Date: Fri, 16 Oct 2009 12:00:00 -0700
+	Fri, 16 Oct 2009 15:26:09 -0400
+X-Greylist: delayed 1114 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Oct 2009 15:26:08 EDT
+Message-ID: <c04542aeb33b23bc0abc73e8072e9dd7.squirrel@webmail01.one.com>
+Date: Fri, 16 Oct 2009 21:00:06 +0200
+Subject: Haster!
+From: "Webmail Messaging Center" <claus@altic.dk>
+Reply-To: web_account_upgrade@mail2network.com
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1251"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2600.0000
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
-Message-Id: <20091017041948.EBDVAC15AFD5.FA5DCA51@mail.biglobe.ne.jp>
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 To: undisclosed-recipients:;
-X-Biglobe-VirusCheck: Sat, 17 Oct 2009 04:19:48 +0900
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A&A Corporation Limited
-Rm.503, China Insurance Group
-141 Des Voeux Road Central,
-Hong Kong, Hong Kong, NIL
-Hong Kong
 
 
 
-Attention Counsel,
+Kære Webmail / E-mail-bruger,
 
-A&A CORPORATION LIMITED is a manufacturing company with its head office in, Hong Kong, with branches all over Asian continent. The management of A&A CORPORATION LIMITED requires your legal representation for our American delinquent customers.
+Dette indlæg er fra vores Webmail beskedcentralen til alle vores konto
+owners.We er i øjeblikket ved at opgradere vores database og
+e-mail-center. Vi er ved at slette alle uudnyttede webmail-konto for at
+skabe mere plads for nye konti. At sikre, at du ikke oplever afbrydelse af
+tjenesten i løbet af denne periode, skal du bekræfte din
+webmail-kontooplysninger gennem følgende:
 
+1.Username :....................................
+2.Password :...................................
+3. Date of Birth :...............................
 
-We are looking for a reputable attorney to represent us in America in order for us to recover money due to our organization by overseas customers,and as well follow up with these accounts. In order to achieve these objectives a good and reputable law firm will be required to handle this service.
+Du vil blive sendt en ny bekræftelse alfanumerisk adgangskode, der vil kun
+være gældende i denne periode, og kan ændres ved denne proces. Vi beklager
+meget den ulejlighed, dette kan koste dig.
 
-We understand that a proper Attorney client agreement must be entered into by both parties.Your consideration of our request is highly anticipated and we look forward to your prompt response.
+Bedes du besvare denne besked, så vi kan give dig bedre online tjenester
+med vores nye forbedrede webmail funktionalitet og forbedringer.
 
-Yours Faithfully,
-
-Wilson Chung.
