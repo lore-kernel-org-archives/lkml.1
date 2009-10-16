@@ -1,298 +1,343 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932725AbZJPPqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932776AbZJPPqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932725AbZJPPqO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 11:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760234AbZJPPqL
+	id S932776AbZJPPqW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 11:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932732AbZJPPqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 11:46:11 -0400
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:43272 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760602AbZJPPqI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 11:46:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:cc:content-type;
-        b=gZSy2jFwYuGeXonv7iLqYFULGLyBLZGRZGPL4tGUA0gZuW1enRy1QDiZbOlzX46O8u
-         lIiRI67q5+LAxnke4cvq92jUHKAXGgnHWuVtFjbvgzF5DCF7YNyDIbf1R6c5G63xiTGP
-         nUNbFe6DcCsYs0EeKQHk05BmOA0JA0StyO/1Q=
-MIME-Version: 1.0
-Date: Fri, 16 Oct 2009 08:45:31 -0700
-X-Google-Sender-Auth: 1cf6be0915f6021b
-Message-ID: <70318cbf0910160845g51baf4dbtff57b81cfb1c7538@mail.gmail.com>
-Subject: Sparse 0.4.2 released
-From: Christopher Li <sparse@chrisli.org>
-To: Linux-Sparse <linux-sparse@vger.kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 16 Oct 2009 11:46:21 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:54536 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932729AbZJPPqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 11:46:20 -0400
+Subject: [RFC 9/12][PATCH] SCHED_DEADLINE: system wide bandwidth management
+From: Raistlin <raistlin@linux.it>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       michael trimarchi <michael@evidence.eu.com>,
+       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Darren Hart <darren@dvhart.com>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       Bjoern Brandenburg <bbb@cs.unc.edu>,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
+       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
+       Juri Lelli <juri.lelli@gmail.com>
+In-Reply-To: <1255707324.6228.448.camel@Palantir>
+References: <1255707324.6228.448.camel@Palantir>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-lfGBOYR9MC0oq/3NeQcX"
+Date: Fri, 16 Oct 2009 17:45:40 +0200
+Message-Id: <1255707940.6228.464.camel@Palantir>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I have tagged and released the sparse version 0.4.2 at
-http://www.kernel.org/pub/software/devel/sparse/dist/sparse-0.4.2.tar.gz
+--=-lfGBOYR9MC0oq/3NeQcX
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-As previous discussions on the sparse mailing list, I am the new maintainer of
-the sparse project. This is my first release for sparse.
-Thanks Josh Triplett for the previously maintaining the project.
+This commit adds the capability of controlling the maximum, system wide,
+CPU bandwidth that is devoted to SCHED_DEADLINE tasks.
 
-I also created a new sparse wiki, it will replace the current sparse
-home page. http://sparse.wiki.kernel.org/index.php/Main_Page
+This is done by means of two files:
+ - /proc/sys/kernel/sched_deadline_runtime_us,
+ - /proc/sys/kernel/sched_deadline_period_us.
+The ratio runtime/period is the total bandwidth all the SCHED_DEADLINE task=
+s
+can use in the system as a whole.
+Trying to create tasks in such a way that they exceed this limitation will
+fail, as soon as the bandwidth cap would be overcome.
 
-A lot of bug fixes and enhancements have gone into this release.
-Special thanks to Al Viro for overhauling the parser. Now sparse
-has  better ctype and attribute handling. The detailed changes follow.
+Default value is _zero_ bandwidth available, thus write some numbers in tho=
+se
+files before trying to start some SCHED_DEADLINE task. Setting runtime > pe=
+riod
+is allowed (i.e., more than 100% bandwidth available for -deadline tasks),
+since it makes more than sense in SMP systems.
 
-Chris
+Signed-off-by: Raistlin <raistlin@linux.it>
+---
+ include/linux/sched.h |    7 ++
+ kernel/sched.c        |  149 +++++++++++++++++++++++++++++++++++++++++++++=
++++-
+ kernel/sysctl.c       |   16 +++++
+ 3 files changed, 171 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 478e07c..4de72eb 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1984,6 +1984,13 @@ int sched_rt_handler(struct ctl_table *table, int wr=
+ite,
+ 		void __user *buffer, size_t *lenp,
+ 		loff_t *ppos);
+=20
++extern unsigned int sysctl_sched_deadline_period;
++extern int sysctl_sched_deadline_runtime;
++
++int sched_deadline_handler(struct ctl_table *table, int write,
++		void __user *buffer, size_t *lenp,
++		loff_t *ppos);
++
+ extern unsigned int sysctl_sched_compat_yield;
+=20
+ #ifdef CONFIG_RT_MUTEXES
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3c3e834..d8b6354 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -870,6 +870,34 @@ static inline u64 global_rt_runtime(void)
+ 	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
+ }
+=20
++/*
++ * deadline_runtime/deadline_period is the maximum bandwidth
++ * -deadline tasks can use. It is system wide, i.e., the sum
++ * of the bandwidths of all the tasks, inside every group and
++ * running on any CPU, has to stay below this value!
++ *
++ * default: 0s (=3D no bandwidth for -deadline tasks)
++ */
++unsigned int sysctl_sched_deadline_period =3D 0;
++int sysctl_sched_deadline_runtime =3D 0;
++
++static inline u64 global_deadline_period(void)
++{
++	return (u64)sysctl_sched_deadline_period * NSEC_PER_USEC;
++}
++
++static inline u64 global_deadline_runtime(void)
++{
++	return (u64)sysctl_sched_deadline_runtime * NSEC_PER_USEC;
++}
++
++/*
++ * locking for the system wide deadline bandwidth management.
++ */
++static DEFINE_MUTEX(deadline_constraints_mutex);
++static DEFINE_SPINLOCK(__sysctl_sched_deadline_lock);
++static u64 __sysctl_sched_deadline_total_bw;
++
+ #ifndef prepare_arch_switch
+ # define prepare_arch_switch(next)	do { } while (0)
+ #endif
+@@ -2606,6 +2634,66 @@ static unsigned long to_ratio(u64 period, u64 runtim=
+e)
+ 	return div64_u64(runtime << 20, period);
+ }
+=20
++static inline
++void __deadline_clear_task_bw(struct task_struct *p, u64 tsk_bw)
++{
++	__sysctl_sched_deadline_total_bw -=3D tsk_bw;
++}
++
++static inline
++void __deadline_add_task_bw(struct task_struct *p, u64 tsk_bw)
++{
++	__sysctl_sched_deadline_total_bw +=3D tsk_bw;
++}
++
++/*
++ * update the total allocated bandwidth, if a new -deadline task arrives,
++ * leaves or stays, but modifies its bandwidth.
++ */
++static int __deadline_check_task_bw(struct task_struct *p, int policy,
++				    struct sched_param_ex *param_ex)
++{
++	u64 bw, tsk_bw;
++	int ret =3D 0;
++
++	spin_lock(&__sysctl_sched_deadline_lock);
++
++	if (sysctl_sched_deadline_period <=3D 0)
++		goto unlock;
++
++	bw =3D to_ratio(sysctl_sched_deadline_period,
++		      sysctl_sched_deadline_runtime);
++	if (bw <=3D 0)
++		return 0;
++
++	if (deadline_policy(policy))
++		tsk_bw =3D to_ratio(timespec_to_ns(&param_ex->sched_deadline),
++				  timespec_to_ns(&param_ex->sched_runtime));
++
++	/*
++	 * Either if a task, enters, leave, or stays deadline but chanes
++	 * its parameters, we need to update accordingly the global
++	 * deadline allocated bandwidth.
++	 */
++	if (task_has_deadline_policy(p) && !deadline_policy(policy)) {
++		__deadline_clear_task_bw(p, p->dl.bw);
++		ret =3D 1;
++	} else if (task_has_deadline_policy(p) && deadline_policy(policy) &&
++		  bw >=3D __sysctl_sched_deadline_total_bw - p->dl.bw + tsk_bw) {
++		__deadline_clear_task_bw(p, p->dl.bw);
++		__deadline_add_task_bw(p, tsk_bw);
++		ret =3D 1;
++	} else if (deadline_policy(policy) && !task_has_deadline_policy(p) &&
++		   bw >=3D __sysctl_sched_deadline_total_bw + tsk_bw) {
++		__deadline_add_task_bw(p, tsk_bw);
++		ret =3D 1;
++	}
++unlock:
++	spin_unlock(&__sysctl_sched_deadline_lock);
++
++	return ret;
++}
++
+ /*
+  * wake_up_new_task - wake up a newly created task for the first time.
+  *
+@@ -2765,8 +2853,10 @@ static void finish_task_switch(struct rq *rq, struct=
+ task_struct *prev)
+ 		mmdrop(mm);
+ 	if (unlikely(prev_state =3D=3D TASK_DEAD)) {
+ 		/* a deadline task is dying: stop the bandwidth timer */
+-		if (deadline_task(prev))
++		if (deadline_task(prev)) {
++			__deadline_clear_task_bw(prev, prev->dl.bw);
+ 			hrtimer_cancel(&prev->dl.dl_timer);
++		}
+=20
+ 		/*
+ 		 * Remove function-return probe instances associated with this
+@@ -6372,6 +6462,19 @@ recheck:
+ 		spin_unlock_irqrestore(&p->pi_lock, flags);
+ 		goto recheck;
+ 	}
++	/*
++	 * If changing to SCHED_DEADLINE (or changing the parameters of a
++	 * SCHED_DEADLINE task) we need to check if enough bandwidth is
++	 * available, which might be not true!
++	 */
++	if (deadline_policy(policy) || deadline_task(p)) {
++		if (!__deadline_check_task_bw(p, policy, param_ex)) {
++			__task_rq_unlock(rq);
++			spin_unlock_irqrestore(&p->pi_lock, flags);
++			return -EPERM;
++		}
++	}
++
+ 	update_rq_clock(rq);
+ 	on_rq =3D p->se.on_rq;
+ 	running =3D task_current(rq, p);
+@@ -10569,6 +10672,25 @@ static int sched_rt_global_constraints(void)
+ }
+ #endif /* CONFIG_RT_GROUP_SCHED */
+=20
++static int sched_deadline_global_constraints(void)
++{
++	u64 bw;
++	int ret =3D 1;
++
++	spin_lock_irq(&__sysctl_sched_deadline_lock);
++	if (sysctl_sched_deadline_period <=3D 0)
++		bw =3D 0;
++	else
++		bw =3D to_ratio(global_deadline_period(),
++			      global_deadline_runtime());
++
++	if (bw < __sysctl_sched_deadline_total_bw)
++		ret =3D 0;
++	spin_unlock_irq(&__sysctl_sched_deadline_lock);
++
++	return ret;
++}
++
+ int sched_rt_handler(struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp,
+ 		loff_t *ppos)
+@@ -10599,6 +10721,31 @@ int sched_rt_handler(struct ctl_table *table, int =
+write,
+ 	return ret;
+ }
+=20
++int sched_deadline_handler(struct ctl_table *table, int write,
++		void __user *buffer, size_t *lenp,
++		loff_t *ppos)
++{
++	int ret;
++	int old_period, old_runtime;
++
++	mutex_lock(&deadline_constraints_mutex);
++	old_period =3D sysctl_sched_deadline_period;
++	old_runtime =3D sysctl_sched_deadline_runtime;
++
++	ret =3D proc_dointvec(table, write, buffer, lenp, ppos);
++
++	if (!ret && write) {
++		if (!sched_deadline_global_constraints()) {
++			sysctl_sched_deadline_period =3D old_period;
++			sysctl_sched_deadline_runtime =3D old_runtime;
++			ret =3D -EINVAL;
++		}
++	}
++	mutex_unlock(&deadline_constraints_mutex);
++
++	return ret;
++}
++
+ #ifdef CONFIG_CGROUP_SCHED
+=20
+ /* return corresponding task_group object of a cgroup */
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 0d949c5..34117f9 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -373,6 +373,22 @@ static struct ctl_table kern_table[] =3D {
+ 	},
+ 	{
+ 		.ctl_name	=3D CTL_UNNUMBERED,
++		.procname	=3D "sched_deadline_period_us",
++		.data		=3D &sysctl_sched_deadline_period,
++		.maxlen		=3D sizeof(unsigned int),
++		.mode		=3D 0644,
++		.proc_handler	=3D &sched_deadline_handler,
++	},
++	{
++		.ctl_name	=3D CTL_UNNUMBERED,
++		.procname	=3D "sched_deadline_runtime_us",
++		.data		=3D &sysctl_sched_deadline_runtime,
++		.maxlen		=3D sizeof(int),
++		.mode		=3D 0644,
++		.proc_handler	=3D &sched_deadline_handler,
++	},
++	{
++		.ctl_name	=3D CTL_UNNUMBERED,
+ 		.procname	=3D "sched_compat_yield",
+ 		.data		=3D &sysctl_sched_compat_yield,
+ 		.maxlen		=3D sizeof(unsigned int),
+--=20
+1.6.0.4
 
 
- .gitignore                                       |    6 +
- Documentation/data-structures.txt                |   54 +
- Makefile                                         |  162 +--
- cgcc                                             |   47 +-
- compat-bsd.c                                     |   20 +
- compile-i386.c                                   |   10 +-
- compile.h                                        |    2 +
- evaluate.c                                       |  141 ++-
- example.c                                        |    2 +-
- expand.c                                         |   11 +-
- expression.c                                     |   66 +-
- expression.h                                     |    4 +-
- flow.c                                           |   10 +-
- flow.h                                           |    6 +
- gdbhelpers                                       |  307 +++++
- ident-list.h                                     |    5 +
- lib.c                                            |  242 ++++-
- lib.h                                            |    5 +-
- linearize.c                                      |   16 +-
- linearize.h                                      |    3 +-
- liveness.c                                       |    2 +-
- parse.c                                          | 1367 +++++++++++++++-------
- parse.h                                          |    3 +-
- pre-process.c                                    |  126 ++-
- ptrlist.h                                        |    2 +
- scope.c                                          |    2 +-
- scope.h                                          |    2 +
- show-parse.c                                     |  110 +-
- simplify.c                                       |   57 +-
- sparse.1                                         |   22 +
- storage.h                                        |    3 +
- symbol.c                                         |   84 +-
- symbol.h                                         |   86 ++-
- target.c                                         |    1 +
- target.h                                         |   15 +
- token.h                                          |    3 +-
- tokenize.c                                       |   41 +-
- unssa.c                                          |    2 +
- validation/address_space.c                       |    6 +-
- validation/attr-warning.c                        |    8 +
- validation/attr_in_parameter.c                   |   12 +
- validation/bad-array-designated-initializer.c    |    6 +-
- validation/bad-assignment.c                      |    4 +-
- validation/bad-cast.c                            |    6 +-
- validation/bad-ternary-cond.c                    |    4 +-
- validation/bad-typeof.c                          |   14 +
- validation/badtype4.c                            |    4 +-
- validation/check_byte_count-ice.c                |    4 +-
- validation/compare-null-to-int.c                 |    2 +-
- validation/cond_expr.c                           |    4 +-
- validation/cond_expr2.c                          |   12 +-
- validation/context.c                             |    6 +-
- validation/declaration-after-statement-ansi.c    |   12 +
- validation/declaration-after-statement-c89.c     |   12 +
- validation/declaration-after-statement-c99.c     |    9 +
- validation/declaration-after-statement-default.c |    9 +
- validation/definitions.c                         |   12 +
- validation/dubious-bitwise-with-not.c            |   24 +
- validation/enum_scope.c                          |   11 +
- validation/extern-inline.c                       |   23 +
- validation/identifier_list.c                     |   18 +
- validation/initializer-entry-defined-twice.c     |    8 +-
- validation/label-scope.c                         |   12 +
- validation/missing-ident.c                       |   18 +
- validation/multi_typedef.c                       |   15 +
- validation/nested-declarator.c                   |   29 +
- validation/nested-declarator2.c                  |   41 +
- validation/noderef.c                             |    6 +-
- validation/preprocessor/preprocessor11.c         |   21 +
- validation/preprocessor/preprocessor12.c         |   11 +
- validation/preprocessor/preprocessor13.c         |   16 +
- validation/preprocessor/preprocessor14.c         |   10 +
- validation/preprocessor/preprocessor15.c         |    9 +
- validation/preprocessor/preprocessor16.c         |    9 +
- validation/preprocessor/preprocessor22.c         |   35 +
- validation/preprocessor/preprocessor7.c          |    9 +
- validation/preprocessor/preprocessor8.c          |   22 +
- validation/reserved.c                            |   40 +
- validation/restrict-array.c                      |   12 +
- validation/sizeof-compound-postfix.c             |    8 +
- validation/specifiers1.c                         |  101 ++
- validation/specifiers2.c                         |  152 +++
- validation/test-suite                            |    6 +-
- validation/typedef_shadow.c                      |   12 +
- validation/typeof-attribute.c                    |   16 +
- validation/typesign.c                            |   36 +-
- 86 files changed, 3011 insertions(+), 912 deletions(-)
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
 
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
 
-Al Viro (39):
-      saner warnings for restricted types
-      fix show_typename()
-      catch !x & y brainos
-      fun with declarations and definitions
-      Fix type_info_expression()
-      fun with declarations and definitions
-      Fix handling of ident-less declarations
-      Separate parsing of identifier-list (in K&R-style declarations)
-      More nested declarator fixes
-      Fix attribute/asm handling
-      more direct_declarator() sanitizing
-      Warn about non-empty identifier list outside of definition
-      Apply attributes after ( to the right place
-      Leave applying attributes until we know whether it's a nested declarator
-      Don't mess with passing symbol to declarator/direct_declarator
-      Fix braino in which_kind()
-      Sanitize direct_declarator logics
-      Separating ctype and parser state, part 1
-      Propagate decl_state to declaration_specifiers()
-      Fix regression created by commit af30c6df74f01db10fa78ac0cbdb5c3c40b5c73f
-      Take the rest of storage class keywords to parse.c
-      Fix handling of typedefs with several declarators
-      preparations to ->declarator() cleanup - separate typedef handling
-      Take the rest of specifiers to parse.c
-      Saner type for __builtin_va_list
-      Rewrite and fix specifiers handling
-      Have ->declarator() act directly on ctype being affected
-      Clean up and split declaration_specifiers()
-      Pass decl_state down to ->declarator() and handle_attributes()
-      Pass decl_state down to ->attribute()
-      Restore __attribute__((mode)) handling
-      Fix enumeration constants' scope beginning
-      Fix declaration_specifiers() handling of typedef name shadowed
-by NS_SYMBOL
-      Fix __label__ handling
-      Simplify get_number_value() and ctype_integer()
-      Don't mix storage class bits with ctype->modifiers while parsing type
-      Sanitize pointer()
-      Segfault at evaluate.c:341
-      warn directive in argument list
+--=-lfGBOYR9MC0oq/3NeQcX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Alberto Bertogli (1):
-      Support the __thread storage class
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Alexander Shishkin (1):
-      don't call sparse when called to generate dependencies
+iEYEABECAAYFAkrYlSQACgkQk4XaBE3IOsTWgACfW02UH8R70llL2SexEuKiKDCk
+F24AmwcmOCrhsOygz5RlKocKiIiyPVt5
+=utGW
+-----END PGP SIGNATURE-----
 
-Alexey Zaytsev (16):
-      Remove symbol.id_list
-      Replace the -specs cgcc option with -target
-      Make show_symbol newline-consistent
-      Handle a terminal -o option properly.
-      Looks more evident this way.
-      Mark handle_switch as static and don't export it from lib.h
-      Handle missing argument to -D.
-      Gdb macros to get a better look at some sparse data structures.
-      A slightly edited irc discussion with Josh Triplett.
-      Warning should be enough for an unhandled transparent union
-      Set gcc include path at runtime.
-      Let cgcc pass -gcc-base-dir to sparse.
-      Document -gcc-base-dir in sparse.1
-      Rename dirafter to idirafter.
-      Let void have sizeof 1
-      Also warn about sizeof(function)
+--=-lfGBOYR9MC0oq/3NeQcX--
 
-Blue Swirl (6):
-      Sparc64 (Sparc V9, LP64) support
-      OpenBSD support
-      Ignore attribute __bounded__, used by OpenBSD headers.
-      Add c{l,t}z{,l,ll}, ffsl{,l}, popcountll and floating point
-comparison builtins.
-      Add support for TImode type (__int128_t)
-      Define __LP64__ for x86_64 unless in 32 bit mode
-
-Christopher Li (11):
-      Evaluate iterator symbols
-      Remove pre_buffer
-      Add enum member list to the parent
-      Teach classify_type to handle typeof
-      Warn about explicit usage of sizeof(void)
-      Makefile automatic header dependency
-      Clean up Makefile long lines
-      Update the validation check for ftabstop=
-      Add validation for restrict and attribute warning
-      move extern inline function to file scope
-      Sparse 0.4.2
-
-David Given (2):
-      Unhardcode byte size being 8 bits.
-      Add type information to struct instruction.
-
-Geoff Johnstone (4):
-      Add support for GCC's -std=... and -ansi command line options.
-      Add builtin functions for use with __FORTIFY_SOURCE
-      Fix type mismatches with incomplete types
-      Add -Wno-declaration-after-statement
-
-Hannes Eder (4):
-      Add -ftabstop=WIDTH
-      refactor handle_switch_f
-      test-suite: be more verbose on 'unhandled' and 'known to fail' tests
-      test-suite: integrate unhandled proprocessor tests
-
-Johannes Berg (8):
-      cgcc: handle ppc arch
-      make sparse keep its promise about context tracking
-      sparse test suite: add test mixing __context__ and
-__attribute__((context(...)))
-      sparse: simple conditional context tracking
-      inlined call bugfix & test
-      improve -Wcontext code and messages
-      fix bug in context tracking code
-      Revert the context tracking code
-
-Josh Triplett (2):
-      Add test case for new warning about !x & y
-      Expand "dubious !x & y" handling to other combinations of !, &, and |.
-
-Kamil Dudka (4):
-      compile-i386: do not generate an infinite loop
-      linearize.h: sanitize header
-      unssa: track uses when replacing a phi node
-      make sparse headers self-compilable...
-
-Linus Torvalds (5):
-      Fix cast instruction generation
-      Simplify (and warn about) right shifts that result in zero
-      Allow array declarators to have 'restrict' in them
-      Turn off '-Wtransparent-union' by default
-      Avoid "attribute 'warning': unknown attribute" warning
-
-Martin Nagy (3):
-      .gitignore: Ignore dependencies and Vim swap files
-      Add missing checks for Waddress-space
-      Print an error if typeof() lacks an argument
-
-Pavel Roskin (1):
-      Ignore "cold" and "hot" attributes, which appeared in gcc 4.3
-
-Pekka Enberg (1):
-      sparse: Add GCC pre-defined macros for user-space
-
-Ramsay Jones (1):
-      Makefile: suppress error message from pkg-config
-
-Reinhard Tartler (1):
-      show_token: handle TOKEN_UNTAINT and TOKEN_ARG_COUNT types
-
-Samuel Bronson (1):
-      Have Makefile import local.mk if it exists.
-
-Thomas Schmid (1):
-      Fix implicit cast to float
-
-Vegard Nossum (2):
-      Fix use of invalid file descriptor
-      Set *tree to NULL on error
