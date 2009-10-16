@@ -1,313 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762538AbZJPPp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932725AbZJPPqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762538AbZJPPp3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 11:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761739AbZJPPp2
+	id S932725AbZJPPqO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 11:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760234AbZJPPqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 11:45:28 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:54421 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760234AbZJPPpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 11:45:15 -0400
-Subject: [RFC 8/12][PATCH] SCHED_DEADLINE: wait next instance syscall added.
-From: Raistlin <raistlin@linux.it>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       michael trimarchi <michael@evidence.eu.com>,
-       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Darren Hart <darren@dvhart.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
-       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
-       Juri Lelli <juri.lelli@gmail.com>
-In-Reply-To: <1255707324.6228.448.camel@Palantir>
-References: <1255707324.6228.448.camel@Palantir>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-BOfZaxkreQgg5t1BT88n"
-Date: Fri, 16 Oct 2009 17:44:58 +0200
-Message-Id: <1255707898.6228.463.camel@Palantir>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 16 Oct 2009 11:46:11 -0400
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:43272 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760602AbZJPPqI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 11:46:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:cc:content-type;
+        b=gZSy2jFwYuGeXonv7iLqYFULGLyBLZGRZGPL4tGUA0gZuW1enRy1QDiZbOlzX46O8u
+         lIiRI67q5+LAxnke4cvq92jUHKAXGgnHWuVtFjbvgzF5DCF7YNyDIbf1R6c5G63xiTGP
+         nUNbFe6DcCsYs0EeKQHk05BmOA0JA0StyO/1Q=
+MIME-Version: 1.0
+Date: Fri, 16 Oct 2009 08:45:31 -0700
+X-Google-Sender-Auth: 1cf6be0915f6021b
+Message-ID: <70318cbf0910160845g51baf4dbtff57b81cfb1c7538@mail.gmail.com>
+Subject: Sparse 0.4.2 released
+From: Christopher Li <sparse@chrisli.org>
+To: Linux-Sparse <linux-sparse@vger.kernel.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---=-BOfZaxkreQgg5t1BT88n
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I have tagged and released the sparse version 0.4.2 at
+http://www.kernel.org/pub/software/devel/sparse/dist/sparse-0.4.2.tar.gz
 
-This commit introduces another new SCHED_DEADLINE related syscall. It is
-called sched_wait_interval() and it has close-to-clock_nanosleep semantic.
+As previous discussions on the sparse mailing list, I am the new maintainer of
+the sparse project. This is my first release for sparse.
+Thanks Josh Triplett for the previously maintaining the project.
 
-However, for SCHED_DEADLINE tasks, it should be the call with which each
-job closes its current instance. In fact, in this case, the task is put to
-sleep and, when it wakes up, the scheduler is informed that a new job
-arrived, saving the overhead that usually comes with a task activation
-to enforce maximum task bandwidth.
+I also created a new sparse wiki, it will replace the current sparse
+home page. http://sparse.wiki.kernel.org/index.php/Main_Page
 
-Signed-off-by: Raistlin <raistlin@linux.it>
----
- arch/arm/include/asm/unistd.h      |    1 +
- arch/arm/kernel/calls.S            |    1 +
- arch/x86/ia32/ia32entry.S          |    1 +
- arch/x86/include/asm/unistd_32.h   |    3 +-
- arch/x86/include/asm/unistd_64.h   |    2 +
- arch/x86/kernel/syscall_table_32.S |    1 +
- include/linux/sched.h              |    1 +
- include/linux/syscalls.h           |    3 ++
- kernel/sched.c                     |   71 ++++++++++++++++++++++++++++++++=
-++++
- kernel/sched_deadline.c            |    9 +++++
- 10 files changed, 92 insertions(+), 1 deletions(-)
+A lot of bug fixes and enhancements have gone into this release.
+Special thanks to Al Viro for overhauling the parser. Now sparse
+has  better ctype and attribute handling. The detailed changes follow.
 
-diff --git a/arch/arm/include/asm/unistd.h b/arch/arm/include/asm/unistd.h
-index 09b927e..769ced1 100644
---- a/arch/arm/include/asm/unistd.h
-+++ b/arch/arm/include/asm/unistd.h
-@@ -394,6 +394,7 @@
- #define __NR_sched_setscheduler_ex	(__NR_SYSCALL_BASE+365)
- #define __NR_sched_setparam_ex		(__NR_SYSCALL_BASE+366)
- #define __NR_sched_getparam_ex		(__NR_SYSCALL_BASE+367)
-+#define __NR_sched_wait_interval	(__NR_SYSCALL_BASE+368)
-=20
- /*
-  * The following SWIs are ARM private.
-diff --git a/arch/arm/kernel/calls.S b/arch/arm/kernel/calls.S
-index 42ad362..8292271 100644
---- a/arch/arm/kernel/calls.S
-+++ b/arch/arm/kernel/calls.S
-@@ -377,6 +377,7 @@
- /* 365 */	CALL(sys_sched_setscheduler_ex)
- 		CALL(sys_sched_setparam_ex)
- 		CALL(sys_sched_getparam_ex)
-+		CALL(sys_sched_wait_interval)
- #ifndef syscalls_counted
- .equ syscalls_padding, ((NR_syscalls + 3) & ~3) - NR_syscalls
- #define syscalls_counted
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index 3d04691..9306b80 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -845,4 +845,5 @@ ia32_sys_call_table:
- 	.quad sys_sched_setscheduler_ex
- 	.quad sys_sched_setparam_ex
- 	.quad sys_sched_getparam_ex
-+	.quad sys_sched_wait_interval		/* 340 */
- ia32_syscall_end:
-diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd=
-_32.h
-index 3928c04..63954cb 100644
---- a/arch/x86/include/asm/unistd_32.h
-+++ b/arch/x86/include/asm/unistd_32.h
-@@ -345,10 +345,11 @@
- #define __NR_sched_setscheduler_ex	337
- #define __NR_sched_setparam_ex		338
- #define __NR_sched_getparam_ex		339
-+#define __NR_sched_wait_interval	340
-=20
- #ifdef __KERNEL__
-=20
--#define NR_syscalls 340
-+#define NR_syscalls 341
-=20
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
-diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd=
-_64.h
-index 84b0743..63cccc7 100644
---- a/arch/x86/include/asm/unistd_64.h
-+++ b/arch/x86/include/asm/unistd_64.h
-@@ -667,6 +667,8 @@ __SYSCALL(__NR_sched_setscheduler_ex, sys_sched_setsche=
-duler_ex)
- __SYSCALL(__NR_sched_setparam_ex, sys_sched_setparam_ex)
- #define __NR_sched_getparam_ex			301
- __SYSCALL(__NR_sched_getparam_ex, sys_sched_getparam_ex)
-+#define __NR_sched_wait_interval		302
-+__SYSCALL(__NR_sched_wait_interval, sys_sched_wait_interval)
-=20
- #ifndef __NO_STUBS
- #define __ARCH_WANT_OLD_READDIR
-diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_t=
-able_32.S
-index 38f056c..bd2cc8e 100644
---- a/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -339,3 +339,4 @@ ENTRY(sys_call_table)
- 	.long sys_sched_setscheduler_ex
- 	.long sys_sched_setparam_ex
- 	.long sys_sched_getparam_ex
-+	.long sys_sched_wait_interval	/* 340 */
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 16668f9..478e07c 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1088,6 +1088,7 @@ struct sched_class {
- 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
- 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
- 	void (*yield_task) (struct rq *rq);
-+	void (*wait_interval) (struct task_struct *p);
-=20
- 	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p, int fla=
-gs);
-=20
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index dad0b33..e01f59c 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -407,6 +407,9 @@ asmlinkage long sys_sched_setaffinity(pid_t pid, unsign=
-ed int len,
- asmlinkage long sys_sched_getaffinity(pid_t pid, unsigned int len,
- 					unsigned long __user *user_mask_ptr);
- asmlinkage long sys_sched_yield(void);
-+asmlinkage long sys_sched_wait_interval(int flags,
-+					const struct timespec __user *rqtp,
-+					struct timespec __user *rmtp);
- asmlinkage long sys_sched_get_priority_max(int policy);
- asmlinkage long sys_sched_get_priority_min(int policy);
- asmlinkage long sys_sched_rr_get_interval(pid_t pid,
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 2c974fd..3c3e834 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6832,6 +6832,77 @@ SYSCALL_DEFINE0(sched_yield)
- 	return 0;
- }
-=20
-+/**
-+ * sys_sched_wait_interval - sleep according to the scheduling class rules=
-.
-+ *
-+ * This function makes the task sleep for an absolute or relative interval
-+ * (clock_nanosleep semantic). The only difference is that, before stoppin=
-g
-+ * the task, it asks its scheduling class if some class specific logic nee=
-ds
-+ * to be triggered right after the wakeup.
-+ */
-+SYSCALL_DEFINE3(sched_wait_interval, int, flags,
-+		const struct timespec __user *, rqtp,
-+		struct timespec __user *, rmtp)
-+{
-+	struct timespec lrqtp;
-+	struct hrtimer_sleeper t;
-+	enum hrtimer_mode mode =3D flags & TIMER_ABSTIME ?
-+				 HRTIMER_MODE_ABS : HRTIMER_MODE_REL;
-+	int ret =3D 0;
-+
-+	if (copy_from_user(&lrqtp, rqtp, sizeof(lrqtp)))
-+		return -EFAULT;
-+
-+	if (!timespec_valid(&lrqtp))
-+		return -EINVAL;
-+
-+	hrtimer_init_on_stack(&t.timer, CLOCK_MONOTONIC, mode);
-+	hrtimer_set_expires(&t.timer, timespec_to_ktime(*rqtp));
-+	hrtimer_init_sleeper(&t, current);
-+	do {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		hrtimer_start_expires(&t.timer, mode);
-+		if (!hrtimer_active(&t.timer))
-+			t.task =3D NULL;
-+
-+		if (likely(t.task)) {
-+			if (t.task->sched_class->wait_interval)
-+				t.task->sched_class->wait_interval(t.task);
-+			schedule();
-+		}
-+
-+		hrtimer_cancel(&t.timer);
-+		mode =3D HRTIMER_MODE_ABS;
-+	} while (t.task && !signal_pending(current));
-+	__set_current_state(TASK_RUNNING);
-+
-+	if (t.task =3D=3D NULL)
-+		goto out;
-+
-+	/* Absolute timers don't need this to be restarted. */
-+	if (mode =3D=3D HRTIMER_MODE_ABS) {
-+		ret =3D -ERESTARTNOHAND;
-+		goto out;
-+	}
-+
-+	if (rmtp) {
-+		ktime_t rmt;
-+		struct timespec rmt_ts;
-+
-+		rmt =3D hrtimer_expires_remaining(&t.timer);
-+		if (rmt.tv64 > 0)
-+			goto out;
-+		rmt_ts =3D ktime_to_timespec(rmt);
-+		if (!timespec_valid(&rmt_ts))
-+			goto out;
-+		if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
-+			ret =3D -EFAULT;
-+	}
-+out:
-+	destroy_hrtimer_on_stack(&t.timer);
-+	return ret;
-+}
-+
- static inline int should_resched(void)
- {
- 	return need_resched() && !(preempt_count() & PREEMPT_ACTIVE);
-diff --git a/kernel/sched_deadline.c b/kernel/sched_deadline.c
-index 7b57bb0..82c0192 100644
---- a/kernel/sched_deadline.c
-+++ b/kernel/sched_deadline.c
-@@ -401,6 +401,14 @@ static void yield_task_deadline(struct rq *rq)
- {
- }
-=20
-+/*
-+ * Informs the scheduler that an instance ended.
-+ */
-+static void wait_interval_deadline(struct task_struct *p)
-+{
-+	p->dl.flags |=3D DL_NEW;
-+}
-+
- #ifdef CONFIG_SCHED_HRTICK
- static void start_hrtick_deadline(struct rq *rq, struct task_struct *p)
- {
-@@ -538,6 +546,7 @@ static const struct sched_class deadline_sched_class =
-=3D {
- 	.enqueue_task		=3D enqueue_task_deadline,
- 	.dequeue_task		=3D dequeue_task_deadline,
- 	.yield_task		=3D yield_task_deadline,
-+	.wait_interval		=3D wait_interval_deadline,
-=20
- 	.check_preempt_curr	=3D check_preempt_curr_deadline,
-=20
---=20
-1.6.0.4
+Chris
 
 
---=20
-<<This happens because I choose it to happen!>> (Raistlin Majere)
-----------------------------------------------------------------------
-Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+ .gitignore                                       |    6 +
+ Documentation/data-structures.txt                |   54 +
+ Makefile                                         |  162 +--
+ cgcc                                             |   47 +-
+ compat-bsd.c                                     |   20 +
+ compile-i386.c                                   |   10 +-
+ compile.h                                        |    2 +
+ evaluate.c                                       |  141 ++-
+ example.c                                        |    2 +-
+ expand.c                                         |   11 +-
+ expression.c                                     |   66 +-
+ expression.h                                     |    4 +-
+ flow.c                                           |   10 +-
+ flow.h                                           |    6 +
+ gdbhelpers                                       |  307 +++++
+ ident-list.h                                     |    5 +
+ lib.c                                            |  242 ++++-
+ lib.h                                            |    5 +-
+ linearize.c                                      |   16 +-
+ linearize.h                                      |    3 +-
+ liveness.c                                       |    2 +-
+ parse.c                                          | 1367 +++++++++++++++-------
+ parse.h                                          |    3 +-
+ pre-process.c                                    |  126 ++-
+ ptrlist.h                                        |    2 +
+ scope.c                                          |    2 +-
+ scope.h                                          |    2 +
+ show-parse.c                                     |  110 +-
+ simplify.c                                       |   57 +-
+ sparse.1                                         |   22 +
+ storage.h                                        |    3 +
+ symbol.c                                         |   84 +-
+ symbol.h                                         |   86 ++-
+ target.c                                         |    1 +
+ target.h                                         |   15 +
+ token.h                                          |    3 +-
+ tokenize.c                                       |   41 +-
+ unssa.c                                          |    2 +
+ validation/address_space.c                       |    6 +-
+ validation/attr-warning.c                        |    8 +
+ validation/attr_in_parameter.c                   |   12 +
+ validation/bad-array-designated-initializer.c    |    6 +-
+ validation/bad-assignment.c                      |    4 +-
+ validation/bad-cast.c                            |    6 +-
+ validation/bad-ternary-cond.c                    |    4 +-
+ validation/bad-typeof.c                          |   14 +
+ validation/badtype4.c                            |    4 +-
+ validation/check_byte_count-ice.c                |    4 +-
+ validation/compare-null-to-int.c                 |    2 +-
+ validation/cond_expr.c                           |    4 +-
+ validation/cond_expr2.c                          |   12 +-
+ validation/context.c                             |    6 +-
+ validation/declaration-after-statement-ansi.c    |   12 +
+ validation/declaration-after-statement-c89.c     |   12 +
+ validation/declaration-after-statement-c99.c     |    9 +
+ validation/declaration-after-statement-default.c |    9 +
+ validation/definitions.c                         |   12 +
+ validation/dubious-bitwise-with-not.c            |   24 +
+ validation/enum_scope.c                          |   11 +
+ validation/extern-inline.c                       |   23 +
+ validation/identifier_list.c                     |   18 +
+ validation/initializer-entry-defined-twice.c     |    8 +-
+ validation/label-scope.c                         |   12 +
+ validation/missing-ident.c                       |   18 +
+ validation/multi_typedef.c                       |   15 +
+ validation/nested-declarator.c                   |   29 +
+ validation/nested-declarator2.c                  |   41 +
+ validation/noderef.c                             |    6 +-
+ validation/preprocessor/preprocessor11.c         |   21 +
+ validation/preprocessor/preprocessor12.c         |   11 +
+ validation/preprocessor/preprocessor13.c         |   16 +
+ validation/preprocessor/preprocessor14.c         |   10 +
+ validation/preprocessor/preprocessor15.c         |    9 +
+ validation/preprocessor/preprocessor16.c         |    9 +
+ validation/preprocessor/preprocessor22.c         |   35 +
+ validation/preprocessor/preprocessor7.c          |    9 +
+ validation/preprocessor/preprocessor8.c          |   22 +
+ validation/reserved.c                            |   40 +
+ validation/restrict-array.c                      |   12 +
+ validation/sizeof-compound-postfix.c             |    8 +
+ validation/specifiers1.c                         |  101 ++
+ validation/specifiers2.c                         |  152 +++
+ validation/test-suite                            |    6 +-
+ validation/typedef_shadow.c                      |   12 +
+ validation/typeof-attribute.c                    |   16 +
+ validation/typesign.c                            |   36 +-
+ 86 files changed, 3011 insertions(+), 912 deletions(-)
 
-http://blog.linux.it/raistlin / raistlin@ekiga.net /
-dario.faggioli@jabber.org
 
---=-BOfZaxkreQgg5t1BT88n
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Al Viro (39):
+      saner warnings for restricted types
+      fix show_typename()
+      catch !x & y brainos
+      fun with declarations and definitions
+      Fix type_info_expression()
+      fun with declarations and definitions
+      Fix handling of ident-less declarations
+      Separate parsing of identifier-list (in K&R-style declarations)
+      More nested declarator fixes
+      Fix attribute/asm handling
+      more direct_declarator() sanitizing
+      Warn about non-empty identifier list outside of definition
+      Apply attributes after ( to the right place
+      Leave applying attributes until we know whether it's a nested declarator
+      Don't mess with passing symbol to declarator/direct_declarator
+      Fix braino in which_kind()
+      Sanitize direct_declarator logics
+      Separating ctype and parser state, part 1
+      Propagate decl_state to declaration_specifiers()
+      Fix regression created by commit af30c6df74f01db10fa78ac0cbdb5c3c40b5c73f
+      Take the rest of storage class keywords to parse.c
+      Fix handling of typedefs with several declarators
+      preparations to ->declarator() cleanup - separate typedef handling
+      Take the rest of specifiers to parse.c
+      Saner type for __builtin_va_list
+      Rewrite and fix specifiers handling
+      Have ->declarator() act directly on ctype being affected
+      Clean up and split declaration_specifiers()
+      Pass decl_state down to ->declarator() and handle_attributes()
+      Pass decl_state down to ->attribute()
+      Restore __attribute__((mode)) handling
+      Fix enumeration constants' scope beginning
+      Fix declaration_specifiers() handling of typedef name shadowed
+by NS_SYMBOL
+      Fix __label__ handling
+      Simplify get_number_value() and ctype_integer()
+      Don't mix storage class bits with ctype->modifiers while parsing type
+      Sanitize pointer()
+      Segfault at evaluate.c:341
+      warn directive in argument list
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Alberto Bertogli (1):
+      Support the __thread storage class
 
-iEYEABECAAYFAkrYlPoACgkQk4XaBE3IOsRlkwCfaRu6yAuXmfkLDD1C9/vzRRRu
-t2gAoIvrIeBlyzUUnjIl5UWLoNVnmV3Q
-=1LFV
------END PGP SIGNATURE-----
+Alexander Shishkin (1):
+      don't call sparse when called to generate dependencies
 
---=-BOfZaxkreQgg5t1BT88n--
+Alexey Zaytsev (16):
+      Remove symbol.id_list
+      Replace the -specs cgcc option with -target
+      Make show_symbol newline-consistent
+      Handle a terminal -o option properly.
+      Looks more evident this way.
+      Mark handle_switch as static and don't export it from lib.h
+      Handle missing argument to -D.
+      Gdb macros to get a better look at some sparse data structures.
+      A slightly edited irc discussion with Josh Triplett.
+      Warning should be enough for an unhandled transparent union
+      Set gcc include path at runtime.
+      Let cgcc pass -gcc-base-dir to sparse.
+      Document -gcc-base-dir in sparse.1
+      Rename dirafter to idirafter.
+      Let void have sizeof 1
+      Also warn about sizeof(function)
 
+Blue Swirl (6):
+      Sparc64 (Sparc V9, LP64) support
+      OpenBSD support
+      Ignore attribute __bounded__, used by OpenBSD headers.
+      Add c{l,t}z{,l,ll}, ffsl{,l}, popcountll and floating point
+comparison builtins.
+      Add support for TImode type (__int128_t)
+      Define __LP64__ for x86_64 unless in 32 bit mode
+
+Christopher Li (11):
+      Evaluate iterator symbols
+      Remove pre_buffer
+      Add enum member list to the parent
+      Teach classify_type to handle typeof
+      Warn about explicit usage of sizeof(void)
+      Makefile automatic header dependency
+      Clean up Makefile long lines
+      Update the validation check for ftabstop=
+      Add validation for restrict and attribute warning
+      move extern inline function to file scope
+      Sparse 0.4.2
+
+David Given (2):
+      Unhardcode byte size being 8 bits.
+      Add type information to struct instruction.
+
+Geoff Johnstone (4):
+      Add support for GCC's -std=... and -ansi command line options.
+      Add builtin functions for use with __FORTIFY_SOURCE
+      Fix type mismatches with incomplete types
+      Add -Wno-declaration-after-statement
+
+Hannes Eder (4):
+      Add -ftabstop=WIDTH
+      refactor handle_switch_f
+      test-suite: be more verbose on 'unhandled' and 'known to fail' tests
+      test-suite: integrate unhandled proprocessor tests
+
+Johannes Berg (8):
+      cgcc: handle ppc arch
+      make sparse keep its promise about context tracking
+      sparse test suite: add test mixing __context__ and
+__attribute__((context(...)))
+      sparse: simple conditional context tracking
+      inlined call bugfix & test
+      improve -Wcontext code and messages
+      fix bug in context tracking code
+      Revert the context tracking code
+
+Josh Triplett (2):
+      Add test case for new warning about !x & y
+      Expand "dubious !x & y" handling to other combinations of !, &, and |.
+
+Kamil Dudka (4):
+      compile-i386: do not generate an infinite loop
+      linearize.h: sanitize header
+      unssa: track uses when replacing a phi node
+      make sparse headers self-compilable...
+
+Linus Torvalds (5):
+      Fix cast instruction generation
+      Simplify (and warn about) right shifts that result in zero
+      Allow array declarators to have 'restrict' in them
+      Turn off '-Wtransparent-union' by default
+      Avoid "attribute 'warning': unknown attribute" warning
+
+Martin Nagy (3):
+      .gitignore: Ignore dependencies and Vim swap files
+      Add missing checks for Waddress-space
+      Print an error if typeof() lacks an argument
+
+Pavel Roskin (1):
+      Ignore "cold" and "hot" attributes, which appeared in gcc 4.3
+
+Pekka Enberg (1):
+      sparse: Add GCC pre-defined macros for user-space
+
+Ramsay Jones (1):
+      Makefile: suppress error message from pkg-config
+
+Reinhard Tartler (1):
+      show_token: handle TOKEN_UNTAINT and TOKEN_ARG_COUNT types
+
+Samuel Bronson (1):
+      Have Makefile import local.mk if it exists.
+
+Thomas Schmid (1):
+      Fix implicit cast to float
+
+Vegard Nossum (2):
+      Fix use of invalid file descriptor
+      Set *tree to NULL on error
