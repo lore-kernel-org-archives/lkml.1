@@ -1,158 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760497AbZJPOi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932581AbZJPOsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760497AbZJPOi4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 10:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbZJPOiz
+	id S932581AbZJPOsK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 10:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932368AbZJPOsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 10:38:55 -0400
-Received: from aglcosbs04.cos.agilent.com ([192.25.218.38]:40701 "EHLO
-	aglcosbs04.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754078AbZJPOiz (ORCPT
+	Fri, 16 Oct 2009 10:48:09 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:42057 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759812AbZJPOsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 10:38:55 -0400
-Message-ID: <4AD8852E.2090302@agilent.com>
-Date: Fri, 16 Oct 2009 07:37:34 -0700
-From: Earl Chew <earl_chew@agilent.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 16 Oct 2009 10:48:08 -0400
+Message-ID: <4AD88729.3050209@s5r6.in-berlin.de>
+Date: Fri, 16 Oct 2009 16:46:01 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.22) Gecko/20090605 SeaMonkey/1.1.17
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v1 1/1]: fs: pipe.c null pointer dereference
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+CC: trivial@kernel.org, akpm@linux-foundation.org, adobriyan@gmail.com,
+       linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH 1/8] trivial: coding style fixes
+References: <1255635840-5691-1-git-send-email-cascardo@holoscopio.com>
+In-Reply-To: <1255635840-5691-1-git-send-email-cascardo@holoscopio.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Oct 2009 14:37:47.0613 (UTC) FILETIME=[3AF738D0:01CA4E6E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a null pointer exception in pipe_rdwr_open() which
-generates the stack trace:
+Thadeu Lima de Souza Cascardo wrote:
+> --- a/drivers/mmc/card/sdio_uart.c
+> +++ b/drivers/mmc/card/sdio_uart.c
+[...]
+> @@ -946,31 +948,31 @@ static int sdio_uart_proc_show(struct seq_file *m, void *v)
+>  			seq_printf(m, "%d: uart:SDIO", i);
+>  			if(capable(CAP_SYS_ADMIN)) {
+>  				seq_printf(m, " tx:%d rx:%d",
+> -					       port->icount.tx, port->icount.rx);
+> +					      port->icount.tx, port->icount.rx);
+>  				if (port->icount.frame)
+>  					seq_printf(m, " fe:%d",
+> -						       port->icount.frame);
+> +						      port->icount.frame);
+>  				if (port->icount.parity)
+>  					seq_printf(m, " pe:%d",
+> -						       port->icount.parity);
+> +						      port->icount.parity);
+>  				if (port->icount.brk)
+>  					seq_printf(m, " brk:%d",
+> -						       port->icount.brk);
+> +						      port->icount.brk);
+>  				if (port->icount.overrun)
+>  					seq_printf(m, " oe:%d",
+> -						       port->icount.overrun);
+> +						      port->icount.overrun);
+>  				if (port->icount.cts)
+[...]
 
+The style problem of the original code was not indentation, but depth of
+indentation levels.  Why not factor this cascade out to a
+show_icount_fields() function?
 
- > Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
- >  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
- >  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
- >  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
- >  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
- >  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
-
-This defect is also described in:
-   http://lkml.org/lkml/2009/10/14/184
-   http://bugzilla.kernel.org/show_bug.cgi?id=14416
-
-
-The failure mode is triggered by an attempt to open an anonymous
-pipe via /proc/pid/fd/* as exemplified by this script:
-
-=============================================================
-#!/bin/sh
-while : ; do
-    { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
-    PID=$!
-    OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
-         { read PID REST ; echo $PID; } )
-    OUT="${OUT%% *}"
-    DELAY=$((RANDOM * 1000 / 32768))
-    usleep $((DELAY * 1000 + RANDOM % 1000 ))
-    echo n > /proc/$OUT/fd/1                 # Trigger defect
-done
-=============================================================
-
-Note that the failure window is quite small and I could only
-reliably reproduce the defect by inserting a small delay
-in pipe_rdwr_open(). For example:
-
-  static int
-  pipe_rdwr_open(struct inode *inode, struct file *filp)
-  {
-        msleep(100);
-        mutex_lock(&inode->i_mutex);
-
-
-Although the defect was observed in pipe_rdwr_open(), I think it
-makes sense to replicate the change through all the pipe_*_open()
-functions.
-
-The core of the change is to verify that inode->i_pipe has not
-been released before attempting to manipulate it. If inode->i_pipe
-is no longer present, return ENOENT to indicate so.
-
-The comment about potentially using atomic_t for i_pipe->readers
-and i_pipe->writers has also been removed because it is no longer
-relevant in this context. The inode->i_mutex lock must be used so
-that inode->i_pipe can be dealt with correctly.
-
-
-
---- linux-2.6.21_mvlcge500/fs/pipe.c.orig	2009-10-15 20:33:53.000000000 
--0700
-+++ linux-2.6.21_mvlcge500/fs/pipe.c	2009-10-15 21:21:25.000000000 -0700
-@@ -712,36 +712,55 @@ pipe_rdwr_release(struct inode *inode, s
-  static int
-  pipe_read_open(struct inode *inode, struct file *filp)
-  {
--	/* We could have perhaps used atomic_t, but this and friends
--	   below are the only places.  So it doesn't seem worthwhile.  */
-+	int ret = -ENOENT;
-+
-  	mutex_lock(&inode->i_mutex);
--	inode->i_pipe->readers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		inode->i_pipe->readers++;
-+	}
-+
-  	mutex_unlock(&inode->i_mutex);
-
--	return 0;
-+	return ret;
-  }
-
-  static int
-  pipe_write_open(struct inode *inode, struct file *filp)
-  {
-+	int ret = -ENOENT;
-+
-  	mutex_lock(&inode->i_mutex);
--	inode->i_pipe->writers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		inode->i_pipe->writers++;
-+	}
-+
-  	mutex_unlock(&inode->i_mutex);
-
--	return 0;
-+	return ret;
-  }
-
-  static int
-  pipe_rdwr_open(struct inode *inode, struct file *filp)
-  {
-+	int ret = -ENOENT;
-+
-  	mutex_lock(&inode->i_mutex);
--	if (filp->f_mode & FMODE_READ)
--		inode->i_pipe->readers++;
--	if (filp->f_mode & FMODE_WRITE)
--		inode->i_pipe->writers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		if (filp->f_mode & FMODE_READ)
-+			inode->i_pipe->readers++;
-+		if (filp->f_mode & FMODE_WRITE)
-+			inode->i_pipe->writers++;
-+	}
-+
-  	mutex_unlock(&inode->i_mutex);
-
--	return 0;
-+	return ret;
-  }
-
-  /*
-
-
-
+Plus, I hope Jiri enhanced your changelog a bit before he committed it.
+(I only looked at this patch because I was wondering what subsystem it
+changed --- the patch title doesn't say it.)
+-- 
+Stefan Richter
+-=====-==--= =-=- =----
+http://arcgraph.de/sr/
