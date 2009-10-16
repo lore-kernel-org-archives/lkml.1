@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbZJPSFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbZJPSFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753750AbZJPSFg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 14:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZJPSFg
+	id S1753367AbZJPSFE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 14:05:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbZJPSFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 14:05:36 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48367 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752017AbZJPSFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 14:05:35 -0400
-Date: Fri, 16 Oct 2009 11:03:43 -0700
-From: Greg KH <gregkh@suse.de>
-To: Massimo Cetra <mcetra@navynet.it>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [00/46] 2.6.31.5-stable review
-Message-ID: <20091016180343.GA16808@suse.de>
-References: <20091016171422.GA13339@kroah.com> <4AD8B41F.2070702@navynet.it>
+	Fri, 16 Oct 2009 14:05:03 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:55850 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbZJPSFC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 14:05:02 -0400
+Date: Fri, 16 Oct 2009 11:06:31 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: mtk.manpages@gmail.com
+Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>, arnd@arndb.de,
+       peterz@infradead.org, Louis.Rilling@kerlabs.com, roland@redhat.com,
+       kosaki.motohiro@jp.fujitsu.com, randy.dunlap@oracle.com,
+       linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
+Subject: Re: [RFC][v8][PATCH 9/10]: Define clone3() syscall
+Message-ID: <20091016180631.GA31036@us.ibm.com>
+References: <20091013044925.GA28181@us.ibm.com> <20091013045439.GI28435@us.ibm.com> <20091016042041.GA7220@us.ibm.com> <cfd18e0f0910152325m4a9125c2q18f36f5bd7d4a0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4AD8B41F.2070702@navynet.it>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <cfd18e0f0910152325m4a9125c2q18f36f5bd7d4a0@mail.gmail.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 16, 2009 at 07:57:51PM +0200, Massimo Cetra wrote:
-> Greg KH ha scritto:
->> This is the start of the stable review cycle for the 2.6.31.5 release.
->> There are 46 patches in this series, all will be posted as a response to
->> this one.  If anyone has any issues with these being applied, please let
->> us know.  If anyone is a maintainer of the proper subsystem, and wants
->> to add a Signed-off-by: line to the patch, please respond with it.
->>
->>   
-> Please consider adding this:
-> http://lkml.org/lkml/2009/10/13/154
->
-> and this:
-> http://lkml.org/lkml/2009/10/14/430
->
-> which definitely makes 2.6.31 unusable for virtualization with KVM and with 
-> some block devices not supporting barriers.
+Michael Kerrisk [mtk.manpages@googlemail.com] wrote:
+| Hi Sukadev
+| 
+| On Fri, Oct 16, 2009 at 6:20 AM, Sukadev Bhattiprolu
+| <sukadev@linux.vnet.ibm.com> wrote:
+| > Here is an updated patch with the following interface:
+| >
+| >        long sys_clone3(unsigned int flags_low, struct clone_args __user *cs,
+| >                        pid_t *pids);
+| >
+| > There are just two other (minor) changes pending to this patchset:
+| >
+| >        - PATCH 7: add a CLONE_UNUSED bit to VALID_CLONE_FLAGS().
+| >        - PATCH 10: update documentation to reflect new interface.
+| >
+| > If this looks ok, we repost entire patchset next week.
+| 
+| I know I'm late to this discussion, but why the name clone3()? It's
+| not consistent with any other convention used fo syscall naming,
+| AFAICS. I think a name like clone_ext() or clonex() (for extended)
+| might make more sense.
 
-Do you have git commit ids for these fixes?
+Sure, we talked about calling it clone_extended() and I can go back
+to that.
 
-thanks,
+Only minor concern with that name was if this new call ever needs to
+be extended, what would we call it :-). With clone3() we could add a
+real/fake parameter and call it clone4() :-p
 
-greg k-h
+Sukadev
