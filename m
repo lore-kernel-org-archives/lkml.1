@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbZJPSde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZJPSjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbZJPSde (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 14:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZJPSde
+	id S1752463AbZJPSjp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 14:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZJPSjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 14:33:34 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:20210 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751335AbZJPSdd (ORCPT
+	Fri, 16 Oct 2009 14:39:44 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:52939 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbZJPSjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 14:33:33 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=M18OWYsJg+mBM6WnBlj4JFf7K+m+7iCkD8h2w+pBnOUpaACnPR6BsQY0rPAgkqS1F
-	vKwl8/CJZQcIY/EhhwDjQ==
-Date: Fri, 16 Oct 2009 11:33:28 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] slub: allow stats to be cleared
-In-Reply-To: <alpine.DEB.1.10.0910161249100.6120@gentwo.org>
-Message-ID: <alpine.DEB.1.00.0910161129320.21328@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0910150215320.1551@chino.kir.corp.google.com> <alpine.DEB.1.10.0910161249100.6120@gentwo.org>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Fri, 16 Oct 2009 14:39:44 -0400
+From: Andy Whitcroft <apw@canonical.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@canonical.com>
+Subject: [PATCH 0/7] update checkpatch to v0.30
+Date: Fri, 16 Oct 2009 19:39:25 +0100
+Message-Id: <1255718372-22805-1-git-send-email-apw@canonical.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Oct 2009, Christoph Lameter wrote:
+Here is a batch of checkpatch updates.  The second of which should fix
+akpm's issue triggering perl warnings on some patches.  The rest are the
+normal slew of little fixes.  These have passed testing here.
 
-> 
-> So writing to any file clears all counters? The documentation does not say
-> so.
-> 
+Complete changelog below.
 
-No, it just clears that particular statistic.
+-apw
 
-On a semi-related topic, it would have been nice to isolate all statistic 
-files to its own directory: /sys/kernel/slab/kmalloc-256/stats/..., for 
-example.  It would have made collecting (and now clearing) all statistics 
-much easier since userspace wouldn't need a predefined list of stat file 
-names to scan.  I wonder if Pekka would allow them to be moved...
+Andy Whitcroft (7):
+  checkpatch: possible types -- prevent illegal modifiers being added
+  checkpatch: correctly stop scanning at the bottom of a hunk
+  checkpatch: update copyright dates
+  checkpatch: fix false errors due to macro concatenation
+  checkpatch: fix __attribute__ matching
+  checkpatch: fix false EXPORT_SYMBOL warning
+  checkpatch: version 0.30
+
+ scripts/checkpatch.pl |   84 +++++++++++++++++++++++++++++++++++-------------
+ 1 files changed, 61 insertions(+), 23 deletions(-)
+
