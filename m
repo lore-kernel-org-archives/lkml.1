@@ -1,100 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbZJPTnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752374AbZJPTxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752788AbZJPTnW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 15:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZJPTnV
+	id S1752374AbZJPTxT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 15:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZJPTxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 15:43:21 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:34787 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751928AbZJPTnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 15:43:10 -0400
-Date: Fri, 16 Oct 2009 12:44:51 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Daniel Lezcano <daniel.lezcano@free.fr>
-Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, Louis.Rilling@kerlabs.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       kosaki.motohiro@jp.fujitsu.com, hpa@zytor.com, mingo@elte.hu,
-       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
-Message-ID: <20091016194451.GA28706@us.ibm.com>
-References: <20091013044925.GA28181@us.ibm.com> <4AD8C7E4.9000903@free.fr>
+	Fri, 16 Oct 2009 15:53:18 -0400
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:39389 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751674AbZJPTxR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 15:53:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=PY63x06/qIQgDByZdxW0zuWpCpWklOmWW7/uTc8RYUrMrWOPisuM4/GbTZbOVkEh9p
+         qnirpz3UDCagd4VufAkuQTQ7V9RWuAZdEHj95WkJtTy+45T/nqVfqWnHbgxD8qEP3cAu
+         zQGzRldOX2pizJSRPezXfOvQ/9RpUFSp9itfI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD8C7E4.9000903@free.fr>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Fri, 16 Oct 2009 21:53:22 +0200
+Message-ID: <b637ec0b0910161253y60eb6b4fl3e49e5b9129d81ac@mail.gmail.com>
+Subject: [Regression] - 2.6.32-rc5 hangs using rfkill on an eeePC
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Lezcano [daniel.lezcano@free.fr] wrote:
-> Sukadev Bhattiprolu wrote:
->> Subject: [RFC][v8][PATCH 0/10] Implement clone3() system call
->>
->> To support application checkpoint/restart, a task must have the same pid it
->> had when it was checkpointed.  When containers are nested, the tasks within
->> the containers exist in multiple pid namespaces and hence have multiple pids
->> to specify during restart.
->>
->> This patchset implements a new system call, clone3() that lets a process
->> specify the pids of the child process.
->>
->> Patches 1 through 7 are helper patches, needed for choosing a pid for the
->> child process.
->>
->> PATCH 9 defines a prototype of the new system call. PATCH 10 adds some
->> documentation on the new system call, some/all of which will eventually
->> go into a man page.
->>   
->
-> Sorry for jumping so late in the discussion and for having maybe my
-> remarks pointless...
->
-> If this syscall is only for checkpoint / restart, why this shouldn't be
-> used with a future generic sys_restart syscall ?
+Hi all.
+Pressing rfkill button on my eeePC 900 to disable wireless hangs the system.
 
-As I tried to explain in PATCH 0/9, the ability to choose a pid is only
-for C/R but we are also trying to clone-flags so we won't need yet
-another variant of clone() fairly soon.
+In console I can see (warning: what follows is copied by hand):
 
-> Otherwise, shouldn't be more convenient to have something usable for
-> everyone, let's say:
->
-> cloneat(pid_t pid, pid_t desiredpid, ...);
->
-> Where 'desiredpid' is a hint of for the kernel for the pid to be
-> allocated (zero means the kernel will choose one for us) and the newly
-> allocated task is the son of 'pid'.
+acpid: client 148[6:100] has disconnected
+ACPI group/action not found: hotkey / ATKD
+unregister netdevice: waiting for wlan0 to become free; usage count=1
 
-Hmm, so P1 would call cloneat() to create a child P3 _on behalf_ of process
-P2 ?  I did not know we had a requirement for that. Can you explain the
-use-case more ? IOW, why can't P2 create the child P3 by itself ?
+(last line repeats forever). Hard reset is needed.
 
-Note also that 'desiredpid' must be a list of pids (one for each pid
-namespaces that the child will belong to) and hence we need 'nr_pids'
-to specify the list. Given that we are limited to 6 parameters to the
-syscall, such parameters must be stuffed into 'struct clone_args'.
+With any previous kernel version (I'm running -rc4 right now) everything works:
 
-So we should do something like:
+ACPI group/action undefined: hotkey / ATKD
+ath5k 0000:01:00.0: PCI INT A disabled
 
-	sys_clone3(u32 flags_low, pid_t pid, struct clone_args *carg,
-		pid_t *desired_pids)
+(there's no acpid line)
 
-or (to match the name and parameters, move 'pid' parameter into clone_args)
 
-> That looks more consistent with the "<syscall>at" family, 'openat',
-> 'faccessat', 'readlinkat', etc ... and usable for something else than
-> the checkpoint / restart.
-
-The subtle difference though is that openat() does not open a file on
-behalf of another process and so the 'at' suffix would not apply ?
-
->
-> Thanks
->  -- Daniel
+Regards,
+Fabio
