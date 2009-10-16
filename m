@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751862AbZJPEhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031AbZJPErx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751862AbZJPEhB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 00:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZJPEhA
+	id S1752031AbZJPErx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 00:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbZJPErw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 00:37:00 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:35235 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751704AbZJPEg7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 00:36:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=QxCI2ESH3EKZbNHvmJX+3BVDgPjdb4GFbHl+qHZX+UOpNO7N6KEsFWXykpLgE02qE0
-         4zPScMAKva1f9e6ccjq62ZU74+sgHc692+o6VxVtosDb+B+/4wrFXFChUvnVi0/slSW1
-         ZLD6hrm2cBfWIjDQfBOMidE9rNqy3X0fI0oEg=
-Date: Thu, 15 Oct 2009 21:36:18 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: lenb@kernel.org, shaohua.li@intel.com, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH v2 1/6] ACPI: dock: clean up error handling paths in
-	dock_add()
-Message-ID: <20091016043618.GB11582@core.coreip.homeip.net>
-References: <20091014224415.18044.88208.stgit@bob.kio> <20091014224616.18044.45719.stgit@bob.kio>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091014224616.18044.45719.stgit@bob.kio>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Fri, 16 Oct 2009 00:47:52 -0400
+Received: from gate.crashing.org ([63.228.1.57]:57318 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751823AbZJPErv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 00:47:51 -0400
+Subject: Re: [PATCH] hvc_console: returning 0 from put_chars is not an error
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>, linuxppc-dev@ozlabs.org,
+       brueckner@linux.vnet.ibm.com, Timur Tabi <timur@freescale.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AD770A9.6070509@freescale.com>
+References: <1255557226-4403-1-git-send-email-timur@freescale.com>
+	 <200910151305.47100.borntraeger@de.ibm.com>
+	 <20091015160906.GA3730@loki.buserror.net>
+	 <200910152041.26646.borntraeger@de.ibm.com>
+	 <4AD770A9.6070509@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 16 Oct 2009 15:46:45 +1100
+Message-Id: <1255668405.19032.13.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex,
+On Thu, 2009-10-15 at 13:57 -0500, Scott Wood wrote:
+> I'd say the dropping approach is quite undesirable (significant 
+> potential for output loss unless the buffer is huge), unless there's 
+> simply no way to safely spin.  Hopefully there are no such backends, but 
+> if there are perhaps we can have them return some special code to 
+> indicate that.
 
-On Wed, Oct 14, 2009 at 04:46:16PM -0600, Alex Chiang wrote:
-> Remove some copy/paste code in our error handling paths, which makes
-> the function smaller and slightly easier to read.
+Should never spin. Best is to keep a copy in the upper layer of the
+pending data and throttle (not accept further data from tty layer) until
+we have managed to flush out that "pending" buffer.
 
-Changing individual attributes into attribute_group would greatly
-simplify the code.
-
+> > If we just busy loop, it actually does not matter how we let hvc_console react 
+> > on 0, as long as we adopt all backends to use that interface consistent.
+> > 
+> > On the other hand, backends might want to do special magic on congestion so I 
+> > personally tend to let the backend loop instead of hvc_console. But I am really  
+> > not sure.
 > 
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
-> 
->  drivers/acpi/dock.c |   75 +++++++++++++++++++--------------------------------
->  1 files changed, 28 insertions(+), 47 deletions(-)
-> 
-> diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-> index 7338b6a..642c7dd 100644
-> --- a/drivers/acpi/dock.c
-> +++ b/drivers/acpi/dock.c
-> @@ -968,11 +968,9 @@ static int dock_add(acpi_handle handle)
->  		platform_device_register_simple(dock_device_name,
->  			dock_station_count, NULL, 0);
->  	dock_device = dock_station->dock_device;
-> -	if (IS_ERR(dock_device)) {
-> -		kfree(dock_station);
-> -		dock_station = NULL;
-> -		return PTR_ERR(dock_device);
-> -	}
-> +	ret = IS_ERR(dock_device) ? PTR_ERR(dock_device) : 0;
-> +	if (ret)
-> +		goto out;
+> Doing it in the backend requires the backend to know whether it's being 
+> called for printk or for user I/O.  In the latter case, we don't want to 
+> spin, but rather wait for an IRQ (or poll with a timer if there's no IRQ). 
 
-I think
+Ben.
 
-	if (IS_ERR(dock_device)) {
-		ret = PTR_ERR(dock_device);
-		goto out;
-	}
 
-is more commonly used form.
-
-Thanks.
-
--- 
-Dmitry
