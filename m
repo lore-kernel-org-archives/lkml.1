@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbZJPRSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756294AbZJPRSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756297AbZJPRSt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbZJPRSr
+	id S1756294AbZJPRSw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbZJPRSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:18:47 -0400
-Received: from kroah.org ([198.145.64.141]:48677 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:18:49 -0400
+Received: from kroah.org ([198.145.64.141]:48683 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755861AbZJPRSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 13:18:45 -0400
-X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:08 2009
-Message-Id: <20091016171208.369491083@linux.site>
+	id S1755948AbZJPRSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 13:18:46 -0400
+X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:09 2009
+Message-Id: <20091016171208.894637208@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:34 -0700
+Date: Fri, 16 Oct 2009 10:10:35 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       NeilBrown <neilb@suse.de>, Dan Williams <dan.j.williams@intel.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [41/46] sysfs: Allow sysfs_notify_dirent to be called from interrupt context.
+Subject: [42/46] Staging: rt2860sta: prevent a panic when disabling when associated
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=sysfs-allow-sysfs_notify_dirent-to-be-called-from-interrupt-context.patch
+Content-Disposition: inline; filename=staging-rt2860sta-prevent-a-panic-when-disabling-when-associated.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,97 +29,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Neil Brown <neilb@suse.de>
+From: Darren Salt <linux@youmustbejoking.demon.co.uk>
 
-commit 83db93f4de2d9ae441a491d1dc61c2204f0195de upstream.
+commit 0af49167b1e5ba154e90d2c454bf4624ee47df80 upstream.
 
-sysfs_notify_dirent is a simple atomic operation that can be used to
-alert user-space that new data can be read from a sysfs attribute.
+This fixes a panic which is triggered when the hardware "disappears" from
+beneath the driver, i.e. when wireless is toggled off via Fn-F2 on various
+EeePC models.
 
-Unfortunately it cannot currently be called from non-process context
-because of its use of spin_lock which is sometimes taken with
-interrupts enabled.
+Ref. bug report http://bugzilla.kernel.org/show_bug.cgi?id=13390
+          panic http://bugzilla.kernel.org/attachment.cgi?id=21928
 
-So change all lockers of sysfs_open_dirent_lock to disable interrupts,
-thus making sysfs_notify_dirent safe to be called from non-process
-context (as drivers/md does in md_safemode_timeout).
-
-sysfs_get_open_dirent is (documented as being) only called from
-process context, so it uses spin_lock_irq.  Other places
-use spin_lock_irqsave.
-
-The usage for sysfs_notify_dirent in md_safemode_timeout was
-introduced in 2.6.28, so this patch is suitable for that and more
-recent kernels.
-
-Reported-by: Joel Andres Granados <jgranado@redhat.com>
-Signed-off-by: NeilBrown <neilb@suse.de>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/sysfs/file.c |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ drivers/staging/rt2860/common/cmm_data_2860.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -268,7 +268,7 @@ static int sysfs_get_open_dirent(struct 
- 	struct sysfs_open_dirent *od, *new_od = NULL;
+--- a/drivers/staging/rt2860/common/cmm_data_2860.c
++++ b/drivers/staging/rt2860/common/cmm_data_2860.c
+@@ -363,6 +363,8 @@ int RtmpPCIMgmtKickOut(
+ 	ULONG			SwIdx = pAd->MgmtRing.TxCpuIdx;
  
-  retry:
--	spin_lock(&sysfs_open_dirent_lock);
-+	spin_lock_irq(&sysfs_open_dirent_lock);
+ 	pTxD  = (PTXD_STRUC) pAd->MgmtRing.Cell[SwIdx].AllocVa;
++	if (!pTxD)
++		return 0;
  
- 	if (!sd->s_attr.open && new_od) {
- 		sd->s_attr.open = new_od;
-@@ -281,7 +281,7 @@ static int sysfs_get_open_dirent(struct 
- 		list_add_tail(&buffer->list, &od->buffers);
- 	}
- 
--	spin_unlock(&sysfs_open_dirent_lock);
-+	spin_unlock_irq(&sysfs_open_dirent_lock);
- 
- 	if (od) {
- 		kfree(new_od);
-@@ -315,8 +315,9 @@ static void sysfs_put_open_dirent(struct
- 				  struct sysfs_buffer *buffer)
- {
- 	struct sysfs_open_dirent *od = sd->s_attr.open;
-+	unsigned long flags;
- 
--	spin_lock(&sysfs_open_dirent_lock);
-+	spin_lock_irqsave(&sysfs_open_dirent_lock, flags);
- 
- 	list_del(&buffer->list);
- 	if (atomic_dec_and_test(&od->refcnt))
-@@ -324,7 +325,7 @@ static void sysfs_put_open_dirent(struct
- 	else
- 		od = NULL;
- 
--	spin_unlock(&sysfs_open_dirent_lock);
-+	spin_unlock_irqrestore(&sysfs_open_dirent_lock, flags);
- 
- 	kfree(od);
- }
-@@ -456,8 +457,9 @@ static unsigned int sysfs_poll(struct fi
- void sysfs_notify_dirent(struct sysfs_dirent *sd)
- {
- 	struct sysfs_open_dirent *od;
-+	unsigned long flags;
- 
--	spin_lock(&sysfs_open_dirent_lock);
-+	spin_lock_irqsave(&sysfs_open_dirent_lock, flags);
- 
- 	od = sd->s_attr.open;
- 	if (od) {
-@@ -465,7 +467,7 @@ void sysfs_notify_dirent(struct sysfs_di
- 		wake_up_interruptible(&od->poll);
- 	}
- 
--	spin_unlock(&sysfs_open_dirent_lock);
-+	spin_unlock_irqrestore(&sysfs_open_dirent_lock, flags);
- }
- EXPORT_SYMBOL_GPL(sysfs_notify_dirent);
- 
+ 	pAd->MgmtRing.Cell[SwIdx].pNdisPacket = pPacket;
+ 	pAd->MgmtRing.Cell[SwIdx].pNextNdisPacket = NULL;
 
 
