@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753114AbZJPQbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZJPQee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753114AbZJPQbq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 12:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbZJPQbp
+	id S1752946AbZJPQee (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 12:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbZJPQed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 12:31:45 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:53118 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751822AbZJPQbp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 12:31:45 -0400
-Date: Fri, 16 Oct 2009 12:23:51 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Tejun Heo <tj@kernel.org>
-cc: "Luck, Tony" <tony.luck@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "rostedt@goodmis.org" <rostedt@goodmis.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "cebbert@redhat.com" <cebbert@redhat.com>
-Subject: Re: [PATCH 13/16] percpu: remove per_cpu__ prefix.
-In-Reply-To: <4AD6E29B.8000506@kernel.org>
-Message-ID: <alpine.DEB.1.10.0910161223010.11490@gentwo.org>
-References: <1255500125-3210-1-git-send-email-tj@kernel.org> <1255500125-3210-14-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0910141026370.26476@gentwo.org> <57C9024A16AD2D4C97DC78E552063EA3E32264A8@orsmsx505.amr.corp.intel.com> <alpine.DEB.1.10.0910141420300.9708@gentwo.org>
- <57C9024A16AD2D4C97DC78E552063EA3E3226704@orsmsx505.amr.corp.intel.com> <alpine.DEB.1.10.0910141445110.30078@gentwo.org> <4AD6E29B.8000506@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 16 Oct 2009 12:34:33 -0400
+Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:62490 "EHLO
+	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750868AbZJPQed convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 12:34:33 -0400
+Date: Fri, 16 Oct 2009 17:24:06 +0100
+From: Darren Salt <linux@youmustbejoking.demon.co.uk>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org
+Subject: Re: Linux 2.6.32-rc5 - eeepc-laptop/rt2860 panic fix patches
+Message-ID: <mpro.krm886004sbpc026m.linux@youmustbejoking.demon.co.uk>
+Mail-Followup-To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, 
+ Darren Salt <linux@youmustbejoking.demon.co.uk>
+User-Agent: Messenger-Pro/2.60.0.3101 (Qt/4.5.2) (Linux-x86_64)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-SA-Exim-Connect-IP: 192.168.0.5
+X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
+X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009, Tejun Heo wrote:
+I demand that Linus Torvalds may or may not hae written...
 
-> __ia64_per_cpu_var() is slightly different from this_cpu_read() in
-> that the former only works for percpu variables which fall on the
-> first percpu page - ie. static percpu vars in the kernel image.  So,
-> __ia64_per_cpu_var() is a bit more efficient than this_cpu_read() as
-> it doesn't have to compute the address.
->
-> So, what we can do is to leave the macro alone for now and then add
-> sparse annotation to it later in the patch as it's basically another
-> specialized accessor.  How does that sound?
+> Darren Salt (2):
+>      eeepc-laptop: Prevent a panic when disabling RT2860 wireless when
+>        associated
 
-Ok. The macro would be arch specific anyways.
+This patch (commit b56ab33d68638e6aafdbfc694025e8354a628f49) causes problems
+with at least some alternative hardware, and should be reverted. I found that
+if I substitute an Intel 3945 for the RT2860 in my 901 then, when eeepc-wlan
+is toggled, we get rfkill set → eeepc-laptop → iwl3945 → rfkill remove (and
+one process stuck in state D), and if I flip the flag which causes this, that
+works fine but rt2860sta will happily cause a panic again.
 
+Both I and Corentin Chary have unsuccessfully tried to get this patch
+dropped.
+
+>      Staging: rt2860sta: prevent a panic when disabling when associated
+
+It has been superseded by this patch (commit
+0af49167b1e5ba154e90d2c454bf4624ee47df80).
+
+-- 
+| Darren Salt            | linux at youmustbejoking | nr. Ashington, | Doon
+| using Debian GNU/Linux | or ds    ,demon,co,uk    | Northumberland | Army
+| + Buy local produce. Try to walk or cycle. TRANSPORT CAUSES GLOBAL WARMING.
+
+I know a good tagline when I steal one.
