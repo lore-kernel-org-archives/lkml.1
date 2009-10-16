@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbZJPRVD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbZJPRUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756819AbZJPRVD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:21:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbZJPRVA
+	id S1757079AbZJPRUh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbZJPRUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:21:00 -0400
-Received: from kroah.org ([198.145.64.141]:48660 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:20:33 -0400
+Received: from kroah.org ([198.145.64.141]:48667 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755235AbZJPRSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755396AbZJPRSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Oct 2009 13:18:43 -0400
 X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:07 2009
-Message-Id: <20091016171206.776466941@linux.site>
+Message-Id: <20091016171207.294878903@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:31 -0700
+Date: Fri, 16 Oct 2009 10:10:32 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [38/46] i2c: Hide probe errors caused by ACPI resource conflicts
+       Jean Delvare <khali@linux-fr.org>,
+       Johannes Berg <johannes@sipsolutions.net>, Takashi Iwai <tiwai@suse.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [39/46] ALSA: Dont assume i2c device probing always succeeds
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=i2c-hide-probe-errors-caused-by-acpi-resource-conflicts.patch
+Content-Disposition: inline; filename=alsa-don-t-assume-i2c-device-probing-always-succeeds.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,122 +31,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jean Delvare <khali@linux-fr.org>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit 18669eabde2ff5fc446e72e043f0539059763438 upstream.
+commit 18c4078489fe064cc0ed08be3381cf2f26657f5f upstream.
 
-When an ACPI resource conflict is detected, error messages are already
-printed by ACPI. There's no point in causing the driver core to print
-more error messages, so return one of the error codes for which no
-message is printed.
+The client->driver pointer can be NULL when i2c-device probing fails
+in i2c_new_device().  This patch adds the NULL checks for client->driver
+and return the error instead of blind assumption of driver availability.
 
-This fixes bug #14293:
-http://bugzilla.kernel.org/show_bug.cgi?id=14293
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Reported-by: Tim Shepard <shep@alum.mit.edu>
+Cc: Jean Delvare <khali@linux-fr.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/i2c/busses/i2c-amd756.c  |    2 +-
- drivers/i2c/busses/i2c-amd8111.c |    4 +++-
- drivers/i2c/busses/i2c-i801.c    |    4 +++-
- drivers/i2c/busses/i2c-isch.c    |    2 +-
- drivers/i2c/busses/i2c-piix4.c   |    4 ++--
- drivers/i2c/busses/i2c-sis96x.c  |    2 +-
- drivers/i2c/busses/i2c-viapro.c  |    2 +-
- 7 files changed, 12 insertions(+), 8 deletions(-)
-
---- a/drivers/i2c/busses/i2c-amd756.c
-+++ b/drivers/i2c/busses/i2c-amd756.c
-@@ -364,7 +364,7 @@ static int __devinit amd756_probe(struct
- 	error = acpi_check_region(amd756_ioport, SMB_IOSIZE,
- 				  amd756_driver.name);
- 	if (error)
--		return error;
-+		return -ENODEV;
- 
- 	if (!request_region(amd756_ioport, SMB_IOSIZE, amd756_driver.name)) {
- 		dev_err(&pdev->dev, "SMB region 0x%x already in use!\n",
---- a/drivers/i2c/busses/i2c-amd8111.c
-+++ b/drivers/i2c/busses/i2c-amd8111.c
-@@ -376,8 +376,10 @@ static int __devinit amd8111_probe(struc
- 	smbus->size = pci_resource_len(dev, 0);
- 
- 	error = acpi_check_resource_conflict(&dev->resource[0]);
--	if (error)
-+	if (error) {
-+		error = -ENODEV;
- 		goto out_kfree;
-+	}
- 
- 	if (!request_region(smbus->base, smbus->size, amd8111_driver.name)) {
- 		error = -EBUSY;
---- a/drivers/i2c/busses/i2c-i801.c
-+++ b/drivers/i2c/busses/i2c-i801.c
-@@ -732,8 +732,10 @@ static int __devinit i801_probe(struct p
- 	}
- 
- 	err = acpi_check_resource_conflict(&dev->resource[SMBBAR]);
--	if (err)
-+	if (err) {
-+		err = -ENODEV;
- 		goto exit;
-+	}
- 
- 	err = pci_request_region(dev, SMBBAR, i801_driver.name);
- 	if (err) {
---- a/drivers/i2c/busses/i2c-isch.c
-+++ b/drivers/i2c/busses/i2c-isch.c
-@@ -281,7 +281,7 @@ static int __devinit sch_probe(struct pc
+--- a/sound/aoa/codecs/tas.c
++++ b/sound/aoa/codecs/tas.c
+@@ -897,6 +897,15 @@ static int tas_create(struct i2c_adapter *adapter,
+ 	client = i2c_new_device(adapter, &info);
+ 	if (!client)
  		return -ENODEV;
- 	}
- 	if (acpi_check_region(sch_smba, SMBIOSIZE, sch_driver.name))
--		return -EBUSY;
++	/*
++	 * We know the driver is already loaded, so the device should be
++	 * already bound. If not it means binding failed, and then there
++	 * is no point in keeping the device instantiated.
++	 */
++	if (!client->driver) {
++		i2c_unregister_device(client);
 +		return -ENODEV;
- 	if (!request_region(sch_smba, SMBIOSIZE, sch_driver.name)) {
- 		dev_err(&dev->dev, "SMBus region 0x%x already in use!\n",
- 			sch_smba);
---- a/drivers/i2c/busses/i2c-piix4.c
-+++ b/drivers/i2c/busses/i2c-piix4.c
-@@ -168,7 +168,7 @@ static int __devinit piix4_setup(struct 
- 	}
++	}
  
- 	if (acpi_check_region(piix4_smba, SMBIOSIZE, piix4_driver.name))
--		return -EBUSY;
+ 	/*
+ 	 * Let i2c-core delete that device on driver removal.
+diff --git a/sound/ppc/keywest.c b/sound/ppc/keywest.c
+index 835fa19..bb6819a 100644
+--- a/sound/ppc/keywest.c
++++ b/sound/ppc/keywest.c
+@@ -59,6 +59,18 @@ static int keywest_attach_adapter(struct i2c_adapter *adapter)
+ 	strlcpy(info.type, "keywest", I2C_NAME_SIZE);
+ 	info.addr = keywest_ctx->addr;
+ 	keywest_ctx->client = i2c_new_device(adapter, &info);
++	if (!keywest_ctx->client)
 +		return -ENODEV;
- 
- 	if (!request_region(piix4_smba, SMBIOSIZE, piix4_driver.name)) {
- 		dev_err(&PIIX4_dev->dev, "SMBus region 0x%x already in use!\n",
-@@ -259,7 +259,7 @@ static int __devinit piix4_setup_sb800(s
- 
- 	piix4_smba = ((smba_en_hi << 8) | smba_en_lo) & 0xffe0;
- 	if (acpi_check_region(piix4_smba, SMBIOSIZE, piix4_driver.name))
--		return -EBUSY;
++	/*
++	 * We know the driver is already loaded, so the device should be
++	 * already bound. If not it means binding failed, and then there
++	 * is no point in keeping the device instantiated.
++	 */
++	if (!keywest_ctx->client->driver) {
++		i2c_unregister_device(keywest_ctx->client);
++		keywest_ctx->client = NULL;
 +		return -ENODEV;
- 
- 	if (!request_region(piix4_smba, SMBIOSIZE, piix4_driver.name)) {
- 		dev_err(&PIIX4_dev->dev, "SMBus region 0x%x already in use!\n",
---- a/drivers/i2c/busses/i2c-sis96x.c
-+++ b/drivers/i2c/busses/i2c-sis96x.c
-@@ -280,7 +280,7 @@ static int __devinit sis96x_probe(struct
- 
- 	retval = acpi_check_resource_conflict(&dev->resource[SIS96x_BAR]);
- 	if (retval)
--		return retval;
-+		return -ENODEV;
- 
- 	/* Everything is happy, let's grab the memory and set things up. */
- 	if (!request_region(sis96x_smbus_base, SMB_IOSIZE,
---- a/drivers/i2c/busses/i2c-viapro.c
-+++ b/drivers/i2c/busses/i2c-viapro.c
-@@ -365,7 +365,7 @@ static int __devinit vt596_probe(struct 
- found:
- 	error = acpi_check_region(vt596_smba, 8, vt596_driver.name);
- 	if (error)
--		return error;
-+		return -ENODEV;
- 
- 	if (!request_region(vt596_smba, 8, vt596_driver.name)) {
- 		dev_err(&pdev->dev, "SMBus region 0x%x already in use!\n",
++	}
+ 	
+ 	/*
+ 	 * Let i2c-core delete that device on driver removal.
 
 
