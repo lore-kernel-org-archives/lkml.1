@@ -1,197 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbZJPJmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbZJPJnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758093AbZJPJmw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 05:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZJPJmv
+	id S1758149AbZJPJnN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 05:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbZJPJnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 05:42:51 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:44584 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831AbZJPJmu (ORCPT
+	Fri, 16 Oct 2009 05:43:11 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:50559 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755493AbZJPJnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 05:42:50 -0400
-Date: Fri, 16 Oct 2009 15:12:08 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: [v9 PATCH 3/9]: cpuidle: implement a list based approach to
-	register a set of idle routines.
-Message-ID: <20091016094208.GE27350@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20091016093850.GB27350@linux.vnet.ibm.com>
+	Fri, 16 Oct 2009 05:43:10 -0400
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, rjw@sisk.pl, htmldeveloper@gmail.com,
+       linux-kernel@vger.kernel.org
+References: <bug-14408-10286@http.bugzilla.kernel.org/>
+	<20091015132323.bea94a13.akpm@linux-foundation.org>
+	<m1tyy0i7tm.fsf@fess.ebiederm.org> <20091016002837.GA4185@x200>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 16 Oct 2009 02:42:25 -0700
+In-Reply-To: <20091016002837.GA4185@x200> (Alexey Dobriyan's message of "Fri\, 16 Oct 2009 04\:28\:37 +0400")
+Message-ID: <m1k4yvisji.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20091016093850.GB27350@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Alexey Dobriyan <adobriyan@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH] sysctl: fix false positives when PROC_SYSCTL=n
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-16 15:08:50]:
+Alexey Dobriyan <adobriyan@gmail.com> writes:
 
-Implement a list based registering mechanism for architectures which
-have multiple sets of idle routines which are to be registered.
+> Having ->procname but not ->proc_handler is valid when PROC_SYSCTL=n,
+> people use such combination to reduce ifdefs with non-standard handlers.
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=14408
 
-Currently, in x86 it is done by merely setting pm_idle = idle_routine
-and managing this pm_idle pointer is messy.
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-To give an example of how this mechanism works:
-In x86, initially, idle routine is selected from the set of poll/mwait/
-c1e/default idle loops. So the selected idle loop is registered in cpuidle
-as one idle state cpuidle devices. Once ACPI comes up, it registers
-another set of idle states on top of this state. Again, suppose a module
-registers another set of idle loops, it is added to this list.
+It looks like I messed up when I wrote sysctl_check.c and used the
+wrong ifdef.  Silly me.  Especially since I had added PROC_SYSCTL
+earlier.
 
-This provides a clean way of registering and unregistering idle state
-routines.
-
-In the current implementation, pm_idle is set as the current idle routine
-being used and the old idle routine has to be maintained and when a module
-registers/unregisters an idle routine, confusion arises.
+Eric
 
 
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle.c |   54 ++++++++++++++++++++++++++++++++++++++++------
- include/linux/cpuidle.h   |    1 
- 2 files changed, 48 insertions(+), 7 deletions(-)
-
-Index: linux.trees.git/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
-+++ linux.trees.git/drivers/cpuidle/cpuidle.c
-@@ -22,6 +22,7 @@
- #include "cpuidle.h"
- 
- DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
-+DEFINE_PER_CPU(struct list_head, cpuidle_devices_list);
- 
- DEFINE_MUTEX(cpuidle_lock);
- 
-@@ -113,6 +114,45 @@ void cpuidle_resume_and_unlock(void)
- 
- EXPORT_SYMBOL_GPL(cpuidle_resume_and_unlock);
- 
-+int cpuidle_add_to_list(struct cpuidle_device *dev)
-+{
-+	int ret, cpu = dev->cpu;
-+	struct cpuidle_device *old_dev;
-+
-+	if (!list_empty(&per_cpu(cpuidle_devices_list, cpu))) {
-+		old_dev = list_first_entry(&per_cpu(cpuidle_devices_list, cpu),
-+				struct cpuidle_device, idle_list);
-+		cpuidle_remove_state_sysfs(old_dev);
-+	}
-+
-+	list_add(&dev->idle_list, &per_cpu(cpuidle_devices_list, cpu));
-+	ret = cpuidle_add_state_sysfs(dev);
-+	return ret;
-+}
-+
-+void cpuidle_remove_from_list(struct cpuidle_device *dev)
-+{
-+	struct cpuidle_device *temp_dev;
-+	struct list_head *pos;
-+	int ret, cpu = dev->cpu;
-+
-+	list_for_each(pos, &per_cpu(cpuidle_devices_list, cpu)) {
-+		temp_dev = container_of(pos, struct cpuidle_device, idle_list);
-+		if (dev == temp_dev) {
-+			list_del(&temp_dev->idle_list);
-+			cpuidle_remove_state_sysfs(temp_dev);
-+			break;
-+		}
-+	}
-+
-+	if (!list_empty(&per_cpu(cpuidle_devices_list, cpu))) {
-+		temp_dev = list_first_entry(&per_cpu(cpuidle_devices_list, cpu),
-+					struct cpuidle_device, idle_list);
-+		ret = cpuidle_add_state_sysfs(temp_dev);
-+	}
-+	cpuidle_kick_cpus();
-+}
-+
- /**
-  * cpuidle_enable_device - enables idle PM for a CPU
-  * @dev: the CPU
-@@ -137,9 +177,6 @@ int cpuidle_enable_device(struct cpuidle
- 			return ret;
- 	}
- 
--	if ((ret = cpuidle_add_state_sysfs(dev)))
--		return ret;
--
- 	if (cpuidle_curr_governor->enable &&
- 	    (ret = cpuidle_curr_governor->enable(dev)))
- 		goto fail_sysfs;
-@@ -158,7 +195,7 @@ int cpuidle_enable_device(struct cpuidle
- 	return 0;
- 
- fail_sysfs:
--	cpuidle_remove_state_sysfs(dev);
-+	cpuidle_remove_from_list(dev);
- 
- 	return ret;
- }
-@@ -183,8 +220,6 @@ void cpuidle_disable_device(struct cpuid
- 
- 	if (cpuidle_curr_governor->disable)
- 		cpuidle_curr_governor->disable(dev);
--
--	cpuidle_remove_state_sysfs(dev);
- }
- 
- EXPORT_SYMBOL_GPL(cpuidle_disable_device);
-@@ -268,6 +303,7 @@ int cpuidle_register_device(struct cpuid
- 	}
- 
- 	cpuidle_enable_device(dev);
-+	cpuidle_add_to_list(dev);
- 
- 	mutex_unlock(&cpuidle_lock);
- 
-@@ -289,6 +325,7 @@ void cpuidle_unregister_device(struct cp
- 	cpuidle_pause_and_lock();
- 
- 	cpuidle_disable_device(dev);
-+	cpuidle_remove_from_list(dev);
- 
- 	per_cpu(cpuidle_devices, dev->cpu) = NULL;
- 
-@@ -339,12 +376,15 @@ static inline void latency_notifier_init
-  */
- static int __init cpuidle_init(void)
- {
--	int ret;
-+	int ret, cpu;
- 
- 	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
- 	if (ret)
- 		return ret;
- 
-+	for_each_possible_cpu(cpu)
-+		INIT_LIST_HEAD(&per_cpu(cpuidle_devices_list, cpu));
-+
- 	latency_notifier_init(&cpuidle_latency_notifier);
- 
- 	return 0;
-Index: linux.trees.git/include/linux/cpuidle.h
-===================================================================
---- linux.trees.git.orig/include/linux/cpuidle.h
-+++ linux.trees.git/include/linux/cpuidle.h
-@@ -92,6 +92,7 @@ struct cpuidle_device {
- 	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
- 	struct cpuidle_state	*last_state;
- 
-+	struct list_head	idle_list;
- 	struct kobject		kobj;
- 	struct completion	kobj_unregister;
- 	void			*governor_data;
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> ---
+>
+>  kernel/sysctl_check.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> --- a/kernel/sysctl_check.c
+> +++ b/kernel/sysctl_check.c
+> @@ -1521,7 +1521,7 @@ int sysctl_check_table(struct nsproxy *namespaces, struct ctl_table *table)
+>  			if (!table->ctl_name && table->strategy)
+>  				set_fail(&fail, table, "Strategy without ctl_name");
+>  #endif
+> -#ifdef CONFIG_PROC_FS
+> +#ifdef CONFIG_PROC_SYSCTL
+>  			if (table->procname && !table->proc_handler)
+>  				set_fail(&fail, table, "No proc_handler");
+>  #endif
