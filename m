@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbZJPKc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbZJPKiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbZJPKc0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 06:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZJPKcZ
+	id S1758183AbZJPKiJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 06:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757981AbZJPKiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 06:32:25 -0400
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:48262 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753393AbZJPKcY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 06:32:24 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KRLRWQ-01-0TQ-02
-X-M-MSG: 
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: <mingo@elte.hu>
-CC: <x86@kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [RESEND PATCH 2/2] x86, mce: Add a global MCE init helper
-Date: Fri, 16 Oct 2009 12:31:33 +0200
-Message-ID: <1255689093-26921-2-git-send-email-borislav.petkov@amd.com>
-X-Mailer: git-send-email 1.6.4.3
-In-Reply-To: <1255689093-26921-1-git-send-email-borislav.petkov@amd.com>
-References: <1255689093-26921-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 16 Oct 2009 10:30:39.0040 (UTC) FILETIME=[B4728C00:01CA4E4B]
-MIME-Version: 1.0
-Content-Type: text/plain
-X-Reverse-DNS: unknown
+	Fri, 16 Oct 2009 06:38:08 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:48093 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757282AbZJPKiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 06:38:06 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>, stable <stable@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
+       Frans Pop <elendil@planet.nl>,
+       reinette chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org\"" <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>
+Subject: [PATCH 0/2] Reduce number of GFP_ATOMIC allocation failures
+Date: Fri, 16 Oct 2009 11:37:24 +0100
+Message-Id: <1255689446-3858-1-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an early initcall (pre SMP) which sets up global MCE functionality.
+The following two patches against 2.6.32-rc4 should reduce allocation
+failure reports for GFP_ATOMIC allocations that have being cropping up
+since 2.6.31-rc1.
 
-Cc: Andi Kleen <andi@firstfloor.org>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- arch/x86/kernel/cpu/mcheck/mce.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+I believe these are candidates for -stable as they address issues in the
+following commit introduced in the v2.6.30..v2.6.31-rc1 window
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index b4a5eca..3f7ac16 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -1429,8 +1429,6 @@ void __cpuinit mcheck_cpu_init(struct cpuinfo_x86 *c)
- 	__mcheck_cpu_init_timer();
- 	INIT_WORK(&__get_cpu_var(mce_work), mce_process_work);
- 
--	if (raw_smp_processor_id() == 0)
--		atomic_notifier_chain_register(&x86_mce_decoder_chain, &mce_dec_nb);
- }
- 
- /*
-@@ -1650,6 +1648,14 @@ static int __init mcheck_enable(char *str)
- }
- __setup("mce", mcheck_enable);
- 
-+static int __init mcheck_init(void)
-+{
-+	atomic_notifier_chain_register(&x86_mce_decoder_chain, &mce_dec_nb);
-+
-+	return 0;
-+}
-+early_initcall(mcheck_init);
-+
- /*
-  * Sysfs support
-  */
--- 
-1.6.4.3
+11e33f6 page allocator: break up the allocator entry point into fast and slow paths
 
+The patch should not have made functional changes but at least two slipped
+by. The first patch wakes kswapd up each time after OOM-killing has been
+considered. This can be important to high-order allocations where kswapd
+needs to reclaim at a higher order. The second patch corrects a problem
+whereby a process that is exiting and making a __GFP_NOFAIL allocation can
+ignore watermarks.
+
+These patches in combination should help reduce the number of GFP_ATOMIC
+failures in the following bug.
+
+[Bug #14141] order 2 page allocation failures in iwlagn
+
+However, this bug should not yet be closed as there are still problems in
+the driver itself that increase the number of GFP_ATOMIC allocations that bug.
+
+The patches should also help the following bugs as well and testing there
+would be appreciated.
+
+[Bug #14265] ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
+
+It might also have helped the following bug although that driver has already
+been fixed by not making high-order atomic allocations.
+
+[Bug #14016] mm/ipw2200 regression
+
+ mm/page_alloc.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
