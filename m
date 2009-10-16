@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbZJPLhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbZJPJjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758618AbZJPLhk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 07:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbZJPLhj
+	id S1753203AbZJPJjj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 05:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZJPJji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 07:37:39 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:58332 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754255AbZJPLhj (ORCPT
+	Fri, 16 Oct 2009 05:39:38 -0400
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:50834 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbZJPJjh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 07:37:39 -0400
-Subject: Re: 2.6.32-rc4-git1 -- INFO: possible circular locking dependency 
- detected
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-In-Reply-To: <a44ae5cd0910120528h6d8992fcn8b6592ee799fbfc5@mail.gmail.com>
-References: <a44ae5cd0910120528h6d8992fcn8b6592ee799fbfc5@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-wJ+m0/k2xVvRI81sFF4K"
-Date: Fri, 16 Oct 2009 18:34:19 +0900
-Message-Id: <1255685659.4095.312.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Fri, 16 Oct 2009 05:39:37 -0400
+Date: Fri, 16 Oct 2009 15:08:50 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: [v9 PATCH 0/9]: cpuidle: Cleanup cpuidle/ Introduce cpuidle to
+	POWER.
+Message-ID: <20091016093850.GB27350@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---=-wJ+m0/k2xVvRI81sFF4K
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+This patchset introduces cpuidle infrastructure to POWER, prototyping
+for pSeries, and also does a major refactoring of current x86 idle
+power management and a cleanup of cpuidle infrastructure.
 
-On Mon, 2009-10-12 at 08:28 -0400, Miles Lane wrote:
-> [  823.466853] [ INFO: possible circular locking dependency detected ]
-> [  823.466866] 2.6.32-rc4-git1 #2
-> [  823.466873] -------------------------------------------------------
-> [  823.466884] swapper/0 is trying to acquire lock:
-> [  823.466893]  (&sta->lock){+.-...}, at: [<f857bda4>] sta_addba_resp_tim=
-er_expired+0x1b/0x50 [mac80211]
-> [  823.466940]
-> [  823.466943] but task is already holding lock:
-> [  823.466953] (&sta->ampdu_mlme.tid_tx[tid]->addba_resp_timer){+.-...}, =
-at: [<c1032f22>] run_timer_softirq+0x125/0x1e5
-> [  823.466984]
-> [  823.466987] which lock already depends on the new lock.
+This patch series has been in discussion for quite a while now and
+below are the links to the previous discussions.
 
-Thanks for the report, I'll have to take a look at it, but this appears
-to be due to the del_timer_sync() in ieee80211_process_addba_resp().
+Hopefully, this is ready to be included in the -tip tree.
 
-Guess it never really happens that the AP doesn't respond quickly enough
-so the timer hardly fires.
+v8 --> http://lkml.org/lkml/2009/10/8/82
+v7 --> http://lkml.org/lkml/2009/10/6/278
+v6 --> http://lkml.org/lkml/2009/9/22/180
+v5 --> http://lkml.org/lkml/2009/9/22/26
+v4 --> http://lkml.org/lkml/2009/9/1/133
+v3 --> http://lkml.org/lkml/2009/8/27/124
+v2 --> http://lkml.org/lkml/2009/8/26/233
+v1 --> http://lkml.org/lkml/2009/8/19/150
 
-johannes
 
---=-wJ+m0/k2xVvRI81sFF4K
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Changes in this version:
+----------------------------------------
+        *Added documentation for the new design regarding registration
+        of idle routines in Documentation/cpuidle/core.txt
 
------BEGIN PGP SIGNATURE-----
+        *Platforms which do not want the code bloat of cpuidle can
+        disable CONFIG_CPU_IDLE. Alternate definition of
+        cpuidle_idle_call is provided which would call the appropriate
+        idle routine provided by the arch without the overhead of
+        registration and governors.
+        (Thanks to Andi for raising this isuue)
 
-iQIcBAABAgAGBQJK2D4YAAoJEODzc/N7+QmaklYQAMvItHFtEMIE96i4YvL8j0Cy
-G/NaSu008oyDhEvukvUET0vCUwnDx/jTAI9VvrNsPhms2MAC9H+Z7cgt/1YWLCi+
-5/tT7q5W0vaHDH1iIK9xsCOjpv8xFO2mJ1nFeCXhAEGCNCxOL+DijQKickIBdR5J
-icAtmUQWDADvq2146jSsuzDcAahAWhrZbSP0kiRfpXi7NXTa5I74uo4lJhB0RdtZ
-jApqoULtLeX6UsekQazviOaanMFwXBqltlGlOOsm3odtHILqo4nHS5/xGwBeSm+S
-LQGt0LyA6Q4clp2pFsmV6y4hpor7e+jxZeIZlxjRlqLpPul9LFrtlZcHiMjxoh0d
-c2wND70sqfKtjZ5/Lkr24L+wV/lLsnDbilMZJwrUcoEO3K+ZflupRDTSHfMNB1l/
-2wbzRJfv5qZvkTvxPoFIn6DxLTa/VKASSL0uGz+uO1GnUzWTzAToTyR9ATcDfStM
-OC6qWcifiX4tELfja+YTJ6OYutrHoJ8mYwMWllyF2k6rsQbBK4yNk1ckQnzsXhvS
-j0rIw48JKwIl3O09TaSwgc5cf8SUASjECedSuCACzzfE08B7h2EmutUE9uA686Cu
-F+iU0mGxeqkUe4bjeKtWigBUM4pOqRLYrIYxCEvT9+zjKZC0s5pcHG9NclrgW+yY
-mIDjjxW9HMaZWoiOMBFN
-=4jLj
------END PGP SIGNATURE-----
+        *I had missed a cpuidle_kick_cpus() in
+        cpuidle_pause_and_lock() which is called from the hotplug
+        path. So added that and tested this patchset by subjecting it
+        to cpuhotplug torture.
+        (Thanks to Balbir for noticing this)
 
---=-wJ+m0/k2xVvRI81sFF4K--
+
+--arun
 
