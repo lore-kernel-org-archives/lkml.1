@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbZJPRVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932789AbZJPRW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932706AbZJPRVs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757614AbZJPRVq
+	id S932789AbZJPRW0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbZJPRWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:21:46 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40561 "EHLO gate.crashing.org"
+	Fri, 16 Oct 2009 13:22:23 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40565 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757501AbZJPRVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 13:21:45 -0400
+	id S1756055AbZJPRVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 13:21:47 -0400
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5] powerpc: Limit memory hotplug support to PPC64 Book-3S machines
-Date: Fri, 16 Oct 2009 12:21:36 -0500
-Message-Id: <1255713699-21852-3-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 3/5] powerpc: cleanup init/Kconfig
+Date: Fri, 16 Oct 2009 12:21:37 -0500
+Message-Id: <1255713699-21852-4-git-send-email-galak@kernel.crashing.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1255713699-21852-2-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1255713699-21852-3-git-send-email-galak@kernel.crashing.org>
 References: <1255713699-21852-1-git-send-email-galak@kernel.crashing.org>
  <1255713699-21852-2-git-send-email-galak@kernel.crashing.org>
+ <1255713699-21852-3-git-send-email-galak@kernel.crashing.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We dont need to depend on PPC64 explicitly as all powerpc platforms
+(32-bit and 64-bit) define PPC now.
+
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- mm/Kconfig |    2 +-
+ init/Kconfig |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 57963c6..7ca3777 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -129,7 +129,7 @@ config MEMORY_HOTPLUG
- 	bool "Allow for memory hot-add"
- 	depends on SPARSEMEM || X86_64_ACPI_NUMA
- 	depends on HOTPLUG && !(HIBERNATION && !S390) && ARCH_ENABLE_MEMORY_HOTPLUG
--	depends on (IA64 || X86 || PPC64 || SUPERH || S390)
-+	depends on (IA64 || X86 || PPC_BOOK3S_64 || SUPERH || S390)
+diff --git a/init/Kconfig b/init/Kconfig
+index 09c5c64..f515864 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -297,7 +297,7 @@ config AUDIT
  
- comment "Memory hotplug is currently incompatible with Software Suspend"
- 	depends on SPARSEMEM && HOTPLUG && HIBERNATION && !S390
+ config AUDITSYSCALL
+ 	bool "Enable system-call auditing support"
+-	depends on AUDIT && (X86 || PPC || PPC64 || S390 || IA64 || UML || SPARC64|| SUPERH)
++	depends on AUDIT && (X86 || PPC || S390 || IA64 || UML || SPARC64 || SUPERH)
+ 	default y if SECURITY_SELINUX
+ 	help
+ 	  Enable low-overhead system-call auditing infrastructure that
 -- 
 1.6.0.6
 
