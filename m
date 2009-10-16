@@ -1,145 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbZJPH5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbZJPGbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757045AbZJPH5i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 03:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbZJPH5h
+	id S1754815AbZJPGbp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 02:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbZJPGbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 03:57:37 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:45652 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751364AbZJPH5h (ORCPT
+	Fri, 16 Oct 2009 02:31:44 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:59699 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752555AbZJPGbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 03:57:37 -0400
-Date: Fri, 16 Oct 2009 15:30:56 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nitin Gupta <ngupta@vflare.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, hongshin@gmail.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: [PATCH] mm: call pte_unmap() against a proper pte (Re: [PATCH 7/9]
- swap_info: swap count continuations)
-Message-Id: <20091016153056.6a1f4fe1.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <Pine.LNX.4.64.0910150153560.3291@sister.anvils>
-References: <Pine.LNX.4.64.0910150130001.2250@sister.anvils>
-	<Pine.LNX.4.64.0910150153560.3291@sister.anvils>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 16 Oct 2009 02:31:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=AKQ/2XvCgeY94IaOjQgauTkLIwr7CZ6BMAXLC8HQ0v/7nfs1qH6i8EWAmhFMrWnHhR
+         ay4SG48Hca9o6KF4uoCzKpKWrkX8Om8TYH8O5hv02ys//kTwhMXQIRNuaOzCEfEkgn7S
+         RNMyJ5/Hijt6KaXGxbacq2IJFT+74LYq7V0qY=
+Subject: Re: ext4 increased intolerance to unclean shutdown?
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Parag Warudkar <parag.lkml@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, tytso@mit.edu
+In-Reply-To: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com>
+References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 16 Oct 2009 08:31:01 +0200
+Message-Id: <1255674661.14475.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Fri, 2009-10-16 at 00:28 -0400, Parag Warudkar wrote:
+> So I have been experimenting with various root file systems on my
+> laptop running latest git. This laptop some times has problems waking
+> up from sleep and that results in it needing a hard reset and
+> subsequently unclean file system.
+> 
+> Initially I had ext3 on and never really had any visible filesystem
+> issues for quite some time even with hard resets after wakeup. Then I
+> switched to ext4 and first time it failed to wakeup from sleep fsck
+> took me through quite a bit of errors - but after fixing them it
+> immediately went and hit EXT4-fs error and it was unusable there
+> onwards until (if I recall correctly) I found the file path associated
+> with the inode relating to that message and used debugfs to delete the
+> file only to have segfaults on subsequent boot. That was some time
+> ago.
+> 
+> Meanwhile I was running xfs root and had the laptop fail to wakeup a
+> fair number of times with no visible file system related issue.
+> 
+> This evening I needed to secure erase the abused SSD and that gave me
+> a chance to retry ext4. But as bad luck would have it, the laptop just
+> failed to wakeup and had to be reset. Sure enough, a ton of errors
+> needed to be fixed when fsck went through the ext4 root fs. I had
+> /boot as 8gb ext3 on same disk and that one showed no errors. But the
+> bad part was it still failed to boot to desktop (GDM could not write
+> to authorization file) after repairing the ext4 root fs. I forced
+> another fsck on the root fs and it (again) found another handful of
+> things to fix. So now it boots to desktop but some startup service
+> still fails to start or stop.
+> 
+> So what's going on? I understand all bets are off when you have to
+> hard reset - but based on my anecdotal experience it seems to me like
+> ext4 has grown more intolerant to unclean shutdowns. Is this to be
+> expected or it's just sheer coincidence?
+> 
+> Curious to understand the reason if any - don't care about the data
+> loss part, as I had purposefully not kept anything important on the
+> filesystems.
 
-> @@ -645,6 +648,7 @@ static int copy_pte_range(struct mm_stru
->  	spinlock_t *src_ptl, *dst_ptl;
->  	int progress = 0;
->  	int rss[2];
-> +	swp_entry_t entry = (swp_entry_t){0};
->  
->  again:
->  	rss[1] = rss[0] = 0;
-> @@ -671,7 +675,10 @@ again:
->  			progress++;
->  			continue;
->  		}
-> -		copy_one_pte(dst_mm, src_mm, dst_pte, src_pte, vma, addr, rss);
-> +		entry.val = copy_one_pte(dst_mm, src_mm, dst_pte, src_pte,
-> +							vma, addr, rss);
-> +		if (entry.val)
-> +			break;
->  		progress += 8;
->  	} while (dst_pte++, src_pte++, addr += PAGE_SIZE, addr != end);
->  
-It isn't the fault of only this patch, but I think breaking the loop without incrementing
-dst_pte(and src_pte) would be bad behavior because we do unmap_pte(dst_pte - 1) later.
-(current copy_pte_range() already does it though... and this is only problematic
-when we break the first loop, IIUC.)
+I had similar experience, and I say it all begin in 2.6.32.
+see, http://marc.info/?l=linux-kernel&m=125486358632602&w=2
 
-> @@ -681,6 +688,12 @@ again:
->  	add_mm_rss(dst_mm, rss[0], rss[1]);
->  	pte_unmap_unlock(dst_pte - 1, dst_ptl);
->  	cond_resched();
-> +
-> +	if (entry.val) {
-> +		if (add_swap_count_continuation(entry, GFP_KERNEL) < 0)
-> +			return -ENOMEM;
-> +		progress = 0;
-> +	}
->  	if (addr != end)
->  		goto again;
->  	return 0;
+In fact I had never seen ext3/4 fsck in action before.
 
-I've searched other places where we break a similar loop and do pte_unmap(pte - 1).
-Current copy_pte_range() and apply_to_pte_range() has the same problem.
 
-How about a patch like this ?
-===
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Best regards,
+	Maxim Levitsky
 
-There are some places where we do like:
 
-	pte = pte_map();
-	do {
-		(do break in some conditions)
-	} while (pte++, ...);
-	pte_unmap(pte - 1);
 
-But if the loop breaks at the first loop, pte_unmap() unmaps invalid pte.
 
-This patch is a fix for this problem.
 
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
----
- mm/memory.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+> 
+> Thanks
+> 
+> Parag
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-diff --git a/mm/memory.c b/mm/memory.c
-index 72a2494..492de38 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -641,6 +641,7 @@ static int copy_pte_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
- 		pmd_t *dst_pmd, pmd_t *src_pmd, struct vm_area_struct *vma,
- 		unsigned long addr, unsigned long end)
- {
-+	pte_t *orig_src_pte, *orig_dst_pte;
- 	pte_t *src_pte, *dst_pte;
- 	spinlock_t *src_ptl, *dst_ptl;
- 	int progress = 0;
-@@ -654,6 +655,8 @@ again:
- 	src_pte = pte_offset_map_nested(src_pmd, addr);
- 	src_ptl = pte_lockptr(src_mm, src_pmd);
- 	spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
-+	orig_src_pte = src_pte;
-+	orig_dst_pte = dst_pte;
- 	arch_enter_lazy_mmu_mode();
- 
- 	do {
-@@ -677,9 +680,9 @@ again:
- 
- 	arch_leave_lazy_mmu_mode();
- 	spin_unlock(src_ptl);
--	pte_unmap_nested(src_pte - 1);
-+	pte_unmap_nested(orig_src_pte);
- 	add_mm_rss(dst_mm, rss[0], rss[1]);
--	pte_unmap_unlock(dst_pte - 1, dst_ptl);
-+	pte_unmap_unlock(orig_dst_pte, dst_ptl);
- 	cond_resched();
- 	if (addr != end)
- 		goto again;
-@@ -1822,10 +1825,10 @@ static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
- 	token = pmd_pgtable(*pmd);
- 
- 	do {
--		err = fn(pte, token, addr, data);
-+		err = fn(pte++, token, addr, data);
- 		if (err)
- 			break;
--	} while (pte++, addr += PAGE_SIZE, addr != end);
-+	} while (addr += PAGE_SIZE, addr != end);
- 
- 	arch_leave_lazy_mmu_mode();
- 
