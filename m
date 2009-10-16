@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbZJPDC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZJPDLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbZJPDC7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Oct 2009 23:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZJPDC6
+	id S1755534AbZJPDLf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Oct 2009 23:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbZJPDLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Oct 2009 23:02:58 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:57135 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751537AbZJPDC5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Oct 2009 23:02:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=EhdZNMXjBz8GEIE9PpNQS2It8lJEZvI2/mGo2IHbSljuXShnv2FQ7BPJHknOzPFzPf
-         6dFX6jZeQ+N3mgtm/0OluCM4N4EMErWdVzwnXbK9BegupNkKxeEuj9Ar4LWlCbEAWRJd
-         KDi+DedYOCbIv8gShrs08w4Ro6D/Fu0jhEHLM=
+	Thu, 15 Oct 2009 23:11:34 -0400
+Received: from claw.goop.org ([74.207.240.146]:39507 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752275AbZJPDLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Oct 2009 23:11:34 -0400
+Message-ID: <4AD7E440.2030503@goop.org>
+Date: Thu, 15 Oct 2009 20:10:56 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20091015215215.GG15898@elf.ucw.cz>
-References: <20091006074635.GA2775@ucw.cz> <20091007085806.GB28807@elf.ucw.cz> 
-	<1254914991.4213.80.camel@hammer.suse.cz> <20091007120643.GA17069@rakim.wolfsonmicro.main> 
-	<f17812d70910070727x47b2a22h8e9f9304740d5abf@mail.gmail.com> 
-	<20091006200933.GA1606@ucw.cz> <1255641385.3985.55.camel@utx.utx.cz> 
-	<20091015212024.GC15898@elf.ucw.cz> <1255643252.3985.63.camel@utx.utx.cz> 
-	<20091015215215.GG15898@elf.ucw.cz>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Fri, 16 Oct 2009 11:01:31 +0800
-Message-ID: <f17812d70910152001r7b5b0326s5f0e880cca3b3b68@mail.gmail.com>
-Subject: Re: spitz: add gpio button support (fixes regression)
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Stanislav Brabec <utx@penguin.cz>, Andrew Morton <akpm@osdl.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>, rpurdie@rpsys.net,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: john stultz <johnstul@us.ibm.com>
+CC: Dan Magenheimer <dan.magenheimer@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
+       arch/x86 maintainers <x86@kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Avi Kivity <avi@redhat.com>, chris.mason@oracle.com
+Subject: Re: [Xen-devel] [PATCH 05/12] xen/pvclock: add monotonicity check
+References: <4AD6B1F0.6030904@goop.org>	 <c7f37ead-3cf2-4277-a44e-425a7b940d31@default> <1f1b08da0910151832m59d14ac2i4add6555d6a1208a@mail.gmail.com>
+In-Reply-To: <1f1b08da0910151832m59d14ac2i4add6555d6a1208a@mail.gmail.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 16, 2009 at 5:52 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Thu 2009-10-15 23:47:32, Stanislav Brabec wrote:
->> Pavel Machek wrote:
->> >Well, resume is hit by second regression.
->> >
->> >Suspend key.... I restored it to the level of functionality in
->> >2.6.31 :-).
+On 10/15/09 18:32, john stultz wrote:
+>>> No, cycle_last isn't updated on every read, only on timer ticks.  This
+>>> test doesn't seem to be intended to make sure that every
+>>> clocksource_read is globally monotonic, but just to avoid
+>>> some boundary
+>>> conditions in the timer interrupt.  I just copied it directly from
+>>> read_tsc().
+>>>       
+>> I understand but you are now essentially emulating a
+>> reliable platform timer with a potentially unreliable
+>> (but still high resolution) per-CPU timer AND probably
+>> delivering that result to userland.
 >>
->> > > +         .type   = EV_KEY,
->> > > +         .code   = KEY_SUSPEND,
->>
->> I guess it should be EV_PWR. Then it will at least go to suspend.
+>> Read_tsc should only be used if either CONSTANT_TSC
+>> or TSC_RELIABLE is true, so read_tsc is guaranteed
+>> to be monotonically-strictly-increasing by hardware
+>> (and enforced for CONSTANT_TSC by check_tsc_warp
+>> at boot).
+>>     
+> Ideally, yes, only perfect TSCs should be used.
 >
-> Does it actually go to suspend with that change?
->
-> (Actually, I wonder how it could have ever worked: userspace should
-> certainly be in a loop there; kernel should not suspend machine on its
-> own. In -rp kernels, kernel _does_ suspend on its own, but... I'm not
-> sure if that's suitable for mainline).
+> But in reality, its a big performance win for folks who can get away
+> with just slightly offset TSCs.
+>   
 
-EV_PWR is what's in the original spitzkbd.c, so I assume that's
-something we should keep. And the reason that EV_PWR makes
-it actually suspend might related the APM emulation things,
-which I'm not very sure about.
+What monotonicity guarantees do we make to usermode, for both syscall
+and vsyscall gettimeofday and clock_gettime?
+
+Though its not clear to me how usermode would even notice very small
+amounts of cross-thread/cpu non-monotonicity anyway.  It would need make
+sure that it samples the time and stores it to some globally visible
+place atomically (with locks, compare-and-swap, etc), which is going to
+be pretty expensive.  And if its going to all that effort it may as well
+do its own monotonicity checking/adjustments if its all that important.
+
+(I can think of plenty of ways of doing it incorrectly, where you'd get
+apparent non-monotonicity regardless of the quality of the time source.)
+
+    J
