@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932323AbZJPNhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932434AbZJPNlD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932323AbZJPNhY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 09:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759894AbZJPNhW
+	id S932434AbZJPNlD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 09:41:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757583AbZJPNlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 09:37:22 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:52405 "EHLO
+	Fri, 16 Oct 2009 09:41:03 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:42969 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757367AbZJPNhT (ORCPT
+	with ESMTP id S1755724AbZJPNlB (ORCPT
 	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Fri, 16 Oct 2009 09:37:19 -0400
+	Fri, 16 Oct 2009 09:41:01 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 2/2] venet: fix locking issue with dev_kfree_skb()
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net
-Date: Fri, 16 Oct 2009 09:36:24 -0400
-Message-ID: <20091016133624.13423.46727.stgit@dev.haskins.net>
-In-Reply-To: <20091016133411.13423.36106.stgit@dev.haskins.net>
-References: <20091016133411.13423.36106.stgit@dev.haskins.net>
+Subject: [PATCH] vbus: fix kmalloc() from interrupt context to use GFP_ATOMIC
+To: linux-kernel@vger.kernel.org
+Cc: alacrityvm-devel@lists.sourceforge.net
+Date: Fri, 16 Oct 2009 09:40:07 -0400
+Message-ID: <20091016133809.13571.6991.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,168 +24,123 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We currently hold the priv->lock with interrupts disabled while calling
-dev_kfree_skb().  lockdep indicated that this arrangement is problematic
-with higher stack components which handle the wmem facility.  It is
-probably a bad idea to hold the lock/interrupts over the duration of this
-function independent of the lock-conflict issue, so lets rectify this.
+Applies to the linux-next branch for AlacrityVM:
 
-This new design switches to a finer-grained model, where we acquire/release
-the lock for each packet that we reap from the tx queue.  This adds
-theoretical lock acquistion overhead, but gains the ability to release
-the skbs without holding a lock and while improving critical section
-granularity.
+git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/alacrityvm/linux-2.6.git
+
+
+----------------------------
+From: Gregory Haskins <ghaskins@novell.com>
+vbus: fix kmalloc() from interrupt context to use GFP_ATOMIC
+
+DEVADD events currently perform a GFP_KERNEL allocation for the device
+object in interrupt context.  This is technically illegal, although we
+have gotten away with it to date by sheer luck that the allocation
+never tried to swap or otherwise sleep.  This problem was highlighted
+with the lockdep facility.
+
+Lets fix this properly by making sure that we only allocated the space
+for the device object using GFP_KERNEL from process-context.  We achieve
+this by generating a temporary GFP_ATOMIC relay for the event and
+deferring the actual device allocation/registration to process context.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- drivers/net/vbus-enet.c |   71 +++++++++++++++++++++++------------------------
- 1 files changed, 35 insertions(+), 36 deletions(-)
+ drivers/vbus/pci-bridge.c |   54 +++++++++++++++++++++++++++++++--------------
+ 1 files changed, 37 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/net/vbus-enet.c b/drivers/net/vbus-enet.c
-index 9d48674..228c366 100644
---- a/drivers/net/vbus-enet.c
-+++ b/drivers/net/vbus-enet.c
-@@ -883,7 +883,7 @@ vbus_enet_tx_start(struct sk_buff *skb, struct net_device *dev)
- 	priv->dev->stats.tx_packets++;
- 	priv->dev->stats.tx_bytes += skb->len;
+diff --git a/drivers/vbus/pci-bridge.c b/drivers/vbus/pci-bridge.c
+index fcde495..c1af37c 100644
+--- a/drivers/vbus/pci-bridge.c
++++ b/drivers/vbus/pci-bridge.c
+@@ -63,7 +63,6 @@ struct vbus_pci_device {
+ 	u64                      handle;
+ 	struct list_head         shms;
+ 	struct vbus_device_proxy vdev;
+-	struct work_struct       add;
+ 	struct work_struct       drop;
+ };
  
--	__skb_queue_tail(&priv->tx.outstanding, skb);
-+	skb_queue_tail(&priv->tx.outstanding, skb);
- 
- 	/*
- 	 * This advances both indexes together implicitly, and then
-@@ -914,7 +914,7 @@ vbus_enet_skb_complete(struct vbus_enet_priv *priv, struct sk_buff *skb)
- 	PDEBUG(priv->dev, "completed sending %d bytes\n",
- 	       skb->len);
- 
--	__skb_unlink(skb, &priv->tx.outstanding);
-+	skb_unlink(skb, &priv->tx.outstanding);
- 	dev_kfree_skb(skb);
- }
- 
-@@ -923,12 +923,16 @@ vbus_enet_skb_complete(struct vbus_enet_priv *priv, struct sk_buff *skb)
-  *
-  * assumes priv->lock held
+@@ -442,18 +441,45 @@ struct vbus_device_proxy_ops vbus_pci_device_ops = {
+  * -------------------
   */
--static void
--vbus_enet_tx_reap(struct vbus_enet_priv *priv)
-+static struct sk_buff *
-+vbus_enet_tx_reap_one(struct vbus_enet_priv *priv)
+ 
++struct deferred_devadd_event {
++	struct work_struct        work;
++	struct vbus_pci_add_event event;
++};
++
++static void deferred_devdrop(struct work_struct *work);
++
+ static void
+ deferred_devadd(struct work_struct *work)
  {
-+	struct sk_buff *skb = NULL;
- 	struct ioq_iterator iter;
-+	unsigned long flags;
++	struct deferred_devadd_event *_event;
+ 	struct vbus_pci_device *new;
  	int ret;
  
-+	spin_lock_irqsave(&priv->lock, flags);
+-	new = container_of(work, struct vbus_pci_device, add);
++	_event = container_of(work, struct deferred_devadd_event, work);
 +
- 	/*
- 	 * We want to iterate on the head of the valid index, but we
- 	 * do not want the iter_pop (below) to flip the ownership, so
-@@ -941,29 +945,15 @@ vbus_enet_tx_reap(struct vbus_enet_priv *priv)
- 	ret = ioq_iter_seek(&iter, ioq_seek_head, 0, 0);
- 	BUG_ON(ret < 0);
- 
--	/*
--	 * We are done once we find the first packet either invalid or still
--	 * owned by the south-side
--	 */
--	while (iter.desc->valid && !iter.desc->sown) {
--
--		if (!priv->evq.txc) {
--			struct sk_buff *skb;
-+	if (iter.desc->valid && !iter.desc->sown) {
- 
--			if (priv->sg) {
--				struct venet_sg *vsg;
--
--				vsg = (struct venet_sg *)iter.desc->cookie;
--				skb = (struct sk_buff *)vsg->cookie;
--			} else
--				skb = (struct sk_buff *)iter.desc->cookie;
-+		if (priv->sg) {
-+			struct venet_sg *vsg;
- 
--			/*
--			 * If TXC is not enabled, we are required to free
--			 * the buffer resources now
--			 */
--			vbus_enet_skb_complete(priv, skb);
--		}
-+			vsg = (struct venet_sg *)iter.desc->cookie;
-+			skb = (struct sk_buff *)vsg->cookie;
-+		} else
-+			skb = (struct sk_buff *)iter.desc->cookie;
- 
- 		/* Reset the descriptor */
- 		iter.desc->valid  = 0;
-@@ -982,19 +972,35 @@ vbus_enet_tx_reap(struct vbus_enet_priv *priv)
- 		PDEBUG(priv->dev, "re-enabling tx queue\n");
- 		netif_wake_queue(priv->dev);
- 	}
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	return skb;
-+}
-+
-+static void
-+vbus_enet_tx_reap(struct vbus_enet_priv *priv)
-+{
-+	struct sk_buff *skb;
-+
-+	while ((skb = vbus_enet_tx_reap_one(priv))) {
-+		if (!priv->evq.txc)
-+			/*
-+			 * We are responsible for freeing the packet upon
-+			 * reap if TXC is not enabled
-+			 */
-+			vbus_enet_skb_complete(priv, skb);
++	new = kzalloc(sizeof(*new), GFP_KERNEL);
++	if (!new) {
++		printk(KERN_ERR "VBUS_PCI: Out of memory on add_event\n");
++		return;
 +	}
++
++	INIT_LIST_HEAD(&new->shms);
++
++	memcpy(new->type, _event->event.type, VBUS_MAX_DEVTYPE_LEN);
++	new->vdev.type        = new->type;
++	new->vdev.id          = _event->event.id;
++	new->vdev.ops         = &vbus_pci_device_ops;
++
++	dev_set_name(&new->vdev.dev, "%lld", _event->event.id);
++
++	INIT_WORK(&new->drop, deferred_devdrop);
+ 
+ 	ret = vbus_device_proxy_register(&new->vdev);
+ 	if (ret < 0)
+ 		panic("failed to register device %lld(%s): %d\n",
+ 		      new->vdev.id, new->type, ret);
++
++	kfree(_event);
  }
  
  static void
- vbus_enet_timeout(struct net_device *dev)
- {
- 	struct vbus_enet_priv *priv = netdev_priv(dev);
--	unsigned long flags;
- 
- 	dev_dbg(&dev->dev, "Transmit timeout\n");
- 
--	spin_lock_irqsave(&priv->lock, flags);
- 	vbus_enet_tx_reap(priv);
--	spin_unlock_irqrestore(&priv->lock, flags);
- }
- 
+@@ -468,25 +494,19 @@ deferred_devdrop(struct work_struct *work)
  static void
-@@ -1014,13 +1020,10 @@ static void
- deferred_tx_isr(unsigned long data)
+ event_devadd(struct vbus_pci_add_event *event)
  {
- 	struct vbus_enet_priv *priv = (struct vbus_enet_priv *)data;
--	unsigned long flags;
+-	struct vbus_pci_device *new = kzalloc(sizeof(*new), GFP_KERNEL);
+-	if (!new) {
+-		printk(KERN_ERR "VBUS_PCI: Out of memory on add_event\n");
++	struct deferred_devadd_event *_event;
++
++	_event = kzalloc(sizeof(*_event), GFP_ATOMIC);
++	if (!_event) {
++		printk(KERN_ERR \
++		       "VBUS_PCI: Out of ATOMIC memory on add_event\n");
+ 		return;
+ 	}
  
- 	PDEBUG(priv->dev, "deferred_tx_isr\n");
- 
--	spin_lock_irqsave(&priv->lock, flags);
- 	vbus_enet_tx_reap(priv);
--	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	ioq_notify_enable(priv->tx.veq.queue, 0);
- }
-@@ -1063,14 +1066,10 @@ evq_txc_event(struct vbus_enet_priv *priv,
- {
- 	struct venet_event_txc *event =
- 		(struct venet_event_txc *)header;
--	unsigned long flags;
+-	INIT_LIST_HEAD(&new->shms);
 -
--	spin_lock_irqsave(&priv->lock, flags);
+-	memcpy(new->type, event->type, VBUS_MAX_DEVTYPE_LEN);
+-	new->vdev.type        = new->type;
+-	new->vdev.id          = event->id;
+-	new->vdev.ops         = &vbus_pci_device_ops;
+-
+-	dev_set_name(&new->vdev.dev, "%lld", event->id);
+-
+-	INIT_WORK(&new->add, deferred_devadd);
+-	INIT_WORK(&new->drop, deferred_devdrop);
++	INIT_WORK(&_event->work, deferred_devadd);
++	memcpy(&_event->event, event, sizeof(*event));
  
- 	vbus_enet_tx_reap(priv);
--	vbus_enet_skb_complete(priv, (struct sk_buff *)event->cookie);
- 
--	spin_unlock_irqrestore(&priv->lock, flags);
-+	vbus_enet_skb_complete(priv, (struct sk_buff *)event->cookie);
+-	schedule_work(&new->add);
++	schedule_work(&_event->work);
  }
  
  static void
