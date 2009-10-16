@@ -1,101 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZJPKLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbZJPLj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961AbZJPKLu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 06:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZJPKLu
+	id S1758970AbZJPLj7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 07:39:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758881AbZJPLj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 06:11:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45434 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750831AbZJPKLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 06:11:49 -0400
-Date: Fri, 16 Oct 2009 12:10:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: dedekind1@gmail.com, linux-mtd <linux-mtd@lists.infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v10 4/5] core: Add kernel message dumper to call on
-	oopses and panics
-Message-ID: <20091016101045.GA3263@elte.hu>
-References: <20091015094057.7298e0d7@marrow.netinsight.se> <20091015094805.754461fa@marrow.netinsight.se> <20091015093133.GF10546@elte.hu> <20091015161052.0752208e@marrow.netinsight.se> <20091015154640.GA11408@elte.hu> <20091016094601.4e2c2d3e@marrow.netinsight.se> <20091016080935.GA3895@elte.hu> <1255681467.32489.360.camel@localhost> <20091016112556.6902b2dc@marrow.netinsight.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091016112556.6902b2dc@marrow.netinsight.se>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Fri, 16 Oct 2009 07:39:58 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:58364 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758870AbZJPLj5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 07:39:57 -0400
+Subject: Re: 2.6.32-rc4-git1 -- INFO: possible circular locking dependency 
+ detected
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <a44ae5cd0910120528h6d8992fcn8b6592ee799fbfc5@mail.gmail.com>
+References: <a44ae5cd0910120528h6d8992fcn8b6592ee799fbfc5@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 16 Oct 2009 19:20:40 +0900
+Message-Id: <1255688440.4095.339.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Actually ... seems to be easy to fix.
 
-* Simon Kagstrom <simon.kagstrom@netinsight.net> wrote:
+Can you reproduce this reliably? I suspect not. If you can, try the
+patch below to make sure -- I'm pretty certain it is a correct patch
+anyhow though.
 
-> +int kmsg_dump_register(struct kmsg_dumper *dumper)
-> +{
-> +	unsigned long flags;
-> +
-> +	/* The dump callback needs to be set */
-> +	if (!dumper->dump)
-> +		return -EINVAL;
-> +
-> +	spin_lock_irqsave(&dump_list_lock, flags);
-> +
-> +	/* Don't allow registering multiple times */
-> +	if (dumper->registered) {
-> +		spin_unlock_irqrestore(&dump_list_lock, flags);
-> +
-> +		return -EBUSY;
-> +	}
-> +
-> +	dumper->registered = 1;
-> +	list_add(&dumper->list, &dump_list);
-> +	spin_unlock_irqrestore(&dump_list_lock, flags);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(kmsg_dump_register);
+johannes
+
+---
+ net/mac80211/agg-tx.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+--- wireless-testing.orig/net/mac80211/agg-tx.c	2009-10-16 19:13:48.000000000 +0900
++++ wireless-testing/net/mac80211/agg-tx.c	2009-10-16 19:15:12.000000000 +0900
+@@ -666,11 +666,13 @@ void ieee80211_process_addba_resp(struct
+ 
+ 	state = &sta->ampdu_mlme.tid_state_tx[tid];
+ 
++	del_timer_sync(&sta->ampdu_mlme.tid_tx[tid]->addba_resp_timer);
++
+ 	spin_lock_bh(&sta->lock);
+ 
+ 	if (!(*state & HT_ADDBA_REQUESTED_MSK)) {
+ 		spin_unlock_bh(&sta->lock);
+-		return;
++		goto timer_still_needed;
+ 	}
+ 
+ 	if (mgmt->u.action.u.addba_resp.dialog_token !=
+@@ -679,13 +681,13 @@ void ieee80211_process_addba_resp(struct
+ #ifdef CONFIG_MAC80211_HT_DEBUG
+ 		printk(KERN_DEBUG "wrong addBA response token, tid %d\n", tid);
+ #endif /* CONFIG_MAC80211_HT_DEBUG */
+-		return;
++		goto timer_still_needed;
+ 	}
+ 
+-	del_timer_sync(&sta->ampdu_mlme.tid_tx[tid]->addba_resp_timer);
+ #ifdef CONFIG_MAC80211_HT_DEBUG
+ 	printk(KERN_DEBUG "switched off addBA timer for tid %d \n", tid);
+ #endif /* CONFIG_MAC80211_HT_DEBUG */
++
+ 	if (le16_to_cpu(mgmt->u.action.u.addba_resp.status)
+ 			== WLAN_STATUS_SUCCESS) {
+ 		u8 curstate = *state;
+@@ -700,4 +702,8 @@ void ieee80211_process_addba_resp(struct
+ 		___ieee80211_stop_tx_ba_session(sta, tid, WLAN_BACK_INITIATOR);
+ 	}
+ 	spin_unlock_bh(&sta->lock);
++
++	return;
++ timer_still_needed:
++	add_timer(&sta->ampdu_mlme.tid_tx[tid]->addba_resp_timer);
+ }
 
 
-i dont want to bikeshed paint this but this sequence caught my eyes. We 
-generally do flatter and clearer locking sequences:
-
-int kmsg_dump_register(struct kmsg_dumper *dumper)
-{
-	unsigned long flags;
-	int err = -EBUSY;
-
-	/* The dump callback needs to be set */
-	if (!dumper->dump)
-		return -EINVAL;
-
-	spin_lock_irqsave(&dump_list_lock, flags);
-
-	/* Don't allow registering multiple times */
-	if (!dumper->registered) {
-		dumper->registered = 1;
-		list_add_tail(&dumper->list, &dump_list);
-		err = 0;
-	}
-
-	spin_unlock_irqrestore(&dump_list_lock, flags);
-
-	return err;
-}
-EXPORT_SYMBOL_GPL(kmsg_dump_register);
-
-(warning: untested, written in mail editor)
-
-Same goes for kmsg_dump_unregister().
-
-	Ingo
