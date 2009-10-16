@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbZJPRUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbZJPRUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757079AbZJPRUh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbZJPRUd
+	id S1757307AbZJPRUJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbZJPRUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:20:33 -0400
-Received: from kroah.org ([198.145.64.141]:48667 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:20:05 -0400
+Received: from kroah.org ([198.145.64.141]:48673 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755396AbZJPRSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 13:18:43 -0400
-X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:07 2009
-Message-Id: <20091016171207.294878903@linux.site>
+	id S1755630AbZJPRSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 13:18:44 -0400
+X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:08 2009
+Message-Id: <20091016171207.830595302@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:32 -0700
+Date: Fri, 16 Oct 2009 10:10:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>,
-       Johannes Berg <johannes@sipsolutions.net>, Takashi Iwai <tiwai@suse.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [39/46] ALSA: Dont assume i2c device probing always succeeds
+       Michal Schmidt <mschmidt@redhat.com>,
+       David Howells <dhowells@redhat.com>, Serge Hallyn <serue@us.ibm.com>,
+       James Morris <jmorris@namei.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [40/46] bsdacct: switch credentials for writing to the accounting file
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=alsa-don-t-assume-i2c-device-probing-always-succeeds.patch
+Content-Disposition: inline; filename=bsdacct-switch-credentials-for-writing-to-the-accounting-file.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,60 +31,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Takashi Iwai <tiwai@suse.de>
+From: Michal Schmidt <mschmidt@redhat.com>
 
-commit 18c4078489fe064cc0ed08be3381cf2f26657f5f upstream.
+commit d8e180dcd5bbbab9cd3ff2e779efcf70692ef541 upstream.
 
-The client->driver pointer can be NULL when i2c-device probing fails
-in i2c_new_device().  This patch adds the NULL checks for client->driver
-and return the error instead of blind assumption of driver availability.
+When process accounting is enabled, every exiting process writes a log to
+the account file.  In addition, every once in a while one of the exiting
+processes checks whether there's enough free space for the log.
 
-Reported-by: Tim Shepard <shep@alum.mit.edu>
-Cc: Jean Delvare <khali@linux-fr.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+SELinux policy may or may not allow the exiting process to stat the fs.
+So unsuspecting processes start generating AVC denials just because
+someone enabled process accounting.
+
+For these filesystem operations, the exiting process's credentials should
+be temporarily switched to that of the process which enabled accounting,
+because it's really that process which wanted to have the accounting
+information logged.
+
+Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
+Acked-by: David Howells <dhowells@redhat.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: James Morris <jmorris@namei.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
---- a/sound/aoa/codecs/tas.c
-+++ b/sound/aoa/codecs/tas.c
-@@ -897,6 +897,15 @@ static int tas_create(struct i2c_adapter *adapter,
- 	client = i2c_new_device(adapter, &info);
- 	if (!client)
- 		return -ENODEV;
-+	/*
-+	 * We know the driver is already loaded, so the device should be
-+	 * already bound. If not it means binding failed, and then there
-+	 * is no point in keeping the device instantiated.
-+	 */
-+	if (!client->driver) {
-+		i2c_unregister_device(client);
-+		return -ENODEV;
-+	}
+---
+ kernel/acct.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+--- a/kernel/acct.c
++++ b/kernel/acct.c
+@@ -491,13 +491,17 @@ static void do_acct_process(struct bsd_a
+ 	u64 run_time;
+ 	struct timespec uptime;
+ 	struct tty_struct *tty;
++	const struct cred *orig_cred;
++
++	/* Perform file operations on behalf of whoever enabled accounting */
++	orig_cred = override_creds(file->f_cred);
  
  	/*
- 	 * Let i2c-core delete that device on driver removal.
-diff --git a/sound/ppc/keywest.c b/sound/ppc/keywest.c
-index 835fa19..bb6819a 100644
---- a/sound/ppc/keywest.c
-+++ b/sound/ppc/keywest.c
-@@ -59,6 +59,18 @@ static int keywest_attach_adapter(struct i2c_adapter *adapter)
- 	strlcpy(info.type, "keywest", I2C_NAME_SIZE);
- 	info.addr = keywest_ctx->addr;
- 	keywest_ctx->client = i2c_new_device(adapter, &info);
-+	if (!keywest_ctx->client)
-+		return -ENODEV;
-+	/*
-+	 * We know the driver is already loaded, so the device should be
-+	 * already bound. If not it means binding failed, and then there
-+	 * is no point in keeping the device instantiated.
-+	 */
-+	if (!keywest_ctx->client->driver) {
-+		i2c_unregister_device(keywest_ctx->client);
-+		keywest_ctx->client = NULL;
-+		return -ENODEV;
-+	}
- 	
+ 	 * First check to see if there is enough free_space to continue
+ 	 * the process accounting system.
+ 	 */
+ 	if (!check_free_space(acct, file))
+-		return;
++		goto out;
+ 
  	/*
- 	 * Let i2c-core delete that device on driver removal.
+ 	 * Fill the accounting struct with the needed info as recorded
+@@ -578,6 +582,8 @@ static void do_acct_process(struct bsd_a
+ 			       sizeof(acct_t), &file->f_pos);
+ 	current->signal->rlim[RLIMIT_FSIZE].rlim_cur = flim;
+ 	set_fs(fs);
++out:
++	revert_creds(orig_cred);
+ }
+ 
+ /**
 
 
