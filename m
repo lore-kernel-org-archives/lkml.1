@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752281AbZJPQwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbZJPQxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752281AbZJPQwE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 12:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbZJPQwE
+	id S1753000AbZJPQxN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 12:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbZJPQxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 12:52:04 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:53982 "EHLO
+	Fri, 16 Oct 2009 12:53:13 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:47086 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751392AbZJPQwD (ORCPT
+	with ESMTP id S1750722AbZJPQxM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 12:52:03 -0400
-Date: Fri, 16 Oct 2009 12:44:06 -0400 (EDT)
+	Fri, 16 Oct 2009 12:53:12 -0400
+Date: Fri, 16 Oct 2009 12:45:26 -0400 (EDT)
 From: Christoph Lameter <cl@linux-foundation.org>
 X-X-Sender: cl@gentwo.org
-To: Tejun Heo <tj@kernel.org>
-cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mel Gorman <mel@csn.ul.ie>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [this_cpu_xx V6 3/7] Use this_cpu operations in slub
-In-Reply-To: <4AD6D3A0.6040706@kernel.org>
-Message-ID: <alpine.DEB.1.10.0910161232420.6120@gentwo.org>
-References: <20091007211024.442168959@gentwo.org> <20091007211052.614790286@gentwo.org> <4AD302A8.4010409@kernel.org> <alpine.DEB.1.10.0910121053240.7932@gentwo.org> <4AD3E23B.8020103@kernel.org> <alpine.DEB.1.10.0910131037420.21608@gentwo.org>
- <4AD4950A.6050201@kernel.org> <alpine.DEB.1.10.0910131117060.8088@gentwo.org> <4AD53022.2050309@kernel.org> <alpine.DEB.1.10.0910141008440.28461@gentwo.org> <4AD6D3A0.6040706@kernel.org>
+To: David Rientjes <rientjes@google.com>
+cc: Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>
+Subject: Re: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu
+ operations in the hotpaths
+In-Reply-To: <alpine.DEB.1.00.0910150157250.20184@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.10.0910161244400.6120@gentwo.org>
+References: <4AD307A5.105@kernel.org> <84144f020910120614r529d8e4em9babe83a90e9371f@mail.gmail.com> <alpine.DEB.1.00.0910130231570.27262@chino.kir.corp.google.com> <alpine.DEB.1.10.0910131041450.21608@gentwo.org> <alpine.DEB.1.10.0910131509170.32394@gentwo.org>
+ <4AD4D8B6.6010700@cs.helsinki.fi> <alpine.DEB.1.10.0910131541290.7246@gentwo.org> <alpine.DEB.1.00.0910131305440.3529@chino.kir.corp.google.com> <alpine.DEB.1.10.0910131625370.13756@gentwo.org> <alpine.DEB.1.00.0910131550050.15347@chino.kir.corp.google.com>
+ <20091014133457.GB5027@csn.ul.ie> <alpine.DEB.1.00.0910150157250.20184@chino.kir.corp.google.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,34 +32,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009, Tejun Heo wrote:
+On Thu, 15 Oct 2009, David Rientjes wrote:
 
-> > Are you defining what __ means for this_cpu_ptr?
+> TCP_STREAM stresses a few specific caches:
 >
-> I was basically stating the different between raw_smp_processor_id()
-> and smp_processor_id() which I thought applied the same to
-> __this_cpu_ptr() and this_cpu_ptr().
-
-Ii does apply. __this_cpu_ptr does not use smp_processor_id() but
-raw_smp_processor_id(). this_cpu_ptr does not need to disable preempt so
-we dont do anything on that level.
-
-> > The vm event counters require both no check and no preempt since they can
-> > be implemented in a racy way.
+> 		ALLOC_FASTPATH	ALLOC_SLOWPATH	FREE_FASTPATH	FREE_SLOWPATH
+> kmalloc-256	3868530		3450592		95628		7223491
+> kmalloc-1024	2440434		429		2430825		10034
+> kmalloc-4096	3860625		1036723		85571		4811779
 >
-> The biggest grief I have is that the meaning of __ is different among
-> different accessors.  If that can be cleared up, we would be in much
-> better shape without adding any extra macros.  Can we just remove all
-> __'s and use meaningful pre or suffixes like raw or irq or whatever?
+> This demonstrates that freeing to full (or partial) slabs causes a lot of
+> pain since the fastpath normally can't be utilized and that's probably
+> beyond the scope of this patchset.
+>
+> It's also different from the cpu slab thrashing issue I identified with
+> the TCP_RR benchmark and had a patchset to somewhat improve.  The
+> criticism was the addition of an increment to a fastpath counter in struct
+> kmem_cache_cpu which could probably now be much cheaper with these
+> optimizations.
 
-It currently means that we do not deal with preempt and do not check for
-preemption. That is consistent.
+Can you redo the patch?
 
-Sure we could change the API to have even more macros than the large
-amount it already has so that we can check for proper preempt disablement.
-
-I guess that would mean adding
-
-raw_nopreempt_this_cpu_xx  and nopreempt_this_cpu_xx variants? The thing
-gets huge. I think we could just leave it. __ suggests that serialization
-and checking is not performed like in the full versions and that is true.
