@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbZJPRUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbZJPRSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757307AbZJPRUJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbZJPRUF
+	id S1756297AbZJPRSt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbZJPRSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:20:05 -0400
-Received: from kroah.org ([198.145.64.141]:48673 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:18:47 -0400
+Received: from kroah.org ([198.145.64.141]:48677 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755630AbZJPRSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 13:18:44 -0400
+	id S1755861AbZJPRSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 13:18:45 -0400
 X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:12:08 2009
-Message-Id: <20091016171207.830595302@linux.site>
+Message-Id: <20091016171208.369491083@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:10:33 -0700
+Date: Fri, 16 Oct 2009 10:10:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Michal Schmidt <mschmidt@redhat.com>,
-       David Howells <dhowells@redhat.com>, Serge Hallyn <serue@us.ibm.com>,
-       James Morris <jmorris@namei.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [40/46] bsdacct: switch credentials for writing to the accounting file
+       NeilBrown <neilb@suse.de>, Dan Williams <dan.j.williams@intel.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [41/46] sysfs: Allow sysfs_notify_dirent to be called from interrupt context.
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=bsdacct-switch-credentials-for-writing-to-the-accounting-file.patch
+Content-Disposition: inline; filename=sysfs-allow-sysfs_notify_dirent-to-be-called-from-interrupt-context.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,63 +30,97 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Michal Schmidt <mschmidt@redhat.com>
+From: Neil Brown <neilb@suse.de>
 
-commit d8e180dcd5bbbab9cd3ff2e779efcf70692ef541 upstream.
+commit 83db93f4de2d9ae441a491d1dc61c2204f0195de upstream.
 
-When process accounting is enabled, every exiting process writes a log to
-the account file.  In addition, every once in a while one of the exiting
-processes checks whether there's enough free space for the log.
+sysfs_notify_dirent is a simple atomic operation that can be used to
+alert user-space that new data can be read from a sysfs attribute.
 
-SELinux policy may or may not allow the exiting process to stat the fs.
-So unsuspecting processes start generating AVC denials just because
-someone enabled process accounting.
+Unfortunately it cannot currently be called from non-process context
+because of its use of spin_lock which is sometimes taken with
+interrupts enabled.
 
-For these filesystem operations, the exiting process's credentials should
-be temporarily switched to that of the process which enabled accounting,
-because it's really that process which wanted to have the accounting
-information logged.
+So change all lockers of sysfs_open_dirent_lock to disable interrupts,
+thus making sysfs_notify_dirent safe to be called from non-process
+context (as drivers/md does in md_safemode_timeout).
 
-Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
-Acked-by: David Howells <dhowells@redhat.com>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: James Morris <jmorris@namei.org>
+sysfs_get_open_dirent is (documented as being) only called from
+process context, so it uses spin_lock_irq.  Other places
+use spin_lock_irqsave.
+
+The usage for sysfs_notify_dirent in md_safemode_timeout was
+introduced in 2.6.28, so this patch is suitable for that and more
+recent kernels.
+
+Reported-by: Joel Andres Granados <jgranado@redhat.com>
+Signed-off-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/acct.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ fs/sysfs/file.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
---- a/kernel/acct.c
-+++ b/kernel/acct.c
-@@ -491,13 +491,17 @@ static void do_acct_process(struct bsd_a
- 	u64 run_time;
- 	struct timespec uptime;
- 	struct tty_struct *tty;
-+	const struct cred *orig_cred;
-+
-+	/* Perform file operations on behalf of whoever enabled accounting */
-+	orig_cred = override_creds(file->f_cred);
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -268,7 +268,7 @@ static int sysfs_get_open_dirent(struct 
+ 	struct sysfs_open_dirent *od, *new_od = NULL;
  
- 	/*
- 	 * First check to see if there is enough free_space to continue
- 	 * the process accounting system.
- 	 */
- 	if (!check_free_space(acct, file))
--		return;
-+		goto out;
+  retry:
+-	spin_lock(&sysfs_open_dirent_lock);
++	spin_lock_irq(&sysfs_open_dirent_lock);
  
- 	/*
- 	 * Fill the accounting struct with the needed info as recorded
-@@ -578,6 +582,8 @@ static void do_acct_process(struct bsd_a
- 			       sizeof(acct_t), &file->f_pos);
- 	current->signal->rlim[RLIMIT_FSIZE].rlim_cur = flim;
- 	set_fs(fs);
-+out:
-+	revert_creds(orig_cred);
+ 	if (!sd->s_attr.open && new_od) {
+ 		sd->s_attr.open = new_od;
+@@ -281,7 +281,7 @@ static int sysfs_get_open_dirent(struct 
+ 		list_add_tail(&buffer->list, &od->buffers);
+ 	}
+ 
+-	spin_unlock(&sysfs_open_dirent_lock);
++	spin_unlock_irq(&sysfs_open_dirent_lock);
+ 
+ 	if (od) {
+ 		kfree(new_od);
+@@ -315,8 +315,9 @@ static void sysfs_put_open_dirent(struct
+ 				  struct sysfs_buffer *buffer)
+ {
+ 	struct sysfs_open_dirent *od = sd->s_attr.open;
++	unsigned long flags;
+ 
+-	spin_lock(&sysfs_open_dirent_lock);
++	spin_lock_irqsave(&sysfs_open_dirent_lock, flags);
+ 
+ 	list_del(&buffer->list);
+ 	if (atomic_dec_and_test(&od->refcnt))
+@@ -324,7 +325,7 @@ static void sysfs_put_open_dirent(struct
+ 	else
+ 		od = NULL;
+ 
+-	spin_unlock(&sysfs_open_dirent_lock);
++	spin_unlock_irqrestore(&sysfs_open_dirent_lock, flags);
+ 
+ 	kfree(od);
  }
+@@ -456,8 +457,9 @@ static unsigned int sysfs_poll(struct fi
+ void sysfs_notify_dirent(struct sysfs_dirent *sd)
+ {
+ 	struct sysfs_open_dirent *od;
++	unsigned long flags;
  
- /**
+-	spin_lock(&sysfs_open_dirent_lock);
++	spin_lock_irqsave(&sysfs_open_dirent_lock, flags);
+ 
+ 	od = sd->s_attr.open;
+ 	if (od) {
+@@ -465,7 +467,7 @@ void sysfs_notify_dirent(struct sysfs_di
+ 		wake_up_interruptible(&od->poll);
+ 	}
+ 
+-	spin_unlock(&sysfs_open_dirent_lock);
++	spin_unlock_irqrestore(&sysfs_open_dirent_lock, flags);
+ }
+ EXPORT_SYMBOL_GPL(sysfs_notify_dirent);
+ 
 
 
