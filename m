@@ -1,74 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbZJPTWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbZJPT2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755178AbZJPTWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 15:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZJPTWT
+	id S1754472AbZJPT2e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 15:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbZJPT2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 15:22:19 -0400
-Received: from mtagate4.de.ibm.com ([195.212.17.164]:39355 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbZJPTWS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 15:22:18 -0400
-Message-ID: <4AD8C7E4.9000903@free.fr>
-Date: Fri, 16 Oct 2009 21:22:12 +0200
-From: Daniel Lezcano <daniel.lezcano@free.fr>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-CC: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, Louis.Rilling@kerlabs.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       kosaki.motohiro@jp.fujitsu.com, hpa@zytor.com, mingo@elte.hu,
-       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
-References: <20091013044925.GA28181@us.ibm.com>
-In-Reply-To: <20091013044925.GA28181@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Oct 2009 15:28:33 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:32106 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752374AbZJPT2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 15:28:32 -0400
+From: Glauber Costa <glommer@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: [PATCH] v5: allow userspace to adjust kvmclock offset
+Date: Fri, 16 Oct 2009 15:28:36 -0400
+Message-Id: <1255721316-11777-1-git-send-email-glommer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sukadev Bhattiprolu wrote:
-> Subject: [RFC][v8][PATCH 0/10] Implement clone3() system call
->
-> To support application checkpoint/restart, a task must have the same pid it
-> had when it was checkpointed.  When containers are nested, the tasks within
-> the containers exist in multiple pid namespaces and hence have multiple pids
-> to specify during restart.
->
-> This patchset implements a new system call, clone3() that lets a process
-> specify the pids of the child process.
->
-> Patches 1 through 7 are helper patches, needed for choosing a pid for the
-> child process.
->
-> PATCH 9 defines a prototype of the new system call. PATCH 10 adds some
-> documentation on the new system call, some/all of which will eventually
-> go into a man page.
->   
+When we migrate a kvm guest that uses pvclock between two hosts, we may
+suffer a large skew. This is because there can be significant differences
+between the monotonic clock of the hosts involved. When a new host with
+a much larger monotonic time starts running the guest, the view of time
+will be significantly impacted.
 
-Sorry for jumping so late in the discussion and for having maybe my
-remarks pointless...
+Situation is much worse when we do the opposite, and migrate to a host with
+a smaller monotonic clock.
 
-If this syscall is only for checkpoint / restart, why this shouldn't be
-used with a future generic sys_restart syscall ?
-Otherwise, shouldn't be more convenient to have something usable for
-everyone, let's say:
+This proposed ioctl will allow userspace to inform us what is the monotonic
+clock value in the source host, so we can keep the time skew short, and
+more importantly, never goes backwards. Userspace may also need to trigger
+the current data, since from the first migration onwards, it won't be
+reflected by a simple call to clock_gettime() anymore.
 
-cloneat(pid_t pid, pid_t desiredpid, ...);
+[ v2: uses a struct with a padding ]
+[ v3: provide an ioctl to get clock data too ]
+[ v4: used fixed-width signed type for delta ]
+[ v5: nitpick fixes, documentation update, and capability bit ]
 
-Where 'desiredpid' is a hint of for the kernel for the pid to be
-allocated (zero means the kernel will choose one for us) and the newly
-allocated task is the son of 'pid'.
-That looks more consistent with the "<syscall>at" family, 'openat',
-'faccessat', 'readlinkat', etc ... and usable for something else than
-the checkpoint / restart.
+Signed-off-by: Glauber Costa <glommer@redhat.com>
+---
+ Documentation/kvm/api.txt       |   34 ++++++++++++++++++++++++++++++++++
+ arch/x86/include/asm/kvm_host.h |    1 +
+ arch/x86/kvm/x86.c              |   36 +++++++++++++++++++++++++++++++++++-
+ include/linux/kvm.h             |    8 ++++++++
+ 4 files changed, 78 insertions(+), 1 deletions(-)
 
-Thanks
-  -- Daniel
+diff --git a/Documentation/kvm/api.txt b/Documentation/kvm/api.txt
+index 5a4bc8c..2353c4b 100644
+--- a/Documentation/kvm/api.txt
++++ b/Documentation/kvm/api.txt
+@@ -593,6 +593,40 @@ struct kvm_irqchip {
+ 	} chip;
+ };
+ 
++4.27 KVM_GET_CLOCK
++
++Capability: KVM_CAP_ADJUST_CLOCK
++Architectures: x86
++Type: vm ioctl
++Parameters: struct kvm_clock_data (out)
++Returns: 0 on success, -1 on error
++
++Gets the current timestamp of kvmclock as seen by the current guest. In
++conjunction with KVM_SET_CLOCK, it is used to ensure monotonicity on scenarios
++such as migration.
++
++struct kvm_clock_data {
++	__u64 clock;  /* kvmclock current value */
++	__u64 pad[2];
++};
++
++4.28 KVM_SET_CLOCK
++
++Capability: KVM_CAP_ADJUST_CLOCK
++Architectures: x86
++Type: vm ioctl
++Parameters: struct kvm_clock_data (in)
++Returns: 0 on success, -1 on error
++
++Sets the current timestamp of kvmclock to the valued specific in its parameter.
++In conjunction with KVM_GET_CLOCK, it is used to ensure monotonicity on scenarios
++such as migration.
++
++struct kvm_clock_data {
++	__u64 clock;  /* kvmclock current value */
++	__u64 pad[2];
++};
++
+ 5. The kvm_run structure
+ 
+ Application code obtains a pointer to the kvm_run structure by
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index d838922..d759a1f 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -412,6 +412,7 @@ struct kvm_arch{
+ 	unsigned long irq_sources_bitmap;
+ 	unsigned long irq_states[KVM_IOAPIC_NUM_PINS];
+ 	u64 vm_init_tsc;
++	s64 kvmclock_offset;
+ };
+ 
+ struct kvm_vm_stat {
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 9b96953..a6fc13a 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -677,7 +677,8 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
+ 	/* With all the info we got, fill in the values */
+ 
+ 	vcpu->hv_clock.system_time = ts.tv_nsec +
+-				     (NSEC_PER_SEC * (u64)ts.tv_sec);
++				     (NSEC_PER_SEC * (u64)ts.tv_sec) + v->kvm->arch.kvmclock_offset;
++
+ 	/*
+ 	 * The interface expects us to write an even number signaling that the
+ 	 * update is finished. Since the guest won't see the intermediate
+@@ -1224,6 +1225,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_PIT2:
+ 	case KVM_CAP_PIT_STATE2:
+ 	case KVM_CAP_SET_IDENTITY_MAP_ADDR:
++	case KVM_CAP_ADJUST_CLOCK:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_COALESCED_MMIO:
+@@ -2421,6 +2423,38 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 		r = 0;
+ 		break;
+ 	}
++	case KVM_SET_CLOCK: {
++		struct timespec now;
++		struct kvm_clock_data user_ns;
++		u64 now_ns;
++		s64 delta;
++
++		r = -EFAULT;
++		if (copy_from_user(&user_ns, argp, sizeof(user_ns)))
++			goto out;
++
++		r = 0;
++		ktime_get_ts(&now);
++		now_ns = timespec_to_ns(&now);
++		delta = user_ns.clock - now_ns;
++		kvm->arch.kvmclock_offset = delta;
++		break;
++	}
++	case KVM_GET_CLOCK: {
++		struct timespec now;
++		struct kvm_clock_data user_ns;
++		u64 now_ns;
++
++		ktime_get_ts(&now);
++		now_ns = timespec_to_ns(&now);
++		user_ns.clock = kvm->arch.kvmclock_offset + now_ns;
++
++		if (copy_to_user(argp, &user_ns, sizeof(user_ns)))
++			r =  -EFAULT;
++
++		break;
++	}
++
+ 	default:
+ 		;
+ 	}
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index f8f8900..7fb04a9 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -436,6 +436,7 @@ struct kvm_ioeventfd {
+ #endif
+ #define KVM_CAP_IOEVENTFD 36
+ #define KVM_CAP_SET_IDENTITY_MAP_ADDR 37
++#define KVM_CAP_ADJUST_CLOCK 38
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
+@@ -497,6 +498,11 @@ struct kvm_irqfd {
+ 	__u8  pad[20];
+ };
+ 
++struct kvm_clock_data {
++	__u64 clock;
++	__u64 pad[2];
++};
++
+ /*
+  * ioctls for VM fds
+  */
+@@ -546,6 +552,8 @@ struct kvm_irqfd {
+ #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
+ #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
+ #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
++#define KVM_SET_CLOCK		  _IOW(KVMIO, 0x7a, struct kvm_clock_data)
++#define KVM_GET_CLOCK		  _IOR(KVMIO, 0x7b, struct kvm_clock_data)
+ 
+ /*
+  * ioctls for vcpu fds
+-- 
+1.6.2.2
 
