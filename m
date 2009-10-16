@@ -1,156 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZJPTOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbZJPTWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754365AbZJPTOc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 15:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZJPTO3
+	id S1755178AbZJPTWU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 15:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZJPTWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 15:14:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:23603 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751035AbZJPTO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 15:14:28 -0400
-Message-ID: <4AD8C679.3030300@redhat.com>
-Date: Fri, 16 Oct 2009 15:16:09 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+	Fri, 16 Oct 2009 15:22:19 -0400
+Received: from mtagate4.de.ibm.com ([195.212.17.164]:39355 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbZJPTWS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 15:22:18 -0400
+Message-ID: <4AD8C7E4.9000903@free.fr>
+Date: Fri, 16 Oct 2009 21:22:12 +0200
+From: Daniel Lezcano <daniel.lezcano@free.fr>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Parag Warudkar <parag.lkml@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       bugzilla-daemon@bugzilla.kernel.org
-Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
-References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com> <20091016091558.GA10184@mit.edu>
-In-Reply-To: <20091016091558.GA10184@mit.edu>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+CC: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, arnd@arndb.de,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, Louis.Rilling@kerlabs.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       kosaki.motohiro@jp.fujitsu.com, hpa@zytor.com, mingo@elte.hu,
+       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
+References: <20091013044925.GA28181@us.ibm.com>
+In-Reply-To: <20091013044925.GA28181@us.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/16/2009 05:15 AM, Theodore Tso wrote:
-> On Fri, Oct 16, 2009 at 12:28:18AM -0400, Parag Warudkar wrote:
->    
->> So I have been experimenting with various root file systems on my
->> laptop running latest git. This laptop some times has problems waking
->> up from sleep and that results in it needing a hard reset and
->> subsequently unclean file system.
->>      
-> A number of people have reported this, and there is some discussion
-> and some suggestions that I've made here:
+Sukadev Bhattiprolu wrote:
+> Subject: [RFC][v8][PATCH 0/10] Implement clone3() system call
 >
-> 	http://bugzilla.kernel.org/show_bug.cgi?id=14354
+> To support application checkpoint/restart, a task must have the same pid it
+> had when it was checkpointed.  When containers are nested, the tasks within
+> the containers exist in multiple pid namespaces and hence have multiple pids
+> to specify during restart.
 >
-> It's been very frustrating because I have not been able to replicate
-> it myself; I've been very much looking for someone who is (a) willing
-> to work with me on this, and perhaps willing to risk running fsck
-> frequently, perhaps after every single unclean shutdown, and (b) who
-> can reliably reproduce this problem.  On my system, which is a T400
-> running 9.04 with the latest git kernels, I've not been able to
-> reproduce it, despite many efforts to try to reproduce it.  (i.e.,
-> suspend the machine and then pull the battery and power; pulling the
-> battery and power, "echo c>  /proc/sysrq-trigger", etc., while
-> doing "make -j4" when the system is being uncleanly shutdown)
->    
+> This patchset implements a new system call, clone3() that lets a process
+> specify the pids of the child process.
+>
+> Patches 1 through 7 are helper patches, needed for choosing a pid for the
+> child process.
+>
+> PATCH 9 defines a prototype of the new system call. PATCH 10 adds some
+> documentation on the new system call, some/all of which will eventually
+> go into a man page.
+>   
 
-I wonder if we might have better luck if we tested using an external 
-(e-sata or USB connected) S-ATA drive.
+Sorry for jumping so late in the discussion and for having maybe my
+remarks pointless...
 
-Instead of pulling the drive's data connection, most of these have an 
-external power source that could be turned off so the drive firmware 
-won't have a chance to flush the volatile write cache. Note that some 
-drives automatically write back the cache if they have power and see a 
-bus disconnect, so hot unplugging just the e-sata or usb cable does not 
-do the trick.
+If this syscall is only for checkpoint / restart, why this shouldn't be
+used with a future generic sys_restart syscall ?
+Otherwise, shouldn't be more convenient to have something usable for
+everyone, let's say:
 
-Given the number of cheap external drives, this should be easy to test 
-at home....
+cloneat(pid_t pid, pid_t desiredpid, ...);
 
-Ric
+Where 'desiredpid' is a hint of for the kernel for the pid to be
+allocated (zero means the kernel will choose one for us) and the newly
+allocated task is the son of 'pid'.
+That looks more consistent with the "<syscall>at" family, 'openat',
+'faccessat', 'readlinkat', etc ... and usable for something else than
+the checkpoint / restart.
 
-
-
-> So if you can come up with a reliable reproduction case, and don't
-> mind doing some experiments and/or exchanging debugging correspondance
-> with me, please let me know.  I'd **really** appreciate the help.
->
-> Information that would be helpful to me would be:
->
-> a) Detailed hardware information (what type of disk/SSD, what type of
-> laptop, hardware configuration, etc.)
->
-> b) Detailed software information (what version of the kernel are you
-> using including any special patches, what distro and version are you
-> using, are you using LVM or dm-crypt, what partition or partitions did
-> you have mounted, was the failing partition a root partition or some
-> other mounted partition, etc.)
->
-> c) Detailed reproduction recipe (what programs were you running before
-> the crash/failed suspend/resume, etc.)
->
->
-> If you do decide to go hunting this problem, one thing I would
-> strongly suggest is that either to use "tune2fs -c 1 /dev/XXX" to
-> force a fsck after every reboot, or if you are using LVM, to use the
-> e2croncheck script (found as an attachment in the above bugzilla entry
-> or in the e2fsprogs sources in the contrib directory) to take a
-> snapshot and then check the snapshot right after you reboot and login
-> to your system.  The reported file system corruptions seem to involve
-> the block allocation bitmaps getting corrupted, and so you will
-> significantly reduce the chances of data loss if you run e2fsck as
-> soon as possible after the file system corruption happens.  This helps
-> you not lose data, and it also helps us find the bug, since it helps
-> pinpoint the earliest possible point where the file system is getting
-> corrupted.
->
-> (I suspect that some bug reporters had their file system get corrupted
-> one or more boot sessions earlier, and by the time the corruption was
-> painfully obvious, they had lost data.  Mercifully, running fsck
-> frequently is much less painful on a freshly created ext4 filesystem,
-> and of course if you are using an SSD.)
->
-> If you can reliably reproduce the problem, it would be great to get a
-> bisection, or at least a confirmation that the problem doesn't exist
-> on 2.6.31, but does exist on 2.6.32-rcX kernels.  At this point I'm
-> reasonably sure it's a post-2.6.31 regression, but it would be good to
-> get a hard confirmation of that fact.
->
-> For people with a reliable reproduction case, one possible experiment
-> can be found here:
->
->     http://bugzilla.kernel.org/show_bug.cgi?id=14354#c18
->
-> Another thing you might try is to try reverting these commits one at a
-> time, and see if they make the problem go away: d0646f7, 5534fb5,
-> 7178057.  These are three commits that seem most likely, but there are
-> only 93 ext4-related commits, so doing a "git bisect start v2.6.31
-> v2.6.32-rc5 -- fs/ext4 fs/jbd2" should only take at most seven compile
-> tests --- assuming this is indeed a 2.6.31 regression and the problem
-> is an ext4-specific code change, as opposed to some other recent
-> change in the writeback code or some device driver which is
-> interacting badly with ext4.
->
-> If that assumption isn't true and so a git bisect limited to fs/ext4
-> and fs/jbd2 doesn't find a bad commit which when reverted makes the
-> problem go away, we could try a full bisection search via "git bisect
-> start v2.6.31 v2.6.31-rc3", which would take approximately 14 compile
-> tests, but hopefully that wouldn't be necessary.
->
-> I'm going to be at the kernel summit in Tokyo next week, so my e-mail
-> latency will be a bit longer than normal, which is one of the reason
-> why I've left a goodly list of potential experiments for people to
-> try.  If you can come up with a reliable regression, and are willing
-> to work with me or to try some of the above mentioned tests, I'll
-> definitely buy you a real (or virtual) beer.
->
-> Given that a number of people have reported losing data as a result,
-> it would **definitely** be a good thing to get this fixed before
-> 2.6.32 is released.
->
-> Thanks,
->
-> 						- Ted
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->    
+Thanks
+  -- Daniel
 
