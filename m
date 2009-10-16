@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbZJPKiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758478AbZJPKiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758183AbZJPKiJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 06:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757981AbZJPKiI
+	id S1758478AbZJPKiM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 06:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757981AbZJPKiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 06:38:08 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:48093 "EHLO gir.skynet.ie"
+	Fri, 16 Oct 2009 06:38:10 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:48110 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757282AbZJPKiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 06:38:06 -0400
+	id S1757514AbZJPKiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 06:38:07 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Andrew Morton <akpm@linux-foundation.org>, stable <stable@kernel.org>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
@@ -21,48 +21,48 @@ Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
        Karol Lewandowski <karol.k.lewandowski@gmail.com>,
        netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        "linux-mm@kvack.org\"" <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 0/2] Reduce number of GFP_ATOMIC allocation failures
-Date: Fri, 16 Oct 2009 11:37:24 +0100
-Message-Id: <1255689446-3858-1-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 1/2] page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
+Date: Fri, 16 Oct 2009 11:37:25 +0100
+Message-Id: <1255689446-3858-2-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1255689446-3858-1-git-send-email-mel@csn.ul.ie>
+References: <1255689446-3858-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following two patches against 2.6.32-rc4 should reduce allocation
-failure reports for GFP_ATOMIC allocations that have being cropping up
-since 2.6.31-rc1.
+If a direct reclaim makes no forward progress, it considers whether it
+should go OOM or not. Whether OOM is triggered or not, it may retry the
+application afterwards. In times past, this would always wake kswapd as well
+but currently, kswapd is not woken up after direct reclaim fails. For order-0
+allocations, this makes little difference but if there is a heavy mix of
+higher-order allocations that direct reclaim is failing for, it might mean
+that kswapd is not rewoken for higher orders as much as it did previously.
 
-I believe these are candidates for -stable as they address issues in the
-following commit introduced in the v2.6.30..v2.6.31-rc1 window
+This patch wakes up kswapd when an allocation is being retried after a direct
+reclaim failure. It would be expected that kswapd is already awake, but
+this has the effect of telling kswapd to reclaim at the higher order as well.
 
-11e33f6 page allocator: break up the allocator entry point into fast and slow paths
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/page_alloc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The patch should not have made functional changes but at least two slipped
-by. The first patch wakes kswapd up each time after OOM-killing has been
-considered. This can be important to high-order allocations where kswapd
-needs to reclaim at a higher order. The second patch corrects a problem
-whereby a process that is exiting and making a __GFP_NOFAIL allocation can
-ignore watermarks.
-
-These patches in combination should help reduce the number of GFP_ATOMIC
-failures in the following bug.
-
-[Bug #14141] order 2 page allocation failures in iwlagn
-
-However, this bug should not yet be closed as there are still problems in
-the driver itself that increase the number of GFP_ATOMIC allocations that bug.
-
-The patches should also help the following bugs as well and testing there
-would be appreciated.
-
-[Bug #14265] ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
-
-It might also have helped the following bug although that driver has already
-been fixed by not making high-order atomic allocations.
-
-[Bug #14016] mm/ipw2200 regression
-
- mm/page_alloc.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index bf72055..dfa4362 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1817,9 +1817,9 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+ 	if (NUMA_BUILD && (gfp_mask & GFP_THISNODE) == GFP_THISNODE)
+ 		goto nopage;
+ 
++restart:
+ 	wake_all_kswapd(order, zonelist, high_zoneidx);
+ 
+-restart:
+ 	/*
+ 	 * OK, we're below the kswapd watermark and have kicked background
+ 	 * reclaim. Now things get more complex, so set up alloc_flags according
+-- 
+1.6.3.3
 
