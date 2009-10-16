@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758191AbZJPR1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932945AbZJPR2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758191AbZJPR1b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 13:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbZJPRSQ
+	id S932945AbZJPR2j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 13:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758138AbZJPR2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 13:18:16 -0400
-Received: from kroah.org ([198.145.64.141]:48440 "EHLO coco.kroah.org"
+	Fri, 16 Oct 2009 13:28:38 -0400
+Received: from kroah.org ([198.145.64.141]:48446 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752783AbZJPRSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 13:18:14 -0400
+	id S1752474AbZJPRSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 13:18:15 -0400
 X-Mailbox-Line: From linux@linux.site Fri Oct 16 10:11:49 2009
-Message-Id: <20091016171148.889563227@linux.site>
+Message-Id: <20091016171149.406810626@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Fri, 16 Oct 2009 10:09:58 -0700
+Date: Fri, 16 Oct 2009 10:09:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Xen-devel <xen-devel@lists.xensource.com>, Ingo Molnar <mingo@elte.hu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [05/46] tracing/filters: Fix memory leak when setting a filter
+Subject: [06/46] x86/paravirt: Use normal calling sequences for irq enable/disable
 References: <20091016170953.128828149@linux.site>
-Content-Disposition: inline; filename=tracing-filters-fix-memory-leak-when-setting-a-filter.patch
+Content-Disposition: inline; filename=x86-paravirt-use-normal-calling-sequences-for-irq-enable-disable.patch
 In-Reply-To: <20091016171422.GA13339@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,37 +31,115 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Li Zefan <lizf@cn.fujitsu.com>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 
-commit 8ad807318fcd62aba0e18c7c7fbfcc1af3fcdbab upstream.
+commit 71999d9862e667f1fd14f8fbfa0cce6d855bad3f upstream.
 
-Every time we set a filter, we leak memory allocated by
-postfix_append_operand() and postfix_append_op().
+Bastian Blank reported a boot crash with stackprotector enabled,
+and debugged it back to edx register corruption.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Tom Zanussi <tzanussi@gmail.com>
-LKML-Reference: <4AD3D7D9.4070400@cn.fujitsu.com>
+For historical reasons irq enable/disable/save/restore had special
+calling sequences to make them more efficient.  With the more
+recent introduction of higher-level and more general optimisations
+this is no longer necessary so we can just use the normal PVOP_
+macros.
+
+This fixes some residual bugs in the old implementations which left
+edx liable to inadvertent clobbering. Also, fix some bugs in
+__PVOP_VCALLEESAVE which were revealed by actual use.
+
+Reported-by: Bastian Blank <bastian@waldi.eu.org>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Xen-devel <xen-devel@lists.xensource.com>
+LKML-Reference: <4AD3BC9B.7040501@goop.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/trace/trace_events_filter.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/paravirt.h |   38 ++++++++++----------------------------
+ 1 file changed, 10 insertions(+), 28 deletions(-)
 
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -844,8 +844,9 @@ static void postfix_clear(struct filter_
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -528,10 +528,11 @@ int paravirt_disable_iospace(void);
+ #define EXTRA_CLOBBERS
+ #define VEXTRA_CLOBBERS
+ #else  /* CONFIG_X86_64 */
++/* [re]ax isn't an arg, but the return val */
+ #define PVOP_VCALL_ARGS					\
+ 	unsigned long __edi = __edi, __esi = __esi,	\
+-		__edx = __edx, __ecx = __ecx
+-#define PVOP_CALL_ARGS		PVOP_VCALL_ARGS, __eax
++		__edx = __edx, __ecx = __ecx, __eax = __eax
++#define PVOP_CALL_ARGS		PVOP_VCALL_ARGS
  
- 	while (!list_empty(&ps->postfix)) {
- 		elt = list_first_entry(&ps->postfix, struct postfix_elt, list);
--		kfree(elt->operand);
- 		list_del(&elt->list);
-+		kfree(elt->operand);
-+		kfree(elt);
- 	}
+ #define PVOP_CALL_ARG1(x)		"D" ((unsigned long)(x))
+ #define PVOP_CALL_ARG2(x)		"S" ((unsigned long)(x))
+@@ -543,6 +544,7 @@ int paravirt_disable_iospace(void);
+ 				"=c" (__ecx)
+ #define PVOP_CALL_CLOBBERS	PVOP_VCALL_CLOBBERS, "=a" (__eax)
+ 
++/* void functions are still allowed [re]ax for scratch */
+ #define PVOP_VCALLEE_CLOBBERS	"=a" (__eax)
+ #define PVOP_CALLEE_CLOBBERS	PVOP_VCALLEE_CLOBBERS
+ 
+@@ -617,8 +619,8 @@ int paravirt_disable_iospace(void);
+ 		       VEXTRA_CLOBBERS,					\
+ 		       pre, post, ##__VA_ARGS__)
+ 
+-#define __PVOP_VCALLEESAVE(rettype, op, pre, post, ...)			\
+-	____PVOP_CALL(rettype, op.func, CLBR_RET_REG,			\
++#define __PVOP_VCALLEESAVE(op, pre, post, ...)				\
++	____PVOP_VCALL(op.func, CLBR_RET_REG,				\
+ 		      PVOP_VCALLEE_CLOBBERS, ,				\
+ 		      pre, post, ##__VA_ARGS__)
+ 
+@@ -1565,42 +1567,22 @@ extern struct paravirt_patch_site __para
+ 
+ static inline unsigned long __raw_local_save_flags(void)
+ {
+-	unsigned long f;
+-
+-	asm volatile(paravirt_alt(PARAVIRT_CALL)
+-		     : "=a"(f)
+-		     : paravirt_type(pv_irq_ops.save_fl),
+-		       paravirt_clobber(CLBR_EAX)
+-		     : "memory", "cc");
+-	return f;
++	return PVOP_CALLEE0(unsigned long, pv_irq_ops.save_fl);
  }
  
+ static inline void raw_local_irq_restore(unsigned long f)
+ {
+-	asm volatile(paravirt_alt(PARAVIRT_CALL)
+-		     : "=a"(f)
+-		     : PV_FLAGS_ARG(f),
+-		       paravirt_type(pv_irq_ops.restore_fl),
+-		       paravirt_clobber(CLBR_EAX)
+-		     : "memory", "cc");
++	PVOP_VCALLEE1(pv_irq_ops.restore_fl, f);
+ }
+ 
+ static inline void raw_local_irq_disable(void)
+ {
+-	asm volatile(paravirt_alt(PARAVIRT_CALL)
+-		     :
+-		     : paravirt_type(pv_irq_ops.irq_disable),
+-		       paravirt_clobber(CLBR_EAX)
+-		     : "memory", "eax", "cc");
++	PVOP_VCALLEE0(pv_irq_ops.irq_disable);
+ }
+ 
+ static inline void raw_local_irq_enable(void)
+ {
+-	asm volatile(paravirt_alt(PARAVIRT_CALL)
+-		     :
+-		     : paravirt_type(pv_irq_ops.irq_enable),
+-		       paravirt_clobber(CLBR_EAX)
+-		     : "memory", "eax", "cc");
++	PVOP_VCALLEE0(pv_irq_ops.irq_enable);
+ }
+ 
+ static inline unsigned long __raw_local_irq_save(void)
 
 
