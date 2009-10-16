@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZJPSkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbZJPSl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbZJPSkv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 14:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbZJPSku
+	id S1755116AbZJPSl4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 14:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbZJPSlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 14:40:50 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:21908 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754737AbZJPSks (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 14:40:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=u6gLOedvYAJvIey5S0MCtT/p9p5VPz+ZF3F35/1/lHHC4nsbe4T3ht4sIT1cStGpL
-	j4D91+0R+FJO290PZUB+w==
-Date: Fri, 16 Oct 2009 11:40:45 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Subject: Re: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu
- operations in the hotpaths
-In-Reply-To: <20091016105016.GB32397@csn.ul.ie>
-Message-ID: <alpine.DEB.1.00.0910161135350.21328@chino.kir.corp.google.com>
-References: <4AD4D8B6.6010700@cs.helsinki.fi> <alpine.DEB.1.10.0910131541290.7246@gentwo.org> <alpine.DEB.1.00.0910131305440.3529@chino.kir.corp.google.com> <alpine.DEB.1.10.0910131625370.13756@gentwo.org> <alpine.DEB.1.00.0910131550050.15347@chino.kir.corp.google.com>
- <20091014133457.GB5027@csn.ul.ie> <alpine.DEB.1.10.0910141003590.9944@gentwo.org> <20091014154944.GD5027@csn.ul.ie> <4AD5F3F8.8080603@cs.helsinki.fi> <alpine.DEB.1.10.0910141154320.26476@gentwo.org> <20091016105016.GB32397@csn.ul.ie>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Fri, 16 Oct 2009 14:41:55 -0400
+Received: from bamako.nerim.net ([62.4.17.28]:64672 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751665AbZJPSly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 14:41:54 -0400
+Date: Fri, 16 Oct 2009 20:41:55 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: Re: [lm-sensors] lm-sensors 3.1.1-3 not detecting sensors on Intel
+     DP55KG motherboard? (chip ID: 0xb473)
+Message-ID: <20091016204155.377fe67d@hyperion.delvare>
+In-Reply-To: <alpine.DEB.2.00.0910160838500.31450@p34.internal.lan>
+References: <alpine.DEB.2.00.0910131743530.5034@p34.internal.lan>
+	<alpine.DEB.2.00.0910140403150.15961@p34.internal.lan>
+	<alpine.DEB.2.00.0910140856190.19307@p34.internal.lan>
+	<20091015100557.22243433@hyperion.delvare>
+	<alpine.DEB.2.00.0910150422400.21030@p34.internal.lan>
+	<20091016111504.5d9cb0ba@hyperion.delvare>
+	<alpine.DEB.2.00.0910160553221.2841@p34.internal.lan>
+	<20091016125353.1c8795f4@hyperion.delvare>
+	<alpine.DEB.2.00.0910160838500.31450@p34.internal.lan>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Oct 2009, Mel Gorman wrote:
-
-> NETPERF TCP
->               SLUB-vanilla   vanilla-highorder     SLUB-this-cpu  this-cpu-highorder    SLAB-vanilla     SLAB-this-cpu
->       64  1773.00 ( 0.00%)   1812.07 ( 2.16%)*  1731.63 (-2.39%)*  1717.99 (-3.20%)*  1794.48 ( 1.20%)   2029.46 (12.64%) 
->              1.00%             5.88%             2.43%             2.83%             1.00%             1.00%        
->      128  3181.12 ( 0.00%)   3193.06 ( 0.37%)*  3471.22 ( 8.36%)   3154.79 (-0.83%)   3296.37 ( 3.50%)   3251.33 ( 2.16%) 
->              1.00%             1.70%             1.00%             1.00%             1.00%             1.00%        
->      256  4794.35 ( 0.00%)   4813.37 ( 0.40%)   4797.38 ( 0.06%)   4819.16 ( 0.51%)   4912.99 ( 2.41%)   4846.86 ( 1.08%) 
->     1024  9438.10 ( 0.00%)   8144.02 (-15.89%)   8681.05 (-8.72%)*  8204.11 (-15.04%)   8270.58 (-14.12%)   8268.85 (-14.14%) 
->              1.00%             1.00%             7.31%             1.00%             1.00%             1.00%        
->     2048  9196.06 ( 0.00%)  11233.72 (18.14%)   9375.72 ( 1.92%)  10487.89 (12.32%)* 11474.59 (19.86%)   9420.01 ( 2.38%) 
->              1.00%             1.00%             1.00%             9.43%             1.00%             1.00%        
->     3312 10338.49 ( 0.00%)*  9730.79 (-6.25%)* 10021.82 (-3.16%)* 10089.90 (-2.46%)* 12018.72 (13.98%)* 12069.28 (14.34%)*
->              9.49%             2.51%             6.36%             5.96%             1.21%             2.12%        
->     4096  9931.20 ( 0.00%)* 12447.88 (20.22%)  10285.38 ( 3.44%)* 10548.56 ( 5.85%)* 12265.59 (19.03%)* 10175.33 ( 2.40%)*
->              1.31%             1.00%             1.38%             8.22%             9.97%             8.33%        
->     6144 12775.08 ( 0.00%)* 10489.24 (-21.79%)* 10559.63 (-20.98%)  11033.15 (-15.79%)* 13139.34 ( 2.77%)  13210.79 ( 3.30%)*
->              1.45%             8.46%             1.00%            12.65%             1.00%             2.99%        
->     8192 10933.93 ( 0.00%)* 10340.42 (-5.74%)* 10534.41 (-3.79%)* 10845.36 (-0.82%)* 10876.42 (-0.53%)* 10738.25 (-1.82%)*
->             14.29%             2.38%             2.10%             1.83%            12.50%             9.55%        
->    10240 12868.58 ( 0.00%)  11211.60 (-14.78%)* 12991.65 ( 0.95%)  11330.97 (-13.57%)* 10892.20 (-18.14%)  13106.01 ( 1.81%) 
->              1.00%            11.36%             1.00%             6.64%             1.00%             1.00%        
->    12288 11854.97 ( 0.00%)  11854.51 (-0.00%)  12122.34 ( 2.21%)* 12258.61 ( 3.29%)* 12129.79 ( 2.27%)* 12411.84 ( 4.49%)*
->              1.00%             1.00%             6.61%             5.69%             5.78%             8.95%        
->    14336 12552.48 ( 0.00%)* 12309.15 (-1.98%)  12501.71 (-0.41%)* 13683.57 ( 8.27%)* 12274.54 (-2.26%)  12322.63 (-1.87%)*
->              6.05%             1.00%             2.58%             2.46%             1.00%             2.23%        
->    16384 11733.09 ( 0.00%)* 11856.66 ( 1.04%)* 12735.05 ( 7.87%)* 13482.61 (12.98%)* 13195.68 (11.08%)* 14401.62 (18.53%) 
->              1.14%             1.05%             9.79%            11.52%            10.30%             1.00%        
+On Fri, 16 Oct 2009 09:40:51 -0400 (EDT), Justin Piszcz wrote:
+> On Fri, 16 Oct 2009, Jean Delvare wrote:
+> > If you want me to investigate this, you can provide an I2C dump of the
+> > chip. Get i2cdump from the i2c-tools package, and then:
+> >
+> > # i2cdump 0 0x2c b
+> >
+> > This might confuse the chip in question though, so only try it if you
+> > are ready to trigger a cold reboot.
 > 
-> Configuring high-rder helper in a few cases here and in one or two
-> cases close the gap with SLAB, particularly for large packet sizes.
-> However, it still suffered for the small packet sizes.
+> Ok, luckily it does not appear to have caused any issues:
 > 
+> # i2cdump 0 0x2c b
+> WARNING! This program can confuse your I2C bus, cause data loss and worse!
+> I will probe file /dev/i2c-0, address 0x2c, mode byte
+> Continue? [Y/n] y
+>       0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
+> 00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> 10: 00 00 00 00 00 00 00 00 00 00 80 80 80 04 7e 10    ..........????~?
+> 20: 75 51 c0 c3 c3 80 28 2d bd 0f de 0f 3b 1d a9 16    uQ????(-????;???
+> 30: 33 4d 4d c2 81 00 c2 00 ff ff ff e6 7b fb 41 6f    3MM??.?....?{?Ao
+> 40: 35 90 40 00 00 ff 00 ff 00 ff 00 ff 00 ff 81 7f    5?@...........??
+> 50: 81 7f 81 7f ff ff ff ff ff ff ff ff 0a a2 a2 ca    ????........????
+> 60: 8a 8a e0 aa 33 4c 4c 5a 2d 2d 64 41 41 04 42 00    ????3LLZ--dAA?B.
+> 70: 00 00 00 00 00 00 6c 60 f0 00 00 55 01 00 00 00    ......l`?..U?...
+> 80: 00 00 00 00 00 00 ff ff 00 00 fb 64 64 64 00 00    ..........?ddd..
+> 90: 00 59 59 59 00 00 00 00 00 00 00 00 00 00 00 00    .YYY............
+> a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+> #
 
-This is understandable considering the statistics that I posted for this 
-workload on my machine, higher order cpu slabs will naturally get freed to 
-more often from the fastpath, which also causes it to utilize the 
-allocation fastpath more often (and we can see the optimization of this 
-patchset), in addition to avoiding partial list handling.
+Smells like an Analog Devices chip, but not one we know... And I can't
+see it on the web site you mentioned. Please search for a small-size
+chip named ADTxxxx (more likely ADT74xx).
 
-The pain with the smaller packet sizes is probably the overhead from the 
-page allocator more than slub, a characteristic that also caused the 
-TCP_RR benchmark to suffer.  It can be mitigated somewhat with slab 
-preallocation or a higher min_partial setting, but that's probably not an 
-optimal solution.
+-- 
+Jean Delvare
