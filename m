@@ -1,147 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932434AbZJPNlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759954AbZJPNl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932434AbZJPNlD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 09:41:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757583AbZJPNlD
+	id S1759954AbZJPNl3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 09:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759507AbZJPNl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 09:41:03 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:42969 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755724AbZJPNlB (ORCPT
-	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Fri, 16 Oct 2009 09:41:01 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH] vbus: fix kmalloc() from interrupt context to use GFP_ATOMIC
-To: linux-kernel@vger.kernel.org
-Cc: alacrityvm-devel@lists.sourceforge.net
-Date: Fri, 16 Oct 2009 09:40:07 -0400
-Message-ID: <20091016133809.13571.6991.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
+	Fri, 16 Oct 2009 09:41:29 -0400
+Received: from lucidpixels.com ([75.144.35.66]:35060 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759434AbZJPNl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 09:41:28 -0400
+Date: Fri, 16 Oct 2009 09:40:51 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Jean Delvare <khali@linux-fr.org>
+cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: Re: [lm-sensors] lm-sensors 3.1.1-3 not detecting sensors on Intel
+    DP55KG motherboard? (chip ID: 0xb473)
+In-Reply-To: <20091016125353.1c8795f4@hyperion.delvare>
+Message-ID: <alpine.DEB.2.00.0910160838500.31450@p34.internal.lan>
+References: <alpine.DEB.2.00.0910131743530.5034@p34.internal.lan> <alpine.DEB.2.00.0910140403150.15961@p34.internal.lan> <alpine.DEB.2.00.0910140856190.19307@p34.internal.lan> <20091015100557.22243433@hyperion.delvare> <alpine.DEB.2.00.0910150422400.21030@p34.internal.lan>
+ <20091016111504.5d9cb0ba@hyperion.delvare> <alpine.DEB.2.00.0910160553221.2841@p34.internal.lan> <20091016125353.1c8795f4@hyperion.delvare>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applies to the linux-next branch for AlacrityVM:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/alacrityvm/linux-2.6.git
 
 
-----------------------------
-From: Gregory Haskins <ghaskins@novell.com>
-vbus: fix kmalloc() from interrupt context to use GFP_ATOMIC
+On Fri, 16 Oct 2009, Jean Delvare wrote:
 
-DEVADD events currently perform a GFP_KERNEL allocation for the device
-object in interrupt context.  This is technically illegal, although we
-have gotten away with it to date by sheer luck that the allocation
-never tried to swap or otherwise sleep.  This problem was highlighted
-with the lockdep facility.
+> On Fri, 16 Oct 2009 05:54:10 -0400 (EDT), Justin Piszcz wrote:
+>> # ./sensors-detect
+>> # sensors-detect revision 5782 (2009-10-16 10:59:16 +0200)
+>> Trying family `VIA/Winbond/Nuvoton/Fintek'...               Yes
+>> Found `Nuvoton W83677HG-I Super IO Sensors'
+>>      (but no address specified)
+>
+> So the LPC interface to the hardware monitoring chip is disabled.
+>
+>> Probing for `Winbond W83791SD'...                           No
+>
+> You have an unknown chip at 0x2c on the SMBus. It could be a hardware
+> monitoring chip... or not.
+Ok..
 
-Lets fix this properly by making sure that we only allocated the space
-for the device object using GFP_KERNEL from process-context.  We achieve
-this by generating a temporary GFP_ATOMIC relay for the event and
-deferring the actual device allocation/registration to process context.
+>
+> If you want me to investigate this, you can provide an I2C dump of the
+> chip. Get i2cdump from the i2c-tools package, and then:
+>
+> # i2cdump 0 0x2c b
+>
+> This might confuse the chip in question though, so only try it if you
+> are ready to trigger a cold reboot.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+Ok, luckily it does not appear to have caused any issues:
 
- drivers/vbus/pci-bridge.c |   54 +++++++++++++++++++++++++++++++--------------
- 1 files changed, 37 insertions(+), 17 deletions(-)
+# i2cdump 0 0x2c b
+WARNING! This program can confuse your I2C bus, cause data loss and worse!
+I will probe file /dev/i2c-0, address 0x2c, mode byte
+Continue? [Y/n] y
+      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
+00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+10: 00 00 00 00 00 00 00 00 00 00 80 80 80 04 7e 10    ..........????~?
+20: 75 51 c0 c3 c3 80 28 2d bd 0f de 0f 3b 1d a9 16    uQ????(-????;???
+30: 33 4d 4d c2 81 00 c2 00 ff ff ff e6 7b fb 41 6f    3MM??.?....?{?Ao
+40: 35 90 40 00 00 ff 00 ff 00 ff 00 ff 00 ff 81 7f    5?@...........??
+50: 81 7f 81 7f ff ff ff ff ff ff ff ff 0a a2 a2 ca    ????........????
+60: 8a 8a e0 aa 33 4c 4c 5a 2d 2d 64 41 41 04 42 00    ????3LLZ--dAA?B.
+70: 00 00 00 00 00 00 6c 60 f0 00 00 55 01 00 00 00    ......l`?..U?...
+80: 00 00 00 00 00 00 ff ff 00 00 fb 64 64 64 00 00    ..........?ddd..
+90: 00 59 59 59 00 00 00 00 00 00 00 00 00 00 00 00    .YYY............
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+#
 
-diff --git a/drivers/vbus/pci-bridge.c b/drivers/vbus/pci-bridge.c
-index fcde495..c1af37c 100644
---- a/drivers/vbus/pci-bridge.c
-+++ b/drivers/vbus/pci-bridge.c
-@@ -63,7 +63,6 @@ struct vbus_pci_device {
- 	u64                      handle;
- 	struct list_head         shms;
- 	struct vbus_device_proxy vdev;
--	struct work_struct       add;
- 	struct work_struct       drop;
- };
- 
-@@ -442,18 +441,45 @@ struct vbus_device_proxy_ops vbus_pci_device_ops = {
-  * -------------------
-  */
- 
-+struct deferred_devadd_event {
-+	struct work_struct        work;
-+	struct vbus_pci_add_event event;
-+};
-+
-+static void deferred_devdrop(struct work_struct *work);
-+
- static void
- deferred_devadd(struct work_struct *work)
- {
-+	struct deferred_devadd_event *_event;
- 	struct vbus_pci_device *new;
- 	int ret;
- 
--	new = container_of(work, struct vbus_pci_device, add);
-+	_event = container_of(work, struct deferred_devadd_event, work);
-+
-+	new = kzalloc(sizeof(*new), GFP_KERNEL);
-+	if (!new) {
-+		printk(KERN_ERR "VBUS_PCI: Out of memory on add_event\n");
-+		return;
-+	}
-+
-+	INIT_LIST_HEAD(&new->shms);
-+
-+	memcpy(new->type, _event->event.type, VBUS_MAX_DEVTYPE_LEN);
-+	new->vdev.type        = new->type;
-+	new->vdev.id          = _event->event.id;
-+	new->vdev.ops         = &vbus_pci_device_ops;
-+
-+	dev_set_name(&new->vdev.dev, "%lld", _event->event.id);
-+
-+	INIT_WORK(&new->drop, deferred_devdrop);
- 
- 	ret = vbus_device_proxy_register(&new->vdev);
- 	if (ret < 0)
- 		panic("failed to register device %lld(%s): %d\n",
- 		      new->vdev.id, new->type, ret);
-+
-+	kfree(_event);
- }
- 
- static void
-@@ -468,25 +494,19 @@ deferred_devdrop(struct work_struct *work)
- static void
- event_devadd(struct vbus_pci_add_event *event)
- {
--	struct vbus_pci_device *new = kzalloc(sizeof(*new), GFP_KERNEL);
--	if (!new) {
--		printk(KERN_ERR "VBUS_PCI: Out of memory on add_event\n");
-+	struct deferred_devadd_event *_event;
-+
-+	_event = kzalloc(sizeof(*_event), GFP_ATOMIC);
-+	if (!_event) {
-+		printk(KERN_ERR \
-+		       "VBUS_PCI: Out of ATOMIC memory on add_event\n");
- 		return;
- 	}
- 
--	INIT_LIST_HEAD(&new->shms);
--
--	memcpy(new->type, event->type, VBUS_MAX_DEVTYPE_LEN);
--	new->vdev.type        = new->type;
--	new->vdev.id          = event->id;
--	new->vdev.ops         = &vbus_pci_device_ops;
--
--	dev_set_name(&new->vdev.dev, "%lld", event->id);
--
--	INIT_WORK(&new->add, deferred_devadd);
--	INIT_WORK(&new->drop, deferred_devdrop);
-+	INIT_WORK(&_event->work, deferred_devadd);
-+	memcpy(&_event->event, event, sizeof(*event));
- 
--	schedule_work(&new->add);
-+	schedule_work(&_event->work);
- }
- 
- static void
 
+>
+>> Client found at address 0x2d
+>> (...)
+>> Probing for `Winbond W83627DHG'...                          Success!
+>>      (confidence 8, driver `use-isa-instead')
+>
+> This is the SMBus access to the W83677HG. We don't have support for
+> that, because LPC access is faster and was always enabled on all
+> motherboards we've seen so far.
+Ok..
+
+>
+> I doubt we'll ever add SMBus access support, for both performance and
+> source code readability reasons. If anything, we could forcibly enable
+> the device on your motherboard. But please first look for BIOS options
+> and/or a BIOS update to enable the LPC interface.
+I am checking now...yes all HW monitoring/etc IS enabled.
+
+>
+> Do you see any hardware monitoring information in the BIOS?
+Yep, see note above.  It is enabled.
+
+>
+> -- 
+> Jean Delvare
+> http://khali.linux-fr.org/wishlist.html
+>
