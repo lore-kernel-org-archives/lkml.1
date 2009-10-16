@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbZJPI6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbZJPI6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757594AbZJPI6S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 04:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756896AbZJPI6R
+	id S1757644AbZJPI6Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 04:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757598AbZJPI6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 16 Oct 2009 04:58:25 -0400
+Received: from k66.ru ([87.224.128.21]:49854 "EHLO k66.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757516AbZJPI6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Oct 2009 04:58:17 -0400
-Received: from mail-gx0-f216.google.com ([209.85.217.216]:51737 "EHLO
-	mail-gx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757491AbZJPI6Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 04:58:16 -0400
-X-Greylist: delayed 416 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Oct 2009 04:58:16 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:content-type;
-        b=sH70aMxB6Pk66wAaDdC02sJB7jchIqaTcVMHql5VolRnTIocoFLeKkRf/tYcfnZ7Kn
-         LF05To2ke4Zz4uqYH3OP+1zBG2ITjaaUaYk0vYdGJYkVAwOgpKCMqppYEq+RSBuNgChJ
-         ywwoDRa/r9+U2HCJyRr6tQeszMoRbxutkv2W4=
-MIME-Version: 1.0
-Date: Fri, 16 Oct 2009 21:50:43 +1300
-X-Google-Sender-Auth: 7933a331cb4d0cdf
-Message-ID: <a5b9b4700910160150o146a8f21n1c76c14755d64da8@mail.gmail.com>
-Subject: Kernel driver with multiple SPI sources
-From: Bertrand Roussel <bertrand.roussel@cor-net.org>
+Date: Fri, 16 Oct 2009 14:57:39 +0600
+From: Andrey Rahmatullin <wrar@altlinux.org>
 To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: drivers/staging/rt2860 doesn't compile
+Message-ID: <20091016085738.GG19095@wrars-comp.wrarsdomain>
+References: <20091014063824.GD6298@wrars-comp.wrarsdomain>
+ <20091014182729.GC19095@wrars-comp.wrarsdomain>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="DNUSDXU7R7AVVM8C"
+Content-Disposition: inline
+In-Reply-To: <20091014182729.GC19095@wrars-comp.wrarsdomain>
+X-Operating-System: ALT Linux Sisyphus
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: Mutt/1.5.20 (2009-06-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-I am currently writing a kernel driver for an IMU, this is a basic
-driver that is taking infos from
-two SPI devices (an adc and a magnetic sensor), that are running on
-the same bus, but different with different CS.
+--DNUSDXU7R7AVVM8C
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm having troubles to determine if the architecture I am currently
-thinking about is a good way to do things.
-In order to write portable code I was thinking in using general kernel
-APIs, and came out with something like this:
- _____      ______
-|     | <> |  ADC |
-|     |    |______|
-| IMU |     ______  <> Bus SPI
-|     | <> |  MAG |
-|_____|    |______|
+On Thu, Oct 15, 2009 at 12:27:29AM +0600, Andrey Rahmatullin wrote:
+> Even after trivial fix (including <linux/sched.h> into
+> drivers/staging/rt2860/rt_linux.h) the driver doesn't compile:
+>=20
+> drivers/staging/rt2860/rt_main_dev.c: In function 'rt_ieee80211_if_setup':
+> drivers/staging/rt2860/rt_main_dev.c:691: error: 'struct net_device' has
+> no member named 'wireless_handlers'
+For the archives: it just means that CONFIG_WIRELESS_EXT should be enabled.
 
-Each block correspond to a driver:
-* IMU is a basic char driver, depending on both ADC and MAG driver,
-and that register new spi_device to the spi_master
-* ADC and MAG are instances of an spi_driver, with a char driver as an interface
 
-The IMU must take samples from the devices at a fixed rate.
-A problem is that to retrieve infos from the MAG for example, a
-command must be send first, then there is a delay from
-1 to 4ms before the result are available, which is known when a PIN gets high.
+--=20
+WBR, wRAR (ALT Linux Team)
 
-Since I'm a beginner in kernel writing, I really don't know if the
-approach I took is a good way to do things or not.
-If that's not the case, can anyone give me some hints about how I
-should consider doing things ?
+--DNUSDXU7R7AVVM8C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-However, in the case as my approach is right, I am really worried
-about the delay part, since I don't want the kernel
-to block for 5ms doing nothing a hundred times per second just because
-it is reading from the SPI, I was considering
-asynchronous IO implementation on the ADC/MAG side.
-A timer would generate the sample rate in the IMU driver, tell the
-ADC, which would send the command, then return.
-On the gpio interrupt, the driver would read the ADC, and return the
-result to the IMU. Which would then tell the MAG,
-which would send the command, then return. Then gpio interrupt, the
-driver read from the MAG, and return the result to
-the IMU again, which would then store both results in a buffer, until
-an application in user space decide to read it.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-I am having trouble writing the Imu <=> Adc and Imu <=> Mag
-communication part, did I got it wrong ?
+iQEcBAEBCAAGBQJK2DWCAAoJEOih81koZvPBDrUH+QE1w3IBWXNDAT/WqgG4Y/KU
+9ApUFWCPNKHCBd611aatXt5jJ66V1U+WFM7QpmsgSEpflHXNWpE1WU3F/+oy33Im
+wfuMaye3I1+0PYK8sjpRhKdSPAyWHT2H73BHsea4cZB7NGECQ7//Anwx8injxod9
+e6SfPVbTJQOoT7kMVf614HLAfbBAV+UrpMbZt/k+k5EyngEgJUbzwlYpRHFexREQ
+EalM6IF2ZghLknAwxMrVguijVF7VeGdI0kV/QAhOhD3idm6FIgYRqGwk0vscMHVm
+K88c2Tc7USCBIwaqsfHq3ymVKQbhi2iauEFAQZmDnUKI9JdlsqSs1of2zAb8Zbs=
+=k33L
+-----END PGP SIGNATURE-----
 
-Best regards,
-Bertrand
+--DNUSDXU7R7AVVM8C--
