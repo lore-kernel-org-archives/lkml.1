@@ -1,323 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752584AbZJQPMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434AbZJQPST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752584AbZJQPMn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 11:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZJQPMm
+	id S1752434AbZJQPST (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 11:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbZJQPSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 11:12:42 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:52807 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752390AbZJQPMg (ORCPT
+	Sat, 17 Oct 2009 11:18:18 -0400
+Received: from trinity.develer.com ([83.149.158.210]:50968 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751700AbZJQPSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 11:12:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=YWLZ4KPg6jKqS1QgYY4Dl985CIutLxBAEFrs2fItZD+p2xUUQw4VOeBmoU8SF+vc1a
-         V1OWOwJ172ev/Ehgog3YOeiXzhdSC9SeMUKz5WLvaSx8qL7SqTPC6ccxznM+OgvQPGoR
-         yA3PgYtMtIhTqY3Aq7BL7aSpmtRMZvsP1CD8E=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 2/2] perf tools: Introduce bitmask'ed additional headers
-Date: Sat, 17 Oct 2009 17:12:34 +0200
-Message-Id: <1255792354-11304-2-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <20091016074222.GD30019@elte.hu>
-References: <20091016074222.GD30019@elte.hu>
+	Sat, 17 Oct 2009 11:18:17 -0400
+Date: Sat, 17 Oct 2009 17:18:19 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       m-ikeda@ds.jp.nec.com, agk@redhat.com, peterz@infradead.org,
+       jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       riel@redhat.com
+Subject: Re: Performance numbers with IO throttling patches (Was: Re: IO
+	scheduler based IO controller V10)
+Message-ID: <20091017151817.GA29639@linux>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <20090924143315.781cd0ac.akpm@linux-foundation.org> <20091010195316.GB16510@redhat.com> <20091010222728.GA30943@linux> <20091012211120.GE7152@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012211120.GE7152@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This provides a new set of bitmasked headers. A new field is added
-in the perf headers that implements a bitmap storing optional features
-present in the perf.data file.
+On Mon, Oct 12, 2009 at 05:11:20PM -0400, Vivek Goyal wrote:
 
-The layout can be pictured like this:
+[snip]
 
-(Usual perf headers)(Features bitmap)[Feature 0][Feature n][Feature 255]
+> I modified my report scripts to also output aggreagate iops numbers and
+> remove max-bandwidth and min-bandwidth numbers. So for same tests and same
+> results I am now reporting iops numbers also. ( I have not re-run the
+> tests.)
+> 
+> IO scheduler controller + CFQ
+> -----------------------------------
+> [Multiple Random Reader]            [Sequential Reader]                 
+> nr  Agg-bandw Max-latency Agg-iops  nr  Agg-bandw Max-latency Agg-iops  
+> 1   223KB/s   132K usec   55        1   5551KB/s  129K usec   1387      
+> 2   190KB/s   154K usec   46        1   5718KB/s  122K usec   1429      
+> 4   445KB/s   208K usec   111       1   5909KB/s  116K usec   1477      
+> 8   158KB/s   2820 msec   36        1   5445KB/s  168K usec   1361      
+> 16  145KB/s   5963 msec   28        1   5418KB/s  164K usec   1354      
+> 32  139KB/s   12762 msec  23        1   5398KB/s  175K usec   1349      
+> 
+> io-throttle + CFQ
+> -----------------------------------
+> BW limit group1=10 MB/s             BW limit group2=10 MB/s             
+> [Multiple Random Reader]            [Sequential Reader]                 
+> nr  Agg-bandw Max-latency Agg-iops  nr  Agg-bandw Max-latency Agg-iops  
+> 1   36KB/s    218K usec   9         1   8006KB/s  20529 usec  2001      
+> 2   360KB/s   228K usec   89        1   7475KB/s  33665 usec  1868      
+> 4   699KB/s   262K usec   173       1   6800KB/s  46224 usec  1700      
+> 8   573KB/s   1800K usec  139       1   2835KB/s  885K usec   708       
+> 16  294KB/s   3590 msec   68        1   437KB/s   1855K usec  109       
+> 32  980KB/s   2861K usec  230       1   1145KB/s  1952K usec  286       
+> 
+> Note that in case of random reader groups, iops are really small. Few
+> thougts.
+> 
+> - What should be the iops limit I should choose for the group. Lets say if
+>   I choose "80", then things should be better for sequential reader group,
+>   but just think of what will happen to random reader group. Especially,
+>   if nature of workload in group1 changes to sequential. Group1 will
+>   simply be killed.
+> 
+>   So yes, one can limit a group both by BW as well as iops-max, but this
+>   requires you to know in advance exactly what workload is running in the
+>   group. The moment workoload changes, these settings might have a very
+>   bad effects.
+> 
+>   So my biggest concern with max-bwidth and max-iops limits is that how
+>   will one configure the system for a dynamic environment. Think of two
+>   virtual machines being used by two customers. At one point they might be
+>   doing some copy operation and running sequential workload an later some
+>   webserver or database query might be doing some random read operations.
 
-If the bit n is set, then the feature n is used in this file. They are
-all set in order. This brings a backward and forward compatibility.
+The main problem IMHO is how to accurately evaluate the cost of an IO
+operation. On rotational media for example the cost to read two distant
+blocks is not the same cost of reading two contiguous blocks (while on a
+flash/SSD drive the cost is probably the same).
 
-The trace_info section has moved into such optional features, this is
-the first and only one for now.
+io-throttle tries to quantify the cost in absolute terms (iops and BW),
+but this is not enough to cover all the possible cases. For example, you
+could hit a physical disk limit, because you're doing a workload too
+seeky, even if the iops and BW numbers are low.
 
-This is backward compatible with the .32 file version although it
-doesn't support the previous separate trace.info file.
+> 
+> - Notice the interesting case of 16 random readers. iops for random reader
+>   group is really low, but still the throughput and iops of sequential
+>   reader group is very bad. I suspect that at CFQ level, some kind of
+>   mixup has taken place where we have not enabled idling for sequential
+>   reader and disk became seek bound hence both the group are loosing.
+>   (Just a guess)
 
-And finally it doesn't support the current interim development version.
+Yes, my guess is the same.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
----
- tools/perf/builtin-record.c |    4 +-
- tools/perf/util/header.c    |  100 ++++++++++++++++++++++++-------------------
- tools/perf/util/header.h    |   30 +++++++++----
- 3 files changed, 78 insertions(+), 56 deletions(-)
+I've re-run some of your tests using a SSD (a MOBI MTRON MSD-PATA3018-ZIF1),
+but changing few parameters: I used a larger block size for the
+sequential workload (there's no need to reduce the block size of the
+single reads if we suppose to read a lot of contiguous blocks).
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index fc3709c..f0467ff 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -574,11 +574,11 @@ static int __cmd_record(int argc, const char **argv)
- 		header = perf_header__new();
- 
- 	if (raw_samples) {
--		perf_header__set_trace_info();
-+		perf_header__feat_trace_info(header);
- 	} else {
- 		for (i = 0; i < nr_counters; i++) {
- 			if (attrs[i].sample_type & PERF_SAMPLE_RAW) {
--				perf_header__set_trace_info();
-+				perf_header__feat_trace_info(header);
- 				break;
- 			}
- 		}
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index 9aae360..171d51b 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -8,6 +8,8 @@
- #include "../perf.h"
- #include "trace-event.h"
- 
-+#include <linux/bitmap.h>
-+
- /*
-  * Create new perf.data header attribute:
-  */
-@@ -48,25 +50,17 @@ void perf_header_attr__add_id(struct perf_header_attr *self, u64 id)
-  */
- struct perf_header *perf_header__new(void)
- {
--	struct perf_header *self = malloc(sizeof(*self));
-+	struct perf_header *self = calloc(sizeof(*self), 1);
- 
- 	if (!self)
- 		die("nomem");
- 
--	self->frozen = 0;
--
--	self->attrs = 0;
- 	self->size = 1;
- 	self->attr = malloc(sizeof(void *));
- 
- 	if (!self->attr)
- 		die("nomem");
- 
--	self->data_offset = 0;
--	self->data_size = 0;
--	self->trace_info_offset = 0;
--	self->trace_info_size = 0;
--
- 	return self;
- }
- 
-@@ -149,14 +143,12 @@ struct perf_file_header {
- 	struct perf_file_section	attrs;
- 	struct perf_file_section	data;
- 	struct perf_file_section	event_types;
--	struct perf_file_section	trace_info;
-+	feat_mask_t			adds_features;
- };
- 
--static int trace_info;
--
--void perf_header__set_trace_info(void)
-+void perf_header__feat_trace_info(struct perf_header *header)
- {
--	trace_info = 1;
-+	set_bit(HEADER_TRACE_INFO, perf_header__adds_mask(header));
- }
- 
- static void do_write(int fd, void *buf, size_t size)
-@@ -172,6 +164,32 @@ static void do_write(int fd, void *buf, size_t size)
- 	}
- }
- 
-+static void perf_header__adds_write(struct perf_header *self, int fd)
-+{
-+	struct perf_file_section trace_sec;
-+	u64 cur_offset = lseek(fd, 0, SEEK_CUR);
-+	unsigned long *feat_mask = perf_header__adds_mask(self);
-+
-+	if (test_bit(HEADER_TRACE_INFO, feat_mask)) {
-+		/* Write trace info */
-+		trace_sec.offset = lseek(fd, sizeof(trace_sec), SEEK_CUR);
-+		read_tracing_data(fd, attrs, nr_counters);
-+		trace_sec.size = lseek(fd, 0, SEEK_CUR) - trace_sec.offset;
-+
-+		/* Write trace info headers */
-+		lseek(fd, cur_offset, SEEK_SET);
-+		do_write(fd, &trace_sec, sizeof(trace_sec));
-+
-+		/*
-+		 * Update cur_offset. So that other (future)
-+		 * features can set their own infos in this place. But if we are
-+		 * the only feature, at least that seeks to the place the data
-+		 * should begin.
-+		 */
-+		cur_offset = lseek(fd, trace_sec.offset + trace_sec.size, SEEK_SET);
-+	}
-+};
-+
- void perf_header__write(struct perf_header *self, int fd)
- {
- 	struct perf_file_header f_header;
-@@ -210,23 +228,7 @@ void perf_header__write(struct perf_header *self, int fd)
- 	if (events)
- 		do_write(fd, events, self->event_size);
- 
--	if (trace_info) {
--		static int trace_info_written;
--
--		/*
--		 * Write it only once
--		 */
--		if (!trace_info_written) {
--			self->trace_info_offset = lseek(fd, 0, SEEK_CUR);
--			read_tracing_data(fd, attrs, nr_counters);
--			self->trace_info_size = lseek(fd, 0, SEEK_CUR) -
--						self->trace_info_offset;
--			trace_info_written = 1;
--		} else {
--			lseek(fd, self->trace_info_offset +
--				self->trace_info_size, SEEK_SET);
--		}
--	}
-+	perf_header__adds_write(self, fd);
- 
- 	self->data_offset = lseek(fd, 0, SEEK_CUR);
- 
-@@ -246,12 +248,10 @@ void perf_header__write(struct perf_header *self, int fd)
- 			.offset = self->event_offset,
- 			.size	= self->event_size,
- 		},
--		.trace_info = {
--			.offset = self->trace_info_offset,
--			.size = self->trace_info_size,
--		},
- 	};
- 
-+	memcpy(&f_header.adds_features, &self->adds_features, sizeof(feat_mask_t));
-+
- 	lseek(fd, 0, SEEK_SET);
- 	do_write(fd, &f_header, sizeof(f_header));
- 	lseek(fd, self->data_offset + self->data_size, SEEK_SET);
-@@ -274,6 +274,20 @@ static void do_read(int fd, void *buf, size_t size)
- 	}
- }
- 
-+static void perf_header__adds_read(struct perf_header *self, int fd)
-+{
-+	const unsigned long *feat_mask = perf_header__adds_mask(self);
-+
-+	if (test_bit(HEADER_TRACE_INFO, feat_mask)) {
-+		struct perf_file_section trace_sec;
-+
-+		do_read(fd, &trace_sec, sizeof(trace_sec));
-+		lseek(fd, trace_sec.offset, SEEK_SET);
-+		trace_report(fd);
-+		lseek(fd, trace_sec.offset + trace_sec.size, SEEK_SET);
-+	}
-+};
-+
- struct perf_header *perf_header__read(int fd)
- {
- 	struct perf_header	*self = perf_header__new();
-@@ -292,9 +306,11 @@ struct perf_header *perf_header__read(int fd)
- 
- 	if (f_header.size != sizeof(f_header)) {
- 		/* Support the previous format */
--		if (f_header.size == offsetof(typeof(f_header), trace_info))
--			f_header.trace_info.size = 0;
--		else
-+		if (f_header.size == offsetof(typeof(f_header), adds_features)) {
-+			unsigned long *mask = (unsigned long *)(void *)
-+					&f_header.adds_features;
-+			bitmap_zero(mask, HEADER_FEAT_BITS);
-+		} else
- 			die("incompatible file format");
- 	}
- 	nr_attrs = f_header.attrs.size / sizeof(f_attr);
-@@ -330,13 +346,9 @@ struct perf_header *perf_header__read(int fd)
- 		event_count =  f_header.event_types.size / sizeof(struct perf_trace_event_type);
- 	}
- 
--	self->trace_info_offset = f_header.trace_info.offset;
--	self->trace_info_size = f_header.trace_info.size;
-+	memcpy(&self->adds_features, &f_header.adds_features, sizeof(feat_mask_t));
- 
--	if (self->trace_info_size) {
--		lseek(fd, self->trace_info_offset, SEEK_SET);
--		trace_report(fd);
--	}
-+	perf_header__adds_read(self, fd);
- 
- 	self->event_offset = f_header.event_types.offset;
- 	self->event_size   = f_header.event_types.size;
-diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
-index 30aee51..0eb4a91 100644
---- a/tools/perf/util/header.h
-+++ b/tools/perf/util/header.h
-@@ -12,19 +12,29 @@ struct perf_header_attr {
- 	off_t id_offset;
- };
- 
-+#define HEADER_TRACE_INFO			1
-+
-+#define HEADER_FEAT_BITS			256
-+
-+typedef	typeof(u64[HEADER_FEAT_BITS / 8])	feat_mask_t;
-+
- struct perf_header {
--	int frozen;
--	int attrs, size;
-+	int			frozen;
-+	int			attrs, size;
- 	struct perf_header_attr **attr;
--	s64 attr_offset;
--	u64 data_offset;
--	u64 data_size;
--	u64 event_offset;
--	u64 event_size;
--	u64 trace_info_offset;
--	u64 trace_info_size;
-+	s64			attr_offset;
-+	u64			data_offset;
-+	u64			data_size;
-+	u64			event_offset;
-+	u64			event_size;
-+	feat_mask_t		adds_features;
- };
- 
-+static inline unsigned long *perf_header__adds_mask(struct perf_header *self)
-+{
-+	return (unsigned long *)(void *)&self->adds_features;
-+}
-+
- struct perf_header *perf_header__read(int fd);
- void perf_header__write(struct perf_header *self, int fd);
- 
-@@ -42,7 +52,7 @@ void perf_header_attr__add_id(struct perf_header_attr *self, u64 id);
- u64 perf_header__sample_type(struct perf_header *header);
- struct perf_event_attr *
- perf_header__find_attr(u64 id, struct perf_header *header);
--void perf_header__set_trace_info(void);
-+void perf_header__feat_trace_info(struct perf_header *header);
- 
- struct perf_header *perf_header__new(void);
- 
--- 
-1.6.2.3
+And for all the io-throttle tests I switched to noop scheduler (CFQ must
+be changed to be cgroup-aware before using it together with io-throttle,
+otherwise the result is that one simply breaks the logic of the other).
 
+=== io-throttle settings ===
+cgroup #1: max-bw 10MB/s, max-iops 2150 iop/s
+cgroup #1: max-bw 10MB/s, max-iops 2150 iop/s
+
+During the tests I used a larger block size for sequential readers,
+respect to the random readers:
+
+sequential-read:	block size = 1MB
+random-read:		block size = 4KB
+
+sequential-readers vs sequential-reader
+=======================================
+[ cgroup #1 workload ]
+fio_args="--rw=read --bs=1M --size=512M --runtime=30 --numjobs=N --direct=1"
+[ cgroup #2 workload ]
+fio_args="--rw=read --bs=1M --size=512M --runtime=30 --numjobs=1 --direct=1"
+
+__2.6.32-rc5__
+[   cgroup #1   ]       [   cgroup #2   ]
+tasks	aggr-bw		tasks	aggr-bw
+1	36210KB/s	1	36992KB/s
+2	47558KB/s	1	24479KB/s
+4	57587KB/s	1	14809KB/s
+8	64667KB/s	1	8393KB/s
+
+__2.6.32-rc5-io-throttle__
+[   cgroup #1   ]       [   cgroup #2   ]
+tasks	aggr-bw		tasks	aggr-bw
+1	10195KB/s	1	10193KB/s
+2	10279KB/s	1	10276KB/s
+4	10281KB/s	1	10277KB/s
+8	10279KB/s	1	10277KB/s
+
+random-readers vs sequential-reader
+===================================
+[ cgroup #1 workload ]
+fio_args="--rw=randread --bs=4k --size=512M --runtime=30 --numjobs=N --direct=1"
+[ cgroup #2 workload ]
+fio_args="--rw=read --bs=1M --size=512M --runtime=30 --numjobs=1 --direct=1"
+
+__2.6.32-rc5__
+[   cgroup #1   ]       [   cgroup #2   ]
+tasks	aggr-bw		tasks	aggr-bw
+1	4767KB/s	1	52819KB/s
+2	5900KB/s	1	39788KB/s
+4	7783KB/s	1	27966KB/s
+8	9296KB/s	1	17606KB/s
+
+__2.6.32-rc5-io-throttle__
+[   cgroup #1   ]       [   cgroup #2   ]
+tasks	aggr-bw		tasks	aggr-bw
+1	8861KB/s	1	8886KB/s
+2	8887KB/s	1	7578KB/s
+4	8886KB/s	1	7271KB/s
+8	8889KB/s	1	7489KB/s
+
+sequential-readers vs random-reader
+===================================
+[ cgroup #1 workload ]
+fio_args="--rw=read --bs=1M --size=512M --runtime=30 --numjobs=N --direct=1"
+[ cgroup #2 workload ]
+fio_args="--rw=randread --bs=4k --size=512M --runtime=30 --numjobs=1 --direct=1"
+
+__2.6.32-rc5__
+[   cgroup #1   ]       [   cgroup #2   ]
+tasks	aggr-bw		tasks	aggr-bw
+1	54511KB/s	1	4865KB/s
+2	70312KB/s	1	 965KB/s
+4	71543KB/s	1	 484KB/s
+8	72899KB/s	1	  98KB/s
+
+__2.6.32-rc5-io-throttle__
+[   cgroup #1   ]       [   cgroup #2   ]
+tasks	aggr-bw		tasks	aggr-bw
+1	8875KB/s	1	8885KB/s
+2	8884KB/s	1	8148KB/s
+4	8886KB/s	1	7637KB/s
+8	8886KB/s	1	7411KB/s
+
+random-readers vs random-reader
+===============================
+[ cgroup #1 workload ]
+fio_args="--rw=randread --bs=4k --size=512M --runtime=30 --numjobs=N --direct=1"
+[ cgroup #2 workload ]
+fio_args="--rw=randread --bs=4k --size=512M --runtime=30 --numjobs=1 --direct=1"
+
+__2.6.32-rc5__
+[   cgroup #1   ]       [   cgroup #2   ]
+tasks	aggr-bw		tasks	aggr-bw
+1	6141KB/s	1	6320KB/s
+2	8567KB/s	1	3987KB/s
+4	9783KB/s	1	2610KB/s
+8	11067KB/s	1	1227KB/s
+
+__2.6.32-rc5-io-throttle__
+[   cgroup #1   ]       [   cgroup #2   ]
+tasks	aggr-bw		tasks	aggr-bw
+1	8883KB/s	1	8886KB/s
+2	8888KB/s	1	7676KB/s
+4	8887KB/s	1	7364KB/s
+8	8884KB/s	1	7264KB/s
+
+With the SSD there's not a consistent degradation of cgroup #2 when we
+increase the tasks of the concurrent random readers in cgroup #1 (both
+in the random-vs-random or random-vs-sequential cases).
+
+We should better analyze the details (probably blktrace would help
+here), but it seems that in your tests the mix of CFQ and io-throttle
+generated a too seeky workload that caused the bad performance values of
+the sequential reader.
+
+-Andrea
