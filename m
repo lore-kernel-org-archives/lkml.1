@@ -1,83 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbZJQHrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752272AbZJQIC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752154AbZJQHrw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 03:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbZJQHrw
+	id S1752272AbZJQIC6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 04:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZJQIC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 03:47:52 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:37702 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbZJQHrv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 03:47:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=m7OJF987qpq1aR/mlwZxikqQ5nkfB9ItM4qDAxAHIge73Um1rh2nLdKo5k95xM+8WA
-         HKvolN/G7DPZYe+SlhHB4PCxXYpL1Tj6STxeWWkXDH6tFQvIor9P5JstUEp/jboAfGY8
-         0tY8oe8fGEevEg6R9WMmiXw9fKdSfL+LczV90=
+	Sat, 17 Oct 2009 04:02:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41509 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751379AbZJQICy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 04:02:54 -0400
+Date: Sat, 17 Oct 2009 10:02:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
+	probe and kprobe-tracer bugfixes
+Message-ID: <20091017080203.GA4155@elte.hu>
+References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <804dabb00910162243m47c038e3xa744ab165317b300@mail.gmail.com>
-References: <804dabb00910162243m47c038e3xa744ab165317b300@mail.gmail.com>
-Date: Sat, 17 Oct 2009 03:40:19 -0400
-Message-ID: <804dabb00910170040v27feb935mc95a751b0b7b4086@mail.gmail.com>
-Subject: Re: booting up: blocking indefinitely on kgdb?
-From: Peter Teoh <htmldeveloper@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sorry....now I reboot it is ok.   I don't know why. sorry about that.
 
-On Sat, Oct 17, 2009 at 1:43 AM, Peter Teoh <htmldeveloper@gmail.com> wrote:
-> Today, both my system (2.6.32.-rc4 from linus git tree and linux-next)
-> bootup blocked indefinitely on:
->
-> kgdb: Registered I/O driver kgdbts.
->
-> while booting up.   The expected line:
->
-> kgdb: Unregistered I/O driver kgdbts, debugger disabled.
->
-> never comes up.
->
-> My bootup menu.lst:
->
-> title Fedora (2.6.26-rc4-next-20080530)
->        root (hd1,7)
->        kernel /boot/vmlinuz-2.6.26-rc4-next-20080530 ro
-> root=UUID=d10fe8db-e7d4-4b42-b265-0109a3f3eedf
->        initrd /boot/initrd-2.6.26-rc4-next-20080530.img
-> title Fedora (2.6.32-rc4)
->        root (hd1,7)
->        kernel /boot/vmlinuz-2.6.32-rc4 ro
-> root=UUID=d10fe8db-e7d4-4b42-b265-0109a3f3eedf
->        initrd /boot/initrd-2.6.32-rc4.img
->
-> and kgdb-related option:
->
-> CONFIG_HAVE_ARCH_KGDB=y
-> CONFIG_KGDB=y
-> CONFIG_KGDB_SERIAL_CONSOLE=y
-> CONFIG_KGDB_TESTS=y
-> CONFIG_KGDB_TESTS_ON_BOOT=y
-> CONFIG_KGDB_TESTS_BOOT_STRING="y"
->
-> The same 2.6.32-rc4 image have bootup previously before without any
-> problem.   So what could be the potential cause of this permanent
-> wait?
->
-> --
-> Regards,
-> Peter Teoh
->
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
+> Hi Ingo and Frederic,
+> 
+> Here are the bugfix and update (mostly cleanup) patches for
+> previous patchset.
+> 
+> > I hope it's part of the last family of instruction set we
+> > are missing.
+> 
+> I added missing SSE opcodes and 3DNow! support too.
+> However, near future, x86 decoder may need AVX support.
+> (AFAIK, currently, there are no code using it.)
+> 
+> Thank you,
+> 
+> ---
+> 
+> Masami Hiramatsu (9):
+>       perf: Add perf-probe document
+>       perf: Add DIE_IF() macro for error checking
+>       perf: Use eprintf() for debug messages in perf-probe
+>       perf: Use die() for error cases in perf-probe
+>       perf: Check libdwarf APIs for perf probe
+>       x86: Add AMD prefetch and 3DNow! opcodes to opcode map
+>       x86: Add MMX/SSE opcode groups to opcode map
+>       tracing/kprobes: Add failure messages for debugging
+>       tracing/kprobes: Update kprobe-tracer selftest against new syntax
+> 
+> 
+>  arch/x86/lib/x86-opcode-map.txt         |   23 ++++-
+>  kernel/trace/trace_kprobe.c             |   39 ++++++--
+>  tools/perf/Documentation/perf-probe.txt |   48 ++++++++++
+>  tools/perf/Makefile                     |    5 +
+>  tools/perf/builtin-probe.c              |   70 ++++++---------
+>  tools/perf/command-list.txt             |    1 
+>  tools/perf/util/probe-finder.c          |  149 ++++++++++++++-----------------
+>  tools/perf/util/probe-finder.h          |   17 ----
+>  tools/perf/util/util.h                  |    9 ++
+>  9 files changed, 206 insertions(+), 155 deletions(-)
+>  create mode 100644 tools/perf/Documentation/perf-probe.txt
 
+Looks really nice, thanks Masami!
 
--- 
-Regards,
-Peter Teoh
+Note, i've created a new topic tree for this work: tip:perf/probes, and 
+have put all the commits there - since i expect most of the 
+enabling/completion work for this feature to happen on the perf events 
+side.
+
+I also merged this tree upto v2.6.32-rc5 and resolved a conflict with 
+recent tracing fixes. Please base future patches on this new tree.
+
+Thanks,
+
+	Ingo
