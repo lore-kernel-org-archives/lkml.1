@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbZJQUh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbZJQUtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753671AbZJQUh7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 16:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZJQUh7
+	id S1753767AbZJQUtw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 16:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbZJQUtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 16:37:59 -0400
-Received: from nerdhammel.gnuher.de ([88.198.0.170]:48599 "EHLO
-	nerdhammel.gnuher.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753635AbZJQUh6 (ORCPT
+	Sat, 17 Oct 2009 16:49:52 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:42375 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752440AbZJQUtv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 16:37:58 -0400
-To: linux-kernel@vger.kernel.org
-Path: not-for-mail
-From: Sven Geggus <lists@fuchsschwanzdomain.de>
-Subject: Re: Kernel crash on 2.6.31.x (kcryptd: page allocation failure..)
-Date: Sat, 17 Oct 2009 20:38:00 +0000 (UTC)
-Organization: Geggus clan, virtual section
-Message-ID: <hbd9v8$7rf$1@ultimate100.geggus.net>
-References: <hbd4dk$5ac$1@ultimate100.geggus.net> <200910172230.13162.elendil@planet.nl>
-NNTP-Posting-Host: diesel.geggus.net
-X-Trace: ultimate100.geggus.net 1255811880 8047 192.168.3.2 (17 Oct 2009 20:38:00 GMT)
-X-Complaints-To: usenet@geggus.net
-NNTP-Posting-Date: Sat, 17 Oct 2009 20:38:00 +0000 (UTC)
-Cancel-Lock: sha1:jNOPNcvUaOcEP1Fo/gpYZXZ5gWI=
-X-TERMINAL: rxvt-unicode
-X-OS: Debian GNU/Linux (Kernel 2.6.31-ztdummy)
-User-Agent: tin/1.9.5-20090720 ("Rieclachan") (UNIX) (Linux/2.6.31-ztdummy (i686))
+	Sat, 17 Oct 2009 16:49:51 -0400
+Date: Sat, 17 Oct 2009 16:41:59 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: David Rientjes <rientjes@google.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] slub: allow stats to be cleared
+In-Reply-To: <alpine.DEB.1.00.0910170154580.31277@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.10.0910171637180.28063@gentwo.org>
+References: <alpine.DEB.1.00.0910150215320.1551@chino.kir.corp.google.com> <alpine.DEB.1.10.0910161249100.6120@gentwo.org> <alpine.DEB.1.00.0910161129320.21328@chino.kir.corp.google.com> <alpine.DEB.1.10.0910162126090.26081@gentwo.org>
+ <alpine.DEB.1.00.0910170154580.31277@chino.kir.corp.google.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop <elendil@planet.nl> wrote:
+On Sat, 17 Oct 2009, David Rientjes wrote:
 
-> What is the _exact_ command sequence you use to reproduce it? I already 
-> have a testcase, but a second test case, or a simpler one, may be useful.
+> On Fri, 16 Oct 2009, Christoph Lameter wrote:
+>
+> > > No, it just clears that particular statistic.
+> >
+> > Ahh. Yes I mis-scanned the loop there. Would it not be better to reset all
+> > counters using some trigger file? Its a bit difficult to reset them all
+> > with this patch.
+> >
+>
+> Pekka seems willing to look at a patch that moves all statistic files to
+> /sys/kernel/slab/cache/stats, so it should make both collecting and now
+> clearing stats very easy without the addition of another file.
 
-Not a particular easy testcase.
+I think we should move the stats regardless of that issue.
 
-This is what I did:
+I'd also like to be able to just do a single echo
+to clear the all stats instead of everyone trying to improvise something
+to touch all files. Its highly unlikely that one only wants to zero
+individual counters.  One way to reset them all would suffice.
 
-On the crashing machine with the dm-encrypted xfs volume:
-ionice -c 3 socat TCP4-LISTEN:5555 - >backup.tar
-
-On the source machine:
-tar cv dir |socat - TCP4:targetmachine:5555
-
-You will certainly not need to use tar.
-
-socat /dev/zero TCP4:targetmachine:5555 should work as well.
-
-I don't know if TCP traffic is really needed probably it is.
-
-Regards
-
-Sven
-
--- 
-"We don't know the OS that God uses, but the Vatican uses Linux"
-                               (Sister Judith Zoebelein, Vatican Webmaster)
-
-/me is giggls@ircnet, http://sven.gegg.us/ on the Web
