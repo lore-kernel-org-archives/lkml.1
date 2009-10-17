@@ -1,22 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752183AbZJQGms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039AbZJQGnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752183AbZJQGms (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 02:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbZJQGmr
+	id S1752039AbZJQGnR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 02:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbZJQGnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 02:42:47 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:39217 "EHLO mgw2.diku.dk"
+	Sat, 17 Oct 2009 02:43:16 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:39228 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbZJQGmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 02:42:46 -0400
-Date: Sat, 17 Oct 2009 08:42:49 +0200 (CEST)
+	id S1751986AbZJQGnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 02:43:15 -0400
+Date: Sat, 17 Oct 2009 08:43:17 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: Ben Dooks <ben-linux@fluff.org>, Russell King <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 13/14] arch/arm/plat-s3c24xx: Move dereference after NULL
- test
-Message-ID: <Pine.LNX.4.64.0910170842310.9213@ask.diku.dk>
+To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 14/14] tools/perf: Move dereference after NULL test
+Message-ID: <Pine.LNX.4.64.0910170842500.9213@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -25,8 +22,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-If the NULL test on buf is needed, then the dereference should be after the
-NULL test.
+In each case, if the NULL test on thread is needed, then the dereference
+should be after the NULL test.
 
 A simplified version of the semantic match that detects this problem is as
 follows (http://coccinelle.lip6.fr/):
@@ -45,28 +42,93 @@ identifier fld;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/arm/plat-s3c24xx/dma.c         |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ tools/perf/builtin-annotate.c |    4 ++--
+ tools/perf/builtin-report.c   |    4 ++--
+ tools/perf/builtin-sched.c    |    4 ++--
+ tools/perf/builtin-trace.c    |    4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/plat-s3c24xx/dma.c b/arch/arm/plat-s3c24xx/dma.c
-index 196b191..f046f8c 100644
---- a/arch/arm/plat-s3c24xx/dma.c
-+++ b/arch/arm/plat-s3c24xx/dma.c
-@@ -208,14 +208,14 @@ s3c2410_dma_loadbuffer(struct s3c2410_dma_chan *chan,
- {
- 	unsigned long reload;
+diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
+index 6b00529..6e580ff 100644
+--- a/tools/perf/builtin-sched.c
++++ b/tools/perf/builtin-sched.c
+@@ -1581,14 +1581,14 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 		(void *)(long)ip,
+ 		(long long)period);
  
--	pr_debug("s3c2410_chan_loadbuffer: loading buff %p (0x%08lx,0x%06x)\n",
--		 buf, (unsigned long)buf->data, buf->size);
+-	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
 -
- 	if (buf == NULL) {
- 		dmawarn("buffer is NULL\n");
- 		return -EINVAL;
+ 	if (thread == NULL) {
+ 		eprintf("problem processing %d event, skipping it.\n",
+ 			event->header.type);
+ 		return -1;
  	}
  
-+	pr_debug("s3c2410_chan_loadbuffer: loading buff %p (0x%08lx,0x%06x)\n",
-+		 buf, (unsigned long)buf->data, buf->size);
++	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
 +
- 	/* check the state of the channel before we do anything */
+ 	process_raw_event(event, more_data, cpu, timestamp, thread);
  
- 	if (chan->load_state == S3C2410_DMALOAD_1LOADED) {
+ 	return 0;
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index f57a23b..df265e2 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -634,14 +634,14 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 		}
+ 	}
+ 
+-	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
+-
+ 	if (thread == NULL) {
+ 		eprintf("problem processing %d event, skipping it.\n",
+ 			event->header.type);
+ 		return -1;
+ 	}
+ 
++	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
++
+ 	if (comm_list && !strlist__has_entry(comm_list, thread->comm))
+ 		return 0;
+ 
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 8c84320..7c1fa3a 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -110,14 +110,14 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 		event->ip.pid,
+ 		(void *)(long)ip);
+ 
+-	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
+-
+ 	if (thread == NULL) {
+ 		fprintf(stderr, "problem processing %d event, skipping it.\n",
+ 			event->header.type);
+ 		return -1;
+ 	}
+ 
++	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
++
+ 	if (event->header.misc & PERF_RECORD_MISC_KERNEL) {
+ 		level = 'k';
+ 		sym = kernel_maps__find_symbol(ip, &map);
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+index fb3f3c2..b9c4371 100644
+--- a/tools/perf/builtin-trace.c
++++ b/tools/perf/builtin-trace.c
+@@ -87,14 +87,14 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 		(void *)(long)ip,
+ 		(long long)period);
+ 
+-	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
+-
+ 	if (thread == NULL) {
+ 		eprintf("problem processing %d event, skipping it.\n",
+ 			event->header.type);
+ 		return -1;
+ 	}
+ 
++	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
++
+ 	if (sample_type & PERF_SAMPLE_RAW) {
+ 		struct {
+ 			u32 size;
