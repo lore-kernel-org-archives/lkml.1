@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbZJQPgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbZJQPmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752599AbZJQPgD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 11:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZJQPgC
+	id S1752700AbZJQPmE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 11:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbZJQPmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 11:36:02 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:47147 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbZJQPgA (ORCPT
+	Sat, 17 Oct 2009 11:42:03 -0400
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:35671 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751885AbZJQPmA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 11:36:00 -0400
+	Sat, 17 Oct 2009 11:42:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=uZeFLjYHmMlm+986WxhPoKAaKarw2VVKnsTbLi0Xubf4pPZr0ZdRP7eUu0yhLA1SmC
-         yVPZnhyLd7WMipyp17GlwLleVTaAk6Q8CbcmiIURpM3Bx6UqR6b9g4rQnnYav6Ac2t0T
-         G5tPMBsMsQDWFvBigg0U8HC5wRIxuG6feQ29Y=
-Message-ID: <4AD9E45C.2080807@gmail.com>
-Date: Sat, 17 Oct 2009 17:35:56 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nYDhqAAztxCDoitVx1qkyN/SkOflITH9V9x/BlZXRzF6bv+yedHIcu1WCx/U5NKGcC
+         XF56bB0jdPpORWKrInIbL9hnq2LG35X5AvTYdDdgnHqWQgy21P009NOALTl6n1G6ntY8
+         tCTvid3ZG/9KxcS5pkg8KR3sT5HWPg5WeI55A=
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, alan@linux.intel.com,
-       stable@kernel.org, stable-commits@vger.kernel.org,
-       =?ISO-8859-1?Q?=22Fr=E9?=
-	 =?ISO-8859-1?Q?d=E9ric_L=2E_W=2E_Meunier=22?= <fredlwm@gmail.com>,
-       linux-kernel@vger.kernel.org, Boyan <btanastasov@yahoo.co.uk>
-Subject: Re: patch pty-quickfix-for-the-pty-enxio-timing-problems.patch added
- to 2.6.31-stable tree
-References: <20091015184454.5BEDB48B35@coco.kroah.org> <alpine.LFD.2.01.0910151450420.6146@localhost.localdomain> <20091015215459.GA11142@suse.de> <alpine.LFD.2.01.0910151502020.6146@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0910151502020.6146@localhost.localdomain>
+In-Reply-To: <20091017235117U.fujita.tomonori@lab.ntt.co.jp>
+References: <20091013091017.GA18431@localhost.localdomain>
+	 <20091017224028V.fujita.tomonori@lab.ntt.co.jp>
+	 <961aa3350910170743n4c9947d1ka0bd31aa1c7b9917@mail.gmail.com>
+	 <20091017235117U.fujita.tomonori@lab.ntt.co.jp>
+Date: Sun, 18 Oct 2009 00:42:04 +0900
+Message-ID: <961aa3350910170842w58a72be0id5fbd0e3a5058a1c@mail.gmail.com>
+Subject: Re: [PATCH 2/8] bitmap: Introduce bitmap_set, bitmap_clear, 
+	bitmap_find_next_zero_area
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, sparclinux@vger.kernel.org,
+       benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
+       gregkh@suse.de, LW@karo-electronics.de, linux-usb@vger.kernel.org,
+       rolandd@cisco.com, yevgenyp@mellanox.co.il, netdev@vger.kernel.org,
+       tony.luck@intel.com, fenghua.yu@intel.com, linux-ia64@vger.kernel.org,
+       linux-altix@sgi.com
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Thu, 15 Oct 2009, Greg KH wrote:
->> Hm, ok, Marcin asked that I include this patch as it fixed his keyboard
->> problems with X on 2.6.31.
+>> >> --- a/lib/iommu-helper.c
+>> >> +++ b/lib/iommu-helper.c
+>> >> @@ -19,7 +19,7 @@ again:
+>> >>       index = (index + align_mask) & ~align_mask;
+>> >>
+>> >>       end = index + nr;
+>> >> -     if (end >= size)
+>> >> +     if (end > size)
+>> >
+>> > I think that this is intentional; the last byte of the limit doesn't
+>> > work.
 >>
->> Marcin, any ideas?
-> 
-> Get current -git, I think it shoul be fixed there properly.
-> 
-> Marking the pty's "low_latency" works around the problem, but will break 
-> at least ppp.
-> 
-> 		Linus
+>> It looks ok to me. Without above change, find_next_zero_area cannot
+>> find a 64 bits zeroed area in next sample code.
+>
+> I meant that we don't want to find such area for IOMMUs (IIRC, it code
+> came from POWER IOMMU).
 
-Greg, I see you queued c8e33141911bf8fe87dc6c92793b9a59b2be0130
-(tty: Make flush_to_ldisc() locking more robust) for stable, so I guess
-you figured out it was not my problems with keyboard (*), but Boyan's
-and Frédéric's.
+OK, I see.  I think we need the comment about it.
 
-* http://lkml.org/lkml/2009/10/12/465
+So we cannot replace find_next_zero_area by bitmap_find_next_zero_area
+and current -mmotm has the bug introduced by this patch in iommu-helper
+and I also introduced the bug in bitmap_find_next_zero_area if
+align_mask != 0 in
+bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area-fix.patch
 
-Marcin
+Andrew, please drop
 
+lib-iommu-helperc-fix-off-by-one-error-in-find_next_zero_area.patch
+iommu-helper-simplify-find_next_zero_area.patch
+bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area.patch
+bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area-fix.patch
+iommu-helper-use-bitmap-library.patch
+isp1362-hcd-use-bitmap_find_next_zero_area.patch
+mlx4-use-bitmap_find_next_zero_area.patch
+sparc-use-bitmap_find_next_zero_area.patch
+ia64-use-bitmap_find_next_zero_area.patch
+genalloc-use-bitmap_find_next_zero_area.patch
+
+I'll overhaul the patchset and retry again.
