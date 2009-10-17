@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbZJQPIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752427AbZJQPJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752318AbZJQPIm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 11:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbZJQPIm
+	id S1752427AbZJQPJh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 11:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZJQPJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 11:08:42 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:46287 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbZJQPIl (ORCPT
+	Sat, 17 Oct 2009 11:09:37 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:40664 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752155AbZJQPJg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 11:08:41 -0400
-Subject: Re: [PATCH 2/2] rt2x00: Implement support for rt2800pci
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Ivo van Doorn <ivdoorn@gmail.com>, John Linville <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, users@host1.serialmonkey.com,
-       Alban Browaeys <prahal@yahoo.com>,
-       Benoit PAPILLAULT <benoit.papillault@free.fr>,
-       Felix Fietkau <nbd@openwrt.org>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       Mattias Nissler <mattias.nissler@gmx.de>,
-       Mark Asselstine <asselsm@gmail.com>,
-       Xose Vazquez Perez <xose.vazquez@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200910171654.03344.bzolnier@gmail.com>
-References: <200910152137.58164.IvDoorn@gmail.com>
-	 <200910152204.16407.IvDoorn@gmail.com>
-	 <200910171654.03344.bzolnier@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-nGMAjkV8uCWHfn4fFx2o"
-Date: Sun, 18 Oct 2009 00:08:24 +0900
-Message-Id: <1255792104.3434.2.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Sat, 17 Oct 2009 11:09:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:message-id
+         :content-type:content-transfer-encoding;
+        b=B+jWlUEfMjJvLRNibYtWYAkrnrh8KvJnAxauA+NoDGQ8e6OhXmQ4cO37PDUXCvfpql
+         1WhONLFGjByxu0xFc3zAK/F3APvXtCQ7emC0Ni/HdvKXRXyvHPZwQIdvUqkEcK1MuBV3
+         CAEjN4D0Nvlg9+8TY+JGTyau1VlZALKzz3NRg=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: rt2x00 mailing list [Fwd: Your message to users awaits moderator approval]
+Date: Sat, 17 Oct 2009 17:09:06 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31.1-56.fc12.x86_64; KDE/4.3.1; x86_64; ; )
+Cc: "David S. Miller" <davem@davemloft.net>
+MIME-Version: 1.0
+Message-Id: <200910171709.06386.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-nGMAjkV8uCWHfn4fFx2o
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+It is not even marked as such..
 
-On Sat, 2009-10-17 at 16:54 +0200, Bartlomiej Zolnierkiewicz wrote:
+RALINK RT2X00 WIRELESS LAN DRIVER
+P:      rt2x00 project
+L:      linux-wireless@vger.kernel.org
+L:      users@rt2x00.serialmonkey.com
 
-> I also used the opportunity to take a closer look at this driver and
-> it seems that it needlessly adds around 2 KLOC to kernel by duplicating
-> the common content of rt2800usb.h to rt2800pci.h instead of moving it
-> to the shared header (like it is done in the staging crap drivers):
+Dave, I guess that you would like to know about that.
 
-Tell me you're kidding -- comparing 2k duplicated LOC with a driver that
-ships its own wifi stack?
+----------  Forwarded Message  ----------
 
-johannes
+Subject: Your message to users awaits moderator approval
+Date: Sunday 18 October 2009
+From: users-bounces@rt2x00.serialmonkey.com
+To: bzolnier@gmail.com
 
---=-nGMAjkV8uCWHfn4fFx2o
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Your mail to 'users' with the subject
 
------BEGIN PGP SIGNATURE-----
+    Re: [PATCH 2/2] rt2x00: Implement support for rt2800pci
 
-iQIcBAABAgAGBQJK2d3kAAoJEODzc/N7+QmawG8P/iEWM2uicvDfAQn+HVbN8ISz
-mDX9UhUx5AEPFgvqcxZR2+lI3pMj6v4fvUlXouozUznX2rrPTIKadDOASLZlrRrc
-zz5iO455SdIMIOZCmwYWg+6WRshl0eGSq6nDtzt/oOUf1kVU+YI3kg0CTx5EoRdw
-FY/CwcjDEOswrazBBZMZM8nYTegC9+kGosZUmJ4Sib0bQFj6y5GWeCRaNyF805rx
-gy4O4FxzBdv+EtfnJ+/sf5tuPe0oBP6o2DsW7jSNvJkFp2wjcBxtm0GyiJfjadIz
-nKAF7x2Bg0kAIR44nCETebDnvDjzAHwqA5Nl20CeEIJUvPY+B31WlR6YOXFRTk71
-QZig03D63KR2azfRfeZjamRBhW3V8H5mpwDDarYQfv+V63nUtSjt8ElXmIeFheib
-FYKg/5OILjp9d6Mp+6pg9LLQoeHYIftbBC/mAMxdffIr+SpZPBqenJCQFo5yfDbC
-XGjl7Siekxkwq+Y1I4sCfIK0McA54ZWYbCBtVvcZyJpnaV4HYEQhOt0vOvXnKRiN
-B+qnZGcLU3tLlM6ZX1+4qFzMxrsEN8FbFyRUduFNSnvD0pDe/mffla25PJdH6ZBN
-v2sT/Pp4dZLiIcHzdYg9IYn+k0JQvVf9k/yAcVh6N8Zilb/jCo+3S8GPbb2Mr9vK
-9J6jxwLBmJQ8NM3V/r28
-=5wb2
------END PGP SIGNATURE-----
+Is being held until the list moderator can review it for approval.
 
---=-nGMAjkV8uCWHfn4fFx2o--
+The reason it is being held:
 
+    Post by non-member to a members-only list
+
+Either the message will get posted to the list, or you will receive
+notification of the moderator's decision.  If you would like to cancel
+this posting, please visit the following URL:
+
+    http://rt2x00.serialmonkey.com/mailman/confirm/users_rt2x00.serialmonkey.com/66f5d5782ee275bf52de31e0eaed2aa86234833c
+
+
+-------------------------------------------------------
