@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbZJQSAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbZJQSXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753343AbZJQSAd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 14:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZJQSAd
+	id S1753063AbZJQSXa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 14:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbZJQSX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 14:00:33 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:60605 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751469AbZJQSAc (ORCPT
+	Sat, 17 Oct 2009 14:23:29 -0400
+Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:37553 "EHLO
+	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbZJQSX3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 14:00:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=j9J41XUG1frcAF/3O1TmoGfIJYtcAxbwcEg3UHlLlnUrJb6ViBA7RFVhDMulomcMXt
-         wIX+RJJydYgf+WUSrhwN/bbq6GblzvnL3lN2/eN8nB472u5EekH/hJDZT9cg1BkQtvoB
-         /W3cVsjN6HJO82pvsmoCbxLIQKNbVo32TirAk=
+	Sat, 17 Oct 2009 14:23:29 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4ADA0BC9.4010506@cam.ac.uk>
+Date: Sat, 17 Oct 2009 19:24:09 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091007)
 MIME-Version: 1.0
-Date: Sat, 17 Oct 2009 20:00:36 +0200
-Message-ID: <2d05c4580910171100of7cb050o514892164cc88176@mail.gmail.com>
-Subject: kdb
-From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
+To: LKML <linux-kernel@vger.kernel.org>, Jean Delvare <khali@linux-fr.org>,
+       Zhang Rui <rui.zhang@intel.com>
+Subject: Best option for handling dependencies between sysfs params.
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Dear All,
 
-I have compiled kernel 2.6.31.4 and apply real-time patch
-"patch-2.6.31.4-rt14.bz2"
-Then I wanted to install "kdb", and I followed instructions from this site:
+The tsl2561 ambient light sensor has separate controls for integration
+time and for gain.
 
-http://www.ibm.com/developerworks/linux/library/l-kdbug/
+Now, discussions about the tsl2550 driver suggested that range be handled
+by an illuminance0_max_range parameter.  In that particular device things
+are simple as there is one internal variable effecting the range.
 
-and I selected these patches:
+So to try and match interfaces, I'm intending to have the
+same illuminance0_max_range and also an integration time parameter.
+(avoiding for now the more complex manual option!)
 
-kdb-v4.4-2.6.31-x86-4.bz2
-kdb-v4.4-2.6.31-common-4.bz2
+My current approach is to use writes to illuminance0_max_range to store
+a 'requested' max gain value.  Thus a later change to the integration time
+parameter may well result in the internal gain parameter also changing
+in order to meet this desired value.
 
-One patch was patched without problems [not sure which one :) ] and
-other one had one
-line with rejection [something about serial port]. Anyway, I compiled
-kernel, and booted
-into it after.
+Reading this parameter will always return the max range value for
+the current configuration.
 
-Questions:
+Do people think this is a valid approach?  More or less corresponds to 
+'integration time priority' in the language of photography. In effect
+it makes the internal gain an automatic parameter rather than integration
+time. Could just as easily do the other way round though.
 
-1. When I press pause key everything freezes ? Is it because that one line of
-rejection during patching ?
+All comments welcome.
 
-2. How do you invoke kdb ? When you invoke it properly, will "kdb"
-shell will be visible in
-terminal ?
-
-regards
+Jonathan
