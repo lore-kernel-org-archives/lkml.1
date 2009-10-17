@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbZJRSvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbZJQR5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755136AbZJRSvn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 14:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbZJRSvm
+	id S1753328AbZJQR5T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 13:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbZJQR5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 14:51:42 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34749 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755058AbZJRSvm (ORCPT
+	Sat, 17 Oct 2009 13:57:18 -0400
+Received: from smtp.zeugmasystems.com ([70.79.96.174]:21017 "EHLO
+	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753250AbZJQR5R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 14:51:42 -0400
-Date: Sat, 17 Oct 2009 19:27:43 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Greg KH <gregkh@suse.de>
-Cc: david@lang.hm, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: removing existing working drivers via staging
-Message-ID: <20091017172743.GE1526@ucw.cz>
-References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm> <4AD74ED7.9070501@s5r6.in-berlin.de> <alpine.DEB.2.00.0910150936310.22169@asgard.lang.hm> <20091015164726.GA10125@suse.de>
+	Sat, 17 Oct 2009 13:57:17 -0400
+Date: Sat, 17 Oct 2009 10:57:21 -0700 (PDT)
+From: Anirban Sinha <asinha@zeugmasystems.com>
+X-X-Sender: asinha@sleet.zeugmasystems.local
+To: David Miller <davem@davemloft.net>
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, ani@anirban.org
+Subject: Re: Kernel oops when clearing bgp neighbor info with TCP MD5SUM
+ enabled
+In-Reply-To: <20091008.175703.83006470.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0910171035340.2364@sleet.zeugmasystems.local>
+References: <Pine.LNX.4.64.0910081514050.18315@sleet.zeugmasystems.local>
+ <20091008.155429.02850661.davem@davemloft.net>
+ <Pine.LNX.4.64.0910081622400.18315@sleet.zeugmasystems.local>
+ <20091008.175703.83006470.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091015164726.GA10125@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 17 Oct 2009 17:57:21.0859 (UTC) FILETIME=[4695E930:01CA4F53]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-10-15 09:47:26, Greg KH wrote:
-> On Thu, Oct 15, 2009 at 09:39:51AM -0700, david@lang.hm wrote:
-> > however, what I think I saw proposed was to move drivers that need to be 
-> > 'cleaned up', to staging and then dropping them if they don't get cleaned.
-> 
-> What is "proposed" is the following:
-> 
-> 	- For drivers currently in the kernel tree, that the subsystem
-> 	  maintainer, for whatever reason, feels is obsolete / broken /
-> 	  needs major cleaning / wants to get rid of, can be submitted
-> 	  to the staging maintainer to be moved to the drivers/staging/
-> 	  directory.
-> 	- For a file to be moved into this directory, all of the normal
-> 	  staging rules apply, including most importantly, a TODO file
-> 	  listing what needs to be done to the driver in order for it to
-> 	  be moved back into the main portion of the kernel tree.
-> 	- If, after a period of 3 releases, no work has been done on the
-> 	  driver by anyone, the driver will be removed from the staging
-> 	  tree, just like all drivers in the staging tree.
-> 
-> Note, as always, if a driver wants to come back from removal of the
-> staging tree, a simple email to the staging maintainer, along with the
-> promise that work will be done, is all it takes to resurrect it.
-> 
-> Sound good?
-> 
-> Now, where to put these "rules"?  Any suggestions?
+On Thu, 8 Oct 2009, David Miller wrote:
 
-I'm not sure it sounds good. It should not be named 'staging' at
-least.
+> >> > We are noticing a kernel OOPS on 2.6.26 kernel when we issue the command
+> >> > "clear ip bgp <bgp-peer-ip>" on Quagga BGP routing software.
+> >>
+> >> You will need to update your kernel, there have been many TCP
+> >> MD5 bug fixes since 2.6.26
+> >>
+> >
+> > Sigh ... wish that were that easy!
+>
+> Contact your vendor for support :-)
 
-								Pavel
+but we *are* the vendors for our distribution and even though I may not be
+a networking guru, I have little bit knowledge in working my way through the
+kernel code. I have traced down the cause of the BUG() and when I did a git
+pull against Linus' tree, I see the same issue in teh git tip as well.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The BUG() is triggered from kernel/timer.c, line 1037 within the
+function __run_timers(). I am reporting these line numbers from the latest git
+tip.
+
+What happens is that before and after the callback, the code grabs the preempt
+count and catches unbalanced preempt_enable() and preempt_disable() calls from
+within the callback function.  In this case, the callback function is
+inet_twdr_hangman() as can be seen from this instrumented log:
+
+[02:15:15.941981] Kernel panic - not syncing: <3>huh, entered ffffffff803fbd60
+(inet_twdr_hangman+0x0/0xe0)with preempt_count 00000102, exited with 00000101?
+
+Clearly there is an extra unbalanced preempt_enable() somewhere within the
+callback function.
+
+When I looked at the function, I see that in net/ipv4/inet_timewait_sock.c
+line 215, the function calls schedule_work(). schedule_work() calls
+queue_work() which in turn calls put_cpu() that ultimately does a
+preempt_enable(). It is this unbalanced preempt_enable() that decriments the
+preempt_count by one as can be seen from the above trace.
+
+I suspect that workqueue related operatios are illegal from a timer callback
+function. In that case, the above mentioned callback function needs to be
+fixed.
+
+Yes, I can't explain why others are also not seeing the same bug crash. We
+don't have the luxury to pull in the latest and greatest kernel from the git
+tree everytime an update is made and try it out. So I am unable to repo the
+issue with the latest kernel. But if that means that this issue should be
+ignored, then that is fine by me. We will fix our private kenrel with an
+appropriate patch as we continue to investigate more.
+
+Cheers,
+
+Ani
+
