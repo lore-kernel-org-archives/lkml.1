@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752054AbZJQGmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752123AbZJQGma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752054AbZJQGmK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 02:42:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZJQGmJ
+	id S1752123AbZJQGma (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 02:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbZJQGm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 02:42:09 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:39201 "EHLO mgw2.diku.dk"
+	Sat, 17 Oct 2009 02:42:29 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:39210 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751595AbZJQGmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 02:42:08 -0400
-Date: Sat, 17 Oct 2009 08:42:11 +0200 (CEST)
+	id S1751826AbZJQGm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 02:42:27 -0400
+Date: Sat, 17 Oct 2009 08:42:30 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 11/14] drivers/scsi: Remove unnecessary NULL test
-Message-ID: <Pine.LNX.4.64.0910170841480.9213@ask.diku.dk>
+To: tony@atomide.com, Russell King <linux@arm.linux.org.uk>,
+       linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 12/14] arch/arm/plat-omap: Drop an unnecessary NULL test
+Message-ID: <Pine.LNX.4.64.0910170842120.9213@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,8 +24,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-At the point where cmnd is initialized, it is tested for NULL, so it
-doesn't have to be tested again here.
+map_iovm_area is only called from a context where its second argument is
+known not to be NULL, so drop the unnecessary test.  If new could be NULL,
+the initialization of da should be moved below the test.
 
 A simplified version of the semantic match that detects this problem is as
 follows (http://coccinelle.lip6.fr/):
@@ -44,18 +45,19 @@ identifier fld;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/scsi/initio.c               |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ arch/arm/plat-omap/iovmm.c          |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/scsi/initio.c b/drivers/scsi/initio.c
-index 89a5948..359de22 100644
---- a/drivers/scsi/initio.c
-+++ b/drivers/scsi/initio.c
-@@ -2817,7 +2817,6 @@ static void i91uSCBPost(u8 * host_mem, u8 * cblk_mem)
- 	}
+diff --git a/arch/arm/plat-omap/iovmm.c b/arch/arm/plat-omap/iovmm.c
+index dc3fac3..21c73d4 100644
+--- a/arch/arm/plat-omap/iovmm.c
++++ b/arch/arm/plat-omap/iovmm.c
+@@ -449,7 +449,7 @@ static int map_iovm_area(struct iommu *obj, struct iovm_struct *new,
+ 	struct scatterlist *sg;
+ 	u32 da = new->da_start;
  
- 	cmnd->result = cblk->tastat | (cblk->hastat << 16);
--	WARN_ON(cmnd == NULL);
- 	i91u_unmap_scb(host->pci_dev, cmnd);
- 	cmnd->scsi_done(cmnd);	/* Notify system DONE           */
- 	initio_release_scb(host, cblk);	/* Release SCB for current channel */
+-	if (!obj || !new || !sgt)
++	if (!obj || !sgt)
+ 		return -EINVAL;
+ 
+ 	BUG_ON(!sgtable_ok(sgt));
