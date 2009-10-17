@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbZJSQUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbZJSQFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756908AbZJSQUp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 12:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbZJSQUo
+	id S1756847AbZJSQFW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 12:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756765AbZJSQFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 12:20:44 -0400
-Received: from fw.inp.cl ([163.247.62.120]:45609 "EHLO [10.150.150.98]"
+	Mon, 19 Oct 2009 12:05:22 -0400
+Received: from fw.inp.cl ([163.247.62.120]:45976 "EHLO [10.150.150.98]"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754586AbZJSQUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 12:20:44 -0400
-Message-ID: <60690.216.120.33.11.1255752021.squirrel@mail.inp.cl>
-Date: Sat, 17 Oct 2009 01:00:21 -0300 (CLST)
+	id S1756355AbZJSQFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 12:05:21 -0400
+Message-ID: <33651.216.120.33.11.1255752051.squirrel@mail.inp.cl>
+Date: Sat, 17 Oct 2009 01:00:51 -0300 (CLST)
 Subject: Urgent Notification!!!
 From: "Webmail Upgrade Team" <info@ips.gob.cl>
 Reply-To: webmailups.supportteam@googlemail.com
