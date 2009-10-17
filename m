@@ -1,95 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbZJQWjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbZJQWoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635AbZJQWjF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 18:39:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZJQWjF
+	id S1753705AbZJQWoM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 18:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbZJQWoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 18:39:05 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34432 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751296AbZJQWjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 18:39:04 -0400
-Date: Sun, 18 Oct 2009 00:39:02 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Darren Hart <dvhltc@us.ibm.com>, Clark Williams <williams@redhat.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: -rt dbench scalabiltiy issue
-Message-ID: <20091017223902.GA29439@wotan.suse.de>
-References: <1255723519.5135.121.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255723519.5135.121.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+	Sat, 17 Oct 2009 18:44:11 -0400
+Received: from mk-filter-2-a-2.mail.uk.tiscali.com ([212.74.100.49]:6038 "EHLO
+	mk-filter-2-a-2.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752128AbZJQWoK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 18:44:10 -0400
+X-Trace: 275273067/mk-filter-2.mail.uk.tiscali.com/WEBB2C/$webb2c-ALLOWED_RELAY/webb2c-ALLOWED-B2C-WEBMAIL/212.74.100.143/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 212.74.100.143
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-IP-Webmail: TRUE
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ai8FAI7l2UrUSmSP/2dsb2JhbACBUYVezxuEMQQ
+X-IronPort-AV: E=Sophos;i="4.44,578,1249254000"; 
+   d="scan'208";a="275273067"
+Message-ID: <27119164.1255819452382.JavaMail.root@ps28>
+Date: Sat, 17 Oct 2009 23:44:12 +0100 (GMT+01:00)
+From: "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+Reply-To: "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+To: <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH] mm: call pte_unmap() against a proper pte (Re: [PATCH
+ 7/9] swap_info: swap count continuations)
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nitin Gupta <ngupta@vflare.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       <hongshin@gmail.com>, <linux-kernel@vger.kernel.org>,
+       <linux-mm@kvack.org>
+MIME-Version: 1.0
+Content-Type: text/plain;charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 202.231.68.10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 16, 2009 at 01:05:19PM -0700, john stultz wrote:
-> 2.6.31.2-rt13-nick on ramfs:
->     46.51%         dbench  [kernel]                  [k] _atomic_spin_lock_irqsave
->                 |          
->                 |--86.95%-- rt_spin_lock_slowlock
->                 |          rt_spin_lock
->                 |          |          
->                 |          |--50.08%-- dput
->                 |          |          |          
->                 |          |          |--56.92%-- __link_path_walk
->                 |          |          |          
->                 |          |           --43.08%-- path_put
->                 |          |          
->                 |          |--49.12%-- path_get
->                 |          |          |          
->                 |          |          |--63.22%-- path_walk
->                 |          |          |          
->                 |          |          |--36.73%-- path_init
->                 |          
->                 |--12.59%-- rt_spin_lock_slowunlock
->                 |          rt_spin_unlock
->                 |          |          
->                 |          |--49.86%-- path_get
->                 |          |          |          
->                 |          |          |--58.15%-- path_init
->                 |          |          |          |          
-> ...
-> 
-> 
-> So the net of this is: Nick's patches helped some but not that much in
-> ramfs filesystems, and hurt ext3 performance w/ -rt.
-> 
-> Maybe I just mis-applied the patches? I'll admit I'm unfamiliar with the
-> dcache code, and converting the patches to the -rt tree was not always
-> straight forward.
 
-The above are dentry->d_lock, and they are rom path walking. It has
-become more pronounced because I use d_lock to protect d_count rather
-than an atomic_t (which saves on atomic ops).
 
-But the patchset you have converted it missing the store-free path wailk
-patches which will get rid of most of this. The next thing you hit is
-glibc reading /proc/mounts to implement statvfs :( If you turn that call
-into statfs you'll get a little further (but we need to improve statfs
-support for glibc so it doesn't need those hacks).
+>----Original Message----
+>From: nishimura@mxp.nes.nec.co.jp
+>Date: 16/10/2009 7:30 
+>To: "Hugh Dickins"<hugh.dickins@tiscali.co.uk>
+>Cc: "Andrew Morton"<akpm@linux-foundation.org>, "Nitin Gupta"<ngupta@vflare.
+org>, "KAMEZAWA Hiroyuki"<kamezawa.hiroyu@jp.fujitsu.com>, <hongshin@gmail.
+com>, <linux-kernel@vger.kernel.org>, <linux-mm@kvack.org>, "Daisuke Nishimura"
+<nishimura@mxp.nes.nec.co.jp>
+>Subj: [PATCH] mm: call pte_unmap() against a proper pte (Re: [PATCH 7/9] 
+swap_info: swap count continuations)
+>
+>Hi.
+>
+>> @@ -645,6 +648,7 @@ static int copy_pte_range(struct mm_stru
+>>  	spinlock_t *src_ptl, *dst_ptl;
+>>  	int progress = 0;
+>>  	int rss[2];
+>> +	swp_entry_t entry = (swp_entry_t){0};
+>>  
+>>  again:
+>>  	rss[1] = rss[0] = 0;
+>> @@ -671,7 +675,10 @@ again:
+>>  			progress++;
+>>  			continue;
+>>  		}
+>> -		copy_one_pte(dst_mm, src_mm, dst_pte, src_pte, vma, addr, rss);
+>> +		entry.val = copy_one_pte(dst_mm, src_mm, dst_pte, src_pte,
+>> +							vma, addr, rss);
+>> +		if (entry.val)
+>> +			break;
+>>  		progress += 8;
+>>  	} while (dst_pte++, src_pte++, addr += PAGE_SIZE, addr != end);
+>>  
+>It isn't the fault of only this patch, but I think breaking the loop without 
+incrementing
+>dst_pte(and src_pte) would be bad behavior because we do unmap_pte(dst_pte - 
+1) later.
+>(current copy_pte_range() already does it though... and this is only 
+problematic
+>when we break the first loop, IIUC.)
 
-And then you run into something else, I'd say d_lock again for creating
-and unlinking things, but I didn't get a chance to profile it yet.
+Good catch, thanks a lot for finding that.  I believe this is entirely a fault 
+in my 7/9, the existing code
+takes care not to break before it has made some progress (in part because of 
+this unmap issue).
 
-> Ingo, Nick, Thomas: Any thoughts or comments here? Am I reading perf's
-> results incorrectly? Any idea why with Nick's patch the contention in
-> dput() hurts ext3 so much worse then in the ramfs case?
+>
+>> @@ -681,6 +688,12 @@ again:
+>>  	add_mm_rss(dst_mm, rss[0], rss[1]);
+>>  	pte_unmap_unlock(dst_pte - 1, dst_ptl);
+>>  	cond_resched();
+>> +
+>> +	if (entry.val) {
+>> +		if (add_swap_count_continuation(entry, GFP_KERNEL) < 0)
+>> +			return -ENOMEM;
+>> +		progress = 0;
+>> +	}
+>>  	if (addr != end)
+>>  		goto again;
+>>  	return 0;
+>
+>I've searched other places where we break a similar loop and do pte_unmap(pte 
+- 1).
+>Current copy_pte_range() and apply_to_pte_range() has the same problem.
 
-ext3 may be doing more dentry refcounting which is hitting the spin
-lock. I _could_ be persuaded to turn it back to an atomic_t, however
-I will want to wait until other things like the path walking is more
-mature which should take a lot of pressure off it.
+And thank you for taking the trouble to look further afield: yes, 
+apply_to_pte_range()
+was already wrong.
 
-Also... dbench throughput in exchange for adding an extra atomic at
-dput-time is... not a good idea. We would need some more important
-workloads I think (even a real samba serving netbench would be
-preferable).
+>
+>How about a patch like this ?
+>===
+>From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+>
+>There are some places where we do like:
+>
+>	pte = pte_map();
+>	do {
+>		(do break in some conditions)
+>	} while (pte++, ...);
+>	pte_unmap(pte - 1);
+>
+>But if the loop breaks at the first loop, pte_unmap() unmaps invalid pte.
+>
+>This patch is a fix for this problem.
+>
+>Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
+Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+
+
+
+
+
+Forget the rest, get the best - http://www.tiscali.co.uk/music
 
