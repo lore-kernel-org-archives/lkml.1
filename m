@@ -1,102 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752272AbZJQIC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752451AbZJQIYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752272AbZJQIC6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 04:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZJQIC5
+	id S1752451AbZJQIYK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 04:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZJQIYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 04:02:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41509 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751379AbZJQICy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 04:02:54 -0400
-Date: Sat, 17 Oct 2009 10:02:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
+	Sat, 17 Oct 2009 04:24:09 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:42257 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752378AbZJQIYG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 04:24:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=xaZ+sk0oxLtAShqWDPWsgPz+cxHO1Iu96rltU5ImdLUfWiCv/JUqG7LrdptwRskDry
+         xXj5QVfVH8seBqyPUj3YEfQZ4FN1SrW8Fb4W5QQ5KKnxMCT1yjUguxPxtUz2opC7HnJb
+         WmG95SQKIlQEbZ+TeBGWrZTl155+m1lnNE9t0=
+Subject: Re: [PATCH 2/2] tracing: add high precision version of
+ trace_clock_local() for MIPS
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: linux-kernel@vger.kernel.org
+Cc: linux-mips <linux-mips@linux-mips.org>, Ralf Baechle <ralf@linux-mips.org>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
-	probe and kprobe-tracer bugfixes
-Message-ID: <20091017080203.GA4155@elte.hu>
-References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Manuel Lauss <manuel.lauss@googlemail.com>,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <3c1635bdc0297252f619e2e50dc4b56f48446b0e.1255692619.git.wuzhangjin@gmail.com>
+References: <4205779ae74d7c4144ee6cbf4e3f15f833646356.1255692619.git.wuzhangjin@gmail.com>
+	 <3c1635bdc0297252f619e2e50dc4b56f48446b0e.1255692619.git.wuzhangjin@gmail.com>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Sat, 17 Oct 2009 16:23:59 +0800
+Message-Id: <1255767839.10178.12.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
-
-> Hi Ingo and Frederic,
+On Fri, 2009-10-16 at 19:38 +0800, Wu Zhangjin wrote:
+> By default, trace_clock_local() call the sched_clock() to get timestamp,
+> in x86, there is a tsc(64bit) based sched_clock(), but in MIPS, the
+> sched_clock() is jiffies based, which can not give enough
+> precision(about 10ms with 1000 HZ). so, we need to implement a higher
+> precision version for MIPS.
 > 
-> Here are the bugfix and update (mostly cleanup) patches for
-> previous patchset.
+> in MIPS, there is a tsc like clock counter. based on it, we can
+> implement a new trace_clock_local(), but because the clock counter is
+> only 32bit long, we need to handle rollover for it.  fortunately, there
+> a high-level abstraction(cyclecounter) of this action implemented in
+> include/linux/clocksource.h, which helps to handle the details behind,
+> we just use it!
 > 
-> > I hope it's part of the last family of instruction set we
-> > are missing.
-> 
-> I added missing SSE opcodes and 3DNow! support too.
-> However, near future, x86 decoder may need AVX support.
-> (AFAIK, currently, there are no code using it.)
-> 
-> Thank you,
-> 
+> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
 > ---
+>  arch/mips/kernel/Makefile      |    6 +++
+>  arch/mips/kernel/trace_clock.c |   67 ++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 73 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/mips/kernel/trace_clock.c
 > 
-> Masami Hiramatsu (9):
->       perf: Add perf-probe document
->       perf: Add DIE_IF() macro for error checking
->       perf: Use eprintf() for debug messages in perf-probe
->       perf: Use die() for error cases in perf-probe
->       perf: Check libdwarf APIs for perf probe
->       x86: Add AMD prefetch and 3DNow! opcodes to opcode map
->       x86: Add MMX/SSE opcode groups to opcode map
->       tracing/kprobes: Add failure messages for debugging
->       tracing/kprobes: Update kprobe-tracer selftest against new syntax
-> 
-> 
->  arch/x86/lib/x86-opcode-map.txt         |   23 ++++-
->  kernel/trace/trace_kprobe.c             |   39 ++++++--
->  tools/perf/Documentation/perf-probe.txt |   48 ++++++++++
->  tools/perf/Makefile                     |    5 +
->  tools/perf/builtin-probe.c              |   70 ++++++---------
->  tools/perf/command-list.txt             |    1 
->  tools/perf/util/probe-finder.c          |  149 ++++++++++++++-----------------
->  tools/perf/util/probe-finder.h          |   17 ----
->  tools/perf/util/util.h                  |    9 ++
->  9 files changed, 206 insertions(+), 155 deletions(-)
->  create mode 100644 tools/perf/Documentation/perf-probe.txt
+> diff --git a/arch/mips/kernel/Makefile b/arch/mips/kernel/Makefile
+> index 8e26e9c..f228868 100644
+> --- a/arch/mips/kernel/Makefile
+> +++ b/arch/mips/kernel/Makefile
+> @@ -8,6 +8,10 @@ obj-y		+= cpu-probe.o branch.o entry.o genex.o irq.o process.o \
+>  		   ptrace.o reset.o setup.o signal.o syscall.o \
+>  		   time.o topology.o traps.o unaligned.o watch.o
+>  
+> +ifdef CONFIG_FUNCTION_TRACER
+> +CFLAGS_REMOVE_trace_clock.o = -pg
+> +endif
+> +
+>  obj-$(CONFIG_CEVT_BCM1480)	+= cevt-bcm1480.o
+>  obj-$(CONFIG_CEVT_R4K_LIB)	+= cevt-r4k.o
+>  obj-$(CONFIG_MIPS_MT_SMTC)	+= cevt-smtc.o
+> @@ -24,6 +28,8 @@ obj-$(CONFIG_SYNC_R4K)		+= sync-r4k.o
+>  obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+>  obj-$(CONFIG_MODULES)		+= mips_ksyms.o module.o
+>  
+> +obj-$(CONFIG_FTRACE)		+= trace_clock.o
+> +
+>  obj-$(CONFIG_CPU_LOONGSON2)	+= r4k_fpu.o r4k_switch.o
+>  obj-$(CONFIG_CPU_MIPS32)	+= r4k_fpu.o r4k_switch.o
+>  obj-$(CONFIG_CPU_MIPS64)	+= r4k_fpu.o r4k_switch.o
+> diff --git a/arch/mips/kernel/trace_clock.c b/arch/mips/kernel/trace_clock.c
+> new file mode 100644
+> index 0000000..435cd56
+> --- /dev/null
+> +++ b/arch/mips/kernel/trace_clock.c
+> @@ -0,0 +1,67 @@
+> +/*
+> + * This file is subject to the terms and conditions of the GNU General Public
+> + * License.  See the file "COPYING" in the main directory of this archive for
+> + * more details.
+> + *
+> + * Copyright (C) 2009 Lemote Inc. & DSLab, Lanzhou University, China
+> + * Author: Wu Zhangjin <wuzj@lemote.com>
+> + */
+> +
+> +#include <linux/clocksource.h>
+> +#include <linux/sched.h>
+> +
+> +#include <asm/time.h>
+> +
+> +/*
+> + * MIPS clock counter based timecounter.
+> + */
+> +
+> +struct timecounter mips_tc;
+> +
+> +/*
+> + * trace_clock_local(): the simplest and least coherent tracing clock.
+> + *
+> + * Useful for tracing that does not cross to other CPUs nor
+> + * does it go through idle events.
+> + */
+> +u64 trace_clock_local(void)
+> +{
+> +	unsigned long flags;
+> +	u64 clock;
+> +
+> +	raw_local_irq_save(flags);
+> +
+> +	preempt_disable_notrace();
+> +
+> +	clock = timecounter_read(&mips_tc);
+> +
+> +	preempt_enable_no_resched_notrace();
+> +
+> +	raw_local_irq_restore(flags);
+> +
+> +	return clock;
+> +}
+> +
+> +static cycle_t mips_cc_read(const struct cyclecounter *cc)
+> +{
+> +	return read_c0_count();
+> +}
+> +
+> +static struct cyclecounter mips_cc = {
+> +	.read = mips_cc_read,
+> +	.mask = CLOCKSOURCE_MASK(32),
+> +	.shift = 32,
+> +};
+> +
+> +static int __init mips_timecounter_init(void)
+> +{
+> +	uint64_t mips_freq = mips_hpt_frequency;
+> +
 
-Looks really nice, thanks Masami!
+we must ensure mips_hpt_frequency is initialized before using it.
 
-Note, i've created a new topic tree for this work: tip:perf/probes, and 
-have put all the commits there - since i expect most of the 
-enabling/completion work for this feature to happen on the perf events 
-side.
+> +	mips_cc.mult = div_sc((unsigned long)mips_freq, NSEC_PER_SEC, 32);
+> +
+> +	timecounter_init(&mips_tc, &mips_cc, sched_clock());
+> +
+> +	return 0;
+> +}
+> +
+> +arch_initcall(mips_timecounter_init);
 
-I also merged this tree upto v2.6.32-rc5 and resolved a conflict with 
-recent tracing fixes. Please base future patches on this new tree.
+mips_timecounter_init() must called before ftrace_init(), so can not put
+it into *_initcall sections(which will be called in rest_init()).
 
-Thanks,
+Regards,
+	Wu Zhangjin
 
-	Ingo
