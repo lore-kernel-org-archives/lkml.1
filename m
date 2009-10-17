@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbZJQPMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752584AbZJQPMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752468AbZJQPMh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 11:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZJQPMg
+	id S1752584AbZJQPMn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 11:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZJQPMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 11:12:36 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:41219 "EHLO
+	Sat, 17 Oct 2009 11:12:42 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:52807 "EHLO
 	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342AbZJQPMf (ORCPT
+	with ESMTP id S1752390AbZJQPMg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 11:12:35 -0400
+	Sat, 17 Oct 2009 11:12:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=p9bd51EwGVsKfCaz4nIc2fM2ulmPWakjHbj4aDAj/DhAD+CASFamI1TzHfNZVsXGNx
-         543rwNt4v1SX+Y2H4tTxgwC65F6Oeb2Z0JOWnNUYWRGovyucoLg6Foo8a1zR+Plch/GD
-         tJDXgXdicRM9ttoNR2FUvrZi9LK8EhTpvSZWs=
+        b=YWLZ4KPg6jKqS1QgYY4Dl985CIutLxBAEFrs2fItZD+p2xUUQw4VOeBmoU8SF+vc1a
+         V1OWOwJ172ev/Ehgog3YOeiXzhdSC9SeMUKz5WLvaSx8qL7SqTPC6ccxznM+OgvQPGoR
+         yA3PgYtMtIhTqY3Aq7BL7aSpmtRMZvsP1CD8E=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -24,9 +24,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 1/2] perf tools: Use kernel bitmap library
-Date: Sat, 17 Oct 2009 17:12:33 +0200
-Message-Id: <1255792354-11304-1-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 2/2] perf tools: Introduce bitmask'ed additional headers
+Date: Sat, 17 Oct 2009 17:12:34 +0200
+Message-Id: <1255792354-11304-2-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <20091016074222.GD30019@elte.hu>
 References: <20091016074222.GD30019@elte.hu>
@@ -34,7 +34,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the kernel bitmap library for internal perf tools uses.
+This provides a new set of bitmasked headers. A new field is added
+in the perf headers that implements a bitmap storing optional features
+present in the perf.data file.
+
+The layout can be pictured like this:
+
+(Usual perf headers)(Features bitmap)[Feature 0][Feature n][Feature 255]
+
+If the bit n is set, then the feature n is used in this file. They are
+all set in order. This brings a backward and forward compatibility.
+
+The trace_info section has moved into such optional features, this is
+the first and only one for now.
+
+This is backward compatible with the .32 file version although it
+doesn't support the previous separate trace.info file.
+
+And finally it doesn't support the current interim development version.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
@@ -43,309 +60,264 @@ Cc: Mike Galbraith <efault@gmx.de>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 ---
- tools/perf/Makefile                      |   16 ++++++++
- tools/perf/builtin-record.c              |    3 --
- tools/perf/builtin-sched.c               |    2 -
- tools/perf/util/include/asm/bitops.h     |    6 +++
- tools/perf/util/include/asm/byteorder.h  |    2 +
- tools/perf/util/include/asm/swab.h       |    1 +
- tools/perf/util/include/asm/types.h      |   17 +++++++++
- tools/perf/util/include/asm/uaccess.h    |   14 +++++++
- tools/perf/util/include/linux/bitmap.h   |    2 +
- tools/perf/util/include/linux/bitops.h   |   27 ++++++++++++++
- tools/perf/util/include/linux/compiler.h |   10 +++++
- tools/perf/util/include/linux/ctype.h    |    1 +
- tools/perf/util/include/linux/kernel.h   |   59 ++++++++++++++++++++++++++++++
- tools/perf/util/include/linux/types.h    |    1 +
- 14 files changed, 156 insertions(+), 5 deletions(-)
- create mode 100644 tools/perf/util/include/asm/bitops.h
- create mode 100644 tools/perf/util/include/asm/byteorder.h
- create mode 100644 tools/perf/util/include/asm/swab.h
- create mode 100644 tools/perf/util/include/asm/types.h
- create mode 100644 tools/perf/util/include/asm/uaccess.h
- create mode 100644 tools/perf/util/include/linux/bitmap.h
- create mode 100644 tools/perf/util/include/linux/bitops.h
- create mode 100644 tools/perf/util/include/linux/compiler.h
- create mode 100644 tools/perf/util/include/linux/ctype.h
- create mode 100644 tools/perf/util/include/linux/types.h
+ tools/perf/builtin-record.c |    4 +-
+ tools/perf/util/header.c    |  100 ++++++++++++++++++++++++-------------------
+ tools/perf/util/header.h    |   30 +++++++++----
+ 3 files changed, 78 insertions(+), 56 deletions(-)
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 106c150..2400e50 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -363,6 +363,9 @@ LIB_OBJS += util/parse-options.o
- LIB_OBJS += util/parse-events.o
- LIB_OBJS += util/path.o
- LIB_OBJS += util/rbtree.o
-+LIB_OBJS += util/bitmap.o
-+LIB_OBJS += util/hweight.o
-+LIB_OBJS += util/find_next_bit.o
- LIB_OBJS += util/run-command.o
- LIB_OBJS += util/quote.o
- LIB_OBJS += util/strbuf.o
-@@ -790,6 +793,19 @@ util/config.o: util/config.c PERF-CFLAGS
- util/rbtree.o: ../../lib/rbtree.c PERF-CFLAGS
- 	$(QUIET_CC)$(CC) -o util/rbtree.o -c $(ALL_CFLAGS) -DETC_PERFCONFIG='"$(ETC_PERFCONFIG_SQ)"' $<
- 
-+# some perf warning policies can't fit to lib/bitmap.c, eg: it warns about variable shadowing
-+# from <string.h> that comes from kernel headers wrapping.
-+KBITMAP_FLAGS=`echo $(ALL_CFLAGS) | sed s/-Wshadow// | sed s/-Wswitch-default// | sed s/-Wextra//`
-+
-+util/bitmap.o: ../../lib/bitmap.c PERF-CFLAGS
-+	$(QUIET_CC)$(CC) -o util/bitmap.o -c $(KBITMAP_FLAGS) -DETC_PERFCONFIG='"$(ETC_PERFCONFIG_SQ)"' $<
-+
-+util/hweight.o: ../../lib/hweight.c PERF-CFLAGS
-+	$(QUIET_CC)$(CC) -o util/hweight.o -c $(ALL_CFLAGS) -DETC_PERFCONFIG='"$(ETC_PERFCONFIG_SQ)"' $<
-+
-+util/find_next_bit.o: ../../lib/find_next_bit.c PERF-CFLAGS
-+	$(QUIET_CC)$(CC) -o util/find_next_bit.o -c $(ALL_CFLAGS) -DETC_PERFCONFIG='"$(ETC_PERFCONFIG_SQ)"' $<
-+
- perf-%$X: %.o $(PERFLIBS)
- 	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) -o $@ $(ALL_LDFLAGS) $(filter %.o,$^) $(LIBS)
- 
 diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 8b2c860..fc3709c 100644
+index fc3709c..f0467ff 100644
 --- a/tools/perf/builtin-record.c
 +++ b/tools/perf/builtin-record.c
-@@ -21,9 +21,6 @@
- #include <unistd.h>
- #include <sched.h>
+@@ -574,11 +574,11 @@ static int __cmd_record(int argc, const char **argv)
+ 		header = perf_header__new();
  
--#define ALIGN(x, a)		__ALIGN_MASK(x, (typeof(x))(a)-1)
--#define __ALIGN_MASK(x, mask)	(((x)+(mask))&~(mask))
+ 	if (raw_samples) {
+-		perf_header__set_trace_info();
++		perf_header__feat_trace_info(header);
+ 	} else {
+ 		for (i = 0; i < nr_counters; i++) {
+ 			if (attrs[i].sample_type & PERF_SAMPLE_RAW) {
+-				perf_header__set_trace_info();
++				perf_header__feat_trace_info(header);
+ 				break;
+ 			}
+ 		}
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index 9aae360..171d51b 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -8,6 +8,8 @@
+ #include "../perf.h"
+ #include "trace-event.h"
+ 
++#include <linux/bitmap.h>
++
+ /*
+  * Create new perf.data header attribute:
+  */
+@@ -48,25 +50,17 @@ void perf_header_attr__add_id(struct perf_header_attr *self, u64 id)
+  */
+ struct perf_header *perf_header__new(void)
+ {
+-	struct perf_header *self = malloc(sizeof(*self));
++	struct perf_header *self = calloc(sizeof(*self), 1);
+ 
+ 	if (!self)
+ 		die("nomem");
+ 
+-	self->frozen = 0;
 -
- static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
+-	self->attrs = 0;
+ 	self->size = 1;
+ 	self->attr = malloc(sizeof(void *));
  
- static long			default_interval		=      0;
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index c9c6856..e32c946 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -38,8 +38,6 @@ static int			cwdlen;
- #define PR_SET_NAME		15               /* Set process name */
- #define MAX_CPUS		4096
+ 	if (!self->attr)
+ 		die("nomem");
  
--#define BUG_ON(x)		assert(!(x))
+-	self->data_offset = 0;
+-	self->data_size = 0;
+-	self->trace_info_offset = 0;
+-	self->trace_info_size = 0;
 -
- static u64			run_measurement_overhead;
- static u64			sleep_measurement_overhead;
+ 	return self;
+ }
  
-diff --git a/tools/perf/util/include/asm/bitops.h b/tools/perf/util/include/asm/bitops.h
-new file mode 100644
-index 0000000..fbe4d92
---- /dev/null
-+++ b/tools/perf/util/include/asm/bitops.h
-@@ -0,0 +1,6 @@
-+#include "../../../../include/asm-generic/bitops/__fls.h"
-+#include "../../../../include/asm-generic/bitops/fls.h"
-+#include "../../../../include/asm-generic/bitops/fls64.h"
-+#include "../../../../include/asm-generic/bitops/__ffs.h"
-+#include "../../../../include/asm-generic/bitops/ffz.h"
-+#include "../../../../include/asm-generic/bitops/hweight.h"
-diff --git a/tools/perf/util/include/asm/byteorder.h b/tools/perf/util/include/asm/byteorder.h
-new file mode 100644
-index 0000000..39f367c
---- /dev/null
-+++ b/tools/perf/util/include/asm/byteorder.h
-@@ -0,0 +1,2 @@
-+#include "../asm/types.h"
-+#include "../../../../include/linux/swab.h"
-diff --git a/tools/perf/util/include/asm/swab.h b/tools/perf/util/include/asm/swab.h
-new file mode 100644
-index 0000000..ed53894
---- /dev/null
-+++ b/tools/perf/util/include/asm/swab.h
-@@ -0,0 +1 @@
-+/* stub */
-diff --git a/tools/perf/util/include/asm/types.h b/tools/perf/util/include/asm/types.h
-new file mode 100644
-index 0000000..06703c6
---- /dev/null
-+++ b/tools/perf/util/include/asm/types.h
-@@ -0,0 +1,17 @@
-+#ifndef PERF_ASM_TYPES_H_
-+#define PERF_ASM_TYPES_H_
-+
-+#include <linux/compiler.h>
-+#include "../../types.h"
-+#include <sys/types.h>
-+
-+/* CHECKME: Not sure both always match */
-+#define BITS_PER_LONG	__WORDSIZE
-+
-+typedef u64	__u64;
-+typedef u32	__u32;
-+typedef u16	__u16;
-+typedef u8	__u8;
-+typedef s64	__s64;
-+
-+#endif /* PERF_ASM_TYPES_H_ */
-diff --git a/tools/perf/util/include/asm/uaccess.h b/tools/perf/util/include/asm/uaccess.h
-new file mode 100644
-index 0000000..d0f72b8
---- /dev/null
-+++ b/tools/perf/util/include/asm/uaccess.h
-@@ -0,0 +1,14 @@
-+#ifndef _PERF_ASM_UACCESS_H_
-+#define _PERF_ASM_UACCESS_H_
-+
-+#define __get_user(src, dest)						\
-+({									\
-+	(src) = *dest;							\
-+	0;								\
-+})
-+
-+#define get_user	__get_user
-+
-+#define access_ok(type, addr, size)	1
-+
-+#endif
-diff --git a/tools/perf/util/include/linux/bitmap.h b/tools/perf/util/include/linux/bitmap.h
-new file mode 100644
-index 0000000..821c103
---- /dev/null
-+++ b/tools/perf/util/include/linux/bitmap.h
-@@ -0,0 +1,2 @@
-+#include "../../../../include/linux/bitmap.h"
-+#include "../../../../include/asm-generic/bitops/find.h"
-diff --git a/tools/perf/util/include/linux/bitops.h b/tools/perf/util/include/linux/bitops.h
-new file mode 100644
-index 0000000..ace57c3
---- /dev/null
-+++ b/tools/perf/util/include/linux/bitops.h
-@@ -0,0 +1,27 @@
-+#ifndef _PERF_LINUX_BITOPS_H_
-+#define _PERF_LINUX_BITOPS_H_
-+
-+#define __KERNEL__
-+
-+#define CONFIG_GENERIC_FIND_NEXT_BIT
-+#define CONFIG_GENERIC_FIND_FIRST_BIT
-+#include "../../../../include/linux/bitops.h"
-+
-+static inline void set_bit(int nr, unsigned long *addr)
-+{
-+	addr[nr / BITS_PER_LONG] |= 1UL << (nr % BITS_PER_LONG);
-+}
-+
-+static __always_inline int test_bit(unsigned int nr, const unsigned long *addr)
-+{
-+	return ((1UL << (nr % BITS_PER_LONG)) &
-+		(((unsigned long *)addr)[nr / BITS_PER_LONG])) != 0;
-+}
-+
-+unsigned long generic_find_next_zero_le_bit(const unsigned long *addr, unsigned
-+		long size, unsigned long offset);
-+
-+unsigned long generic_find_next_le_bit(const unsigned long *addr, unsigned
-+		long size, unsigned long offset);
-+
-+#endif
-diff --git a/tools/perf/util/include/linux/compiler.h b/tools/perf/util/include/linux/compiler.h
-new file mode 100644
-index 0000000..dfb0713
---- /dev/null
-+++ b/tools/perf/util/include/linux/compiler.h
-@@ -0,0 +1,10 @@
-+#ifndef _PERF_LINUX_COMPILER_H_
-+#define _PERF_LINUX_COMPILER_H_
-+
-+#ifndef __always_inline
-+#define __always_inline	inline
-+#endif
-+#define __user
-+#define __attribute_const__
-+
-+#endif
-diff --git a/tools/perf/util/include/linux/ctype.h b/tools/perf/util/include/linux/ctype.h
-new file mode 100644
-index 0000000..bae5783
---- /dev/null
-+++ b/tools/perf/util/include/linux/ctype.h
-@@ -0,0 +1 @@
-+#include "../../../../include/linux/ctype.h"
-diff --git a/tools/perf/util/include/linux/kernel.h b/tools/perf/util/include/linux/kernel.h
-index a6b8739..4b9204d 100644
---- a/tools/perf/util/include/linux/kernel.h
-+++ b/tools/perf/util/include/linux/kernel.h
-@@ -1,6 +1,16 @@
- #ifndef PERF_LINUX_KERNEL_H_
- #define PERF_LINUX_KERNEL_H_
+@@ -149,14 +143,12 @@ struct perf_file_header {
+ 	struct perf_file_section	attrs;
+ 	struct perf_file_section	data;
+ 	struct perf_file_section	event_types;
+-	struct perf_file_section	trace_info;
++	feat_mask_t			adds_features;
+ };
  
-+#include <stdarg.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <assert.h>
-+
-+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-+
-+#define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
-+#define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
-+
- #ifndef offsetof
- #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
- #endif
-@@ -26,4 +36,53 @@
- 	_max1 > _max2 ? _max1 : _max2; })
- #endif
+-static int trace_info;
+-
+-void perf_header__set_trace_info(void)
++void perf_header__feat_trace_info(struct perf_header *header)
+ {
+-	trace_info = 1;
++	set_bit(HEADER_TRACE_INFO, perf_header__adds_mask(header));
+ }
  
-+#ifndef min
-+#define min(x, y) ({				\
-+	typeof(x) _min1 = (x);			\
-+	typeof(y) _min2 = (y);			\
-+	(void) (&_min1 == &_min2);		\
-+	_min1 < _min2 ? _min1 : _min2; })
-+#endif
-+
-+#ifndef BUG_ON
-+#define BUG_ON(cond) assert(!(cond))
-+#endif
-+
-+/*
-+ * Both need more care to handle endianness
-+ * (Don't use bitmap_copy_le() for now)
-+ */
-+#define cpu_to_le64(x)	(x)
-+#define cpu_to_le32(x)	(x)
-+
-+static inline int
-+vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
+ static void do_write(int fd, void *buf, size_t size)
+@@ -172,6 +164,32 @@ static void do_write(int fd, void *buf, size_t size)
+ 	}
+ }
+ 
++static void perf_header__adds_write(struct perf_header *self, int fd)
 +{
-+	int i;
-+	ssize_t ssize = size;
++	struct perf_file_section trace_sec;
++	u64 cur_offset = lseek(fd, 0, SEEK_CUR);
++	unsigned long *feat_mask = perf_header__adds_mask(self);
 +
-+	i = vsnprintf(buf, size, fmt, args);
++	if (test_bit(HEADER_TRACE_INFO, feat_mask)) {
++		/* Write trace info */
++		trace_sec.offset = lseek(fd, sizeof(trace_sec), SEEK_CUR);
++		read_tracing_data(fd, attrs, nr_counters);
++		trace_sec.size = lseek(fd, 0, SEEK_CUR) - trace_sec.offset;
 +
-+	return (i >= ssize) ? (ssize - 1) : i;
++		/* Write trace info headers */
++		lseek(fd, cur_offset, SEEK_SET);
++		do_write(fd, &trace_sec, sizeof(trace_sec));
++
++		/*
++		 * Update cur_offset. So that other (future)
++		 * features can set their own infos in this place. But if we are
++		 * the only feature, at least that seeks to the place the data
++		 * should begin.
++		 */
++		cur_offset = lseek(fd, trace_sec.offset + trace_sec.size, SEEK_SET);
++	}
++};
++
+ void perf_header__write(struct perf_header *self, int fd)
+ {
+ 	struct perf_file_header f_header;
+@@ -210,23 +228,7 @@ void perf_header__write(struct perf_header *self, int fd)
+ 	if (events)
+ 		do_write(fd, events, self->event_size);
+ 
+-	if (trace_info) {
+-		static int trace_info_written;
+-
+-		/*
+-		 * Write it only once
+-		 */
+-		if (!trace_info_written) {
+-			self->trace_info_offset = lseek(fd, 0, SEEK_CUR);
+-			read_tracing_data(fd, attrs, nr_counters);
+-			self->trace_info_size = lseek(fd, 0, SEEK_CUR) -
+-						self->trace_info_offset;
+-			trace_info_written = 1;
+-		} else {
+-			lseek(fd, self->trace_info_offset +
+-				self->trace_info_size, SEEK_SET);
+-		}
+-	}
++	perf_header__adds_write(self, fd);
+ 
+ 	self->data_offset = lseek(fd, 0, SEEK_CUR);
+ 
+@@ -246,12 +248,10 @@ void perf_header__write(struct perf_header *self, int fd)
+ 			.offset = self->event_offset,
+ 			.size	= self->event_size,
+ 		},
+-		.trace_info = {
+-			.offset = self->trace_info_offset,
+-			.size = self->trace_info_size,
+-		},
+ 	};
+ 
++	memcpy(&f_header.adds_features, &self->adds_features, sizeof(feat_mask_t));
++
+ 	lseek(fd, 0, SEEK_SET);
+ 	do_write(fd, &f_header, sizeof(f_header));
+ 	lseek(fd, self->data_offset + self->data_size, SEEK_SET);
+@@ -274,6 +274,20 @@ static void do_read(int fd, void *buf, size_t size)
+ 	}
+ }
+ 
++static void perf_header__adds_read(struct perf_header *self, int fd)
++{
++	const unsigned long *feat_mask = perf_header__adds_mask(self);
++
++	if (test_bit(HEADER_TRACE_INFO, feat_mask)) {
++		struct perf_file_section trace_sec;
++
++		do_read(fd, &trace_sec, sizeof(trace_sec));
++		lseek(fd, trace_sec.offset, SEEK_SET);
++		trace_report(fd);
++		lseek(fd, trace_sec.offset + trace_sec.size, SEEK_SET);
++	}
++};
++
+ struct perf_header *perf_header__read(int fd)
+ {
+ 	struct perf_header	*self = perf_header__new();
+@@ -292,9 +306,11 @@ struct perf_header *perf_header__read(int fd)
+ 
+ 	if (f_header.size != sizeof(f_header)) {
+ 		/* Support the previous format */
+-		if (f_header.size == offsetof(typeof(f_header), trace_info))
+-			f_header.trace_info.size = 0;
+-		else
++		if (f_header.size == offsetof(typeof(f_header), adds_features)) {
++			unsigned long *mask = (unsigned long *)(void *)
++					&f_header.adds_features;
++			bitmap_zero(mask, HEADER_FEAT_BITS);
++		} else
+ 			die("incompatible file format");
+ 	}
+ 	nr_attrs = f_header.attrs.size / sizeof(f_attr);
+@@ -330,13 +346,9 @@ struct perf_header *perf_header__read(int fd)
+ 		event_count =  f_header.event_types.size / sizeof(struct perf_trace_event_type);
+ 	}
+ 
+-	self->trace_info_offset = f_header.trace_info.offset;
+-	self->trace_info_size = f_header.trace_info.size;
++	memcpy(&self->adds_features, &f_header.adds_features, sizeof(feat_mask_t));
+ 
+-	if (self->trace_info_size) {
+-		lseek(fd, self->trace_info_offset, SEEK_SET);
+-		trace_report(fd);
+-	}
++	perf_header__adds_read(self, fd);
+ 
+ 	self->event_offset = f_header.event_types.offset;
+ 	self->event_size   = f_header.event_types.size;
+diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
+index 30aee51..0eb4a91 100644
+--- a/tools/perf/util/header.h
++++ b/tools/perf/util/header.h
+@@ -12,19 +12,29 @@ struct perf_header_attr {
+ 	off_t id_offset;
+ };
+ 
++#define HEADER_TRACE_INFO			1
++
++#define HEADER_FEAT_BITS			256
++
++typedef	typeof(u64[HEADER_FEAT_BITS / 8])	feat_mask_t;
++
+ struct perf_header {
+-	int frozen;
+-	int attrs, size;
++	int			frozen;
++	int			attrs, size;
+ 	struct perf_header_attr **attr;
+-	s64 attr_offset;
+-	u64 data_offset;
+-	u64 data_size;
+-	u64 event_offset;
+-	u64 event_size;
+-	u64 trace_info_offset;
+-	u64 trace_info_size;
++	s64			attr_offset;
++	u64			data_offset;
++	u64			data_size;
++	u64			event_offset;
++	u64			event_size;
++	feat_mask_t		adds_features;
+ };
+ 
++static inline unsigned long *perf_header__adds_mask(struct perf_header *self)
++{
++	return (unsigned long *)(void *)&self->adds_features;
 +}
 +
-+static inline int scnprintf(char * buf, size_t size, const char * fmt, ...)
-+{
-+	va_list args;
-+	ssize_t ssize = size;
-+	int i;
-+
-+	va_start(args, fmt);
-+	i = vsnprintf(buf, size, fmt, args);
-+	va_end(args);
-+
-+	return (i >= ssize) ? (ssize - 1) : i;
-+}
-+
-+static inline unsigned long
-+simple_strtoul(const char *nptr, char **endptr, int base)
-+{
-+	return strtoul(nptr, endptr, base);
-+}
-+
- #endif
-diff --git a/tools/perf/util/include/linux/types.h b/tools/perf/util/include/linux/types.h
-new file mode 100644
-index 0000000..ed53894
---- /dev/null
-+++ b/tools/perf/util/include/linux/types.h
-@@ -0,0 +1 @@
-+/* stub */
+ struct perf_header *perf_header__read(int fd);
+ void perf_header__write(struct perf_header *self, int fd);
+ 
+@@ -42,7 +52,7 @@ void perf_header_attr__add_id(struct perf_header_attr *self, u64 id);
+ u64 perf_header__sample_type(struct perf_header *header);
+ struct perf_event_attr *
+ perf_header__find_attr(u64 id, struct perf_header *header);
+-void perf_header__set_trace_info(void);
++void perf_header__feat_trace_info(struct perf_header *header);
+ 
+ struct perf_header *perf_header__new(void);
+ 
 -- 
 1.6.2.3
 
