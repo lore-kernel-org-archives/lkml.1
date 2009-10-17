@@ -1,430 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbZJQJ7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbZJQJ7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753242AbZJQJ7c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 05:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZJQJ7a
+	id S1753097AbZJQJ7W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 05:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbZJQJ7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 05:59:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40417 "EHLO hera.kernel.org"
+	Sat, 17 Oct 2009 05:59:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40409 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753175AbZJQJ71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 05:59:27 -0400
-Date: Sat, 17 Oct 2009 09:58:39 GMT
+	id S1752732AbZJQJ7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 05:59:20 -0400
+Date: Sat, 17 Oct 2009 09:58:53 GMT
 From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jkenisto@us.ibm.com, sam@ravnborg.org, fweisbec@gmail.com,
+       jkenisto@us.ibm.com, ananth@in.ibm.com, fweisbec@gmail.com,
        tglx@linutronix.de, mhiramat@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, jkenisto@us.ibm.com, sam@ravnborg.org,
+Reply-To: ananth@in.ibm.com, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, jkenisto@us.ibm.com,
        tglx@linutronix.de, mhiramat@redhat.com, mingo@elte.hu
-In-Reply-To: <20090908163246.23516.78835.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20090908163246.23516.78835.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <20090908164755.24050.81182.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20090908164755.24050.81182.stgit@dhcp-100-2-132.bos.redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/probes] x86: Add MMX support for instruction decoder
-Message-ID: <tip-f12b4f546b4e327d5620a544a2bddab68de66027@git.kernel.org>
-Git-Commit-ID: f12b4f546b4e327d5620a544a2bddab68de66027
+Subject: [tip:perf/probes] kprobes/x86-32: Move irq-exit functions to kprobes section
+Message-ID: <tip-a00e817f42663941ea0aa5f85a9d1c4f8b212839@git.kernel.org>
+Git-Commit-ID: a00e817f42663941ea0aa5f85a9d1c4f8b212839
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 17 Oct 2009 09:58:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 17 Oct 2009 09:58:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f12b4f546b4e327d5620a544a2bddab68de66027
-Gitweb:     http://git.kernel.org/tip/f12b4f546b4e327d5620a544a2bddab68de66027
+Commit-ID:  a00e817f42663941ea0aa5f85a9d1c4f8b212839
+Gitweb:     http://git.kernel.org/tip/a00e817f42663941ea0aa5f85a9d1c4f8b212839
 Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Tue, 8 Sep 2009 12:32:46 -0400
+AuthorDate: Tue, 8 Sep 2009 12:47:55 -0400
 Committer:  Frederic Weisbecker <fweisbec@gmail.com>
-CommitDate: Fri, 11 Sep 2009 01:12:34 +0200
+CommitDate: Fri, 11 Sep 2009 03:59:35 +0200
 
-x86: Add MMX support for instruction decoder
+kprobes/x86-32: Move irq-exit functions to kprobes section
 
-Add MMX/SSE instructions to x86 opcode maps, since some of those
-instructions are used in the kernel.
+Move irq-exit functions to .kprobes.text section to protect against
+kprobes recursion.
 
-This also fixes failures in the x86 instruction decoder seftest.
+When I ran kprobe stress test on x86-32, I found below symbols
+cause unrecoverable recursive probing:
+
+	ret_from_exception
+	ret_from_intr
+	check_userspace
+	restore_all
+	restore_all_notrace
+	restore_nocheck
+	irq_return
+
+And also, I found some interrupt/exception entry points that
+cause similar problems.
+
+This patch moves those symbols (including their container functions)
+to .kprobes.text section to prevent any kprobes probing.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
-LKML-Reference: <20090908163246.23516.78835.stgit@dhcp-100-2-132.bos.redhat.com>
+LKML-Reference: <20090908164755.24050.81182.stgit@dhcp-100-2-132.bos.redhat.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- arch/x86/lib/x86-opcode-map.txt |  307 +++++++++++++++++++++++++--------------
- 1 files changed, 200 insertions(+), 107 deletions(-)
+ arch/x86/kernel/entry_32.S |   24 ++++++++++++++++++++++++
+ kernel/kprobes.c           |    2 ++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/lib/x86-opcode-map.txt b/arch/x86/lib/x86-opcode-map.txt
-index 083dd59..59e20d5 100644
---- a/arch/x86/lib/x86-opcode-map.txt
-+++ b/arch/x86/lib/x86-opcode-map.txt
-@@ -310,14 +310,14 @@ Referrer: 2-byte escape
- 0e:
- 0f:
- # 0x0f 0x10-0x1f
--10:
--11:
--12:
--13:
--14:
--15:
--16:
--17:
-+10: movups Vps,Wps | movss Vss,Wss (F3) | movupd Vpd,Wpd (66) | movsd Vsd,Wsd (F2)
-+11: movups Wps,Vps | movss Wss,Vss (F3) | movupd Wpd,Vpd (66) | movsd Wsd,Vsd (F2)
-+12: movlps Vq,Mq | movlpd Vq,Mq (66) | movhlps Vq,Uq | movddup Vq,Wq (F2) | movsldup Vq,Wq (F3)
-+13: mpvlps Mq,Vq | movlpd Mq,Vq (66)
-+14: unpcklps Vps,Wq | unpcklpd Vpd,Wq (66)
-+15: unpckhps Vps,Wq | unpckhpd Vpd,Wq (66)
-+16: movhps Vq,Mq | movhpd Vq,Mq (66) | movlsps Vq,Uq | movshdup Vq,Wq (F3)
-+17: movhps Mq,Vq | movhpd Mq,Vq (66)
- 18: Grp16 (1A)
- 19:
- 1a:
-@@ -337,12 +337,12 @@ Referrer: 2-byte escape
- 27:
- 28: movaps Vps,Wps | movapd Vpd,Wpd (66)
- 29: movaps Wps,Vps | movapd Wpd,Vpd (66)
--2a:
--2b:
--2c:
--2d:
--2e:
--2f:
-+2a: cvtpi2ps Vps,Qpi | cvtsi2ss Vss,Ed/q (F3) | cvtpi2pd Vpd,Qpi (66) | cvtsi2sd Vsd,Ed/q (F2)
-+2b: movntps Mps,Vps | movntpd Mpd,Vpd (66)
-+2c: cvttps2pi Ppi,Wps | cvttss2si  Gd/q,Wss (F3) | cvttpd2pi Ppi,Wpd (66) | cvttsd2si Gd/q,Wsd (F2)
-+2d: cvtps2pi Ppi,Wps | cvtss2si Gd/q,Wss (F3) | cvtpd2pi Qpi,Wpd (66) | cvtsd2si Gd/q,Wsd (F2)
-+2e: ucomiss Vss,Wss | ucomisd  Vsd,Wsd (66)
-+2f: comiss Vss,Wss | comisd  Vsd,Wsd (66)
- # 0x0f 0x30-0x3f
- 30: WRMSR
- 31: RDTSC
-@@ -378,56 +378,56 @@ Referrer: 2-byte escape
- 4e: CMOVLE/NG Gv,Ev
- 4f: CMOVNLE/G Gv,Ev
- # 0x0f 0x50-0x5f
--50:
--51:
--52:
--53:
--54:
--55:
--56:
--57:
--58:
--59:
--5a:
--5b:
--5c:
--5d:
--5e:
--5f:
-+50: movmskps Gd/q,Ups | movmskpd Gd/q,Upd (66)
-+51: sqrtps Vps,Wps | sqrtss Vss,Wss (F3) | sqrtpd Vpd,Wpd (66) | sqrtsd Vsd,Wsd (F2)
-+52: rsqrtps Vps,Wps | rsqrtss Vss,Wss (F3)
-+53: rcpps Vps,Wps | rcpss Vss,Wss (F3)
-+54: andps Vps,Wps | andpd Vpd,Wpd (66)
-+55: andnps Vps,Wps | andnpd Vpd,Wpd (66)
-+56: orps Vps,Wps | orpd Vpd,Wpd (66)
-+57: xorps Vps,Wps | xorpd Vpd,Wpd (66)
-+58: addps Vps,Wps | addss Vss,Wss (F3) | addpd Vpd,Wpd (66) | addsd Vsd,Wsd (F2)
-+59: mulps Vps,Wps | mulss Vss,Wss (F3) | mulpd Vpd,Wpd (66) | mulsd Vsd,Wsd (F2)
-+5a: cvtps2pd Vpd,Wps | cvtss2sd Vsd,Wss (F3) | cvtpd2ps Vps,Wpd (66) | cvtsd2ss Vsd,Wsd (F2)
-+5b: cvtdq2ps Vps,Wdq | cvtps2dq Vdq,Wps (66) | cvttps2dq Vdq,Wps (F3)
-+5c: subps Vps,Wps | subss Vss,Wss (F3) | subpd Vpd,Wpd (66) | subsd Vsd,Wsd (F2)
-+5d: minps Vps,Wps | minss Vss,Wss (F3) | minpd Vpd,Wpd (66) | minsd Vsd,Wsd (F2)
-+5e: divps Vps,Wps | divss Vss,Wss (F3) | divpd Vpd,Wpd (66) | divsd Vsd,Wsd (F2)
-+5f: maxps Vps,Wps | maxss Vss,Wss (F3) | maxpd Vpd,Wpd (66) | maxsd Vsd,Wsd (F2)
- # 0x0f 0x60-0x6f
--60:
--61:
--62:
--63:
--64:
--65:
--66:
--67:
--68:
--69:
--6a:
--6b:
--6c:
--6d:
--6e:
--6f:
-+60: punpcklbw Pq,Qd | punpcklbw Vdq,Wdq (66)
-+61: punpcklwd Pq,Qd | punpcklwd Vdq,Wdq (66)
-+62: punpckldq Pq,Qd | punpckldq Vdq,Wdq (66)
-+63: packsswb Pq,Qq | packsswb Vdq,Wdq (66)
-+64: pcmpgtb Pq,Qq | pcmpgtb Vdq,Wdq (66)
-+65: pcmpgtw Pq,Qq | pcmpgtw(66) Vdq,Wdq
-+66: pcmpgtd Pq,Qq | pcmpgtd Vdq,Wdq (66)
-+67: packuswb Pq,Qq | packuswb(66) Vdq,Wdq
-+68: punpckhbw Pq,Qd | punpckhbw Vdq,Wdq (66)
-+69: punpckhwd Pq,Qd | punpckhwd Vdq,Wdq (66)
-+6a: punpckhdq Pq,Qd | punpckhdq Vdq,Wdq (66)
-+6b: packssdw Pq,Qd | packssdw Vdq,Wdq (66)
-+6c: punpcklqdq Vdq,Wdq (66)
-+6d: punpckhqdq Vdq,Wdq (66)
-+6e: movd/q/ Pd,Ed/q | movd/q Vdq,Ed/q (66)
-+6f: movq Pq,Qq | movdqa Vdq,Wdq (66) | movdqu Vdq,Wdq (F3)
- # 0x0f 0x70-0x7f
--70:
-+70: pshufw Pq,Qq,Ib | pshufd Vdq,Wdq,Ib (66) | pshufhw Vdq,Wdq,Ib (F3) | pshuflw VdqWdq,Ib (F2)
- 71: Grp12 (1A)
- 72: Grp13 (1A)
- 73: Grp14 (1A)
--74:
--75:
--76:
--77:
-+74: pcmpeqb Pq,Qq | pcmpeqb Vdq,Wdq (66)
-+75: pcmpeqw Pq,Qq | pcmpeqw Vdq,Wdq (66)
-+76: pcmpeqd Pq,Qq | pcmpeqd Vdq,Wdq (66)
-+77: emms
- 78: VMREAD Ed/q,Gd/q
- 79: VMWRITE Gd/q,Ed/q
- 7a:
- 7b:
--7c:
--7d:
--7e:
--7f:
-+7c: haddps(F2) Vps,Wps | haddpd(66) Vpd,Wpd
-+7d: hsubps(F2) Vps,Wps | hsubpd(66) Vpd,Wpd
-+7e: movd/q Ed/q,Pd | movd/q Ed/q,Vdq (66) | movq Vq,Wq (F3)
-+7f: movq Qq,Pq | movdqa Wdq,Vdq (66) | movdqu Wdq,Vdq (F3)
- # 0x0f 0x80-0x8f
- 80: JO Jz (f64)
- 81: JNO Jz (f64)
-@@ -499,11 +499,11 @@ bf: MOVSX Gv,Ew
- # 0x0f 0xc0-0xcf
- c0: XADD Eb,Gb
- c1: XADD Ev,Gv
--c2:
-+c2: cmpps Vps,Wps,Ib | cmpss Vss,Wss,Ib (F3) | cmppd Vpd,Wpd,Ib (66) | cmpsd Vsd,Wsd,Ib (F2)
- c3: movnti Md/q,Gd/q
--c4:
--c5:
--c6:
-+c4: pinsrw Pq,Rd/q/Mw,Ib | pinsrw Vdq,Rd/q/Mw,Ib (66)
-+c5: pextrw Gd,Nq,Ib | pextrw Gd,Udq,Ib (66)
-+c6: shufps Vps,Wps,Ib | shufpd Vpd,Wpd,Ib (66)
- c7: Grp9 (1A)
- c8: BSWAP RAX/EAX/R8/R8D
- c9: BSWAP RCX/ECX/R9/R9D
-@@ -514,60 +514,131 @@ cd: BSWAP RBP/EBP/R13/R13D
- ce: BSWAP RSI/ESI/R14/R14D
- cf: BSWAP RDI/EDI/R15/R15D
- # 0x0f 0xd0-0xdf
--d0:
--d1:
--d2:
--d3:
--d4:
--d5:
--d6:
--d7:
--d8:
--d9:
--da:
--db:
--dc:
--dd:
--de:
--df:
-+d0: addsubps Vps,Wps (F2) | addsubpd Vpd,Wpd (66)
-+d1: psrlw Pq,Qq | psrlw Vdq,Wdq (66)
-+d2: psrld Pq,Qq | psrld Vdq,Wdq (66)
-+d3: psrlq Pq,Qq | psrlq Vdq,Wdq (66)
-+d4: paddq Pq,Qq | paddq Vdq,Wdq (66)
-+d5: pmullw Pq,Qq | pmullw Vdq,Wdq (66)
-+d6: movq Wq,Vq (66) | movq2dq Vdq,Nq (F3) | movdq2q Pq,Uq (F2)
-+d7: pmovmskb Gd,Nq | pmovmskb Gd,Udq (66)
-+d8: psubusb Pq,Qq | psubusb Vdq,Wdq (66)
-+d9: psubusw Pq,Qq | psubusw Vdq,Wdq (66)
-+da: pminub Pq,Qq | pminub Vdq,Wdq (66)
-+db: pand Pq,Qq | pand Vdq,Wdq (66)
-+dc: paddusb Pq,Qq | paddusb Vdq,Wdq (66)
-+dd: paddusw Pq,Qq | paddusw Vdq,Wdq (66)
-+de: pmaxub Pq,Qq | pmaxub Vdq,Wdq (66)
-+df: pandn Pq,Qq | pandn Vdq,Wdq (66)
- # 0x0f 0xe0-0xef
--e0:
--e1:
--e2:
--e3:
--e4:
--e5:
--e6:
--e7:
--e8:
--e9:
--ea:
--eb:
--ec:
--ed:
--ee:
--ef:
-+e0: pavgb Pq,Qq | pavgb Vdq,Wdq (66)
-+e1: psraw Pq,Qq | psraw Vdq,Wdq (66)
-+e2: psrad Pq,Qq | psrad Vdq,Wdq (66)
-+e3: pavgw Pq,Qq | pavgw Vdq,Wdq (66)
-+e4: pmulhuw Pq,Qq | pmulhuw Vdq,Wdq (66)
-+e5: pmulhw Pq,Qq | pmulhw Vdq,Wdq (66)
-+e6: cvtpd2dq Vdq,Wpd (F2) | cvttpd2dq Vdq,Wpd (66) | cvtdq2pd Vpd,Wdq (F3)
-+e7: movntq Mq,Pq | movntdq Mdq,Vdq (66)
-+e8: psubsb Pq,Qq | psubsb Vdq,Wdq (66)
-+e9: psubsw Pq,Qq | psubsw Vdq,Wdq (66)
-+ea: pminsw Pq,Qq | pminsw Vdq,Wdq (66)
-+eb: por Pq,Qq | por Vdq,Wdq (66)
-+ec: paddsb Pq,Qq | paddsb Vdq,Wdq (66)
-+ed: paddsw Pq,Qq | paddsw Vdq,Wdq (66)
-+ee: pmaxsw Pq,Qq | pmaxsw Vdq,Wdq (66)
-+ef: pxor Pq,Qq | pxor Vdq,Wdq (66)
- # 0x0f 0xf0-0xff
--f0:
--f1:
--f2:
--f3:
--f4:
--f5:
--f6:
--f7:
--f8:
--f9:
--fa:
--fb:
--fc:
--fd:
--fe:
-+f0: lddqu Vdq,Mdq (F2)
-+f1: psllw Pq,Qq | psllw Vdq,Wdq (66)
-+f2: pslld Pq,Qq | pslld Vdq,Wdq (66)
-+f3: psllq Pq,Qq | psllq Vdq,Wdq (66)
-+f4: pmuludq Pq,Qq | pmuludq Vdq,Wdq (66)
-+f5: pmaddwd Pq,Qq | pmaddwd Vdq,Wdq (66)
-+f6: psadbw Pq,Qq | psadbw Vdq,Wdq (66)
-+f7: maskmovq Pq,Nq | maskmovdqu Vdq,Udq (66)
-+f8: psubb Pq,Qq | psubb Vdq,Wdq (66)
-+f9: psubw Pq,Qq | psubw Vdq,Wdq (66)
-+fa: psubd Pq,Qq | psubd Vdq,Wdq (66)
-+fb: psubq Pq,Qq | psubq Vdq,Wdq (66)
-+fc: paddb Pq,Qq | paddb Vdq,Wdq (66)
-+fd: paddw Pq,Qq | paddw Vdq,Wdq (66)
-+fe: paddd Pq,Qq | paddd Vdq,Wdq (66)
- ff:
- EndTable
+diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
+index c097e7d..beb30da 100644
+--- a/arch/x86/kernel/entry_32.S
++++ b/arch/x86/kernel/entry_32.S
+@@ -334,6 +334,10 @@ ENTRY(ret_from_fork)
+ END(ret_from_fork)
  
- Table: 3-byte opcode 1
- Referrer: 3-byte escape 1
-+# 0x0f 0x38 0x00-0x0f
-+00: pshufb Pq,Qq | pshufb Vdq,Wdq (66)
-+01: phaddw Pq,Qq | phaddw Vdq,Wdq (66)
-+02: phaddd Pq,Qq | phaddd Vdq,Wdq (66)
-+03: phaddsw Pq,Qq | phaddsw Vdq,Wdq (66)
-+04: pmaddubsw Pq,Qq | pmaddubsw (66)Vdq,Wdq
-+05: phsubw Pq,Qq | phsubw Vdq,Wdq (66)
-+06: phsubd Pq,Qq | phsubd Vdq,Wdq (66)
-+07: phsubsw Pq,Qq | phsubsw Vdq,Wdq (66)
-+08: psignb Pq,Qq | psignb Vdq,Wdq (66)
-+09: psignw Pq,Qq | psignw Vdq,Wdq (66)
-+0a: psignd Pq,Qq | psignd Vdq,Wdq (66)
-+0b: pmulhrsw Pq,Qq | pmulhrsw Vdq,Wdq (66)
-+0c:
-+0d:
-+0e:
-+0f:
-+# 0x0f 0x38 0x10-0x1f
-+10: pblendvb Vdq,Wdq (66)
-+11:
-+12:
-+13:
-+14: blendvps Vdq,Wdq (66)
-+15: blendvpd Vdq,Wdq (66)
-+16:
-+17: ptest Vdq,Wdq (66)
-+18:
-+19:
-+1a:
-+1b:
-+1c: pabsb Pq,Qq | pabsb Vdq,Wdq (66)
-+1d: pabsw Pq,Qq | pabsw Vdq,Wdq (66)
-+1e: pabsd Pq,Qq | pabsd Vdq,Wdq (66)
-+1f:
-+# 0x0f 0x38 0x20-0x2f
-+20: pmovsxbw Vdq,Udq/Mq (66)
-+21: pmovsxbd Vdq,Udq/Md (66)
-+22: pmovsxbq Vdq,Udq/Mw (66)
-+23: pmovsxwd Vdq,Udq/Mq (66)
-+24: pmovsxwq Vdq,Udq/Md (66)
-+25: pmovsxdq Vdq,Udq/Mq (66)
-+26:
-+27:
-+28: pmuldq Vdq,Wdq (66)
-+29: pcmpeqq Vdq,Wdq (66)
-+2a: movntdqa Vdq,Mdq (66)
-+2b: packusdw Vdq,Wdq (66)
-+2c:
-+2d:
-+2e:
-+2f:
-+# 0x0f 0x38 0x30-0x3f
-+30: pmovzxbw Vdq,Udq/Mq (66)
-+31: pmovzxbd Vdq,Udq/Md (66)
-+32: pmovzxbq Vdq,Udq/Mw (66)
-+33: pmovzxwd Vdq,Udq/Mq (66)
-+34: pmovzxwq Vdq,Udq/Md (66)
-+35: pmovzxdq Vdq,Udq/Mq (66)
-+36:
-+37: pcmpgtq Vdq,Wdq (66)
-+38: pminsb Vdq,Wdq (66)
-+39: pminsd Vdq,Wdq (66)
-+3a: pminuw Vdq,Wdq (66)
-+3b: pminud Vdq,Wdq (66)
-+3c: pmaxsb Vdq,Wdq (66)
-+3d: pmaxsd Vdq,Wdq (66)
-+3e: pmaxuw Vdq,Wdq (66)
-+3f: pmaxud Vdq,Wdq (66)
-+# 0x0f 0x38 0x4f-0xff
-+40: pmulld Vdq,Wdq (66)
-+41: phminposuw Vdq,Wdq (66)
- 80: INVEPT Gd/q,Mdq (66)
- 81: INVPID Gd/q,Mdq (66)
- f0: MOVBE Gv,Mv | CRC32 Gd,Eb (F2)
-@@ -576,7 +647,29 @@ EndTable
+ /*
++ * Interrupt exit functions should be protected against kprobes
++ */
++	.pushsection .kprobes.text, "ax"
++/*
+  * Return to user mode is not as complex as all this looks,
+  * but we want the default path for a system call return to
+  * go as quickly as possible which is why some of this is
+@@ -383,6 +387,10 @@ need_resched:
+ END(resume_kernel)
+ #endif
+ 	CFI_ENDPROC
++/*
++ * End of kprobes section
++ */
++	.popsection
  
- Table: 3-byte opcode 2
- Referrer: 3-byte escape 2
--# all opcode is for SSE
-+# 0x0f 0x3a 0x00-0xff
-+08: roundps Vdq,Wdq,Ib (66)
-+09: roundpd Vdq,Wdq,Ib (66)
-+0a: roundss Vss,Wss,Ib (66)
-+0b: roundsd Vsd,Wsd,Ib (66)
-+0c: blendps Vdq,Wdq,Ib (66)
-+0d: blendpd Vdq,Wdq,Ib (66)
-+0e: pblendw Vdq,Wdq,Ib (66)
-+0f: palignr Pq,Qq,Ib | palignr Vdq,Wdq,Ib (66)
-+14: pextrb Rd/Mb,Vdq,Ib (66)
-+15: pextrw Rd/Mw,Vdq,Ib (66)
-+16: pextrd/pextrq Ed/q,Vdq,Ib (66)
-+17: extractps Ed,Vdq,Ib (66)
-+20: pinsrb Vdq,Rd/q/Mb,Ib (66)
-+21: insertps Vdq,Udq/Md,Ib (66)
-+22: pinsrd/pinsrq Vdq,Ed/q,Ib (66)
-+40: dpps Vdq,Wdq,Ib (66)
-+41: dppd Vdq,Wdq,Ib (66)
-+42: mpsadbw Vdq,Wdq,Ib (66)
-+60: pcmpestrm Vdq,Wdq,Ib (66)
-+61: pcmpestri Vdq,Wdq,Ib (66)
-+62: pcmpistrm Vdq,Wdq,Ib (66)
-+63: pcmpistri Vdq,Wdq,Ib (66)
- EndTable
+ /* SYSENTER_RETURN points to after the "sysenter" instruction in
+    the vsyscall page.  See vsyscall-sysentry.S, which defines the symbol.  */
+@@ -513,6 +521,10 @@ sysexit_audit:
+ 	PTGS_TO_GS_EX
+ ENDPROC(ia32_sysenter_target)
  
- GrpTable: Grp1
++/*
++ * syscall stub including irq exit should be protected against kprobes
++ */
++	.pushsection .kprobes.text, "ax"
+ 	# system call handler stub
+ ENTRY(system_call)
+ 	RING0_INT_FRAME			# can't unwind into user space anyway
+@@ -705,6 +717,10 @@ syscall_badsys:
+ 	jmp resume_userspace
+ END(syscall_badsys)
+ 	CFI_ENDPROC
++/*
++ * End of kprobes section
++ */
++	.popsection
+ 
+ /*
+  * System calls that need a pt_regs pointer.
+@@ -814,6 +830,10 @@ common_interrupt:
+ ENDPROC(common_interrupt)
+ 	CFI_ENDPROC
+ 
++/*
++ *  Irq entries should be protected against kprobes
++ */
++	.pushsection .kprobes.text, "ax"
+ #define BUILD_INTERRUPT3(name, nr, fn)	\
+ ENTRY(name)				\
+ 	RING0_INT_FRAME;		\
+@@ -980,6 +1000,10 @@ ENTRY(spurious_interrupt_bug)
+ 	jmp error_code
+ 	CFI_ENDPROC
+ END(spurious_interrupt_bug)
++/*
++ * End of kprobes section
++ */
++	.popsection
+ 
+ ENTRY(kernel_thread_helper)
+ 	pushl $0		# fake return address for unwinder
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 3267d90..00d01b0 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -91,6 +91,8 @@ static spinlock_t *kretprobe_table_lock_ptr(unsigned long hash)
+ static struct kprobe_blackpoint kprobe_blacklist[] = {
+ 	{"preempt_schedule",},
+ 	{"native_get_debugreg",},
++	{"irq_entries_start",},
++	{"common_interrupt",},
+ 	{NULL}    /* Terminator */
+ };
+ 
