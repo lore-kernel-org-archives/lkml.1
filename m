@@ -1,231 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434AbZJQPST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752408AbZJQPUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752434AbZJQPST (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 11:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbZJQPSS
+	id S1752408AbZJQPUI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 11:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZJQPUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 11:18:18 -0400
-Received: from trinity.develer.com ([83.149.158.210]:50968 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751700AbZJQPSR (ORCPT
+	Sat, 17 Oct 2009 11:20:07 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:59224 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751945AbZJQPUG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 11:18:17 -0400
-Date: Sat, 17 Oct 2009 17:18:19 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       m-ikeda@ds.jp.nec.com, agk@redhat.com, peterz@infradead.org,
-       jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
-       riel@redhat.com
-Subject: Re: Performance numbers with IO throttling patches (Was: Re: IO
-	scheduler based IO controller V10)
-Message-ID: <20091017151817.GA29639@linux>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <20090924143315.781cd0ac.akpm@linux-foundation.org> <20091010195316.GB16510@redhat.com> <20091010222728.GA30943@linux> <20091012211120.GE7152@redhat.com>
+	Sat, 17 Oct 2009 11:20:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=RzeExyRVGf9PyHcmZ3BOT0x4rqaKAAfXDAyZoBEddROf1jXw+K3g2S0DgBtOakTVA/
+         STR3zKxe+lQZXnWO9Wk4hnCGPy/z7yS3skOT6AkurmD2WtpTtL4CDyBTGB5fz0QEOGJ5
+         u78gf8W2bfqrgfathzc/uU0C7k8huSty+7nro=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 2/2] rt2x00: Implement support for rt2800pci
+Date: Sat, 17 Oct 2009 17:19:23 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31.1-56.fc12.x86_64; KDE/4.3.1; x86_64; ; )
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, John Linville <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, users@host1.serialmonkey.com,
+       Alban Browaeys <prahal@yahoo.com>,
+       Benoit PAPILLAULT <benoit.papillault@free.fr>,
+       Felix Fietkau <nbd@openwrt.org>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       Mattias Nissler <mattias.nissler@gmx.de>,
+       Mark Asselstine <asselsm@gmail.com>,
+       Xose Vazquez Perez <xose.vazquez@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <200910152137.58164.IvDoorn@gmail.com> <200910171654.03344.bzolnier@gmail.com> <1255792104.3434.2.camel@johannes.local>
+In-Reply-To: <1255792104.3434.2.camel@johannes.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012211120.GE7152@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200910171719.24093.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 05:11:20PM -0400, Vivek Goyal wrote:
-
-[snip]
-
-> I modified my report scripts to also output aggreagate iops numbers and
-> remove max-bandwidth and min-bandwidth numbers. So for same tests and same
-> results I am now reporting iops numbers also. ( I have not re-run the
-> tests.)
+On Saturday 17 October 2009 17:08:24 Johannes Berg wrote:
+> On Sat, 2009-10-17 at 16:54 +0200, Bartlomiej Zolnierkiewicz wrote:
 > 
-> IO scheduler controller + CFQ
-> -----------------------------------
-> [Multiple Random Reader]            [Sequential Reader]                 
-> nr  Agg-bandw Max-latency Agg-iops  nr  Agg-bandw Max-latency Agg-iops  
-> 1   223KB/s   132K usec   55        1   5551KB/s  129K usec   1387      
-> 2   190KB/s   154K usec   46        1   5718KB/s  122K usec   1429      
-> 4   445KB/s   208K usec   111       1   5909KB/s  116K usec   1477      
-> 8   158KB/s   2820 msec   36        1   5445KB/s  168K usec   1361      
-> 16  145KB/s   5963 msec   28        1   5418KB/s  164K usec   1354      
-> 32  139KB/s   12762 msec  23        1   5398KB/s  175K usec   1349      
+> > I also used the opportunity to take a closer look at this driver and
+> > it seems that it needlessly adds around 2 KLOC to kernel by duplicating
+> > the common content of rt2800usb.h to rt2800pci.h instead of moving it
+> > to the shared header (like it is done in the staging crap drivers):
 > 
-> io-throttle + CFQ
-> -----------------------------------
-> BW limit group1=10 MB/s             BW limit group2=10 MB/s             
-> [Multiple Random Reader]            [Sequential Reader]                 
-> nr  Agg-bandw Max-latency Agg-iops  nr  Agg-bandw Max-latency Agg-iops  
-> 1   36KB/s    218K usec   9         1   8006KB/s  20529 usec  2001      
-> 2   360KB/s   228K usec   89        1   7475KB/s  33665 usec  1868      
-> 4   699KB/s   262K usec   173       1   6800KB/s  46224 usec  1700      
-> 8   573KB/s   1800K usec  139       1   2835KB/s  885K usec   708       
-> 16  294KB/s   3590 msec   68        1   437KB/s   1855K usec  109       
-> 32  980KB/s   2861K usec  230       1   1145KB/s  1952K usec  286       
-> 
-> Note that in case of random reader groups, iops are really small. Few
-> thougts.
-> 
-> - What should be the iops limit I should choose for the group. Lets say if
->   I choose "80", then things should be better for sequential reader group,
->   but just think of what will happen to random reader group. Especially,
->   if nature of workload in group1 changes to sequential. Group1 will
->   simply be killed.
-> 
->   So yes, one can limit a group both by BW as well as iops-max, but this
->   requires you to know in advance exactly what workload is running in the
->   group. The moment workoload changes, these settings might have a very
->   bad effects.
-> 
->   So my biggest concern with max-bwidth and max-iops limits is that how
->   will one configure the system for a dynamic environment. Think of two
->   virtual machines being used by two customers. At one point they might be
->   doing some copy operation and running sequential workload an later some
->   webserver or database query might be doing some random read operations.
+> Tell me you're kidding -- comparing 2k duplicated LOC with a driver that
+> ships its own wifi stack?
 
-The main problem IMHO is how to accurately evaluate the cost of an IO
-operation. On rotational media for example the cost to read two distant
-blocks is not the same cost of reading two contiguous blocks (while on a
-flash/SSD drive the cost is probably the same).
+Why would I be?
 
-io-throttle tries to quantify the cost in absolute terms (iops and BW),
-but this is not enough to cover all the possible cases. For example, you
-could hit a physical disk limit, because you're doing a workload too
-seeky, even if the iops and BW numbers are low.
+1) The patch is submitted to kernel _proper_ not kernel staging so I see
+no excuse for duplicating 2-4 KLOC and it should be fixed.
 
-> 
-> - Notice the interesting case of 16 random readers. iops for random reader
->   group is really low, but still the throughput and iops of sequential
->   reader group is very bad. I suspect that at CFQ level, some kind of
->   mixup has taken place where we have not enabled idling for sequential
->   reader and disk became seek bound hence both the group are loosing.
->   (Just a guess)
-
-Yes, my guess is the same.
-
-I've re-run some of your tests using a SSD (a MOBI MTRON MSD-PATA3018-ZIF1),
-but changing few parameters: I used a larger block size for the
-sequential workload (there's no need to reduce the block size of the
-single reads if we suppose to read a lot of contiguous blocks).
-
-And for all the io-throttle tests I switched to noop scheduler (CFQ must
-be changed to be cgroup-aware before using it together with io-throttle,
-otherwise the result is that one simply breaks the logic of the other).
-
-=== io-throttle settings ===
-cgroup #1: max-bw 10MB/s, max-iops 2150 iop/s
-cgroup #1: max-bw 10MB/s, max-iops 2150 iop/s
-
-During the tests I used a larger block size for sequential readers,
-respect to the random readers:
-
-sequential-read:	block size = 1MB
-random-read:		block size = 4KB
-
-sequential-readers vs sequential-reader
-=======================================
-[ cgroup #1 workload ]
-fio_args="--rw=read --bs=1M --size=512M --runtime=30 --numjobs=N --direct=1"
-[ cgroup #2 workload ]
-fio_args="--rw=read --bs=1M --size=512M --runtime=30 --numjobs=1 --direct=1"
-
-__2.6.32-rc5__
-[   cgroup #1   ]       [   cgroup #2   ]
-tasks	aggr-bw		tasks	aggr-bw
-1	36210KB/s	1	36992KB/s
-2	47558KB/s	1	24479KB/s
-4	57587KB/s	1	14809KB/s
-8	64667KB/s	1	8393KB/s
-
-__2.6.32-rc5-io-throttle__
-[   cgroup #1   ]       [   cgroup #2   ]
-tasks	aggr-bw		tasks	aggr-bw
-1	10195KB/s	1	10193KB/s
-2	10279KB/s	1	10276KB/s
-4	10281KB/s	1	10277KB/s
-8	10279KB/s	1	10277KB/s
-
-random-readers vs sequential-reader
-===================================
-[ cgroup #1 workload ]
-fio_args="--rw=randread --bs=4k --size=512M --runtime=30 --numjobs=N --direct=1"
-[ cgroup #2 workload ]
-fio_args="--rw=read --bs=1M --size=512M --runtime=30 --numjobs=1 --direct=1"
-
-__2.6.32-rc5__
-[   cgroup #1   ]       [   cgroup #2   ]
-tasks	aggr-bw		tasks	aggr-bw
-1	4767KB/s	1	52819KB/s
-2	5900KB/s	1	39788KB/s
-4	7783KB/s	1	27966KB/s
-8	9296KB/s	1	17606KB/s
-
-__2.6.32-rc5-io-throttle__
-[   cgroup #1   ]       [   cgroup #2   ]
-tasks	aggr-bw		tasks	aggr-bw
-1	8861KB/s	1	8886KB/s
-2	8887KB/s	1	7578KB/s
-4	8886KB/s	1	7271KB/s
-8	8889KB/s	1	7489KB/s
-
-sequential-readers vs random-reader
-===================================
-[ cgroup #1 workload ]
-fio_args="--rw=read --bs=1M --size=512M --runtime=30 --numjobs=N --direct=1"
-[ cgroup #2 workload ]
-fio_args="--rw=randread --bs=4k --size=512M --runtime=30 --numjobs=1 --direct=1"
-
-__2.6.32-rc5__
-[   cgroup #1   ]       [   cgroup #2   ]
-tasks	aggr-bw		tasks	aggr-bw
-1	54511KB/s	1	4865KB/s
-2	70312KB/s	1	 965KB/s
-4	71543KB/s	1	 484KB/s
-8	72899KB/s	1	  98KB/s
-
-__2.6.32-rc5-io-throttle__
-[   cgroup #1   ]       [   cgroup #2   ]
-tasks	aggr-bw		tasks	aggr-bw
-1	8875KB/s	1	8885KB/s
-2	8884KB/s	1	8148KB/s
-4	8886KB/s	1	7637KB/s
-8	8886KB/s	1	7411KB/s
-
-random-readers vs random-reader
-===============================
-[ cgroup #1 workload ]
-fio_args="--rw=randread --bs=4k --size=512M --runtime=30 --numjobs=N --direct=1"
-[ cgroup #2 workload ]
-fio_args="--rw=randread --bs=4k --size=512M --runtime=30 --numjobs=1 --direct=1"
-
-__2.6.32-rc5__
-[   cgroup #1   ]       [   cgroup #2   ]
-tasks	aggr-bw		tasks	aggr-bw
-1	6141KB/s	1	6320KB/s
-2	8567KB/s	1	3987KB/s
-4	9783KB/s	1	2610KB/s
-8	11067KB/s	1	1227KB/s
-
-__2.6.32-rc5-io-throttle__
-[   cgroup #1   ]       [   cgroup #2   ]
-tasks	aggr-bw		tasks	aggr-bw
-1	8883KB/s	1	8886KB/s
-2	8888KB/s	1	7676KB/s
-4	8887KB/s	1	7364KB/s
-8	8884KB/s	1	7264KB/s
-
-With the SSD there's not a consistent degradation of cgroup #2 when we
-increase the tasks of the concurrent random readers in cgroup #1 (both
-in the random-vs-random or random-vs-sequential cases).
-
-We should better analyze the details (probably blktrace would help
-here), but it seems that in your tests the mix of CFQ and io-throttle
-generated a too seeky workload that caused the bad performance values of
-the sequential reader.
-
--Andrea
+2) The fact that the some staging driver consists in 90% of crap doesn't
+mean that it doesn't have some good design ideas..  (i.e. abstracting chipset
+registers access in a discussed case)
