@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZJRSZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbZJQRHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754978AbZJRSZX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 14:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbZJRSZW
+	id S1752960AbZJQRHW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 13:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZJQRHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 14:25:22 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41024 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754494AbZJRSZW (ORCPT
+	Sat, 17 Oct 2009 13:07:21 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:52627 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751469AbZJQRHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 14:25:22 -0400
-Date: Sat, 17 Oct 2009 19:01:24 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Paul Fertser <fercerpav@gmail.com>
-Cc: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org,
-       Nelson Castillo <arhuaco@freaks-unidos.net>,
-       Balaji Rao <balajirrao@openmoko.org>
-Subject: Re: [PATCH] power: pcf50633: introduces battery charging current
-	control
-Message-ID: <20091017170124.GB1526@ucw.cz>
-References: <1255471148-29047-1-git-send-email-fercerpav@gmail.com> <1255471148-29047-2-git-send-email-fercerpav@gmail.com>
+	Sat, 17 Oct 2009 13:07:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=THGfTV3a0/4FFehBv1wQ7yDvyEvo2r0wcIypxsBqKM1TKAC0Oro5u/zxijp+XLHQ4X
+         DYgwUfzeBP6539/kKoJLtdHAiHFnlCyYKHIt0anByhEXKosndUwVzxhFhijPbeVdTjgS
+         Cwznsa77DMuVx7tD4x+T2PiVTi+J/SPcu1yOw=
+Date: Sat, 17 Oct 2009 19:07:20 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       "Michele De Candia (VT)" <michele.decandia@valueteam.com>,
+       Linux I2C <linux-i2c@vger.kernel.org>
+Subject: Re: [PATCH V2] ALS: TSL2550 driver move from i2c/chips
+Message-ID: <20091017170718.GB10344@nowhere>
+References: <4AD9F750.9090800@cam.ac.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1255471148-29047-2-git-send-email-fercerpav@gmail.com>
+In-Reply-To: <4AD9F750.9090800@cam.ac.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> From: Balaji Rao <balajirrao@openmoko.org>
-
-Could we get some changelog here? Like 'it adds new file to sysfs
-interface, ...'
-
-
-
-> +static ssize_t
-> +show_chglim(struct device *dev, struct device_attribute *attr, char *buf)
-
-Could we get meaningful function names?
-
-> @@ -31,6 +31,8 @@ struct pcf50633_platform_data {
->  
->  	int charging_restart_interval;
->  
-> +	int chg_ref_current_ma;
+On Sat, Oct 17, 2009 at 05:56:48PM +0100, Jonathan Cameron wrote:
+> +static int tsl2550_get_id(void)
+> +{
+> +	int ret, val;
 > +
+> +idr_again:
+> +	if (unlikely(idr_pre_get(&tsl2550_idr, GFP_KERNEL) == 0))
+> +		return -ENOMEM;
+> +	spin_lock(&tsl2550_idr_lock);
+> +	ret = idr_get_new(&tsl2550_idr, NULL, &val);
+> +	if (unlikely(ret == -EAGAIN))
+> +		goto idr_again;
 
-...and variable names? This is also inconsistent with name above.
 
-								Pavel
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+That looks like a fair chance to produce a deadlock
+by reacquiring the above spinlock.
+
+Also I never see the above lock released later from this
+function or its caller.
+
