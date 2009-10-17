@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbZJQRHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbZJRSdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752960AbZJQRHW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 13:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZJQRHV
+	id S1755069AbZJRSdr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 14:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbZJRSdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 13:07:21 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:52627 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751469AbZJQRHU (ORCPT
+	Sun, 18 Oct 2009 14:33:47 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39897 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754934AbZJRSdq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 13:07:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=THGfTV3a0/4FFehBv1wQ7yDvyEvo2r0wcIypxsBqKM1TKAC0Oro5u/zxijp+XLHQ4X
-         DYgwUfzeBP6539/kKoJLtdHAiHFnlCyYKHIt0anByhEXKosndUwVzxhFhijPbeVdTjgS
-         Cwznsa77DMuVx7tD4x+T2PiVTi+J/SPcu1yOw=
-Date: Sat, 17 Oct 2009 19:07:20 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       "Michele De Candia (VT)" <michele.decandia@valueteam.com>,
-       Linux I2C <linux-i2c@vger.kernel.org>
-Subject: Re: [PATCH V2] ALS: TSL2550 driver move from i2c/chips
-Message-ID: <20091017170718.GB10344@nowhere>
-References: <4AD9F750.9090800@cam.ac.uk>
+	Sun, 18 Oct 2009 14:33:46 -0400
+Date: Sat, 17 Oct 2009 19:09:46 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Arnd Bergmann <arndbergmann@googlemail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, gregkh@suse.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:bkl/drivers] drivers: Remove BKL from misc_open
+Message-ID: <20091017170946.GC1526@ucw.cz>
+References: <20091010153349.237173041@linutronix.de> <alpine.LFD.2.00.0910141816020.9428@localhost.localdomain> <200910141854.49418.arnd@arndb.de> <200910141912.40190.arnd@arndb.de> <alpine.LFD.2.00.0910142136010.9428@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AD9F750.9090800@cam.ac.uk>
+In-Reply-To: <alpine.LFD.2.00.0910142136010.9428@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 17, 2009 at 05:56:48PM +0100, Jonathan Cameron wrote:
-> +static int tsl2550_get_id(void)
-> +{
-> +	int ret, val;
-> +
-> +idr_again:
-> +	if (unlikely(idr_pre_get(&tsl2550_idr, GFP_KERNEL) == 0))
-> +		return -ENOMEM;
-> +	spin_lock(&tsl2550_idr_lock);
-> +	ret = idr_get_new(&tsl2550_idr, NULL, &val);
-> +	if (unlikely(ret == -EAGAIN))
-> +		goto idr_again;
+Hi!!
 
+> > > drivers/staging/android/binder.c
+> > > drivers/staging/dream/qdsp5/audio_aac.c
+> > > drivers/staging/dream/qdsp5/audio_evrc.c
+> > > drivers/staging/dream/qdsp5/audio_in.c
+> > > drivers/staging/dream/qdsp5/audio_out.c
+> > > drivers/staging/dream/qdsp5/snd.c
+> > > drivers/staging/dream/smd/smd_qmi.c
+> > > drivers/staging/panel/panel.c
+> 
+> More sigh.
 
-
-That looks like a fair chance to produce a deadlock
-by reacquiring the above spinlock.
-
-Also I never see the above lock released later from this
-function or its caller.
-
+I guess you can just pretend these do not exist.
+							Pavel 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
