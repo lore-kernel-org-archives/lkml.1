@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751652AbZJQGjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751811AbZJQGkC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751652AbZJQGjl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 02:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZJQGjk
+	id S1751811AbZJQGkC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 02:40:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZJQGkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 02:39:40 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:36128 "EHLO mgw2.diku.dk"
+	Sat, 17 Oct 2009 02:40:01 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:46776 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbZJQGjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 02:39:39 -0400
-Date: Sat, 17 Oct 2009 08:39:41 +0200 (CEST)
+	id S1751486AbZJQGj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 02:39:59 -0400
+Date: Sat, 17 Oct 2009 08:40:02 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 6/14] drivers/media/video: Move dereference after NULL test
-Message-ID: <Pine.LNX.4.64.0910170839070.9213@ask.diku.dk>
+To: Ben Dooks <ben-linux@fluff.org>, linux-arm-kernel@lists.infradead.org,
+       linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 7/14] drivers/mmc: Move dereference after NULL test
+Message-ID: <Pine.LNX.4.64.0910170839430.9213@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,17 +24,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-In quickcam_messenger.c, if the NULL test on uvd is needed, then the
-dereference should be after the NULL test.
-
-In vpif_display.c, std_info is initialized to the address of a structure
-field.  This seems unlikely to be NULL.  If it could somehow be NULL, then
-the assignment should be moved after the NULL test.  Alternatively, perhaps
-the NULL test is intended to test std_info->stdid rather than std_info?
-
-In saa7134-alsa.c, the function is only called from one place, where the
-chip argument has already been dereferenced.  On the other hand, if it
-should be kept, then card should be initialized after it.
+If the NULL test on mrq is needed, then the derefernce should be after the
+NULL test.
 
 A simplified version of the semantic match that detects this problem is as
 follows (http://coccinelle.lip6.fr/):
@@ -52,53 +44,27 @@ identifier fld;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/media/video/davinci/vpif_display.c        |    2 --
- drivers/media/video/saa7134/saa7134-alsa.c        |    2 --
- drivers/media/video/usbvideo/quickcam_messenger.c |    3 ++-
- 3 files changed, 2 insertions(+), 5 deletions(-)
+ drivers/mmc/host/s3cmci.c           |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/media/video/usbvideo/quickcam_messenger.c b/drivers/media/video/usbvideo/quickcam_messenger.c
-index 803d3e4..f0043d0 100644
---- a/drivers/media/video/usbvideo/quickcam_messenger.c
-+++ b/drivers/media/video/usbvideo/quickcam_messenger.c
-@@ -692,12 +692,13 @@ static int qcm_start_data(struct uvd *uvd)
- 
- static void qcm_stop_data(struct uvd *uvd)
+diff --git a/drivers/mmc/host/s3cmci.c b/drivers/mmc/host/s3cmci.c
+index 99b74a3..5be6962 100644
+--- a/drivers/mmc/host/s3cmci.c
++++ b/drivers/mmc/host/s3cmci.c
+@@ -820,7 +820,7 @@ fail_request:
+ static void finalize_request(struct s3cmci_host *host)
  {
--	struct qcm *cam = (struct qcm *) uvd->user_data;
-+	struct qcm *cam;
- 	int i, j;
- 	int ret;
+ 	struct mmc_request *mrq = host->mrq;
+-	struct mmc_command *cmd = host->cmd_is_stop ? mrq->stop : mrq->cmd;
++	struct mmc_command *cmd;
+ 	int debug_as_failure = 0;
  
- 	if ((uvd == NULL) || (!uvd->streaming) || (uvd->dev == NULL))
+ 	if (host->complete_what != COMPLETION_FINALIZE)
+@@ -828,6 +828,7 @@ static void finalize_request(struct s3cmci_host *host)
+ 
+ 	if (!mrq)
  		return;
-+	cam = (struct qcm *) uvd->user_data;
++	cmd = host->cmd_is_stop ? mrq->stop : mrq->cmd;
  
- 	ret = qcm_camera_off(uvd);
- 	if (ret)
-diff --git a/drivers/media/video/davinci/vpif_display.c b/drivers/media/video/davinci/vpif_display.c
-index c015da8..7500411 100644
---- a/drivers/media/video/davinci/vpif_display.c
-+++ b/drivers/media/video/davinci/vpif_display.c
-@@ -383,8 +383,6 @@ static int vpif_get_std_info(struct channel_obj *ch)
- 	int index;
- 
- 	std_info->stdid = vid_ch->stdid;
--	if (!std_info)
--		return -1;
- 
- 	for (index = 0; index < ARRAY_SIZE(ch_params); index++) {
- 		config = &ch_params[index];
-diff --git a/drivers/media/video/saa7134/saa7134-alsa.c b/drivers/media/video/saa7134/saa7134-alsa.c
-index d48c450..d3bd82a 100644
---- a/drivers/media/video/saa7134/saa7134-alsa.c
-+++ b/drivers/media/video/saa7134/saa7134-alsa.c
-@@ -1011,8 +1011,6 @@ static int snd_card_saa7134_new_mixer(snd_card_saa7134_t * chip)
- 	unsigned int idx;
- 	int err, addr;
- 
--	if (snd_BUG_ON(!chip))
--		return -EINVAL;
- 	strcpy(card->mixername, "SAA7134 Mixer");
- 
- 	for (idx = 0; idx < ARRAY_SIZE(snd_saa7134_volume_controls); idx++) {
+ 	if (cmd->data && (cmd->error == 0) &&
+ 	    (cmd->data->error == 0)) {
