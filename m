@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751348AbZJQFnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751343AbZJQGc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751348AbZJQFnT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 01:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbZJQFnS
+	id S1751343AbZJQGc4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 02:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbZJQGcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 01:43:18 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:51661 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751146AbZJQFnR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 01:43:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=VB2Mty7Cw+9q8nN0TXnnyVvIvtxNQlFIK9JbuWPi9Cefdie8Epy6shJ9cctYpMf9OM
-         Sa7sACQQ/xQc58+F7d1locx+JwDX61bU83/kgdaAQNvmbmF8aIMVva/Q7mame2DEE2gx
-         B3du7mwPsYjrLMAf1ZevNiZIfxsnfNT2J/HGw=
+	Sat, 17 Oct 2009 02:32:55 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:59094 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750839AbZJQGcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 02:32:55 -0400
+Date: Sat, 17 Oct 2009 08:32:56 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/14] sound/soc: Move dereference after NULL test
+Message-ID: <Pine.LNX.4.64.0910170832300.9213@ask.diku.dk>
 MIME-Version: 1.0
-Date: Sat, 17 Oct 2009 01:43:21 -0400
-Message-ID: <804dabb00910162243m47c038e3xa744ab165317b300@mail.gmail.com>
-Subject: booting up: blocking indefinitely on kgdb?
-From: Peter Teoh <htmldeveloper@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today, both my system (2.6.32.-rc4 from linus git tree and linux-next)
-bootup blocked indefinitely on:
+From: Julia Lawall <julia@diku.dk>
 
-kgdb: Registered I/O driver kgdbts.
+If the NULL test on jack is needed, then the derefernce should be after the
+NULL test.
 
-while booting up.   The expected line:
+A simplified version of the semantic match that detects this problem is as
+follows (http://coccinelle.lip6.fr/):
 
-kgdb: Unregistered I/O driver kgdbts, debugger disabled.
+// <smpl>
+@match exists@
+expression x, E;
+identifier fld;
+@@
 
-never comes up.
+* x->fld
+  ... when != \(x = E\|&x\)
+* x == NULL
+// </smpl>
 
-My bootup menu.lst:
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-title Fedora (2.6.26-rc4-next-20080530)
-	root (hd1,7)
-	kernel /boot/vmlinuz-2.6.26-rc4-next-20080530 ro
-root=UUID=d10fe8db-e7d4-4b42-b265-0109a3f3eedf
-	initrd /boot/initrd-2.6.26-rc4-next-20080530.img
-title Fedora (2.6.32-rc4)
-	root (hd1,7)
-	kernel /boot/vmlinuz-2.6.32-rc4 ro
-root=UUID=d10fe8db-e7d4-4b42-b265-0109a3f3eedf
-	initrd /boot/initrd-2.6.32-rc4.img
+---
+ sound/soc/soc-jack.c                |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-and kgdb-related option:
-
-CONFIG_HAVE_ARCH_KGDB=y
-CONFIG_KGDB=y
-CONFIG_KGDB_SERIAL_CONSOLE=y
-CONFIG_KGDB_TESTS=y
-CONFIG_KGDB_TESTS_ON_BOOT=y
-CONFIG_KGDB_TESTS_BOOT_STRING="y"
-
-The same 2.6.32-rc4 image have bootup previously before without any
-problem.   So what could be the potential cause of this permanent
-wait?
-
--- 
-Regards,
-Peter Teoh
+diff --git a/sound/soc/soc-jack.c b/sound/soc/soc-jack.c
+index 1d455ab..1212414 100644
+--- a/sound/soc/soc-jack.c
++++ b/sound/soc/soc-jack.c
+@@ -58,7 +58,7 @@ EXPORT_SYMBOL_GPL(snd_soc_jack_new);
+  */
+ void snd_soc_jack_report(struct snd_soc_jack *jack, int status, int mask)
+ {
+-	struct snd_soc_codec *codec = jack->card->codec;
++	struct snd_soc_codec *codec;
+ 	struct snd_soc_jack_pin *pin;
+ 	int enable;
+ 	int oldstatus;
+@@ -67,6 +67,7 @@ void snd_soc_jack_report(struct snd_soc_jack *jack, int status, int mask)
+ 		WARN_ON_ONCE(!jack);
+ 		return;
+ 	}
++	codec = jack->card->codec;
+ 
+ 	mutex_lock(&codec->mutex);
+ 
