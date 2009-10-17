@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbZJQR5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbZJQSAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753328AbZJQR5T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 13:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbZJQR5S
+	id S1753343AbZJQSAd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 14:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZJQSAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 13:57:18 -0400
-Received: from smtp.zeugmasystems.com ([70.79.96.174]:21017 "EHLO
-	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753250AbZJQR5R (ORCPT
+	Sat, 17 Oct 2009 14:00:33 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:60605 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751469AbZJQSAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 13:57:17 -0400
-Date: Sat, 17 Oct 2009 10:57:21 -0700 (PDT)
-From: Anirban Sinha <asinha@zeugmasystems.com>
-X-X-Sender: asinha@sleet.zeugmasystems.local
-To: David Miller <davem@davemloft.net>
-cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, ani@anirban.org
-Subject: Re: Kernel oops when clearing bgp neighbor info with TCP MD5SUM
- enabled
-In-Reply-To: <20091008.175703.83006470.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0910171035340.2364@sleet.zeugmasystems.local>
-References: <Pine.LNX.4.64.0910081514050.18315@sleet.zeugmasystems.local>
- <20091008.155429.02850661.davem@davemloft.net>
- <Pine.LNX.4.64.0910081622400.18315@sleet.zeugmasystems.local>
- <20091008.175703.83006470.davem@davemloft.net>
+	Sat, 17 Oct 2009 14:00:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=j9J41XUG1frcAF/3O1TmoGfIJYtcAxbwcEg3UHlLlnUrJb6ViBA7RFVhDMulomcMXt
+         wIX+RJJydYgf+WUSrhwN/bbq6GblzvnL3lN2/eN8nB472u5EekH/hJDZT9cg1BkQtvoB
+         /W3cVsjN6HJO82pvsmoCbxLIQKNbVo32TirAk=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 17 Oct 2009 17:57:21.0859 (UTC) FILETIME=[4695E930:01CA4F53]
+Date: Sat, 17 Oct 2009 20:00:36 +0200
+Message-ID: <2d05c4580910171100of7cb050o514892164cc88176@mail.gmail.com>
+Subject: kdb
+From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Oct 2009, David Miller wrote:
+Hi,
 
-> >> > We are noticing a kernel OOPS on 2.6.26 kernel when we issue the command
-> >> > "clear ip bgp <bgp-peer-ip>" on Quagga BGP routing software.
-> >>
-> >> You will need to update your kernel, there have been many TCP
-> >> MD5 bug fixes since 2.6.26
-> >>
-> >
-> > Sigh ... wish that were that easy!
->
-> Contact your vendor for support :-)
+I have compiled kernel 2.6.31.4 and apply real-time patch
+"patch-2.6.31.4-rt14.bz2"
+Then I wanted to install "kdb", and I followed instructions from this site:
 
-but we *are* the vendors for our distribution and even though I may not be
-a networking guru, I have little bit knowledge in working my way through the
-kernel code. I have traced down the cause of the BUG() and when I did a git
-pull against Linus' tree, I see the same issue in teh git tip as well.
+http://www.ibm.com/developerworks/linux/library/l-kdbug/
 
-The BUG() is triggered from kernel/timer.c, line 1037 within the
-function __run_timers(). I am reporting these line numbers from the latest git
-tip.
+and I selected these patches:
 
-What happens is that before and after the callback, the code grabs the preempt
-count and catches unbalanced preempt_enable() and preempt_disable() calls from
-within the callback function.  In this case, the callback function is
-inet_twdr_hangman() as can be seen from this instrumented log:
+kdb-v4.4-2.6.31-x86-4.bz2
+kdb-v4.4-2.6.31-common-4.bz2
 
-[02:15:15.941981] Kernel panic - not syncing: <3>huh, entered ffffffff803fbd60
-(inet_twdr_hangman+0x0/0xe0)with preempt_count 00000102, exited with 00000101?
+One patch was patched without problems [not sure which one :) ] and
+other one had one
+line with rejection [something about serial port]. Anyway, I compiled
+kernel, and booted
+into it after.
 
-Clearly there is an extra unbalanced preempt_enable() somewhere within the
-callback function.
+Questions:
 
-When I looked at the function, I see that in net/ipv4/inet_timewait_sock.c
-line 215, the function calls schedule_work(). schedule_work() calls
-queue_work() which in turn calls put_cpu() that ultimately does a
-preempt_enable(). It is this unbalanced preempt_enable() that decriments the
-preempt_count by one as can be seen from the above trace.
+1. When I press pause key everything freezes ? Is it because that one line of
+rejection during patching ?
 
-I suspect that workqueue related operatios are illegal from a timer callback
-function. In that case, the above mentioned callback function needs to be
-fixed.
+2. How do you invoke kdb ? When you invoke it properly, will "kdb"
+shell will be visible in
+terminal ?
 
-Yes, I can't explain why others are also not seeing the same bug crash. We
-don't have the luxury to pull in the latest and greatest kernel from the git
-tree everytime an update is made and try it out. So I am unable to repo the
-issue with the latest kernel. But if that means that this issue should be
-ignored, then that is fine by me. We will fix our private kenrel with an
-appropriate patch as we continue to investigate more.
-
-Cheers,
-
-Ani
-
+regards
