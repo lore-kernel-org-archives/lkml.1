@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZJQXXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbZJQXmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZJQXXI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 19:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbZJQXXI
+	id S1753885AbZJQXmy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 19:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbZJQXmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 19:23:08 -0400
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:41543 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751296AbZJQXXH (ORCPT
+	Sat, 17 Oct 2009 19:42:53 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:45342 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752356AbZJQXmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 19:23:07 -0400
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <6a3d8d2c4775189d3f854bdd25a87b0d2e37987e.1255811956.git.joe@perches.com>
-References: <6a3d8d2c4775189d3f854bdd25a87b0d2e37987e.1255811956.git.joe@perches.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-6dxJVV11QnqpKIFUA0qM"
-Date: Sun, 18 Oct 2009 00:23:01 +0100
-Message-Id: <1255821781.2488.643.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: Re: [PATCH 1/1] scripts/get_maintainer.pl: Add --roles and
- --rolestats
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	Sat, 17 Oct 2009 19:42:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qhmXAPYnaQU2pMqGsB+JsDP7N9TqB71O0DTtCnUBB2zYbESPQinLNWOcdaMEggB1Om
+         ZltXFDue4rYfbWKmaDL49hUrv/K7iKjQbsipzJ/QD4IpMimm1sACGUdB0PpxiFTwjqDU
+         jtHbXeSpmh36+BWFTJGgGlUKgi/Xw/e08UGRc=
+Date: Sun, 18 Oct 2009 01:42:53 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] x86: hw-breakpoints: Actually flush thread
+	breakpoints in flush_thread().
+Message-ID: <20091017234250.GC10344@nowhere>
+References: <20091005102306.GA7889@linux-sh.org> <20091005104955.GA14852@in.ibm.com> <20091009034003.GA7747@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091009034003.GA7747@linux-sh.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 09, 2009 at 12:40:04PM +0900, Paul Mundt wrote:
+> On Mon, Oct 05, 2009 at 04:19:55PM +0530, K.Prasad wrote:
+> > On Mon, Oct 05, 2009 at 07:23:06PM +0900, Paul Mundt wrote:
+> > > [ I noticed this whilst hacking up SH support, applies to the current
+> > >   tracing/hw-breakpoints topic branch. ]
+> > > 
+> > > flush_thread() tries to do a TIF_DEBUG check before calling in to
+> > > flush_thread_hw_breakpoint() (which subsequently clears the thread flag),
+> > > but for some reason, the x86 code is manually clearing TIF_DEBUG
+> > > immediately before the test, so this path will never be taken.
+> > > 
+> > > This kills off the erroneous clear_tsk_thread_flag() and lets
+> > > flush_thread_hw_breakpoint() actually get invoked.
+> > > 
+> > 
+> > Yes, this is wrong and we missed it. Thanks for fixing!
+> > 
+> > > Presumably folks were getting lucky with testing and the
+> > > free_thread_info() -> free_thread_xstate() path was taking care of the
+> > > flush there.
+> > > 
+> > > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> > 
+> > Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > 
+> > 
+> Ingo, are you planning on picking this up? Or is there a hw-breakpoints
+> tree somewhere outside of -tip that I'm unaware of?
 
---=-6dxJVV11QnqpKIFUA0qM
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2009-10-17 at 13:47 -0700, Joe Perches wrote:
-> --roles shows the role of each email address, i.e. why it was selected.
-> --rolestats selects --roles and adds git log/blame signers #'s and %
->=20
-> Multiple roles are possible (supporter, maintainer, git-signer...)
->=20
-> --roles or --rolestats is meant to help identify appropriate maintainers
-> to notify and should not be used with "git send-email --cc-cmd"
-[...]
-> Other changes:
->=20
-> Format git-signers email addresses a bit to reduce bad signatures
-> Command line bad arguments emitted a verbose usage(), just show --help
-> Version number bumped to .22
->=20
-> Ben Hutchings <ben@decadent.org.uk> had the idea and created a good deal
-> of this implementation.
+I'm picking it.
+Thanks.
 
-You're too modest!
-
-> Signed-off-by: Joe Perches <joe@perches.com>
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-
-Ben.
-
---=20
-Ben Hutchings
-It is impossible to make anything foolproof because fools are so ingenious.
-
---=-6dxJVV11QnqpKIFUA0qM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIVAwUAStpR0Oe/yOyVhhEJAQLACA//RugQUEXTvWqA2x6JXQYlj2tlKmbfCvZx
-hHc1QjePaAbsjTTTNbY1V3mlBO6j+jdbDhR2FDqDiEsfWbELBWiwzl8XtvMotoE1
-5pIWKKPq6Nja8FCxg5rDwMmippP8tWlHp05xPMjj7d4OTuSJeEypZbZmMngC1bYh
-YMAZTjdCJ+Ke9r5oSoaVa2wrk7rrsMXsbjHrj721TV5yxC0DOkXIdBUFi00HRROv
-PjURg3ckFPsDHicf/LvI94z7YlLxC7Fj6kaaNV2dAXhW7U5dgorC0/cLEkcjt8zq
-S7tVB871Z9mPAgAVfjWMYkrL4hwaXDhkwm+8kiINaBD4vfJm8Yq4hr7/pUvdkFK3
-rYiOvDur8C0ueUB33ecgTGCHHBQqloPNHnXLwM8ZE+mNNyQj2VgITy8ZwbAopevS
-N/aPxsuCExAwRHuC+wdmWEd9SRdsiibxRIgNKqxUHd0VjOlEW8dOp679WSRSly6U
-W60lqbP1QPEx4DXXr5UreLw0AgBrX4oPOSlQKC0sF7giDETgDiJ0dRB1mXOqEJMQ
-W00kHjBxVLghxfD4q8UK+MX9DWoiV4Dwzqx5hcJ7O+2Ymas/1L3iS/ulUNUMR/2u
-nJg7lzyNratuuajH8CUWCk9DfTYuaoIEsUYBuafutQTLnzQsT54k9up5c5Z/s1yq
-PI1Q+TyN5DA=
-=9e03
------END PGP SIGNATURE-----
-
---=-6dxJVV11QnqpKIFUA0qM--
