@@ -1,129 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbZJQWez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbZJQWjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbZJQWez (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 18:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZJQWey
+	id S1753635AbZJQWjF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 18:39:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZJQWjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 18:34:54 -0400
-Received: from lucidpixels.com ([75.144.35.66]:35848 "EHLO lucidpixels.com"
+	Sat, 17 Oct 2009 18:39:05 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34432 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751550AbZJQWex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 18:34:53 -0400
-Date: Sat, 17 Oct 2009 18:34:57 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-cc: Alan Piszcz <ap@solarrain.com>
-Subject: 2.6.31+2.6.31.4: XFS - All I/O locks up to D-state after 24-48 hours
- (sysrq-t+w available)
-Message-ID: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	id S1751296AbZJQWjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 18:39:04 -0400
+Date: Sun, 18 Oct 2009 00:39:02 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Darren Hart <dvhltc@us.ibm.com>, Clark Williams <williams@redhat.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: -rt dbench scalabiltiy issue
+Message-ID: <20091017223902.GA29439@wotan.suse.de>
+References: <1255723519.5135.121.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255723519.5135.121.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, Oct 16, 2009 at 01:05:19PM -0700, john stultz wrote:
+> 2.6.31.2-rt13-nick on ramfs:
+>     46.51%         dbench  [kernel]                  [k] _atomic_spin_lock_irqsave
+>                 |          
+>                 |--86.95%-- rt_spin_lock_slowlock
+>                 |          rt_spin_lock
+>                 |          |          
+>                 |          |--50.08%-- dput
+>                 |          |          |          
+>                 |          |          |--56.92%-- __link_path_walk
+>                 |          |          |          
+>                 |          |           --43.08%-- path_put
+>                 |          |          
+>                 |          |--49.12%-- path_get
+>                 |          |          |          
+>                 |          |          |--63.22%-- path_walk
+>                 |          |          |          
+>                 |          |          |--36.73%-- path_init
+>                 |          
+>                 |--12.59%-- rt_spin_lock_slowunlock
+>                 |          rt_spin_unlock
+>                 |          |          
+>                 |          |--49.86%-- path_get
+>                 |          |          |          
+>                 |          |          |--58.15%-- path_init
+>                 |          |          |          |          
+> ...
+> 
+> 
+> So the net of this is: Nick's patches helped some but not that much in
+> ramfs filesystems, and hurt ext3 performance w/ -rt.
+> 
+> Maybe I just mis-applied the patches? I'll admit I'm unfamiliar with the
+> dcache code, and converting the patches to the -rt tree was not always
+> straight forward.
 
-I have a system I recently upgraded from 2.6.30.x and after approximately 
-24-48 hours--sometimes longer, the system cannot write any more files to 
-disk (luckily though I can still write to /dev/shm) -- to which I have
-saved the sysrq-t and sysrq-w output:
+The above are dentry->d_lock, and they are rom path walking. It has
+become more pronounced because I use d_lock to protect d_count rather
+than an atomic_t (which saves on atomic ops).
 
-http://home.comcast.net/~jpiszcz/20091017/sysrq-w.txt
-http://home.comcast.net/~jpiszcz/20091017/sysrq-t.txt
+But the patchset you have converted it missing the store-free path wailk
+patches which will get rid of most of this. The next thing you hit is
+glibc reading /proc/mounts to implement statvfs :( If you turn that call
+into statfs you'll get a little further (but we need to improve statfs
+support for glibc so it doesn't need those hacks).
 
-Configuration:
+And then you run into something else, I'd say d_lock again for creating
+and unlinking things, but I didn't get a chance to profile it yet.
 
-$ cat /proc/mdstat 
-Personalities : [raid1] [raid6] [raid5] [raid4] 
-md1 : active raid1 sdb2[1] sda2[0]
-       136448 blocks [2/2] [UU]
+> Ingo, Nick, Thomas: Any thoughts or comments here? Am I reading perf's
+> results incorrectly? Any idea why with Nick's patch the contention in
+> dput() hurts ext3 so much worse then in the ramfs case?
 
-md2 : active raid1 sdb3[1] sda3[0]
-       129596288 blocks [2/2] [UU]
+ext3 may be doing more dentry refcounting which is hitting the spin
+lock. I _could_ be persuaded to turn it back to an atomic_t, however
+I will want to wait until other things like the path walking is more
+mature which should take a lot of pressure off it.
 
-md3 : active raid5 sdj1[7] sdi1[6] sdh1[5] sdf1[3] sdg1[4] sde1[2] sdd1[1] sdc1[0]
-       5128001536 blocks level 5, 1024k chunk, algorithm 2 [8/8] [UUUUUUUU]
+Also... dbench throughput in exchange for adding an extra atomic at
+dput-time is... not a good idea. We would need some more important
+workloads I think (even a real samba serving netbench would be
+preferable).
 
-md0 : active raid1 sdb1[1] sda1[0]
-       16787776 blocks [2/2] [UU]
-
-$ mount
-/dev/md2 on / type xfs (rw,noatime,nobarrier,logbufs=8,logbsize=262144)
-tmpfs on /lib/init/rw type tmpfs (rw,nosuid,mode=0755)
-proc on /proc type proc (rw,noexec,nosuid,nodev)
-sysfs on /sys type sysfs (rw,noexec,nosuid,nodev)
-udev on /dev type tmpfs (rw,mode=0755)
-tmpfs on /dev/shm type tmpfs (rw,nosuid,nodev)
-devpts on /dev/pts type devpts (rw,noexec,nosuid,gid=5,mode=620)
-/dev/md1 on /boot type ext3 (rw,noatime)
-/dev/md3 on /r/1 type xfs (rw,noatime,nobarrier,logbufs=8,logbsize=262144)
-rpc_pipefs on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)
-nfsd on /proc/fs/nfsd type nfsd (rw)
-
-Distribution: Debian Testing
-Arch: x86_64
-
-The problem occurs with 2.6.31 and I upgraded to 2.6.31.4 and the problem
-persists.
-
-Here is a snippet of two processes in D-state, the first was not doing 
-anything, the second was mrtg.
-
-[121444.684000] pickup        D 0000000000000003     0 18407   4521 0x00000000
-[121444.684000]  ffff880231dd2290 0000000000000086 0000000000000000 0000000000000000
-[121444.684000]  000000000000ff40 000000000000c8c8 ffff880176794d10 ffff880176794f90
-[121444.684000]  000000032266dd08 ffff8801407a87f0 ffff8800280878d8 ffff880176794f90
-[121444.684000] Call Trace:
-[121444.684000]  [<ffffffff810a742d>] ? free_pages_and_swap_cache+0x9d/0xc0
-[121444.684000]  [<ffffffff81454866>] ? __mutex_lock_slowpath+0xd6/0x160
-[121444.684000]  [<ffffffff814546ba>] ? mutex_lock+0x1a/0x40
-[121444.684000]  [<ffffffff810b26ef>] ? generic_file_llseek+0x2f/0x70
-[121444.684000]  [<ffffffff810b119e>] ? sys_lseek+0x7e/0x90
-[121444.684000]  [<ffffffff8109ffd2>] ? sys_munmap+0x52/0x80
-[121444.684000]  [<ffffffff8102c52b>] ? system_call_fastpath+0x16/0x1b
-
-[121444.684000] rateup        D 0000000000000000     0 18538  18465 0x00000000
-[121444.684000]  ffff88023f8a8c10 0000000000000082 0000000000000000 ffff88023ea09ec8
-[121444.684000]  000000000000ff40 000000000000c8c8 ffff88023faace50 ffff88023faad0d0
-[121444.684000]  0000000300003e00 000000010720cc78 0000000000003e00 ffff88023faad0d0
-[121444.684000] Call Trace:
-[121444.684000]  [<ffffffff811f42e2>] ? xfs_buf_iorequest+0x42/0x90
-[121444.684000]  [<ffffffff811dd66d>] ? xlog_bdstrat_cb+0x3d/0x50
-[121444.684000]  [<ffffffff811db05b>] ? xlog_sync+0x20b/0x4e0
-[121444.684000]  [<ffffffff811dc44c>] ? xlog_state_sync+0x26c/0x2a0
-[121444.684000]  [<ffffffff810513e0>] ? default_wake_function+0x0/0x10
-[121444.684000]  [<ffffffff811dc4d1>] ? _xfs_log_force+0x51/0x80
-[121444.684000]  [<ffffffff811dc50b>] ? xfs_log_force+0xb/0x40
-[121444.684000]  [<ffffffff811a7223>] ? xfs_alloc_ag_vextent+0x123/0x130
-[121444.684000]  [<ffffffff811a7aa8>] ? xfs_alloc_vextent+0x368/0x4b0
-[121444.684000]  [<ffffffff811b41e8>] ? xfs_bmap_btalloc+0x598/0xa40
-[121444.684000]  [<ffffffff811b6a42>] ? xfs_bmapi+0x9e2/0x11a0
-[121444.684000]  [<ffffffff811dd7f0>] ? xlog_grant_push_ail+0x30/0xf0
-[121444.684000]  [<ffffffff811e8fd8>] ? xfs_trans_reserve+0xa8/0x220
-[121444.684000]  [<ffffffff811d805e>] ? xfs_iomap_write_allocate+0x23e/0x3b0
-[121444.684000]  [<ffffffff811f0daf>] ? __xfs_get_blocks+0x8f/0x220
-[121444.684000]  [<ffffffff811d8c00>] ? xfs_iomap+0x2c0/0x300
-[121444.684000]  [<ffffffff810d5b76>] ? __set_page_dirty+0x66/0xd0
-[121444.684000]  [<ffffffff811f0d15>] ? xfs_map_blocks+0x25/0x30
-[121444.684000]  [<ffffffff811f1e04>] ? xfs_page_state_convert+0x414/0x6c0
-[121444.684000]  [<ffffffff811f23b7>] ? xfs_vm_writepage+0x77/0x130
-[121444.684000]  [<ffffffff8108b21a>] ? __writepage+0xa/0x40
-[121444.684000]  [<ffffffff8108baff>] ? write_cache_pages+0x1df/0x3c0
-[121444.684000]  [<ffffffff8108b210>] ? __writepage+0x0/0x40
-[121444.684000]  [<ffffffff810b1533>] ? do_sync_write+0xe3/0x130
-[121444.684000]  [<ffffffff8108bd30>] ? do_writepages+0x20/0x40
-[121444.684000]  [<ffffffff81085abd>] ? __filemap_fdatawrite_range+0x4d/0x60
-[121444.684000]  [<ffffffff811f54dd>] ? xfs_flush_pages+0xad/0xc0
-[121444.684000]  [<ffffffff811ee907>] ? xfs_release+0x167/0x1d0
-[121444.684000]  [<ffffffff811f52b0>] ? xfs_file_release+0x10/0x20
-[121444.684000]  [<ffffffff810b2c0d>] ? __fput+0xcd/0x1e0
-[121444.684000]  [<ffffffff810af556>] ? filp_close+0x56/0x90
-[121444.684000]  [<ffffffff810af636>] ? sys_close+0xa6/0x100
-[121444.684000]  [<ffffffff8102c52b>] ? system_call_fastpath+0x16/0x1b
-
-Anyone know what is going on here?
-
-Justin.
 
