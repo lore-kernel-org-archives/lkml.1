@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753935AbZJQKGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbZJQKG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753935AbZJQKGi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 06:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbZJQKGg
+	id S1753994AbZJQKG4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 06:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbZJQKGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 06:06:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33143 "EHLO hera.kernel.org"
+	Sat, 17 Oct 2009 06:06:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33167 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753916AbZJQKGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 06:06:31 -0400
-Date: Sat, 17 Oct 2009 10:06:11 GMT
+	id S1753908AbZJQKGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 06:06:49 -0400
+Date: Sat, 17 Oct 2009 10:06:25 GMT
 From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
        hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
@@ -19,36 +19,32 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
        mhiramat@redhat.com, mingo@elte.hu
-In-Reply-To: <20091017000801.16556.46866.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20091017000801.16556.46866.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <20091017000810.16556.38013.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20091017000810.16556.38013.stgit@dhcp-100-2-132.bos.redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/probes] perf: Use die() for error cases in perf-probe
-Message-ID: <tip-074fc0e4b3f5d24306c2995f2f3b0bd4759e8aeb@git.kernel.org>
-Git-Commit-ID: 074fc0e4b3f5d24306c2995f2f3b0bd4759e8aeb
+Subject: [tip:perf/probes] perf: Use eprintf() for debug messages in perf-probe
+Message-ID: <tip-89c69c0eee7515cdc217f4278de43547284b3458@git.kernel.org>
+Git-Commit-ID: 89c69c0eee7515cdc217f4278de43547284b3458
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 17 Oct 2009 10:06:12 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 17 Oct 2009 10:06:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  074fc0e4b3f5d24306c2995f2f3b0bd4759e8aeb
-Gitweb:     http://git.kernel.org/tip/074fc0e4b3f5d24306c2995f2f3b0bd4759e8aeb
+Commit-ID:  89c69c0eee7515cdc217f4278de43547284b3458
+Gitweb:     http://git.kernel.org/tip/89c69c0eee7515cdc217f4278de43547284b3458
 Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Fri, 16 Oct 2009 20:08:01 -0400
+AuthorDate: Fri, 16 Oct 2009 20:08:10 -0400
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Sat, 17 Oct 2009 09:54:00 +0200
 
-perf: Use die() for error cases in perf-probe
+perf: Use eprintf() for debug messages in perf-probe
 
-Use die() for exiting perf-probe with errors. This replaces
-perror_exit(), msg_exit() and fprintf()+exit() with die(), and
-uses die() in semantic_error().
-
-This also renames 'die' local variables to 'dw_die' for avoiding
-name confliction.
+Replace debug() macro with eprintf() and add -v option for
+showing those messages in perf-probe.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
@@ -56,307 +52,187 @@ Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20091017000801.16556.46866.stgit@dhcp-100-2-132.bos.redhat.com>
+LKML-Reference: <20091017000810.16556.38013.stgit@dhcp-100-2-132.bos.redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/builtin-probe.c     |   47 ++++++++++------------------------
- tools/perf/util/probe-finder.c |   55 ++++++++++++++-------------------------
- 2 files changed, 34 insertions(+), 68 deletions(-)
+ tools/perf/builtin-probe.c     |   23 ++++++++++++++---------
+ tools/perf/util/probe-finder.c |   12 +++++++-----
+ tools/perf/util/probe-finder.h |    7 -------
+ 3 files changed, 21 insertions(+), 21 deletions(-)
 
 diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-index 73c883b..a1467d1 100644
+index a1467d1..b5ad86a 100644
 --- a/tools/perf/builtin-probe.c
 +++ b/tools/perf/builtin-probe.c
-@@ -49,6 +49,7 @@ const char *default_search_path[NR_SEARCH_PATH] = {
+@@ -35,6 +35,8 @@
+ #include "perf.h"
+ #include "builtin.h"
+ #include "util/util.h"
++#include "util/event.h"
++#include "util/debug.h"
+ #include "util/parse-options.h"
+ #include "util/parse-events.h"	/* For debugfs_path */
+ #include "util/probe-finder.h"
+@@ -76,7 +78,7 @@ static int parse_probepoint(const struct option *opt __used,
+ 	if (!str)	/* The end of probe points */
+ 		return 0;
  
- #define MAX_PATH_LEN 256
- #define MAX_PROBES 128
-+#define MAX_PROBE_ARGS 128
+-	debug("Probe-define(%d): %s\n", session.nr_probe, str);
++	eprintf("probe-definition(%d): %s\n", session.nr_probe, str);
+ 	if (++session.nr_probe == MAX_PROBES)
+ 		semantic_error("Too many probes");
  
- /* Session management structure */
- static struct {
-@@ -60,19 +61,7 @@ static struct {
- 	char *events[MAX_PROBES];
- } session;
- 
--static void semantic_error(const char *msg)
--{
--	fprintf(stderr, "Semantic error: %s\n", msg);
--	exit(1);
--}
--
--static void perror_exit(const char *msg)
--{
--	perror(msg);
--	exit(1);
--}
--
--#define MAX_PROBE_ARGS 128
-+#define semantic_error(msg ...) die("Semantic error :" msg)
- 
- static int parse_probepoint(const struct option *opt __used,
- 			    const char *str, int unset __used)
-@@ -109,7 +98,7 @@ static int parse_probepoint(const struct option *opt __used,
- 			/* Duplicate the argument */
- 			argv[argc] = strndup(s, str - s);
- 			if (argv[argc] == NULL)
--				perror_exit("strndup");
-+				die("strndup");
+@@ -101,7 +103,7 @@ static int parse_probepoint(const struct option *opt __used,
+ 				die("strndup");
  			if (++argc == MAX_PROBE_ARGS)
  				semantic_error("Too many arguments");
- 			debug("argv[%d]=%s\n", argc, argv[argc - 1]);
-@@ -171,7 +160,7 @@ static int parse_probepoint(const struct option *opt __used,
- 	if (pp->nr_args > 0) {
- 		pp->args = (char **)malloc(sizeof(char *) * pp->nr_args);
- 		if (!pp->args)
--			perror_exit("malloc");
-+			die("malloc");
- 		memcpy(pp->args, &argv[2], sizeof(char *) * pp->nr_args);
+-			debug("argv[%d]=%s\n", argc, argv[argc - 1]);
++			eprintf("argv[%d]=%s\n", argc, argv[argc - 1]);
+ 		}
+ 	} while (*str != '\0');
+ 	if (argc < 2)
+@@ -131,7 +133,7 @@ static int parse_probepoint(const struct option *opt __used,
+ 		pp->line = atoi(ptr);
+ 		if (!pp->file || !pp->line)
+ 			semantic_error("Failed to parse line.");
+-		debug("file:%s line:%d\n", pp->file, pp->line);
++		eprintf("file:%s line:%d\n", pp->file, pp->line);
+ 	} else {
+ 		/* Function name */
+ 		ptr = strchr(arg, '+');
+@@ -148,7 +150,7 @@ static int parse_probepoint(const struct option *opt __used,
+ 			pp->file = strdup(ptr);
+ 		}
+ 		pp->function = strdup(arg);
+-		debug("symbol:%s file:%s offset:%d\n",
++		eprintf("symbol:%s file:%s offset:%d\n",
+ 		      pp->function, pp->file, pp->offset);
  	}
+ 	free(argv[1]);
+@@ -173,7 +175,7 @@ static int parse_probepoint(const struct option *opt __used,
+ 			session.need_dwarf = 1;
+ 		}
  
-@@ -260,7 +249,7 @@ static int write_new_event(int fd, const char *buf)
- 	printf("Adding new event: %s\n", buf);
- 	ret = write(fd, buf, strlen(buf));
- 	if (ret <= 0)
--		perror("Error: Failed to create event");
-+		die("failed to create event.");
- 
- 	return ret;
+-	debug("%d arguments\n", pp->nr_args);
++	eprintf("%d arguments\n", pp->nr_args);
+ 	return 0;
  }
-@@ -273,7 +262,7 @@ static int synthesize_probepoint(struct probe_point *pp)
- 	int i, len, ret;
- 	pp->probes[0] = buf = (char *)calloc(MAX_CMDLEN, sizeof(char));
- 	if (!buf)
--		perror_exit("calloc");
-+		die("calloc");
- 	ret = snprintf(buf, MAX_CMDLEN, "%s+%d", pp->function, pp->offset);
- 	if (ret <= 0 || ret >= MAX_CMDLEN)
- 		goto error;
-@@ -322,10 +311,8 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
- 		ret = synthesize_probepoint(&session.probes[j]);
- 		if (ret == -E2BIG)
- 			semantic_error("probe point is too long.");
--		else if (ret < 0) {
--			perror("snprintf");
--			return -1;
--		}
-+		else if (ret < 0)
-+			die("snprintf");
+ 
+@@ -186,7 +188,7 @@ static int open_default_vmlinux(void)
+ 
+ 	ret = uname(&uts);
+ 	if (ret) {
+-		debug("uname() failed.\n");
++		eprintf("uname() failed.\n");
+ 		return -errno;
  	}
+ 	session.release = uts.release;
+@@ -194,11 +196,12 @@ static int open_default_vmlinux(void)
+ 		ret = snprintf(fname, MAX_PATH_LEN,
+ 			       default_search_path[i], session.release);
+ 		if (ret >= MAX_PATH_LEN || ret < 0) {
+-			debug("Filename(%d,%s) is too long.\n", i, uts.release);
++			eprintf("Filename(%d,%s) is too long.\n", i,
++				uts.release);
+ 			errno = E2BIG;
+ 			return -E2BIG;
+ 		}
+-		debug("try to open %s\n", fname);
++		eprintf("try to open %s\n", fname);
+ 		fd = open(fname, O_RDONLY);
+ 		if (fd >= 0)
+ 			break;
+@@ -213,6 +216,8 @@ static const char * const probe_usage[] = {
+ };
  
+ static const struct option options[] = {
++	OPT_BOOLEAN('v', "verbose", &verbose,
++		    "be more verbose (show parsed arguments, etc)"),
  #ifndef NO_LIBDWARF
-@@ -336,10 +323,8 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
- 		fd = open(session.vmlinux, O_RDONLY);
- 	else
- 		fd = open_default_vmlinux();
--	if (fd < 0) {
--		perror("vmlinux/module file open");
--		return -1;
--	}
-+	if (fd < 0)
-+		die("vmlinux/module file open");
- 
- 	/* Searching probe points */
- 	for (j = 0; j < session.nr_probe; j++) {
-@@ -349,10 +334,8 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
- 
- 		lseek(fd, SEEK_SET, 0);
+ 	OPT_STRING('k', "vmlinux", &session.vmlinux, "file",
+ 		"vmlinux/module pathname"),
+@@ -336,7 +341,7 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
  		ret = find_probepoint(fd, pp);
--		if (ret <= 0) {
--			fprintf(stderr, "Error: No probe point found.\n");
--			return -1;
--		}
-+		if (ret <= 0)
-+			die("No probe point found.\n");
- 		debug("probe event %s found\n", session.events[j]);
+ 		if (ret <= 0)
+ 			die("No probe point found.\n");
+-		debug("probe event %s found\n", session.events[j]);
++		eprintf("probe event %s found\n", session.events[j]);
  	}
  	close(fd);
-@@ -363,10 +346,8 @@ setup_probes:
- 	/* Settng up probe points */
- 	snprintf(buf, MAX_CMDLEN, "%s/../kprobe_events", debugfs_path);
- 	fd = open(buf, O_WRONLY, O_APPEND);
--	if (fd < 0) {
--		perror("kprobe_events open");
--		return -1;
--	}
-+	if (fd < 0)
-+		die("kprobe_events open");
- 	for (j = 0; j < session.nr_probe; j++) {
- 		pp = &session.probes[j];
- 		if (pp->found == 1) {
+ 
 diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
-index ec6f53f..338fdb9 100644
+index 338fdb9..db24c91 100644
 --- a/tools/perf/util/probe-finder.c
 +++ b/tools/perf/util/probe-finder.c
-@@ -31,6 +31,8 @@
- #include <string.h>
+@@ -32,6 +32,8 @@
  #include <stdarg.h>
  #include <ctype.h>
-+
-+#include "util.h"
+ 
++#include "event.h"
++#include "debug.h"
+ #include "util.h"
  #include "probe-finder.h"
  
- 
-@@ -43,20 +45,6 @@ struct die_link {
- static Dwarf_Debug __dw_debug;
- static Dwarf_Error __dw_error;
- 
--static void msg_exit(int ret, const char *fmt, ...)
--{
--	va_list ap;
--
--	va_start(ap, fmt);
--	fprintf(stderr, "Error:  ");
--	vfprintf(stderr, fmt, ap);
--	va_end(ap);
--
--	fprintf(stderr, "\n");
--	exit(ret);
--}
--
--
- /*
-  * Generic dwarf analysis helpers
-  */
-@@ -151,11 +139,11 @@ static Dwarf_Unsigned die_get_fileno(Dwarf_Die cu_die, const char *fname)
+@@ -134,7 +136,7 @@ static Dwarf_Unsigned die_get_fileno(Dwarf_Die cu_die, const char *fname)
+ 		dwarf_dealloc(__dw_debug, srcs, DW_DLA_LIST);
+ 	}
+ 	if (found)
+-		debug("found fno: %d\n", (int)found);
++		eprintf("found fno: %d\n", (int)found);
+ 	return found;
  }
  
- /* Compare diename and tname */
--static int die_compare_name(Dwarf_Die die, const char *tname)
-+static int die_compare_name(Dwarf_Die dw_die, const char *tname)
- {
- 	char *name;
- 	int ret;
--	ret = dwarf_diename(die, &name, &__dw_error);
-+	ret = dwarf_diename(dw_die, &name, &__dw_error);
- 	ERR_IF(ret == DW_DLV_ERROR);
- 	if (ret == DW_DLV_OK) {
- 		ret = strcmp(tname, name);
-@@ -187,25 +175,25 @@ static int die_within_subprogram(Dwarf_Die sp_die, Dwarf_Addr addr,
- }
- 
- /* Check the die is inlined function */
--static Dwarf_Bool die_inlined_subprogram(Dwarf_Die die)
-+static Dwarf_Bool die_inlined_subprogram(Dwarf_Die dw_die)
- {
- 	/* TODO: check strictly */
- 	Dwarf_Bool inl;
- 	int ret;
- 
--	ret = dwarf_hasattr(die, DW_AT_inline, &inl, &__dw_error);
-+	ret = dwarf_hasattr(dw_die, DW_AT_inline, &inl, &__dw_error);
- 	ERR_IF(ret == DW_DLV_ERROR);
- 	return inl;
- }
- 
- /* Get the offset of abstruct_origin */
--static Dwarf_Off die_get_abstract_origin(Dwarf_Die die)
-+static Dwarf_Off die_get_abstract_origin(Dwarf_Die dw_die)
- {
- 	Dwarf_Attribute attr;
- 	Dwarf_Off cu_offs;
- 	int ret;
- 
--	ret = dwarf_attr(die, DW_AT_abstract_origin, &attr, &__dw_error);
-+	ret = dwarf_attr(dw_die, DW_AT_abstract_origin, &attr, &__dw_error);
- 	ERR_IF(ret != DW_DLV_OK);
- 	ret = dwarf_formref(attr, &cu_offs, &__dw_error);
- 	ERR_IF(ret != DW_DLV_OK);
-@@ -214,7 +202,7 @@ static Dwarf_Off die_get_abstract_origin(Dwarf_Die die)
- }
- 
- /* Get entry pc(or low pc, 1st entry of ranges)  of the die */
--static Dwarf_Addr die_get_entrypc(Dwarf_Die die)
-+static Dwarf_Addr die_get_entrypc(Dwarf_Die dw_die)
- {
- 	Dwarf_Attribute attr;
- 	Dwarf_Addr addr;
-@@ -224,7 +212,7 @@ static Dwarf_Addr die_get_entrypc(Dwarf_Die die)
- 	int ret;
- 
- 	/* Try to get entry pc */
--	ret = dwarf_attr(die, DW_AT_entry_pc, &attr, &__dw_error);
-+	ret = dwarf_attr(dw_die, DW_AT_entry_pc, &attr, &__dw_error);
- 	ERR_IF(ret == DW_DLV_ERROR);
- 	if (ret == DW_DLV_OK) {
- 		ret = dwarf_formaddr(attr, &addr, &__dw_error);
-@@ -234,13 +222,13 @@ static Dwarf_Addr die_get_entrypc(Dwarf_Die die)
+@@ -440,7 +442,7 @@ static void find_variable(Dwarf_Die sp_die, struct probe_finder *pf)
+ 		return ;
  	}
  
- 	/* Try to get low pc */
--	ret = dwarf_lowpc(die, &addr, &__dw_error);
-+	ret = dwarf_lowpc(dw_die, &addr, &__dw_error);
- 	ERR_IF(ret == DW_DLV_ERROR);
- 	if (ret == DW_DLV_OK)
- 		return addr;
- 
- 	/* Try to get ranges */
--	ret = dwarf_attr(die, DW_AT_ranges, &attr, &__dw_error);
-+	ret = dwarf_attr(dw_die, DW_AT_ranges, &attr, &__dw_error);
- 	ERR_IF(ret != DW_DLV_OK);
- 	ret = dwarf_formref(attr, &offs, &__dw_error);
- 	ERR_IF(ret != DW_DLV_OK);
-@@ -382,11 +370,11 @@ static void show_location(Dwarf_Loc *loc, struct probe_finder *pf)
- 	} else if (op == DW_OP_regx) {
- 		regn = loc->lr_number;
- 	} else
--		msg_exit(-EINVAL, "Dwarf_OP %d is not supported.\n", op);
-+		die("Dwarf_OP %d is not supported.\n", op);
- 
- 	regs = get_arch_regstr(regn);
- 	if (!regs)
--		msg_exit(-EINVAL, "%lld exceeds max register number.\n", regn);
-+		die("%lld exceeds max register number.\n", regn);
- 
- 	if (deref)
- 		ret = snprintf(pf->buf, pf->len,
-@@ -417,8 +405,8 @@ static void show_variable(Dwarf_Die vr_die, struct probe_finder *pf)
- 	dwarf_dealloc(__dw_debug, attr, DW_DLA_ATTR);
- 	return ;
- error:
--	msg_exit(-1, "Failed to find the location of %s at this address.\n"
--		 " Perhaps, it was optimized out.\n", pf->var);
-+	die("Failed to find the location of %s at this address.\n"
-+	    " Perhaps, it has been optimized out.\n", pf->var);
- }
- 
- static int variable_callback(struct die_link *dlink, void *data)
-@@ -456,8 +444,7 @@ static void find_variable(Dwarf_Die sp_die, struct probe_finder *pf)
+-	debug("Searching '%s' variable in context.\n", pf->var);
++	eprintf("Searching '%s' variable in context.\n", pf->var);
  	/* Search child die for local variables and parameters. */
  	ret = search_die_from_children(sp_die, variable_callback, pf);
  	if (!ret)
--		msg_exit(-1, "Failed to find '%s' in this function.\n",
--			 pf->var);
-+		die("Failed to find '%s' in this function.\n", pf->var);
- }
+@@ -550,7 +552,7 @@ static void find_by_line(Dwarf_Die cu_die, struct probe_finder *pf)
  
- /* Get a frame base on the address */
-@@ -568,8 +555,7 @@ static void find_by_line(Dwarf_Die cu_die, struct probe_finder *pf)
+ 		ret = dwarf_lineaddr(lines[i], &addr, &__dw_error);
+ 		ERR_IF(ret != DW_DLV_OK);
+-		debug("Probe point found: 0x%llx\n", addr);
++		eprintf("Probe point found: 0x%llx\n", addr);
+ 		pf->addr = addr;
  		/* Search a real subprogram including this line, */
  		ret = search_die_from_children(cu_die, probeaddr_callback, pf);
- 		if (ret == 0)
--			msg_exit(-1,
--				 "Probe point is not found in subprograms.\n");
-+			die("Probe point is not found in subprograms.\n");
- 		/* Continuing, because target line might be inlined. */
- 	}
- 	dwarf_srclines_dealloc(__dw_debug, lines, cnt);
-@@ -621,7 +607,7 @@ static int probefunc_callback(struct die_link *dlink, void *data)
- 				    !die_inlined_subprogram(lk->die))
- 					goto found;
+@@ -581,7 +583,7 @@ static int probefunc_callback(struct die_link *dlink, void *data)
+ 							  &pf->inl_offs,
+ 							  &__dw_error);
+ 				ERR_IF(ret != DW_DLV_OK);
+-				debug("inline definition offset %lld\n",
++				eprintf("inline definition offset %lld\n",
+ 					pf->inl_offs);
+ 				return 0;
  			}
--			msg_exit(-1, "Failed to find real subprogram.\n");
-+			die("Failed to find real subprogram.\n");
- found:
- 			/* Get offset from subprogram */
- 			ret = die_within_subprogram(lk->die, pf->addr, &offs);
-@@ -649,8 +635,7 @@ int find_probepoint(int fd, struct probe_point *pp)
+@@ -597,7 +599,7 @@ static int probefunc_callback(struct die_link *dlink, void *data)
+ 			/* Get probe address */
+ 			pf->addr = die_get_entrypc(dlink->die);
+ 			pf->addr += pp->offset;
+-			debug("found inline addr: 0x%llx\n", pf->addr);
++			eprintf("found inline addr: 0x%llx\n", pf->addr);
+ 			/* Inlined function. Get a real subprogram */
+ 			for (lk = dlink->parent; lk != NULL; lk = lk->parent) {
+ 				tag = 0;
+diff --git a/tools/perf/util/probe-finder.h b/tools/perf/util/probe-finder.h
+index 306810c..6a7cb0c 100644
+--- a/tools/perf/util/probe-finder.h
++++ b/tools/perf/util/probe-finder.h
+@@ -4,13 +4,6 @@
+ #define _stringify(n)	#n
+ #define stringify(n)	_stringify(n)
  
- 	ret = dwarf_init(fd, DW_DLC_READ, 0, 0, &__dw_debug, &__dw_error);
- 	if (ret != DW_DLV_OK)
--		msg_exit(-1, "Failed to call dwarf_init(). "
--			 "Maybe, not a dwarf file?\n");
-+		die("Failed to call dwarf_init(). Maybe, not a dwarf file.\n");
- 
- 	pp->found = 0;
- 	while (++cu_number) {
+-#ifdef DEBUG
+-#define debug(fmt ...)	\
+-	fprintf(stderr, "DBG(" __FILE__ ":" stringify(__LINE__) "): " fmt)
+-#else
+-#define debug(fmt ...)	do {} while (0)
+-#endif
+-
+ #define ERR_IF(cnd)	\
+ 	do { if (cnd) {	\
+ 		fprintf(stderr, "Error (" __FILE__ ":" stringify(__LINE__) \
