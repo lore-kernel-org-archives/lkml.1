@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751625AbZJQGei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751652AbZJQGjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751625AbZJQGei (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 02:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbZJQGei
+	id S1751652AbZJQGjl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 02:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZJQGjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 02:34:38 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:51658 "EHLO mgw1.diku.dk"
+	Sat, 17 Oct 2009 02:39:40 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:36128 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751397AbZJQGeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 02:34:37 -0400
-Date: Sat, 17 Oct 2009 08:34:39 +0200 (CEST)
+	id S1751301AbZJQGjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 02:39:39 -0400
+Date: Sat, 17 Oct 2009 08:39:41 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/14] drivers/acpi: Move dereference after NULL test
-Message-ID: <Pine.LNX.4.64.0910170834200.9213@ask.diku.dk>
+Subject: [PATCH 6/14] drivers/media/video: Move dereference after NULL test
+Message-ID: <Pine.LNX.4.64.0910170839070.9213@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,8 +23,17 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-If the NULL test on pr is needed, then the dereference should be after the
-NULL test.
+In quickcam_messenger.c, if the NULL test on uvd is needed, then the
+dereference should be after the NULL test.
+
+In vpif_display.c, std_info is initialized to the address of a structure
+field.  This seems unlikely to be NULL.  If it could somehow be NULL, then
+the assignment should be moved after the NULL test.  Alternatively, perhaps
+the NULL test is intended to test std_info->stdid rather than std_info?
+
+In saa7134-alsa.c, the function is only called from one place, where the
+chip argument has already been dereferenced.  On the other hand, if it
+should be kept, then card should be initialized after it.
 
 A simplified version of the semantic match that detects this problem is as
 follows (http://coccinelle.lip6.fr/):
@@ -43,29 +52,53 @@ identifier fld;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/acpi/processor_throttling.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/media/video/davinci/vpif_display.c        |    2 --
+ drivers/media/video/saa7134/saa7134-alsa.c        |    2 --
+ drivers/media/video/usbvideo/quickcam_messenger.c |    3 ++-
+ 3 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/acpi/processor_throttling.c b/drivers/acpi/processor_throttling.c
-index 4c6c14c..1c5d7a8 100644
---- a/drivers/acpi/processor_throttling.c
-+++ b/drivers/acpi/processor_throttling.c
-@@ -1133,15 +1133,15 @@ int acpi_processor_get_throttling_info(struct acpi_processor *pr)
- 	int result = 0;
- 	struct acpi_processor_throttling *pthrottling;
+diff --git a/drivers/media/video/usbvideo/quickcam_messenger.c b/drivers/media/video/usbvideo/quickcam_messenger.c
+index 803d3e4..f0043d0 100644
+--- a/drivers/media/video/usbvideo/quickcam_messenger.c
++++ b/drivers/media/video/usbvideo/quickcam_messenger.c
+@@ -692,12 +692,13 @@ static int qcm_start_data(struct uvd *uvd)
  
-+	if (!pr)
-+		return -EINVAL;
-+
- 	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
- 			  "pblk_address[0x%08x] duty_offset[%d] duty_width[%d]\n",
- 			  pr->throttling.address,
- 			  pr->throttling.duty_offset,
- 			  pr->throttling.duty_width));
+ static void qcm_stop_data(struct uvd *uvd)
+ {
+-	struct qcm *cam = (struct qcm *) uvd->user_data;
++	struct qcm *cam;
+ 	int i, j;
+ 	int ret;
  
--	if (!pr)
+ 	if ((uvd == NULL) || (!uvd->streaming) || (uvd->dev == NULL))
+ 		return;
++	cam = (struct qcm *) uvd->user_data;
+ 
+ 	ret = qcm_camera_off(uvd);
+ 	if (ret)
+diff --git a/drivers/media/video/davinci/vpif_display.c b/drivers/media/video/davinci/vpif_display.c
+index c015da8..7500411 100644
+--- a/drivers/media/video/davinci/vpif_display.c
++++ b/drivers/media/video/davinci/vpif_display.c
+@@ -383,8 +383,6 @@ static int vpif_get_std_info(struct channel_obj *ch)
+ 	int index;
+ 
+ 	std_info->stdid = vid_ch->stdid;
+-	if (!std_info)
+-		return -1;
+ 
+ 	for (index = 0; index < ARRAY_SIZE(ch_params); index++) {
+ 		config = &ch_params[index];
+diff --git a/drivers/media/video/saa7134/saa7134-alsa.c b/drivers/media/video/saa7134/saa7134-alsa.c
+index d48c450..d3bd82a 100644
+--- a/drivers/media/video/saa7134/saa7134-alsa.c
++++ b/drivers/media/video/saa7134/saa7134-alsa.c
+@@ -1011,8 +1011,6 @@ static int snd_card_saa7134_new_mixer(snd_card_saa7134_t * chip)
+ 	unsigned int idx;
+ 	int err, addr;
+ 
+-	if (snd_BUG_ON(!chip))
 -		return -EINVAL;
--
- 	/*
- 	 * Evaluate _PTC, _TSS and _TPC
- 	 * They must all be present or none of them can be used.
+ 	strcpy(card->mixername, "SAA7134 Mixer");
+ 
+ 	for (idx = 0; idx < ARRAY_SIZE(snd_saa7134_volume_controls); idx++) {
