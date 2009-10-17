@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbZJQAH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555AbZJQAHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752714AbZJQAH6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Oct 2009 20:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZJQAH2
+	id S1752555AbZJQAHp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Oct 2009 20:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbZJQAHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 20:07:28 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:62359 "EHLO mx1.redhat.com"
+	Fri, 16 Oct 2009 20:07:42 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:9983 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751370AbZJQAHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 20:07:25 -0400
+	id S1752238AbZJQAHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Oct 2009 20:07:40 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip tracing/kprobes 4/9] x86: Add AMD prefetch and 3DNow!
-	opcodes to opcode map
+Subject: [PATCH -tip tracing/kprobes 5/9] perf: Check libdwarf APIs for perf
+	probe
 To: Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>,
        Masami Hiramatsu <mhiramat@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
        Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
@@ -29,8 +28,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Jim Keniston <jkenisto@us.ibm.com>,
        "Frank Ch. Eigler" <fche@redhat.com>
-Date: Fri, 16 Oct 2009 20:07:44 -0400
-Message-ID: <20091017000744.16556.27881.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Fri, 16 Oct 2009 20:07:52 -0400
+Message-ID: <20091017000752.16556.92051.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -41,16 +40,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add AMD prefetch and 3DNow! opcode including FEMMS. Since 3DNow!
-uses the last immediate byte as an opcode extension byte, x86 insn
-just treats the extenstion byte as an immediate byte instead of
-a part of opcode (insn_get_opcode() decodes first "0x0f 0x0f"
-bytes.)
-Users who are interested in analyzing 3DNow! opcode still can
-decode it by analyzing the immediate byte.
+Check libdwarf APIs for perf probe in tools/perf/Makefile. Since
+dwarf_get_ranges() has been added from libdwarf 20081231 (and it's
+the newest function used in probe-finder.c), this just checks
+whether the function is defined.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -63,42 +58,27 @@ Cc: Christoph Hellwig <hch@infradead.org>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: Frank Ch. Eigler <fche@redhat.com>
+-
 ---
 
- arch/x86/lib/x86-opcode-map.txt |   13 ++++++++++---
- 1 files changed, 10 insertions(+), 3 deletions(-)
+ tools/perf/Makefile |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/lib/x86-opcode-map.txt b/arch/x86/lib/x86-opcode-map.txt
-index e7285d8..894497f 100644
---- a/arch/x86/lib/x86-opcode-map.txt
-+++ b/arch/x86/lib/x86-opcode-map.txt
-@@ -306,9 +306,10 @@ Referrer: 2-byte escape
- 0a:
- 0b: UD2 (1B)
- 0c:
--0d: NOP Ev
--0e:
--0f:
-+0d: NOP Ev | GrpP
-+0e: FEMMS
-+# 3DNow! uses the last imm byte as opcode extension.
-+0f: 3DNow! Pq,Qq,Ib
- # 0x0f 0x10-0x1f
- 10: movups Vps,Wps | movss Vss,Wss (F3) | movupd Vpd,Wpd (66) | movsd Vsd,Wsd (F2)
- 11: movups Wps,Vps | movss Wss,Vss (F3) | movupd Wpd,Vpd (66) | movsd Wsd,Vsd (F2)
-@@ -813,6 +814,12 @@ GrpTable: Grp16
- 3: prefetch T2
- EndTable
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 52b1f43..03c27b9 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -420,8 +420,8 @@ ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf *
+ 	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel);
+ endif
  
-+# AMD's Prefetch Group
-+GrpTable: GrpP
-+0: PREFETCH
-+1: PREFETCHW
-+EndTable
-+
- GrpTable: GrpPDLK
- 0: MONTMUL
- 1: XSHA1
+-ifneq ($(shell sh -c "(echo '\#include <libdwarf/dwarf.h>'; echo '\#include <libdwarf/libdwarf.h>'; echo 'int main(void) { Dwarf_Debug dbg; Dwarf_Error err; dwarf_init(0, DW_DLC_READ, 0, 0, &dbg, &err); return (long)dbg; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -ldwarf -lelf -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
+-	msg := $(warning No libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel);
++ifneq ($(shell sh -c "(echo '\#include <libdwarf/dwarf.h>'; echo '\#include <libdwarf/libdwarf.h>'; echo 'int main(void) { Dwarf_Debug dbg; Dwarf_Error err; Dwarf_Ranges *rng; dwarf_init(0, DW_DLC_READ, 0, 0, &dbg, &err); dwarf_get_ranges(dbg, 0, &rng, 0, 0, &err); return (long)dbg; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -ldwarf -lelf -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
++	msg := $(warning No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231);
+ 	BASIC_CFLAGS += -DNO_LIBDWARF
+ else
+ 	EXTLIBS += -lelf -ldwarf
 
 
 -- 
