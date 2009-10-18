@@ -1,173 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbZJRXJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbZJRXJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755549AbZJRXJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 19:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbZJRXJ4
+	id S1755523AbZJRXJU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 19:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbZJRXJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 19:09:56 -0400
-Received: from aglcosbs02.cos.agilent.com ([192.25.218.39]:37878 "EHLO
-	aglcosbs02.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755346AbZJRXJz (ORCPT
+	Sun, 18 Oct 2009 19:09:20 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:13334 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754259AbZJRXJT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 19:09:55 -0400
-Message-ID: <4ADBA01C.6040508@agilent.com>
-Date: Sun, 18 Oct 2009 16:09:16 -0700
-From: Earl Chew <earl_chew@agilent.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sun, 18 Oct 2009 19:09:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=edk3Jp57YP9XjQqY3wvc4N8HuCgk9YaqTwVH96a7B6qcgLDGn7bx3pqWm1lbND7N3L
+         4ZEhehQSq1ns9uJ4vm8015UBYy8oX1oPTqbNIxfYfhXZEYPRO0UUvGfjq2NTrjWpcqQm
+         P43x6esrLGMPGCfC+VbiMpy/NbplZ1C4pS0JA=
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Bug in time warp detection code in older -rt kernels
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Oct 2009 23:09:33.0336 (UTC) FILETIME=[0DD43980:01CA5048]
+In-Reply-To: <1255906474-25091-2-git-send-email-felipe.contreras@gmail.com>
+References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com>
+	 <1255906474-25091-2-git-send-email-felipe.contreras@gmail.com>
+Date: Mon, 19 Oct 2009 02:09:22 +0300
+Message-ID: <94a0d4530910181609u33955cd5tf9e56b7d2ae9a616@mail.gmail.com>
+Subject: Re: [PATCH 1/7] usb: trivial cleanups
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-kernel@vger.kernel.org,
+       Felipe Contreras <felipe.contreras@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Sarah Sharp <sarah.a.sharp@linux.intel.com>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mostly a historical note at this point but potentially relevant
-to those who are working with older code.
+On Mon, Oct 19, 2009 at 1:54 AM, Felipe Contreras
+<felipe.contreras@gmail.com> wrote:
+> It seems 'min_t' was used before, and looks cleaner, plus white-space
+> stuff.
+>
+> Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+> ---
+>  drivers/usb/core/hcd.c |    7 +++----
+>  1 files changed, 3 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
+> index 34de475..e6d754e 100644
+> --- a/drivers/usb/core/hcd.c
+> +++ b/drivers/usb/core/hcd.c
+> @@ -396,8 +396,7 @@ rh_string(int id, struct usb_hcd const *hcd, u8 *data, unsigned len)
+>        case 0:
+>                /* Array of LANGID codes (0x0409 is MSFT-speak for "en-us") */
+>                /* See http://www.usb.org/developers/docs/USB_LANGIDs.pdf */
+> -               if (len > 4)
+> -                       len = 4;
+> +               len = min_t(unsigned, len, sizeof(langids));
+>                memcpy(data, langids, len);
+>                return len;
+>        case 1:
 
-RT kernels of the 2.6.21 vintage carry a time warp detection patch
-like this:
+I still have an unfixed warning:
+drivers/usb/core/hcd.c: In function ‘rh_string’:
+/data/public/src/linux/arch/x86/include/asm/string_32.h:74: warning:
+array subscript is above array bounds
 
-http://www.filewatcher.com/p/patch-2.6.22.1-rt6-broken-out.tar.gz.627467/patches/time-warp-detect.patch.html
+Apparently there's a problem with the optimized memcpy for x86 with this code:
+static char const langids[4] = {4, USB_DT_STRING, 0x09, 0x04};
+len = min_t(unsigned, len, sizeof(langids));
+memcpy(data, langids, len);
+return len;
 
-The patch will sometimes issue a false positive because:
+gcc 4.4 is trying to optimize the memcpy, but it's not able to realize
+that 'len' will always be <= 4 and the memcpy will not exceed langids.
+One way to solve this is by replacing len with the min_t expression:
+memcpy(data, langids, min_t(unsigned, len, sizeof(langids)));
 
-+void warp_check_clock_was_changed(void)
-+{
-+	int cpu;
-+
-+	for_each_online_cpu(cpu)
-+		per_cpu(timestamp, cpu).tv64 = 0;
-+}
+However, that looks ugly and we need the expression again for the
+return. Another way is to remove 'const' from langids.
 
-will attempt to update the per-cpu timestamp as will the following
-code in __get_realtime_clock_ts():
+AFAIK the code is perfectly correct as it is, I think the fact that
+gcc 4.4 complains is a bug on gcc side.
 
-+	cpu = raw_smp_processor_id();
-+	prev = per_cpu(timestamp, cpu);
-+	per_cpu(timestamp, cpu) = now;
+Cheers.
 
-
-Sometimes warp_check_clock_was_changed() will get to update
-the per-cpu timestamp, only to have its work de-railed by
-__get_realtime_clock_ts() overwriting the per-cpu timestamp
-with the last read value.
-
-
-I chose to resolve the false positives by relaxing the warp
-check and to allow some results to be returned unverified
-under conditions of high contention.
-
-
-Earl
-
-
---- linux-2.6.21_mvlcge500/kernel/timer.c.orig	2008-11-04 
-09:19:46.000000000 -0800
-+++ linux-2.6.21_mvlcge500/kernel/timer.c	2009-10-18 15:39:32.000000000 
--0700
-@@ -970,14 +970,11 @@ cycle_t notrace usecs_to_cycles(unsigned
-  	return ns2cyc(clock, (u64)usecs * 1000);
-  }
-
--static DEFINE_PER_CPU(ktime_t, timestamp);
-+static unsigned timestamp_epoch;
-
--void warp_check_clock_was_changed(void)
-+void warp_check_clock_was_changed()
-  {
--	int cpu;
--
--	for_each_online_cpu(cpu)
--		per_cpu(timestamp, cpu).tv64 = 0;
-+	timestamp_epoch++;
-  }
-
-  /**
-@@ -989,45 +986,66 @@ void warp_check_clock_was_changed(void)
-   */
-  static inline void __get_realtime_clock_ts(struct timespec *ts)
-  {
--	unsigned long seq;
-+	unsigned seq;
-  	s64 nsecs;
-
--	unsigned long flags;
-  	static int once = 1;
-  	ktime_t prev, now;
--	int cpu;
-+	unsigned epoch;
-+	int gateholder;
-+
-+	static struct {
-+		atomic_t gate;
-+		ktime_t clock;
-+		unsigned epoch;
-+	} timestamp = { .gate = ATOMIC_INIT(1) };
-+
-+	/* As multiple threads across multiple cpus attempt to read
-+	 * the time, only allow the first through the gate to perform
-+	 * the time warp sanity check. This reduces the number of
-+	 * verifications when there are many threads reading the clock,
-+	 * but it would be uncommon to have so many threads reading the
-+	 * time.
-+	 */
-+	gateholder = atomic_dec_and_test(&timestamp.gate);
-
--	local_irq_save(flags);
-  	do {
-  		seq = read_seqbegin(&xtime_lock);
-
-  		*ts = xtime;
-  		nsecs = __get_nsec_offset();
--
--		now = timespec_to_ktime(*ts);
-+		epoch = timestamp_epoch;
-
-  	} while (read_seqretry(&xtime_lock, seq));
-
-  	timespec_add_ns(ts, nsecs);
-
-  	now = timespec_to_ktime(*ts);
-+	prev.tv64 = 0;
-+
-+	if (gateholder) {
-
--	cpu = raw_smp_processor_id();
--	prev = per_cpu(timestamp, cpu);
--	per_cpu(timestamp, cpu) = now;
-+		if (epoch != timestamp.epoch) {
-+			timestamp.clock.tv64 = 0;
-+			timestamp.epoch = epoch;
-+		}
-+
-+		prev = timestamp.clock;
-+		timestamp.clock = now;
-+	}
-+
-+	atomic_inc(&timestamp.gate);
-
-  	if (once > 0 && prev.tv64 > now.tv64) {
-  		once--;
-  		stop_trace();
-  		user_trace_stop();
--		local_irq_restore(flags);
-
--		printk("BUG: time warp detected!\n");
--		printk("prev > now, %016Lx > %016Lx:\n", prev.tv64, now.tv64);
--		printk("= %Ld delta, on CPU#%d\n", prev.tv64 - now.tv64, cpu);
-+		printk(KERN_ERR "BUG: time warp detected: "
-+			"prev %016Lx  now %016Lx:\n", prev.tv64, now.tv64);
-+
-  		dump_stack();
--	} else
--		local_irq_restore(flags);
-+	}
-  }
-
-  /**
-
-
-
+-- 
+Felipe Contreras
