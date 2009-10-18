@@ -1,99 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbZJRMwG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754606AbZJRNS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554AbZJRMwG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 08:52:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZJRMwG
+	id S1754606AbZJRNS5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 09:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbZJRNS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 08:52:06 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53837 "EHLO mx1.suse.de"
+	Sun, 18 Oct 2009 09:18:56 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:45013 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754494AbZJRMwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 08:52:05 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs / Novell
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [BUGFIX] dnotify: handle_event shouldn't match on FS_EVENT_ON_CHILD
-Date: Sun, 18 Oct 2009 14:49:22 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Eric Paris <eparis@redhat.com>
-References: <200910181446.44625.agruen@suse.de>
-In-Reply-To: <200910181446.44625.agruen@suse.de>
+	id S1753303AbZJRNS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 09:18:56 -0400
+Date: Sun, 18 Oct 2009 15:18:14 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>
+cc: Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnd Bergmann <arndbergmann@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] MIPS: VPE: Remove leftover unlock_kernel()
+Message-ID: <alpine.LFD.2.00.0910181512200.3462@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910181449.23267.agruen@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Test case demonstrating the bug:
+Please push the following patch to Linus for 2.6.32-rc6.
+(or else drop 1bbfc20d0161cd94b1b8111566be2fa41b41b608)
 
+>From aaf663d27d2ce9641df5833163f47fdb9ba9c833 Mon Sep 17 00:00:00 2001
+From: John Kacur <jkacur@redhat.com>
+Date: Sun, 18 Oct 2009 15:00:35 +0200
+Subject: [PATCH] MIPS: VPE: Remove leftover unlock_kernel()
 
-#define _GNU_SOURCE
+commit 1bbfc20d0161cd94b1b8111566be2fa41b41b608
+was supposed to have removed the BKL, but there is a leftover and unpaired
+unlock_kernel call in the function vpe_open. Remove it.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
+Signed-off-by: John Kacur <jkacur@redhat.com>
+---
+ arch/mips/kernel/vpe.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-static void create_event(int s, siginfo_t* si, void* p)
-{
-	printf("create\n");
-}
+diff --git a/arch/mips/kernel/vpe.c b/arch/mips/kernel/vpe.c
+index 03092ab..6047752 100644
+--- a/arch/mips/kernel/vpe.c
++++ b/arch/mips/kernel/vpe.c
+@@ -1116,8 +1116,6 @@ static int vpe_open(struct inode *inode, struct file *filp)
+ 	v->shared_ptr = NULL;
+ 	v->__start = 0;
+ 
+-	unlock_kernel();
+-
+ 	return 0;
+ }
+ 
+-- 
+1.6.0.6
 
-static void delete_event(int s, siginfo_t* si, void* p)
-{
-	printf("delete\n");
-}
-
-int main (void) {
-	struct sigaction action;
-	char *tmpdir, *file;
-	int fd1, fd2;
-
-	sigemptyset (&action.sa_mask);
-	action.sa_flags = SA_SIGINFO;
-
-	action.sa_sigaction = create_event;
-	sigaction (SIGRTMIN + 0, &action, NULL);
-
-	action.sa_sigaction = delete_event;
-	sigaction (SIGRTMIN + 1, &action, NULL);
-
-#	define TMPDIR "/tmp/test.XXXXXX"
-	tmpdir = malloc(strlen(TMPDIR) + 1);
-	strcpy(tmpdir, TMPDIR);
-	mkdtemp(tmpdir);
-
-#	define TMPFILE "file"
-	file = malloc(strlen(tmpdir) + strlen(TMPFILE) + 2);
-	sprintf(file, "%s/%s", tmpdir, TMPFILE);
-
-	fd1 = open (tmpdir, O_RDONLY);
-	fcntl(fd1, F_SETSIG, SIGRTMIN);
-	fcntl(fd1, F_NOTIFY, DN_MULTISHOT | DN_CREATE);
-
-	fd2 = open (tmpdir, O_RDONLY);
-	fcntl(fd2, F_SETSIG, SIGRTMIN + 1);
-	fcntl(fd2, F_NOTIFY, DN_MULTISHOT | DN_DELETE);
-
-	if (fork()) {
-		creat(file, 0600);
-
-		/* Spurious event triggered below! */
-
-		unlink(file);
-	} else {
-		sleep(1);
-		rmdir(tmpdir);
-	}
-
-	return 0;
-}
