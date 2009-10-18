@@ -1,50 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbZJRC6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZJRDIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754181AbZJRC6l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Oct 2009 22:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZJRC6k
+	id S1754207AbZJRDIk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Oct 2009 23:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbZJRDIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Oct 2009 22:58:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37510 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754117AbZJRC6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Oct 2009 22:58:40 -0400
-Message-ID: <4ADA845E.4080109@kernel.org>
-Date: Sun, 18 Oct 2009 11:58:38 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sat, 17 Oct 2009 23:08:39 -0400
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:64680 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754133AbZJRDIj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Oct 2009 23:08:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=X6AcyIXQBRL9PrSdUd1XcDwctuBGvWt/ONhuqN2vvgPdjyWh/nblTtzSqehUxSDjND
+         NxZTzTDW2rIiitivw9m6ZF70yiBFmoT4ph1Sd+BwtuTiGBLN67LQ0fVPwUxepooiV1nj
+         smB4R/nEDN4Mk2GSUBLoQZ0dzdOYB72Lp4rbU=
 MIME-Version: 1.0
-To: monstr@monstr.eu
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, mingo@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
-       rostedt@goodmis.org, hpa@zytor.com, cebbert@redhat.com,
-       tony.luck@intel.com
-Subject: Re: [PATCH 13/16] percpu: remove per_cpu__ prefix.
-References: <1255500125-3210-1-git-send-email-tj@kernel.org> <1255500125-3210-14-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0910141026370.26476@gentwo.org> <4AD6EA57.6020105@kernel.org> <4AD80CD6.7030204@monstr.eu>
-In-Reply-To: <4AD80CD6.7030204@monstr.eu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 18 Oct 2009 02:58:13 +0000 (UTC)
+In-Reply-To: <200910171654.03344.bzolnier@gmail.com>
+References: <200910152137.58164.IvDoorn@gmail.com> <200910152204.16407.IvDoorn@gmail.com> 
+	<200910171654.03344.bzolnier@gmail.com>
+From: Julian Calaby <julian.calaby@gmail.com>
+Date: Sun, 18 Oct 2009 14:08:23 +1100
+Message-ID: <646765f40910172008r1309126fla6897d4289004934@mail.gmail.com>
+Subject: Re: [PATCH 2/2] rt2x00: Implement support for rt2800pci
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, John Linville <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, users@host1.serialmonkey.com,
+       Alban Browaeys <prahal@yahoo.com>,
+       Benoit PAPILLAULT <benoit.papillault@free.fr>,
+       Felix Fietkau <nbd@openwrt.org>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       Mattias Nissler <mattias.nissler@gmx.de>,
+       Mark Asselstine <asselsm@gmail.com>,
+       Xose Vazquez Perez <xose.vazquez@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Sorry about the delay.
+On Sun, Oct 18, 2009 at 01:54, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+> Now to the less happy part..
+>
+> I also used the opportunity to take a closer look at this driver and
+> it seems that it needlessly adds around 2 KLOC to kernel by duplicating
+> the common content of rt2800usb.h to rt2800pci.h instead of moving it
+> to the shared header (like it is done in the staging crap drivers):
+>
+> $ wc -l drivers/net/wireless/rt2x00/rt2800usb.h drivers/net/wireless/rt2x00/rt2800pci.h
+>  1951 drivers/net/wireless/rt2x00/rt2800usb.h
+>  1960 drivers/net/wireless/rt2x00/rt2800pci.h
+>  3911 total
+>
+> $ diff -u drivers/net/wireless/rt2x00/rt2800usb.h drivers/net/wireless/rt2x00/rt2800pci.h|diffstat
+>  rt2800pci.h |  213 +++++++++++++++++++++++++++++++-----------------------------
+>  1 file changed, 111 insertions(+), 102 deletions(-)
+>
+> Similarly it looks like most of the code between rt2800usb.c and rt2800pci.c
+> could also be shared (up to another 2 KLOC saved) by adding abstraction layer
+> for accessing chipset registers over different buses (again like it is done
+> in staging crap drivers):
+>
+> $ wc -l drivers/net/wireless/rt2x00/rt2800usb.c drivers/net/wireless/rt2x00/rt2800pci.c
+>  3077 drivers/net/wireless/rt2x00/rt2800usb.c
+>  3323 drivers/net/wireless/rt2x00/rt2800pci.c
+>  6400 total
+>
+> $ diff -u drivers/net/wireless/rt2x00/rt2800usb.c drivers/net/wireless/rt2x00/rt2800pci.c|diffstat
+>  rt2800pci.c | 2190 +++++++++++++++++++++++++++++++++---------------------------
+>  1 file changed, 1218 insertions(+), 972 deletions(-)
 
-Michal Simek wrote:
-> where is git repo with that patches?
+Nobody else has said it, so:
 
-The patches are available in the following git tree.
+Patches welcome!
 
- git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git unified-symbols
+Your points with the vendor drivers apply here too - consolidating the
+common parts of the drivers will enhance readability, and make
+development easier, and mean that, with your help, these might get to
+a everyday usable state quicker.
 
-and the original thread at
+And remember that this is a preliminary release of the code. There's
+still a long way to go.
 
- http://thread.gmane.org/gmane.linux.kernel/902383
-
-Thanks.
+Thanks,
 
 -- 
-tejun
+
+Julian Calaby
+
+Email: julian.calaby@gmail.com
+.Plan: http://sites.google.com/site/juliancalaby/
