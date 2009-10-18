@@ -1,39 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZJRPwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbZJRQRL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbZJRPwS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 11:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZJRPwR
+	id S1754779AbZJRQRL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 12:17:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbZJRQRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 11:52:17 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:10846 "EHLO mx1.redhat.com"
+	Sun, 18 Oct 2009 12:17:10 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:34305 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754710AbZJRPwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 11:52:17 -0400
-Subject: Re: [BUGFIX] dnotify: handle_event shouldn't match on
- FS_EVENT_ON_CHILD
-From: Eric Paris <eparis@redhat.com>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200910181446.44625.agruen@suse.de>
-References: <200910181446.44625.agruen@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 18 Oct 2009 11:52:10 -0400
-Message-Id: <1255881130.15182.99.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1754729AbZJRQRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 12:17:10 -0400
+Date: Sun, 18 Oct 2009 18:16:40 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+cc: Arnd Bergmann <arndbergmann@googlemail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCHES 0/5] Remove smp_lock.h in the BKL removal effort
+Message-ID: <alpine.LFD.2.00.0910181812310.3462@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-18 at 14:46 +0200, Andreas Gruenbacher wrote:
-> Mask off FS_EVENT_ON_CHILD in dnotify_handle_event().  Otherwise, when there
-> is more than one watch on a directory and dnotify_should_send_event()
-> succeeds, events with FS_EVENT_ON_CHILD set will trigger all watches and cause
-> spurious events.
+The following patches remove the smp_lock.h include in files that 
+no-longer use the BKL.
 
-Added to my linus tree last night (along with a couple other fixes) will
-push it public and ask him to pull when I finish testing.
+A few of them rely on patches already sent by various people in the remove 
+the bkl effort - and they may only exist in Thomas' queue.
 
--Eric
+I could have made this one big patch, but I thought that breaking them up
+by architecture would make bisecting more logical.
 
+Thanks
+
+John Kacur
