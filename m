@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbZJRHrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854AbZJRHtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752819AbZJRHrr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 03:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZJRHrq
+	id S1752854AbZJRHtK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 03:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZJRHtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 03:47:46 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:47941 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751362AbZJRHrp (ORCPT
+	Sun, 18 Oct 2009 03:49:09 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:41184 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752647AbZJRHtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 03:47:45 -0400
-Date: Sun, 18 Oct 2009 09:47:45 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Steven King <sfking@fdwdc.com>
-Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
-       uclinux-dev@uclinux.org, Greg Ungerer <gerg@snapgear.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [PATCH] Merge m68k and m68knommu
-Message-ID: <20091018074745.GA13755@merkur.ravnborg.org>
-References: <200910171802.59072.sfking@fdwdc.com>
+	Sun, 18 Oct 2009 03:49:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=vjM2+ZA0TqbYDI6qv/lFCv1bTluzmsXU56B+lEvWlVZgH2gTG8qV56xFBJ+iZoxUfQ
+         L/9Og043S5fCCvn+rngGUcnmq30o9iyURG5HARKNmuZGN2mEES0wK+5uaVCJu4P8R/Ep
+         9f3W6E6QoxOY70HyeZDArU+qUK4F8719eAPi8=
+Date: Sun, 18 Oct 2009 00:49:10 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.32-rc3
+Message-ID: <20091018074909.GG3935@core.coreip.homeip.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200910171802.59072.sfking@fdwdc.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 17, 2009 at 06:02:58PM -0700, Steven King wrote:
-> This is a script and patch to merge the m68knommu arch into m68k.
-> 
-> The script was inspired by the script Sam Ravnborg used to merge the 
-> includes from m68knommu. For those files common to both arches but 
-> differing in content, the m68k version of the file is renamed to 
-> <file>_mm.<ext> and the m68knommu version of the file is moved into the 
-> corresponding m68k directory and renamed <file>_no.<ext> and a small 
-> wrapper file <file>.<ext> is used to select between the two version. Files 
-> that are common to both but don't differ are removed from the m68knommu 
-> tree and files and directories that are unique to the m68knommu tree are 
-> moved to the m68k tree. Finally, the arch/m68knommu tree is removed.
-> 
-> To select between the the versions of the files, the wrapper uses
-> 
-> #ifdef CONFIG_MMU
-> #include <file>_mm.<ext>
-> #else
-> #include <file>_no.<ext>
-> #endif
-> 
-> The patch modifies the toplevel Makefile so that ARCH=m68knommu still works 
-> (by setting SRCARCH=m68k) and adds the m68knommu Kconfig and Makefile 
-> to the m68k Kconfig and Makefile, using the definition of ARCH to select 
-> which values to use.
-> 
-> Thus when building for either a m68k or an m68knommu target, one still 
-> specifies either ARCH=m68k or ARCH=m68knommu and everything should 
-> build EXACTLY as it did pre-merge.  (I think).
+Hi Linus,
 
-Hi Steven.
+Please pull from:
 
-This looks good!
-The mechanical method you are using really makes it simple to do
-the merge.
-And it also nicely highlights which files that really differs.
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
-There is obviously more that can be merged later
-but this is the first and biggest step.
+to receive updates for the input subsystem.
 
-> 
-> Signed-off-by: Steven King <sfking@fdwdc.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Changelog:
+---------
 
-	Sam
+Dmitry Torokhov (7):
+      Input: synaptics - add another Protege M300 to rate blacklist
+      Input: i8042 - make pnp_data_busted variable boolean instead of int
+      Input: atkbd - restore resetting LED state at startup
+      Input: atkbd - postpone restoring LED/repeat rate at resume
+      Input: fix locking issue in /proc/bus/input/ handlers
+      Input: i8042 - add Sony Vaio VGN-FZ240E to the nomux list
+      Input: logips2pp - model 73 is actually TrackMan FX
+
+Herton Ronaldo Krzesinski (1):
+      Input: atkbd - consolidate force release quirks for volume keys
+
+Roel Kluin (1):
+      Input: hp_sdc_rtc - fix test in hp_sdc_rtc_read_rt()
+
+
+Diffstat:
+--------
+
+ drivers/input/input.c                 |   65 ++++++++++++++++------
+ drivers/input/keyboard/atkbd.c        |   96 +++++++++++++++++++--------------
+ drivers/input/misc/hp_sdc_rtc.c       |    2 +-
+ drivers/input/mouse/logips2pp.c       |    2 +-
+ drivers/input/mouse/synaptics.c       |   10 ++++
+ drivers/input/serio/i8042-x86ia64io.h |   13 ++++-
+ 6 files changed, 127 insertions(+), 61 deletions(-)
+
+-- 
+Dmitry
+
