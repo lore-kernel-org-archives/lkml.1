@@ -1,210 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932090AbZJRXdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbZJRXjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932090AbZJRXdd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 19:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbZJRXdc
+	id S1755507AbZJRXjH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 19:39:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbZJRXjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 19:33:32 -0400
-Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:51841 "EHLO
-	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750840AbZJRXda (ORCPT
+	Sun, 18 Oct 2009 19:39:06 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:44493 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752290AbZJRXjF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 19:33:30 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Date: Mon, 19 Oct 2009 01:33:29 +0200
-User-Agent: KMail/1.9.9
-Cc: David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <20091014103002.GA5027@csn.ul.ie> <200910141510.11059.elendil@planet.nl>
-In-Reply-To: <200910141510.11059.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
+	Sun, 18 Oct 2009 19:39:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsYEAA1D20pMRK1g/2dsb2JhbACBUtdYhDEE
+Date: Sun, 18 Oct 2009 19:39:08 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: ltt-dev@lists.casi.polymtl.ca
+Cc: linux-kernel@vger.kernel.org
+Subject: [RELEASE] LTTng 0.162 for Linux 2.6.31.3
+Message-ID: <20091018233908.GA8867@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910190133.33183.elendil@planet.nl>
-X-OriginalArrivalTime: 18 Oct 2009 23:33:33.0693 (UTC) FILETIME=[685942D0:01CA504B]
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 19:35:19 up 61 days, 10:24,  4 users,  load average: 1.10, 0.68,
+	0.66
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Another long mail, sorry.
+Hi everyone,
 
-On Wednesday 14 October 2009, Frans Pop wrote:
-> > There still has not been a mm-change identified that makes
-> > fragmentation significantly worse.
->
-> My bisection shows a very clear point, even if not an individual commit,
-> in the 'akpm' merge where SKB errors suddenly become *much* more
-> frequent and easy to trigger.
-> I'm sorry to say this, but the fact that nothing has been identified yet
-> is IMO the result of a lack of effort, not because there is no such
-> change.
+So, having postponed quite a few things lately, the LTTng port to 2.6.31
+lagged for much longer than usual. Here it is, at last.
 
-I was wrong. It turns out that I was creating the variations in the test 
-results around the akpm merge myself by tiny changes in the way I ran the 
-tests. It took another round of about 30 compilations and tests purely in 
-this range to show that, but those same tests also made me aware of other 
-patterns I should look at.
+As always, it is available at: http://www.lttng.org
 
-Until a few days ago I was concentrating on "do I see SKB allocation errors 
-or not". Since then I've also been looking more consciously at when they 
-happen, at disk access patterns and at desktop freeze patterns.
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
 
-I think I did mention before that this whole issue is rather subtle :-/
-So, my apologies for finguering the wrong area for so long, but it looked 
-solid given the info available at the time.
+Comments and feedback are always appreciated.
 
-On Thursday 15 October 2009, Mel Gorman wrote:
-> Outside the range of commits suspected of causing problems was the
-> following. It's extremely low probability
->
-> Commit 8aa7e84 Fix congestion_wait() sync/async vs read/write confusion
->         This patch alters the call to congestion_wait() in the page
->         allocator. Frankly, I don't get the change but it might worth
->         checking if replacing BLK_RW_ASYNC with WRITE on top of 2.6.31
->         makes any difference
+Thanks,
 
-This is the real culprit. Mel: thanks very much for looking beyond the 
-area I identified. Your overview of mm changes was exactly what I needed 
-and really helped a lot during my later tests.
+Mathieu
 
-This commit definitely causes most of the problems; confirmed by reverting 
-it on top of 2.6.31 (also requires reverting 373c0a7e, which is a later 
-build fix).
-
-The rest of this mail gives details on my tests and how I reached the above 
-conclusion.
-
-TEST BASELINE (2.6.30)
-======================
-I mentioned in an earlier mail that I run three instances of gitk for my 
-tests. Loading gitk seems to consist of 3 phases:
-1) general initial scan of the repository (branches?)
-2) reading commits: commit counter increases
-3) reading references (including bisection good/bad points) and
-   uncommitted changes
-
-Below times and comments per stage when the test is run with 2.6.30. As my 
-test starts after a clean boot, buffers are mostly empty.
-
-1st instance: 'gitk v2.6.29..master' (preparation)
-1) ~20 seconds; user interface is mostly blank
-2) ~5 seconds to read 35.000 commits; user interface is updated and counter
-   increases steadily as they are read
-3) ~10 seconds; "branch"/"follows"/"precedes" info and tags are filled
-   in; fairly heavy disk activity
-
-2st instance: 'gitk master' (preparation)
-1) 0 seconds (because data is already buffered)
-2) ~25 seconds to read 167500 commits; counter increases steadily
-3) 1-2 seconds (because data is already buffered)
-
-3st instance: 'gitk master' (the actual test)
-1) 0 seconds because data is already buffered
-2) ~55 seconds due to swapping overhead; minor music skip around commit
-   110.000; counter slower after 90.000, some short halts, but generally
-   increases steadily; moderate disk activity
-3) ~55-60 seconds; because buffers have been emptied data must by read
-   again, with swapping; very heavy disk activity; fairly long music
-   skip (15-20 seconds), but no SKB allocation errors
-
-So, the loading of the 3rd instance takes 1.5 minutes longer than the 
-second because of the swapping. And phase 3) is most affected by it.
-
-AFTER WIRELESS CHANGE
-=====================
-After commit 4752c93c30 ("iwlcore: Allow skb allocation from tasklet") I 
-start getting the SKB errors. They can be triggered reliably if the whole 
-test is repeated 1 or 2 times, but generally not the first time the test 
-is run.
-
-Or so I thought for a long time.
-It turns out that I will get SKB errors during the first run if I'm
-"sloppy" in the test execution. For example if I wait too long before 
-switching from the last gitk instance to konsole where I have 
-a 'tail -f /var/log/kern.log' running.
-Another factor is the state of the repository: do I have master checked 
-out, or an older branch, or am I in the middle of a bisection. This 
-influences how data is read from the disk and thus the test results.
-A last factor may be the size of the kernel I'm using: my test/bisect 
-kernel is significantly smaller than my regular kernel.
-
-If the test is run completely cleanly, I will not get SKB errors during the 
-first run. Also, this change does not affect the timings of the test at 
-all: the total load time of the 3rd instance is still ~1:55 and music 
-skips happen in roughly the same places. The pattern of disk activity also 
-remains unchanged.
-
-If I do *not* run the test cleanly, any SKB errors during the first test 
-run will always be during phase 3), never during phase 2). This is what I 
-saw during tests in the 'akpm' range, and explains the inconsistent 
-results there.
-
-After discovering this I've made a copy of the git repo so that I always 
-test using the exact same state and tightened my test procedure.
-
-AFTER congestion_wait CHANGE
-============================
-If I test commit 9f2d8be, which is just before the congestion_wait() 
-change, I still get the same pattern as described above. But when I test 
-with 8aa7e84 ("Fix congestion_wait() sync/async vs read/write confusion"), 
-things change dramatically when the 3rd gitk instance is started.
-
-During the 2nd phase I see the first SKB allocation errors with a music 
-skip between reading commits 95.000 and 110.000.
-About commit 115.000 there is a very long pause during which the counter 
-does not increase, music stops and the desktop freezes completely. The 
-first 30 seconds of that freeze there is only very low disk activity (which 
-seems strange); the next 25 seconds there suddenly is very high disk  
-activity during which things gradually unfreeze and more SKB errors are 
-displayed. After that the commit counter runs up fairly steadily again.
-
-Phase 2) ends at ~1:45. Phase 3) (with more SKB errors) ends at ~2:05.
-
-So this change almost doubles the time needed for phase 2) and causes SKB 
-allocation errors to occur during that phase. Also, before this commit the 
-desktop freezes are much shorter and less severe. With this change the 
-desktop is completely unusable for almost a minute during phase 2), with 
-even the mouse pointer frozen solid.
-Note that phase 3) becomes shorter, but that the total time needed to load 
-the 3rd instance increases by about 10-15 seconds.
-
-Note: -rc2 and -rc3 had broken NFS, so I had to cherry-pick 3 NFS commits 
-from -rc4 on top of the commits I wanted to test.
-
-WITH congestion_wait CHANGE REVERTED
-====================================
-I've done quite a few tests of 2.6.31 with 373c0a7e and 8aa7e847 reverted 
-to confirm that's really the culprit. I've done this for .31-rc3, .31-rc4,
-.31-rc5, .31 and .31.1.
-
-In all cases the huge freeze in phase 2) is gone and the general behavior 
-and timings are again as it was after the wireless change. During most 
-tests I did not get any SKB allocation errors during phase 2) or phase 3).
-
-However with .31-rc5, .31 and .31.1 I have had some tests where I would see 
-a few SKB allocation errors during phase 3) (which is somewhat likely), 
-but also during phase 2). At this point I'm unsure whether this is just 
-noise, or maybe a minor influence from some change merged after .31-rc4.
-Looking through the commits there are several mm/page allocation changes.
-
-For now I suggest ignoring this though as the impact (if any) is very minor 
-and it is not reproducible reliably enough.
-
-
-Next I'll retest Mel's patches and also test Reinette's patches.
-
-Cheers,
-FJP
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
