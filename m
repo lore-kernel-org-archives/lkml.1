@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbZJRIYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbZJRICi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754471AbZJRIYv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 04:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbZJRIYu
+	id S1753056AbZJRICi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 04:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbZJRICh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 04:24:50 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:37100 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437AbZJRIYq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 04:24:46 -0400
-X-Greylist: delayed 1642 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Oct 2009 04:24:46 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hSs0v3WpOOwdN2wjDJq78+vVdyUClZNICRThu9ETgBkmh0Zc1psn+5T6mpiqUnoinI
-         kxTrNmgNnire5G4+vVldQd5K53N1MlBa54fOEV4Xr1K4dafFgIHuFzw5y7LE3uTg2inh
-         nwpjkAgUeRs/vSFQSr2yD7VuVnRczHzZX+05o=
-Date: Sun, 18 Oct 2009 00:57:24 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Stas Sergeev <stsp@aknet.ru>
-Cc: Linux kernel <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dtor-oss@comcast.net>, Takashi Iwai <tiwai@suse.de>
-Subject: Re: [patch][rfc] depend pcspkr on CONFIG_EMBEDDED
-Message-ID: <20091018075723.GI3935@core.coreip.homeip.net>
-References: <4ADA3593.4010607@aknet.ru>
+	Sun, 18 Oct 2009 04:02:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45362 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752368AbZJRICg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 04:02:36 -0400
+Date: Sun, 18 Oct 2009 01:02:38 -0700
+From: Greg KH <gregkh@suse.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: ?ric Piel <eric.piel@tremplin-utc.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
+	anymore
+Message-ID: <20091018080238.GA13810@suse.de>
+References: <4AD120F2.3020606@tremplin-utc.net> <20091011030029.GA6526@suse.de> <200910112135.29384.dmitry.torokhov@gmail.com> <4AD31709.4000103@tremplin-utc.net> <20091012154846.GB7996@core.coreip.homeip.net> <20091012173551.GC10557@suse.de> <20091012183313.GC8345@core.coreip.homeip.net> <20091012185417.GA30342@suse.de> <20091013031741.GB2887@core.coreip.homeip.net> <20091018075127.GH3935@core.coreip.homeip.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4ADA3593.4010607@aknet.ru>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091018075127.GH3935@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stas,
+On Sun, Oct 18, 2009 at 12:51:27AM -0700, Dmitry Torokhov wrote:
+> On Mon, Oct 12, 2009 at 08:17:41PM -0700, Dmitry Torokhov wrote:
+> > On Mon, Oct 12, 2009 at 11:54:17AM -0700, Greg KH wrote:
+> > > On Mon, Oct 12, 2009 at 11:33:13AM -0700, Dmitry Torokhov wrote:
+> > > > On Mon, Oct 12, 2009 at 10:35:51AM -0700, Greg KH wrote:
+> > > > > On Mon, Oct 12, 2009 at 08:48:46AM -0700, Dmitry Torokhov wrote:
+> > > > > > > So at least, unbind should fail as well as bind.
+> > > > > > >
+> > > > > > 
+> > > > > > That would be Greg's domain s it is driver core decision whether to
+> > > > > > allow unbinding platform devices registered with
+> > > > > > platform_driver_probe().
+> > > > > 
+> > > > > No, I do not see why that should not be allowed.
+> > > > > 
+> > > > 
+> > > > Because once you did unbind the device you are stuck (unless the driver
+> > > > is compiled as a module, but then you could just unload the module
+> > > > instead of unbinding). Disallowing unbind would allow discarding not
+> > > > only __devinit but __devexit sections when driver is built in which
+> > > > would make ebedded people happy[^Hier].
+> > > 
+> > > Yeah, good point.
+> > > 
+> > > Does anyone do bind/unbind with platform devices today?
+> > > 
+> > > If not, a patch changing this would be welcome.
+> > > 
+> > 
+> > How about this one?
+> > 
+> 
+> *ping* We need to resolve this, otherwise everyone who likes to rebind
+> i8042 in couse of STR/STD will be in trouble.
 
-On Sun, Oct 18, 2009 at 01:22:27AM +0400, Stas Sergeev wrote:
-> Hello.
->
-> As most of the problems with snd-pcsp
-> are now settled and the major distros
-> are starting to unblacklist it and use
-> instead of pcspkr:
-> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=539767
-> I'd like to do that sneaky thing.
-> The major argument for keeping pcspkr
-> I've heard, was that it doesn't require
-> the entire ALSA stack, and in this
-> case I think it is usefull only with
-> CONFIG_EMBEDDED. Right now it is a common
-> situation when the both modules are
-> built, and whichever gets loaded first,
-> works.
-> So can something like the attached
-> patch be applied?
+Sorry, am in Tokyo right now.
 
-I think it is up to destribution to select the driver they want to use
-and blacklist the one they don't want. No need to change the kernel.
+I like this patch, and will queue it up, but it's too late for .32, it
+will have to wait for .33.
 
--- 
-Dmitry
+I'll hope to get my patch queue flushed out after I return in about 10
+days.
+
+thanks,
+
+greg k-h
