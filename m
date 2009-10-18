@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbZJRQVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZJRQ1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754857AbZJRQVg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 12:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbZJRQVf
+	id S1754775AbZJRQ1f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 12:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbZJRQ1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 12:21:35 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:13029 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754806AbZJRQVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 12:21:35 -0400
-Date: Sun, 18 Oct 2009 18:21:12 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-cc: Arnd Bergmann <arndbergmann@googlemail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCHES 5/5] Remove smp_lock.h in the BKL removal effort
-In-Reply-To: <alpine.LFD.2.00.0910181812310.3462@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0910181820460.3462@localhost.localdomain>
-References: <alpine.LFD.2.00.0910181812310.3462@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 18 Oct 2009 12:27:34 -0400
+Received: from foo.birdnet.se ([213.88.146.6]:48254 "HELO foo.birdnet.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750948AbZJRQ1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 12:27:34 -0400
+Message-ID: <20091018162737.18611.qmail@stuge.se>
+Date: Sun, 18 Oct 2009 18:27:37 +0200
+From: Peter Stuge <peter@stuge.se>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Hardware initialization in line discipline - ldisc_open() ?
+Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	linux-kernel@vger.kernel.org
+References: <20091015205803.30544.qmail@stuge.se> <20091015223137.6b9fb55a@lxorguk.ukuu.org.uk> <20091015214642.6208.qmail@stuge.se> <20091015230853.44fb10c1@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091015230853.44fb10c1@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 3f588af35ab828530031a19224e11d42254b72d0 Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Sun, 18 Oct 2009 18:01:53 +0200
-Subject: [PATCH] ia32: Remove the smp_lock.h include in files that no longer use BKL
+Alan Cox wrote:
+> > > Similar problem with the GSM mux I've been working on. I've gone for
+> > > making the ldisc attach always work and then kicking things off via an
+> > > ioctl which sets the desired mode/parameters/encoding.
+> > 
+> > I'll do the same. Did you add a new ioctl for this, or use an
+> > existing one?
+> 
+> I added a private one - given I needed to pass the adaption layer code,
+> gsm mux level and whether we were initiator or not it didn't really fit
+> anything generic in the tty layer.
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- arch/x86/ia32/sys_ia32.c |    1 -
- arch/x86/kernel/cpuid.c  |    1 -
- arch/x86/kernel/msr.c    |    1 -
- 3 files changed, 0 insertions(+), 3 deletions(-)
+I was trying to reuse an existing ioctl, partly because I'm not sure
+how to add a one and partly because fewer are better, but
+TIOCSERCONFIG which seemed fitting does not appear to be passed on to
+my ldisc. :\
 
-diff --git a/arch/x86/ia32/sys_ia32.c b/arch/x86/ia32/sys_ia32.c
-index 32a88e4..aa9778c 100644
---- a/arch/x86/ia32/sys_ia32.c
-+++ b/arch/x86/ia32/sys_ia32.c
-@@ -28,7 +28,6 @@
- #include <linux/syscalls.h>
- #include <linux/times.h>
- #include <linux/utsname.h>
--#include <linux/smp_lock.h>
- #include <linux/mm.h>
- #include <linux/uio.h>
- #include <linux/poll.h>
-diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
-index 13c8fbf..ccb0332 100644
---- a/arch/x86/kernel/cpuid.c
-+++ b/arch/x86/kernel/cpuid.c
-@@ -33,7 +33,6 @@
- #include <linux/init.h>
- #include <linux/poll.h>
- #include <linux/smp.h>
--#include <linux/smp_lock.h>
- #include <linux/major.h>
- #include <linux/fs.h>
- #include <linux/device.h>
-diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
-index 64a2bab..9d3f56e 100644
---- a/arch/x86/kernel/msr.c
-+++ b/arch/x86/kernel/msr.c
-@@ -30,7 +30,6 @@
- #include <linux/init.h>
- #include <linux/poll.h>
- #include <linux/smp.h>
--#include <linux/smp_lock.h>
- #include <linux/major.h>
- #include <linux/fs.h>
- #include <linux/device.h>
--- 
-1.6.0.6
+Should I make a new one (what does private mean here btw?) and how do
+I do it exactly? Is patching Documentation/ioctl/ioctl-number.txt and
+asm/ioctls.h all? The "addressing" in ioctl-number seems a little
+chaotic, do I just pick anything that is available?
 
 
+//Peter
