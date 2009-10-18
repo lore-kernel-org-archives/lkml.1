@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751797AbZJRG1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbZJRGoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751797AbZJRG1H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 02:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZJRG1H
+	id S1751905AbZJRGoE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 02:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZJRGoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 02:27:07 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49650 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750977AbZJRG1G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 02:27:06 -0400
-Date: Sun, 18 Oct 2009 15:25:58 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: hw-breakpoints: Actually flush thread breakpoints in flush_thread().
-Message-ID: <20091018062558.GA20535@linux-sh.org>
-References: <20091005102306.GA7889@linux-sh.org> <20091005104955.GA14852@in.ibm.com> <20091009034003.GA7747@linux-sh.org> <20091017234250.GC10344@nowhere>
+	Sun, 18 Oct 2009 02:44:03 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1645 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750901AbZJRGoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 02:44:02 -0400
+Message-ID: <4ADAB8F4.6090502@redhat.com>
+Date: Sun, 18 Oct 2009 15:43:00 +0900
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091017234250.GC10344@nowhere>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: [GIT PULL RFC] pvclock cleanups and pvclock vsyscall support
+References: <1255548516-15260-1-git-send-email-jeremy.fitzhardinge@citrix.com> <4AD6C679.3000001@redhat.com> <4AD77C21.2050506@goop.org>
+In-Reply-To: <4AD77C21.2050506@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 18, 2009 at 01:42:53AM +0200, Frederic Weisbecker wrote:
-> On Fri, Oct 09, 2009 at 12:40:04PM +0900, Paul Mundt wrote:
-> > On Mon, Oct 05, 2009 at 04:19:55PM +0530, K.Prasad wrote:
-> > > On Mon, Oct 05, 2009 at 07:23:06PM +0900, Paul Mundt wrote:
-> > > > [ I noticed this whilst hacking up SH support, applies to the current
-> > > >   tracing/hw-breakpoints topic branch. ]
-> > > > 
-> > > > flush_thread() tries to do a TIF_DEBUG check before calling in to
-> > > > flush_thread_hw_breakpoint() (which subsequently clears the thread flag),
-> > > > but for some reason, the x86 code is manually clearing TIF_DEBUG
-> > > > immediately before the test, so this path will never be taken.
-> > > > 
-> > > > This kills off the erroneous clear_tsk_thread_flag() and lets
-> > > > flush_thread_hw_breakpoint() actually get invoked.
-> > > > 
-> > > 
-> > > Yes, this is wrong and we missed it. Thanks for fixing!
-> > > 
-> > > > Presumably folks were getting lucky with testing and the
-> > > > free_thread_info() -> free_thread_xstate() path was taking care of the
-> > > > flush there.
-> > > > 
-> > > > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> > > 
-> > > Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> > > 
-> > > 
-> > Ingo, are you planning on picking this up? Or is there a hw-breakpoints
-> > tree somewhere outside of -tip that I'm unaware of?
-> 
-> 
-> I'm picking it.
-> Thanks.
-> 
-Thanks. If you're setting up a tree somewhere can you let me know where
-it will be hosted? I'm pretty much done with the SH support for the
-existing topic branch in -tip, but if it's being reworked, then I'd like
-to get my changes reworked and integrated as soon as possible.
+On 10/16/2009 04:46 AM, Jeremy Fitzhardinge wrote:
+> Care to cook up a patch to implement the kvm bits to make sure it all
+> works OK for you?
+>    
+
+I've started to do that, but it occurs to me that we're missing out on 
+NUMA placement by forcing all clocks to be on the same page. OTOH, if 
+the clocks are heavily used, they'll stay in cache, and if not, who cares.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
