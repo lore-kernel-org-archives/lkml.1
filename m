@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbZJRGoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751992AbZJRGtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751905AbZJRGoE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 02:44:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZJRGoD
+	id S1751992AbZJRGtR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 02:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZJRGtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 02:44:03 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:1645 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750901AbZJRGoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 02:44:02 -0400
-Message-ID: <4ADAB8F4.6090502@redhat.com>
-Date: Sun, 18 Oct 2009 15:43:00 +0900
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [GIT PULL RFC] pvclock cleanups and pvclock vsyscall support
-References: <1255548516-15260-1-git-send-email-jeremy.fitzhardinge@citrix.com> <4AD6C679.3000001@redhat.com> <4AD77C21.2050506@goop.org>
-In-Reply-To: <4AD77C21.2050506@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 18 Oct 2009 02:49:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33923
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751536AbZJRGtP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 02:49:15 -0400
+Date: Sat, 17 Oct 2009 23:49:31 -0700 (PDT)
+Message-Id: <20091017.234931.193720902.davem@davemloft.net>
+To: bzolnier@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: rt2x00 mailing list [Fwd: Your message to users awaits
+ moderator approval]
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200910171709.06386.bzolnier@gmail.com>
+References: <200910171709.06386.bzolnier@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/16/2009 04:46 AM, Jeremy Fitzhardinge wrote:
-> Care to cook up a patch to implement the kvm bits to make sure it all
-> works OK for you?
->    
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date: Sat, 17 Oct 2009 17:09:06 +0200
 
-I've started to do that, but it occurs to me that we're missing out on 
-NUMA placement by forcing all clocks to be on the same page. OTOH, if 
-the clocks are heavily used, they'll stay in cache, and if not, who cares.
+> 
+> It is not even marked as such..
+> 
+> RALINK RT2X00 WIRELESS LAN DRIVER
+> P:      rt2x00 project
+> L:      linux-wireless@vger.kernel.org
+> L:      users@rt2x00.serialmonkey.com
+> 
+> Dave, I guess that you would like to know about that.
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+As neither the wireless nor the linux/MAINTAINERS file
+maintainer, probably not :-)
 
+Andrew seems to collect MAINTAINERS fixes, feel free to
+send him a patch with lkml CC:'d as you've done here.
