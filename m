@@ -1,124 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbZJRUTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbZJRUXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244AbZJRUTd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 16:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbZJRUTc
+	id S1755264AbZJRUXO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 16:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbZJRUXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 16:19:32 -0400
-Received: from mail-px0-f171.google.com ([209.85.216.171]:51322 "EHLO
-	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754683AbZJRUTb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 16:19:31 -0400
-Message-ID: <4ADB7856.7000803@anirban.org>
-Date: Sun, 18 Oct 2009 13:19:34 -0700
-From: Anirban Sinha <ani@anirban.org>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.4pre) Gecko/20090915 Thunderbird/3.0b4
+	Sun, 18 Oct 2009 16:23:14 -0400
+Received: from lucidpixels.com ([75.144.35.66]:54745 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755126AbZJRUXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 16:23:13 -0400
+Date: Sun, 18 Oct 2009 16:23:17 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: nut-upsuser@lists.alioth.debian.org
+cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: 2.6.31.4: USB/UPS connectivity issue on Intel DP55KG Motherboard
+ [DEBUG logs included upsd/upsmon/usbhid-ups]
+In-Reply-To: <alpine.DEB.2.00.0910140926560.19307@p34.internal.lan>
+Message-ID: <alpine.DEB.2.00.0910181619360.27363@p34.internal.lan>
+References: <alpine.DEB.2.00.0910131749190.5034@p34.internal.lan> <4AD51C4E.1090204@gmail.com> <alpine.DEB.2.00.0910140359070.15961@p34.internal.lan> <alpine.DEB.2.00.0910140904110.19307@p34.internal.lan>
+ <alpine.DEB.2.00.0910140926560.19307@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>
-CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       Anirban Sinha <asinha@zeugmasystems.com>
-Subject: Re: Kernel oops when clearing bgp neighbor info with TCP MD5SUM enabled
-References: <Pine.LNX.4.64.0910081514050.18315@sleet.zeugmasystems.local> <20091008.155429.02850661.davem@davemloft.net> <Pine.LNX.4.64.0910081622400.18315@sleet.zeugmasystems.local> <20091008.175703.83006470.davem@davemloft.net> <Pine.LNX.4.64.0910171035340.2364@sleet.zeugmasystems.local> <4ADA7EDC.5010402@anirban.org>
-In-Reply-To: <4ADA7EDC.5010402@anirban.org>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oleg:
 
-I have a question for you. The queue_work() routine which is called from schedule_work() does a put_cpu() which in turn does a enable_preempt(). Is this an attempt to trigger the scheduler? One of the side affects of this enable_preempt() is the crash that we see below. What is happening is that  a timer callback routine, in  this case inet_twdr_hangman(), tries a bunch of cleanup until a threshold is reached. If further cleanups needs to be done beyond the threshold, it queues a work function. Now when the timer callback is run in __run_timers(), the routine grabs the value of preempt_count before and after the callback function call. If the two counts do not match, it calls BUG() (line 1037 in kernel/timer.c). Is is it illegal to schedule a work function from within a timer callback? What would be a good solution? I have already posted in netdev but since workqueues and timers are general kernel infrastructure, I thought I might as well post the question in the main linux m
-ailing list and to you.
+On Wed, 14 Oct 2009, Justin Piszcz wrote:
 
-Here's the output from my instrumented BUG() call:
+>
+>
+> On Wed, 14 Oct 2009, Justin Piszcz wrote:
+>
+>> Hi,
+>> 
+>> I have included debugging logs-- see below, is this a nut or kernel/USB 
+>> subsystem issue?
+>> 
+>> Robert/Nut User List--
+>> 
+>> Looks like the data goes stale, please let me know if any more 
+>> logs/debugging is required, is this a kernel/usb problem or a nut issue? I 
+>> recall a change in the USB subsystem a few kernel versions back caused a 
+>> different issue (on a different UPS, but nevertheless it was kernel 
+>> related).
+>
 
-[02:15:15.941981] Kernel panic - not syncing: <3>huh, entered ffffffff803fbd60
-(inet_twdr_hangman+0x0/0xe0)with preempt_count 00000102, exited with 00000101?
+The details+logs are here (previous e-mail did not go through, too large for
+the list):
+wget http://home.comcast.net/~jpiszcz/20091014/nut-problem.txt
 
- I was thinking of a hacky solution, to replace schedule_work() with schedule_delayed_work() just to get around the issue. But I am sure this is just too hacky and probably not the ideal solution ...
+For now I have disabled nut-- is there any more debugging that I can do to
+help find/solve the problem?  Also cc'ing linux-usb & linux-kernel on this 
+one.
 
-Cheers,
+Highlights from the above txt file:
 
-Ani
+Pinging UPS [apc]
+mainloop: polling 3 filedescriptors
+Got PONG from UPS [apc]
+mainloop: polling 3 filedescriptors
+mainloop: no data available
+mainloop: polling 3 filedescriptors
+sstate_dead: driver for UPS [apc] says data is stale
+Data for UPS [apc] is stale - check driver
+mainloop: polling 3 filedescriptors
+mainloop: no data available
+sstate_dead: driver for UPS [apc] says data is stale
+mainloop: polling 3 filedescriptors
+Sending error [DATA-STALE] to client 127.0.0.1
+write: [destfd=6] [len=15] [ERR DATA-STALE]
+sstate_dead: driver for UPS [apc] says data is stale
+mainloop: polling 3 filedescriptors
+mainloop: no data available
+sstate_dead: driver for UPS [apc] says data is stale
+mainloop: polling 3 filedescriptors
 
+Entering libusb_get_report
+Report[get]: (2 bytes) => 50 16
+PhyMax = 0, PhyMin = 0, LogMax = 100, LogMin = 0
+get_unit_expo: 00000000 found 0
+Path: UPS.PowerConverter.PercentLoad, Type: Feature, ReportID: 0x50, Offset: 0, Size: 8, Value: 22.000000
+Entering libusb_get_report
+Can't retrieve Report 21: Broken pipe
+send_to_one: PONG
+upsdrv_updateinfo...
+Got to reconnect!
 
-Once upon a time, like on 09-10-17 7:35 PM, Anirban Sinha wrote:
-> 
-> 
-> Once upon a time, like on 09-10-17 10:57 AM, Anirban Sinha wrote:
->> On Thu, 8 Oct 2009, David Miller wrote:
->>
->>>>>> We are noticing a kernel OOPS on 2.6.26 kernel when we issue the command
->>>>>> "clear ip bgp <bgp-peer-ip>" on Quagga BGP routing software.
-> 
-> and btw, this is the crash (on mips) we are talking about:
-> 
-> # [23:10:35.108808] Kernel bug detected[#1]:
-> [23:10:35.112527] Cpu 0
-> [23:10:35.114676] $ 0   : 0000000000000000 0000000014001fe0
-> 0000000000000066 0000000000000004
-> [23:10:35.122845] $ 4   : ffffffff80516c10 0000000014001fe0
-> ffffffff8050c010 0000000000000004
-> [23:10:35.131015] $ 8   : 0000000000000000 0000000000000041
-> ffffffff805142e8 0000000000000001
-> [23:10:35.139184] $12   : ffffffff80600000 ffffffff805f0000
-> 0000000000000064 0000000000000190
-> [23:10:35.147354] $16   : 0000000000000102 ffffffff803afdf0
-> ffffffff80539040 ffffffff80600780
-> [23:10:35.155526] $20   : ffffffff80540000 0000000000200200
-> ffffffff804c0000 000000000000000a
-> [23:10:35.163695] $24   : a3d70a3d70a3d70b 8000000000000003
-> [23:10:35.171865] $28   : ffffffff8050c000 ffffffff8050fd90
-> 9000000010030000 ffffffff801487a8
-> [23:10:35.180035] Hi    : 0000000000000000
-> [23:10:35.183819] Lo    : 0000000000000000
-> [23:10:35.187603] epc   : ffffffff801487a8 run_timer_softirq+0x198/0x258
-> Tainted: P
-> [23:10:35.196032] ra    : ffffffff801487a8 run_timer_softirq+0x198/0x258
-> [23:10:35.202395] Status: 14001fe3    KX SX UX KERNEL EXL IE
-> [23:10:35.207814] Cause : 00808024
-> [23:10:35.210911] PrId  : 01041100 (SiByte SB1A)
-> [23:10:35.215209] Modules linked in: xt_state ipt_REJECT iptable_filter
-> nf_conntrack_ftp ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4
-> ip_tables ebtable_filter ebtables bridge llc zeug_ipmcdrv(P) irqdisp(P)
-> zvirt(P) zeugmod(P) softdog
-> [23:10:35.236024] Process swapper (pid: 0, threadinfo=ffffffff8050c000,
-> task=ffffffff805142e8, tls=0000000000000000)
-> [23:10:35.246169] Stack : ffffffff8050fd90 ffffffff8050fd90
-> 0000000014001fe0 ffffffff805ff3e0
-> [23:10:35.254166]         ffffffff806003c4 0000000000000001
-> ffffffff8053f650 ffffffff805706d0
-> [23:10:35.262337]         ffffffff80572020 ffffffff80142280
-> ffffffff806003c0 0000000000000000
-> [23:10:35.270507]         0000000014001fe0 000000000000c5b0
-> ffffffff8fefc520 ffffffff8feea52c
-> [23:10:35.278676]         0000000000000015 0000000000004460
-> 0000000000000940 ffffffff8fe1bf00
-> [23:10:35.286846]         ffffffff8fffdab0 ffffffff80142410
-> 0000000000000000 ffffffff80142778
-> [23:10:35.295017]         ffffffff80103d20 ffffffff80103d20
-> 0000000000000000 0000000014001fe1
-> [23:10:35.303187]         0000000000040000 ffffffff8050c010
-> 0000000000000000 a80000017f87c138
-> [23:10:35.311357]         0000000014001fe0 ffffffffffff00fe
-> 0000000000000004 a80000017e7e0680
-> [23:10:35.319528]         0000000000000000 000000000000001d
-> ffffffff8050ffe0 0000000000001f00
-> [23:10:35.327696]         ...
-> [23:10:35.330536] Call Trace:
-> [23:10:35.333201] [<ffffffff801487a8>] run_timer_softirq+0x198/0x258
-> [23:10:35.339224] [<ffffffff80142280>] __do_softirq+0x198/0x288
-> [23:10:35.344812] [<ffffffff80142410>] do_softirq+0xa0/0xa8
-> [23:10:35.350057] [<ffffffff80142778>] irq_exit+0x70/0x88
-> [23:10:35.355131] [<ffffffff80103d20>] ret_from_irq+0x0/0x4
-> [23:10:35.360377] [<ffffffff801063f4>] cpu_idle+0x1c/0x88
-> [23:10:35.365455]
-> [23:10:35.367171]
-> [23:10:35.367174] Code: 0040382d  0c04ef4c  00000000 <0200000d> 0c10ee9c
-> 0260202d  dfa60000  17a6ffe5  00000000
-> [23:10:35.378822] Kernel panic - not syncing: Fatal exception in
-> interrupt
-> 
+The same cable, UPS etc was used on another motherboard for 1-2+ years without
+any issue, after moving it to a DP55KG, this problem began.
+
+Justin.
