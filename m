@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZJRIMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbZJRIML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbZJRIMw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 04:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbZJRIMM
+	id S1754262AbZJRIML (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 04:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZJRIMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 04:12:12 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:50936 "EHLO
+	Sun, 18 Oct 2009 04:12:10 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:50939 "EHLO
 	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753725AbZJRILU (ORCPT
+	with ESMTP id S1751180AbZJRILV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 04:11:20 -0400
+	Sun, 18 Oct 2009 04:11:21 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 13/14] kbuild: move autoconf.h to include/generated
-Date: Sun, 18 Oct 2009 10:15:22 +0200
-Message-Id: <1255853723-477-13-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 14/14] kbuild: move utsrelease.h to include/generated
+Date: Sun, 18 Oct 2009 10:15:23 +0200
+Message-Id: <1255853723-477-14-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.2.5
 In-Reply-To: <20091018080635.GA13767@merkur.ravnborg.org>
 References: <20091018080635.GA13767@merkur.ravnborg.org>
@@ -23,167 +23,263 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix up all users of utsrelease.h
+
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- .gitignore                       |    1 -
- Documentation/kbuild/kconfig.txt |    3 ++-
- Makefile                         |   11 ++++++-----
- arch/m68k/kernel/head.S          |    2 +-
- scripts/basic/fixdep.c           |   10 +++++-----
- scripts/kconfig/confdata.c       |    2 +-
- scripts/mkcompile_h              |    2 +-
- 7 files changed, 16 insertions(+), 15 deletions(-)
+ .gitignore                                   |    1 -
+ Makefile                                     |    5 ++---
+ arch/alpha/boot/bootp.c                      |    2 +-
+ arch/alpha/boot/bootpz.c                     |    2 +-
+ arch/alpha/boot/main.c                       |    2 +-
+ arch/frv/kernel/setup.c                      |    2 +-
+ arch/powerpc/platforms/52xx/efika.c          |    2 +-
+ arch/powerpc/platforms/amigaone/setup.c      |    2 +-
+ arch/powerpc/platforms/chrp/setup.c          |    2 +-
+ arch/powerpc/platforms/powermac/bootx_init.c |    2 +-
+ arch/x86/boot/header.S                       |    2 +-
+ arch/x86/boot/version.c                      |    2 +-
+ drivers/staging/panel/panel.c                |    2 +-
+ include/linux/vermagic.h                     |    2 +-
+ init/version.c                               |    2 +-
+ kernel/kexec.c                               |    2 +-
+ kernel/trace/trace.c                         |    2 +-
+ 17 files changed, 17 insertions(+), 19 deletions(-)
 
 diff --git a/.gitignore b/.gitignore
-index 0f594d9..91f8e0c 100644
+index 91f8e0c..4980606 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -45,7 +45,6 @@ Module.symvers
- # Generated include files
+@@ -46,7 +46,6 @@ Module.symvers
  #
  include/config
--include/linux/autoconf.h
  include/linux/version.h
- include/linux/utsrelease.h
+-include/linux/utsrelease.h
  include/generated
-diff --git a/Documentation/kbuild/kconfig.txt b/Documentation/kbuild/kconfig.txt
-index 849b5e5..ab8dc35 100644
---- a/Documentation/kbuild/kconfig.txt
-+++ b/Documentation/kbuild/kconfig.txt
-@@ -106,7 +106,8 @@ This environment variable can be set to specify the path & name of the
- KCONFIG_AUTOHEADER
- --------------------------------------------------
- This environment variable can be set to specify the path & name of the
--"autoconf.h" (header) file.  Its default value is "include/linux/autoconf.h".
-+"autoconf.h" (header) file.
-+Its default value is "include/generated/autoconf.h".
  
- 
- ======================================================================
+ # stgit generated dirs
 diff --git a/Makefile b/Makefile
-index 6570cf1..b125cd9 100644
+index b125cd9..3ee1c81 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -336,7 +336,7 @@ CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
- # Needed to be compatible with the O= option
- LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include -Iinclude \
-                    $(if $(KBUILD_SRC), -I$(srctree)/include) \
--                   -include include/linux/autoconf.h
-+                   -include include/generated/autoconf.h
+@@ -967,7 +967,7 @@ endif
+ # prepare2 creates a makefile if using a separate output directory
+ prepare2: prepare3 outputmakefile
  
- KBUILD_CPPFLAGS := -D__KERNEL__
+-prepare1: prepare2 include/linux/version.h include/linux/utsrelease.h \
++prepare1: prepare2 include/linux/version.h include/generated/utsrelease.h \
+                    include/config/auto.conf
+ 	$(cmd_crmodverdir)
  
-@@ -491,17 +491,18 @@ $(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
- # if auto.conf.cmd is missing then we are probably in a cleaned tree so
- # we execute the config step to be sure to catch updated Kconfig files
- include/config/auto.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
-+	$(Q)mkdir -p include/generated
- 	$(Q)$(MAKE) -f $(srctree)/Makefile silentoldconfig
- else
--# external modules needs include/linux/autoconf.h and include/config/auto.conf
-+# external modules needs include/generated/autoconf.h and include/config/auto.conf
- # but do not care if they are up-to-date. Use auto.conf to trigger the test
- PHONY += include/config/auto.conf
+@@ -1004,7 +1004,7 @@ endef
+ include/linux/version.h: $(srctree)/Makefile FORCE
+ 	$(call filechk,version.h)
  
- include/config/auto.conf:
--	$(Q)test -e include/linux/autoconf.h -a -e $@ || (		\
-+	$(Q)test -e include/generated/autoconf.h -a -e $@ || (		\
- 	echo;								\
- 	echo "  ERROR: Kernel configuration is invalid.";		\
--	echo "         include/linux/autoconf.h or $@ are missing.";	\
-+	echo "         include/generated/autoconf.h or $@ are missing.";\
- 	echo "         Run 'make oldconfig && make prepare' on kernel src to fix it.";	\
- 	echo;								\
- 	/bin/false)
-@@ -1148,7 +1149,7 @@ CLEAN_FILES +=	vmlinux System.map \
- # Directories & files removed with 'make mrproper'
+-include/linux/utsrelease.h: include/config/kernel.release FORCE
++include/generated/utsrelease.h: include/config/kernel.release FORCE
+ 	$(call filechk,utsrelease.h)
+ 
+ PHONY += headerdep
+@@ -1150,7 +1150,6 @@ CLEAN_FILES +=	vmlinux System.map \
  MRPROPER_DIRS  += include/config usr/include include/generated
  MRPROPER_FILES += .config .config.old .version .old_version             \
--                  include/linux/autoconf.h include/linux/version.h      \
-+                  include/linux/version.h                               \
-                   include/linux/utsrelease.h                            \
+                   include/linux/version.h                               \
+-                  include/linux/utsrelease.h                            \
  		  Module.symvers Module.markers tags TAGS cscope*
  
-diff --git a/arch/m68k/kernel/head.S b/arch/m68k/kernel/head.S
-index 86edb5f..ef54128 100644
---- a/arch/m68k/kernel/head.S
-+++ b/arch/m68k/kernel/head.S
-@@ -196,7 +196,7 @@
-  * for them and trying to understand what they mean.
-  *
-  * CONFIG_xxx:	These are the obvious machine configuration defines created
-- * during configuration.  These are defined in include/linux/autoconf.h.
-+ * during configuration.  These are defined in autoconf.h.
-  *
-  * CONSOLE:	There is support for head.S console in this file.  This
-  * console can talk to a Mac frame buffer, but could easily be extrapolated
-diff --git a/scripts/basic/fixdep.c b/scripts/basic/fixdep.c
-index 6bf21f8..ea26b23 100644
---- a/scripts/basic/fixdep.c
-+++ b/scripts/basic/fixdep.c
-@@ -16,15 +16,15 @@
-  * tells make when to remake a file.
-  *
-  * To use this list as-is however has the drawback that virtually
-- * every file in the kernel includes <linux/autoconf.h>.
-+ * every file in the kernel includes autoconf.h.
-  *
-- * If the user re-runs make *config, linux/autoconf.h will be
-+ * If the user re-runs make *config, autoconf.h will be
-  * regenerated.  make notices that and will rebuild every file which
-  * includes autoconf.h, i.e. basically all files. This is extremely
-  * annoying if the user just changed CONFIG_HIS_DRIVER from n to m.
-  *
-  * So we play the same trick that "mkdep" played before. We replace
-- * the dependency on linux/autoconf.h by a dependency on every config
-+ * the dependency on autoconf.h by a dependency on every config
-  * option which is mentioned in any of the listed prequisites.
-  *
-  * kconfig populates a tree in include/config/ with an empty file
-@@ -73,7 +73,7 @@
-  *   cmd_<target> = <cmdline>
-  *
-  * and then basically copies the .<target>.d file to stdout, in the
-- * process filtering out the dependency on linux/autoconf.h and adding
-+ * process filtering out the dependency on autoconf.h and adding
-  * dependencies on include/config/my/option.h for every
-  * CONFIG_MY_OPTION encountered in any of the prequisites.
-  *
-@@ -324,7 +324,7 @@ static void parse_dep_file(void *map, size_t len)
- 			p++;
- 		}
- 		memcpy(s, m, p-m); s[p-m] = 0;
--		if (strrcmp(s, "include/linux/autoconf.h") &&
-+		if (strrcmp(s, "include/generated/autoconf.h") &&
- 		    strrcmp(s, "arch/um/include/uml-config.h") &&
- 		    strrcmp(s, ".ver")) {
- 			printf("  %s \\\n", s);
-diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index b55e72f..797a741 100644
---- a/scripts/kconfig/confdata.c
-+++ b/scripts/kconfig/confdata.c
-@@ -776,7 +776,7 @@ int conf_write_autoconf(void)
+ # clean - Delete most, but leave enough to build external modules
+diff --git a/arch/alpha/boot/bootp.c b/arch/alpha/boot/bootp.c
+index 3af21c7..3c8d1b2 100644
+--- a/arch/alpha/boot/bootp.c
++++ b/arch/alpha/boot/bootp.c
+@@ -9,7 +9,7 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <linux/mm.h>
  
- 	name = getenv("KCONFIG_AUTOHEADER");
- 	if (!name)
--		name = "include/linux/autoconf.h";
-+		name = "include/generated/autoconf.h";
- 	if (rename(".tmpconfig.h", name))
- 		return 1;
- 	name = conf_get_autoconfig_name();
-diff --git a/scripts/mkcompile_h b/scripts/mkcompile_h
-index bce3d0f..23dbad8 100755
---- a/scripts/mkcompile_h
-+++ b/scripts/mkcompile_h
-@@ -14,7 +14,7 @@ vecho() { [ "${quiet}" = "silent_" ] || echo "$@" ; }
- # So "sudo make install" won't change the "compiled by <user>"
- # do "compiled by root"
+ #include <asm/system.h>
+diff --git a/arch/alpha/boot/bootpz.c b/arch/alpha/boot/bootpz.c
+index 1036b51..ade3f12 100644
+--- a/arch/alpha/boot/bootpz.c
++++ b/arch/alpha/boot/bootpz.c
+@@ -11,7 +11,7 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <linux/mm.h>
  
--if [ -r $TARGET -a ! -O include/linux/autoconf.h ]; then
-+if [ -r $TARGET -a ! -O include/generated/autoconf.h ]; then
-   vecho "  SKIPPED $TARGET"
-   exit 0
- fi
+ #include <asm/system.h>
+diff --git a/arch/alpha/boot/main.c b/arch/alpha/boot/main.c
+index 89f3be0..644b7db 100644
+--- a/arch/alpha/boot/main.c
++++ b/arch/alpha/boot/main.c
+@@ -7,7 +7,7 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <linux/mm.h>
+ 
+ #include <asm/system.h>
+diff --git a/arch/frv/kernel/setup.c b/arch/frv/kernel/setup.c
+index 55e4fab..75cf7f4 100644
+--- a/arch/frv/kernel/setup.c
++++ b/arch/frv/kernel/setup.c
+@@ -10,7 +10,7 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ 
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <linux/delay.h>
+diff --git a/arch/powerpc/platforms/52xx/efika.c b/arch/powerpc/platforms/52xx/efika.c
+index bcc69e1..45c0cb9 100644
+--- a/arch/powerpc/platforms/52xx/efika.c
++++ b/arch/powerpc/platforms/52xx/efika.c
+@@ -10,7 +10,7 @@
+  */
+ 
+ #include <linux/init.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <linux/pci.h>
+ #include <linux/of.h>
+ #include <asm/prom.h>
+diff --git a/arch/powerpc/platforms/amigaone/setup.c b/arch/powerpc/platforms/amigaone/setup.c
+index 9290a7a..fb4eb0d 100644
+--- a/arch/powerpc/platforms/amigaone/setup.c
++++ b/arch/powerpc/platforms/amigaone/setup.c
+@@ -14,7 +14,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/seq_file.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/cputable.h>
+diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
+index cd4ad9a..0a6f5ab 100644
+--- a/arch/powerpc/platforms/chrp/setup.c
++++ b/arch/powerpc/platforms/chrp/setup.c
+@@ -23,7 +23,7 @@
+ #include <linux/reboot.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <linux/adb.h>
+ #include <linux/module.h>
+ #include <linux/delay.h>
+diff --git a/arch/powerpc/platforms/powermac/bootx_init.c b/arch/powerpc/platforms/powermac/bootx_init.c
+index cf66091..9dd789a 100644
+--- a/arch/powerpc/platforms/powermac/bootx_init.c
++++ b/arch/powerpc/platforms/powermac/bootx_init.c
+@@ -12,7 +12,7 @@
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+ #include <linux/init.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <asm/sections.h>
+ #include <asm/prom.h>
+ #include <asm/page.h>
+diff --git a/arch/x86/boot/header.S b/arch/x86/boot/header.S
+index b31cc54..93e689f 100644
+--- a/arch/x86/boot/header.S
++++ b/arch/x86/boot/header.S
+@@ -16,7 +16,7 @@
+  */
+ 
+ #include <asm/segment.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <asm/boot.h>
+ #include <asm/e820.h>
+ #include <asm/page_types.h>
+diff --git a/arch/x86/boot/version.c b/arch/x86/boot/version.c
+index 4d88763..2b15aa4 100644
+--- a/arch/x86/boot/version.c
++++ b/arch/x86/boot/version.c
+@@ -13,7 +13,7 @@
+  */
+ 
+ #include "boot.h"
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <generated/compile.h>
+ 
+ const char kernel_version[] =
+diff --git a/drivers/staging/panel/panel.c b/drivers/staging/panel/panel.c
+index dd7d3fd..51e94a1 100644
+--- a/drivers/staging/panel/panel.c
++++ b/drivers/staging/panel/panel.c
+@@ -55,7 +55,7 @@
+ #include <linux/list.h>
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ 
+ #include <linux/io.h>
+ #include <asm/uaccess.h>
+diff --git a/include/linux/vermagic.h b/include/linux/vermagic.h
+index 79b9837..cf97b5b 100644
+--- a/include/linux/vermagic.h
++++ b/include/linux/vermagic.h
+@@ -1,4 +1,4 @@
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <linux/module.h>
+ 
+ /* Simply sanity version stamp for modules. */
+diff --git a/init/version.c b/init/version.c
+index 82328aa..adff586 100644
+--- a/init/version.c
++++ b/init/version.c
+@@ -10,7 +10,7 @@
+ #include <linux/module.h>
+ #include <linux/uts.h>
+ #include <linux/utsname.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <linux/version.h>
+ 
+ #ifndef CONFIG_KALLSYMS
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index f336e21..83f54e2 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -21,7 +21,7 @@
+ #include <linux/hardirq.h>
+ #include <linux/elf.h>
+ #include <linux/elfcore.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <linux/utsname.h>
+ #include <linux/numa.h>
+ #include <linux/suspend.h>
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index c820b03..565eccf 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -12,7 +12,7 @@
+  *  Copyright (C) 2004 William Lee Irwin III
+  */
+ #include <linux/ring_buffer.h>
+-#include <linux/utsrelease.h>
++#include <generated/utsrelease.h>
+ #include <linux/stacktrace.h>
+ #include <linux/writeback.h>
+ #include <linux/kallsyms.h>
 -- 
 1.6.2.5
 
