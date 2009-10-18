@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbZJRUMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbZJRURu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbZJRUMA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 16:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbZJRUMA
+	id S1755237AbZJRURu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 16:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbZJRURs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 16:12:00 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:39008 "EHLO mx1.redhat.com"
+	Sun, 18 Oct 2009 16:17:48 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:40314 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754934AbZJRUL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 16:11:59 -0400
-Date: Sun, 18 Oct 2009 22:11:32 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arnd Bergmann <arndbergmann@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH] hpet: Remove BKL from hpet_open
-Message-ID: <alpine.LFD.2.00.0910182210220.3462@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1755216AbZJRURq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 16:17:46 -0400
+Subject: [GIT PULL] inotify, dnotify, and fsnotify fixes
+From: Eric Paris <eparis@redhat.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, yjwei@cn.fujitsu.com, agruen@suse.de
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 18 Oct 2009 16:17:41 -0400
+Message-Id: <1255897061.15182.120.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 8dea55a14071c1b3445fc8a934f96c47dd35a1e1 Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Sun, 18 Oct 2009 22:07:01 +0200
-Subject: [PATCH] hpet: Remove BKL from hpet_open
+Three fixes and something I should have sent during the merge window.  I
+should have added the patch to the feature-removal-list stating that I
+plan to drop the in kernel inotify hooks all together in .33 when I
+merge the audit->fsnotify changes, but it shouldn't hurt to go in now.  
 
-hpet_open received the BKL from commit 48b81880519274d2a8b3e9919a47d91d05a1c964
-during the BKL pushdown.
+Inotify and dnotify both have fixes to stop sending extra extraneous
+events.
 
-It is not needed here because everything is serialized via the hpet_lock
+The fsnotify patch fixes that last race people reported in the inotify
+rewrite last cycle and the people seeing complaints in dmesg that
+inotify might be leaking memory.  Yeah!  inotify can be stressed by over
+100 simultaneous threads on a 64 way machine without problems!
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- drivers/char/hpet.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
-index 70a770a..5e83828 100644
---- a/drivers/char/hpet.c
-+++ b/drivers/char/hpet.c
-@@ -14,7 +14,6 @@
- #include <linux/interrupt.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
--#include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/miscdevice.h>
- #include <linux/major.h>
-@@ -251,7 +250,6 @@ static int hpet_open(struct inode *inode, struct file *file)
- 	if (file->f_mode & FMODE_WRITE)
- 		return -EINVAL;
- 
--	lock_kernel();
- 	spin_lock_irq(&hpet_lock);
- 
- 	for (devp = NULL, hpetp = hpets; hpetp && !devp; hpetp = hpetp->hp_next)
-@@ -265,7 +263,6 @@ static int hpet_open(struct inode *inode, struct file *file)
- 
- 	if (!devp) {
- 		spin_unlock_irq(&hpet_lock);
--		unlock_kernel();
- 		return -EBUSY;
- 	}
- 
-@@ -273,7 +270,6 @@ static int hpet_open(struct inode *inode, struct file *file)
- 	devp->hd_irqdata = 0;
- 	devp->hd_flags |= HPET_OPEN;
- 	spin_unlock_irq(&hpet_lock);
--	unlock_kernel();
- 
- 	hpet_timer_set_irq(devp);
- 
--- 
-1.6.0.6
+The following changes since commit 2fdc246aaf9a7fa088451ad2a72e9119b5f7f029:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../bp/bp
+
+are available in the git repository at:
+
+  git://git.infradead.org/users/eparis/notify.git for-linus
+
+Andreas Gruenbacher (1):
+      dnotify: ignore FS_EVENT_ON_CHILD
+
+Eric Paris (2):
+      fsnotify: do not set group for a mark before it is on the i_list
+      inotify: deprecate the inotify kernel interface
+
+Wei Yongjun (1):
+      inotify: fix coalesce duplicate events into a single event in special case
+
+ Documentation/feature-removal-schedule.txt |    8 ++++++++
+ fs/notify/dnotify/dnotify.c                |    3 ++-
+ fs/notify/inode_mark.c                     |    6 +++---
+ fs/notify/notification.c                   |    2 +-
+ 4 files changed, 14 insertions(+), 5 deletions(-)
 
