@@ -1,154 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZJRPtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZJRPwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbZJRPtQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 11:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZJRPtP
+	id S1754752AbZJRPwS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 11:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZJRPwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 11:49:15 -0400
-Received: from ns.penguin.cz ([84.21.108.25]:44559 "EHLO ns.penguin.cz"
+	Sun, 18 Oct 2009 11:52:17 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:10846 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754692AbZJRPtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 11:49:15 -0400
-Subject: Re: [PATCH] serial-core: resume serial hardware with
-	no_console_suspend
-From: Stanislav Brabec <utx@penguin.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, gregkh@suse.de,
-       alan@lxorguk.ukuu.org.uk, s.hauer@pengutronix.de, saxena@laptop.org,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <1255880800.4581.40.camel@utx.utx.cz>
-References: <1253021938.6597.16.camel@hammer.suse.cz>
-	 <20090924170503.37cbe4ed.akpm@linux-foundation.org>
-	 <20090925073617.GA5856@n2100.arm.linux.org.uk>
-	 <1253872547.13257.18.camel@hammer.suse.cz>
-	 <20091005162741.599a1be9.akpm@linux-foundation.org>
-	 <1255878358.4581.29.camel@utx.utx.cz> <1255880800.4581.40.camel@utx.utx.cz>
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 18 Oct 2009 17:49:17 +0200
-Message-Id: <1255880957.4581.43.camel@utx.utx.cz>
+	id S1754710AbZJRPwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 11:52:17 -0400
+Subject: Re: [BUGFIX] dnotify: handle_event shouldn't match on
+ FS_EVENT_ON_CHILD
+From: Eric Paris <eparis@redhat.com>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200910181446.44625.agruen@suse.de>
+References: <200910181446.44625.agruen@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 18 Oct 2009 11:52:10 -0400
+Message-Id: <1255881130.15182.99.camel@dhcp231-106.rdu.redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanislav Brabec wrote:
-> Also sending a "diff -w" on the same code in the next mail﻿ for easier
-> review.
+On Sun, 2009-10-18 at 14:46 +0200, Andreas Gruenbacher wrote:
+> Mask off FS_EVENT_ON_CHILD in dnotify_handle_event().  Otherwise, when there
+> is more than one watch on a directory and dnotify_should_send_event()
+> succeeds, events with FS_EVENT_ON_CHILD set will trigger all watches and cause
+> spurious events.
 
-Here is a "diff -w" patch without indentation changes.
+Added to my linus tree last night (along with a couple other fixes) will
+push it public and ask him to pull when I finish testing.
 
-Do not apply!
-
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index dcc7244..f1e1ab2 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2008,12 +2008,6 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 
- 	mutex_lock(&port->mutex);
- 
--	if (!console_suspend_enabled && uart_console(uport)) {
--		/* we're going to avoid suspending serial console */
--		mutex_unlock(&port->mutex);
--		return 0;
--	}
--
- 	tty_dev = device_find_child(uport->dev, &match, serial_match_port);
- 	if (device_may_wakeup(tty_dev)) {
- 		enable_irq_wake(uport->irq);
-@@ -2021,12 +2015,14 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 		mutex_unlock(&port->mutex);
- 		return 0;
- 	}
-+	if (console_suspend_enabled || !uart_console(uport))
- 	uport->suspended = 1;
- 
- 	if (port->flags & ASYNC_INITIALIZED) {
- 		const struct uart_ops *ops = uport->ops;
- 		int tries;
- 
-+		if (console_suspend_enabled || !uart_console(uport)) {
- 		set_bit(ASYNCB_SUSPENDED, &port->flags);
- 		clear_bit(ASYNCB_INITIALIZED, &port->flags);
- 
-@@ -2035,6 +2031,7 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 		ops->set_mctrl(uport, 0);
- 		ops->stop_rx(uport);
- 		spin_unlock_irq(&uport->lock);
-+		}
- 
- 		/*
- 		 * Wait for the transmitter to empty.
-@@ -2049,15 +2046,17 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 			       drv->dev_name,
- 			       drv->tty_driver->name_base + uport->line);
- 
-+		if (console_suspend_enabled || !uart_console(uport))
- 		ops->shutdown(uport);
- 	}
- 
- 	/*
- 	 * Disable the console device before suspending.
- 	 */
--	if (uart_console(uport))
-+	if (console_suspend_enabled && uart_console(uport))
- 		console_stop(uport->cons);
- 
-+	if (console_suspend_enabled || !uart_console(uport))
- 	uart_change_pm(state, 3);
- 
- 	mutex_unlock(&port->mutex);
-@@ -2075,29 +2074,6 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
- 
- 	mutex_lock(&port->mutex);
- 
--	if (!console_suspend_enabled && uart_console(uport)) {
--		/* no need to resume serial console, it wasn't suspended */
--		/*
--		 * First try to use the console cflag setting.
--		 */
--		memset(&termios, 0, sizeof(struct ktermios));
--		termios.c_cflag = uport->cons->cflag;
--		/*
--		 * If that's unset, use the tty termios setting.
--		 */
--		if (termios.c_cflag == 0)
--			termios = *state->port.tty->termios;
--		else {
--			termios.c_ispeed = termios.c_ospeed =
--				tty_termios_input_baud_rate(&termios);
--			termios.c_ispeed = termios.c_ospeed =
--				tty_termios_baud_rate(&termios);
--		}
--		uport->ops->set_termios(uport, &termios, NULL);
--		mutex_unlock(&port->mutex);
--		return 0;
--	}
--
- 	tty_dev = device_find_child(uport->dev, &match, serial_match_port);
- 	if (!uport->suspended && device_may_wakeup(tty_dev)) {
- 		disable_irq_wake(uport->irq);
-@@ -2123,6 +2099,7 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
- 		spin_lock_irq(&uport->lock);
- 		ops->set_mctrl(uport, 0);
- 		spin_unlock_irq(&uport->lock);
-+		if (console_suspend_enabled || !uart_console(uport)) {
- 		ret = ops->startup(uport);
- 		if (ret == 0) {
- 			uart_change_speed(state, NULL);
-@@ -2139,6 +2116,7 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
- 			 */
- 			uart_shutdown(state);
- 		}
-+		}
- 
- 		clear_bit(ASYNCB_SUSPENDED, &port->flags);
- 	}
-
-
-________________________________________________________________________
-Stanislav Brabec
-http://www.penguin.cz/~utx
+-Eric
 
