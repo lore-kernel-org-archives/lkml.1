@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751899AbZJRGcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751797AbZJRG1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751899AbZJRGcF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 02:32:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbZJRGcF
+	id S1751797AbZJRG1H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 02:27:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZJRG1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 02:32:05 -0400
-Received: from mail-px0-f171.google.com ([209.85.216.171]:35513 "EHLO
-	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180AbZJRGcD convert rfc822-to-8bit (ORCPT
+	Sun, 18 Oct 2009 02:27:07 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49650 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750977AbZJRG1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 02:32:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=q3b8JaPNR8m91HDmtx89BMD3lJSSiEhuOaK603N5WwV4e+dpAOdDFbyl1dYBSC+8Zj
-         YWXAOSm+s5ag7TDZtDyw5zcmHYxam38hGFKw8DDs10OCJLAHalmmjgd1B27W+qS05iHg
-         ftPO7OsDvqibcrZ9uixCZzu0+BLe3wnJb0sak=
+	Sun, 18 Oct 2009 02:27:06 -0400
+Date: Sun, 18 Oct 2009 15:25:58 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] x86: hw-breakpoints: Actually flush thread breakpoints in flush_thread().
+Message-ID: <20091018062558.GA20535@linux-sh.org>
+References: <20091005102306.GA7889@linux-sh.org> <20091005104955.GA14852@in.ibm.com> <20091009034003.GA7747@linux-sh.org> <20091017234250.GC10344@nowhere>
 MIME-Version: 1.0
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901E24550@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE190901E24550@mi8nycmail19.Mi8.com>
-Date: Sun, 18 Oct 2009 14:25:25 +0800
-Message-ID: <2674af740910172325n2bfeb444i41966fd95fc7951c@mail.gmail.com>
-Subject: Re: [PATCH] clockevents.c: fix symbol was not declared noise
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       john stultz <johnstul@us.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091017234250.GC10344@nowhere>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 17, 2009 at 6:19 AM, H Hartley Sweeten
-<hartleys@visionengravers.com> wrote:
-> Include "tick-internal.h" in order to pick up the extern function
-> prototype for clockevents_shutdown().  This quiets the following
-> spares build noise:
->
->  warning: symbol 'clockevents_shutdown' was not declared. Should it be static?
->
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
->
-
-Looks good.
-Reviewed-by: Yong Zhang <yong.zhang0@gmail.com>
-
-Cc'ed some experts.
-
-> ---
->
-> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-> index 620b58a..c30ba1f 100644
-> --- a/kernel/time/clockevents.c
-> +++ b/kernel/time/clockevents.c
-> @@ -20,6 +20,8 @@
->  #include <linux/sysdev.h>
->  #include <linux/tick.h>
->
-> +#include "tick-internal.h"
-> +
->  /* The registered clock event devices */
->  static LIST_HEAD(clockevent_devices);
->  static LIST_HEAD(clockevents_released);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Sun, Oct 18, 2009 at 01:42:53AM +0200, Frederic Weisbecker wrote:
+> On Fri, Oct 09, 2009 at 12:40:04PM +0900, Paul Mundt wrote:
+> > On Mon, Oct 05, 2009 at 04:19:55PM +0530, K.Prasad wrote:
+> > > On Mon, Oct 05, 2009 at 07:23:06PM +0900, Paul Mundt wrote:
+> > > > [ I noticed this whilst hacking up SH support, applies to the current
+> > > >   tracing/hw-breakpoints topic branch. ]
+> > > > 
+> > > > flush_thread() tries to do a TIF_DEBUG check before calling in to
+> > > > flush_thread_hw_breakpoint() (which subsequently clears the thread flag),
+> > > > but for some reason, the x86 code is manually clearing TIF_DEBUG
+> > > > immediately before the test, so this path will never be taken.
+> > > > 
+> > > > This kills off the erroneous clear_tsk_thread_flag() and lets
+> > > > flush_thread_hw_breakpoint() actually get invoked.
+> > > > 
+> > > 
+> > > Yes, this is wrong and we missed it. Thanks for fixing!
+> > > 
+> > > > Presumably folks were getting lucky with testing and the
+> > > > free_thread_info() -> free_thread_xstate() path was taking care of the
+> > > > flush there.
+> > > > 
+> > > > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> > > 
+> > > Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > > 
+> > > 
+> > Ingo, are you planning on picking this up? Or is there a hw-breakpoints
+> > tree somewhere outside of -tip that I'm unaware of?
+> 
+> 
+> I'm picking it.
+> Thanks.
+> 
+Thanks. If you're setting up a tree somewhere can you let me know where
+it will be hosted? I'm pretty much done with the SH support for the
+existing topic branch in -tip, but if it's being reworked, then I'd like
+to get my changes reworked and integrated as soon as possible.
