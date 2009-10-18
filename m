@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbZJRWr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbZJRWtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755458AbZJRWr7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 18:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbZJRWr5
+	id S1755468AbZJRWtQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 18:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbZJRWtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 18:47:57 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:44765 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755430AbZJRWr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 18:47:57 -0400
-Date: Mon, 19 Oct 2009 00:47:35 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arnd Bergmann <arndbergmann@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Subject: [PATCH] crypto: s390: Remove BKL in zcrypt_open
-Message-ID: <alpine.LFD.2.00.0910190046540.3405@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 18 Oct 2009 18:49:15 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45927 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755431AbZJRWtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 18:49:14 -0400
+X-Authenticated: #20192376
+X-Provags-ID: V01U2FsdGVkX18oFkcmO1sovr+InZl/wsLn99xDlOVecjHjsDGKBL
+	aMUXQCSHtBA8KH
+From: Andreas Fenkart <andreas.fenkart@streamunlimited.com>
+To: linux-kernel@vger.kernel.org
+Subject: Make totalhigh_pages of consistent type.
+Date: Mon, 19 Oct 2009 00:49:27 +0200
+Message-Id: <1255906168-19279-1-git-send-email-andreas.fenkart@streamunlimited.com>
+X-Mailer: git-send-email 1.6.4.3
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 7673a4ec79b4b4edf3cead3ed88a93d6081c44f0 Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Mon, 19 Oct 2009 00:44:03 +0200
-Subject: [PATCH] crypto: s390: Remove BKL in zcrypt_open
+Printing the value of totalhigh_pages requires casting, like in
+this print message:
 
-Do we really need to look an atomic_inc? I don't think so.
+arch/x86/mm/init_32.c:
+  printk(KERN_INFO "Memory: %luk/%luk available (%dk kernel code, "
+      "%dk reserved, %dk data, %dk init, %ldk highmem)\n",
+    ...
+    (unsigned long)(totalhigh_pages << (PAGE_SHIFT-10)));
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- drivers/s390/crypto/zcrypt_api.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+The need for casting is due to totalhigh_pages being of different
+type, when CONFIG_HIGHMEM is set/unset.
 
-diff --git a/drivers/s390/crypto/zcrypt_api.c b/drivers/s390/crypto/zcrypt_api.c
-index 65b6a96..e55e311 100644
---- a/drivers/s390/crypto/zcrypt_api.c
-+++ b/drivers/s390/crypto/zcrypt_api.c
-@@ -34,7 +34,6 @@
- #include <linux/fs.h>
- #include <linux/proc_fs.h>
- #include <linux/compat.h>
--#include <linux/smp_lock.h>
- #include <asm/atomic.h>
- #include <asm/uaccess.h>
- #include <linux/hw_random.h>
-@@ -299,9 +298,7 @@ static ssize_t zcrypt_write(struct file *filp, const char __user *buf,
-  */
- static int zcrypt_open(struct inode *inode, struct file *filp)
- {
--	lock_kernel();
- 	atomic_inc(&zcrypt_open_count);
--	unlock_kernel();
- 	return 0;
- }
- 
--- 
-1.6.0.6
+include/linux/highmem.h:
+  #ifdef CONFIG_HIGHMEM
+  
+  extern unsigned long totalhigh_pages;
+  
+  #else /* CONFIG_HIGHMEM */
+  
+ -#define totalhigh_pages 0
+ +#define totalhigh_pages 0UL
+  ...
+
+For C files there should be no problem, because 0/0UL are both
+valid C and denote the same value. Assembly files are not
+affected, since linux/highmem.h can not be included from
+assembly.
 
