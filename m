@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbZJRR1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZJSH6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754956AbZJRR1j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 13:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbZJRR1i
+	id S1755799AbZJSH6f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 03:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbZJSH6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 13:27:38 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:47359 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754938AbZJRR1h (ORCPT
+	Mon, 19 Oct 2009 03:58:34 -0400
+Received: from 9125hd39008.ikexpress.com ([213.246.39.8]:55409 "EHLO
+	9125hd39008.ikoula.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755746AbZJSH6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 13:27:37 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Tim Abbott <tabbott@ksplice.com>
-Subject: [PATCH v4 7/7] m68knommu: Split the .init section into INIT_TEXT_SECTION and INIT_DATA_SECTION.
-Date: Sun, 18 Oct 2009 13:23:55 -0400
-Message-Id: <1255886635-17371-7-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.4.3
-In-Reply-To: <alpine.DEB.1.10.0910142041520.6638@dr-wily.mit.edu>
-References: <alpine.DEB.1.10.0910142041520.6638@dr-wily.mit.edu>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Mon, 19 Oct 2009 03:58:30 -0400
+X-Greylist: delayed 31129 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 03:58:29 EDT
+To: linux-kernel@vger.kernel.org
+Subject: =?UTF-8?Q?Participez_GRATUITEMENT_=E0_des_centaines_de_jeux_concours_grat?=  =?UTF-8?Q?uits_en_quelques_clics_!?=
+Recieved: 
+Date: Sun, 18 Oct 2009 19:24:43 +0200
+From: noreply@Konkours.com
+Message-ID: <a2d0082a9b080789c61a17afb69ffd5d@www.sevaderpascher.fr>
+X-Priority: 3
+X-Mailer: PHPMailer [version 1.73]
+X-Mailer: phplist v2.10.10
+X-MessageID: 3
+X-ListMember: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
----
- arch/m68knommu/kernel/vmlinux.lds.S |   17 ++++-------------
- 1 files changed, 4 insertions(+), 13 deletions(-)
 
-diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
-index 65e2874..2bff62f 100644
---- a/arch/m68knommu/kernel/vmlinux.lds.S
-+++ b/arch/m68knommu/kernel/vmlinux.lds.S
-@@ -154,22 +154,13 @@ SECTIONS {
- 		_edata = . ;
- 	} > DATA
- 
--	.init : {
-+	.init.text : {
- 		. = ALIGN(PAGE_SIZE);
- 		__init_begin = .;
- 	} > INIT
--	.init : {
--		_sinittext = .;
--		INIT_TEXT
--		_einittext = .;
--		INIT_DATA
--		INIT_SETUP(16)
--		INIT_CALLS
--		CON_INITCALL
--		SECURITY_INITCALL
--		INIT_RAM_FS
--	} > INIT
--	.init : {
-+	INIT_TEXT_SECTION(PAGE_SIZE) > INIT
-+	INIT_DATA_SECTION(16) > INIT
-+	.init.data : {
- 		. = ALIGN(PAGE_SIZE);
- 		__init_end = .;
- 	} > INIT
--- 
-1.6.4.3
+
+
+<http://www.cashtrafic.com/script/clic.php?id=80093&option=emailing&ban=3726&data=&redirection=http%3A%2F%2Fwww.konkours.com%2Fpubs%2Fpdv-module%2Fpdv3_index.php%3Fparent%3Dcash%26pdv%3D1%26form_type%3D1%26d%3D5957>
+
+
+<http://www.cashtrafic.com/script/clic.php?id=80093&option=emailing&ban=3726&data=&redirection=http%3A%2F%2Fwww.konkours.com%2Fpubs%2Fpdv-module%2Fpdv3_index.php%3Fparent%3Dcash%26pdv%3D1%26form_type%3D1%26d%3D5957>
+
+
+<http://www.cashtrafic.com/script/clic.php?id=80093&option=emailing&ban=3726&data=&redirection=http%3A%2F%2Fwww.konkours.com%2Fpubs%2Fpdv-module%2Fpdv3_index.php%3Fparent%3Dcash%26pdv%3D1%26form_type%3D1%26d%3D5957>
+
+
+<http://www.cashtrafic.com/script/clic.php?id=80093&option=emailing&ban=3726&data=&redirection=http%3A%2F%2Fwww.konkours.com%2Fpubs%2Fpdv-module%2Fpdv3_index.php%3Fparent%3Dcash%26pdv%3D1%26form_type%3D1%26d%3D5957>
+
+
+<http://www.cashtrafic.com/script/clic.php?id=80093&option=emailing&ban=3726&data=&redirection=http%3A%2F%2Fwww.konkours.com%2Fpubs%2Fpdv-module%2Fpdv3_index.php%3Fparent%3Dcash%26pdv%3D1%26form_type%3D1%26d%3D5957>
+
+
+<http://www.cashtrafic.com/script/clic.php?id=80093&option=emailing&ban=3726&data=&redirection=http%3A%2F%2Fwww.konkours.com%2Fpubs%2Fpdv-module%2Fpdv3_index.php%3Fparent%3Dcash%26pdv%3D1%26form_type%3D1%26d%3D5957>
+
+
+<http://www.cashtrafic.com/script/clic.php?id=80093&option=emailing&ban=3726&data=&redirection=http%3A%2F%2Fwww.konkours.com%2Fpubs%2Fpdv-module%2Fpdv3_index.php%3Fparent%3Dcash%26pdv%3D1%26form_type%3D1%26d%3D5957>
+
+
+<http://www.cashtrafic.com/script/clic.php?id=80093&option=emailing&ban=3726&data=&redirection=http%3A%2F%2Fwww.konkours.com%2Fpubs%2Fpdv-module%2Fpdv3_index.php%3Fparent%3Dcash%26pdv%3D1%26form_type%3D1%26d%3D5957>
+
+
+<http://www.cashtrafic.com/script/clic.php?id=80093&option=emailing&ban=3726&data=&redirection=http%3A%2F%2Fwww.konkours.com%2Fpubs%2Fpdv-module%2Fpdv3_index.php%3Fparent%3Dcash%26pdv%3D1%26form_type%3D1%26d%3D5957>
+
+
+
+--
+Si vous ne voulez plus recevoir nos lettres d'information, 
+http://www.sevaderpascher.fr/lists/?p=unsubscribe&uid=8ba1fcd0395420e2b89e516de93fbdec
+
+Mettre à jour mes préférences ou me désabonner
+http://www.sevaderpascher.fr/lists/?p=preferences&uid=8ba1fcd0395420e2b89e516de93fbdec
+Envoyer ce Message à un ami,
+http://www.sevaderpascher.fr/lists/?p=forward&uid=8ba1fcd0395420e2b89e516de93fbdec&mid=3
+
+
+--
+Powered by PHPlist, www.phplist.com --
+
 
