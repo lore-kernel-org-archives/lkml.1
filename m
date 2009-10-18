@@ -1,68 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZJRMhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbZJRMoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbZJRMhw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 08:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbZJRMhw
+	id S1754506AbZJRMoF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 08:44:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbZJRMoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 08:37:52 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59183 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753303AbZJRMhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 08:37:51 -0400
-Date: Sun, 18 Oct 2009 23:37:49 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Blanchard <anton@samba.org>
-Cc: benh@kernel.crashing.org, mingo@elte.hu, paulus@samba.org,
-       a.p.zijlstra@chello.nl, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] powerpc: Create PPC_WARN_ALIGNMENT to match
- PPC_WARN_EMULATED
-Message-Id: <20091018233749.0a17ff78.sfr@canb.auug.org.au>
-In-Reply-To: <20091018111126.GL4808@kryten>
-References: <20091018110929.GK4808@kryten>
-	<20091018111126.GL4808@kryten>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__18_Oct_2009_23_37_49_+1100_hhor9XLfdVfYPguI"
+	Sun, 18 Oct 2009 08:44:04 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:63794 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbZJRMoC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 08:44:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ltgOe7P0vLiH52CTXZMue5IlriKSCGcMv7eWqSxcyoxnqykYOeRGL4+5/G4NG9J9ee
+         LJv8Ca7JkNC/Wm1bd1Abo/Y5nm5EPHB19+ITtf85Z4UzNdHJallHYbXPmB2vXJUZtjZ/
+         pbRl4G7yjHfnSW+yCIkimo/8SrlDgi0U5v1vQ=
+MIME-Version: 1.0
+In-Reply-To: <4ADACD3A.9020803@gmail.com>
+References: <4ADACD3A.9020803@gmail.com>
+Date: Sun, 18 Oct 2009 13:44:04 +0100
+Message-ID: <9b2b86520910180544g94ecc8fuf0d7849e18cd8937@mail.gmail.com>
+Subject: Re: Fast LKM symbol resolution with SysV ELH hash table
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: carmelo73@gmail.com
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__18_Oct_2009_23_37_49_+1100_hhor9XLfdVfYPguI
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Anton,
-
-On Sun, 18 Oct 2009 22:11:26 +1100 Anton Blanchard <anton@samba.org> wrote:
+On 10/18/09, Carmelo Amoroso <carmelo73@gmail.com> wrote:
+> Hi,
+> I'm just sending this message to report about a work I've recently done
+> to speed-up symbol resolution for modules by using a SysV ELF hash table
+> (without relying upon binutils support).
+> This work has been presented few days ago at the Embedded Linux Conference
+> Europe.
 >
-> @@ -66,8 +66,12 @@ extern void ppc_warn_emulated_print(cons
-> =20
->  #else /* !CONFIG_PPC_EMULATED_STATS */
-> =20
-> -#define PPC_WARN_EMULATED(type)	do { } while (0)
-> +#define __PPC_WARN_EMULATED(type)	do { } while (0)
-> +#define __PPC_WARN_ALIGNMENT(type)	do { } while (0)
+> Patches are already publicly available for 2.6.23 kernel @STLinux git
+> (http://git.stlinux.com/?p=stm/linux-sh4-2.6.23.y.git;a=summary)
+>
+> For 2.6.30 already ported but not yet available.
+>
+> Benchmarks have shown an average reduction of 96% in time spent for symbol
+> resolution
+> (that is 25x faster).
+>
+> All details can be found at
+> http://tree.celinuxforum.org/CelfPubWiki/ELCEurope2009Presentations?action=AttachFile&do=view&target=C_AMOROSO_Fast_lkm_loader_ELC-E_2009.pdf
+>
+> I'm working to update them to mainline and post for review and discussion.
+> We are also working right now to update this work too to use GNU hash
+> instead of SysV ELF hash
 
-I think this last line is not needed?
+Hi!
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I found this very interesting.  I recently posted a prototype to use
+binary search to optimize symbol lookup[1].  I guess it's unlikely for
+more than one such optimization to be merged into mainline :).
 
---Signature=_Sun__18_Oct_2009_23_37_49_+1100_hhor9XLfdVfYPguI
-Content-Type: application/pgp-signature
+The nice thing about binary search is that it doesn't require
+increased memory structures.  You just have to sort the existing
+tables (although it's easier said than done).  Anyway, this means I
+didn't have to worry about making it optional, or being accused of
+bloat.  I also managed to patch into the existing modpost run, instead
+of adding another intermediate build step.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+---
+We should certainly expect hash tables to be faster.  Strictly
+speaking our numbers are incomparable, because your test machine is a
+bit different to my x86 netbook :).  I didn't even report the same
+numbers.  That said, I have some saved "perf report" output, and it
+_looks_ like using bsearch cut down find_symbol()+strcmp() by 96%
+<grin>.
 
-iEYEARECAAYFAkrbDB0ACgkQjjKRsyhoI8xEIQCggsBJxLWjQl03PpJo4bGUJZOl
-1WMAn3KZuaX751h1SrDhXxiJBnDmY/l9
-=TRv2
------END PGP SIGNATURE-----
+If look at the total savings hash tables made in your slides, I
+actually get 98%.  I guess either the analysis was conservative or
+there were more modules which were omitted for brevity.
+---
 
---Signature=_Sun__18_Oct_2009_23_37_49_+1100_hhor9XLfdVfYPguI--
+Hypothetically: imagine we both finish our work and testing on the
+same machine shows hash tables saving 100% and bsearch saving 90%.  In
+absolute terms, hash tables might have an advantage of 0.03s on my
+system (where bsearch saved 0.3s), and a total advantage of 0.015s for
+the modules you tested (where hash tables saved ~0.15s).
+
+Would you accept bsearch in this case?  Or would you feel that the
+performance of hash tables outweighed the extra memory requirements?
+
+(This leaves the question of why you need to load 0.015s worth of
+always-needed in-tree kernel code as modules.  For those who haven't
+read the slides, the  reasoning is that built-in code would take
+_longer_ to load.  The boot-loader is often slower at IO, and it
+doesn't allow other initialization to occur in parallel).
+
+Warm regards
+Alan
+
+---
+[1]  My bsearch prototype has several undisclosed problems which I'm
+working on.   If you're curious you can find the patches by searching
+"from:alan-jenkins@tuffmail.co.uk to:Rusty".  At the moment the series
+is blocked on ARM.  I want to kill EXPORT_SYMBOL_ALIAS in armksyms.c,
+because it breaks some simplifying assumptions I was relying on.
+
+The protoype also limits the optimization to built-in symbols to avoid
+extra modpost overhead.  However, this is an orthogonal decision - it
+should not be hard to change if desired.
