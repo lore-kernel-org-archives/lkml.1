@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZJRWjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbZJRWr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbZJRWjk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 18:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbZJRWjk
+	id S1755458AbZJRWr7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 18:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbZJRWr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 18:39:40 -0400
-Received: from xenotime.net ([72.52.64.118]:55160 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753952AbZJRWjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 18:39:39 -0400
-Date: Sun, 18 Oct 2009 15:39:42 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Peter Stuge <peter@stuge.se>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Adding an ioctl or three
-Message-Id: <20091018153942.aeef78ee.rdunlap@xenotime.net>
-In-Reply-To: <20091018223306.17571.qmail@stuge.se>
-References: <20091015205803.30544.qmail@stuge.se>
-	<20091015223137.6b9fb55a@lxorguk.ukuu.org.uk>
-	<20091015214642.6208.qmail@stuge.se>
-	<20091015230853.44fb10c1@lxorguk.ukuu.org.uk>
-	<20091018162737.18611.qmail@stuge.se>
-	<20091018223306.17571.qmail@stuge.se>
-Organization: YPO4
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Oct 2009 18:47:57 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:44765 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755430AbZJRWr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 18:47:57 -0400
+Date: Mon, 19 Oct 2009 00:47:35 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arnd Bergmann <arndbergmann@googlemail.com>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Subject: [PATCH] crypto: s390: Remove BKL in zcrypt_open
+Message-ID: <alpine.LFD.2.00.0910190046540.3405@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Oct 2009 00:33:06 +0200 Peter Stuge wrote:
+>From 7673a4ec79b4b4edf3cead3ed88a93d6081c44f0 Mon Sep 17 00:00:00 2001
+From: John Kacur <jkacur@redhat.com>
+Date: Mon, 19 Oct 2009 00:44:03 +0200
+Subject: [PATCH] crypto: s390: Remove BKL in zcrypt_open
 
-> Peter Stuge wrote:
-> > Is patching Documentation/ioctl/ioctl-number.txt and
-> > asm/ioctls.h all?
-> 
-> I added an ioctl into a header of my own. It works fine, but..
-> 
-> 
-> > The "addressing" in ioctl-number seems a little chaotic, do I just
-> > pick anything that is available?
-> 
-> Documentation/ioctl/ioctl-number.txt seems out of date. I picked
-> a number that was used (by linux/toshiba.h) but not listed. Do I have
-> to grep it out?
+Do we really need to look an atomic_inc? I don't think so.
 
-Can you at least list what files/drivers need to be added to
-Documentation/ioctl/ioctl-number.txt, please?
-
+Signed-off-by: John Kacur <jkacur@redhat.com>
 ---
-~Randy
+ drivers/s390/crypto/zcrypt_api.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/s390/crypto/zcrypt_api.c b/drivers/s390/crypto/zcrypt_api.c
+index 65b6a96..e55e311 100644
+--- a/drivers/s390/crypto/zcrypt_api.c
++++ b/drivers/s390/crypto/zcrypt_api.c
+@@ -34,7 +34,6 @@
+ #include <linux/fs.h>
+ #include <linux/proc_fs.h>
+ #include <linux/compat.h>
+-#include <linux/smp_lock.h>
+ #include <asm/atomic.h>
+ #include <asm/uaccess.h>
+ #include <linux/hw_random.h>
+@@ -299,9 +298,7 @@ static ssize_t zcrypt_write(struct file *filp, const char __user *buf,
+  */
+ static int zcrypt_open(struct inode *inode, struct file *filp)
+ {
+-	lock_kernel();
+ 	atomic_inc(&zcrypt_open_count);
+-	unlock_kernel();
+ 	return 0;
+ }
+ 
+-- 
+1.6.0.6
+
