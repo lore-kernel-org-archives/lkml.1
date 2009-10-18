@@ -1,137 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751307AbZJRFHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbZJRGAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751307AbZJRFHK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 01:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750887AbZJRFHI
+	id S1751399AbZJRGAx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 02:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbZJRGAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 01:07:08 -0400
-Received: from sh.osrg.net ([192.16.179.4]:32832 "EHLO sh.osrg.net"
+	Sun, 18 Oct 2009 02:00:52 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:63801 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750847AbZJRFHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 01:07:06 -0400
-Date: Sun, 18 Oct 2009 14:07:04 +0900
-To: tony.luck@intel.com, linux-ia64@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, lchiquitto@novell.com
-Subject: [PATCH] ia64: fix SBA IOMMU to handle allocation failure properly
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1750888AbZJRGAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 02:00:52 -0400
+Message-ID: <4ADAAF50.9040604@redhat.com>
+Date: Sun, 18 Oct 2009 02:01:52 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
+ 	probe and kprobe-tracer bugfixes
+References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <20091017080203.GA4155@elte.hu> <20091017103427.GA31238@elte.hu>
+In-Reply-To: <20091017103427.GA31238@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20091018140631K.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sun, 18 Oct 2009 14:07:05 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an updated patch of the patch that I've posted one year
-ago. Shehjar reported the problem and confirmed that the patch fixes
-it:
+Ingo Molnar wrote:
+> 
+> I took a good look at the current bits, and there are a few more things 
+> that need to be fixed before we can consider 'perf probe' for upstream.
+> 
+> Firstly, this decoder bug is still not fixed:
+> 
+>   CHK     include/linux/compile.h
+>   TEST    posttest
+> Error: ffffffff81068fe0:        66 0f 73 fd 04          pslldq $0x4,%xmm5
+> Error: objdump says 5 bytes, but insn_get_length() says 4 (attr:8000)
+> make[1]: *** [posttest] Error 2
+> 
+> 64-bit allyesconfig will trigger this for example, but the attached 
+> smaller config too. This needs to be fixed before we can apply any
+> new commits.
 
-http://lkml.indiana.edu/hypermail/linux/kernel/0811.0/01562.html
+Absolutely, yes. Thank you for reporting. I'm checking it again.
 
-Leonardo told me that he hit the same problem and confirmed that the
-patch fixes it.
+> Secondly, the probe syntax is quite non-obvious currently. All the 'p' 
+> and -P gymnastics is just a barrier to the first-time user getting his 
+> first probe inserted successfully.
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] ia64: fix SBA IOMMU to handle allocation failure properly
+Hmm...
 
-It's possible that SBA IOMMU might fail to find I/O space under heavy
-I/Os. SBA IOMMU panics on allocation failure but it shouldn't; drivers
-can handle the failure. The majority of other IOMMU drivers don't
-panic on allocation failure.
+> The user need not worry about whether it's a 'kprobe' or a 'kretprobe'. 
+> The user should _specify_ what it wants to probe, and _that_ will lead 
+> to 'perf probe' picking the most suitable facility to achieve that kind 
+> of probing.
+> 
+> It might be a kprobe, a kretprobe, or an mcount driven function probe, 
+> an existing tracepoint if it happens to be present in that place already 
+> - or some other future mechanism. The driving force must be a robust 
+> specification of 'what', not the mechanics of 'how'.
 
-This patch fixes SBA IOMMU path to handle allocation failure properly.
+Agreed.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/ia64/hp/common/sba_iommu.c |   38 +++++++++++++++++++++++++++++---------
- 1 files changed, 29 insertions(+), 9 deletions(-)
+> Considering that, the current 'perf probe' syntax does not achieve that 
+> goal yet.
+> 
+> Here are a few syntax suggestions
+> 
+> The simpest probe syntax should be to add a probe to a single function 
+> name:
+> 
+>   perf probe +schedule
+> 
+> _nothing else_.
+> 
+> To remove it, the user should just do something like:
+> 
+>   perf probe -schedule
+> 
+> (to be symmetric 'perf probe +schedule' should work as well)
 
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index 674a837..01ae69b 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -677,12 +677,19 @@ sba_alloc_range(struct ioc *ioc, struct device *dev, size_t size)
- 			spin_unlock_irqrestore(&ioc->saved_lock, flags);
- 
- 			pide = sba_search_bitmap(ioc, dev, pages_needed, 0);
--			if (unlikely(pide >= (ioc->res_size << 3)))
--				panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n",
--				      ioc->ioc_hpa);
-+			if (unlikely(pide >= (ioc->res_size << 3))) {
-+				printk(KERN_WARNING "%s: I/O MMU @ %p is"
-+				       "out of mapping resources, %u %u %lx\n",
-+				       __func__, ioc->ioc_hpa, ioc->res_size,
-+				       pages_needed, dma_get_seg_boundary(dev));
-+				return -1;
-+			}
- #else
--			panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n",
--			      ioc->ioc_hpa);
-+			printk(KERN_WARNING "%s: I/O MMU @ %p is"
-+			       "out of mapping resources, %u %u %lx\n",
-+			       __func__, ioc->ioc_hpa, ioc->res_size,
-+			       pages_needed, dma_get_seg_boundary(dev));
-+			return -1;
- #endif
- 		}
- 	}
-@@ -965,6 +972,8 @@ static dma_addr_t sba_map_page(struct device *dev, struct page *page,
- #endif
- 
- 	pide = sba_alloc_range(ioc, dev, size);
-+	if (pide < 0)
-+		return 0;
- 
- 	iovp = (dma_addr_t) pide << iovp_shift;
- 
-@@ -1320,6 +1329,7 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
- 	unsigned long dma_offset, dma_len; /* start/len of DMA stream */
- 	int n_mappings = 0;
- 	unsigned int max_seg_size = dma_get_max_seg_size(dev);
-+	int idx;
- 
- 	while (nents > 0) {
- 		unsigned long vaddr = (unsigned long) sba_sg_address(startsg);
-@@ -1418,16 +1428,22 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
- 		vcontig_sg->dma_length = vcontig_len;
- 		dma_len = (dma_len + dma_offset + ~iovp_mask) & iovp_mask;
- 		ASSERT(dma_len <= DMA_CHUNK_SIZE);
--		dma_sg->dma_address = (dma_addr_t) (PIDE_FLAG
--			| (sba_alloc_range(ioc, dev, dma_len) << iovp_shift)
--			| dma_offset);
-+		idx = sba_alloc_range(ioc, dev, dma_len);
-+		if (idx < 0) {
-+			dma_sg->dma_length = 0;
-+			return -1;
-+		}
-+		dma_sg->dma_address = (dma_addr_t)(PIDE_FLAG | (idx << iovp_shift)
-+						   | dma_offset);
- 		n_mappings++;
- 	}
- 
- 	return n_mappings;
- }
- 
--
-+static void sba_unmap_sg_attrs(struct device *dev, struct scatterlist *sglist,
-+			       int nents, enum dma_data_direction dir,
-+			       struct dma_attrs *attrs);
- /**
-  * sba_map_sg - map Scatter/Gather list
-  * @dev: instance of PCI owned by the driver that's asking.
-@@ -1493,6 +1509,10 @@ static int sba_map_sg_attrs(struct device *dev, struct scatterlist *sglist,
- 	** Access to the virtual address is what forces a two pass algorithm.
- 	*/
- 	coalesced = sba_coalesce_chunks(ioc, dev, sglist, nents);
-+	if (coalesced < 0) {
-+		sba_unmap_sg_attrs(dev, sglist, nents, dir, attrs);
-+		return 0;
-+	}
- 
- 	/*
- 	** Program the I/O Pdir
+I think '-<symbol>' syntax doesn't work good with other command-line
+options and multiple definitions.
+(However, it will be good for input-from-file syntax. :-))
+
+So, what would you think about using -D (def) and -U (undef) ?
+
+> perf probe will make up a synthetic probe name for that - probe-1 for 
+> example. It will also pick the suitable probe mechanism (kprobes).
+
+How about [perfprobe:symbol_offs] ?
+
+> All the other extensions and possibilities - arguments, variables, 
+> source code lines, etc. should be natural and intuitive extensions of 
+> this basic, minimal syntax.
+
+Don't you like current space(' ') separated arguments? :-)
+I mean, what is 'natural' syntax in your opinion?
+
+> 
+> To insert a simple probe no -P should be needed, 'p', no ':' - no probe 
+> name even.
+
+Yeah, return-probe and event-name should be optional.
+
+> Furthermore, there should be a way to list existing probes (and only 
+> probes), probably via 'perf list --probes' or 'perf probe --list'.
+
+OK. I think perf probe --list will list up all probes including
+user-defined ftrace-event via debugfs (not perf-probe), since
+perf can use and delete it.
+
+> Plus, 'perf probe --help' should list a few simple examples, beyond the 
+> syntax.
+> 
+> Ok?
+
+Sure.
+
+Thank you!
+
+
 -- 
-1.5.6.5
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
