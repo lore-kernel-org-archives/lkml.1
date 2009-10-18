@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbZJRWSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbZJRWZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbZJRWSr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 18:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZJRWSq
+	id S1755370AbZJRWZr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 18:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZJRWZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 18:18:46 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:48419 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755215AbZJRWSp (ORCPT
+	Sun, 18 Oct 2009 18:25:46 -0400
+Received: from smtp104.biz.mail.mud.yahoo.com ([68.142.200.252]:28962 "HELO
+	smtp104.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752196AbZJRWZq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 18:18:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=G1ALZA7yVenglsfLZ5B0WyJtxLsywVwXYTlnwNof53QPjy2o64ldW5dBvVHgwbT2TA
-         U9m/RSn4wVfUkQc0qviSw0z7wgNw7HcnHOMnpJfqOafzlnVS0asjKWjPIYsIWP7lyG9b
-         yKpIBpGnSvOlW7aUbloUiMwOSNkcYwHNa53tA=
-Date: Mon, 19 Oct 2009 00:18:44 +0200
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       stable <stable@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>, Frans Pop <elendil@planet.nl>,
-       reinette chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/2] Reduce number of GFP_ATOMIC allocation failures
-Message-ID: <20091018221844.GA2061@bizet.domek.prywatny>
-References: <1255689446-3858-1-git-send-email-mel@csn.ul.ie> <20091017183421.GA3370@bizet.domek.prywatny>
+	Sun, 18 Oct 2009 18:25:46 -0400
+X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
+X-YMail-OSG: 0mv8j1UVM1kI.0R7AqSVcci121_Z6jafDvmu6iqlqBkpMY0Zfc0Lc7EMf8DId4qUA9czfdWDG3X3DeG0vvqM_SbLS.q2BCwbJCVfRXsZ9VzTviUAS5qCkGGYcBmYUPDVDwfadXDvd38xI2rFEmdZcV0lKHOStKe5jeyo8aSQLU_bVxrkssbICvs08.IGOXjftFm_J9d4H_Wkr3uVWD.5KpEoEVGJ4gC4UC0dUhIi3QBAd8MV6mrfQTNMyG_i_Dj9ylNb7.PBt4pHOfeuRNU64TiplH5lZfclaWFXIIflcF9EIUF7Qy6NxFJCsoGKaYi8Op5PhWwt0oocaQ2x7_jDg6R5Y11BT6Mv.0eRKToNDvr3XuaL5vddEikGaP2UNZ4ZflTgQPyK0Dtj9OulfIooxA--
+X-Yahoo-Newman-Property: ymail-3
+From: Steven King <sfking@fdwdc.com>
+Organization: fdwdc.com
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fix section mismatch in fec.c
+Date: Sun, 18 Oct 2009 15:25:48 -0700
+User-Agent: KMail/1.9.9
+Cc: netdev@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091017183421.GA3370@bizet.domek.prywatny>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200910181525.48574.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 17, 2009 at 08:34:21PM +0200, Karol Lewandowski wrote:
+fec_enet_init is called by both fec_probe and fec_resume, so it shouldn't 
+be marked as __init.
 
-> I'll go now for another round of bisecting... and hopefully this time
-> I'll be able to trigger this problem on different/faster computer with
-> e100-based card.
-
-No luck with that either.
-
-I've tried merging 'akpm' (517d08699b25) into clean 2.6.30 tree and
-got suspend-breakage which makes it untestable for me.  (I've tried
-reverting drm, suspend, and other commits... all that failed.)
-
-Is there mm-related git tree hidden somewhere?  ... or broken out
-mm-related patches that were sent to Andrew ... or maybe it's possible
-to get "git log -p" from Mel's private repo?  Anything?
-
-Thanks.
+Signed-off-by: Steven King <sfking@fdwdc.com>
 
 
+diff --git a/drivers/net/fec.c b/drivers/net/fec.c
+index 2923438..e8218a3 100644
+--- a/drivers/net/fec.c
++++ b/drivers/net/fec.c
+@@ -1654,7 +1654,8 @@ static const struct net_device_ops fec_netdev_ops = {
+   *
+   * index is only used in legacy code
+   */
+-int __init fec_enet_init(struct net_device *dev, int index)
++static int
++fec_enet_init(struct net_device *dev, int index)
+ {
+ 	struct fec_enet_private *fep = netdev_priv(dev);
+ 	struct bufdesc *cbd_base;
+
+-- 
+Steven King -- sfking at fdwdc dot com
