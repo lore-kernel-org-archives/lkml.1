@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753725AbZJRLO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754287AbZJRLaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753725AbZJRLO3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 07:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZJRLO2
+	id S1754287AbZJRLaS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 07:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbZJRLaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 07:14:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:54375 "EHLO ozlabs.org"
+	Sun, 18 Oct 2009 07:30:18 -0400
+Received: from ozlabs.org ([203.10.76.45]:42411 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752688AbZJRLO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 07:14:27 -0400
-Date: Sun, 18 Oct 2009 22:13:00 +1100
+	id S1752638AbZJRLaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 07:30:17 -0400
+Date: Sun, 18 Oct 2009 22:29:23 +1100
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, mingo@elte.hu, paulus@samba.org,
-       a.p.zijlstra@chello.nl
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] powerpc perf_event: Add alignment-faults and
-	emulation-faults software events
-Message-ID: <20091018111300.GM4808@kryten>
-References: <20091018110929.GK4808@kryten> <20091018111126.GL4808@kryten>
+To: mingo@elte.hu, paulus@samba.org, a.p.zijlstra@chello.nl
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] perf stat: Add branch performance metric
+Message-ID: <20091018112923.GQ4808@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091018111126.GL4808@kryten>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hook up the alignment-faults and emulation-faults events for powerpc.
+When we count both branches and branch-misses it is useful to print out
+the percentage of branch-misses:
+
+# perf stat -e branches -e branch-misses /bin/true
+
+ Performance counter stats for '/bin/true':
+
+         401684  branches                 #      0.000 M/sec
+          23301  branch-misses            #      5.801 %  
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux.trees.git/arch/powerpc/include/asm/emulated_ops.h
-===================================================================
---- linux.trees.git.orig/arch/powerpc/include/asm/emulated_ops.h	2009-09-22 13:45:07.000000000 +1000
-+++ linux.trees.git/arch/powerpc/include/asm/emulated_ops.h	2009-09-22 13:45:27.000000000 +1000
-@@ -19,6 +19,7 @@
- #define _ASM_POWERPC_EMULATED_OPS_H
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index 3db31e7..6a2e37e 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -125,6 +125,7 @@ struct stats			event_res_stats[MAX_COUNTERS][3];
+ struct stats			runtime_nsecs_stats;
+ struct stats			walltime_nsecs_stats;
+ struct stats			runtime_cycles_stats;
++struct stats			runtime_branches_stats;
  
- #include <asm/atomic.h>
-+#include <linux/perf_event.h>
+ #define MATCH_EVENT(t, c, counter)			\
+ 	(attrs[counter].type == PERF_TYPE_##t &&	\
+@@ -235,6 +237,8 @@ static void read_counter(int counter)
+ 		update_stats(&runtime_nsecs_stats, count[0]);
+ 	if (MATCH_EVENT(HARDWARE, HW_CPU_CYCLES, counter))
+ 		update_stats(&runtime_cycles_stats, count[0]);
++	if (MATCH_EVENT(HARDWARE, HW_BRANCH_INSTRUCTIONS, counter))
++		update_stats(&runtime_branches_stats, count[0]);
+ }
  
+ static int run_perf_stat(int argc __used, const char **argv)
+@@ -352,6 +356,14 @@ static void abs_printout(int counter, double avg)
+ 			ratio = avg / total;
  
- #ifdef CONFIG_PPC_EMULATED_STATS
-@@ -71,7 +72,18 @@ extern void ppc_warn_emulated_print(cons
- 
- #endif /* !CONFIG_PPC_EMULATED_STATS */
- 
--#define PPC_WARN_EMULATED(type, regs)	__PPC_WARN_EMULATED(type)
--#define PPC_WARN_ALIGNMENT(type, regs)	__PPC_WARN_EMULATED(type)
-+#define PPC_WARN_EMULATED(type, regs)					\
-+	do {								\
-+		perf_sw_event(PERF_COUNT_SW_EMULATION_FAULTS,		\
-+			1, 0, regs, 0);					\
-+		__PPC_WARN_EMULATED(type);				\
-+	} while (0)
+ 		fprintf(stderr, " # %10.3f IPC  ", ratio);
++	} else if (MATCH_EVENT(HARDWARE, HW_BRANCH_MISSES, counter)) {
++		total = avg_stats(&runtime_branches_stats);
 +
-+#define PPC_WARN_ALIGNMENT(type, regs)					\
-+	do {								\
-+		perf_sw_event(PERF_COUNT_SW_ALIGNMENT_FAULTS,		\
-+			1, 0, regs, regs->dar);				\
-+		__PPC_WARN_EMULATED(type);				\
-+	} while (0)
++		if (total)
++			ratio = avg * 100 / total;
++
++		fprintf(stderr, " # %10.3f %%  ", ratio);
++
+ 	} else {
+ 		total = avg_stats(&runtime_nsecs_stats);
  
- #endif /* _ASM_POWERPC_EMULATED_OPS_H */
