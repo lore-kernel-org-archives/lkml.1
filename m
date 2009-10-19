@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751152AbZJSApJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751684AbZJSBEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751152AbZJSApJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 20:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbZJSApI
+	id S1751684AbZJSBEE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 21:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZJSBED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 20:45:08 -0400
-Received: from ozlabs.org ([203.10.76.45]:36378 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846AbZJSApH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 20:45:07 -0400
-Date: Mon, 19 Oct 2009 11:42:26 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: benh@kernel.crashing.org, mingo@elte.hu, paulus@samba.org,
-       a.p.zijlstra@chello.nl, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] powerpc perf_event: Add alignment-faults and
-	emulation-faults software events
-Message-ID: <20091019004226.GT4808@kryten>
-References: <20091018110929.GK4808@kryten> <20091018111126.GL4808@kryten> <20091018111300.GM4808@kryten> <1255909805.4192.5.camel@concordia>
+	Sun, 18 Oct 2009 21:04:03 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:19534 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751217AbZJSBEB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 21:04:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=v/qn/xA+pDnNFSFOuCeR0SrbXEvN0FRTN2O/yyBezoRd5Oo+tsvhPwEUxawv3JKFwI
+         xI3vrFyh2aNay+oKUnCJ/cHl/0l7Ydw8zdfN/lUUDuof91orZKmTix9BGmDWdN54eRHv
+         /YKXKrXjTOBEqFYpJMPsxWDjXo/rusWhMLXaA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255909805.4192.5.camel@concordia>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091019000221.GA23405@kroah.com>
+References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com>
+	 <1255906474-25091-2-git-send-email-felipe.contreras@gmail.com>
+	 <20091019000221.GA23405@kroah.com>
+Date: Mon, 19 Oct 2009 04:04:04 +0300
+Message-ID: <94a0d4530910181804g74543e4fp436aa36eaae0885@mail.gmail.com>
+Subject: Re: [PATCH 1/7] usb: trivial cleanups
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       Sarah Sharp <sarah.a.sharp@linux.intel.com>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 19, 2009 at 3:02 AM, Greg KH <greg@kroah.com> wrote:
+> On Mon, Oct 19, 2009 at 01:54:28AM +0300, Felipe Contreras wrote:
+>> It seems 'min_t' was used before, and looks cleaner, plus white-space
+>> stuff.
+>>
+>> Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+>
+> But this doesn't fix a kernel warning, does it?  If so, what one?
 
-Hi,
+No, it's just cleanups I noticed while trying to fix the warning I
+described here:
+http://lkml.org/lkml/2009/10/18/126
 
-> > +#define PPC_WARN_ALIGNMENT(type, regs)				\
-> > +	do {								\
-> > +		perf_sw_event(PERF_COUNT_SW_ALIGNMENT_FAULTS,		\
-> > +			1, 0, regs, regs->dar);				\
-> > +		__PPC_WARN_EMULATED(type);				\
-> > +	} while (0)
-> 
-> Does that work with perfxxx configured off?
-
-Yeah, perf_event.h defines an empty version if its configured off:
-
-static inline void
-perf_sw_event(u32 event_id, u64 nr, int nmi,
-                     struct pt_regs *regs, u64 addr)                    { }
-
-Anton
+-- 
+Felipe Contreras
