@@ -1,126 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbZJSNYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbZJSNbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbZJSNYU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 09:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbZJSNYU
+	id S1756171AbZJSNbl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 09:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbZJSNbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 09:24:20 -0400
-Received: from mail.windriver.com ([147.11.1.11]:43937 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754624AbZJSNYT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 09:24:19 -0400
-Message-ID: <4ADC6884.9000603@windriver.com>
-Date: Mon, 19 Oct 2009 08:24:20 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 19 Oct 2009 09:31:40 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49412 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756112AbZJSNbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 09:31:40 -0400
+Date: Mon, 19 Oct 2009 14:31:46 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Tobi Oetiker <tobi@oetiker.ch>
+Cc: Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
+       jens.axboe@oracle.com
+Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
+Message-ID: <20091019133146.GB9036@csn.ul.ie>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910190133.33183.elendil@planet.nl> <1255912562.6824.9.camel@penberg-laptop> <200910190444.55867.elendil@planet.nl> <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu>
 MIME-Version: 1.0
-To: Peter Teoh <htmldeveloper@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: booting up: blocking indefinitely on kgdb?
-References: <804dabb00910162243m47c038e3xa744ab165317b300@mail.gmail.com> <804dabb00910170040v27feb935mc95a751b0b7b4086@mail.gmail.com>
-In-Reply-To: <804dabb00910170040v27feb935mc95a751b0b7b4086@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Oct 2009 13:24:20.0974 (UTC) FILETIME=[77A4B8E0:01CA50BF]
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Teoh wrote:
-> sorry....now I reboot it is ok.   I don't know why. sorry about that.
->
->   
+On Mon, Oct 19, 2009 at 11:49:08AM +0200, Tobi Oetiker wrote:
+> Today Frans Pop wrote:
+> 
+> >
+> > I'm starting to think that this commit may not be directly related to high
+> > order allocation failures. The fact that I'm seeing SKB allocation
+> > failures earlier because of this commit could be just a side effect.
+> > It could be that instead the main impact of this commit is on encrypted
+> > file system and/or encrypted swap (kcryptd).
+> >
+> > Besides mm the commit also touches dm-crypt (and nfs/write.c, but as I'm
+> > only reading from NFS that's unlikely).
+> 
+> I have updated a fileserver to 2.6.31 today and I see page
+> allocation failures from several parts of the system ... mostly nfs though ... (it is a nfs server).
+> So I guess the problem must be quite generic:
+> 
+> 
+> Oct 19 07:10:02 johan kernel: [23565.684110] swapper: page allocation failure. order:5, mode:0x4020 [kern.warning]
+> Oct 19 07:10:02 johan kernel: [23565.684118] Pid: 0, comm: swapper Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
+> Oct 19 07:10:02 johan kernel: [23565.684121] Call Trace: [kern.warning]
+> Oct 19 07:10:02 johan kernel: [23565.684124]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
+> 
 
-This is actually a real problem.  It is a race condition, and there are
-actually two separate problems.
+What's the rest of the stack trace? I'm wondering where a large number
+of order-5 GFP_ATOMIC allocations are coming from. It seems different to
+the e100 problem where there is one GFP_ATOMIC allocation while the
+firmware is being loaded.
 
-1) When a processor kernel thread is put into the single step state,
-kgdb expects it to hit the single trap on the same processor the single
-step request was made on.
+Thanks
 
-On an SMP system a process or kernel thread can migrate to another
-processor after kgdb resumes.  This will result in a hard hang in the
-cpu roundup part of kgdb.
+> 
+> Oct 19 08:59:16 johan kernel: [30120.685647] __ratelimit: 13 callbacks suppressed [kern.warning]
+> Oct 19 08:59:16 johan kernel: [30120.685654] nfsd: page allocation failure. order:5, mode:0x4020 [kern.warning]
+> Oct 19 08:59:16 johan kernel: [30120.685660] Pid: 6071, comm: nfsd Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
+> Oct 19 08:59:16 johan kernel: [30120.685663] Call Trace: [kern.warning]
+> Oct 19 08:59:16 johan kernel: [30120.685666]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
+> 
+> Oct 19 09:36:31 johan kernel: [32355.708345] __ratelimit: 16 callbacks suppressed [kern.warning]
+> Oct 19 09:36:31 johan kernel: [32355.708352] nfsd: page allocation failure. order:5, mode:0x4020 [kern.warning]
+> Oct 19 09:36:31 johan kernel: [32355.708358] Pid: 6087, comm: nfsd Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
+> Oct 19 09:36:31 johan kernel: [32355.708361] Call Trace: [kern.warning]
+> Oct 19 09:36:31 johan kernel: [32355.708364]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
+> 
+> Oct 19 10:52:01 johan kernel: [36885.358312] __ratelimit: 31 callbacks suppressed [kern.warning]
+> Oct 19 10:52:01 johan kernel: [36885.358319] nfsd: page allocation failure. order:5, mode:0x4020 [kern.warning]
+> Oct 19 10:52:01 johan kernel: [36885.358325] Pid: 6057, comm: nfsd Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
+> Oct 19 10:52:01 johan kernel: [36885.358327] Call Trace: [kern.warning]
+> Oct 19 10:52:01 johan kernel: [36885.358331]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
+> 
+> Oct 19 11:12:01 johan kernel: [38085.163831] events/3: page allocation failure. order:5, mode:0x4020 [kern.warning]
+> Oct 19 11:12:01 johan kernel: [38085.163840] Pid: 18, comm: events/3 Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
+> Oct 19 11:12:01 johan kernel: [38085.163843] Call Trace: [kern.warning]
+> Oct 19 11:12:01 johan kernel: [38085.163846]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
+> 
+> 
+> 
+> -- 
+> Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+> http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+> 
 
-2) Schedule lock contention can cause a hard hang.
-
-On an SMP system kgdb for the x86 architecture single steps by running
-only a single core.  This is quite problematic if you have the schedule
-a lock held by a cpu which is in busy wait.  The system will deadlock on
-the single step operation from kgdb.  This problem is easily observed by
-doing on a 2 processor system by doing:
-
-   while [ 1 ] ; do find /  2> /dev/null > /dev/null; done &
-   while [ 1 ] ; do date > /dev/null ; done &
-   echo V1 > /sys/module/kgdbts/parameters/kgdbts
-
-For the first problem, I have a fix which is in the linux-next branch
-and will I will send a merge request to Linus to get it into the
-mainline tree.
-
-For the second problem, I am going to merge a change to release all the
-processors to run, at the expense of missing a breakpoint.   It is
-possible to change the behavior of this dynamically, for someone who
-might care about this behavior, until a longer term approach is
-implemented.  I have an experimental patch which implements the longer
-term approach of using displaced stepping. 
-
-The experimental patch uses kprobes to manage software breakpoints.  The
-kprobe allows the breakpoint to remain planted while stepping around it
-by using out of line instruction execution, where you emulate the
-original instruction using memory elsewhere, followed by another trap
-instruction.
-
-Thanks,
-Jason.
-
-> On Sat, Oct 17, 2009 at 1:43 AM, Peter Teoh <htmldeveloper@gmail.com> wrote:
->   
->> Today, both my system (2.6.32.-rc4 from linus git tree and linux-next)
->> bootup blocked indefinitely on:
->>
->> kgdb: Registered I/O driver kgdbts.
->>
->> while booting up.   The expected line:
->>
->> kgdb: Unregistered I/O driver kgdbts, debugger disabled.
->>
->> never comes up.
->>
->> My bootup menu.lst:
->>
->> title Fedora (2.6.26-rc4-next-20080530)
->>        root (hd1,7)
->>        kernel /boot/vmlinuz-2.6.26-rc4-next-20080530 ro
->> root=UUID=d10fe8db-e7d4-4b42-b265-0109a3f3eedf
->>        initrd /boot/initrd-2.6.26-rc4-next-20080530.img
->> title Fedora (2.6.32-rc4)
->>        root (hd1,7)
->>        kernel /boot/vmlinuz-2.6.32-rc4 ro
->> root=UUID=d10fe8db-e7d4-4b42-b265-0109a3f3eedf
->>        initrd /boot/initrd-2.6.32-rc4.img
->>
->> and kgdb-related option:
->>
->> CONFIG_HAVE_ARCH_KGDB=y
->> CONFIG_KGDB=y
->> CONFIG_KGDB_SERIAL_CONSOLE=y
->> CONFIG_KGDB_TESTS=y
->> CONFIG_KGDB_TESTS_ON_BOOT=y
->> CONFIG_KGDB_TESTS_BOOT_STRING="y"
->>
->> The same 2.6.32-rc4 image have bootup previously before without any
->> problem.   So what could be the potential cause of this permanent
->> wait?
->>
->> --
->> Regards,
->> Peter Teoh
->>
->>     
->
->
->
->   
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
