@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbZJSIEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbZJSIwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbZJSIEP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 04:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZJSIEO
+	id S932083AbZJSIwf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 04:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbZJSIwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 04:04:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40142 "EHLO mx2.mail.elte.hu"
+	Mon, 19 Oct 2009 04:52:34 -0400
+Received: from mx3.orcon.net.nz ([219.88.242.53]:40674 "EHLO mx3.orcon.net.nz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753125AbZJSIEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 04:04:13 -0400
-Date: Mon, 19 Oct 2009 10:04:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Arjan van de Ven <arjan@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: nfs mount fail
-Message-ID: <20091019080403.GA24036@elte.hu>
-References: <84144f020910181935q4aed9f0dx7a8a149d8b8743c7@mail.gmail.com> <20091019114339.4b67d947@infradead.org> <1255921080.839.2.camel@penberg-laptop> <86802c440910182252v4648a7d1k249d091799583e37@mail.gmail.com> <1255933848.11116.2.camel@heimdal.trondhjem.org> <20091019065433.GA29550@elte.hu> <1255935518.18914.0.camel@penberg-laptop> <20091019070825.GA16493@elte.hu> <86802c440910190031m33e116d3o90869de5212bb2e@mail.gmail.com> <1255938774.11116.35.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255938774.11116.35.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	id S1755888AbZJSIwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 04:52:34 -0400
+X-Greylist: delayed 2477 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 04:52:34 EDT
+From: Michael Cree <mcree@orcon.net.nz>
+To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Unimplemented syscalls on Alpha
+Date: Mon, 19 Oct 2009 21:11:07 +1300
+Message-Id: <1255939868-5050-1-git-send-email-mcree@orcon.net.nz>
+X-Mailer: git-send-email 1.6.3.3
+X-DSPAM-Check: by mx3.orcon.net.nz on Mon, 19 Oct 2009 21:11:20 +1300
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Mon Oct 19 21:11:21 2009
+X-DSPAM-Confidence: 0.7616
+X-DSPAM-Probability: 0.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I couldn't but help notice the increasing number of unimplemented syscalls
+on the Alpha architecture.  I thought I might poke around to see what might
+be required to get these implemented and got a pleasant surprise when it
+seems some only need an entry in the syscall table.  Indeed, the patch in
+reply to this message gets preadv and pwritev going -- tested with the
+sample program at http://lkml.org/lkml/2009/4/6/535.
 
-* Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+I am happy to write patches to wire up more of the syscalls, but I am
+wondering which ones are as straightforward as the preadv/pwritev case?
+That is, do any require extra programming other than the syscall table?  Do
+I need to get the entries in the syscall table in the same order as other
+architectures?
 
-> > --- a/fs/nfs/super.c
-> > +++ b/fs/nfs/super.c
-> > @@ -1253,6 +1253,7 @@ static int nfs_parse_mount_options(char *raw,
-> >  			default:
-> >  				dfprintk(MOUNT, "NFS:   unrecognized "
-> >  						"transport protocol\n");
-> > +				kfree(string);
-> >  				return 0;
-> >  			}
-> >  			break;
-> 
-> There is a possible clean up there too. We can move the other kfree() 
-> calls out of the inner switch statement, and coalesce them all into a 
-> single call.
+The unimplemented syscalls on Alpha are:
 
-Correct - separately from the leak fix. (which potentially wants to go 
-to -stable as well)
+<stdin>:395:2: warning: #warning syscall umount2 not implemented
+<stdin>:1463:2: warning: #warning syscall timerfd_create not implemented
+<stdin>:1471:2: warning: #warning syscall fallocate not implemented
+<stdin>:1475:2: warning: #warning syscall timerfd_settime not implemented
+<stdin>:1479:2: warning: #warning syscall timerfd_gettime not implemented
+<stdin>:1483:2: warning: #warning syscall signalfd4 not implemented
+<stdin>:1487:2: warning: #warning syscall eventfd2 not implemented
+<stdin>:1491:2: warning: #warning syscall epoll_create1 not implemented
+<stdin>:1495:2: warning: #warning syscall dup3 not implemented
+<stdin>:1499:2: warning: #warning syscall pipe2 not implemented
+<stdin>:1503:2: warning: #warning syscall inotify_init1 not implemented
+<stdin>:1507:2: warning: #warning syscall preadv not implemented
+<stdin>:1511:2: warning: #warning syscall pwritev not implemented
+<stdin>:1515:2: warning: #warning syscall rt_tgsigqueueinfo not implemented
+<stdin>:1519:2: warning: #warning syscall perf_event_open not implemented
 
-Plus it's not just the kfree() calls that can be refactored but also the 
-~25 match_strdup() call sites. Most of these repetitive sequences:
+Cheers
+Michael.
 
-                case Opt_retrans:
-                        string = match_strdup(args);
-                        if (string == NULL)
-                                goto out_nomem;
-                        rc = strict_strtoul(string, 10, &option);
-                        kfree(string);
-                        if (rc != 0 || option == 0)
-                                goto out_invalid_value;
-                        mnt->retrans = option;
-                        break;
-
-could be pushed into a helper function, along the lines of:
-
-                case Opt_retrans:
-			if (parse_opt(args, &mnt->retrans) < 0 || mnt->retrans == 0)
-                                goto out_invalid_value;
-                        break;
-
-where the non-repetitive value checks can be done after a generic 
-parse_opt(). (or something like that)
-
-That makes it more readable as well, as the switch statement will only 
-list true per option properties, with minimal repetitive patterns.
-
-	Ingo
