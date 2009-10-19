@@ -1,66 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbZJSJtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbZJSJyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbZJSJtY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 05:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbZJSJtV
+	id S1754581AbZJSJyQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 05:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbZJSJyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 05:49:21 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:55808 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754549AbZJSJtT (ORCPT
+	Mon, 19 Oct 2009 05:54:15 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:34976 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbZJSJyO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 05:49:19 -0400
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Wolfram Sang <w.sang@pengutronix.de>, Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH] checkpatch: fix false positive on __initconst
-Date: Mon, 19 Oct 2009 11:49:14 +0200
-Message-Id: <1255945754-2160-1-git-send-email-w.sang@pengutronix.de>
-X-Mailer: git-send-email 1.6.3.3
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Mon, 19 Oct 2009 05:54:14 -0400
+Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Tobi Oetiker <tobi@oetiker.ch>
+Cc: Frans Pop <elendil@planet.nl>, Mel Gorman <mel@csn.ul.ie>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
+       jens.axboe@oracle.com
+In-Reply-To: <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
+	 <200910190133.33183.elendil@planet.nl>
+	 <1255912562.6824.9.camel@penberg-laptop>
+	 <200910190444.55867.elendil@planet.nl>
+	 <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu>
+Date: Mon, 19 Oct 2009 12:54:11 +0300
+Message-Id: <1255946051.5941.2.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-checkpatch falsely complained about '__initconst' because it thought the
-'const' needed a space before. Fix this by changing the list of attributes:
+On Mon, 2009-10-19 at 11:49 +0200, Tobi Oetiker wrote:
+> Today Frans Pop wrote:
+> 
+> >
+> > I'm starting to think that this commit may not be directly related to high
+> > order allocation failures. The fact that I'm seeing SKB allocation
+> > failures earlier because of this commit could be just a side effect.
+> > It could be that instead the main impact of this commit is on encrypted
+> > file system and/or encrypted swap (kcryptd).
+> >
+> > Besides mm the commit also touches dm-crypt (and nfs/write.c, but as I'm
+> > only reading from NFS that's unlikely).
+> 
+> I have updated a fileserver to 2.6.31 today and I see page
+> allocation failures from several parts of the system ... mostly nfs though ... (it is a nfs server).
+> So I guess the problem must be quite generic:
 
-- add '__initconst'
-- force plain 'init' to contain a word-boundary at the end
+Yup, it almost certainly is. Does this patch help?
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Andy Whitcroft <apw@shadowen.org>
----
+http://lkml.org/lkml/2009/10/16/89
 
-Not entirely sure if adding the word boundary may cause a side-effect which I
-overlooked. A few more eyes on this would be great.
+Frans, did you ever get around retesting with just the above patch
+applied?
 
- scripts/checkpatch.pl |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+			Pekka
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 87bbb8b..0a47a1f 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -142,11 +142,14 @@ our $Sparse	= qr{
- 			__kprobes|
- 			__ref
- 		}x;
-+
-+# Notes to $Attribute:
-+# We need \b after 'init' otherwise 'initconst' will cause a false positive in a check
- our $Attribute	= qr{
- 			const|
- 			__read_mostly|
- 			__kprobes|
--			__(?:mem|cpu|dev|)(?:initdata|init)|
-+			__(?:mem|cpu|dev|)(?:initdata|initconst|init\b)|
- 			____cacheline_aligned|
- 			____cacheline_aligned_in_smp|
- 			____cacheline_internodealigned_in_smp|
--- 
-1.6.3.3
+> Oct 19 07:10:02 johan kernel: [23565.684110] swapper: page allocation failure. order:5, mode:0x4020 [kern.warning]
+> Oct 19 07:10:02 johan kernel: [23565.684118] Pid: 0, comm: swapper Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
+> Oct 19 07:10:02 johan kernel: [23565.684121] Call Trace: [kern.warning]
+> Oct 19 07:10:02 johan kernel: [23565.684124]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
+> 
+> 
+> Oct 19 08:59:16 johan kernel: [30120.685647] __ratelimit: 13 callbacks suppressed [kern.warning]
+> Oct 19 08:59:16 johan kernel: [30120.685654] nfsd: page allocation failure. order:5, mode:0x4020 [kern.warning]
+> Oct 19 08:59:16 johan kernel: [30120.685660] Pid: 6071, comm: nfsd Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
+> Oct 19 08:59:16 johan kernel: [30120.685663] Call Trace: [kern.warning]
+> Oct 19 08:59:16 johan kernel: [30120.685666]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
+> 
+> Oct 19 09:36:31 johan kernel: [32355.708345] __ratelimit: 16 callbacks suppressed [kern.warning]
+> Oct 19 09:36:31 johan kernel: [32355.708352] nfsd: page allocation failure. order:5, mode:0x4020 [kern.warning]
+> Oct 19 09:36:31 johan kernel: [32355.708358] Pid: 6087, comm: nfsd Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
+> Oct 19 09:36:31 johan kernel: [32355.708361] Call Trace: [kern.warning]
+> Oct 19 09:36:31 johan kernel: [32355.708364]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
+> 
+> Oct 19 10:52:01 johan kernel: [36885.358312] __ratelimit: 31 callbacks suppressed [kern.warning]
+> Oct 19 10:52:01 johan kernel: [36885.358319] nfsd: page allocation failure. order:5, mode:0x4020 [kern.warning]
+> Oct 19 10:52:01 johan kernel: [36885.358325] Pid: 6057, comm: nfsd Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
+> Oct 19 10:52:01 johan kernel: [36885.358327] Call Trace: [kern.warning]
+> Oct 19 10:52:01 johan kernel: [36885.358331]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
+> 
+> Oct 19 11:12:01 johan kernel: [38085.163831] events/3: page allocation failure. order:5, mode:0x4020 [kern.warning]
+> Oct 19 11:12:01 johan kernel: [38085.163840] Pid: 18, comm: events/3 Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
+> Oct 19 11:12:01 johan kernel: [38085.163843] Call Trace: [kern.warning]
+> Oct 19 11:12:01 johan kernel: [38085.163846]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
+> 
+> 
+> 
 
