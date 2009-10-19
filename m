@@ -1,38 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZJSIQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbZJSISt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755621AbZJSIQy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 04:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZJSIQx
+	id S1755477AbZJSISt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 04:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZJSISs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 04:16:53 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:37265 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754030AbZJSIQw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 04:16:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=nraKP2Y1EFqNtdzsl5v7lIi1wJ1KwzF0b/FdN+hS6PDSS99KlYw2DD4W+HYzLb0mlM
-         Gh9BiXef/wvd4Rpn/MKFr3ekCMVse6vBo0D/nrbl9SIDvwivWY7grjAqgMMNvkilG2G/
-         elTcJCuD3vBn2VbsQZndys8Vvl+p7okvDe8hI=
-MIME-Version: 1.0
-Date: Mon, 19 Oct 2009 16:16:56 +0800
-Message-ID: <f2201a0b0910190116w29cd5e3w1ae2c76bd677f9ed@mail.gmail.com>
-Subject: Question about invalidate_inode_pages2_range()
-From: Peng Tao <lkml.bergwolf@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 19 Oct 2009 04:18:48 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:23397 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbZJSISs convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;7:1>);
+	Mon, 19 Oct 2009 04:18:48 -0400
+Message-Id: <4ADC3D3C020000780001AA10@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Mon, 19 Oct 2009 09:19:40 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Cc: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alan Cox" <alan@linux.intel.com>,
+       <linux-arm-kernel@lists.infradead.org>,
+       <u.kleine-koenig@pengutronix.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] serial/atmel_serial: Fix another fallout of the
+	 change to BUILD_BUG_ON
+References: <1255417680-25609-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <20091013092644.72c78334@hskinnemoen-d830>
+ <4AD44AF10200007800019801@vpn.id2.novell.com>
+ <200910191638.41299.rusty@rustcorp.com.au>
+In-Reply-To: <200910191638.41299.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>>> Rusty Russell <rusty@rustcorp.com.au> 19.10.09 08:08 >>>
+>How's this?  It's not quite valid C, but it "works":
 
-I've a question about invalidate_inode_pages2_range().
+But that's not what you proposed initially, i.e. generating a link time
+error if a compile time error can't be generated (and only if even a link
+time error isn't possible, a run time one should be forced).
 
-When does invalidate_inode_pages2_range() returns -EBUSY? It locks and
-writes back the page. Why invalidate_complete_page2() still may fail
-due to page dirtiness?
+And btw., why do you think this isn't valid C?
 
-TIA.
+Jan
+
