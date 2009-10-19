@@ -1,26 +1,27 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932455AbZJPOnF (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 16 Oct 2009 10:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759942AbZJPOnE
+	id S1753588AbZJSGA2 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Mon, 19 Oct 2009 02:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZJSGA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Oct 2009 10:43:04 -0400
-Received: from localhost ([123.30.75.2]:5031 "EHLO mail.camau.gov.vn"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758431AbZJPOnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Oct 2009 10:43:03 -0400
-X-Greylist: delayed 310 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Oct 2009 10:43:02 EDT
-Message-ID: <b4bd9ee3cea9a24551737e23a69e95d4.squirrel@mail.camau.gov.vn>
-Date: Fri, 16 Oct 2009 22:42:19 +0800 (SE Asia Standard Time)
-Subject: Dear Webmail User
-From: "WEBMAILUPGRADE" <upgradecentre@consultant.com>
-Reply-To: upgradecenter@8u8.com
-User-Agent: SquirrelMail/1.4.17
-MIME-Version: 1.0
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-OriginalArrivalTime: 16 Oct 2009 14:42:19.0953 (UTC) FILETIME=[DD4B0210:01CA4E6E]
+	Mon, 19 Oct 2009 02:00:28 -0400
+Received: from mxout2.netvision.net.il ([194.90.9.21]:52515 "EHLO
+	mxout2.netvision.net.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753140AbZJSGA1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 02:00:27 -0400
+X-Greylist: delayed 1033 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 02:00:27 EDT
+Date: Mon, 19 Oct 2009 07:41:24 +0200
+From: l tali <ta@013net.net>
+Subject: Hello
+Reply-to: missrosetimbo26@live.fr
+Message-id: <fc83cf3a7317.4adc1824@netvision.net.il>
+MIME-version: 1.0
+X-Mailer: Sun Java(tm) System Messenger Express 6.2-8.04 (built Feb 28 2007)
+Content-type: text/plain; charset=us-ascii
+Content-language: en
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-Accept-Language: en
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,22 +29,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
+Hello
 
-Dear Webmail User,
-We are really sorry for the inconvenience we are making you pass
-through,we are having problem with our database due to our recent upgrade
-and we can not find your data. Please we need to rectify this problem
-before the next 24-hours if not, you may not be able to send or receive
-email with your  e-mail address.
-Please provide your account details below so we can rectify this problem
-as soon as possible:
-USER NAME:
-PASSWORD:
-COUNTRY:
-NOTE: Your data and information will not be tampered or interfered with,
-We'll just record your data back into our database and send you a new
-confirmation alphanumerical password that will only be valid during this
-period and can be changed after this process.
-Please respond to this notice to enable us provide you better online
-services.
-
+How are you today? I hope you are fine.If so thank be to God almighty.My name is Rose Timbo,26 years from Sierra Loene  in West Africa.I am single girl looking for honest and nice person. Somebody who care and fear God whom i can partner with .I don't care about your colour or ethnicity.I would like to know you more,most especially what you like and what you dislike.I'm sending you this beautiful mail, with a wish for much happiness.I am looking forward to hear from you.Love from, 
+Your Love Rose.
