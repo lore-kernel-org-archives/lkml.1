@@ -1,151 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932277AbZJSU3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbZJSUVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932277AbZJSU3Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 16:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757416AbZJSU3Q
+	id S1757526AbZJSUVU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 16:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbZJSUVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 16:29:16 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:50713 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757369AbZJSU3P (ORCPT
+	Mon, 19 Oct 2009 16:21:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:6470 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752315AbZJSUVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 16:29:15 -0400
+	Mon, 19 Oct 2009 16:21:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:mime-version:content-type
          :content-transfer-encoding:content-disposition:message-id;
-        b=VCZp7y5t4g89WdGK9uBS11X7XsvwnkicKL9ejDuuebTBNmnKqAVeYms5qWGGgYhbkX
-         bT2VCGGL425GsB2oyXK7OnJvBeE5P+TUA04Y0a1daKgqyV2ZqRmuWIgFFECEq+rvJFeU
-         wldd0EkYKTBVS9dWiGQiRH6rHA4To10Rk8YNI=
+        b=X0e22vPmkAlXFFPCp+5mQjVTNpjFhKejUrlJKJxj2hfevtDFnIG+Oogs02cSEWC7tO
+         1ncAHJDjYaEhP7OvSp77+Ce8IA7TWd+/KCQazEWd6n/qXexlExYULRXBKH93GcrmsM57
+         9G1dmVnll8AjkwkBmZOWPaO8cY+Y0/N0BvKbQ=
 From: Corrado Zoccolo <czoccolo@gmail.com>
 To: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
        Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>
-Subject: [RFC PATCH 1/5] cfq-iosched: adapt slice to number of processes doing I/O
-Date: Mon, 19 Oct 2009 22:21:03 +0200
+Subject: [RFC PATCH 2/5] cfq-iosched: preparation to handle multiple service trees
+Date: Mon, 19 Oct 2009 22:21:15 +0200
 User-Agent: KMail/1.11.4 (Linux/2.6.32cz; KDE/4.2.4; i686; ; )
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200910192221.03805.czoccolo@gmail.com>
+Message-Id: <200910192221.15739.czoccolo@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the number of processes performing I/O concurrently increases,
-a fixed time slice per process will cause large latencies.
-
-This patch, if low_latency mode is enabled,  will scale the time slice
-assigned to each process according to a 300ms target latency.
-
-In order to keep fairness among processes:
-* The number of active processes is computed using a special form of
-running average, that quickly follows sudden increases (to keep latency low),
-and decrease slowly (to have fairness in spite of rapid decreases of this
-value).
-
-To safeguard sequential bandwidth, we impose a minimum time slice
-(computed using 2*cfq_slice_idle as base, adjusted according to priority
-and async-ness).
+We embed a pointer to the service tree in each queue, to handle multiple
+service trees easily.
+Service trees are enriched with a counter.
+Queues are enriched with a back pointer to their context.
 
 Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
 ---
- block/cfq-iosched.c |   41 +++++++++++++++++++++++++++++++++++++----
- 1 files changed, 37 insertions(+), 4 deletions(-)
+ block/cfq-iosched.c |   30 +++++++++++++++++++++---------
+ 1 files changed, 21 insertions(+), 9 deletions(-)
 
 diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 069a610..04d3b66 100644
+index 04d3b66..f866b17 100644
 --- a/block/cfq-iosched.c
 +++ b/block/cfq-iosched.c
-@@ -27,6 +27,8 @@ static const int cfq_slice_sync = HZ / 10;
- static int cfq_slice_async = HZ / 25;
- static const int cfq_slice_async_rq = 2;
- static int cfq_slice_idle = HZ / 125;
-+static const int cfq_target_latency = HZ * 3/10; /* 300 ms */
-+static const int cfq_hist_divisor = 4;
+@@ -69,8 +69,9 @@ static DEFINE_SPINLOCK(ioc_gone_lock);
+ struct cfq_rb_root {
+ 	struct rb_root rb;
+ 	struct rb_node *left;
++	unsigned count;
+ };
+-#define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, }
++#define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, }
  
  /*
-  * offset from end of service tree
-@@ -134,6 +136,8 @@ struct cfq_data {
- 	struct rb_root prio_trees[CFQ_PRIO_LISTS];
+  * Per process-grouping structure
+@@ -115,6 +116,9 @@ struct cfq_queue {
+ 	unsigned short ioprio_class, org_ioprio_class;
  
- 	unsigned int busy_queues;
-+	unsigned int busy_rt_queues;
-+	unsigned int busy_queues_avg[2];
- 
- 	int rq_in_driver[2];
- 	int sync_flight;
-@@ -301,10 +305,37 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 	return cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio);
- }
- 
-+static inline unsigned
-+cfq_get_avg_queues(struct cfq_data *cfqd, bool rt) {
-+	unsigned min_q, max_q;
-+	unsigned mult  = cfq_hist_divisor - 1;
-+	unsigned round = cfq_hist_divisor / 2;
-+	unsigned busy  = rt ? cfqd->busy_rt_queues :
-+		(cfqd->busy_queues - cfqd->busy_rt_queues);
-+	min_q = min(cfqd->busy_queues_avg[rt], busy);
-+	max_q = max(cfqd->busy_queues_avg[rt], busy);
-+	cfqd->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
-+		cfq_hist_divisor;
-+	return cfqd->busy_queues_avg[rt];
-+}
+ 	pid_t pid;
 +
- static inline void
- cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
++	struct cfq_rb_root *service_tree;
++	struct cfq_io_context *cic;
+ };
+ 
+ /*
+@@ -254,6 +258,7 @@ static inline void cic_set_cfqq(struct cfq_io_context *cic,
+ 				struct cfq_queue *cfqq, bool is_sync)
  {
--	cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) + jiffies;
-+	unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
-+	if (cfqd->cfq_latency) {
-+		unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));
-+		unsigned process_thr = cfqd->cfq_target_latency
-+			/ cfqd->cfq_slice[1];
-+		if (iq > process_thr) {
-+			unsigned low_slice = 2 * slice * cfqd->cfq_slice_idle
-+				/ cfqd->cfq_slice[1];
-+			slice = max(slice * cfq_target_latency /
-+				(cfqd->cfq_slice[1] * iq),
-+				min(slice, low_slice));
-+		}
-+	}
-+	cfqq->slice_end = jiffies + slice;
- 	cfq_log_cfqq(cfqd, cfqq, "set_slice=%lu", cfqq->slice_end - jiffies);
- }
- 
-@@ -655,7 +686,8 @@ static void cfq_add_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 	BUG_ON(cfq_cfqq_on_rr(cfqq));
- 	cfq_mark_cfqq_on_rr(cfqq);
- 	cfqd->busy_queues++;
--
-+	if (cfq_class_rt(cfqq))
-+		cfqd->busy_rt_queues++;
- 	cfq_resort_rr_list(cfqd, cfqq);
- }
- 
-@@ -678,6 +710,8 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 
- 	BUG_ON(!cfqd->busy_queues);
- 	cfqd->busy_queues--;
-+	if (cfq_class_rt(cfqq))
-+		cfqd->busy_rt_queues--;
+ 	cic->cfqq[is_sync] = cfqq;
++	cfqq->cic = cic;
  }
  
  /*
-@@ -2152,10 +2186,9 @@ static void cfq_insert_request(struct request_queue *q, struct request *rq)
- 	cfq_log_cfqq(cfqd, cfqq, "insert_request");
- 	cfq_init_prio_data(cfqq, RQ_CIC(rq)->ioc);
- 
--	cfq_add_rq_rb(rq);
--
- 	rq_set_fifo_time(rq, jiffies + cfqd->cfq_fifo_expire[rq_is_sync(rq)]);
- 	list_add_tail(&rq->queuelist, &cfqq->fifo);
-+	cfq_add_rq_rb(rq);
- 
- 	cfq_rq_enqueued(cfqd, cfqq, rq);
+@@ -474,6 +479,7 @@ static void cfq_rb_erase(struct rb_node *n, struct cfq_rb_root *root)
+ 	if (root->left == n)
+ 		root->left = NULL;
+ 	rb_erase_init(n, &root->rb);
++	--root->count;
  }
+ 
+ /*
+@@ -524,11 +530,12 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	struct rb_node **p, *parent;
+ 	struct cfq_queue *__cfqq;
+ 	unsigned long rb_key;
++	struct cfq_rb_root *service_tree = &cfqd->service_tree;
+ 	int left;
+ 
+ 	if (cfq_class_idle(cfqq)) {
+ 		rb_key = CFQ_IDLE_DELAY;
+-		parent = rb_last(&cfqd->service_tree.rb);
++		parent = rb_last(&service_tree->rb);
+ 		if (parent && parent != &cfqq->rb_node) {
+ 			__cfqq = rb_entry(parent, struct cfq_queue, rb_node);
+ 			rb_key += __cfqq->rb_key;
+@@ -546,7 +553,7 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 		cfqq->slice_resid = 0;
+ 	} else {
+ 		rb_key = -HZ;
+-		__cfqq = cfq_rb_first(&cfqd->service_tree);
++		__cfqq = cfq_rb_first(service_tree);
+ 		rb_key += __cfqq ? __cfqq->rb_key : jiffies;
+ 	}
+ 
+@@ -557,12 +564,14 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 		if (rb_key == cfqq->rb_key)
+ 			return;
+ 
+-		cfq_rb_erase(&cfqq->rb_node, &cfqd->service_tree);
++		cfq_rb_erase(&cfqq->rb_node, cfqq->service_tree);
++		cfqq->service_tree = NULL;
+ 	}
+ 
+ 	left = 1;
+ 	parent = NULL;
+-	p = &cfqd->service_tree.rb.rb_node;
++	cfqq->service_tree = service_tree;
++	p = &service_tree->rb.rb_node;
+ 	while (*p) {
+ 		struct rb_node **n;
+ 
+@@ -594,11 +603,12 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	}
+ 
+ 	if (left)
+-		cfqd->service_tree.left = &cfqq->rb_node;
++		service_tree->left = &cfqq->rb_node;
+ 
+ 	cfqq->rb_key = rb_key;
+ 	rb_link_node(&cfqq->rb_node, parent, p);
+-	rb_insert_color(&cfqq->rb_node, &cfqd->service_tree.rb);
++	rb_insert_color(&cfqq->rb_node, &service_tree->rb);
++	service_tree->count++;
+ }
+ 
+ static struct cfq_queue *
+@@ -701,8 +711,10 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 	BUG_ON(!cfq_cfqq_on_rr(cfqq));
+ 	cfq_clear_cfqq_on_rr(cfqq);
+ 
+-	if (!RB_EMPTY_NODE(&cfqq->rb_node))
+-		cfq_rb_erase(&cfqq->rb_node, &cfqd->service_tree);
++	if (!RB_EMPTY_NODE(&cfqq->rb_node)) {
++		cfq_rb_erase(&cfqq->rb_node, cfqq->service_tree);
++		cfqq->service_tree = NULL;
++	}
+ 	if (cfqq->p_root) {
+ 		rb_erase(&cfqq->p_node, cfqq->p_root);
+ 		cfqq->p_root = NULL;
 -- 
 1.6.2.5
 
