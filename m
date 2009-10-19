@@ -1,65 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbZJSWuC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbZJSWxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757873AbZJSWuC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 18:50:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbZJSWuB
+	id S932320AbZJSWxJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 18:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbZJSWxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 18:50:01 -0400
-Received: from cantor.suse.de ([195.135.220.2]:34208 "EHLO mx1.suse.de"
+	Mon, 19 Oct 2009 18:53:09 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:57515 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751877AbZJSWuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 18:50:00 -0400
-Date: Tue, 20 Oct 2009 00:50:03 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH 2/7] ipc: fix trivial warning
-In-Reply-To: <94a0d4530910190949y265426cbq4c32466a9fab8966@mail.gmail.com>
-Message-ID: <alpine.LSU.2.00.0910200047200.8582@wotan.suse.de>
-References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com>  <1255906474-25091-3-git-send-email-felipe.contreras@gmail.com>  <alpine.LSU.2.00.0910191610160.8582@wotan.suse.de>  <94a0d4530910190750j5674ef13m93198b68d305b188@mail.gmail.com> 
- <alpine.LSU.2.00.0910191655220.8582@wotan.suse.de>  <94a0d4530910190815n4cf2c2ebmd288f6e7501b1ba5@mail.gmail.com>  <alpine.LSU.2.00.0910191716580.8582@wotan.suse.de> <94a0d4530910190949y265426cbq4c32466a9fab8966@mail.gmail.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	id S1755962AbZJSWxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 18:53:08 -0400
+Message-ID: <4ADCEE1B.40003@redhat.com>
+Date: Mon, 19 Oct 2009 18:54:19 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
+ 	probe and kprobe-tracer bugfixes
+References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <20091017080203.GA4155@elte.hu> <20091017103427.GA31238@elte.hu> <4ADAAF50.9040604@redhat.com> <20091019075103.GF17960@elte.hu> <20091019110055.GA5549@nowhere> <20091019112125.GA12829@elte.hu> <4ADCC348.2020800@redhat.com>
+In-Reply-To: <4ADCC348.2020800@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Oct 2009, Felipe Contreras wrote:
-
-> > This statement of your makes me wonder why you have submitted the patch in
-> > the first place, as you are apparently not sure whether adding
-> > uninitialized_var() is a valid thing to do or not.
-[ ... ]
-> In any case, if the patch is not correct, then somebody should point
-> that out, which is what the patch review process is for. Alternatively
-> I could have sent an email asking what is happening here, but from my
-> point of view this patch serves exactly the same purpose, and has the
-> advantage that it might turn out to be correct.
->
-> It's not as if I didn't do any homework while writing this patch.
-
-Sorry if it sounded to offensive, I have probably been a little bit too 
-tired ysterday.
-
-> > The gcc warning in this case is actually bogus, as msqid64 is touched only
-> > iff cmd == IPC_SET, and in such case, copy_msqid_from_user() initializes
-> > it properly.
+Masami Hiramatsu wrote:
+> Ingo Molnar wrote:
+>> For example you might want to probe the point within schedule that calls
+>> switch_mm() - this could be done via:
+>>
+>>    perf probe schedule@switch_mm
+>>
+>> Or the point where 'next' gets assigned? Sure, you dont need to even
+>> open the editor, if you know the rough outline of the function you can
+>> probe it via:
+>>
+>>    perf probe schedule@'next ='
+>>
+>> Note that i was able to specify both probes without having opened an
+>> editor - just based on the general knowledge of the scheduler.
 > 
-> Yes, but it's used by ipcctl_pre_down, which from what I can see is
-> only using those arguments when cmd == IPC_SET, so everything is ok.
-> But still, I don't think the compiler _should_ know what
-> ipcctl_pre_down is going to do, if you look _only_ at msgctl_down,
-> then uninitialized_var is OK.
+> It may be useful for return probe too :-)
+> 
+>  perf probe schedule@return
 
-Well at least older compilers were able to see this, only 4.4 seems to be 
-warning here ... I have applied the patch for now, but I am really not 
-fully convinced about it yet, we should probably report it to gcc folks 
-anyway.
+Hmm, IMHO,
 
-Thanks,
+>>    perf probe schedule@switch_mm
+
+might be confused as 'probe schedule() called from switch_mm()'.
+
+BTW, there might be several local/inline functions which have
+same name.
+I think we'd better provide a syntax for solving this issue.
+And current syntax uses @ for this purpose as below.
+
+ perf probe localfunc@file
+
+Maybe, we still can use % for special matching,
+
+ perf probe schedule%switch_mm
+
+These can be combined with each other, as below.
+
+ perf probe schedule@kernel/sched.c%switch_mm
+
+Or, supporting lazy string pattern matching
+ (reusing glob matching in ftrace?)
+
+ perf probe schedule:'switch_mm(*);'
+
+Just my thought.
+
+Thank you,
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
