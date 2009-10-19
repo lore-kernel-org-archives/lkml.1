@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbZJSPGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbZJSPIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756601AbZJSPGP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 11:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756042AbZJSPGO
+	id S932190AbZJSPIz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 11:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932165AbZJSPIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 11:06:14 -0400
-Received: from mga10.intel.com ([192.55.52.92]:42045 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756516AbZJSPGO (ORCPT
+	Mon, 19 Oct 2009 11:08:54 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54693 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932160AbZJSPIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 11:06:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,585,1249282800"; 
-   d="scan'208";a="738009146"
-Date: Mon, 19 Oct 2009 17:08:13 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Paul Fertser <fercerpav@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Nelson Castillo <arhuaco@freaks-unidos.net>,
-       Lars-Peter Clausen <lars@metafoo.de>
-Subject: Re: [PATCH 5/7] mfd: pcf50633: Cleanup pcf50633_probe error
- handling
-Message-ID: <20091019150812.GC3885@sortiz.org>
-References: <1255471956-29201-1-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-2-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-3-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-4-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-5-git-send-email-fercerpav@gmail.com>
+	Mon, 19 Oct 2009 11:08:53 -0400
+Date: Mon, 19 Oct 2009 11:08:56 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: nut-upsuser@lists.alioth.debian.org, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31.4: USB/UPS connectivity issue on Intel DP55KG Motherboard
+ [DEBUG logs included upsd/upsmon/usbhid-ups]
+In-Reply-To: <alpine.DEB.2.00.0910181732550.4761@p34.internal.lan>
+Message-ID: <Pine.LNX.4.44L0.0910191100050.3899-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255471956-29201-5-git-send-email-fercerpav@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+On Sun, 18 Oct 2009, Justin Piszcz wrote:
 
-On Wed, Oct 14, 2009 at 02:12:34AM +0400, Paul Fertser wrote:
-> From: Lars-Peter Clausen <lars@metafoo.de>
+> Thanks Alan,
 > 
-> Currently the child devices were not freed if the irq could not be requested.
-> This patch restructures the function, that in case of an error all previously
-> allocated resources are freed.
+> I have performed all of the steps you recommended, there is also a bug in
+> the docs, the directory seems to be different, or at least if you have
+> everything compiled into the kernel and not using modules.
+
+> Start nut:
+> # /etc/init.d/nut start
+> Starting Network UPS Tools: upsdrvctl upsd upsmon.
 > 
-> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
-> Signed-off-by: Paul Fertser <fercerpav@gmail.com>
-> ---
->  drivers/mfd/pcf50633-core.c |   47 +++++++++++++++++++++++++-----------------
->  1 files changed, 28 insertions(+), 19 deletions(-)
-[...]
->  	if (enable_irq_wake(client->irq) < 0)
-> -		dev_err(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
-> +		dev_info(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
->  			"in this hardware revision", client->irq);
-2 things here: This doesnt really belong to this patch, and also I'd prefer to
-keep that as an error message.
+> Within ~20-30 seconds it already broke:
+> ============================================================================
+> Broadcast Message from nut@p34.internal.lan
+>          (somewhere) at 17:22 ...
 
+Well, the usbmon trace shows that wherever the problem lies, it isn't 
+in the kernel.  There were a few problems in the device itself -- it 
+was queried for a report and did not provide any data.  The nut program 
+should be smart enough to retry when this happens, but it didn't.
 
->  	ret = sysfs_create_group(&client->dev.kobj, &pcf_attr_group);
->  	if (ret)
-> -		dev_err(pcf->dev, "error creating sysfs entries\n");
-> +		dev_info(pcf->dev, "Failed to create sysfs entries\n");
-Same here.
+It did try to re-establish communcation with the device, but it appears
+that nut got caught in a loop during this attempt.  During this loop
+nut did nothing but transfer a bunch of string descriptors from the
+device, over and over again at 2-second intervals.  The loop lasted for
+almost a minute, until another device error occurred.  Then nut
+recovered properly -- until a third error happened and nut got stuck in
+its loop again.
 
-Otherwise, this patch looks good to me.
+Alan Stern
 
-
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
