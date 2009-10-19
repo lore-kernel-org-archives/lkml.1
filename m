@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbZJSJtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbZJSJtI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbZJSJtL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 05:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZJSJtJ
+	id S1754202AbZJSJtI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 05:49:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZJSJtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 05:49:09 -0400
-Received: from james.oetiker.ch ([213.144.138.195]:35819 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248AbZJSJtH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 Oct 2009 05:49:07 -0400
-Date: Mon, 19 Oct 2009 11:49:08 +0200 (CEST)
-From: Tobi Oetiker <tobi@oetiker.ch>
-To: Frans Pop <elendil@planet.nl>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
-       jens.axboe@oracle.com
-Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
-In-Reply-To: <200910190444.55867.elendil@planet.nl>
-Message-ID: <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910190133.33183.elendil@planet.nl> <1255912562.6824.9.camel@penberg-laptop> <200910190444.55867.elendil@planet.nl>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Received: from cantor.suse.de ([195.135.220.2]:34574 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751877AbZJSJtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 05:49:06 -0400
+Date: Mon, 19 Oct 2009 11:49:09 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       Ian Kent <raven@themaw.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/6] brlock: introduce special brlocks
+Message-ID: <20091019094909.GC27856@wotan.suse.de>
+References: <20091015044026.319860788@suse.de> <20091015050048.777261867@suse.de> <20091018222512.683973f7.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091018222512.683973f7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today Frans Pop wrote:
+On Sun, Oct 18, 2009 at 10:25:12PM -0700, Andrew Morton wrote:
+> On Thu, 15 Oct 2009 15:40:30 +1100 npiggin@suse.de wrote:
+> 
+> > +#define DECLARE_BRLOCK(name)						\
+> 
+> This:
+> 
+> > + DECLARE_PER_CPU(spinlock_t, name##_lock);				\
+> > + static inline void name##_lock_init(void) {				\
+> > +	int i;								\
+> > +	for_each_possible_cpu(i) {					\
+> > +		spinlock_t *lock;					\
+> > +		lock = &per_cpu(name##_lock, i);			\
+> > +		spin_lock_init(lock);					\
+> > +	}								\
+> > + }									\
+> > + static inline void name##_rlock(void) {				\
+> > +	spinlock_t *lock;						\
+> > +	lock = &get_cpu_var(name##_lock);				\
+> > +	spin_lock(lock);						\
+> > + }									\
+> 
+> generates a definition, not a declaration.  Hence DEFINE_BRLOCK.
+> 
+> </petpeeve #29>
 
->
-> I'm starting to think that this commit may not be directly related to high
-> order allocation failures. The fact that I'm seeing SKB allocation
-> failures earlier because of this commit could be just a side effect.
-> It could be that instead the main impact of this commit is on encrypted
-> file system and/or encrypted swap (kcryptd).
->
-> Besides mm the commit also touches dm-crypt (and nfs/write.c, but as I'm
-> only reading from NFS that's unlikely).
+Well yes, but being a static inline, then I don't know of a better 
+way. Probably just better not to pretend we are expanding a simple
+declaration here, and name it something differently? (BRLOCK_HEADER(blah))?
 
-I have updated a fileserver to 2.6.31 today and I see page
-allocation failures from several parts of the system ... mostly nfs though ... (it is a nfs server).
-So I guess the problem must be quite generic:
-
-
-Oct 19 07:10:02 johan kernel: [23565.684110] swapper: page allocation failure. order:5, mode:0x4020 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684118] Pid: 0, comm: swapper Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684121] Call Trace: [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684124]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
-
-
-Oct 19 08:59:16 johan kernel: [30120.685647] __ratelimit: 13 callbacks suppressed [kern.warning]
-Oct 19 08:59:16 johan kernel: [30120.685654] nfsd: page allocation failure. order:5, mode:0x4020 [kern.warning]
-Oct 19 08:59:16 johan kernel: [30120.685660] Pid: 6071, comm: nfsd Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
-Oct 19 08:59:16 johan kernel: [30120.685663] Call Trace: [kern.warning]
-Oct 19 08:59:16 johan kernel: [30120.685666]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
-
-Oct 19 09:36:31 johan kernel: [32355.708345] __ratelimit: 16 callbacks suppressed [kern.warning]
-Oct 19 09:36:31 johan kernel: [32355.708352] nfsd: page allocation failure. order:5, mode:0x4020 [kern.warning]
-Oct 19 09:36:31 johan kernel: [32355.708358] Pid: 6087, comm: nfsd Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
-Oct 19 09:36:31 johan kernel: [32355.708361] Call Trace: [kern.warning]
-Oct 19 09:36:31 johan kernel: [32355.708364]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
-
-Oct 19 10:52:01 johan kernel: [36885.358312] __ratelimit: 31 callbacks suppressed [kern.warning]
-Oct 19 10:52:01 johan kernel: [36885.358319] nfsd: page allocation failure. order:5, mode:0x4020 [kern.warning]
-Oct 19 10:52:01 johan kernel: [36885.358325] Pid: 6057, comm: nfsd Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
-Oct 19 10:52:01 johan kernel: [36885.358327] Call Trace: [kern.warning]
-Oct 19 10:52:01 johan kernel: [36885.358331]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
-
-Oct 19 11:12:01 johan kernel: [38085.163831] events/3: page allocation failure. order:5, mode:0x4020 [kern.warning]
-Oct 19 11:12:01 johan kernel: [38085.163840] Pid: 18, comm: events/3 Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
-Oct 19 11:12:01 johan kernel: [38085.163843] Call Trace: [kern.warning]
-Oct 19 11:12:01 johan kernel: [38085.163846]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
-
-
-
--- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
