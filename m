@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbZJSPkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbZJSPhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756686AbZJSPkw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 11:40:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZJSPkv
+	id S1756751AbZJSPhB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 11:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756593AbZJSPhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 11:40:51 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:52062 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752581AbZJSPkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 11:40:51 -0400
-Date: Mon, 19 Oct 2009 17:36:18 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Anirban Sinha <ani@anirban.org>
-Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org, Anirban Sinha <asinha@zeugmasystems.com>
-Subject: Re: Kernel oops when clearing bgp neighbor info with TCP MD5SUM
-	enabled
-Message-ID: <20091019153618.GA20967@redhat.com>
-References: <Pine.LNX.4.64.0910081514050.18315@sleet.zeugmasystems.local> <20091008.155429.02850661.davem@davemloft.net> <Pine.LNX.4.64.0910081622400.18315@sleet.zeugmasystems.local> <20091008.175703.83006470.davem@davemloft.net> <Pine.LNX.4.64.0910171035340.2364@sleet.zeugmasystems.local> <4ADA7EDC.5010402@anirban.org> <4ADB7856.7000803@anirban.org> <20091019121327.GA11423@redhat.com> <4ADC8677.7000607@anirban.org>
+	Mon, 19 Oct 2009 11:37:00 -0400
+Received: from mga12.intel.com ([143.182.124.36]:37707 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756548AbZJSPhA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 11:37:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,585,1249282800"; 
+   d="scan'208";a="200780696"
+Date: Mon, 19 Oct 2009 17:38:17 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Paul Fertser <fercerpav@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Nelson Castillo <arhuaco@freaks-unidos.net>
+Subject: Re: [PATCH 1/7] mfd: pcf50633 disable unnecessary shutdown on
+ lowsys
+Message-ID: <20091019153816.GE3885@sortiz.org>
+References: <1255471956-29201-1-git-send-email-fercerpav@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4ADC8677.7000607@anirban.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1255471956-29201-1-git-send-email-fercerpav@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/19, Anirban Sinha wrote:
->
-> Once upon a time, like on 09-10-19 5:13 AM, Oleg Nesterov wrote:
->
-> >> Is is
-> >> it illegal to schedule a work function from within a timer callback?
-> >
-> > Yes sure.
->
-> hmm. may be in that case, that function needs to be re-written.
+Hi Paul,
 
-OOPS!!!! I misread your question, didn't notice "il" above...
+I applied all patches except patch 5, on which I commented about.
+Also, patch 3 didnt have any changelog execpt the SOB lines. I expect to get
+something even for such trivial patches.
 
-I meant: yes sure it _is legal_ to schedule a work from within a timer
-callback (in fact it is legal from any context).
+Thanks for your work.
 
-Sorry for confusion.
+Cheers,
+Samuel.
 
-Oleg.
+On Wed, Oct 14, 2009 at 02:12:30AM +0400, Paul Fertser wrote:
+> On gta02 hardware revision A5 it can actually bring the system down
+> during normal operating conditions so we disable it.
+> 
+> Signed-off-by: Paul Fertser <fercerpav@gmail.com>
+> ---
+>  drivers/mfd/pcf50633-core.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
+> index d26d774..6efe5c3 100644
+> --- a/drivers/mfd/pcf50633-core.c
+> +++ b/drivers/mfd/pcf50633-core.c
+> @@ -345,6 +345,9 @@ static void pcf50633_irq_worker(struct work_struct *work)
+>  		goto out;
+>  	}
+>  
+> +	/* defeat 8s death from lowsys on A5 */
+> +	pcf50633_reg_write(pcf, PCF50633_REG_OOCSHDWN,  0x04);
+> +
+>  	/* We immediately read the usb and adapter status. We thus make sure
+>  	 * only of USBINS/USBREM IRQ handlers are called */
+>  	if (pcf_int[0] & (PCF50633_INT1_USBINS | PCF50633_INT1_USBREM)) {
+> -- 
+> 1.6.0.6
+> 
 
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
