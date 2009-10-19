@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbZJSSH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbZJSSIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbZJSSH2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 14:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbZJSSH1
+	id S1757154AbZJSSIj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 14:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbZJSSIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 14:07:27 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:51226 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754781AbZJSSH0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 14:07:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=p08COSPID+fWonBhZeogXxwL2WoPbYFjGG2dkG+cbppHiZnvhk6nvl0CEYW0h4ZQRb
-         PPL3UxPxAbJ0RVa+cWoGXudDpFf/SCjQhlalPx9JDpN+4sswOhDZBKqQH4ZsZmgEPl3K
-         DXLEaGyam/AojhwLC43A9Z1dDwM2AGY/M0kPM=
-Date: Mon, 19 Oct 2009 20:07:12 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: tomoki.sekiyama.qu@hitachi.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       satoshi.oshima.fk@hitachi.com, hidehiro.kawai.ez@hitachi.com,
-       hideo.aoki.tk@hitachi.com
-Subject: Re: [PATCH] AF_UNIX: Fix deadlock on connecting to shutdown socket
-Message-ID: <20091019180712.GA2959@ami.dom.local>
-References: <4ADC010C.5070809@hitachi.com>
- <20091019115713.GB6869@ff.dom.local>
- <20091019.061459.193694892.davem@davemloft.net>
+	Mon, 19 Oct 2009 14:08:39 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:20112 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754765AbZJSSIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 14:08:38 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091019.061459.193694892.davem@davemloft.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+X-Fcc: ~/Mail/linus
+Cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] consider stack access while checking for alternate
+ signal stack
+In-Reply-To: Sebastian Andrzej Siewior's message of  Monday, 19 October 2009 10:02:39 +0200 <20091019080239.GB25783@Chamillionaire.breakpoint.cc>
+References: <20091018191247.GA21844@Chamillionaire.breakpoint.cc>
+	<20091019073358.GE17960@elte.hu>
+	<20091019080239.GB25783@Chamillionaire.breakpoint.cc>
+Emacs: featuring the world's first municipal garbage collector!
+Message-Id: <20091019180810.3CB751E@magilla.sf.frob.com>
+Date: Mon, 19 Oct 2009 11:08:10 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 06:14:59AM -0700, David Miller wrote:
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Mon, 19 Oct 2009 11:57:13 +0000
-> 
-> > Isn't the shutdown call expected to change sk_state to TCP_CLOSE?
-> 
-> No, because the send side is still up and operational, it's
-> only a half duplex close.
+AFAICT all you want is the following, and I'm not sure it requires all that
+much explanation.  I've probably missed some subtlety.
 
-OK, thanks for the explanation,
-Jarek P.
+
+Thanks,
+Roland
+
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2090,7 +2090,13 @@ static inline int is_si_special(const struct siginfo *info)
+ 
+ static inline int on_sig_stack(unsigned long sp)
+ {
+-	return (sp - current->sas_ss_sp < current->sas_ss_size);
++#ifdef CONFIG_STACK_GROWSUP
++	return sp >= current->sas_ss_sp &&
++		sp - current->sas_ss_sp < current->sas_ss_size;
++#else
++	return sp > current->sas_ss_sp &&
++		sp - current->sas_ss_sp <= current->sas_ss_size;
++#endif
+ }
+ 
