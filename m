@@ -1,84 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbZJSIjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZJSInc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbZJSIjr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 04:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZJSIjr
+	id S1755891AbZJSInc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 04:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZJSInc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 04:39:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33282 "EHLO mx3.mail.elte.hu"
+	Mon, 19 Oct 2009 04:43:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34569 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846AbZJSIjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 04:39:46 -0400
-Date: Mon, 19 Oct 2009 10:39:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Arjan van de Ven <arjan@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] nfs: Fix nfs_parse_mount_options() kfree() leak
-Message-ID: <20091019083934.GA28434@elte.hu>
-References: <86802c440910182252v4648a7d1k249d091799583e37@mail.gmail.com> <1255933848.11116.2.camel@heimdal.trondhjem.org> <20091019065433.GA29550@elte.hu> <1255935518.18914.0.camel@penberg-laptop> <20091019070825.GA16493@elte.hu> <86802c440910190031m33e116d3o90869de5212bb2e@mail.gmail.com> <1255938774.11116.35.camel@heimdal.trondhjem.org> <20091019080403.GA24036@elte.hu> <20091019082333.GA27410@elte.hu> <1255940951.14447.9.camel@heimdal.trondhjem.org>
+	id S1752674AbZJSInb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 04:43:31 -0400
+Date: Mon, 19 Oct 2009 08:42:49 GMT
+From: tip-bot for Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, randy.dunlap@oracle.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       randy.dunlap@oracle.com, mingo@elte.hu
+In-Reply-To: <4ADBCCE8.3060300@oracle.com>
+References: <4ADBCCE8.3060300@oracle.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf tools: Display better error messages on missing packages
+Message-ID: <tip-1abc7f5500fff8422f34826a006648d8741d83d3@git.kernel.org>
+Git-Commit-ID: 1abc7f5500fff8422f34826a006648d8741d83d3
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1255940951.14447.9.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 19 Oct 2009 08:42:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  1abc7f5500fff8422f34826a006648d8741d83d3
+Gitweb:     http://git.kernel.org/tip/1abc7f5500fff8422f34826a006648d8741d83d3
+Author:     Randy Dunlap <randy.dunlap@oracle.com>
+AuthorDate: Sun, 18 Oct 2009 19:20:24 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 19 Oct 2009 10:06:37 +0200
 
-* Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+perf tools: Display better error messages on missing packages
 
-> > So d508afb fixed all that needed fixing and there's nothing serious 
-> > pending here. I've reverted all pending bits in tip:out-of-tree, so 
-> > it's pure -git now. I rarely have to carry any NFS fixes in 
-> > out-of-tree, this was an odd-one-out exception that fell through the 
-> > cracks.
-> > 
-> > 	Ingo
-> 
-> OK. Could you resend the remaining leak fix, with the fixed up 
-> changelog and attributions so I can pass it on to Linus?
+Check for libelf headers and glibc headers separately so that
+the error message correctly identifies which package
+installation is missing/needed.
 
-Sure - find it below.
-
-Thanks,
-
-	Ingo
-
--------------------------------------------->
->From 42497c08be18c388f696a692ca5f8c3ba48cb183 Mon Sep 17 00:00:00 2001
-From: Yinghai Lu <yinghai@kernel.org>
-Date: Fri, 3 Apr 2009 09:06:15 +0200
-Subject: [PATCH] nfs: Fix nfs_parse_mount_options() kfree() leak
-
-Fix a (small) memory leak in one of the error paths of
-the NFS mount options parsing code.
-
-Reported-by: Yinghai Lu <yinghai@kernel.org>
-Reported-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: paulus@samba.org
+Cc: a.p.zijlstra@chello.nl
+Cc: efault@gmx.de
+Cc: fweisbec@gmail.com
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <4ADBCCE8.3060300@oracle.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- fs/nfs/super.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ tools/perf/Makefile |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index a2c18ac..90be551 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -1253,6 +1253,7 @@ static int nfs_parse_mount_options(char *raw,
- 			default:
- 				dfprintk(MOUNT, "NFS:   unrecognized "
- 						"transport protocol\n");
-+				kfree(string);
- 				return 0;
- 			}
- 			break;
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 2400e50..db89a6d 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -431,8 +431,12 @@ ifeq ($(uname_S),Darwin)
+ 	PTHREAD_LIBS =
+ endif
+ 
++ifneq ($(shell sh -c "(echo '\#include <gnu/libc-version.h>'; echo 'int main(void) { const char * version = gnu_get_libc_version(); return (long)version; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
++	msg := $(error No gnu/libc-version.h found, please install glibc-dev[el]);
++endif
++
+ ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
+-	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el]);
++	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel);
+ endif
+ 
+ ifdef NO_DEMANGLE
