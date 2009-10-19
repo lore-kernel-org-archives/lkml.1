@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbZJSHQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZJSHRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755231AbZJSHQY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 03:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbZJSHQX
+	id S1755339AbZJSHRq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 03:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZJSHRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 03:16:23 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:59005 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753477AbZJSHQW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 03:16:22 -0400
-Date: Mon, 19 Oct 2009 09:16:21 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org, Constantin Baranov <const@mimas.ru>
-Subject: Re: [PATCH] leds-alix2: add support for button connected to J15
-Message-ID: <20091019071621.GZ28832@buzzloop.caiaq.de>
-References: <20091016130315.GT28832@buzzloop.caiaq.de>
- <1255863412.27878.136.camel@ted>
+	Mon, 19 Oct 2009 03:17:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57235 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754354AbZJSHRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 03:17:45 -0400
+Date: Mon, 19 Oct 2009 09:17:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linguranus@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
+	avoid memory miss predication.
+Message-ID: <20091019071740.GA17407@elte.hu>
+References: <1255928924-19140-1-git-send-email-linguranus@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1255863412.27878.136.camel@ted>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1255928924-19140-1-git-send-email-linguranus@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 18, 2009 at 11:56:52AM +0100, Richard Purdie wrote:
-> On Fri, 2009-10-16 at 15:03 +0200, Daniel Mack wrote:
-> > for a project I was working on, we used the J15 connector of the ALIX.2D
-> > board (which is connected to a GPIO of the CS5536 Geode companion chip)
-> > for an external button switch.
-> > 
-> > I thought it might be worth sharing this piece of code, so others can do
-> > the same.
-> > 
-> > There is, however, a small hardware modification is necessary as the pin
-> > is also shared as buzzer output. I noted that in the Kconfig entry.
-> > 
-> > The patch should go thru Richard's led-2.6.git as it depends on another
-> > one that has been queued there already.
+
+* linguranus@gmail.com <linguranus@gmail.com> wrote:
+
+> From: Ling <linguranus@gmail.com>
 > 
-> How common is this modification? I'm just trying to get a feel for the
-> number of users out there of this feature...
+> Hi All
+> 
+> CPU will use memory disambiguration predication to speculatively read 
+> memory without waiting for previous write instructions and correctly 
+> avoid conflict between them (RAW). However it seem only to care about 
+> last 12 bits of address, not care about real address. For example if 
+> rsi is 0xf004, rdi is 0xe008, when we do following operation there 
+> will generate big performance latency.
 
-Hmm, hard to say. One can either use that IO as output to control a
-buzzer (which isn't placed on the board, but there are solder pads for
-it), as output for other purpose or as input.
+Would be nice to trigger this kind of pattern via some testcase that 
+uses read() or write() - or some other real workload.
 
-Don't know what other people use it for, though, but we needed an
-external button in our case and use this IO pin for that purpose.
+Then you can use 'perf stat --repeat 10 ./my-test-prog' to measure it 
+and post the results - the before-patch/after-patch instruction count, 
+cycle count, etc.
 
-Anyway - I don't insist in that patch to be taken. The idea was more to
-share it so others won't have to hack the same thing.
+You can get 'perf' via:
 
-I'll still submit a new version with Dmitry's suggestions addressed.
+  cd tools/perf
+  make -j install
+
+(And please preserve the Cc: line for new postings - thanks.)
 
 Thanks,
-Daniel
+
+	Ingo
