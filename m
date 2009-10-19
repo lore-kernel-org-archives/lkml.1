@@ -1,159 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757894AbZJSVfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbZJUHxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757894AbZJSVfg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 17:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757763AbZJSVff
+	id S1753191AbZJUHxx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 03:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbZJUHxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 17:35:35 -0400
-Received: from aglcosbs02.cos.agilent.com ([192.25.218.39]:43500 "EHLO
-	aglcosbs02.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757723AbZJSVff (ORCPT
+	Wed, 21 Oct 2009 03:53:52 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55931 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753167AbZJUHxv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 17:35:35 -0400
-Message-ID: <4ADCDB9A.7050701@agilent.com>
-Date: Mon, 19 Oct 2009 14:35:22 -0700
-From: Earl Chew <earl_chew@agilent.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 21 Oct 2009 03:53:51 -0400
+Date: Mon, 19 Oct 2009 23:35:43 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Paul Fertser <fercerpav@gmail.com>
+Cc: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel@vger.kernel.org,
+       Nelson Castillo <arhuaco@freaks-unidos.net>,
+       Balaji Rao <balajirrao@openmoko.org>
+Subject: Re: [PATCH] power: pcf50633: introduces battery charging current
+	control
+Message-ID: <20091019213542.GA1482@ucw.cz>
+References: <1255471148-29047-1-git-send-email-fercerpav@gmail.com> <1255471148-29047-2-git-send-email-fercerpav@gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v3 1/1]: fs: pipe.c null pointer dereference + sign off +
- unmangled diffs
-References: <4AD8852E.2090302@agilent.com> <4ADCAC33.4070908@agilent.com>
-In-Reply-To: <4ADCAC33.4070908@agilent.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Oct 2009 21:35:25.0594 (UTC) FILETIME=[11ECEFA0:01CA5104]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255471148-29047-2-git-send-email-fercerpav@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Exactly as before, but with sign off and tabs preserved ]
+On Wed 2009-10-14 01:59:04, Paul Fertser wrote:
+> From: Balaji Rao <balajirrao@openmoko.org>
+> 
+> Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
+> Signed-off-by: Paul Fertser <fercerpav@gmail.com>
+> ---
+>  drivers/power/pcf50633-charger.c  |   73 ++++++++++++++++++++++++++++++++++---
+>  include/linux/mfd/pcf50633/core.h |    2 +
+>  2 files changed, 70 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/power/pcf50633-charger.c b/drivers/power/pcf50633-charger.c
+> index 48e92c0..13f2839 100644
+> --- a/drivers/power/pcf50633-charger.c
+> +++ b/drivers/power/pcf50633-charger.c
+> @@ -48,16 +48,21 @@ int pcf50633_mbc_usb_curlim_set(struct pcf50633 *pcf, int ma)
+>  	u8 bits;
+>  	int charging_start = 1;
+>  	u8 mbcs2, chgmod;
+> +	unsigned int mbcc5;
+>  
+> -	if (ma >= 1000)
+> +	if (ma >= 1000) {
+>  		bits = PCF50633_MBCC7_USB_1000mA;
+> -	else if (ma >= 500)
+> +		ma = 1000;
+> +	} else if (ma >= 500) {
+>  		bits = PCF50633_MBCC7_USB_500mA;
+> -	else if (ma >= 100)
+> +		ma = 500;
+> +	} else if (ma >= 100) {
+>  		bits = PCF50633_MBCC7_USB_100mA;
+> -	else {
+> +		ma = 100;
+> +	} else {
+>  		bits = PCF50633_MBCC7_USB_SUSPEND;
+>  		charging_start = 0;
+> +		ma = 0;
+>  	}
+>  
+>  	ret = pcf50633_reg_set_bit_mask(pcf, PCF50633_REG_MBCC7,
+> @@ -67,7 +72,24 @@ int pcf50633_mbc_usb_curlim_set(struct pcf50633 *pcf, int ma)
+>  	else
+>  		dev_info(pcf->dev, "usb curlim to %d mA\n", ma);
+>  
+> -	/* Manual charging start */
+> +	/*
+> +	 * We limit the charging current to be the USB current limit.
+> +	 * The reason is that on pcf50633, when it enters PMU Standby mode,
+> +	 * which it does when the device goes "off", the USB current limit
+> +	 * reverts to the variant default.  In at least one common case, that
+> +	 * default is 500mA.  By setting the charging current to be the same
+> +	 * as the USB limit we set here before PMU standby, we enforce it only
+> +	 * using the correct amount of current even when the USB current limit
+> +	 * gets reset to the wrong thing
+> +	 */
+> +
+> +	if (mbc->pcf->pdata->chg_ref_current_ma) {
+> +		mbcc5 = (ma << 8) / mbc->pcf->pdata->chg_ref_current_ma;
+> +		if (mbcc5 > 255)
+> +			mbcc5 = 255;
+> +		pcf50633_reg_write(mbc->pcf, PCF50633_REG_MBCC5, mbcc5);
+> +	}
+> +
+>  	mbcs2 = pcf50633_reg_read(pcf, PCF50633_REG_MBCS2);
+>  	chgmod = (mbcs2 & PCF50633_MBCS2_MBC_MASK);
+>  
+> @@ -157,9 +179,50 @@ static ssize_t set_usblim(struct device *dev,
+>  
+>  static DEVICE_ATTR(usb_curlim, S_IRUGO | S_IWUSR, show_usblim, set_usblim);
+>  
+> +static ssize_t
+> +show_chglim(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +	struct pcf50633_mbc *mbc = dev_get_drvdata(dev);
+> +	u8 mbcc5 = pcf50633_reg_read(mbc->pcf, PCF50633_REG_MBCC5);
+> +	unsigned int ma;
+> +
+> +	if (!mbc->pcf->pdata->chg_ref_current_ma)
+> +		return -ENODEV;
+> +
+> +	ma = (mbc->pcf->pdata->chg_ref_current_ma *  mbcc5) >> 8;
+> +
+> +	return sprintf(buf, "%u\n", ma);
+> +}
+> +
+> +static ssize_t set_chglim(struct device *dev,
+> +		struct device_attribute *attr, const char *buf, size_t count)
+> +{
+> +	struct pcf50633_mbc *mbc = dev_get_drvdata(dev);
+> +	unsigned long ma;
+> +	unsigned int mbcc5;
+> +	int ret;
+> +
+> +	if (!mbc->pcf->pdata->chg_ref_current_ma)
+> +		return -ENODEV;
+> +
+> +	ret = strict_strtoul(buf, 10, &ma);
+> +	if (ret)
+> +		return -EINVAL;
+> +
+> +	mbcc5 = (ma << 8) / mbc->pcf->pdata->chg_ref_current_ma;
+> +	if (mbcc5 > 255)
+> +		mbcc5 = 255;
+> +	pcf50633_reg_write(mbc->pcf, PCF50633_REG_MBCC5, mbcc5);
+> +
+> +	return count;
+> +}
+> +
+> +static DEVICE_ATTR(chg_curlim, S_IRUGO | S_IWUSR, show_chglim, set_chglim);
+> +
+>  static struct attribute *pcf50633_mbc_sysfs_entries[] = {
+>  	&dev_attr_chgmode.attr,
+>  	&dev_attr_usb_curlim.attr,
+> +	&dev_attr_chg_curlim.attr,
+>  	NULL,
+>  };
+>  
+> diff --git a/include/linux/mfd/pcf50633/core.h b/include/linux/mfd/pcf50633/core.h
+> index 9aba7b7..222dd90 100644
+> --- a/include/linux/mfd/pcf50633/core.h
+> +++ b/include/linux/mfd/pcf50633/core.h
+> @@ -31,6 +31,8 @@ struct pcf50633_platform_data {
+>  
+>  	int charging_restart_interval;
+>  
+> +	int chg_ref_current_ma;
+> +
+>  	/* Callbacks */
+>  	void (*probe_done)(struct pcf50633 *);
+>  	void (*mbc_event_callback)(struct pcf50633 *, int);
 
-This patch fixes a null pointer exception in pipe_rdwr_open() which
-generates the stack trace:
-
-
-> Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
->  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
->  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
->  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
->  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
->  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
-
-
-The failure mode is triggered by an attempt to open an anonymous
-pipe via /proc/pid/fd/* as exemplified by this script:
-
-=============================================================
-#!/bin/sh
-while : ; do
-   { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
-   PID=$!
-   OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
-        { read PID REST ; echo $PID; } )
-   OUT="${OUT%% *}"
-   DELAY=$((RANDOM * 1000 / 32768))
-   usleep $((DELAY * 1000 + RANDOM % 1000 ))
-   echo n > /proc/$OUT/fd/1                 # Trigger defect
-done
-=============================================================
-
-Note that the failure window is quite small and I could only
-reliably reproduce the defect by inserting a small delay
-in pipe_rdwr_open(). For example:
-
- static int
- pipe_rdwr_open(struct inode *inode, struct file *filp)
- {
-       msleep(100);
-       mutex_lock(&inode->i_mutex);
-
-
-Although the defect was observed in pipe_rdwr_open(), I think it
-makes sense to replicate the change through all the pipe_*_open()
-functions.
-
-The core of the change is to verify that inode->i_pipe has not
-been released before attempting to manipulate it. If inode->i_pipe
-is no longer present, return ENOENT to indicate so.
-
-The comment about potentially using atomic_t for i_pipe->readers
-and i_pipe->writers has also been removed because it is no longer
-relevant in this context. The inode->i_mutex lock must be used so
-that inode->i_pipe can be dealt with correctly.
-
-
-
---- linux-2.6.21_mvlcge500/fs/pipe.c.orig	2009-10-15 20:33:53.000000000 -0700
-+++ linux-2.6.21_mvlcge500/fs/pipe.c	2009-10-15 21:21:25.000000000 -0700
-@@ -712,36 +712,55 @@ pipe_rdwr_release(struct inode *inode, s
- static int
- pipe_read_open(struct inode *inode, struct file *filp)
- {
--	/* We could have perhaps used atomic_t, but this and friends
--	   below are the only places.  So it doesn't seem worthwhile.  */
-+	int ret = -ENOENT;
-+
- 	mutex_lock(&inode->i_mutex);
--	inode->i_pipe->readers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		inode->i_pipe->readers++;
-+	}
-+
- 	mutex_unlock(&inode->i_mutex);
- 
--	return 0;
-+	return ret;
- }
- 
- static int
- pipe_write_open(struct inode *inode, struct file *filp)
- {
-+	int ret = -ENOENT;
-+
- 	mutex_lock(&inode->i_mutex);
--	inode->i_pipe->writers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		inode->i_pipe->writers++;
-+	}
-+
- 	mutex_unlock(&inode->i_mutex);
- 
--	return 0;
-+	return ret;
- }
- 
- static int
- pipe_rdwr_open(struct inode *inode, struct file *filp)
- {
-+	int ret = -ENOENT;
-+
- 	mutex_lock(&inode->i_mutex);
--	if (filp->f_mode & FMODE_READ)
--		inode->i_pipe->readers++;
--	if (filp->f_mode & FMODE_WRITE)
--		inode->i_pipe->writers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		if (filp->f_mode & FMODE_READ)
-+			inode->i_pipe->readers++;
-+		if (filp->f_mode & FMODE_WRITE)
-+			inode->i_pipe->writers++;
-+	}
-+
- 	mutex_unlock(&inode->i_mutex);
- 
--	return 0;
-+	return ret;
- }
- 
- /*
-
-
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
