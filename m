@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756470AbZJSOhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756961AbZJSQg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756470AbZJSOhb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 10:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbZJSOha
+	id S1756961AbZJSQg1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 12:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbZJSQg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 10:37:30 -0400
-Received: from [118.217.181.54] ([118.217.181.54]:3364 "EHLO svctag-42p1gbx"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756432AbZJSOh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 10:37:29 -0400
+	Mon, 19 Oct 2009 12:36:26 -0400
+Received: from avmx01.nexon.com.au ([210.215.48.100]:53450 "EHLO
+	avmx01.nexon.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752196AbZJSQg0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 12:36:26 -0400
 From: returnedm@return.pec.pchome.com.tw
-Message-ID: <SVCTAG-42P1GBXRNB6H00014f65@svctag-42p1gbx>
-X-OriginalArrivalTime: 19 Oct 2009 14:37:27.0156 (UTC) FILETIME=[AE02FB40:01CA50C9]
-Date: 19 Oct 2009 23:37:27 +0900
-To: unlisted-recipients:; (no To-header on input)
+Message-ID: <SERVER9ZAhCdbKNumu2000115c9@SERVER.untamed.local>
+X-OriginalArrivalTime: 19 Oct 2009 14:39:17.0406 (UTC) FILETIME=[EFB9CBE0:01CA50C9]
+Date: 20 Oct 2009 01:39:17 +1100
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
