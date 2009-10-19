@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757767AbZJSVpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932299AbZJSVqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757767AbZJSVpw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 17:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbZJSVpv
+	id S932299AbZJSVqd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 17:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756888AbZJSVqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 17:45:51 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37207 "EHLO
+	Mon, 19 Oct 2009 17:46:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37213 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755782AbZJSVpv convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1755847AbZJSVqc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 17:45:51 -0400
-Date: Tue, 20 Oct 2009 06:46:49 +0900
+	Mon, 19 Oct 2009 17:46:32 -0400
+Date: Tue, 20 Oct 2009 06:47:31 +0900
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu
-Subject: [PATCH 1/2] perf timechart: Fix the wakeup-arrows that point to
- non-visible processes
-Message-ID: <20091020064649.0e4959b2@infradead.org>
+Subject: [PATCH 2/2] perf timechart: Improve the visual appearance of
+ scheduler delays
+Message-ID: <20091020064731.20ae126a@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -28,81 +28,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 81e4574cf1e2091443dc254470a2160d7be0f940 Mon Sep 17 00:00:00 2001
+>From f25f1ea50dde14d6478657da459dcde17b75ea8a Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Tue, 20 Oct 2009 06:40:57 +0900
-Subject: [PATCH 1/2] perf timechart: Fix the wakeup-arrows that point to non-visible processes
+Date: Tue, 20 Oct 2009 06:43:17 +0900
+Subject: [PATCH 2/2] perf timechart: Improve the visual appearance of scheduler delays
 
-The timechart wakeup arrows currently show no process information when
-the waker/wakee are processes that are not actually chosen to be shown
-on the timechart.
+[from KS feedback]
 
-This patch fixes this oversight, by looking through all processes
-(after giving preference to visible processes) as well as falling back
-to just showing the PID if no name for the process can be resolved.
+Currently, scheduler delays are shown in a mostly transparent, light yellow color.
+This color is rather hard to see on several screens, especially projectors.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+This patch changes the color of the scheduler delays to be a much more "hard"
+yellow that survived the kernel summit projector.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com
 ---
- tools/perf/builtin-timechart.c |   28 ++++++++++++++++++++++++++--
- 1 files changed, 26 insertions(+), 2 deletions(-)
+ tools/perf/util/svghelper.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
-index 702d8fe..e8a510d 100644
---- a/tools/perf/builtin-timechart.c
-+++ b/tools/perf/builtin-timechart.c
-@@ -765,19 +765,40 @@ static void draw_wakeups(void)
- 					if (c->Y && c->start_time <= we->time && c->end_time >= we->time) {
- 						if (p->pid == we->waker) {
- 							from = c->Y;
--							task_from = c->comm;
-+							task_from = strdup(c->comm);
- 						}
- 						if (p->pid == we->wakee) {
- 							to = c->Y;
--							task_to = c->comm;
-+							task_to = strdup(c->comm);
- 						}
- 					}
- 					c = c->next;
- 				}
-+				c = p->all;
-+				while (c) {
-+					if (p->pid == we->waker && !from) {
-+						from = c->Y;
-+						task_from = strdup(c->comm);
-+					}
-+					if (p->pid == we->wakee && !to) {
-+						to = c->Y;
-+						task_to = strdup(c->comm);
-+					}
-+					c = c->next;
-+				}
- 			}
- 			p = p->next;
- 		}
- 
-+		if (!task_from) {
-+			task_from = malloc(40);
-+			sprintf(task_from, "[%i]", we->waker);
-+		}
-+		if (!task_to) {
-+			task_to = malloc(40);
-+			sprintf(task_to, "[%i]", we->wakee);
-+		}
-+
- 		if (we->waker == -1)
- 			svg_interrupt(we->time, to);
- 		else if (from && to && abs(from - to) == 1)
-@@ -785,6 +806,9 @@ static void draw_wakeups(void)
- 		else
- 			svg_partial_wakeline(we->time, from, task_from, to, task_to);
- 		we = we->next;
-+
-+		free(task_from);
-+		free(task_to);
- 	}
- }
- 
+diff --git a/tools/perf/util/svghelper.c b/tools/perf/util/svghelper.c
+index 856655d..b3637db 100644
+--- a/tools/perf/util/svghelper.c
++++ b/tools/perf/util/svghelper.c
+@@ -103,7 +103,7 @@ void open_svg(const char *filename, int cpus, int rows, u64 start, u64 end)
+ 	fprintf(svgfile, "      rect.process2 { fill:rgb(180,180,180); fill-opacity:0.9; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
+ 	fprintf(svgfile, "      rect.sample   { fill:rgb(  0,  0,255); fill-opacity:0.8; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
+ 	fprintf(svgfile, "      rect.blocked  { fill:rgb(255,  0,  0); fill-opacity:0.5; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
+-	fprintf(svgfile, "      rect.waiting  { fill:rgb(214,214,  0); fill-opacity:0.3; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
++	fprintf(svgfile, "      rect.waiting  { fill:rgb(224,214,  0); fill-opacity:0.8; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
+ 	fprintf(svgfile, "      rect.WAITING  { fill:rgb(255,214, 48); fill-opacity:0.6; stroke-width:0;   stroke:rgb(  0,  0,  0); } \n");
+ 	fprintf(svgfile, "      rect.cpu      { fill:rgb(192,192,192); fill-opacity:0.2; stroke-width:0.5; stroke:rgb(128,128,128); } \n");
+ 	fprintf(svgfile, "      rect.pstate   { fill:rgb(128,128,128); fill-opacity:0.8; stroke-width:0; } \n");
 -- 
 1.6.2.5
 
