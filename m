@@ -1,84 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbZJSQDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbZJSQQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbZJSQDZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 12:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756355AbZJSQDZ
+	id S1756833AbZJSQQG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 12:16:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756841AbZJSQQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 12:03:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36083 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754816AbZJSQDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 12:03:24 -0400
-X-Authenticated: #46697607
-X-Provags-ID: V01U2FsdGVkX18re3IDOm8rS5sbC8WNFZTcMXQRebE54b091BSfoF
-	3EF2Cz3F87OIKM
-From: Egon Alter <egon.alter@gmx.net>
-To: linux-kernel@vger.kernel.org
-Subject: nfs oops in 2.6.32-rc5-00041-g1d91624
-Date: Mon, 19 Oct 2009 18:03:26 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc5-00041-g1d91624; KDE/4.3.1; x86_64; ; )
+	Mon, 19 Oct 2009 12:16:05 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:44138 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756833AbZJSQQE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 12:16:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ZhXnZCaIJSXEObjWxnqH3XogHzfePlV0Yyc2IzIPBbiHGslMzZ8Fb2Gz1wjdT89Nif
+         eW2nyG8Pl2JfczwSwf4SY3GqkBp+DPRPD0cKFLr3mI5HQ5+87Cr9IagJHfH6yL8O/dSd
+         L5bSaRcyRcXuKpmTfelOcx91dDH9NbSyMAf+Q=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910191803.26845.egon.alter@gmx.net>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+In-Reply-To: <alpine.LSU.2.00.0910191658260.8582@wotan.suse.de>
+References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com>
+	 <1255906474-25091-6-git-send-email-felipe.contreras@gmail.com>
+	 <alpine.LSU.2.00.0910191616290.8582@wotan.suse.de>
+	 <94a0d4530910190757y139c7e20xe6a58f0cbf13a79d@mail.gmail.com>
+	 <alpine.LSU.2.00.0910191658260.8582@wotan.suse.de>
+Date: Mon, 19 Oct 2009 19:16:07 +0300
+Message-ID: <94a0d4530910190916t2bdd9ecl59a3cfc0cc732852@mail.gmail.com>
+Subject: Re: [PATCH 5/7] acpi: fix a bunch of style issues on 'actypes.h'
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>,
+       linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 19, 2009 at 6:03 PM, Jiri Kosina <jkosina@suse.cz> wrote:
+> On Mon, 19 Oct 2009, Felipe Contreras wrote:
+>
+>> > I have never been in favor of merging whitespace-only patches (in a
+>> > sense that the sole purpose of them being to change whitespaces, but
+>> > no else value added).
+>> If somebody tries to send a patch for that file that doesn't fix the
+>> white-space, checkpatch will complain, and people will complain that
+>> checkpatch complains, which is precisely what happened,
+>
+> Oh, well ... checkpatch warning about this is somewhat controversial. My
+> preferred way would be that it warns about whitespace only if there are
+> also some other (non-whitespace) changes.
 
-Hi,
+Huh? I think we are talking about different things. See the next comment.
 
-I got this oops while doing a grep on an nfs4 share.
+>> and I was requested to write this patch by Daniel Walker (final mail
+>> wasn't on the ml):
+>>
+>> http://lkml.org/lkml/2009/9/14/183
+>
+> This is something slightly different -- he asks you to fixup whitespace
+> issue in the code you are newly introducing, right?
 
- kernel: general protection fault: 0000 [#1] SMP
- kernel: last sysfs file: /sys/devices/system/cpu/cpu1/cache/index2/shared_cpu_map
- kernel: CPU 0
- kernel: Modules linked in: nfs lockd nfs_acl auth_rpcgss sunrpc sit tunnel4 analog it87 hwmon_vid joydev snd_pcm_oss snd_mixer_o
-ss snd_seq_midi snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_seq cpufreq_conservative cpufreq_userspace cpufreq_
-powersave snd_hda_codec_realtek snd_emu10k1 snd_rawmidi snd_ac97_codec ac97_bus snd_seq_device snd_hda_intel snd_util_mem snd_hda_codec radeon ttm snd_pcm sn
-d_timer snd_hwdep emu10k1_gp drm_kms_helper snd k8temp r8169 gameport pcspkr drm soundcore mii snd_page_alloc i2c_piix4 i2c_algo_bit
- kernel: Pid: 4337, comm: rpciod/0 Tainted: G        W  2.6.32-rc5-00041-g1d91624 #1 GA-MA69VM-S2
- kernel: RIP: 0010:[<ffffffffa028d9c2>]  [<ffffffffa028d9c2>] rpcauth_checkverf+0x32/0x70 [sunrpc]
- kernel: RSP: 0000:ffff8800371add60  EFLAGS: 00010246
- kernel: RAX: 6b6b6b6b6b6b6b6b RBX: ffff880017380070 RCX: 000000000000200f
- kernel: RDX: 0000000000000000 RSI: ffff880034418290 RDI: ffff880017380070
- kernel: RBP: ffff8800371add80 R08: ffff8800371ac000 R09: 0000010f683033fc
- kernel: R10: 0000000000000000 R11: ffff880001c14318 R12: ffff880035d54590
- kernel: R13: ffff880034418290 R14: ffff88003472dad0 R15: ffff880034c87260
- kernel: FS:  000000007ffd8000(0000) GS:ffff880001c00000(0000) knlGS:00000000f73ff6c0
- kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
- kernel: CR2: 000000000e966004 CR3: 00000000140fe000 CR4: 00000000000006f0
- kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
- kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
- kernel: Process rpciod/0 (pid: 4337, threadinfo ffff8800371ac000, task ffff8800345f66c0)
- kernel: Stack:
- kernel:  ffff880038cd2588 ffff880017380070 ffff880034c87260 ffffffffa0320ed0
- kernel: <0> ffff8800371adde0 ffffffffa0285449 ffff8800371addb0 ffffffffa0284cba
- kernel: <0> 0000000000000000 ffff880017387a38 ffff8800345f6c38 ffff880017380070
- kernel: Call Trace:
- kernel:  [<ffffffffa0320ed0>] ? nfs4_xdr_dec_read+0x0/0x110 [nfs]
- kernel:  [<ffffffffa0285449>] call_decode+0x2d9/0x790 [sunrpc]
- kernel:  [<ffffffffa0284cba>] ? call_transmit_status+0x3a/0x80 [sunrpc]
- kernel:  [<ffffffffa028cc82>] __rpc_execute+0xb2/0x2b0 [sunrpc]
- kernel:  [<ffffffffa028ceb0>] ? rpc_async_schedule+0x0/0x20 [sunrpc]
- kernel:  [<ffffffffa028cec0>] rpc_async_schedule+0x10/0x20 [sunrpc]
- kernel:  [<ffffffff8106969d>] worker_thread+0x15d/0x280
- kernel:  [<ffffffff8106de50>] ? autoremove_wake_function+0x0/0x40
- kernel:  [<ffffffff81069540>] ? worker_thread+0x0/0x280
- kernel:  [<ffffffff8106da4e>] kthread+0x8e/0xa0
- kernel:  [<ffffffff8100ceaa>] child_rip+0xa/0x20
- kernel:  [<ffffffff8106d9c0>] ? kthread+0x0/0xa0
- kernel:  [<ffffffff8100cea0>] ? child_rip+0x0/0x20
- kernel: Code: 20 f6 05 d9 d5 01 00 10 48 89 5d e8 4c 89 6d f8 48 89 fb 4c 89 65 f0 49 89 f5 4c 8b 67 50 75 1c 49 8b 44 24 38 4c 89 ee 48 89 df <ff> 50 38 48 8b 5d e8 4c 8b 65 
-f0 4c 8b 6d f8 c9 c3 49 8b 44 24
- kernel: RIP  [<ffffffffa028d9c2>] rpcauth_checkverf+0x32/0x70 [sunrpc]
- kernel:  RSP <ffff8800371add60>
- kernel: ---[ end trace 667f1c1d6e9b9476 ]---
+No, did you read the thread?
 
+This was my patch:
+-#define ACPI_MIN(a,b)                   (((a)<(b))?(a):(b))
+-#define ACPI_MAX(a,b)                   (((a)>(b))?(a):(b))
++#define ACPI_MIN(a,b)                   min(a, b)
++#define ACPI_MAX(a,b)                   max(a, b)
 
-Greetings
+Checkpatch complains, even though my changes are ok. So that's what I
+mean, if somebody wants to do a similar patch in the future so that
+checkpatch doesn't complain; they would have to fix the white-spaces
+again.
 
-Egon
+Or checkpatch should be fixed.
+
+>> > And after today's discussion on kernel summit on this topic, I wouldn't
+>> > expect any maintainer to merge it, sorry :)
+>> What are you talking about?
+>
+> Seems like many kernel maintainers are just tired of
+> 'whitespace-cleanup-only' patches that bring no real added value
+> otherwise.
+
+Hm, I wonder what would happen to the current badly formatted code.
+Stay there forever?
+
+-- 
+Felipe Contreras
