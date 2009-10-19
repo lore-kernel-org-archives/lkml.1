@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbZJSVLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757674AbZJSVUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757612AbZJSVLA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 17:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757570AbZJSVLA
+	id S1757674AbZJSVUr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 17:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbZJSVUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 17:11:00 -0400
-Received: from smtprelay03.ispgateway.de ([80.67.31.26]:50179 "EHLO
-	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757557AbZJSVK7 (ORCPT
+	Mon, 19 Oct 2009 17:20:47 -0400
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:29061 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757206AbZJSVUq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 17:10:59 -0400
-References: <20091019102116.222ff9c3.peter@piie.net> <9ea470500910191151j370cec68w67ee8e31f42f3303@mail.gmail.com>
-Message-ID: <cone.1255986667.852662.3188.1000@deskpiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Borislav Petkov <petkovbb@gmail.com>, linux-kernel@vger.kernel.org,
-       Andreas Mohr <andi@lisas.de>
-Subject: Re: [Patch] acerhdf: Return temperature in milidegree
-Date: Mon, 19 Oct 2009 23:11:07 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Content-Disposition: inline
+	Mon, 19 Oct 2009 17:20:46 -0400
+X-Greylist: delayed 390 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 17:20:45 EDT
+Subject: [PATCH v4 0/6] ACPI: dock: code hygiene
+To: =shaohua.li@intel.com, lenb@kernel.org
+From: Alex Chiang <achiang@hp.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 19 Oct 2009 15:14:19 -0600
+Message-ID: <20091019211132.5412.80438.stgit@bob.kio>
+User-Agent: StGit/0.14.3.386.gb02d
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Boris,
+This is v4 of a modest attempt to clean up the dock driver.
 
-Borislav Petkov writes:
+As before, compile tested only, since I don't have any machines
+that provide _DCK.
 
-> Hi,
-> 
-> On Mon, Oct 19, 2009 at 10:21 AM, Peter Feuerer <peter@piie.net> wrote:
->> what do you think about this patch?
-> 
-> I don't think it is worth the trouble. Just compare the changes your
-> patch introduces with a simple
-> 
->  temp * 1000
-> 
-> you can do in userspace.
-> 
-> If this were a standard interface then maybe the changes could be
-> warranted but it doesn't seem like so...
-> 
+Thanks.
+/ac
 
-I just had a look at the documentation concerning this topic: 
+v3 -> v4:
+	- defensively code in case sysfs_create_group() fails and
+	  sysfs_remove_group() can't handle removing a non-existent group;
+	  suggested by Dmitry Torokhov
 
-Documentation/thermal/sysfs-api.txt:162
+v2 -> v3:
+	- now using an attribute_group, as suggested by Dmitry Torokhov
 
-temp           Current temperature as reported by thermal zone (sensor)
-            Unit: millidegree Celsius
-            RO
-            Required
+v1 -> v2:
+	- changed how we add platform device data, based on Shaohua Li's
+  	  review
+---
+
+Alex Chiang (6):
+      ACPI: dock: convert sysfs attributes to an attribute_group
+      ACPI: dock: combine add|alloc_dock_dependent_device
+      ACPI: dock: remove global 'dock_device_name'
+      ACPI: dock: dock_add - hoist up platform_device_register_simple()
+      ACPI: dock: add struct dock_station * directly to platform device data
+      ACPI: dock: minor whitespace and style cleanups
 
 
-It is expected to be in millidegree, so I think we should discuss, modify 
-and apply the patch.
+ drivers/acpi/dock.c |  266 ++++++++++++++++++---------------------------------
+ 1 files changed, 93 insertions(+), 173 deletions(-)
 
-regards,
---peter
