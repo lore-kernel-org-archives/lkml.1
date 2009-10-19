@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbZJSPhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZJSPr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756751AbZJSPhB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 11:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756593AbZJSPhA
+	id S1756753AbZJSPr2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 11:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZJSPr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 11:37:00 -0400
-Received: from mga12.intel.com ([143.182.124.36]:37707 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756548AbZJSPhA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 11:37:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,585,1249282800"; 
-   d="scan'208";a="200780696"
-Date: Mon, 19 Oct 2009 17:38:17 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Paul Fertser <fercerpav@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Nelson Castillo <arhuaco@freaks-unidos.net>
-Subject: Re: [PATCH 1/7] mfd: pcf50633 disable unnecessary shutdown on
- lowsys
-Message-ID: <20091019153816.GE3885@sortiz.org>
-References: <1255471956-29201-1-git-send-email-fercerpav@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255471956-29201-1-git-send-email-fercerpav@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 19 Oct 2009 11:47:27 -0400
+Received: from mail.perches.com ([173.55.12.10]:2257 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751624AbZJSPr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 11:47:27 -0400
+Subject: Re: [PATCH 1/3] scripts/get_maintainer.pl: Add patch/file search
+ for keywords
+From: Joe Perches <joe@perches.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20091019094101.GB3414@pengutronix.de>
+References: <cover.1255153863.git.joe@perches.com>
+	 <73a375fb516cc420fcff9a0489e29a5509fbf34e.1255153863.git.joe@perches.com>
+	 <20091019094101.GB3414@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 19 Oct 2009 08:47:30 -0700
+Message-Id: <1255967250.24167.621.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
-
-I applied all patches except patch 5, on which I commented about.
-Also, patch 3 didnt have any changelog execpt the SOB lines. I expect to get
-something even for such trivial patches.
-
-Thanks for your work.
-
-Cheers,
-Samuel.
-
-On Wed, Oct 14, 2009 at 02:12:30AM +0400, Paul Fertser wrote:
-> On gta02 hardware revision A5 it can actually bring the system down
-> during normal operating conditions so we disable it.
+On Mon, 2009-10-19 at 11:41 +0200, Wolfram Sang wrote:
+> > @@ -149,6 +153,8 @@ while (<MAINT>) {
+> >  	    if ((-d $value)) {
+> >  		$value =~ s@([^/])$@$1/@;
+> >  	    }
+> > +	} elsif ($type eq "K") {
+> > +	    $keyword_hash{@typevalue} = $value;
 > 
-> Signed-off-by: Paul Fertser <fercerpav@gmail.com>
-> ---
->  drivers/mfd/pcf50633-core.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
-> index d26d774..6efe5c3 100644
-> --- a/drivers/mfd/pcf50633-core.c
-> +++ b/drivers/mfd/pcf50633-core.c
-> @@ -345,6 +345,9 @@ static void pcf50633_irq_worker(struct work_struct *work)
->  		goto out;
->  	}
->  
-> +	/* defeat 8s death from lowsys on A5 */
-> +	pcf50633_reg_write(pcf, PCF50633_REG_OOCSHDWN,  0x04);
-> +
->  	/* We immediately read the usb and adapter status. We thus make sure
->  	 * only of USBINS/USBREM IRQ handlers are called */
->  	if (pcf_int[0] & (PCF50633_INT1_USBINS | PCF50633_INT1_USBREM)) {
-> -- 
-> 1.6.0.6
-> 
+> It matches the way how the current implementation works, but I guess somewhen
+> this @typevalue-array should be converted into a hash like
+>	$types{$type} = $value;
+> or similar unless I missed something.
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+I think you missed something.
+
+What this is doing is saving the typevalue index of the
+section where the keyword is specified.  That index is
+used on the type match to add maintainers.
+
+> Maybe the file should be read completely to save the loop.
+
+I see if that matters.
+
+> A bit unrelated: I noticed that lkml gets always added due to "F: *". Maybe
+> this list should be skipped if there has been another mailing list found?
+
+I think that get_maintainers is generally used by people
+that aren't already sure who should get an email about 
+a patch or file.  I think lkml should be cc'd in almost
+every case when someone is not already sure where to
+send something.
+
+cheers, Joe
+
