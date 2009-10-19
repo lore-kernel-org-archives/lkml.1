@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZJSInc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751970AbZJSJO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbZJSInc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 04:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZJSInc
+	id S1751970AbZJSJO6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 05:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbZJSJO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 04:43:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34569 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752674AbZJSInb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 04:43:31 -0400
-Date: Mon, 19 Oct 2009 08:42:49 GMT
-From: tip-bot for Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, randy.dunlap@oracle.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       randy.dunlap@oracle.com, mingo@elte.hu
-In-Reply-To: <4ADBCCE8.3060300@oracle.com>
-References: <4ADBCCE8.3060300@oracle.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf tools: Display better error messages on missing packages
-Message-ID: <tip-1abc7f5500fff8422f34826a006648d8741d83d3@git.kernel.org>
-Git-Commit-ID: 1abc7f5500fff8422f34826a006648d8741d83d3
-X-Mailer: tip-git-log-daemon
+	Mon, 19 Oct 2009 05:14:57 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:42619 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750758AbZJSJO4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 05:14:56 -0400
+X-Greylist: delayed 1566 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 05:14:56 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RWZqZmTJJ+g7fqwj1tj/8QODW2lY/2fNEni9dCuoUpOv9DZ6jULUQKcUKlphSbjy0B
+         BndWtLSmB7BONB6xBY/Vbu/fovbR3RaPs8ePKD7GQ9PGLJy3k+cAGNPZ4lbVOl0m2C4I
+         7jyraJAda5zkvm/QllYPs3eccPwSwcafZwln8=
 MIME-Version: 1.0
+In-Reply-To: <20091019082556.GV20961@kernel.dk>
+References: <4ADC1BAE.9060508@gmail.com> <20091019082556.GV20961@kernel.dk>
+Date: Mon, 19 Oct 2009 16:48:55 +0800
+Message-ID: <412e6f7f0910190148m79d7910et358d0b3627e39aa2@mail.gmail.com>
+Subject: Re: PATCH: sendfile() checks f_op.sendpage() instead of 
+	f_op.splice_write() wrongly
+From: Changli Gao <xiaosuo@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 19 Oct 2009 08:42:49 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1abc7f5500fff8422f34826a006648d8741d83d3
-Gitweb:     http://git.kernel.org/tip/1abc7f5500fff8422f34826a006648d8741d83d3
-Author:     Randy Dunlap <randy.dunlap@oracle.com>
-AuthorDate: Sun, 18 Oct 2009 19:20:24 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 19 Oct 2009 10:06:37 +0200
+On Mon, Oct 19, 2009 at 4:25 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Mon, Oct 19 2009, Changli Gao wrote:
+>
+> Question is, if the check should just be dropped completely, since we
+> use fallback default handlers if the fs doesn't have
+> ->splice_read/->splice_write().
 
-perf tools: Display better error messages on missing packages
+Agree with you. I think we can drop it.
 
-Check for libelf headers and glibc headers separately so that
-the error message correctly identifies which package
-installation is missing/needed.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: paulus@samba.org
-Cc: a.p.zijlstra@chello.nl
-Cc: efault@gmx.de
-Cc: fweisbec@gmail.com
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <4ADBCCE8.3060300@oracle.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/Makefile |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 2400e50..db89a6d 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -431,8 +431,12 @@ ifeq ($(uname_S),Darwin)
- 	PTHREAD_LIBS =
- endif
- 
-+ifneq ($(shell sh -c "(echo '\#include <gnu/libc-version.h>'; echo 'int main(void) { const char * version = gnu_get_libc_version(); return (long)version; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
-+	msg := $(error No gnu/libc-version.h found, please install glibc-dev[el]);
-+endif
-+
- ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
--	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el]);
-+	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel);
- endif
- 
- ifdef NO_DEMANGLE
+-- 
+Regards，
+Changli Gao(xiaosuo@gmail.com)
