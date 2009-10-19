@@ -1,113 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbZJSGeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbZJSGbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754873AbZJSGeQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 02:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbZJSGeP
+	id S1753949AbZJSGbD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 02:31:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZJSGbC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 02:34:15 -0400
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:64027 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754615AbZJSGeN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 02:34:13 -0400
-X-Greylist: delayed 543 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 02:34:13 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=xnJsY3iZLxCfDpId6r4kMdGgladsIh+BRVBHhfbmZSNh1t/4T4FYFHbGYC5PI57qhB
-         9IifAJdHn1NAStJz2dNwGDrxaCAEmjIKRjwms0rD7d6KwoDGjJa+WuY08Z0M4ZHHcqcI
-         4AvV7lZrds0TsC5P5bV3+EMCzQOZqrcGissXg=
-Date: Mon, 19 Oct 2009 14:28:30 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: marcel@holtmann.org
-Cc: oliver@hartkopp.net, netdev@vger.kernel.org,
-       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] bluetooth: static lock key fix
-Message-ID: <20091019062830.GB4102@darkstar.vlan7>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 19 Oct 2009 02:31:02 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:60818 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752674AbZJSGbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 02:31:01 -0400
+Subject: Re: nfs mount fail
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440910182252v4648a7d1k249d091799583e37@mail.gmail.com>
+References: <86802c440910171825j22556a4bofbf0bd6cd134d53c@mail.gmail.com>
+	 <84144f020910181935q4aed9f0dx7a8a149d8b8743c7@mail.gmail.com>
+	 <20091019114339.4b67d947@infradead.org>
+	 <1255921080.839.2.camel@penberg-laptop>
+	 <86802c440910182252v4648a7d1k249d091799583e37@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 19 Oct 2009 15:30:48 +0900
+Message-Id: <1255933848.11116.2.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 7 sum msgs/h 1 total rcpts 1681 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 0ED132C325A4045BBFD3641029670806D500BBAE
+X-UiO-SPAM-Test: remote_host: 220.106.13.183 spam_score: -49 maxlevel 80 minaction 2 bait 0 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When shutdown ppp connection, lockdep waring about non-static key
-will happen, it is caused by the lock is not initialized properly
-at that time.
+On Sun, 2009-10-18 at 22:52 -0700, Yinghai Lu wrote:
+> On Sun, Oct 18, 2009 at 7:58 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > On Mon, 2009-10-19 at 11:43 +0900, Arjan van de Ven wrote:
+> >> On Mon, 19 Oct 2009 05:35:20 +0300
+> >> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> >>
+> >> > >
+> >> > > [  278.734149] ------------[ cut here ]------------
+> >> > > [  278.739620] kernel BUG at mm/slub.c:2969!
+> >> >
+> >> > So this means that someone is passing a pointer to kfree() that did
+> >> > not come from kmalloc(). Which tree are you testing?
+> >>
+> >> > > [  278.770030] Pid: 2594, comm: rpciod/0 Not tainted
+> >> > > 2.6.32-rc5-tip-01483-ga166936-dirty #651
+> >>
+> >> some evil person decided to put the exact kernel tree/version in the
+> >> oops output ;-)
+> >
+> > Oh, right. Ingo, Yinghai says Linus' tree is fine so any ideas why this
+> > shows up in -tip? Also it seems we've had a similar bug before:
+> >
+> >  http://lkml.org/lkml/2009/4/2/698
+> >
+> > Hmmh?
+> 
+> yes. something miss merged again...
+> 
+> need change some lines.
+> 
+> ---
+>  fs/nfs/super.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/fs/nfs/super.c
+> ===================================================================
+> --- linux-2.6.orig/fs/nfs/super.c
+> +++ linux-2.6/fs/nfs/super.c
+> @@ -1231,7 +1231,6 @@ static int nfs_parse_mount_options(char
+>  				goto out_nomem;
+>  			token = match_token(string,
+>  					    nfs_xprt_protocol_tokens, args);
+> -			kfree(string);
+> 
+>  			switch (token) {
+>  			case Opt_xprt_udp:
+> @@ -1254,6 +1253,7 @@ static int nfs_parse_mount_options(char
+>  			default:
+>  				dfprintk(MOUNT, "NFS:   unrecognized "
+>  						"transport protocol\n");
+> +				kfree(string);
 
-Fix with tuning the lock/skb_queue_head init order
+This doesn't match mainline either. To do so, the above kfree() has to
+be at the end of the "Opt_xprt_rdma:" case...
 
-[   94.339261] INFO: trying to register non-static key.
-[   94.342509] the code is fine but needs lockdep annotation.
-[   94.342509] turning off the locking correctness validator.
-[   94.342509] Pid: 0, comm: swapper Not tainted 2.6.31-mm1 #2
-[   94.342509] Call Trace:
-[   94.342509]  [<c0248fbe>] register_lock_class+0x58/0x241
-[   94.342509]  [<c024b5df>] ? __lock_acquire+0xb57/0xb73
-[   94.342509]  [<c024ab34>] __lock_acquire+0xac/0xb73
-[   94.342509]  [<c024b7fa>] ? lock_release_non_nested+0x17b/0x1de
-[   94.342509]  [<c024b662>] lock_acquire+0x67/0x84
-[   94.342509]  [<c04cd1eb>] ? skb_dequeue+0x15/0x41
-[   94.342509]  [<c054a857>] _spin_lock_irqsave+0x2f/0x3f
-[   94.342509]  [<c04cd1eb>] ? skb_dequeue+0x15/0x41
-[   94.342509]  [<c04cd1eb>] skb_dequeue+0x15/0x41
-[   94.342509]  [<c054a648>] ? _read_unlock+0x1d/0x20
-[   94.342509]  [<c04cd641>] skb_queue_purge+0x14/0x1b
-[   94.342509]  [<fab94fdc>] l2cap_recv_frame+0xea1/0x115a [l2cap]
-[   94.342509]  [<c024b5df>] ? __lock_acquire+0xb57/0xb73
-[   94.342509]  [<c0249c04>] ? mark_lock+0x1e/0x1c7
-[   94.342509]  [<f8364963>] ? hci_rx_task+0xd2/0x1bc [bluetooth]
-[   94.342509]  [<fab95346>] l2cap_recv_acldata+0xb1/0x1c6 [l2cap]
-[   94.342509]  [<f8364997>] hci_rx_task+0x106/0x1bc [bluetooth]
-[   94.342509]  [<fab95295>] ? l2cap_recv_acldata+0x0/0x1c6 [l2cap]
-[   94.342509]  [<c02302c4>] tasklet_action+0x69/0xc1
-[   94.342509]  [<c022fbef>] __do_softirq+0x94/0x11e
-[   94.342509]  [<c022fcaf>] do_softirq+0x36/0x5a
-[   94.342509]  [<c022fe14>] irq_exit+0x35/0x68
-[   94.342509]  [<c0204ced>] do_IRQ+0x72/0x89
-[   94.342509]  [<c02038ee>] common_interrupt+0x2e/0x34
-[   94.342509]  [<c024007b>] ? pm_qos_add_requirement+0x63/0x9d
-[   94.342509]  [<c038e8a5>] ? acpi_idle_enter_bm+0x209/0x238
-[   94.342509]  [<c049d238>] cpuidle_idle_call+0x5c/0x94
-[   94.342509]  [<c02023f8>] cpu_idle+0x4e/0x6f
-[   94.342509]  [<c0534153>] rest_init+0x53/0x55
-[   94.342509]  [<c0781894>] start_kernel+0x2f0/0x2f5
-[   94.342509]  [<c0781091>] i386_start_kernel+0x91/0x96
+>  				return 0;
+>  			}
+>  			break;
+> @@ -1264,6 +1264,8 @@ static int nfs_parse_mount_options(char
+>  			token = match_token(string,
+>  					    nfs_xprt_protocol_tokens, args);
+> 
+> +			kfree(string);
+> +
+>  			switch (token) {
+>  			case Opt_xprt_udp:
+>  				mnt->mount_server.protocol = XPRT_TRANSPORT_UDP;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Reported-by: Oliver Hartkopp <oliver@hartkopp.net>
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-Tested-by: Oliver Hartkopp <oliver@hartkopp.net>
----
-net/bluetooth/l2cap.c |    9 ++++++---
-1 file changed, 6 insertions(+), 3 deletions(-)
 
---- linux-2.6.31.orig/net/bluetooth/l2cap.c	2009-10-09 08:32:46.000000000 +0800
-+++ linux-2.6.31/net/bluetooth/l2cap.c	2009-10-09 08:33:57.000000000 +0800
-@@ -555,12 +555,12 @@ static struct l2cap_conn *l2cap_conn_add
- 
- 	conn->feat_mask = 0;
- 
--	setup_timer(&conn->info_timer, l2cap_info_timeout,
--						(unsigned long) conn);
--
- 	spin_lock_init(&conn->lock);
- 	rwlock_init(&conn->chan_list.lock);
- 
-+	setup_timer(&conn->info_timer, l2cap_info_timeout,
-+						(unsigned long) conn);
-+
- 	conn->disc_reason = 0x13;
- 
- 	return conn;
-@@ -783,6 +783,9 @@ static void l2cap_sock_init(struct sock 
- 	/* Default config options */
- 	pi->conf_len = 0;
- 	pi->flush_to = L2CAP_DEFAULT_FLUSH_TO;
-+	skb_queue_head_init(TX_QUEUE(sk));
-+	skb_queue_head_init(SREJ_QUEUE(sk));
-+	INIT_LIST_HEAD(SREJ_LIST(sk));
- }
- 
- static struct proto l2cap_proto = {
