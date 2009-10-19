@@ -1,105 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932248AbZJSTZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbZJSTcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932248AbZJSTZo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 15:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZJSTZn
+	id S1757315AbZJSTcR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 15:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757250AbZJSTcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 15:25:43 -0400
-Received: from mga10.intel.com ([192.55.52.92]:10406 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755745AbZJSTZm (ORCPT
+	Mon, 19 Oct 2009 15:32:17 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:38730 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753988AbZJSTcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 15:25:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,586,1249282800"; 
-   d="scan'208";a="505146064"
-Date: Mon, 19 Oct 2009 21:26:46 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Amit Kucheria <amit.kucheria@verdurent.com>
-Cc: List Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 1/5] mfd: twl4030-power: Rename DEVGROUP to DEV_GRP
-Message-ID: <20091019192646.GC30203@sortiz.org>
-References: <1255954211-28496-1-git-send-email-amit.kucheria@verdurent.com>
- <1255954244-28873-1-git-send-email-amit.kucheria@verdurent.com>
+	Mon, 19 Oct 2009 15:32:16 -0400
+Date: Mon, 19 Oct 2009 21:30:58 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Roland McGrath <roland@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] consider stack access while checking for alternate
+ signal stack
+Message-ID: <20091019193058.GA29613@Chamillionaire.breakpoint.cc>
+References: <20091018191247.GA21844@Chamillionaire.breakpoint.cc>
+ <20091019073358.GE17960@elte.hu>
+ <20091019080239.GB25783@Chamillionaire.breakpoint.cc>
+ <20091019180810.3CB751E@magilla.sf.frob.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1255954244-28873-1-git-send-email-amit.kucheria@verdurent.com>
+In-Reply-To: <20091019180810.3CB751E@magilla.sf.frob.com>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Amit,
+* Roland McGrath | 2009-10-19 11:08:10 [-0700]:
 
-I've applied patches 1,2 and 3 to my for-next branch.
-I dont think patch 4 is really useful, and I'll wait for an ACK from Tony or
-Nokia before pushing patch 5.
+>AFAICT all you want is the following, and I'm not sure it requires all that
+>much explanation.  I've probably missed some subtlety.
 
-Thanks for your work.
-
-Cheers,
-Samuel.
-
-On Mon, Oct 19, 2009 at 03:10:44PM +0300, Amit Kucheria wrote:
-> Stick to the names used in the reference manual
+>Thanks,
+>Roland
+>
+>--- a/include/linux/sched.h
+>+++ b/include/linux/sched.h
+>@@ -2090,7 +2090,13 @@ static inline int is_si_special(const struct siginfo *info)
 > 
-> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-> Cc: sameo@linux.intel.com
-> Cc: linux-omap@vger.kernel.org
-> ---
->  drivers/mfd/twl4030-power.c |   16 ++++++++--------
->  1 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
-> index d423e0c..82e3bcb 100644
-> --- a/drivers/mfd/twl4030-power.c
-> +++ b/drivers/mfd/twl4030-power.c
-> @@ -69,12 +69,12 @@ static u8 twl4030_start_script_address = 0x2b;
->  
->  /* resource configuration registers */
->  
-> -#define DEVGROUP_OFFSET		0
-> +#define DEV_GRP_OFFSET		0
->  #define TYPE_OFFSET		1
->  
-> -/* Bit positions */
-> -#define DEVGROUP_SHIFT		5
-> -#define DEVGROUP_MASK		(7 << DEVGROUP_SHIFT)
-> +/* Bit positions in the registers */
-> +#define DEV_GRP_SHIFT		5
-> +#define DEV_GRP_MASK		(7 << DEV_GRP_SHIFT)
->  #define TYPE_SHIFT		0
->  #define TYPE_MASK		(7 << TYPE_SHIFT)
->  #define TYPE2_SHIFT		3
-> @@ -328,7 +328,7 @@ static int __init twl4030_configure_resource(struct twl4030_resconfig *rconfig)
->  
->  	/* Set resource group */
->  	err = twl4030_i2c_read_u8(TWL4030_MODULE_PM_RECEIVER, &grp,
-> -				rconfig_addr + DEVGROUP_OFFSET);
-> +				rconfig_addr + DEV_GRP_OFFSET);
->  	if (err) {
->  		pr_err("TWL4030 Resource %d group could not be read\n",
->  			rconfig->resource);
-> @@ -336,10 +336,10 @@ static int __init twl4030_configure_resource(struct twl4030_resconfig *rconfig)
->  	}
->  
->  	if (rconfig->devgroup >= 0) {
-> -		grp &= ~DEVGROUP_MASK;
-> -		grp |= rconfig->devgroup << DEVGROUP_SHIFT;
-> +		grp &= ~DEV_GRP_MASK;
-> +		grp |= rconfig->devgroup << DEV_GRP_SHIFT;
->  		err = twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
-> -					grp, rconfig_addr + DEVGROUP_OFFSET);
-> +					grp, rconfig_addr + DEV_GRP_OFFSET);
->  		if (err < 0) {
->  			pr_err("TWL4030 failed to program devgroup\n");
->  			return err;
-> -- 
-> 1.6.3.3
+> static inline int on_sig_stack(unsigned long sp)
+> {
+>-	return (sp - current->sas_ss_sp < current->sas_ss_size);
+>+#ifdef CONFIG_STACK_GROWSUP
+>+	return sp >= current->sas_ss_sp &&
+>+		sp - current->sas_ss_sp < current->sas_ss_size;
+
+CONFIG_STACK_GROWSUP is wrong: If your stack grows up and sp ==
+sas_ss_sp + size than you are using the last entry in your sig stack
+which will be not recognized correctly. The case where sp == sas_ss_sp
+is also not detected correctly but this should not happen in real life.
+
+>+#else
+>+	return sp > current->sas_ss_sp &&
+>+		sp - current->sas_ss_sp <= current->sas_ss_size;
+>+#endif
+That is the PRE case which is the only relevant since we don't have any
+POST architectures. The check here produces the same results as my
+variant so it is okay :)
+So you prefer the smaller patch with comments around it?
+> }
 > 
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Sebastian
