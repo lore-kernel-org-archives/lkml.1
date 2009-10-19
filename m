@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932092AbZJSDFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbZJSDjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932092AbZJSDFH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 23:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755819AbZJSDFG
+	id S1755252AbZJSDjH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 23:39:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbZJSDjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 23:05:06 -0400
-Received: from bld-mail14.adl6.internode.on.net ([150.101.137.99]:34707 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755793AbZJSDFF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 23:05:05 -0400
-Date: Mon, 19 Oct 2009 14:04:56 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: 2.6.31+2.6.31.4: XFS - All I/O locks up to D-state after 24-48
-	hours (sysrq-t+w available)
-Message-ID: <20091019030456.GS9464@discord.disaster>
-References: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan> <alpine.DEB.2.00.0910181607040.27363@p34.internal.lan>
-MIME-Version: 1.0
+	Sun, 18 Oct 2009 23:39:07 -0400
+Received: from lo.gmane.org ([80.91.229.12]:52362 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753125AbZJSDjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 23:39:06 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Raja R Harinath <harinath@hurrynot.org>
+Subject: Re: [RFC][PATCH 2/4] mm: stack based kmap_atomic
+Date: Mon, 19 Oct 2009 08:38:12 +0530
+Message-ID: <87tyxw13oj.fsf@hariville.hurrynot.org>
+References: <20091008232226.768382977@chello.nl>
+	<20091008232528.365592989@chello.nl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910181607040.27363@p34.internal.lan>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 59.96.63.58
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+Cancel-Lock: sha1:fWtyGmAncqsOfUg8xoyyiuxjqbw=
+Cc: linux-arch@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 18, 2009 at 04:17:42PM -0400, Justin Piszcz wrote:
-> It has happened again, all sysrq-X output was saved this time.
->
-> wget http://home.comcast.net/~jpiszcz/20091018/crash.txt
-> wget http://home.comcast.net/~jpiszcz/20091018/dmesg.txt
-> wget http://home.comcast.net/~jpiszcz/20091018/interrupts.txt
-> wget http://home.comcast.net/~jpiszcz/20091018/sysrq-l.txt
-> wget http://home.comcast.net/~jpiszcz/20091018/sysrq-m.txt
-> wget http://home.comcast.net/~jpiszcz/20091018/sysrq-p.txt
-> wget http://home.comcast.net/~jpiszcz/20091018/sysrq-q.txt
-> wget http://home.comcast.net/~jpiszcz/20091018/sysrq-t.txt
-> wget http://home.comcast.net/~jpiszcz/20091018/sysrq-w.txt
-.....
-> Again, some more D-state processes:
->
-> [76325.608073] pdflush       D 0000000000000001     0   362      2 0x00000000
-> [76325.608087] Call Trace:
-> [76325.608095]  [<ffffffff811ea1c0>] ? xfs_trans_brelse+0x30/0x130
-> [76325.608099]  [<ffffffff811dc44c>] ? xlog_state_sync+0x26c/0x2a0
-> [76325.608103]  [<ffffffff810513e0>] ? default_wake_function+0x0/0x10
-> [76325.608106]  [<ffffffff811dc4d1>] ? _xfs_log_force+0x51/0x80
-> [76325.608108]  [<ffffffff811dc50b>] ? xfs_log_force+0xb/0x40
->
-> [76325.608202] xfssyncd      D 0000000000000000     0   831      2 0x00000000
-> [76325.608214] Call Trace:
-> [76325.608216]  [<ffffffff811dc229>] ? xlog_state_sync+0x49/0x2a0
-> [76325.608220]  [<ffffffff811d3485>] ? __xfs_iunpin_wait+0x95/0xe0
-> [76325.608222]  [<ffffffff81069c20>] ? autoremove_wake_function+0x0/0x30
-> [76325.608225]  [<ffffffff811d566d>] ? xfs_iflush+0xdd/0x2f0
-> [76325.608228]  [<ffffffff811fbe28>] ? xfs_reclaim_inode+0x148/0x190
-> [76325.608231]  [<ffffffff811fbe70>] ? xfs_reclaim_inode_now+0x0/0xa0
-> [76325.608233]  [<ffffffff811fc8dc>] ? xfs_inode_ag_walk+0x6c/0xc0
-> [76325.608236]  [<ffffffff811fbe70>] ? xfs_reclaim_inode_now+0x0/0xa0
->
-> All of the D-state processes:
+Hi,
 
-All pointing to log IO not completing.
+Peter Zijlstra <a.p.zijlstra@chello.nl> writes:
 
-That is, all of the D state processes are backed up on locks or
-waiting for IO completion processing. A lot of the processes are
-waiting for _xfs_log_force to complete, others are waiting for
-inodes to be unpinned or are backed up behind locked inodes that are
-waiting on log IO to complete before they can complete the
-transaction and unlock the inode, and so on.
+> @@ -74,7 +76,10 @@ EXPORT_SYMBOL(kmap_atomic);
+>  void kunmap_atomic(void *kvaddr, enum km_type type)
+>  {
+>  	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
+> -	unsigned int idx = type + KM_TYPE_NR * smp_processor_id();
+> +	unsigned int idx;
+> +
+> +	type = kmap_atomic_idx_pop();
+> +	idx = type + KM_TYPE_NR * smp_processor_id();
 
-Unfortunately, the xfslogd and xfsdatad kernel threads are not
-present in any of the output given, so I can't tell if these have
-deadlocked themselves and caused the problem. However, my experience
-with such pile-ups is that an I/O completion has not been run for
-some reason and that is the cause of the problem. I don't know if
-you can provide enough information to tell us if this happened or
-not. Instead, do you have a test case that you can share?
+Maybe you can avoid the 4/4 patch and preserve clean bisects by renaming
+the unused parameter here and elsewhere, and introduce the 'type' local
+in this patch.
 
-Cheers,
+  void kunmap_atomic(void *kvaddr, enum km_type unused)
+  {
+    ...
+    unsigned int idx, type;
+    ...
+  }
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+That way, patch 3/4 will remove a genuinely unused parameter, and thus
+remain compile-able.
+
+- Hari
+
