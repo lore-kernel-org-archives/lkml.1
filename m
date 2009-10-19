@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932148AbZJSPIC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756487AbZJSOtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932148AbZJSPIC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 11:08:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756529AbZJSPIB
+	id S1756487AbZJSOtP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 10:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755618AbZJSOtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 11:08:01 -0400
-Received: from fmmailgate07.web.de ([217.72.192.248]:42640 "EHLO
-	fmmailgate07.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756042AbZJSPIA (ORCPT
+	Mon, 19 Oct 2009 10:49:15 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:36908 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754636AbZJSOtO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 11:08:00 -0400
-Date: Mon, 19 Oct 2009 16:47:10 +0200
-Message-Id: <1392884759@web.de>
+	Mon, 19 Oct 2009 10:49:14 -0400
+Subject: [PATCH 0/4] Kmemleak patches for 2.6.33
+To: linux-kernel@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Mon, 19 Oct 2009 15:49:17 +0100
+Message-ID: <20091019144602.14221.27128.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.15-rc4
 MIME-Version: 1.0
-From: Thomas Schlichter <thomas.schlichter@web.de>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, dri-devel@lists.sourceforge.net,
-       Robert Hancock <hancockrwd@gmail.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "H. Peter Anvin" <hpa@zytor.com>, jbarnes@virtuousgeek.org,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Thomas Hellstrom <thellstrom@vmware.com>, Tejun Heo <tj@kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, x86@kernel.org,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: =?iso-8859-15?Q?Re:_[RFC_Patch]_use_MTRR_for_write_combining_if_PAT_is?=
- =?iso-8859-15?Q?_not__available?=
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX19ZlUd4Y/03uBjN7eVmh9lQeiPdX0M2co2aMLkt0XLynFxgi
- UwGbannFbSR1yIRmxm0SlZO2Cel47FPi8Bjanrktr2Ntf2EIoEajUwyHfUDd
- g==
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Oct 2009 14:49:18.0211 (UTC) FILETIME=[55D55D30:01CA50CB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> >>> Thomas Schlichter <thomas.schlichter@web.de> 17.10.09 21:48 >>>
-> >What do you think about these patches?
-> 
-> Functionality-wise this looks fine to me; whether the core sysfs changes
-> are acceptable I can't judge, though.
+This is a series of kmemleak patches for the upcoming merging window.
+The final patch in the series changes the leak reporting logic a bit to
+reduce the transient false positives.
 
-OK, who can? Or shall I simply ask get_maintainer.pl again?
+If there are no objections, I'll push them to the -next tree. Thanks.
 
-> However, I would recommend folding the last two arguments of
-> mtrr_add_unaligned(), i.e. use mtrr_usage != NULL as the increment
-> argument passed to mtrr_add().
 
-Good idea, I will do so this evening...
+Catalin Marinas (4):
+      kmemleak: Simplify the kmemleak_scan_area() function prototype
+      kmemleak: Scan the _ftrace_events section in modules
+      kmemleak: Store object reverse references for debugging purposes
+      kmemleak: Allow two scanning passes before reported an object as leak
 
-> And patches 5 and 6 would apparently not build right now, as they're
-> failing to pass the new 5th argument to mtrr_add_unaligned().
 
-*Grml* you are of course right. But I am not sure if these both patches
-are a goot idea at all.
+ include/linux/kmemleak.h |    8 +--
+ kernel/module.c          |   13 +++-
+ mm/kmemleak.c            |  141 ++++++++++++++++++----------------------------
+ mm/slab.c                |    4 +
+ 4 files changed, 68 insertions(+), 98 deletions(-)
 
-> Also, why do you add x86-specific code to drivers/pci-sysfs.c when the
-> function called there (pci_mmap_page_range()) already is arch-specific?
-> Moving your addition there would also allow covering the related
-> (legacy?) procfs based functionality... pci_release() could also become
-> arch-specific, with a fall-back definition to NULL.
-
-You are right, I should do that...
-
-> Additionally, I would suggest making those code portions depend on
-> CONFIG_X86_MTRR rather than CONFIG_X86, so that you don't
-> needlessly (try to) allocate the mtrr_usage vector.
-
-Good idea, I will do so.
-
-Thank you very much for your feedback, I'll hopefully come up with an
-even better version tonight...
-
-Kind regards,
-  Thomas
+-- 
+Catalin
