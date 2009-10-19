@@ -1,50 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbZJSLXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbZJSL00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbZJSLXJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 07:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbZJSLXI
+	id S1756052AbZJSL00 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 07:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbZJSL0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 07:23:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46841 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755998AbZJSLXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 07:23:08 -0400
-Date: Mon, 19 Oct 2009 13:23:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tim Blechmann <tim@klingt.org>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] perf stat: add branch performance counters to default
-Message-ID: <20091019112302.GB12829@elte.hu>
-References: <4ADC3975.8050109@klingt.org>
+	Mon, 19 Oct 2009 07:26:25 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:41025 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751389AbZJSL0Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 07:26:25 -0400
+Date: Mon, 19 Oct 2009 12:25:51 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Julia Lawall <julia@diku.dk>
+Cc: Ben Dooks <ben-linux@fluff.org>, Russell King <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 13/14] arch/arm/plat-s3c24xx: Move dereference after
+ NULL test
+Message-ID: <20091019112551.GA13389@fluff.org.uk>
+References: <Pine.LNX.4.64.0910170842310.9213@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4ADC3975.8050109@klingt.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <Pine.LNX.4.64.0910170842310.9213@ask.diku.dk>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Oct 17, 2009 at 08:42:49AM +0200, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> If the NULL test on buf is needed, then the dereference should be after the
+> NULL test.
+> 
+> A simplified version of the semantic match that detects this problem is as
+> follows (http://coccinelle.lip6.fr/):
+> 
+> // <smpl>
+> @match exists@
+> expression x, E;
+> identifier fld;
+> @@
+> 
+> * x->fld
+>   ... when != \(x = E\|&x\)
+> * x == NULL
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-* Tim Blechmann <tim@klingt.org> wrote:
+I'll apply it to next-s3c24xx-fixes unless someone else wants to
+pick it up for inclusion.
+ 
+> ---
+>  arch/arm/plat-s3c24xx/dma.c         |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/arm/plat-s3c24xx/dma.c b/arch/arm/plat-s3c24xx/dma.c
+> index 196b191..f046f8c 100644
+> --- a/arch/arm/plat-s3c24xx/dma.c
+> +++ b/arch/arm/plat-s3c24xx/dma.c
+> @@ -208,14 +208,14 @@ s3c2410_dma_loadbuffer(struct s3c2410_dma_chan *chan,
+>  {
+>  	unsigned long reload;
+>  
+> -	pr_debug("s3c2410_chan_loadbuffer: loading buff %p (0x%08lx,0x%06x)\n",
+> -		 buf, (unsigned long)buf->data, buf->size);
+> -
+>  	if (buf == NULL) {
+>  		dmawarn("buffer is NULL\n");
+>  		return -EINVAL;
+>  	}
+>  
+> +	pr_debug("s3c2410_chan_loadbuffer: loading buff %p (0x%08lx,0x%06x)\n",
+> +		 buf, (unsigned long)buf->data, buf->size);
+> +
+>  	/* check the state of the channel before we do anything */
+>  
+>  	if (chan->load_state == S3C2410_DMALOAD_1LOADED) {
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-> not sure, whether there is any reason, why the branch performance 
-> counters are not enabled by default. personally, i would find it quite 
-> useful, though
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-yeah, i find it useful too. The main reason is that most of the systems 
-out there have like 2 freely defined events. Only Nehalem and i think 
-Power7 has more.
-
-OTOH ... maybe we should just do it, as most measurement and tuning is 
-done on modern hardware. I'll try your patch in the perf tree - if too 
-many people complain we will undo it.
-
-	Ingo
+  'a smiley only costs 4 bytes'
