@@ -1,200 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbZJSCbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbZJSCfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754091AbZJSCbc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 22:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbZJSCbc
+	id S1755648AbZJSCfT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 22:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZJSCfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 22:31:32 -0400
-Received: from ozlabs.org ([203.10.76.45]:54338 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753463AbZJSCbb convert rfc822-to-8bit (ORCPT
+	Sun, 18 Oct 2009 22:35:19 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:36207 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754615AbZJSCfR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 22:31:31 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PULL] virtio fixes
-Date: Mon, 19 Oct 2009 13:01:23 +1030
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
+	Sun, 18 Oct 2009 22:35:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=l6OZMdXfXbYI2FFmpuVZbP9sOVOJ8nPnpLhiqcAMK6fQHYkTk1Kaf1l5obRFX3JTB0
+         Mlg8N/t5ZjIYIsRICgphVW/I5H2vwZ2w2axpdVsG/cxAGDfsSXM32Ft0Rc1AcEjSPUAs
+         9v9RMKBjsgyF1Pvwr5mmBMTxMvijj8iI3U8UA=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+In-Reply-To: <86802c440910171825j22556a4bofbf0bd6cd134d53c@mail.gmail.com>
+References: <86802c440910171825j22556a4bofbf0bd6cd134d53c@mail.gmail.com>
+Date: Mon, 19 Oct 2009 05:35:20 +0300
+X-Google-Sender-Auth: f24e248f14c1cd50
+Message-ID: <84144f020910181935q4aed9f0dx7a8a149d8b8743c7@mail.gmail.com>
+Subject: Re: nfs mount fail
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200910191301.24726.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Sorry for delay, recent absences, but all been in linux-next a week now)
+Hi,
 
-The following changes since commit 2fdc246aaf9a7fa088451ad2a72e9119b5f7f029:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../bp/bp
+On Sun, Oct 18, 2009 at 4:25 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> mpk12-3214-189-144:~ # cat x
+> mount -t nfs 10.6.75.100:/data/shared/pxeboot /x
+>
+> mpk12-3214-189-144:~ # sh x
+>
+> [  278.734149] ------------[ cut here ]------------
+> [  278.739620] kernel BUG at mm/slub.c:2969!
 
-are available in the git repository at:
+So this means that someone is passing a pointer to kfree() that did
+not come from kmalloc(). Which tree are you testing?
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
-
-Christian Borntraeger (1):
-      virtio: let header files include virtio_ids.h
-
-Christoph Hellwig (1):
-      virtio_blk: revert QUEUE_FLAG_VIRT addition
-
-Rusty Russell (1):
-      virtio_blk: Revert serial number support
-
-Uwe Kleine-König (2):
-      move virtballoon_remove to .devexit.text
-      move virtrng_remove to .devexit.text
-
- Documentation/lguest/lguest.c       |    1 -
- drivers/block/virtio_blk.c          |   39 ++--------------------------------
- drivers/char/hw_random/virtio-rng.c |    3 +-
- drivers/char/virtio_console.c       |    1 -
- drivers/net/virtio_net.c            |    1 -
- drivers/virtio/virtio_balloon.c     |    3 +-
- include/linux/Kbuild                |    1 +
- include/linux/virtio_9p.h           |    1 +
- include/linux/virtio_balloon.h      |    1 +
- include/linux/virtio_blk.h          |    5 +---
- include/linux/virtio_console.h      |    1 +
- include/linux/virtio_net.h          |    1 +
- include/linux/virtio_rng.h          |    1 +
- net/9p/trans_virtio.c               |    1 -
- 14 files changed, 12 insertions(+), 48 deletions(-)
-
-
-commit d5a01175aa25ef30a99545f09e0a2828a226d3cd
-Author: Christoph Hellwig <hch@lst.de>
-Date:   Fri Sep 4 22:44:42 2009 +0200
-
-    virtio_blk: revert QUEUE_FLAG_VIRT addition
-    
-    It seems like the addition of QUEUE_FLAG_VIRT caueses major performance
-    regressions for Fedora users:
-    
-    	https://bugzilla.redhat.com/show_bug.cgi?id=509383
-    	https://bugzilla.redhat.com/show_bug.cgi?id=505695
-    
-    while I can't reproduce those extreme regressions myself I think the flag
-    is wrong.
-    
-    Rationale:
-    
-      QUEUE_FLAG_VIRT expands to QUEUE_FLAG_NONROT which casus the queue
-      unplugged immediately.  This is not a good behaviour for at least
-      qemu and kvm where we do have significant overhead for every
-      I/O operations.  Even with all the latested speeups (native AIO,
-      MSI support, zero copy) we can only get native speed for up to 128kb
-      I/O requests we already are down to 66% of native performance for 4kb
-      requests even on my laptop running the Intel X25-M SSD for which the
-      QUEUE_FLAG_NONROT was designed.
-      If we ever get virtio-blk overhead low enough that this flag makes
-      sense it should only be set based on a feature flag set by the host.
-    
-    Signed-off-by: Christoph Hellwig <hch@lst.de>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
- drivers/block/virtio_blk.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-commit 6ff87d1f188f65a51c28595e9ad16183cbd58d94
-Author: Christian Borntraeger <borntraeger@de.ibm.com>
-Date:   Wed Sep 30 11:17:21 2009 +0200
-
-    virtio: let header files include virtio_ids.h
-    
-    Rusty,
-    
-    commit 3ca4f5ca73057a617f9444a91022d7127041970a
-        virtio: add virtio IDs file
-    moved all device IDs into a single file. While the change itself is
-    a very good one, it can break userspace applications. For example
-    if a userspace tool wanted to get the ID of virtio_net it used to
-    include virtio_net.h. This does no longer work, since virtio_net.h
-    does not include virtio_ids.h.
-    This patch moves all "#include <linux/virtio_ids.h>" from the C
-    files into the header files, making the header files compatible with
-    the old ones.
-    
-    In addition, this patch exports virtio_ids.h to userspace.
-    
-    CC: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-    Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
- Documentation/lguest/lguest.c       |    1 -
- drivers/block/virtio_blk.c          |    1 -
- drivers/char/hw_random/virtio-rng.c |    1 -
- drivers/char/virtio_console.c       |    1 -
- drivers/net/virtio_net.c            |    1 -
- drivers/virtio/virtio_balloon.c     |    1 -
- include/linux/Kbuild                |    1 +
- include/linux/virtio_9p.h           |    1 +
- include/linux/virtio_balloon.h      |    1 +
- include/linux/virtio_blk.h          |    1 +
- include/linux/virtio_console.h      |    1 +
- include/linux/virtio_net.h          |    1 +
- include/linux/virtio_rng.h          |    1 +
- net/9p/trans_virtio.c               |    1 -
- 14 files changed, 7 insertions(+), 7 deletions(-)
-
-commit ef728ac6296b8ae36791c7644e92b7bc75c0fd88
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Mon Oct 19 12:58:28 2009 -0600
-
-    virtio_blk: Revert serial number support
-    
-    This reverts "Add serial number support for virtio_blk, V4a".
-    
-    Turns out that virtio_pci, lguest and s/390 all have an 8 bit limit
-    on virtio config space, so noone could ever use this.
-    
-    This is coming back later in a cleaner form.
-    
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-    Cc: john cooper <john.cooper@redhat.com>
-    Cc: Jens Axboe <jens.axboe@oracle.com>
-
- drivers/block/virtio_blk.c |   37 +++----------------------------------
- include/linux/virtio_blk.h |    4 ----
- 2 files changed, 3 insertions(+), 38 deletions(-)
-
-commit 22b4b8fe00398cb66cb9a95d3f0c21b0155e5421
-Author: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date:   Thu Oct 1 10:28:33 2009 +0200
-
-    move virtballoon_remove to .devexit.text
-    
-    The function virtballoon_remove is used only wrapped by __devexit_p so
-    define it using __devexit.
-    
-    Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-    Acked-by: Sam Ravnborg <sam@ravnborg.org>
-    Acked-by: Michael S. Tsirkin <mst@redhat.com>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
- drivers/virtio/virtio_balloon.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-commit 360390725dce2961ac35be5f59640f9d44f03d25
-Author: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date:   Thu Oct 1 10:28:35 2009 +0200
-
-    move virtrng_remove to .devexit.text
-    
-    The function virtrng_remove is used only wrapped by __devexit_p so define
-    it using __devexit.
-    
-    Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-    Acked-by: Sam Ravnborg <sam@ravnborg.org>
-    Cc: Rusty Russell <rusty@rustcorp.com.au>
-    Cc: Michael S. Tsirkin <mst@redhat.com>
-    Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
-    Cc: linux-kernel@vger.kernel.org
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
- drivers/char/hw_random/virtio-rng.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> [  278.743056] invalid opcode: 0000 [#1] SMP
+> [  278.750365] last sysfs file: /sys/devices/virtual/net/sit0/type
+> [  278.755898] CPU 0
+> [  278.758637] Modules linked in:
+> [  278.770030] Pid: 2594, comm: rpciod/0 Not tainted
+> 2.6.32-rc5-tip-01483-ga166936-dirty #651
+> [  278.788458] RIP: 0010:[<ffffffff81174437>]  [<ffffffff81174437>]
+> kfree+0x96/0x14a
+> [  278.797545] RSP: 0018:ffff88087b9fdc50  EFLAGS: 00010246
+> [  278.810035] RAX: 0a00000000000000 RBX: 0000000000037803 RCX: ffff880854828018
+> [  278.815372] RDX: ffffea0000000000 RSI: 0000000000000378 RDI: ffff881800706475
+> [  278.832711] RBP: ffff88087b9fdc90 R08: ffff88084d37ce80 R09: 00000000e3115a3e
+> [  278.848764] R10: 00000000ffffe0be R11: 0000000000000000 R12: ffffea009c02da70
+> [  278.852385] R13: ffff881800706475 R14: ffff88084439d680 R15: 0000000000000001
+> [  278.872750] FS:  0000000000000000(0000) GS:ffff88003fc00000(0000)
+> knlGS:0000000000000000
+> [  278.889379] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> [  278.895226] CR2: 00007fcb2369c000 CR3: 0000000848df0000 CR4: 00000000000026f0
+> [  278.911157] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [  278.916692] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [  278.934540] Process rpciod/0 (pid: 2594, threadinfo
+> ffff88087b9fc000, task ffff88087bdc2370)
+> [  278.950913] Stack:
+> [  278.952455]  ffff88087913e934 ffff88087747e048 00000000e3115a3e
+> 0000000000037803
+> [  278.969335] <0> ffff880854828000 ffff88084d37ce80 ffff88084439d680
+> 0000000000000001
+> [  278.976115] <0> ffff88087b9fdcc0 ffffffff81dae6d8 ffffffff81dbb5d5
+> 00000000e3115a3e
+> [  278.995869] Call Trace:
+> [  278.997442]  [<ffffffff81dae6d8>] xs_set_port+0x73/0xa3
+> [  279.011219]  [<ffffffff81dbb5d5>] ? rpcb_dec_getport+0x0/0xc2
+> [  279.016461]  [<ffffffff81dbb4ac>] rpcb_getport_done+0x80/0xdb
+> [  279.030585]  [<ffffffff81db1cbf>] rpc_exit_task+0x3b/0x7f
+> [  279.033790]  [<ffffffff81db24a9>] __rpc_execute+0x97/0x251
+> [  279.051120]  [<ffffffff81db26e2>] rpc_async_schedule+0x28/0x3e
+> [  279.057205]  [<ffffffff810bbe9c>] worker_thread+0x1fa/0x317
+> [  279.071181]  [<ffffffff810bbe42>] ? worker_thread+0x1a0/0x317
+> [  279.075343]  [<ffffffff81db26ba>] ? rpc_async_schedule+0x0/0x3e
+> [  279.092033]  [<ffffffff810c26c8>] ? autoremove_wake_function+0x0/0x63
+> [  279.100028]  [<ffffffff810bbca2>] ? worker_thread+0x0/0x317
+> [  279.112094]  [<ffffffff810c2277>] kthread+0x9d/0xa5
+> [  279.116720]  [<ffffffff8104205a>] child_rip+0xa/0x20
+> [  279.133457]  [<ffffffff810419fc>] ? restore_args+0x0/0x30
+> [  279.137271]  [<ffffffff810c21da>] ? kthread+0x0/0xa5
+> [  279.149933]  [<ffffffff81042050>] ? child_rip+0x0/0x20
+> [  279.154086] Code: 00 00 00 00 00 ea ff ff 48 6b c0 68 4c 8d 24 10
+> 66 41 83 3c 24 00 79 05 4d 8b 64 24 10 49 8b 04 24 84 c0 78 17 66 a9
+> 00 c0 75 04 <0f> 0b eb fe 4c 89 e7 e8 87 b8 fc ff e9 80 00 00 00 48 8b
+> 45 08
+> [  279.198800] RIP  [<ffffffff81174437>] kfree+0x96/0x14a
+> [  279.204063]  RSP <ffff88087b9fdc50>
+> [  279.210307] ---[ end trace 52f0b2ff8e4dec91 ]---
+>
+> Message from syslogd@mpk12-3214-189-144 at Sat Oct 17 18:23:40 2009 ...
+> mpk12-3214-189-144 kernel: [  278.734149] ------------[ cut here ]------------
+>
+> Message from syslogd@mpk12-3214-189-144 at Sat Oct 17 18:23:40 2009 ...
+> mpk12-3214-189-144 kernel: [  278.743056] invalid opcode: 0000 [#1] SMP
+>
+> Message from syslogd@mpk12-3214-189-144 at Sat Oct 17 18:23:40 2009 ...
+> mpk12-3214-189-144 kernel: [  278.750365] last sysfs file:
+> /sys/devices/virtual/net/sit0/type
+>
+> Message from syslogd@mpk12-3214-189-144 at Sat Oct 17 18:23:40 2009 ...
+> mpk12-3214-189-144 kernel: [  278.950913] Stack:
+>
+> Message from syslogd@mpk12-3214-189-144 at Sat Oct 17 18:23:40 2009 ...
+> mpk12-3214-189-144 kernel: [  278.995869] Call Trace:
+>
+> Message from syslogd@mpk12-3214-189-144 at Sat Oct 17 18:23:40 2009 ...
+> mpk12-3214-189-144 kernel: [  279.154086] Code: 00 00 00 00 00 ea ff
+> ff 48 6b c0 68 4c 8d 24 10 66 41 83 3c 24 00 79 05 4d 8b 64 24 10 49
+> 8b 04 24 84 c0 78 17 66 a9 00 c0 75 04 <0f> 0b eb fe 4c 89 e7 e8 87 b8
+> fc ff e9 80 00 00 00 48 8b 45 08
+>
+> mount.nfs: mount system call failed
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
