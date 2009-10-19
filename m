@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZJSPcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbZJSPcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbZJSPcp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 11:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756643AbZJSPcp
+	id S1756761AbZJSPcH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 11:32:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbZJSPcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 11:32:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49217 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756551AbZJSPco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 11:32:44 -0400
-Date: Mon, 19 Oct 2009 17:31:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Schlichter <thomas.schlichter@web.de>
-Cc: Jan Beulich <JBeulich@novell.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, arjan@linux.intel.com,
-       dri-devel@lists.sourceforge.net, hancockrwd@gmail.com, hmh@hmh.eng.br,
-       hpa@zytor.com, jbarnes@virtuousgeek.org, jeremy.fitzhardinge@citrix.com,
-       linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de,
-       thellstrom@vmware.com, tj@kernel.org, venkatesh.pallipadi@intel.com,
-       x86@kernel.org, yinghai@kernel.org
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
-	available
-Message-ID: <20091019153134.GA18198@elte.hu>
-References: <1392906098@web.de>
+	Mon, 19 Oct 2009 11:32:06 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:53729 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756686AbZJSPcE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 11:32:04 -0400
+Message-ID: <4ADC8677.7000607@anirban.org>
+Date: Mon, 19 Oct 2009 08:32:07 -0700
+From: Anirban Sinha <ani@anirban.org>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.4pre) Gecko/20090915 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1392906098@web.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Oleg Nesterov <oleg@redhat.com>
+CC: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org, Anirban Sinha <asinha@zeugmasystems.com>
+Subject: Re: Kernel oops when clearing bgp neighbor info with TCP MD5SUM enabled
+References: <Pine.LNX.4.64.0910081514050.18315@sleet.zeugmasystems.local> <20091008.155429.02850661.davem@davemloft.net> <Pine.LNX.4.64.0910081622400.18315@sleet.zeugmasystems.local> <20091008.175703.83006470.davem@davemloft.net> <Pine.LNX.4.64.0910171035340.2364@sleet.zeugmasystems.local> <4ADA7EDC.5010402@anirban.org> <4ADB7856.7000803@anirban.org> <20091019121327.GA11423@redhat.com>
+In-Reply-To: <20091019121327.GA11423@redhat.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Thomas Schlichter <thomas.schlichter@web.de> wrote:
 
-> I don't think this is a good idea, Robert Hancock wrote there may be 
-> millions of such Laptops (Core Solo/Duo erratum AE7, Pentium M erratum 
-> Y31) :
->
->   http://marc.info/?l=linux-kernel&m=125537136105246&w=2
+Once upon a time, like on 09-10-19 5:13 AM, Oleg Nesterov wrote:
+> Hi Anirban,
 > 
-> > or Perhaps just try to add mtrr only for the pci mmap case like the 
-> > 4th patch in this series..
+> On 10/18, Anirban Sinha wrote:
+>>
+>> I have a question for you. The queue_work() routine which is called from
+>> schedule_work() does a put_cpu() which in turn does a enable_preempt(). Is
+>> this an attempt to trigger the scheduler?
 > 
-> I'd prefer this! ;-)
+> No. please note that queue_work() does get_cpu() + put_cpu() to protect
+> against cpu_down() in between.
 
-Hm, we could perhaps do that - but i think we should only do that on 
-systems that have PAT disabled.
+grrr! Ah yes, my eyes failed me (or it saw what I wanted it to see :)). You do have a get_cpu() and put_cpu() together in the same code path. I guess I will have to keep looking at inet_twdr_hangman(). 
 
-Which brings up the question of how to properly QA such a narrow segment 
-of the market. Maybe disabling CONFIG_X86_PAT should enable that logic 
-too.
+>> Is is
+>> it illegal to schedule a work function from within a timer callback?
+> 
+> Yes sure.
 
-	Ingo
+hmm. may be in that case, that function needs to be re-written. 
+
+> I'd suppose that this unbalance comes from inet_twdr_hangman() pathes.
+> 
+> Could you verify this?
+
+I'll keep looking. Thanks for the help Oleg. 
+
+Ani
+
