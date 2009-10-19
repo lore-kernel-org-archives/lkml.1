@@ -1,21 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbZJSVeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbZJSVeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757788AbZJSVeI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 17:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757714AbZJSVeI
+	id S1757899AbZJSVeS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 17:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757727AbZJSVeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 17:34:08 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:1616 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757704AbZJSVeH (ORCPT
+	Mon, 19 Oct 2009 17:34:17 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:7681 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757819AbZJSVeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 17:34:07 -0400
-Subject: [PATCH 0/5] mm: modest useability enhancements for node sysfs attrs
+	Mon, 19 Oct 2009 17:34:12 -0400
+Subject: [PATCH 1/5] mm: add numa node symlink for memory section in sysfs
 To: akpm@linux-foundation.org
 From: Alex Chiang <achiang@hp.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Date: Mon, 19 Oct 2009 15:34:10 -0600
-Message-ID: <20091019212740.32729.7171.stgit@bob.kio>
+Cc: linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>,
+       Gary Hade <garyhade@us.ibm.com>, Badari Pulavarty <pbadari@us.ibm.com>,
+       linux-kernel@vger.kernel.org
+Date: Mon, 19 Oct 2009 15:34:15 -0600
+Message-ID: <20091019213415.32729.86034.stgit@bob.kio>
+In-Reply-To: <20091019212740.32729.7171.stgit@bob.kio>
+References: <20091019212740.32729.7171.stgit@bob.kio>
 User-Agent: StGit/0.14.3.386.gb02d
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -24,29 +28,118 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been poking at memory/node hotplug lately, and found myself wondering
-what node a memory section or CPU might belong to.
+Commit c04fc586c (mm: show node to memory section relationship with
+symlinks in sysfs) created symlinks from nodes to memory sections, e.g.
 
-Yes, the information is there in sysfs, but to me, having a symlink pointing
-back to the node is so much more convenient.
+/sys/devices/system/node/node1/memory135 -> ../../memory/memory135
 
-Thanks,
-/ac
+If you're examining the memory section though and are wondering what
+node it might belong to, you can find it by grovelling around in
+sysfs, but it's a little cumbersome.
 
+Add a reverse symlink for each memory section that points back to the
+node to which it belongs.
+
+Cc: Gary Hade <garyhade@us.ibm.com>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
-Alex Chiang (5):
-      mm: add numa node symlink for memory section in sysfs
-      mm: refactor register_cpu_under_node()
-      mm: refactor unregister_cpu_under_node()
-      mm: add numa node symlink for cpu devices in sysfs
-      Documentation: ABI: document /sys/devices/system/cpu/
+ Documentation/ABI/testing/sysfs-devices-memory |   14 +++++++++++++-
+ Documentation/memory-hotplug.txt               |   11 +++++++----
+ drivers/base/node.c                            |   11 ++++++++++-
+ 3 files changed, 30 insertions(+), 6 deletions(-)
 
-
- Documentation/ABI/testing/sysfs-devices-cpu    |   42 ++++++++++++++++++
- Documentation/ABI/testing/sysfs-devices-memory |   14 ++++++
- Documentation/memory-hotplug.txt               |   11 +++--
- drivers/base/node.c                            |   56 +++++++++++++++++-------
- 4 files changed, 102 insertions(+), 21 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-devices-cpu
+diff --git a/Documentation/ABI/testing/sysfs-devices-memory b/Documentation/ABI/testing/sysfs-devices-memory
+index 9fe91c0..bf1627b 100644
+--- a/Documentation/ABI/testing/sysfs-devices-memory
++++ b/Documentation/ABI/testing/sysfs-devices-memory
+@@ -60,6 +60,19 @@ Description:
+ Users:		hotplug memory remove tools
+ 		https://w3.opensource.ibm.com/projects/powerpc-utils/
+ 
++
++What:		/sys/devices/system/memoryX/nodeY
++Date:		October 2009
++Contact:	Linux Memory Management list <linux-mm@kvack.org>
++Description:
++		When CONFIG_NUMA is enabled, a symbolic link that
++		points to the corresponding NUMA node directory.
++
++		For example, the following symbolic link is created for
++		memory section 9 on node0:
++		/sys/devices/system/memory/memory9/node0 -> ../../node/node0
++
++
+ What:		/sys/devices/system/node/nodeX/memoryY
+ Date:		September 2008
+ Contact:	Gary Hade <garyhade@us.ibm.com>
+@@ -70,4 +83,3 @@ Description:
+ 		memory section directory.  For example, the following symbolic
+ 		link is created for memory section 9 on node0.
+ 		/sys/devices/system/node/node0/memory9 -> ../../memory/memory9
+-
+diff --git a/Documentation/memory-hotplug.txt b/Documentation/memory-hotplug.txt
+index bbc8a6a..57e7e9c 100644
+--- a/Documentation/memory-hotplug.txt
++++ b/Documentation/memory-hotplug.txt
+@@ -160,12 +160,15 @@ Under each section, you can see 4 files.
+ NOTE:
+   These directories/files appear after physical memory hotplug phase.
+ 
+-If CONFIG_NUMA is enabled the
+-/sys/devices/system/memory/memoryXXX memory section
+-directories can also be accessed via symbolic links located in
+-the /sys/devices/system/node/node* directories.  For example:
++If CONFIG_NUMA is enabled the memoryXXX/ directories can also be accessed
++via symbolic links located in the /sys/devices/system/node/node* directories.
++
++For example:
+ /sys/devices/system/node/node0/memory9 -> ../../memory/memory9
+ 
++A backlink will also be created:
++/sys/devices/system/memory/memory9/node0 -> ../../node/node0
++
+ --------------------------------
+ 4. Physical memory hot-add phase
+ --------------------------------
+diff --git a/drivers/base/node.c b/drivers/base/node.c
+index 1fe5536..3108b21 100644
+--- a/drivers/base/node.c
++++ b/drivers/base/node.c
+@@ -268,6 +268,7 @@ static int get_nid_for_pfn(unsigned long pfn)
+ /* register memory section under specified node if it spans that node */
+ int register_mem_sect_under_node(struct memory_block *mem_blk, int nid)
+ {
++	int ret;
+ 	unsigned long pfn, sect_start_pfn, sect_end_pfn;
+ 
+ 	if (!mem_blk)
+@@ -284,9 +285,15 @@ int register_mem_sect_under_node(struct memory_block *mem_blk, int nid)
+ 			continue;
+ 		if (page_nid != nid)
+ 			continue;
+-		return sysfs_create_link_nowarn(&node_devices[nid].sysdev.kobj,
++		ret = sysfs_create_link_nowarn(&node_devices[nid].sysdev.kobj,
+ 					&mem_blk->sysdev.kobj,
+ 					kobject_name(&mem_blk->sysdev.kobj));
++		if (ret)
++			return ret;
++
++		return sysfs_create_link_nowarn(&mem_blk->sysdev.kobj,
++				&node_devices[nid].sysdev.kobj,
++				kobject_name(&node_devices[nid].sysdev.kobj));
+ 	}
+ 	/* mem section does not span the specified node */
+ 	return 0;
+@@ -315,6 +322,8 @@ int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
+ 			continue;
+ 		sysfs_remove_link(&node_devices[nid].sysdev.kobj,
+ 			 kobject_name(&mem_blk->sysdev.kobj));
++		sysfs_remove_link(&mem_blk->sysdev.kobj,
++			 kobject_name(&node_devices[nid].sysdev.kobj));
+ 	}
+ 	return 0;
+ }
 
