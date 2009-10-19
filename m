@@ -1,228 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbZJSTOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbZJSTRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757316AbZJSTOq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 15:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbZJSTOp
+	id S1757300AbZJSTRn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 15:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756561AbZJSTRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 15:14:45 -0400
-Received: from mga10.intel.com ([192.55.52.92]:4483 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757290AbZJSTOo (ORCPT
+	Mon, 19 Oct 2009 15:17:42 -0400
+Received: from mail.windriver.com ([147.11.1.11]:35103 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751702AbZJSTRl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 15:14:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,586,1249282800"; 
-   d="scan'208";a="738081493"
-Date: Mon, 19 Oct 2009 21:15:37 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Amit Kucheria <amit.kucheria@verdurent.com>
-Cc: List Linux Kernel <linux-kernel@vger.kernel.org>,
-       Tero Kristo <tero.kristo@nokia.com>, linux-omap@vger.kernel.org
-Subject: Re: [PATCH 5/5] mfd: twl4030-power: Optimised power scripts for
- the rx51
-Message-ID: <20091019191536.GB30203@sortiz.org>
-References: <1255954211-28496-1-git-send-email-amit.kucheria@verdurent.com>
- <1255954268-29162-1-git-send-email-amit.kucheria@verdurent.com>
+	Mon, 19 Oct 2009 15:17:41 -0400
+Message-ID: <4ADCBB58.5020803@windriver.com>
+Date: Mon, 19 Oct 2009 14:17:44 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255954268-29162-1-git-send-email-amit.kucheria@verdurent.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Peter Teoh <htmldeveloper@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: booting up: blocking indefinitely on kgdb?
+References: <804dabb00910162243m47c038e3xa744ab165317b300@mail.gmail.com> <804dabb00910170040v27feb935mc95a751b0b7b4086@mail.gmail.com> <4ADC6884.9000603@windriver.com> <804dabb00910190854m4f18e55cpf5600ebc0f1b7502@mail.gmail.com>
+In-Reply-To: <804dabb00910190854m4f18e55cpf5600ebc0f1b7502@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Oct 2009 19:17:44.0030 (UTC) FILETIME=[D5A64FE0:01CA50F0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Amit,
+Peter Teoh wrote:
+> On Mon, Oct 19, 2009 at 9:24 AM, Jason Wessel
+> <jason.wessel@windriver.com> wrote:
+>   
+>> This is actually a real problem.  It is a race condition, and there are
+>> actually two separate problems.
+>>
+>> 1) When a processor kernel thread is put into the single step state,
+>> kgdb expects it to hit the single trap on the same processor the single
+>> step request was made on.
+>>
+>>     
+>
+> sorry for being irrelevant....can i ask this:   even if the present
+> CPU is in single step mode, all other CPU can be fully running and
+> executing all the time, correct?  
 
-On Mon, Oct 19, 2009 at 03:11:08PM +0300, Amit Kucheria wrote:
-> The power scripts optimisation was mainly done by:
-> Tero Kristo <tero.kristo@nokia.com> and
-> Arnaud Mandy <ext-arnaud.2.mandy@nokia.com>
-> 
-> I'm only refactoring and testing it against the mainline kernel.
-Fine with me but if you want me to carry this patch, I'd like to get an ACK
-from Tony or one of the 2 above mentioned Nokia developers.
+It is not quite that simple.  The single step mode is a kernel task state.
 
-Cheers,
-Samuel.
+When kgdb does a single step on the x86 architecture, the HW single step
+bit is set in the active kernel task on CPU 2 for instance.   Then kgdb
+starts just that CPU.   If an interrupt occurs or any kind of
+preemption, is when the problem case arises.  This task may get
+scheduled onto a different CPU at a later point, and dead lock ensues.
 
 
-> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-> Cc: Samuel Ortiz <sameo@linux.intel.com>
-> Cc: Tero Kristo <tero.kristo@nokia.com>
-> Cc: linux-omap@vger.kernel.org
-> ---
->  arch/arm/mach-omap2/board-rx51-peripherals.c |  118 ++++++++++++++++++--------
->  1 files changed, 82 insertions(+), 36 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
-> index c1af532..d933050 100644
-> --- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-> +++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-> @@ -292,15 +292,9 @@ static struct twl4030_usb_data rx51_usb_data = {
->  
->  static struct twl4030_ins sleep_on_seq[] __initdata = {
->  /*
-> - * Turn off VDD1 and VDD2.
-> + * Turn off everything
->   */
-> -	{MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_OFF), 4},
-> -	{MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_OFF), 2},
-> -/*
-> - * And also turn off the OMAP3 PLLs and the sysclk output.
-> - */
-> -	{MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_OFF), 3},
-> -	{MSG_SINGULAR(DEV_GRP_P1, 0x17, RES_STATE_OFF), 3},
-> +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_ALL, 1, 0, RES_STATE_SLEEP), 2},
->  };
->  
->  static struct twl4030_script sleep_on_script __initdata = {
-> @@ -311,14 +305,9 @@ static struct twl4030_script sleep_on_script __initdata = {
->  
->  static struct twl4030_ins wakeup_seq[] __initdata = {
->  /*
-> - * Reenable the OMAP3 PLLs.
-> - * Wakeup VDD1 and VDD2.
-> - * Reenable sysclk output.
-> + * Reenable everything
->   */
-> -	{MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_ACTIVE), 0x30},
-> -	{MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_ACTIVE), 0x30},
-> -	{MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_ACTIVE), 0x37},
-> -	{MSG_SINGULAR(DEV_GRP_P1, 0x19, RES_STATE_ACTIVE), 3},
-> +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_ALL, 1, 0, RES_STATE_ACTIVE), 2},
->  };
->  
->  static struct twl4030_script wakeup_script __initdata = {
-> @@ -329,10 +318,9 @@ static struct twl4030_script wakeup_script __initdata = {
->  
->  static struct twl4030_ins wakeup_p3_seq[] __initdata = {
->  /*
-> - * Wakeup VDD1 (dummy to be able to insert a delay)
-> - * Enable CLKEN
-> + * Reenable everything
->   */
-> -	{MSG_SINGULAR(DEV_GRP_P1, 0x17, RES_STATE_ACTIVE), 3},
-> +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_ALL, 1, 0, RES_STATE_ACTIVE), 2},
->  };
->  
->  static struct twl4030_script wakeup_p3_script __initdata = {
-> @@ -353,12 +341,11 @@ static struct twl4030_ins wrst_seq[] __initdata = {
->  	{MSG_SINGULAR(DEV_GRP_NULL, RES_RESET, RES_STATE_OFF), 2},
->  	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_ALL, 0, 1, RES_STATE_ACTIVE),
->  		0x13},
-> -	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_PP, 0, 2, RES_STATE_WRST), 0x13},
->  	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_PP, 0, 3, RES_STATE_OFF), 0x13},
->  	{MSG_SINGULAR(DEV_GRP_NULL, RES_VDD1, RES_STATE_WRST), 0x13},
->  	{MSG_SINGULAR(DEV_GRP_NULL, RES_VDD2, RES_STATE_WRST), 0x13},
->  	{MSG_SINGULAR(DEV_GRP_NULL, RES_VPLL1, RES_STATE_WRST), 0x35},
-> -	{MSG_SINGULAR(DEV_GRP_P1, RES_HFCLKOUT, RES_STATE_ACTIVE), 2},
-> +	{MSG_SINGULAR(DEV_GRP_P3, RES_HFCLKOUT, RES_STATE_ACTIVE), 2},
->  	{MSG_SINGULAR(DEV_GRP_NULL, RES_RESET, RES_STATE_ACTIVE), 2},
->  };
->  
-> @@ -380,22 +367,81 @@ static struct twl4030_script *twl4030_scripts[] __initdata = {
->  };
->  
->  static struct twl4030_resconfig twl4030_rconfig[] __initdata = {
-> -	{ .resource = RES_VINTANA1, .devgroup = -1, .type = -1, .type2 = 1 },
-> -	{ .resource = RES_VINTANA2, .devgroup = -1, .type = -1, .type2 = 1 },
-> -	{ .resource = RES_VINTDIG, .devgroup = -1, .type = -1, .type2 = 1 },
-> -	{ .resource = RES_VMMC1, .devgroup = -1, .type = -1, .type2 = 3},
-> -	{ .resource = RES_VMMC2, .devgroup = DEV_GRP_NULL, .type = -1,
-> -	  .type2 = 3},
-> -	{ .resource = RES_VAUX1, .devgroup = -1, .type = -1, .type2 = 3},
-> -	{ .resource = RES_VAUX2, .devgroup = -1, .type = -1, .type2 = 3},
-> -	{ .resource = RES_VAUX3, .devgroup = -1, .type = -1, .type2 = 3},
-> -	{ .resource = RES_VAUX4, .devgroup = -1, .type = -1, .type2 = 3},
-> -	{ .resource = RES_VPLL2, .devgroup = -1, .type = -1, .type2 = 3},
-> -	{ .resource = RES_VDAC, .devgroup = -1, .type = -1, .type2 = 3},
-> -	{ .resource = RES_VSIM, .devgroup = DEV_GRP_NULL, .type = -1,
-> -	  .type2 = 3},
-> -	{ .resource = RES_CLKEN, .devgroup = DEV_GRP_P3, .type = -1,
-> -		.type2 = 1 },
-> +	{ .resource = RES_VDD1, .devgroup = -1,
-> +	  .type = 1, .type2 = -1, .remap_off = RES_STATE_OFF,
-> +	  .remap_sleep = RES_STATE_OFF
-> +	},
-> +	{ .resource = RES_VDD2, .devgroup = -1,
-> +	  .type = 1, .type2 = -1, .remap_off = RES_STATE_OFF,
-> +	  .remap_sleep = RES_STATE_OFF
-> +	},
-> +	{ .resource = RES_VPLL1, .devgroup = -1,
-> +	  .type = 1, .type2 = -1, .remap_off = RES_STATE_OFF,
-> +	  .remap_sleep = RES_STATE_OFF
-> +	},
-> +	{ .resource = RES_VPLL2, .devgroup = -1,
-> +	  .type = -1, .type2 = 3, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VAUX1, .devgroup = -1,
-> +	  .type = -1, .type2 = 3, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VAUX2, .devgroup = -1,
-> +	  .type = -1, .type2 = 3, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VAUX3, .devgroup = -1,
-> +	  .type = -1, .type2 = 3, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VAUX4, .devgroup = -1,
-> +	  .type = -1, .type2 = 3, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VMMC1, .devgroup = -1,
-> +	  .type = -1, .type2 = 3, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VMMC2, .devgroup = -1,
-> +	  .type = -1, .type2 = 3, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VDAC, .devgroup = -1,
-> +	  .type = -1, .type2 = 3, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VSIM, .devgroup = -1,
-> +	  .type = -1, .type2 = 3, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VINTANA1, .devgroup = DEV_GRP_P1 | DEV_GRP_P3,
-> +	  .type = -1, .type2 = -1, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VINTANA2, .devgroup = DEV_GRP_P1 | DEV_GRP_P3,
-> +	  .type = 1, .type2 = -1, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VINTDIG, .devgroup = DEV_GRP_P1 | DEV_GRP_P3,
-> +	  .type = -1, .type2 = -1, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_VIO, .devgroup = DEV_GRP_P3,
-> +	  .type = 1, .type2 = -1, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_CLKEN, .devgroup = DEV_GRP_P1 | DEV_GRP_P3,
-> +	  .type = 1, .type2 = -1 , .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_REGEN, .devgroup = DEV_GRP_P1 | DEV_GRP_P3,
-> +	  .type = 1, .type2 = -1, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_NRES_PWRON, .devgroup = DEV_GRP_P1 | DEV_GRP_P3,
-> +	  .type = 1, .type2 = -1, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_SYSEN, .devgroup = DEV_GRP_P1 | DEV_GRP_P3,
-> +	  .type = 1, .type2 = -1, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_HFCLKOUT, .devgroup = DEV_GRP_P3,
-> +	  .type = 1, .type2 = -1, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_32KCLKOUT, .devgroup = -1,
-> +	  .type = 1, .type2 = -1, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_RESET, .devgroup = -1,
-> +	  .type = 1, .type2 = -1, .remap_off = -1, .remap_sleep = -1
-> +	},
-> +	{ .resource = RES_Main_Ref, .devgroup = -1,
-> +	  .type = 1, .type2 = -1, .remap_off = -1, .remap_sleep = -1
-> +	},
->  	{ 0, 0},
->  };
->  
-> -- 
-> 1.6.3.3
-> 
+>  kgdb is not designed to handle more
+> than one CPU in single step mode, right?   if wrong, then i supposed
+> there must be a way to switch among processor, which i don't know how.
+>   not sure if the same concept pertained to kdb?
+>
+>   
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Kgdb will not single step more that one task at a time.  In kdb it has
+the capability of switching CPUs, and in the kgdb+kdb merge branch I
+implemented that functionality as well.  Either way it it still can only
+single step one kernel thread at a time.
+
+>> On an SMP system a process or kernel thread can migrate to another
+>> processor after kgdb resumes.  This will result in a hard hang in the
+>> cpu roundup part of kgdb.
+>>     
+>
+> not sure if it is ok if i can know more about the reason for the hard
+> hang (in slightly more detail).   The reason is because i am trying to
+> understand if this same problem does exists in any other parts of the
+> kernel?   eg, kdb? or anywhere in the suspend-resume cycle?  or
+> perhaps it can be generalized into a smatch or sparse rules for
+> standard error pattern recognition?  or perhaps inlined into the
+> kernel source some kind of dynamic test to test/identify the problem?
+>
+>   
+
+This particular problem does not exist anywhere else in the kernel.  It
+is unique to the way kgdb deals with stopping and starting the system. 
+
+In kernel/kgdb.c the key is in anything that touches the variable
+"kgdb_cpu_doing_single_step".  It is up to each architecture that makes
+use of kgdb to set/unset this variable.  The x86 arch sets it, and what
+it does is not allow the other CPUs to run when single stepping.  If we
+remove the set on the x86 arch, then you end up with the task migration
+issue, so I was proposing putting in the fix to both issues, until a
+displaced solution with kprobes or another implementation is completed.
+
+You trade one problem for another of course with allowing the CPU's to run.
+
+The original problem was a "hard hang".   The new problem is the
+possibility of a missed break point.   For instance if you set a
+breakpoint in a chunk of common code that can execute in parallel on two
+different CPUs.  The breakpoint gets removed, the single step HW flag is
+set, and if another CPU or task runs through that chunk of code, the
+break point is missed.  My preference is to trade the hard hang away for
+the time being.
+
+Jason.
