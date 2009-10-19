@@ -1,56 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbZJSF1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbZJSF1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753036AbZJSF1j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 01:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbZJSF1j
+	id S1752708AbZJSF1X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 01:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZJSF1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 01:27:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59194 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752674AbZJSF1i (ORCPT
+	Mon, 19 Oct 2009 01:27:22 -0400
+Received: from mail-px0-f171.google.com ([209.85.216.171]:62642 "EHLO
+	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbZJSF1V convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 01:27:38 -0400
-Date: Sun, 18 Oct 2009 22:25:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: npiggin@suse.de
-Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
-       Ian Kent <raven@themaw.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/6] brlock: introduce special brlocks
-Message-Id: <20091018222512.683973f7.akpm@linux-foundation.org>
-In-Reply-To: <20091015050048.777261867@suse.de>
-References: <20091015044026.319860788@suse.de>
-	<20091015050048.777261867@suse.de>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Oct 2009 01:27:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Me+PnRnGL87cQW5y7Wx/GIoDLcWkCKfVrx00bjdQibIZyX4Y6Q2C2gcHiNLQb7YKhU
+         8YkCrgA3PJKwLWvYXfEls8YOr5u1xvx80+KNlN1mzwtjE77iK0ezhSfIl0smYxLZRujX
+         lVW9yLT1gJGWmZoFIh7D0L2B2TrDduyCCx9PQ=
+MIME-Version: 1.0
+In-Reply-To: <4ADB93C4.4090607@imap.cc>
+References: <4ADB93C4.4090607@imap.cc>
+Date: Mon, 19 Oct 2009 13:27:24 +0800
+Message-ID: <7b6bb4a50910182227y1281b40bj3fcc082d32cf4496@mail.gmail.com>
+Subject: Re: possible circular locking dependency in ISDN PPP
+From: Xiaotian Feng <xtfeng@gmail.com>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       isdn4linux <isdn4linux@listserv.isdn4linux.de>,
+       Netdev <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009 15:40:30 +1100 npiggin@suse.de wrote:
+---> isdn_net_get_locked_lp
+     --->lock &nd->queue_lock
+     --->lock &nd->queue->xmit_lock
+     .....................
+     ---->unlock &nd->queue_lock
 
-> +#define DECLARE_BRLOCK(name)						\
+---> isdn_net_writebuf_skb (called with &nd->queue->xmit_lock locked)
+     ---->isdn_net_inc_frame_cnt
+          ---->isdn_net_device_busy
+               ----> lock &nd->queue_lock
 
-This:
+So there's a circular locking dependency.. Looking into isdn_net_get_locked_lp()
 
-> + DECLARE_PER_CPU(spinlock_t, name##_lock);				\
-> + static inline void name##_lock_init(void) {				\
-> +	int i;								\
-> +	for_each_possible_cpu(i) {					\
-> +		spinlock_t *lock;					\
-> +		lock = &per_cpu(name##_lock, i);			\
-> +		spin_lock_init(lock);					\
-> +	}								\
-> + }									\
-> + static inline void name##_rlock(void) {				\
-> +	spinlock_t *lock;						\
-> +	lock = &get_cpu_var(name##_lock);				\
-> +	spin_lock(lock);						\
-> + }									\
+static __inline__ isdn_net_local * isdn_net_get_locked_lp(isdn_net_dev *nd)
+{
+        unsigned long flags;
+        isdn_net_local *lp;
 
-generates a definition, not a declaration.  Hence DEFINE_BRLOCK.
+        spin_lock_irqsave(&nd->queue_lock, flags);
+        lp = nd->queue;         /* get lp on top of queue */
+        spin_lock(&nd->queue->xmit_lock);
+        while (isdn_net_lp_busy(nd->queue)) {
+                spin_unlock(&nd->queue->xmit_lock);
+                nd->queue = nd->queue->next;
+                if (nd->queue == lp) { /* not found -- should never happen */
+                        lp = NULL;
+                        goto errout;
+                }
+                spin_lock(&nd->queue->xmit_lock);
+        }
+        lp = nd->queue;
+        nd->queue = nd->queue->next;
+        local_bh_disable();
+errout:
+        spin_unlock_irqrestore(&nd->queue_lock, flags);
+        return lp;
+}
 
-</petpeeve #29>
+Why do we need to hold xmit_lock while using
+isdn_net_lp_busy(nd->queue) ? Can following patch fix this bug?
+
+---
+diff --git a/drivers/isdn/i4l/isdn_net.h b/drivers/isdn/i4l/isdn_net.h
+index 74032d0..7511f08 100644
+--- a/drivers/isdn/i4l/isdn_net.h
++++ b/drivers/isdn/i4l/isdn_net.h
+@@ -83,19 +83,19 @@ static __inline__ isdn_net_local *
+isdn_net_get_locked_lp(isdn_net_dev *nd)
+
+        spin_lock_irqsave(&nd->queue_lock, flags);
+        lp = nd->queue;         /* get lp on top of queue */
+-       spin_lock(&nd->queue->xmit_lock);
+        while (isdn_net_lp_busy(nd->queue)) {
+-               spin_unlock(&nd->queue->xmit_lock);
+                nd->queue = nd->queue->next;
+                if (nd->queue == lp) { /* not found -- should never happen */
+                        lp = NULL;
+                        goto errout;
+                }
+-               spin_lock(&nd->queue->xmit_lock);
+        }
+        lp = nd->queue;
+        nd->queue = nd->queue->next;
++       spin_unlock_irqrestore(&nd->queue_lock, flags);
++       spin_lock(&lp->xmit_lock);
+        local_bh_disable();
++       return lp;
+ errout:
+        spin_unlock_irqrestore(&nd->queue_lock, flags);
+        return lp;
+
+On Mon, Oct 19, 2009 at 6:16 AM, Tilman Schmidt <tilman@imap.cc> wrote:
+> A test of PPP over ISDN with ipppd, capidrv and the so far unmerged
+> CAPI port of the Gigaset driver produced the following lockdep
+> message:
+>
+>  =======================================================
+>  [ INFO: possible circular locking dependency detected ]
+>  2.6.32-rc4-testing #7
+>  -------------------------------------------------------
+>  ipppd/28379 is trying to acquire lock:
+>  (&netdev->queue_lock){......}, at: [<e62ad0fd>] isdn_net_device_busy+0x2c/0x74 [isdn]
+>
+>  but task is already holding lock:
+>  (&netdev->local->xmit_lock){+.....}, at: [<e62aefc2>] isdn_net_write_super+0x3f/0x6e [isdn]
+>
+>  which lock already depends on the new lock.
+>
+>
+>  the existing dependency chain (in reverse order) is:
+>
+>  -> #1 (&netdev->local->xmit_lock){+.....}:
+>        [<c0157e9c>] __lock_acquire+0xa12/0xb99
+>        [<c01580ac>] lock_acquire+0x89/0xa0
+>        [<c0373249>] _spin_lock+0x1b/0x2a
+>        [<e62b9d1c>] isdn_ppp_xmit+0xf0/0x5b0 [isdn]
+>        [<e62b03f0>] isdn_net_start_xmit+0x4c6/0x66b [isdn]
+>        [<c0307e75>] dev_hard_start_xmit+0x251/0x2e4
+>        [<c0317bcc>] sch_direct_xmit+0x4f/0x122
+>        [<c030829c>] dev_queue_xmit+0x2ae/0x412
+>        [<c030d748>] neigh_resolve_output+0x1f2/0x23c
+>        [<c0329b9c>] ip_finish_output2+0x1b1/0x1db
+>        [<c0329c25>] ip_finish_output+0x5f/0x62
+>        [<c0329cb5>] ip_output+0x8d/0x92
+>        [<c03290c0>] ip_local_out+0x18/0x1b
+>        [<c032932c>] ip_push_pending_frames+0x269/0x2c1
+>        [<c033fd78>] raw_sendmsg+0x618/0x6b0
+>        [<c0347ac9>] inet_sendmsg+0x3b/0x48
+>        [<c02fa5b5>] __sock_sendmsg+0x45/0x4e
+>        [<c02fad4b>] sock_sendmsg+0xb8/0xce
+>        [<c02faea0>] sys_sendmsg+0x13f/0x192
+>        [<c02fbeb2>] sys_socketcall+0x157/0x18e
+>        [<c0102974>] sysenter_do_call+0x12/0x32
+>
+>  -> #0 (&netdev->queue_lock){......}:
+>        [<c0157da9>] __lock_acquire+0x91f/0xb99
+>        [<c01580ac>] lock_acquire+0x89/0xa0
+>        [<c03732db>] _spin_lock_irqsave+0x24/0x34
+>        [<e62ad0fd>] isdn_net_device_busy+0x2c/0x74 [isdn]
+>        [<e62aeee3>] isdn_net_writebuf_skb+0x6e/0xc2 [isdn]
+>        [<e62aefd4>] isdn_net_write_super+0x51/0x6e [isdn]
+>        [<e62bc26f>] isdn_ppp_write+0x3a8/0x3bc [isdn]
+>        [<e62b785a>] isdn_write+0x1d9/0x1f9 [isdn]
+>        [<c01c42c5>] vfs_write+0x84/0xdf
+>        [<c01c43b9>] sys_write+0x3b/0x60
+>        [<c0102974>] sysenter_do_call+0x12/0x32
+>
+>  other info that might help us debug this:
+>
+>  1 lock held by ipppd/28379:
+>  #0:  (&netdev->local->xmit_lock){+.....}, at: [<e62aefc2>] isdn_net_write_super+0x3f/0x6e [isdn]
+>
+>  stack backtrace:
+>  Pid: 28379, comm: ipppd Not tainted 2.6.32-rc4-testing #7
+>  Call Trace:
+>  [<c03710dc>] ? printk+0xf/0x13
+>  [<c015714d>] print_circular_bug+0x90/0x9c
+>  [<c0157da9>] __lock_acquire+0x91f/0xb99
+>  [<c01580ac>] lock_acquire+0x89/0xa0
+>  [<e62ad0fd>] ? isdn_net_device_busy+0x2c/0x74 [isdn]
+>  [<c03732db>] _spin_lock_irqsave+0x24/0x34
+>  [<e62ad0fd>] ? isdn_net_device_busy+0x2c/0x74 [isdn]
+>  [<e62ad0fd>] isdn_net_device_busy+0x2c/0x74 [isdn]
+>  [<e62aeee3>] isdn_net_writebuf_skb+0x6e/0xc2 [isdn]
+>  [<e62aefd4>] isdn_net_write_super+0x51/0x6e [isdn]
+>  [<e62bc26f>] isdn_ppp_write+0x3a8/0x3bc [isdn]
+>  [<e62b785a>] isdn_write+0x1d9/0x1f9 [isdn]
+>  [<c01c3b6c>] ? rw_verify_area+0x8a/0xad
+>  [<e62b7681>] ? isdn_write+0x0/0x1f9 [isdn]
+>  [<c01c42c5>] vfs_write+0x84/0xdf
+>  [<c01c43b9>] sys_write+0x3b/0x60
+>  [<c0102974>] sysenter_do_call+0x12/0x32
+>
+> The message appeared shortly after initiating the connection,
+> during the PPP negotiation, just when the IP address was assigned.
+> The system continued to run normally, and the connection was
+> successfully established. Full log showing the entire connection
+> (with capidrv and Gigaset driver debugging output enabled, 70 kB),
+> available at http://www.phoenixsoftware.de/~ts/ppp-lockprob-full.log
+> in case someone's interested. It shows the messages from ipppd
+> about the IP address assignment arriving in the middle of the
+> lockdep message.
+>
+> I cannot say whether this is a regression. My previous tests of
+> that scenario were done on a machine with an Nvidia graphics card
+> where the lockdep machinery would refuse to run because of the
+> kernel being tainted by the Nvidia driver, so I wouldn't have seen
+> anything one way or another.
+>
+> Btw, one of those "NOHZ: local_softirq_pending 08" messages is also
+> present in the log, but that's 28 seconds later so I'd be surprised
+> if the two were related.
+>
+> Any hints about the possible cause and seriousness of that
+> message would be welcome. I'm particularly interested, of course,
+> in finding out whether the Gigaset driver might somehow be causing
+> it, even though it doesn't appear anywhere in the backtraces.
+>
+> aTdHvAaNnKcSe
+> Tilman
+>
+> --
+> Tilman Schmidt                    E-Mail: tilman@imap.cc
+> Bonn, Germany
+> Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+> Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
+>
+>
