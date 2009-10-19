@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbZJSJtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbZJSJtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202AbZJSJtI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 05:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZJSJtH
+	id S1754675AbZJSJtY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 05:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbZJSJtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 05:49:07 -0400
-Received: from cantor.suse.de ([195.135.220.2]:34574 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751877AbZJSJtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 05:49:06 -0400
-Date: Mon, 19 Oct 2009 11:49:09 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
-       Ian Kent <raven@themaw.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/6] brlock: introduce special brlocks
-Message-ID: <20091019094909.GC27856@wotan.suse.de>
-References: <20091015044026.319860788@suse.de> <20091015050048.777261867@suse.de> <20091018222512.683973f7.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091018222512.683973f7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Mon, 19 Oct 2009 05:49:21 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:55808 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754549AbZJSJtT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 05:49:19 -0400
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Wolfram Sang <w.sang@pengutronix.de>, Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH] checkpatch: fix false positive on __initconst
+Date: Mon, 19 Oct 2009 11:49:14 +0200
+Message-Id: <1255945754-2160-1-git-send-email-w.sang@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.3
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 18, 2009 at 10:25:12PM -0700, Andrew Morton wrote:
-> On Thu, 15 Oct 2009 15:40:30 +1100 npiggin@suse.de wrote:
-> 
-> > +#define DECLARE_BRLOCK(name)						\
-> 
-> This:
-> 
-> > + DECLARE_PER_CPU(spinlock_t, name##_lock);				\
-> > + static inline void name##_lock_init(void) {				\
-> > +	int i;								\
-> > +	for_each_possible_cpu(i) {					\
-> > +		spinlock_t *lock;					\
-> > +		lock = &per_cpu(name##_lock, i);			\
-> > +		spin_lock_init(lock);					\
-> > +	}								\
-> > + }									\
-> > + static inline void name##_rlock(void) {				\
-> > +	spinlock_t *lock;						\
-> > +	lock = &get_cpu_var(name##_lock);				\
-> > +	spin_lock(lock);						\
-> > + }									\
-> 
-> generates a definition, not a declaration.  Hence DEFINE_BRLOCK.
-> 
-> </petpeeve #29>
+checkpatch falsely complained about '__initconst' because it thought the
+'const' needed a space before. Fix this by changing the list of attributes:
 
-Well yes, but being a static inline, then I don't know of a better 
-way. Probably just better not to pretend we are expanding a simple
-declaration here, and name it something differently? (BRLOCK_HEADER(blah))?
+- add '__initconst'
+- force plain 'init' to contain a word-boundary at the end
+
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Andy Whitcroft <apw@shadowen.org>
+---
+
+Not entirely sure if adding the word boundary may cause a side-effect which I
+overlooked. A few more eyes on this would be great.
+
+ scripts/checkpatch.pl |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 87bbb8b..0a47a1f 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -142,11 +142,14 @@ our $Sparse	= qr{
+ 			__kprobes|
+ 			__ref
+ 		}x;
++
++# Notes to $Attribute:
++# We need \b after 'init' otherwise 'initconst' will cause a false positive in a check
+ our $Attribute	= qr{
+ 			const|
+ 			__read_mostly|
+ 			__kprobes|
+-			__(?:mem|cpu|dev|)(?:initdata|init)|
++			__(?:mem|cpu|dev|)(?:initdata|initconst|init\b)|
+ 			____cacheline_aligned|
+ 			____cacheline_aligned_in_smp|
+ 			____cacheline_internodealigned_in_smp|
+-- 
+1.6.3.3
 
