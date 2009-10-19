@@ -1,71 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932423AbZJSXuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbZJSXvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932423AbZJSXuO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 19:50:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932399AbZJSXuN
+	id S1758028AbZJSXvx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 19:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757979AbZJSXvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 19:50:13 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:42980 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932397AbZJSXuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 19:50:11 -0400
-Date: Mon, 19 Oct 2009 16:50:12 -0700
-From: Matt Helsley <matthltc@us.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Matt Helsley <matthltc@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       mtk.manpages@gmail.com, randy.dunlap@oracle.com, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       Louis.Rilling@kerlabs.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu,
-       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v8][PATCH 9/10]: Define clone3() syscall
-Message-ID: <20091019235012.GF27627@count0.beaverton.ibm.com>
-References: <20091013044925.GA28181@us.ibm.com> <20091013045439.GI28435@us.ibm.com> <20091016042041.GA7220@us.ibm.com> <cfd18e0f0910152325m4a9125c2q18f36f5bd7d4a0@mail.gmail.com> <20091016180631.GA31036@us.ibm.com> <20091019174405.GE27627@count0.beaverton.ibm.com> <4ADCDAA8.5080408@zytor.com>
+	Mon, 19 Oct 2009 19:51:53 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:50117 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753781AbZJSXvw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 19:51:52 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Egon Alter <egon.alter@gmx.net>
+Subject: Re: nfs oops in 2.6.32-rc5-00041-g1d91624
+Date: Tue, 20 Oct 2009 01:51:54 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+References: <200910191803.26845.egon.alter@gmx.net>
+In-reply-To: <200910191803.26845.egon.alter@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4ADCDAA8.5080408@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200910200151.55016.elendil@planet.nl>
+X-OriginalArrivalTime: 19 Oct 2009 23:51:55.0204 (UTC) FILETIME=[23504040:01CA5117]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20, 2009 at 06:31:20AM +0900, H. Peter Anvin wrote:
-> On 10/20/2009 02:44 AM, Matt Helsley wrote:
->>> |
->>> | I know I'm late to this discussion, but why the name clone3()? It's
->>> | not consistent with any other convention used fo syscall naming,
->
-> This assumption, of course, is just plain wrong.  Look at the wait  
-> system calls, for example.  However, when a small integer is used like  
-> that, it pretty much always reflects numbers of arguments.
->
->>> | AFAICS. I think a name like clone_ext() or clonex() (for extended)
->>> | might make more sense.
->>>
->>> Sure, we talked about calling it clone_extended() and I can go back
->>> to that.
->>>
->>> Only minor concern with that name was if this new call ever needs to
->>> be extended, what would we call it :-). With clone3() we could add a
->>> real/fake parameter and call it clone4() :-p
->>
->> Perhaps clone64 (somewhat like stat64 for example)?
->>
->
-> I think that doesn't exactly reflect the nature of the changes.
+Adding CC to linux-nfs.
 
-Yes. Without adopting an impractical encoding scheme it's quite
-unlikely a small number like 3 or 64 could exactly reflect all the
-changes :). I don't think that's a realistic objection though so...
+=================
+Hi,
 
-> clone3() is actually pretty good.
+I got this oops while doing a grep on an nfs4 share.
 
-I agree.
+ kernel: general protection fault: 0000 [#1] SMP
+ kernel: last sysfs file: /sys/devices/system/cpu/cpu1/cache/index2/shared_cpu_map
+ kernel: CPU 0
+ kernel: Modules linked in: nfs lockd nfs_acl auth_rpcgss sunrpc sit tunnel4 analog it87 hwmon_vid joydev snd_pcm_oss snd_mixer_o
+ss snd_seq_midi snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_seq cpufreq_conservative cpufreq_userspace cpufreq_
+powersave snd_hda_codec_realtek snd_emu10k1 snd_rawmidi snd_ac97_codec ac97_bus snd_seq_device snd_hda_intel snd_util_mem snd_hda_codec radeon ttm snd_pcm sn
+d_timer snd_hwdep emu10k1_gp drm_kms_helper snd k8temp r8169 gameport pcspkr drm soundcore mii snd_page_alloc i2c_piix4 i2c_algo_bit
+ kernel: Pid: 4337, comm: rpciod/0 Tainted: G        W  2.6.32-rc5-00041-g1d91624 #1 GA-MA69VM-S2
+ kernel: RIP: 0010:[<ffffffffa028d9c2>]  [<ffffffffa028d9c2>] rpcauth_checkverf+0x32/0x70 [sunrpc]
+ kernel: RSP: 0000:ffff8800371add60  EFLAGS: 00010246
+ kernel: RAX: 6b6b6b6b6b6b6b6b RBX: ffff880017380070 RCX: 000000000000200f
+ kernel: RDX: 0000000000000000 RSI: ffff880034418290 RDI: ffff880017380070
+ kernel: RBP: ffff8800371add80 R08: ffff8800371ac000 R09: 0000010f683033fc
+ kernel: R10: 0000000000000000 R11: ffff880001c14318 R12: ffff880035d54590
+ kernel: R13: ffff880034418290 R14: ffff88003472dad0 R15: ffff880034c87260
+ kernel: FS:  000000007ffd8000(0000) GS:ffff880001c00000(0000) knlGS:00000000f73ff6c0
+ kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+ kernel: CR2: 000000000e966004 CR3: 00000000140fe000 CR4: 00000000000006f0
+ kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+ kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+ kernel: Process rpciod/0 (pid: 4337, threadinfo ffff8800371ac000, task ffff8800345f66c0)
+ kernel: Stack:
+ kernel:  ffff880038cd2588 ffff880017380070 ffff880034c87260 ffffffffa0320ed0
+ kernel: <0> ffff8800371adde0 ffffffffa0285449 ffff8800371addb0 ffffffffa0284cba
+ kernel: <0> 0000000000000000 ffff880017387a38 ffff8800345f6c38 ffff880017380070
+ kernel: Call Trace:
+ kernel:  [<ffffffffa0320ed0>] ? nfs4_xdr_dec_read+0x0/0x110 [nfs]
+ kernel:  [<ffffffffa0285449>] call_decode+0x2d9/0x790 [sunrpc]
+ kernel:  [<ffffffffa0284cba>] ? call_transmit_status+0x3a/0x80 [sunrpc]
+ kernel:  [<ffffffffa028cc82>] __rpc_execute+0xb2/0x2b0 [sunrpc]
+ kernel:  [<ffffffffa028ceb0>] ? rpc_async_schedule+0x0/0x20 [sunrpc]
+ kernel:  [<ffffffffa028cec0>] rpc_async_schedule+0x10/0x20 [sunrpc]
+ kernel:  [<ffffffff8106969d>] worker_thread+0x15d/0x280
+ kernel:  [<ffffffff8106de50>] ? autoremove_wake_function+0x0/0x40
+ kernel:  [<ffffffff81069540>] ? worker_thread+0x0/0x280
+ kernel:  [<ffffffff8106da4e>] kthread+0x8e/0xa0
+ kernel:  [<ffffffff8100ceaa>] child_rip+0xa/0x20
+ kernel:  [<ffffffff8106d9c0>] ? kthread+0x0/0xa0
+ kernel:  [<ffffffff8100cea0>] ? child_rip+0x0/0x20
+ kernel: Code: 20 f6 05 d9 d5 01 00 10 48 89 5d e8 4c 89 6d f8 48 89 fb 4c 89 65 f0 49 89 f5 4c 8b 67 50 75 1c 49 8b 44 24 38 4c 89 ee 48 89 df <ff> 50 38 48 8b 5d e8 4c 8b 65 
+f0 4c 8b 6d f8 c9 c3 49 8b 44 24
+ kernel: RIP  [<ffffffffa028d9c2>] rpcauth_checkverf+0x32/0x70 [sunrpc]
+ kernel:  RSP <ffff8800371add60>
+ kernel: ---[ end trace 667f1c1d6e9b9476 ]---
 
-Cheers,
-	-Matt Helsley
+
+Greetings
+
+Egon
