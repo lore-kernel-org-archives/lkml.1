@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbZJSIku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbZJSIiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755771AbZJSIku (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 04:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZJSIkt
+	id S1755550AbZJSIiE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 04:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZJSIiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 04:40:49 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:56252 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbZJSIkt (ORCPT
+	Mon, 19 Oct 2009 04:38:03 -0400
+Received: from mail-px0-f171.google.com ([209.85.216.171]:46138 "EHLO
+	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbZJSIiC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 04:40:49 -0400
+	Mon, 19 Oct 2009 04:38:02 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:x-operating-system:user-agent;
-        b=so0/apCqAA5/xssUEprtaigSOzgmw/mznsRnJMR8jJrnAlQdQnQJODGnLHj7NonoH4
-         fxzkUR4ItXoe3u1hjf9rJz4kba5x5la9eII4RfuZOSCgNWL79Uxo4vEDdSJ1UQ+CTM27
-         So6t8GCOCRzGuUgLwdOnQ7W+wO+HclRuz1TaI=
-Date: Mon, 19 Oct 2009 16:33:29 +0800
-From: Li Hong <lihong.hi@gmail.com>
-To: Borislav Petkov <borislav.petkov@amd.com>,
-       Doug Thompson <dougthompson@xmission.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] amd64_edac: fix a wrong goto clause in amd64_edac.c
-Message-ID: <20091019083329.GA7340@uhli>
-Mail-Followup-To: Borislav Petkov <borislav.petkov@amd.com>,
-	Doug Thompson <dougthompson@xmission.com>,
-	linux-kernel@vger.kernel.org
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=L769XuBf4yrZ0oPDoQMQNJykoBHBxNBhM87i+7FtVpkOuKtvYMLtP1zuEG73PuCh+F
+         TvXu0xUAa7rj+BJfkhWXpi5d/09X0k1teqGoW8D0M6sm89y/xZO/MM/ssaF+sb2r15T4
+         p/SGfvikEWUxst+8yLeAXUHQ7NSzkjFPnc93o=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Operating-System: Linux uhli 2.6.28-11-generic 
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1255940788.14447.7.camel@heimdal.trondhjem.org>
+References: <f2201a0b0910190116w29cd5e3w1ae2c76bd677f9ed@mail.gmail.com>
+	 <1255940788.14447.7.camel@heimdal.trondhjem.org>
+Date: Mon, 19 Oct 2009 16:38:06 +0800
+X-Google-Sender-Auth: 2d996ea0b867d96e
+Message-ID: <6149e97b0910190138k5791351dmc95d9cc636aaef2f@mail.gmail.com>
+Subject: Re: Question about invalidate_inode_pages2_range()
+From: Peng Tao <lkml.bergwolf@gmail.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In amd64_edac_init(void) in amd64_edac.c, cache_k8_northbridges() is called
-before pci_register_driver. If it fails, should exit with err directly.
+On Mon, Oct 19, 2009 at 4:26 PM, Trond Myklebust
+<trond.myklebust@fys.uio.no> wrote:
+> On Mon, 2009-10-19 at 16:16 +0800, Peng Tao wrote:
+>> Hi,
+>>
+>> I've a question about invalidate_inode_pages2_range().
+>>
+>> When does invalidate_inode_pages2_range() returns -EBUSY? It locks and
+>> writes back the page. Why invalidate_complete_page2() still may fail
+>> due to page dirtiness?
+>
+> A lot of those requirements were set by NFS, which uses
+> invalidate_inode_pages2() in order to invalidate the page cache when it
+> detects that a file has been changed on the server (either due to an
+> O_DIRECT write, or due to another client modifying the file).
+>
+> In such cases, you want to try to keep the dirty data by writing it out
+> instead of discarding it.
+Thanks for your quick response. But I have two more questions about this.
+1. invalidate_inode_pages2_range() calls wait_on_page_writeback().
+Does the latter actually write out the dirty page?
+2. Is there any interface in the mm subsystem forces discarding a page cache?
 
-Signed-off-by: Li Hong <lihong.hi@gmail.com>
----
- drivers/edac/amd64_edac.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index d4560d9..3ee539a 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -3163,7 +3163,7 @@ static int __init amd64_edac_init(void)
- 	opstate_init();
- 
- 	if (cache_k8_northbridges() < 0)
--		goto err_exit;
-+		return err;
- 
- 	err = pci_register_driver(&amd64_pci_driver);
- 	if (err)
-@@ -3189,8 +3189,6 @@ static int __init amd64_edac_init(void)
- 
- err_2nd_stage:
- 	debugf0("2nd stage failed\n");
--
--err_exit:
- 	pci_unregister_driver(&amd64_pci_driver);
- 
- 	return err;
--- 
-1.6.0.4
-
+Cheers,
+Peng Tao
