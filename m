@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbZJSOX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756384AbZJSOcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756414AbZJSOX3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 10:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756332AbZJSOX2
+	id S1756384AbZJSOcf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 10:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbZJSOcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 10:23:28 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:50254 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755934AbZJSOX2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 10:23:28 -0400
-Date: Mon, 19 Oct 2009 10:23:32 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-cc: USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31.4: USB/UPS connectivity issue on Intel DP55KG Motherboard
- [DEBUG logs included upsd/upsmon/usbhid-ups]
-In-Reply-To: <alpine.DEB.2.00.0910181732550.4761@p34.internal.lan>
-Message-ID: <Pine.LNX.4.44L0.0910191016370.3899-100000@iolanthe.rowland.org>
+	Mon, 19 Oct 2009 10:32:35 -0400
+Received: from icculus.org ([67.106.77.212]:51073 "EHLO icculus.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756304AbZJSOce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 10:32:34 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 10:32:34 EDT
+Date: Mon, 19 Oct 2009 10:25:43 -0400 (EDT)
+From: "Ryan C. Gordon" <icculus@icculus.org>
+X-X-Sender: icculus@andre.icculuslan
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] binfmt_elf: Reorder objects in Makefile to favor platform
+ default.
+Message-ID: <alpine.DEB.2.00.0910190415430.13303@andre.icculuslan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Oct 2009, Justin Piszcz wrote:
+Reordered object list so compat_binfmt_elf.o comes first. This will make it
+call register_binfmt() first, inserting it at the end of the list.
 
-> I have performed all of the steps you recommended, there is also a bug in
-> the docs, the directory seems to be different, or at least if you have
-> everything compiled into the kernel and not using modules.
+Now the kernel will try the compatibility formats as a backup if the actual
+system format rejects the binary. As almost all binaries loaded won't be
+compatibility formats, this saves a few cycles for each process.
 
-> Steps from the USB documentation:
-> 
-> # mount -t debugfs none_debugs /sys/kernel/debug
-> #
-> 
-> The kernel documentation is outdated:
-> 
-> # ls /sys/kernel/debug/usbmon
-> 0s  0u  1s  1t  1u  2s  2t  2u  3s  3t  3u  4s  4t  4u
-> #
-> 
-> The directory is: 
-> # ls /sys/kernel/debug/usb/usbmon
-> 0s  0u  1s  1t  1u  2s  2t  2u
+Signed-off-by: Ryan C. Gordon <icculus@icculus.org>
+---
+ fs/Makefile |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-This has already been corrected in the 2.6.32-rc kernels.
-
-However there is another respect in which the documentation is
-outdated: It mentions /proc/bus/usb/devices.  That file has moved; it
-is now named /sys/kernel/debug/usb/devices.  Would you like to submit a
-patch fixing this?
-
-Alan Stern
+diff --git a/fs/Makefile b/fs/Makefile
+index af6d047..173d153 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -40,8 +40,9 @@ obj-$(CONFIG_BINFMT_MISC)	+= binfmt_misc.o
+ # binfmt_script is always there
+ obj-y				+= binfmt_script.o
+ 
+-obj-$(CONFIG_BINFMT_ELF)	+= binfmt_elf.o
++# List compat_* first, so they insert at end of the list, and are tried last.
+ obj-$(CONFIG_COMPAT_BINFMT_ELF)	+= compat_binfmt_elf.o
++obj-$(CONFIG_BINFMT_ELF)	+= binfmt_elf.o
+ obj-$(CONFIG_BINFMT_ELF_FDPIC)	+= binfmt_elf_fdpic.o
+ obj-$(CONFIG_BINFMT_SOM)	+= binfmt_som.o
+ obj-$(CONFIG_BINFMT_FLAT)	+= binfmt_flat.o
+-- 
+1.6.0.4
 
