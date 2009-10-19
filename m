@@ -1,165 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756852AbZJSQBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbZJSP5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756852AbZJSQBq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 12:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756355AbZJSQBp
+	id S1756927AbZJSP5R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 11:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756957AbZJSP5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 12:01:45 -0400
-Received: from mail-px0-f179.google.com ([209.85.216.179]:56633 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755934AbZJSQBo convert rfc822-to-8bit (ORCPT
+	Mon, 19 Oct 2009 11:57:16 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:62450 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756907AbZJSP5P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 12:01:44 -0400
+	Mon, 19 Oct 2009 11:57:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=pnXqPENR4N49lIIeyHchVSY6CRiWoiefvAHp3VofV1mO3GLPX7XXHA8JRuWlyIi/Zz
-         gI/QF8G/FRlaiKweFooAtVXewSim9UIxX8PovVSfbi1HAb8CBlUN2WXfDIPDkwTP5z6O
-         HhTmJuOeqcedBXEHolhK1yl6IBEk4/EjXnanQ=
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=k3QgXYtBu7zDbGRx/xfbS5DymVNKW6NPfjsmzzrB43mnPaZ7sO69cNcCWFhNScnAgg
+         8BFwAjD/D0ZvkGviXqf+Fw6EmgbLeWE8Ceoe/AaPqMjeTi8qABlYDCtm1n7e9+qa7H7i
+         DlG74V4teVu5fcfuWqw6wltd9rFNE68WVjy2A=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Subject: Re: [PATCH 2/2] rt2x00: Implement support for rt2800pci
+Date: Mon, 19 Oct 2009 17:56:16 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31.1-56.fc12.x86_64; KDE/4.3.1; x86_64; ; )
+Cc: John Linville <linville@tuxdriver.com>, linux-wireless@vger.kernel.org,
+       users@host1.serialmonkey.com, Alban Browaeys <prahal@yahoo.com>,
+       Benoit PAPILLAULT <benoit.papillault@free.fr>,
+       Felix Fietkau <nbd@openwrt.org>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       Mattias Nissler <mattias.nissler@gmx.de>,
+       Mark Asselstine <asselsm@gmail.com>,
+       Xose Vazquez Perez <xose.vazquez@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <200910152137.58164.IvDoorn@gmail.com> <200910171654.03344.bzolnier@gmail.com> <200910181859.22413.IvDoorn@gmail.com>
+In-Reply-To: <200910181859.22413.IvDoorn@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <4ADC6884.9000603@windriver.com>
-References: <804dabb00910162243m47c038e3xa744ab165317b300@mail.gmail.com>
-	 <804dabb00910170040v27feb935mc95a751b0b7b4086@mail.gmail.com>
-	 <4ADC6884.9000603@windriver.com>
-Date: Mon, 19 Oct 2009 11:54:24 -0400
-Message-ID: <804dabb00910190854m4f18e55cpf5600ebc0f1b7502@mail.gmail.com>
-Subject: Re: booting up: blocking indefinitely on kgdb?
-From: Peter Teoh <htmldeveloper@gmail.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Message-Id: <200910191756.16579.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thank you for the explanation.
+On Sunday 18 October 2009 18:59:21 Ivo van Doorn wrote:
+> > I also used the opportunity to take a closer look at this driver and
+> > it seems that it needlessly adds around 2 KLOC to kernel by duplicating
+> > the common content of rt2800usb.h to rt2800pci.h instead of moving it
+> > to the shared header (like it is done in the staging crap drivers):
+> > 
+> > $ wc -l drivers/net/wireless/rt2x00/rt2800usb.h drivers/net/wireless/rt2x00/rt2800pci.h
+> >   1951 drivers/net/wireless/rt2x00/rt2800usb.h
+> >   1960 drivers/net/wireless/rt2x00/rt2800pci.h
+> >   3911 total
+> > 
+> > $ diff -u drivers/net/wireless/rt2x00/rt2800usb.h drivers/net/wireless/rt2x00/rt2800pci.h|diffstat
+> >  rt2800pci.h |  213 +++++++++++++++++++++++++++++++-----------------------------
+> >   1 file changed, 111 insertions(+), 102 deletions(-)
+> 
+> Creating rt2800.h with common register defines has been on the todo list for some time already,
+> it will likely happen in the future, but until I get around to update my debugfs scripts the seperate
+> rt2800pci.h and rt2800usb.h files make debugging and register analysis a bit easier.
 
-On Mon, Oct 19, 2009 at 9:24 AM, Jason Wessel
-<jason.wessel@windriver.com> wrote:
-> Peter Teoh wrote:
->> sorry....now I reboot it is ok.   I don't know why. sorry about that.
->>
->>
->
-> This is actually a real problem.  It is a race condition, and there are
-> actually two separate problems.
->
-> 1) When a processor kernel thread is put into the single step state,
-> kgdb expects it to hit the single trap on the same processor the single
-> step request was made on.
->
+Knowing that this driver has been in more-or-less unchanged state in your
+tree for at least past half year I would say that there was a plenty of time
+to fix this trivial issue..
 
-sorry for being irrelevant....can i ask this:   even if the present
-CPU is in single step mode, all other CPU can be fully running and
-executing all the time, correct?   kgdb is not designed to handle more
-than one CPU in single step mode, right?   if wrong, then i supposed
-there must be a way to switch among processor, which i don't know how.
-  not sure if the same concept pertained to kdb?
+Also are the said scripts available anywhere?
 
-> On an SMP system a process or kernel thread can migrate to another
-> processor after kgdb resumes.  This will result in a hard hang in the
-> cpu roundup part of kgdb.
+> > Similarly it looks like most of the code between rt2800usb.c and rt2800pci.c
+> > could also be shared (up to another 2 KLOC saved) by adding abstraction layer
+> > for accessing chipset registers over different buses (again like it is done
+> > in staging crap drivers):
+> > 
+> > $ wc -l drivers/net/wireless/rt2x00/rt2800usb.c drivers/net/wireless/rt2x00/rt2800pci.c
+> >   3077 drivers/net/wireless/rt2x00/rt2800usb.c
+> >   3323 drivers/net/wireless/rt2x00/rt2800pci.c
+> >   6400 total
+> > 
+> > $ diff -u drivers/net/wireless/rt2x00/rt2800usb.c drivers/net/wireless/rt2x00/rt2800pci.c|diffstat
+> >  rt2800pci.c | 2190 +++++++++++++++++++++++++++++++++---------------------------
+> >  1 file changed, 1218 insertions(+), 972 deletions(-)
+> 
+> I don't agree on this, for starters the whole "abstraction layer as done in the staging driver, really
+> obfuscated the code in multiple areas, so whatever abstraction layer will be needed for rt2x00 it
+> should be done much cleaner without the ugly defines and crap like that. So unless there is a _clean_
+> and very _readable_ solution for such abstraction layer I might consider it.
 
-not sure if it is ok if i can know more about the reason for the hard
-hang (in slightly more detail).   The reason is because i am trying to
-understand if this same problem does exists in any other parts of the
-kernel?   eg, kdb? or anywhere in the suspend-resume cycle?  or
-perhaps it can be generalized into a smatch or sparse rules for
-standard error pattern recognition?  or perhaps inlined into the
-kernel source some kind of dynamic test to test/identify the problem?
+Nobody was talking about duplicating any obfuscations present in the staging
+driver -- adding struct rt2800_ops would be the preferred way to go.
 
->
-> 2) Schedule lock contention can cause a hard hang.
->
-> On an SMP system kgdb for the x86 architecture single steps by running
-> only a single core.  This is quite problematic if you have the schedule
-> a lock held by a cpu which is in busy wait.  The system will deadlock on
-> the single step operation from kgdb.  This problem is easily observed by
-> doing on a 2 processor system by doing:
->
->   while [ 1 ] ; do find /  2> /dev/null > /dev/null; done &
->   while [ 1 ] ; do date > /dev/null ; done &
->   echo V1 > /sys/module/kgdbts/parameters/kgdbts
->
-> For the first problem, I have a fix which is in the linux-next branch
-> and will I will send a merge request to Linus to get it into the
-> mainline tree.
->
-> For the second problem, I am going to merge a change to release all the
-> processors to run, at the expense of missing a breakpoint.   It is
-> possible to change the behavior of this dynamically, for someone who
-> might care about this behavior, until a longer term approach is
-> implemented.  I have an experimental patch which implements the longer
-> term approach of using displaced stepping.
->
-> The experimental patch uses kprobes to manage software breakpoints.  The
-> kprobe allows the breakpoint to remain planted while stepping around it
-> by using out of line instruction execution, where you emulate the
-> original instruction using memory elsewhere, followed by another trap
-> instruction.
->
-> Thanks,
+> Secondly, you can't merge them until both drivers would correctly for all users/chipsets, because only
+> then you can see what registers are initialized equaly, and where potential pitfalls are between the
+> 2 busses.
 
-thank you for the verbose explanation.......appreciate very much.
-let me take some time to understand......
+Merge should be done sooner than later, or the drivers will diverge even
+more, i.e. eFUSE support is needed for rt2800usb and is currently present
+only in rt2800pci driver.
 
-> Jason.
->
->> On Sat, Oct 17, 2009 at 1:43 AM, Peter Teoh <htmldeveloper@gmail.com> wrote:
->>
->>> Today, both my system (2.6.32.-rc4 from linus git tree and linux-next)
->>> bootup blocked indefinitely on:
->>>
->>> kgdb: Registered I/O driver kgdbts.
->>>
->>> while booting up.   The expected line:
->>>
->>> kgdb: Unregistered I/O driver kgdbts, debugger disabled.
->>>
->>> never comes up.
->>>
->>> My bootup menu.lst:
->>>
->>> title Fedora (2.6.26-rc4-next-20080530)
->>>        root (hd1,7)
->>>        kernel /boot/vmlinuz-2.6.26-rc4-next-20080530 ro
->>> root=UUID=d10fe8db-e7d4-4b42-b265-0109a3f3eedf
->>>        initrd /boot/initrd-2.6.26-rc4-next-20080530.img
->>> title Fedora (2.6.32-rc4)
->>>        root (hd1,7)
->>>        kernel /boot/vmlinuz-2.6.32-rc4 ro
->>> root=UUID=d10fe8db-e7d4-4b42-b265-0109a3f3eedf
->>>        initrd /boot/initrd-2.6.32-rc4.img
->>>
->>> and kgdb-related option:
->>>
->>> CONFIG_HAVE_ARCH_KGDB=y
->>> CONFIG_KGDB=y
->>> CONFIG_KGDB_SERIAL_CONSOLE=y
->>> CONFIG_KGDB_TESTS=y
->>> CONFIG_KGDB_TESTS_ON_BOOT=y
->>> CONFIG_KGDB_TESTS_BOOT_STRING="y"
->>>
->>> The same 2.6.32-rc4 image have bootup previously before without any
->>> problem.   So what could be the potential cause of this permanent
->>> wait?
->>>
->>> --
->>> Regards,
->>> Peter Teoh
->>>
->>>
->>
->>
->>
->>
->
->
+You can always split them later, OTOH joining diverged code bases is much
+more difficult task (i.e. unifying rt2860, rt2870, rt3070 and rt3090 was)
 
+Moreover rt2800pci doesn't work at all currently (why it is not labeled as
+EXPERIMENTAL BTW, ditto for rt2800usb?) so there is no rush in merging it
+and you have a plenty of time to improve your code for the usual kernel
+standards (alternatively you may want consider submitting it for staging).
 
+Could you please start looking into addressing valid review comments?
 
--- 
-Regards,
-Peter Teoh
+[ If you do not have a time for it, my offer to take over maintenance of
+  rt2800 drivers is still actual.. ]
