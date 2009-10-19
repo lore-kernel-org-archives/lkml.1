@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZJSPr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbZJSPuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbZJSPr2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 11:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZJSPr1
+	id S932231AbZJSPuv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 11:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932207AbZJSPuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 11:47:27 -0400
-Received: from mail.perches.com ([173.55.12.10]:2257 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751624AbZJSPr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 11:47:27 -0400
-Subject: Re: [PATCH 1/3] scripts/get_maintainer.pl: Add patch/file search
- for keywords
-From: Joe Perches <joe@perches.com>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20091019094101.GB3414@pengutronix.de>
-References: <cover.1255153863.git.joe@perches.com>
-	 <73a375fb516cc420fcff9a0489e29a5509fbf34e.1255153863.git.joe@perches.com>
-	 <20091019094101.GB3414@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 19 Oct 2009 08:47:30 -0700
-Message-Id: <1255967250.24167.621.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Oct 2009 11:50:51 -0400
+Received: from mga06.intel.com ([134.134.136.21]:13650 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932205AbZJSPuu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 11:50:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,585,1249282800"; 
+   d="scan'208";a="459120058"
+Date: Mon, 19 Oct 2009 17:52:31 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: ilkka.koskinen@nokia.com
+Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] twl4030: Do not dereference null pointer in error
+ path
+Message-ID: <20091019155230.GF3885@sortiz.org>
+References: <1254323515-30866-1-git-send-email-ilkka.koskinen@nokia.com>
+ <F80267346F10C541946CBE8909F1C39E12170A3880@NOK-EUMSG-02.mgdnok.nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <F80267346F10C541946CBE8909F1C39E12170A3880@NOK-EUMSG-02.mgdnok.nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-19 at 11:41 +0200, Wolfram Sang wrote:
-> > @@ -149,6 +153,8 @@ while (<MAINT>) {
-> >  	    if ((-d $value)) {
-> >  		$value =~ s@([^/])$@$1/@;
-> >  	    }
-> > +	} elsif ($type eq "K") {
-> > +	    $keyword_hash{@typevalue} = $value;
+Hi Ilkka,
+
+On Fri, Oct 16, 2009 at 04:21:41PM +0200, ilkka.koskinen@nokia.com wrote:
 > 
-> It matches the way how the current implementation works, but I guess somewhen
-> this @typevalue-array should be converted into a hash like
->	$types{$type} = $value;
-> or similar unless I missed something.
+> Hi Samuel,
+> 
+> What is the status of this patch and the other one:
+> [PATCH 2/2] twl4030: Enable low-power mode to 32KHz oscillator
+I'm sorry but it seems I havent received those 2 patches. Could you please
+re-send them ?
 
-I think you missed something.
+Cheers,
+Samuel.
 
-What this is doing is saving the typevalue index of the
-section where the keyword is specified.  That index is
-used on the type match to add maintainers.
 
-> Maybe the file should be read completely to save the loop.
+> Cheers, Ilkka
+> 
+> >-----Original Message-----
+> >From: Koskinen Ilkka (Nokia-D/Tampere) 
+> >Sent: 30 September, 2009 18:12
+> >To: linux-kernel@vger.kernel.org; sameo@linux.intel.com
+> >Cc: linux-omap@vger.kernel.org; Koskinen Ilkka (Nokia-D/Tampere)
+> >Subject: [PATCH 1/2] twl4030: Do not dereference null pointer 
+> >in error path
+> >
+> >Signed-off-by: Ilkka Koskinen <ilkka.koskinen@nokia.com>
+> >---
+> > drivers/mfd/twl4030-core.c |    2 +-
+> > 1 files changed, 1 insertions(+), 1 deletions(-)
+> >
+> >diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+> >index e424cf6..8cf0a02 100644
+> >--- a/drivers/mfd/twl4030-core.c
+> >+++ b/drivers/mfd/twl4030-core.c
+> >@@ -792,7 +792,7 @@ twl4030_probe(struct i2c_client *client, 
+> >const struct i2c_device_id *id)
+> > 			twl->client = i2c_new_dummy(client->adapter,
+> > 					twl->address);
+> > 			if (!twl->client) {
+> >-				dev_err(&twl->client->dev,
+> >+				dev_err(&client->dev,
+> > 					"can't attach client %d\n", i);
+> > 				status = -ENOMEM;
+> > 				goto fail;
+> >-- 
+> >1.6.0.4
+> >
+> >
 
-I see if that matters.
-
-> A bit unrelated: I noticed that lkml gets always added due to "F: *". Maybe
-> this list should be skipped if there has been another mailing list found?
-
-I think that get_maintainers is generally used by people
-that aren't already sure who should get an email about 
-a patch or file.  I think lkml should be cc'd in almost
-every case when someone is not already sure where to
-send something.
-
-cheers, Joe
-
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
