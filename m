@@ -1,65 +1,333 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZJSH4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755622AbZJSH5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432AbZJSH4O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 03:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZJSH4L
+	id S1755622AbZJSH5S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 03:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZJSH5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 03:56:11 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:52350 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753125AbZJSH4H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 03:56:07 -0400
-Date: Mon, 19 Oct 2009 09:56:04 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Julia Lawall <julia@diku.dk>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-arm-kernel@lists.infradead.org,
-       linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 7/14] drivers/mmc: Move dereference after NULL test
-Message-ID: <20091019075604.GB11449@pengutronix.de>
-References: <Pine.LNX.4.64.0910170839430.9213@ask.diku.dk>
+	Mon, 19 Oct 2009 03:57:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57407 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753521AbZJSH5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 03:57:13 -0400
+Date: Mon, 19 Oct 2009 07:56:08 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
+       peterz@infradead.org, efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1255792354-11304-2-git-send-email-fweisbec@gmail.com>
+References: <1255792354-11304-2-git-send-email-fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf tools: Introduce bitmask'ed additional headers
+Message-ID: <tip-2ba0825075e76236d22a20decd8e2346a99faabe@git.kernel.org>
+Git-Commit-ID: 2ba0825075e76236d22a20decd8e2346a99faabe
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0910170839430.9213@ask.diku.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 19 Oct 2009 07:56:22 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 17, 2009 at 08:40:02AM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> If the NULL test on mrq is needed, then the derefernce should be after the
-> NULL test.
-s/derefernce/dereference/
+Commit-ID:  2ba0825075e76236d22a20decd8e2346a99faabe
+Gitweb:     http://git.kernel.org/tip/2ba0825075e76236d22a20decd8e2346a99faabe
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Sat, 17 Oct 2009 17:12:34 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 19 Oct 2009 09:26:35 +0200
+
+perf tools: Introduce bitmask'ed additional headers
+
+This provides a new set of bitmasked headers. A new field is
+added in the perf headers that implements a bitmap storing
+optional features present in the perf.data file.
+
+The layout can be pictured like this:
+
+(Usual perf headers)(Features bitmap)[Feature 0][Feature
+n][Feature 255]
+
+If the bit n is set, then the feature n is used in this file.
+They are all set in order. This brings a backward and forward
+compatibility.
+
+The trace_info section has moved into such optional features,
+this is the first and only one for now.
+
+This is backward compatible with the .32 file version although
+it doesn't support the previous separate trace.info file.
+
+And finally it doesn't support the current interim development
+version.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <1255792354-11304-2-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/builtin-record.c |    4 +-
+ tools/perf/util/header.c    |  100 ++++++++++++++++++++++++-------------------
+ tools/perf/util/header.h    |   30 +++++++++----
+ 3 files changed, 78 insertions(+), 56 deletions(-)
+
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index fc3709c..f0467ff 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -574,11 +574,11 @@ static int __cmd_record(int argc, const char **argv)
+ 		header = perf_header__new();
  
-> A simplified version of the semantic match that detects this problem is as
-> follows (http://coccinelle.lip6.fr/):
-> 
-> // <smpl>
-> @match exists@
-> expression x, E;
-> identifier fld;
-> @@
-> 
-> * x->fld
->   ... when != \(x = E\|&x\)
-> * x == NULL
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-Other than that
-
-Acked-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+ 	if (raw_samples) {
+-		perf_header__set_trace_info();
++		perf_header__feat_trace_info(header);
+ 	} else {
+ 		for (i = 0; i < nr_counters; i++) {
+ 			if (attrs[i].sample_type & PERF_SAMPLE_RAW) {
+-				perf_header__set_trace_info();
++				perf_header__feat_trace_info(header);
+ 				break;
+ 			}
+ 		}
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index 9aae360..171d51b 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -8,6 +8,8 @@
+ #include "../perf.h"
+ #include "trace-event.h"
+ 
++#include <linux/bitmap.h>
++
+ /*
+  * Create new perf.data header attribute:
+  */
+@@ -48,25 +50,17 @@ void perf_header_attr__add_id(struct perf_header_attr *self, u64 id)
+  */
+ struct perf_header *perf_header__new(void)
+ {
+-	struct perf_header *self = malloc(sizeof(*self));
++	struct perf_header *self = calloc(sizeof(*self), 1);
+ 
+ 	if (!self)
+ 		die("nomem");
+ 
+-	self->frozen = 0;
+-
+-	self->attrs = 0;
+ 	self->size = 1;
+ 	self->attr = malloc(sizeof(void *));
+ 
+ 	if (!self->attr)
+ 		die("nomem");
+ 
+-	self->data_offset = 0;
+-	self->data_size = 0;
+-	self->trace_info_offset = 0;
+-	self->trace_info_size = 0;
+-
+ 	return self;
+ }
+ 
+@@ -149,14 +143,12 @@ struct perf_file_header {
+ 	struct perf_file_section	attrs;
+ 	struct perf_file_section	data;
+ 	struct perf_file_section	event_types;
+-	struct perf_file_section	trace_info;
++	feat_mask_t			adds_features;
+ };
+ 
+-static int trace_info;
+-
+-void perf_header__set_trace_info(void)
++void perf_header__feat_trace_info(struct perf_header *header)
+ {
+-	trace_info = 1;
++	set_bit(HEADER_TRACE_INFO, perf_header__adds_mask(header));
+ }
+ 
+ static void do_write(int fd, void *buf, size_t size)
+@@ -172,6 +164,32 @@ static void do_write(int fd, void *buf, size_t size)
+ 	}
+ }
+ 
++static void perf_header__adds_write(struct perf_header *self, int fd)
++{
++	struct perf_file_section trace_sec;
++	u64 cur_offset = lseek(fd, 0, SEEK_CUR);
++	unsigned long *feat_mask = perf_header__adds_mask(self);
++
++	if (test_bit(HEADER_TRACE_INFO, feat_mask)) {
++		/* Write trace info */
++		trace_sec.offset = lseek(fd, sizeof(trace_sec), SEEK_CUR);
++		read_tracing_data(fd, attrs, nr_counters);
++		trace_sec.size = lseek(fd, 0, SEEK_CUR) - trace_sec.offset;
++
++		/* Write trace info headers */
++		lseek(fd, cur_offset, SEEK_SET);
++		do_write(fd, &trace_sec, sizeof(trace_sec));
++
++		/*
++		 * Update cur_offset. So that other (future)
++		 * features can set their own infos in this place. But if we are
++		 * the only feature, at least that seeks to the place the data
++		 * should begin.
++		 */
++		cur_offset = lseek(fd, trace_sec.offset + trace_sec.size, SEEK_SET);
++	}
++};
++
+ void perf_header__write(struct perf_header *self, int fd)
+ {
+ 	struct perf_file_header f_header;
+@@ -210,23 +228,7 @@ void perf_header__write(struct perf_header *self, int fd)
+ 	if (events)
+ 		do_write(fd, events, self->event_size);
+ 
+-	if (trace_info) {
+-		static int trace_info_written;
+-
+-		/*
+-		 * Write it only once
+-		 */
+-		if (!trace_info_written) {
+-			self->trace_info_offset = lseek(fd, 0, SEEK_CUR);
+-			read_tracing_data(fd, attrs, nr_counters);
+-			self->trace_info_size = lseek(fd, 0, SEEK_CUR) -
+-						self->trace_info_offset;
+-			trace_info_written = 1;
+-		} else {
+-			lseek(fd, self->trace_info_offset +
+-				self->trace_info_size, SEEK_SET);
+-		}
+-	}
++	perf_header__adds_write(self, fd);
+ 
+ 	self->data_offset = lseek(fd, 0, SEEK_CUR);
+ 
+@@ -246,12 +248,10 @@ void perf_header__write(struct perf_header *self, int fd)
+ 			.offset = self->event_offset,
+ 			.size	= self->event_size,
+ 		},
+-		.trace_info = {
+-			.offset = self->trace_info_offset,
+-			.size = self->trace_info_size,
+-		},
+ 	};
+ 
++	memcpy(&f_header.adds_features, &self->adds_features, sizeof(feat_mask_t));
++
+ 	lseek(fd, 0, SEEK_SET);
+ 	do_write(fd, &f_header, sizeof(f_header));
+ 	lseek(fd, self->data_offset + self->data_size, SEEK_SET);
+@@ -274,6 +274,20 @@ static void do_read(int fd, void *buf, size_t size)
+ 	}
+ }
+ 
++static void perf_header__adds_read(struct perf_header *self, int fd)
++{
++	const unsigned long *feat_mask = perf_header__adds_mask(self);
++
++	if (test_bit(HEADER_TRACE_INFO, feat_mask)) {
++		struct perf_file_section trace_sec;
++
++		do_read(fd, &trace_sec, sizeof(trace_sec));
++		lseek(fd, trace_sec.offset, SEEK_SET);
++		trace_report(fd);
++		lseek(fd, trace_sec.offset + trace_sec.size, SEEK_SET);
++	}
++};
++
+ struct perf_header *perf_header__read(int fd)
+ {
+ 	struct perf_header	*self = perf_header__new();
+@@ -292,9 +306,11 @@ struct perf_header *perf_header__read(int fd)
+ 
+ 	if (f_header.size != sizeof(f_header)) {
+ 		/* Support the previous format */
+-		if (f_header.size == offsetof(typeof(f_header), trace_info))
+-			f_header.trace_info.size = 0;
+-		else
++		if (f_header.size == offsetof(typeof(f_header), adds_features)) {
++			unsigned long *mask = (unsigned long *)(void *)
++					&f_header.adds_features;
++			bitmap_zero(mask, HEADER_FEAT_BITS);
++		} else
+ 			die("incompatible file format");
+ 	}
+ 	nr_attrs = f_header.attrs.size / sizeof(f_attr);
+@@ -330,13 +346,9 @@ struct perf_header *perf_header__read(int fd)
+ 		event_count =  f_header.event_types.size / sizeof(struct perf_trace_event_type);
+ 	}
+ 
+-	self->trace_info_offset = f_header.trace_info.offset;
+-	self->trace_info_size = f_header.trace_info.size;
++	memcpy(&self->adds_features, &f_header.adds_features, sizeof(feat_mask_t));
+ 
+-	if (self->trace_info_size) {
+-		lseek(fd, self->trace_info_offset, SEEK_SET);
+-		trace_report(fd);
+-	}
++	perf_header__adds_read(self, fd);
+ 
+ 	self->event_offset = f_header.event_types.offset;
+ 	self->event_size   = f_header.event_types.size;
+diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
+index 30aee51..0eb4a91 100644
+--- a/tools/perf/util/header.h
++++ b/tools/perf/util/header.h
+@@ -12,19 +12,29 @@ struct perf_header_attr {
+ 	off_t id_offset;
+ };
+ 
++#define HEADER_TRACE_INFO			1
++
++#define HEADER_FEAT_BITS			256
++
++typedef	typeof(u64[HEADER_FEAT_BITS / 8])	feat_mask_t;
++
+ struct perf_header {
+-	int frozen;
+-	int attrs, size;
++	int			frozen;
++	int			attrs, size;
+ 	struct perf_header_attr **attr;
+-	s64 attr_offset;
+-	u64 data_offset;
+-	u64 data_size;
+-	u64 event_offset;
+-	u64 event_size;
+-	u64 trace_info_offset;
+-	u64 trace_info_size;
++	s64			attr_offset;
++	u64			data_offset;
++	u64			data_size;
++	u64			event_offset;
++	u64			event_size;
++	feat_mask_t		adds_features;
+ };
+ 
++static inline unsigned long *perf_header__adds_mask(struct perf_header *self)
++{
++	return (unsigned long *)(void *)&self->adds_features;
++}
++
+ struct perf_header *perf_header__read(int fd);
+ void perf_header__write(struct perf_header *self, int fd);
+ 
+@@ -42,7 +52,7 @@ void perf_header_attr__add_id(struct perf_header_attr *self, u64 id);
+ u64 perf_header__sample_type(struct perf_header *header);
+ struct perf_event_attr *
+ perf_header__find_attr(u64 id, struct perf_header *header);
+-void perf_header__set_trace_info(void);
++void perf_header__feat_trace_info(struct perf_header *header);
+ 
+ struct perf_header *perf_header__new(void);
+ 
