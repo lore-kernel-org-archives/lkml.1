@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbZJSMSC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbZJSM01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbZJSMSC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 08:18:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbZJSMSB
+	id S1755988AbZJSM01 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 08:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbZJSM00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 08:18:01 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:56782 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755529AbZJSMSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 08:18:00 -0400
-Date: Mon, 19 Oct 2009 14:13:27 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Anirban Sinha <ani@anirban.org>
-Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org, Anirban Sinha <asinha@zeugmasystems.com>
-Subject: Re: Kernel oops when clearing bgp neighbor info with TCP MD5SUM
-	enabled
-Message-ID: <20091019121327.GA11423@redhat.com>
-References: <Pine.LNX.4.64.0910081514050.18315@sleet.zeugmasystems.local> <20091008.155429.02850661.davem@davemloft.net> <Pine.LNX.4.64.0910081622400.18315@sleet.zeugmasystems.local> <20091008.175703.83006470.davem@davemloft.net> <Pine.LNX.4.64.0910171035340.2364@sleet.zeugmasystems.local> <4ADA7EDC.5010402@anirban.org> <4ADB7856.7000803@anirban.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ADB7856.7000803@anirban.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 19 Oct 2009 08:26:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36854 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754080AbZJSM00 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 08:26:26 -0400
+Date: Mon, 19 Oct 2009 05:24:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       Ian Kent <raven@themaw.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/6] brlock: introduce special brlocks
+Message-Id: <20091019052400.e7f304aa.akpm@linux-foundation.org>
+In-Reply-To: <20091019094909.GC27856@wotan.suse.de>
+References: <20091015044026.319860788@suse.de>
+	<20091015050048.777261867@suse.de>
+	<20091018222512.683973f7.akpm@linux-foundation.org>
+	<20091019094909.GC27856@wotan.suse.de>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Anirban,
+On Mon, 19 Oct 2009 11:49:09 +0200 Nick Piggin <npiggin@suse.de> wrote:
 
-On 10/18, Anirban Sinha wrote:
->
-> I have a question for you. The queue_work() routine which is called from
-> schedule_work() does a put_cpu() which in turn does a enable_preempt(). Is
-> this an attempt to trigger the scheduler?
+> On Sun, Oct 18, 2009 at 10:25:12PM -0700, Andrew Morton wrote:
+> > On Thu, 15 Oct 2009 15:40:30 +1100 npiggin@suse.de wrote:
+> > 
+> > > +#define DECLARE_BRLOCK(name)						\
+> > 
+> > This:
+> > 
+> > > + DECLARE_PER_CPU(spinlock_t, name##_lock);				\
+> > > + static inline void name##_lock_init(void) {				\
+> > > +	int i;								\
+> > > +	for_each_possible_cpu(i) {					\
+> > > +		spinlock_t *lock;					\
+> > > +		lock = &per_cpu(name##_lock, i);			\
+> > > +		spin_lock_init(lock);					\
+> > > +	}								\
+> > > + }									\
+> > > + static inline void name##_rlock(void) {				\
+> > > +	spinlock_t *lock;						\
+> > > +	lock = &get_cpu_var(name##_lock);				\
+> > > +	spin_lock(lock);						\
+> > > + }									\
+> > 
+> > generates a definition, not a declaration.  Hence DEFINE_BRLOCK.
+> > 
+> > </petpeeve #29>
+> 
+> Well yes, but being a static inline, then I don't know of a better 
+> way. Probably just better not to pretend we are expanding a simple
+> declaration here, and name it something differently? (BRLOCK_HEADER(blah))?
 
-No. please note that queue_work() does get_cpu() + put_cpu() to protect
-against cpu_down() in between.
-
-This can trigger the scheduler of course, but everything should be OK.
-
-> One of the side affects of
-> this enable_preempt() is the crash that we see below. What is happening
-> is that  a timer callback routine, in  this case inet_twdr_hangman(),
-> tries a bunch of cleanup until a threshold is reached. If further cleanups
-> needs to be done beyond the threshold, it queues a work function. Now when
-> the timer callback is run in __run_timers(), the routine grabs the value
-> of preempt_count before and after the callback function call. If the two
-> counts do not match, it calls BUG() (line 1037 in kernel/timer.c).
-
-Yes, but I can't see how queue_work() can be involved, it doesn't change
-->preempt_count. Note again it does put after get.
-
-> Is is
-> it illegal to schedule a work function from within a timer callback?
-
-Yes sure.
-
-I'd suppose that this unbalance comes from inet_twdr_hangman() pathes.
-
-Could you verify this?
-
-Oleg.
-
+DEFINE_BRLOCK(blah)
