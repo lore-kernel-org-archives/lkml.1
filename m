@@ -1,72 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbZJSOuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbZJSOxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756532AbZJSOuU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 10:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756439AbZJSOuT
+	id S1756498AbZJSOxt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 10:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbZJSOxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 10:50:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:5035 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756436AbZJSOuR convert rfc822-to-8bit (ORCPT
+	Mon, 19 Oct 2009 10:53:48 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:37810 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756134AbZJSOxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 10:50:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=luNkrgp7pxjJbIu9p8whCt0lk3MI1cmkd4/JW6kkQqFyLXzis0G6cVMh9T98dVGGiP
-         pBFsXa1Tg0yqe2Lw++9vAM2Bv0tfKMfJK9Lu+vKDrXXBbn0Opiu1nyU8fvtRku2wkqg0
-         QNgP/HBnHGmO2Saz5RQcgM430I0Ic5ciQW4yo=
-MIME-Version: 1.0
-In-Reply-To: <alpine.LSU.2.00.0910191610160.8582@wotan.suse.de>
-References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com>
-	 <1255906474-25091-3-git-send-email-felipe.contreras@gmail.com>
-	 <alpine.LSU.2.00.0910191610160.8582@wotan.suse.de>
-Date: Mon, 19 Oct 2009 17:50:21 +0300
-Message-ID: <94a0d4530910190750j5674ef13m93198b68d305b188@mail.gmail.com>
-Subject: Re: [PATCH 2/7] ipc: fix trivial warning
-From: Felipe Contreras <felipe.contreras@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 19 Oct 2009 10:53:47 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] regulator: Factor out voltage constraint setup
+Date: Mon, 19 Oct 2009 15:53:50 +0100
+Message-Id: <1255964030-12147-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 5:12 PM, Jiri Kosina <jkosina@suse.cz> wrote:
-> On Mon, 19 Oct 2009, Felipe Contreras wrote:
->
->> Commit a0d092f introduced the following warning:
->> ipc/msg.c: In function ?msgctl_down?:
->> ipc/msg.c:415: warning: ?msqid64? may be used uninitialized in this function
->>
->> Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
->> ---
->>  ipc/msg.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/ipc/msg.c b/ipc/msg.c
->> index 2ceab7f..085bd58 100644
->> --- a/ipc/msg.c
->> +++ b/ipc/msg.c
->> @@ -412,7 +412,7 @@ static int msgctl_down(struct ipc_namespace *ns, int msqid, int cmd,
->>                      struct msqid_ds __user *buf, int version)
->>  {
->>       struct kern_ipc_perm *ipcp;
->> -     struct msqid64_ds msqid64;
->> +     struct msqid64_ds uninitialized_var(msqid64);
->>       struct msg_queue *msq;
->>       int err;
->
-> What gcc are you using? I am not getting any warning at least with gcc
-> "(SUSE Linux) 4.3.1 20080507 (prerelease) [gcc-4_3-branch revision
-> 135036]"
+This allows constraints to take effect on regulators that support
+voltage setting but for which the board does not specify a voltage
+range (for example, because it is fixed correctly at system startup).
 
-gcc (GCC) 4.4.1 20090725 (Red Hat 4.4.1-2)
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/core.c |   64 ++++++++++++++++++++++++++-------------------
+ 1 files changed, 37 insertions(+), 27 deletions(-)
 
-Since I moved to Fedora 11 I get more warnings than other people,
-possibly because gcc 4.4.
-
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 744ea1d..282ff1f 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -672,31 +672,11 @@ static void print_constraints(struct regulator_dev *rdev)
+ 	printk(KERN_INFO "regulator: %s: %s\n", rdev->desc->name, buf);
+ }
+ 
+-/**
+- * set_machine_constraints - sets regulator constraints
+- * @rdev: regulator source
+- * @constraints: constraints to apply
+- *
+- * Allows platform initialisation code to define and constrain
+- * regulator circuits e.g. valid voltage/current ranges, etc.  NOTE:
+- * Constraints *must* be set by platform code in order for some
+- * regulator operations to proceed i.e. set_voltage, set_current_limit,
+- * set_mode.
+- */
+-static int set_machine_constraints(struct regulator_dev *rdev,
+-	struct regulation_constraints *constraints)
++static int machine_constraints_voltage(struct regulator_dev *rdev,
++	const char *name, struct regulation_constraints *constraints)
+ {
+-	int ret = 0;
+-	const char *name;
+ 	struct regulator_ops *ops = rdev->desc->ops;
+ 
+-	if (constraints->name)
+-		name = constraints->name;
+-	else if (rdev->desc->name)
+-		name = rdev->desc->name;
+-	else
+-		name = "regulator";
+-
+ 	/* constrain machine-level voltage specs to fit
+ 	 * the actual range supported by this regulator.
+ 	 */
+@@ -719,14 +699,13 @@ static int set_machine_constraints(struct regulator_dev *rdev,
+ 
+ 		/* voltage constraints are optional */
+ 		if ((cmin == 0) && (cmax == 0))
+-			goto out;
++			return 0;
+ 
+ 		/* else require explicit machine-level constraints */
+ 		if (cmin <= 0 || cmax <= 0 || cmax < cmin) {
+ 			pr_err("%s: %s '%s' voltage constraints\n",
+ 				       __func__, "invalid", name);
+-			ret = -EINVAL;
+-			goto out;
++			return -EINVAL;
+ 		}
+ 
+ 		/* initial: [cmin..cmax] valid, [min_uV..max_uV] not */
+@@ -748,8 +727,7 @@ static int set_machine_constraints(struct regulator_dev *rdev,
+ 		if (max_uV < min_uV) {
+ 			pr_err("%s: %s '%s' voltage constraints\n",
+ 				       __func__, "unsupportable", name);
+-			ret = -EINVAL;
+-			goto out;
++			return -EINVAL;
+ 		}
+ 
+ 		/* use regulator's subset of machine constraints */
+@@ -767,6 +745,38 @@ static int set_machine_constraints(struct regulator_dev *rdev,
+ 		}
+ 	}
+ 
++	return 0;
++}
++
++/**
++ * set_machine_constraints - sets regulator constraints
++ * @rdev: regulator source
++ * @constraints: constraints to apply
++ *
++ * Allows platform initialisation code to define and constrain
++ * regulator circuits e.g. valid voltage/current ranges, etc.  NOTE:
++ * Constraints *must* be set by platform code in order for some
++ * regulator operations to proceed i.e. set_voltage, set_current_limit,
++ * set_mode.
++ */
++static int set_machine_constraints(struct regulator_dev *rdev,
++	struct regulation_constraints *constraints)
++{
++	int ret = 0;
++	const char *name;
++	struct regulator_ops *ops = rdev->desc->ops;
++
++	if (constraints->name)
++		name = constraints->name;
++	else if (rdev->desc->name)
++		name = rdev->desc->name;
++	else
++		name = "regulator";
++
++	ret = machine_constraints_voltage(rdev, name, constraints);
++	if (ret != 0)
++		goto out;
++
+ 	rdev->constraints = constraints;
+ 
+ 	/* do we need to apply the constraint voltage */
 -- 
-Felipe Contreras
+1.6.5
+
