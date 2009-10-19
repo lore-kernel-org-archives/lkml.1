@@ -1,113 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752924AbZJSFhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZJSF6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752924AbZJSFhM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 01:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZJSFhM
+	id S1753387AbZJSF6u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 01:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZJSF6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 01:37:12 -0400
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:60735 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbZJSFhL (ORCPT
+	Mon, 19 Oct 2009 01:58:49 -0400
+Received: from mail-pz0-f197.google.com ([209.85.222.197]:60854 "EHLO
+	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753213AbZJSF6s convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 01:37:11 -0400
-Date: Mon, 19 Oct 2009 01:37:08 -0400
-From: Andres Salomon <dilinger@collabora.co.uk>
-To: linux-kernel@vger.kernel.org
-Cc: David Airlie <airlied@linux.ie>, dri-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org
-Subject: [PATCH] drm: kill more unused DRM macros
-Message-ID: <20091019013708.6ca3c7df@mycelium.queued.net>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Oct 2009 01:58:48 -0400
+X-Greylist: delayed 411 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 01:58:48 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=A/XjhvQJM5q9oYeKpC/CSgAgZtS5jXoZcPqvG44MAQHJCMIvIIAXgbb5lIFNOdBXmn
+         19zvz3BirC0MsnC9+newccrbZQXTJ3VjqydBnBtx0pu9kfHcxkiCSYT4EKUok/7TlEF9
+         yYjghAP7djyGxzqSahV0BqgPLvjkxCs6ZC3nE=
+MIME-Version: 1.0
+In-Reply-To: <1255921080.839.2.camel@penberg-laptop>
+References: <86802c440910171825j22556a4bofbf0bd6cd134d53c@mail.gmail.com>
+	 <84144f020910181935q4aed9f0dx7a8a149d8b8743c7@mail.gmail.com>
+	 <20091019114339.4b67d947@infradead.org>
+	 <1255921080.839.2.camel@penberg-laptop>
+Date: Sun, 18 Oct 2009 22:52:01 -0700
+Message-ID: <86802c440910182252v4648a7d1k249d091799583e37@mail.gmail.com>
+Subject: Re: nfs mount fail
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Oct 18, 2009 at 7:58 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> On Mon, 2009-10-19 at 11:43 +0900, Arjan van de Ven wrote:
+>> On Mon, 19 Oct 2009 05:35:20 +0300
+>> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>>
+>> > >
+>> > > [  278.734149] ------------[ cut here ]------------
+>> > > [  278.739620] kernel BUG at mm/slub.c:2969!
+>> >
+>> > So this means that someone is passing a pointer to kfree() that did
+>> > not come from kmalloc(). Which tree are you testing?
+>>
+>> > > [  278.770030] Pid: 2594, comm: rpciod/0 Not tainted
+>> > > 2.6.32-rc5-tip-01483-ga166936-dirty #651
+>>
+>> some evil person decided to put the exact kernel tree/version in the
+>> oops output ;-)
+>
+> Oh, right. Ingo, Yinghai says Linus' tree is fine so any ideas why this
+> shows up in -tip? Also it seems we've had a similar bug before:
+>
+>  http://lkml.org/lkml/2009/4/2/698
+>
+> Hmmh?
 
-There are a few more macros in drmP.h that are unused; DRM_GET_PRIV_SAREA,
-DRM_ARRAY_SIZE, and DRM_WAITCOUNT can go away completely.
+yes. something miss merged again...
 
-Unfortunately, DRM_COPY is still used in one place, but we can at least
-move it to where it's used.  It's an awful looking macro..
+need change some lines.
 
-Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
 ---
- drivers/gpu/drm/drm_drv.c |   12 ++++++++++++
- include/drm/drmP.h        |   25 -------------------------
- 2 files changed, 12 insertions(+), 25 deletions(-)
+ fs/nfs/super.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/drm_drv.c b/drivers/gpu/drm/drm_drv.c
-index a75ca63..43297ca 100644
---- a/drivers/gpu/drm/drm_drv.c
-+++ b/drivers/gpu/drm/drm_drv.c
-@@ -366,6 +366,18 @@ module_init(drm_core_init);
- module_exit(drm_core_exit);
- 
- /**
-+ * Copy and IOCTL return string to user space
-+ */
-+#define DRM_COPY(name, value)                                         \
-+	len = strlen(value);                                          \
-+	if (len > name##_len) len = name##_len;                       \
-+	name##_len = strlen(value);                                   \
-+	if (len && name) {                                            \
-+		if (copy_to_user(name, value, len))                   \
-+			return -EFAULT;                               \
-+	}
+Index: linux-2.6/fs/nfs/super.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/super.c
++++ linux-2.6/fs/nfs/super.c
+@@ -1231,7 +1231,6 @@ static int nfs_parse_mount_options(char
+ 				goto out_nomem;
+ 			token = match_token(string,
+ 					    nfs_xprt_protocol_tokens, args);
+-			kfree(string);
+
+ 			switch (token) {
+ 			case Opt_xprt_udp:
+@@ -1254,6 +1253,7 @@ static int nfs_parse_mount_options(char
+ 			default:
+ 				dfprintk(MOUNT, "NFS:   unrecognized "
+ 						"transport protocol\n");
++				kfree(string);
+ 				return 0;
+ 			}
+ 			break;
+@@ -1264,6 +1264,8 @@ static int nfs_parse_mount_options(char
+ 			token = match_token(string,
+ 					    nfs_xprt_protocol_tokens, args);
+
++			kfree(string);
 +
-+/**
-  * Get version information
-  *
-  * \param inode device inode.
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index af30da3..b2112f4 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -251,23 +251,10 @@ extern void drm_ut_debug_printk(unsigned int request_level,
- /** \name Internal types and structures */
- /*@{*/
- 
--#define DRM_ARRAY_SIZE(x) ARRAY_SIZE(x)
--
- #define DRM_LEFTCOUNT(x) (((x)->rp + (x)->count - (x)->wp) % ((x)->count + 1))
- #define DRM_BUFCOUNT(x) ((x)->count - DRM_LEFTCOUNT(x))
--#define DRM_WAITCOUNT(dev,idx) DRM_BUFCOUNT(&dev->queuelist[idx]->waitlist)
- 
- #define DRM_IF_VERSION(maj, min) (maj << 16 | min)
--/**
-- * Get the private SAREA mapping.
-- *
-- * \param _dev DRM device.
-- * \param _ctx context number.
-- * \param _map output mapping.
-- */
--#define DRM_GET_PRIV_SAREA(_dev, _ctx, _map) do {	\
--	(_map) = (_dev)->context_sareas[_ctx];		\
--} while(0)
- 
- /**
-  * Test that the hardware lock is held by the caller, returning otherwise.
-@@ -287,18 +274,6 @@ do {										\
- } while (0)
- 
- /**
-- * Copy and IOCTL return string to user space
-- */
--#define DRM_COPY( name, value )						\
--	len = strlen( value );						\
--	if ( len > name##_len ) len = name##_len;			\
--	name##_len = strlen( value );					\
--	if ( len && name ) {						\
--		if ( copy_to_user( name, value, len ) )			\
--			return -EFAULT;					\
--	}
--
--/**
-  * Ioctl function type.
-  *
-  * \param inode device inode.
--- 
-1.5.6.5
-
+ 			switch (token) {
+ 			case Opt_xprt_udp:
+ 				mnt->mount_server.protocol = XPRT_TRANSPORT_UDP;
