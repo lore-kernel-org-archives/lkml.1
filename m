@@ -1,129 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbZJSNkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbZJSNkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756190AbZJSNkG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 09:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbZJSNkF
+	id S1756198AbZJSNkv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 09:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbZJSNkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 09:40:05 -0400
-Received: from james.oetiker.ch ([213.144.138.195]:48401 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755902AbZJSNkD (ORCPT
+	Mon, 19 Oct 2009 09:40:51 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:26092 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756042AbZJSNku (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 09:40:03 -0400
-Date: Mon, 19 Oct 2009 15:40:05 +0200 (CEST)
-From: Tobias Oetiker <tobi@oetiker.ch>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
-       jens.axboe@oracle.com
-Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
-In-Reply-To: <20091019133146.GB9036@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0910191538450.8526@sebohet.brgvxre.pu>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910190133.33183.elendil@planet.nl> <1255912562.6824.9.camel@penberg-laptop> <200910190444.55867.elendil@planet.nl> <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu> <20091019133146.GB9036@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 19 Oct 2009 09:40:50 -0400
+Message-ID: <4ADC6C67.8090206@monstr.eu>
+Date: Mon, 19 Oct 2009 15:40:55 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tejun Heo <tj@kernel.org>
+CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au, mingo@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
+       rostedt@goodmis.org, hpa@zytor.com, cebbert@redhat.com,
+       tony.luck@intel.com
+Subject: Re: [PATCH 13/16] percpu: remove per_cpu__ prefix.
+References: <1255500125-3210-1-git-send-email-tj@kernel.org> <1255500125-3210-14-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0910141026370.26476@gentwo.org> <4AD6EA57.6020105@kernel.org>
+In-Reply-To: <4AD6EA57.6020105@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
+Tejun Heo wrote:
+> (microblaze maintainer cc'd, hello)
+> 
+> Christoph Lameter wrote:
+>> On Wed, 14 Oct 2009, Tejun Heo wrote:
+>>
+>>> @@ -39,7 +39,7 @@ extern void *per_cpu_init(void);
+>>>   * On the positive side, using __ia64_per_cpu_var() instead of __get_cpu_var() is slightly
+>>>   * more efficient.
+>>>   */
+>>> -#define __ia64_per_cpu_var(var)	per_cpu__##var
+>>> +#define __ia64_per_cpu_var(var)	var
+>> IA64 could completely drop the macro? Tony?
+> 
+> Being discussed but I think we should just add sparse annotation there
+> instead.
+> 
+>>> diff --git a/arch/microblaze/include/asm/entry.h b/arch/microblaze/include/asm/entry.h
+>>> index 61abbd2..ec89f2a 100644
+>>> --- a/arch/microblaze/include/asm/entry.h
+>>> +++ b/arch/microblaze/include/asm/entry.h
+>>> @@ -21,7 +21,7 @@
+>>>   * places
+>>>   */
+>>>
+>>> -#define PER_CPU(var) per_cpu__##var
+>>> +#define PER_CPU(var) var
+>> Microblaze too.
+> 
+> This macro is used only in assemblies which wouldn't be covered by
+> sparse so in this case this patch series actually removes protection,
+> so I wasn't too sure about ripping the macro off.  Any ideas what we
+> can do here?  Just kill it?
 
-Today Mel Gorman wrote:
+If I understand correctly, functionality will be the same. But anyway I would
+like to mot lose information about per_cpu variables. That's why please keep
+that macro for Microblaze. If is the problem, you should convince me why to do it.
 
-> On Mon, Oct 19, 2009 at 11:49:08AM +0200, Tobi Oetiker wrote:
-> > Today Frans Pop wrote:
-> >
-> > >
-> > > I'm starting to think that this commit may not be directly related to high
-> > > order allocation failures. The fact that I'm seeing SKB allocation
-> > > failures earlier because of this commit could be just a side effect.
-> > > It could be that instead the main impact of this commit is on encrypted
-> > > file system and/or encrypted swap (kcryptd).
-> > >
-> > > Besides mm the commit also touches dm-crypt (and nfs/write.c, but as I'm
-> > > only reading from NFS that's unlikely).
-> >
-> > I have updated a fileserver to 2.6.31 today and I see page
-> > allocation failures from several parts of the system ... mostly nfs though ... (it is a nfs server).
-> > So I guess the problem must be quite generic:
-> >
-> >
-> > Oct 19 07:10:02 johan kernel: [23565.684110] swapper: page allocation failure. order:5, mode:0x4020 [kern.warning]
-> > Oct 19 07:10:02 johan kernel: [23565.684118] Pid: 0, comm: swapper Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
-> > Oct 19 07:10:02 johan kernel: [23565.684121] Call Trace: [kern.warning]
-> > Oct 19 07:10:02 johan kernel: [23565.684124]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
-> >
->
-> What's the rest of the stack trace? I'm wondering where a large number
-> of order-5 GFP_ATOMIC allocations are coming from. It seems different to
-> the e100 problem where there is one GFP_ATOMIC allocation while the
-> firmware is being loaded.
+Thanks,
+Michal
 
-Oct 19 07:10:02 johan kernel: [23565.684110] swapper: page allocation failure. order:5, mode:0x4020 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684118] Pid: 0, comm: swapper Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684121] Call Trace: [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684124]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684157]  [<ffffffff810da7e5>] __alloc_pages_nodemask+0x135/0x140 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684164]  [<ffffffff815065b4>] ? _spin_unlock_bh+0x14/0x20 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684170]  [<ffffffff8110b368>] kmalloc_large_node+0x68/0xc0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684175]  [<ffffffff8110f15a>] __kmalloc_node_track_caller+0x11a/0x180 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684181]  [<ffffffff8140ffd2>] ? skb_copy+0x32/0xa0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684185]  [<ffffffff8140d8b6>] __alloc_skb+0x76/0x180 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684205]  [<ffffffff8140ffd2>] skb_copy+0x32/0xa0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684221]  [<ffffffffa050f33c>] vboxNetFltLinuxPacketHandler+0x5c/0xd0 [vboxnetflt] [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684227]  [<ffffffff81416a6d>] dev_queue_xmit_nit+0x10d/0x170 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684231]  [<ffffffff81416f79>] dev_hard_start_xmit+0x189/0x1c0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684236]  [<ffffffff8142f071>] __qdisc_run+0x1a1/0x230 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684240]  [<ffffffff81418a88>] dev_queue_xmit+0x238/0x310 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684246]  [<ffffffff8144864b>] ip_finish_output+0x11b/0x2f0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684250]  [<ffffffff814488a9>] ip_output+0x89/0xd0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684254]  [<ffffffff814478c0>] ip_local_out+0x20/0x30 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684258]  [<ffffffff814481ab>] ip_queue_xmit+0x22b/0x3f0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684264]  [<ffffffff8145d5e5>] tcp_transmit_skb+0x345/0x4e0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684269]  [<ffffffff8145eaf6>] tcp_write_xmit+0xb6/0x2e0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684273]  [<ffffffff8145ed8b>] __tcp_push_pending_frames+0x2b/0xa0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684277]  [<ffffffff8145b249>] tcp_rcv_established+0x459/0x6d0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684282]  [<ffffffff814630bd>] tcp_v4_do_rcv+0x12d/0x140 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684285]  [<ffffffff8146365e>] tcp_v4_rcv+0x58e/0x7c0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684289]  [<ffffffff8144276d>] ip_local_deliver_finish+0x11d/0x2b0 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684293]  [<ffffffff8144293b>] ip_local_deliver+0x3b/0x90 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684297]  [<ffffffff81442ad6>] ip_rcv_finish+0x146/0x420 [kern.warning]
-Oct 19 07:10:02 johan kernel: [23565.684301]  [<ffffffff8144304b>] ip_rcv+0x29b/0x370 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684304]  [<ffffffff81418f9a>] netif_receive_skb+0x38a/0x4d0 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684308]  [<ffffffff81419268>] napi_skb_finish+0x48/0x60 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684311]  [<ffffffff81419724>] napi_gro_receive+0x34/0x40 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684330]  [<ffffffffa006b623>] tg3_rx+0x373/0x4b0 [tg3] [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684339]  [<ffffffffa006cbf0>] tg3_poll_work+0x70/0xf0 [tg3] [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684347]  [<ffffffffa006ccae>] tg3_poll+0x3e/0xe0 [tg3] [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684350]  [<ffffffff814198d2>] net_rx_action+0x102/0x210 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684357]  [<ffffffff81061d24>] __do_softirq+0xc4/0x1f0 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684362]  [<ffffffff8101314c>] call_softirq+0x1c/0x30 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684365]  [<ffffffff81014945>] do_softirq+0x55/0x90 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684369]  [<ffffffff8106116b>] irq_exit+0x7b/0x90 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684372]  [<ffffffff81013e93>] do_IRQ+0x73/0xe0 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684378]  [<ffffffff81012993>] ret_from_intr+0x0/0x11 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684381]  <EOI>  [<ffffffff810318b6>] ? native_safe_halt+0x6/0x10 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684391]  [<ffffffff81019cd8>] ? default_idle+0x48/0xe0 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684396]  [<ffffffff8150929d>] ? __atomic_notifier_call_chain+0xd/0x10 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684400]  [<ffffffff815092b1>] ? atomic_notifier_call_chain+0x11/0x20 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684404]  [<ffffffff810107c8>] ? cpu_idle+0x98/0xe0 [kern.warning]
-Oct 19 07:10:04 johan kernel: [23565.684410]  [<ffffffff81500d95>] ? start_secondary+0x95/0xc0 [kern.warning]
 
-if you need more, I can send you a whole bunch of them ...
 
-cheers
-tobi
+
+
 
 -- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
