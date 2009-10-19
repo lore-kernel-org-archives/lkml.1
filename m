@@ -1,43 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbZJSQ0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbZJSQfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756921AbZJSQ0G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 12:26:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbZJSQ0F
+	id S1756969AbZJSQfR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 12:35:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756925AbZJSQfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 12:26:05 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:9714 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756848AbZJSQ0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 12:26:04 -0400
-From: Andreas Schwab <schwab@redhat.com>
-To: "Ryan C. Gordon" <icculus@icculus.org>
+	Mon, 19 Oct 2009 12:35:16 -0400
+Received: from mga12.intel.com ([143.182.124.36]:4579 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751017AbZJSQfQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 12:35:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,586,1249282800"; 
+   d="scan'208";a="200804548"
+Date: Mon, 19 Oct 2009 18:37:16 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Aaro Koskinen <aaro.koskinen@nokia.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] binfmt_elf: Reorder objects in Makefile to favor platform default.
-References: <alpine.DEB.2.00.0910190415430.13303@andre.icculuslan>
-X-Yow: I'm in ATLANTIC CITY riding in a comfortable ROLLING CHAIR...
-Date: Mon, 19 Oct 2009 18:26:06 +0200
-In-Reply-To: <alpine.DEB.2.00.0910190415430.13303@andre.icculuslan> (Ryan
-	C. Gordon's message of "Mon, 19 Oct 2009 10:25:43 -0400 (EDT)")
-Message-ID: <m3r5szfizl.fsf@hase.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+Subject: Re: [PATCH 1/2] mfd: twl4030-power: do not allow negative or zero
+ length script
+Message-ID: <20091019163715.GG3885@sortiz.org>
+References: <1255522550-15199-1-git-send-email-aaro.koskinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255522550-15199-1-git-send-email-aaro.koskinen@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Ryan C. Gordon" <icculus@icculus.org> writes:
+Hi Aaro,
 
-> Now the kernel will try the compatibility formats as a backup if the actual
-> system format rejects the binary. As almost all binaries loaded won't be
-> compatibility formats, this saves a few cycles for each process.
+On Wed, Oct 14, 2009 at 03:15:49PM +0300, Aaro Koskinen wrote:
+> The script length cannot be negative. If the length is zero, return
+> an error.
+> 
+> The patch eliminates the following compiler warning:
+Out of curiosity, which toolchain are you using ? I cross compile my mfd tree
+for ARM, and I dont get this error...
 
-Perhaps this should be configurable.  For a 64-bit arch with mostly
-32-bit userspace the compat format should probably be tried first.
+ 
+> drivers/mfd/twl4030-power.c: In function 'twl4030_power_init':
+twl4030_power_init ? Isnt it twl4030_write_script ?
 
-Andreas.
+Cheers,
+Samuel.
+
+
+> drivers/mfd/twl4030-power.c:151: warning: 'err' may be used uninitialized in this function
+> drivers/mfd/twl4030-power.c:151: note: 'err' was declared here
+> 
+> Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
+> ---
+>  drivers/mfd/twl4030-power.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
+> index d423e0c..eae6cda 100644
+> --- a/drivers/mfd/twl4030-power.c
+> +++ b/drivers/mfd/twl4030-power.c
+> @@ -146,9 +146,9 @@ out:
+>  }
+>  
+>  static int __init twl4030_write_script(u8 address, struct twl4030_ins *script,
+> -				       int len)
+> +				       unsigned len)
+>  {
+> -	int err;
+> +	int err = EINVAL;
+>  
+>  	for (; len; len--, address++, script++) {
+>  		if (len == 1) {
+> -- 
+> 1.6.0.4
+> 
 
 -- 
-Andreas Schwab, schwab@redhat.com
-GPG Key fingerprint = D4E8 DBE3 3813 BB5D FA84  5EC7 45C6 250E 6F00 984E
-"And now for something completely different."
+Intel Open Source Technology Centre
+http://oss.intel.com/
