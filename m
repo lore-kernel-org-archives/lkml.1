@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbZJSP3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZJSPcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756671AbZJSP3S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 11:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756625AbZJSP3R
+	id S1756774AbZJSPcp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 11:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756643AbZJSPcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 11:29:17 -0400
-Received: from cantor.suse.de ([195.135.220.2]:48599 "EHLO mx1.suse.de"
+	Mon, 19 Oct 2009 11:32:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49217 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756548AbZJSP3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 11:29:16 -0400
-Date: Mon, 19 Oct 2009 17:29:20 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH 2/7] ipc: fix trivial warning
-In-Reply-To: <94a0d4530910190815n4cf2c2ebmd288f6e7501b1ba5@mail.gmail.com>
-Message-ID: <alpine.LSU.2.00.0910191716580.8582@wotan.suse.de>
-References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com>  <1255906474-25091-3-git-send-email-felipe.contreras@gmail.com>  <alpine.LSU.2.00.0910191610160.8582@wotan.suse.de>  <94a0d4530910190750j5674ef13m93198b68d305b188@mail.gmail.com> 
- <alpine.LSU.2.00.0910191655220.8582@wotan.suse.de> <94a0d4530910190815n4cf2c2ebmd288f6e7501b1ba5@mail.gmail.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	id S1756551AbZJSPco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 11:32:44 -0400
+Date: Mon, 19 Oct 2009 17:31:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Schlichter <thomas.schlichter@web.de>
+Cc: Jan Beulich <JBeulich@novell.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, arjan@linux.intel.com,
+       dri-devel@lists.sourceforge.net, hancockrwd@gmail.com, hmh@hmh.eng.br,
+       hpa@zytor.com, jbarnes@virtuousgeek.org, jeremy.fitzhardinge@citrix.com,
+       linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de,
+       thellstrom@vmware.com, tj@kernel.org, venkatesh.pallipadi@intel.com,
+       x86@kernel.org, yinghai@kernel.org
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
+	available
+Message-ID: <20091019153134.GA18198@elte.hu>
+References: <1392906098@web.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-1551833554-1255966160=:8582"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1392906098@web.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---168427776-1551833554-1255966160=:8582
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+* Thomas Schlichter <thomas.schlichter@web.de> wrote:
 
-On Mon, 19 Oct 2009, Felipe Contreras wrote:
-
-> >> >> ipc/msg.c: In function ?msgctl_down?:
-> >> >> ipc/msg.c:415: warning: ?msqid64? may be used uninitialized in this function
-> >> >>
-> >> >> Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
-> >> >> ---
-> >> >>  ipc/msg.c |    2 +-
-> >> >>  1 files changed, 1 insertions(+), 1 deletions(-)
-> >> >>
-> >> >> diff --git a/ipc/msg.c b/ipc/msg.c
-> >> >> index 2ceab7f..085bd58 100644
-> >> >> --- a/ipc/msg.c
-> >> >> +++ b/ipc/msg.c
-> >> >> @@ -412,7 +412,7 @@ static int msgctl_down(struct ipc_namespace *ns, int msqid, int cmd,
-> >> >>                      struct msqid_ds __user *buf, int version)
-> >> >>  {
-> >> >>       struct kern_ipc_perm *ipcp;
-> >> >> -     struct msqid64_ds msqid64;
-> >> >> +     struct msqid64_ds uninitialized_var(msqid64);
-> >> >>       struct msg_queue *msq;
-> >> >>       int err;
-[ ... snip ... ]
-> > I have verified both with 4.1 and 4.3, and it doesn't emit this
-> > false-positive warning, so there have been gcc versions getting this
-> > right. Ergo gcc developers should rather fix this "regression" and revert
-> > to the old behavior, methinks.
+> I don't think this is a good idea, Robert Hancock wrote there may be 
+> millions of such Laptops (Core Solo/Duo erratum AE7, Pentium M erratum 
+> Y31) :
+>
+>   http://marc.info/?l=linux-kernel&m=125537136105246&w=2
 > 
-> The other possibility is that the bug was in gcc 4.1/4.3, and now 4.4
-> finds an actual problem in the code. I will try to dig deeper to see
-> what's actually happening... at first glance I don't see who is
-> initializing msqid64.
+> > or Perhaps just try to add mtrr only for the pci mmap case like the 
+> > 4th patch in this series..
+> 
+> I'd prefer this! ;-)
 
-This statement of your makes me wonder why you have submitted the patch in 
-the first place, as you are apparently not sure whether adding 
-uninitialized_var() is a valid thing to do or not.
+Hm, we could perhaps do that - but i think we should only do that on 
+systems that have PAT disabled.
 
-The gcc warning in this case is actually bogus, as msqid64 is touched only 
-iff cmd == IPC_SET, and in such case, copy_msqid_from_user() initializes 
-it properly.
+Which brings up the question of how to properly QA such a narrow segment 
+of the market. Maybe disabling CONFIG_X86_PAT should enable that logic 
+too.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
---168427776-1551833554-1255966160=:8582--
+	Ingo
