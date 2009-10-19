@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbZJSPPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbZJSPYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756615AbZJSPPZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 11:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbZJSPPY
+	id S1756652AbZJSPYp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 11:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbZJSPYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 11:15:24 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:23416 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756433AbZJSPPX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 11:15:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tIiXCQTp2xfJwapZMZPUowG2XxbfiKn7Om0TL7f0ybd1SLC0dhUUt9pJ+fEz4clzAx
-         S5ShXqKC2omhXQZg2VqOqlm+7DLhlCweUytzNM7wxHlUVOVgrvBrJkN0gSCIqgMPY6lu
-         hfIIN9BIrf7EK50A5W3N+wafct4uJKi4MLyi8=
+	Mon, 19 Oct 2009 11:24:45 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50460 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756267AbZJSPYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 11:24:44 -0400
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1+tHwwx6kat1zZ/WrAbEXJqS1CQeF2HS4ioQ1rd50
+	pkeyvIQ0ODq/W9
+From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
+To: "Greg Kroah-Hartman" <gregkh@suse.de>
+Subject: Re: [PATCH] staging/et131x:  adding __init/__exit macros
+Date: Mon, 19 Oct 2009 17:24:44 +0200
+User-Agent: KMail/1.9.10
+Cc: Jiri Kosina <jkosina@suse.cz>, Alan Cox <alan@linux.intel.com>,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+References: <200909290134.15295.PeterHuewe@gmx.de> <alpine.LSU.2.00.0909291107410.9280@wotan.suse.de>
+In-Reply-To: <alpine.LSU.2.00.0909291107410.9280@wotan.suse.de>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LSU.2.00.0910191655220.8582@wotan.suse.de>
-References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com>
-	 <1255906474-25091-3-git-send-email-felipe.contreras@gmail.com>
-	 <alpine.LSU.2.00.0910191610160.8582@wotan.suse.de>
-	 <94a0d4530910190750j5674ef13m93198b68d305b188@mail.gmail.com>
-	 <alpine.LSU.2.00.0910191655220.8582@wotan.suse.de>
-Date: Mon, 19 Oct 2009 18:15:27 +0300
-Message-ID: <94a0d4530910190815n4cf2c2ebmd288f6e7501b1ba5@mail.gmail.com>
-Subject: Re: [PATCH 2/7] ipc: fix trivial warning
-From: Felipe Contreras <felipe.contreras@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910191724.45300.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 5:57 PM, Jiri Kosina <jkosina@suse.cz> wrote:
-> On Mon, 19 Oct 2009, Felipe Contreras wrote:
+Am Tuesday 29 September 2009 11:10:01 schrieb Jiri Kosina:
+> On Tue, 29 Sep 2009, Peter Huewe wrote:
+> > From: Peter Huewe <peterhuewe@gmx.de>
+> >
+> > Trivial patch which adds the __init/__exit macros to the module_init/
+> > module_exit functions of ./staging/et131x/et131x_initpci.c
+> >
+> > Greg, please have a look at the small patch and either pull it through
+> > your staging tree, or please ack' it so Jiri can pull it through the
+> > trivial tree.
 >
->> >> ipc/msg.c: In function ?msgctl_down?:
->> >> ipc/msg.c:415: warning: ?msqid64? may be used uninitialized in this function
->> >>
->> >> Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
->> >> ---
->> >>  ipc/msg.c |    2 +-
->> >>  1 files changed, 1 insertions(+), 1 deletions(-)
->> >>
->> >> diff --git a/ipc/msg.c b/ipc/msg.c
->> >> index 2ceab7f..085bd58 100644
->> >> --- a/ipc/msg.c
->> >> +++ b/ipc/msg.c
->> >> @@ -412,7 +412,7 @@ static int msgctl_down(struct ipc_namespace *ns, int msqid, int cmd,
->> >>                      struct msqid_ds __user *buf, int version)
->> >>  {
->> >>       struct kern_ipc_perm *ipcp;
->> >> -     struct msqid64_ds msqid64;
->> >> +     struct msqid64_ds uninitialized_var(msqid64);
->> >>       struct msg_queue *msq;
->> >>       int err;
->> >
->> > What gcc are you using? I am not getting any warning at least with gcc
->> > "(SUSE Linux) 4.3.1 20080507 (prerelease) [gcc-4_3-branch revision
->> > 135036]"
->>
->> gcc (GCC) 4.4.1 20090725 (Red Hat 4.4.1-2)
->>
->> Since I moved to Fedora 11 I get more warnings than other people,
->> possibly because gcc 4.4.
+> Greg -- I'd prefer you taking trivial staging fixes through yoru tree, as
+> I expect we'll be conflicting soon due to the speed of changes in staging
+> area, if you don't have any objections.
 >
-> Wouldn't it be better just to report this to gcc developers as a bug
-> instead?
+> Thanks,
 
-If it's a gcc bug, yes.
 
-> I have verified both with 4.1 and 4.3, and it doesn't emit this
-> false-positive warning, so there have been gcc versions getting this
-> right. Ergo gcc developers should rather fix this "regression" and revert
-> to the old behavior, methinks.
+Hi Greg,
 
-The other possibility is that the bug was in gcc 4.1/4.3, and now 4.4
-finds an actual problem in the code. I will try to dig deeper to see
-what's actually happening... at first glance I don't see who is
-initializing msqid64.
+any updates on this patch?
+If I should recreate the patch against the linux-next tree, or your staging 
+tree, please tell me.
 
--- 
-Felipe Contreras
+Same applies to 
+[PATCH] staging/cx25821:  adding __init/__exit macros
+[PATCH] staging/p9auth:  adding __init/__exit macros
+[PATCH] staging/phison:  adding __init/__exit macros
+and somewhat also to
+[PATCH] staging/panel: prevent driver from calling misc_deregister twice on 
+same ressource
+
+
+Thanks,
+Peter
+
+
