@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbZJSIiE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbZJSIjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbZJSIiE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 04:38:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZJSIiD
+	id S1755193AbZJSIjr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 04:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZJSIjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 04:38:03 -0400
-Received: from mail-px0-f171.google.com ([209.85.216.171]:46138 "EHLO
-	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbZJSIiC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 04:38:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=L769XuBf4yrZ0oPDoQMQNJykoBHBxNBhM87i+7FtVpkOuKtvYMLtP1zuEG73PuCh+F
-         TvXu0xUAa7rj+BJfkhWXpi5d/09X0k1teqGoW8D0M6sm89y/xZO/MM/ssaF+sb2r15T4
-         p/SGfvikEWUxst+8yLeAXUHQ7NSzkjFPnc93o=
-MIME-Version: 1.0
-In-Reply-To: <1255940788.14447.7.camel@heimdal.trondhjem.org>
-References: <f2201a0b0910190116w29cd5e3w1ae2c76bd677f9ed@mail.gmail.com>
-	 <1255940788.14447.7.camel@heimdal.trondhjem.org>
-Date: Mon, 19 Oct 2009 16:38:06 +0800
-X-Google-Sender-Auth: 2d996ea0b867d96e
-Message-ID: <6149e97b0910190138k5791351dmc95d9cc636aaef2f@mail.gmail.com>
-Subject: Re: Question about invalidate_inode_pages2_range()
-From: Peng Tao <lkml.bergwolf@gmail.com>
+	Mon, 19 Oct 2009 04:39:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33282 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750846AbZJSIjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 04:39:46 -0400
+Date: Mon, 19 Oct 2009 10:39:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Arjan van de Ven <arjan@infradead.org>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] nfs: Fix nfs_parse_mount_options() kfree() leak
+Message-ID: <20091019083934.GA28434@elte.hu>
+References: <86802c440910182252v4648a7d1k249d091799583e37@mail.gmail.com> <1255933848.11116.2.camel@heimdal.trondhjem.org> <20091019065433.GA29550@elte.hu> <1255935518.18914.0.camel@penberg-laptop> <20091019070825.GA16493@elte.hu> <86802c440910190031m33e116d3o90869de5212bb2e@mail.gmail.com> <1255938774.11116.35.camel@heimdal.trondhjem.org> <20091019080403.GA24036@elte.hu> <20091019082333.GA27410@elte.hu> <1255940951.14447.9.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255940951.14447.9.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 4:26 PM, Trond Myklebust
-<trond.myklebust@fys.uio.no> wrote:
-> On Mon, 2009-10-19 at 16:16 +0800, Peng Tao wrote:
->> Hi,
->>
->> I've a question about invalidate_inode_pages2_range().
->>
->> When does invalidate_inode_pages2_range() returns -EBUSY? It locks and
->> writes back the page. Why invalidate_complete_page2() still may fail
->> due to page dirtiness?
->
-> A lot of those requirements were set by NFS, which uses
-> invalidate_inode_pages2() in order to invalidate the page cache when it
-> detects that a file has been changed on the server (either due to an
-> O_DIRECT write, or due to another client modifying the file).
->
-> In such cases, you want to try to keep the dirty data by writing it out
-> instead of discarding it.
-Thanks for your quick response. But I have two more questions about this.
-1. invalidate_inode_pages2_range() calls wait_on_page_writeback().
-Does the latter actually write out the dirty page?
-2. Is there any interface in the mm subsystem forces discarding a page cache?
 
-Cheers,
-Peng Tao
+* Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+
+> > So d508afb fixed all that needed fixing and there's nothing serious 
+> > pending here. I've reverted all pending bits in tip:out-of-tree, so 
+> > it's pure -git now. I rarely have to carry any NFS fixes in 
+> > out-of-tree, this was an odd-one-out exception that fell through the 
+> > cracks.
+> > 
+> > 	Ingo
+> 
+> OK. Could you resend the remaining leak fix, with the fixed up 
+> changelog and attributions so I can pass it on to Linus?
+
+Sure - find it below.
+
+Thanks,
+
+	Ingo
+
+-------------------------------------------->
+>From 42497c08be18c388f696a692ca5f8c3ba48cb183 Mon Sep 17 00:00:00 2001
+From: Yinghai Lu <yinghai@kernel.org>
+Date: Fri, 3 Apr 2009 09:06:15 +0200
+Subject: [PATCH] nfs: Fix nfs_parse_mount_options() kfree() leak
+
+Fix a (small) memory leak in one of the error paths of
+the NFS mount options parsing code.
+
+Reported-by: Yinghai Lu <yinghai@kernel.org>
+Reported-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ fs/nfs/super.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index a2c18ac..90be551 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -1253,6 +1253,7 @@ static int nfs_parse_mount_options(char *raw,
+ 			default:
+ 				dfprintk(MOUNT, "NFS:   unrecognized "
+ 						"transport protocol\n");
++				kfree(string);
+ 				return 0;
+ 			}
+ 			break;
