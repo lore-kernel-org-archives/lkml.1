@@ -1,112 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbZJSGbD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbZJSGiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949AbZJSGbD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 02:31:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZJSGbC
+	id S1754567AbZJSGiI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 02:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZJSGiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 02:31:02 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:60818 "EHLO mail-out1.uio.no"
+	Mon, 19 Oct 2009 02:38:07 -0400
+Received: from ozlabs.org ([203.10.76.45]:35420 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752674AbZJSGbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 02:31:01 -0400
-Subject: Re: nfs mount fail
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440910182252v4648a7d1k249d091799583e37@mail.gmail.com>
-References: <86802c440910171825j22556a4bofbf0bd6cd134d53c@mail.gmail.com>
-	 <84144f020910181935q4aed9f0dx7a8a149d8b8743c7@mail.gmail.com>
-	 <20091019114339.4b67d947@infradead.org>
-	 <1255921080.839.2.camel@penberg-laptop>
-	 <86802c440910182252v4648a7d1k249d091799583e37@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 19 Oct 2009 15:30:48 +0900
-Message-Id: <1255933848.11116.2.camel@heimdal.trondhjem.org>
+	id S1753726AbZJSGiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 02:38:05 -0400
+Subject: Re: Characters vanishing in the tty layer? (maybe related to [Bug
+ #14388] keyboard under X with 2.6.31)
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Michael Neuling <mikey@neuling.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <alpine.LFD.2.01.0910140748420.6146@localhost.localdomain>
+References: <1255501294.21962.24.camel@concordia>
+	 <alpine.LFD.2.01.0910140748420.6146@localhost.localdomain>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-9Wod46MrbXzcvq80/psn"
+Date: Mon, 19 Oct 2009 17:38:07 +1100
+Message-Id: <1255934287.4192.125.camel@concordia>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 7 sum msgs/h 1 total rcpts 1681 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 0ED132C325A4045BBFD3641029670806D500BBAE
-X-UiO-SPAM-Test: remote_host: 220.106.13.183 spam_score: -49 maxlevel 80 minaction 2 bait 0 blacklist 0 greylist 0 ratelimit 0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-18 at 22:52 -0700, Yinghai Lu wrote:
-> On Sun, Oct 18, 2009 at 7:58 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > On Mon, 2009-10-19 at 11:43 +0900, Arjan van de Ven wrote:
-> >> On Mon, 19 Oct 2009 05:35:20 +0300
-> >> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> >>
-> >> > >
-> >> > > [  278.734149] ------------[ cut here ]------------
-> >> > > [  278.739620] kernel BUG at mm/slub.c:2969!
-> >> >
-> >> > So this means that someone is passing a pointer to kfree() that did
-> >> > not come from kmalloc(). Which tree are you testing?
-> >>
-> >> > > [  278.770030] Pid: 2594, comm: rpciod/0 Not tainted
-> >> > > 2.6.32-rc5-tip-01483-ga166936-dirty #651
-> >>
-> >> some evil person decided to put the exact kernel tree/version in the
-> >> oops output ;-)
-> >
-> > Oh, right. Ingo, Yinghai says Linus' tree is fine so any ideas why this
-> > shows up in -tip? Also it seems we've had a similar bug before:
-> >
-> >  http://lkml.org/lkml/2009/4/2/698
-> >
-> > Hmmh?
-> 
-> yes. something miss merged again...
-> 
-> need change some lines.
-> 
-> ---
->  fs/nfs/super.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/fs/nfs/super.c
-> ===================================================================
-> --- linux-2.6.orig/fs/nfs/super.c
-> +++ linux-2.6/fs/nfs/super.c
-> @@ -1231,7 +1231,6 @@ static int nfs_parse_mount_options(char
->  				goto out_nomem;
->  			token = match_token(string,
->  					    nfs_xprt_protocol_tokens, args);
-> -			kfree(string);
-> 
->  			switch (token) {
->  			case Opt_xprt_udp:
-> @@ -1254,6 +1253,7 @@ static int nfs_parse_mount_options(char
->  			default:
->  				dfprintk(MOUNT, "NFS:   unrecognized "
->  						"transport protocol\n");
-> +				kfree(string);
 
-This doesn't match mainline either. To do so, the above kfree() has to
-be at the end of the "Opt_xprt_rdma:" case...
+--=-9Wod46MrbXzcvq80/psn
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->  				return 0;
->  			}
->  			break;
-> @@ -1264,6 +1264,8 @@ static int nfs_parse_mount_options(char
->  			token = match_token(string,
->  					    nfs_xprt_protocol_tokens, args);
-> 
-> +			kfree(string);
-> +
->  			switch (token) {
->  			case Opt_xprt_udp:
->  				mnt->mount_server.protocol = XPRT_TRANSPORT_UDP;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+On Wed, 2009-10-14 at 07:53 -0700, Linus Torvalds wrote:
+>=20
+> On Wed, 14 Oct 2009, Michael Ellerman wrote:
+> >=20
+> > I'm using 80f5069 or thereabouts, plus some powerpc patches. We also se=
+e
+> > the bug in 31, but not in 27.
+>=20
+> Could you bisect it? Even if you don't bisect it _all_ the way, 27..31 is=
+=20
+> a big range. Doing just a handful of bisections (say six or seven) would=20
+> cut down the number of commits from 47 thousand to somewhat more=20
+> manageable "hundreds of commits"... But obviously going all the way would=
+=20
+> be better.
 
+As Benh said it's not really bisectable on our kernel. But I got Mikey
+to bisect it on upstream using a different simulator model, and he
+couldn't tie it down. It becomes easier to hit in more recent kernels
+(since 27), but he could hit in 25 too.
+
+Looking at the code, which I should have done first, it looks like this
+is expected behaviour. The sequence is roughly:
+
+      * hvc_console reads all our input and passes it to the tty code
+        via tty_insert_flip_char()
+      * flush_to_ldisc() runs calling n_tty_receive_buf(), which fills
+        4K of tty->read_buf
+      * Once read_buf is full, tty->receive_room becomes 0 and
+        flush_to_ldisc() reschedules itself to run again in 1 jiffy.
+      * Bash reads 1 character, causing receive_room to become 1.
+      * flush_to_ldisc() runs again and inserts 1 more char because
+        receive_room is now 1.
+      * (repeat the last two steps a few times)
+      * Bash sets tty->icanon =3D 1 via n_tty_set_termios(), which calls
+        n_tty_set_room(). Because icanon is enabled, n_tty_set_room()
+        lies and says we have space for 1 character even though we
+        don't.
+      * flush_to_ldisc() runs, sees that receive_room is 1 and calls
+        n_tty_receive_buf()
+      * n_tty_receive_buf() calls n_tty_receive_char() which drops the
+        character because there's no room (~ line 1132).
+      * We keep dropping characters until we see a newline, which
+        increments tty->canon_data, causing n_tty_set_room() to report 0
+        space left, and so flush_to_ldisc() reschedules again.
+
+
+It's a bit unfortunate that n_tty_set_room() lies about the available
+space when icanon =3D 1, but it makes sense in order to handle erase. It
+would be nice if n_tty_receive_buf() returned a status to
+flush_to_disc() to say "actually I could only fit X chars after all,
+please take them back" - but I don't grok how that would play with all
+the other logic in there.
+
+cheers
+
+
+
+
+--=-9Wod46MrbXzcvq80/psn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkrcCU8ACgkQdSjSd0sB4dIPAgCcCUp4D/8++vh0PUlPeGlbgy+s
+TW0AoIXGTbZ7M9ntWqlVlD1ThEReAsTY
+=TvBk
+-----END PGP SIGNATURE-----
+
+--=-9Wod46MrbXzcvq80/psn--
 
