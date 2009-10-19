@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZJSCAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbZJSCV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbZJSCAR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 22:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZJSCAP
+	id S1755173AbZJSCV1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 22:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbZJSCV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 22:00:15 -0400
-Received: from mga03.intel.com ([143.182.124.21]:42705 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753247AbZJSCAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 22:00:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,582,1249282800"; 
-   d="scan'208";a="200535378"
-Subject: [BUGFIX] Fix irq_fpu_usable usage in aesni
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 19 Oct 2009 10:00:17 +0800
-Message-Id: <1255917617.1951.33.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Sun, 18 Oct 2009 22:21:27 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:28055 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750918AbZJSCV0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 22:21:26 -0400
+Message-ID: <4ADBCCE8.3060300@oracle.com>
+Date: Sun, 18 Oct 2009 19:20:24 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       tglx@linutronix.de
+Subject: [PATCH] perf tools: better error messages on missing packages
+References: <tip-55621ccf2b7a8afe39df8c80f55b28424fd07d13@git.kernel.org> <20091013140915.96cfe060.randy.dunlap@oracle.com> <20091014062052.GD784@elte.hu> <20091014074404.98577824.randy.dunlap@oracle.com> <20091014155848.GB15193@ghostprotocols.net>
+In-Reply-To: <20091014155848.GB15193@ghostprotocols.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4ADBCD02.0016:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When renaming kernel_fpu_using to irq_fpu_usable, the semantics of the
-function is changed too, from mesuring whether kernel is using FPU,
-that is, the FPU is NOT available, to measuring whether FPU is usable,
-that is, the FPU is available.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-But the usage of irq_fpu_usable in aesni-intel_glue.c is not changed
-accordingly. This patch fixes this.
+Check for libelf headers and glibc headers separately so that
+the error message correctly identifies which package
+installation is missing/needed.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- arch/x86/crypto/aesni-intel_glue.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ tools/perf/Makefile |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/arch/x86/crypto/aesni-intel_glue.c
-+++ b/arch/x86/crypto/aesni-intel_glue.c
-@@ -82,7 +82,7 @@ static int aes_set_key_common(struct cry
- 		return -EINVAL;
- 	}
+--- lnx-2632-rc5.orig/tools/perf/Makefile
++++ lnx-2632-rc5/tools/perf/Makefile
+@@ -422,8 +422,12 @@ ifeq ($(uname_S),Darwin)
+ 	PTHREAD_LIBS =
+ endif
  
--	if (irq_fpu_usable())
-+	if (!irq_fpu_usable())
- 		err = crypto_aes_expand_key(ctx, in_key, key_len);
- 	else {
- 		kernel_fpu_begin();
-@@ -103,7 +103,7 @@ static void aes_encrypt(struct crypto_tf
- {
- 	struct crypto_aes_ctx *ctx = aes_ctx(crypto_tfm_ctx(tfm));
++ifneq ($(shell sh -c "(echo '\#include <gnu/libc-version.h>'; echo 'int main(void) { const char * version = gnu_get_libc_version(); return (long)version; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
++	msg := $(error No gnu/libc-version.h found, please install glibc-dev[el]);
++endif
++
+ ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
+-	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el]);
++	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel);
+ endif
  
--	if (irq_fpu_usable())
-+	if (!irq_fpu_usable())
- 		crypto_aes_encrypt_x86(ctx, dst, src);
- 	else {
- 		kernel_fpu_begin();
-@@ -116,7 +116,7 @@ static void aes_decrypt(struct crypto_tf
- {
- 	struct crypto_aes_ctx *ctx = aes_ctx(crypto_tfm_ctx(tfm));
- 
--	if (irq_fpu_usable())
-+	if (!irq_fpu_usable())
- 		crypto_aes_decrypt_x86(ctx, dst, src);
- 	else {
- 		kernel_fpu_begin();
-@@ -342,7 +342,7 @@ static int ablk_encrypt(struct ablkciphe
- 	struct crypto_ablkcipher *tfm = crypto_ablkcipher_reqtfm(req);
- 	struct async_aes_ctx *ctx = crypto_ablkcipher_ctx(tfm);
- 
--	if (irq_fpu_usable()) {
-+	if (!irq_fpu_usable()) {
- 		struct ablkcipher_request *cryptd_req =
- 			ablkcipher_request_ctx(req);
- 		memcpy(cryptd_req, req, sizeof(*req));
-@@ -363,7 +363,7 @@ static int ablk_decrypt(struct ablkciphe
- 	struct crypto_ablkcipher *tfm = crypto_ablkcipher_reqtfm(req);
- 	struct async_aes_ctx *ctx = crypto_ablkcipher_ctx(tfm);
- 
--	if (irq_fpu_usable()) {
-+	if (!irq_fpu_usable()) {
- 		struct ablkcipher_request *cryptd_req =
- 			ablkcipher_request_ctx(req);
- 		memcpy(cryptd_req, req, sizeof(*req));
-
-
+ ifdef NO_DEMANGLE
