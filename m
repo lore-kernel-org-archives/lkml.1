@@ -1,99 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbZJSWxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbZJSW4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932320AbZJSWxJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 18:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbZJSWxJ
+	id S1757913AbZJSW4e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 18:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbZJSW4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 18:53:09 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:57515 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755962AbZJSWxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 18:53:08 -0400
-Message-ID: <4ADCEE1B.40003@redhat.com>
-Date: Mon, 19 Oct 2009 18:54:19 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Mon, 19 Oct 2009 18:56:34 -0400
+Received: from aglcosbs04.cos.agilent.com ([192.25.218.38]:45440 "EHLO
+	aglcosbs04.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755971AbZJSW4d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 18:56:33 -0400
+Message-ID: <4ADCEE6D.6050008@agilent.com>
+Date: Mon, 19 Oct 2009 15:55:41 -0700
+From: Earl Chew <earl_chew@agilent.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
- 	probe and kprobe-tracer bugfixes
-References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <20091017080203.GA4155@elte.hu> <20091017103427.GA31238@elte.hu> <4ADAAF50.9040604@redhat.com> <20091019075103.GF17960@elte.hu> <20091019110055.GA5549@nowhere> <20091019112125.GA12829@elte.hu> <4ADCC348.2020800@redhat.com>
-In-Reply-To: <4ADCC348.2020800@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v4 1/1]: fs: pipe.c null pointer dereference + really sign
+ off + unmangled diffs
+References: <4AD8852E.2090302@agilent.com> <4ADCAC33.4070908@agilent.com> <4ADCDB9A.7050701@agilent.com>
+In-Reply-To: <4ADCDB9A.7050701@agilent.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Oct 2009 22:55:45.0863 (UTC) FILETIME=[4B079D70:01CA510F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Ingo Molnar wrote:
->> For example you might want to probe the point within schedule that calls
->> switch_mm() - this could be done via:
->>
->>    perf probe schedule@switch_mm
->>
->> Or the point where 'next' gets assigned? Sure, you dont need to even
->> open the editor, if you know the rough outline of the function you can
->> probe it via:
->>
->>    perf probe schedule@'next ='
->>
->> Note that i was able to specify both probes without having opened an
->> editor - just based on the general knowledge of the scheduler.
-> 
-> It may be useful for return probe too :-)
-> 
->  perf probe schedule@return
+[ Exactly as before, but really sign off and tabs preserved ]
 
-Hmm, IMHO,
 
->>    perf probe schedule@switch_mm
+This patch fixes a null pointer exception in pipe_rdwr_open() which
+generates the stack trace:
 
-might be confused as 'probe schedule() called from switch_mm()'.
 
-BTW, there might be several local/inline functions which have
-same name.
-I think we'd better provide a syntax for solving this issue.
-And current syntax uses @ for this purpose as below.
+> Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
+>  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
+>  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
+>  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
+>  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
+>  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
 
- perf probe localfunc@file
 
-Maybe, we still can use % for special matching,
+The failure mode is triggered by an attempt to open an anonymous
+pipe via /proc/pid/fd/* as exemplified by this script:
 
- perf probe schedule%switch_mm
+=============================================================
+#!/bin/sh
+while : ; do
+   { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
+   PID=$!
+   OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
+        { read PID REST ; echo $PID; } )
+   OUT="${OUT%% *}"
+   DELAY=$((RANDOM * 1000 / 32768))
+   usleep $((DELAY * 1000 + RANDOM % 1000 ))
+   echo n > /proc/$OUT/fd/1                 # Trigger defect
+done
+=============================================================
 
-These can be combined with each other, as below.
+Note that the failure window is quite small and I could only
+reliably reproduce the defect by inserting a small delay
+in pipe_rdwr_open(). For example:
 
- perf probe schedule@kernel/sched.c%switch_mm
+ static int
+ pipe_rdwr_open(struct inode *inode, struct file *filp)
+ {
+       msleep(100);
+       mutex_lock(&inode->i_mutex);
 
-Or, supporting lazy string pattern matching
- (reusing glob matching in ftrace?)
 
- perf probe schedule:'switch_mm(*);'
+Although the defect was observed in pipe_rdwr_open(), I think it
+makes sense to replicate the change through all the pipe_*_open()
+functions.
 
-Just my thought.
+The core of the change is to verify that inode->i_pipe has not
+been released before attempting to manipulate it. If inode->i_pipe
+is no longer present, return ENOENT to indicate so.
 
-Thank you,
+The comment about potentially using atomic_t for i_pipe->readers
+and i_pipe->writers has also been removed because it is no longer
+relevant in this context. The inode->i_mutex lock must be used so
+that inode->i_pipe can be dealt with correctly.
 
--- 
-Masami Hiramatsu
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+Signed-off-by: Earl Chew <earl_chew@agilent.com>
 
-e-mail: mhiramat@redhat.com
+
+--- linux-2.6.21_mvlcge500/fs/pipe.c.orig	2009-10-15 20:33:53.000000000 -0700
++++ linux-2.6.21_mvlcge500/fs/pipe.c	2009-10-15 21:21:25.000000000 -0700
+@@ -712,36 +712,55 @@ pipe_rdwr_release(struct inode *inode, s
+ static int
+ pipe_read_open(struct inode *inode, struct file *filp)
+ {
+-	/* We could have perhaps used atomic_t, but this and friends
+-	   below are the only places.  So it doesn't seem worthwhile.  */
++	int ret = -ENOENT;
++
+ 	mutex_lock(&inode->i_mutex);
+-	inode->i_pipe->readers++;
++
++	if (inode->i_pipe) {
++		ret = 0;
++		inode->i_pipe->readers++;
++	}
++
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static int
+ pipe_write_open(struct inode *inode, struct file *filp)
+ {
++	int ret = -ENOENT;
++
+ 	mutex_lock(&inode->i_mutex);
+-	inode->i_pipe->writers++;
++
++	if (inode->i_pipe) {
++		ret = 0;
++		inode->i_pipe->writers++;
++	}
++
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static int
+ pipe_rdwr_open(struct inode *inode, struct file *filp)
+ {
++	int ret = -ENOENT;
++
+ 	mutex_lock(&inode->i_mutex);
+-	if (filp->f_mode & FMODE_READ)
+-		inode->i_pipe->readers++;
+-	if (filp->f_mode & FMODE_WRITE)
+-		inode->i_pipe->writers++;
++
++	if (inode->i_pipe) {
++		ret = 0;
++		if (filp->f_mode & FMODE_READ)
++			inode->i_pipe->readers++;
++		if (filp->f_mode & FMODE_WRITE)
++			inode->i_pipe->writers++;
++	}
++
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ /*
+
 
