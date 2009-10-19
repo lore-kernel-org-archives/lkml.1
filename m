@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932366AbZJSWA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932375AbZJSWBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932366AbZJSWA3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 18:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932329AbZJSWA2
+	id S932375AbZJSWBc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 18:01:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbZJSWBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 18:00:28 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:50604 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932327AbZJSWA2 (ORCPT
+	Mon, 19 Oct 2009 18:01:32 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:59575 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755446AbZJSWBb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 18:00:28 -0400
+	Mon, 19 Oct 2009 18:01:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=r+YeAd7JhRRA9zJyhV+OvTuODxI4KQLFCnW0OlLzEhSb8jUH+iBN02Q1MlKOADjJJb
-         eNX/MZ+1NZmZ+w3uH3/oJKv2fSyyIgp3ot9Ddx5rplyE9iBwsPC39aZRKW3mwBEyvi6d
-         BrWNJIgpmCIBxPUnpQpBQEFLU9ZlHBJe+Xrmk=
-From: Arnd Bergmann <arndbergmann@googlemail.com>
-To: John Kacur <jkacur@redhat.com>
-Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
-Date: Tue, 20 Oct 2009 00:00:24 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
-Cc: Arnd Bergmann <arndbergmann@googlemail.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain> <200910190619.48037.arnd@arndb.de> <alpine.LFD.2.00.0910192019420.3563@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0910192019420.3563@localhost.localdomain>
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SfsMsBVwbcCXVSYOCxl/sPUnFU+/dO2Ea1syB6dzbO6G47AfS7tkCgvHQ5eZXhAM/U
+         n2hIk1uqP9ZzZ6osNHNoWpI0xGkE9FmQHZDeJ+eJwsFW+PSViLGQ9ui2pZM5NiCxWggf
+         5LxOhkEQ/TTzuIaBJ+ux+Tq7evIenSiAA57Ro=
+Date: Tue, 20 Oct 2009 00:01:31 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arnd Bergmann <arndbergmann@googlemail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH RFC] PPC-BRIQ_PANEL: Remove BKL and replace with atomic
+	variable.
+Message-ID: <20091019220129.GE4880@nowhere>
+References: <alpine.LFD.2.00.0910182137470.3462@localhost.localdomain> <alpine.LFD.2.00.0910190658070.4975@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910200000.24574.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0910190658070.4975@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 October 2009, John Kacur wrote:
-> How does this look? (Version 2 of the patch follows)
+On Mon, Oct 19, 2009 at 07:04:02AM +0200, Thomas Gleixner wrote:
+> B1;2005;0cOn Sun, 18 Oct 2009, John Kacur wrote:
+> 
+> > >From b64c7d0f11eab96cb253b23c7264c999746116c0 Mon Sep 17 00:00:00 2001
+> > From: John Kacur <jkacur@redhat.com>
+> > Date: Sun, 18 Oct 2009 21:29:21 +0200
+> > Subject: [PATCH] PPC-BRIQ_PANEL: Remove BKL and replace with atomic variable.
+> > 
+> > There are no locks here except the bkl in briq_panel_open. It's only
+> > purpose is to ensure single access. Remove the bkl and ensure single access
+> > by making vfd_is_open an atomic_variable.
+> 
+> And again, can you please look more carefully at the init
+> vs. read/write functions ?
+> 
+> The BKL is not only protecting the single user variable it's also
+> serializing write against the access to the display in init.
+> 
+> Thanks,
+> 
+> 	tglx
 
-Looks good now.
 
-> From efd07cfcd021b4438d83d383ab81f9b35cb41eb9 Mon Sep 17 00:00:00 2001
-> From: John Kacur <jkacur@redhat.com>
-> Date: Sun, 18 Oct 2009 23:49:49 +0200
-> Subject: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
-> 
-> The BKL is in this function because of the BKL pushdown
-> (see commit f8f2c79d594463427f7114cedb1555110d547d89)
-> 
-> It is not needed here because the mutex_lock sonypi_device.lock
-> provides the necessary locking.
-> 
-> sonpi_misc_ioctl can be converted to unlocked ioctls since it relies on
-> its own locking (the mutex sonypi_device.lock) and not the bkl
-> 
-> Signed-off-by: John Kacur <jkacur@redhat.com>
+That could be solved by statically initializing vfd_is_open to -1
+and then set it to 0 once briq_panel_init has finished initializing
+the device.
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Another thing, I really don't see the point in this check in
+briq_panel_read() and briq_panel_write():
+
+	if (!vfd_is_open)
+		return -ENODEV;
+
+
+You can't read/write if vfd_is_open hasn't been set to 1 (open set)
+and you're not racing against the release callback since it is called
+after the file is closed.
+
+I guess this check can disappear from read/write callbacks.
+
