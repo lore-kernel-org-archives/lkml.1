@@ -1,55 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZJSKHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbZJSKRL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbZJSKHQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 06:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbZJSKHP
+	id S1755266AbZJSKRL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 06:17:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755118AbZJSKRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 06:07:15 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36925 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750758AbZJSKHO (ORCPT
+	Mon, 19 Oct 2009 06:17:08 -0400
+Received: from aa002msb.fastweb.it ([85.18.95.81]:49227 "EHLO
+	aa002msb.fastweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754941AbZJSKRE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 06:07:14 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 2.6.32] mfd: Always initialise WM831x IRQ mutex
-Date: Mon, 19 Oct 2009 11:07:05 +0100
-Message-Id: <1255946825-9569-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.5
+	Mon, 19 Oct 2009 06:17:04 -0400
+Message-ID: <4ADC3C41.7000207@evidence.eu.com>
+Date: Mon, 19 Oct 2009 12:15:29 +0200
+From: Claudio Scordino <claudio@evidence.eu.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       kernel@arm.linux.org.uk
+Subject: [PATCH] Default setting of the ARM_UNWIND option
+References: <4AD73DA4.4050006@evidence.eu.com> <1255620333.10164.77.camel@pc1117.cambridge.arm.com>
+In-Reply-To: <1255620333.10164.77.camel@pc1117.cambridge.arm.com>
+Content-Type: multipart/mixed;
+ boundary="------------030105020307030702070408"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This avoids crashes when running without interrupt support.
+This is a multi-part message in MIME format.
+--------------030105020307030702070408
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+[email cut-and-pasted from a private discussion...]
+>>    moving from release 2.6.27 to release 2.6.32-rc4, my ARM board 
+>> (derived from AT91SAM9623-EK) started hanging at the initial 
+>> "Calibrating delay loop" message.
+>>
+>> After some inspection, I found out the problem to be with commit 
+>> adf8b37bafc1495393201a2ae4235846371870d0.
+>>
+>> In practice, it enables stack unwinding support by default. However, if 
+>> enabled, it hangs my machine.
+>>
+>> The problem might be with my compiler (according to the help, stack 
+>> unwinding only works with EABI compilers).
+>>
+>> I'm using a CodeSourcery gcc 4.2.1 "arm-none-linux-gnueabi".
+>>     
+>
+> I think 4.2.1 generates really buggy code with -fno-frame-pointer,
+> nothing to do with the stack unwinding implementation in the kernel. I
+> would recommend you either use a newer compiler or disables ARM_UNWIND
+> in your .config (which automatically re-enables FRAMEPOINTER).
+>   
+Hi Catalin,
+
+   thank you for your answer.
+
+In my opinion, we should change the default setting of this option.
+
+Having "yes" as default policy for ARM_UNWIND means that, by default, 
+the kernel does not boot if a user has a buggy compiler (like me) and 
+he/she doesn't explicitly disable the ARM_UNWIND option.
+
+Consider that people may not know that their problem is related to the 
+ARM_UNWIND option. Therefore, they may waste time just bisecting to 
+understand where their problem really is.
+
+Therefore, my suggestion is to change the default policy of this option 
+as shown in the attached patch, to avoid a potential waste of time of 
+developers. Users who know that they can enable this option, will enable 
+it.
+
+Let me know what you think about this suggestion.
+
+Many thanks and my best regards,
+
+               Claudio
+
+
+
+--------------030105020307030702070408
+Content-Type: text/x-patch;
+ name="0001-Disable-stack-unwinding-support-by-default-since-it.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-Disable-stack-unwinding-support-by-default-since-it.pat";
+ filename*1="ch"
+
+>From 3b688dbebb5fb3345e48cd491eb387434db165da Mon Sep 17 00:00:00 2001
+From: Claudio Scordino <claudio@evidence.eu.com>
+Date: Mon, 19 Oct 2009 11:59:16 +0200
+Subject: [PATCH 1/1] Disable stack unwinding support by default, since it does not work on some buggy or not-EABI compilers.
+
+
+Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
 ---
- drivers/mfd/wm831x-irq.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/arm/Kconfig.debug |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mfd/wm831x-irq.c b/drivers/mfd/wm831x-irq.c
-index d3015df..ac056ea 100644
---- a/drivers/mfd/wm831x-irq.c
-+++ b/drivers/mfd/wm831x-irq.c
-@@ -507,6 +507,8 @@ int wm831x_irq_init(struct wm831x *wm831x, int irq)
- {
- 	int i, ret;
+diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
+index 1a6f70e..925e3fd 100644
+--- a/arch/arm/Kconfig.debug
++++ b/arch/arm/Kconfig.debug
+@@ -19,13 +19,13 @@ config FRAME_POINTER
+ config ARM_UNWIND
+ 	bool "Enable stack unwinding support"
+ 	depends on AEABI && EXPERIMENTAL
+-	default y
++	default n
+ 	help
+ 	  This option enables stack unwinding support in the kernel
+ 	  using the information automatically generated by the
+ 	  compiler. The resulting kernel image is slightly bigger but
+ 	  the performance is not affected. Currently, this feature
+-	  only works with EABI compilers. If unsure say Y.
++	  only works with EABI compilers. If unsure say N.
  
-+	mutex_init(&wm831x->irq_lock);
-+
- 	if (!irq) {
- 		dev_warn(wm831x->dev,
- 			 "No interrupt specified - functionality limited\n");
-@@ -521,7 +523,6 @@ int wm831x_irq_init(struct wm831x *wm831x, int irq)
- 	}
- 
- 	wm831x->irq = irq;
--	mutex_init(&wm831x->irq_lock);
- 	INIT_WORK(&wm831x->irq_work, wm831x_irq_worker);
- 
- 	/* Mask the individual interrupt sources */
+ config DEBUG_USER
+ 	bool "Verbose user fault messages"
 -- 
-1.6.5
+1.6.0.4
 
+
+--------------030105020307030702070408--
