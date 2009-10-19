@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757733AbZJSVYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932306AbZJSV3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757733AbZJSVYj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 17:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757645AbZJSVYi
+	id S932306AbZJSV3y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 17:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932287AbZJSV3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 17:24:38 -0400
-Received: from smtprelay04.ispgateway.de ([80.67.18.16]:39578 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757641AbZJSVYi (ORCPT
+	Mon, 19 Oct 2009 17:29:53 -0400
+Received: from aglcosbs02.cos.agilent.com ([192.25.218.39]:41064 "EHLO
+	aglcosbs02.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932265AbZJSV3x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 17:24:38 -0400
-References: <20091019102116.222ff9c3.peter@piie.net> <20091019091617.GA13277@rhlx01.hs-esslingen.de>
-Message-ID: <cone.1255987487.209127.3188.1000@deskpiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Borislav Petkov <petkovbb@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [Patch] acerhdf: Return temperature in milidegree
-Date: Mon, 19 Oct 2009 23:24:47 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Content-Disposition: inline
+	Mon, 19 Oct 2009 17:29:53 -0400
+Message-ID: <4ADCDA2F.1090209@agilent.com>
+Date: Mon, 19 Oct 2009 14:29:19 -0700
+From: Earl Chew <earl_chew@agilent.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: dwalker@fifo99.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 1/1]: fs: pipe.c null pointer dereference + sign off
+References: <4AD8852E.2090302@agilent.com>  <4ADCAC33.4070908@agilent.com> <1255981395.23353.46.camel@desktop>
+In-Reply-To: <1255981395.23353.46.camel@desktop>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+X-OriginalArrivalTime: 19 Oct 2009 21:29:23.0439 (UTC) FILETIME=[3A1077F0:01CA5103]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andreas,
+Daniel Walker wrote:
+> You patch looks like it might be line wrapped .. Sometimes mailers will
+> do that if you don't tell them the content is already formatted.
 
-thank you very much for your brainstorming.
+Arghhh ... struck by Thunderbirditis.
 
-Andreas Mohr writes:
+Apparently mailnews.send_plaintext_flowed=false is the key to
+preserving tabs, and the Toggle Word Wrap extension is useful
+for to avoid inserting additional newlines:
 
-> Hi,
-> 
-> On Mon, Oct 19, 2009 at 10:21:16AM +0200, Peter Feuerer wrote:
->> 
->> Hi Boris,
->> 
->> what do you think about this patch?
-> 
-> Personally I'm hurting a bit due to the open-coded "* 1000" transition
-> in all places.
-> 
-> I'd add a helper macro
-> #define TEMP_DEGREE_TO_SYS(x) ((x) * 1000)
-> and use that in all places where it matters.
-> 
-> Advantage:
-> - either no mistyping (10000 instead of 1000) _or_ bug occurring in _all_
->   places where this macro is used
-> - easily grepped-for
-> - easily changed once the system granularity gets updated
+https://addons.mozilla.org/en-US/thunderbird/addon/2351
 
-I agree with you in these points, but I have also some disadvantages to discuss:
+As you can see, I'm new to this game. Your patience is appreciated.
 
-Disadvantages:
- - Thinking about the implemenation such a macro would require, users may 
-   get confused. They would still set the fanon / fanoff trip points in 
-   degree, but when they read documentation or the current temperature, 
-   millidegree is used.  
- - I think "TEMP_DEGREE_TO_SYS(59)" in code is not 
-   as good readable as "59000"
+I'll repost.
 
-what about writing something like "59 * 1000" insead of "59000"?
+> Also I see your using a MontaVista kernel, which is older than current
+> mainline .. I would assume you tested this on a recent kernel also?
 
-Or something like that:
+I don't have immediate access to a more recent kernel.
 
-#define FACTOR_MILLIDEGREE 1000
-59 * FACTOR_MILLIDEGREE 
+The changes are fairly straightforward and I have added extensive
+documentation on how to reproduce and verify the defect.
 
-this solution has all your listed advantages and eliminates the 
-disadvantages I see in the "TEMP_DEGREE_TO_SYS" solution.
+Is anyone interested in helping out here by verifying on a
+more recent kernel?
 
---peter
+Earl
+
+
