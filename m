@@ -1,167 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbZJSSNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbZJSSX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932183AbZJSSNJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 14:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbZJSSNI
+	id S1757246AbZJSSX4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 14:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756103AbZJSSX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 14:13:08 -0400
-Received: from aglcosbs04.cos.agilent.com ([192.25.218.38]:46288 "EHLO
-	aglcosbs04.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754861AbZJSSNH (ORCPT
+	Mon, 19 Oct 2009 14:23:56 -0400
+Received: from outbox.allstream.net ([207.245.244.41]:63254 "EHLO
+	outbox.allstream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755485AbZJSSXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 14:13:07 -0400
-Message-ID: <4ADCAC33.4070908@agilent.com>
-Date: Mon, 19 Oct 2009 11:13:07 -0700
-From: Earl Chew <earl_chew@agilent.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
+	Mon, 19 Oct 2009 14:23:55 -0400
+X-Greylist: delayed 522 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 14:23:55 EDT
+From: "=?utf-8?B?bGlua2V4Y2hhbmdl?=" <linkexchange@cellflare.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/1]: fs: pipe.c null pointer dereference + sign off
-References: <4AD8852E.2090302@agilent.com>
-In-Reply-To: <4AD8852E.2090302@agilent.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Oct 2009 18:13:09.0739 (UTC) FILETIME=[D0646BB0:01CA50E7]
+Subject: =?utf-8?B?cGFydG5lcnNoaXAgaXNzdWU=?=
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Date: Mon, 19 Oct 2009 14:15:11 -0400
+Message-ID: <20091019181511875.47CF2AA251846BAB@cfworkstation>
+X-Mailer: Web CEO 8.0.0.3790
+X-OriginalArrivalTime: 19 Oct 2009 18:15:07.0316 (UTC) FILETIME=[16793F40:01CA50E8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n9JIOA16020807
 
-[ Exactly as before, but with sign off ]
+Hello,
+I have found your website groups.google.co.za when searching the web on the topics related to my website theme.
+I must say your site content is very good and I think we would benefit much from possible partnership - for example link exchange. This would bring more targeted traffic to our sites, plus increase our websites' weight at the search engines, as they give greater value to the links from the topic-related sites rather than irrelevant backlinks.
 
+My website http://www.cellflare.com/ is definitely related to yours.
 
-This patch fixes a null pointer exception in pipe_rdwr_open() which
-generates the stack trace:
+I would be glad to link to your site in return to you linking back to mine.
+Feel free to email me direct to linkexchange@cellflare.com to discuss the details on the possible partnership.
 
+Hope for the fruitful cooperation,
 
- > Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
- >  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
- >  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
- >  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
- >  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
- >  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
-
-This defect is also described in:
-   http://lkml.org/lkml/2009/10/14/184
-   http://bugzilla.kernel.org/show_bug.cgi?id=14416
-
-
-The failure mode is triggered by an attempt to open an anonymous
-pipe via /proc/pid/fd/* as exemplified by this script:
-
-=============================================================
-#!/bin/sh
-while : ; do
-    { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
-    PID=$!
-    OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
-         { read PID REST ; echo $PID; } )
-    OUT="${OUT%% *}"
-    DELAY=$((RANDOM * 1000 / 32768))
-    usleep $((DELAY * 1000 + RANDOM % 1000 ))
-    echo n > /proc/$OUT/fd/1                 # Trigger defect
-done
-=============================================================
-
-Note that the failure window is quite small and I could only
-reliably reproduce the defect by inserting a small delay
-in pipe_rdwr_open(). For example:
-
-  static int
-  pipe_rdwr_open(struct inode *inode, struct file *filp)
-  {
-        msleep(100);
-        mutex_lock(&inode->i_mutex);
-
-
-Although the defect was observed in pipe_rdwr_open(), I think it
-makes sense to replicate the change through all the pipe_*_open()
-functions.
-
-The core of the change is to verify that inode->i_pipe has not
-been released before attempting to manipulate it. If inode->i_pipe
-is no longer present, return ENOENT to indicate so.
-
-The comment about potentially using atomic_t for i_pipe->readers
-and i_pipe->writers has also been removed because it is no longer
-relevant in this context. The inode->i_mutex lock must be used so
-that inode->i_pipe can be dealt with correctly.
-
-
-Signed-off-by: Earl Chew <earl_chew@agilent.com>
-
-
---- linux-2.6.21_mvlcge500/fs/pipe.c.orig    2009-10-15 
-20:33:53.000000000 -0700
-+++ linux-2.6.21_mvlcge500/fs/pipe.c    2009-10-15 21:21:25.000000000 -0700
-@@ -712,36 +712,55 @@ pipe_rdwr_release(struct inode *inode, s
-  static int
-  pipe_read_open(struct inode *inode, struct file *filp)
-  {
--    /* We could have perhaps used atomic_t, but this and friends
--       below are the only places.  So it doesn't seem worthwhile.  */
-+    int ret = -ENOENT;
-+
-      mutex_lock(&inode->i_mutex);
--    inode->i_pipe->readers++;
-+
-+    if (inode->i_pipe) {
-+        ret = 0;
-+        inode->i_pipe->readers++;
-+    }
-+
-      mutex_unlock(&inode->i_mutex);
-
--    return 0;
-+    return ret;
-  }
-
-  static int
-  pipe_write_open(struct inode *inode, struct file *filp)
-  {
-+    int ret = -ENOENT;
-+
-      mutex_lock(&inode->i_mutex);
--    inode->i_pipe->writers++;
-+
-+    if (inode->i_pipe) {
-+        ret = 0;
-+        inode->i_pipe->writers++;
-+    }
-+
-      mutex_unlock(&inode->i_mutex);
-
--    return 0;
-+    return ret;
-  }
-
-  static int
-  pipe_rdwr_open(struct inode *inode, struct file *filp)
-  {
-+    int ret = -ENOENT;
-+
-      mutex_lock(&inode->i_mutex);
--    if (filp->f_mode & FMODE_READ)
--        inode->i_pipe->readers++;
--    if (filp->f_mode & FMODE_WRITE)
--        inode->i_pipe->writers++;
-+
-+    if (inode->i_pipe) {
-+        ret = 0;
-+        if (filp->f_mode & FMODE_READ)
-+            inode->i_pipe->readers++;
-+        if (filp->f_mode & FMODE_WRITE)
-+            inode->i_pipe->writers++;
-+    }
-+
-      mutex_unlock(&inode->i_mutex);
-
--    return 0;
-+    return ret;
-  }
-
-  /*
-
-
-
-
-
+Best regards,
+linkexchange,
+http://www.cellflare.com/
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
