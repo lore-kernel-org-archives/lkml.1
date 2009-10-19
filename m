@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZJSHRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbZJSHZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbZJSHRq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 03:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZJSHRq
+	id S1755309AbZJSHZZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 03:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZJSHZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 03:17:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57235 "EHLO mx2.mail.elte.hu"
+	Mon, 19 Oct 2009 03:25:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41542 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754354AbZJSHRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 03:17:45 -0400
-Date: Mon, 19 Oct 2009 09:17:40 +0200
+	id S1752811AbZJSHZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 03:25:23 -0400
+Date: Mon, 19 Oct 2009 09:25:17 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: linguranus@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
-	avoid memory miss predication.
-Message-ID: <20091019071740.GA17407@elte.hu>
-References: <1255928924-19140-1-git-send-email-linguranus@gmail.com>
+To: Anton Blanchard <anton@samba.org>
+Cc: benh@kernel.crashing.org, paulus@samba.org, a.p.zijlstra@chello.nl,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] powerpc perf_event: Add alignment-faults and
+	emulation-faults software events
+Message-ID: <20091019072517.GB17960@elte.hu>
+References: <20091018110929.GK4808@kryten> <20091018111126.GL4808@kryten> <20091018111300.GM4808@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1255928924-19140-1-git-send-email-linguranus@gmail.com>
+In-Reply-To: <20091018111300.GM4808@kryten>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
@@ -34,33 +34,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* linguranus@gmail.com <linguranus@gmail.com> wrote:
+* Anton Blanchard <anton@samba.org> wrote:
 
-> From: Ling <linguranus@gmail.com>
+> Hook up the alignment-faults and emulation-faults events for powerpc.
 > 
-> Hi All
-> 
-> CPU will use memory disambiguration predication to speculatively read 
-> memory without waiting for previous write instructions and correctly 
-> avoid conflict between them (RAW). However it seem only to care about 
-> last 12 bits of address, not care about real address. For example if 
-> rsi is 0xf004, rdi is 0xe008, when we do following operation there 
-> will generate big performance latency.
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Would be nice to trigger this kind of pattern via some testcase that 
-uses read() or write() - or some other real workload.
+nice.
 
-Then you can use 'perf stat --repeat 10 ./my-test-prog' to measure it 
-and post the results - the before-patch/after-patch instruction count, 
-cycle count, etc.
-
-You can get 'perf' via:
-
-  cd tools/perf
-  make -j install
-
-(And please preserve the Cc: line for new postings - thanks.)
-
-Thanks,
+The first patch is for perf events - it would be nice if we could do the 
+two PowerPC changes via the perf events tree - that would speed up the 
+upstream availability of this new feature. Ben, what do you think?
 
 	Ingo
