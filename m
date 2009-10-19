@@ -1,160 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbZJSW4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932342AbZJSXIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757913AbZJSW4e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 18:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbZJSW4e
+	id S932342AbZJSXIJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 19:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbZJSXII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 18:56:34 -0400
-Received: from aglcosbs04.cos.agilent.com ([192.25.218.38]:45440 "EHLO
-	aglcosbs04.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755971AbZJSW4d (ORCPT
+	Mon, 19 Oct 2009 19:08:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:20138 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755582AbZJSXIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 18:56:33 -0400
-Message-ID: <4ADCEE6D.6050008@agilent.com>
-Date: Mon, 19 Oct 2009 15:55:41 -0700
-From: Earl Chew <earl_chew@agilent.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 19 Oct 2009 19:08:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Pxn1RQYy6lx+GWtMzc7rTzteO3hjK4gl5XrEqNPEz/TVj4x+xxCR/jeNZVRnR9N5wn
+         fw0V5kznknGwcwOhMgtcY5krL68o8cd+PlNW9EtK1+8DkZnrrrBhNSXdW+XqlU0f9oUG
+         UCYppNALNFrA7HwgCA6a8/mZPhqjUF0Mcb2Sk=
+Date: Tue, 20 Oct 2009 03:09:52 +0400
+From: Paul Fertser <fercerpav@gmail.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, Nelson Castillo <arhuaco@freaks-unidos.net>,
+       Lars-Peter Clausen <lars@metafoo.de>
+Subject: Re: [PATCH 5/7] mfd: pcf50633: Cleanup pcf50633_probe error
+	handling
+Message-ID: <20091019230952.GB19580@home.pavel.comp>
+References: <1255471956-29201-1-git-send-email-fercerpav@gmail.com> <1255471956-29201-2-git-send-email-fercerpav@gmail.com> <1255471956-29201-3-git-send-email-fercerpav@gmail.com> <1255471956-29201-4-git-send-email-fercerpav@gmail.com> <1255471956-29201-5-git-send-email-fercerpav@gmail.com> <20091019150812.GC3885@sortiz.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v4 1/1]: fs: pipe.c null pointer dereference + really sign
- off + unmangled diffs
-References: <4AD8852E.2090302@agilent.com> <4ADCAC33.4070908@agilent.com> <4ADCDB9A.7050701@agilent.com>
-In-Reply-To: <4ADCDB9A.7050701@agilent.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Oct 2009 22:55:45.0863 (UTC) FILETIME=[4B079D70:01CA510F]
+Content-Type: multipart/mixed; boundary="LQksG6bCIzRHxTLp"
+Content-Disposition: inline
+In-Reply-To: <20091019150812.GC3885@sortiz.org>
+User-Agent: Mutt/1.5.17 (2007-11-30)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Exactly as before, but really sign off and tabs preserved ]
 
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-This patch fixes a null pointer exception in pipe_rdwr_open() which
-generates the stack trace:
+Hi Samuel,
 
+Big thanks for your comments, next time i send anything upstream i
+will certainly provide a minimal changelog for every patch :)
 
-> Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
->  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
->  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
->  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
->  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
->  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
+On Mon, Oct 19, 2009 at 05:08:13PM +0200, Samuel Ortiz wrote:
+> On Wed, Oct 14, 2009 at 02:12:34AM +0400, Paul Fertser wrote:
+> >  	if (enable_irq_wake(client->irq) < 0)
+> > -		dev_err(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
+> > +		dev_info(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
+> >  			"in this hardware revision", client->irq);
+> 2 things here: This doesnt really belong to this patch, and also I'd prefer to
+> keep that as an error message.
+[...]
+> >  	ret = sysfs_create_group(&client->dev.kobj, &pcf_attr_group);
+> >  	if (ret)
+> > -		dev_err(pcf->dev, "error creating sysfs entries\n");
+> > +		dev_info(pcf->dev, "Failed to create sysfs entries\n");
+> Same here.
 
+Sure. Please find amended version in attachement.
 
-The failure mode is triggered by an attempt to open an anonymous
-pipe via /proc/pid/fd/* as exemplified by this script:
+-- 
+Be free, use free (http://www.gnu.org/philosophy/free-sw.html) software!
+mailto:fercerpav@gmail.com
 
-=============================================================
-#!/bin/sh
-while : ; do
-   { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
-   PID=$!
-   OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
-        { read PID REST ; echo $PID; } )
-   OUT="${OUT%% *}"
-   DELAY=$((RANDOM * 1000 / 32768))
-   usleep $((DELAY * 1000 + RANDOM % 1000 ))
-   echo n > /proc/$OUT/fd/1                 # Trigger defect
-done
-=============================================================
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="0005-mfd-pcf50633-Cleanup-pcf50633_probe-error-handling.patch"
 
-Note that the failure window is quite small and I could only
-reliably reproduce the defect by inserting a small delay
-in pipe_rdwr_open(). For example:
+>From 7f982d01515371fcbab0086bf77448f351b09a42 Mon Sep 17 00:00:00 2001
+From: Lars-Peter Clausen <lars@metafoo.de>
+Date: Thu, 8 Oct 2009 00:24:54 +0200
+Subject: [PATCH] mfd: pcf50633: Cleanup pcf50633_probe error handling
 
- static int
- pipe_rdwr_open(struct inode *inode, struct file *filp)
+Currently the child devices were not freed if the irq could not be requested.
+This patch restructures the function, that in case of an error all previously
+allocated resources are freed.
+
+Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+Signed-off-by: Paul Fertser <fercerpav@gmail.com>
+---
+ drivers/mfd/pcf50633-core.c |   43 ++++++++++++++++++++++++++-----------------
+ 1 files changed, 26 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
+index 69cdbdc..5aed527 100644
+--- a/drivers/mfd/pcf50633-core.c
++++ b/drivers/mfd/pcf50633-core.c
+@@ -553,9 +553,14 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
  {
-       msleep(100);
-       mutex_lock(&inode->i_mutex);
-
-
-Although the defect was observed in pipe_rdwr_open(), I think it
-makes sense to replicate the change through all the pipe_*_open()
-functions.
-
-The core of the change is to verify that inode->i_pipe has not
-been released before attempting to manipulate it. If inode->i_pipe
-is no longer present, return ENOENT to indicate so.
-
-The comment about potentially using atomic_t for i_pipe->readers
-and i_pipe->writers has also been removed because it is no longer
-relevant in this context. The inode->i_mutex lock must be used so
-that inode->i_pipe can be dealt with correctly.
-
-
-Signed-off-by: Earl Chew <earl_chew@agilent.com>
-
-
---- linux-2.6.21_mvlcge500/fs/pipe.c.orig	2009-10-15 20:33:53.000000000 -0700
-+++ linux-2.6.21_mvlcge500/fs/pipe.c	2009-10-15 21:21:25.000000000 -0700
-@@ -712,36 +712,55 @@ pipe_rdwr_release(struct inode *inode, s
- static int
- pipe_read_open(struct inode *inode, struct file *filp)
- {
--	/* We could have perhaps used atomic_t, but this and friends
--	   below are the only places.  So it doesn't seem worthwhile.  */
-+	int ret = -ENOENT;
-+
- 	mutex_lock(&inode->i_mutex);
--	inode->i_pipe->readers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		inode->i_pipe->readers++;
+ 	struct pcf50633 *pcf;
+ 	struct pcf50633_platform_data *pdata = client->dev.platform_data;
+-	int i, ret = 0;
++	int i, ret;
+ 	int version, variant;
+ 
++	if (!client->irq) {
++		dev_err(&client->dev, "Missing IRQ\n");
++		return -ENOENT;
 +	}
 +
- 	mutex_unlock(&inode->i_mutex);
+ 	pcf = kzalloc(sizeof(*pcf), GFP_KERNEL);
+ 	if (!pcf)
+ 		return -ENOMEM;
+@@ -570,6 +575,12 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+ 	pcf->irq = client->irq;
+ 	pcf->work_queue = create_singlethread_workqueue("pcf50633");
  
--	return 0;
-+	return ret;
- }
- 
- static int
- pipe_write_open(struct inode *inode, struct file *filp)
- {
-+	int ret = -ENOENT;
-+
- 	mutex_lock(&inode->i_mutex);
--	inode->i_pipe->writers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		inode->i_pipe->writers++;
++	if (!pcf->work_queue) {
++		dev_err(&client->dev, "Failed to alloc workqueue\n");
++		ret = -ENOMEM;
++		goto err_free;
 +	}
 +
- 	mutex_unlock(&inode->i_mutex);
+ 	INIT_WORK(&pcf->irq_work, pcf50633_irq_worker);
  
--	return 0;
-+	return ret;
- }
+ 	version = pcf50633_reg_read(pcf, 0);
+@@ -577,7 +588,7 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+ 	if (version < 0 || variant < 0) {
+ 		dev_err(pcf->dev, "Unable to probe pcf50633\n");
+ 		ret = -ENODEV;
+-		goto err;
++		goto err_destroy_workqueue;
+ 	}
  
- static int
- pipe_rdwr_open(struct inode *inode, struct file *filp)
- {
-+	int ret = -ENOENT;
+ 	dev_info(pcf->dev, "Probed device version %d variant %d\n",
+@@ -591,6 +602,14 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+ 	pcf50633_reg_write(pcf, PCF50633_REG_INT4M, 0x00);
+ 	pcf50633_reg_write(pcf, PCF50633_REG_INT5M, 0x00);
+ 
++	ret = request_irq(client->irq, pcf50633_irq,
++					IRQF_TRIGGER_LOW, "pcf50633", pcf);
 +
- 	mutex_lock(&inode->i_mutex);
--	if (filp->f_mode & FMODE_READ)
--		inode->i_pipe->readers++;
--	if (filp->f_mode & FMODE_WRITE)
--		inode->i_pipe->writers++;
-+
-+	if (inode->i_pipe) {
-+		ret = 0;
-+		if (filp->f_mode & FMODE_READ)
-+			inode->i_pipe->readers++;
-+		if (filp->f_mode & FMODE_WRITE)
-+			inode->i_pipe->writers++;
++	if (ret) {
++		dev_err(pcf->dev, "Failed to request IRQ %d\n", ret);
++		goto err_destroy_workqueue;
 +	}
 +
- 	mutex_unlock(&inode->i_mutex);
+ 	/* Create sub devices */
+ 	pcf50633_client_dev_register(pcf, "pcf50633-input",
+ 						&pcf->input_pdev);
+@@ -606,7 +625,7 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
  
--	return 0;
-+	return ret;
+ 		pdev = platform_device_alloc("pcf50633-regltr", i);
+ 		if (!pdev) {
+-			dev_err(pcf->dev, "Cannot create regulator\n");
++			dev_err(pcf->dev, "Cannot create regulator %d\n", i);
+ 			continue;
+ 		}
+ 
+@@ -618,19 +637,6 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+ 		platform_device_add(pdev);
+ 	}
+ 
+-	if (client->irq) {
+-		ret = request_irq(client->irq, pcf50633_irq,
+-				IRQF_TRIGGER_LOW, "pcf50633", pcf);
+-
+-		if (ret) {
+-			dev_err(pcf->dev, "Failed to request IRQ %d\n", ret);
+-			goto err;
+-		}
+-	} else {
+-		dev_err(pcf->dev, "No IRQ configured\n");
+-		goto err;
+-	}
+-
+ 	if (enable_irq_wake(client->irq) < 0)
+ 		dev_err(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
+ 			"in this hardware revision", client->irq);
+@@ -644,9 +650,12 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+ 
+ 	return 0;
+ 
+-err:
++err_destroy_workqueue:
+ 	destroy_workqueue(pcf->work_queue);
++err_free:
++	i2c_set_clientdata(client, NULL);
+ 	kfree(pcf);
++
+ 	return ret;
  }
  
- /*
+-- 
+1.6.0.6
 
 
+--LQksG6bCIzRHxTLp--
