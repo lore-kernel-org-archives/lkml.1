@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZJSN66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbZJSOBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbZJSN66 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 09:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbZJSN65
+	id S1756293AbZJSOBw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 10:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbZJSOBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 09:58:57 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:37077 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755618AbZJSN65 (ORCPT
+	Mon, 19 Oct 2009 10:01:51 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:24379 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756177AbZJSOBr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 09:58:57 -0400
-Date: Mon, 19 Oct 2009 09:59:01 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
-cc: Jiri Kosina <jkosina@suse.cz>, <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Sarah Sharp <sarah.a.sharp@linux.intel.com>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH 1/7] usb: trivial cleanups
-In-Reply-To: <94a0d4530910181609u33955cd5tf9e56b7d2ae9a616@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0910190956580.3899-100000@iolanthe.rowland.org>
+	Mon, 19 Oct 2009 10:01:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=KbJ945i7iNMmd45j/GuRosJR0x5H3MDqZ3ZiHudj8V+2m2b+7A1loeSK77NaVr84zh
+         ZtnLcllyx7JRVU0bb5VQemDwRc0Su3rwOV0SwLFC+c+r1uoiMSZI33uUaBD/zRnsDa6D
+         xFS350+AetiVcChxJLR91fuDgSHMpGwmO1Vew=
+Date: Mon, 19 Oct 2009 16:01:45 +0200
+From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Tobi Oetiker <tobi@oetiker.ch>, Frans Pop <elendil@planet.nl>,
+       Mel Gorman <mel@csn.ul.ie>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
+       jens.axboe@oracle.com
+Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
+Message-ID: <20091019140145.GA4222@bizet.domek.prywatny>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910190133.33183.elendil@planet.nl> <1255912562.6824.9.camel@penberg-laptop> <200910190444.55867.elendil@planet.nl> <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu> <1255946051.5941.2.camel@penberg-laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255946051.5941.2.camel@penberg-laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Oct 2009, Felipe Contreras wrote:
-
-> I still have an unfixed warning:
-> drivers/usb/core/hcd.c: In function ‘rh_string’:
-> /data/public/src/linux/arch/x86/include/asm/string_32.h:74: warning:
-> array subscript is above array bounds
+On Mon, Oct 19, 2009 at 12:54:11PM +0300, Pekka Enberg wrote:
+> On Mon, 2009-10-19 at 11:49 +0200, Tobi Oetiker wrote:
+> > I have updated a fileserver to 2.6.31 today and I see page
+> > allocation failures from several parts of the system ... mostly nfs though ... (it is a nfs server).
+> > So I guess the problem must be quite generic:
 > 
-> Apparently there's a problem with the optimized memcpy for x86 with this code:
-> static char const langids[4] = {4, USB_DT_STRING, 0x09, 0x04};
-> len = min_t(unsigned, len, sizeof(langids));
-> memcpy(data, langids, len);
-> return len;
+> Yup, it almost certainly is. Does this patch help?
 > 
-> gcc 4.4 is trying to optimize the memcpy, but it's not able to realize
-> that 'len' will always be <= 4 and the memcpy will not exceed langids.
-> One way to solve this is by replacing len with the min_t expression:
-> memcpy(data, langids, min_t(unsigned, len, sizeof(langids)));
-> 
-> However, that looks ugly and we need the expression again for the
-> return. Another way is to remove 'const' from langids.
-> 
-> AFAIK the code is perfectly correct as it is, I think the fact that
-> gcc 4.4 complains is a bug on gcc side.
+> http://lkml.org/lkml/2009/10/16/89
 
-Yes, it is a well-known bug in gcc.  Other places in the kernel get 
-similar warnings.
+This patch seems to help in some cases.  Before applying this patch I
+was able to trigger alloc failures on different machine by booting
+kernel with "mem=256MB" and doing:
 
-Alan Stern
+  $ gitk on-full-tree &
+  # rmmod e100
+  ... wait for few MBs in swap
+  # modprobe e100; ifup --force ethX
 
+So here this patch helped -- with it, I was unable to trigger page
+allocation failures (testing was short, tough).  However, as I said
+here[1], I applied both of Mel's patches (including this one) and that
+didn't help my orginal issue (failures after suspend).
+
+[1] http://lkml.org/lkml/2009/10/17/109
+
+Thanks.
