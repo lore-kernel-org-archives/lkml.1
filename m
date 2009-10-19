@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbZJSN7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZJSN66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756254AbZJSN7o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 09:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbZJSN7m
+	id S1756232AbZJSN66 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 09:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbZJSN65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 09:59:42 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:45006 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756150AbZJSN7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 09:59:42 -0400
-Message-ID: <4ADC707E.2040802@redhat.com>
-Date: Mon, 19 Oct 2009 09:58:22 -0400
-From: Jarod Wilson <jarod@redhat.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10.5; en-US; rv:1.9.1.4pre) Gecko/20090915 Thunderbird/3.0b4
+	Mon, 19 Oct 2009 09:58:57 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:37077 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755618AbZJSN65 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 09:58:57 -0400
+Date: Mon, 19 Oct 2009 09:59:01 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Felipe Contreras <felipe.contreras@gmail.com>
+cc: Jiri Kosina <jkosina@suse.cz>, <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Sarah Sharp <sarah.a.sharp@linux.intel.com>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 1/7] usb: trivial cleanups
+In-Reply-To: <94a0d4530910181609u33955cd5tf9e56b7d2ae9a616@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0910190956580.3899-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Felipe Contreras <felipe.contreras@gmail.com>,
-       linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Neil Horman <nhorman@tuxdriver.com>, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 3/7] crypto: testmgr: fix warning
-References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com> <1255906474-25091-4-git-send-email-felipe.contreras@gmail.com> <alpine.LSU.2.00.0910191551030.8582@wotan.suse.de>
-In-Reply-To: <alpine.LSU.2.00.0910191551030.8582@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/19/09 9:52 AM, Jiri Kosina wrote:
-> On Mon, 19 Oct 2009, Felipe Contreras wrote:
->
->> crypto/testmgr.c: In function ?test_cprng?:
->> crypto/testmgr.c:1204: warning: ?err? may be used uninitialized in this function
->>
->> Signed-off-by: Felipe Contreras<felipe.contreras@gmail.com>
->> ---
->>   crypto/testmgr.c |    2 +-
->>   1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/crypto/testmgr.c b/crypto/testmgr.c
->> index 6d5b746..1f2357b 100644
->> --- a/crypto/testmgr.c
->> +++ b/crypto/testmgr.c
->> @@ -1201,7 +1201,7 @@ static int test_cprng(struct crypto_rng *tfm, struct cprng_testvec *template,
->>   		      unsigned int tcount)
->>   {
->>   	const char *algo = crypto_tfm_alg_driver_name(crypto_rng_tfm(tfm));
->> -	int err, i, j, seedsize;
->> +	int err = 0, i, j, seedsize;
->>   	u8 *seed;
->>   	char result[32];
->
-> As it is not obvious to me immediately why/whether tcount couldn't be zero
-> (which would cause uninitialized use of 'err'), I am not merging this
-> through trivial tree. Herbert?
+On Mon, 19 Oct 2009, Felipe Contreras wrote:
 
-I believe I'm the guilty party who wrote the code in question. 
-Initializing err to 0 isn't correct. tcount should always be at least 1, 
-if its 0, test_cprng has been called with invalid parameters. I believe 
-err would best be initialized to -EINVAL, lest the caller think they 
-were successful.
+> I still have an unfixed warning:
+> drivers/usb/core/hcd.c: In function ‘rh_string’:
+> /data/public/src/linux/arch/x86/include/asm/string_32.h:74: warning:
+> array subscript is above array bounds
+> 
+> Apparently there's a problem with the optimized memcpy for x86 with this code:
+> static char const langids[4] = {4, USB_DT_STRING, 0x09, 0x04};
+> len = min_t(unsigned, len, sizeof(langids));
+> memcpy(data, langids, len);
+> return len;
+> 
+> gcc 4.4 is trying to optimize the memcpy, but it's not able to realize
+> that 'len' will always be <= 4 and the memcpy will not exceed langids.
+> One way to solve this is by replacing len with the min_t expression:
+> memcpy(data, langids, min_t(unsigned, len, sizeof(langids)));
+> 
+> However, that looks ugly and we need the expression again for the
+> return. Another way is to remove 'const' from langids.
+> 
+> AFAIK the code is perfectly correct as it is, I think the fact that
+> gcc 4.4 complains is a bug on gcc side.
 
--- 
-Jarod Wilson
-jarod@redhat.com
+Yes, it is a well-known bug in gcc.  Other places in the kernel get 
+similar warnings.
+
+Alan Stern
+
