@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932314AbZJSWhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbZJSWuC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932314AbZJSWhE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 18:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757553AbZJSWhD
+	id S1757873AbZJSWuC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 18:50:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbZJSWuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 18:37:03 -0400
-Received: from static-220-247-10-204.b-man.svips.gol.ne.jp ([220.247.10.204]:60631
-	"EHLO smtp.kamineko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755895AbZJSWhC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 18:37:02 -0400
-X-Greylist: delayed 386 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 18:37:02 EDT
-Date: Tue, 20 Oct 2009 07:30:39 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: Arnd Bergmann <arndbergmann@googlemail.com>
-Cc: John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
-Message-ID: <20091019223039.GA4367@kamineko.org>
-References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain>
- <200910190619.48037.arnd@arndb.de>
- <alpine.LFD.2.00.0910192019420.3563@localhost.localdomain>
- <200910200000.24574.arnd@arndb.de>
+	Mon, 19 Oct 2009 18:50:01 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34208 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751877AbZJSWuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 18:50:00 -0400
+Date: Tue, 20 Oct 2009 00:50:03 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH 2/7] ipc: fix trivial warning
+In-Reply-To: <94a0d4530910190949y265426cbq4c32466a9fab8966@mail.gmail.com>
+Message-ID: <alpine.LSU.2.00.0910200047200.8582@wotan.suse.de>
+References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com>  <1255906474-25091-3-git-send-email-felipe.contreras@gmail.com>  <alpine.LSU.2.00.0910191610160.8582@wotan.suse.de>  <94a0d4530910190750j5674ef13m93198b68d305b188@mail.gmail.com> 
+ <alpine.LSU.2.00.0910191655220.8582@wotan.suse.de>  <94a0d4530910190815n4cf2c2ebmd288f6e7501b1ba5@mail.gmail.com>  <alpine.LSU.2.00.0910191716580.8582@wotan.suse.de> <94a0d4530910190949y265426cbq4c32466a9fab8966@mail.gmail.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910200000.24574.arnd@arndb.de>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.32-rc4 x86_64
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.2.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20, 2009 at 12:00:24AM +0200, Arnd Bergmann wrote:
-> On Monday 19 October 2009, John Kacur wrote:
-> > How does this look? (Version 2 of the patch follows)
+On Mon, 19 Oct 2009, Felipe Contreras wrote:
+
+> > This statement of your makes me wonder why you have submitted the patch in
+> > the first place, as you are apparently not sure whether adding
+> > uninitialized_var() is a valid thing to do or not.
+[ ... ]
+> In any case, if the patch is not correct, then somebody should point
+> that out, which is what the patch review process is for. Alternatively
+> I could have sent an email asking what is happening here, but from my
+> point of view this patch serves exactly the same purpose, and has the
+> advantage that it might turn out to be correct.
+>
+> It's not as if I didn't do any homework while writing this patch.
+
+Sorry if it sounded to offensive, I have probably been a little bit too 
+tired ysterday.
+
+> > The gcc warning in this case is actually bogus, as msqid64 is touched only
+> > iff cmd == IPC_SET, and in such case, copy_msqid_from_user() initializes
+> > it properly.
 > 
-> Looks good now.
+> Yes, but it's used by ipcctl_pre_down, which from what I can see is
+> only using those arguments when cmd == IPC_SET, so everything is ok.
+> But still, I don't think the compiler _should_ know what
+> ipcctl_pre_down is going to do, if you look _only_ at msgctl_down,
+> then uninitialized_var is OK.
 
-Looks alright to me too.
+Well at least older compilers were able to see this, only 4.4 seems to be 
+warning here ... I have applied the patch for now, but I am really not 
+fully convinced about it yet, we should probably report it to gcc folks 
+anyway.
 
-> > From efd07cfcd021b4438d83d383ab81f9b35cb41eb9 Mon Sep 17 00:00:00 2001
-> > From: John Kacur <jkacur@redhat.com>
-> > Date: Sun, 18 Oct 2009 23:49:49 +0200
-> > Subject: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
-> > 
-> > The BKL is in this function because of the BKL pushdown
-> > (see commit f8f2c79d594463427f7114cedb1555110d547d89)
-> > 
-> > It is not needed here because the mutex_lock sonypi_device.lock
-> > provides the necessary locking.
-> > 
-> > sonpi_misc_ioctl can be converted to unlocked ioctls since it relies on
-> > its own locking (the mutex sonypi_device.lock) and not the bkl
-> > 
-> > Signed-off-by: John Kacur <jkacur@redhat.com>
-> 
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
+Thanks,
 
-Acked-by: Mattia Dongili <malattia@linux.it>
 -- 
-mattia
-:wq!
+Jiri Kosina
+SUSE Labs, Novell Inc.
