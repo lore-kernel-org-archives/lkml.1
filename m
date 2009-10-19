@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbZJSTsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbZJSTvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757381AbZJSTsq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 15:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757257AbZJSTsq
+	id S1757425AbZJSTvl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 15:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbZJSTvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 15:48:46 -0400
-Received: from gv-out-0910.google.com ([216.239.58.184]:20877 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbZJSTsp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 15:48:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=N+S5vn2dRCnmhWx4+80rUkxtvdIy4i0ymgRK7ft6dS9riRfGDsP2nTFOaSWiJlugam
-         cc6EL2Y9Ev2a9OtUtFYQnc6Eh/A/b9DzGQp5xrLbcmV0Ki21fYP+IRxtM9c2c4tiyNvj
-         GpCONbQtaNZRLKneRbMdnCzrqKxmkTs+428Nc=
-Date: Mon, 19 Oct 2009 21:48:45 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: hw-breakpoints: Actually flush thread
-	breakpoints in flush_thread().
-Message-ID: <20091019194842.GD4880@nowhere>
-References: <20091005102306.GA7889@linux-sh.org> <20091005104955.GA14852@in.ibm.com> <20091009034003.GA7747@linux-sh.org> <20091017234250.GC10344@nowhere> <20091018062558.GA20535@linux-sh.org>
+	Mon, 19 Oct 2009 15:51:40 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:50023 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751949AbZJSTvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 15:51:40 -0400
+Date: Mon, 19 Oct 2009 17:51:28 -0200
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Glauber Costa <glommer@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: [PATCH] v5: allow userspace to adjust kvmclock offset
+Message-ID: <20091019195128.GC17781@amt.cnet>
+References: <1255721316-11777-1-git-send-email-glommer@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091018062558.GA20535@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1255721316-11777-1-git-send-email-glommer@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 18, 2009 at 03:25:58PM +0900, Paul Mundt wrote:
-> Thanks. If you're setting up a tree somewhere can you let me know where
-> it will be hosted? I'm pretty much done with the SH support for the
-> existing topic branch in -tip, but if it's being reworked, then I'd like
-> to get my changes reworked and integrated as soon as possible.
+On Fri, Oct 16, 2009 at 03:28:36PM -0400, Glauber Costa wrote:
+> When we migrate a kvm guest that uses pvclock between two hosts, we may
+> suffer a large skew. This is because there can be significant differences
+> between the monotonic clock of the hosts involved. When a new host with
+> a much larger monotonic time starts running the guest, the view of time
+> will be significantly impacted.
+> 
+> Situation is much worse when we do the opposite, and migrate to a host with
+> a smaller monotonic clock.
+> 
+> This proposed ioctl will allow userspace to inform us what is the monotonic
+> clock value in the source host, so we can keep the time skew short, and
+> more importantly, never goes backwards. Userspace may also need to trigger
+> the current data, since from the first migration onwards, it won't be
+> reflected by a simple call to clock_gettime() anymore.
+> 
+> [ v2: uses a struct with a padding ]
+> [ v3: provide an ioctl to get clock data too ]
+> [ v4: used fixed-width signed type for delta ]
+> [ v5: nitpick fixes, documentation update, and capability bit ]
+> 
+> Signed-off-by: Glauber Costa <glommer@redhat.com>
 
-
-Oh you have based SH breakpoint support on top of the current breakpoint
-API in -tip?
-
-Hm, you should have talked to us about that since it's being reworked.
-
-I'll probably post soon the rebase on top of perf events. And even if
-it gets merged in -tip, it should still be considered as very unstable.
-
-May be should you better wait for it to get upstream?
-
-
+Applied, thanks (the ioctl number changed though).
