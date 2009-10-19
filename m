@@ -1,131 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbZJSSKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbZJSSNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757199AbZJSSKI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 14:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbZJSSKH
+	id S932183AbZJSSNJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 14:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbZJSSNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 14:10:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38341 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755022AbZJSSKF (ORCPT
+	Mon, 19 Oct 2009 14:13:08 -0400
+Received: from aglcosbs04.cos.agilent.com ([192.25.218.38]:46288 "EHLO
+	aglcosbs04.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754861AbZJSSNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 14:10:05 -0400
-Date: Tue, 20 Oct 2009 03:09:57 +0900 (JST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Michael Neuling <mikey@neuling.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Characters vanishing in the tty layer? (maybe related to [Bug
- #14388] keyboard under X with 2.6.31)
-In-Reply-To: <1255934287.4192.125.camel@concordia>
-Message-ID: <alpine.LFD.2.00.0910200245330.13080@eeepc.linux-foundation.org>
-References: <1255501294.21962.24.camel@concordia>  <alpine.LFD.2.01.0910140748420.6146@localhost.localdomain> <1255934287.4192.125.camel@concordia>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 19 Oct 2009 14:13:07 -0400
+Message-ID: <4ADCAC33.4070908@agilent.com>
+Date: Mon, 19 Oct 2009 11:13:07 -0700
+From: Earl Chew <earl_chew@agilent.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/1]: fs: pipe.c null pointer dereference + sign off
+References: <4AD8852E.2090302@agilent.com>
+In-Reply-To: <4AD8852E.2090302@agilent.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Oct 2009 18:13:09.0739 (UTC) FILETIME=[D0646BB0:01CA50E7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[ Exactly as before, but with sign off ]
 
 
-On Mon, 19 Oct 2009, Michael Ellerman wrote:
-> 
-> As Benh said it's not really bisectable on our kernel. But I got Mikey
-> to bisect it on upstream using a different simulator model, and he
-> couldn't tie it down. It becomes easier to hit in more recent kernels
-> (since 27), but he could hit in 25 too.
+This patch fixes a null pointer exception in pipe_rdwr_open() which
+generates the stack trace:
 
-Ok, thanks to the verification.
 
-And I think I see why it got easier to hit lately, and to some degree I 
-think we can at least partially avoid it:
+ > Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
+ >  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
+ >  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
+ >  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
+ >  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
+ >  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
 
->       * hvc_console reads all our input and passes it to the tty code
->         via tty_insert_flip_char()
->       * flush_to_ldisc() runs calling n_tty_receive_buf(), which fills
->         4K of tty->read_buf
->       * Once read_buf is full, tty->receive_room becomes 0 and
->         flush_to_ldisc() reschedules itself to run again in 1 jiffy.
->       * Bash reads 1 character, causing receive_room to become 1.
->       * flush_to_ldisc() runs again and inserts 1 more char because
->         receive_room is now 1.
+This defect is also described in:
+   http://lkml.org/lkml/2009/10/14/184
+   http://bugzilla.kernel.org/show_bug.cgi?id=14416
 
-.. ok, I agree that our behavior in the "buffer full" case is likely not 
-wonderful. And that's especially true in the 'icanon' case..
 
->       * (repeat the last two steps a few times)
->       * Bash sets tty->icanon = 1 via n_tty_set_termios(), which calls
->         n_tty_set_room(). Because icanon is enabled, n_tty_set_room()
->         lies and says we have space for 1 character even though we
->         don't.
+The failure mode is triggered by an attempt to open an anonymous
+pipe via /proc/pid/fd/* as exemplified by this script:
 
-So just to clarify - icanon wasn't set before?
+=============================================================
+#!/bin/sh
+while : ; do
+    { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
+    PID=$!
+    OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
+         { read PID REST ; echo $PID; } )
+    OUT="${OUT%% *}"
+    DELAY=$((RANDOM * 1000 / 32768))
+    usleep $((DELAY * 1000 + RANDOM % 1000 ))
+    echo n > /proc/$OUT/fd/1                 # Trigger defect
+done
+=============================================================
 
->       * flush_to_ldisc() runs, sees that receive_room is 1 and calls
->         n_tty_receive_buf()
->       * n_tty_receive_buf() calls n_tty_receive_char() which drops the
->         character because there's no room (~ line 1132).
->       * We keep dropping characters until we see a newline, which
->         increments tty->canon_data, causing n_tty_set_room() to report 0
->         space left, and so flush_to_ldisc() reschedules again.
+Note that the failure window is quite small and I could only
+reliably reproduce the defect by inserting a small delay
+in pipe_rdwr_open(). For example:
 
-Did you have newlines in the big bulk dump?
+  static int
+  pipe_rdwr_open(struct inode *inode, struct file *filp)
+  {
+        msleep(100);
+        mutex_lock(&inode->i_mutex);
 
-If there really aren't any newlines, I don't think we can do a lot. icanon 
-handling kind of fundamentally doesn't work if there is no newline at all, 
-since it is all about line buffering, and we obviously have to limit the 
-lines _somewhere_.
 
-But I also thihk that we only update that whole 'canon_data' thing if we 
-_received_ the newlines while we were in icanon mode (but I didn't really 
-check very closely), so if we actually switch from -icanon to +icanon, I 
-think canon_data can be confused, and we thus handle the buffer-full case 
-worse than we _could_ have.
+Although the defect was observed in pipe_rdwr_open(), I think it
+makes sense to replicate the change through all the pipe_*_open()
+functions.
 
-> It's a bit unfortunate that n_tty_set_room() lies about the available
-> space when icanon = 1, but it makes sense in order to handle erase. It
-> would be nice if n_tty_receive_buf() returned a status to
-> flush_to_disc() to say "actually I could only fit X chars after all,
-> please take them back" - but I don't grok how that would play with all
-> the other logic in there.
+The core of the change is to verify that inode->i_pipe has not
+been released before attempting to manipulate it. If inode->i_pipe
+is no longer present, return ENOENT to indicate so.
 
-Yeah, I don't think that is even worth it. The thing is, we do have to 
-start dropping characters at some point, so trying to extend the non-drop 
-case just moves it somewhere else. If you are in canon mode, and the line 
-is longer than <some-number-that-happens-to-be-4kB>, you're basically 
-screwed.
+The comment about potentially using atomic_t for i_pipe->readers
+and i_pipe->writers has also been removed because it is no longer
+relevant in this context. The inode->i_mutex lock must be used so
+that inode->i_pipe can be dealt with correctly.
 
-But what we _might_ do is to handle the "turn on canon mode" case better, 
-in case the old buffer had newlines. IOW, instead of always setting 
-'canon_data' to 0 when icanon changes (and setting canon_head to the tail 
-of the data), maybe we should simply _count_ the number of newlines (and 
-set canon_head to the last one in the buffer).
 
-IOW, if you do have newlines in your bulk data before icanon got set, we 
-could probably make n_tty handle that case better.
+Signed-off-by: Earl Chew <earl_chew@agilent.com>
 
-That said, as far as I know, the tty layer behavior in this area has 
-basically always been the way it is. The fact that you can see it more 
-easily is almost certainly just related to just how the buffers that lead 
-up to flush_to_ldisc have grown, and are now allowed to fill up further. 
-So it probably got much easier to trigger, but it is likely not in any way 
-a really new case, and goes back not just to 2.6.25, but probably 
-forever...
 
-I wonder a bit what in your particular environment makes this problem show 
-up, but I assume that your simulation environment ends up just blindly 
-stuffing the tty buffers through the virtual console, so you basically 
-have "simulated typing" that was (a) started long before the reader was 
-interested in accepting it and (b) was a huge dump rather than what any 
-real load would be.
+--- linux-2.6.21_mvlcge500/fs/pipe.c.orig    2009-10-15 
+20:33:53.000000000 -0700
++++ linux-2.6.21_mvlcge500/fs/pipe.c    2009-10-15 21:21:25.000000000 -0700
+@@ -712,36 +712,55 @@ pipe_rdwr_release(struct inode *inode, s
+  static int
+  pipe_read_open(struct inode *inode, struct file *filp)
+  {
+-    /* We could have perhaps used atomic_t, but this and friends
+-       below are the only places.  So it doesn't seem worthwhile.  */
++    int ret = -ENOENT;
++
+      mutex_lock(&inode->i_mutex);
+-    inode->i_pipe->readers++;
++
++    if (inode->i_pipe) {
++        ret = 0;
++        inode->i_pipe->readers++;
++    }
++
+      mutex_unlock(&inode->i_mutex);
 
-But if you change n_tty_set_termios() to count newlines when it sets 
-icanon, you might get the behaviour you want, and it would seem to me to 
-be an improvement over what we have now, so I wouldn't object to it, even 
-if I suspect nobody else has ever cared, and would ever care in the 
-future.
+-    return 0;
++    return ret;
+  }
 
-			Linus
+  static int
+  pipe_write_open(struct inode *inode, struct file *filp)
+  {
++    int ret = -ENOENT;
++
+      mutex_lock(&inode->i_mutex);
+-    inode->i_pipe->writers++;
++
++    if (inode->i_pipe) {
++        ret = 0;
++        inode->i_pipe->writers++;
++    }
++
+      mutex_unlock(&inode->i_mutex);
+
+-    return 0;
++    return ret;
+  }
+
+  static int
+  pipe_rdwr_open(struct inode *inode, struct file *filp)
+  {
++    int ret = -ENOENT;
++
+      mutex_lock(&inode->i_mutex);
+-    if (filp->f_mode & FMODE_READ)
+-        inode->i_pipe->readers++;
+-    if (filp->f_mode & FMODE_WRITE)
+-        inode->i_pipe->writers++;
++
++    if (inode->i_pipe) {
++        ret = 0;
++        if (filp->f_mode & FMODE_READ)
++            inode->i_pipe->readers++;
++        if (filp->f_mode & FMODE_WRITE)
++            inode->i_pipe->writers++;
++    }
++
+      mutex_unlock(&inode->i_mutex);
+
+-    return 0;
++    return ret;
+  }
+
+  /*
+
+
+
+
+
