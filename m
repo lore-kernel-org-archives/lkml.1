@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932375AbZJSWBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932380AbZJSWEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932375AbZJSWBc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 18:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbZJSWBc
+	id S932380AbZJSWEY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 18:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932329AbZJSWEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 18:01:32 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:59575 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755446AbZJSWBb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 18:01:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=SfsMsBVwbcCXVSYOCxl/sPUnFU+/dO2Ea1syB6dzbO6G47AfS7tkCgvHQ5eZXhAM/U
-         n2hIk1uqP9ZzZ6osNHNoWpI0xGkE9FmQHZDeJ+eJwsFW+PSViLGQ9ui2pZM5NiCxWggf
-         5LxOhkEQ/TTzuIaBJ+ux+Tq7evIenSiAA57Ro=
-Date: Tue, 20 Oct 2009 00:01:31 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arnd Bergmann <arndbergmann@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH RFC] PPC-BRIQ_PANEL: Remove BKL and replace with atomic
-	variable.
-Message-ID: <20091019220129.GE4880@nowhere>
-References: <alpine.LFD.2.00.0910182137470.3462@localhost.localdomain> <alpine.LFD.2.00.0910190658070.4975@localhost.localdomain>
+	Mon, 19 Oct 2009 18:04:24 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45489 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755738AbZJSWEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 18:04:23 -0400
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1848U5Q0RQ4WXkbMN0cB/Cs4t6louJKKAa5SBxn/k
+	JX4l/3wSOFq4ow
+From: Peter Huewe <PeterHuewe@gmx.de>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH] staging/et131x:  adding __init/__exit macros
+Date: Tue, 20 Oct 2009 00:04:23 +0200
+User-Agent: KMail/1.9.10
+Cc: Jiri Kosina <jkosina@suse.cz>, Alan Cox <alan@linux.intel.com>,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+References: <200909290134.15295.PeterHuewe@gmx.de> <200910191724.45300.PeterHuewe@gmx.de> <20091019214351.GA15014@suse.de>
+In-Reply-To: <20091019214351.GA15014@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0910190658070.4975@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200910200004.23875.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.68
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 07:04:02AM +0200, Thomas Gleixner wrote:
-> B1;2005;0cOn Sun, 18 Oct 2009, John Kacur wrote:
-> 
-> > >From b64c7d0f11eab96cb253b23c7264c999746116c0 Mon Sep 17 00:00:00 2001
-> > From: John Kacur <jkacur@redhat.com>
-> > Date: Sun, 18 Oct 2009 21:29:21 +0200
-> > Subject: [PATCH] PPC-BRIQ_PANEL: Remove BKL and replace with atomic variable.
-> > 
-> > There are no locks here except the bkl in briq_panel_open. It's only
-> > purpose is to ensure single access. Remove the bkl and ensure single access
-> > by making vfd_is_open an atomic_variable.
-> 
-> And again, can you please look more carefully at the init
-> vs. read/write functions ?
-> 
-> The BKL is not only protecting the single user variable it's also
-> serializing write against the access to the display in init.
-> 
-> Thanks,
-> 
-> 	tglx
+Am Monday 19 October 2009 23:43:51 schrieb Greg KH:
+> These patches are still in my queue, sorry, been really busy, and am now
+> at the Linux kernel summit this week.  I should get to them next week
+> when I return.
+>
+> thanks for your patience,
+>
+> greg k-h
+
+Absolutely no problem - sorry for bugging you.
+
+Have a good time at the summit.
+Peter
 
 
-That could be solved by statically initializing vfd_is_open to -1
-and then set it to 0 once briq_panel_init has finished initializing
-the device.
-
-Another thing, I really don't see the point in this check in
-briq_panel_read() and briq_panel_write():
-
-	if (!vfd_is_open)
-		return -ENODEV;
-
-
-You can't read/write if vfd_is_open hasn't been set to 1 (open set)
-and you're not racing against the release callback since it is called
-after the file is closed.
-
-I guess this check can disappear from read/write callbacks.
-
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors"
+> in the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
