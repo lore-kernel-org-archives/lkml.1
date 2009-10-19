@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbZJSNlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbZJSNpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756220AbZJSNlG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 09:41:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbZJSNlF
+	id S1756209AbZJSNpH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 09:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756161AbZJSNpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 09:41:05 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:44631 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756183AbZJSNlD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 09:41:03 -0400
-Message-ID: <4ADC6C76.3040908@monstr.eu>
-Date: Mon, 19 Oct 2009 15:41:10 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, mingo@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
-       rostedt@goodmis.org, hpa@zytor.com, cebbert@redhat.com,
-       tony.luck@intel.com
-Subject: Re: [PATCH 13/16] percpu: remove per_cpu__ prefix.
-References: <1255500125-3210-1-git-send-email-tj@kernel.org> <1255500125-3210-14-git-send-email-tj@kernel.org> <alpine.DEB.1.10.0910141026370.26476@gentwo.org> <4AD6EA57.6020105@kernel.org> <4AD80CD6.7030204@monstr.eu> <4ADA845E.4080109@kernel.org>
-In-Reply-To: <4ADA845E.4080109@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 19 Oct 2009 09:45:06 -0400
+Received: from mga11.intel.com ([192.55.52.93]:42421 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755629AbZJSNpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 09:45:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,585,1249282800"; 
+   d="scan'208";a="505038271"
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
+ available
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Jan Beulich <JBeulich@novell.com>
+Cc: Thomas Schlichter <thomas.schlichter@web.de>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Tejun Heo <tj@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
+       Ingo Molnar <mingo@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       Thomas Hellstrom <thellstrom@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <4ADC4A76020000780001AA49@vpn.id2.novell.com>
+References: <4AD449A702000078000197EE@vpn.id2.novell.com>
+	 <200910142114.12433.thomas.schlichter@web.de>
+	 <4AD6EFD7020000780001A067@vpn.id2.novell.com>
+	 <200910172148.36267.thomas.schlichter@web.de>
+	 <4ADC4A76020000780001AA49@vpn.id2.novell.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Mon, 19 Oct 2009 06:44:34 -0700
+Message-Id: <1255959874.2823.46.camel@sbs-t61>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello, Sorry about the delay.
+On Mon, 2009-10-19 at 02:16 -0700, Jan Beulich wrote:
+> Functionality-wise this looks fine to me
 
-no worries about.
+If we are going to make ioremap() and set_memory_wc() add mtrr's in
+non-pat case, then we need to delete the added mtrr(s) in the
+corresponding iounmap() and set_memory_wb() aswell.
 
-> 
-> Michal Simek wrote:
->> where is git repo with that patches?
-> 
-> The patches are available in the following git tree.
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git unified-symbols
-> 
-> and the original thread at
-> 
->  http://thread.gmane.org/gmane.linux.kernel/902383
+hmm, this is becoming too complex. The way i915 and other graphics
+drivers are using set_memory_wc(), it is def a bad idea to start adding
+mtrr's behind the back for non-pat case.
 
-I compiled it there is no problem.
-I hope you will add these patches through linux-next which I test every day.
+Can't we just force PAT option always and we probably don't care about
+ioremap_wc() on processors were PAT doesn't get enabled because of known
+errata.
 
-Thanks,
-Michal
+or Perhaps just try to add mtrr only for the pci mmap case like the 4th
+patch in this series..
 
+thanks,
+suresh
 
-> 
-> Thanks.
-> 
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
