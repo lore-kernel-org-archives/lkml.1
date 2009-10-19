@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbZJSPIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932209AbZJSPJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932190AbZJSPIz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 11:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932165AbZJSPIy
+	id S932209AbZJSPJK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 11:09:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932195AbZJSPJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 11:08:54 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54693 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932160AbZJSPIx (ORCPT
+	Mon, 19 Oct 2009 11:09:09 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:12002 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932194AbZJSPJI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 11:08:53 -0400
-Date: Mon, 19 Oct 2009 11:08:56 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-cc: nut-upsuser@lists.alioth.debian.org, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31.4: USB/UPS connectivity issue on Intel DP55KG Motherboard
- [DEBUG logs included upsd/upsmon/usbhid-ups]
-In-Reply-To: <alpine.DEB.2.00.0910181732550.4761@p34.internal.lan>
-Message-ID: <Pine.LNX.4.44L0.0910191100050.3899-100000@iolanthe.rowland.org>
+	Mon, 19 Oct 2009 11:09:08 -0400
+X-IronPort-AV: E=Sophos;i="4.44,585,1249272000"; 
+   d="scan'208";a="7791043"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] mfd: Staticise __adp5520_ack_bits()
+Date: Mon, 19 Oct 2009 16:09:07 +0100
+Message-ID: <8A42379416420646B9BFAC9682273B6D0E695B8F@limkexm3.ad.analog.com>
+In-Reply-To: <1255963582-6796-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+thread-topic: [PATCH] mfd: Staticise __adp5520_ack_bits()
+thread-index: AcpQyvTwVYZTHMM2RzKBjAWIID/qygAArZ/Q
+References: <1255963582-6796-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "Mark Brown" <broonie@opensource.wolfsonmicro.com>,
+       "Samuel Ortiz" <sameo@linux.intel.com>,
+       "Mike Frysinger" <vapier@gentoo.org>, "Bryan Wu" <cooloney@kernel.org>
+CC: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 19 Oct 2009 15:09:09.0959 (UTC) FILETIME=[1C2BAD70:01CA50CE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Oct 2009, Justin Piszcz wrote:
+>From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
+>The function is not exported as the __ indicates. __
+>
+>Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-> Thanks Alan,
-> 
-> I have performed all of the steps you recommended, there is also a bug in
-> the docs, the directory seems to be different, or at least if you have
-> everything compiled into the kernel and not using modules.
 
-> Start nut:
-> # /etc/init.d/nut start
-> Starting Network UPS Tools: upsdrvctl upsd upsmon.
-> 
-> Within ~20-30 seconds it already broke:
-> ============================================================================
-> Broadcast Message from nut@p34.internal.lan
->          (somewhere) at 17:22 ...
+Acked-by: Michael Hennerich <michael.hennerich@analog.com>
 
-Well, the usbmon trace shows that wherever the problem lies, it isn't 
-in the kernel.  There were a few problems in the device itself -- it 
-was queried for a report and did not provide any data.  The nut program 
-should be smart enough to retry when this happens, but it didn't.
 
-It did try to re-establish communcation with the device, but it appears
-that nut got caught in a loop during this attempt.  During this loop
-nut did nothing but transfer a bunch of string descriptors from the
-device, over and over again at 2-second intervals.  The loop lasted for
-almost a minute, until another device error occurred.  Then nut
-recovered properly -- until a third error happened and nut got stuck in
-its loop again.
+>---
+> drivers/mfd/adp5520.c |    3 ++-
+> 1 files changed, 2 insertions(+), 1 deletions(-)
+>
+>diff --git a/drivers/mfd/adp5520.c b/drivers/mfd/adp5520.c
+>index 401a9b6..b266447 100644
+>--- a/drivers/mfd/adp5520.c
+>+++ b/drivers/mfd/adp5520.c
+>@@ -66,7 +66,8 @@ static int __adp5520_write(struct i2c_client *client,
+> 	return 0;
+> }
+>
+>-int __adp5520_ack_bits(struct i2c_client *client, int reg, uint8_t
+bit_mask)
+>+static int __adp5520_ack_bits(struct i2c_client *client, int reg,
+>+			      uint8_t bit_mask)
+> {
+> 	struct adp5520_chip *chip = i2c_get_clientdata(client);
+> 	uint8_t reg_val;
+>--
+>1.6.5
 
-Alan Stern
-
+-Michael
