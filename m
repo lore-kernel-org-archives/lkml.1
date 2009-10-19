@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932415AbZJSXZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbZJSXix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932415AbZJSXZo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 19:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932383AbZJSXZn
+	id S1757985AbZJSXix (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 19:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757950AbZJSXiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 19:25:43 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:36098 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932353AbZJSXZn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 19:25:43 -0400
-Date: Tue, 20 Oct 2009 08:24:32 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: hw-breakpoints: Actually flush thread breakpoints in flush_thread().
-Message-ID: <20091019232431.GB18597@linux-sh.org>
-References: <20091005102306.GA7889@linux-sh.org> <20091005104955.GA14852@in.ibm.com> <20091009034003.GA7747@linux-sh.org> <20091017234250.GC10344@nowhere> <20091018062558.GA20535@linux-sh.org> <20091019194842.GD4880@nowhere>
+	Mon, 19 Oct 2009 19:38:52 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:23277 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756045AbZJSXiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 19:38:51 -0400
+Message-ID: <4ADCF88B.9080402@redhat.com>
+Date: Tue, 20 Oct 2009 08:38:51 +0900
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091019194842.GD4880@nowhere>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Glauber Costa <glommer@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] v5: allow userspace to adjust kvmclock offset
+References: <1255721316-11777-1-git-send-email-glommer@redhat.com>
+In-Reply-To: <1255721316-11777-1-git-send-email-glommer@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 09:48:45PM +0200, Frederic Weisbecker wrote:
-> On Sun, Oct 18, 2009 at 03:25:58PM +0900, Paul Mundt wrote:
-> > Thanks. If you're setting up a tree somewhere can you let me know where
-> > it will be hosted? I'm pretty much done with the SH support for the
-> > existing topic branch in -tip, but if it's being reworked, then I'd like
-> > to get my changes reworked and integrated as soon as possible.
-> 
-> 
-> Oh you have based SH breakpoint support on top of the current breakpoint
-> API in -tip?
-> 
-> Hm, you should have talked to us about that since it's being reworked.
-> 
-Strange, I thought that's what I was doing ;-)
+On 10/17/2009 04:28 AM, Glauber Costa wrote:
+> When we migrate a kvm guest that uses pvclock between two hosts, we may
+> suffer a large skew. This is because there can be significant differences
+> between the monotonic clock of the hosts involved. When a new host with
+> a much larger monotonic time starts running the guest, the view of time
+> will be significantly impacted.
+>
+> Situation is much worse when we do the opposite, and migrate to a host with
+> a smaller monotonic clock.
+>
+> This proposed ioctl will allow userspace to inform us what is the monotonic
+> clock value in the source host, so we can keep the time skew short, and
+> more importantly, never goes backwards. Userspace may also need to trigger
+> the current data, since from the first migration onwards, it won't be
+> reflected by a simple call to clock_gettime() anymore.
+>
+> +struct kvm_clock_data {
+> +	__u64 clock;
+> +	__u64 pad[2];
+> +};
+> +
+>    
 
-> I'll probably post soon the rebase on top of perf events. And even if
-> it gets merged in -tip, it should still be considered as very unstable.
-> 
-> May be should you better wait for it to get upstream?
-> 
-I wanted to get the initial support out of the way early to see if there
-was anything in the generic code that needed work, but apart from some
-minor stuff it's been kept fairly well isolated. The SH support I have
-works fine, but isn't a lot of code, and can trivially be reworked on top
-of whatever the new interface looks like. I've left out things like
-ptrace and kgdb stub integration precisely because I knew the code was
-being reworked.
+The padding is not reusable without a flags word that we can set bits in 
+for extended functionality.  Please add one (and a check that it is 
+zero, or -EINVAL).
 
-Given that, I'm not in any particular rush, so whenever the reworked
-patches are available, I'll give them a run and rebase accordingly.
+Since it was already applied, please do it as an incremental patch.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
