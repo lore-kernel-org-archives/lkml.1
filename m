@@ -1,93 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757962AbZJSVee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757894AbZJSVfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757962AbZJSVee (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 17:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757945AbZJSVec
+	id S1757894AbZJSVfg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 17:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757763AbZJSVff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 17:34:32 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:1780 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757838AbZJSVeb (ORCPT
+	Mon, 19 Oct 2009 17:35:35 -0400
+Received: from aglcosbs02.cos.agilent.com ([192.25.218.39]:43500 "EHLO
+	aglcosbs02.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757723AbZJSVff (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 17:34:31 -0400
-Subject: [PATCH 5/5] Documentation: ABI: document /sys/devices/system/cpu/
-To: akpm@linux-foundation.org
-From: Alex Chiang <achiang@hp.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Date: Mon, 19 Oct 2009 15:34:35 -0600
-Message-ID: <20091019213435.32729.81751.stgit@bob.kio>
-In-Reply-To: <20091019212740.32729.7171.stgit@bob.kio>
-References: <20091019212740.32729.7171.stgit@bob.kio>
-User-Agent: StGit/0.14.3.386.gb02d
+	Mon, 19 Oct 2009 17:35:35 -0400
+Message-ID: <4ADCDB9A.7050701@agilent.com>
+Date: Mon, 19 Oct 2009 14:35:22 -0700
+From: Earl Chew <earl_chew@agilent.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v3 1/1]: fs: pipe.c null pointer dereference + sign off +
+ unmangled diffs
+References: <4AD8852E.2090302@agilent.com> <4ADCAC33.4070908@agilent.com>
+In-Reply-To: <4ADCAC33.4070908@agilent.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Oct 2009 21:35:25.0594 (UTC) FILETIME=[11ECEFA0:01CA5104]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This interface has been around for a long time, but hasn't been
-officially documented.
+[ Exactly as before, but with sign off and tabs preserved ]
 
-Since I wanted to extend the ABI, I figured I would document what
-already existed.
+This patch fixes a null pointer exception in pipe_rdwr_open() which
+generates the stack trace:
 
-Cc: Greg KH <greg@kroah.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
 
- Documentation/ABI/testing/sysfs-devices-cpu |   42 +++++++++++++++++++++++++++
- 1 files changed, 42 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-devices-cpu
+> Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
+>  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
+>  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
+>  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
+>  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
+>  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-cpu b/Documentation/ABI/testing/sysfs-devices-cpu
-new file mode 100644
-index 0000000..9070889
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-devices-cpu
-@@ -0,0 +1,42 @@
-+What:		/sys/devices/system/cpu/
-+Date:		October 2009
-+Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+Description:
-+		A collection of CPU attributes, including cache information,
-+		topology, and frequency. It also contains a mechanism to
-+		logically hotplug CPUs.
+
+The failure mode is triggered by an attempt to open an anonymous
+pipe via /proc/pid/fd/* as exemplified by this script:
+
+=============================================================
+#!/bin/sh
+while : ; do
+   { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
+   PID=$!
+   OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
+        { read PID REST ; echo $PID; } )
+   OUT="${OUT%% *}"
+   DELAY=$((RANDOM * 1000 / 32768))
+   usleep $((DELAY * 1000 + RANDOM % 1000 ))
+   echo n > /proc/$OUT/fd/1                 # Trigger defect
+done
+=============================================================
+
+Note that the failure window is quite small and I could only
+reliably reproduce the defect by inserting a small delay
+in pipe_rdwr_open(). For example:
+
+ static int
+ pipe_rdwr_open(struct inode *inode, struct file *filp)
+ {
+       msleep(100);
+       mutex_lock(&inode->i_mutex);
+
+
+Although the defect was observed in pipe_rdwr_open(), I think it
+makes sense to replicate the change through all the pipe_*_open()
+functions.
+
+The core of the change is to verify that inode->i_pipe has not
+been released before attempting to manipulate it. If inode->i_pipe
+is no longer present, return ENOENT to indicate so.
+
+The comment about potentially using atomic_t for i_pipe->readers
+and i_pipe->writers has also been removed because it is no longer
+relevant in this context. The inode->i_mutex lock must be used so
+that inode->i_pipe can be dealt with correctly.
+
+
+
+--- linux-2.6.21_mvlcge500/fs/pipe.c.orig	2009-10-15 20:33:53.000000000 -0700
++++ linux-2.6.21_mvlcge500/fs/pipe.c	2009-10-15 21:21:25.000000000 -0700
+@@ -712,36 +712,55 @@ pipe_rdwr_release(struct inode *inode, s
+ static int
+ pipe_read_open(struct inode *inode, struct file *filp)
+ {
+-	/* We could have perhaps used atomic_t, but this and friends
+-	   below are the only places.  So it doesn't seem worthwhile.  */
++	int ret = -ENOENT;
 +
-+		The actual attributes present are architecture and
-+		configuration dependent.
+ 	mutex_lock(&inode->i_mutex);
+-	inode->i_pipe->readers++;
 +
++	if (inode->i_pipe) {
++		ret = 0;
++		inode->i_pipe->readers++;
++	}
 +
-+What:		/sys/devices/system/cpu/$cpu/online
-+Date:		January 2006
-+Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+Description:
-+		When CONFIG_HOTPLUG_CPU is enabled, allows the user to
-+		discover and change the online state of a CPU. To discover
-+		the state:
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static int
+ pipe_write_open(struct inode *inode, struct file *filp)
+ {
++	int ret = -ENOENT;
 +
-+		cat /sys/devices/system/cpu/$cpu/online
+ 	mutex_lock(&inode->i_mutex);
+-	inode->i_pipe->writers++;
 +
-+		A value of 0 indicates the CPU is offline. A value of 1
-+		indicates it is online. To change the state, echo the
-+		desired new state into the file:
++	if (inode->i_pipe) {
++		ret = 0;
++		inode->i_pipe->writers++;
++	}
 +
-+		echo [0|1] > /sys/devices/system/cpu/$cpu/online
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static int
+ pipe_rdwr_open(struct inode *inode, struct file *filp)
+ {
++	int ret = -ENOENT;
 +
-+		For more information, please read Documentation/cpu-hotplug.txt
+ 	mutex_lock(&inode->i_mutex);
+-	if (filp->f_mode & FMODE_READ)
+-		inode->i_pipe->readers++;
+-	if (filp->f_mode & FMODE_WRITE)
+-		inode->i_pipe->writers++;
 +
++	if (inode->i_pipe) {
++		ret = 0;
++		if (filp->f_mode & FMODE_READ)
++			inode->i_pipe->readers++;
++		if (filp->f_mode & FMODE_WRITE)
++			inode->i_pipe->writers++;
++	}
 +
-+What:		/sys/devices/system/cpu/$cpu/node
-+Date:		October 2009
-+Contact:	Linux memory management mailing list <linux-mm@kvack.org>
-+Description:
-+		When CONFIG_NUMA is enabled, a symbolic link that points
-+		to the corresponding NUMA node directory.
-+
-+		For example, the following symlink is created for cpu42
-+		in NUMA node 2:
-+
-+		/sys/devices/system/cpu/cpu42/node2 -> ../../node/node2
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ /*
+
+
+
 
