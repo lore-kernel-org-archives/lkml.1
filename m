@@ -1,41 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbZJSPMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbZJSPNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbZJSPMv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 11:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbZJSPMu
+	id S1756683AbZJSPNT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 11:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbZJSPNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 11:12:50 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:56921 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756651AbZJSPMu (ORCPT
+	Mon, 19 Oct 2009 11:13:18 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:40102 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756651AbZJSPNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 11:12:50 -0400
-Date: Mon, 19 Oct 2009 16:12:52 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Jaroslav Kysela <perex@perex.cz>,
-       Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/14] sound/soc: Move dereference after NULL test
-Message-ID: <20091019151251.GB29796@sirena.org.uk>
-References: <Pine.LNX.4.64.0910170832300.9213@ask.diku.dk>
+	Mon, 19 Oct 2009 11:13:17 -0400
+Date: Mon, 19 Oct 2009 11:13:22 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31.4: USB/UPS connectivity issue on Intel DP55KG Motherboard
+ [DEBUG logs included upsd/upsmon/usbhid-ups]
+In-Reply-To: <alpine.DEB.2.00.0910191048000.7710@p34.internal.lan>
+Message-ID: <Pine.LNX.4.44L0.0910191110020.3899-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0910170832300.9213@ask.diku.dk>
-X-Cookie: BOFH excuse
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 17, 2009 at 08:32:56AM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> If the NULL test on jack is needed, then the derefernce should be after the
-> NULL test.
+On Mon, 19 Oct 2009, Justin Piszcz wrote:
 
-Applied, thanks.
+> >> The kernel documentation is outdated:
+> >>
+> >> # ls /sys/kernel/debug/usbmon
+> >> 0s  0u  1s  1t  1u  2s  2t  2u  3s  3t  3u  4s  4t  4u
+> >> #
+> >>
+> >> The directory is:
+> >> # ls /sys/kernel/debug/usb/usbmon
+> >> 0s  0u  1s  1t  1u  2s  2t  2u
+> >
+> > This has already been corrected in the 2.6.32-rc kernels.
+> Great to hear, I will try the latest 2.6.31-rcX kernel!
+
+It looks like you misunderstood.  I was referring to the 2.6.32-rc 
+kernels, not 2.6.31-rc.  In particular, check out this commit:
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=f0cc82a831d4d839eb6b67c7c046ebd2d1d7c4c2
+
+> Hi,
+> 
+> Sure, what I meant is:
+> 
+> usbmon.txt states:
+> /sys/kernel/debug/usbmon/3u
+>              ^^^^^
+> 
+> Actual location:
+> /sys/kernel/debug/usb/usbmon/3u
+>              ^^^^^^^^^
+
+Yes, I know.
+
+> Patch below (and attached):
+
+As I said, this correction has already been made.
+
+Alan Stern
+
