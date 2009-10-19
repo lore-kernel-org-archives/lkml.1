@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZJSM7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbZJSNId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604AbZJSM7y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 08:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZJSM7x
+	id S1756095AbZJSNId (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 09:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbZJSNId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 08:59:53 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:55870 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbZJSM7x convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 08:59:53 -0400
-From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 3/4] ASoC: TWL4030: Only update the needed bits in *set_dai_sysclk
-Date: Mon, 19 Oct 2009 15:59:38 +0300
-User-Agent: KMail/1.12.2 (Linux/2.6.31-gentoo; KDE/4.3.2; i686; ; )
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "sameo@linux.intel.com" <sameo@linux.intel.com>,
-       "tony@atomide.com" <tony@atomide.com>
-References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com> <1255956140-4829-4-git-send-email-peter.ujfalusi@nokia.com> <20091019125507.GA1417@rakim.wolfsonmicro.main>
-In-Reply-To: <20091019125507.GA1417@rakim.wolfsonmicro.main>
+	Mon, 19 Oct 2009 09:08:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54623 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753410AbZJSNIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 09:08:32 -0400
+Date: Mon, 19 Oct 2009 15:08:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robin Holt <holt@sgi.com>
+Cc: tglx@linutronix.de, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Martin Hicks <mort@sgi.com>
+Subject: Re: [patch 1/1] x86, UV: uv_hub_send_ipi Needs to set
+	DELIVERY_MODE=4 for vector=NMI_VECTOR.
+Message-ID: <20091019130821.GC9030@elte.hu>
+References: <20091019091854.696198000@alcatraz.americas.sgi.com> <20091019091919.050247000@alcatraz.americas.sgi.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200910191559.38478.peter.ujfalusi@nokia.com>
-X-OriginalArrivalTime: 19 Oct 2009 12:59:42.0021 (UTC) FILETIME=[061E6750:01CA50BC]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091019091919.050247000@alcatraz.americas.sgi.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 October 2009 15:55:08 ext Mark Brown wrote:
-> On Mon, Oct 19, 2009 at 03:42:19PM +0300, Peter Ujfalusi wrote:
-> > +	apll_ctrl = twl4030_read_reg_cache(codec, TWL4030_REG_APLL_CTL);
-> > +	apll_ctrl &= ~TWL4030_APLL_INFREQ;
-> >  	switch (freq) {
-> 
-> I'll apply this - it's idiomatic for the current driver - but you might
-> want to look at snd_soc_update_bits() which does a read/modify/write
-> cycle for you.
-> 
 
-Yeah, it is a good idea.
-I'll address this when I go through the soc codec driver in my planned revisit 
-and cleanup round quite soon.
+* Robin Holt <holt@sgi.com> wrote:
 
-Thanks,
-Péter
+> When sending a NMI_VECTOR IPI using the UV_HUB_IPI_INT register,
+> we need to ensure the delivery mode field of that register has NMI
+> delivery selected.
+> 
+> To: Ingo Molnar <mingo@elte.hu>
+> To: tglx@linutronix.de
+> Signed-off-by: Robin Holt <holt@sgi.com>
+> Acked-by: Jack Steiner <steiner@sgi.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: stable@kernel.org
+> Cc: Martin Hicks <mort@sgi.com>
+> 
+> ---
+>  arch/x86/include/asm/uv/uv_hub.h |    6 ++++++
+>  1 file changed, 6 insertions(+)
+> Index: linux-x86/arch/x86/include/asm/uv/uv_hub.h
+> ===================================================================
+> --- linux-x86.orig/arch/x86/include/asm/uv/uv_hub.h	2009-10-19 04:07:07.000000000 -0500
+> +++ linux-x86/arch/x86/include/asm/uv/uv_hub.h	2009-10-19 04:07:09.000000000 -0500
+> @@ -19,6 +19,7 @@
+>  #include <asm/types.h>
+>  #include <asm/percpu.h>
+>  #include <asm/uv/uv_mmrs.h>
+> +#include <asm/irq_vectors.h>
+>  
+>  
+>  /*
+> @@ -435,9 +436,14 @@ static inline void uv_set_cpu_scir_bits(
+>  static inline void uv_hub_send_ipi(int pnode, int apicid, int vector)
+>  {
+>  	unsigned long val;
+> +	unsigned long dmode = 0; /* Directed Delivery */
+> +
+> +	if (vector == NMI_VECTOR)
+> +		dmode = 4; /* NMI Delivery */
+>  
+>  	val = (1UL << UVH_IPI_INT_SEND_SHFT) |
+>  			((apicid) << UVH_IPI_INT_APIC_ID_SHFT) |
+> +			(dmode << UVH_IPI_INT_DELIVERY_MODE_SHFT) |
+>  			(vector << UVH_IPI_INT_VECTOR_SHFT);
+>  	uv_write_global_mmr64(pnode, UVH_IPI_INT, val);
+
+Hm, would be cleaner to create an enum for that '4' (and for 0) in 
+uv_mmrs.h and use it here. (We have similar constants for delivery modes 
+in io_apic.h, see dest_*.)
+
+	Ingo
