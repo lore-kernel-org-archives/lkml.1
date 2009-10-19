@@ -1,70 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752371AbZJSL5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbZJSMGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752371AbZJSL5R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 07:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZJSL5Q
+	id S1755056AbZJSMGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 08:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZJSMGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 07:57:16 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:43954 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752212AbZJSL5P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 07:57:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=b5UyfmW1s0bdZksZwoQwuwXMPgg1fvkFzc6VhTDrhqgCt4tok/B/SzNjdrea2/NVfI
-         hAspgGeBTNSQFTKXfDAkxIHd0K4romf304HyrK+I0YGnwijaU/SotKLV1F9wxHZ8DVBt
-         sz0FXI6roJjKEF1q95VgY1uNA/NeCmMDJgy2A=
-Date: Mon, 19 Oct 2009 11:57:13 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk, davem@davemloft.net,
-       satoshi.oshima.fk@hitachi.com, hidehiro.kawai.ez@hitachi.com,
-       hideo.aoki.tk@hitachi.com
-Subject: Re: [PATCH] AF_UNIX: Fix deadlock on connecting to shutdown socket
-Message-ID: <20091019115713.GB6869@ff.dom.local>
+	Mon, 19 Oct 2009 08:06:18 -0400
+Received: from web25606.mail.ukl.yahoo.com ([217.12.10.165]:47669 "HELO
+	web25606.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752492AbZJSMGS convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 08:06:18 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 08:06:17 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=WCEQ5Rl0gn6md9h97+E4muCRUS4WVrXNN61GmDy6GQ+QPVYPnm6+VqevAtJK0mtThRkpCQDUXGrtqYS1UVCMt+DRPP+Gs9Tk5QelxUBv83ZVVTDzLJynlnolc8bYeTSqSg9ThdqhqH5KHPE4Ayg4wmBOPOwiQVAfiVmN4PllC2o=;
+Message-ID: <875665.27410.qm@web25606.mail.ukl.yahoo.com>
+X-YMail-OSG: vzxjLB4VM1mwWyEk2OcjWIVXEuQ0fBt3u1oEP7_hSDOPN2Dsg1QE3ANVab4MzMKjzekLoPO21YDoPLaHeRAbDRS9CY.pmJoxBzyGajc2isZZh97P5DsUjDoSSQfa2kV1A5_90GBIhb7wInEd.oCNC6gEXN7s3Yf3aQYS2p4iR344OEc8yLSYy03PCA0UAsOVavJKdJxTWsPN78VttjfCGncXsALTU.zKuPGmdqGjPcgmEsL4mx2kT9UO7YoYhx5b2zwODy3o3Loky6.oqp1P8n5wgGNQHKW97PL.oHtpjzfh7RewQ38sdaNNR8IqLNYtI_jGTUsQrntDHU6FYN4njkmA4saa5zS4uVS6gVE-
+X-Mailer: YahooMailRC/182.10 YahooMailWebService/0.7.361.3
+Date: Mon, 19 Oct 2009 11:59:41 +0000 (GMT)
+From: Romont Sylvain <psgman24@yahoo.fr>
+Subject: ISDB-T tuner
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ADC010C.5070809@hitachi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19-10-2009 08:02, Tomoki Sekiyama wrote:
-...
-> Why this happens:
->  Error checks between unix_socket_connect() and unix_wait_for_peer() are
->  inconsistent. The former calls the latter to wait until the backlog is
->  processed. Despite the latter returns without doing anything when the
->  socket is shutdown, the former doesn't check the shutdown state and
->  just retries calling the latter forever.
-> 
-> Patch:
->  The patch below adds shutdown check into unix_socket_connect(), so
->  connect(2) to the shutdown socket will return -ECONREFUSED.
-> 
-> Signed-off-by: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
-> Signed-off-by: Masanori Yoshida <masanori.yoshida.tv@hitachi.com>
-> ---
->  net/unix/af_unix.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
-> index 51ab497..fc820cd 100644
-> --- a/net/unix/af_unix.c
-> +++ b/net/unix/af_unix.c
-> @@ -1074,6 +1074,8 @@ restart:
->  	err = -ECONNREFUSED;
->  	if (other->sk_state != TCP_LISTEN)
->  		goto out_unlock;
-> +	if (other->sk_shutdown & RCV_SHUTDOWN)
-> +		goto out_unlock;
+Hello!
 
-Isn't the shutdown call expected to change sk_state to TCP_CLOSE?
+I actually live in Japan, I try to make working a tuner card ISDB-T with
+linux. I searched a lot in internet but I find nothing....
+How can I make it working?
+My tuner card is a Pixela PIXDT090-PE0
+in picture here:  http://bbsimg01.kakaku.com/images/bbs/000/208/208340_m.jpg
 
-Jarek P.
+Thank you for your help!!!
+
+
+ROMONT Sylvain
+
+
+      
