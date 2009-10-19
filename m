@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbZJSOOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbZJSOO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756343AbZJSOOv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 10:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756325AbZJSOOu
+	id S1756389AbZJSOO5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 10:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756364AbZJSOO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 10:14:50 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35955 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756267AbZJSOOt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 10:14:49 -0400
-Date: Mon, 19 Oct 2009 10:14:54 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
+	Mon, 19 Oct 2009 10:14:56 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42887 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756355AbZJSOOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 10:14:54 -0400
+Date: Mon, 19 Oct 2009 16:14:57 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
 To: Felipe Contreras <felipe.contreras@gmail.com>
-cc: Jiri Kosina <jkosina@suse.cz>, <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Sarah Sharp <sarah.a.sharp@linux.intel.com>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH 1/7] usb: trivial cleanups
-In-Reply-To: <94a0d4530910190703q1a0e2a6ar4cf74a68d7bc339f@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0910191014160.3899-100000@iolanthe.rowland.org>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 6/7] acpi: fix trivial warning
+In-Reply-To: <1255906474-25091-7-git-send-email-felipe.contreras@gmail.com>
+Message-ID: <alpine.LSU.2.00.0910191614150.8582@wotan.suse.de>
+References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com> <1255906474-25091-7-git-send-email-felipe.contreras@gmail.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Mon, 19 Oct 2009, Felipe Contreras wrote:
 
-> >> AFAIK the code is perfectly correct as it is, I think the fact that
-> >> gcc 4.4 complains is a bug on gcc side.
-> >
-> > Yes, it is a well-known bug in gcc.  Other places in the kernel get
-> > similar warnings.
-> 
-> So gcc guys are aware of this? Is there a bug report or something?
+> drivers/acpi/acpica/tbfadt.c: In function ?acpi_tb_create_local_fadt?:
+> arch/x86/include/asm/string_32.h:74: warning: array subscript is above array bounds
 
-I don't know.  You should ask them.
+Same is in your previous patch -- what gcc is that? I don't see any 
+warning with 4.3.1
 
-Alan Stern
+$ make drivers/acpi/acpica/tbfadt.o
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CALL    scripts/checksyscalls.sh
+  CC      drivers/acpi/acpica/tbfadt.o
+$
 
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
