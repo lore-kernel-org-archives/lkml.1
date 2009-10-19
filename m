@@ -1,126 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbZJSQaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbZJSQTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756938AbZJSQaS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 12:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbZJSQaR
+	id S1756889AbZJSQTO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 12:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbZJSQTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 12:30:17 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:52652 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756856AbZJSQaO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 12:30:14 -0400
-Date: Tue, 20 Oct 2009 01:18:15 +0900
-From: Chris Mason <chris.mason@oracle.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Frans Pop <elendil@planet.nl>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Message-ID: <20091019161815.GA11487@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Mel Gorman <mel@csn.ul.ie>, Frans Pop <elendil@planet.nl>,
-	David Rientjes <rientjes@google.com>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	Reinette Chatre <reinette.chatre@intel.com>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-	Mohamed Abbas <mohamed.abbas@intel.com>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	"John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
- <20091014103002.GA5027@csn.ul.ie>
- <200910141510.11059.elendil@planet.nl>
- <200910190133.33183.elendil@planet.nl>
- <20091019140151.GC9036@csn.ul.ie>
+	Mon, 19 Oct 2009 12:19:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1485 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754892AbZJSQTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 12:19:13 -0400
+Date: Mon, 19 Oct 2009 14:18:24 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
+	probe and kprobe-tracer bugfixes
+Message-ID: <20091019161824.GA10449@ghostprotocols.net>
+References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <20091017080203.GA4155@elte.hu> <20091017103427.GA31238@elte.hu> <4ADAAF50.9040604@redhat.com> <20091019075103.GF17960@elte.hu> <20091019110055.GA5549@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091019140151.GC9036@csn.ul.ie>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4ADC915D.012C:SCFMA4539814,ss=1,fgs=0
+In-Reply-To: <20091019110055.GA5549@nowhere>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 03:01:52PM +0100, Mel Gorman wrote:
-> 
-> > During the 2nd phase I see the first SKB allocation errors with a music 
-> > skip between reading commits 95.000 and 110.000.
-> > About commit 115.000 there is a very long pause during which the counter 
-> > does not increase, music stops and the desktop freezes completely. The 
-> > first 30 seconds of that freeze there is only very low disk activity (which 
-> > seems strange);
-> 
-> I'm just going to have to depend on Jens here. Jens, the congestion_wait() is
-> on BLK_RW_ASYNC after the commit. Reclaim usually writes pages asynchronously
-> but lumpy reclaim actually waits of pages to write out synchronously so
-> it's not always async.
+Em Mon, Oct 19, 2009 at 01:00:57PM +0200, Frederic Weisbecker escreveu:
+> On Mon, Oct 19, 2009 at 09:51:03AM +0200, Ingo Molnar wrote:
+> > > So, what would you think about using -D (def) and -U (undef) ?
+> > The simpest case should be no extra character at all:
+> >   perf probe schedule
+> Yeah, I really prefer that too.
 
-Waiting doesn't make it synchronous from the elevator point of view ;)
-If you're using WB_SYNC_NONE, it's a async write.  WB_SYNC_ALL makes it
-a sync write.  I only see WB_SYNC_NONE in vmscan.c, so we should be
-using the async congestion wait.  (the exception is xfs which always
-does async writes).
+/me too
+ 
+> If you want more precision, it also means you have you code editor opened
+> and want to set a precise point. Since you also have the absolute
+> line directly displayed by your editor, you don't want to calculate the relative
+> line but rather the absolute one.
 
-But I'm honestly not 100% sure.  Looking back through the emails, the
-test case is doing IO on top of a whole lot of things on top of
-dm-crypt?  I just tried to figure out if dm-crypt is turning the async
-IO into sync IOs, but didn't quite make sense of it.
+Perhaps this should come with vim/emacs key bindings so that all this
+gets hidden by just opening the source code and pressing
+control+SOMEKEY?
 
-Could you also please include which filesystems were being abused during
-the test and how?  Reading through the emails, I think you've got:
-
-gitk being run 3 times on some FS (NFS?)
-streaming reads on NFS
-swap on dm-crypt
-
-If other filesystems are being used, please correct me.  Also please
-include if they are on crypto or straight block device.
-
-> 
-> Either way, reclaim is usually worried about writing pages but it would appear
-> after this change that a lot of read activity can also stall a process in
-> direct reclaim. What might be happening in Frans's particular case is that the
-> tasklet that allocates high-order pages for the RX buffers is getting stalled
-> by congestion caused by other processes doing reads from the filesystem.
-> While it makes sense from a congestion point of view to halt the IO, the
-> reclaim operations from direct reclaimers is getting delayed for long enough
-> to cause problems for GFP_ATOMIC.
-
-The congestion_wait code either waits for congestion to clear or for
-a given timeout.  The part that isn't clear is if before the patch
-we waited a very short time (congestion cleared quickly) or a very long
-time (we hit the timeout or congestion cleared slowly).
-
-The easiest way to tell is to just replace the congestion_wait() calls
-in direct reclaim with schedule_timeout_interruptible(10), test, then
-schedule_timeout_interruptible(HZ/20), then test again.
-
-> 
-> Does this sound plausible to you? If so, what's the best way of
-> addressing this? Changing congestion_wait back to WRITE (assuming that
-> works for Frans)? Changing it to SYNC (again, assuming it actually
-> works) or a revert?
-
-I don't think changing it to SYNC is a good plan unless we're actually
-doing sync io.  It would be better to just wait on one of the pages that
-you've sent down (or its hashed waitqueue since the page can go away).
-
--chris
-
+- Arnaldo
