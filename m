@@ -1,530 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbZJSO7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbZJSO74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756559AbZJSO7y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 10:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbZJSO7w
+	id S1756581AbZJSO74 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 10:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbZJSO7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 10:59:52 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:49432 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756367AbZJSO7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 10:59:47 -0400
-Date: Mon, 19 Oct 2009 15:59:54 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Tobias Oetiker <tobi@oetiker.ch>
-Cc: Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
-       jens.axboe@oracle.com
-Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
-Message-ID: <20091019145954.GH9036@csn.ul.ie>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910190133.33183.elendil@planet.nl> <1255912562.6824.9.camel@penberg-laptop> <200910190444.55867.elendil@planet.nl> <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu> <20091019133146.GB9036@csn.ul.ie> <alpine.DEB.2.00.0910191538450.8526@sebohet.brgvxre.pu> <20091019140957.GE9036@csn.ul.ie> <alpine.DEB.2.00.0910191613580.8526@sebohet.brgvxre.pu>
+	Mon, 19 Oct 2009 10:59:55 -0400
+Received: from fmmailgate06.web.de ([217.72.192.247]:33564 "EHLO
+	fmmailgate06.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756522AbZJSO7y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 10:59:54 -0400
+X-Greylist: delayed 767 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 10:59:54 EDT
+Date: Mon, 19 Oct 2009 16:59:57 +0200
+Message-Id: <1392906098@web.de>
 MIME-Version: 1.0
+From: Thomas Schlichter <thomas.schlichter@web.de>
+To: Jan Beulich <JBeulich@novell.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: arjan@linux.intel.com, dri-devel@lists.sourceforge.net,
+       hancockrwd@gmail.com, hmh@hmh.eng.br, hpa@zytor.com,
+       jbarnes@virtuousgeek.org, jeremy.fitzhardinge@citrix.com,
+       linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de,
+       thellstrom@vmware.com, tj@kernel.org, venkatesh.pallipadi@intel.com,
+       x86@kernel.org, yinghai@kernel.org
+Subject: =?iso-8859-15?Q?Re:_[RFC_Patch]_use_MTRR_for_write_combining_if_PAT_is?=
+ =?iso-8859-15?Q?_not_available?=
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1/PFL7tc7ax6SUUNgFtX/zjj4XvYsEOulZhcAVgGD1+eypZl
+ bwrmWL9oB8qqc8aj3TT06ipqc1VCn7a64jalJMG1eor/N18uO5d7C1XxxNu9
+ Q==
 Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910191613580.8526@sebohet.brgvxre.pu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 04:16:36PM +0200, Tobias Oetiker wrote:
-> Hi Mel,
+Suresh Siddha wrote:
+> If we are going to make ioremap() and set_memory_wc() add mtrr's in
+> non-pat case, then we need to delete the added mtrr(s) in the
+> corresponding iounmap() and set_memory_wb() aswell.
 > 
-> Today Mel Gorman wrote:
-> 
-> > On Mon, Oct 19, 2009 at 03:40:05PM +0200, Tobias Oetiker wrote:
-> > > Hi Mel,
-> > >
-> > > Today Mel Gorman wrote:
-> > >
-> > > > On Mon, Oct 19, 2009 at 11:49:08AM +0200, Tobi Oetiker wrote:
-> > > > > Today Frans Pop wrote:
-> > > > >
-> > > > > >
-> > > > > > I'm starting to think that this commit may not be directly related to high
-> > > > > > order allocation failures. The fact that I'm seeing SKB allocation
-> > > > > > failures earlier because of this commit could be just a side effect.
-> > > > > > It could be that instead the main impact of this commit is on encrypted
-> > > > > > file system and/or encrypted swap (kcryptd).
-> > > > > >
-> > > > > > Besides mm the commit also touches dm-crypt (and nfs/write.c, but as I'm
-> > > > > > only reading from NFS that's unlikely).
-> > > > >
-> > > > > I have updated a fileserver to 2.6.31 today and I see page
-> > > > > allocation failures from several parts of the system ... mostly nfs though ... (it is a nfs server).
-> > > > > So I guess the problem must be quite generic:
-> > > > >
-> > > > >
-> > > > > Oct 19 07:10:02 johan kernel: [23565.684110] swapper: page allocation failure. order:5, mode:0x4020 [kern.warning]
-> > > > > Oct 19 07:10:02 johan kernel: [23565.684118] Pid: 0, comm: swapper Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
-> > > > > Oct 19 07:10:02 johan kernel: [23565.684121] Call Trace: [kern.warning]
-> > > > > Oct 19 07:10:02 johan kernel: [23565.684124]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
-> > > > >
-> > > >
-> > > > What's the rest of the stack trace? I'm wondering where a large number
-> > > > of order-5 GFP_ATOMIC allocations are coming from. It seems different to
-> > > > the e100 problem where there is one GFP_ATOMIC allocation while the
-> > > > firmware is being loaded.
-> > >
-> > > Oct 19 07:10:02 johan kernel: [23565.684110] swapper: page allocation failure. order:5, mode:0x4020 [kern.warning]
-> > > Oct 19 07:10:02 johan kernel: [23565.684118] Pid: 0, comm: swapper Not tainted 2.6.31-02063104-generic #02063104 [kern.warning]
-> > > Oct 19 07:10:02 johan kernel: [23565.684121] Call Trace: [kern.warning]
-> > > Oct 19 07:10:02 johan kernel: [23565.684124]  <IRQ>  [<ffffffff810da5a2>] __alloc_pages_slowpath+0x3b2/0x4c0 [kern.warning]
-> > > Oct 19 07:10:02 johan kernel: [23565.684157]  [<ffffffff810da7e5>] __alloc_pages_nodemask+0x135/0x140 [kern.warning]
-> > > Oct 19 07:10:02 johan kernel: [23565.684164]  [<ffffffff815065b4>] ? _spin_unlock_bh+0x14/0x20 [kern.warning]
-> > > Oct 19 07:10:02 johan kernel: [23565.684170]  [<ffffffff8110b368>] kmalloc_large_node+0x68/0xc0 [kern.warning]
-> > > Oct 19 07:10:02 johan kernel: [23565.684175]  [<ffffffff8110f15a>] __kmalloc_node_track_caller+0x11a/0x180 [kern.warning]
-> > > Oct 19 07:10:02 johan kernel: [23565.684181]  [<ffffffff8140ffd2>] ? skb_copy+0x32/0xa0 [kern.warning]
-> > > Oct 19 07:10:02 johan kernel: [23565.684185]  [<ffffffff8140d8b6>] __alloc_skb+0x76/0x180 [kern.warning]
-> > > Oct 19 07:10:02 johan kernel: [23565.684205]  [<ffffffff8140ffd2>] skb_copy+0x32/0xa0 [kern.warning]
-> > > Oct 19 07:10:02 johan kernel: [23565.684221]  [<ffffffffa050f33c>] vboxNetFltLinuxPacketHandler+0x5c/0xd0 [vboxnetflt] [kern.warning]
-> >
-> > Is the MTU set very high between the host and virtualised machine?
-> >
-> > Can you test please with the patch at http://lkml.org/lkml/2009/10/16/89
-> > applied and with commits 373c0a7e and 8aa7e847 reverted please?
-> 
-> if you can send me a consolidated patch which does apply to
-> 2.6.31.4 I will be glad to try ...
-> 
+> hmm, this is becoming too complex. The way i915 and other graphics
+> drivers are using set_memory_wc(), it is def a bad idea to start adding
+> mtrr's behind the back for non-pat case.
 
-Sure
+Yes, maybe it's better to drop it for ioremap() and set_memory_wc(). But I'd like
+to keep it for mmapping the PCI region. It should help all the people with
+PAT-incapable CPUs and graphics chips without DRM support (for them there
+simply is no driver that should set up the MTRR entries...).
 
-==== CUT HERE ====
+> Can't we just force PAT option always and we probably don't care about
+> ioremap_wc() on processors were PAT doesn't get enabled because of known
+> errata.
 
->From 6c0215af3b7c39ef7b8083ea38ca3ad93cd3f51f Mon Sep 17 00:00:00 2001
-From: Mel Gorman <mel@csn.ul.ie>
-Date: Mon, 19 Oct 2009 15:40:43 +0100
-Subject: [PATCH] Kick off kswapd after direct reclaim and revert congestion changes
+I don't think this is a good idea, Robert Hancock wrote there may be millions of
+such Laptops (Core Solo/Duo erratum AE7, Pentium M erratum Y31) :
+  http://marc.info/?l=linux-kernel&m=125537136105246&w=2
 
-The following patch is http://lkml.org/lkml/2009/10/16/89 on top of
-2.6.31.4 as well as patches 373c0a7e and 8aa7e847 reverted.
---- 
- arch/x86/lib/usercopy_32.c  |    2 +-
- drivers/block/pktcdvd.c     |   10 ++++------
- drivers/md/dm-crypt.c       |    2 +-
- fs/fat/file.c               |    2 +-
- fs/fuse/dev.c               |    8 ++++----
- fs/nfs/write.c              |    8 +++-----
- fs/reiserfs/journal.c       |    2 +-
- fs/xfs/linux-2.6/kmem.c     |    4 ++--
- fs/xfs/linux-2.6/xfs_buf.c  |    2 +-
- include/linux/backing-dev.h |   11 +++--------
- include/linux/blkdev.h      |   13 +++++++++----
- mm/backing-dev.c            |    7 ++++---
- mm/memcontrol.c             |    2 +-
- mm/page-writeback.c         |    8 ++++----
- mm/page_alloc.c             |   15 ++++++++-------
- mm/vmscan.c                 |    8 ++++----
- 16 files changed, 51 insertions(+), 53 deletions(-)
+> or Perhaps just try to add mtrr only for the pci mmap case like the 4th
+> patch in this series..
 
-diff --git a/arch/x86/lib/usercopy_32.c b/arch/x86/lib/usercopy_32.c
-index 1f118d4..7c8ca91 100644
---- a/arch/x86/lib/usercopy_32.c
-+++ b/arch/x86/lib/usercopy_32.c
-@@ -751,7 +751,7 @@ survive:
- 
- 			if (retval == -ENOMEM && is_global_init(current)) {
- 				up_read(&current->mm->mmap_sem);
--				congestion_wait(BLK_RW_ASYNC, HZ/50);
-+				congestion_wait(WRITE, HZ/50);
- 				goto survive;
- 			}
- 
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index 99a506f..83650e0 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -1372,10 +1372,8 @@ try_next_bio:
- 	wakeup = (pd->write_congestion_on > 0
- 	 		&& pd->bio_queue_size <= pd->write_congestion_off);
- 	spin_unlock(&pd->lock);
--	if (wakeup) {
--		clear_bdi_congested(&pd->disk->queue->backing_dev_info,
--					BLK_RW_ASYNC);
--	}
-+	if (wakeup)
-+		clear_bdi_congested(&pd->disk->queue->backing_dev_info, WRITE);
- 
- 	pkt->sleep_time = max(PACKET_WAIT_TIME, 1);
- 	pkt_set_state(pkt, PACKET_WAITING_STATE);
-@@ -2594,10 +2592,10 @@ static int pkt_make_request(struct request_queue *q, struct bio *bio)
- 	spin_lock(&pd->lock);
- 	if (pd->write_congestion_on > 0
- 	    && pd->bio_queue_size >= pd->write_congestion_on) {
--		set_bdi_congested(&q->backing_dev_info, BLK_RW_ASYNC);
-+		set_bdi_congested(&q->backing_dev_info, WRITE);
- 		do {
- 			spin_unlock(&pd->lock);
--			congestion_wait(BLK_RW_ASYNC, HZ);
-+			congestion_wait(WRITE, HZ);
- 			spin_lock(&pd->lock);
- 		} while(pd->bio_queue_size > pd->write_congestion_off);
- 	}
-diff --git a/drivers/md/dm-crypt.c b/drivers/md/dm-crypt.c
-index ed10381..c72a8dd 100644
---- a/drivers/md/dm-crypt.c
-+++ b/drivers/md/dm-crypt.c
-@@ -776,7 +776,7 @@ static void kcryptd_crypt_write_convert(struct dm_crypt_io *io)
- 		 * But don't wait if split was due to the io size restriction
- 		 */
- 		if (unlikely(out_of_pages))
--			congestion_wait(BLK_RW_ASYNC, HZ/100);
-+			congestion_wait(WRITE, HZ/100);
- 
- 		/*
- 		 * With async crypto it is unsafe to share the crypto context
-diff --git a/fs/fat/file.c b/fs/fat/file.c
-index f042b96..b28ea64 100644
---- a/fs/fat/file.c
-+++ b/fs/fat/file.c
-@@ -134,7 +134,7 @@ static int fat_file_release(struct inode *inode, struct file *filp)
- 	if ((filp->f_mode & FMODE_WRITE) &&
- 	     MSDOS_SB(inode->i_sb)->options.flush) {
- 		fat_flush_inodes(inode->i_sb, inode, NULL);
--		congestion_wait(BLK_RW_ASYNC, HZ/10);
-+		congestion_wait(WRITE, HZ/10);
- 	}
- 	return 0;
- }
-diff --git a/fs/fuse/dev.c b/fs/fuse/dev.c
-index 6484eb7..f58ecbc 100644
---- a/fs/fuse/dev.c
-+++ b/fs/fuse/dev.c
-@@ -286,8 +286,8 @@ __releases(&fc->lock)
- 		}
- 		if (fc->num_background == FUSE_CONGESTION_THRESHOLD &&
- 		    fc->connected && fc->bdi_initialized) {
--			clear_bdi_congested(&fc->bdi, BLK_RW_SYNC);
--			clear_bdi_congested(&fc->bdi, BLK_RW_ASYNC);
-+			clear_bdi_congested(&fc->bdi, READ);
-+			clear_bdi_congested(&fc->bdi, WRITE);
- 		}
- 		fc->num_background--;
- 		fc->active_background--;
-@@ -414,8 +414,8 @@ static void fuse_request_send_nowait_locked(struct fuse_conn *fc,
- 		fc->blocked = 1;
- 	if (fc->num_background == FUSE_CONGESTION_THRESHOLD &&
- 	    fc->bdi_initialized) {
--		set_bdi_congested(&fc->bdi, BLK_RW_SYNC);
--		set_bdi_congested(&fc->bdi, BLK_RW_ASYNC);
-+		set_bdi_congested(&fc->bdi, READ);
-+		set_bdi_congested(&fc->bdi, WRITE);
- 	}
- 	list_add_tail(&req->list, &fc->bg_queue);
- 	flush_bg_queue(fc);
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index a34fae2..5693fcd 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -200,10 +200,8 @@ static int nfs_set_page_writeback(struct page *page)
- 		struct nfs_server *nfss = NFS_SERVER(inode);
- 
- 		if (atomic_long_inc_return(&nfss->writeback) >
--				NFS_CONGESTION_ON_THRESH) {
--			set_bdi_congested(&nfss->backing_dev_info,
--						BLK_RW_ASYNC);
--		}
-+				NFS_CONGESTION_ON_THRESH)
-+			set_bdi_congested(&nfss->backing_dev_info, WRITE);
- 	}
- 	return ret;
- }
-@@ -215,7 +213,7 @@ static void nfs_end_page_writeback(struct page *page)
- 
- 	end_page_writeback(page);
- 	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH)
--		clear_bdi_congested(&nfss->backing_dev_info, BLK_RW_ASYNC);
-+		clear_bdi_congested(&nfss->backing_dev_info, WRITE);
- }
- 
- /*
-diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-index 9062220..77f5bb7 100644
---- a/fs/reiserfs/journal.c
-+++ b/fs/reiserfs/journal.c
-@@ -997,7 +997,7 @@ static int reiserfs_async_progress_wait(struct super_block *s)
- 	DEFINE_WAIT(wait);
- 	struct reiserfs_journal *j = SB_JOURNAL(s);
- 	if (atomic_read(&j->j_async_throttle))
--		congestion_wait(BLK_RW_ASYNC, HZ / 10);
-+		congestion_wait(WRITE, HZ / 10);
- 	return 0;
- }
- 
-diff --git a/fs/xfs/linux-2.6/kmem.c b/fs/xfs/linux-2.6/kmem.c
-index 2d3f90a..1cd3b55 100644
---- a/fs/xfs/linux-2.6/kmem.c
-+++ b/fs/xfs/linux-2.6/kmem.c
-@@ -53,7 +53,7 @@ kmem_alloc(size_t size, unsigned int __nocast flags)
- 			printk(KERN_ERR "XFS: possible memory allocation "
- 					"deadlock in %s (mode:0x%x)\n",
- 					__func__, lflags);
--		congestion_wait(BLK_RW_ASYNC, HZ/50);
-+		congestion_wait(WRITE, HZ/50);
- 	} while (1);
- }
- 
-@@ -130,7 +130,7 @@ kmem_zone_alloc(kmem_zone_t *zone, unsigned int __nocast flags)
- 			printk(KERN_ERR "XFS: possible memory allocation "
- 					"deadlock in %s (mode:0x%x)\n",
- 					__func__, lflags);
--		congestion_wait(BLK_RW_ASYNC, HZ/50);
-+		congestion_wait(WRITE, HZ/50);
- 	} while (1);
- }
- 
-diff --git a/fs/xfs/linux-2.6/xfs_buf.c b/fs/xfs/linux-2.6/xfs_buf.c
-index 965df12..178c20c 100644
---- a/fs/xfs/linux-2.6/xfs_buf.c
-+++ b/fs/xfs/linux-2.6/xfs_buf.c
-@@ -412,7 +412,7 @@ _xfs_buf_lookup_pages(
- 
- 			XFS_STATS_INC(xb_page_retries);
- 			xfsbufd_wakeup(0, gfp_mask);
--			congestion_wait(BLK_RW_ASYNC, HZ/50);
-+			congestion_wait(WRITE, HZ/50);
- 			goto retry;
- 		}
- 
-diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
-index 1d52425..0ec2c59 100644
---- a/include/linux/backing-dev.h
-+++ b/include/linux/backing-dev.h
-@@ -229,14 +229,9 @@ static inline int bdi_rw_congested(struct backing_dev_info *bdi)
- 				  (1 << BDI_async_congested));
- }
- 
--enum {
--	BLK_RW_ASYNC	= 0,
--	BLK_RW_SYNC	= 1,
--};
--
--void clear_bdi_congested(struct backing_dev_info *bdi, int sync);
--void set_bdi_congested(struct backing_dev_info *bdi, int sync);
--long congestion_wait(int sync, long timeout);
-+void clear_bdi_congested(struct backing_dev_info *bdi, int rw);
-+void set_bdi_congested(struct backing_dev_info *bdi, int rw);
-+long congestion_wait(int rw, long timeout);
- 
- 
- static inline bool bdi_cap_writeback_dirty(struct backing_dev_info *bdi)
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 69103e0..998c8e0 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -70,6 +70,11 @@ enum rq_cmd_type_bits {
- 	REQ_TYPE_ATA_PC,
- };
- 
-+enum {
-+	BLK_RW_ASYNC	= 0,
-+	BLK_RW_SYNC	= 1,
-+};
-+
- /*
-  * For request of type REQ_TYPE_LINUX_BLOCK, rq->cmd[0] is the opcode being
-  * sent down (similar to how REQ_TYPE_BLOCK_PC means that ->cmd[] holds a
-@@ -775,18 +780,18 @@ extern int sg_scsi_ioctl(struct request_queue *, struct gendisk *, fmode_t,
-  * congested queues, and wake up anyone who was waiting for requests to be
-  * put back.
-  */
--static inline void blk_clear_queue_congested(struct request_queue *q, int sync)
-+static inline void blk_clear_queue_congested(struct request_queue *q, int rw)
- {
--	clear_bdi_congested(&q->backing_dev_info, sync);
-+	clear_bdi_congested(&q->backing_dev_info, rw);
- }
- 
- /*
-  * A queue has just entered congestion.  Flag that in the queue's VM-visible
-  * state flags and increment the global gounter of congested queues.
-  */
--static inline void blk_set_queue_congested(struct request_queue *q, int sync)
-+static inline void blk_set_queue_congested(struct request_queue *q, int rw)
- {
--	set_bdi_congested(&q->backing_dev_info, sync);
-+	set_bdi_congested(&q->backing_dev_info, rw);
- }
- 
- extern void blk_start_queue(struct request_queue *q);
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index c86edd2..493b468 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -283,6 +283,7 @@ static wait_queue_head_t congestion_wqh[2] = {
- 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[1])
- 	};
- 
-+
- void clear_bdi_congested(struct backing_dev_info *bdi, int sync)
- {
- 	enum bdi_state bit;
-@@ -307,18 +308,18 @@ EXPORT_SYMBOL(set_bdi_congested);
- 
- /**
-  * congestion_wait - wait for a backing_dev to become uncongested
-- * @sync: SYNC or ASYNC IO
-+ * @rw: READ or WRITE
-  * @timeout: timeout in jiffies
-  *
-  * Waits for up to @timeout jiffies for a backing_dev (any backing_dev) to exit
-  * write congestion.  If no backing_devs are congested then just wait for the
-  * next write to be completed.
-  */
--long congestion_wait(int sync, long timeout)
-+long congestion_wait(int rw, long timeout)
- {
- 	long ret;
- 	DEFINE_WAIT(wait);
--	wait_queue_head_t *wqh = &congestion_wqh[sync];
-+	wait_queue_head_t *wqh = &congestion_wqh[rw];
- 
- 	prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
- 	ret = io_schedule_timeout(timeout);
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index fd4529d..834509f 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -1990,7 +1990,7 @@ try_to_free:
- 		if (!progress) {
- 			nr_retries--;
- 			/* maybe some writeback is necessary */
--			congestion_wait(BLK_RW_ASYNC, HZ/10);
-+			congestion_wait(WRITE, HZ/10);
- 		}
- 
- 	}
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 81627eb..7687879 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -575,7 +575,7 @@ static void balance_dirty_pages(struct address_space *mapping)
- 		if (pages_written >= write_chunk)
- 			break;		/* We've done our duty */
- 
--		congestion_wait(BLK_RW_ASYNC, HZ/10);
-+		congestion_wait(WRITE, HZ/10);
- 	}
- 
- 	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
-@@ -669,7 +669,7 @@ void throttle_vm_writeout(gfp_t gfp_mask)
-                 if (global_page_state(NR_UNSTABLE_NFS) +
- 			global_page_state(NR_WRITEBACK) <= dirty_thresh)
-                         	break;
--                congestion_wait(BLK_RW_ASYNC, HZ/10);
-+                congestion_wait(WRITE, HZ/10);
- 
- 		/*
- 		 * The caller might hold locks which can prevent IO completion
-@@ -715,7 +715,7 @@ static void background_writeout(unsigned long _min_pages)
- 		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
- 			/* Wrote less than expected */
- 			if (wbc.encountered_congestion || wbc.more_io)
--				congestion_wait(BLK_RW_ASYNC, HZ/10);
-+				congestion_wait(WRITE, HZ/10);
- 			else
- 				break;
- 		}
-@@ -787,7 +787,7 @@ static void wb_kupdate(unsigned long arg)
- 		writeback_inodes(&wbc);
- 		if (wbc.nr_to_write > 0) {
- 			if (wbc.encountered_congestion || wbc.more_io)
--				congestion_wait(BLK_RW_ASYNC, HZ/10);
-+				congestion_wait(WRITE, HZ/10);
- 			else
- 				break;	/* All the old data is written */
- 		}
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 0b3c6cb..489a187 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1673,7 +1673,7 @@ __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
- 			preferred_zone, migratetype);
- 
- 		if (!page && gfp_mask & __GFP_NOFAIL)
--			congestion_wait(BLK_RW_ASYNC, HZ/50);
-+			congestion_wait(WRITE, HZ/50);
- 	} while (!page && (gfp_mask & __GFP_NOFAIL));
- 
- 	return page;
-@@ -1763,16 +1763,17 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
- 	if (NUMA_BUILD && (gfp_mask & GFP_THISNODE) == GFP_THISNODE)
- 		goto nopage;
- 
--	wake_all_kswapd(order, zonelist, high_zoneidx);
--
- 	/*
--	 * OK, we're below the kswapd watermark and have kicked background
--	 * reclaim. Now things get more complex, so set up alloc_flags according
--	 * to how we want to proceed.
-+	 * OK, we're below the kswapd watermark and now things get more
-+	 * complex, so set up alloc_flags according to how we want to
-+	 * proceed.
- 	 */
- 	alloc_flags = gfp_to_alloc_flags(gfp_mask);
- 
- restart:
-+	/* Kick background reclaim */
-+	wake_all_kswapd(order, zonelist, high_zoneidx);
-+
- 	/* This is the last chance, in general, before the goto nopage. */
- 	page = get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
- 			high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
-@@ -1844,7 +1845,7 @@ rebalance:
- 	pages_reclaimed += did_some_progress;
- 	if (should_alloc_retry(gfp_mask, order, pages_reclaimed)) {
- 		/* Wait for some write requests to complete then retry */
--		congestion_wait(BLK_RW_ASYNC, HZ/50);
-+		congestion_wait(WRITE, HZ/50);
- 		goto rebalance;
- 	}
- 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 94e86dd..9219beb 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1109,7 +1109,7 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
- 		 */
- 		if (nr_freed < nr_taken && !current_is_kswapd() &&
- 		    lumpy_reclaim) {
--			congestion_wait(BLK_RW_ASYNC, HZ/10);
-+			congestion_wait(WRITE, HZ/10);
- 
- 			/*
- 			 * The attempt at page out may have made some
-@@ -1726,7 +1726,7 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
- 
- 		/* Take a nap, wait for some writeback to complete */
- 		if (sc->nr_scanned && priority < DEF_PRIORITY - 2)
--			congestion_wait(BLK_RW_ASYNC, HZ/10);
-+			congestion_wait(WRITE, HZ/10);
- 	}
- 	/* top priority shrink_zones still had more to do? don't OOM, then */
- 	if (!sc->all_unreclaimable && scanning_global_lru(sc))
-@@ -1965,7 +1965,7 @@ loop_again:
- 		 * another pass across the zones.
- 		 */
- 		if (total_scanned && priority < DEF_PRIORITY - 2)
--			congestion_wait(BLK_RW_ASYNC, HZ/10);
-+			congestion_wait(WRITE, HZ/10);
- 
- 		/*
- 		 * We do this so kswapd doesn't build up large priorities for
-@@ -2238,7 +2238,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
- 				goto out;
- 
- 			if (sc.nr_scanned && prio < DEF_PRIORITY - 2)
--				congestion_wait(BLK_RW_ASYNC, HZ / 10);
-+				congestion_wait(WRITE, HZ / 10);
- 		}
- 	}
- 
+I'd prefer this! ;-)
+
+Kind regards,
+  Thomas
