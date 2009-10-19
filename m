@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbZJSKRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbZJSKRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755266AbZJSKRL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 06:17:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755118AbZJSKRI
+	id S1754938AbZJSKRB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 06:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZJSKRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 06:17:08 -0400
+	Mon, 19 Oct 2009 06:17:00 -0400
 Received: from aa002msb.fastweb.it ([85.18.95.81]:49227 "EHLO
 	aa002msb.fastweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754941AbZJSKRE (ORCPT
+	with ESMTP id S1750846AbZJSKQ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 06:17:04 -0400
-Message-ID: <4ADC3C41.7000207@evidence.eu.com>
-Date: Mon, 19 Oct 2009 12:15:29 +0200
+	Mon, 19 Oct 2009 06:16:59 -0400
+Message-ID: <4ADC3C92.3000709@evidence.eu.com>
+Date: Mon, 19 Oct 2009 12:16:50 +0200
 From: Claudio Scordino <claudio@evidence.eu.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
@@ -22,13 +22,13 @@ Subject: [PATCH] Default setting of the ARM_UNWIND option
 References: <4AD73DA4.4050006@evidence.eu.com> <1255620333.10164.77.camel@pc1117.cambridge.arm.com>
 In-Reply-To: <1255620333.10164.77.camel@pc1117.cambridge.arm.com>
 Content-Type: multipart/mixed;
- boundary="------------030105020307030702070408"
+ boundary="------------060600090505070306050102"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------030105020307030702070408
+--------------060600090505070306050102
 Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 
@@ -56,32 +56,33 @@ Content-Transfer-Encoding: 7bit
 >   
 Hi Catalin,
 
-   thank you for your answer.
+    thank you for your answer.
 
 In my opinion, we should change the default setting of this option.
 
-Having "yes" as default policy for ARM_UNWIND means that, by default, 
-the kernel does not boot if a user has a buggy compiler (like me) and 
+Having "yes" as default policy for ARM_UNWIND means that, by default,
+the kernel does not boot if a user has a buggy compiler (like me) and
 he/she doesn't explicitly disable the ARM_UNWIND option.
 
-Consider that people may not know that their problem is related to the 
-ARM_UNWIND option. Therefore, they may waste time just bisecting to 
+Consider that people may not know that their problem is related to the
+ARM_UNWIND option. Therefore, they may waste time just bisecting to
 understand where their problem really is.
 
-Therefore, my suggestion is to change the default policy of this option 
-as shown in the attached patch, to avoid a potential waste of time of 
-developers. Users who know that they can enable this option, will enable 
+Therefore, my suggestion is to change the default policy of this option
+as shown in the attached patch, to avoid a potential waste of time of
+developers. Users who know that they can enable this option, will enable
 it.
 
 Let me know what you think about this suggestion.
 
 Many thanks and my best regards,
 
-               Claudio
+                Claudio
 
 
 
---------------030105020307030702070408
+
+--------------060600090505070306050102
 Content-Type: text/x-patch;
  name="0001-Disable-stack-unwinding-support-by-default-since-it.patch"
 Content-Transfer-Encoding: 7bit
@@ -89,11 +90,12 @@ Content-Disposition: inline;
  filename*0="0001-Disable-stack-unwinding-support-by-default-since-it.pat";
  filename*1="ch"
 
->From 3b688dbebb5fb3345e48cd491eb387434db165da Mon Sep 17 00:00:00 2001
 From: Claudio Scordino <claudio@evidence.eu.com>
 Date: Mon, 19 Oct 2009 11:59:16 +0200
 Subject: [PATCH 1/1] Disable stack unwinding support by default, since it does not work on some buggy or not-EABI compilers.
 
+Disable stack unwinding support by default, since it does not work on some
+buggy or not-EABI compilers.
 
 Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
 ---
@@ -124,4 +126,4 @@ index 1a6f70e..925e3fd 100644
 1.6.0.4
 
 
---------------030105020307030702070408--
+--------------060600090505070306050102--
