@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbZJSPFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZJSO7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756569AbZJSPFE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 11:05:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbZJSPFD
+	id S1756510AbZJSO7p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 10:59:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756348AbZJSO7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 11:05:03 -0400
-Received: from web50112.mail.re2.yahoo.com ([206.190.39.149]:27997 "HELO
-	web50112.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756501AbZJSPFC convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 11:05:02 -0400
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 11:05:02 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=17wksTGdRMpXdQOoV+UUgW8JY8U51N5w6IqGRcbFEfZXrEZ0xjZQJR4hypT62wkZ/ueifZtnwt1WqsZL+hzISShFNFuxBoM7tQQrJ/iVL9jEWCRbS39BsrTzzrSTo7TIDaMMLo+CUlp5UBBCU36ufqh689yxSGjiFFFdsSlzjCI=;
-Message-ID: <989292.58968.qm@web50112.mail.re2.yahoo.com>
-X-YMail-OSG: 4uK5cCAVM1k2SZxAGDUJFrUAvjyWAY.7dQR3yT05Ou1UNrLAJf.3pHyDVIQ7KEFUUH4Ey6G023_mfTHxH0R0bxXC36w1QmxnNmG3lfIgYjsNNpHLfbhIBRDfkqRiAb5.1WJUKi7t5nZGzSgB4YI6IWDJW7_SW51JDMm2in3Lftg4mil8AZ_wAWdLH_hD0qs_EntOdhNXFKhSkn8iqO5ow9LNw.VO2zKtfzUfHwEfGy.K5cFvCCXjulHSZey5wdQu2B_QE.8WIiEALZ_eLctpu1DLW5MhA22pCYacdMFsTFoeu6qQlpOVsAmvM.J_bBuZpLdsw0MOYFpaF4sbz14PZ2ihqx1X._OvOp5fR3NVYUnfGytFlh74PciZXjN5QIc2ToGX.kXWQ7Q5XHem77aTcTdlMT7IdCyRhf_XxTOVM2s-
-X-Mailer: YahooMailClassic/8.0.7 YahooMailWebService/0.7.361.3
-Date: Mon, 19 Oct 2009 07:58:24 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [PATCH] amd64_edac: fix a wrong goto clause in amd64_edac.c
-To: Borislav Petkov <borislav.petkov@amd.com>,
-       Doug Thompson <dougthompson@xmission.com>, linux-kernel@vger.kernel.org,
-       Li Hong <lihong.hi@gmail.com>
-In-Reply-To: <20091019083329.GA7340@uhli>
+	Mon, 19 Oct 2009 10:59:44 -0400
+Received: from aglcosbs01.cos.agilent.com ([192.25.218.35]:46093 "EHLO
+	aglcosbs01.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752076AbZJSO7o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 10:59:44 -0400
+Message-ID: <4ADC7EDD.9030307@agilent.com>
+Date: Mon, 19 Oct 2009 07:59:41 -0700
+From: Earl Chew <earl_chew@agilent.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Using remap_pfn_range() to increase total_vm beyond RLIMIT_AS
+References: <4AD7916A.2080200@agilent.com> <4ADBCCFA.1020507@goop.org>
+In-Reply-To: <4ADBCCFA.1020507@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Oct 2009 14:59:46.0103 (UTC) FILETIME=[CC161470:01CA50CC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
---- On Mon, 10/19/09, Li Hong <lihong.hi@gmail.com> wrote:
-
-> From: Li Hong <lihong.hi@gmail.com>
-> Subject: [PATCH] amd64_edac: fix a wrong goto clause in amd64_edac.c
-> To: "Borislav Petkov" <borislav.petkov@amd.com>, "Doug Thompson" <dougthompson@xmission.com>, linux-kernel@vger.kernel.org
-> Date: Monday, October 19, 2009, 2:33 AM
-> In amd64_edac_init(void) in
-> amd64_edac.c, cache_k8_northbridges() is called
-> before pci_register_driver. If it fails, should exit with
-> err directly.
+Jeremy Fitzhardinge wrote:
+>> I think this means that a device driver can map pages into
+>> a process and thus effectively increase address space of
+>> a process above and beyond the limit set by RLIMIT_AS.
 > 
-> Signed-off-by: Li Hong <lihong.hi@gmail.com>
+> I suspect this is justified because remap_pfn_range is generally
+> (always?) used to map device memory, and other memory which isn't
+> represented by struct pages, so it doesn't really count as real memory
+> usage.
 
-Acked-by: Doug Thompson <dougthompson@xmission.com>
+Well, perhaps not always.
+
+http://lkml.org/lkml/2008/12/3/453
+
+http://www.scs.ch/~frey/linux/memorymap.html
 
 
-> ---
->  drivers/edac/amd64_edac.c |    4 +---
->  1 files changed, 1 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/edac/amd64_edac.c
-> b/drivers/edac/amd64_edac.c
-> index d4560d9..3ee539a 100644
-> --- a/drivers/edac/amd64_edac.c
-> +++ b/drivers/edac/amd64_edac.c
-> @@ -3163,7 +3163,7 @@ static int __init
-> amd64_edac_init(void)
->      opstate_init();
->  
->      if (cache_k8_northbridges() < 0)
-> -        goto err_exit;
-> +        return err;
->  
->      err =
-> pci_register_driver(&amd64_pci_driver);
->      if (err)
-> @@ -3189,8 +3189,6 @@ static int __init
-> amd64_edac_init(void)
->  
->  err_2nd_stage:
->      debugf0("2nd stage failed\n");
-> -
-> -err_exit:
->     
-> pci_unregister_driver(&amd64_pci_driver);
->  
->      return err;
-> -- 
-> 1.6.0.4
-> 
-> 
+While DMA related activity is the most obvious reason a driver
+might want to allocate memory and inject it into userspace,
+I could imagine other reasons (though not necessarily good ones)
+where it is more efficient to simply copy data to/from a buffer
+shared with a driver.
+
+In both the scenarios outlined, this would be real memory
+and not simply IO space.
+
+
+As to whether it's even justified for IO space, I'm uncertain.
+
+The reference material at www.opengroup.org is not crystal clear:
+
+http://www.opengroup.org/onlinepubs/009695399/functions/getrlimit.html
+
+> RLIMIT_AS
+> This is the maximum size of a process' total available memory, in
+> bytes. If this limit is exceeded, the malloc() and mmap() functions
+> shall fail with errno set to [ENOMEM]. In addition, the automatic stack
+> growth fails with the effects outlined above.
+
+
+I think controlling the size of the address space of the process
+is the intent (likely evidenced by the name RLIMIT_AS), but the
+text only speaks of user space APIs malloc() and mmap(). The
+text does hint that this should apply to other indirect
+means of address space expansion by describing stack growth.
+
+One could also regard memory injected by device drivers as mmap()
+by other means.
+
+Earl
+
+
+
