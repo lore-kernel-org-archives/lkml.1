@@ -1,100 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbZJSHFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbZJSHGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbZJSHFA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 03:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZJSHE7
+	id S1754965AbZJSHGq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 03:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbZJSHGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 03:04:59 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:50387 "EHLO mail-out2.uio.no"
+	Mon, 19 Oct 2009 03:06:46 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54061 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752224AbZJSHE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 03:04:59 -0400
-Subject: Re: nfs mount fail
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Arjan van de Ven <arjan@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091019065433.GA29550@elte.hu>
-References: <86802c440910171825j22556a4bofbf0bd6cd134d53c@mail.gmail.com>
-	 <84144f020910181935q4aed9f0dx7a8a149d8b8743c7@mail.gmail.com>
-	 <20091019114339.4b67d947@infradead.org>
-	 <1255921080.839.2.camel@penberg-laptop>
-	 <86802c440910182252v4648a7d1k249d091799583e37@mail.gmail.com>
-	 <1255933848.11116.2.camel@heimdal.trondhjem.org>
-	 <20091019065433.GA29550@elte.hu>
-Content-Type: text/plain
-Date: Mon, 19 Oct 2009 16:04:48 +0900
-Message-Id: <1255935888.11116.6.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 9 sum msgs/h 1 total rcpts 1687 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 717BD060470F2B934548142D4F2E1802CBACC4CE
-X-UiO-SPAM-Test: remote_host: 220.106.13.183 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 1 max/h 1 blacklist 0 greylist 0 ratelimit 0
+	id S1753291AbZJSHGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 03:06:45 -0400
+Date: Mon, 19 Oct 2009 09:06:49 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Peng Tao <bergwolf@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: fix comments for invalidate_inode_pages2()
+In-Reply-To: <1255934893-7696-1-git-send-email-bergwolf@gmail.com>
+Message-ID: <alpine.LSU.2.00.0910190906220.8582@wotan.suse.de>
+References: <1255934893-7696-1-git-send-email-bergwolf@gmail.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-19 at 08:54 +0200, Ingo Molnar wrote:
-> * Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+On Mon, 19 Oct 2009, Peng Tao wrote:
+
+> invalidate_inode_pages2() returns -EBUSY *NOT* -EIO if any pages could not be
+> invalidated.
 > 
-> > > yes. something miss merged again...
-> > > 
-> > > need change some lines.
-> > 
-> > This doesn't match mainline either. To do so, the above kfree() has to 
-> > be at the end of the "Opt_xprt_rdma:" case...
-> 
-> it's from a test patch in tip:out-of-tree:
-> 
->   d40bc6b: <not-for-merge> nfs: fix nfs_parse_mount_options() double kfree()
-> 
-> (attached below)
-> 
-> that fix is wrong apparently - is there a correct fix upstream perhaps?
-<snip>
-> This commit:
-> 
->   a67d18f: NFS: load the rpc/rdma transport module automatically
-> 
-> Moved a kfree() of the options strings in nfs_parse_mount_options()
-> inadvertently and introduced a double kfree(). Fix it.
-> 
-> Reported-by: Yinghai Lu <yinghai@kernel.org>
-> Analyzed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Peng Tao <bergwolf@gmail.com>
 > ---
->  fs/nfs/super.c |    2 +-
+>  mm/truncate.c |    2 +-
 >  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-> index a2c18ac..482a2c3 100644
-> --- a/fs/nfs/super.c
-> +++ b/fs/nfs/super.c
-> @@ -1231,6 +1231,7 @@ static int nfs_parse_mount_options(char *raw,
->  				goto out_nomem;
->  			token = match_token(string,
->  					    nfs_xprt_protocol_tokens, args);
-> +			kfree(string);
->  
->  			switch (token) {
->  			case Opt_xprt_udp:
-> @@ -1262,7 +1263,6 @@ static int nfs_parse_mount_options(char *raw,
->  				goto out_nomem;
->  			token = match_token(string,
->  					    nfs_xprt_protocol_tokens, args);
-> -			kfree(string);
->  
->  			switch (token) {
->  			case Opt_xprt_udp:
+> diff --git a/mm/truncate.c b/mm/truncate.c
+> index 450cebd..2c147a7 100644
+> --- a/mm/truncate.c
+> +++ b/mm/truncate.c
+> @@ -490,7 +490,7 @@ EXPORT_SYMBOL_GPL(invalidate_inode_pages2_range);
+>   * Any pages which are found to be mapped into pagetables are unmapped prior to
+>   * invalidation.
+>   *
+> - * Returns -EIO if any pages could not be invalidated.
+> + * Returns -EBUSY if any pages could not be invalidated.
+>   */
+>  int invalidate_inode_pages2(struct address_space *mapping)
+>  {
 
-This patch appears to be reverting the correct fix from commit d508afb
-in mainline
-        http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git&a=commitdiff&h=d508afb437daee7cf07da085b635c44a4ebf9b38
+Right, this way it's consistent with invalidate_inode_pages2_range().
 
-Cheers
-  Trond
+Applied, thanks.
 
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
