@@ -1,40 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751421AbZJSA6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750941AbZJSAgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751421AbZJSA6o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Oct 2009 20:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbZJSA6n
+	id S1750941AbZJSAgO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Oct 2009 20:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbZJSAgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Oct 2009 20:58:43 -0400
-Received: from kroah.org ([198.145.64.141]:49224 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750918AbZJSA6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Oct 2009 20:58:43 -0400
-Date: Sun, 18 Oct 2009 17:02:21 -0700
-From: Greg KH <greg@kroah.com>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-       Sarah Sharp <sarah.a.sharp@linux.intel.com>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org
-Subject: Re: [PATCH 1/7] usb: trivial cleanups
-Message-ID: <20091019000221.GA23405@kroah.com>
-References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com> <1255906474-25091-2-git-send-email-felipe.contreras@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255906474-25091-2-git-send-email-felipe.contreras@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 18 Oct 2009 20:36:13 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:60084 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbZJSAgM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Oct 2009 20:36:12 -0400
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Frans Pop <elendil@planet.nl>
+Cc: Mel Gorman <mel@csn.ul.ie>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
+       jens.axboe@oracle.com
+In-Reply-To: <200910190133.33183.elendil@planet.nl>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
+	 <20091014103002.GA5027@csn.ul.ie> <200910141510.11059.elendil@planet.nl>
+	 <200910190133.33183.elendil@planet.nl>
+Date: Mon, 19 Oct 2009 03:36:02 +0300
+Message-Id: <1255912562.6824.9.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 01:54:28AM +0300, Felipe Contreras wrote:
-> It seems 'min_t' was used before, and looks cleaner, plus white-space
-> stuff.
+(Adding Jens to CC.)
+
+On Wednesday 14 October 2009, Frans Pop wrote:
+> > > There still has not been a mm-change identified that makes
+> > > fragmentation significantly worse.
+
+On Mon, 2009-10-19 at 01:33 +0200, Frans Pop wrote:
+> > My bisection shows a very clear point, even if not an individual commit,
+> > in the 'akpm' merge where SKB errors suddenly become *much* more
+> > frequent and easy to trigger.
+> > I'm sorry to say this, but the fact that nothing has been identified yet
+> > is IMO the result of a lack of effort, not because there is no such
+> > change.
 > 
-> Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+> I was wrong. It turns out that I was creating the variations in the test 
+> results around the akpm merge myself by tiny changes in the way I ran the 
+> tests. It took another round of about 30 compilations and tests purely in 
+> this range to show that, but those same tests also made me aware of other 
+> patterns I should look at.
+> 
+> Until a few days ago I was concentrating on "do I see SKB allocation errors 
+> or not". Since then I've also been looking more consciously at when they 
+> happen, at disk access patterns and at desktop freeze patterns.
+> 
+> I think I did mention before that this whole issue is rather subtle :-/
+> So, my apologies for finguering the wrong area for so long, but it looked 
+> solid given the info available at the time.
+> 
+> On Thursday 15 October 2009, Mel Gorman wrote:
+> > Outside the range of commits suspected of causing problems was the
+> > following. It's extremely low probability
+> >
+> > Commit 8aa7e84 Fix congestion_wait() sync/async vs read/write confusion
+> >         This patch alters the call to congestion_wait() in the page
+> >         allocator. Frankly, I don't get the change but it might worth
+> >         checking if replacing BLK_RW_ASYNC with WRITE on top of 2.6.31
+> >         makes any difference
+> 
+> This is the real culprit. Mel: thanks very much for looking beyond the 
+> area I identified. Your overview of mm changes was exactly what I needed 
+> and really helped a lot during my later tests.
+> 
+> This commit definitely causes most of the problems; confirmed by reverting 
+> it on top of 2.6.31 (also requires reverting 373c0a7e, which is a later 
+> build fix).
 
-But this doesn't fix a kernel warning, does it?  If so, what one?
+Mel/Jens, any ideas why commit 8aa7e84 makes us run out of high order
+pages? Should we be using BLK_RW_SYNC in mm/page_alloc.c instead of
+BLK_RW_ASYNC?
 
-thanks,
+			Pekka
 
-greg k-h
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index bf72055..fa8380a 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1727,7 +1727,7 @@ __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
+ 			preferred_zone, migratetype);
+ 
+ 		if (!page && gfp_mask & __GFP_NOFAIL)
+-			congestion_wait(BLK_RW_ASYNC, HZ/50);
++			congestion_wait(BLK_RW_SYNC, HZ/50);
+ 	} while (!page && (gfp_mask & __GFP_NOFAIL));
+ 
+ 	return page;
+@@ -1898,7 +1898,7 @@ rebalance:
+ 	pages_reclaimed += did_some_progress;
+ 	if (should_alloc_retry(gfp_mask, order, pages_reclaimed)) {
+ 		/* Wait for some write requests to complete then retry */
+-		congestion_wait(BLK_RW_ASYNC, HZ/50);
++		congestion_wait(BLK_RW_SYNC, HZ/50);
+ 		goto rebalance;
+ 	}
+ 
+
+
