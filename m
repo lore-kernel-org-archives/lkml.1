@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbZJSRRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbZJSRLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757123AbZJSRRx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 13:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757018AbZJSRRw
+	id S1757054AbZJSRLn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 13:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbZJSRLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 13:17:52 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:59754 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756984AbZJSRRv (ORCPT
+	Mon, 19 Oct 2009 13:11:42 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36784 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752725AbZJSRLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 13:17:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=T2sKUdP3Wx+cNyfXRF1gaka9vdxelk7BcTlxSdhXymK6bOKYk+GrgnaWyjaOs63sXL
-         yN19W9OWrzoz9ibGsPOWxKCHZ4JlBklC6JmIiefAV47FSGfVIUNPfLFTGX16rtczsd4v
-         rQjdgKMjRi6ZEWjPrtXSPdFksJPhoO8UeGWPA=
-Date: Mon, 19 Oct 2009 19:09:47 +0200
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Tobi Oetiker <tobi@oetiker.ch>,
-       Frans Pop <elendil@planet.nl>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
-       jens.axboe@oracle.com
-Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
-Message-ID: <20091019170947.GA3782@bizet.domek.prywatny>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910190133.33183.elendil@planet.nl> <1255912562.6824.9.camel@penberg-laptop> <200910190444.55867.elendil@planet.nl> <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu> <1255946051.5941.2.camel@penberg-laptop> <20091019140145.GA4222@bizet.domek.prywatny> <20091019140619.GD9036@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091019140619.GD9036@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 19 Oct 2009 13:11:42 -0400
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH] perf tools: Add missing tools/perf/util/include/string.h
+Date: Mon, 19 Oct 2009 15:11:36 -0200
+Message-Id: <1255972296-11500-1-git-send-email-acme@redhat.com>
+X-Mailer: git-send-email 1.6.2.5
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 03:06:19PM +0100, Mel Gorman wrote:
-> Can you test with my kswapd patch applied and commits 373c0a7e,8aa7e847
-> reverted please?
+To cure a bunch of:
 
-It seems that your patch and Frans' reverts together *do* make
-difference.
+In file included from util/include/linux/bitmap.h:1,
+                 from util/header.h:8,
+                 from builtin-trace.c:7:
+util/include/../../../../include/linux/bitmap.h:8:26: error: linux/string.h: No such file or directory
+make: *** [builtin-trace.o] Error 1
+make: *** Waiting for unfinished jobs....
 
-With these patches I haven't been able to trigger failures so far
-(in about 6 attempts). I'll continue testing and let you know if
-anything changes.
+Cc: Steven Rostedt <srostedt@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/Makefile                    |    1 +
+ tools/perf/util/include/linux/string.h |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+ create mode 100644 tools/perf/util/include/linux/string.h
 
-If nothing changes this looks like fix for my problem.
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index db89a6d..3b154f1 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -329,6 +329,7 @@ LIB_H += ../../include/linux/perf_event.h
+ LIB_H += ../../include/linux/rbtree.h
+ LIB_H += ../../include/linux/list.h
+ LIB_H += util/include/linux/list.h
++LIB_H += util/include/linux/string.h
+ LIB_H += perf.h
+ LIB_H += util/event.h
+ LIB_H += util/types.h
+diff --git a/tools/perf/util/include/linux/string.h b/tools/perf/util/include/linux/string.h
+new file mode 100644
+index 0000000..3b2f590
+--- /dev/null
++++ b/tools/perf/util/include/linux/string.h
+@@ -0,0 +1 @@
++#include <string.h>
+-- 
+1.5.5.1
 
-Thanks.  Thanks a lot!
