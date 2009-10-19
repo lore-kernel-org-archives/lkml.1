@@ -1,109 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbZJSSTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757234AbZJSSVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757205AbZJSSTq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 14:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbZJSSTp
+	id S1757234AbZJSSVA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 14:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbZJSSVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 14:19:45 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:56056 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754990AbZJSSTo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 14:19:44 -0400
-Subject: Re: linux-next: tree build failure
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: sfr@canb.auug.org.au, akpm@linux-foundation.org,
-       linuxppc-dev@lists.ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
-       kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org
-In-Reply-To: <4AD6EB17020000780001A050@vpn.id2.novell.com>
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
-	 <1254267572.15622.1621.camel@slab.beaverton.ibm.com>
-	 <4AC318450200007800017355@vpn.id2.novell.com>
-	 <1254498517.3839.17.camel@slab.beaverton.ibm.com>
-	 <4AC9B5310200007800017EA1@vpn.id2.novell.com>
-	 <1255115648.2546.71.camel@slab.beaverton.ibm.com>
-	 <1255561026.29192.0.camel@slab.beaverton.ibm.com>
-	 <4AD6EB17020000780001A050@vpn.id2.novell.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Mon, 19 Oct 2009 11:19:29 -0700
-Message-Id: <1255976369.13995.98.camel@slab.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Oct 2009 14:21:00 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:7285 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754990AbZJSSU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 14:20:59 -0400
+Date: Mon, 19 Oct 2009 20:20:30 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: Arnd Bergmann <arndbergmann@googlemail.com>
+cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
+In-Reply-To: <200910190619.48037.arnd@arndb.de>
+Message-ID: <alpine.LFD.2.00.0910192019420.3563@localhost.localdomain>
+References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain> <200910190619.48037.arnd@arndb.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-15 at 08:27 +0100, Jan Beulich wrote:
-> >>> Hollis Blanchard <hollisb@us.ibm.com> 15.10.09 00:57 >>>
-> >On Fri, 2009-10-09 at 12:14 -0700, Hollis Blanchard wrote:
-> >> Rusty's version of BUILD_BUG_ON() does indeed fix the build break, and
-> >> also exposes the bug in kvmppc_account_exit_stat(). So to recap:
-> >> 
-> >> original: built but didn't work
-> >> Jan's: doesn't build
-> >> Rusty's: builds and works
-> >> 
-> >> Where do you want to go from here?
-> >
-> >Jan, what are your thoughts? Your BUILD_BUG_ON patch has broken the
-> >build, and we still need to fix it.
+
+
+On Mon, 19 Oct 2009, Arnd Bergmann wrote:
+
+> On Sunday 18 October 2009, John Kacur wrote:
+> > The BKL is in this function because of the BKL pushdown
+> > (see commit f8f2c79d594463427f7114cedb1555110d547d89)
+> > 
+> > It is not needed here because the mutex_lock sonypi_device.lock
+> > provides the necessary locking.
 > 
-> My perspective is that it just uncovered already existing brokenness. And
-> honestly, I won't be able to get to look into this within the next days. (And
-> btw., when I run into issues with other people's code changes, quite
-> frequently I'm told to propose a patch, so I'm also having some
-> philosophical problem understanding why I can't simply expect the same
-> when people run into issues with changes I made, especially in cases like
-> this where it wasn't me introducing the broken code.) So, if this can wait
-> for a couple of days, I can try to find time to look into this. Otherwise, I'd
-> rely on someone running into the actual issue to implement a solution.
+> The driver still uses the BKL in the ioctl function, which can
+> probably be removed at the same time.
+> 
+> 	Arnd <><
+> 
 
-Sorry, I thought it was clear, but to be more explicit: I propose the
-following patch, which replaces the current BUILD_BUG_ON implementation
-with Rusty's version.
+How does this look? (Version 2 of the patch follows)
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -677,18 +677,19 @@ struct sysinfo {
- 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
+>From efd07cfcd021b4438d83d383ab81f9b35cb41eb9 Mon Sep 17 00:00:00 2001
+From: John Kacur <jkacur@redhat.com>
+Date: Sun, 18 Oct 2009 23:49:49 +0200
+Subject: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
+
+The BKL is in this function because of the BKL pushdown
+(see commit f8f2c79d594463427f7114cedb1555110d547d89)
+
+It is not needed here because the mutex_lock sonypi_device.lock
+provides the necessary locking.
+
+sonpi_misc_ioctl can be converted to unlocked ioctls since it relies on
+its own locking (the mutex sonypi_device.lock) and not the bkl
+
+Signed-off-by: John Kacur <jkacur@redhat.com>
+---
+ drivers/char/sonypi.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
+index 8c262aa..593cbb5 100644
+--- a/drivers/char/sonypi.c
++++ b/drivers/char/sonypi.c
+@@ -50,7 +50,6 @@
+ #include <linux/err.h>
+ #include <linux/kfifo.h>
+ #include <linux/platform_device.h>
+-#include <linux/smp_lock.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+@@ -902,14 +901,13 @@ static int sonypi_misc_release(struct inode *inode, struct file *file)
+ 
+ static int sonypi_misc_open(struct inode *inode, struct file *file)
+ {
+-	lock_kernel();
+ 	mutex_lock(&sonypi_device.lock);
+ 	/* Flush input queue on first open */
+ 	if (!sonypi_device.open_count)
+ 		kfifo_reset(sonypi_device.fifo);
+ 	sonypi_device.open_count++;
+ 	mutex_unlock(&sonypi_device.lock);
+-	unlock_kernel();
++
+ 	return 0;
+ }
+ 
+@@ -951,10 +949,10 @@ static unsigned int sonypi_misc_poll(struct file *file, poll_table *wait)
+ 	return 0;
+ }
+ 
+-static int sonypi_misc_ioctl(struct inode *ip, struct file *fp,
++static long sonypi_misc_ioctl(struct file *fp,
+ 			     unsigned int cmd, unsigned long arg)
+ {
+-	int ret = 0;
++	long ret = 0;
+ 	void __user *argp = (void __user *)arg;
+ 	u8 val8;
+ 	u16 val16;
+@@ -1070,7 +1068,7 @@ static const struct file_operations sonypi_misc_fops = {
+ 	.open		= sonypi_misc_open,
+ 	.release	= sonypi_misc_release,
+ 	.fasync		= sonypi_misc_fasync,
+-	.ioctl		= sonypi_misc_ioctl,
++	.unlocked_ioctl	= sonypi_misc_ioctl,
  };
  
--/* Force a compilation error if condition is true */
--#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
--
--/* Force a compilation error if condition is constant and true */
--#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
--
--/* Force a compilation error if condition is true, but also produce a
--   result (of value 0 and type size_t), so the expression can be used
--   e.g. in a structure initializer (or where-ever else comma expressions
--   aren't permitted). */
--#define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
--#define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
-+#ifndef __OPTIMIZE__
-+#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
-+#else
-+/* If it's a constant, catch it at compile time, otherwise at link time. */
-+extern int __build_bug_on_failed;
-+#define BUILD_BUG_ON_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
-+#define BUILD_BUG_ON(condition) \
-+		do {                                                            \
-+				((void)sizeof(char[1 - 2*!!(condition)]));              \
-+				if (condition) __build_bug_on_failed = 1;               \
-+		} while(0)
-+#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
-+#endif
- 
- /* Trap pasters of __FUNCTION__ at compile-time */
- #define __FUNCTION__ (__func__)
-
-
+ static struct miscdevice sonypi_misc_device = {
 -- 
-Hollis Blanchard
-IBM Linux Technology Center
+1.6.0.6
+
 
