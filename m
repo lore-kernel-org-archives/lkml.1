@@ -1,46 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbZJSMGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbZJSMAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755056AbZJSMGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 08:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZJSMGS
+	id S1754774AbZJSMAU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 08:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbZJSMAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 08:06:18 -0400
-Received: from web25606.mail.ukl.yahoo.com ([217.12.10.165]:47669 "HELO
-	web25606.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752492AbZJSMGS convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 08:06:18 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Oct 2009 08:06:17 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=WCEQ5Rl0gn6md9h97+E4muCRUS4WVrXNN61GmDy6GQ+QPVYPnm6+VqevAtJK0mtThRkpCQDUXGrtqYS1UVCMt+DRPP+Gs9Tk5QelxUBv83ZVVTDzLJynlnolc8bYeTSqSg9ThdqhqH5KHPE4Ayg4wmBOPOwiQVAfiVmN4PllC2o=;
-Message-ID: <875665.27410.qm@web25606.mail.ukl.yahoo.com>
-X-YMail-OSG: vzxjLB4VM1mwWyEk2OcjWIVXEuQ0fBt3u1oEP7_hSDOPN2Dsg1QE3ANVab4MzMKjzekLoPO21YDoPLaHeRAbDRS9CY.pmJoxBzyGajc2isZZh97P5DsUjDoSSQfa2kV1A5_90GBIhb7wInEd.oCNC6gEXN7s3Yf3aQYS2p4iR344OEc8yLSYy03PCA0UAsOVavJKdJxTWsPN78VttjfCGncXsALTU.zKuPGmdqGjPcgmEsL4mx2kT9UO7YoYhx5b2zwODy3o3Loky6.oqp1P8n5wgGNQHKW97PL.oHtpjzfh7RewQ38sdaNNR8IqLNYtI_jGTUsQrntDHU6FYN4njkmA4saa5zS4uVS6gVE-
-X-Mailer: YahooMailRC/182.10 YahooMailWebService/0.7.361.3
-Date: Mon, 19 Oct 2009 11:59:41 +0000 (GMT)
-From: Romont Sylvain <psgman24@yahoo.fr>
-Subject: ISDB-T tuner
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 19 Oct 2009 08:00:19 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:57072 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751316AbZJSMAS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 08:00:18 -0400
+Subject: Re: Leaks in trace reported by kmemleak
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <c4e36d110910190215j129e61ey5e20634a4bc19292@mail.gmail.com>
+References: <c4e36d110910150159j6092d0d1lb20434bd9d43d8ce@mail.gmail.com>
+	 <4AD6EF65.6080602@cn.fujitsu.com>
+	 <1255605778.10164.49.camel@pc1117.cambridge.arm.com>
+	 <c4e36d110910160045y52d80450g1d803dd2090a2bd8@mail.gmail.com>
+	 <1255690674.3008.24.camel@pc1117.cambridge.arm.com>
+	 <c4e36d110910160632y4448475dp1ae66dfc01ff8448@mail.gmail.com>
+	 <tnxbpk7a0ok.fsf@pc1117.cambridge.arm.com>
+	 <c4e36d110910160728n5ceefaa8u6b9989aec0564628@mail.gmail.com>
+	 <c4e36d110910160807i2298dacp7d37289ca3ad25f@mail.gmail.com>
+	 <1255711285.3008.59.camel@pc1117.cambridge.arm.com>
+	 <c4e36d110910190215j129e61ey5e20634a4bc19292@mail.gmail.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 19 Oct 2009 13:00:05 +0100
+Message-Id: <1255953605.31096.26.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Oct 2009 12:00:06.0496 (UTC) FILETIME=[B2F09600:01CA50B3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Mon, 2009-10-19 at 11:15 +0200, Zdenek Kabelac wrote:
+> 2009/10/16 Catalin Marinas <catalin.marinas@arm.com>:
+> > On Fri, 2009-10-16 at 17:07 +0200, Zdenek Kabelac wrote:
+> >> So I've tested this modified version and it gives much better result
+> >> with respect to amount of leaked objects
+> >
+> > BTW, I created this tree with kmemleak patches to be pushed upstream:
+> >
+> > git://git.kernel.org/pub/scm/linux/kernel/git/cmarinas/kmemleak.git
+> >
+> > It would be easier to test.
+> 
+> Yes this branch worked well - and there were no leaks  from i915 or
+> kvm modules for trace.
+> 
+> What is however interesting is the false positive leak for
+> dma_debug_init(). Which is sometimes listed and sometimes not - the
+> memory is allocated just once in the code during boot, so it's strange
+> that pointers to that area are sometimes out of kmemleak scan.
 
-I actually live in Japan, I try to make working a tuner card ISDB-T with
-linux. I searched a lot in internet but I find nothing....
-How can I make it working?
-My tuner card is a Pixela PIXDT090-PE0
-in picture here:  http://bbsimg01.kakaku.com/images/bbs/000/208/208340_m.jpg
+I updated the tree above with another patch which lists where an object
+is referred from. So when you get a leak reported and it later
+disappears, you can use:
 
-Thank you for your help!!!
+echo dump=0x... > /sys/kernel/debug/kmemleak
 
+and in syslog you can find information about the previously reported
+object and where it is referred from (if it is no longer reported as a
+leak). I'm not sure whether this option would be useful for anything
+other than debugging kmemleak. I still aim on getting to near 0 false
+positives.
 
-ROMONT Sylvain
+Anyway, trying this new patch on the debug_objects, when no longer
+reported they are referred from obj_hash. My opinion is that they were
+moved to obj_hash during the kmemleak scanning but after kmemleak
+finished scanning the data section, hence they couldn't be found.
 
+I hoped that not reporting object allocated within the last 5s would
+avoid such problems but there are places like debug_objects for which it
+doesn't work as the objects were reported earlier.
 
-      
+A workaround I had in the past was to not report an object unless it was
+found as a leak in two consecutive scans. I should probably reinstate
+this feature (could be optimised to use a second prio_tree containing
+only objects found as leaks).
+
+-- 
+Catalin
+
