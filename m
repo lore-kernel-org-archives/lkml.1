@@ -1,165 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbZJUHxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbZJUHzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753191AbZJUHxx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 03:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbZJUHxw
+	id S1753204AbZJUHzB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 03:55:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbZJUHzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 03:53:52 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55931 "EHLO
+	Wed, 21 Oct 2009 03:55:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55980 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753167AbZJUHxv (ORCPT
+	with ESMTP id S1753175AbZJUHy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 03:53:51 -0400
-Date: Mon, 19 Oct 2009 23:35:43 +0200
+	Wed, 21 Oct 2009 03:54:59 -0400
+Date: Mon, 19 Oct 2009 23:36:36 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Paul Fertser <fercerpav@gmail.com>
-Cc: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org,
-       Nelson Castillo <arhuaco@freaks-unidos.net>,
-       Balaji Rao <balajirrao@openmoko.org>
-Subject: Re: [PATCH] power: pcf50633: introduces battery charging current
-	control
-Message-ID: <20091019213542.GA1482@ucw.cz>
-References: <1255471148-29047-1-git-send-email-fercerpav@gmail.com> <1255471148-29047-2-git-send-email-fercerpav@gmail.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>, arnd@arndb.de,
+       peterz@infradead.org, Louis.Rilling@kerlabs.com, roland@redhat.com,
+       kosaki.motohiro@jp.fujitsu.com, randy.dunlap@oracle.com,
+       linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
+Subject: Re: [RFC][v8][PATCH 10/10]: Document clone3() syscall
+Message-ID: <20091019213636.GB1482@ucw.cz>
+References: <20091013044925.GA28181@us.ibm.com> <20091013045556.GJ28435@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1255471148-29047-2-git-send-email-fercerpav@gmail.com>
+In-Reply-To: <20091013045556.GJ28435@us.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-10-14 01:59:04, Paul Fertser wrote:
-> From: Balaji Rao <balajirrao@openmoko.org>
-> 
-> Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
-> Signed-off-by: Paul Fertser <fercerpav@gmail.com>
-> ---
->  drivers/power/pcf50633-charger.c  |   73 ++++++++++++++++++++++++++++++++++---
->  include/linux/mfd/pcf50633/core.h |    2 +
->  2 files changed, 70 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/power/pcf50633-charger.c b/drivers/power/pcf50633-charger.c
-> index 48e92c0..13f2839 100644
-> --- a/drivers/power/pcf50633-charger.c
-> +++ b/drivers/power/pcf50633-charger.c
-> @@ -48,16 +48,21 @@ int pcf50633_mbc_usb_curlim_set(struct pcf50633 *pcf, int ma)
->  	u8 bits;
->  	int charging_start = 1;
->  	u8 mbcs2, chgmod;
-> +	unsigned int mbcc5;
->  
-> -	if (ma >= 1000)
-> +	if (ma >= 1000) {
->  		bits = PCF50633_MBCC7_USB_1000mA;
-> -	else if (ma >= 500)
-> +		ma = 1000;
-> +	} else if (ma >= 500) {
->  		bits = PCF50633_MBCC7_USB_500mA;
-> -	else if (ma >= 100)
-> +		ma = 500;
-> +	} else if (ma >= 100) {
->  		bits = PCF50633_MBCC7_USB_100mA;
-> -	else {
-> +		ma = 100;
-> +	} else {
->  		bits = PCF50633_MBCC7_USB_SUSPEND;
->  		charging_start = 0;
-> +		ma = 0;
->  	}
->  
->  	ret = pcf50633_reg_set_bit_mask(pcf, PCF50633_REG_MBCC7,
-> @@ -67,7 +72,24 @@ int pcf50633_mbc_usb_curlim_set(struct pcf50633 *pcf, int ma)
->  	else
->  		dev_info(pcf->dev, "usb curlim to %d mA\n", ma);
->  
-> -	/* Manual charging start */
-> +	/*
-> +	 * We limit the charging current to be the USB current limit.
-> +	 * The reason is that on pcf50633, when it enters PMU Standby mode,
-> +	 * which it does when the device goes "off", the USB current limit
-> +	 * reverts to the variant default.  In at least one common case, that
-> +	 * default is 500mA.  By setting the charging current to be the same
-> +	 * as the USB limit we set here before PMU standby, we enforce it only
-> +	 * using the correct amount of current even when the USB current limit
-> +	 * gets reset to the wrong thing
-> +	 */
+Hi!
+
+> This gives a brief overview of the clone3() system call.  We should
+
+Thanks!
+
+> eventually describe more details in existing clone(2) man page or in
+> a new man page.
+
+M. Kerrisk (see MAINTAINERS) maintains man pages...
+
+> Changelog[v8]:
+> 	- clone2() is already in use in IA64. Rename syscall to clone3()
+...
+> Index: linux-2.6/Documentation/clone2
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6/Documentation/clone2	2009-10-12 19:54:38.000000000 -0700
+
+clone3?
+
+> +struct clone_struct {
+> +	u64 flags;
+> +	u64 child_stack;
+
+u64 seems wrong  on 32 bit platforms. ulong?
+
+> +	u32 nr_pids;
+
+So nr_pids is either 1 or 2?
+
+> +	u32 reserved1;
+> +	u64 parent_tid;
+> +	u64 child_tid;
+> +	u64 reserved2;
+> +};
 > +
-> +	if (mbc->pcf->pdata->chg_ref_current_ma) {
-> +		mbcc5 = (ma << 8) / mbc->pcf->pdata->chg_ref_current_ma;
-> +		if (mbcc5 > 255)
-> +			mbcc5 = 255;
-> +		pcf50633_reg_write(mbc->pcf, PCF50633_REG_MBCC5, mbcc5);
-> +	}
+
+
+> +	See CLONE_NEWPID section of clone(2) man page for details about pid
+> +	namespaces.
 > +
->  	mbcs2 = pcf50633_reg_read(pcf, PCF50633_REG_MBCS2);
->  	chgmod = (mbcs2 & PCF50633_MBCS2_MBC_MASK);
->  
-> @@ -157,9 +179,50 @@ static ssize_t set_usblim(struct device *dev,
->  
->  static DEVICE_ATTR(usb_curlim, S_IRUGO | S_IWUSR, show_usblim, set_usblim);
->  
-> +static ssize_t
-> +show_chglim(struct device *dev, struct device_attribute *attr, char *buf)
-> +{
-> +	struct pcf50633_mbc *mbc = dev_get_drvdata(dev);
-> +	u8 mbcc5 = pcf50633_reg_read(mbc->pcf, PCF50633_REG_MBCC5);
-> +	unsigned int ma;
+> +	The order pids in @pids corresponds to the nesting order of pid-
+> +	namespaces, with @pids[0] corresponding to the init_pid_ns.
+
+Ok, so I'm confused.
+
+> +	If a pid in the @pids list is 0, the kernel will assign the next
+> +	available pid in the pid namespace, for the process.
 > +
-> +	if (!mbc->pcf->pdata->chg_ref_current_ma)
-> +		return -ENODEV;
+> +	If a pid in the @pids list is non-zero, the kernel tries to assign
+> +	the specified pid in that namespace.  If that pid is already in use
+> +	by another process, the system call fails with -EBUSY.
+...
+> +	On failure, clone3() returns -1 and sets 'errno' to one of following
+> +	values (the child process is not created).
+
+Inconsistent with above. Syscalls really return -ERRCODE, errno is
+glibc magic.
+
+> +Example:
 > +
-> +	ma = (mbc->pcf->pdata->chg_ref_current_ma *  mbcc5) >> 8;
+> +	pid_t pids[] = { 77, 99 };
+> +	struct clone_struct cs;
 > +
-> +	return sprintf(buf, "%u\n", ma);
-> +}
+> +	cs.flags = (u64) SIGCHLD;
+> +	cs.child_stack = (u64) setup_child_stack();
+> +	cs.nr_pids = 2;
+> +	cs.parent_tid = 0LL;
+> +	cs.child_tid = 0LL;
 > +
-> +static ssize_t set_chglim(struct device *dev,
-> +		struct device_attribute *attr, const char *buf, size_t count)
-> +{
-> +	struct pcf50633_mbc *mbc = dev_get_drvdata(dev);
-> +	unsigned long ma;
-> +	unsigned int mbcc5;
-> +	int ret;
-> +
-> +	if (!mbc->pcf->pdata->chg_ref_current_ma)
-> +		return -ENODEV;
-> +
-> +	ret = strict_strtoul(buf, 10, &ma);
-> +	if (ret)
-> +		return -EINVAL;
-> +
-> +	mbcc5 = (ma << 8) / mbc->pcf->pdata->chg_ref_current_ma;
-> +	if (mbcc5 > 255)
-> +		mbcc5 = 255;
-> +	pcf50633_reg_write(mbc->pcf, PCF50633_REG_MBCC5, mbcc5);
-> +
-> +	return count;
-> +}
-> +
-> +static DEVICE_ATTR(chg_curlim, S_IRUGO | S_IWUSR, show_chglim, set_chglim);
-> +
->  static struct attribute *pcf50633_mbc_sysfs_entries[] = {
->  	&dev_attr_chgmode.attr,
->  	&dev_attr_usb_curlim.attr,
-> +	&dev_attr_chg_curlim.attr,
->  	NULL,
->  };
->  
-> diff --git a/include/linux/mfd/pcf50633/core.h b/include/linux/mfd/pcf50633/core.h
-> index 9aba7b7..222dd90 100644
-> --- a/include/linux/mfd/pcf50633/core.h
-> +++ b/include/linux/mfd/pcf50633/core.h
-> @@ -31,6 +31,8 @@ struct pcf50633_platform_data {
->  
->  	int charging_restart_interval;
->  
-> +	int chg_ref_current_ma;
-> +
->  	/* Callbacks */
->  	void (*probe_done)(struct pcf50633 *);
->  	void (*mbc_event_callback)(struct pcf50633 *, int);
+> +	rc = syscall(__NR_clone3, &cs, pids);
+
+Hmm, is there reason why pids are not at the end of struct
+clone_struct? Passing most parameters in special structure, then pids
+separately is strange...
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
