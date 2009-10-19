@@ -1,93 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751772AbZJSEuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751041AbZJSFDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751772AbZJSEuh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 00:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbZJSEug
+	id S1751041AbZJSFDX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 01:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbZJSFDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 00:50:36 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:63585 "EHLO mx2.netapp.com"
+	Mon, 19 Oct 2009 01:03:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:50223 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750837AbZJSEuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 00:50:35 -0400
-X-IronPort-AV: E=Sophos;i="4.44,583,1249282800"; 
-   d="scan'208";a="260337272"
-Subject: Re: 2.6.31.4: Oops
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephan von Krawczynski <skraw@ithnet.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-In-Reply-To: <20091018204950.7cc299ec.akpm@linux-foundation.org>
-References: <20091014115306.2a87a7a4.skraw@ithnet.com>
-	 <20091018204950.7cc299ec.akpm@linux-foundation.org>
-Content-Type: text/plain
+	id S1750698AbZJSFDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 01:03:22 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Dave Jones <davej@redhat.com>
+Subject: [PATCH] cpufreq: use an enum for speedstep processor identification
+Date: Mon, 19 Oct 2009 15:33:16 +1030
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Dominik Brodowski <linux@brodo.de>, dave.mueller@gmx.ch,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20091007201108.GA16813@redhat.com> <200910191418.23238.rusty@rustcorp.com.au>
+In-Reply-To: <200910191418.23238.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Mon, 19 Oct 2009 13:50:23 +0900
-Message-Id: <1255927823.5628.4.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-X-OriginalArrivalTime: 19 Oct 2009 04:50:24.0490 (UTC) FILETIME=[ABAAACA0:01CA5077]
+Content-Disposition: inline
+Message-Id: <200910191533.16979.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-18 at 20:49 -0700, Andrew Morton wrote:
-> (cc linux-nfs)
-> 
-> On Wed, 14 Oct 2009 11:53:06 +0200 Stephan von Krawczynski <skraw@ithnet.com> wrote:
-> 
-> > Hello all,
-> > 
-> > just received this one:
-> > 
-> > Oct 13 20:16:02 box kernel: BUG: unable to handle kernel paging request at ffffff98
-> > Oct 13 20:16:02 box kernel: IP: [<f827b2e4>] nfs_writepages+0x13/0xad [nfs]
-> > Oct 13 20:16:02 box kernel: *pde = 0042d067 *pte = 00000000
-> > Oct 13 20:16:02 box kernel: Oops: 0002 [#1]
-> > Oct 13 20:16:02 box kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:03:08.0/subsystem_device
-> > Oct 13 20:16:02 box kernel: Modules linked in: speedstep_lib freq_table nfs lockd sunrpc e100 mii e1000
-> > Oct 13 20:16:02 box kernel:
-> > Oct 13 20:16:02 box kernel: Pid: 4638, comm: httpd2-prefork Not tainted (2.6.31.4 #1)
-> > Oct 13 20:16:02 box kernel: EIP: 0060:[<f827b2e4>] EFLAGS: 00010292 CPU: 0
-> > Oct 13 20:16:02 box kernel: EIP is at nfs_writepages+0x13/0xad [nfs]
-> > Oct 13 20:16:02 box kernel: EAX: f0d0f654 EBX: 0000000a ECX: 00000020 EDX: f6393ecc
-> > Oct 13 20:16:02 box kernel: ESI: f0d0f654 EDI: 00000000 EBP: ffffff98 ESP: f6393e38
-> > Oct 13 20:16:02 box kernel:  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-> > Oct 13 20:16:02 box kernel: Process httpd2-prefork (pid: 4638, ti=f6392000 task=f63f7850 task.ti=f6392000)
-> > Oct 13 20:16:03 box kernel: Stack:
-> > Oct 13 20:16:03 box kernel:  f6393ecc f0d0f654 00000000 c0161f93 002283a0 00000000 00000000 f6088052
-> > Oct 13 20:16:03 box kernel: <0> f4d0f7ec f6393e6c f715ca00 f827362e f700d900 f4d08a14 0000000a f0d0f654
-> > Oct 13 20:16:03 box kernel: <0> f6393ecc 00000020 f827c7ce 0000000a f6393ec4 f6393ef4 f0d0f654 f827c85e
-> > Oct 13 20:16:03 box kernel: Call Trace:
-> > Oct 13 20:16:03 box kernel:  [<c0161f93>] ? __link_path_walk+0x840/0x910
-> > Oct 13 20:16:03 box kernel:  [<f827362e>] ? __nfs_revalidate_inode+0x105/0x18a [nfs]
-> > Oct 13 20:16:03 box kernel:  [<f827c7ce>] ? __nfs_write_mapping+0xf/0x3b [nfs]
-> > Oct 13 20:16:03 box kernel:  [<f827c85e>] ? nfs_write_mapping+0x64/0x6c [nfs]
-> > Oct 13 20:16:03 box kernel:  [<c01e0341>] ? __copy_to_user_ll+0x3e/0x45
-> > Oct 13 20:16:03 box kernel:  [<f8273238>] ? nfs_getattr+0x34/0xaf [nfs]
-> > Oct 13 20:16:03 box kernel:  [<f8273204>] ? nfs_getattr+0x0/0xaf [nfs]
-> > Oct 13 20:16:03 box kernel:  [<c015dce1>] ? vfs_getattr+0x21/0x30
-> > Oct 13 20:16:03 box kernel:  [<c015dd6e>] ? vfs_fstatat+0x4d/0x61
-> > Oct 13 20:16:03 box kernel:  [<c015dda7>] ? vfs_lstat+0x13/0x15
-> > Oct 13 20:16:03 box kernel:  [<c015e2fc>] ? sys_lstat64+0xf/0x23
-> > Oct 13 20:16:03 box kernel:  [<c0102848>] ? sysenter_do_call+0x12/0x26
-> > Oct 13 20:16:03 box kernel: Code: c3 56 89 c6 53 e8 4a ff ff ff 89 c3 89 f0 e8 5b 0e ec c7 89 d8 5b 5e c3 55 57 56 53 83 ec 38 89 44 24 04 89 14 24 8b 38 8d 6f 98 <0f> ba 6f 98 04 19 c0 31 d2 85 c0 74 19 68 82 00 00 00 ba 04 00
-> > Oct 13 20:16:03 box kernel: EIP: [<f827b2e4>] nfs_writepages+0x13/0xad [nfs] SS:ESP 0068:f6393e38
-> > Oct 13 20:16:03 box kernel: CR2: 00000000ffffff98
-> > Oct 13 20:16:03 box kernel: ---[ end trace 8d9ba71dd690c760 ]---
-> > 
+The "unsigned int processor" everywhere confused Rusty, leading to
+breakage when he passed in smp_processor_id().
 
->From the Oops, it looks as if mapping->host is a null pointer. I don't
-see how this can ever happen short of a memory scribble...
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Stephan, have you tried turning on the slab debugging code?
-
-Cheers
-  Trond
--- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c b/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
+--- a/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
++++ b/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
+@@ -39,7 +39,7 @@ static struct pci_dev *speedstep_chipset
+ 
+ /* speedstep_processor
+  */
+-static unsigned int speedstep_processor;
++static enum speedstep_processor speedstep_processor;
+ 
+ static u32 pmbase;
+ 
+diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c b/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
+--- a/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
++++ b/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
+@@ -34,7 +34,7 @@ static int relaxed_check;
+  *                   GET PROCESSOR CORE SPEED IN KHZ                 *
+  *********************************************************************/
+ 
+-static unsigned int pentium3_get_frequency(unsigned int processor)
++static unsigned int pentium3_get_frequency(enum speedstep_processor processor)
+ {
+ 	/* See table 14 of p3_ds.pdf and table 22 of 29834003.pdf */
+ 	struct {
+@@ -227,7 +227,7 @@ static unsigned int pentium4_get_frequen
+ 
+ 
+ /* Warning: may get called from smp_call_function_single. */
+-unsigned int speedstep_get_frequency(unsigned int processor)
++unsigned int speedstep_get_frequency(enum speedstep_processor processor)
+ {
+ 	switch (processor) {
+ 	case SPEEDSTEP_CPU_PCORE:
+@@ -380,7 +380,7 @@ EXPORT_SYMBOL_GPL(speedstep_detect_proce
+  *                     DETECT SPEEDSTEP SPEEDS                       *
+  *********************************************************************/
+ 
+-unsigned int speedstep_get_freqs(unsigned int processor,
++unsigned int speedstep_get_freqs(enum speedstep_processor processor,
+ 				  unsigned int *low_speed,
+ 				  unsigned int *high_speed,
+ 				  unsigned int *transition_latency,
+diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-lib.h b/arch/x86/kernel/cpu/cpufreq/speedstep-lib.h
+--- a/arch/x86/kernel/cpu/cpufreq/speedstep-lib.h
++++ b/arch/x86/kernel/cpu/cpufreq/speedstep-lib.h
+@@ -11,18 +11,18 @@
+ 
+ 
+ /* processors */
+-
+-#define SPEEDSTEP_CPU_PIII_C_EARLY	0x00000001  /* Coppermine core */
+-#define SPEEDSTEP_CPU_PIII_C		0x00000002  /* Coppermine core */
+-#define SPEEDSTEP_CPU_PIII_T		0x00000003  /* Tualatin core */
+-#define SPEEDSTEP_CPU_P4M		0x00000004  /* P4-M  */
+-
++enum speedstep_processor {
++	SPEEDSTEP_CPU_PIII_C_EARLY = 0x00000001,  /* Coppermine core */
++	SPEEDSTEP_CPU_PIII_C	   = 0x00000002,  /* Coppermine core */
++	SPEEDSTEP_CPU_PIII_T	   = 0x00000003,  /* Tualatin core */
++	SPEEDSTEP_CPU_P4M	   = 0x00000004,  /* P4-M  */
+ /* the following processors are not speedstep-capable and are not auto-detected
+  * in speedstep_detect_processor(). However, their speed can be detected using
+  * the speedstep_get_frequency() call. */
+-#define SPEEDSTEP_CPU_PM		0xFFFFFF03  /* Pentium M  */
+-#define SPEEDSTEP_CPU_P4D		0xFFFFFF04  /* desktop P4  */
+-#define SPEEDSTEP_CPU_PCORE		0xFFFFFF05  /* Core */
++	SPEEDSTEP_CPU_PM	   = 0xFFFFFF03,  /* Pentium M  */
++	SPEEDSTEP_CPU_P4D	   = 0xFFFFFF04,  /* desktop P4  */
++	SPEEDSTEP_CPU_PCORE	   = 0xFFFFFF05,  /* Core */
++};
+ 
+ /* speedstep states -- only two of them */
+ 
+@@ -31,10 +31,10 @@
+ 
+ 
+ /* detect a speedstep-capable processor */
+-extern unsigned int speedstep_detect_processor (void);
++extern enum speedstep_processor speedstep_detect_processor (void);
+ 
+ /* detect the current speed (in khz) of the processor */
+-extern unsigned int speedstep_get_frequency(unsigned int processor);
++extern unsigned int speedstep_get_frequency(enum speedstep_processor processor);
+ 
+ 
+ /* detect the low and high speeds of the processor. The callback
+@@ -42,7 +42,7 @@ extern unsigned int speedstep_get_freque
+  * SPEEDSTEP_LOW; the second argument is zero so that no
+  * cpufreq_notify_transition calls are initiated.
+  */
+-extern unsigned int speedstep_get_freqs(unsigned int processor,
++extern unsigned int speedstep_get_freqs(enum speedstep_processor processor,
+ 	unsigned int *low_speed,
+ 	unsigned int *high_speed,
+ 	unsigned int *transition_latency,
+diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c b/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
+--- a/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
++++ b/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
+@@ -35,7 +35,7 @@ static int smi_cmd;
+ static unsigned int smi_sig;
+ 
+ /* info about the processor */
+-static unsigned int speedstep_processor;
++static enum speedstep_processor speedstep_processor;
+ 
+ /*
+  * There are only two frequency states for each processor. Values
