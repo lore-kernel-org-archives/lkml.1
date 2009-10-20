@@ -1,71 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106AbZJTNTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752088AbZJTNTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752106AbZJTNTo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 09:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbZJTNTo
+	id S1752088AbZJTNTn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 09:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbZJTNTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 09:19:44 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:51560 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752069AbZJTNTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 Oct 2009 09:19:42 -0400
-Subject: Re: [PATCH] perf tools: Shut up compiler warning
-From: Steven Rostedt <srostedt@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <20091020055439.GA29531@elte.hu>
-References: <y> <1255971369-11368-1-git-send-email-acme@redhat.com>
-	 <20091020055439.GA29531@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Red Hat
-Date: Tue, 20 Oct 2009 09:19:19 -0400
-Message-Id: <1256044759.2669.0.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Received: from smtp.nokia.com ([192.100.122.230]:23256 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbZJTNTl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 09:19:41 -0400
+From: <ilkka.koskinen@nokia.com>
+To: <sameo@linux.intel.com>
+CC: <linux-omap@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Date: Tue, 20 Oct 2009 15:19:20 +0200
+Subject: RE: [PATCH 1/2] twl4030: Do not dereference null pointer in error
+ path
+Thread-Topic: [PATCH 1/2] twl4030: Do not dereference null pointer in error
+ path
+Thread-Index: AcpQ0/HID5cFA177TgS0bCEDfi8vSwAsyLPQ
+Message-ID: <F80267346F10C541946CBE8909F1C39E121710C56C@NOK-EUMSG-02.mgdnok.nokia.com>
+References: <1254323515-30866-1-git-send-email-ilkka.koskinen@nokia.com>
+ <F80267346F10C541946CBE8909F1C39E12170A3880@NOK-EUMSG-02.mgdnok.nokia.com>
+ <20091019155230.GF3885@sortiz.org>
+In-Reply-To: <20091019155230.GF3885@sortiz.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
+X-OriginalArrivalTime: 20 Oct 2009 13:19:31.0938 (UTC) FILETIME=[F5C71420:01CA5187]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-20 at 07:54 +0200, Ingo Molnar wrote:
-> * Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
-> 
-> > cc1: warnings being treated as errors
-> > util/trace-event-parse.c: In function ‘parse_ftrace_printk’:
-> > util/trace-event-parse.c:289: warning: ‘fmt’ may be used uninitialized in this function
-> > 
-> > Cc: Steven Rostedt <srostedt@redhat.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> > Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> > ---
-> >  tools/perf/util/trace-event-parse.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-> > index 4b61b49..0b8a01b 100644
-> > --- a/tools/perf/util/trace-event-parse.c
-> > +++ b/tools/perf/util/trace-event-parse.c
-> > @@ -286,7 +286,7 @@ void parse_ftrace_printk(char *file, unsigned int size __unused)
-> >  	char *line;
-> >  	char *next = NULL;
-> >  	char *addr_str;
-> > -	char *fmt;
-> > +	char *fmt = NULL;
-> >  	int i;
-> >  
-> >  	line = strtok_r(file, "\n", &next);
-> 
-> Actually, this might be a real bug that GCC pointed out: what makes sure 
-> that strtok_r() does not return a NULL (no more tokens) and hence fmt 
-> remains NULL (crashing the rest of the parser)?
+ 
+Hi Samuel,
 
-Ug, yeah that's a bug. That was one of the later changes I did at night.
-I'll go look at it and see how it should really be.
+>From: ext Samuel Ortiz [mailto:sameo@linux.intel.com] 
+>Sent: 19 October, 2009 18:53
+>On Fri, Oct 16, 2009 at 04:21:41PM +0200, 
+>ilkka.koskinen@nokia.com wrote:
+>> 
+>> Hi Samuel,
+>> 
+>> What is the status of this patch and the other one:
+>> [PATCH 2/2] twl4030: Enable low-power mode to 32KHz oscillator
+>I'm sorry but it seems I havent received those 2 patches. 
+>Could you please
+>re-send them ?
 
-Thanks,
+Sorry, my mistake. I already forgot that the patches never
+reached you. I'll resend them right away.
 
--- Steve
+Cheers, Ilkka
 
-
+>> >-----Original Message-----
+>> >From: Koskinen Ilkka (Nokia-D/Tampere) 
+>> >Sent: 30 September, 2009 18:12
+>> >To: linux-kernel@vger.kernel.org; sameo@linux.intel.com
+>> >Cc: linux-omap@vger.kernel.org; Koskinen Ilkka (Nokia-D/Tampere)
+>> >Subject: [PATCH 1/2] twl4030: Do not dereference null pointer 
+>> >in error path
+>> >
+>> >Signed-off-by: Ilkka Koskinen <ilkka.koskinen@nokia.com>
+>> >---
+>> > drivers/mfd/twl4030-core.c |    2 +-
+>> > 1 files changed, 1 insertions(+), 1 deletions(-)
+>> >
+>> >diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+>> >index e424cf6..8cf0a02 100644
+>> >--- a/drivers/mfd/twl4030-core.c
+>> >+++ b/drivers/mfd/twl4030-core.c
+>> >@@ -792,7 +792,7 @@ twl4030_probe(struct i2c_client *client, 
+>> >const struct i2c_device_id *id)
+>> > 			twl->client = i2c_new_dummy(client->adapter,
+>> > 					twl->address);
+>> > 			if (!twl->client) {
+>> >-				dev_err(&twl->client->dev,
+>> >+				dev_err(&client->dev,
+>> > 					"can't attach client %d\n", i);
+>> > 				status = -ENOMEM;
+>> > 				goto fail;
+>> >-- 
+>> >1.6.0.4
+>> >
+>> >
+>
+>-- 
+>Intel Open Source Technology Centre
+>http://oss.intel.com/
+>
