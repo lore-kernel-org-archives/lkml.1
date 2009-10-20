@@ -1,79 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751904AbZJTLvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751912AbZJTLz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751904AbZJTLvF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 07:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbZJTLvF
+	id S1751912AbZJTLz6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 07:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbZJTLz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 07:51:05 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36769 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751095AbZJTLvE (ORCPT
+	Tue, 20 Oct 2009 07:55:58 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38222 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751653AbZJTLz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 07:51:04 -0400
-Date: Tue, 20 Oct 2009 12:51:06 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "sameo@linux.intel.com" <sameo@linux.intel.com>,
-       "tony@atomide.com" <tony@atomide.com>
-Subject: Re: [PATCH 4/4] ASoC: TWL4030: Driver registration via
- twl4030_codec MFD
-Message-ID: <20091020115106.GB2909@rakim.wolfsonmicro.main>
-References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com>
- <1255956140-4829-5-git-send-email-peter.ujfalusi@nokia.com>
- <20091020102540.GB28592@opensource.wolfsonmicro.com>
- <200910201430.49223.peter.ujfalusi@nokia.com>
+	Tue, 20 Oct 2009 07:55:57 -0400
+Message-ID: <c18f2c2738f6a584b431324b38f21970.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20091019213415.32729.86034.stgit@bob.kio>
+References: <20091019212740.32729.7171.stgit@bob.kio>
+    <20091019213415.32729.86034.stgit@bob.kio>
+Date: Tue, 20 Oct 2009 20:55:58 +0900 (JST)
+Subject: Re: [PATCH 1/5] mm: add numa node symlink for memory section in
+ sysfs
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Alex Chiang" <achiang@hp.com>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+       "Ingo Molnar" <mingo@elte.hu>, "Gary Hade" <garyhade@us.ibm.com>,
+       "Badari Pulavarty" <pbadari@us.ibm.com>, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910201430.49223.peter.ujfalusi@nokia.com>
-X-Cookie: Real programs don't eat cache.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20, 2009 at 02:30:49PM +0300, Peter Ujfalusi wrote:
+Alex Chiang wrote:
+> Commit c04fc586c (mm: show node to memory section relationship with
+> symlinks in sysfs) created symlinks from nodes to memory sections, e.g.
+>
+> /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+>
+> If you're examining the memory section though and are wondering what
+> node it might belong to, you can find it by grovelling around in
+> sysfs, but it's a little cumbersome.
+>
+> Add a reverse symlink for each memory section that points back to the
+> node to which it belongs.
+>
+> Cc: Gary Hade <garyhade@us.ibm.com>
+> Cc: Badari Pulavarty <pbadari@us.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
 
-> In patch 1, the register definitions had to be added, so that the twl4030_codec 
-> driver knows the registers (and there could be the vibra driver placed 
-> separately from the soc codec driver).
-> In patch 3, where I modify the soc codec driver to use the new method, than I 
-> remove the definitions and use the existing header file, introduced by the first 
-> patch.
-> All in all, after each patch the kernel can be builds, boots and works as 
-> before.
+2 yeas ago, I wanted to add this symlink. But don't...because
+some vendor's host has no 1-to-1 relationship between a memsection
+and a node. (I don't remember precisely, sorry....s390?)
 
-Sure, though I suspect patch 3 could just be split in two happily with
-an include.  I don't really mind either way.  If you are going to keep
-them as one patch it'd be good to call out the move in the changelog.
+Then, a memsection can be under prural nodes.
 
-> > You've also got the bias being brought up when the ASoC system comes up
-> > rather than when the driver comes up.  To be honest it doesn't really
-> > make any difference either way, it's just slightly different to other
-> > drivers.
+At brief look, this patch provides 1-to-1 relationship between them.
+If it's ok for all stake-holders, I welcome this.
 
-> I was thinking that if you built the kernel with SND_SOC_ALL_CODECS on OMAP 
-> platform for some reason and you don't actually use the twl4030 as audio device 
-> -> no machine driver, which would use it, than the codec part would be off.
-> But yes, probably I can move the povering up to the probe function.
+Thanks,
+-Kame
 
-That's a good enough reason to leave things as they are, though really
-if you're building SND_SOC_ALL_CODECs in a production system you're
-being a bit strange.
+> ---
+>
+>  Documentation/ABI/testing/sysfs-devices-memory |   14 +++++++++++++-
+>  Documentation/memory-hotplug.txt               |   11 +++++++----
+>  drivers/base/node.c                            |   11 ++++++++++-
+>  3 files changed, 30 insertions(+), 6 deletions(-)
+>
+> diff --git a/Documentation/ABI/testing/sysfs-devices-memory
+> b/Documentation/ABI/testing/sysfs-devices-memory
+> index 9fe91c0..bf1627b 100644
+> --- a/Documentation/ABI/testing/sysfs-devices-memory
+> +++ b/Documentation/ABI/testing/sysfs-devices-memory
+> @@ -60,6 +60,19 @@ Description:
+>  Users:		hotplug memory remove tools
+>  		https://w3.opensource.ibm.com/projects/powerpc-utils/
+>
+> +
+> +What:		/sys/devices/system/memoryX/nodeY
+> +Date:		October 2009
+> +Contact:	Linux Memory Management list <linux-mm@kvack.org>
+> +Description:
+> +		When CONFIG_NUMA is enabled, a symbolic link that
+> +		points to the corresponding NUMA node directory.
+> +
+> +		For example, the following symbolic link is created for
+> +		memory section 9 on node0:
+> +		/sys/devices/system/memory/memory9/node0 -> ../../node/node0
+> +
+> +
+>  What:		/sys/devices/system/node/nodeX/memoryY
+>  Date:		September 2008
+>  Contact:	Gary Hade <garyhade@us.ibm.com>
+> @@ -70,4 +83,3 @@ Description:
+>  		memory section directory.  For example, the following symbolic
+>  		link is created for memory section 9 on node0.
+>  		/sys/devices/system/node/node0/memory9 -> ../../memory/memory9
+> -
+> diff --git a/Documentation/memory-hotplug.txt
+> b/Documentation/memory-hotplug.txt
+> index bbc8a6a..57e7e9c 100644
+> --- a/Documentation/memory-hotplug.txt
+> +++ b/Documentation/memory-hotplug.txt
+> @@ -160,12 +160,15 @@ Under each section, you can see 4 files.
+>  NOTE:
+>    These directories/files appear after physical memory hotplug phase.
+>
+> -If CONFIG_NUMA is enabled the
+> -/sys/devices/system/memory/memoryXXX memory section
+> -directories can also be accessed via symbolic links located in
+> -the /sys/devices/system/node/node* directories.  For example:
+> +If CONFIG_NUMA is enabled the memoryXXX/ directories can also be accessed
+> +via symbolic links located in the /sys/devices/system/node/node*
+> directories.
+> +
+> +For example:
+>  /sys/devices/system/node/node0/memory9 -> ../../memory/memory9
+>
+> +A backlink will also be created:
+> +/sys/devices/system/memory/memory9/node0 -> ../../node/node0
+> +
+>  --------------------------------
+>  4. Physical memory hot-add phase
+>  --------------------------------
+> diff --git a/drivers/base/node.c b/drivers/base/node.c
+> index 1fe5536..3108b21 100644
+> --- a/drivers/base/node.c
+> +++ b/drivers/base/node.c
+> @@ -268,6 +268,7 @@ static int get_nid_for_pfn(unsigned long pfn)
+>  /* register memory section under specified node if it spans that node */
+>  int register_mem_sect_under_node(struct memory_block *mem_blk, int nid)
+>  {
+> +	int ret;
+>  	unsigned long pfn, sect_start_pfn, sect_end_pfn;
+>
+>  	if (!mem_blk)
+> @@ -284,9 +285,15 @@ int register_mem_sect_under_node(struct memory_block
+> *mem_blk, int nid)
+>  			continue;
+>  		if (page_nid != nid)
+>  			continue;
+> -		return sysfs_create_link_nowarn(&node_devices[nid].sysdev.kobj,
+> +		ret = sysfs_create_link_nowarn(&node_devices[nid].sysdev.kobj,
+>  					&mem_blk->sysdev.kobj,
+>  					kobject_name(&mem_blk->sysdev.kobj));
+> +		if (ret)
+> +			return ret;
+> +
+> +		return sysfs_create_link_nowarn(&mem_blk->sysdev.kobj,
+> +				&node_devices[nid].sysdev.kobj,
+> +				kobject_name(&node_devices[nid].sysdev.kobj));
+>  	}
+>  	/* mem section does not span the specified node */
+>  	return 0;
+> @@ -315,6 +322,8 @@ int unregister_mem_sect_under_nodes(struct
+> memory_block *mem_blk)
+>  			continue;
+>  		sysfs_remove_link(&node_devices[nid].sysdev.kobj,
+>  			 kobject_name(&mem_blk->sysdev.kobj));
+> +		sysfs_remove_link(&mem_blk->sysdev.kobj,
+> +			 kobject_name(&node_devices[nid].sysdev.kobj));
+>  	}
+>  	return 0;
+>  }
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-> > > +MODULE_ALIAS("platform:twl4030_codec:audio");
 
-> > Is that second colon right given...
-
-> I'm not sure about it at all either. I did not found any other 'nested MFD' 
-> drivers around, so this is just a guess
-> Should it be:
-
->  +MODULE_ALIAS("platform:twl4030_codec_audio");
-
-Yes.  The aliasing makes no reference to the parents of the device, it
-only cares about the device name - for the purposes of module loading
-and driver matching it's identical to any other platform device.
