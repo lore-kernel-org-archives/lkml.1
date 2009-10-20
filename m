@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbZJTWv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbZJTXAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752474AbZJTWv1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 18:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbZJTWv1
+	id S1752838AbZJTXAL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 19:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZJTXAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 18:51:27 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:59087 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751072AbZJTWv0 (ORCPT
+	Tue, 20 Oct 2009 19:00:10 -0400
+Received: from smtp104.biz.mail.mud.yahoo.com ([68.142.200.252]:23981 "HELO
+	smtp104.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752388AbZJTXAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 18:51:26 -0400
-Message-ID: <4ADE3EE9.3090308@us.ibm.com>
-Date: Tue, 20 Oct 2009 15:51:21 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 20 Oct 2009 19:00:09 -0400
+X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
+X-YMail-OSG: NE4FQeUVM1kwlfWgZ0SLeCZaBjd9FzruJ_5jErqrMgac8WCCwM5neu9_bWPPUl9mC7CPB9XxTM9wGMJkXn.WZcG_UInFTlvPaVsXSCFQfpteNQNQdE05.MSBRGoLdX3XuX6Vsd_juwtHrVF42H7tWSRwFHNbfDykJ.JKxssfsjlIZ7pCCuzmEJn3MOQTbirz7ausEOnDAre.WG27Xh3fvaUJEqeGWjFyO4_zTjUWhlykrbAJwlRH61CBH2Ce0oy5HOrQP2TshCCZlP_.x.7iOm7opJFOL5vfHGJXXtSRGZDg.GRRSdnaa6mljny8bqUGBLCvTV6snL9tspHWWGrJ._luWcxrtFi_nzzJcMpK0Z2MqVIKd4Ergf4MUoV_yZo3a8_Rs4Pbv1193nqmiGOJ80NOMtK0NmI3WUxIis4-
+X-Yahoo-Newman-Property: ymail-3
+From: Steven King <sfking@fdwdc.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] fix section mismatch in fec.c
+Date: Tue, 20 Oct 2009 16:00:10 -0700
+User-Agent: KMail/1.9.9
+Organization: fdwdc.com
+Cc: netdev@vger.kernel.org
 MIME-Version: 1.0
-To: John Kacur <jkacur@redhat.com>
-CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH] futex: Detect mismatched requeue targets
-References: <1953271756.544571256071596329.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-In-Reply-To: <1953271756.544571256071596329.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910201600.10545.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Kacur wrote:
-> ----- "Darren Hart" <dvhltc@us.ibm.com> wrote:
-> 
->> John Kacur wrote:
->>> Hello Darren
->>>
->>> I took your patch from commit
->> 84bc4af59081ee974dd80210e694ab59ebe51ce8
->>> and I tried to git-cherry-pick it for v2.6.31.4-rt14
->>>
->>> I had a little merge-commit to resolve. That wasn't too hard, but as
->> the 
->>> code is a bit different between the two versions, I would appreciate
->> it if 
->>> you could review the patch, and make sure that it still makes sense
->> for 
->>> v2.6.31.r-rt14
->> Hi John,
->>
->> It looks good to me.  Where did you have the conflicts?
->>
->> --
-> 
-> The conflict was in the futex_wait_requeue_pi function.
-> That's where you really need to double check that the logic still makes sense.
+fec_enet_init is called by both fec_probe and fec_resume, so it shouldn't 
+be marked as __init.
 
-Hi John,
+Signed-off-by: Steven King <sfking@fdwdc.com>
 
-Yes, I suspect the conflict was do to the retry: label. You should have 
-already pulled in the spurious wakeup patch, so you should be fine.  The 
-patch looks good to me.
 
-Thanks,
+diff --git a/drivers/net/fec.c b/drivers/net/fec.c
+index 2923438..16a1d58 100644
+--- a/drivers/net/fec.c
++++ b/drivers/net/fec.c
+@@ -1654,7 +1654,7 @@ static const struct net_device_ops fec_netdev_ops = {
+   *
+   * index is only used in legacy code
+   */
+-int __init fec_enet_init(struct net_device *dev, int index)
++static int fec_enet_init(struct net_device *dev, int index)
+ {
+ 	struct fec_enet_private *fep = netdev_priv(dev);
+ 	struct bufdesc *cbd_base;
 
 -- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+Steven King -- sfking at fdwdc dot com
