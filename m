@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbZJTFys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbZJTFzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbZJTFys (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 01:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZJTFyr
+	id S1754187AbZJTFzj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 01:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZJTFzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 01:54:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59779 "EHLO mx3.mail.elte.hu"
+	Tue, 20 Oct 2009 01:55:38 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:26560 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754132AbZJTFyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 01:54:46 -0400
-Date: Tue, 20 Oct 2009 07:54:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <srostedt@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] perf tools: Shut up compiler warning
-Message-ID: <20091020055439.GA29531@elte.hu>
-References: <y> <1255971369-11368-1-git-send-email-acme@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1255971369-11368-1-git-send-email-acme@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751734AbZJTFzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 01:55:38 -0400
+From: Amit Shah <amit.shah@redhat.com>
+To: rusty@rustcorp.com.au
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       Amit Shah <amit.shah@redhat.com>
+Subject: [PATCH v9 0/1] virtio-console: Support for generic ports and multiple consoles
+Date: Tue, 20 Oct 2009 11:24:54 +0530
+Message-Id: <1256018095-19400-1-git-send-email-amit.shah@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello all,
 
-* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+Here is a new iteration of the patch series that implements a
+transport for guest and host communications.
 
-> cc1: warnings being treated as errors
-> util/trace-event-parse.c: In function ‘parse_ftrace_printk’:
-> util/trace-event-parse.c:289: warning: ‘fmt’ may be used uninitialized in this function
-> 
-> Cc: Steven Rostedt <srostedt@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
->  tools/perf/util/trace-event-parse.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-> index 4b61b49..0b8a01b 100644
-> --- a/tools/perf/util/trace-event-parse.c
-> +++ b/tools/perf/util/trace-event-parse.c
-> @@ -286,7 +286,7 @@ void parse_ftrace_printk(char *file, unsigned int size __unused)
->  	char *line;
->  	char *next = NULL;
->  	char *addr_str;
-> -	char *fmt;
-> +	char *fmt = NULL;
->  	int i;
->  
->  	line = strtok_r(file, "\n", &next);
+I've tested for compatibility (old qemu & new kernel, new qemu & old
+kernel, new qemu & new kernel) and it all works fine. To maintain
+backward compatibility, the first port to be spawned (port at id 0) is
+to be a console port, to be bound to hvc. This keeps new host, old
+guest happy.
 
-Actually, this might be a real bug that GCC pointed out: what makes sure 
-that strtok_r() does not return a NULL (no more tokens) and hence fmt 
-remains NULL (crashing the rest of the parser)?
+A testsuite is put up at the following site that has an interactive
+test program that can be run in the guest. It also has an automated
+test suite that tests the major functionalities presented here:
 
-	Ingo
+    http://fedorapeople.org/gitweb?p=amitshah/public_git/test-virtserial.git
+
+This version passes all the automated tests there.
+
+Christian has tested the console functionality on s390.
+
+v9:
+- Add debugfs files for each port to expose some port-specific information for
+  easier debugging
+- Port hotplug fix
+- Disallow opening of console ports (open(/dev/vcon0) should fail)
+- A couple of other minor fixes.
+
+Please review and apply,
+	Amit
+
+Amit Shah (1):
+  virtio_console: Add support for multiple ports for generic guest and
+    host communication
+
+ drivers/char/Kconfig           |    6 +
+ drivers/char/virtio_console.c  | 1372 ++++++++++++++++++++++++++++++++++++----
+ include/linux/virtio_console.h |   50 ++-
+ 3 files changed, 1292 insertions(+), 136 deletions(-)
+
