@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbZJTITT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751412AbZJTIWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751287AbZJTITT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 04:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZJTITS
+	id S1751412AbZJTIWp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 04:22:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZJTIWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 04:19:18 -0400
-Received: from fanny.its.uu.se ([130.238.4.241]:48728 "EHLO fanny.its.uu.se"
+	Tue, 20 Oct 2009 04:22:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53098 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbZJTITR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 04:19:17 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19165.29312.300540.500942@pilspetsen.it.uu.se>
-Date: Tue, 20 Oct 2009 10:19:12 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Walleij <linus.walleij@stericsson.com>, linux-mips@linux-mips.org,
-       Ralf Baechle <ralf@linux-mips.org>, Mikael Pettersson <mikpe@it.uu.se>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] Make MIPS dynamic clocksource/clockevent clock code
-	generic
-In-Reply-To: <alpine.LFD.2.00.0910200454300.2863@localhost.localdomain>
-References: <1255819715-19763-1-git-send-email-linus.walleij@stericsson.com>
-	<alpine.LFD.2.00.0910200454300.2863@localhost.localdomain>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+	id S1751071AbZJTIWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 04:22:43 -0400
+Date: Tue, 20 Oct 2009 19:22:42 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: acme@redhat.com, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Re: linux-next: net tree build warnings
+Message-Id: <20091020192242.73a15b31.sfr@canb.auug.org.au>
+In-Reply-To: <20091020.011816.194175213.davem@davemloft.net>
+References: <20091017021024.GI25141@ghostprotocols.net>
+	<20091020.010943.162563535.davem@davemloft.net>
+	<20091020191457.2e0c073c.sfr@canb.auug.org.au>
+	<20091020.011816.194175213.davem@davemloft.net>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__20_Oct_2009_19_22_42_+1100_T0EGliVUaIt3zRa5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner writes:
- > > +static inline void clockevent_set_clock(struct clock_event_device *dev, u32 hz)
- > > +{
- > > +	u64 temp;
- > > +	u32 shift;
- > > +
- > > +	/* Find a shift value */
- > > +	for (shift = 32; shift > 0; shift--) {
- > > +		temp = (u64) hz << shift;
- > > +		do_div(temp, NSEC_PER_SEC);
- > > +		if ((temp >> 32) == 0)
- > > +			break;
- > > +	}
- > > +	dev->shift = shift;
- > > +	dev->mult = (u32) temp;
- > > +}
- > > +
- > > +
- > > +static inline void clocksource_set_clock(struct clocksource *cs, u32 hz)
- > > +{
- > > +	u64 temp;
- > > +	u32 shift;
- > > +
- > > +	/* Find a shift value */
- > > +	for (shift = 32; shift > 0; shift--) {
- > > +		temp = (u64) NSEC_PER_SEC << shift;
- > > +		do_div(temp, hz);
- > > +		if ((temp >> 32) == 0)
- > > +			break;
- > > +	}
- > > +	cs->shift = shift;
- > > +	cs->mult = (u32) temp;
- > > +}
- > > +
- > 
- > So that's the same function twice, right ?
+--Signature=_Tue__20_Oct_2009_19_22_42_+1100_T0EGliVUaIt3zRa5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-They are similar but not identical:
+On Tue, 20 Oct 2009 01:18:16 -0700 (PDT) David Miller <davem@davemloft.net>=
+ wrote:
+>
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> >=20
+> > Should I maybe cc all the linux-next emails about the net tree to netde=
+v?
+>=20
+> Sure, that would help me track things.
 
- > > +		temp = (u64) hz << shift;
- > > +		do_div(temp, NSEC_PER_SEC);
+Done.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-vs
+--Signature=_Tue__20_Oct_2009_19_22_42_+1100_T0EGliVUaIt3zRa5
+Content-Type: application/pgp-signature
 
- > > +		temp = (u64) NSEC_PER_SEC << shift;
- > > +		do_div(temp, hz);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-I suppose both functions could be implemented by a suitably
-parametric third function, but IMO that would just obscure things.
+iEYEARECAAYFAkrdc1IACgkQjjKRsyhoI8yrJgCfSqTH1k0Mo0nKSlJcvneIKg1r
+1UkAn3mw8nNfnSxNgyR0Dk7iQsaon1E3
+=Uqei
+-----END PGP SIGNATURE-----
 
-Making them non-inline I fully agree with.
+--Signature=_Tue__20_Oct_2009_19_22_42_+1100_T0EGliVUaIt3zRa5--
