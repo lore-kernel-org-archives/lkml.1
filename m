@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932411AbZJTAUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbZJTA2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932411AbZJTAUU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 20:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758017AbZJTAUU
+	id S1758086AbZJTA2i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 20:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758067AbZJTA2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 20:20:20 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:47561 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758030AbZJTAUT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 20:20:19 -0400
-Subject: Reminder: Linux Foundation Technical Advisory Board Elections and
- Nomination process, Election tonight tokyo time
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Tech Board Discuss <Tech-board-discuss@lists.linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       ksummit-2009-discuss@lists.linux-foundation.org
-Content-Type: text/plain
-Date: Tue, 20 Oct 2009 09:20:22 +0900
-Message-Id: <1255998022.6006.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Mon, 19 Oct 2009 20:28:38 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:21201 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758035AbZJTA2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 20:28:37 -0400
+Message-ID: <4ADD049E.9080000@redhat.com>
+Date: Mon, 19 Oct 2009 20:30:22 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Ashwin Chaugule <ashbertslists@gmail.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
+       a.p.zijlstra@chello.nl
+Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
+ 	probe and kprobe-tracer bugfixes
+References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <ad7a95ae0910191610q6f6200f1n112a71a0cbd483f1@mail.gmail.com>
+In-Reply-To: <ad7a95ae0910191610q6f6200f1n112a71a0cbd483f1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The elections for five of the ten members of the Linux Foundation
-Technical Advisory Board[TAB] are held every year. This year, the idea
-is to be open to both KS and JLS attendees who wish to vote (should a
-joint event between KS and JLS on Tuesday turn up, it will be held there
-instead).
+Hi Ashwin,
 
-The election will be held at Gonpachi in Ginza
+Ashwin Chaugule wrote:
+> Masami,
+>            I really like your idea with kprobes ! I havent yet run
+> this stuff on my machine, but I've been planning to utilize kprobes
+> with perfevents too. Please let me know if the following functionality
+> is already possible with your patches.
 
-http://www.gonpachi.jp/en/g_zone/home/location
+Thanks! I'm happy to here that you are interested in.
 
-at 21:00 or shortly afterwards.  Any JLS or KS attendee is welcome to
-turn up and vote (small quantities of food and beverage will be provided
-as an incentive).  Nominations will be accepted at the location until
-shortly after 21:00.
+> The basic idea I had was to be able to profile any function in the
+> kernel using kprobes and use the perfevents framework to monitor
+> things like incorrect branch predictions, cache misses etc. for the
+> scope of that function. That way, we can fine tune kernel functions
+> that are in the hot path of kernel control flow, using gcc tricks,
+> inline assembly, or even architecture specific tricks.
 
-Anyone is eligible to stand for election, simply send your nomination
-to:
+Actually, perf-probe can add tracepoint-like events. It will allow you
+to probe function inside by both C-source-line level and address level.
+perf-probe already supports inline function too.
 
-Tech-board-discuss@lists.linux-foundation.org
+Currently, even its syntax is unstable, but you can add an event inside
+some function which is at cfile.c line 100, as below;
 
-We currently have Ten nominees for Five places:
+ perf probe -P 'p:probe1 cfile.c:100'
 
-Greg KH <greg@kroah.com>
-Christoph Lameter <christoph@lameter.com>
-Jonathan Corbet <corbet@lwn.net>
-Arjan van de Ven <arjan@infradead.org>
-Christoph Hellwig <hch@lst.de>
-Roland Dreier <roland@digitalvampire.org>
-John W. Linville <linville@tuxdriver.com>
-Theodore Ts'o <tytso@mit.edu>
-David Woodhouse <dwmw2@infradead.org>
-Thomas Gleixner <tglx@linutronix.de>
+and you can trace it by using perf record as same as other tracepoints
 
-The deadline for receiving nominations by email is also up until the the
-election is held (on the Evening of 19 October Japan time). Although,
-please remember if you're not going to be present that things go wrong
-with both networks and mailing lists, so get your nomination in early).
+ perf record -f -e kprobes:myprobe:record -F 1 -a ls
 
-James Bottomley (TAB Chair)
 
+> Alternately, I think even dynamic trace could provide similar insight
+> with perfevents ? If none of this is already done, I plan to work on
+> this in my spare time and would like to team up with anyone else
+> interested.
+
+Yes, it's done as I said above.
+But it still has long TODO list, including support type of arguments,
+arrays, fields of structures and so on (of course, defining useful
+syntax too). So any comments and contributes are welcome :-)
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
