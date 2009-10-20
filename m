@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbZJTFcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbZJTFb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbZJTFcP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 01:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbZJTFcO
+	id S1753247AbZJTFb5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 01:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZJTFb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 01:32:14 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:39612 "EHLO
+	Tue, 20 Oct 2009 01:31:56 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:39610 "EHLO
 	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbZJTFbv (ORCPT
+	with ESMTP id S1750895AbZJTFbu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 01:31:51 -0400
+	Tue, 20 Oct 2009 01:31:50 -0400
 From: "John W. Linville" <linville@tuxdriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: gregkh@suse.de, "John W. Linville" <linville@tuxdriver.com>
-Subject: [PATCH 2/4] arlan: move driver to staging
-Date: Tue, 20 Oct 2009 14:17:08 +0900
-Message-Id: <1256015830-12700-2-git-send-email-linville@tuxdriver.com>
+Subject: [PATCH 4/4] netwave: move driver to staging
+Date: Tue, 20 Oct 2009 14:17:10 +0900
+Message-Id: <1256015830-12700-4-git-send-email-linville@tuxdriver.com>
 X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
+In-Reply-To: <1256015830-12700-3-git-send-email-linville@tuxdriver.com>
 References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
+ <1256015830-12700-2-git-send-email-linville@tuxdriver.com>
+ <1256015830-12700-3-git-send-email-linville@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the arlan driver to drivers/staging.  This is another pre-802.11
+Move the netwave driver to drivers/staging.  This is another pre-802.11
 driver that has seen virtually no non-API-fixup activity in years, and
 for which no active hardware is likely to still exist.  This driver
 represents unnecessary ongoing maintenance for no clear benefit.
@@ -33,7515 +35,3057 @@ Summit in Tokyo, Japan...
 
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 ---
- drivers/net/wireless/Kconfig       |   16 -
- drivers/net/wireless/Makefile      |    4 -
- drivers/net/wireless/arlan-main.c  | 1887 ------------------------------------
- drivers/net/wireless/arlan-proc.c  | 1253 ------------------------
- drivers/net/wireless/arlan.h       |  539 ----------
- drivers/staging/Kconfig            |    2 +
- drivers/staging/Makefile           |    1 +
- drivers/staging/arlan/Kconfig      |   15 +
- drivers/staging/arlan/Makefile     |    3 +
- drivers/staging/arlan/arlan-main.c | 1887 ++++++++++++++++++++++++++++++++++++
- drivers/staging/arlan/arlan-proc.c | 1253 ++++++++++++++++++++++++
- drivers/staging/arlan/arlan.h      |  539 ++++++++++
- 12 files changed, 3700 insertions(+), 3699 deletions(-)
- delete mode 100644 drivers/net/wireless/arlan-main.c
- delete mode 100644 drivers/net/wireless/arlan-proc.c
- delete mode 100644 drivers/net/wireless/arlan.h
- create mode 100644 drivers/staging/arlan/Kconfig
- create mode 100644 drivers/staging/arlan/Makefile
- create mode 100644 drivers/staging/arlan/arlan-main.c
- create mode 100644 drivers/staging/arlan/arlan-proc.c
- create mode 100644 drivers/staging/arlan/arlan.h
+ drivers/net/wireless/Kconfig         |   65 +--
+ drivers/net/wireless/Makefile        |    3 -
+ drivers/net/wireless/netwave_cs.c    | 1389 ----------------------------------
+ drivers/staging/Kconfig              |    2 +
+ drivers/staging/Makefile             |    1 +
+ drivers/staging/netwave/Kconfig      |   10 +
+ drivers/staging/netwave/Makefile     |    1 +
+ drivers/staging/netwave/netwave_cs.c | 1389 ++++++++++++++++++++++++++++++++++
+ 8 files changed, 1420 insertions(+), 1440 deletions(-)
+ delete mode 100644 drivers/net/wireless/netwave_cs.c
+ create mode 100644 drivers/staging/netwave/Kconfig
+ create mode 100644 drivers/staging/netwave/Makefile
+ create mode 100644 drivers/staging/netwave/netwave_cs.c
 
 diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
-index 019db8e..f38b979 100644
+index fc1eae1..18cadf0 100644
 --- a/drivers/net/wireless/Kconfig
 +++ b/drivers/net/wireless/Kconfig
-@@ -24,22 +24,6 @@ menuconfig WLAN_PRE80211
- 	  This option does not affect the kernel build, it only
- 	  lets you choose drivers.
+@@ -7,47 +7,17 @@ menuconfig WLAN
+ 	depends on !S390
+ 	default y
+ 	---help---
+-	  This section contains all the pre 802.11 and 802.11 wireless
+-	  device drivers. For a complete list of drivers and documentation
++	  This section contains all the 802.11 wireless LAN device
++	  drivers. For a complete list of drivers and documentation
+ 	  on them refer to the wireless wiki:
  
--config ARLAN
--	tristate "Aironet Arlan 655 & IC2200 DS support"
--	depends on ISA && !64BIT && WLAN_PRE80211
--	select WIRELESS_EXT
+ 	  http://wireless.kernel.org/en/users/Drivers
+ 
+ if WLAN
+ 
+-menuconfig WLAN_PRE80211
+-	bool "Wireless LAN (pre-802.11)"
+-	depends on NETDEVICES
 -	---help---
--	  Aironet makes Arlan, a class of wireless LAN adapters. These use the
--	  www.Telxon.com chip, which is also used on several similar cards.
--	  This driver is tested on the 655 and IC2200 series cards. Look at
--	  <http://www.ylenurme.ee/~elmer/655/> for the latest information.
+-	  Say Y if you have any pre-802.11 wireless LAN hardware.
 -
--	  The driver is built as two modules, arlan and arlan-proc. The latter
--	  is the /proc interface and is not needed most of time.
+-	  This option does not affect the kernel build, it only
+-	  lets you choose drivers.
 -
--	  On some computers the card ends up in non-valid state after some
--	  time. Use a ping-reset script to clear it.
+-config PCMCIA_NETWAVE
+-	tristate "Xircom Netwave AirSurfer Pcmcia wireless support"
+-	depends on PCMCIA && WLAN_PRE80211
+-	select WIRELESS_EXT
+-	help
+-	  Say Y here if you intend to attach this type of PCMCIA (PC-card)
+-	  wireless Ethernet networking card to your computer.
 -
- config WAVELAN
- 	tristate "AT&T/Lucent old WaveLAN & DEC RoamAbout DS ISA support"
- 	depends on ISA && WLAN_PRE80211
+-	  To compile this driver as a module, choose M here: the module will be
+-	  called netwave_cs.  If unsure, say N.
+-
+-
+-menuconfig WLAN_80211
+-	bool "Wireless LAN (IEEE 802.11)"
+-	depends on NETDEVICES
+-	---help---
+-	  Say Y if you have any 802.11 wireless LAN hardware.
+-
+-	  This option does not affect the kernel build, it only
+-	  lets you choose drivers.
+-
+ config PCMCIA_RAYCS
+ 	tristate "Aviator/Raytheon 2.4GHz wireless support"
+-	depends on PCMCIA && WLAN_80211
++	depends on PCMCIA
+ 	select WIRELESS_EXT
+ 	---help---
+ 	  Say Y here if you intend to attach an Aviator/Raytheon PCMCIA
+@@ -60,7 +30,6 @@ config PCMCIA_RAYCS
+ 
+ config LIBERTAS
+ 	tristate "Marvell 8xxx Libertas WLAN driver support"
+-	depends on WLAN_80211
+ 	select WIRELESS_EXT
+ 	select LIB80211
+ 	select FW_LOADER
+@@ -100,7 +69,7 @@ config LIBERTAS_DEBUG
+ 
+ config LIBERTAS_THINFIRM
+ 	tristate "Marvell 8xxx Libertas WLAN driver support with thin firmware"
+-	depends on WLAN_80211 && MAC80211
++	depends on MAC80211
+ 	select FW_LOADER
+ 	---help---
+ 	  A library for Marvell Libertas 8xxx devices using thinfirm.
+@@ -113,7 +82,7 @@ config LIBERTAS_THINFIRM_USB
+ 
+ config AIRO
+ 	tristate "Cisco/Aironet 34X/35X/4500/4800 ISA and PCI cards"
+-	depends on ISA_DMA_API && WLAN_80211 && (PCI || BROKEN)
++	depends on ISA_DMA_API && (PCI || BROKEN)
+ 	select WIRELESS_EXT
+ 	select CRYPTO
+ 	---help---
+@@ -131,7 +100,7 @@ config AIRO
+ 
+ config ATMEL
+       tristate "Atmel at76c50x chipset  802.11b support"
+-      depends on (PCI || PCMCIA) && WLAN_80211
++      depends on (PCI || PCMCIA)
+       select WIRELESS_EXT
+       select FW_LOADER
+       select CRC32
+@@ -165,7 +134,7 @@ config PCMCIA_ATMEL
+ 
+ config AT76C50X_USB
+         tristate "Atmel at76c503/at76c505/at76c505a USB cards"
+-        depends on MAC80211 && WLAN_80211 && USB
++        depends on MAC80211 && USB
+         select FW_LOADER
+         ---help---
+           Enable support for USB Wireless devices using Atmel at76c503,
+@@ -173,7 +142,7 @@ config AT76C50X_USB
+ 
+ config AIRO_CS
+ 	tristate "Cisco/Aironet 34X/35X/4500/4800 PCMCIA cards"
+-	depends on PCMCIA && (BROKEN || !M32R) && WLAN_80211
++	depends on PCMCIA && (BROKEN || !M32R)
+ 	select WIRELESS_EXT
+ 	select CRYPTO
+ 	select CRYPTO_AES
+@@ -193,7 +162,7 @@ config AIRO_CS
+ 
+ config PCMCIA_WL3501
+       tristate "Planet WL3501 PCMCIA cards"
+-      depends on EXPERIMENTAL && PCMCIA && WLAN_80211
++      depends on EXPERIMENTAL && PCMCIA
+       select WIRELESS_EXT
+        ---help---
+          A driver for WL3501 PCMCIA 802.11 wireless cards made by Planet.
+@@ -202,7 +171,7 @@ config PCMCIA_WL3501
+ 
+ config PRISM54
+ 	tristate 'Intersil Prism GT/Duette/Indigo PCI/Cardbus (DEPRECATED)'
+-	depends on PCI && EXPERIMENTAL && WLAN_80211
++	depends on PCI && EXPERIMENTAL
+ 	select WIRELESS_EXT
+ 	select FW_LOADER
+ 	---help---
+@@ -224,7 +193,7 @@ config PRISM54
+ 
+ config USB_ZD1201
+ 	tristate "USB ZD1201 based Wireless device support"
+-	depends on USB && WLAN_80211
++	depends on USB
+ 	select WIRELESS_EXT
+ 	select FW_LOADER
+ 	---help---
+@@ -242,7 +211,7 @@ config USB_ZD1201
+ 
+ config USB_NET_RNDIS_WLAN
+ 	tristate "Wireless RNDIS USB support"
+-	depends on USB && WLAN_80211 && EXPERIMENTAL
++	depends on USB && EXPERIMENTAL
+ 	depends on CFG80211
+ 	select USB_USBNET
+ 	select USB_NET_CDCETHER
+@@ -270,7 +239,7 @@ config USB_NET_RNDIS_WLAN
+ 
+ config RTL8180
+ 	tristate "Realtek 8180/8185 PCI support"
+-	depends on MAC80211 && PCI && WLAN_80211 && EXPERIMENTAL
++	depends on MAC80211 && PCI && EXPERIMENTAL
+ 	select EEPROM_93CX6
+ 	---help---
+ 	  This is a driver for RTL8180 and RTL8185 based cards.
+@@ -326,7 +295,7 @@ config RTL8180
+ 
+ config RTL8187
+ 	tristate "Realtek 8187 and 8187B USB support"
+-	depends on MAC80211 && USB && WLAN_80211
++	depends on MAC80211 && USB
+ 	select EEPROM_93CX6
+ 	---help---
+ 	  This is a driver for RTL8187 and RTL8187B based cards.
+@@ -355,7 +324,7 @@ config RTL8187_LEDS
+ 
+ config ADM8211
+ 	tristate "ADMtek ADM8211 support"
+-	depends on MAC80211 && PCI && WLAN_80211 && EXPERIMENTAL
++	depends on MAC80211 && PCI && EXPERIMENTAL
+ 	select CRC32
+ 	select EEPROM_93CX6
+ 	---help---
+@@ -382,7 +351,7 @@ config ADM8211
+ 
+ config MAC80211_HWSIM
+ 	tristate "Simulated radio testing tool for mac80211"
+-	depends on MAC80211 && WLAN_80211
++	depends on MAC80211
+ 	---help---
+ 	  This driver is a developer testing tool that can be used to test
+ 	  IEEE 802.11 networking stack (mac80211) functionality. This is not
+@@ -395,7 +364,7 @@ config MAC80211_HWSIM
+ 
+ config MWL8K
+ 	tristate "Marvell 88W8xxx PCI/PCIe Wireless support"
+-	depends on MAC80211 && PCI && WLAN_80211 && EXPERIMENTAL
++	depends on MAC80211 && PCI && EXPERIMENTAL
+ 	---help---
+ 	  This driver supports Marvell TOPDOG 802.11 wireless cards.
+ 
 diff --git a/drivers/net/wireless/Makefile b/drivers/net/wireless/Makefile
-index 527c272..b56c70f 100644
+index f4a7c8a..5d4ce4d 100644
 --- a/drivers/net/wireless/Makefile
 +++ b/drivers/net/wireless/Makefile
-@@ -5,10 +5,6 @@
+@@ -5,9 +5,6 @@
  obj-$(CONFIG_IPW2100) += ipw2x00/
  obj-$(CONFIG_IPW2200) += ipw2x00/
  
--obj-$(CONFIG_ARLAN) += arlan.o 
+-# Obsolete cards
+-obj-$(CONFIG_PCMCIA_NETWAVE)	+= netwave_cs.o
 -
--arlan-objs := arlan-main.o arlan-proc.o
--
- # Obsolete cards
- obj-$(CONFIG_WAVELAN)		+= wavelan.o
- obj-$(CONFIG_PCMCIA_NETWAVE)	+= netwave_cs.o
-diff --git a/drivers/net/wireless/arlan-main.c b/drivers/net/wireless/arlan-main.c
+ obj-$(CONFIG_HERMES)		+= orinoco/
+ 
+ obj-$(CONFIG_AIRO)		+= airo.o
+diff --git a/drivers/net/wireless/netwave_cs.c b/drivers/net/wireless/netwave_cs.c
 deleted file mode 100644
-index 921a082..0000000
---- a/drivers/net/wireless/arlan-main.c
+index 9498b46..0000000
+--- a/drivers/net/wireless/netwave_cs.c
 +++ /dev/null
-@@ -1,1887 +0,0 @@
--/*
-- *  Copyright (C) 1997 Cullen Jennings
-- *  Copyright (C) 1998 Elmer Joandiu, elmer@ylenurme.ee
-- *  GNU General Public License applies
-- * This module provides support for the Arlan 655 card made by Aironet
-- */
--
--#include "arlan.h"
--
--#if BITS_PER_LONG != 32
--#  error FIXME: this driver requires a 32-bit platform
--#endif
--
--static const char *arlan_version = "C.Jennigs 97 & Elmer.Joandi@ut.ee  Oct'98, http://www.ylenurme.ee/~elmer/655/";
--
--struct net_device *arlan_device[MAX_ARLANS];
--
--static int SID = SIDUNKNOWN;
--static int radioNodeId = radioNodeIdUNKNOWN;
--static char encryptionKey[12] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
--int arlan_debug = debugUNKNOWN;
--static int spreadingCode = spreadingCodeUNKNOWN;
--static int channelNumber = channelNumberUNKNOWN;
--static int channelSet = channelSetUNKNOWN;
--static int systemId = systemIdUNKNOWN;
--static int registrationMode = registrationModeUNKNOWN;
--static int keyStart;
--static int tx_delay_ms;
--static int retries = 5;
--static int tx_queue_len = 1;
--static int arlan_EEPROM_bad;
--
--#ifdef ARLAN_DEBUGGING
--
--static int testMemory = testMemoryUNKNOWN;
--static int irq = irqUNKNOWN;
--static int txScrambled = 1;
--static int mdebug;
--
--module_param(irq, int, 0);
--module_param(mdebug, int, 0);
--module_param(testMemory, int, 0);
--module_param(txScrambled, int, 0);
--MODULE_PARM_DESC(irq, "(unused)");
--MODULE_PARM_DESC(testMemory, "(unused)");
--MODULE_PARM_DESC(mdebug, "Arlan multicast debugging (0-1)");
--#endif
--
--module_param_named(debug, arlan_debug, int, 0);
--module_param(spreadingCode, int, 0);
--module_param(channelNumber, int, 0);
--module_param(channelSet, int, 0);
--module_param(systemId, int, 0);
--module_param(registrationMode, int, 0);
--module_param(radioNodeId, int, 0);
--module_param(SID, int, 0);
--module_param(keyStart, int, 0);
--module_param(tx_delay_ms, int, 0);
--module_param(retries, int, 0);
--module_param(tx_queue_len, int, 0);
--module_param_named(EEPROM_bad, arlan_EEPROM_bad, int, 0);
--MODULE_PARM_DESC(debug, "Arlan debug enable (0-1)");
--MODULE_PARM_DESC(retries, "Arlan maximum packet retransmisions");
--#ifdef ARLAN_ENTRY_EXIT_DEBUGGING
--static int arlan_entry_debug;
--static int arlan_exit_debug;
--static int arlan_entry_and_exit_debug;
--module_param_named(entry_debug, arlan_entry_debug, int, 0);
--module_param_named(exit_debug, arlan_exit_debug, int, 0);
--module_param_named(entry_and_exit_debug, arlan_entry_and_exit_debug, int, 0);
--MODULE_PARM_DESC(entry_debug, "Arlan driver function entry debugging");
--MODULE_PARM_DESC(exit_debug, "Arlan driver function exit debugging");
--MODULE_PARM_DESC(entry_and_exit_debug, "Arlan driver function entry and exit debugging");
--#endif
--
--struct arlan_conf_stru arlan_conf[MAX_ARLANS];
--static int arlans_found;
--
--static  int 	arlan_open(struct net_device *dev);
--static  netdev_tx_t arlan_tx(struct sk_buff *skb, struct net_device *dev);
--static  irqreturn_t arlan_interrupt(int irq, void *dev_id);
--static  int 	arlan_close(struct net_device *dev);
--static  struct net_device_stats *
--		arlan_statistics		(struct net_device *dev);
--static  void 	arlan_set_multicast		(struct net_device *dev);
--static  int 	arlan_hw_tx			(struct net_device* dev, char *buf, int length );
--static  int	arlan_hw_config			(struct net_device * dev);
--static  void 	arlan_tx_done_interrupt		(struct net_device * dev, int status);
--static  void	arlan_rx_interrupt		(struct net_device * dev, u_char rxStatus, u_short, u_short);
--static  void	arlan_process_interrupt		(struct net_device * dev);
--static	void	arlan_tx_timeout		(struct net_device *dev);
--
--static inline long us2ticks(int us)
--{
--	return us * (1000000 / HZ);
--}
--
--
--#ifdef ARLAN_ENTRY_EXIT_DEBUGGING
--#define ARLAN_DEBUG_ENTRY(name) \
--	{\
--	struct timeval timev;\
--	do_gettimeofday(&timev);\
--		if (arlan_entry_debug || arlan_entry_and_exit_debug)\
--			printk("--->>>" name " %ld " "\n",((long int) timev.tv_sec * 1000000 + timev.tv_usec));\
--	}
--#define ARLAN_DEBUG_EXIT(name) \
--	{\
--	struct timeval timev;\
--	do_gettimeofday(&timev);\
--		if (arlan_exit_debug || arlan_entry_and_exit_debug)\
--			printk("<<<---" name " %ld " "\n",((long int) timev.tv_sec * 1000000 + timev.tv_usec) );\
--	}
--#else
--#define ARLAN_DEBUG_ENTRY(name)
--#define ARLAN_DEBUG_EXIT(name)
--#endif
--
--
--#define arlan_interrupt_ack(dev)\
--        clearClearInterrupt(dev);\
--        setClearInterrupt(dev);
--
--static inline int arlan_drop_tx(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--
--	dev->stats.tx_errors++;
--	if (priv->Conf->tx_delay_ms)
--	{
--		priv->tx_done_delayed = jiffies + priv->Conf->tx_delay_ms * HZ / 1000 + 1;
--	}
--	else
--	{
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_TX;
--		TXHEAD(dev).offset = 0;
--		TXTAIL(dev).offset = 0;
--		priv->txLast = 0;
--		priv->bad = 0;
--		if (!priv->under_reset && !priv->under_config)
--			netif_wake_queue (dev);
--	}
--	return 1;
--}
--
--
--int arlan_command(struct net_device *dev, int command_p)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--	struct arlan_conf_stru *conf = priv->Conf;
--	int udelayed = 0;
--	int i = 0;
--	unsigned long flags;
--
--	ARLAN_DEBUG_ENTRY("arlan_command");
--
--	if (priv->card_polling_interval)
--		priv->card_polling_interval = 1;
--
--	if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
--		printk(KERN_DEBUG "arlan_command, %lx commandByte %x waiting %lx incoming %x \n",
--		jiffies, READSHMB(arlan->commandByte),
--		       priv->waiting_command_mask, command_p);
--
--	priv->waiting_command_mask |= command_p;
--
--	if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
--		if (time_after(jiffies, priv->lastReset + 5 * HZ))
--			priv->waiting_command_mask &= ~ARLAN_COMMAND_RESET;
--
--	if (priv->waiting_command_mask & ARLAN_COMMAND_INT_ACK)
--	{
--		arlan_interrupt_ack(dev);
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_ACK;
--	}
--	if (priv->waiting_command_mask & ARLAN_COMMAND_INT_ENABLE)
--	{
--		setInterruptEnable(dev);
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_ENABLE;
--	}
--
--	/* Card access serializing lock */
--	spin_lock_irqsave(&priv->lock, flags);
--
--	/* Check cards status and waiting */
--
--	if (priv->waiting_command_mask & (ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW))
--	{
--		while (priv->waiting_command_mask & (ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW))
--		{
--			if (READSHMB(arlan->resetFlag) ||
--				READSHMB(arlan->commandByte))	/* || 
--								   (readControlRegister(dev) & ARLAN_ACCESS))
--								 */
--				udelay(40);
--			else
--				priv->waiting_command_mask &= ~(ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW);
--
--			udelayed++;
--
--			if (priv->waiting_command_mask & ARLAN_COMMAND_LONG_WAIT_NOW)
--			{
--				if (udelayed * 40 > 1000000)
--				{
--					printk(KERN_ERR "%s long wait too long \n", dev->name);
--					priv->waiting_command_mask |= ARLAN_COMMAND_RESET;
--					break;
--				}
--			}
--			else if (priv->waiting_command_mask & ARLAN_COMMAND_WAIT_NOW)
--			{
--				if (udelayed * 40 > 1000)
--				{
--					printk(KERN_ERR "%s short wait too long \n", dev->name);
--					goto bad_end;
--				}
--			}
--		}
--	}
--	else
--	{
--		i = 0;
--		while ((READSHMB(arlan->resetFlag) ||
--			READSHMB(arlan->commandByte)) &&
--			conf->pre_Command_Wait > (i++) * 10)
--			udelay(10);
--
--
--		if ((READSHMB(arlan->resetFlag) ||
--			READSHMB(arlan->commandByte)) &&
--			!(priv->waiting_command_mask & ARLAN_COMMAND_RESET))
--		{
--			goto card_busy_end;
--		}
--	}
--	if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
--		priv->under_reset = 1;
--	if (priv->waiting_command_mask & ARLAN_COMMAND_CONF)
--		priv->under_config = 1;
--
--	/* Issuing command */
--	arlan_lock_card_access(dev);
--	if (priv->waiting_command_mask & ARLAN_COMMAND_POWERUP)
--	{
--	//     if (readControlRegister(dev) & (ARLAN_ACCESS && ARLAN_POWER))
--		setPowerOn(dev);
--		arlan_interrupt_lancpu(dev);
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_POWERUP;
--		priv->waiting_command_mask |= ARLAN_COMMAND_RESET;
--		priv->card_polling_interval = HZ / 10;
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_ACTIVATE)
--	{
--		WRITESHMB(arlan->commandByte, ARLAN_COM_ACTIVATE);
--		arlan_interrupt_lancpu(dev);
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_ACTIVATE;
--		priv->card_polling_interval = HZ / 10;
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_RX_ABORT)
--	{
--		if (priv->rx_command_given)
--		{
--			WRITESHMB(arlan->commandByte, ARLAN_COM_RX_ABORT);
--			arlan_interrupt_lancpu(dev);
--			priv->rx_command_given = 0;
--		}
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_RX_ABORT;
--		priv->card_polling_interval = 1;
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_TX_ABORT)
--	{
--		if (priv->tx_command_given)
--		{
--			WRITESHMB(arlan->commandByte, ARLAN_COM_TX_ABORT);
--			arlan_interrupt_lancpu(dev);
--			priv->tx_command_given = 0;
--		}
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_TX_ABORT;
--		priv->card_polling_interval = 1;
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
--	{
--		priv->under_reset=1;
--		netif_stop_queue (dev);
--
--		arlan_drop_tx(dev);
--		if (priv->tx_command_given || priv->rx_command_given)
--		{
--			printk(KERN_ERR "%s: Reset under tx or rx command \n", dev->name);
--		}
--		netif_stop_queue (dev);
--		if (arlan_debug & ARLAN_DEBUG_RESET)
--			printk(KERN_ERR "%s: Doing chip reset\n", dev->name);
--		priv->lastReset = jiffies;
--		WRITESHM(arlan->commandByte, 0, u_char);
--		/* hold card in reset state */
--		setHardwareReset(dev);
--		/* set reset flag and then release reset */
--		WRITESHM(arlan->resetFlag, 0xff, u_char);
--		clearChannelAttention(dev);
--		clearHardwareReset(dev);
--		priv->card_polling_interval = HZ / 4;
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_RESET;
--		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RACK;
--//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RENABLE; 
--//		priv->waiting_command_mask |= ARLAN_COMMAND_RX;
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_INT_RACK)
--	{
--		clearHardwareReset(dev);
--		clearClearInterrupt(dev);
--		setClearInterrupt(dev);
--		setInterruptEnable(dev);
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_RACK;
--		priv->waiting_command_mask |= ARLAN_COMMAND_CONF;
--		priv->under_config = 1;
--		priv->under_reset = 0;
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_INT_RENABLE)
--	{
--		setInterruptEnable(dev);
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_RENABLE;
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_CONF)
--	{
--		if (priv->tx_command_given || priv->rx_command_given)
--		{
--			printk(KERN_ERR "%s: Reset under tx or rx command \n", dev->name);
--		}
--		arlan_drop_tx(dev);
--		setInterruptEnable(dev);
--		arlan_hw_config(dev);
--		arlan_interrupt_lancpu(dev);
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_CONF;
--		priv->card_polling_interval = HZ / 10;
--//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RACK;   
--//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_ENABLE; 
--		priv->waiting_command_mask |= ARLAN_COMMAND_CONF_WAIT;
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_CONF_WAIT)
--	{
--		if (READSHMB(arlan->configuredStatusFlag) != 0 &&
--			READSHMB(arlan->diagnosticInfo) == 0xff)
--		{
--			priv->waiting_command_mask &= ~ARLAN_COMMAND_CONF_WAIT;
--			priv->waiting_command_mask |= ARLAN_COMMAND_RX;
--			priv->waiting_command_mask |= ARLAN_COMMAND_TBUSY_CLEAR;
--			priv->card_polling_interval = HZ / 10;
--			priv->tx_command_given = 0;
--			priv->under_config = 0;
--		}
--		else
--		{
--			priv->card_polling_interval = 1;
--			if (arlan_debug & ARLAN_DEBUG_TIMING)
--				printk(KERN_ERR "configure delayed \n");
--		}
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_RX)
--	{
--		if (!registrationBad(dev))
--		{
--			setInterruptEnable(dev);
--			memset_io(arlan->commandParameter, 0, 0xf);
--			WRITESHMB(arlan->commandByte, ARLAN_COM_INT | ARLAN_COM_RX_ENABLE);
--			WRITESHMB(arlan->commandParameter[0], conf->rxParameter);
--			arlan_interrupt_lancpu(dev);
--			priv->rx_command_given = 0; // mnjah, bad
--			priv->waiting_command_mask &= ~ARLAN_COMMAND_RX;
--			priv->card_polling_interval = 1;
--		}
--		else
--			priv->card_polling_interval = 2;
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_TBUSY_CLEAR)
--	{
--		if ( !registrationBad(dev) &&
--		     (netif_queue_stopped(dev) || !netif_running(dev)) )
--			{
--				priv->waiting_command_mask &= ~ARLAN_COMMAND_TBUSY_CLEAR;
--				netif_wake_queue (dev);
--			}
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_TX)
--	{
--		if (!test_and_set_bit(0, (void *) &priv->tx_command_given))
--		{
--			if (time_after(jiffies, 
--				       priv->tx_last_sent + us2ticks(conf->rx_tweak1))
--			    || time_before(jiffies,
--					   priv->last_rx_int_ack_time + us2ticks(conf->rx_tweak2)))
--			{
--				setInterruptEnable(dev);
--				memset_io(arlan->commandParameter, 0, 0xf);
--				WRITESHMB(arlan->commandByte, ARLAN_COM_TX_ENABLE | ARLAN_COM_INT);
--				memcpy_toio(arlan->commandParameter, &TXLAST(dev), 14);
--//				for ( i=1 ; i < 15 ; i++) printk("%02x:",READSHMB(arlan->commandParameter[i]));
--				priv->tx_last_sent = jiffies;
--				arlan_interrupt_lancpu(dev);
--				priv->tx_command_given = 1;
--				priv->waiting_command_mask &= ~ARLAN_COMMAND_TX;
--				priv->card_polling_interval = 1;
--			}
--			else
--			{
--				priv->tx_command_given = 0;
--				priv->card_polling_interval = 1;
--			}
--		} 
--		else if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
--			printk(KERN_ERR "tx command when tx chain locked \n");
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_NOOPINT)
--	{
--		{
--			WRITESHMB(arlan->commandByte, ARLAN_COM_NOP | ARLAN_COM_INT);
--		}
--		arlan_interrupt_lancpu(dev);
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_NOOPINT;
--		priv->card_polling_interval = HZ / 3;
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_NOOP)
--	{
--		WRITESHMB(arlan->commandByte, ARLAN_COM_NOP);
--		arlan_interrupt_lancpu(dev);
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_NOOP;
--		priv->card_polling_interval = HZ / 3;
--	}
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_SLOW_POLL)
--	{
--		WRITESHMB(arlan->commandByte, ARLAN_COM_GOTO_SLOW_POLL);
--		arlan_interrupt_lancpu(dev);
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_SLOW_POLL;
--		priv->card_polling_interval = HZ / 3;
--	} 
--	else if (priv->waiting_command_mask & ARLAN_COMMAND_POWERDOWN)
--	{
--		setPowerOff(dev);
--		if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
--			printk(KERN_WARNING "%s: Arlan Going Standby\n", dev->name);
--		priv->waiting_command_mask &= ~ARLAN_COMMAND_POWERDOWN;
--		priv->card_polling_interval = 3 * HZ;
--	}
--	arlan_unlock_card_access(dev);
--	for (i = 0; READSHMB(arlan->commandByte) && i < 20; i++)
--		udelay(10);
--	if (READSHMB(arlan->commandByte))
--		if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
--			printk(KERN_ERR "card busy leaving command %lx\n", priv->waiting_command_mask);
--
--	spin_unlock_irqrestore(&priv->lock, flags);
--	ARLAN_DEBUG_EXIT("arlan_command");
--	priv->last_command_buff_free_time = jiffies;
--	return 0;
--
--card_busy_end:
--	if (time_after(jiffies, priv->last_command_buff_free_time + HZ))
--		priv->waiting_command_mask |= ARLAN_COMMAND_CLEAN_AND_RESET;
--
--	if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
--		printk(KERN_ERR "%s arlan_command card busy end \n", dev->name);
--	spin_unlock_irqrestore(&priv->lock, flags);
--	ARLAN_DEBUG_EXIT("arlan_command");
--	return 1;
--
--bad_end:
--	printk(KERN_ERR "%s arlan_command bad end \n", dev->name);
--
--	spin_unlock_irqrestore(&priv->lock, flags);
--	ARLAN_DEBUG_EXIT("arlan_command");
--
--	return -1;
--}
--
--static inline void arlan_command_process(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--
--	int times = 0;
--	while (priv->waiting_command_mask && times < 8)
--	{
--		if (priv->waiting_command_mask)
--		{
--			if (arlan_command(dev, 0))
--				break;
--			times++;
--		}
--		/* if long command, we won't repeat trying */ ;
--		if (priv->card_polling_interval > 1)
--			break;
--		times++;
--	}
--}
--
--
--static inline void arlan_retransmit_now(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--
--
--	ARLAN_DEBUG_ENTRY("arlan_retransmit_now");
--	if (TXLAST(dev).offset == 0)
--	{
--		if (TXHEAD(dev).offset)
--		{
--			priv->txLast = 0;
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_DEBUG "TX buff switch to head \n");
--
--		}
--		else if (TXTAIL(dev).offset)
--		{
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_DEBUG "TX buff switch to tail \n");
--			priv->txLast = 1;
--		}
--		else
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_ERR "ReTransmit buff empty");
--		netif_wake_queue (dev);
--		return;
--
--	}
--	arlan_command(dev, ARLAN_COMMAND_TX);
--
--	priv->Conf->driverRetransmissions++;
--	priv->retransmissions++;
--
--	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk("Retransmit %d bytes \n", TXLAST(dev).length);
--
--	ARLAN_DEBUG_EXIT("arlan_retransmit_now");
--}
--
--
--
--static void arlan_registration_timer(unsigned long data)
--{
--	struct net_device *dev = (struct net_device *) data;
--	struct arlan_private *priv = netdev_priv(dev);
--	int bh_mark_needed = 0;
--	int next_tick = 1;
--	long lostTime = ((long)jiffies - (long)priv->registrationLastSeen)
--			* (1000/HZ);
--
--	if (registrationBad(dev))
--	{
--		priv->registrationLostCount++;
--		if (lostTime > 7000 && lostTime < 7200)
--		{
--			printk(KERN_NOTICE "%s registration Lost \n", dev->name);
--		}
--		if (lostTime / priv->reRegisterExp > 2000)
--			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_CONF);
--		if (lostTime / (priv->reRegisterExp) > 3500)
--			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
--		if (priv->reRegisterExp < 400)
--			priv->reRegisterExp += 2;
--		if (lostTime > 7200)
--		{
--			next_tick = HZ;
--			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
--		}
--	}
--	else
--	{
--		if (priv->Conf->registrationMode && lostTime > 10000 &&
--			priv->registrationLostCount)
--		{
--			printk(KERN_NOTICE "%s registration is back after %ld milliseconds\n",
--			       dev->name, lostTime);
--		}
--		priv->registrationLastSeen = jiffies;
--		priv->registrationLostCount = 0;
--		priv->reRegisterExp = 1;
--		if (!netif_running(dev) )
--			netif_wake_queue(dev);
--		if (time_after(priv->tx_last_sent,priv->tx_last_cleared) &&
--		    time_after(jiffies, priv->tx_last_sent * 5*HZ) ){
--			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);		
--			priv->tx_last_cleared = jiffies;
--		}
--	}
--
--
--	if (!registrationBad(dev) && priv->ReTransmitRequested)
--	{
--		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--			printk(KERN_ERR "Retransmit from timer \n");
--		priv->ReTransmitRequested = 0;
--		arlan_retransmit_now(dev);
--	}
--	if (!registrationBad(dev) &&
--		time_after(jiffies, priv->tx_done_delayed) &&
--		priv->tx_done_delayed != 0)
--	{
--		TXLAST(dev).offset = 0;
--		if (priv->txLast)
--			priv->txLast = 0;
--		else if (TXTAIL(dev).offset)
--			priv->txLast = 1;
--		if (TXLAST(dev).offset)
--		{
--			arlan_retransmit_now(dev);
--			dev->trans_start = jiffies;
--		}
--		if (!(TXHEAD(dev).offset && TXTAIL(dev).offset))
--		{
--			netif_wake_queue (dev);
--		}
--		priv->tx_done_delayed = 0;
--		bh_mark_needed = 1;
--	}
--	if (bh_mark_needed)
--	{
--		netif_wake_queue (dev);
--	}
--	arlan_process_interrupt(dev);
--
--	if (next_tick < priv->card_polling_interval)
--		next_tick = priv->card_polling_interval;
--
--	priv->timer.expires = jiffies + next_tick;
--
--	add_timer(&priv->timer);
--}
--
--
--#ifdef ARLAN_DEBUGGING
--
--static void arlan_print_registers(struct net_device *dev, int line)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem *arlan = priv->card;
--
--	u_char hostcpuLock, lancpuLock, controlRegister, cntrlRegImage,
--		txStatus, rxStatus, interruptInProgress, commandByte;
--
--
--	ARLAN_DEBUG_ENTRY("arlan_print_registers");
--	READSHM(interruptInProgress, arlan->interruptInProgress, u_char);
--	READSHM(hostcpuLock, arlan->hostcpuLock, u_char);
--	READSHM(lancpuLock, arlan->lancpuLock, u_char);
--	READSHM(controlRegister, arlan->controlRegister, u_char);
--	READSHM(cntrlRegImage, arlan->cntrlRegImage, u_char);
--	READSHM(txStatus, arlan->txStatus, u_char);
--	READSHM(rxStatus, arlan->rxStatus, u_char);
--	READSHM(commandByte, arlan->commandByte, u_char);
--
--	printk(KERN_WARNING "line %04d IP %02x HL %02x LL %02x CB %02x CR %02x CRI %02x TX %02x RX %02x\n",
--		line, interruptInProgress, hostcpuLock, lancpuLock, commandByte,
--		controlRegister, cntrlRegImage, txStatus, rxStatus);
--
--	ARLAN_DEBUG_EXIT("arlan_print_registers");
--}
--#endif
--
--
--static int arlan_hw_tx(struct net_device *dev, char *buf, int length)
--{
--	int i;
--
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--	struct arlan_conf_stru *conf = priv->Conf;
--
--	int tailStarts = 0x800;
--	int headEnds = 0x0;
--
--
--	ARLAN_DEBUG_ENTRY("arlan_hw_tx");
--	if (TXHEAD(dev).offset)
--		headEnds = (((TXHEAD(dev).offset + TXHEAD(dev).length - offsetof(struct arlan_shmem, txBuffer)) / 64) + 1) * 64;
--	if (TXTAIL(dev).offset)
--		tailStarts = 0x800 - (((TXTAIL(dev).offset - offsetof(struct arlan_shmem, txBuffer)) / 64) + 2) * 64;
--
--
--	if (!TXHEAD(dev).offset && length < tailStarts)
--	{
--		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--			printk(KERN_ERR "TXHEAD insert, tailStart %d\n", tailStarts);
--
--		TXHEAD(dev).offset =
--			offsetof(struct arlan_shmem, txBuffer);
--		TXHEAD(dev).length = length - ARLAN_FAKE_HDR_LEN;
--		for (i = 0; i < 6; i++)
--			TXHEAD(dev).dest[i] = buf[i];
--		TXHEAD(dev).clear = conf->txClear;
--		TXHEAD(dev).retries = conf->txRetries;	/* 0 is use default */
--		TXHEAD(dev).routing = conf->txRouting;
--		TXHEAD(dev).scrambled = conf->txScrambled;
--		memcpy_toio((char __iomem *)arlan + TXHEAD(dev).offset, buf + ARLAN_FAKE_HDR_LEN, TXHEAD(dev).length);
--	}
--	else if (!TXTAIL(dev).offset && length < (0x800 - headEnds))
--	{
--		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--			printk(KERN_ERR "TXTAIL insert, headEnd %d\n", headEnds);
--
--		TXTAIL(dev).offset =
--			offsetof(struct arlan_shmem, txBuffer) + 0x800 - (length / 64 + 2) * 64;
--		TXTAIL(dev).length = length - ARLAN_FAKE_HDR_LEN;
--		for (i = 0; i < 6; i++)
--			TXTAIL(dev).dest[i] = buf[i];
--		TXTAIL(dev).clear = conf->txClear;
--		TXTAIL(dev).retries = conf->txRetries;
--		TXTAIL(dev).routing = conf->txRouting;
--		TXTAIL(dev).scrambled = conf->txScrambled;
--		memcpy_toio(((char __iomem *)arlan + TXTAIL(dev).offset), buf + ARLAN_FAKE_HDR_LEN, TXTAIL(dev).length);
--	}
--	else
--	{
--		netif_stop_queue (dev);
--		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--			printk(KERN_ERR "TX TAIL & HEAD full, return, tailStart %d headEnd %d\n", tailStarts, headEnds);
--		return -1;
--	}
--	priv->out_bytes += length;
--	priv->out_bytes10 += length;
--	if (conf->measure_rate < 1)
--		conf->measure_rate = 1;
--	if (time_after(jiffies, priv->out_time + conf->measure_rate * HZ))
--	{
--		conf->out_speed = priv->out_bytes / conf->measure_rate;
--		priv->out_bytes = 0;
--		priv->out_time = jiffies;
--	}
--	if (time_after(jiffies, priv->out_time10 + conf->measure_rate * 10*HZ))
--	{
--		conf->out_speed10 = priv->out_bytes10 / (10 * conf->measure_rate);
--		priv->out_bytes10 = 0;
--		priv->out_time10 = jiffies;
--	}
--	if (TXHEAD(dev).offset && TXTAIL(dev).offset)
--	{
--		netif_stop_queue (dev);
--		return 0;
--	}
--	else
--		netif_start_queue (dev);
--
--
--	IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
--		printk(KERN_WARNING "%s Transmit t %2x:%2x:%2x:%2x:%2x:%2x f %2x:%2x:%2x:%2x:%2x:%2x \n", dev->name,
--		   (unsigned char) buf[0], (unsigned char) buf[1], (unsigned char) buf[2], (unsigned char) buf[3],
--		   (unsigned char) buf[4], (unsigned char) buf[5], (unsigned char) buf[6], (unsigned char) buf[7],
--		   (unsigned char) buf[8], (unsigned char) buf[9], (unsigned char) buf[10], (unsigned char) buf[11]);
--
--	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_ERR "TX command prepare for buffer %d\n", priv->txLast);
--
--	arlan_command(dev, ARLAN_COMMAND_TX);
--
--	priv->tx_last_sent = jiffies;
--
--	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk("%s TX Qued %d bytes \n", dev->name, length);
--
--	ARLAN_DEBUG_EXIT("arlan_hw_tx");
--
--	return 0;
--}
--
--
--static int arlan_hw_config(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--	struct arlan_conf_stru *conf = priv->Conf;
--
--	ARLAN_DEBUG_ENTRY("arlan_hw_config");
--
--	printk(KERN_NOTICE "%s arlan configure called \n", dev->name);
--	if (arlan_EEPROM_bad)
--		printk(KERN_NOTICE "arlan configure with eeprom bad option \n");
--
--
--	WRITESHM(arlan->spreadingCode, conf->spreadingCode, u_char);
--	WRITESHM(arlan->channelSet, conf->channelSet, u_char);
--
--	if (arlan_EEPROM_bad)
--		WRITESHM(arlan->defaultChannelSet, conf->channelSet, u_char);
--
--	WRITESHM(arlan->channelNumber, conf->channelNumber, u_char);
--
--	WRITESHM(arlan->scramblingDisable, conf->scramblingDisable, u_char);
--	WRITESHM(arlan->txAttenuation, conf->txAttenuation, u_char);
--
--	WRITESHM(arlan->systemId, conf->systemId, u_int);
--
--	WRITESHM(arlan->maxRetries, conf->maxRetries, u_char);
--	WRITESHM(arlan->receiveMode, conf->receiveMode, u_char);
--	WRITESHM(arlan->priority, conf->priority, u_char);
--	WRITESHM(arlan->rootOrRepeater, conf->rootOrRepeater, u_char);
--	WRITESHM(arlan->SID, conf->SID, u_int);
--
--	WRITESHM(arlan->registrationMode, conf->registrationMode, u_char);
--
--	WRITESHM(arlan->registrationFill, conf->registrationFill, u_char);
--	WRITESHM(arlan->localTalkAddress, conf->localTalkAddress, u_char);
--	WRITESHM(arlan->codeFormat, conf->codeFormat, u_char);
--	WRITESHM(arlan->numChannels, conf->numChannels, u_char);
--	WRITESHM(arlan->channel1, conf->channel1, u_char);
--	WRITESHM(arlan->channel2, conf->channel2, u_char);
--	WRITESHM(arlan->channel3, conf->channel3, u_char);
--	WRITESHM(arlan->channel4, conf->channel4, u_char);
--	WRITESHM(arlan->radioNodeId, conf->radioNodeId, u_short);
--	WRITESHM(arlan->SID, conf->SID, u_int);
--	WRITESHM(arlan->waitTime, conf->waitTime, u_short);
--	WRITESHM(arlan->lParameter, conf->lParameter, u_short);
--	memcpy_toio(&(arlan->_15), &(conf->_15), 3);
--	WRITESHM(arlan->_15, conf->_15, u_short);
--	WRITESHM(arlan->headerSize, conf->headerSize, u_short);
--	if (arlan_EEPROM_bad)
--		WRITESHM(arlan->hardwareType, conf->hardwareType, u_char);
--	WRITESHM(arlan->radioType, conf->radioType, u_char);
--	if (arlan_EEPROM_bad)
--		WRITESHM(arlan->radioModule, conf->radioType, u_char);
--
--	memcpy_toio(arlan->encryptionKey + keyStart, encryptionKey, 8);
--	memcpy_toio(arlan->name, conf->siteName, 16);
--
--	WRITESHMB(arlan->commandByte, ARLAN_COM_INT | ARLAN_COM_CONF);	/* do configure */
--	memset_io(arlan->commandParameter, 0, 0xf);	/* 0xf */
--	memset_io(arlan->commandParameter + 1, 0, 2);
--	if (conf->writeEEPROM)
--	{
--		  memset_io(arlan->commandParameter, conf->writeEEPROM, 1);
--//		conf->writeEEPROM=0;
--	}
--	if (conf->registrationMode && conf->registrationInterrupts)
--		memset_io(arlan->commandParameter + 3, 1, 1);
--	else
--		memset_io(arlan->commandParameter + 3, 0, 1);
--
--	priv->irq_test_done = 0;
--
--	if (conf->tx_queue_len)
--		dev->tx_queue_len = conf->tx_queue_len;
--	udelay(100);
--
--	ARLAN_DEBUG_EXIT("arlan_hw_config");
--	return 0;
--}
--
--
--static int arlan_read_card_configuration(struct net_device *dev)
--{
--	u_char tlx415;
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--	struct arlan_conf_stru *conf = priv->Conf;
--
--	ARLAN_DEBUG_ENTRY("arlan_read_card_configuration");
--
--	if (radioNodeId == radioNodeIdUNKNOWN)
--	{
--		READSHM(conf->radioNodeId, arlan->radioNodeId, u_short);
--	}
--	else
--		conf->radioNodeId = radioNodeId;
--		
--	if (SID == SIDUNKNOWN)
--	{
--		READSHM(conf->SID, arlan->SID, u_int);
--	}
--	else conf->SID = SID;
--		
--	if (spreadingCode == spreadingCodeUNKNOWN)
--	{
--		  READSHM(conf->spreadingCode, arlan->spreadingCode, u_char);
--	}
--	else
--		conf->spreadingCode = spreadingCode;
--		
--	if (channelSet == channelSetUNKNOWN)
--	{
--		READSHM(conf->channelSet, arlan->channelSet, u_char);
--	}
--	else conf->channelSet = channelSet;
--
--	if (channelNumber == channelNumberUNKNOWN)
--	{
--		READSHM(conf->channelNumber, arlan->channelNumber, u_char);
--	}
--	else conf->channelNumber = channelNumber;
--	
--	READSHM(conf->scramblingDisable, arlan->scramblingDisable, u_char);
--	READSHM(conf->txAttenuation, arlan->txAttenuation, u_char);
--	
--	if (systemId == systemIdUNKNOWN)
--	{
--		READSHM(conf->systemId, arlan->systemId, u_int);
--	} 
--	else conf->systemId = systemId;
--	
--	READSHM(conf->maxDatagramSize, arlan->maxDatagramSize, u_short);
--	READSHM(conf->maxFrameSize, arlan->maxFrameSize, u_short);
--	READSHM(conf->maxRetries, arlan->maxRetries, u_char);
--	READSHM(conf->receiveMode, arlan->receiveMode, u_char);
--	READSHM(conf->priority, arlan->priority, u_char);
--	READSHM(conf->rootOrRepeater, arlan->rootOrRepeater, u_char);
--
--	if (SID == SIDUNKNOWN)
--	{
--		  READSHM(conf->SID, arlan->SID, u_int);
--	}
--	else conf->SID = SID;
--	
--	if (registrationMode == registrationModeUNKNOWN)
--	{
--		  READSHM(conf->registrationMode, arlan->registrationMode, u_char);
--	}
--	else conf->registrationMode = registrationMode;
--	
--	READSHM(conf->registrationFill, arlan->registrationFill, u_char);
--	READSHM(conf->localTalkAddress, arlan->localTalkAddress, u_char);
--	READSHM(conf->codeFormat, arlan->codeFormat, u_char);
--	READSHM(conf->numChannels, arlan->numChannels, u_char);
--	READSHM(conf->channel1, arlan->channel1, u_char);
--	READSHM(conf->channel2, arlan->channel2, u_char);
--	READSHM(conf->channel3, arlan->channel3, u_char);
--	READSHM(conf->channel4, arlan->channel4, u_char);
--	READSHM(conf->waitTime, arlan->waitTime, u_short);
--	READSHM(conf->lParameter, arlan->lParameter, u_short);
--	READSHM(conf->_15, arlan->_15, u_short);
--	READSHM(conf->headerSize, arlan->headerSize, u_short);
--	READSHM(conf->hardwareType, arlan->hardwareType, u_char);
--	READSHM(conf->radioType, arlan->radioModule, u_char);
--	
--	if (conf->radioType == 0)
--		conf->radioType = 0xc;
--
--	WRITESHM(arlan->configStatus, 0xA5, u_char);
--	READSHM(tlx415, arlan->configStatus, u_char);
--	
--	if (tlx415 != 0xA5)
--		printk(KERN_INFO "%s tlx415 chip \n", dev->name);
--	
--	conf->txClear = 0;
--	conf->txRetries = 1;
--	conf->txRouting = 1;
--	conf->txScrambled = 0;
--	conf->rxParameter = 1;
--	conf->txTimeoutMs = 4000;
--	conf->waitCardTimeout = 100000;
--	conf->receiveMode = ARLAN_RCV_CLEAN;
--	memcpy_fromio(conf->siteName, arlan->name, 16);
--	conf->siteName[16] = '\0';
--	conf->retries = retries;
--	conf->tx_delay_ms = tx_delay_ms;
--	conf->ReTransmitPacketMaxSize = 200;
--	conf->waitReTransmitPacketMaxSize = 200;
--	conf->txAckTimeoutMs = 900;
--	conf->fastReTransCount = 3;
--
--	ARLAN_DEBUG_EXIT("arlan_read_card_configuration");
--
--	return 0;
--}
--
--
--static int lastFoundAt = 0xbe000;
--
--
--/*
-- * This is the real probe routine. Linux has a history of friendly device
-- * probes on the ISA bus. A good device probes avoids doing writes, and
-- * verifies that the correct device exists and functions.
-- */
--#define ARLAN_SHMEM_SIZE	0x2000
--static int __init arlan_check_fingerprint(unsigned long memaddr)
--{
--	static const char probeText[] = "TELESYSTEM SLW INC.    ARLAN \0";
--	volatile struct arlan_shmem __iomem *arlan = (struct arlan_shmem *) memaddr;
--	unsigned long paddr = virt_to_phys((void *) memaddr);
--	char tempBuf[49];
--
--	ARLAN_DEBUG_ENTRY("arlan_check_fingerprint");
--
--	if (!request_mem_region(paddr, ARLAN_SHMEM_SIZE, "arlan")) {
--		// printk(KERN_WARNING "arlan: memory region %lx excluded from probing \n",paddr);
--		return -ENODEV;
--	}
--
--	memcpy_fromio(tempBuf, arlan->textRegion, 29);
--	tempBuf[30] = 0;
--
--	/* check for card at this address */
--	if (0 != strncmp(tempBuf, probeText, 29)){
-- 		release_mem_region(paddr, ARLAN_SHMEM_SIZE);
--		return -ENODEV;
--	}
--
--//   printk(KERN_INFO "arlan found at 0x%x \n",memaddr);
--	ARLAN_DEBUG_EXIT("arlan_check_fingerprint");
--
--	return 0;
--}
--
--static int arlan_change_mtu(struct net_device *dev, int new_mtu)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--	struct arlan_conf_stru *conf = priv->Conf;
--
--	ARLAN_DEBUG_ENTRY("arlan_change_mtu");
--	if (new_mtu > 2032)
--		return -EINVAL;
--	dev->mtu = new_mtu;
--	if (new_mtu < 256)
--		new_mtu = 256;	/* cards book suggests 1600 */
--	conf->maxDatagramSize = new_mtu;
--	conf->maxFrameSize = new_mtu + 48;
--
--	arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_CONF);
--	printk(KERN_NOTICE "%s mtu changed to %d \n", dev->name, new_mtu);
--
--	ARLAN_DEBUG_EXIT("arlan_change_mtu");
--
--	return 0;
--}
--
--static int arlan_mac_addr(struct net_device *dev, void *p)
--{
--	struct sockaddr *addr = p;
--
--
--	ARLAN_DEBUG_ENTRY("arlan_mac_addr");
--	return -EINVAL;
--
--	if (netif_running(dev))
--		return -EBUSY;
--	memcpy(dev->dev_addr, addr->sa_data, dev->addr_len);
--
--	ARLAN_DEBUG_EXIT("arlan_mac_addr");
--	return 0;
--}
--
--static const struct net_device_ops arlan_netdev_ops = {
--	.ndo_open		= arlan_open,
--	.ndo_stop		= arlan_close,
--	.ndo_start_xmit		= arlan_tx,
--	.ndo_get_stats		= arlan_statistics,
--	.ndo_set_multicast_list = arlan_set_multicast,
--	.ndo_change_mtu		= arlan_change_mtu,
--	.ndo_set_mac_address	= arlan_mac_addr,
--	.ndo_tx_timeout		= arlan_tx_timeout,
--	.ndo_validate_addr	= eth_validate_addr,
--};
--
--static int __init arlan_setup_device(struct net_device *dev, int num)
--{
--	struct arlan_private *ap = netdev_priv(dev);
--	int err;
--
--	ARLAN_DEBUG_ENTRY("arlan_setup_device");
--
--	ap->conf = (struct arlan_shmem *)(ap+1);
--
--	dev->tx_queue_len = tx_queue_len;
--	dev->netdev_ops = &arlan_netdev_ops;
--	dev->watchdog_timeo = 3*HZ;
--	
--	ap->irq_test_done = 0;
--	ap->Conf = &arlan_conf[num];
--
--	ap->Conf->pre_Command_Wait = 40;
--	ap->Conf->rx_tweak1 = 30;
--	ap->Conf->rx_tweak2 = 0;
--
--
--	err = register_netdev(dev);
--	if (err) {
--		release_mem_region(virt_to_phys((void *) dev->mem_start), 
--			   ARLAN_SHMEM_SIZE);
--		free_netdev(dev);
--		return err;
--	}
--	arlan_device[num] = dev;
--	ARLAN_DEBUG_EXIT("arlan_setup_device");
--	return 0;
--}
--
--static int __init arlan_probe_here(struct net_device *dev, 
--				   unsigned long memaddr)
--{
--	struct arlan_private *ap = netdev_priv(dev);
--
--	ARLAN_DEBUG_ENTRY("arlan_probe_here");
--
--	if (arlan_check_fingerprint(memaddr))
--		return -ENODEV;
--
--	printk(KERN_NOTICE "%s: Arlan found at %llx, \n ", dev->name, 
--	       (u64) virt_to_phys((void*)memaddr));
--
--	ap->card = (void *) memaddr;
--	dev->mem_start = memaddr;
--	dev->mem_end = memaddr + ARLAN_SHMEM_SIZE-1;
--
--	if (dev->irq < 2)
--	{
--		READSHM(dev->irq, ap->card->irqLevel, u_char);
--	} else if (dev->irq == 2)
--		dev->irq = 9;
--
--	arlan_read_card_configuration(dev);
--
--	ARLAN_DEBUG_EXIT("arlan_probe_here");
--	return 0;
--}
--
--
--static int arlan_open(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--	int ret = 0;
--
--	ARLAN_DEBUG_ENTRY("arlan_open");
--
--	ret = request_irq(dev->irq, &arlan_interrupt, 0, dev->name, dev);
--	if (ret)
--	{
--		printk(KERN_ERR "%s: unable to get IRQ %d .\n",
--			dev->name, dev->irq);
--		return ret;
--	}
--
--
--	priv->bad = 0;
--	priv->lastReset = 0;
--	priv->reset = 0;
--	memcpy_fromio(dev->dev_addr, arlan->lanCardNodeId, 6);
--	memset(dev->broadcast, 0xff, 6);
--	dev->tx_queue_len = tx_queue_len;
--	priv->interrupt_processing_active = 0;
--	spin_lock_init(&priv->lock);
--
--	netif_start_queue (dev);
--
--	priv->registrationLostCount = 0;
--	priv->registrationLastSeen = jiffies;
--	priv->txLast = 0;
--	priv->tx_command_given = 0;
--	priv->rx_command_given = 0;
--	
--	priv->reRegisterExp = 1;
--	priv->tx_last_sent = jiffies - 1;
--	priv->tx_last_cleared = jiffies;
--	priv->Conf->writeEEPROM = 0;
--	priv->Conf->registrationInterrupts = 1;
--
--	init_timer(&priv->timer);
--	priv->timer.expires = jiffies + HZ / 10;
--	priv->timer.data = (unsigned long) dev;
--	priv->timer.function = &arlan_registration_timer;	/* timer handler */
--
--	arlan_command(dev, ARLAN_COMMAND_POWERUP | ARLAN_COMMAND_LONG_WAIT_NOW);
--	mdelay(200);
--	add_timer(&priv->timer);
--
--	ARLAN_DEBUG_EXIT("arlan_open");
--	return 0;
--}
--
--
--static void arlan_tx_timeout (struct net_device *dev)
--{
--	printk(KERN_ERR "%s: arlan transmit timed out, kernel decided\n", dev->name);
--	/* Try to restart the adaptor. */
--	arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
--	// dev->trans_start = jiffies;
--	// netif_start_queue (dev);
--}
--
--
--static netdev_tx_t arlan_tx(struct sk_buff *skb, struct net_device *dev)
--{
--	short length;
--	unsigned char *buf;
--
--	ARLAN_DEBUG_ENTRY("arlan_tx");
--	
--	length = ETH_ZLEN < skb->len ? skb->len : ETH_ZLEN;
--	buf = skb->data;
--
--	if (length + 0x12 > 0x800) {
--		printk(KERN_ERR "TX RING overflow \n");
--		netif_stop_queue (dev);
--	}
--
--	if (arlan_hw_tx(dev, buf, length) == -1)
--		goto bad_end;
--
--	dev->trans_start = jiffies;
--
--	dev_kfree_skb(skb);
--
--	arlan_process_interrupt(dev);
--	ARLAN_DEBUG_EXIT("arlan_tx");
--	return NETDEV_TX_OK;
--
--bad_end:
--	arlan_process_interrupt(dev);
--	netif_stop_queue (dev);
--	ARLAN_DEBUG_EXIT("arlan_tx");
--	return NETDEV_TX_BUSY;
--}
--
--
--static inline int DoNotReTransmitCrap(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--
--	if (TXLAST(dev).length < priv->Conf->ReTransmitPacketMaxSize)
--		return 1;
--	return 0;
--
--}
--
--static inline int DoNotWaitReTransmitCrap(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--
--	if (TXLAST(dev).length < priv->Conf->waitReTransmitPacketMaxSize)
--		return 1;
--	return 0;
--}
--
--static inline void arlan_queue_retransmit(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--
--	ARLAN_DEBUG_ENTRY("arlan_queue_retransmit");
--
--	if (DoNotWaitReTransmitCrap(dev))
--	{
--		  arlan_drop_tx(dev);
--	} else
--		priv->ReTransmitRequested++;
--
--	ARLAN_DEBUG_EXIT("arlan_queue_retransmit");
--}
--
--static inline void RetryOrFail(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--
--	ARLAN_DEBUG_ENTRY("RetryOrFail");
--
--	if (priv->retransmissions > priv->Conf->retries ||
--	    DoNotReTransmitCrap(dev))
--	{
--		arlan_drop_tx(dev);
--	}
--	else if (priv->bad <= priv->Conf->fastReTransCount)
--	{
--		arlan_retransmit_now(dev);
--	}
--	else arlan_queue_retransmit(dev);
--
--	ARLAN_DEBUG_EXIT("RetryOrFail");
--}
--
--
--static void arlan_tx_done_interrupt(struct net_device *dev, int status)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--
--	ARLAN_DEBUG_ENTRY("arlan_tx_done_interrupt");
--
--	priv->tx_last_cleared = jiffies;
--	priv->tx_command_given = 0;
--	switch (status)
--	{
--		case 1:
--		{
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--				printk("arlan intr: transmit OK\n");
--			dev->stats.tx_packets++;
--			priv->bad = 0;
--			priv->reset = 0;
--			priv->retransmissions = 0;
--			if (priv->Conf->tx_delay_ms)
--			{
--				priv->tx_done_delayed = jiffies + (priv->Conf->tx_delay_ms * HZ) / 1000 + 1;
--			}
--			else
--			{
--				TXLAST(dev).offset = 0;
--				if (priv->txLast)
--					priv->txLast = 0;
--				else if (TXTAIL(dev).offset)
--					priv->txLast = 1;
--				if (TXLAST(dev).offset)
--				{
--					arlan_retransmit_now(dev);
--					dev->trans_start = jiffies;
--				}
--				if (!TXHEAD(dev).offset || !TXTAIL(dev).offset)
--				{
--					netif_wake_queue (dev);
--				}
--			}
--		}
--		break;
--		
--		case 2:
--		{
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--				printk("arlan intr: transmit timed out\n");
--			priv->bad += 1;
--			//arlan_queue_retransmit(dev);
--			RetryOrFail(dev);
--		}
--		break;
--
--		case 3:
--		{
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--				printk("arlan intr: transmit max retries\n");
--			priv->bad += 1;
--			priv->reset = 0;
--			//arlan_queue_retransmit(dev);
--			RetryOrFail(dev);
--		}
--		break;
--		
--		case 4:
--		{
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--				printk("arlan intr: transmit aborted\n");
--			priv->bad += 1;
--			arlan_queue_retransmit(dev);
--			//RetryOrFail(dev);
--		}
--		break;
--
--		case 5:
--		{
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--				printk("arlan intr: transmit not registered\n");
--			priv->bad += 1;
--			//debug=101;
--			arlan_queue_retransmit(dev);
--		}
--		break;
--
--		case 6:
--		{
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) 
--				printk("arlan intr: transmit destination full\n");
--			priv->bad += 1;
--			priv->reset = 0;
--			//arlan_drop_tx(dev);
--			arlan_queue_retransmit(dev);
--		}
--		break;
--
--		case 7:
--		{
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--				printk("arlan intr: transmit unknown ack\n");
--			priv->bad += 1;
--			priv->reset = 0;
--			arlan_queue_retransmit(dev);
--		}
--		break;
--		
--		case 8:
--		{
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--				printk("arlan intr: transmit dest mail box full\n");
--			priv->bad += 1;
--			priv->reset = 0;
--			//arlan_drop_tx(dev);
--			arlan_queue_retransmit(dev);
--		}
--		break;
--
--		case 9:
--		{
--			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
--				printk("arlan intr: transmit root dest not reg.\n");
--			priv->bad += 1;
--			priv->reset = 1;
--			//arlan_drop_tx(dev);
--			arlan_queue_retransmit(dev);
--		}
--		break;
--
--		default:
--		{
--			printk(KERN_ERR "arlan intr: transmit status unknown\n");
--			priv->bad += 1;
--			priv->reset = 1;
--			arlan_drop_tx(dev);
--		}
--	}
--
--	ARLAN_DEBUG_EXIT("arlan_tx_done_interrupt");
--}
--
--
--static void arlan_rx_interrupt(struct net_device *dev, u_char rxStatus, u_short rxOffset, u_short pkt_len)
--{
--	char *skbtmp;
--	int i = 0;
--
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--	struct arlan_conf_stru *conf = priv->Conf;
--
--
--	ARLAN_DEBUG_ENTRY("arlan_rx_interrupt");
--	// by spec,   not                WRITESHMB(arlan->rxStatus,0x00);
--	// prohibited here              arlan_command(dev, ARLAN_COMMAND_RX);
--
--	if (pkt_len < 10 || pkt_len > 2048)
--	{
--		printk(KERN_WARNING "%s: got too short or long packet, len %d \n", dev->name, pkt_len);
--		return;
--	}
--	if (rxOffset + pkt_len > 0x2000)
--	{
--		printk("%s: got too long packet, len %d offset %x\n", dev->name, pkt_len, rxOffset);
--		return;
--	}
--	priv->in_bytes += pkt_len;
--	priv->in_bytes10 += pkt_len;
--	if (conf->measure_rate < 1)
--		conf->measure_rate = 1;
--	if (time_after(jiffies, priv->in_time + conf->measure_rate * HZ))
--	{
--		conf->in_speed = priv->in_bytes / conf->measure_rate;
--		priv->in_bytes = 0;
--		priv->in_time = jiffies;
--	}
--	if (time_after(jiffies, priv->in_time10 + conf->measure_rate * 10*HZ))
--	{
--		conf->in_speed10 = priv->in_bytes10 / (10 * conf->measure_rate);
--		priv->in_bytes10 = 0;
--		priv->in_time10 = jiffies;
--	}
--	DEBUGSHM(1, "arlan rcv pkt rxStatus= %d ", arlan->rxStatus, u_char);
--	switch (rxStatus)
--	{
--		case 1:
--		case 2:
--		case 3:
--		{
--			/* Malloc up new buffer. */
--			struct sk_buff *skb;
--
--			DEBUGSHM(50, "arlan recv pkt offs=%d\n", arlan->rxOffset, u_short);
--			DEBUGSHM(1, "arlan rxFrmType = %d \n", arlan->rxFrmType, u_char);
--			DEBUGSHM(1, KERN_INFO "arlan rx scrambled = %d \n", arlan->scrambled, u_char);
--
--			/* here we do multicast filtering to avoid slow 8-bit memcopy */
--#ifdef ARLAN_MULTICAST
--			if (!(dev->flags & IFF_ALLMULTI) &&
--				!(dev->flags & IFF_PROMISC) &&
--				dev->mc_list)
--			{
--				char hw_dst_addr[6];
--				struct dev_mc_list *dmi = dev->mc_list;
--				int i;
--
--				memcpy_fromio(hw_dst_addr, arlan->ultimateDestAddress, 6);
--				if (hw_dst_addr[0] == 0x01)
--				{
--					if (mdebug)
--						if (hw_dst_addr[1] == 0x00)
--							printk(KERN_ERR "%s mcast 0x0100 \n", dev->name);
--						else if (hw_dst_addr[1] == 0x40)
--							printk(KERN_ERR "%s m/bcast 0x0140 \n", dev->name);
--					while (dmi)
--					{
--						if (dmi->dmi_addrlen == 6) {
--							if (arlan_debug & ARLAN_DEBUG_HEADER_DUMP)
--								printk(KERN_ERR "%s mcl %pM\n",
--								       dev->name, dmi->dmi_addr);
--							for (i = 0; i < 6; i++)
--								if (dmi->dmi_addr[i] != hw_dst_addr[i])
--									break;
--							if (i == 6)
--								break;
--						} else
--							printk(KERN_ERR "%s: invalid multicast address length given.\n", dev->name);
--						dmi = dmi->next;
--					}
--					/* we reach here if multicast filtering is on and packet 
--					 * is multicast and not for receive */
--					goto end_of_interrupt;
--				}
--			}
--#endif				// ARLAN_MULTICAST
--			/* multicast filtering ends here */
--			pkt_len += ARLAN_FAKE_HDR_LEN;
--
--			skb = dev_alloc_skb(pkt_len + 4);
--			if (skb == NULL)
--			{
--				printk(KERN_ERR "%s: Memory squeeze, dropping packet.\n", dev->name);
--				dev->stats.rx_dropped++;
--				break;
--			}
--			skb_reserve(skb, 2);
--			skbtmp = skb_put(skb, pkt_len);
--
--			memcpy_fromio(skbtmp + ARLAN_FAKE_HDR_LEN, ((char __iomem *) arlan) + rxOffset, pkt_len - ARLAN_FAKE_HDR_LEN);
--			memcpy_fromio(skbtmp, arlan->ultimateDestAddress, 6);
--			memcpy_fromio(skbtmp + 6, arlan->rxSrc, 6);
--			WRITESHMB(arlan->rxStatus, 0x00);
--			arlan_command(dev, ARLAN_COMMAND_RX);
--
--			IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
--			{
--				char immedDestAddress[6];
--				char immedSrcAddress[6];
--				memcpy_fromio(immedDestAddress, arlan->immedDestAddress, 6);
--				memcpy_fromio(immedSrcAddress, arlan->immedSrcAddress, 6);
--
--				printk(KERN_WARNING "%s t %pM f %pM imd %pM ims %pM\n",
--				       dev->name, skbtmp,
--				       &skbtmp[6],
--				       immedDestAddress,
--				       immedSrcAddress);
--			}
--			skb->protocol = eth_type_trans(skb, dev);
--			IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
--				if (skb->protocol != 0x608 && skb->protocol != 0x8)
--				{
--					for (i = 0; i <= 22; i++)
--						printk("%02x:", (u_char) skbtmp[i + 12]);
--					printk(KERN_ERR "\n");
--					printk(KERN_WARNING "arlan kernel pkt type trans %x \n", skb->protocol);
--				}
--			netif_rx(skb);
--			dev->stats.rx_packets++;
--			dev->stats.rx_bytes += pkt_len;
--		}
--		break;
--		
--		default:
--			printk(KERN_ERR "arlan intr: received unknown status\n");
--			dev->stats.rx_crc_errors++;
--			break;
--	}
--	ARLAN_DEBUG_EXIT("arlan_rx_interrupt");
--}
--
--static void arlan_process_interrupt(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--	u_char rxStatus = READSHMB(arlan->rxStatus);
--	u_char txStatus = READSHMB(arlan->txStatus);
--	u_short rxOffset = READSHMS(arlan->rxOffset);
--	u_short pkt_len = READSHMS(arlan->rxLength);
--	int interrupt_count = 0;
--
--	ARLAN_DEBUG_ENTRY("arlan_process_interrupt");
--
--	if (test_and_set_bit(0, (void *) &priv->interrupt_processing_active))
--	{
--		if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
--			printk(KERN_ERR "interrupt chain reentering \n");
--		goto end_int_process;
--	}
--	while ((rxStatus || txStatus || priv->interrupt_ack_requested)
--			&& (interrupt_count < 5))
--	{
--		if (rxStatus)
--			priv->last_rx_int_ack_time = jiffies;
--
--		arlan_command(dev, ARLAN_COMMAND_INT_ACK);
--		arlan_command(dev, ARLAN_COMMAND_INT_ENABLE);
--		
--		IFDEBUG(ARLAN_DEBUG_INTERRUPT)
--			printk(KERN_ERR "%s:  got IRQ rx %x tx %x comm %x rxOff %x rxLen %x \n",
--					dev->name, rxStatus, txStatus, READSHMB(arlan->commandByte),
--					rxOffset, pkt_len);
--
--		if (rxStatus == 0 && txStatus == 0)
--		{
--			if (priv->irq_test_done)
--			{
--				if (!registrationBad(dev))
--					IFDEBUG(ARLAN_DEBUG_INTERRUPT) printk(KERN_ERR "%s unknown interrupt(nop? regLost ?) reason tx %d rx %d ",
--										    dev->name, txStatus, rxStatus);
--			} else {
--				IFDEBUG(ARLAN_DEBUG_INTERRUPT)
--					printk(KERN_INFO "%s irq $%d test OK \n", dev->name, dev->irq);
--
--			}
--			priv->interrupt_ack_requested = 0;
--			goto ends;
--		}
--		if (txStatus != 0)
--		{
--			WRITESHMB(arlan->txStatus, 0x00);
--			arlan_tx_done_interrupt(dev, txStatus);
--			goto ends;
--		}
--		if (rxStatus == 1 || rxStatus == 2)
--		{		/* a packet waiting */
--			arlan_rx_interrupt(dev, rxStatus, rxOffset, pkt_len);
--			goto ends;
--		}
--		if (rxStatus > 2 && rxStatus < 0xff)
--		{
--			WRITESHMB(arlan->rxStatus, 0x00);
--			printk(KERN_ERR "%s unknown rxStatus reason tx %d rx %d ",
--				dev->name, txStatus, rxStatus);
--			goto ends;
--		}
--		if (rxStatus == 0xff)
--		{
--			WRITESHMB(arlan->rxStatus, 0x00);
--			arlan_command(dev, ARLAN_COMMAND_RX);
--			if (registrationBad(dev))
--				netif_device_detach(dev);
--			if (!registrationBad(dev))
--			{
--				priv->registrationLastSeen = jiffies;
--				if (!netif_queue_stopped(dev) && !priv->under_reset && !priv->under_config)
--					netif_wake_queue (dev);
--			}
--			goto ends;
--		}
--ends:
--
--		arlan_command_process(dev);
--
--		rxStatus = READSHMB(arlan->rxStatus);
--		txStatus = READSHMB(arlan->txStatus);
--		rxOffset = READSHMS(arlan->rxOffset);
--		pkt_len = READSHMS(arlan->rxLength);
--
--
--		priv->irq_test_done = 1;
--
--		interrupt_count++;
--	}
--	priv->interrupt_processing_active = 0;
--
--end_int_process:
--	arlan_command_process(dev);
--
--	ARLAN_DEBUG_EXIT("arlan_process_interrupt");
--	return;
--}
--
--static irqreturn_t arlan_interrupt(int irq, void *dev_id)
--{
--	struct net_device *dev = dev_id;
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--	u_char rxStatus = READSHMB(arlan->rxStatus);
--	u_char txStatus = READSHMB(arlan->txStatus);
--
--	ARLAN_DEBUG_ENTRY("arlan_interrupt");
--
--
--	if (!rxStatus && !txStatus)
--		priv->interrupt_ack_requested++;
--
--	arlan_process_interrupt(dev);
--	
--	priv->irq_test_done = 1;
--
--	ARLAN_DEBUG_EXIT("arlan_interrupt");
--	return IRQ_HANDLED;
--
--}
--
--
--static int arlan_close(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--
--	ARLAN_DEBUG_ENTRY("arlan_close");
--
--	del_timer_sync(&priv->timer);
--
--	arlan_command(dev, ARLAN_COMMAND_POWERDOWN);
--
--	IFDEBUG(ARLAN_DEBUG_STARTUP)
--		printk(KERN_NOTICE "%s: Closing device\n", dev->name);
--
--	netif_stop_queue(dev);
--	free_irq(dev->irq, dev);
--
--	ARLAN_DEBUG_EXIT("arlan_close");
--	return 0;
--}
--
--#ifdef ARLAN_DEBUGGING
--static long alignLong(volatile u_char * ptr)
--{
--	long ret;
--	memcpy_fromio(&ret, (void *) ptr, 4);
--	return ret;
--}
--#endif
--
--/*
-- * Get the current statistics.
-- * This may be called with the card open or closed.
-- */
--
--static struct net_device_stats *arlan_statistics(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--
--
--	ARLAN_DEBUG_ENTRY("arlan_statistics");
--
--	/* Update the statistics from the device registers. */
--
--	READSHM(dev->stats.collisions, arlan->numReTransmissions, u_int);
--	READSHM(dev->stats.rx_crc_errors, arlan->numCRCErrors, u_int);
--	READSHM(dev->stats.rx_dropped, arlan->numFramesDiscarded, u_int);
--	READSHM(dev->stats.rx_fifo_errors, arlan->numRXBufferOverflows, u_int);
--	READSHM(dev->stats.rx_frame_errors, arlan->numReceiveFramesLost, u_int);
--	READSHM(dev->stats.rx_over_errors, arlan->numRXOverruns, u_int);
--	READSHM(dev->stats.rx_packets, arlan->numDatagramsReceived, u_int);
--	READSHM(dev->stats.tx_aborted_errors, arlan->numAbortErrors, u_int);
--	READSHM(dev->stats.tx_carrier_errors, arlan->numStatusTimeouts, u_int);
--	READSHM(dev->stats.tx_dropped, arlan->numDatagramsDiscarded, u_int);
--	READSHM(dev->stats.tx_fifo_errors, arlan->numTXUnderruns, u_int);
--	READSHM(dev->stats.tx_packets, arlan->numDatagramsTransmitted, u_int);
--	READSHM(dev->stats.tx_window_errors, arlan->numHoldOffs, u_int);
--
--	ARLAN_DEBUG_EXIT("arlan_statistics");
--
--	return &dev->stats;
--}
--
--
--static void arlan_set_multicast(struct net_device *dev)
--{
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--	struct arlan_conf_stru *conf = priv->Conf;
--	int board_conf_needed = 0;
--
--
--	ARLAN_DEBUG_ENTRY("arlan_set_multicast");
--
--	if (dev->flags & IFF_PROMISC)
--	{
--		unsigned char recMode;
--		READSHM(recMode, arlan->receiveMode, u_char);
--		conf->receiveMode = (ARLAN_RCV_PROMISC | ARLAN_RCV_CONTROL);
--		if (conf->receiveMode != recMode)
--			board_conf_needed = 1;
--	}
--	else
--	{
--		/* turn off promiscuous mode  */
--		unsigned char recMode;
--		READSHM(recMode, arlan->receiveMode, u_char);
--		conf->receiveMode = ARLAN_RCV_CLEAN | ARLAN_RCV_CONTROL;
--		if (conf->receiveMode != recMode)
--			board_conf_needed = 1;
--	}
--	if (board_conf_needed)
--		arlan_command(dev, ARLAN_COMMAND_CONF);
--
--	ARLAN_DEBUG_EXIT("arlan_set_multicast");
--}
--
--
--struct net_device * __init arlan_probe(int unit)
--{
--	struct net_device *dev;
--	int err;
--	int m;
--
--	ARLAN_DEBUG_ENTRY("arlan_probe");
--
--	if (arlans_found == MAX_ARLANS)
--		return ERR_PTR(-ENODEV);
--
--	/* 
--	 * Reserve space for local data and a copy of the shared memory
--	 * that is used by the /proc interface.
--	 */
--	dev = alloc_etherdev(sizeof(struct arlan_private)
--			     + sizeof(struct arlan_shmem));
--	if (!dev)
--		return ERR_PTR(-ENOMEM);
--
--	if (unit >= 0) {
--		sprintf(dev->name, "eth%d", unit);
--		netdev_boot_setup_check(dev);
--		
--		if (dev->mem_start) {
--			if (arlan_probe_here(dev, dev->mem_start) == 0)
--				goto found;
--			goto not_found;
--		}
--			
--	}
--
--
--	for (m = (int)phys_to_virt(lastFoundAt) + ARLAN_SHMEM_SIZE; 
--	     m <= (int)phys_to_virt(0xDE000); 
--	     m += ARLAN_SHMEM_SIZE)
--	{
--		if (arlan_probe_here(dev, m) == 0)
--		{
--			lastFoundAt = (int)virt_to_phys((void*)m);
--			goto found;
--		}
--	}
--
--	if (lastFoundAt == 0xbe000)
--		printk(KERN_ERR "arlan: No Arlan devices found \n");
--
-- not_found:
--	free_netdev(dev);
--	return ERR_PTR(-ENODEV);
--
-- found:
--	err = arlan_setup_device(dev, arlans_found);
--	if (err)
--		dev = ERR_PTR(err);
--	else if (!arlans_found++)
--		printk(KERN_INFO "Arlan driver %s\n", arlan_version);
--
--	return dev;
--}
--
--#ifdef  MODULE
--int __init init_module(void)
--{
--	int i = 0;
--
--	ARLAN_DEBUG_ENTRY("init_module");
--
--	if (channelSet != channelSetUNKNOWN || channelNumber != channelNumberUNKNOWN || systemId != systemIdUNKNOWN)
--		return -EINVAL;
--
--	for (i = 0; i < MAX_ARLANS; i++) {
--		struct net_device *dev = arlan_probe(i);
--
--		if (IS_ERR(dev)) 
--			return PTR_ERR(dev);
--	}
--	init_arlan_proc();
--	printk(KERN_INFO "Arlan driver %s\n", arlan_version);
--	ARLAN_DEBUG_EXIT("init_module");
--	return 0;
--}
--
--
--void __exit cleanup_module(void)
--{
--	int i = 0;
--	struct net_device *dev;
--
--	ARLAN_DEBUG_ENTRY("cleanup_module");
--
--	IFDEBUG(ARLAN_DEBUG_SHUTDOWN)
--		printk(KERN_INFO "arlan: unloading module\n");
--
--	cleanup_arlan_proc();
--
--	for (i = 0; i < MAX_ARLANS; i++)
--	{
--		dev = arlan_device[i];
--		if (dev) {
--			arlan_command(dev, ARLAN_COMMAND_POWERDOWN );
--
--			unregister_netdev(dev);
--			release_mem_region(virt_to_phys((void *) dev->mem_start), 
--					   ARLAN_SHMEM_SIZE);
--			free_netdev(dev);
--			arlan_device[i] = NULL;
--		}
--	}
--
--	ARLAN_DEBUG_EXIT("cleanup_module");
--}
--
--
--#endif
--MODULE_LICENSE("GPL");
-diff --git a/drivers/net/wireless/arlan-proc.c b/drivers/net/wireless/arlan-proc.c
-deleted file mode 100644
-index a8b6896..0000000
---- a/drivers/net/wireless/arlan-proc.c
-+++ /dev/null
-@@ -1,1253 +0,0 @@
--#include "arlan.h"
--
--#include <linux/sysctl.h>
--
--#ifdef CONFIG_PROC_FS
--
--/* void enableReceive(struct net_device* dev);
--*/
--
--
--
--#define ARLAN_STR_SIZE 	0x2ff0
--#define DEV_ARLAN_INFO 	1
--#define DEV_ARLAN 	1
--#define SARLG(type,var) {\
--	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n", #var, READSHMB(priva->card->var));	\
--	}
--
--#define SARLBN(type,var,nn) {\
--	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x",#var);\
--	for (i=0; i < nn; i++ ) pos += sprintf(arlan_drive_info+pos, "%02x",READSHMB(priva->card->var[i]));\
--	pos += sprintf(arlan_drive_info+pos, "\n");	\
--	}
--
--#define SARLBNpln(type,var,nn) {\
--	for (i=0; i < nn; i++ ) pos += sprintf(arlan_drive_info+pos, "%02x",READSHMB(priva->card->var[i]));\
--	}
--
--#define SARLSTR(var,nn) {\
--	char tmpStr[400];\
--	int  tmpLn = nn;\
--	if (nn > 399 ) tmpLn = 399; \
--	memcpy(tmpStr,(char *) priva->conf->var,tmpLn);\
--	tmpStr[tmpLn] = 0; \
--	pos += sprintf(arlan_drive_info+pos, "%s\t=\t%s \n",#var,priva->conf->var);\
--	}
--
--#define SARLUC(var)  	SARLG(u_char, var)
--#define SARLUCN(var,nn) SARLBN(u_char,var, nn)
--#define SARLUS(var)	SARLG(u_short, var)
--#define SARLUSN(var,nn)	SARLBN(u_short,var, nn)
--#define SARLUI(var)	SARLG(u_int, var)
--
--#define SARLUSA(var) {\
--	u_short tmpVar;\
--	memcpy(&tmpVar, (short *) priva->conf->var,2); \
--	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n",#var, tmpVar);\
--}
--
--#define SARLUIA(var) {\
--	u_int tmpVar;\
--	memcpy(&tmpVar, (int* )priva->conf->var,4); \
--	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n",#var, tmpVar);\
--}
--
--
--static const char *arlan_diagnostic_info_string(struct net_device *dev)
--{
--
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--	u_char diagnosticInfo;
--
--	READSHM(diagnosticInfo, arlan->diagnosticInfo, u_char);
--
--	switch (diagnosticInfo)
--	{
--		case 0xFF:
--			return "Diagnostic info is OK";
--		case 0xFE:
--			return "ERROR EPROM Checksum error ";
--		case 0xFD:
--			return "ERROR Local Ram Test Failed ";
--		case 0xFC:
--			return "ERROR SCC failure ";
--		case 0xFB:
--			return "ERROR BackBone failure ";
--		case 0xFA:
--			return "ERROR transceiver not found ";
--		case 0xF9:
--			return "ERROR no more address space ";
--		case 0xF8:
--			return "ERROR Checksum error  ";
--		case 0xF7:
--			return "ERROR Missing SS Code";
--		case 0xF6:
--			return "ERROR Invalid config format";
--		case 0xF5:
--			return "ERROR Reserved errorcode F5";
--		case 0xF4:
--			return "ERROR Invalid spreading code/channel number";
--		case 0xF3:
--			return "ERROR Load Code Error";
--		case 0xF2:
--			return "ERROR Reserver errorcode F2 ";
--		case 0xF1:
--			return "ERROR Invalid command receivec by LAN card ";
--		case 0xF0:
--			return "ERROR Invalid parameter found in command ";
--		case 0xEF:
--			return "ERROR On-chip timer failure ";
--		case 0xEE:
--			return "ERROR T410 timer failure ";
--		case 0xED:
--			return "ERROR Too Many TxEnable commands ";
--		case 0xEC:
--			return "ERROR EEPROM error on radio module ";
--		default:
--			return "ERROR unknown Diagnostic info reply code ";
--	  }
--}
--
--static const char *arlan_hardware_type_string(struct net_device *dev)
--{
--	u_char hardwareType;
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--
--	READSHM(hardwareType, arlan->hardwareType, u_char);
--	switch (hardwareType)
--	{
--		case 0x00:
--			return "type A450";
--		case 0x01:
--			return "type A650 ";
--		case 0x04:
--			return "type TMA coproc";
--		case 0x0D:
--			return "type A650E ";
--		case 0x18:
--			return "type TMA coproc Australian";
--		case 0x19:
--			return "type A650A ";
--		case 0x26:
--			return "type TMA coproc European";
--		case 0x2E:
--			return "type A655 ";
--		case 0x2F:
--			return "type A655A ";
--		case 0x30:
--			return "type A655E ";
--		case 0x0B:
--			return "type A670 ";
--		case 0x0C:
--			return "type A670E ";
--		case 0x2D:
--			return "type A670A ";
--		case 0x0F:
--			return "type A411T";
--		case 0x16:
--			return "type A411TA";
--		case 0x1B:
--			return "type A440T";
--		case 0x1C:
--			return "type A412T";
--		case 0x1E:
--			return "type A412TA";
--		case 0x22:
--			return "type A411TE";
--		case 0x24:
--			return "type A412TE";
--		case 0x27:
--			return "type A671T ";
--		case 0x29:
--			return "type A671TA ";
--		case 0x2B:
--			return "type A671TE ";
--		case 0x31:
--			return "type A415T ";
--		case 0x33:
--			return "type A415TA ";
--		case 0x35:
--			return "type A415TE ";
--		case 0x37:
--			return "type A672";
--		case 0x39:
--			return "type A672A ";
--		case 0x3B:
--			return "type A672T";
--		case 0x6B:
--			return "type IC2200";
--		default:
--			return "type A672T";
--	}
--}
--#ifdef ARLAN_DEBUGGING
--static void arlan_print_diagnostic_info(struct net_device *dev)
--{
--	int i;
--	u_char diagnosticInfo;
--	u_short diagnosticOffset;
--	u_char hardwareType;
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--
--	//  ARLAN_DEBUG_ENTRY("arlan_print_diagnostic_info");
--
--	if (READSHMB(arlan->configuredStatusFlag) == 0)
--		printk("Arlan: Card NOT configured\n");
--	else
--		printk("Arlan: Card is configured\n");
--
--	READSHM(diagnosticInfo, arlan->diagnosticInfo, u_char);
--	READSHM(diagnosticOffset, arlan->diagnosticOffset, u_short);
--
--	printk(KERN_INFO "%s\n", arlan_diagnostic_info_string(dev));
--
--	if (diagnosticInfo != 0xff)
--		printk("%s arlan: Diagnostic Offset %d \n", dev->name, diagnosticOffset);
--
--	printk("arlan: LAN CODE ID = ");
--	for (i = 0; i < 6; i++)
--		DEBUGSHM(1, "%03d:", arlan->lanCardNodeId[i], u_char);
--	printk("\n");
--
--	printk("arlan: Arlan BroadCast address  = ");
--	for (i = 0; i < 6; i++)
--		DEBUGSHM(1, "%03d:", arlan->broadcastAddress[i], u_char);
--	printk("\n");
--
--	READSHM(hardwareType, arlan->hardwareType, u_char);
--	printk(KERN_INFO "%s\n", arlan_hardware_type_string(dev));
--
--
--	DEBUGSHM(1, "arlan: channelNumber=%d\n", arlan->channelNumber, u_char);
--	DEBUGSHM(1, "arlan: channelSet=%d\n", arlan->channelSet, u_char);
--	DEBUGSHM(1, "arlan: spreadingCode=%d\n", arlan->spreadingCode, u_char);
--	DEBUGSHM(1, "arlan: radioNodeId=%d\n", arlan->radioNodeId, u_short);
--	DEBUGSHM(1, "arlan: SID	=%d\n", arlan->SID, u_short);
--	DEBUGSHM(1, "arlan: rxOffset=%d\n", arlan->rxOffset, u_short);
--
--	DEBUGSHM(1, "arlan: registration mode is %d\n", arlan->registrationMode, u_char);
--
--	printk("arlan: name= ");
--	IFDEBUG(1)
--	
--	for (i = 0; i < 16; i++)
--	{
--		char c;
--		READSHM(c, arlan->name[i], char);
--		if (c)
--			printk("%c", c);
--	}
--	printk("\n");
--
--//   ARLAN_DEBUG_EXIT("arlan_print_diagnostic_info");
--
--}
--
--
--/******************************		TEST 	MEMORY	**************/
--
--static int arlan_hw_test_memory(struct net_device *dev)
--{
--	u_char *ptr;
--	int i;
--	int memlen = sizeof(struct arlan_shmem) - 0xF;	/* avoid control register */
--	volatile char *arlan_mem = (char *) (dev->mem_start);
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--	char pattern;
--
--	ptr = NULL;
--
--	/* hold card in reset state */
--	setHardwareReset(dev);
--
--	/* test memory */
--	pattern = 0;
--	for (i = 0; i < memlen; i++)
--		WRITESHM(arlan_mem[i], ((u_char) pattern++), u_char);
--
--	pattern = 0;
--	for (i = 0; i < memlen; i++)
--	{
--		char res;
--		READSHM(res, arlan_mem[i], char);
--		if (res != pattern++)
--		{
--			printk(KERN_ERR "Arlan driver memory test 1 failed \n");
--			return -1;
--		}
--	}
--
--	pattern = 0;
--	for (i = 0; i < memlen; i++)
--		WRITESHM(arlan_mem[i], ~(pattern++), char);
--
--	pattern = 0;
--	for (i = 0; i < memlen; i++)
--	{
--		char res;
--		READSHM(res, arlan_mem[i], char);
--		if (res != ~(pattern++))
--		{
--			printk(KERN_ERR "Arlan driver memory test 2 failed \n");
--			return -1;
--		}
--	}
--
--	/* zero memory */
--	for (i = 0; i < memlen; i++)
--		WRITESHM(arlan_mem[i], 0x00, char);
--
--	IFDEBUG(1) printk(KERN_INFO "Arlan: memory tests ok\n");
--
--	/* set reset flag and then release reset */
--	WRITESHM(arlan->resetFlag, 0xff, u_char);
--
--	clearChannelAttention(dev);
--	clearHardwareReset(dev);
--
--	/* wait for reset flag to become zero, we'll wait for two seconds */
--	if (arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW))
--	{
--		printk(KERN_ERR "%s arlan: failed to come back from memory test\n", dev->name);
--		return -1;
--	}
--	return 0;
--}
--
--static int arlan_setup_card_by_book(struct net_device *dev)
--{
--	u_char irqLevel, configuredStatusFlag;
--	struct arlan_private *priv = netdev_priv(dev);
--	volatile struct arlan_shmem __iomem *arlan = priv->card;
--
--//	ARLAN_DEBUG_ENTRY("arlan_setup_card");
--
--	READSHM(configuredStatusFlag, arlan->configuredStatusFlag, u_char);
--
--	IFDEBUG(10)
--	if (configuredStatusFlag != 0)
--		IFDEBUG(10) printk("arlan: CARD IS CONFIGURED\n");
--	else
--		IFDEBUG(10) printk("arlan: card is NOT configured\n");
--
--	if (testMemory || (READSHMB(arlan->diagnosticInfo) != 0xff))
--		if (arlan_hw_test_memory(dev))
--			return -1;
--
--	DEBUGSHM(4, "arlan configuredStatus = %d \n", arlan->configuredStatusFlag, u_char);
--	DEBUGSHM(4, "arlan driver diagnostic: 0x%2x\n", arlan->diagnosticInfo, u_char);
--
--	/* issue nop command - no interrupt */
--	arlan_command(dev, ARLAN_COMMAND_NOOP);
--	if (arlan_command(dev, ARLAN_COMMAND_WAIT_NOW) != 0)
--		return -1;
--
--	IFDEBUG(50) printk("1st Noop successfully executed !!\n");
--
--	/* try to turn on the arlan interrupts */
--	clearClearInterrupt(dev);
--	setClearInterrupt(dev);
--	setInterruptEnable(dev);
--
--	/* issue nop command - with interrupt */
--
--	arlan_command(dev, ARLAN_COMMAND_NOOPINT);
--	if (arlan_command(dev, ARLAN_COMMAND_WAIT_NOW) != 0)
--		return -1;
--
--
--	IFDEBUG(50) printk("2nd Noop successfully executed !!\n");
--
--	READSHM(irqLevel, arlan->irqLevel, u_char)
--	
--	if (irqLevel != dev->irq)
--	{
--		IFDEBUG(1) printk(KERN_WARNING "arlan dip switches set irq to %d\n", irqLevel);
--		printk(KERN_WARNING "device driver irq set to %d - does not match\n", dev->irq);
--		dev->irq = irqLevel;
--	}
--	else
--		IFDEBUG(2) printk("irq level is OK\n");
--
--
--	IFDEBUG(3) arlan_print_diagnostic_info(dev);
--
--	arlan_command(dev, ARLAN_COMMAND_CONF);
--
--	READSHM(configuredStatusFlag, arlan->configuredStatusFlag, u_char);
--	if (configuredStatusFlag == 0)
--	{
--		printk(KERN_WARNING "arlan configure failed\n");
--		return -1;
--	}
--	arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW);
--	arlan_command(dev, ARLAN_COMMAND_RX);
--	arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW);
--	printk(KERN_NOTICE "%s: arlan driver version %s loaded\n",
--	       dev->name, arlan_version);
--
--//	ARLAN_DEBUG_EXIT("arlan_setup_card");
--
--	return 0;		/* no errors */
--}
--#endif
--
--#ifdef ARLAN_PROC_INTERFACE
--#ifdef ARLAN_PROC_SHM_DUMP
--
--static char arlan_drive_info[ARLAN_STR_SIZE] = "A655\n\0";
--
--static int arlan_sysctl_info(ctl_table * ctl, int write,
--		      void __user *buffer, size_t * lenp, loff_t *ppos)
--{
--	int i;
--	int retv, pos, devnum;
--	struct arlan_private *priva = NULL;
--	struct net_device *dev;
--	pos = 0;
--	if (write)
--	{
--		printk("wrirte: ");
--		for (i = 0; i < 100; i++)
--			printk("adi %x \n", arlan_drive_info[i]);
--	}
--	if (ctl->procname == NULL || arlan_drive_info == NULL)
--	{
--		printk(KERN_WARNING " procname is NULL in sysctl_table or arlan_drive_info is NULL \n at arlan module\n ");
--		return -1;
--	}
--	devnum = ctl->procname[5] - '0';
--	if (devnum < 0 || devnum > MAX_ARLANS - 1)
--	{
--		printk(KERN_WARNING "too strange devnum in procfs parse\n ");
--		return -1;
--	}
--	else if (arlan_device[devnum] == NULL)
--	{
--		if (ctl->procname)
--			pos += sprintf(arlan_drive_info + pos, "\t%s\n\n", ctl->procname);
--		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
--		goto final;
--	}
--	else
--		priva = netdev_priv(arlan_device[devnum]);
--
--	if (priva == NULL)
--	{
--		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
--		return -1;
--	}
--	dev = arlan_device[devnum];
--
--	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
--
--	pos = sprintf(arlan_drive_info, "Arlan  info \n");
--	/* Header Signature */
--	SARLSTR(textRegion, 48);
--	SARLUC(resetFlag);
--	pos += sprintf(arlan_drive_info + pos, "diagnosticInfo\t=\t%s \n", arlan_diagnostic_info_string(dev));
--	SARLUC(diagnosticInfo);
--	SARLUS(diagnosticOffset);
--	SARLUCN(_1, 12);
--	SARLUCN(lanCardNodeId, 6);
--	SARLUCN(broadcastAddress, 6);
--	pos += sprintf(arlan_drive_info + pos, "hardwareType =\t  %s \n", arlan_hardware_type_string(dev));
--	SARLUC(hardwareType);
--	SARLUC(majorHardwareVersion);
--	SARLUC(minorHardwareVersion);
--	SARLUC(radioModule);
--	SARLUC(defaultChannelSet);
--	SARLUCN(_2, 47);
--
--	/* Control/Status Block - 0x0080 */
--	SARLUC(interruptInProgress);
--	SARLUC(cntrlRegImage);
--
--	SARLUCN(_3, 14);
--	SARLUC(commandByte);
--	SARLUCN(commandParameter, 15);
--
--	/* Receive Status - 0x00a0 */
--	SARLUC(rxStatus);
--	SARLUC(rxFrmType);
--	SARLUS(rxOffset);
--	SARLUS(rxLength);
--	SARLUCN(rxSrc, 6);
--	SARLUC(rxBroadcastFlag);
--	SARLUC(rxQuality);
--	SARLUC(scrambled);
--	SARLUCN(_4, 1);
--
--	/* Transmit Status - 0x00b0 */
--	SARLUC(txStatus);
--	SARLUC(txAckQuality);
--	SARLUC(numRetries);
--	SARLUCN(_5, 14);
--	SARLUCN(registeredRouter, 6);
--	SARLUCN(backboneRouter, 6);
--	SARLUC(registrationStatus);
--	SARLUC(configuredStatusFlag);
--	SARLUCN(_6, 1);
--	SARLUCN(ultimateDestAddress, 6);
--	SARLUCN(immedDestAddress, 6);
--	SARLUCN(immedSrcAddress, 6);
--	SARLUS(rxSequenceNumber);
--	SARLUC(assignedLocaltalkAddress);
--	SARLUCN(_7, 27);
--
--	/* System Parameter Block */
--
--	/* - Driver Parameters (Novell Specific) */
--
--	SARLUS(txTimeout);
--	SARLUS(transportTime);
--	SARLUCN(_8, 4);
--
--	/* - Configuration Parameters */
--	SARLUC(irqLevel);
--	SARLUC(spreadingCode);
--	SARLUC(channelSet);
--	SARLUC(channelNumber);
--	SARLUS(radioNodeId);
--	SARLUCN(_9, 2);
--	SARLUC(scramblingDisable);
--	SARLUC(radioType);
--	SARLUS(routerId);
--	SARLUCN(_10, 9);
--	SARLUC(txAttenuation);
--	SARLUIA(systemId);
--	SARLUS(globalChecksum);
--	SARLUCN(_11, 4);
--	SARLUS(maxDatagramSize);
--	SARLUS(maxFrameSize);
--	SARLUC(maxRetries);
--	SARLUC(receiveMode);
--	SARLUC(priority);
--	SARLUC(rootOrRepeater);
--	SARLUCN(specifiedRouter, 6);
--	SARLUS(fastPollPeriod);
--	SARLUC(pollDecay);
--	SARLUSA(fastPollDelay);
--	SARLUC(arlThreshold);
--	SARLUC(arlDecay);
--	SARLUCN(_12, 1);
--	SARLUS(specRouterTimeout);
--	SARLUCN(_13, 5);
--
--	/* Scrambled Area */
--	SARLUIA(SID);
--	SARLUCN(encryptionKey, 12);
--	SARLUIA(_14);
--	SARLUSA(waitTime);
--	SARLUSA(lParameter);
--	SARLUCN(_15, 3);
--	SARLUS(headerSize);
--	SARLUS(sectionChecksum);
--
--	SARLUC(registrationMode);
--	SARLUC(registrationFill);
--	SARLUS(pollPeriod);
--	SARLUS(refreshPeriod);
--	SARLSTR(name, 16);
--	SARLUCN(NID, 6);
--	SARLUC(localTalkAddress);
--	SARLUC(codeFormat);
--	SARLUC(numChannels);
--	SARLUC(channel1);
--	SARLUC(channel2);
--	SARLUC(channel3);
--	SARLUC(channel4);
--	SARLUCN(SSCode, 59);
--
--/*      SARLUCN( _16, 0x140);
-- */
--	/* Statistics Block - 0x0300 */
--	SARLUC(hostcpuLock);
--	SARLUC(lancpuLock);
--	SARLUCN(resetTime, 18);
--	SARLUIA(numDatagramsTransmitted);
--	SARLUIA(numReTransmissions);
--	SARLUIA(numFramesDiscarded);
--	SARLUIA(numDatagramsReceived);
--	SARLUIA(numDuplicateReceivedFrames);
--	SARLUIA(numDatagramsDiscarded);
--	SARLUS(maxNumReTransmitDatagram);
--	SARLUS(maxNumReTransmitFrames);
--	SARLUS(maxNumConsecutiveDuplicateFrames);
--	/* misaligned here so we have to go to characters */
--	SARLUIA(numBytesTransmitted);
--	SARLUIA(numBytesReceived);
--	SARLUIA(numCRCErrors);
--	SARLUIA(numLengthErrors);
--	SARLUIA(numAbortErrors);
--	SARLUIA(numTXUnderruns);
--	SARLUIA(numRXOverruns);
--	SARLUIA(numHoldOffs);
--	SARLUIA(numFramesTransmitted);
--	SARLUIA(numFramesReceived);
--	SARLUIA(numReceiveFramesLost);
--	SARLUIA(numRXBufferOverflows);
--	SARLUIA(numFramesDiscardedAddrMismatch);
--	SARLUIA(numFramesDiscardedSIDMismatch);
--	SARLUIA(numPollsTransmistted);
--	SARLUIA(numPollAcknowledges);
--	SARLUIA(numStatusTimeouts);
--	SARLUIA(numNACKReceived);
--	SARLUS(auxCmd);
--	SARLUCN(dumpPtr, 4);
--	SARLUC(dumpVal);
--	SARLUC(wireTest);
--	
--	/* next 4 seems too long for procfs, over single page ?
--	SARLUCN( _17, 0x86);
--	SARLUCN( txBuffer, 0x800);
--	SARLUCN( rxBuffer,  0x800); 
--	SARLUCN( _18, 0x0bff);
--	 */
--
--	pos += sprintf(arlan_drive_info + pos, "rxRing\t=\t0x");
--	for (i = 0; i < 0x50; i++)
--		pos += sprintf(arlan_drive_info + pos, "%02x", ((char *) priva->conf)[priva->conf->rxOffset + i]);
--	pos += sprintf(arlan_drive_info + pos, "\n");
--
--	SARLUC(configStatus);
--	SARLUC(_22);
--	SARLUC(progIOCtrl);
--	SARLUC(shareMBase);
--	SARLUC(controlRegister);
--
--	pos += sprintf(arlan_drive_info + pos, " total %d chars\n", pos);
--	if (ctl)
--		if (ctl->procname)
--			pos += sprintf(arlan_drive_info + pos, " driver name : %s\n", ctl->procname);
--final:
--	*lenp = pos;
--
--	if (!write)
--		retv = proc_dostring(ctl, write, buffer, lenp, ppos);
--	else
--	{
--		*lenp = 0;
--		return -1;
--	}
--	return retv;
--}
--
--
--static int arlan_sysctl_info161719(ctl_table * ctl, int write,
--			    void __user *buffer, size_t * lenp, loff_t *ppos)
--{
--	int i;
--	int retv, pos, devnum;
--	struct arlan_private *priva = NULL;
--
--	pos = 0;
--	devnum = ctl->procname[5] - '0';
--	if (arlan_device[devnum] == NULL)
--	{
--		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
--		goto final;
--	}
--	else
--		priva = netdev_priv(arlan_device[devnum]);
--	if (priva == NULL)
--	{
--		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
--		return -1;
--	}
--	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
--	SARLUCN(_16, 0xC0);
--	SARLUCN(_17, 0x6A);
--	SARLUCN(_18, 14);
--	SARLUCN(_19, 0x86);
--	SARLUCN(_21, 0x3fd);
--
--final:
--	*lenp = pos;
--	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
--	return retv;
--}
--
--static int arlan_sysctl_infotxRing(ctl_table * ctl, int write,
--			    void __user *buffer, size_t * lenp, loff_t *ppos)
--{
--	int i;
--	int retv, pos, devnum;
--	struct arlan_private *priva = NULL;
--
--	pos = 0;
--	devnum = ctl->procname[5] - '0';
--	if (arlan_device[devnum] == NULL)
--	{
--		  pos += sprintf(arlan_drive_info + pos, "No device found here \n");
--		  goto final;
--	}
--	else
--		priva = netdev_priv(arlan_device[devnum]);
--	if (priva == NULL)
--	{
--		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
--		return -1;
--	}
--	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
--	SARLBNpln(u_char, txBuffer, 0x800);
--final:
--	*lenp = pos;
--	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
--	return retv;
--}
--
--static int arlan_sysctl_inforxRing(ctl_table * ctl, int write,
--			    void __user *buffer, size_t * lenp, loff_t *ppos)
--{
--	int i;
--	int retv, pos, devnum;
--	struct arlan_private *priva = NULL;
--
--	pos = 0;
--	devnum = ctl->procname[5] - '0';
--	if (arlan_device[devnum] == NULL)
--	{
--		  pos += sprintf(arlan_drive_info + pos, "No device found here \n");
--		  goto final;
--	} else
--		priva = netdev_priv(arlan_device[devnum]);
--	if (priva == NULL)
--	{
--		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
--		return -1;
--	}
--	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
--	SARLBNpln(u_char, rxBuffer, 0x800);
--final:
--	*lenp = pos;
--	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
--	return retv;
--}
--
--static int arlan_sysctl_info18(ctl_table * ctl, int write,
--			void __user *buffer, size_t * lenp, loff_t *ppos)
--{
--	int i;
--	int retv, pos, devnum;
--	struct arlan_private *priva = NULL;
--
--	pos = 0;
--	devnum = ctl->procname[5] - '0';
--	if (arlan_device[devnum] == NULL)
--	{
--		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
--		goto final;
--	}
--	else
--		priva = netdev_priv(arlan_device[devnum]);
--	if (priva == NULL)
--	{
--		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
--		return -1;
--	}
--	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
--	SARLBNpln(u_char, _18, 0x800);
--
--final:
--	*lenp = pos;
--	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
--	return retv;
--}
--
--
--#endif				/* #ifdef ARLAN_PROC_SHM_DUMP */
--
--
--static char conf_reset_result[200];
--
--static int arlan_configure(ctl_table * ctl, int write,
--		    void __user *buffer, size_t * lenp, loff_t *ppos)
--{
--	int pos = 0;
--	int devnum = ctl->procname[6] - '0';
--	struct arlan_private *priv;
--
--	if (devnum < 0 || devnum > MAX_ARLANS - 1)
--	{
--		  printk(KERN_WARNING "too strange devnum in procfs parse\n ");
--		  return -1;
--	}
--	else if (arlan_device[devnum] != NULL)
--	{
--		  priv = netdev_priv(arlan_device[devnum]);
--
--		  arlan_command(arlan_device[devnum], ARLAN_COMMAND_CLEAN_AND_CONF);
--	}
--	else
--		return -1;
--
--	*lenp = pos;
--	return proc_dostring(ctl, write, buffer, lenp, ppos);
--}
--
--static int arlan_sysctl_reset(ctl_table * ctl, int write,
--		       void __user *buffer, size_t * lenp, loff_t *ppos)
--{
--	int pos = 0;
--	int devnum = ctl->procname[5] - '0';
--	struct arlan_private *priv;
--
--	if (devnum < 0 || devnum > MAX_ARLANS - 1)
--	{
--		  printk(KERN_WARNING "too strange devnum in procfs parse\n ");
--		  return -1;
--	}
--	else if (arlan_device[devnum] != NULL)
--	{
--		priv = netdev_priv(arlan_device[devnum]);
--		arlan_command(arlan_device[devnum], ARLAN_COMMAND_CLEAN_AND_RESET);
--
--	} else
--		return -1;
--	*lenp = pos + 3;
--	return proc_dostring(ctl, write, buffer, lenp, ppos);
--}
--
--
--/* Place files in /proc/sys/dev/arlan */
--#define CTBLN(num,card,nam) \
--        { .ctl_name = num,\
--          .procname = #nam,\
--          .data = &(arlan_conf[card].nam),\
--          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec}
--#ifdef ARLAN_DEBUGGING
--
--#define ARLAN_PROC_DEBUG_ENTRIES \
--        { .ctl_name = 48, .procname = "entry_exit_debug",\
--          .data = &arlan_entry_and_exit_debug,\
--          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec},\
--	{ .ctl_name = 49, .procname = "debug", .data = &arlan_debug,\
--          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec},
--#else 
--#define ARLAN_PROC_DEBUG_ENTRIES
--#endif
--
--#define ARLAN_SYSCTL_TABLE_TOTAL(cardNo)\
--	CTBLN(1,cardNo,spreadingCode),\
--	CTBLN(2,cardNo, channelNumber),\
--	CTBLN(3,cardNo, scramblingDisable),\
--	CTBLN(4,cardNo, txAttenuation),\
--	CTBLN(5,cardNo, systemId), \
--	CTBLN(6,cardNo, maxDatagramSize),\
--	CTBLN(7,cardNo, maxFrameSize),\
--	CTBLN(8,cardNo, maxRetries),\
--	CTBLN(9,cardNo, receiveMode),\
--	CTBLN(10,cardNo, priority),\
--	CTBLN(11,cardNo, rootOrRepeater),\
--	CTBLN(12,cardNo, SID),\
--	CTBLN(13,cardNo, registrationMode),\
--	CTBLN(14,cardNo, registrationFill),\
--	CTBLN(15,cardNo, localTalkAddress),\
--	CTBLN(16,cardNo, codeFormat),\
--	CTBLN(17,cardNo, numChannels),\
--	CTBLN(18,cardNo, channel1),\
--	CTBLN(19,cardNo, channel2),\
--	CTBLN(20,cardNo, channel3),\
--	CTBLN(21,cardNo, channel4),\
--	CTBLN(22,cardNo, txClear),\
--	CTBLN(23,cardNo, txRetries),\
--	CTBLN(24,cardNo, txRouting),\
--	CTBLN(25,cardNo, txScrambled),\
--	CTBLN(26,cardNo, rxParameter),\
--	CTBLN(27,cardNo, txTimeoutMs),\
--	CTBLN(28,cardNo, waitCardTimeout),\
--	CTBLN(29,cardNo, channelSet), \
--	{.ctl_name = 30, .procname = "name",\
--	 .data = arlan_conf[cardNo].siteName,\
--	 .maxlen = 16, .mode = 0600, .proc_handler = &proc_dostring},\
--	CTBLN(31,cardNo,waitTime),\
--	CTBLN(32,cardNo,lParameter),\
--	CTBLN(33,cardNo,_15),\
--	CTBLN(34,cardNo,headerSize),\
--	CTBLN(36,cardNo,tx_delay_ms),\
--	CTBLN(37,cardNo,retries),\
--	CTBLN(38,cardNo,ReTransmitPacketMaxSize),\
--	CTBLN(39,cardNo,waitReTransmitPacketMaxSize),\
--	CTBLN(40,cardNo,fastReTransCount),\
--	CTBLN(41,cardNo,driverRetransmissions),\
--	CTBLN(42,cardNo,txAckTimeoutMs),\
--	CTBLN(43,cardNo,registrationInterrupts),\
--	CTBLN(44,cardNo,hardwareType),\
--	CTBLN(45,cardNo,radioType),\
--	CTBLN(46,cardNo,writeEEPROM),\
--	CTBLN(47,cardNo,writeRadioType),\
--	ARLAN_PROC_DEBUG_ENTRIES\
--	CTBLN(50,cardNo,in_speed),\
--	CTBLN(51,cardNo,out_speed),\
--	CTBLN(52,cardNo,in_speed10),\
--	CTBLN(53,cardNo,out_speed10),\
--	CTBLN(54,cardNo,in_speed_max),\
--	CTBLN(55,cardNo,out_speed_max),\
--	CTBLN(56,cardNo,measure_rate),\
--	CTBLN(57,cardNo,pre_Command_Wait),\
--	CTBLN(58,cardNo,rx_tweak1),\
--	CTBLN(59,cardNo,rx_tweak2),\
--	CTBLN(60,cardNo,tx_queue_len),\
--
--
--
--static ctl_table arlan_conf_table0[] =
--{
--	ARLAN_SYSCTL_TABLE_TOTAL(0)
--
--#ifdef ARLAN_PROC_SHM_DUMP
--	{
--		.ctl_name	= 150,
--		.procname	= "arlan0-txRing",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_infotxRing,
--	},
--	{
--		.ctl_name	= 151,
--		.procname	= "arlan0-rxRing",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_inforxRing,
--	},
--	{
--		.ctl_name	= 152,
--		.procname	= "arlan0-18",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info18,
--	},
--	{
--		.ctl_name	= 153,
--		.procname	= "arlan0-ring",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info161719,
--	},
--	{
--		.ctl_name	= 154,
--		.procname	= "arlan0-shm-cpy",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info,
--	},
--#endif
--	{
--		.ctl_name	= 155,
--		.procname	= "config0",
--		.data		= &conf_reset_result,
--		.maxlen		= 100,
--		.mode		= 0400,
--		.proc_handler	= &arlan_configure
--	},
--	{
--		.ctl_name	= 156,
--		.procname	= "reset0",
--		.data		= &conf_reset_result,
--		.maxlen		= 100,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_reset,
--	},
--	{ .ctl_name = 0 }
--};
--
--static ctl_table arlan_conf_table1[] =
--{
--
--	ARLAN_SYSCTL_TABLE_TOTAL(1)
--
--#ifdef ARLAN_PROC_SHM_DUMP
--	{
--		.ctl_name	= 150,
--		.procname	= "arlan1-txRing",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_infotxRing,
--	},
--	{
--		.ctl_name	= 151,
--		.procname	= "arlan1-rxRing",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_inforxRing,
--	},
--	{
--		.ctl_name	= 152,
--		.procname	= "arlan1-18",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info18,
--	},
--	{
--		.ctl_name	= 153,
--		.procname	= "arlan1-ring",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info161719,
--	},
--	{
--		.ctl_name	= 154,
--		.procname	= "arlan1-shm-cpy",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info,
--	},
--#endif
--	{
--		.ctl_name	= 155,
--		.procname	= "config1",
--		.data		= &conf_reset_result,
--		.maxlen		= 100,
--		.mode		= 0400,
--		.proc_handler	= &arlan_configure,
--	},
--	{
--		.ctl_name	= 156,
--		.procname	= "reset1",
--		.data		= &conf_reset_result,
--		.maxlen		= 100,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_reset,
--	},
--	{ .ctl_name = 0 }
--};
--
--static ctl_table arlan_conf_table2[] =
--{
--
--	ARLAN_SYSCTL_TABLE_TOTAL(2)
--
--#ifdef ARLAN_PROC_SHM_DUMP
--	{
--		.ctl_name	= 150,
--		.procname	= "arlan2-txRing",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_infotxRing,
--	},
--	{
--		.ctl_name	= 151,
--		.procname	= "arlan2-rxRing",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_inforxRing,
--	},
--	{
--		.ctl_name	= 152,
--		.procname	= "arlan2-18",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info18,
--	},
--	{
--		.ctl_name	= 153,
--		.procname	= "arlan2-ring",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info161719,
--	},
--	{
--		.ctl_name	= 154,
--		.procname	= "arlan2-shm-cpy",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info,
--	},
--#endif
--	{
--		.ctl_name	= 155,
--		.procname	= "config2",
--		.data		= &conf_reset_result,
--		.maxlen		= 100,
--		.mode		= 0400,
--		.proc_handler	= &arlan_configure,
--	},
--	{
--		.ctl_name	= 156,
--		.procname	= "reset2",
--		.data		= &conf_reset_result,
--		.maxlen		= 100,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_reset,
--	},
--	{ .ctl_name = 0 }
--};
--
--static ctl_table arlan_conf_table3[] =
--{
--
--	ARLAN_SYSCTL_TABLE_TOTAL(3)
--
--#ifdef ARLAN_PROC_SHM_DUMP
--	{
--		.ctl_name	= 150,
--		.procname	= "arlan3-txRing",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_infotxRing,
--	},
--	{
--		.ctl_name	= 151,
--		.procname	= "arlan3-rxRing",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_inforxRing,
--	},
--	{
--		.ctl_name	= 152,
--		.procname	= "arlan3-18",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info18,
--	},
--	{
--		.ctl_name	= 153,
--		.procname	= "arlan3-ring",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info161719,
--	},
--	{
--		.ctl_name	= 154,
--		.procname	= "arlan3-shm-cpy",
--		.data		= &arlan_drive_info,
--		.maxlen		= ARLAN_STR_SIZE,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_info,
--	},
--#endif
--	{
--		.ctl_name	= 155,
--		.procname	= "config3",
--		.data		= &conf_reset_result,
--		.maxlen		= 100,
--		.mode		= 0400,
--		.proc_handler	= &arlan_configure,
--	},
--	{
--		.ctl_name	= 156,
--		.procname	= "reset3",
--		.data		= &conf_reset_result,
--		.maxlen		= 100,
--		.mode		= 0400,
--		.proc_handler	= &arlan_sysctl_reset,
--	},
--	{ .ctl_name = 0 }
--};
--
--
--
--static ctl_table arlan_table[] =
--{
--	{
--		.ctl_name	= 0,
--		.procname	= "arlan0",
--		.maxlen		= 0,
--		.mode		= 0600,
--		.child		= arlan_conf_table0,
--	},
--	{
--		.ctl_name	= 0,
--		.procname	= "arlan1",
--		.maxlen		= 0,
--		.mode		= 0600,
--		.child		= arlan_conf_table1,
--	},
--	{
--		.ctl_name	= 0,
--		.procname	= "arlan2",
--		.maxlen		= 0,
--		.mode		= 0600,
--		.child		= arlan_conf_table2,
--	},
--	{
--		.ctl_name	= 0,
--		.procname	= "arlan3",
--		.maxlen		= 0,
--		.mode		= 0600,
--		.child		= arlan_conf_table3,
--	},
--	{ .ctl_name = 0 }
--};
--
--#else
--
--static ctl_table arlan_table[MAX_ARLANS + 1] =
--{
--	{ .ctl_name = 0 }
--};
--#endif
--
--
--// static int mmtu = 1234;
--
--static ctl_table arlan_root_table[] =
--{
--	{
--		.ctl_name	= CTL_ARLAN,
--		.procname	= "arlan",
--		.maxlen		= 0,
--		.mode		= 0555,
--		.child		= arlan_table,
--	},
--	{ .ctl_name = 0 }
--};
--
--/* Make sure that /proc/sys/dev is there */
--//static ctl_table arlan_device_root_table[] =
--//{
--//	{CTL_DEV, "dev", NULL, 0, 0555, arlan_root_table},
--//	{0}
--//};
--
--
--static struct ctl_table_header *arlan_device_sysctl_header;
--
--int __init init_arlan_proc(void)
--{
--
--	int i = 0;
--	if (arlan_device_sysctl_header)
--		return 0;
--	for (i = 0; i < MAX_ARLANS && arlan_device[i]; i++)
--		arlan_table[i].ctl_name = i + 1;
--	arlan_device_sysctl_header = register_sysctl_table(arlan_root_table);
--	if (!arlan_device_sysctl_header)
--		return -1;
--
--	return 0;
--
--}
--
--void __exit cleanup_arlan_proc(void)
--{
--	unregister_sysctl_table(arlan_device_sysctl_header);
--	arlan_device_sysctl_header = NULL;
--
--}
--#endif
-diff --git a/drivers/net/wireless/arlan.h b/drivers/net/wireless/arlan.h
-deleted file mode 100644
-index fb3ad51..0000000
---- a/drivers/net/wireless/arlan.h
-+++ /dev/null
-@@ -1,539 +0,0 @@
--/*
-- *  Copyright (C) 1997 Cullen Jennings
-- *  Copyright (C) 1998 Elmer.Joandi@ut.ee, +37-255-13500	
-- *  GNU General Public License applies
-- */
+@@ -1,1389 +0,0 @@
+-/*********************************************************************
+- *                
+- * Filename:      netwave_cs.c
+- * Version:       0.4.1
+- * Description:   Netwave AirSurfer Wireless LAN PC Card driver
+- * Status:        Experimental.
+- * Authors:       John Markus Bjørndalen <johnm@cs.uit.no>
+- *                Dag Brattli <dagb@cs.uit.no>
+- *                David Hinds <dahinds@users.sourceforge.net>
+- * Created at:    A long time ago!
+- * Modified at:   Mon Nov 10 11:54:37 1997
+- * Modified by:   Dag Brattli <dagb@cs.uit.no>
+- * 
+- *     Copyright (c) 1997 University of Tromsø, Norway
+- *
+- * Revision History:
+- *
+- *   08-Nov-97 15:14:47   John Markus Bjørndalen <johnm@cs.uit.no>
+- *    - Fixed some bugs in netwave_rx and cleaned it up a bit. 
+- *      (One of the bugs would have destroyed packets when receiving
+- *      multiple packets per interrupt). 
+- *    - Cleaned up parts of newave_hw_xmit. 
+- *    - A few general cleanups. 
+- *   24-Oct-97 13:17:36   Dag Brattli <dagb@cs.uit.no>
+- *    - Fixed netwave_rx receive function (got updated docs)
+- *   Others:
+- *    - Changed name from xircnw to netwave, take a look at 
+- *      http://www.netwave-wireless.com
+- *    - Some reorganizing of the code
+- *    - Removed possible race condition between interrupt handler and transmit
+- *      function
+- *    - Started to add wireless extensions, but still needs some coding
+- *    - Added watchdog for better handling of transmission timeouts 
+- *      (hopefully this works better)
+- ********************************************************************/
+-
+-/* To have statistics (just packets sent) define this */
+-#undef NETWAVE_STATS
 -
 -#include <linux/module.h>
 -#include <linux/kernel.h>
+-#include <linux/init.h>
 -#include <linux/types.h>
--#include <linux/skbuff.h>
--#include <linux/if_ether.h>	/* For the statistics structure. */
--#include <linux/if_arp.h>	/* For ARPHRD_ETHER */
+-#include <linux/fcntl.h>
+-#include <linux/interrupt.h>
 -#include <linux/ptrace.h>
 -#include <linux/ioport.h>
 -#include <linux/in.h>
 -#include <linux/slab.h>
 -#include <linux/string.h>
 -#include <linux/timer.h>
--
--#include <linux/init.h>
--#include <linux/bitops.h>
--#include <asm/system.h>
--#include <asm/io.h>
 -#include <linux/errno.h>
--#include <linux/delay.h>
 -#include <linux/netdevice.h>
 -#include <linux/etherdevice.h>
+-#include <linux/skbuff.h>
+-#include <linux/bitops.h>
+-#include <linux/wireless.h>
+-#include <net/iw_handler.h>
 -
+-#include <pcmcia/cs_types.h>
+-#include <pcmcia/cs.h>
+-#include <pcmcia/cistpl.h>
+-#include <pcmcia/cisreg.h>
+-#include <pcmcia/ds.h>
+-#include <pcmcia/mem_op.h>
 -
--//#define ARLAN_DEBUGGING 1
+-#include <asm/system.h>
+-#include <asm/io.h>
+-#include <asm/dma.h>
 -
--#define ARLAN_PROC_INTERFACE
--#define MAX_ARLANS 4 /* not more than 4 ! */
--#define ARLAN_PROC_SHM_DUMP /* shows all card registers, makes driver way larger */
+-#define NETWAVE_REGOFF         0x8000
+-/* The Netwave IO registers, offsets to iobase */
+-#define NETWAVE_REG_COR        0x0
+-#define NETWAVE_REG_CCSR       0x2
+-#define NETWAVE_REG_ASR        0x4
+-#define NETWAVE_REG_IMR        0xa
+-#define NETWAVE_REG_PMR        0xc
+-#define NETWAVE_REG_IOLOW      0x6
+-#define NETWAVE_REG_IOHI       0x7
+-#define NETWAVE_REG_IOCONTROL  0x8
+-#define NETWAVE_REG_DATA       0xf
+-/* The Netwave Extended IO registers, offsets to RamBase */
+-#define NETWAVE_EREG_ASCC      0x114
+-#define NETWAVE_EREG_RSER      0x120
+-#define NETWAVE_EREG_RSERW     0x124
+-#define NETWAVE_EREG_TSER      0x130
+-#define NETWAVE_EREG_TSERW     0x134
+-#define NETWAVE_EREG_CB        0x100
+-#define NETWAVE_EREG_SPCQ      0x154
+-#define NETWAVE_EREG_SPU       0x155
+-#define NETWAVE_EREG_LIF       0x14e
+-#define NETWAVE_EREG_ISPLQ     0x156
+-#define NETWAVE_EREG_HHC       0x158
+-#define NETWAVE_EREG_NI        0x16e
+-#define NETWAVE_EREG_MHS       0x16b
+-#define NETWAVE_EREG_TDP       0x140
+-#define NETWAVE_EREG_RDP       0x150
+-#define NETWAVE_EREG_PA        0x160
+-#define NETWAVE_EREG_EC        0x180
+-#define NETWAVE_EREG_CRBP      0x17a
+-#define NETWAVE_EREG_ARW       0x166
 -
--#define ARLAN_MAX_MULTICAST_ADDRS 16
--#define ARLAN_RCV_CLEAN 	0
--#define ARLAN_RCV_PROMISC 1
--#define ARLAN_RCV_CONTROL 2
+-/*
+- * Commands used in the extended command buffer
+- * NETWAVE_EREG_CB (0x100-0x10F) 
+- */
+-#define NETWAVE_CMD_NOP        0x00
+-#define NETWAVE_CMD_SRC        0x01
+-#define NETWAVE_CMD_STC        0x02
+-#define NETWAVE_CMD_AMA        0x03
+-#define NETWAVE_CMD_DMA        0x04
+-#define NETWAVE_CMD_SAMA       0x05
+-#define NETWAVE_CMD_ER         0x06
+-#define NETWAVE_CMD_DR         0x07
+-#define NETWAVE_CMD_TL         0x08
+-#define NETWAVE_CMD_SRP        0x09
+-#define NETWAVE_CMD_SSK        0x0a
+-#define NETWAVE_CMD_SMD        0x0b
+-#define NETWAVE_CMD_SAPD       0x0c
+-#define NETWAVE_CMD_SSS        0x11
+-/* End of Command marker */
+-#define NETWAVE_CMD_EOC        0x00
 -
--#ifdef CONFIG_PROC_FS
--extern int init_arlan_proc(void);
--extern void cleanup_arlan_proc(void);
+-/* ASR register bits */
+-#define NETWAVE_ASR_RXRDY   0x80
+-#define NETWAVE_ASR_TXBA    0x01
+-
+-#define TX_TIMEOUT		((32*HZ)/100)
+-
+-static const unsigned int imrConfRFU1 = 0x10; /* RFU interrupt mask, keep high */
+-static const unsigned int imrConfIENA = 0x02; /* Interrupt enable */
+-
+-static const unsigned int corConfIENA   = 0x01; /* Interrupt enable */
+-static const unsigned int corConfLVLREQ = 0x40; /* Keep high */
+-
+-static const unsigned int rxConfRxEna  = 0x80; /* Receive Enable */
+-static const unsigned int rxConfMAC    = 0x20; /* MAC host receive mode*/ 
+-static const unsigned int rxConfPro    = 0x10; /* Promiscuous */
+-static const unsigned int rxConfAMP    = 0x08; /* Accept Multicast Packets */
+-static const unsigned int rxConfBcast  = 0x04; /* Accept Broadcast Packets */
+-
+-static const unsigned int txConfTxEna  = 0x80; /* Transmit Enable */
+-static const unsigned int txConfMAC    = 0x20; /* Host sends MAC mode */
+-static const unsigned int txConfEUD    = 0x10; /* Enable Uni-Data packets */
+-static const unsigned int txConfKey    = 0x02; /* Scramble data packets */
+-static const unsigned int txConfLoop   = 0x01; /* Loopback mode */
+-
+-/*
+-   All the PCMCIA modules use PCMCIA_DEBUG to control debugging.  If
+-   you do not define PCMCIA_DEBUG at all, all the debug code will be
+-   left out.  If you compile with PCMCIA_DEBUG=0, the debug code will
+-   be present but disabled -- but it can then be enabled for specific
+-   modules at load time with a 'pc_debug=#' option to insmod.
+-*/
+-
+-#ifdef PCMCIA_DEBUG
+-static int pc_debug = PCMCIA_DEBUG;
+-module_param(pc_debug, int, 0);
+-#define DEBUG(n, args...) if (pc_debug>(n)) printk(KERN_DEBUG args)
+-static char *version =
+-"netwave_cs.c 0.3.0 Thu Jul 17 14:36:02 1997 (John Markus Bjørndalen)\n";
 -#else
--#define init_arlan_proc()	({ 0; })
--#define cleanup_arlan_proc()	do { } while (0)
+-#define DEBUG(n, args...)
 -#endif
 -
--extern struct net_device *arlan_device[MAX_ARLANS];
--extern int	arlan_debug;
--extern int	arlan_entry_debug;
--extern int	arlan_exit_debug;
--extern int	testMemory;
--extern int     arlan_command(struct net_device * dev, int command);
-- 
--#define SIDUNKNOWN -1
--#define radioNodeIdUNKNOWN -1
--#define irqUNKNOWN 0
--#define debugUNKNOWN 0
--#define testMemoryUNKNOWN 1
--#define spreadingCodeUNKNOWN 0
--#define channelNumberUNKNOWN 0
--#define channelSetUNKNOWN 0
--#define systemIdUNKNOWN -1
--#define registrationModeUNKNOWN -1
+-/*====================================================================*/
 -
+-/* Parameters that can be set with 'insmod' */
 -
--#define IFDEBUG( L ) if ( (L) & arlan_debug ) 
--#define ARLAN_FAKE_HDR_LEN 12 
+-/* Choose the domain, default is 0x100 */
+-static u_int  domain = 0x100;
 -
--#ifdef ARLAN_DEBUGGING
--	#define DEBUG 1
--	#define ARLAN_ENTRY_EXIT_DEBUGGING 1
--	#define ARLAN_DEBUG(a,b) printk(KERN_DEBUG a, b)
--#else
--	#define ARLAN_DEBUG(a,b) 
--#endif
+-/* Scramble key, range from 0x0 to 0xffff.  
+- * 0x0 is no scrambling. 
+- */
+-static u_int  scramble_key = 0x0;
 -
--#define ARLAN_SHMEM_SIZE	0x2000
+-/* Shared memory speed, in ns. The documentation states that 
+- * the card should not be read faster than every 400ns. 
+- * This timing should be provided by the HBA. If it becomes a 
+- * problem, try setting mem_speed to 400. 
+- */
+-static int mem_speed;
 -
--struct arlan_shmem
+-module_param(domain, int, 0);
+-module_param(scramble_key, int, 0);
+-module_param(mem_speed, int, 0);
+-
+-/*====================================================================*/
+-
+-/* PCMCIA (Card Services) related functions */
+-static void netwave_release(struct pcmcia_device *link);     /* Card removal */
+-static int netwave_pcmcia_config(struct pcmcia_device *arg); /* Runs after card
+-													   insertion */
+-static void netwave_detach(struct pcmcia_device *p_dev);    /* Destroy instance */
+-
+-/* Hardware configuration */
+-static void netwave_doreset(unsigned int iobase, u_char __iomem *ramBase);
+-static void netwave_reset(struct net_device *dev);
+-
+-/* Misc device stuff */
+-static int netwave_open(struct net_device *dev);  /* Open the device */
+-static int netwave_close(struct net_device *dev); /* Close the device */
+-
+-/* Packet transmission and Packet reception */
+-static netdev_tx_t netwave_start_xmit( struct sk_buff *skb,
+-					     struct net_device *dev);
+-static int netwave_rx( struct net_device *dev);
+-
+-/* Interrupt routines */
+-static irqreturn_t netwave_interrupt(int irq, void *dev_id);
+-static void netwave_watchdog(struct net_device *);
+-
+-/* Wireless extensions */
+-static struct iw_statistics* netwave_get_wireless_stats(struct net_device *dev);
+-
+-static void set_multicast_list(struct net_device *dev);
+-
+-/*
+-   A struct pcmcia_device structure has fields for most things that are needed
+-   to keep track of a socket, but there will usually be some device
+-   specific information that also needs to be kept track of.  The
+-   'priv' pointer in a struct pcmcia_device structure can be used to point to
+-   a device-specific private data structure, like this.
+-
+-   A driver needs to provide a dev_node_t structure for each device
+-   on a card.  In some cases, there is only one device per card (for
+-   example, ethernet cards, modems).  In other cases, there may be
+-   many actual or logical devices (SCSI adapters, memory cards with
+-   multiple partitions).  The dev_node_t structures need to be kept
+-   in a linked list starting at the 'dev' field of a struct pcmcia_device
+-   structure.  We allocate them in the card's private data structure,
+-   because they generally can't be allocated dynamically.
+-*/
+-
+-static const struct iw_handler_def	netwave_handler_def;
+-
+-#define SIOCGIPSNAP	SIOCIWFIRSTPRIV	+ 1	/* Site Survey Snapshot */
+-
+-#define MAX_ESA 10
+-
+-typedef struct net_addr {
+-    u_char addr48[6];
+-} net_addr;
+-
+-struct site_survey {
+-    u_short length;
+-    u_char  struct_revision;
+-    u_char  roaming_state;
+-	
+-    u_char  sp_existsFlag;
+-    u_char  sp_link_quality;
+-    u_char  sp_max_link_quality;
+-    u_char  linkQualityGoodFairBoundary;
+-    u_char  linkQualityFairPoorBoundary;
+-    u_char  sp_utilization;
+-    u_char  sp_goodness;
+-    u_char  sp_hotheadcount;
+-    u_char  roaming_condition;
+-	
+-    net_addr sp;
+-    u_char   numAPs;
+-    net_addr nearByAccessPoints[MAX_ESA];
+-};	
+-   
+-typedef struct netwave_private {
+-	struct pcmcia_device	*p_dev;
+-    spinlock_t	spinlock;	/* Serialize access to the hardware (SMP) */
+-    dev_node_t node;
+-    u_char     __iomem *ramBase;
+-    int        timeoutCounter;
+-    int        lastExec;
+-    struct timer_list      watchdog;	/* To avoid blocking state */
+-    struct site_survey     nss;
+-    struct iw_statistics   iw_stats;    /* Wireless stats */
+-} netwave_private;
+-
+-/*
+- * The Netwave card is little-endian, so won't work for big endian
+- * systems.
+- */
+-static inline unsigned short get_uint16(u_char __iomem *staddr) 
 -{
--      /* Header Signature */ 
--      volatile	char textRegion[48];
--      volatile	u_char resetFlag;
--      volatile	u_char  diagnosticInfo;
--      volatile	u_short diagnosticOffset;
--      volatile	u_char _1[12];
--      volatile	u_char lanCardNodeId[6];
--      volatile	u_char broadcastAddress[6];
--      volatile	u_char hardwareType;
--      volatile	u_char majorHardwareVersion;
--      volatile	u_char minorHardwareVersion;
--      volatile	u_char radioModule;// shows EEPROM, can be overridden at 0x111
--      volatile	u_char defaultChannelSet; // shows EEProm, can be overriiden at 0x10A
--      volatile	u_char _2[47];
--      
--      /* Control/Status Block - 0x0080 */
--      volatile	u_char interruptInProgress; /* not used by lancpu */
--      volatile	u_char cntrlRegImage; /* not used by lancpu */
--      volatile	u_char _3[13];
--      volatile	u_char dumpByte;
--      volatile	u_char commandByte; /* non-zero = active */
--      volatile	u_char commandParameter[15];
--
--      /* Receive Status - 0x00a0 */
--      volatile	u_char rxStatus; /* 1- data, 2-control, 0xff - registr change */
--      volatile	u_char rxFrmType;
--      volatile	u_short rxOffset;
--      volatile	u_short rxLength;
--      volatile	u_char rxSrc[6];
--      volatile	u_char rxBroadcastFlag;
--      volatile	u_char rxQuality;
--      volatile	u_char scrambled;
--      volatile	u_char _4[1];
--      
--      /* Transmit Status - 0x00b0 */
--      volatile	u_char txStatus;
--      volatile	u_char txAckQuality;
--      volatile	u_char numRetries;
--      volatile	u_char _5[14];
--      volatile	u_char registeredRouter[6];
--      volatile	u_char backboneRouter[6];
--      volatile	u_char registrationStatus;
--      volatile	u_char configuredStatusFlag;
--      volatile	u_char _6[1];
--      volatile	u_char ultimateDestAddress[6];
--      volatile	u_char immedDestAddress[6];
--      volatile	u_char immedSrcAddress[6];
--      volatile	u_short rxSequenceNumber;
--      volatile	u_char assignedLocaltalkAddress;
--      volatile	u_char _7[27];
--
--      /* System Parameter Block */
--
--      /* - Driver Parameters (Novell Specific) */
--
--      volatile	u_short txTimeout;
--      volatile	u_short transportTime;
--      volatile	u_char _8[4];
--
--      /* - Configuration Parameters */
--      volatile	u_char irqLevel;
--      volatile	u_char spreadingCode;
--      volatile	u_char channelSet;
--      volatile	u_char channelNumber;
--      volatile	u_short radioNodeId;
--      volatile	u_char _9[2];
--      volatile	u_char scramblingDisable;
--      volatile	u_char radioType;
--      volatile	u_short routerId;
--      volatile	u_char _10[9];
--      volatile	u_char txAttenuation;
--      volatile	u_char systemId[4]; 
--      volatile	u_short globalChecksum;
--      volatile	u_char _11[4];
--      volatile	u_short maxDatagramSize;
--      volatile	u_short maxFrameSize;
--      volatile	u_char maxRetries;
--      volatile	u_char receiveMode;
--      volatile	u_char priority;
--      volatile	u_char rootOrRepeater;
--      volatile	u_char specifiedRouter[6];
--      volatile	u_short fastPollPeriod;
--      volatile	u_char pollDecay;
--      volatile	u_char fastPollDelay[2];
--      volatile	u_char arlThreshold;
--      volatile	u_char arlDecay;
--      volatile	u_char _12[1];
--      volatile	u_short specRouterTimeout;
--      volatile	u_char _13[5];
--
--      /* Scrambled Area */
--      volatile	u_char SID[4];
--      volatile	u_char encryptionKey[12];
--      volatile	u_char _14[2];
--      volatile	u_char waitTime[2];
--      volatile	u_char lParameter[2];
--      volatile	u_char _15[3];
--      volatile	u_short headerSize;
--      volatile	u_short sectionChecksum;
--
--      volatile	u_char registrationMode;
--      volatile	u_char registrationFill;
--      volatile	u_short pollPeriod;
--      volatile	u_short refreshPeriod;
--      volatile	u_char name[16];
--      volatile	u_char NID[6];
--      volatile	u_char localTalkAddress;
--      volatile	u_char codeFormat;
--      volatile	u_char numChannels;
--      volatile	u_char channel1;
--      volatile	u_char channel2;
--      volatile	u_char channel3;
--      volatile	u_char channel4;
--      volatile	u_char SSCode[59];
--
--      volatile	u_char _16[0xC0];
--      volatile	u_short auxCmd;
--      volatile	u_char  dumpPtr[4];
--      volatile	u_char dumpVal;
--      volatile	u_char _17[0x6A];
--      volatile	u_char wireTest;
--      volatile	u_char _18[14];
--
--      /* Statistics Block - 0x0300 */
--      volatile	u_char hostcpuLock;
--      volatile	u_char lancpuLock;
--      volatile	u_char resetTime[18];
--      
--      volatile	u_char numDatagramsTransmitted[4];
--      volatile	u_char numReTransmissions[4];
--      volatile	u_char numFramesDiscarded[4];
--      volatile	u_char numDatagramsReceived[4];
--      volatile	u_char numDuplicateReceivedFrames[4];
--      volatile	u_char numDatagramsDiscarded[4];
--      
--      volatile	u_short maxNumReTransmitDatagram;
--      volatile	u_short maxNumReTransmitFrames;
--      volatile	u_short maxNumConsecutiveDuplicateFrames;
--      /* misaligned here so we have to go to characters */
--     
--      volatile	u_char numBytesTransmitted[4];
--      volatile	u_char numBytesReceived[4];
--      volatile	u_char numCRCErrors[4];
--      volatile	u_char numLengthErrors[4];
--      volatile	u_char numAbortErrors[4];
--      volatile	u_char numTXUnderruns[4];
--      volatile	u_char numRXOverruns[4];
--      volatile	u_char numHoldOffs[4];
--      volatile	u_char numFramesTransmitted[4];
--      volatile	u_char numFramesReceived[4];
--      volatile	u_char numReceiveFramesLost[4];
--      volatile	u_char numRXBufferOverflows[4];
--      volatile	u_char numFramesDiscardedAddrMismatch[4];
--      volatile	u_char numFramesDiscardedSIDMismatch[4];
--      volatile	u_char numPollsTransmistted[4];
--      volatile	u_char numPollAcknowledges[4];
--      volatile	u_char numStatusTimeouts[4];
--      volatile	u_char numNACKReceived[4];
--
--      volatile	u_char _19[0x86];
--
--      volatile	u_char txBuffer[0x800];
--      volatile	u_char rxBuffer[0x800];
--
--      volatile	u_char _20[0x800];
--      volatile	u_char _21[0x3fb];
--      volatile	u_char configStatus;
--      volatile	u_char _22;
--      volatile	u_char progIOCtrl;
--      volatile	u_char shareMBase;
--      volatile	u_char controlRegister;
--};
--
--struct arlan_conf_stru {
--      int spreadingCode;
--      int channelSet;
--      int channelNumber;
--      int scramblingDisable;
--      int txAttenuation;
--      int systemId; 
--      int maxDatagramSize;
--      int maxFrameSize;
--      int maxRetries;
--      int receiveMode;
--      int priority;
--      int rootOrRepeater;
--      int SID;
--      int radioNodeId;
--      int registrationMode;
--      int registrationFill;
--      int localTalkAddress;
--      int codeFormat;
--      int numChannels;
--      int channel1;
--      int channel2;
--      int channel3;
--      int channel4;
--      int txClear;
--      int txRetries;
--      int txRouting;
--      int txScrambled;
--      int rxParameter;
--      int txTimeoutMs;
--      int txAckTimeoutMs;
--      int waitCardTimeout;
--      int	waitTime;
--      int	lParameter;
--      int	_15;
--      int	headerSize;
--      int retries;
--      int tx_delay_ms;
--      int waitReTransmitPacketMaxSize;
--      int ReTransmitPacketMaxSize;
--      int fastReTransCount;
--      int driverRetransmissions;
--      int registrationInterrupts;
--      int hardwareType;
--      int radioType;
--      int writeRadioType;
--      int writeEEPROM;
--      char siteName[17];
--      int measure_rate;
--      int in_speed;
--      int out_speed;
--      int in_speed10;
--      int out_speed10;
--      int in_speed_max;
--      int out_speed_max;
--      int pre_Command_Wait;
--      int rx_tweak1;
--      int rx_tweak2;
--      int tx_queue_len;
--};
--
--extern struct arlan_conf_stru arlan_conf[MAX_ARLANS];
--
--struct TxParam
--{
--      volatile	short 		offset;
--      volatile 	short 		length;
--      volatile	u_char 		dest[6];
--      volatile	unsigned	char clear;
--      volatile	unsigned	char retries;
--      volatile	unsigned	char routing;
--      volatile	unsigned	char scrambled;
--};
--
--#define TX_RING_SIZE 2
--/* Information that need to be kept for each board. */
--struct arlan_private {
--      struct arlan_shmem __iomem * card;
--      struct arlan_shmem * conf;
--
--      struct arlan_conf_stru * Conf;	     
--      int	bad;
--      int 	reset;
--      unsigned long lastReset;
--      struct timer_list timer;
--      struct timer_list tx_delay_timer;
--      struct timer_list tx_retry_timer;
--      struct timer_list rx_check_timer;
--
--      int registrationLostCount;
--      int reRegisterExp;
--      int irq_test_done;
--
--      struct TxParam txRing[TX_RING_SIZE];
--      char reTransmitBuff[0x800];
--      int txLast;
--      unsigned ReTransmitRequested;
--      unsigned long tx_done_delayed;
--      unsigned long registrationLastSeen;
--
--      unsigned long	tx_last_sent;
--      unsigned long	tx_last_cleared;
--      unsigned long	retransmissions;
--      unsigned long 	interrupt_ack_requested;
--      spinlock_t	lock;
--      unsigned long	waiting_command_mask;
--      unsigned long 	card_polling_interval;
--      unsigned long 	last_command_buff_free_time;
--
--      int 		under_reset;
--      int 		under_config;
--      int 		rx_command_given;
--      int	 	tx_command_given;
--      unsigned  long	interrupt_processing_active;
--      unsigned long	last_rx_int_ack_time;
--      unsigned long	in_bytes;
--      unsigned long 	out_bytes;
--      unsigned long	in_time;
--      unsigned long	out_time;
--      unsigned long	in_time10;
--      unsigned long	out_time10;
--      unsigned long	in_bytes10;
--      unsigned long 	out_bytes10;
--      int	init_etherdev_alloc;
--};
--
--
--
--#define ARLAN_CLEAR		0x00
--#define ARLAN_RESET 		0x01
--#define ARLAN_CHANNEL_ATTENTION 0x02
--#define ARLAN_INTERRUPT_ENABLE 	0x04
--#define ARLAN_CLEAR_INTERRUPT 	0x08
--#define ARLAN_POWER 		0x40
--#define ARLAN_ACCESS		0x80
--
--#define ARLAN_COM_CONF                0x01
--#define ARLAN_COM_RX_ENABLE           0x03
--#define ARLAN_COM_RX_ABORT            0x04
--#define ARLAN_COM_TX_ENABLE           0x05
--#define ARLAN_COM_TX_ABORT            0x06
--#define ARLAN_COM_NOP		      0x07
--#define ARLAN_COM_STANDBY             0x08
--#define ARLAN_COM_ACTIVATE            0x09
--#define ARLAN_COM_GOTO_SLOW_POLL      0x0a
--#define ARLAN_COM_INT                 0x80
--
--
--#define TXLAST(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[((struct arlan_private *)netdev_priv(dev))->txLast])
--#define TXHEAD(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[0])
--#define TXTAIL(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[1])
--
--#define TXBuffStart(dev) offsetof(struct arlan_shmem, txBuffer)
--#define TXBuffEnd(dev) offsetof(struct arlan_shmem, xxBuffer)
-- 
--#define READSHM(to,from,atype) {\
--	atype tmp;\
--	memcpy_fromio(&(tmp),&(from),sizeof(atype));\
--	to = tmp;\
--	}
--
--#define READSHMEM(from,atype)\
--	atype from; \
--	READSHM(from, arlan->from, atype);
--
--#define WRITESHM(to,from,atype) \
--	{ atype tmpSHM = from;\
--	memcpy_toio(&(to),&tmpSHM,sizeof(atype));\
--	}
--
--#define DEBUGSHM(levelSHM,stringSHM,stuff,atype) \
--	{	atype tmpSHM; \
--		memcpy_fromio(&tmpSHM,&(stuff),sizeof(atype));\
--		IFDEBUG(levelSHM) printk(stringSHM,tmpSHM);\
--	}
--
--#define WRITESHMB(to, val) \
--	writeb(val,&(to))
--#define READSHMB(to) \
--	readb(&(to))
--#define WRITESHMS(to, val) \
--	writew(val,&(to))
--#define READSHMS(to) \
--	readw(&(to))
--#define WRITESHMI(to, val) \
--	writel(val,&(to))
--#define READSHMI(to) \
--	readl(&(to))
--
--
--
--
--
--#define registrationBad(dev)\
--   ( (   READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationMode)    > 0) && \
--     (   READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationStatus) == 0)    )
--
--
--#define readControlRegister(dev)\
-- 	READSHMB(((struct arlan_private *)netdev_priv(dev))->card->cntrlRegImage)
--
--#define writeControlRegister(dev, v){\
--   WRITESHMB(((struct arlan_private *)netdev_priv(dev))->card->cntrlRegImage	,((v) &0xF) );\
--   WRITESHMB(((struct arlan_private *)netdev_priv(dev))->card->controlRegister	,(v) 	);}
--
--
--#define arlan_interrupt_lancpu(dev) {\
--   int cr;   \
--   \
--   cr = readControlRegister(dev);\
--   if (cr & ARLAN_CHANNEL_ATTENTION){ \
--      writeControlRegister(dev, (cr & ~ARLAN_CHANNEL_ATTENTION));\
--   }else  \
--      writeControlRegister(dev, (cr | ARLAN_CHANNEL_ATTENTION));\
+-    return readw(staddr); /* Return only 16 bits */
 -}
 -
--#define clearChannelAttention(dev){ \
--   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_CHANNEL_ATTENTION);}
--#define setHardwareReset(dev) {\
--   writeControlRegister(dev,readControlRegister(dev) | ARLAN_RESET);}
--#define clearHardwareReset(dev) {\
--   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_RESET);}
--#define setInterruptEnable(dev){\
--   writeControlRegister(dev,readControlRegister(dev) | ARLAN_INTERRUPT_ENABLE)  ;}
--#define clearInterruptEnable(dev){\
--   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_INTERRUPT_ENABLE)  ;}
--#define setClearInterrupt(dev){\
--   writeControlRegister(dev,readControlRegister(dev) | ARLAN_CLEAR_INTERRUPT)   ;}
--#define clearClearInterrupt(dev){\
--   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_CLEAR_INTERRUPT);}
--#define setPowerOff(dev){\
--   writeControlRegister(dev,readControlRegister(dev) | (ARLAN_POWER && ARLAN_ACCESS));\
--   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_ACCESS);}
--#define setPowerOn(dev){\
--   writeControlRegister(dev,readControlRegister(dev) & ~(ARLAN_POWER));   }
--#define arlan_lock_card_access(dev){\
--   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_ACCESS);}
--#define arlan_unlock_card_access(dev){\
--   writeControlRegister(dev,readControlRegister(dev) | ARLAN_ACCESS ); }  
+-static inline short get_int16(u_char __iomem * staddr)
+-{
+-    return readw(staddr);
+-}
+-
+-/* 
+- * Wait until the WOC (Write Operation Complete) bit in the 
+- * ASR (Adapter Status Register) is asserted. 
+- * This should have aborted if it takes too long time. 
+- */
+-static inline void wait_WOC(unsigned int iobase)
+-{
+-    /* Spin lock */
+-    while ((inb(iobase + NETWAVE_REG_ASR) & 0x8) != 0x8) ; 
+-}
+-
+-static void netwave_snapshot(netwave_private *priv, u_char __iomem *ramBase, 
+-			     unsigned int iobase) {
+-    u_short resultBuffer;
+-
+-    /* if time since last snapshot is > 1 sec. (100 jiffies?)  then take 
+-     * new snapshot, else return cached data. This is the recommended rate.  
+-     */
+-    if ( jiffies - priv->lastExec > 100) { 
+-	/* Take site survey  snapshot */ 
+-	/*printk( KERN_DEBUG "Taking new snapshot. %ld\n", jiffies -
+-	  priv->lastExec); */
+-	wait_WOC(iobase); 
+-	writeb(NETWAVE_CMD_SSS, ramBase + NETWAVE_EREG_CB + 0); 
+-	writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 1); 
+-	wait_WOC(iobase); 
+-
+-	/* Get result and copy to cach */ 
+-	resultBuffer = readw(ramBase + NETWAVE_EREG_CRBP); 
+-	copy_from_pc( &priv->nss, ramBase+resultBuffer, 
+-		      sizeof(struct site_survey)); 
+-    } 
+-}
+-
+-/*
+- * Function netwave_get_wireless_stats (dev)
+- *
+- *    Wireless extensions statistics
+- *
+- */
+-static struct iw_statistics *netwave_get_wireless_stats(struct net_device *dev)
+-{	
+-    unsigned long flags;
+-    unsigned int iobase = dev->base_addr;
+-    netwave_private *priv = netdev_priv(dev);
+-    u_char __iomem *ramBase = priv->ramBase;
+-    struct iw_statistics* wstats;
+-	
+-    wstats = &priv->iw_stats;
+-
+-    spin_lock_irqsave(&priv->spinlock, flags);
+-	
+-    netwave_snapshot( priv, ramBase, iobase);
+-
+-    wstats->status = priv->nss.roaming_state;
+-    wstats->qual.qual = readb( ramBase + NETWAVE_EREG_SPCQ); 
+-    wstats->qual.level = readb( ramBase + NETWAVE_EREG_ISPLQ);
+-    wstats->qual.noise = readb( ramBase + NETWAVE_EREG_SPU) & 0x3f;
+-    wstats->discard.nwid = 0L;
+-    wstats->discard.code = 0L;
+-    wstats->discard.misc = 0L;
+-
+-    spin_unlock_irqrestore(&priv->spinlock, flags);
+-    
+-    return &priv->iw_stats;
+-}
+-
+-static const struct net_device_ops netwave_netdev_ops = {
+-	.ndo_open	 	= netwave_open,
+-	.ndo_stop		= netwave_close,
+-	.ndo_start_xmit		= netwave_start_xmit,
+-	.ndo_set_multicast_list = set_multicast_list,
+-	.ndo_tx_timeout		= netwave_watchdog,
+-	.ndo_change_mtu		= eth_change_mtu,
+-	.ndo_set_mac_address 	= eth_mac_addr,
+-	.ndo_validate_addr	= eth_validate_addr,
+-};
+-
+-/*
+- * Function netwave_attach (void)
+- *
+- *     Creates an "instance" of the driver, allocating local data 
+- *     structures for one device.  The device is registered with Card 
+- *     Services.
+- *
+- *     The dev_link structure is initialized, but we don't actually
+- *     configure the card at this point -- we wait until we receive a
+- *     card insertion event.
+- */
+-static int netwave_probe(struct pcmcia_device *link)
+-{
+-    struct net_device *dev;
+-    netwave_private *priv;
+-
+-    DEBUG(0, "netwave_attach()\n");
+-
+-    /* Initialize the struct pcmcia_device structure */
+-    dev = alloc_etherdev(sizeof(netwave_private));
+-    if (!dev)
+-	return -ENOMEM;
+-    priv = netdev_priv(dev);
+-    priv->p_dev = link;
+-    link->priv = dev;
+-
+-    /* The io structure describes IO port mapping */
+-    link->io.NumPorts1 = 16;
+-    link->io.Attributes1 = IO_DATA_PATH_WIDTH_16;
+-    /* link->io.NumPorts2 = 16; 
+-       link->io.Attributes2 = IO_DATA_PATH_WIDTH_16; */
+-    link->io.IOAddrLines = 5;
+-    
+-    /* Interrupt setup */
+-    link->irq.Attributes = IRQ_TYPE_DYNAMIC_SHARING | IRQ_HANDLE_PRESENT;
+-    link->irq.IRQInfo1 = IRQ_LEVEL_ID;
+-    link->irq.Handler = &netwave_interrupt;
+-    
+-    /* General socket configuration */
+-    link->conf.Attributes = CONF_ENABLE_IRQ;
+-    link->conf.IntType = INT_MEMORY_AND_IO;
+-    link->conf.ConfigIndex = 1;
+-
+-    /* Netwave private struct init. link/dev/node already taken care of,
+-     * other stuff zero'd - Jean II */
+-    spin_lock_init(&priv->spinlock);
+-
+-    /* Netwave specific entries in the device structure */
+-    dev->netdev_ops = &netwave_netdev_ops;
+-    /* wireless extensions */
+-    dev->wireless_handlers = &netwave_handler_def;
+-
+-    dev->watchdog_timeo = TX_TIMEOUT;
+-
+-    link->irq.Instance = dev;
+-
+-    return netwave_pcmcia_config( link);
+-} /* netwave_attach */
+-
+-/*
+- * Function netwave_detach (link)
+- *
+- *    This deletes a driver "instance".  The device is de-registered
+- *    with Card Services.  If it has been released, all local data
+- *    structures are freed.  Otherwise, the structures will be freed
+- *    when the device is released.
+- */
+-static void netwave_detach(struct pcmcia_device *link)
+-{
+-	struct net_device *dev = link->priv;
+-
+-	DEBUG(0, "netwave_detach(0x%p)\n", link);
+-
+-	netwave_release(link);
+-
+-	if (link->dev_node)
+-		unregister_netdev(dev);
+-
+-	free_netdev(dev);
+-} /* netwave_detach */
+-
+-/*
+- * Wireless Handler : get protocol name
+- */
+-static int netwave_get_name(struct net_device *dev,
+-			    struct iw_request_info *info,
+-			    union iwreq_data *wrqu,
+-			    char *extra)
+-{
+-	strcpy(wrqu->name, "Netwave");
+-	return 0;
+-}
+-
+-/*
+- * Wireless Handler : set Network ID
+- */
+-static int netwave_set_nwid(struct net_device *dev,
+-			    struct iw_request_info *info,
+-			    union iwreq_data *wrqu,
+-			    char *extra)
+-{
+-	unsigned long flags;
+-	unsigned int iobase = dev->base_addr;
+-	netwave_private *priv = netdev_priv(dev);
+-	u_char __iomem *ramBase = priv->ramBase;
+-
+-	/* Disable interrupts & save flags */
+-	spin_lock_irqsave(&priv->spinlock, flags);
+-
+-	if(!wrqu->nwid.disabled) {
+-	    domain = wrqu->nwid.value;
+-	    printk( KERN_DEBUG "Setting domain to 0x%x%02x\n", 
+-		    (domain >> 8) & 0x01, domain & 0xff);
+-	    wait_WOC(iobase);
+-	    writeb(NETWAVE_CMD_SMD, ramBase + NETWAVE_EREG_CB + 0);
+-	    writeb( domain & 0xff, ramBase + NETWAVE_EREG_CB + 1);
+-	    writeb((domain >>8 ) & 0x01,ramBase + NETWAVE_EREG_CB+2);
+-	    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 3);
+-	}
+-
+-	/* ReEnable interrupts & restore flags */
+-	spin_unlock_irqrestore(&priv->spinlock, flags);
+-    
+-	return 0;
+-}
+-
+-/*
+- * Wireless Handler : get Network ID
+- */
+-static int netwave_get_nwid(struct net_device *dev,
+-			    struct iw_request_info *info,
+-			    union iwreq_data *wrqu,
+-			    char *extra)
+-{
+-	wrqu->nwid.value = domain;
+-	wrqu->nwid.disabled = 0;
+-	wrqu->nwid.fixed = 1;
+-	return 0;
+-}
+-
+-/*
+- * Wireless Handler : set scramble key
+- */
+-static int netwave_set_scramble(struct net_device *dev,
+-				struct iw_request_info *info,
+-				union iwreq_data *wrqu,
+-				char *key)
+-{
+-	unsigned long flags;
+-	unsigned int iobase = dev->base_addr;
+-	netwave_private *priv = netdev_priv(dev);
+-	u_char __iomem *ramBase = priv->ramBase;
+-
+-	/* Disable interrupts & save flags */
+-	spin_lock_irqsave(&priv->spinlock, flags);
+-
+-	scramble_key = (key[0] << 8) | key[1];
+-	wait_WOC(iobase);
+-	writeb(NETWAVE_CMD_SSK, ramBase + NETWAVE_EREG_CB + 0);
+-	writeb(scramble_key & 0xff, ramBase + NETWAVE_EREG_CB + 1);
+-	writeb((scramble_key>>8) & 0xff, ramBase + NETWAVE_EREG_CB + 2);
+-	writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 3);
+-
+-	/* ReEnable interrupts & restore flags */
+-	spin_unlock_irqrestore(&priv->spinlock, flags);
+-    
+-	return 0;
+-}
+-
+-/*
+- * Wireless Handler : get scramble key
+- */
+-static int netwave_get_scramble(struct net_device *dev,
+-				struct iw_request_info *info,
+-				union iwreq_data *wrqu,
+-				char *key)
+-{
+-	key[1] = scramble_key & 0xff;
+-	key[0] = (scramble_key>>8) & 0xff;
+-	wrqu->encoding.flags = IW_ENCODE_ENABLED;
+-	wrqu->encoding.length = 2;
+-	return 0;
+-}
+-
+-/*
+- * Wireless Handler : get mode
+- */
+-static int netwave_get_mode(struct net_device *dev,
+-			    struct iw_request_info *info,
+-			    union iwreq_data *wrqu,
+-			    char *extra)
+-{
+-	if(domain & 0x100)
+-		wrqu->mode = IW_MODE_INFRA;
+-	else
+-		wrqu->mode = IW_MODE_ADHOC;
+-
+-	return 0;
+-}
+-
+-/*
+- * Wireless Handler : get range info
+- */
+-static int netwave_get_range(struct net_device *dev,
+-			     struct iw_request_info *info,
+-			     union iwreq_data *wrqu,
+-			     char *extra)
+-{
+-	struct iw_range *range = (struct iw_range *) extra;
+-	int ret = 0;
+-
+-	/* Set the length (very important for backward compatibility) */
+-	wrqu->data.length = sizeof(struct iw_range);
+-
+-	/* Set all the info we don't care or don't know about to zero */
+-	memset(range, 0, sizeof(struct iw_range));
+-
+-	/* Set the Wireless Extension versions */
+-	range->we_version_compiled = WIRELESS_EXT;
+-	range->we_version_source = 9;	/* Nothing for us in v10 and v11 */
+-		   
+-	/* Set information in the range struct */
+-	range->throughput = 450 * 1000;	/* don't argue on this ! */
+-	range->min_nwid = 0x0000;
+-	range->max_nwid = 0x01FF;
+-
+-	range->num_channels = range->num_frequency = 0;
+-		   
+-	range->sensitivity = 0x3F;
+-	range->max_qual.qual = 255;
+-	range->max_qual.level = 255;
+-	range->max_qual.noise = 0;
+-		   
+-	range->num_bitrates = 1;
+-	range->bitrate[0] = 1000000;	/* 1 Mb/s */
+-
+-	range->encoding_size[0] = 2;		/* 16 bits scrambling */
+-	range->num_encoding_sizes = 1;
+-	range->max_encoding_tokens = 1;	/* Only one key possible */
+-
+-	return ret;
+-}
+-
+-/*
+- * Wireless Private Handler : get snapshot
+- */
+-static int netwave_get_snap(struct net_device *dev,
+-			    struct iw_request_info *info,
+-			    union iwreq_data *wrqu,
+-			    char *extra)
+-{
+-	unsigned long flags;
+-	unsigned int iobase = dev->base_addr;
+-	netwave_private *priv = netdev_priv(dev);
+-	u_char __iomem *ramBase = priv->ramBase;
+-
+-	/* Disable interrupts & save flags */
+-	spin_lock_irqsave(&priv->spinlock, flags);
+-
+-	/* Take snapshot of environment */
+-	netwave_snapshot( priv, ramBase, iobase);
+-	wrqu->data.length = priv->nss.length;
+-	memcpy(extra, (u_char *) &priv->nss, sizeof( struct site_survey));
+-
+-	priv->lastExec = jiffies;
+-
+-	/* ReEnable interrupts & restore flags */
+-	spin_unlock_irqrestore(&priv->spinlock, flags);
+-    
+-	return(0);
+-}
+-
+-/*
+- * Structures to export the Wireless Handlers
+- *     This is the stuff that are treated the wireless extensions (iwconfig)
+- */
+-
+-static const struct iw_priv_args netwave_private_args[] = {
+-/*{ cmd,         set_args,                            get_args, name } */
+-  { SIOCGIPSNAP, 0, 
+-    IW_PRIV_TYPE_BYTE | IW_PRIV_SIZE_FIXED | sizeof(struct site_survey), 
+-    "getsitesurvey" },
+-};
+-
+-static const iw_handler		netwave_handler[] =
+-{
+-	NULL,				/* SIOCSIWNAME */
+-	netwave_get_name,		/* SIOCGIWNAME */
+-	netwave_set_nwid,		/* SIOCSIWNWID */
+-	netwave_get_nwid,		/* SIOCGIWNWID */
+-	NULL,				/* SIOCSIWFREQ */
+-	NULL,				/* SIOCGIWFREQ */
+-	NULL,				/* SIOCSIWMODE */
+-	netwave_get_mode,		/* SIOCGIWMODE */
+-	NULL,				/* SIOCSIWSENS */
+-	NULL,				/* SIOCGIWSENS */
+-	NULL,				/* SIOCSIWRANGE */
+-	netwave_get_range,		/* SIOCGIWRANGE */
+-	NULL,				/* SIOCSIWPRIV */
+-	NULL,				/* SIOCGIWPRIV */
+-	NULL,				/* SIOCSIWSTATS */
+-	NULL,				/* SIOCGIWSTATS */
+-	NULL,				/* SIOCSIWSPY */
+-	NULL,				/* SIOCGIWSPY */
+-	NULL,				/* -- hole -- */
+-	NULL,				/* -- hole -- */
+-	NULL,				/* SIOCSIWAP */
+-	NULL,				/* SIOCGIWAP */
+-	NULL,				/* -- hole -- */
+-	NULL,				/* SIOCGIWAPLIST */
+-	NULL,				/* -- hole -- */
+-	NULL,				/* -- hole -- */
+-	NULL,				/* SIOCSIWESSID */
+-	NULL,				/* SIOCGIWESSID */
+-	NULL,				/* SIOCSIWNICKN */
+-	NULL,				/* SIOCGIWNICKN */
+-	NULL,				/* -- hole -- */
+-	NULL,				/* -- hole -- */
+-	NULL,				/* SIOCSIWRATE */
+-	NULL,				/* SIOCGIWRATE */
+-	NULL,				/* SIOCSIWRTS */
+-	NULL,				/* SIOCGIWRTS */
+-	NULL,				/* SIOCSIWFRAG */
+-	NULL,				/* SIOCGIWFRAG */
+-	NULL,				/* SIOCSIWTXPOW */
+-	NULL,				/* SIOCGIWTXPOW */
+-	NULL,				/* SIOCSIWRETRY */
+-	NULL,				/* SIOCGIWRETRY */
+-	netwave_set_scramble,		/* SIOCSIWENCODE */
+-	netwave_get_scramble,		/* SIOCGIWENCODE */
+-};
+-
+-static const iw_handler		netwave_private_handler[] =
+-{
+-	NULL,				/* SIOCIWFIRSTPRIV */
+-	netwave_get_snap,		/* SIOCIWFIRSTPRIV + 1 */
+-};
+-
+-static const struct iw_handler_def	netwave_handler_def =
+-{
+-	.num_standard	= ARRAY_SIZE(netwave_handler),
+-	.num_private	= ARRAY_SIZE(netwave_private_handler),
+-	.num_private_args = ARRAY_SIZE(netwave_private_args),
+-	.standard	= (iw_handler *) netwave_handler,
+-	.private	= (iw_handler *) netwave_private_handler,
+-	.private_args	= (struct iw_priv_args *) netwave_private_args,
+-	.get_wireless_stats = netwave_get_wireless_stats,
+-};
+-
+-/*
+- * Function netwave_pcmcia_config (link)
+- *
+- *     netwave_pcmcia_config() is scheduled to run after a CARD_INSERTION 
+- *     event is received, to configure the PCMCIA socket, and to make the
+- *     device available to the system. 
+- *
+- */
+-
+-#define CS_CHECK(fn, ret) \
+-do { last_fn = (fn); if ((last_ret = (ret)) != 0) goto cs_failed; } while (0)
+-
+-static int netwave_pcmcia_config(struct pcmcia_device *link) {
+-    struct net_device *dev = link->priv;
+-    netwave_private *priv = netdev_priv(dev);
+-    int i, j, last_ret, last_fn;
+-    win_req_t req;
+-    memreq_t mem;
+-    u_char __iomem *ramBase = NULL;
+-
+-    DEBUG(0, "netwave_pcmcia_config(0x%p)\n", link);
+-
+-    /*
+-     *  Try allocating IO ports.  This tries a few fixed addresses.
+-     *  If you want, you can also read the card's config table to
+-     *  pick addresses -- see the serial driver for an example.
+-     */
+-    for (i = j = 0x0; j < 0x400; j += 0x20) {
+-	link->io.BasePort1 = j ^ 0x300;
+-	i = pcmcia_request_io(link, &link->io);
+-	if (i == 0)
+-		break;
+-    }
+-    if (i != 0) {
+-	cs_error(link, RequestIO, i);
+-	goto failed;
+-    }
+-
+-    /*
+-     *  Now allocate an interrupt line.  Note that this does not
+-     *  actually assign a handler to the interrupt.
+-     */
+-    CS_CHECK(RequestIRQ, pcmcia_request_irq(link, &link->irq));
+-
+-    /*
+-     *  This actually configures the PCMCIA socket -- setting up
+-     *  the I/O windows and the interrupt mapping.
+-     */
+-    CS_CHECK(RequestConfiguration, pcmcia_request_configuration(link, &link->conf));
+-
+-    /*
+-     *  Allocate a 32K memory window.  Note that the struct pcmcia_device
+-     *  structure provides space for one window handle -- if your
+-     *  device needs several windows, you'll need to keep track of
+-     *  the handles in your private data structure, dev->priv.
+-     */
+-    DEBUG(1, "Setting mem speed of %d\n", mem_speed);
+-
+-    req.Attributes = WIN_DATA_WIDTH_8|WIN_MEMORY_TYPE_CM|WIN_ENABLE;
+-    req.Base = 0; req.Size = 0x8000;
+-    req.AccessSpeed = mem_speed;
+-    CS_CHECK(RequestWindow, pcmcia_request_window(&link, &req, &link->win));
+-    mem.CardOffset = 0x20000; mem.Page = 0; 
+-    CS_CHECK(MapMemPage, pcmcia_map_mem_page(link->win, &mem));
+-
+-    /* Store base address of the common window frame */
+-    ramBase = ioremap(req.Base, 0x8000);
+-    priv->ramBase = ramBase;
+-
+-    dev->irq = link->irq.AssignedIRQ;
+-    dev->base_addr = link->io.BasePort1;
+-    SET_NETDEV_DEV(dev, &handle_to_dev(link));
+-
+-    if (register_netdev(dev) != 0) {
+-	printk(KERN_DEBUG "netwave_cs: register_netdev() failed\n");
+-	goto failed;
+-    }
+-
+-    strcpy(priv->node.dev_name, dev->name);
+-    link->dev_node = &priv->node;
+-
+-    /* Reset card before reading physical address */
+-    netwave_doreset(dev->base_addr, ramBase);
+-
+-    /* Read the ethernet address and fill in the Netwave registers. */
+-    for (i = 0; i < 6; i++) 
+-	dev->dev_addr[i] = readb(ramBase + NETWAVE_EREG_PA + i);
+-
+-    printk(KERN_INFO "%s: Netwave: port %#3lx, irq %d, mem %lx, "
+-	   "id %c%c, hw_addr %pM\n",
+-	   dev->name, dev->base_addr, dev->irq,
+-	   (u_long) ramBase,
+-	   (int) readb(ramBase+NETWAVE_EREG_NI),
+-	   (int) readb(ramBase+NETWAVE_EREG_NI+1),
+-	   dev->dev_addr);
+-
+-    /* get revision words */
+-    printk(KERN_DEBUG "Netwave_reset: revision %04x %04x\n", 
+-	   get_uint16(ramBase + NETWAVE_EREG_ARW),
+-	   get_uint16(ramBase + NETWAVE_EREG_ARW+2));
+-    return 0;
+-
+-cs_failed:
+-    cs_error(link, last_fn, last_ret);
+-failed:
+-    netwave_release(link);
+-    return -ENODEV;
+-} /* netwave_pcmcia_config */
+-
+-/*
+- * Function netwave_release (arg)
+- *
+- *    After a card is removed, netwave_release() will unregister the net
+- *    device, and release the PCMCIA configuration.  If the device is
+- *    still open, this will be postponed until it is closed.
+- */
+-static void netwave_release(struct pcmcia_device *link)
+-{
+-	struct net_device *dev = link->priv;
+-	netwave_private *priv = netdev_priv(dev);
+-
+-	DEBUG(0, "netwave_release(0x%p)\n", link);
+-
+-	pcmcia_disable_device(link);
+-	if (link->win)
+-		iounmap(priv->ramBase);
+-}
+-
+-static int netwave_suspend(struct pcmcia_device *link)
+-{
+-	struct net_device *dev = link->priv;
+-
+-	if (link->open)
+-		netif_device_detach(dev);
+-
+-	return 0;
+-}
+-
+-static int netwave_resume(struct pcmcia_device *link)
+-{
+-	struct net_device *dev = link->priv;
+-
+-	if (link->open) {
+-		netwave_reset(dev);
+-		netif_device_attach(dev);
+-	}
+-
+-	return 0;
+-}
 -
 -
+-/*
+- * Function netwave_doreset (ioBase, ramBase)
+- *
+- *    Proper hardware reset of the card.
+- */
+-static void netwave_doreset(unsigned int ioBase, u_char __iomem *ramBase)
+-{
+-    /* Reset card */
+-    wait_WOC(ioBase);
+-    outb(0x80, ioBase + NETWAVE_REG_PMR);
+-    writeb(0x08, ramBase + NETWAVE_EREG_ASCC); /* Bit 3 is WOC */
+-    outb(0x0, ioBase + NETWAVE_REG_PMR); /* release reset */
+-}
 -
+-/*
+- * Function netwave_reset (dev)
+- *
+- *    Reset and restore all of the netwave registers 
+- */
+-static void netwave_reset(struct net_device *dev) {
+-    /* u_char state; */
+-    netwave_private *priv = netdev_priv(dev);
+-    u_char __iomem *ramBase = priv->ramBase;
+-    unsigned int iobase = dev->base_addr;
 -
--#define ARLAN_COMMAND_RX		0x000001
--#define ARLAN_COMMAND_NOOP		0x000002
--#define ARLAN_COMMAND_NOOPINT		0x000004
--#define ARLAN_COMMAND_TX		0x000008
--#define ARLAN_COMMAND_CONF		0x000010
--#define ARLAN_COMMAND_RESET		0x000020
--#define ARLAN_COMMAND_TX_ABORT		0x000040
--#define ARLAN_COMMAND_RX_ABORT		0x000080
--#define ARLAN_COMMAND_POWERDOWN		0x000100
--#define ARLAN_COMMAND_POWERUP		0x000200
--#define ARLAN_COMMAND_SLOW_POLL 	0x000400
--#define ARLAN_COMMAND_ACTIVATE 		0x000800
--#define ARLAN_COMMAND_INT_ACK		0x001000
--#define ARLAN_COMMAND_INT_ENABLE	0x002000
--#define ARLAN_COMMAND_WAIT_NOW		0x004000
--#define ARLAN_COMMAND_LONG_WAIT_NOW	0x008000
--#define ARLAN_COMMAND_STANDBY		0x010000
--#define ARLAN_COMMAND_INT_RACK		0x020000
--#define ARLAN_COMMAND_INT_RENABLE	0x040000
--#define ARLAN_COMMAND_CONF_WAIT		0x080000
--#define ARLAN_COMMAND_TBUSY_CLEAR	0x100000
--#define ARLAN_COMMAND_CLEAN_AND_CONF	(ARLAN_COMMAND_TX_ABORT\
--					| ARLAN_COMMAND_RX_ABORT\
--					| ARLAN_COMMAND_CONF)
--#define ARLAN_COMMAND_CLEAN_AND_RESET   (ARLAN_COMMAND_TX_ABORT\
--					| ARLAN_COMMAND_RX_ABORT\
--					| ARLAN_COMMAND_RESET)
+-    DEBUG(0, "netwave_reset: Done with hardware reset\n");
 -
+-    priv->timeoutCounter = 0;
 -
-- 
--#define ARLAN_DEBUG_CHAIN_LOCKS		0x00001
--#define ARLAN_DEBUG_RESET		0x00002
--#define ARLAN_DEBUG_TIMING		0x00004
--#define ARLAN_DEBUG_CARD_STATE		0x00008
--#define ARLAN_DEBUG_TX_CHAIN		0x00010
--#define ARLAN_DEBUG_MULTICAST		0x00020
--#define ARLAN_DEBUG_HEADER_DUMP		0x00040
--#define ARLAN_DEBUG_INTERRUPT		0x00080
--#define ARLAN_DEBUG_STARTUP		0x00100
--#define ARLAN_DEBUG_SHUTDOWN		0x00200
-- 
+-    /* Reset card */
+-    netwave_doreset(iobase, ramBase);
+-    printk(KERN_DEBUG "netwave_reset: Done with hardware reset\n");
+-	
+-    /* Write a NOP to check the card */
+-    wait_WOC(iobase);
+-    writeb(NETWAVE_CMD_NOP, ramBase + NETWAVE_EREG_CB + 0);
+-    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 1);
+-	
+-    /* Set receive conf */
+-    wait_WOC(iobase);
+-    writeb(NETWAVE_CMD_SRC, ramBase + NETWAVE_EREG_CB + 0);
+-    writeb(rxConfRxEna + rxConfBcast, ramBase + NETWAVE_EREG_CB + 1);
+-    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 2);
+-    
+-    /* Set transmit conf */
+-    wait_WOC(iobase);
+-    writeb(NETWAVE_CMD_STC, ramBase + NETWAVE_EREG_CB + 0);
+-    writeb(txConfTxEna, ramBase + NETWAVE_EREG_CB + 1);
+-    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 2);
+-    
+-    /* Now set the MU Domain */
+-    printk(KERN_DEBUG "Setting domain to 0x%x%02x\n", (domain >> 8) & 0x01, domain & 0xff);
+-    wait_WOC(iobase);
+-    writeb(NETWAVE_CMD_SMD, ramBase + NETWAVE_EREG_CB + 0);
+-    writeb(domain & 0xff, ramBase + NETWAVE_EREG_CB + 1);
+-    writeb((domain>>8) & 0x01, ramBase + NETWAVE_EREG_CB + 2);
+-    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 3);
+-	
+-    /* Set scramble key */
+-    printk(KERN_DEBUG "Setting scramble key to 0x%x\n", scramble_key);
+-    wait_WOC(iobase);
+-    writeb(NETWAVE_CMD_SSK, ramBase + NETWAVE_EREG_CB + 0);
+-    writeb(scramble_key & 0xff, ramBase + NETWAVE_EREG_CB + 1);
+-    writeb((scramble_key>>8) & 0xff, ramBase + NETWAVE_EREG_CB + 2);
+-    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 3);
+-
+-    /* Enable interrupts, bit 4 high to keep unused
+-     * source from interrupting us, bit 2 high to 
+-     * set interrupt enable, 567 to enable TxDN, 
+-     * RxErr and RxRdy
+-     */
+-    wait_WOC(iobase);
+-    outb(imrConfIENA+imrConfRFU1, iobase + NETWAVE_REG_IMR);
+-
+-    /* Hent 4 bytes fra 0x170. Skal vaere 0a,29,88,36
+-     * waitWOC
+-     * skriv 80 til d000:3688
+-     * sjekk om det ble 80
+-     */
+-    
+-    /* Enable Receiver */
+-    wait_WOC(iobase);
+-    writeb(NETWAVE_CMD_ER, ramBase + NETWAVE_EREG_CB + 0);
+-    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 1);
+-	
+-    /* Set the IENA bit in COR */
+-    wait_WOC(iobase);
+-    outb(corConfIENA + corConfLVLREQ, iobase + NETWAVE_REG_COR);
+-}
+-
+-/*
+- * Function netwave_hw_xmit (data, len, dev)    
+- */
+-static int netwave_hw_xmit(unsigned char* data, int len,
+-			   struct net_device* dev) {
+-    unsigned long flags;
+-    unsigned int TxFreeList,
+-	         curBuff,
+-	         MaxData, 
+-                 DataOffset;
+-    int tmpcount; 
+-	
+-    netwave_private *priv = netdev_priv(dev);
+-    u_char __iomem * ramBase = priv->ramBase;
+-    unsigned int iobase = dev->base_addr;
+-
+-    /* Disable interrupts & save flags */
+-    spin_lock_irqsave(&priv->spinlock, flags);
+-
+-    /* Check if there are transmit buffers available */
+-    wait_WOC(iobase);
+-    if ((inb(iobase+NETWAVE_REG_ASR) & NETWAVE_ASR_TXBA) == 0) {
+-	/* No buffers available */
+-	printk(KERN_DEBUG "netwave_hw_xmit: %s - no xmit buffers available.\n",
+-	       dev->name);
+-	spin_unlock_irqrestore(&priv->spinlock, flags);
+-	return 1;
+-    }
+-
+-    dev->stats.tx_bytes += len;
+-
+-    DEBUG(3, "Transmitting with SPCQ %x SPU %x LIF %x ISPLQ %x\n",
+-	  readb(ramBase + NETWAVE_EREG_SPCQ),
+-	  readb(ramBase + NETWAVE_EREG_SPU),
+-	  readb(ramBase + NETWAVE_EREG_LIF),
+-	  readb(ramBase + NETWAVE_EREG_ISPLQ));
+-
+-    /* Now try to insert it into the adapters free memory */
+-    wait_WOC(iobase);
+-    TxFreeList = get_uint16(ramBase + NETWAVE_EREG_TDP);
+-    MaxData    = get_uint16(ramBase + NETWAVE_EREG_TDP+2);
+-    DataOffset = get_uint16(ramBase + NETWAVE_EREG_TDP+4);
+-	
+-    DEBUG(3, "TxFreeList %x, MaxData %x, DataOffset %x\n",
+-	  TxFreeList, MaxData, DataOffset);
+-
+-    /* Copy packet to the adapter fragment buffers */
+-    curBuff = TxFreeList; 
+-    tmpcount = 0; 
+-    while (tmpcount < len) {
+-	int tmplen = len - tmpcount; 
+-	copy_to_pc(ramBase + curBuff + DataOffset, data + tmpcount, 
+-		   (tmplen < MaxData) ? tmplen : MaxData);
+-	tmpcount += MaxData;
+-			
+-	/* Advance to next buffer */
+-	curBuff = get_uint16(ramBase + curBuff);
+-    }
+-    
+-    /* Now issue transmit list */
+-    wait_WOC(iobase);
+-    writeb(NETWAVE_CMD_TL, ramBase + NETWAVE_EREG_CB + 0);
+-    writeb(len & 0xff, ramBase + NETWAVE_EREG_CB + 1);
+-    writeb((len>>8) & 0xff, ramBase + NETWAVE_EREG_CB + 2);
+-    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 3);
+-
+-    spin_unlock_irqrestore(&priv->spinlock, flags);
+-    return 0;
+-}
+-
+-static netdev_tx_t netwave_start_xmit(struct sk_buff *skb,
+-					    struct net_device *dev) {
+-	/* This flag indicate that the hardware can't perform a transmission.
+-	 * Theoritically, NET3 check it before sending a packet to the driver,
+-	 * but in fact it never do that and pool continuously.
+-	 * As the watchdog will abort too long transmissions, we are quite safe...
+-	 */
+-
+-    netif_stop_queue(dev);
+-
+-    {
+-	short length = ETH_ZLEN < skb->len ? skb->len : ETH_ZLEN;
+-	unsigned char* buf = skb->data;
+-	
+-	if (netwave_hw_xmit( buf, length, dev) == 1) {
+-	    /* Some error, let's make them call us another time? */
+-	    netif_start_queue(dev);
+-	}
+-	dev->trans_start = jiffies;
+-    }
+-    dev_kfree_skb(skb);
+-    
+-    return NETDEV_TX_OK;
+-} /* netwave_start_xmit */
+-
+-/*
+- * Function netwave_interrupt (irq, dev_id)
+- *
+- *    This function is the interrupt handler for the Netwave card. This
+- *    routine will be called whenever: 
+- *	  1. A packet is received.
+- *	  2. A packet has successfully been transferred and the unit is
+- *	     ready to transmit another packet.
+- *	  3. A command has completed execution.
+- */
+-static irqreturn_t netwave_interrupt(int irq, void* dev_id)
+-{
+-    unsigned int iobase;
+-    u_char __iomem *ramBase;
+-    struct net_device *dev = (struct net_device *)dev_id;
+-    struct netwave_private *priv = netdev_priv(dev);
+-    struct pcmcia_device *link = priv->p_dev;
+-    int i;
+-    
+-    if (!netif_device_present(dev))
+-	return IRQ_NONE;
+-    
+-    iobase = dev->base_addr;
+-    ramBase = priv->ramBase;
+-	
+-    /* Now find what caused the interrupt, check while interrupts ready */
+-    for (i = 0; i < 10; i++) {
+-	u_char status;
+-		
+-	wait_WOC(iobase);	
+-	if (!(inb(iobase+NETWAVE_REG_CCSR) & 0x02))
+-	    break; /* None of the interrupt sources asserted (normal exit) */
+-	
+-        status = inb(iobase + NETWAVE_REG_ASR);
+-		
+-	if (!pcmcia_dev_present(link)) {
+-	    DEBUG(1, "netwave_interrupt: Interrupt with status 0x%x "
+-		  "from removed or suspended card!\n", status);
+-	    break;
+-	}
+-		
+-	/* RxRdy */
+-	if (status & 0x80) {
+-	    netwave_rx(dev);
+-	    /* wait_WOC(iobase); */
+-	    /* RxRdy cannot be reset directly by the host */
+-	}
+-	/* RxErr */
+-	if (status & 0x40) {
+-	    u_char rser;
+-			
+-	    rser = readb(ramBase + NETWAVE_EREG_RSER);			
+-	    
+-	    if (rser & 0x04) {
+-		++dev->stats.rx_dropped;
+-		++dev->stats.rx_crc_errors;
+-	    }
+-	    if (rser & 0x02)
+-		++dev->stats.rx_frame_errors;
+-			
+-	    /* Clear the RxErr bit in RSER. RSER+4 is the
+-	     * write part. Also clear the RxCRC (0x04) and 
+-	     * RxBig (0x02) bits if present */
+-	    wait_WOC(iobase);
+-	    writeb(0x40 | (rser & 0x06), ramBase + NETWAVE_EREG_RSER + 4);
+-
+-	    /* Write bit 6 high to ASCC to clear RxErr in ASR,
+-	     * WOC must be set first! 
+-	     */
+-	    wait_WOC(iobase);
+-	    writeb(0x40, ramBase + NETWAVE_EREG_ASCC);
+-
+-	    /* Remember to count up dev->stats on error packets */
+-	    ++dev->stats.rx_errors;
+-	}
+-	/* TxDN */
+-	if (status & 0x20) {
+-	    int txStatus;
+-
+-	    txStatus = readb(ramBase + NETWAVE_EREG_TSER);
+-	    DEBUG(3, "Transmit done. TSER = %x id %x\n", 
+-		  txStatus, readb(ramBase + NETWAVE_EREG_TSER + 1));
+-	    
+-	    if (txStatus & 0x20) {
+-		/* Transmitting was okay, clear bits */
+-		wait_WOC(iobase);
+-		writeb(0x2f, ramBase + NETWAVE_EREG_TSER + 4);
+-		++dev->stats.tx_packets;
+-	    }
+-			
+-	    if (txStatus & 0xd0) {
+-		if (txStatus & 0x80) {
+-		    ++dev->stats.collisions; /* Because of /proc/net/dev*/
+-		    /* ++dev->stats.tx_aborted_errors; */
+-		    /* printk("Collision. %ld\n", jiffies - dev->trans_start); */
+-		}
+-		if (txStatus & 0x40) 
+-		    ++dev->stats.tx_carrier_errors;
+-		/* 0x80 TxGU Transmit giveup - nine times and no luck
+-		 * 0x40 TxNOAP No access point. Discarded packet.
+-		 * 0x10 TxErr Transmit error. Always set when 
+-		 *      TxGU and TxNOAP is set. (Those are the only ones
+-		 *      to set TxErr).
+-		 */
+-		DEBUG(3, "netwave_interrupt: TxDN with error status %x\n", 
+-		      txStatus);
+-		
+-		/* Clear out TxGU, TxNOAP, TxErr and TxTrys */
+-		wait_WOC(iobase);
+-		writeb(0xdf & txStatus, ramBase+NETWAVE_EREG_TSER+4);
+-		++dev->stats.tx_errors;
+-	    }
+-	    DEBUG(3, "New status is TSER %x ASR %x\n",
+-		  readb(ramBase + NETWAVE_EREG_TSER),
+-		  inb(iobase + NETWAVE_REG_ASR));
+-
+-	    netif_wake_queue(dev);
+-	}
+-	/* TxBA, this would trigger on all error packets received */
+-	/* if (status & 0x01) {
+-	   DEBUG(4, "Transmit buffers available, %x\n", status);
+-	   }
+-	   */
+-    }
+-    /* Handled if we looped at least one time - Jean II */
+-    return IRQ_RETVAL(i);
+-} /* netwave_interrupt */
+-
+-/*
+- * Function netwave_watchdog (a)
+- *
+- *    Watchdog : when we start a transmission, we set a timer in the
+- *    kernel.  If the transmission complete, this timer is disabled. If
+- *    it expire, we reset the card.
+- *
+- */
+-static void netwave_watchdog(struct net_device *dev) {
+-
+-    DEBUG(1, "%s: netwave_watchdog: watchdog timer expired\n", dev->name);
+-    netwave_reset(dev);
+-    dev->trans_start = jiffies;
+-    netif_wake_queue(dev);
+-} /* netwave_watchdog */
+-
+-static int netwave_rx(struct net_device *dev)
+-{
+-    netwave_private *priv = netdev_priv(dev);
+-    u_char __iomem *ramBase = priv->ramBase;
+-    unsigned int iobase = dev->base_addr;
+-    u_char rxStatus;
+-    struct sk_buff *skb = NULL;
+-    unsigned int curBuffer,
+-		rcvList;
+-    int rcvLen;
+-    int tmpcount = 0;
+-    int dataCount, dataOffset;
+-    int i;
+-    u_char *ptr;
+-	
+-    DEBUG(3, "xinw_rx: Receiving ... \n");
+-
+-    /* Receive max 10 packets for now. */
+-    for (i = 0; i < 10; i++) {
+-	/* Any packets? */
+-	wait_WOC(iobase);
+-	rxStatus = readb(ramBase + NETWAVE_EREG_RSER);		
+-	if ( !( rxStatus & 0x80)) /* No more packets */
+-	    break;
+-		
+-	/* Check if multicast/broadcast or other */
+-	/* multicast = (rxStatus & 0x20);  */
+-		
+-	/* The receive list pointer and length of the packet */
+-	wait_WOC(iobase);
+-	rcvLen  = get_int16( ramBase + NETWAVE_EREG_RDP);
+-	rcvList = get_uint16( ramBase + NETWAVE_EREG_RDP + 2);
+-		
+-	if (rcvLen < 0) {
+-	    printk(KERN_DEBUG "netwave_rx: Receive packet with len %d\n", 
+-		   rcvLen);
+-	    return 0;
+-	}
+-		
+-	skb = dev_alloc_skb(rcvLen+5);
+-	if (skb == NULL) {
+-	    DEBUG(1, "netwave_rx: Could not allocate an sk_buff of "
+-		  "length %d\n", rcvLen);
+-	    ++dev->stats.rx_dropped;
+-	    /* Tell the adapter to skip the packet */
+-	    wait_WOC(iobase);
+-	    writeb(NETWAVE_CMD_SRP, ramBase + NETWAVE_EREG_CB + 0);
+-	    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 1);
+-	    return 0;
+-	}
+-
+-	skb_reserve( skb, 2);  /* Align IP on 16 byte */
+-	skb_put( skb, rcvLen);
+-
+-	/* Copy packet fragments to the skb data area */
+-	ptr = (u_char*) skb->data;
+-	curBuffer = rcvList;
+-	tmpcount = 0; 
+-	while ( tmpcount < rcvLen) {
+-	    /* Get length and offset of current buffer */
+-	    dataCount  = get_uint16( ramBase+curBuffer+2);
+-	    dataOffset = get_uint16( ramBase+curBuffer+4);
+-		
+-	    copy_from_pc( ptr + tmpcount,
+-			  ramBase+curBuffer+dataOffset, dataCount);
+-
+-	    tmpcount += dataCount;
+-		
+-	    /* Point to next buffer */
+-	    curBuffer = get_uint16(ramBase + curBuffer);
+-	}
+-	
+-	skb->protocol = eth_type_trans(skb,dev);
+-	/* Queue packet for network layer */
+-	netif_rx(skb);
+-
+-	dev->stats.rx_packets++;
+-	dev->stats.rx_bytes += rcvLen;
+-
+-	/* Got the packet, tell the adapter to skip it */
+-	wait_WOC(iobase);
+-	writeb(NETWAVE_CMD_SRP, ramBase + NETWAVE_EREG_CB + 0);
+-	writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 1);
+-	DEBUG(3, "Packet reception ok\n");
+-    }
+-    return 0;
+-}
+-
+-static int netwave_open(struct net_device *dev) {
+-    netwave_private *priv = netdev_priv(dev);
+-    struct pcmcia_device *link = priv->p_dev;
+-
+-    DEBUG(1, "netwave_open: starting.\n");
+-    
+-    if (!pcmcia_dev_present(link))
+-	return -ENODEV;
+-
+-    link->open++;
+-
+-    netif_start_queue(dev);
+-    netwave_reset(dev);
+-	
+-    return 0;
+-}
+-
+-static int netwave_close(struct net_device *dev) {
+-    netwave_private *priv = netdev_priv(dev);
+-    struct pcmcia_device *link = priv->p_dev;
+-
+-    DEBUG(1, "netwave_close: finishing.\n");
+-
+-    link->open--;
+-    netif_stop_queue(dev);
+-
+-    return 0;
+-}
+-
+-static struct pcmcia_device_id netwave_ids[] = {
+-	PCMCIA_DEVICE_PROD_ID12("Xircom", "CreditCard Netwave", 0x2e3ee845, 0x54e28a28),
+-	PCMCIA_DEVICE_NULL,
+-};
+-MODULE_DEVICE_TABLE(pcmcia, netwave_ids);
+-
+-static struct pcmcia_driver netwave_driver = {
+-	.owner		= THIS_MODULE,
+-	.drv		= {
+-		.name	= "netwave_cs",
+-	},
+-	.probe		= netwave_probe,
+-	.remove		= netwave_detach,
+-	.id_table       = netwave_ids,
+-	.suspend	= netwave_suspend,
+-	.resume		= netwave_resume,
+-};
+-
+-static int __init init_netwave_cs(void)
+-{
+-	return pcmcia_register_driver(&netwave_driver);
+-}
+-
+-static void __exit exit_netwave_cs(void)
+-{
+-	pcmcia_unregister_driver(&netwave_driver);
+-}
+-
+-module_init(init_netwave_cs);
+-module_exit(exit_netwave_cs);
+-
+-/* Set or clear the multicast filter for this adaptor.
+-   num_addrs == -1	Promiscuous mode, receive all packets
+-   num_addrs == 0	Normal mode, clear multicast list
+-   num_addrs > 0	Multicast mode, receive normal and MC packets, and do
+-   best-effort filtering.
+- */
+-static void set_multicast_list(struct net_device *dev)
+-{
+-    unsigned int iobase = dev->base_addr;
+-    netwave_private *priv = netdev_priv(dev);
+-    u_char __iomem * ramBase = priv->ramBase;
+-    u_char  rcvMode = 0;
+-   
+-#ifdef PCMCIA_DEBUG
+-    if (pc_debug > 2) {
+-	static int old;
+-	if (old != dev->mc_count) {
+-	    old = dev->mc_count;
+-	    DEBUG(0, "%s: setting Rx mode to %d addresses.\n",
+-		  dev->name, dev->mc_count);
+-	}
+-    }
+-#endif
+-	
+-    if (dev->mc_count || (dev->flags & IFF_ALLMULTI)) {
+-	/* Multicast Mode */
+-	rcvMode = rxConfRxEna + rxConfAMP + rxConfBcast;
+-    } else if (dev->flags & IFF_PROMISC) {
+-	/* Promiscous mode */
+-	rcvMode = rxConfRxEna + rxConfPro + rxConfAMP + rxConfBcast;
+-    } else {
+-	/* Normal mode */
+-	rcvMode = rxConfRxEna + rxConfBcast;
+-    }
+-	
+-    /* printk("netwave set_multicast_list: rcvMode to %x\n", rcvMode);*/
+-    /* Now set receive mode */
+-    wait_WOC(iobase);
+-    writeb(NETWAVE_CMD_SRC, ramBase + NETWAVE_EREG_CB + 0);
+-    writeb(rcvMode, ramBase + NETWAVE_EREG_CB + 1);
+-    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 2);
+-}
+-MODULE_LICENSE("GPL");
 diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
-index dffc820..0603cc5 100644
+index 71cad2f..7e4a0b5 100644
 --- a/drivers/staging/Kconfig
 +++ b/drivers/staging/Kconfig
-@@ -129,5 +129,7 @@ source "drivers/staging/iio/Kconfig"
+@@ -133,5 +133,7 @@ source "drivers/staging/arlan/Kconfig"
  
- source "drivers/staging/strip/Kconfig"
+ source "drivers/staging/wavelan/Kconfig"
  
-+source "drivers/staging/arlan/Kconfig"
++source "drivers/staging/netwave/Kconfig"
 +
  endif # !STAGING_EXCLUDE_BUILD
  endif # STAGING
 diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
-index e91391d..cfc16fd 100644
+index 95bc3e5..4cb1b78 100644
 --- a/drivers/staging/Makefile
 +++ b/drivers/staging/Makefile
-@@ -46,3 +46,4 @@ obj-$(CONFIG_RAR_REGISTER)	+= rar/
- obj-$(CONFIG_DX_SEP)		+= sep/
- obj-$(CONFIG_IIO)		+= iio/
- obj-$(CONFIG_STRIP)		+= strip/
-+obj-$(CONFIG_ARLAN)		+= arlan/
-diff --git a/drivers/staging/arlan/Kconfig b/drivers/staging/arlan/Kconfig
+@@ -49,3 +49,4 @@ obj-$(CONFIG_STRIP)		+= strip/
+ obj-$(CONFIG_ARLAN)		+= arlan/
+ obj-$(CONFIG_WAVELAN)		+= wavelan/
+ obj-$(CONFIG_PCMCIA_WAVELAN)	+= wavelan/
++obj-$(CONFIG_PCMCIA_NETWAVE)	+= netwave/
+diff --git a/drivers/staging/netwave/Kconfig b/drivers/staging/netwave/Kconfig
 new file mode 100644
-index 0000000..0585ed8
+index 0000000..b6f0f0a
 --- /dev/null
-+++ b/drivers/staging/arlan/Kconfig
-@@ -0,0 +1,15 @@
-+config ARLAN
-+	tristate "Aironet Arlan 655 & IC2200 DS support"
-+	depends on ISA && !64BIT
++++ b/drivers/staging/netwave/Kconfig
+@@ -0,0 +1,10 @@
++config PCMCIA_NETWAVE
++	tristate "Xircom Netwave AirSurfer Pcmcia wireless support"
++	depends on PCMCIA
 +	select WIRELESS_EXT
-+	---help---
-+	  Aironet makes Arlan, a class of wireless LAN adapters. These use the
-+	  www.Telxon.com chip, which is also used on several similar cards.
-+	  This driver is tested on the 655 and IC2200 series cards. Look at
-+	  <http://www.ylenurme.ee/~elmer/655/> for the latest information.
++	help
++	  Say Y here if you intend to attach this type of PCMCIA (PC-card)
++	  wireless Ethernet networking card to your computer.
 +
-+	  The driver is built as two modules, arlan and arlan-proc. The latter
-+	  is the /proc interface and is not needed most of time.
-+
-+	  On some computers the card ends up in non-valid state after some
-+	  time. Use a ping-reset script to clear it.
-diff --git a/drivers/staging/arlan/Makefile b/drivers/staging/arlan/Makefile
++	  To compile this driver as a module, choose M here: the module will be
++	  called netwave_cs.  If unsure, say N.
+diff --git a/drivers/staging/netwave/Makefile b/drivers/staging/netwave/Makefile
 new file mode 100644
-index 0000000..9e58e5f
+index 0000000..2ab89de
 --- /dev/null
-+++ b/drivers/staging/arlan/Makefile
-@@ -0,0 +1,3 @@
-+obj-$(CONFIG_ARLAN) += arlan.o 
-+
-+arlan-objs := arlan-main.o arlan-proc.o
-diff --git a/drivers/staging/arlan/arlan-main.c b/drivers/staging/arlan/arlan-main.c
++++ b/drivers/staging/netwave/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_PCMCIA_NETWAVE)	+= netwave_cs.o
+diff --git a/drivers/staging/netwave/netwave_cs.c b/drivers/staging/netwave/netwave_cs.c
 new file mode 100644
-index 0000000..921a082
+index 0000000..9498b46
 --- /dev/null
-+++ b/drivers/staging/arlan/arlan-main.c
-@@ -0,0 +1,1887 @@
-+/*
-+ *  Copyright (C) 1997 Cullen Jennings
-+ *  Copyright (C) 1998 Elmer Joandiu, elmer@ylenurme.ee
-+ *  GNU General Public License applies
-+ * This module provides support for the Arlan 655 card made by Aironet
-+ */
-+
-+#include "arlan.h"
-+
-+#if BITS_PER_LONG != 32
-+#  error FIXME: this driver requires a 32-bit platform
-+#endif
-+
-+static const char *arlan_version = "C.Jennigs 97 & Elmer.Joandi@ut.ee  Oct'98, http://www.ylenurme.ee/~elmer/655/";
-+
-+struct net_device *arlan_device[MAX_ARLANS];
-+
-+static int SID = SIDUNKNOWN;
-+static int radioNodeId = radioNodeIdUNKNOWN;
-+static char encryptionKey[12] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
-+int arlan_debug = debugUNKNOWN;
-+static int spreadingCode = spreadingCodeUNKNOWN;
-+static int channelNumber = channelNumberUNKNOWN;
-+static int channelSet = channelSetUNKNOWN;
-+static int systemId = systemIdUNKNOWN;
-+static int registrationMode = registrationModeUNKNOWN;
-+static int keyStart;
-+static int tx_delay_ms;
-+static int retries = 5;
-+static int tx_queue_len = 1;
-+static int arlan_EEPROM_bad;
-+
-+#ifdef ARLAN_DEBUGGING
-+
-+static int testMemory = testMemoryUNKNOWN;
-+static int irq = irqUNKNOWN;
-+static int txScrambled = 1;
-+static int mdebug;
-+
-+module_param(irq, int, 0);
-+module_param(mdebug, int, 0);
-+module_param(testMemory, int, 0);
-+module_param(txScrambled, int, 0);
-+MODULE_PARM_DESC(irq, "(unused)");
-+MODULE_PARM_DESC(testMemory, "(unused)");
-+MODULE_PARM_DESC(mdebug, "Arlan multicast debugging (0-1)");
-+#endif
-+
-+module_param_named(debug, arlan_debug, int, 0);
-+module_param(spreadingCode, int, 0);
-+module_param(channelNumber, int, 0);
-+module_param(channelSet, int, 0);
-+module_param(systemId, int, 0);
-+module_param(registrationMode, int, 0);
-+module_param(radioNodeId, int, 0);
-+module_param(SID, int, 0);
-+module_param(keyStart, int, 0);
-+module_param(tx_delay_ms, int, 0);
-+module_param(retries, int, 0);
-+module_param(tx_queue_len, int, 0);
-+module_param_named(EEPROM_bad, arlan_EEPROM_bad, int, 0);
-+MODULE_PARM_DESC(debug, "Arlan debug enable (0-1)");
-+MODULE_PARM_DESC(retries, "Arlan maximum packet retransmisions");
-+#ifdef ARLAN_ENTRY_EXIT_DEBUGGING
-+static int arlan_entry_debug;
-+static int arlan_exit_debug;
-+static int arlan_entry_and_exit_debug;
-+module_param_named(entry_debug, arlan_entry_debug, int, 0);
-+module_param_named(exit_debug, arlan_exit_debug, int, 0);
-+module_param_named(entry_and_exit_debug, arlan_entry_and_exit_debug, int, 0);
-+MODULE_PARM_DESC(entry_debug, "Arlan driver function entry debugging");
-+MODULE_PARM_DESC(exit_debug, "Arlan driver function exit debugging");
-+MODULE_PARM_DESC(entry_and_exit_debug, "Arlan driver function entry and exit debugging");
-+#endif
-+
-+struct arlan_conf_stru arlan_conf[MAX_ARLANS];
-+static int arlans_found;
-+
-+static  int 	arlan_open(struct net_device *dev);
-+static  netdev_tx_t arlan_tx(struct sk_buff *skb, struct net_device *dev);
-+static  irqreturn_t arlan_interrupt(int irq, void *dev_id);
-+static  int 	arlan_close(struct net_device *dev);
-+static  struct net_device_stats *
-+		arlan_statistics		(struct net_device *dev);
-+static  void 	arlan_set_multicast		(struct net_device *dev);
-+static  int 	arlan_hw_tx			(struct net_device* dev, char *buf, int length );
-+static  int	arlan_hw_config			(struct net_device * dev);
-+static  void 	arlan_tx_done_interrupt		(struct net_device * dev, int status);
-+static  void	arlan_rx_interrupt		(struct net_device * dev, u_char rxStatus, u_short, u_short);
-+static  void	arlan_process_interrupt		(struct net_device * dev);
-+static	void	arlan_tx_timeout		(struct net_device *dev);
-+
-+static inline long us2ticks(int us)
-+{
-+	return us * (1000000 / HZ);
-+}
-+
-+
-+#ifdef ARLAN_ENTRY_EXIT_DEBUGGING
-+#define ARLAN_DEBUG_ENTRY(name) \
-+	{\
-+	struct timeval timev;\
-+	do_gettimeofday(&timev);\
-+		if (arlan_entry_debug || arlan_entry_and_exit_debug)\
-+			printk("--->>>" name " %ld " "\n",((long int) timev.tv_sec * 1000000 + timev.tv_usec));\
-+	}
-+#define ARLAN_DEBUG_EXIT(name) \
-+	{\
-+	struct timeval timev;\
-+	do_gettimeofday(&timev);\
-+		if (arlan_exit_debug || arlan_entry_and_exit_debug)\
-+			printk("<<<---" name " %ld " "\n",((long int) timev.tv_sec * 1000000 + timev.tv_usec) );\
-+	}
-+#else
-+#define ARLAN_DEBUG_ENTRY(name)
-+#define ARLAN_DEBUG_EXIT(name)
-+#endif
-+
-+
-+#define arlan_interrupt_ack(dev)\
-+        clearClearInterrupt(dev);\
-+        setClearInterrupt(dev);
-+
-+static inline int arlan_drop_tx(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+
-+	dev->stats.tx_errors++;
-+	if (priv->Conf->tx_delay_ms)
-+	{
-+		priv->tx_done_delayed = jiffies + priv->Conf->tx_delay_ms * HZ / 1000 + 1;
-+	}
-+	else
-+	{
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_TX;
-+		TXHEAD(dev).offset = 0;
-+		TXTAIL(dev).offset = 0;
-+		priv->txLast = 0;
-+		priv->bad = 0;
-+		if (!priv->under_reset && !priv->under_config)
-+			netif_wake_queue (dev);
-+	}
-+	return 1;
-+}
-+
-+
-+int arlan_command(struct net_device *dev, int command_p)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+	struct arlan_conf_stru *conf = priv->Conf;
-+	int udelayed = 0;
-+	int i = 0;
-+	unsigned long flags;
-+
-+	ARLAN_DEBUG_ENTRY("arlan_command");
-+
-+	if (priv->card_polling_interval)
-+		priv->card_polling_interval = 1;
-+
-+	if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
-+		printk(KERN_DEBUG "arlan_command, %lx commandByte %x waiting %lx incoming %x \n",
-+		jiffies, READSHMB(arlan->commandByte),
-+		       priv->waiting_command_mask, command_p);
-+
-+	priv->waiting_command_mask |= command_p;
-+
-+	if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
-+		if (time_after(jiffies, priv->lastReset + 5 * HZ))
-+			priv->waiting_command_mask &= ~ARLAN_COMMAND_RESET;
-+
-+	if (priv->waiting_command_mask & ARLAN_COMMAND_INT_ACK)
-+	{
-+		arlan_interrupt_ack(dev);
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_ACK;
-+	}
-+	if (priv->waiting_command_mask & ARLAN_COMMAND_INT_ENABLE)
-+	{
-+		setInterruptEnable(dev);
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_ENABLE;
-+	}
-+
-+	/* Card access serializing lock */
-+	spin_lock_irqsave(&priv->lock, flags);
-+
-+	/* Check cards status and waiting */
-+
-+	if (priv->waiting_command_mask & (ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW))
-+	{
-+		while (priv->waiting_command_mask & (ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW))
-+		{
-+			if (READSHMB(arlan->resetFlag) ||
-+				READSHMB(arlan->commandByte))	/* || 
-+								   (readControlRegister(dev) & ARLAN_ACCESS))
-+								 */
-+				udelay(40);
-+			else
-+				priv->waiting_command_mask &= ~(ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW);
-+
-+			udelayed++;
-+
-+			if (priv->waiting_command_mask & ARLAN_COMMAND_LONG_WAIT_NOW)
-+			{
-+				if (udelayed * 40 > 1000000)
-+				{
-+					printk(KERN_ERR "%s long wait too long \n", dev->name);
-+					priv->waiting_command_mask |= ARLAN_COMMAND_RESET;
-+					break;
-+				}
-+			}
-+			else if (priv->waiting_command_mask & ARLAN_COMMAND_WAIT_NOW)
-+			{
-+				if (udelayed * 40 > 1000)
-+				{
-+					printk(KERN_ERR "%s short wait too long \n", dev->name);
-+					goto bad_end;
-+				}
-+			}
-+		}
-+	}
-+	else
-+	{
-+		i = 0;
-+		while ((READSHMB(arlan->resetFlag) ||
-+			READSHMB(arlan->commandByte)) &&
-+			conf->pre_Command_Wait > (i++) * 10)
-+			udelay(10);
-+
-+
-+		if ((READSHMB(arlan->resetFlag) ||
-+			READSHMB(arlan->commandByte)) &&
-+			!(priv->waiting_command_mask & ARLAN_COMMAND_RESET))
-+		{
-+			goto card_busy_end;
-+		}
-+	}
-+	if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
-+		priv->under_reset = 1;
-+	if (priv->waiting_command_mask & ARLAN_COMMAND_CONF)
-+		priv->under_config = 1;
-+
-+	/* Issuing command */
-+	arlan_lock_card_access(dev);
-+	if (priv->waiting_command_mask & ARLAN_COMMAND_POWERUP)
-+	{
-+	//     if (readControlRegister(dev) & (ARLAN_ACCESS && ARLAN_POWER))
-+		setPowerOn(dev);
-+		arlan_interrupt_lancpu(dev);
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_POWERUP;
-+		priv->waiting_command_mask |= ARLAN_COMMAND_RESET;
-+		priv->card_polling_interval = HZ / 10;
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_ACTIVATE)
-+	{
-+		WRITESHMB(arlan->commandByte, ARLAN_COM_ACTIVATE);
-+		arlan_interrupt_lancpu(dev);
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_ACTIVATE;
-+		priv->card_polling_interval = HZ / 10;
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_RX_ABORT)
-+	{
-+		if (priv->rx_command_given)
-+		{
-+			WRITESHMB(arlan->commandByte, ARLAN_COM_RX_ABORT);
-+			arlan_interrupt_lancpu(dev);
-+			priv->rx_command_given = 0;
-+		}
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_RX_ABORT;
-+		priv->card_polling_interval = 1;
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_TX_ABORT)
-+	{
-+		if (priv->tx_command_given)
-+		{
-+			WRITESHMB(arlan->commandByte, ARLAN_COM_TX_ABORT);
-+			arlan_interrupt_lancpu(dev);
-+			priv->tx_command_given = 0;
-+		}
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_TX_ABORT;
-+		priv->card_polling_interval = 1;
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
-+	{
-+		priv->under_reset=1;
-+		netif_stop_queue (dev);
-+
-+		arlan_drop_tx(dev);
-+		if (priv->tx_command_given || priv->rx_command_given)
-+		{
-+			printk(KERN_ERR "%s: Reset under tx or rx command \n", dev->name);
-+		}
-+		netif_stop_queue (dev);
-+		if (arlan_debug & ARLAN_DEBUG_RESET)
-+			printk(KERN_ERR "%s: Doing chip reset\n", dev->name);
-+		priv->lastReset = jiffies;
-+		WRITESHM(arlan->commandByte, 0, u_char);
-+		/* hold card in reset state */
-+		setHardwareReset(dev);
-+		/* set reset flag and then release reset */
-+		WRITESHM(arlan->resetFlag, 0xff, u_char);
-+		clearChannelAttention(dev);
-+		clearHardwareReset(dev);
-+		priv->card_polling_interval = HZ / 4;
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_RESET;
-+		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RACK;
-+//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RENABLE; 
-+//		priv->waiting_command_mask |= ARLAN_COMMAND_RX;
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_INT_RACK)
-+	{
-+		clearHardwareReset(dev);
-+		clearClearInterrupt(dev);
-+		setClearInterrupt(dev);
-+		setInterruptEnable(dev);
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_RACK;
-+		priv->waiting_command_mask |= ARLAN_COMMAND_CONF;
-+		priv->under_config = 1;
-+		priv->under_reset = 0;
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_INT_RENABLE)
-+	{
-+		setInterruptEnable(dev);
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_RENABLE;
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_CONF)
-+	{
-+		if (priv->tx_command_given || priv->rx_command_given)
-+		{
-+			printk(KERN_ERR "%s: Reset under tx or rx command \n", dev->name);
-+		}
-+		arlan_drop_tx(dev);
-+		setInterruptEnable(dev);
-+		arlan_hw_config(dev);
-+		arlan_interrupt_lancpu(dev);
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_CONF;
-+		priv->card_polling_interval = HZ / 10;
-+//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RACK;   
-+//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_ENABLE; 
-+		priv->waiting_command_mask |= ARLAN_COMMAND_CONF_WAIT;
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_CONF_WAIT)
-+	{
-+		if (READSHMB(arlan->configuredStatusFlag) != 0 &&
-+			READSHMB(arlan->diagnosticInfo) == 0xff)
-+		{
-+			priv->waiting_command_mask &= ~ARLAN_COMMAND_CONF_WAIT;
-+			priv->waiting_command_mask |= ARLAN_COMMAND_RX;
-+			priv->waiting_command_mask |= ARLAN_COMMAND_TBUSY_CLEAR;
-+			priv->card_polling_interval = HZ / 10;
-+			priv->tx_command_given = 0;
-+			priv->under_config = 0;
-+		}
-+		else
-+		{
-+			priv->card_polling_interval = 1;
-+			if (arlan_debug & ARLAN_DEBUG_TIMING)
-+				printk(KERN_ERR "configure delayed \n");
-+		}
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_RX)
-+	{
-+		if (!registrationBad(dev))
-+		{
-+			setInterruptEnable(dev);
-+			memset_io(arlan->commandParameter, 0, 0xf);
-+			WRITESHMB(arlan->commandByte, ARLAN_COM_INT | ARLAN_COM_RX_ENABLE);
-+			WRITESHMB(arlan->commandParameter[0], conf->rxParameter);
-+			arlan_interrupt_lancpu(dev);
-+			priv->rx_command_given = 0; // mnjah, bad
-+			priv->waiting_command_mask &= ~ARLAN_COMMAND_RX;
-+			priv->card_polling_interval = 1;
-+		}
-+		else
-+			priv->card_polling_interval = 2;
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_TBUSY_CLEAR)
-+	{
-+		if ( !registrationBad(dev) &&
-+		     (netif_queue_stopped(dev) || !netif_running(dev)) )
-+			{
-+				priv->waiting_command_mask &= ~ARLAN_COMMAND_TBUSY_CLEAR;
-+				netif_wake_queue (dev);
-+			}
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_TX)
-+	{
-+		if (!test_and_set_bit(0, (void *) &priv->tx_command_given))
-+		{
-+			if (time_after(jiffies, 
-+				       priv->tx_last_sent + us2ticks(conf->rx_tweak1))
-+			    || time_before(jiffies,
-+					   priv->last_rx_int_ack_time + us2ticks(conf->rx_tweak2)))
-+			{
-+				setInterruptEnable(dev);
-+				memset_io(arlan->commandParameter, 0, 0xf);
-+				WRITESHMB(arlan->commandByte, ARLAN_COM_TX_ENABLE | ARLAN_COM_INT);
-+				memcpy_toio(arlan->commandParameter, &TXLAST(dev), 14);
-+//				for ( i=1 ; i < 15 ; i++) printk("%02x:",READSHMB(arlan->commandParameter[i]));
-+				priv->tx_last_sent = jiffies;
-+				arlan_interrupt_lancpu(dev);
-+				priv->tx_command_given = 1;
-+				priv->waiting_command_mask &= ~ARLAN_COMMAND_TX;
-+				priv->card_polling_interval = 1;
-+			}
-+			else
-+			{
-+				priv->tx_command_given = 0;
-+				priv->card_polling_interval = 1;
-+			}
-+		} 
-+		else if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
-+			printk(KERN_ERR "tx command when tx chain locked \n");
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_NOOPINT)
-+	{
-+		{
-+			WRITESHMB(arlan->commandByte, ARLAN_COM_NOP | ARLAN_COM_INT);
-+		}
-+		arlan_interrupt_lancpu(dev);
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_NOOPINT;
-+		priv->card_polling_interval = HZ / 3;
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_NOOP)
-+	{
-+		WRITESHMB(arlan->commandByte, ARLAN_COM_NOP);
-+		arlan_interrupt_lancpu(dev);
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_NOOP;
-+		priv->card_polling_interval = HZ / 3;
-+	}
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_SLOW_POLL)
-+	{
-+		WRITESHMB(arlan->commandByte, ARLAN_COM_GOTO_SLOW_POLL);
-+		arlan_interrupt_lancpu(dev);
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_SLOW_POLL;
-+		priv->card_polling_interval = HZ / 3;
-+	} 
-+	else if (priv->waiting_command_mask & ARLAN_COMMAND_POWERDOWN)
-+	{
-+		setPowerOff(dev);
-+		if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
-+			printk(KERN_WARNING "%s: Arlan Going Standby\n", dev->name);
-+		priv->waiting_command_mask &= ~ARLAN_COMMAND_POWERDOWN;
-+		priv->card_polling_interval = 3 * HZ;
-+	}
-+	arlan_unlock_card_access(dev);
-+	for (i = 0; READSHMB(arlan->commandByte) && i < 20; i++)
-+		udelay(10);
-+	if (READSHMB(arlan->commandByte))
-+		if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
-+			printk(KERN_ERR "card busy leaving command %lx\n", priv->waiting_command_mask);
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+	ARLAN_DEBUG_EXIT("arlan_command");
-+	priv->last_command_buff_free_time = jiffies;
-+	return 0;
-+
-+card_busy_end:
-+	if (time_after(jiffies, priv->last_command_buff_free_time + HZ))
-+		priv->waiting_command_mask |= ARLAN_COMMAND_CLEAN_AND_RESET;
-+
-+	if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
-+		printk(KERN_ERR "%s arlan_command card busy end \n", dev->name);
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+	ARLAN_DEBUG_EXIT("arlan_command");
-+	return 1;
-+
-+bad_end:
-+	printk(KERN_ERR "%s arlan_command bad end \n", dev->name);
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+	ARLAN_DEBUG_EXIT("arlan_command");
-+
-+	return -1;
-+}
-+
-+static inline void arlan_command_process(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+
-+	int times = 0;
-+	while (priv->waiting_command_mask && times < 8)
-+	{
-+		if (priv->waiting_command_mask)
-+		{
-+			if (arlan_command(dev, 0))
-+				break;
-+			times++;
-+		}
-+		/* if long command, we won't repeat trying */ ;
-+		if (priv->card_polling_interval > 1)
-+			break;
-+		times++;
-+	}
-+}
-+
-+
-+static inline void arlan_retransmit_now(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+
-+
-+	ARLAN_DEBUG_ENTRY("arlan_retransmit_now");
-+	if (TXLAST(dev).offset == 0)
-+	{
-+		if (TXHEAD(dev).offset)
-+		{
-+			priv->txLast = 0;
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_DEBUG "TX buff switch to head \n");
-+
-+		}
-+		else if (TXTAIL(dev).offset)
-+		{
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_DEBUG "TX buff switch to tail \n");
-+			priv->txLast = 1;
-+		}
-+		else
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_ERR "ReTransmit buff empty");
-+		netif_wake_queue (dev);
-+		return;
-+
-+	}
-+	arlan_command(dev, ARLAN_COMMAND_TX);
-+
-+	priv->Conf->driverRetransmissions++;
-+	priv->retransmissions++;
-+
-+	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk("Retransmit %d bytes \n", TXLAST(dev).length);
-+
-+	ARLAN_DEBUG_EXIT("arlan_retransmit_now");
-+}
-+
-+
-+
-+static void arlan_registration_timer(unsigned long data)
-+{
-+	struct net_device *dev = (struct net_device *) data;
-+	struct arlan_private *priv = netdev_priv(dev);
-+	int bh_mark_needed = 0;
-+	int next_tick = 1;
-+	long lostTime = ((long)jiffies - (long)priv->registrationLastSeen)
-+			* (1000/HZ);
-+
-+	if (registrationBad(dev))
-+	{
-+		priv->registrationLostCount++;
-+		if (lostTime > 7000 && lostTime < 7200)
-+		{
-+			printk(KERN_NOTICE "%s registration Lost \n", dev->name);
-+		}
-+		if (lostTime / priv->reRegisterExp > 2000)
-+			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_CONF);
-+		if (lostTime / (priv->reRegisterExp) > 3500)
-+			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
-+		if (priv->reRegisterExp < 400)
-+			priv->reRegisterExp += 2;
-+		if (lostTime > 7200)
-+		{
-+			next_tick = HZ;
-+			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
-+		}
-+	}
-+	else
-+	{
-+		if (priv->Conf->registrationMode && lostTime > 10000 &&
-+			priv->registrationLostCount)
-+		{
-+			printk(KERN_NOTICE "%s registration is back after %ld milliseconds\n",
-+			       dev->name, lostTime);
-+		}
-+		priv->registrationLastSeen = jiffies;
-+		priv->registrationLostCount = 0;
-+		priv->reRegisterExp = 1;
-+		if (!netif_running(dev) )
-+			netif_wake_queue(dev);
-+		if (time_after(priv->tx_last_sent,priv->tx_last_cleared) &&
-+		    time_after(jiffies, priv->tx_last_sent * 5*HZ) ){
-+			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);		
-+			priv->tx_last_cleared = jiffies;
-+		}
-+	}
-+
-+
-+	if (!registrationBad(dev) && priv->ReTransmitRequested)
-+	{
-+		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+			printk(KERN_ERR "Retransmit from timer \n");
-+		priv->ReTransmitRequested = 0;
-+		arlan_retransmit_now(dev);
-+	}
-+	if (!registrationBad(dev) &&
-+		time_after(jiffies, priv->tx_done_delayed) &&
-+		priv->tx_done_delayed != 0)
-+	{
-+		TXLAST(dev).offset = 0;
-+		if (priv->txLast)
-+			priv->txLast = 0;
-+		else if (TXTAIL(dev).offset)
-+			priv->txLast = 1;
-+		if (TXLAST(dev).offset)
-+		{
-+			arlan_retransmit_now(dev);
-+			dev->trans_start = jiffies;
-+		}
-+		if (!(TXHEAD(dev).offset && TXTAIL(dev).offset))
-+		{
-+			netif_wake_queue (dev);
-+		}
-+		priv->tx_done_delayed = 0;
-+		bh_mark_needed = 1;
-+	}
-+	if (bh_mark_needed)
-+	{
-+		netif_wake_queue (dev);
-+	}
-+	arlan_process_interrupt(dev);
-+
-+	if (next_tick < priv->card_polling_interval)
-+		next_tick = priv->card_polling_interval;
-+
-+	priv->timer.expires = jiffies + next_tick;
-+
-+	add_timer(&priv->timer);
-+}
-+
-+
-+#ifdef ARLAN_DEBUGGING
-+
-+static void arlan_print_registers(struct net_device *dev, int line)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem *arlan = priv->card;
-+
-+	u_char hostcpuLock, lancpuLock, controlRegister, cntrlRegImage,
-+		txStatus, rxStatus, interruptInProgress, commandByte;
-+
-+
-+	ARLAN_DEBUG_ENTRY("arlan_print_registers");
-+	READSHM(interruptInProgress, arlan->interruptInProgress, u_char);
-+	READSHM(hostcpuLock, arlan->hostcpuLock, u_char);
-+	READSHM(lancpuLock, arlan->lancpuLock, u_char);
-+	READSHM(controlRegister, arlan->controlRegister, u_char);
-+	READSHM(cntrlRegImage, arlan->cntrlRegImage, u_char);
-+	READSHM(txStatus, arlan->txStatus, u_char);
-+	READSHM(rxStatus, arlan->rxStatus, u_char);
-+	READSHM(commandByte, arlan->commandByte, u_char);
-+
-+	printk(KERN_WARNING "line %04d IP %02x HL %02x LL %02x CB %02x CR %02x CRI %02x TX %02x RX %02x\n",
-+		line, interruptInProgress, hostcpuLock, lancpuLock, commandByte,
-+		controlRegister, cntrlRegImage, txStatus, rxStatus);
-+
-+	ARLAN_DEBUG_EXIT("arlan_print_registers");
-+}
-+#endif
-+
-+
-+static int arlan_hw_tx(struct net_device *dev, char *buf, int length)
-+{
-+	int i;
-+
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+	struct arlan_conf_stru *conf = priv->Conf;
-+
-+	int tailStarts = 0x800;
-+	int headEnds = 0x0;
-+
-+
-+	ARLAN_DEBUG_ENTRY("arlan_hw_tx");
-+	if (TXHEAD(dev).offset)
-+		headEnds = (((TXHEAD(dev).offset + TXHEAD(dev).length - offsetof(struct arlan_shmem, txBuffer)) / 64) + 1) * 64;
-+	if (TXTAIL(dev).offset)
-+		tailStarts = 0x800 - (((TXTAIL(dev).offset - offsetof(struct arlan_shmem, txBuffer)) / 64) + 2) * 64;
-+
-+
-+	if (!TXHEAD(dev).offset && length < tailStarts)
-+	{
-+		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+			printk(KERN_ERR "TXHEAD insert, tailStart %d\n", tailStarts);
-+
-+		TXHEAD(dev).offset =
-+			offsetof(struct arlan_shmem, txBuffer);
-+		TXHEAD(dev).length = length - ARLAN_FAKE_HDR_LEN;
-+		for (i = 0; i < 6; i++)
-+			TXHEAD(dev).dest[i] = buf[i];
-+		TXHEAD(dev).clear = conf->txClear;
-+		TXHEAD(dev).retries = conf->txRetries;	/* 0 is use default */
-+		TXHEAD(dev).routing = conf->txRouting;
-+		TXHEAD(dev).scrambled = conf->txScrambled;
-+		memcpy_toio((char __iomem *)arlan + TXHEAD(dev).offset, buf + ARLAN_FAKE_HDR_LEN, TXHEAD(dev).length);
-+	}
-+	else if (!TXTAIL(dev).offset && length < (0x800 - headEnds))
-+	{
-+		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+			printk(KERN_ERR "TXTAIL insert, headEnd %d\n", headEnds);
-+
-+		TXTAIL(dev).offset =
-+			offsetof(struct arlan_shmem, txBuffer) + 0x800 - (length / 64 + 2) * 64;
-+		TXTAIL(dev).length = length - ARLAN_FAKE_HDR_LEN;
-+		for (i = 0; i < 6; i++)
-+			TXTAIL(dev).dest[i] = buf[i];
-+		TXTAIL(dev).clear = conf->txClear;
-+		TXTAIL(dev).retries = conf->txRetries;
-+		TXTAIL(dev).routing = conf->txRouting;
-+		TXTAIL(dev).scrambled = conf->txScrambled;
-+		memcpy_toio(((char __iomem *)arlan + TXTAIL(dev).offset), buf + ARLAN_FAKE_HDR_LEN, TXTAIL(dev).length);
-+	}
-+	else
-+	{
-+		netif_stop_queue (dev);
-+		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+			printk(KERN_ERR "TX TAIL & HEAD full, return, tailStart %d headEnd %d\n", tailStarts, headEnds);
-+		return -1;
-+	}
-+	priv->out_bytes += length;
-+	priv->out_bytes10 += length;
-+	if (conf->measure_rate < 1)
-+		conf->measure_rate = 1;
-+	if (time_after(jiffies, priv->out_time + conf->measure_rate * HZ))
-+	{
-+		conf->out_speed = priv->out_bytes / conf->measure_rate;
-+		priv->out_bytes = 0;
-+		priv->out_time = jiffies;
-+	}
-+	if (time_after(jiffies, priv->out_time10 + conf->measure_rate * 10*HZ))
-+	{
-+		conf->out_speed10 = priv->out_bytes10 / (10 * conf->measure_rate);
-+		priv->out_bytes10 = 0;
-+		priv->out_time10 = jiffies;
-+	}
-+	if (TXHEAD(dev).offset && TXTAIL(dev).offset)
-+	{
-+		netif_stop_queue (dev);
-+		return 0;
-+	}
-+	else
-+		netif_start_queue (dev);
-+
-+
-+	IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
-+		printk(KERN_WARNING "%s Transmit t %2x:%2x:%2x:%2x:%2x:%2x f %2x:%2x:%2x:%2x:%2x:%2x \n", dev->name,
-+		   (unsigned char) buf[0], (unsigned char) buf[1], (unsigned char) buf[2], (unsigned char) buf[3],
-+		   (unsigned char) buf[4], (unsigned char) buf[5], (unsigned char) buf[6], (unsigned char) buf[7],
-+		   (unsigned char) buf[8], (unsigned char) buf[9], (unsigned char) buf[10], (unsigned char) buf[11]);
-+
-+	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_ERR "TX command prepare for buffer %d\n", priv->txLast);
-+
-+	arlan_command(dev, ARLAN_COMMAND_TX);
-+
-+	priv->tx_last_sent = jiffies;
-+
-+	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk("%s TX Qued %d bytes \n", dev->name, length);
-+
-+	ARLAN_DEBUG_EXIT("arlan_hw_tx");
-+
-+	return 0;
-+}
-+
-+
-+static int arlan_hw_config(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+	struct arlan_conf_stru *conf = priv->Conf;
-+
-+	ARLAN_DEBUG_ENTRY("arlan_hw_config");
-+
-+	printk(KERN_NOTICE "%s arlan configure called \n", dev->name);
-+	if (arlan_EEPROM_bad)
-+		printk(KERN_NOTICE "arlan configure with eeprom bad option \n");
-+
-+
-+	WRITESHM(arlan->spreadingCode, conf->spreadingCode, u_char);
-+	WRITESHM(arlan->channelSet, conf->channelSet, u_char);
-+
-+	if (arlan_EEPROM_bad)
-+		WRITESHM(arlan->defaultChannelSet, conf->channelSet, u_char);
-+
-+	WRITESHM(arlan->channelNumber, conf->channelNumber, u_char);
-+
-+	WRITESHM(arlan->scramblingDisable, conf->scramblingDisable, u_char);
-+	WRITESHM(arlan->txAttenuation, conf->txAttenuation, u_char);
-+
-+	WRITESHM(arlan->systemId, conf->systemId, u_int);
-+
-+	WRITESHM(arlan->maxRetries, conf->maxRetries, u_char);
-+	WRITESHM(arlan->receiveMode, conf->receiveMode, u_char);
-+	WRITESHM(arlan->priority, conf->priority, u_char);
-+	WRITESHM(arlan->rootOrRepeater, conf->rootOrRepeater, u_char);
-+	WRITESHM(arlan->SID, conf->SID, u_int);
-+
-+	WRITESHM(arlan->registrationMode, conf->registrationMode, u_char);
-+
-+	WRITESHM(arlan->registrationFill, conf->registrationFill, u_char);
-+	WRITESHM(arlan->localTalkAddress, conf->localTalkAddress, u_char);
-+	WRITESHM(arlan->codeFormat, conf->codeFormat, u_char);
-+	WRITESHM(arlan->numChannels, conf->numChannels, u_char);
-+	WRITESHM(arlan->channel1, conf->channel1, u_char);
-+	WRITESHM(arlan->channel2, conf->channel2, u_char);
-+	WRITESHM(arlan->channel3, conf->channel3, u_char);
-+	WRITESHM(arlan->channel4, conf->channel4, u_char);
-+	WRITESHM(arlan->radioNodeId, conf->radioNodeId, u_short);
-+	WRITESHM(arlan->SID, conf->SID, u_int);
-+	WRITESHM(arlan->waitTime, conf->waitTime, u_short);
-+	WRITESHM(arlan->lParameter, conf->lParameter, u_short);
-+	memcpy_toio(&(arlan->_15), &(conf->_15), 3);
-+	WRITESHM(arlan->_15, conf->_15, u_short);
-+	WRITESHM(arlan->headerSize, conf->headerSize, u_short);
-+	if (arlan_EEPROM_bad)
-+		WRITESHM(arlan->hardwareType, conf->hardwareType, u_char);
-+	WRITESHM(arlan->radioType, conf->radioType, u_char);
-+	if (arlan_EEPROM_bad)
-+		WRITESHM(arlan->radioModule, conf->radioType, u_char);
-+
-+	memcpy_toio(arlan->encryptionKey + keyStart, encryptionKey, 8);
-+	memcpy_toio(arlan->name, conf->siteName, 16);
-+
-+	WRITESHMB(arlan->commandByte, ARLAN_COM_INT | ARLAN_COM_CONF);	/* do configure */
-+	memset_io(arlan->commandParameter, 0, 0xf);	/* 0xf */
-+	memset_io(arlan->commandParameter + 1, 0, 2);
-+	if (conf->writeEEPROM)
-+	{
-+		  memset_io(arlan->commandParameter, conf->writeEEPROM, 1);
-+//		conf->writeEEPROM=0;
-+	}
-+	if (conf->registrationMode && conf->registrationInterrupts)
-+		memset_io(arlan->commandParameter + 3, 1, 1);
-+	else
-+		memset_io(arlan->commandParameter + 3, 0, 1);
-+
-+	priv->irq_test_done = 0;
-+
-+	if (conf->tx_queue_len)
-+		dev->tx_queue_len = conf->tx_queue_len;
-+	udelay(100);
-+
-+	ARLAN_DEBUG_EXIT("arlan_hw_config");
-+	return 0;
-+}
-+
-+
-+static int arlan_read_card_configuration(struct net_device *dev)
-+{
-+	u_char tlx415;
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+	struct arlan_conf_stru *conf = priv->Conf;
-+
-+	ARLAN_DEBUG_ENTRY("arlan_read_card_configuration");
-+
-+	if (radioNodeId == radioNodeIdUNKNOWN)
-+	{
-+		READSHM(conf->radioNodeId, arlan->radioNodeId, u_short);
-+	}
-+	else
-+		conf->radioNodeId = radioNodeId;
-+		
-+	if (SID == SIDUNKNOWN)
-+	{
-+		READSHM(conf->SID, arlan->SID, u_int);
-+	}
-+	else conf->SID = SID;
-+		
-+	if (spreadingCode == spreadingCodeUNKNOWN)
-+	{
-+		  READSHM(conf->spreadingCode, arlan->spreadingCode, u_char);
-+	}
-+	else
-+		conf->spreadingCode = spreadingCode;
-+		
-+	if (channelSet == channelSetUNKNOWN)
-+	{
-+		READSHM(conf->channelSet, arlan->channelSet, u_char);
-+	}
-+	else conf->channelSet = channelSet;
-+
-+	if (channelNumber == channelNumberUNKNOWN)
-+	{
-+		READSHM(conf->channelNumber, arlan->channelNumber, u_char);
-+	}
-+	else conf->channelNumber = channelNumber;
-+	
-+	READSHM(conf->scramblingDisable, arlan->scramblingDisable, u_char);
-+	READSHM(conf->txAttenuation, arlan->txAttenuation, u_char);
-+	
-+	if (systemId == systemIdUNKNOWN)
-+	{
-+		READSHM(conf->systemId, arlan->systemId, u_int);
-+	} 
-+	else conf->systemId = systemId;
-+	
-+	READSHM(conf->maxDatagramSize, arlan->maxDatagramSize, u_short);
-+	READSHM(conf->maxFrameSize, arlan->maxFrameSize, u_short);
-+	READSHM(conf->maxRetries, arlan->maxRetries, u_char);
-+	READSHM(conf->receiveMode, arlan->receiveMode, u_char);
-+	READSHM(conf->priority, arlan->priority, u_char);
-+	READSHM(conf->rootOrRepeater, arlan->rootOrRepeater, u_char);
-+
-+	if (SID == SIDUNKNOWN)
-+	{
-+		  READSHM(conf->SID, arlan->SID, u_int);
-+	}
-+	else conf->SID = SID;
-+	
-+	if (registrationMode == registrationModeUNKNOWN)
-+	{
-+		  READSHM(conf->registrationMode, arlan->registrationMode, u_char);
-+	}
-+	else conf->registrationMode = registrationMode;
-+	
-+	READSHM(conf->registrationFill, arlan->registrationFill, u_char);
-+	READSHM(conf->localTalkAddress, arlan->localTalkAddress, u_char);
-+	READSHM(conf->codeFormat, arlan->codeFormat, u_char);
-+	READSHM(conf->numChannels, arlan->numChannels, u_char);
-+	READSHM(conf->channel1, arlan->channel1, u_char);
-+	READSHM(conf->channel2, arlan->channel2, u_char);
-+	READSHM(conf->channel3, arlan->channel3, u_char);
-+	READSHM(conf->channel4, arlan->channel4, u_char);
-+	READSHM(conf->waitTime, arlan->waitTime, u_short);
-+	READSHM(conf->lParameter, arlan->lParameter, u_short);
-+	READSHM(conf->_15, arlan->_15, u_short);
-+	READSHM(conf->headerSize, arlan->headerSize, u_short);
-+	READSHM(conf->hardwareType, arlan->hardwareType, u_char);
-+	READSHM(conf->radioType, arlan->radioModule, u_char);
-+	
-+	if (conf->radioType == 0)
-+		conf->radioType = 0xc;
-+
-+	WRITESHM(arlan->configStatus, 0xA5, u_char);
-+	READSHM(tlx415, arlan->configStatus, u_char);
-+	
-+	if (tlx415 != 0xA5)
-+		printk(KERN_INFO "%s tlx415 chip \n", dev->name);
-+	
-+	conf->txClear = 0;
-+	conf->txRetries = 1;
-+	conf->txRouting = 1;
-+	conf->txScrambled = 0;
-+	conf->rxParameter = 1;
-+	conf->txTimeoutMs = 4000;
-+	conf->waitCardTimeout = 100000;
-+	conf->receiveMode = ARLAN_RCV_CLEAN;
-+	memcpy_fromio(conf->siteName, arlan->name, 16);
-+	conf->siteName[16] = '\0';
-+	conf->retries = retries;
-+	conf->tx_delay_ms = tx_delay_ms;
-+	conf->ReTransmitPacketMaxSize = 200;
-+	conf->waitReTransmitPacketMaxSize = 200;
-+	conf->txAckTimeoutMs = 900;
-+	conf->fastReTransCount = 3;
-+
-+	ARLAN_DEBUG_EXIT("arlan_read_card_configuration");
-+
-+	return 0;
-+}
-+
-+
-+static int lastFoundAt = 0xbe000;
-+
-+
-+/*
-+ * This is the real probe routine. Linux has a history of friendly device
-+ * probes on the ISA bus. A good device probes avoids doing writes, and
-+ * verifies that the correct device exists and functions.
-+ */
-+#define ARLAN_SHMEM_SIZE	0x2000
-+static int __init arlan_check_fingerprint(unsigned long memaddr)
-+{
-+	static const char probeText[] = "TELESYSTEM SLW INC.    ARLAN \0";
-+	volatile struct arlan_shmem __iomem *arlan = (struct arlan_shmem *) memaddr;
-+	unsigned long paddr = virt_to_phys((void *) memaddr);
-+	char tempBuf[49];
-+
-+	ARLAN_DEBUG_ENTRY("arlan_check_fingerprint");
-+
-+	if (!request_mem_region(paddr, ARLAN_SHMEM_SIZE, "arlan")) {
-+		// printk(KERN_WARNING "arlan: memory region %lx excluded from probing \n",paddr);
-+		return -ENODEV;
-+	}
-+
-+	memcpy_fromio(tempBuf, arlan->textRegion, 29);
-+	tempBuf[30] = 0;
-+
-+	/* check for card at this address */
-+	if (0 != strncmp(tempBuf, probeText, 29)){
-+ 		release_mem_region(paddr, ARLAN_SHMEM_SIZE);
-+		return -ENODEV;
-+	}
-+
-+//   printk(KERN_INFO "arlan found at 0x%x \n",memaddr);
-+	ARLAN_DEBUG_EXIT("arlan_check_fingerprint");
-+
-+	return 0;
-+}
-+
-+static int arlan_change_mtu(struct net_device *dev, int new_mtu)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+	struct arlan_conf_stru *conf = priv->Conf;
-+
-+	ARLAN_DEBUG_ENTRY("arlan_change_mtu");
-+	if (new_mtu > 2032)
-+		return -EINVAL;
-+	dev->mtu = new_mtu;
-+	if (new_mtu < 256)
-+		new_mtu = 256;	/* cards book suggests 1600 */
-+	conf->maxDatagramSize = new_mtu;
-+	conf->maxFrameSize = new_mtu + 48;
-+
-+	arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_CONF);
-+	printk(KERN_NOTICE "%s mtu changed to %d \n", dev->name, new_mtu);
-+
-+	ARLAN_DEBUG_EXIT("arlan_change_mtu");
-+
-+	return 0;
-+}
-+
-+static int arlan_mac_addr(struct net_device *dev, void *p)
-+{
-+	struct sockaddr *addr = p;
-+
-+
-+	ARLAN_DEBUG_ENTRY("arlan_mac_addr");
-+	return -EINVAL;
-+
-+	if (netif_running(dev))
-+		return -EBUSY;
-+	memcpy(dev->dev_addr, addr->sa_data, dev->addr_len);
-+
-+	ARLAN_DEBUG_EXIT("arlan_mac_addr");
-+	return 0;
-+}
-+
-+static const struct net_device_ops arlan_netdev_ops = {
-+	.ndo_open		= arlan_open,
-+	.ndo_stop		= arlan_close,
-+	.ndo_start_xmit		= arlan_tx,
-+	.ndo_get_stats		= arlan_statistics,
-+	.ndo_set_multicast_list = arlan_set_multicast,
-+	.ndo_change_mtu		= arlan_change_mtu,
-+	.ndo_set_mac_address	= arlan_mac_addr,
-+	.ndo_tx_timeout		= arlan_tx_timeout,
-+	.ndo_validate_addr	= eth_validate_addr,
-+};
-+
-+static int __init arlan_setup_device(struct net_device *dev, int num)
-+{
-+	struct arlan_private *ap = netdev_priv(dev);
-+	int err;
-+
-+	ARLAN_DEBUG_ENTRY("arlan_setup_device");
-+
-+	ap->conf = (struct arlan_shmem *)(ap+1);
-+
-+	dev->tx_queue_len = tx_queue_len;
-+	dev->netdev_ops = &arlan_netdev_ops;
-+	dev->watchdog_timeo = 3*HZ;
-+	
-+	ap->irq_test_done = 0;
-+	ap->Conf = &arlan_conf[num];
-+
-+	ap->Conf->pre_Command_Wait = 40;
-+	ap->Conf->rx_tweak1 = 30;
-+	ap->Conf->rx_tweak2 = 0;
-+
-+
-+	err = register_netdev(dev);
-+	if (err) {
-+		release_mem_region(virt_to_phys((void *) dev->mem_start), 
-+			   ARLAN_SHMEM_SIZE);
-+		free_netdev(dev);
-+		return err;
-+	}
-+	arlan_device[num] = dev;
-+	ARLAN_DEBUG_EXIT("arlan_setup_device");
-+	return 0;
-+}
-+
-+static int __init arlan_probe_here(struct net_device *dev, 
-+				   unsigned long memaddr)
-+{
-+	struct arlan_private *ap = netdev_priv(dev);
-+
-+	ARLAN_DEBUG_ENTRY("arlan_probe_here");
-+
-+	if (arlan_check_fingerprint(memaddr))
-+		return -ENODEV;
-+
-+	printk(KERN_NOTICE "%s: Arlan found at %llx, \n ", dev->name, 
-+	       (u64) virt_to_phys((void*)memaddr));
-+
-+	ap->card = (void *) memaddr;
-+	dev->mem_start = memaddr;
-+	dev->mem_end = memaddr + ARLAN_SHMEM_SIZE-1;
-+
-+	if (dev->irq < 2)
-+	{
-+		READSHM(dev->irq, ap->card->irqLevel, u_char);
-+	} else if (dev->irq == 2)
-+		dev->irq = 9;
-+
-+	arlan_read_card_configuration(dev);
-+
-+	ARLAN_DEBUG_EXIT("arlan_probe_here");
-+	return 0;
-+}
-+
-+
-+static int arlan_open(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+	int ret = 0;
-+
-+	ARLAN_DEBUG_ENTRY("arlan_open");
-+
-+	ret = request_irq(dev->irq, &arlan_interrupt, 0, dev->name, dev);
-+	if (ret)
-+	{
-+		printk(KERN_ERR "%s: unable to get IRQ %d .\n",
-+			dev->name, dev->irq);
-+		return ret;
-+	}
-+
-+
-+	priv->bad = 0;
-+	priv->lastReset = 0;
-+	priv->reset = 0;
-+	memcpy_fromio(dev->dev_addr, arlan->lanCardNodeId, 6);
-+	memset(dev->broadcast, 0xff, 6);
-+	dev->tx_queue_len = tx_queue_len;
-+	priv->interrupt_processing_active = 0;
-+	spin_lock_init(&priv->lock);
-+
-+	netif_start_queue (dev);
-+
-+	priv->registrationLostCount = 0;
-+	priv->registrationLastSeen = jiffies;
-+	priv->txLast = 0;
-+	priv->tx_command_given = 0;
-+	priv->rx_command_given = 0;
-+	
-+	priv->reRegisterExp = 1;
-+	priv->tx_last_sent = jiffies - 1;
-+	priv->tx_last_cleared = jiffies;
-+	priv->Conf->writeEEPROM = 0;
-+	priv->Conf->registrationInterrupts = 1;
-+
-+	init_timer(&priv->timer);
-+	priv->timer.expires = jiffies + HZ / 10;
-+	priv->timer.data = (unsigned long) dev;
-+	priv->timer.function = &arlan_registration_timer;	/* timer handler */
-+
-+	arlan_command(dev, ARLAN_COMMAND_POWERUP | ARLAN_COMMAND_LONG_WAIT_NOW);
-+	mdelay(200);
-+	add_timer(&priv->timer);
-+
-+	ARLAN_DEBUG_EXIT("arlan_open");
-+	return 0;
-+}
-+
-+
-+static void arlan_tx_timeout (struct net_device *dev)
-+{
-+	printk(KERN_ERR "%s: arlan transmit timed out, kernel decided\n", dev->name);
-+	/* Try to restart the adaptor. */
-+	arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
-+	// dev->trans_start = jiffies;
-+	// netif_start_queue (dev);
-+}
-+
-+
-+static netdev_tx_t arlan_tx(struct sk_buff *skb, struct net_device *dev)
-+{
-+	short length;
-+	unsigned char *buf;
-+
-+	ARLAN_DEBUG_ENTRY("arlan_tx");
-+	
-+	length = ETH_ZLEN < skb->len ? skb->len : ETH_ZLEN;
-+	buf = skb->data;
-+
-+	if (length + 0x12 > 0x800) {
-+		printk(KERN_ERR "TX RING overflow \n");
-+		netif_stop_queue (dev);
-+	}
-+
-+	if (arlan_hw_tx(dev, buf, length) == -1)
-+		goto bad_end;
-+
-+	dev->trans_start = jiffies;
-+
-+	dev_kfree_skb(skb);
-+
-+	arlan_process_interrupt(dev);
-+	ARLAN_DEBUG_EXIT("arlan_tx");
-+	return NETDEV_TX_OK;
-+
-+bad_end:
-+	arlan_process_interrupt(dev);
-+	netif_stop_queue (dev);
-+	ARLAN_DEBUG_EXIT("arlan_tx");
-+	return NETDEV_TX_BUSY;
-+}
-+
-+
-+static inline int DoNotReTransmitCrap(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+
-+	if (TXLAST(dev).length < priv->Conf->ReTransmitPacketMaxSize)
-+		return 1;
-+	return 0;
-+
-+}
-+
-+static inline int DoNotWaitReTransmitCrap(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+
-+	if (TXLAST(dev).length < priv->Conf->waitReTransmitPacketMaxSize)
-+		return 1;
-+	return 0;
-+}
-+
-+static inline void arlan_queue_retransmit(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+
-+	ARLAN_DEBUG_ENTRY("arlan_queue_retransmit");
-+
-+	if (DoNotWaitReTransmitCrap(dev))
-+	{
-+		  arlan_drop_tx(dev);
-+	} else
-+		priv->ReTransmitRequested++;
-+
-+	ARLAN_DEBUG_EXIT("arlan_queue_retransmit");
-+}
-+
-+static inline void RetryOrFail(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+
-+	ARLAN_DEBUG_ENTRY("RetryOrFail");
-+
-+	if (priv->retransmissions > priv->Conf->retries ||
-+	    DoNotReTransmitCrap(dev))
-+	{
-+		arlan_drop_tx(dev);
-+	}
-+	else if (priv->bad <= priv->Conf->fastReTransCount)
-+	{
-+		arlan_retransmit_now(dev);
-+	}
-+	else arlan_queue_retransmit(dev);
-+
-+	ARLAN_DEBUG_EXIT("RetryOrFail");
-+}
-+
-+
-+static void arlan_tx_done_interrupt(struct net_device *dev, int status)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+
-+	ARLAN_DEBUG_ENTRY("arlan_tx_done_interrupt");
-+
-+	priv->tx_last_cleared = jiffies;
-+	priv->tx_command_given = 0;
-+	switch (status)
-+	{
-+		case 1:
-+		{
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+				printk("arlan intr: transmit OK\n");
-+			dev->stats.tx_packets++;
-+			priv->bad = 0;
-+			priv->reset = 0;
-+			priv->retransmissions = 0;
-+			if (priv->Conf->tx_delay_ms)
-+			{
-+				priv->tx_done_delayed = jiffies + (priv->Conf->tx_delay_ms * HZ) / 1000 + 1;
-+			}
-+			else
-+			{
-+				TXLAST(dev).offset = 0;
-+				if (priv->txLast)
-+					priv->txLast = 0;
-+				else if (TXTAIL(dev).offset)
-+					priv->txLast = 1;
-+				if (TXLAST(dev).offset)
-+				{
-+					arlan_retransmit_now(dev);
-+					dev->trans_start = jiffies;
-+				}
-+				if (!TXHEAD(dev).offset || !TXTAIL(dev).offset)
-+				{
-+					netif_wake_queue (dev);
-+				}
-+			}
-+		}
-+		break;
-+		
-+		case 2:
-+		{
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+				printk("arlan intr: transmit timed out\n");
-+			priv->bad += 1;
-+			//arlan_queue_retransmit(dev);
-+			RetryOrFail(dev);
-+		}
-+		break;
-+
-+		case 3:
-+		{
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+				printk("arlan intr: transmit max retries\n");
-+			priv->bad += 1;
-+			priv->reset = 0;
-+			//arlan_queue_retransmit(dev);
-+			RetryOrFail(dev);
-+		}
-+		break;
-+		
-+		case 4:
-+		{
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+				printk("arlan intr: transmit aborted\n");
-+			priv->bad += 1;
-+			arlan_queue_retransmit(dev);
-+			//RetryOrFail(dev);
-+		}
-+		break;
-+
-+		case 5:
-+		{
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+				printk("arlan intr: transmit not registered\n");
-+			priv->bad += 1;
-+			//debug=101;
-+			arlan_queue_retransmit(dev);
-+		}
-+		break;
-+
-+		case 6:
-+		{
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) 
-+				printk("arlan intr: transmit destination full\n");
-+			priv->bad += 1;
-+			priv->reset = 0;
-+			//arlan_drop_tx(dev);
-+			arlan_queue_retransmit(dev);
-+		}
-+		break;
-+
-+		case 7:
-+		{
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+				printk("arlan intr: transmit unknown ack\n");
-+			priv->bad += 1;
-+			priv->reset = 0;
-+			arlan_queue_retransmit(dev);
-+		}
-+		break;
-+		
-+		case 8:
-+		{
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+				printk("arlan intr: transmit dest mail box full\n");
-+			priv->bad += 1;
-+			priv->reset = 0;
-+			//arlan_drop_tx(dev);
-+			arlan_queue_retransmit(dev);
-+		}
-+		break;
-+
-+		case 9:
-+		{
-+			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
-+				printk("arlan intr: transmit root dest not reg.\n");
-+			priv->bad += 1;
-+			priv->reset = 1;
-+			//arlan_drop_tx(dev);
-+			arlan_queue_retransmit(dev);
-+		}
-+		break;
-+
-+		default:
-+		{
-+			printk(KERN_ERR "arlan intr: transmit status unknown\n");
-+			priv->bad += 1;
-+			priv->reset = 1;
-+			arlan_drop_tx(dev);
-+		}
-+	}
-+
-+	ARLAN_DEBUG_EXIT("arlan_tx_done_interrupt");
-+}
-+
-+
-+static void arlan_rx_interrupt(struct net_device *dev, u_char rxStatus, u_short rxOffset, u_short pkt_len)
-+{
-+	char *skbtmp;
-+	int i = 0;
-+
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+	struct arlan_conf_stru *conf = priv->Conf;
-+
-+
-+	ARLAN_DEBUG_ENTRY("arlan_rx_interrupt");
-+	// by spec,   not                WRITESHMB(arlan->rxStatus,0x00);
-+	// prohibited here              arlan_command(dev, ARLAN_COMMAND_RX);
-+
-+	if (pkt_len < 10 || pkt_len > 2048)
-+	{
-+		printk(KERN_WARNING "%s: got too short or long packet, len %d \n", dev->name, pkt_len);
-+		return;
-+	}
-+	if (rxOffset + pkt_len > 0x2000)
-+	{
-+		printk("%s: got too long packet, len %d offset %x\n", dev->name, pkt_len, rxOffset);
-+		return;
-+	}
-+	priv->in_bytes += pkt_len;
-+	priv->in_bytes10 += pkt_len;
-+	if (conf->measure_rate < 1)
-+		conf->measure_rate = 1;
-+	if (time_after(jiffies, priv->in_time + conf->measure_rate * HZ))
-+	{
-+		conf->in_speed = priv->in_bytes / conf->measure_rate;
-+		priv->in_bytes = 0;
-+		priv->in_time = jiffies;
-+	}
-+	if (time_after(jiffies, priv->in_time10 + conf->measure_rate * 10*HZ))
-+	{
-+		conf->in_speed10 = priv->in_bytes10 / (10 * conf->measure_rate);
-+		priv->in_bytes10 = 0;
-+		priv->in_time10 = jiffies;
-+	}
-+	DEBUGSHM(1, "arlan rcv pkt rxStatus= %d ", arlan->rxStatus, u_char);
-+	switch (rxStatus)
-+	{
-+		case 1:
-+		case 2:
-+		case 3:
-+		{
-+			/* Malloc up new buffer. */
-+			struct sk_buff *skb;
-+
-+			DEBUGSHM(50, "arlan recv pkt offs=%d\n", arlan->rxOffset, u_short);
-+			DEBUGSHM(1, "arlan rxFrmType = %d \n", arlan->rxFrmType, u_char);
-+			DEBUGSHM(1, KERN_INFO "arlan rx scrambled = %d \n", arlan->scrambled, u_char);
-+
-+			/* here we do multicast filtering to avoid slow 8-bit memcopy */
-+#ifdef ARLAN_MULTICAST
-+			if (!(dev->flags & IFF_ALLMULTI) &&
-+				!(dev->flags & IFF_PROMISC) &&
-+				dev->mc_list)
-+			{
-+				char hw_dst_addr[6];
-+				struct dev_mc_list *dmi = dev->mc_list;
-+				int i;
-+
-+				memcpy_fromio(hw_dst_addr, arlan->ultimateDestAddress, 6);
-+				if (hw_dst_addr[0] == 0x01)
-+				{
-+					if (mdebug)
-+						if (hw_dst_addr[1] == 0x00)
-+							printk(KERN_ERR "%s mcast 0x0100 \n", dev->name);
-+						else if (hw_dst_addr[1] == 0x40)
-+							printk(KERN_ERR "%s m/bcast 0x0140 \n", dev->name);
-+					while (dmi)
-+					{
-+						if (dmi->dmi_addrlen == 6) {
-+							if (arlan_debug & ARLAN_DEBUG_HEADER_DUMP)
-+								printk(KERN_ERR "%s mcl %pM\n",
-+								       dev->name, dmi->dmi_addr);
-+							for (i = 0; i < 6; i++)
-+								if (dmi->dmi_addr[i] != hw_dst_addr[i])
-+									break;
-+							if (i == 6)
-+								break;
-+						} else
-+							printk(KERN_ERR "%s: invalid multicast address length given.\n", dev->name);
-+						dmi = dmi->next;
-+					}
-+					/* we reach here if multicast filtering is on and packet 
-+					 * is multicast and not for receive */
-+					goto end_of_interrupt;
-+				}
-+			}
-+#endif				// ARLAN_MULTICAST
-+			/* multicast filtering ends here */
-+			pkt_len += ARLAN_FAKE_HDR_LEN;
-+
-+			skb = dev_alloc_skb(pkt_len + 4);
-+			if (skb == NULL)
-+			{
-+				printk(KERN_ERR "%s: Memory squeeze, dropping packet.\n", dev->name);
-+				dev->stats.rx_dropped++;
-+				break;
-+			}
-+			skb_reserve(skb, 2);
-+			skbtmp = skb_put(skb, pkt_len);
-+
-+			memcpy_fromio(skbtmp + ARLAN_FAKE_HDR_LEN, ((char __iomem *) arlan) + rxOffset, pkt_len - ARLAN_FAKE_HDR_LEN);
-+			memcpy_fromio(skbtmp, arlan->ultimateDestAddress, 6);
-+			memcpy_fromio(skbtmp + 6, arlan->rxSrc, 6);
-+			WRITESHMB(arlan->rxStatus, 0x00);
-+			arlan_command(dev, ARLAN_COMMAND_RX);
-+
-+			IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
-+			{
-+				char immedDestAddress[6];
-+				char immedSrcAddress[6];
-+				memcpy_fromio(immedDestAddress, arlan->immedDestAddress, 6);
-+				memcpy_fromio(immedSrcAddress, arlan->immedSrcAddress, 6);
-+
-+				printk(KERN_WARNING "%s t %pM f %pM imd %pM ims %pM\n",
-+				       dev->name, skbtmp,
-+				       &skbtmp[6],
-+				       immedDestAddress,
-+				       immedSrcAddress);
-+			}
-+			skb->protocol = eth_type_trans(skb, dev);
-+			IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
-+				if (skb->protocol != 0x608 && skb->protocol != 0x8)
-+				{
-+					for (i = 0; i <= 22; i++)
-+						printk("%02x:", (u_char) skbtmp[i + 12]);
-+					printk(KERN_ERR "\n");
-+					printk(KERN_WARNING "arlan kernel pkt type trans %x \n", skb->protocol);
-+				}
-+			netif_rx(skb);
-+			dev->stats.rx_packets++;
-+			dev->stats.rx_bytes += pkt_len;
-+		}
-+		break;
-+		
-+		default:
-+			printk(KERN_ERR "arlan intr: received unknown status\n");
-+			dev->stats.rx_crc_errors++;
-+			break;
-+	}
-+	ARLAN_DEBUG_EXIT("arlan_rx_interrupt");
-+}
-+
-+static void arlan_process_interrupt(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+	u_char rxStatus = READSHMB(arlan->rxStatus);
-+	u_char txStatus = READSHMB(arlan->txStatus);
-+	u_short rxOffset = READSHMS(arlan->rxOffset);
-+	u_short pkt_len = READSHMS(arlan->rxLength);
-+	int interrupt_count = 0;
-+
-+	ARLAN_DEBUG_ENTRY("arlan_process_interrupt");
-+
-+	if (test_and_set_bit(0, (void *) &priv->interrupt_processing_active))
-+	{
-+		if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
-+			printk(KERN_ERR "interrupt chain reentering \n");
-+		goto end_int_process;
-+	}
-+	while ((rxStatus || txStatus || priv->interrupt_ack_requested)
-+			&& (interrupt_count < 5))
-+	{
-+		if (rxStatus)
-+			priv->last_rx_int_ack_time = jiffies;
-+
-+		arlan_command(dev, ARLAN_COMMAND_INT_ACK);
-+		arlan_command(dev, ARLAN_COMMAND_INT_ENABLE);
-+		
-+		IFDEBUG(ARLAN_DEBUG_INTERRUPT)
-+			printk(KERN_ERR "%s:  got IRQ rx %x tx %x comm %x rxOff %x rxLen %x \n",
-+					dev->name, rxStatus, txStatus, READSHMB(arlan->commandByte),
-+					rxOffset, pkt_len);
-+
-+		if (rxStatus == 0 && txStatus == 0)
-+		{
-+			if (priv->irq_test_done)
-+			{
-+				if (!registrationBad(dev))
-+					IFDEBUG(ARLAN_DEBUG_INTERRUPT) printk(KERN_ERR "%s unknown interrupt(nop? regLost ?) reason tx %d rx %d ",
-+										    dev->name, txStatus, rxStatus);
-+			} else {
-+				IFDEBUG(ARLAN_DEBUG_INTERRUPT)
-+					printk(KERN_INFO "%s irq $%d test OK \n", dev->name, dev->irq);
-+
-+			}
-+			priv->interrupt_ack_requested = 0;
-+			goto ends;
-+		}
-+		if (txStatus != 0)
-+		{
-+			WRITESHMB(arlan->txStatus, 0x00);
-+			arlan_tx_done_interrupt(dev, txStatus);
-+			goto ends;
-+		}
-+		if (rxStatus == 1 || rxStatus == 2)
-+		{		/* a packet waiting */
-+			arlan_rx_interrupt(dev, rxStatus, rxOffset, pkt_len);
-+			goto ends;
-+		}
-+		if (rxStatus > 2 && rxStatus < 0xff)
-+		{
-+			WRITESHMB(arlan->rxStatus, 0x00);
-+			printk(KERN_ERR "%s unknown rxStatus reason tx %d rx %d ",
-+				dev->name, txStatus, rxStatus);
-+			goto ends;
-+		}
-+		if (rxStatus == 0xff)
-+		{
-+			WRITESHMB(arlan->rxStatus, 0x00);
-+			arlan_command(dev, ARLAN_COMMAND_RX);
-+			if (registrationBad(dev))
-+				netif_device_detach(dev);
-+			if (!registrationBad(dev))
-+			{
-+				priv->registrationLastSeen = jiffies;
-+				if (!netif_queue_stopped(dev) && !priv->under_reset && !priv->under_config)
-+					netif_wake_queue (dev);
-+			}
-+			goto ends;
-+		}
-+ends:
-+
-+		arlan_command_process(dev);
-+
-+		rxStatus = READSHMB(arlan->rxStatus);
-+		txStatus = READSHMB(arlan->txStatus);
-+		rxOffset = READSHMS(arlan->rxOffset);
-+		pkt_len = READSHMS(arlan->rxLength);
-+
-+
-+		priv->irq_test_done = 1;
-+
-+		interrupt_count++;
-+	}
-+	priv->interrupt_processing_active = 0;
-+
-+end_int_process:
-+	arlan_command_process(dev);
-+
-+	ARLAN_DEBUG_EXIT("arlan_process_interrupt");
-+	return;
-+}
-+
-+static irqreturn_t arlan_interrupt(int irq, void *dev_id)
-+{
-+	struct net_device *dev = dev_id;
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+	u_char rxStatus = READSHMB(arlan->rxStatus);
-+	u_char txStatus = READSHMB(arlan->txStatus);
-+
-+	ARLAN_DEBUG_ENTRY("arlan_interrupt");
-+
-+
-+	if (!rxStatus && !txStatus)
-+		priv->interrupt_ack_requested++;
-+
-+	arlan_process_interrupt(dev);
-+	
-+	priv->irq_test_done = 1;
-+
-+	ARLAN_DEBUG_EXIT("arlan_interrupt");
-+	return IRQ_HANDLED;
-+
-+}
-+
-+
-+static int arlan_close(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+
-+	ARLAN_DEBUG_ENTRY("arlan_close");
-+
-+	del_timer_sync(&priv->timer);
-+
-+	arlan_command(dev, ARLAN_COMMAND_POWERDOWN);
-+
-+	IFDEBUG(ARLAN_DEBUG_STARTUP)
-+		printk(KERN_NOTICE "%s: Closing device\n", dev->name);
-+
-+	netif_stop_queue(dev);
-+	free_irq(dev->irq, dev);
-+
-+	ARLAN_DEBUG_EXIT("arlan_close");
-+	return 0;
-+}
-+
-+#ifdef ARLAN_DEBUGGING
-+static long alignLong(volatile u_char * ptr)
-+{
-+	long ret;
-+	memcpy_fromio(&ret, (void *) ptr, 4);
-+	return ret;
-+}
-+#endif
-+
-+/*
-+ * Get the current statistics.
-+ * This may be called with the card open or closed.
-+ */
-+
-+static struct net_device_stats *arlan_statistics(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+
-+
-+	ARLAN_DEBUG_ENTRY("arlan_statistics");
-+
-+	/* Update the statistics from the device registers. */
-+
-+	READSHM(dev->stats.collisions, arlan->numReTransmissions, u_int);
-+	READSHM(dev->stats.rx_crc_errors, arlan->numCRCErrors, u_int);
-+	READSHM(dev->stats.rx_dropped, arlan->numFramesDiscarded, u_int);
-+	READSHM(dev->stats.rx_fifo_errors, arlan->numRXBufferOverflows, u_int);
-+	READSHM(dev->stats.rx_frame_errors, arlan->numReceiveFramesLost, u_int);
-+	READSHM(dev->stats.rx_over_errors, arlan->numRXOverruns, u_int);
-+	READSHM(dev->stats.rx_packets, arlan->numDatagramsReceived, u_int);
-+	READSHM(dev->stats.tx_aborted_errors, arlan->numAbortErrors, u_int);
-+	READSHM(dev->stats.tx_carrier_errors, arlan->numStatusTimeouts, u_int);
-+	READSHM(dev->stats.tx_dropped, arlan->numDatagramsDiscarded, u_int);
-+	READSHM(dev->stats.tx_fifo_errors, arlan->numTXUnderruns, u_int);
-+	READSHM(dev->stats.tx_packets, arlan->numDatagramsTransmitted, u_int);
-+	READSHM(dev->stats.tx_window_errors, arlan->numHoldOffs, u_int);
-+
-+	ARLAN_DEBUG_EXIT("arlan_statistics");
-+
-+	return &dev->stats;
-+}
-+
-+
-+static void arlan_set_multicast(struct net_device *dev)
-+{
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+	struct arlan_conf_stru *conf = priv->Conf;
-+	int board_conf_needed = 0;
-+
-+
-+	ARLAN_DEBUG_ENTRY("arlan_set_multicast");
-+
-+	if (dev->flags & IFF_PROMISC)
-+	{
-+		unsigned char recMode;
-+		READSHM(recMode, arlan->receiveMode, u_char);
-+		conf->receiveMode = (ARLAN_RCV_PROMISC | ARLAN_RCV_CONTROL);
-+		if (conf->receiveMode != recMode)
-+			board_conf_needed = 1;
-+	}
-+	else
-+	{
-+		/* turn off promiscuous mode  */
-+		unsigned char recMode;
-+		READSHM(recMode, arlan->receiveMode, u_char);
-+		conf->receiveMode = ARLAN_RCV_CLEAN | ARLAN_RCV_CONTROL;
-+		if (conf->receiveMode != recMode)
-+			board_conf_needed = 1;
-+	}
-+	if (board_conf_needed)
-+		arlan_command(dev, ARLAN_COMMAND_CONF);
-+
-+	ARLAN_DEBUG_EXIT("arlan_set_multicast");
-+}
-+
-+
-+struct net_device * __init arlan_probe(int unit)
-+{
-+	struct net_device *dev;
-+	int err;
-+	int m;
-+
-+	ARLAN_DEBUG_ENTRY("arlan_probe");
-+
-+	if (arlans_found == MAX_ARLANS)
-+		return ERR_PTR(-ENODEV);
-+
-+	/* 
-+	 * Reserve space for local data and a copy of the shared memory
-+	 * that is used by the /proc interface.
-+	 */
-+	dev = alloc_etherdev(sizeof(struct arlan_private)
-+			     + sizeof(struct arlan_shmem));
-+	if (!dev)
-+		return ERR_PTR(-ENOMEM);
-+
-+	if (unit >= 0) {
-+		sprintf(dev->name, "eth%d", unit);
-+		netdev_boot_setup_check(dev);
-+		
-+		if (dev->mem_start) {
-+			if (arlan_probe_here(dev, dev->mem_start) == 0)
-+				goto found;
-+			goto not_found;
-+		}
-+			
-+	}
-+
-+
-+	for (m = (int)phys_to_virt(lastFoundAt) + ARLAN_SHMEM_SIZE; 
-+	     m <= (int)phys_to_virt(0xDE000); 
-+	     m += ARLAN_SHMEM_SIZE)
-+	{
-+		if (arlan_probe_here(dev, m) == 0)
-+		{
-+			lastFoundAt = (int)virt_to_phys((void*)m);
-+			goto found;
-+		}
-+	}
-+
-+	if (lastFoundAt == 0xbe000)
-+		printk(KERN_ERR "arlan: No Arlan devices found \n");
-+
-+ not_found:
-+	free_netdev(dev);
-+	return ERR_PTR(-ENODEV);
-+
-+ found:
-+	err = arlan_setup_device(dev, arlans_found);
-+	if (err)
-+		dev = ERR_PTR(err);
-+	else if (!arlans_found++)
-+		printk(KERN_INFO "Arlan driver %s\n", arlan_version);
-+
-+	return dev;
-+}
-+
-+#ifdef  MODULE
-+int __init init_module(void)
-+{
-+	int i = 0;
-+
-+	ARLAN_DEBUG_ENTRY("init_module");
-+
-+	if (channelSet != channelSetUNKNOWN || channelNumber != channelNumberUNKNOWN || systemId != systemIdUNKNOWN)
-+		return -EINVAL;
-+
-+	for (i = 0; i < MAX_ARLANS; i++) {
-+		struct net_device *dev = arlan_probe(i);
-+
-+		if (IS_ERR(dev)) 
-+			return PTR_ERR(dev);
-+	}
-+	init_arlan_proc();
-+	printk(KERN_INFO "Arlan driver %s\n", arlan_version);
-+	ARLAN_DEBUG_EXIT("init_module");
-+	return 0;
-+}
-+
-+
-+void __exit cleanup_module(void)
-+{
-+	int i = 0;
-+	struct net_device *dev;
-+
-+	ARLAN_DEBUG_ENTRY("cleanup_module");
-+
-+	IFDEBUG(ARLAN_DEBUG_SHUTDOWN)
-+		printk(KERN_INFO "arlan: unloading module\n");
-+
-+	cleanup_arlan_proc();
-+
-+	for (i = 0; i < MAX_ARLANS; i++)
-+	{
-+		dev = arlan_device[i];
-+		if (dev) {
-+			arlan_command(dev, ARLAN_COMMAND_POWERDOWN );
-+
-+			unregister_netdev(dev);
-+			release_mem_region(virt_to_phys((void *) dev->mem_start), 
-+					   ARLAN_SHMEM_SIZE);
-+			free_netdev(dev);
-+			arlan_device[i] = NULL;
-+		}
-+	}
-+
-+	ARLAN_DEBUG_EXIT("cleanup_module");
-+}
-+
-+
-+#endif
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/staging/arlan/arlan-proc.c b/drivers/staging/arlan/arlan-proc.c
-new file mode 100644
-index 0000000..a8b6896
---- /dev/null
-+++ b/drivers/staging/arlan/arlan-proc.c
-@@ -0,0 +1,1253 @@
-+#include "arlan.h"
-+
-+#include <linux/sysctl.h>
-+
-+#ifdef CONFIG_PROC_FS
-+
-+/* void enableReceive(struct net_device* dev);
-+*/
-+
-+
-+
-+#define ARLAN_STR_SIZE 	0x2ff0
-+#define DEV_ARLAN_INFO 	1
-+#define DEV_ARLAN 	1
-+#define SARLG(type,var) {\
-+	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n", #var, READSHMB(priva->card->var));	\
-+	}
-+
-+#define SARLBN(type,var,nn) {\
-+	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x",#var);\
-+	for (i=0; i < nn; i++ ) pos += sprintf(arlan_drive_info+pos, "%02x",READSHMB(priva->card->var[i]));\
-+	pos += sprintf(arlan_drive_info+pos, "\n");	\
-+	}
-+
-+#define SARLBNpln(type,var,nn) {\
-+	for (i=0; i < nn; i++ ) pos += sprintf(arlan_drive_info+pos, "%02x",READSHMB(priva->card->var[i]));\
-+	}
-+
-+#define SARLSTR(var,nn) {\
-+	char tmpStr[400];\
-+	int  tmpLn = nn;\
-+	if (nn > 399 ) tmpLn = 399; \
-+	memcpy(tmpStr,(char *) priva->conf->var,tmpLn);\
-+	tmpStr[tmpLn] = 0; \
-+	pos += sprintf(arlan_drive_info+pos, "%s\t=\t%s \n",#var,priva->conf->var);\
-+	}
-+
-+#define SARLUC(var)  	SARLG(u_char, var)
-+#define SARLUCN(var,nn) SARLBN(u_char,var, nn)
-+#define SARLUS(var)	SARLG(u_short, var)
-+#define SARLUSN(var,nn)	SARLBN(u_short,var, nn)
-+#define SARLUI(var)	SARLG(u_int, var)
-+
-+#define SARLUSA(var) {\
-+	u_short tmpVar;\
-+	memcpy(&tmpVar, (short *) priva->conf->var,2); \
-+	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n",#var, tmpVar);\
-+}
-+
-+#define SARLUIA(var) {\
-+	u_int tmpVar;\
-+	memcpy(&tmpVar, (int* )priva->conf->var,4); \
-+	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n",#var, tmpVar);\
-+}
-+
-+
-+static const char *arlan_diagnostic_info_string(struct net_device *dev)
-+{
-+
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+	u_char diagnosticInfo;
-+
-+	READSHM(diagnosticInfo, arlan->diagnosticInfo, u_char);
-+
-+	switch (diagnosticInfo)
-+	{
-+		case 0xFF:
-+			return "Diagnostic info is OK";
-+		case 0xFE:
-+			return "ERROR EPROM Checksum error ";
-+		case 0xFD:
-+			return "ERROR Local Ram Test Failed ";
-+		case 0xFC:
-+			return "ERROR SCC failure ";
-+		case 0xFB:
-+			return "ERROR BackBone failure ";
-+		case 0xFA:
-+			return "ERROR transceiver not found ";
-+		case 0xF9:
-+			return "ERROR no more address space ";
-+		case 0xF8:
-+			return "ERROR Checksum error  ";
-+		case 0xF7:
-+			return "ERROR Missing SS Code";
-+		case 0xF6:
-+			return "ERROR Invalid config format";
-+		case 0xF5:
-+			return "ERROR Reserved errorcode F5";
-+		case 0xF4:
-+			return "ERROR Invalid spreading code/channel number";
-+		case 0xF3:
-+			return "ERROR Load Code Error";
-+		case 0xF2:
-+			return "ERROR Reserver errorcode F2 ";
-+		case 0xF1:
-+			return "ERROR Invalid command receivec by LAN card ";
-+		case 0xF0:
-+			return "ERROR Invalid parameter found in command ";
-+		case 0xEF:
-+			return "ERROR On-chip timer failure ";
-+		case 0xEE:
-+			return "ERROR T410 timer failure ";
-+		case 0xED:
-+			return "ERROR Too Many TxEnable commands ";
-+		case 0xEC:
-+			return "ERROR EEPROM error on radio module ";
-+		default:
-+			return "ERROR unknown Diagnostic info reply code ";
-+	  }
-+}
-+
-+static const char *arlan_hardware_type_string(struct net_device *dev)
-+{
-+	u_char hardwareType;
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+
-+	READSHM(hardwareType, arlan->hardwareType, u_char);
-+	switch (hardwareType)
-+	{
-+		case 0x00:
-+			return "type A450";
-+		case 0x01:
-+			return "type A650 ";
-+		case 0x04:
-+			return "type TMA coproc";
-+		case 0x0D:
-+			return "type A650E ";
-+		case 0x18:
-+			return "type TMA coproc Australian";
-+		case 0x19:
-+			return "type A650A ";
-+		case 0x26:
-+			return "type TMA coproc European";
-+		case 0x2E:
-+			return "type A655 ";
-+		case 0x2F:
-+			return "type A655A ";
-+		case 0x30:
-+			return "type A655E ";
-+		case 0x0B:
-+			return "type A670 ";
-+		case 0x0C:
-+			return "type A670E ";
-+		case 0x2D:
-+			return "type A670A ";
-+		case 0x0F:
-+			return "type A411T";
-+		case 0x16:
-+			return "type A411TA";
-+		case 0x1B:
-+			return "type A440T";
-+		case 0x1C:
-+			return "type A412T";
-+		case 0x1E:
-+			return "type A412TA";
-+		case 0x22:
-+			return "type A411TE";
-+		case 0x24:
-+			return "type A412TE";
-+		case 0x27:
-+			return "type A671T ";
-+		case 0x29:
-+			return "type A671TA ";
-+		case 0x2B:
-+			return "type A671TE ";
-+		case 0x31:
-+			return "type A415T ";
-+		case 0x33:
-+			return "type A415TA ";
-+		case 0x35:
-+			return "type A415TE ";
-+		case 0x37:
-+			return "type A672";
-+		case 0x39:
-+			return "type A672A ";
-+		case 0x3B:
-+			return "type A672T";
-+		case 0x6B:
-+			return "type IC2200";
-+		default:
-+			return "type A672T";
-+	}
-+}
-+#ifdef ARLAN_DEBUGGING
-+static void arlan_print_diagnostic_info(struct net_device *dev)
-+{
-+	int i;
-+	u_char diagnosticInfo;
-+	u_short diagnosticOffset;
-+	u_char hardwareType;
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+
-+	//  ARLAN_DEBUG_ENTRY("arlan_print_diagnostic_info");
-+
-+	if (READSHMB(arlan->configuredStatusFlag) == 0)
-+		printk("Arlan: Card NOT configured\n");
-+	else
-+		printk("Arlan: Card is configured\n");
-+
-+	READSHM(diagnosticInfo, arlan->diagnosticInfo, u_char);
-+	READSHM(diagnosticOffset, arlan->diagnosticOffset, u_short);
-+
-+	printk(KERN_INFO "%s\n", arlan_diagnostic_info_string(dev));
-+
-+	if (diagnosticInfo != 0xff)
-+		printk("%s arlan: Diagnostic Offset %d \n", dev->name, diagnosticOffset);
-+
-+	printk("arlan: LAN CODE ID = ");
-+	for (i = 0; i < 6; i++)
-+		DEBUGSHM(1, "%03d:", arlan->lanCardNodeId[i], u_char);
-+	printk("\n");
-+
-+	printk("arlan: Arlan BroadCast address  = ");
-+	for (i = 0; i < 6; i++)
-+		DEBUGSHM(1, "%03d:", arlan->broadcastAddress[i], u_char);
-+	printk("\n");
-+
-+	READSHM(hardwareType, arlan->hardwareType, u_char);
-+	printk(KERN_INFO "%s\n", arlan_hardware_type_string(dev));
-+
-+
-+	DEBUGSHM(1, "arlan: channelNumber=%d\n", arlan->channelNumber, u_char);
-+	DEBUGSHM(1, "arlan: channelSet=%d\n", arlan->channelSet, u_char);
-+	DEBUGSHM(1, "arlan: spreadingCode=%d\n", arlan->spreadingCode, u_char);
-+	DEBUGSHM(1, "arlan: radioNodeId=%d\n", arlan->radioNodeId, u_short);
-+	DEBUGSHM(1, "arlan: SID	=%d\n", arlan->SID, u_short);
-+	DEBUGSHM(1, "arlan: rxOffset=%d\n", arlan->rxOffset, u_short);
-+
-+	DEBUGSHM(1, "arlan: registration mode is %d\n", arlan->registrationMode, u_char);
-+
-+	printk("arlan: name= ");
-+	IFDEBUG(1)
-+	
-+	for (i = 0; i < 16; i++)
-+	{
-+		char c;
-+		READSHM(c, arlan->name[i], char);
-+		if (c)
-+			printk("%c", c);
-+	}
-+	printk("\n");
-+
-+//   ARLAN_DEBUG_EXIT("arlan_print_diagnostic_info");
-+
-+}
-+
-+
-+/******************************		TEST 	MEMORY	**************/
-+
-+static int arlan_hw_test_memory(struct net_device *dev)
-+{
-+	u_char *ptr;
-+	int i;
-+	int memlen = sizeof(struct arlan_shmem) - 0xF;	/* avoid control register */
-+	volatile char *arlan_mem = (char *) (dev->mem_start);
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+	char pattern;
-+
-+	ptr = NULL;
-+
-+	/* hold card in reset state */
-+	setHardwareReset(dev);
-+
-+	/* test memory */
-+	pattern = 0;
-+	for (i = 0; i < memlen; i++)
-+		WRITESHM(arlan_mem[i], ((u_char) pattern++), u_char);
-+
-+	pattern = 0;
-+	for (i = 0; i < memlen; i++)
-+	{
-+		char res;
-+		READSHM(res, arlan_mem[i], char);
-+		if (res != pattern++)
-+		{
-+			printk(KERN_ERR "Arlan driver memory test 1 failed \n");
-+			return -1;
-+		}
-+	}
-+
-+	pattern = 0;
-+	for (i = 0; i < memlen; i++)
-+		WRITESHM(arlan_mem[i], ~(pattern++), char);
-+
-+	pattern = 0;
-+	for (i = 0; i < memlen; i++)
-+	{
-+		char res;
-+		READSHM(res, arlan_mem[i], char);
-+		if (res != ~(pattern++))
-+		{
-+			printk(KERN_ERR "Arlan driver memory test 2 failed \n");
-+			return -1;
-+		}
-+	}
-+
-+	/* zero memory */
-+	for (i = 0; i < memlen; i++)
-+		WRITESHM(arlan_mem[i], 0x00, char);
-+
-+	IFDEBUG(1) printk(KERN_INFO "Arlan: memory tests ok\n");
-+
-+	/* set reset flag and then release reset */
-+	WRITESHM(arlan->resetFlag, 0xff, u_char);
-+
-+	clearChannelAttention(dev);
-+	clearHardwareReset(dev);
-+
-+	/* wait for reset flag to become zero, we'll wait for two seconds */
-+	if (arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW))
-+	{
-+		printk(KERN_ERR "%s arlan: failed to come back from memory test\n", dev->name);
-+		return -1;
-+	}
-+	return 0;
-+}
-+
-+static int arlan_setup_card_by_book(struct net_device *dev)
-+{
-+	u_char irqLevel, configuredStatusFlag;
-+	struct arlan_private *priv = netdev_priv(dev);
-+	volatile struct arlan_shmem __iomem *arlan = priv->card;
-+
-+//	ARLAN_DEBUG_ENTRY("arlan_setup_card");
-+
-+	READSHM(configuredStatusFlag, arlan->configuredStatusFlag, u_char);
-+
-+	IFDEBUG(10)
-+	if (configuredStatusFlag != 0)
-+		IFDEBUG(10) printk("arlan: CARD IS CONFIGURED\n");
-+	else
-+		IFDEBUG(10) printk("arlan: card is NOT configured\n");
-+
-+	if (testMemory || (READSHMB(arlan->diagnosticInfo) != 0xff))
-+		if (arlan_hw_test_memory(dev))
-+			return -1;
-+
-+	DEBUGSHM(4, "arlan configuredStatus = %d \n", arlan->configuredStatusFlag, u_char);
-+	DEBUGSHM(4, "arlan driver diagnostic: 0x%2x\n", arlan->diagnosticInfo, u_char);
-+
-+	/* issue nop command - no interrupt */
-+	arlan_command(dev, ARLAN_COMMAND_NOOP);
-+	if (arlan_command(dev, ARLAN_COMMAND_WAIT_NOW) != 0)
-+		return -1;
-+
-+	IFDEBUG(50) printk("1st Noop successfully executed !!\n");
-+
-+	/* try to turn on the arlan interrupts */
-+	clearClearInterrupt(dev);
-+	setClearInterrupt(dev);
-+	setInterruptEnable(dev);
-+
-+	/* issue nop command - with interrupt */
-+
-+	arlan_command(dev, ARLAN_COMMAND_NOOPINT);
-+	if (arlan_command(dev, ARLAN_COMMAND_WAIT_NOW) != 0)
-+		return -1;
-+
-+
-+	IFDEBUG(50) printk("2nd Noop successfully executed !!\n");
-+
-+	READSHM(irqLevel, arlan->irqLevel, u_char)
-+	
-+	if (irqLevel != dev->irq)
-+	{
-+		IFDEBUG(1) printk(KERN_WARNING "arlan dip switches set irq to %d\n", irqLevel);
-+		printk(KERN_WARNING "device driver irq set to %d - does not match\n", dev->irq);
-+		dev->irq = irqLevel;
-+	}
-+	else
-+		IFDEBUG(2) printk("irq level is OK\n");
-+
-+
-+	IFDEBUG(3) arlan_print_diagnostic_info(dev);
-+
-+	arlan_command(dev, ARLAN_COMMAND_CONF);
-+
-+	READSHM(configuredStatusFlag, arlan->configuredStatusFlag, u_char);
-+	if (configuredStatusFlag == 0)
-+	{
-+		printk(KERN_WARNING "arlan configure failed\n");
-+		return -1;
-+	}
-+	arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW);
-+	arlan_command(dev, ARLAN_COMMAND_RX);
-+	arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW);
-+	printk(KERN_NOTICE "%s: arlan driver version %s loaded\n",
-+	       dev->name, arlan_version);
-+
-+//	ARLAN_DEBUG_EXIT("arlan_setup_card");
-+
-+	return 0;		/* no errors */
-+}
-+#endif
-+
-+#ifdef ARLAN_PROC_INTERFACE
-+#ifdef ARLAN_PROC_SHM_DUMP
-+
-+static char arlan_drive_info[ARLAN_STR_SIZE] = "A655\n\0";
-+
-+static int arlan_sysctl_info(ctl_table * ctl, int write,
-+		      void __user *buffer, size_t * lenp, loff_t *ppos)
-+{
-+	int i;
-+	int retv, pos, devnum;
-+	struct arlan_private *priva = NULL;
-+	struct net_device *dev;
-+	pos = 0;
-+	if (write)
-+	{
-+		printk("wrirte: ");
-+		for (i = 0; i < 100; i++)
-+			printk("adi %x \n", arlan_drive_info[i]);
-+	}
-+	if (ctl->procname == NULL || arlan_drive_info == NULL)
-+	{
-+		printk(KERN_WARNING " procname is NULL in sysctl_table or arlan_drive_info is NULL \n at arlan module\n ");
-+		return -1;
-+	}
-+	devnum = ctl->procname[5] - '0';
-+	if (devnum < 0 || devnum > MAX_ARLANS - 1)
-+	{
-+		printk(KERN_WARNING "too strange devnum in procfs parse\n ");
-+		return -1;
-+	}
-+	else if (arlan_device[devnum] == NULL)
-+	{
-+		if (ctl->procname)
-+			pos += sprintf(arlan_drive_info + pos, "\t%s\n\n", ctl->procname);
-+		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
-+		goto final;
-+	}
-+	else
-+		priva = netdev_priv(arlan_device[devnum]);
-+
-+	if (priva == NULL)
-+	{
-+		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
-+		return -1;
-+	}
-+	dev = arlan_device[devnum];
-+
-+	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
-+
-+	pos = sprintf(arlan_drive_info, "Arlan  info \n");
-+	/* Header Signature */
-+	SARLSTR(textRegion, 48);
-+	SARLUC(resetFlag);
-+	pos += sprintf(arlan_drive_info + pos, "diagnosticInfo\t=\t%s \n", arlan_diagnostic_info_string(dev));
-+	SARLUC(diagnosticInfo);
-+	SARLUS(diagnosticOffset);
-+	SARLUCN(_1, 12);
-+	SARLUCN(lanCardNodeId, 6);
-+	SARLUCN(broadcastAddress, 6);
-+	pos += sprintf(arlan_drive_info + pos, "hardwareType =\t  %s \n", arlan_hardware_type_string(dev));
-+	SARLUC(hardwareType);
-+	SARLUC(majorHardwareVersion);
-+	SARLUC(minorHardwareVersion);
-+	SARLUC(radioModule);
-+	SARLUC(defaultChannelSet);
-+	SARLUCN(_2, 47);
-+
-+	/* Control/Status Block - 0x0080 */
-+	SARLUC(interruptInProgress);
-+	SARLUC(cntrlRegImage);
-+
-+	SARLUCN(_3, 14);
-+	SARLUC(commandByte);
-+	SARLUCN(commandParameter, 15);
-+
-+	/* Receive Status - 0x00a0 */
-+	SARLUC(rxStatus);
-+	SARLUC(rxFrmType);
-+	SARLUS(rxOffset);
-+	SARLUS(rxLength);
-+	SARLUCN(rxSrc, 6);
-+	SARLUC(rxBroadcastFlag);
-+	SARLUC(rxQuality);
-+	SARLUC(scrambled);
-+	SARLUCN(_4, 1);
-+
-+	/* Transmit Status - 0x00b0 */
-+	SARLUC(txStatus);
-+	SARLUC(txAckQuality);
-+	SARLUC(numRetries);
-+	SARLUCN(_5, 14);
-+	SARLUCN(registeredRouter, 6);
-+	SARLUCN(backboneRouter, 6);
-+	SARLUC(registrationStatus);
-+	SARLUC(configuredStatusFlag);
-+	SARLUCN(_6, 1);
-+	SARLUCN(ultimateDestAddress, 6);
-+	SARLUCN(immedDestAddress, 6);
-+	SARLUCN(immedSrcAddress, 6);
-+	SARLUS(rxSequenceNumber);
-+	SARLUC(assignedLocaltalkAddress);
-+	SARLUCN(_7, 27);
-+
-+	/* System Parameter Block */
-+
-+	/* - Driver Parameters (Novell Specific) */
-+
-+	SARLUS(txTimeout);
-+	SARLUS(transportTime);
-+	SARLUCN(_8, 4);
-+
-+	/* - Configuration Parameters */
-+	SARLUC(irqLevel);
-+	SARLUC(spreadingCode);
-+	SARLUC(channelSet);
-+	SARLUC(channelNumber);
-+	SARLUS(radioNodeId);
-+	SARLUCN(_9, 2);
-+	SARLUC(scramblingDisable);
-+	SARLUC(radioType);
-+	SARLUS(routerId);
-+	SARLUCN(_10, 9);
-+	SARLUC(txAttenuation);
-+	SARLUIA(systemId);
-+	SARLUS(globalChecksum);
-+	SARLUCN(_11, 4);
-+	SARLUS(maxDatagramSize);
-+	SARLUS(maxFrameSize);
-+	SARLUC(maxRetries);
-+	SARLUC(receiveMode);
-+	SARLUC(priority);
-+	SARLUC(rootOrRepeater);
-+	SARLUCN(specifiedRouter, 6);
-+	SARLUS(fastPollPeriod);
-+	SARLUC(pollDecay);
-+	SARLUSA(fastPollDelay);
-+	SARLUC(arlThreshold);
-+	SARLUC(arlDecay);
-+	SARLUCN(_12, 1);
-+	SARLUS(specRouterTimeout);
-+	SARLUCN(_13, 5);
-+
-+	/* Scrambled Area */
-+	SARLUIA(SID);
-+	SARLUCN(encryptionKey, 12);
-+	SARLUIA(_14);
-+	SARLUSA(waitTime);
-+	SARLUSA(lParameter);
-+	SARLUCN(_15, 3);
-+	SARLUS(headerSize);
-+	SARLUS(sectionChecksum);
-+
-+	SARLUC(registrationMode);
-+	SARLUC(registrationFill);
-+	SARLUS(pollPeriod);
-+	SARLUS(refreshPeriod);
-+	SARLSTR(name, 16);
-+	SARLUCN(NID, 6);
-+	SARLUC(localTalkAddress);
-+	SARLUC(codeFormat);
-+	SARLUC(numChannels);
-+	SARLUC(channel1);
-+	SARLUC(channel2);
-+	SARLUC(channel3);
-+	SARLUC(channel4);
-+	SARLUCN(SSCode, 59);
-+
-+/*      SARLUCN( _16, 0x140);
-+ */
-+	/* Statistics Block - 0x0300 */
-+	SARLUC(hostcpuLock);
-+	SARLUC(lancpuLock);
-+	SARLUCN(resetTime, 18);
-+	SARLUIA(numDatagramsTransmitted);
-+	SARLUIA(numReTransmissions);
-+	SARLUIA(numFramesDiscarded);
-+	SARLUIA(numDatagramsReceived);
-+	SARLUIA(numDuplicateReceivedFrames);
-+	SARLUIA(numDatagramsDiscarded);
-+	SARLUS(maxNumReTransmitDatagram);
-+	SARLUS(maxNumReTransmitFrames);
-+	SARLUS(maxNumConsecutiveDuplicateFrames);
-+	/* misaligned here so we have to go to characters */
-+	SARLUIA(numBytesTransmitted);
-+	SARLUIA(numBytesReceived);
-+	SARLUIA(numCRCErrors);
-+	SARLUIA(numLengthErrors);
-+	SARLUIA(numAbortErrors);
-+	SARLUIA(numTXUnderruns);
-+	SARLUIA(numRXOverruns);
-+	SARLUIA(numHoldOffs);
-+	SARLUIA(numFramesTransmitted);
-+	SARLUIA(numFramesReceived);
-+	SARLUIA(numReceiveFramesLost);
-+	SARLUIA(numRXBufferOverflows);
-+	SARLUIA(numFramesDiscardedAddrMismatch);
-+	SARLUIA(numFramesDiscardedSIDMismatch);
-+	SARLUIA(numPollsTransmistted);
-+	SARLUIA(numPollAcknowledges);
-+	SARLUIA(numStatusTimeouts);
-+	SARLUIA(numNACKReceived);
-+	SARLUS(auxCmd);
-+	SARLUCN(dumpPtr, 4);
-+	SARLUC(dumpVal);
-+	SARLUC(wireTest);
-+	
-+	/* next 4 seems too long for procfs, over single page ?
-+	SARLUCN( _17, 0x86);
-+	SARLUCN( txBuffer, 0x800);
-+	SARLUCN( rxBuffer,  0x800); 
-+	SARLUCN( _18, 0x0bff);
-+	 */
-+
-+	pos += sprintf(arlan_drive_info + pos, "rxRing\t=\t0x");
-+	for (i = 0; i < 0x50; i++)
-+		pos += sprintf(arlan_drive_info + pos, "%02x", ((char *) priva->conf)[priva->conf->rxOffset + i]);
-+	pos += sprintf(arlan_drive_info + pos, "\n");
-+
-+	SARLUC(configStatus);
-+	SARLUC(_22);
-+	SARLUC(progIOCtrl);
-+	SARLUC(shareMBase);
-+	SARLUC(controlRegister);
-+
-+	pos += sprintf(arlan_drive_info + pos, " total %d chars\n", pos);
-+	if (ctl)
-+		if (ctl->procname)
-+			pos += sprintf(arlan_drive_info + pos, " driver name : %s\n", ctl->procname);
-+final:
-+	*lenp = pos;
-+
-+	if (!write)
-+		retv = proc_dostring(ctl, write, buffer, lenp, ppos);
-+	else
-+	{
-+		*lenp = 0;
-+		return -1;
-+	}
-+	return retv;
-+}
-+
-+
-+static int arlan_sysctl_info161719(ctl_table * ctl, int write,
-+			    void __user *buffer, size_t * lenp, loff_t *ppos)
-+{
-+	int i;
-+	int retv, pos, devnum;
-+	struct arlan_private *priva = NULL;
-+
-+	pos = 0;
-+	devnum = ctl->procname[5] - '0';
-+	if (arlan_device[devnum] == NULL)
-+	{
-+		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
-+		goto final;
-+	}
-+	else
-+		priva = netdev_priv(arlan_device[devnum]);
-+	if (priva == NULL)
-+	{
-+		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
-+		return -1;
-+	}
-+	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
-+	SARLUCN(_16, 0xC0);
-+	SARLUCN(_17, 0x6A);
-+	SARLUCN(_18, 14);
-+	SARLUCN(_19, 0x86);
-+	SARLUCN(_21, 0x3fd);
-+
-+final:
-+	*lenp = pos;
-+	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
-+	return retv;
-+}
-+
-+static int arlan_sysctl_infotxRing(ctl_table * ctl, int write,
-+			    void __user *buffer, size_t * lenp, loff_t *ppos)
-+{
-+	int i;
-+	int retv, pos, devnum;
-+	struct arlan_private *priva = NULL;
-+
-+	pos = 0;
-+	devnum = ctl->procname[5] - '0';
-+	if (arlan_device[devnum] == NULL)
-+	{
-+		  pos += sprintf(arlan_drive_info + pos, "No device found here \n");
-+		  goto final;
-+	}
-+	else
-+		priva = netdev_priv(arlan_device[devnum]);
-+	if (priva == NULL)
-+	{
-+		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
-+		return -1;
-+	}
-+	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
-+	SARLBNpln(u_char, txBuffer, 0x800);
-+final:
-+	*lenp = pos;
-+	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
-+	return retv;
-+}
-+
-+static int arlan_sysctl_inforxRing(ctl_table * ctl, int write,
-+			    void __user *buffer, size_t * lenp, loff_t *ppos)
-+{
-+	int i;
-+	int retv, pos, devnum;
-+	struct arlan_private *priva = NULL;
-+
-+	pos = 0;
-+	devnum = ctl->procname[5] - '0';
-+	if (arlan_device[devnum] == NULL)
-+	{
-+		  pos += sprintf(arlan_drive_info + pos, "No device found here \n");
-+		  goto final;
-+	} else
-+		priva = netdev_priv(arlan_device[devnum]);
-+	if (priva == NULL)
-+	{
-+		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
-+		return -1;
-+	}
-+	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
-+	SARLBNpln(u_char, rxBuffer, 0x800);
-+final:
-+	*lenp = pos;
-+	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
-+	return retv;
-+}
-+
-+static int arlan_sysctl_info18(ctl_table * ctl, int write,
-+			void __user *buffer, size_t * lenp, loff_t *ppos)
-+{
-+	int i;
-+	int retv, pos, devnum;
-+	struct arlan_private *priva = NULL;
-+
-+	pos = 0;
-+	devnum = ctl->procname[5] - '0';
-+	if (arlan_device[devnum] == NULL)
-+	{
-+		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
-+		goto final;
-+	}
-+	else
-+		priva = netdev_priv(arlan_device[devnum]);
-+	if (priva == NULL)
-+	{
-+		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
-+		return -1;
-+	}
-+	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
-+	SARLBNpln(u_char, _18, 0x800);
-+
-+final:
-+	*lenp = pos;
-+	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
-+	return retv;
-+}
-+
-+
-+#endif				/* #ifdef ARLAN_PROC_SHM_DUMP */
-+
-+
-+static char conf_reset_result[200];
-+
-+static int arlan_configure(ctl_table * ctl, int write,
-+		    void __user *buffer, size_t * lenp, loff_t *ppos)
-+{
-+	int pos = 0;
-+	int devnum = ctl->procname[6] - '0';
-+	struct arlan_private *priv;
-+
-+	if (devnum < 0 || devnum > MAX_ARLANS - 1)
-+	{
-+		  printk(KERN_WARNING "too strange devnum in procfs parse\n ");
-+		  return -1;
-+	}
-+	else if (arlan_device[devnum] != NULL)
-+	{
-+		  priv = netdev_priv(arlan_device[devnum]);
-+
-+		  arlan_command(arlan_device[devnum], ARLAN_COMMAND_CLEAN_AND_CONF);
-+	}
-+	else
-+		return -1;
-+
-+	*lenp = pos;
-+	return proc_dostring(ctl, write, buffer, lenp, ppos);
-+}
-+
-+static int arlan_sysctl_reset(ctl_table * ctl, int write,
-+		       void __user *buffer, size_t * lenp, loff_t *ppos)
-+{
-+	int pos = 0;
-+	int devnum = ctl->procname[5] - '0';
-+	struct arlan_private *priv;
-+
-+	if (devnum < 0 || devnum > MAX_ARLANS - 1)
-+	{
-+		  printk(KERN_WARNING "too strange devnum in procfs parse\n ");
-+		  return -1;
-+	}
-+	else if (arlan_device[devnum] != NULL)
-+	{
-+		priv = netdev_priv(arlan_device[devnum]);
-+		arlan_command(arlan_device[devnum], ARLAN_COMMAND_CLEAN_AND_RESET);
-+
-+	} else
-+		return -1;
-+	*lenp = pos + 3;
-+	return proc_dostring(ctl, write, buffer, lenp, ppos);
-+}
-+
-+
-+/* Place files in /proc/sys/dev/arlan */
-+#define CTBLN(num,card,nam) \
-+        { .ctl_name = num,\
-+          .procname = #nam,\
-+          .data = &(arlan_conf[card].nam),\
-+          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec}
-+#ifdef ARLAN_DEBUGGING
-+
-+#define ARLAN_PROC_DEBUG_ENTRIES \
-+        { .ctl_name = 48, .procname = "entry_exit_debug",\
-+          .data = &arlan_entry_and_exit_debug,\
-+          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec},\
-+	{ .ctl_name = 49, .procname = "debug", .data = &arlan_debug,\
-+          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec},
-+#else 
-+#define ARLAN_PROC_DEBUG_ENTRIES
-+#endif
-+
-+#define ARLAN_SYSCTL_TABLE_TOTAL(cardNo)\
-+	CTBLN(1,cardNo,spreadingCode),\
-+	CTBLN(2,cardNo, channelNumber),\
-+	CTBLN(3,cardNo, scramblingDisable),\
-+	CTBLN(4,cardNo, txAttenuation),\
-+	CTBLN(5,cardNo, systemId), \
-+	CTBLN(6,cardNo, maxDatagramSize),\
-+	CTBLN(7,cardNo, maxFrameSize),\
-+	CTBLN(8,cardNo, maxRetries),\
-+	CTBLN(9,cardNo, receiveMode),\
-+	CTBLN(10,cardNo, priority),\
-+	CTBLN(11,cardNo, rootOrRepeater),\
-+	CTBLN(12,cardNo, SID),\
-+	CTBLN(13,cardNo, registrationMode),\
-+	CTBLN(14,cardNo, registrationFill),\
-+	CTBLN(15,cardNo, localTalkAddress),\
-+	CTBLN(16,cardNo, codeFormat),\
-+	CTBLN(17,cardNo, numChannels),\
-+	CTBLN(18,cardNo, channel1),\
-+	CTBLN(19,cardNo, channel2),\
-+	CTBLN(20,cardNo, channel3),\
-+	CTBLN(21,cardNo, channel4),\
-+	CTBLN(22,cardNo, txClear),\
-+	CTBLN(23,cardNo, txRetries),\
-+	CTBLN(24,cardNo, txRouting),\
-+	CTBLN(25,cardNo, txScrambled),\
-+	CTBLN(26,cardNo, rxParameter),\
-+	CTBLN(27,cardNo, txTimeoutMs),\
-+	CTBLN(28,cardNo, waitCardTimeout),\
-+	CTBLN(29,cardNo, channelSet), \
-+	{.ctl_name = 30, .procname = "name",\
-+	 .data = arlan_conf[cardNo].siteName,\
-+	 .maxlen = 16, .mode = 0600, .proc_handler = &proc_dostring},\
-+	CTBLN(31,cardNo,waitTime),\
-+	CTBLN(32,cardNo,lParameter),\
-+	CTBLN(33,cardNo,_15),\
-+	CTBLN(34,cardNo,headerSize),\
-+	CTBLN(36,cardNo,tx_delay_ms),\
-+	CTBLN(37,cardNo,retries),\
-+	CTBLN(38,cardNo,ReTransmitPacketMaxSize),\
-+	CTBLN(39,cardNo,waitReTransmitPacketMaxSize),\
-+	CTBLN(40,cardNo,fastReTransCount),\
-+	CTBLN(41,cardNo,driverRetransmissions),\
-+	CTBLN(42,cardNo,txAckTimeoutMs),\
-+	CTBLN(43,cardNo,registrationInterrupts),\
-+	CTBLN(44,cardNo,hardwareType),\
-+	CTBLN(45,cardNo,radioType),\
-+	CTBLN(46,cardNo,writeEEPROM),\
-+	CTBLN(47,cardNo,writeRadioType),\
-+	ARLAN_PROC_DEBUG_ENTRIES\
-+	CTBLN(50,cardNo,in_speed),\
-+	CTBLN(51,cardNo,out_speed),\
-+	CTBLN(52,cardNo,in_speed10),\
-+	CTBLN(53,cardNo,out_speed10),\
-+	CTBLN(54,cardNo,in_speed_max),\
-+	CTBLN(55,cardNo,out_speed_max),\
-+	CTBLN(56,cardNo,measure_rate),\
-+	CTBLN(57,cardNo,pre_Command_Wait),\
-+	CTBLN(58,cardNo,rx_tweak1),\
-+	CTBLN(59,cardNo,rx_tweak2),\
-+	CTBLN(60,cardNo,tx_queue_len),\
-+
-+
-+
-+static ctl_table arlan_conf_table0[] =
-+{
-+	ARLAN_SYSCTL_TABLE_TOTAL(0)
-+
-+#ifdef ARLAN_PROC_SHM_DUMP
-+	{
-+		.ctl_name	= 150,
-+		.procname	= "arlan0-txRing",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_infotxRing,
-+	},
-+	{
-+		.ctl_name	= 151,
-+		.procname	= "arlan0-rxRing",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_inforxRing,
-+	},
-+	{
-+		.ctl_name	= 152,
-+		.procname	= "arlan0-18",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info18,
-+	},
-+	{
-+		.ctl_name	= 153,
-+		.procname	= "arlan0-ring",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info161719,
-+	},
-+	{
-+		.ctl_name	= 154,
-+		.procname	= "arlan0-shm-cpy",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info,
-+	},
-+#endif
-+	{
-+		.ctl_name	= 155,
-+		.procname	= "config0",
-+		.data		= &conf_reset_result,
-+		.maxlen		= 100,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_configure
-+	},
-+	{
-+		.ctl_name	= 156,
-+		.procname	= "reset0",
-+		.data		= &conf_reset_result,
-+		.maxlen		= 100,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_reset,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table arlan_conf_table1[] =
-+{
-+
-+	ARLAN_SYSCTL_TABLE_TOTAL(1)
-+
-+#ifdef ARLAN_PROC_SHM_DUMP
-+	{
-+		.ctl_name	= 150,
-+		.procname	= "arlan1-txRing",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_infotxRing,
-+	},
-+	{
-+		.ctl_name	= 151,
-+		.procname	= "arlan1-rxRing",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_inforxRing,
-+	},
-+	{
-+		.ctl_name	= 152,
-+		.procname	= "arlan1-18",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info18,
-+	},
-+	{
-+		.ctl_name	= 153,
-+		.procname	= "arlan1-ring",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info161719,
-+	},
-+	{
-+		.ctl_name	= 154,
-+		.procname	= "arlan1-shm-cpy",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info,
-+	},
-+#endif
-+	{
-+		.ctl_name	= 155,
-+		.procname	= "config1",
-+		.data		= &conf_reset_result,
-+		.maxlen		= 100,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_configure,
-+	},
-+	{
-+		.ctl_name	= 156,
-+		.procname	= "reset1",
-+		.data		= &conf_reset_result,
-+		.maxlen		= 100,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_reset,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table arlan_conf_table2[] =
-+{
-+
-+	ARLAN_SYSCTL_TABLE_TOTAL(2)
-+
-+#ifdef ARLAN_PROC_SHM_DUMP
-+	{
-+		.ctl_name	= 150,
-+		.procname	= "arlan2-txRing",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_infotxRing,
-+	},
-+	{
-+		.ctl_name	= 151,
-+		.procname	= "arlan2-rxRing",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_inforxRing,
-+	},
-+	{
-+		.ctl_name	= 152,
-+		.procname	= "arlan2-18",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info18,
-+	},
-+	{
-+		.ctl_name	= 153,
-+		.procname	= "arlan2-ring",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info161719,
-+	},
-+	{
-+		.ctl_name	= 154,
-+		.procname	= "arlan2-shm-cpy",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info,
-+	},
-+#endif
-+	{
-+		.ctl_name	= 155,
-+		.procname	= "config2",
-+		.data		= &conf_reset_result,
-+		.maxlen		= 100,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_configure,
-+	},
-+	{
-+		.ctl_name	= 156,
-+		.procname	= "reset2",
-+		.data		= &conf_reset_result,
-+		.maxlen		= 100,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_reset,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table arlan_conf_table3[] =
-+{
-+
-+	ARLAN_SYSCTL_TABLE_TOTAL(3)
-+
-+#ifdef ARLAN_PROC_SHM_DUMP
-+	{
-+		.ctl_name	= 150,
-+		.procname	= "arlan3-txRing",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_infotxRing,
-+	},
-+	{
-+		.ctl_name	= 151,
-+		.procname	= "arlan3-rxRing",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_inforxRing,
-+	},
-+	{
-+		.ctl_name	= 152,
-+		.procname	= "arlan3-18",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info18,
-+	},
-+	{
-+		.ctl_name	= 153,
-+		.procname	= "arlan3-ring",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info161719,
-+	},
-+	{
-+		.ctl_name	= 154,
-+		.procname	= "arlan3-shm-cpy",
-+		.data		= &arlan_drive_info,
-+		.maxlen		= ARLAN_STR_SIZE,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_info,
-+	},
-+#endif
-+	{
-+		.ctl_name	= 155,
-+		.procname	= "config3",
-+		.data		= &conf_reset_result,
-+		.maxlen		= 100,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_configure,
-+	},
-+	{
-+		.ctl_name	= 156,
-+		.procname	= "reset3",
-+		.data		= &conf_reset_result,
-+		.maxlen		= 100,
-+		.mode		= 0400,
-+		.proc_handler	= &arlan_sysctl_reset,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+
-+
-+static ctl_table arlan_table[] =
-+{
-+	{
-+		.ctl_name	= 0,
-+		.procname	= "arlan0",
-+		.maxlen		= 0,
-+		.mode		= 0600,
-+		.child		= arlan_conf_table0,
-+	},
-+	{
-+		.ctl_name	= 0,
-+		.procname	= "arlan1",
-+		.maxlen		= 0,
-+		.mode		= 0600,
-+		.child		= arlan_conf_table1,
-+	},
-+	{
-+		.ctl_name	= 0,
-+		.procname	= "arlan2",
-+		.maxlen		= 0,
-+		.mode		= 0600,
-+		.child		= arlan_conf_table2,
-+	},
-+	{
-+		.ctl_name	= 0,
-+		.procname	= "arlan3",
-+		.maxlen		= 0,
-+		.mode		= 0600,
-+		.child		= arlan_conf_table3,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+#else
-+
-+static ctl_table arlan_table[MAX_ARLANS + 1] =
-+{
-+	{ .ctl_name = 0 }
-+};
-+#endif
-+
-+
-+// static int mmtu = 1234;
-+
-+static ctl_table arlan_root_table[] =
-+{
-+	{
-+		.ctl_name	= CTL_ARLAN,
-+		.procname	= "arlan",
-+		.maxlen		= 0,
-+		.mode		= 0555,
-+		.child		= arlan_table,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+/* Make sure that /proc/sys/dev is there */
-+//static ctl_table arlan_device_root_table[] =
-+//{
-+//	{CTL_DEV, "dev", NULL, 0, 0555, arlan_root_table},
-+//	{0}
-+//};
-+
-+
-+static struct ctl_table_header *arlan_device_sysctl_header;
-+
-+int __init init_arlan_proc(void)
-+{
-+
-+	int i = 0;
-+	if (arlan_device_sysctl_header)
-+		return 0;
-+	for (i = 0; i < MAX_ARLANS && arlan_device[i]; i++)
-+		arlan_table[i].ctl_name = i + 1;
-+	arlan_device_sysctl_header = register_sysctl_table(arlan_root_table);
-+	if (!arlan_device_sysctl_header)
-+		return -1;
-+
-+	return 0;
-+
-+}
-+
-+void __exit cleanup_arlan_proc(void)
-+{
-+	unregister_sysctl_table(arlan_device_sysctl_header);
-+	arlan_device_sysctl_header = NULL;
-+
-+}
-+#endif
-diff --git a/drivers/staging/arlan/arlan.h b/drivers/staging/arlan/arlan.h
-new file mode 100644
-index 0000000..fb3ad51
---- /dev/null
-+++ b/drivers/staging/arlan/arlan.h
-@@ -0,0 +1,539 @@
-+/*
-+ *  Copyright (C) 1997 Cullen Jennings
-+ *  Copyright (C) 1998 Elmer.Joandi@ut.ee, +37-255-13500	
-+ *  GNU General Public License applies
-+ */
++++ b/drivers/staging/netwave/netwave_cs.c
+@@ -0,0 +1,1389 @@
++/*********************************************************************
++ *                
++ * Filename:      netwave_cs.c
++ * Version:       0.4.1
++ * Description:   Netwave AirSurfer Wireless LAN PC Card driver
++ * Status:        Experimental.
++ * Authors:       John Markus Bjørndalen <johnm@cs.uit.no>
++ *                Dag Brattli <dagb@cs.uit.no>
++ *                David Hinds <dahinds@users.sourceforge.net>
++ * Created at:    A long time ago!
++ * Modified at:   Mon Nov 10 11:54:37 1997
++ * Modified by:   Dag Brattli <dagb@cs.uit.no>
++ * 
++ *     Copyright (c) 1997 University of Tromsø, Norway
++ *
++ * Revision History:
++ *
++ *   08-Nov-97 15:14:47   John Markus Bjørndalen <johnm@cs.uit.no>
++ *    - Fixed some bugs in netwave_rx and cleaned it up a bit. 
++ *      (One of the bugs would have destroyed packets when receiving
++ *      multiple packets per interrupt). 
++ *    - Cleaned up parts of newave_hw_xmit. 
++ *    - A few general cleanups. 
++ *   24-Oct-97 13:17:36   Dag Brattli <dagb@cs.uit.no>
++ *    - Fixed netwave_rx receive function (got updated docs)
++ *   Others:
++ *    - Changed name from xircnw to netwave, take a look at 
++ *      http://www.netwave-wireless.com
++ *    - Some reorganizing of the code
++ *    - Removed possible race condition between interrupt handler and transmit
++ *      function
++ *    - Started to add wireless extensions, but still needs some coding
++ *    - Added watchdog for better handling of transmission timeouts 
++ *      (hopefully this works better)
++ ********************************************************************/
++
++/* To have statistics (just packets sent) define this */
++#undef NETWAVE_STATS
 +
 +#include <linux/module.h>
 +#include <linux/kernel.h>
++#include <linux/init.h>
 +#include <linux/types.h>
-+#include <linux/skbuff.h>
-+#include <linux/if_ether.h>	/* For the statistics structure. */
-+#include <linux/if_arp.h>	/* For ARPHRD_ETHER */
++#include <linux/fcntl.h>
++#include <linux/interrupt.h>
 +#include <linux/ptrace.h>
 +#include <linux/ioport.h>
 +#include <linux/in.h>
 +#include <linux/slab.h>
 +#include <linux/string.h>
 +#include <linux/timer.h>
-+
-+#include <linux/init.h>
-+#include <linux/bitops.h>
-+#include <asm/system.h>
-+#include <asm/io.h>
 +#include <linux/errno.h>
-+#include <linux/delay.h>
 +#include <linux/netdevice.h>
 +#include <linux/etherdevice.h>
++#include <linux/skbuff.h>
++#include <linux/bitops.h>
++#include <linux/wireless.h>
++#include <net/iw_handler.h>
 +
++#include <pcmcia/cs_types.h>
++#include <pcmcia/cs.h>
++#include <pcmcia/cistpl.h>
++#include <pcmcia/cisreg.h>
++#include <pcmcia/ds.h>
++#include <pcmcia/mem_op.h>
 +
-+//#define ARLAN_DEBUGGING 1
++#include <asm/system.h>
++#include <asm/io.h>
++#include <asm/dma.h>
 +
-+#define ARLAN_PROC_INTERFACE
-+#define MAX_ARLANS 4 /* not more than 4 ! */
-+#define ARLAN_PROC_SHM_DUMP /* shows all card registers, makes driver way larger */
++#define NETWAVE_REGOFF         0x8000
++/* The Netwave IO registers, offsets to iobase */
++#define NETWAVE_REG_COR        0x0
++#define NETWAVE_REG_CCSR       0x2
++#define NETWAVE_REG_ASR        0x4
++#define NETWAVE_REG_IMR        0xa
++#define NETWAVE_REG_PMR        0xc
++#define NETWAVE_REG_IOLOW      0x6
++#define NETWAVE_REG_IOHI       0x7
++#define NETWAVE_REG_IOCONTROL  0x8
++#define NETWAVE_REG_DATA       0xf
++/* The Netwave Extended IO registers, offsets to RamBase */
++#define NETWAVE_EREG_ASCC      0x114
++#define NETWAVE_EREG_RSER      0x120
++#define NETWAVE_EREG_RSERW     0x124
++#define NETWAVE_EREG_TSER      0x130
++#define NETWAVE_EREG_TSERW     0x134
++#define NETWAVE_EREG_CB        0x100
++#define NETWAVE_EREG_SPCQ      0x154
++#define NETWAVE_EREG_SPU       0x155
++#define NETWAVE_EREG_LIF       0x14e
++#define NETWAVE_EREG_ISPLQ     0x156
++#define NETWAVE_EREG_HHC       0x158
++#define NETWAVE_EREG_NI        0x16e
++#define NETWAVE_EREG_MHS       0x16b
++#define NETWAVE_EREG_TDP       0x140
++#define NETWAVE_EREG_RDP       0x150
++#define NETWAVE_EREG_PA        0x160
++#define NETWAVE_EREG_EC        0x180
++#define NETWAVE_EREG_CRBP      0x17a
++#define NETWAVE_EREG_ARW       0x166
 +
-+#define ARLAN_MAX_MULTICAST_ADDRS 16
-+#define ARLAN_RCV_CLEAN 	0
-+#define ARLAN_RCV_PROMISC 1
-+#define ARLAN_RCV_CONTROL 2
++/*
++ * Commands used in the extended command buffer
++ * NETWAVE_EREG_CB (0x100-0x10F) 
++ */
++#define NETWAVE_CMD_NOP        0x00
++#define NETWAVE_CMD_SRC        0x01
++#define NETWAVE_CMD_STC        0x02
++#define NETWAVE_CMD_AMA        0x03
++#define NETWAVE_CMD_DMA        0x04
++#define NETWAVE_CMD_SAMA       0x05
++#define NETWAVE_CMD_ER         0x06
++#define NETWAVE_CMD_DR         0x07
++#define NETWAVE_CMD_TL         0x08
++#define NETWAVE_CMD_SRP        0x09
++#define NETWAVE_CMD_SSK        0x0a
++#define NETWAVE_CMD_SMD        0x0b
++#define NETWAVE_CMD_SAPD       0x0c
++#define NETWAVE_CMD_SSS        0x11
++/* End of Command marker */
++#define NETWAVE_CMD_EOC        0x00
 +
-+#ifdef CONFIG_PROC_FS
-+extern int init_arlan_proc(void);
-+extern void cleanup_arlan_proc(void);
++/* ASR register bits */
++#define NETWAVE_ASR_RXRDY   0x80
++#define NETWAVE_ASR_TXBA    0x01
++
++#define TX_TIMEOUT		((32*HZ)/100)
++
++static const unsigned int imrConfRFU1 = 0x10; /* RFU interrupt mask, keep high */
++static const unsigned int imrConfIENA = 0x02; /* Interrupt enable */
++
++static const unsigned int corConfIENA   = 0x01; /* Interrupt enable */
++static const unsigned int corConfLVLREQ = 0x40; /* Keep high */
++
++static const unsigned int rxConfRxEna  = 0x80; /* Receive Enable */
++static const unsigned int rxConfMAC    = 0x20; /* MAC host receive mode*/ 
++static const unsigned int rxConfPro    = 0x10; /* Promiscuous */
++static const unsigned int rxConfAMP    = 0x08; /* Accept Multicast Packets */
++static const unsigned int rxConfBcast  = 0x04; /* Accept Broadcast Packets */
++
++static const unsigned int txConfTxEna  = 0x80; /* Transmit Enable */
++static const unsigned int txConfMAC    = 0x20; /* Host sends MAC mode */
++static const unsigned int txConfEUD    = 0x10; /* Enable Uni-Data packets */
++static const unsigned int txConfKey    = 0x02; /* Scramble data packets */
++static const unsigned int txConfLoop   = 0x01; /* Loopback mode */
++
++/*
++   All the PCMCIA modules use PCMCIA_DEBUG to control debugging.  If
++   you do not define PCMCIA_DEBUG at all, all the debug code will be
++   left out.  If you compile with PCMCIA_DEBUG=0, the debug code will
++   be present but disabled -- but it can then be enabled for specific
++   modules at load time with a 'pc_debug=#' option to insmod.
++*/
++
++#ifdef PCMCIA_DEBUG
++static int pc_debug = PCMCIA_DEBUG;
++module_param(pc_debug, int, 0);
++#define DEBUG(n, args...) if (pc_debug>(n)) printk(KERN_DEBUG args)
++static char *version =
++"netwave_cs.c 0.3.0 Thu Jul 17 14:36:02 1997 (John Markus Bjørndalen)\n";
 +#else
-+#define init_arlan_proc()	({ 0; })
-+#define cleanup_arlan_proc()	do { } while (0)
++#define DEBUG(n, args...)
 +#endif
 +
-+extern struct net_device *arlan_device[MAX_ARLANS];
-+extern int	arlan_debug;
-+extern int	arlan_entry_debug;
-+extern int	arlan_exit_debug;
-+extern int	testMemory;
-+extern int     arlan_command(struct net_device * dev, int command);
-+ 
-+#define SIDUNKNOWN -1
-+#define radioNodeIdUNKNOWN -1
-+#define irqUNKNOWN 0
-+#define debugUNKNOWN 0
-+#define testMemoryUNKNOWN 1
-+#define spreadingCodeUNKNOWN 0
-+#define channelNumberUNKNOWN 0
-+#define channelSetUNKNOWN 0
-+#define systemIdUNKNOWN -1
-+#define registrationModeUNKNOWN -1
++/*====================================================================*/
 +
++/* Parameters that can be set with 'insmod' */
 +
-+#define IFDEBUG( L ) if ( (L) & arlan_debug ) 
-+#define ARLAN_FAKE_HDR_LEN 12 
++/* Choose the domain, default is 0x100 */
++static u_int  domain = 0x100;
 +
-+#ifdef ARLAN_DEBUGGING
-+	#define DEBUG 1
-+	#define ARLAN_ENTRY_EXIT_DEBUGGING 1
-+	#define ARLAN_DEBUG(a,b) printk(KERN_DEBUG a, b)
-+#else
-+	#define ARLAN_DEBUG(a,b) 
-+#endif
++/* Scramble key, range from 0x0 to 0xffff.  
++ * 0x0 is no scrambling. 
++ */
++static u_int  scramble_key = 0x0;
 +
-+#define ARLAN_SHMEM_SIZE	0x2000
++/* Shared memory speed, in ns. The documentation states that 
++ * the card should not be read faster than every 400ns. 
++ * This timing should be provided by the HBA. If it becomes a 
++ * problem, try setting mem_speed to 400. 
++ */
++static int mem_speed;
 +
-+struct arlan_shmem
++module_param(domain, int, 0);
++module_param(scramble_key, int, 0);
++module_param(mem_speed, int, 0);
++
++/*====================================================================*/
++
++/* PCMCIA (Card Services) related functions */
++static void netwave_release(struct pcmcia_device *link);     /* Card removal */
++static int netwave_pcmcia_config(struct pcmcia_device *arg); /* Runs after card
++													   insertion */
++static void netwave_detach(struct pcmcia_device *p_dev);    /* Destroy instance */
++
++/* Hardware configuration */
++static void netwave_doreset(unsigned int iobase, u_char __iomem *ramBase);
++static void netwave_reset(struct net_device *dev);
++
++/* Misc device stuff */
++static int netwave_open(struct net_device *dev);  /* Open the device */
++static int netwave_close(struct net_device *dev); /* Close the device */
++
++/* Packet transmission and Packet reception */
++static netdev_tx_t netwave_start_xmit( struct sk_buff *skb,
++					     struct net_device *dev);
++static int netwave_rx( struct net_device *dev);
++
++/* Interrupt routines */
++static irqreturn_t netwave_interrupt(int irq, void *dev_id);
++static void netwave_watchdog(struct net_device *);
++
++/* Wireless extensions */
++static struct iw_statistics* netwave_get_wireless_stats(struct net_device *dev);
++
++static void set_multicast_list(struct net_device *dev);
++
++/*
++   A struct pcmcia_device structure has fields for most things that are needed
++   to keep track of a socket, but there will usually be some device
++   specific information that also needs to be kept track of.  The
++   'priv' pointer in a struct pcmcia_device structure can be used to point to
++   a device-specific private data structure, like this.
++
++   A driver needs to provide a dev_node_t structure for each device
++   on a card.  In some cases, there is only one device per card (for
++   example, ethernet cards, modems).  In other cases, there may be
++   many actual or logical devices (SCSI adapters, memory cards with
++   multiple partitions).  The dev_node_t structures need to be kept
++   in a linked list starting at the 'dev' field of a struct pcmcia_device
++   structure.  We allocate them in the card's private data structure,
++   because they generally can't be allocated dynamically.
++*/
++
++static const struct iw_handler_def	netwave_handler_def;
++
++#define SIOCGIPSNAP	SIOCIWFIRSTPRIV	+ 1	/* Site Survey Snapshot */
++
++#define MAX_ESA 10
++
++typedef struct net_addr {
++    u_char addr48[6];
++} net_addr;
++
++struct site_survey {
++    u_short length;
++    u_char  struct_revision;
++    u_char  roaming_state;
++	
++    u_char  sp_existsFlag;
++    u_char  sp_link_quality;
++    u_char  sp_max_link_quality;
++    u_char  linkQualityGoodFairBoundary;
++    u_char  linkQualityFairPoorBoundary;
++    u_char  sp_utilization;
++    u_char  sp_goodness;
++    u_char  sp_hotheadcount;
++    u_char  roaming_condition;
++	
++    net_addr sp;
++    u_char   numAPs;
++    net_addr nearByAccessPoints[MAX_ESA];
++};	
++   
++typedef struct netwave_private {
++	struct pcmcia_device	*p_dev;
++    spinlock_t	spinlock;	/* Serialize access to the hardware (SMP) */
++    dev_node_t node;
++    u_char     __iomem *ramBase;
++    int        timeoutCounter;
++    int        lastExec;
++    struct timer_list      watchdog;	/* To avoid blocking state */
++    struct site_survey     nss;
++    struct iw_statistics   iw_stats;    /* Wireless stats */
++} netwave_private;
++
++/*
++ * The Netwave card is little-endian, so won't work for big endian
++ * systems.
++ */
++static inline unsigned short get_uint16(u_char __iomem *staddr) 
 +{
-+      /* Header Signature */ 
-+      volatile	char textRegion[48];
-+      volatile	u_char resetFlag;
-+      volatile	u_char  diagnosticInfo;
-+      volatile	u_short diagnosticOffset;
-+      volatile	u_char _1[12];
-+      volatile	u_char lanCardNodeId[6];
-+      volatile	u_char broadcastAddress[6];
-+      volatile	u_char hardwareType;
-+      volatile	u_char majorHardwareVersion;
-+      volatile	u_char minorHardwareVersion;
-+      volatile	u_char radioModule;// shows EEPROM, can be overridden at 0x111
-+      volatile	u_char defaultChannelSet; // shows EEProm, can be overriiden at 0x10A
-+      volatile	u_char _2[47];
-+      
-+      /* Control/Status Block - 0x0080 */
-+      volatile	u_char interruptInProgress; /* not used by lancpu */
-+      volatile	u_char cntrlRegImage; /* not used by lancpu */
-+      volatile	u_char _3[13];
-+      volatile	u_char dumpByte;
-+      volatile	u_char commandByte; /* non-zero = active */
-+      volatile	u_char commandParameter[15];
-+
-+      /* Receive Status - 0x00a0 */
-+      volatile	u_char rxStatus; /* 1- data, 2-control, 0xff - registr change */
-+      volatile	u_char rxFrmType;
-+      volatile	u_short rxOffset;
-+      volatile	u_short rxLength;
-+      volatile	u_char rxSrc[6];
-+      volatile	u_char rxBroadcastFlag;
-+      volatile	u_char rxQuality;
-+      volatile	u_char scrambled;
-+      volatile	u_char _4[1];
-+      
-+      /* Transmit Status - 0x00b0 */
-+      volatile	u_char txStatus;
-+      volatile	u_char txAckQuality;
-+      volatile	u_char numRetries;
-+      volatile	u_char _5[14];
-+      volatile	u_char registeredRouter[6];
-+      volatile	u_char backboneRouter[6];
-+      volatile	u_char registrationStatus;
-+      volatile	u_char configuredStatusFlag;
-+      volatile	u_char _6[1];
-+      volatile	u_char ultimateDestAddress[6];
-+      volatile	u_char immedDestAddress[6];
-+      volatile	u_char immedSrcAddress[6];
-+      volatile	u_short rxSequenceNumber;
-+      volatile	u_char assignedLocaltalkAddress;
-+      volatile	u_char _7[27];
-+
-+      /* System Parameter Block */
-+
-+      /* - Driver Parameters (Novell Specific) */
-+
-+      volatile	u_short txTimeout;
-+      volatile	u_short transportTime;
-+      volatile	u_char _8[4];
-+
-+      /* - Configuration Parameters */
-+      volatile	u_char irqLevel;
-+      volatile	u_char spreadingCode;
-+      volatile	u_char channelSet;
-+      volatile	u_char channelNumber;
-+      volatile	u_short radioNodeId;
-+      volatile	u_char _9[2];
-+      volatile	u_char scramblingDisable;
-+      volatile	u_char radioType;
-+      volatile	u_short routerId;
-+      volatile	u_char _10[9];
-+      volatile	u_char txAttenuation;
-+      volatile	u_char systemId[4]; 
-+      volatile	u_short globalChecksum;
-+      volatile	u_char _11[4];
-+      volatile	u_short maxDatagramSize;
-+      volatile	u_short maxFrameSize;
-+      volatile	u_char maxRetries;
-+      volatile	u_char receiveMode;
-+      volatile	u_char priority;
-+      volatile	u_char rootOrRepeater;
-+      volatile	u_char specifiedRouter[6];
-+      volatile	u_short fastPollPeriod;
-+      volatile	u_char pollDecay;
-+      volatile	u_char fastPollDelay[2];
-+      volatile	u_char arlThreshold;
-+      volatile	u_char arlDecay;
-+      volatile	u_char _12[1];
-+      volatile	u_short specRouterTimeout;
-+      volatile	u_char _13[5];
-+
-+      /* Scrambled Area */
-+      volatile	u_char SID[4];
-+      volatile	u_char encryptionKey[12];
-+      volatile	u_char _14[2];
-+      volatile	u_char waitTime[2];
-+      volatile	u_char lParameter[2];
-+      volatile	u_char _15[3];
-+      volatile	u_short headerSize;
-+      volatile	u_short sectionChecksum;
-+
-+      volatile	u_char registrationMode;
-+      volatile	u_char registrationFill;
-+      volatile	u_short pollPeriod;
-+      volatile	u_short refreshPeriod;
-+      volatile	u_char name[16];
-+      volatile	u_char NID[6];
-+      volatile	u_char localTalkAddress;
-+      volatile	u_char codeFormat;
-+      volatile	u_char numChannels;
-+      volatile	u_char channel1;
-+      volatile	u_char channel2;
-+      volatile	u_char channel3;
-+      volatile	u_char channel4;
-+      volatile	u_char SSCode[59];
-+
-+      volatile	u_char _16[0xC0];
-+      volatile	u_short auxCmd;
-+      volatile	u_char  dumpPtr[4];
-+      volatile	u_char dumpVal;
-+      volatile	u_char _17[0x6A];
-+      volatile	u_char wireTest;
-+      volatile	u_char _18[14];
-+
-+      /* Statistics Block - 0x0300 */
-+      volatile	u_char hostcpuLock;
-+      volatile	u_char lancpuLock;
-+      volatile	u_char resetTime[18];
-+      
-+      volatile	u_char numDatagramsTransmitted[4];
-+      volatile	u_char numReTransmissions[4];
-+      volatile	u_char numFramesDiscarded[4];
-+      volatile	u_char numDatagramsReceived[4];
-+      volatile	u_char numDuplicateReceivedFrames[4];
-+      volatile	u_char numDatagramsDiscarded[4];
-+      
-+      volatile	u_short maxNumReTransmitDatagram;
-+      volatile	u_short maxNumReTransmitFrames;
-+      volatile	u_short maxNumConsecutiveDuplicateFrames;
-+      /* misaligned here so we have to go to characters */
-+     
-+      volatile	u_char numBytesTransmitted[4];
-+      volatile	u_char numBytesReceived[4];
-+      volatile	u_char numCRCErrors[4];
-+      volatile	u_char numLengthErrors[4];
-+      volatile	u_char numAbortErrors[4];
-+      volatile	u_char numTXUnderruns[4];
-+      volatile	u_char numRXOverruns[4];
-+      volatile	u_char numHoldOffs[4];
-+      volatile	u_char numFramesTransmitted[4];
-+      volatile	u_char numFramesReceived[4];
-+      volatile	u_char numReceiveFramesLost[4];
-+      volatile	u_char numRXBufferOverflows[4];
-+      volatile	u_char numFramesDiscardedAddrMismatch[4];
-+      volatile	u_char numFramesDiscardedSIDMismatch[4];
-+      volatile	u_char numPollsTransmistted[4];
-+      volatile	u_char numPollAcknowledges[4];
-+      volatile	u_char numStatusTimeouts[4];
-+      volatile	u_char numNACKReceived[4];
-+
-+      volatile	u_char _19[0x86];
-+
-+      volatile	u_char txBuffer[0x800];
-+      volatile	u_char rxBuffer[0x800];
-+
-+      volatile	u_char _20[0x800];
-+      volatile	u_char _21[0x3fb];
-+      volatile	u_char configStatus;
-+      volatile	u_char _22;
-+      volatile	u_char progIOCtrl;
-+      volatile	u_char shareMBase;
-+      volatile	u_char controlRegister;
-+};
-+
-+struct arlan_conf_stru {
-+      int spreadingCode;
-+      int channelSet;
-+      int channelNumber;
-+      int scramblingDisable;
-+      int txAttenuation;
-+      int systemId; 
-+      int maxDatagramSize;
-+      int maxFrameSize;
-+      int maxRetries;
-+      int receiveMode;
-+      int priority;
-+      int rootOrRepeater;
-+      int SID;
-+      int radioNodeId;
-+      int registrationMode;
-+      int registrationFill;
-+      int localTalkAddress;
-+      int codeFormat;
-+      int numChannels;
-+      int channel1;
-+      int channel2;
-+      int channel3;
-+      int channel4;
-+      int txClear;
-+      int txRetries;
-+      int txRouting;
-+      int txScrambled;
-+      int rxParameter;
-+      int txTimeoutMs;
-+      int txAckTimeoutMs;
-+      int waitCardTimeout;
-+      int	waitTime;
-+      int	lParameter;
-+      int	_15;
-+      int	headerSize;
-+      int retries;
-+      int tx_delay_ms;
-+      int waitReTransmitPacketMaxSize;
-+      int ReTransmitPacketMaxSize;
-+      int fastReTransCount;
-+      int driverRetransmissions;
-+      int registrationInterrupts;
-+      int hardwareType;
-+      int radioType;
-+      int writeRadioType;
-+      int writeEEPROM;
-+      char siteName[17];
-+      int measure_rate;
-+      int in_speed;
-+      int out_speed;
-+      int in_speed10;
-+      int out_speed10;
-+      int in_speed_max;
-+      int out_speed_max;
-+      int pre_Command_Wait;
-+      int rx_tweak1;
-+      int rx_tweak2;
-+      int tx_queue_len;
-+};
-+
-+extern struct arlan_conf_stru arlan_conf[MAX_ARLANS];
-+
-+struct TxParam
-+{
-+      volatile	short 		offset;
-+      volatile 	short 		length;
-+      volatile	u_char 		dest[6];
-+      volatile	unsigned	char clear;
-+      volatile	unsigned	char retries;
-+      volatile	unsigned	char routing;
-+      volatile	unsigned	char scrambled;
-+};
-+
-+#define TX_RING_SIZE 2
-+/* Information that need to be kept for each board. */
-+struct arlan_private {
-+      struct arlan_shmem __iomem * card;
-+      struct arlan_shmem * conf;
-+
-+      struct arlan_conf_stru * Conf;	     
-+      int	bad;
-+      int 	reset;
-+      unsigned long lastReset;
-+      struct timer_list timer;
-+      struct timer_list tx_delay_timer;
-+      struct timer_list tx_retry_timer;
-+      struct timer_list rx_check_timer;
-+
-+      int registrationLostCount;
-+      int reRegisterExp;
-+      int irq_test_done;
-+
-+      struct TxParam txRing[TX_RING_SIZE];
-+      char reTransmitBuff[0x800];
-+      int txLast;
-+      unsigned ReTransmitRequested;
-+      unsigned long tx_done_delayed;
-+      unsigned long registrationLastSeen;
-+
-+      unsigned long	tx_last_sent;
-+      unsigned long	tx_last_cleared;
-+      unsigned long	retransmissions;
-+      unsigned long 	interrupt_ack_requested;
-+      spinlock_t	lock;
-+      unsigned long	waiting_command_mask;
-+      unsigned long 	card_polling_interval;
-+      unsigned long 	last_command_buff_free_time;
-+
-+      int 		under_reset;
-+      int 		under_config;
-+      int 		rx_command_given;
-+      int	 	tx_command_given;
-+      unsigned  long	interrupt_processing_active;
-+      unsigned long	last_rx_int_ack_time;
-+      unsigned long	in_bytes;
-+      unsigned long 	out_bytes;
-+      unsigned long	in_time;
-+      unsigned long	out_time;
-+      unsigned long	in_time10;
-+      unsigned long	out_time10;
-+      unsigned long	in_bytes10;
-+      unsigned long 	out_bytes10;
-+      int	init_etherdev_alloc;
-+};
-+
-+
-+
-+#define ARLAN_CLEAR		0x00
-+#define ARLAN_RESET 		0x01
-+#define ARLAN_CHANNEL_ATTENTION 0x02
-+#define ARLAN_INTERRUPT_ENABLE 	0x04
-+#define ARLAN_CLEAR_INTERRUPT 	0x08
-+#define ARLAN_POWER 		0x40
-+#define ARLAN_ACCESS		0x80
-+
-+#define ARLAN_COM_CONF                0x01
-+#define ARLAN_COM_RX_ENABLE           0x03
-+#define ARLAN_COM_RX_ABORT            0x04
-+#define ARLAN_COM_TX_ENABLE           0x05
-+#define ARLAN_COM_TX_ABORT            0x06
-+#define ARLAN_COM_NOP		      0x07
-+#define ARLAN_COM_STANDBY             0x08
-+#define ARLAN_COM_ACTIVATE            0x09
-+#define ARLAN_COM_GOTO_SLOW_POLL      0x0a
-+#define ARLAN_COM_INT                 0x80
-+
-+
-+#define TXLAST(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[((struct arlan_private *)netdev_priv(dev))->txLast])
-+#define TXHEAD(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[0])
-+#define TXTAIL(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[1])
-+
-+#define TXBuffStart(dev) offsetof(struct arlan_shmem, txBuffer)
-+#define TXBuffEnd(dev) offsetof(struct arlan_shmem, xxBuffer)
-+ 
-+#define READSHM(to,from,atype) {\
-+	atype tmp;\
-+	memcpy_fromio(&(tmp),&(from),sizeof(atype));\
-+	to = tmp;\
-+	}
-+
-+#define READSHMEM(from,atype)\
-+	atype from; \
-+	READSHM(from, arlan->from, atype);
-+
-+#define WRITESHM(to,from,atype) \
-+	{ atype tmpSHM = from;\
-+	memcpy_toio(&(to),&tmpSHM,sizeof(atype));\
-+	}
-+
-+#define DEBUGSHM(levelSHM,stringSHM,stuff,atype) \
-+	{	atype tmpSHM; \
-+		memcpy_fromio(&tmpSHM,&(stuff),sizeof(atype));\
-+		IFDEBUG(levelSHM) printk(stringSHM,tmpSHM);\
-+	}
-+
-+#define WRITESHMB(to, val) \
-+	writeb(val,&(to))
-+#define READSHMB(to) \
-+	readb(&(to))
-+#define WRITESHMS(to, val) \
-+	writew(val,&(to))
-+#define READSHMS(to) \
-+	readw(&(to))
-+#define WRITESHMI(to, val) \
-+	writel(val,&(to))
-+#define READSHMI(to) \
-+	readl(&(to))
-+
-+
-+
-+
-+
-+#define registrationBad(dev)\
-+   ( (   READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationMode)    > 0) && \
-+     (   READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationStatus) == 0)    )
-+
-+
-+#define readControlRegister(dev)\
-+ 	READSHMB(((struct arlan_private *)netdev_priv(dev))->card->cntrlRegImage)
-+
-+#define writeControlRegister(dev, v){\
-+   WRITESHMB(((struct arlan_private *)netdev_priv(dev))->card->cntrlRegImage	,((v) &0xF) );\
-+   WRITESHMB(((struct arlan_private *)netdev_priv(dev))->card->controlRegister	,(v) 	);}
-+
-+
-+#define arlan_interrupt_lancpu(dev) {\
-+   int cr;   \
-+   \
-+   cr = readControlRegister(dev);\
-+   if (cr & ARLAN_CHANNEL_ATTENTION){ \
-+      writeControlRegister(dev, (cr & ~ARLAN_CHANNEL_ATTENTION));\
-+   }else  \
-+      writeControlRegister(dev, (cr | ARLAN_CHANNEL_ATTENTION));\
++    return readw(staddr); /* Return only 16 bits */
 +}
 +
-+#define clearChannelAttention(dev){ \
-+   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_CHANNEL_ATTENTION);}
-+#define setHardwareReset(dev) {\
-+   writeControlRegister(dev,readControlRegister(dev) | ARLAN_RESET);}
-+#define clearHardwareReset(dev) {\
-+   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_RESET);}
-+#define setInterruptEnable(dev){\
-+   writeControlRegister(dev,readControlRegister(dev) | ARLAN_INTERRUPT_ENABLE)  ;}
-+#define clearInterruptEnable(dev){\
-+   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_INTERRUPT_ENABLE)  ;}
-+#define setClearInterrupt(dev){\
-+   writeControlRegister(dev,readControlRegister(dev) | ARLAN_CLEAR_INTERRUPT)   ;}
-+#define clearClearInterrupt(dev){\
-+   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_CLEAR_INTERRUPT);}
-+#define setPowerOff(dev){\
-+   writeControlRegister(dev,readControlRegister(dev) | (ARLAN_POWER && ARLAN_ACCESS));\
-+   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_ACCESS);}
-+#define setPowerOn(dev){\
-+   writeControlRegister(dev,readControlRegister(dev) & ~(ARLAN_POWER));   }
-+#define arlan_lock_card_access(dev){\
-+   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_ACCESS);}
-+#define arlan_unlock_card_access(dev){\
-+   writeControlRegister(dev,readControlRegister(dev) | ARLAN_ACCESS ); }  
++static inline short get_int16(u_char __iomem * staddr)
++{
++    return readw(staddr);
++}
++
++/* 
++ * Wait until the WOC (Write Operation Complete) bit in the 
++ * ASR (Adapter Status Register) is asserted. 
++ * This should have aborted if it takes too long time. 
++ */
++static inline void wait_WOC(unsigned int iobase)
++{
++    /* Spin lock */
++    while ((inb(iobase + NETWAVE_REG_ASR) & 0x8) != 0x8) ; 
++}
++
++static void netwave_snapshot(netwave_private *priv, u_char __iomem *ramBase, 
++			     unsigned int iobase) {
++    u_short resultBuffer;
++
++    /* if time since last snapshot is > 1 sec. (100 jiffies?)  then take 
++     * new snapshot, else return cached data. This is the recommended rate.  
++     */
++    if ( jiffies - priv->lastExec > 100) { 
++	/* Take site survey  snapshot */ 
++	/*printk( KERN_DEBUG "Taking new snapshot. %ld\n", jiffies -
++	  priv->lastExec); */
++	wait_WOC(iobase); 
++	writeb(NETWAVE_CMD_SSS, ramBase + NETWAVE_EREG_CB + 0); 
++	writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 1); 
++	wait_WOC(iobase); 
++
++	/* Get result and copy to cach */ 
++	resultBuffer = readw(ramBase + NETWAVE_EREG_CRBP); 
++	copy_from_pc( &priv->nss, ramBase+resultBuffer, 
++		      sizeof(struct site_survey)); 
++    } 
++}
++
++/*
++ * Function netwave_get_wireless_stats (dev)
++ *
++ *    Wireless extensions statistics
++ *
++ */
++static struct iw_statistics *netwave_get_wireless_stats(struct net_device *dev)
++{	
++    unsigned long flags;
++    unsigned int iobase = dev->base_addr;
++    netwave_private *priv = netdev_priv(dev);
++    u_char __iomem *ramBase = priv->ramBase;
++    struct iw_statistics* wstats;
++	
++    wstats = &priv->iw_stats;
++
++    spin_lock_irqsave(&priv->spinlock, flags);
++	
++    netwave_snapshot( priv, ramBase, iobase);
++
++    wstats->status = priv->nss.roaming_state;
++    wstats->qual.qual = readb( ramBase + NETWAVE_EREG_SPCQ); 
++    wstats->qual.level = readb( ramBase + NETWAVE_EREG_ISPLQ);
++    wstats->qual.noise = readb( ramBase + NETWAVE_EREG_SPU) & 0x3f;
++    wstats->discard.nwid = 0L;
++    wstats->discard.code = 0L;
++    wstats->discard.misc = 0L;
++
++    spin_unlock_irqrestore(&priv->spinlock, flags);
++    
++    return &priv->iw_stats;
++}
++
++static const struct net_device_ops netwave_netdev_ops = {
++	.ndo_open	 	= netwave_open,
++	.ndo_stop		= netwave_close,
++	.ndo_start_xmit		= netwave_start_xmit,
++	.ndo_set_multicast_list = set_multicast_list,
++	.ndo_tx_timeout		= netwave_watchdog,
++	.ndo_change_mtu		= eth_change_mtu,
++	.ndo_set_mac_address 	= eth_mac_addr,
++	.ndo_validate_addr	= eth_validate_addr,
++};
++
++/*
++ * Function netwave_attach (void)
++ *
++ *     Creates an "instance" of the driver, allocating local data 
++ *     structures for one device.  The device is registered with Card 
++ *     Services.
++ *
++ *     The dev_link structure is initialized, but we don't actually
++ *     configure the card at this point -- we wait until we receive a
++ *     card insertion event.
++ */
++static int netwave_probe(struct pcmcia_device *link)
++{
++    struct net_device *dev;
++    netwave_private *priv;
++
++    DEBUG(0, "netwave_attach()\n");
++
++    /* Initialize the struct pcmcia_device structure */
++    dev = alloc_etherdev(sizeof(netwave_private));
++    if (!dev)
++	return -ENOMEM;
++    priv = netdev_priv(dev);
++    priv->p_dev = link;
++    link->priv = dev;
++
++    /* The io structure describes IO port mapping */
++    link->io.NumPorts1 = 16;
++    link->io.Attributes1 = IO_DATA_PATH_WIDTH_16;
++    /* link->io.NumPorts2 = 16; 
++       link->io.Attributes2 = IO_DATA_PATH_WIDTH_16; */
++    link->io.IOAddrLines = 5;
++    
++    /* Interrupt setup */
++    link->irq.Attributes = IRQ_TYPE_DYNAMIC_SHARING | IRQ_HANDLE_PRESENT;
++    link->irq.IRQInfo1 = IRQ_LEVEL_ID;
++    link->irq.Handler = &netwave_interrupt;
++    
++    /* General socket configuration */
++    link->conf.Attributes = CONF_ENABLE_IRQ;
++    link->conf.IntType = INT_MEMORY_AND_IO;
++    link->conf.ConfigIndex = 1;
++
++    /* Netwave private struct init. link/dev/node already taken care of,
++     * other stuff zero'd - Jean II */
++    spin_lock_init(&priv->spinlock);
++
++    /* Netwave specific entries in the device structure */
++    dev->netdev_ops = &netwave_netdev_ops;
++    /* wireless extensions */
++    dev->wireless_handlers = &netwave_handler_def;
++
++    dev->watchdog_timeo = TX_TIMEOUT;
++
++    link->irq.Instance = dev;
++
++    return netwave_pcmcia_config( link);
++} /* netwave_attach */
++
++/*
++ * Function netwave_detach (link)
++ *
++ *    This deletes a driver "instance".  The device is de-registered
++ *    with Card Services.  If it has been released, all local data
++ *    structures are freed.  Otherwise, the structures will be freed
++ *    when the device is released.
++ */
++static void netwave_detach(struct pcmcia_device *link)
++{
++	struct net_device *dev = link->priv;
++
++	DEBUG(0, "netwave_detach(0x%p)\n", link);
++
++	netwave_release(link);
++
++	if (link->dev_node)
++		unregister_netdev(dev);
++
++	free_netdev(dev);
++} /* netwave_detach */
++
++/*
++ * Wireless Handler : get protocol name
++ */
++static int netwave_get_name(struct net_device *dev,
++			    struct iw_request_info *info,
++			    union iwreq_data *wrqu,
++			    char *extra)
++{
++	strcpy(wrqu->name, "Netwave");
++	return 0;
++}
++
++/*
++ * Wireless Handler : set Network ID
++ */
++static int netwave_set_nwid(struct net_device *dev,
++			    struct iw_request_info *info,
++			    union iwreq_data *wrqu,
++			    char *extra)
++{
++	unsigned long flags;
++	unsigned int iobase = dev->base_addr;
++	netwave_private *priv = netdev_priv(dev);
++	u_char __iomem *ramBase = priv->ramBase;
++
++	/* Disable interrupts & save flags */
++	spin_lock_irqsave(&priv->spinlock, flags);
++
++	if(!wrqu->nwid.disabled) {
++	    domain = wrqu->nwid.value;
++	    printk( KERN_DEBUG "Setting domain to 0x%x%02x\n", 
++		    (domain >> 8) & 0x01, domain & 0xff);
++	    wait_WOC(iobase);
++	    writeb(NETWAVE_CMD_SMD, ramBase + NETWAVE_EREG_CB + 0);
++	    writeb( domain & 0xff, ramBase + NETWAVE_EREG_CB + 1);
++	    writeb((domain >>8 ) & 0x01,ramBase + NETWAVE_EREG_CB+2);
++	    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 3);
++	}
++
++	/* ReEnable interrupts & restore flags */
++	spin_unlock_irqrestore(&priv->spinlock, flags);
++    
++	return 0;
++}
++
++/*
++ * Wireless Handler : get Network ID
++ */
++static int netwave_get_nwid(struct net_device *dev,
++			    struct iw_request_info *info,
++			    union iwreq_data *wrqu,
++			    char *extra)
++{
++	wrqu->nwid.value = domain;
++	wrqu->nwid.disabled = 0;
++	wrqu->nwid.fixed = 1;
++	return 0;
++}
++
++/*
++ * Wireless Handler : set scramble key
++ */
++static int netwave_set_scramble(struct net_device *dev,
++				struct iw_request_info *info,
++				union iwreq_data *wrqu,
++				char *key)
++{
++	unsigned long flags;
++	unsigned int iobase = dev->base_addr;
++	netwave_private *priv = netdev_priv(dev);
++	u_char __iomem *ramBase = priv->ramBase;
++
++	/* Disable interrupts & save flags */
++	spin_lock_irqsave(&priv->spinlock, flags);
++
++	scramble_key = (key[0] << 8) | key[1];
++	wait_WOC(iobase);
++	writeb(NETWAVE_CMD_SSK, ramBase + NETWAVE_EREG_CB + 0);
++	writeb(scramble_key & 0xff, ramBase + NETWAVE_EREG_CB + 1);
++	writeb((scramble_key>>8) & 0xff, ramBase + NETWAVE_EREG_CB + 2);
++	writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 3);
++
++	/* ReEnable interrupts & restore flags */
++	spin_unlock_irqrestore(&priv->spinlock, flags);
++    
++	return 0;
++}
++
++/*
++ * Wireless Handler : get scramble key
++ */
++static int netwave_get_scramble(struct net_device *dev,
++				struct iw_request_info *info,
++				union iwreq_data *wrqu,
++				char *key)
++{
++	key[1] = scramble_key & 0xff;
++	key[0] = (scramble_key>>8) & 0xff;
++	wrqu->encoding.flags = IW_ENCODE_ENABLED;
++	wrqu->encoding.length = 2;
++	return 0;
++}
++
++/*
++ * Wireless Handler : get mode
++ */
++static int netwave_get_mode(struct net_device *dev,
++			    struct iw_request_info *info,
++			    union iwreq_data *wrqu,
++			    char *extra)
++{
++	if(domain & 0x100)
++		wrqu->mode = IW_MODE_INFRA;
++	else
++		wrqu->mode = IW_MODE_ADHOC;
++
++	return 0;
++}
++
++/*
++ * Wireless Handler : get range info
++ */
++static int netwave_get_range(struct net_device *dev,
++			     struct iw_request_info *info,
++			     union iwreq_data *wrqu,
++			     char *extra)
++{
++	struct iw_range *range = (struct iw_range *) extra;
++	int ret = 0;
++
++	/* Set the length (very important for backward compatibility) */
++	wrqu->data.length = sizeof(struct iw_range);
++
++	/* Set all the info we don't care or don't know about to zero */
++	memset(range, 0, sizeof(struct iw_range));
++
++	/* Set the Wireless Extension versions */
++	range->we_version_compiled = WIRELESS_EXT;
++	range->we_version_source = 9;	/* Nothing for us in v10 and v11 */
++		   
++	/* Set information in the range struct */
++	range->throughput = 450 * 1000;	/* don't argue on this ! */
++	range->min_nwid = 0x0000;
++	range->max_nwid = 0x01FF;
++
++	range->num_channels = range->num_frequency = 0;
++		   
++	range->sensitivity = 0x3F;
++	range->max_qual.qual = 255;
++	range->max_qual.level = 255;
++	range->max_qual.noise = 0;
++		   
++	range->num_bitrates = 1;
++	range->bitrate[0] = 1000000;	/* 1 Mb/s */
++
++	range->encoding_size[0] = 2;		/* 16 bits scrambling */
++	range->num_encoding_sizes = 1;
++	range->max_encoding_tokens = 1;	/* Only one key possible */
++
++	return ret;
++}
++
++/*
++ * Wireless Private Handler : get snapshot
++ */
++static int netwave_get_snap(struct net_device *dev,
++			    struct iw_request_info *info,
++			    union iwreq_data *wrqu,
++			    char *extra)
++{
++	unsigned long flags;
++	unsigned int iobase = dev->base_addr;
++	netwave_private *priv = netdev_priv(dev);
++	u_char __iomem *ramBase = priv->ramBase;
++
++	/* Disable interrupts & save flags */
++	spin_lock_irqsave(&priv->spinlock, flags);
++
++	/* Take snapshot of environment */
++	netwave_snapshot( priv, ramBase, iobase);
++	wrqu->data.length = priv->nss.length;
++	memcpy(extra, (u_char *) &priv->nss, sizeof( struct site_survey));
++
++	priv->lastExec = jiffies;
++
++	/* ReEnable interrupts & restore flags */
++	spin_unlock_irqrestore(&priv->spinlock, flags);
++    
++	return(0);
++}
++
++/*
++ * Structures to export the Wireless Handlers
++ *     This is the stuff that are treated the wireless extensions (iwconfig)
++ */
++
++static const struct iw_priv_args netwave_private_args[] = {
++/*{ cmd,         set_args,                            get_args, name } */
++  { SIOCGIPSNAP, 0, 
++    IW_PRIV_TYPE_BYTE | IW_PRIV_SIZE_FIXED | sizeof(struct site_survey), 
++    "getsitesurvey" },
++};
++
++static const iw_handler		netwave_handler[] =
++{
++	NULL,				/* SIOCSIWNAME */
++	netwave_get_name,		/* SIOCGIWNAME */
++	netwave_set_nwid,		/* SIOCSIWNWID */
++	netwave_get_nwid,		/* SIOCGIWNWID */
++	NULL,				/* SIOCSIWFREQ */
++	NULL,				/* SIOCGIWFREQ */
++	NULL,				/* SIOCSIWMODE */
++	netwave_get_mode,		/* SIOCGIWMODE */
++	NULL,				/* SIOCSIWSENS */
++	NULL,				/* SIOCGIWSENS */
++	NULL,				/* SIOCSIWRANGE */
++	netwave_get_range,		/* SIOCGIWRANGE */
++	NULL,				/* SIOCSIWPRIV */
++	NULL,				/* SIOCGIWPRIV */
++	NULL,				/* SIOCSIWSTATS */
++	NULL,				/* SIOCGIWSTATS */
++	NULL,				/* SIOCSIWSPY */
++	NULL,				/* SIOCGIWSPY */
++	NULL,				/* -- hole -- */
++	NULL,				/* -- hole -- */
++	NULL,				/* SIOCSIWAP */
++	NULL,				/* SIOCGIWAP */
++	NULL,				/* -- hole -- */
++	NULL,				/* SIOCGIWAPLIST */
++	NULL,				/* -- hole -- */
++	NULL,				/* -- hole -- */
++	NULL,				/* SIOCSIWESSID */
++	NULL,				/* SIOCGIWESSID */
++	NULL,				/* SIOCSIWNICKN */
++	NULL,				/* SIOCGIWNICKN */
++	NULL,				/* -- hole -- */
++	NULL,				/* -- hole -- */
++	NULL,				/* SIOCSIWRATE */
++	NULL,				/* SIOCGIWRATE */
++	NULL,				/* SIOCSIWRTS */
++	NULL,				/* SIOCGIWRTS */
++	NULL,				/* SIOCSIWFRAG */
++	NULL,				/* SIOCGIWFRAG */
++	NULL,				/* SIOCSIWTXPOW */
++	NULL,				/* SIOCGIWTXPOW */
++	NULL,				/* SIOCSIWRETRY */
++	NULL,				/* SIOCGIWRETRY */
++	netwave_set_scramble,		/* SIOCSIWENCODE */
++	netwave_get_scramble,		/* SIOCGIWENCODE */
++};
++
++static const iw_handler		netwave_private_handler[] =
++{
++	NULL,				/* SIOCIWFIRSTPRIV */
++	netwave_get_snap,		/* SIOCIWFIRSTPRIV + 1 */
++};
++
++static const struct iw_handler_def	netwave_handler_def =
++{
++	.num_standard	= ARRAY_SIZE(netwave_handler),
++	.num_private	= ARRAY_SIZE(netwave_private_handler),
++	.num_private_args = ARRAY_SIZE(netwave_private_args),
++	.standard	= (iw_handler *) netwave_handler,
++	.private	= (iw_handler *) netwave_private_handler,
++	.private_args	= (struct iw_priv_args *) netwave_private_args,
++	.get_wireless_stats = netwave_get_wireless_stats,
++};
++
++/*
++ * Function netwave_pcmcia_config (link)
++ *
++ *     netwave_pcmcia_config() is scheduled to run after a CARD_INSERTION 
++ *     event is received, to configure the PCMCIA socket, and to make the
++ *     device available to the system. 
++ *
++ */
++
++#define CS_CHECK(fn, ret) \
++do { last_fn = (fn); if ((last_ret = (ret)) != 0) goto cs_failed; } while (0)
++
++static int netwave_pcmcia_config(struct pcmcia_device *link) {
++    struct net_device *dev = link->priv;
++    netwave_private *priv = netdev_priv(dev);
++    int i, j, last_ret, last_fn;
++    win_req_t req;
++    memreq_t mem;
++    u_char __iomem *ramBase = NULL;
++
++    DEBUG(0, "netwave_pcmcia_config(0x%p)\n", link);
++
++    /*
++     *  Try allocating IO ports.  This tries a few fixed addresses.
++     *  If you want, you can also read the card's config table to
++     *  pick addresses -- see the serial driver for an example.
++     */
++    for (i = j = 0x0; j < 0x400; j += 0x20) {
++	link->io.BasePort1 = j ^ 0x300;
++	i = pcmcia_request_io(link, &link->io);
++	if (i == 0)
++		break;
++    }
++    if (i != 0) {
++	cs_error(link, RequestIO, i);
++	goto failed;
++    }
++
++    /*
++     *  Now allocate an interrupt line.  Note that this does not
++     *  actually assign a handler to the interrupt.
++     */
++    CS_CHECK(RequestIRQ, pcmcia_request_irq(link, &link->irq));
++
++    /*
++     *  This actually configures the PCMCIA socket -- setting up
++     *  the I/O windows and the interrupt mapping.
++     */
++    CS_CHECK(RequestConfiguration, pcmcia_request_configuration(link, &link->conf));
++
++    /*
++     *  Allocate a 32K memory window.  Note that the struct pcmcia_device
++     *  structure provides space for one window handle -- if your
++     *  device needs several windows, you'll need to keep track of
++     *  the handles in your private data structure, dev->priv.
++     */
++    DEBUG(1, "Setting mem speed of %d\n", mem_speed);
++
++    req.Attributes = WIN_DATA_WIDTH_8|WIN_MEMORY_TYPE_CM|WIN_ENABLE;
++    req.Base = 0; req.Size = 0x8000;
++    req.AccessSpeed = mem_speed;
++    CS_CHECK(RequestWindow, pcmcia_request_window(&link, &req, &link->win));
++    mem.CardOffset = 0x20000; mem.Page = 0; 
++    CS_CHECK(MapMemPage, pcmcia_map_mem_page(link->win, &mem));
++
++    /* Store base address of the common window frame */
++    ramBase = ioremap(req.Base, 0x8000);
++    priv->ramBase = ramBase;
++
++    dev->irq = link->irq.AssignedIRQ;
++    dev->base_addr = link->io.BasePort1;
++    SET_NETDEV_DEV(dev, &handle_to_dev(link));
++
++    if (register_netdev(dev) != 0) {
++	printk(KERN_DEBUG "netwave_cs: register_netdev() failed\n");
++	goto failed;
++    }
++
++    strcpy(priv->node.dev_name, dev->name);
++    link->dev_node = &priv->node;
++
++    /* Reset card before reading physical address */
++    netwave_doreset(dev->base_addr, ramBase);
++
++    /* Read the ethernet address and fill in the Netwave registers. */
++    for (i = 0; i < 6; i++) 
++	dev->dev_addr[i] = readb(ramBase + NETWAVE_EREG_PA + i);
++
++    printk(KERN_INFO "%s: Netwave: port %#3lx, irq %d, mem %lx, "
++	   "id %c%c, hw_addr %pM\n",
++	   dev->name, dev->base_addr, dev->irq,
++	   (u_long) ramBase,
++	   (int) readb(ramBase+NETWAVE_EREG_NI),
++	   (int) readb(ramBase+NETWAVE_EREG_NI+1),
++	   dev->dev_addr);
++
++    /* get revision words */
++    printk(KERN_DEBUG "Netwave_reset: revision %04x %04x\n", 
++	   get_uint16(ramBase + NETWAVE_EREG_ARW),
++	   get_uint16(ramBase + NETWAVE_EREG_ARW+2));
++    return 0;
++
++cs_failed:
++    cs_error(link, last_fn, last_ret);
++failed:
++    netwave_release(link);
++    return -ENODEV;
++} /* netwave_pcmcia_config */
++
++/*
++ * Function netwave_release (arg)
++ *
++ *    After a card is removed, netwave_release() will unregister the net
++ *    device, and release the PCMCIA configuration.  If the device is
++ *    still open, this will be postponed until it is closed.
++ */
++static void netwave_release(struct pcmcia_device *link)
++{
++	struct net_device *dev = link->priv;
++	netwave_private *priv = netdev_priv(dev);
++
++	DEBUG(0, "netwave_release(0x%p)\n", link);
++
++	pcmcia_disable_device(link);
++	if (link->win)
++		iounmap(priv->ramBase);
++}
++
++static int netwave_suspend(struct pcmcia_device *link)
++{
++	struct net_device *dev = link->priv;
++
++	if (link->open)
++		netif_device_detach(dev);
++
++	return 0;
++}
++
++static int netwave_resume(struct pcmcia_device *link)
++{
++	struct net_device *dev = link->priv;
++
++	if (link->open) {
++		netwave_reset(dev);
++		netif_device_attach(dev);
++	}
++
++	return 0;
++}
 +
 +
++/*
++ * Function netwave_doreset (ioBase, ramBase)
++ *
++ *    Proper hardware reset of the card.
++ */
++static void netwave_doreset(unsigned int ioBase, u_char __iomem *ramBase)
++{
++    /* Reset card */
++    wait_WOC(ioBase);
++    outb(0x80, ioBase + NETWAVE_REG_PMR);
++    writeb(0x08, ramBase + NETWAVE_EREG_ASCC); /* Bit 3 is WOC */
++    outb(0x0, ioBase + NETWAVE_REG_PMR); /* release reset */
++}
 +
++/*
++ * Function netwave_reset (dev)
++ *
++ *    Reset and restore all of the netwave registers 
++ */
++static void netwave_reset(struct net_device *dev) {
++    /* u_char state; */
++    netwave_private *priv = netdev_priv(dev);
++    u_char __iomem *ramBase = priv->ramBase;
++    unsigned int iobase = dev->base_addr;
 +
-+#define ARLAN_COMMAND_RX		0x000001
-+#define ARLAN_COMMAND_NOOP		0x000002
-+#define ARLAN_COMMAND_NOOPINT		0x000004
-+#define ARLAN_COMMAND_TX		0x000008
-+#define ARLAN_COMMAND_CONF		0x000010
-+#define ARLAN_COMMAND_RESET		0x000020
-+#define ARLAN_COMMAND_TX_ABORT		0x000040
-+#define ARLAN_COMMAND_RX_ABORT		0x000080
-+#define ARLAN_COMMAND_POWERDOWN		0x000100
-+#define ARLAN_COMMAND_POWERUP		0x000200
-+#define ARLAN_COMMAND_SLOW_POLL 	0x000400
-+#define ARLAN_COMMAND_ACTIVATE 		0x000800
-+#define ARLAN_COMMAND_INT_ACK		0x001000
-+#define ARLAN_COMMAND_INT_ENABLE	0x002000
-+#define ARLAN_COMMAND_WAIT_NOW		0x004000
-+#define ARLAN_COMMAND_LONG_WAIT_NOW	0x008000
-+#define ARLAN_COMMAND_STANDBY		0x010000
-+#define ARLAN_COMMAND_INT_RACK		0x020000
-+#define ARLAN_COMMAND_INT_RENABLE	0x040000
-+#define ARLAN_COMMAND_CONF_WAIT		0x080000
-+#define ARLAN_COMMAND_TBUSY_CLEAR	0x100000
-+#define ARLAN_COMMAND_CLEAN_AND_CONF	(ARLAN_COMMAND_TX_ABORT\
-+					| ARLAN_COMMAND_RX_ABORT\
-+					| ARLAN_COMMAND_CONF)
-+#define ARLAN_COMMAND_CLEAN_AND_RESET   (ARLAN_COMMAND_TX_ABORT\
-+					| ARLAN_COMMAND_RX_ABORT\
-+					| ARLAN_COMMAND_RESET)
++    DEBUG(0, "netwave_reset: Done with hardware reset\n");
 +
++    priv->timeoutCounter = 0;
 +
-+ 
-+#define ARLAN_DEBUG_CHAIN_LOCKS		0x00001
-+#define ARLAN_DEBUG_RESET		0x00002
-+#define ARLAN_DEBUG_TIMING		0x00004
-+#define ARLAN_DEBUG_CARD_STATE		0x00008
-+#define ARLAN_DEBUG_TX_CHAIN		0x00010
-+#define ARLAN_DEBUG_MULTICAST		0x00020
-+#define ARLAN_DEBUG_HEADER_DUMP		0x00040
-+#define ARLAN_DEBUG_INTERRUPT		0x00080
-+#define ARLAN_DEBUG_STARTUP		0x00100
-+#define ARLAN_DEBUG_SHUTDOWN		0x00200
-+ 
++    /* Reset card */
++    netwave_doreset(iobase, ramBase);
++    printk(KERN_DEBUG "netwave_reset: Done with hardware reset\n");
++	
++    /* Write a NOP to check the card */
++    wait_WOC(iobase);
++    writeb(NETWAVE_CMD_NOP, ramBase + NETWAVE_EREG_CB + 0);
++    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 1);
++	
++    /* Set receive conf */
++    wait_WOC(iobase);
++    writeb(NETWAVE_CMD_SRC, ramBase + NETWAVE_EREG_CB + 0);
++    writeb(rxConfRxEna + rxConfBcast, ramBase + NETWAVE_EREG_CB + 1);
++    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 2);
++    
++    /* Set transmit conf */
++    wait_WOC(iobase);
++    writeb(NETWAVE_CMD_STC, ramBase + NETWAVE_EREG_CB + 0);
++    writeb(txConfTxEna, ramBase + NETWAVE_EREG_CB + 1);
++    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 2);
++    
++    /* Now set the MU Domain */
++    printk(KERN_DEBUG "Setting domain to 0x%x%02x\n", (domain >> 8) & 0x01, domain & 0xff);
++    wait_WOC(iobase);
++    writeb(NETWAVE_CMD_SMD, ramBase + NETWAVE_EREG_CB + 0);
++    writeb(domain & 0xff, ramBase + NETWAVE_EREG_CB + 1);
++    writeb((domain>>8) & 0x01, ramBase + NETWAVE_EREG_CB + 2);
++    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 3);
++	
++    /* Set scramble key */
++    printk(KERN_DEBUG "Setting scramble key to 0x%x\n", scramble_key);
++    wait_WOC(iobase);
++    writeb(NETWAVE_CMD_SSK, ramBase + NETWAVE_EREG_CB + 0);
++    writeb(scramble_key & 0xff, ramBase + NETWAVE_EREG_CB + 1);
++    writeb((scramble_key>>8) & 0xff, ramBase + NETWAVE_EREG_CB + 2);
++    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 3);
++
++    /* Enable interrupts, bit 4 high to keep unused
++     * source from interrupting us, bit 2 high to 
++     * set interrupt enable, 567 to enable TxDN, 
++     * RxErr and RxRdy
++     */
++    wait_WOC(iobase);
++    outb(imrConfIENA+imrConfRFU1, iobase + NETWAVE_REG_IMR);
++
++    /* Hent 4 bytes fra 0x170. Skal vaere 0a,29,88,36
++     * waitWOC
++     * skriv 80 til d000:3688
++     * sjekk om det ble 80
++     */
++    
++    /* Enable Receiver */
++    wait_WOC(iobase);
++    writeb(NETWAVE_CMD_ER, ramBase + NETWAVE_EREG_CB + 0);
++    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 1);
++	
++    /* Set the IENA bit in COR */
++    wait_WOC(iobase);
++    outb(corConfIENA + corConfLVLREQ, iobase + NETWAVE_REG_COR);
++}
++
++/*
++ * Function netwave_hw_xmit (data, len, dev)    
++ */
++static int netwave_hw_xmit(unsigned char* data, int len,
++			   struct net_device* dev) {
++    unsigned long flags;
++    unsigned int TxFreeList,
++	         curBuff,
++	         MaxData, 
++                 DataOffset;
++    int tmpcount; 
++	
++    netwave_private *priv = netdev_priv(dev);
++    u_char __iomem * ramBase = priv->ramBase;
++    unsigned int iobase = dev->base_addr;
++
++    /* Disable interrupts & save flags */
++    spin_lock_irqsave(&priv->spinlock, flags);
++
++    /* Check if there are transmit buffers available */
++    wait_WOC(iobase);
++    if ((inb(iobase+NETWAVE_REG_ASR) & NETWAVE_ASR_TXBA) == 0) {
++	/* No buffers available */
++	printk(KERN_DEBUG "netwave_hw_xmit: %s - no xmit buffers available.\n",
++	       dev->name);
++	spin_unlock_irqrestore(&priv->spinlock, flags);
++	return 1;
++    }
++
++    dev->stats.tx_bytes += len;
++
++    DEBUG(3, "Transmitting with SPCQ %x SPU %x LIF %x ISPLQ %x\n",
++	  readb(ramBase + NETWAVE_EREG_SPCQ),
++	  readb(ramBase + NETWAVE_EREG_SPU),
++	  readb(ramBase + NETWAVE_EREG_LIF),
++	  readb(ramBase + NETWAVE_EREG_ISPLQ));
++
++    /* Now try to insert it into the adapters free memory */
++    wait_WOC(iobase);
++    TxFreeList = get_uint16(ramBase + NETWAVE_EREG_TDP);
++    MaxData    = get_uint16(ramBase + NETWAVE_EREG_TDP+2);
++    DataOffset = get_uint16(ramBase + NETWAVE_EREG_TDP+4);
++	
++    DEBUG(3, "TxFreeList %x, MaxData %x, DataOffset %x\n",
++	  TxFreeList, MaxData, DataOffset);
++
++    /* Copy packet to the adapter fragment buffers */
++    curBuff = TxFreeList; 
++    tmpcount = 0; 
++    while (tmpcount < len) {
++	int tmplen = len - tmpcount; 
++	copy_to_pc(ramBase + curBuff + DataOffset, data + tmpcount, 
++		   (tmplen < MaxData) ? tmplen : MaxData);
++	tmpcount += MaxData;
++			
++	/* Advance to next buffer */
++	curBuff = get_uint16(ramBase + curBuff);
++    }
++    
++    /* Now issue transmit list */
++    wait_WOC(iobase);
++    writeb(NETWAVE_CMD_TL, ramBase + NETWAVE_EREG_CB + 0);
++    writeb(len & 0xff, ramBase + NETWAVE_EREG_CB + 1);
++    writeb((len>>8) & 0xff, ramBase + NETWAVE_EREG_CB + 2);
++    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 3);
++
++    spin_unlock_irqrestore(&priv->spinlock, flags);
++    return 0;
++}
++
++static netdev_tx_t netwave_start_xmit(struct sk_buff *skb,
++					    struct net_device *dev) {
++	/* This flag indicate that the hardware can't perform a transmission.
++	 * Theoritically, NET3 check it before sending a packet to the driver,
++	 * but in fact it never do that and pool continuously.
++	 * As the watchdog will abort too long transmissions, we are quite safe...
++	 */
++
++    netif_stop_queue(dev);
++
++    {
++	short length = ETH_ZLEN < skb->len ? skb->len : ETH_ZLEN;
++	unsigned char* buf = skb->data;
++	
++	if (netwave_hw_xmit( buf, length, dev) == 1) {
++	    /* Some error, let's make them call us another time? */
++	    netif_start_queue(dev);
++	}
++	dev->trans_start = jiffies;
++    }
++    dev_kfree_skb(skb);
++    
++    return NETDEV_TX_OK;
++} /* netwave_start_xmit */
++
++/*
++ * Function netwave_interrupt (irq, dev_id)
++ *
++ *    This function is the interrupt handler for the Netwave card. This
++ *    routine will be called whenever: 
++ *	  1. A packet is received.
++ *	  2. A packet has successfully been transferred and the unit is
++ *	     ready to transmit another packet.
++ *	  3. A command has completed execution.
++ */
++static irqreturn_t netwave_interrupt(int irq, void* dev_id)
++{
++    unsigned int iobase;
++    u_char __iomem *ramBase;
++    struct net_device *dev = (struct net_device *)dev_id;
++    struct netwave_private *priv = netdev_priv(dev);
++    struct pcmcia_device *link = priv->p_dev;
++    int i;
++    
++    if (!netif_device_present(dev))
++	return IRQ_NONE;
++    
++    iobase = dev->base_addr;
++    ramBase = priv->ramBase;
++	
++    /* Now find what caused the interrupt, check while interrupts ready */
++    for (i = 0; i < 10; i++) {
++	u_char status;
++		
++	wait_WOC(iobase);	
++	if (!(inb(iobase+NETWAVE_REG_CCSR) & 0x02))
++	    break; /* None of the interrupt sources asserted (normal exit) */
++	
++        status = inb(iobase + NETWAVE_REG_ASR);
++		
++	if (!pcmcia_dev_present(link)) {
++	    DEBUG(1, "netwave_interrupt: Interrupt with status 0x%x "
++		  "from removed or suspended card!\n", status);
++	    break;
++	}
++		
++	/* RxRdy */
++	if (status & 0x80) {
++	    netwave_rx(dev);
++	    /* wait_WOC(iobase); */
++	    /* RxRdy cannot be reset directly by the host */
++	}
++	/* RxErr */
++	if (status & 0x40) {
++	    u_char rser;
++			
++	    rser = readb(ramBase + NETWAVE_EREG_RSER);			
++	    
++	    if (rser & 0x04) {
++		++dev->stats.rx_dropped;
++		++dev->stats.rx_crc_errors;
++	    }
++	    if (rser & 0x02)
++		++dev->stats.rx_frame_errors;
++			
++	    /* Clear the RxErr bit in RSER. RSER+4 is the
++	     * write part. Also clear the RxCRC (0x04) and 
++	     * RxBig (0x02) bits if present */
++	    wait_WOC(iobase);
++	    writeb(0x40 | (rser & 0x06), ramBase + NETWAVE_EREG_RSER + 4);
++
++	    /* Write bit 6 high to ASCC to clear RxErr in ASR,
++	     * WOC must be set first! 
++	     */
++	    wait_WOC(iobase);
++	    writeb(0x40, ramBase + NETWAVE_EREG_ASCC);
++
++	    /* Remember to count up dev->stats on error packets */
++	    ++dev->stats.rx_errors;
++	}
++	/* TxDN */
++	if (status & 0x20) {
++	    int txStatus;
++
++	    txStatus = readb(ramBase + NETWAVE_EREG_TSER);
++	    DEBUG(3, "Transmit done. TSER = %x id %x\n", 
++		  txStatus, readb(ramBase + NETWAVE_EREG_TSER + 1));
++	    
++	    if (txStatus & 0x20) {
++		/* Transmitting was okay, clear bits */
++		wait_WOC(iobase);
++		writeb(0x2f, ramBase + NETWAVE_EREG_TSER + 4);
++		++dev->stats.tx_packets;
++	    }
++			
++	    if (txStatus & 0xd0) {
++		if (txStatus & 0x80) {
++		    ++dev->stats.collisions; /* Because of /proc/net/dev*/
++		    /* ++dev->stats.tx_aborted_errors; */
++		    /* printk("Collision. %ld\n", jiffies - dev->trans_start); */
++		}
++		if (txStatus & 0x40) 
++		    ++dev->stats.tx_carrier_errors;
++		/* 0x80 TxGU Transmit giveup - nine times and no luck
++		 * 0x40 TxNOAP No access point. Discarded packet.
++		 * 0x10 TxErr Transmit error. Always set when 
++		 *      TxGU and TxNOAP is set. (Those are the only ones
++		 *      to set TxErr).
++		 */
++		DEBUG(3, "netwave_interrupt: TxDN with error status %x\n", 
++		      txStatus);
++		
++		/* Clear out TxGU, TxNOAP, TxErr and TxTrys */
++		wait_WOC(iobase);
++		writeb(0xdf & txStatus, ramBase+NETWAVE_EREG_TSER+4);
++		++dev->stats.tx_errors;
++	    }
++	    DEBUG(3, "New status is TSER %x ASR %x\n",
++		  readb(ramBase + NETWAVE_EREG_TSER),
++		  inb(iobase + NETWAVE_REG_ASR));
++
++	    netif_wake_queue(dev);
++	}
++	/* TxBA, this would trigger on all error packets received */
++	/* if (status & 0x01) {
++	   DEBUG(4, "Transmit buffers available, %x\n", status);
++	   }
++	   */
++    }
++    /* Handled if we looped at least one time - Jean II */
++    return IRQ_RETVAL(i);
++} /* netwave_interrupt */
++
++/*
++ * Function netwave_watchdog (a)
++ *
++ *    Watchdog : when we start a transmission, we set a timer in the
++ *    kernel.  If the transmission complete, this timer is disabled. If
++ *    it expire, we reset the card.
++ *
++ */
++static void netwave_watchdog(struct net_device *dev) {
++
++    DEBUG(1, "%s: netwave_watchdog: watchdog timer expired\n", dev->name);
++    netwave_reset(dev);
++    dev->trans_start = jiffies;
++    netif_wake_queue(dev);
++} /* netwave_watchdog */
++
++static int netwave_rx(struct net_device *dev)
++{
++    netwave_private *priv = netdev_priv(dev);
++    u_char __iomem *ramBase = priv->ramBase;
++    unsigned int iobase = dev->base_addr;
++    u_char rxStatus;
++    struct sk_buff *skb = NULL;
++    unsigned int curBuffer,
++		rcvList;
++    int rcvLen;
++    int tmpcount = 0;
++    int dataCount, dataOffset;
++    int i;
++    u_char *ptr;
++	
++    DEBUG(3, "xinw_rx: Receiving ... \n");
++
++    /* Receive max 10 packets for now. */
++    for (i = 0; i < 10; i++) {
++	/* Any packets? */
++	wait_WOC(iobase);
++	rxStatus = readb(ramBase + NETWAVE_EREG_RSER);		
++	if ( !( rxStatus & 0x80)) /* No more packets */
++	    break;
++		
++	/* Check if multicast/broadcast or other */
++	/* multicast = (rxStatus & 0x20);  */
++		
++	/* The receive list pointer and length of the packet */
++	wait_WOC(iobase);
++	rcvLen  = get_int16( ramBase + NETWAVE_EREG_RDP);
++	rcvList = get_uint16( ramBase + NETWAVE_EREG_RDP + 2);
++		
++	if (rcvLen < 0) {
++	    printk(KERN_DEBUG "netwave_rx: Receive packet with len %d\n", 
++		   rcvLen);
++	    return 0;
++	}
++		
++	skb = dev_alloc_skb(rcvLen+5);
++	if (skb == NULL) {
++	    DEBUG(1, "netwave_rx: Could not allocate an sk_buff of "
++		  "length %d\n", rcvLen);
++	    ++dev->stats.rx_dropped;
++	    /* Tell the adapter to skip the packet */
++	    wait_WOC(iobase);
++	    writeb(NETWAVE_CMD_SRP, ramBase + NETWAVE_EREG_CB + 0);
++	    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 1);
++	    return 0;
++	}
++
++	skb_reserve( skb, 2);  /* Align IP on 16 byte */
++	skb_put( skb, rcvLen);
++
++	/* Copy packet fragments to the skb data area */
++	ptr = (u_char*) skb->data;
++	curBuffer = rcvList;
++	tmpcount = 0; 
++	while ( tmpcount < rcvLen) {
++	    /* Get length and offset of current buffer */
++	    dataCount  = get_uint16( ramBase+curBuffer+2);
++	    dataOffset = get_uint16( ramBase+curBuffer+4);
++		
++	    copy_from_pc( ptr + tmpcount,
++			  ramBase+curBuffer+dataOffset, dataCount);
++
++	    tmpcount += dataCount;
++		
++	    /* Point to next buffer */
++	    curBuffer = get_uint16(ramBase + curBuffer);
++	}
++	
++	skb->protocol = eth_type_trans(skb,dev);
++	/* Queue packet for network layer */
++	netif_rx(skb);
++
++	dev->stats.rx_packets++;
++	dev->stats.rx_bytes += rcvLen;
++
++	/* Got the packet, tell the adapter to skip it */
++	wait_WOC(iobase);
++	writeb(NETWAVE_CMD_SRP, ramBase + NETWAVE_EREG_CB + 0);
++	writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 1);
++	DEBUG(3, "Packet reception ok\n");
++    }
++    return 0;
++}
++
++static int netwave_open(struct net_device *dev) {
++    netwave_private *priv = netdev_priv(dev);
++    struct pcmcia_device *link = priv->p_dev;
++
++    DEBUG(1, "netwave_open: starting.\n");
++    
++    if (!pcmcia_dev_present(link))
++	return -ENODEV;
++
++    link->open++;
++
++    netif_start_queue(dev);
++    netwave_reset(dev);
++	
++    return 0;
++}
++
++static int netwave_close(struct net_device *dev) {
++    netwave_private *priv = netdev_priv(dev);
++    struct pcmcia_device *link = priv->p_dev;
++
++    DEBUG(1, "netwave_close: finishing.\n");
++
++    link->open--;
++    netif_stop_queue(dev);
++
++    return 0;
++}
++
++static struct pcmcia_device_id netwave_ids[] = {
++	PCMCIA_DEVICE_PROD_ID12("Xircom", "CreditCard Netwave", 0x2e3ee845, 0x54e28a28),
++	PCMCIA_DEVICE_NULL,
++};
++MODULE_DEVICE_TABLE(pcmcia, netwave_ids);
++
++static struct pcmcia_driver netwave_driver = {
++	.owner		= THIS_MODULE,
++	.drv		= {
++		.name	= "netwave_cs",
++	},
++	.probe		= netwave_probe,
++	.remove		= netwave_detach,
++	.id_table       = netwave_ids,
++	.suspend	= netwave_suspend,
++	.resume		= netwave_resume,
++};
++
++static int __init init_netwave_cs(void)
++{
++	return pcmcia_register_driver(&netwave_driver);
++}
++
++static void __exit exit_netwave_cs(void)
++{
++	pcmcia_unregister_driver(&netwave_driver);
++}
++
++module_init(init_netwave_cs);
++module_exit(exit_netwave_cs);
++
++/* Set or clear the multicast filter for this adaptor.
++   num_addrs == -1	Promiscuous mode, receive all packets
++   num_addrs == 0	Normal mode, clear multicast list
++   num_addrs > 0	Multicast mode, receive normal and MC packets, and do
++   best-effort filtering.
++ */
++static void set_multicast_list(struct net_device *dev)
++{
++    unsigned int iobase = dev->base_addr;
++    netwave_private *priv = netdev_priv(dev);
++    u_char __iomem * ramBase = priv->ramBase;
++    u_char  rcvMode = 0;
++   
++#ifdef PCMCIA_DEBUG
++    if (pc_debug > 2) {
++	static int old;
++	if (old != dev->mc_count) {
++	    old = dev->mc_count;
++	    DEBUG(0, "%s: setting Rx mode to %d addresses.\n",
++		  dev->name, dev->mc_count);
++	}
++    }
++#endif
++	
++    if (dev->mc_count || (dev->flags & IFF_ALLMULTI)) {
++	/* Multicast Mode */
++	rcvMode = rxConfRxEna + rxConfAMP + rxConfBcast;
++    } else if (dev->flags & IFF_PROMISC) {
++	/* Promiscous mode */
++	rcvMode = rxConfRxEna + rxConfPro + rxConfAMP + rxConfBcast;
++    } else {
++	/* Normal mode */
++	rcvMode = rxConfRxEna + rxConfBcast;
++    }
++	
++    /* printk("netwave set_multicast_list: rcvMode to %x\n", rcvMode);*/
++    /* Now set receive mode */
++    wait_WOC(iobase);
++    writeb(NETWAVE_CMD_SRC, ramBase + NETWAVE_EREG_CB + 0);
++    writeb(rcvMode, ramBase + NETWAVE_EREG_CB + 1);
++    writeb(NETWAVE_CMD_EOC, ramBase + NETWAVE_EREG_CB + 2);
++}
++MODULE_LICENSE("GPL");
 -- 
 1.6.2.5
 
