@@ -1,173 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbZJTQAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752548AbZJTQAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752609AbZJTQAy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 12:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZJTQAx
+	id S1752548AbZJTQAk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 12:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZJTQAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 12:00:53 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:12750 "EHLO mx1.redhat.com"
+	Tue, 20 Oct 2009 12:00:39 -0400
+Received: from khc.piap.pl ([195.187.100.11]:38654 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752193AbZJTQAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 12:00:52 -0400
-From: Jiri Olsa <jolsa@redhat.com>
-To: mingo@elte.hu, rostedt@goodmis.org
-Cc: linux-kernel@vger.kernel.org, Jiri Olsa <jolsa@redhat.com>
-Subject: [PATCH] tracing - fix function graph trace to properly skip records
-Date: Tue, 20 Oct 2009 18:00:39 +0200
-Message-Id: <1256054439-24386-1-git-send-email-jolsa@redhat.com>
+	id S1751599AbZJTQAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 12:00:38 -0400
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, <linux-ide@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, Robert Hancock <hancockrwd@gmail.com>
+Subject: Re: sata_via: SError: { UnrecovData Proto TrStaTrns }
+References: <m3my46yo5g.fsf@intrepid.localdomain>
+	<19147.28614.505296.752363@pilspetsen.it.uu.se>
+	<m3vdii51d8.fsf@intrepid.localdomain>
+	<19157.6679.939371.469696@pilspetsen.it.uu.se>
+	<20091014125344.7d0b2597@lxorguk.ukuu.org.uk>
+Date: Tue, 20 Oct 2009 18:00:40 +0200
+In-Reply-To: <20091014125344.7d0b2597@lxorguk.ukuu.org.uk> (Alan Cox's message
+	of "Wed, 14 Oct 2009 12:53:44 +0100")
+Message-ID: <m33a5e5a3b.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Update: I've connected Kingston SSD instead of Transcend's. The same
+errors appear, but now there is a lot of them (> 30 instead of maybe 5
+per my test with Transcend).
 
-there's a case where the graph tracer might get confused and displays
-"{}" brackets in a wrong way.
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-Sorry for long description, but I found no better way to 
-describe the issue.. ;)
+> These two may be worth playing with, especially latency. Forcing the
+> latency on the problem board would be interesting given that it is a DMA
+> transfer that is failing.
 
+Changing the latency byte doesn't seem to change anything. OTOH the
+VT6421A mini-PCI card is the only PCI device in system (not counting the
+on-CPU AHB-PCI bridge). The problem is also present (to a lesser extent)
+when I plug it into x86-64 machine (using mini-PCI adapter). The SSD
+works fine if connected to motherboard's NVidia MCP55 SATA controller.
 
-As the function_graph tracer goes through the trace entries (using "trace" file)
-it keeps pointer to the current record and the next one:
+I have read the datasheet and tried some changes to PCI registers but it
+doesn't fix it.
 
-current ->  func1 ENTRY
-   next ->  func2 ENTRY
-            func2 RETURN
-            func1 RETURN
+I'm going to test x86-64 + VT6421A + Kingston SSD combination soon.
 
-If it spots adjacent ENTRY and RETURN trace entries of the same function
-and pid, it displays the "func2();" trace
-
-            func1 ENTRY
-current ->  func2 ENTRY 
-   next ->  func2 RETURN
-            func1 RETURN
-
-and moves the next trace entry pointer behind the RETURN entry
-
-            func1 ENTRY
-current ->  func2 ENTRY 
-            func2 RETURN
-   next ->  func1 RETURN
-
-so the next record peek will skip the RETURN entry and continue with
-whatever is next.
-
-It works ok but for one case. 
-
-If the "func2()" trace does not make it to the seq_file read buffer, it needs
-to be processed again in the next read.  And here comes the issue: 
-the next read will see following pointers setup for func2 processing:
-
-            func1 ENTRY
-current ->  func2 ENTRY 
-            func2 RETURN
-   next ->  func1 RETURN
-
-which will turn to displaying the func2 entry like: "func2() {", since the
-next entry is not RETURN of the same type.  Generaly it is whatever entry 
-that follows, but definitelly not the RETURN entry of the same function.
-
-Following patch fixes the issue by skipping the entry in the last moment,
-bypassing the issue to happen during the sequential reads.
-
-wbr,
-jirka
-
-
-NOTE:
-
-AFAIK patch does not affect "trace_pipe" handling, since the change is
-on the ring_buffer_iter level. However the "trace_pipe" suffers from
-the same issue -> when the read buffer is filled up, the current trace
-entry is not copied to it. Following read will continue with next entry.
-It might be harder to fix this, since "trace_pipe" in order to see next
-record has to eat the current one... 
-
-I'll look at possible solution, but any ideas are welcome.. :)
-
-
-
-Signed-off-by: Jiri Olsa <jolsa@redhat.com>
----
- include/linux/ftrace_event.h         |    1 +
- kernel/trace/trace.c                 |   29 +++++++++++++++++++++++++++++
- kernel/trace/trace_functions_graph.c |    2 +-
- 3 files changed, 31 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index d117704..7b07ad2 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -53,6 +53,7 @@ struct trace_iterator {
- 	struct mutex		mutex;
- 	struct ring_buffer_iter	*buffer_iter[NR_CPUS];
- 	unsigned long		iter_flags;
-+	bool			skip_entry;
- 
- 	/* The below is zeroed out in pipe_read */
- 	struct trace_seq	seq;
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 026e715..b8032b4 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1490,9 +1490,35 @@ struct trace_entry *trace_find_next_entry(struct trace_iterator *iter,
- 	return __find_next_entry(iter, ent_cpu, ent_ts);
- }
- 
-+/*
-+ * Move the head pointer one trace entry forward.
-+ *
-+ * Used currently by the function graph trace. It needs to move across
-+ * the trace "RET record" in case of adjacent ENTRY and RET records,
-+ * in order to display correctly the "();" or "{}" brackets.
-+ */
-+static void skip_entry(struct trace_iterator *iter)
-+{
-+	struct ring_buffer_iter *ring_iter;
-+
-+	/* Don't allow ftrace to trace into the ring buffers */
-+	ftrace_disable_cpu();
-+
-+	ring_iter = iter->buffer_iter[iter->cpu];
-+	if (ring_iter)
-+		ring_buffer_read(ring_iter, NULL);
-+
-+	iter->skip_entry = false;
-+
-+	ftrace_enable_cpu();
-+}
-+
- /* Find the next real entry, and increment the iterator to the next entry */
- static void *find_next_entry_inc(struct trace_iterator *iter)
- {
-+	if (iter->skip_entry)
-+		skip_entry(iter);
-+
- 	iter->ent = __find_next_entry(iter, &iter->cpu, &iter->ts);
- 
- 	if (iter->ent)
-@@ -1594,6 +1620,9 @@ static void *s_start(struct seq_file *m, loff_t *pos)
- 
- 	atomic_inc(&trace_record_cmdline_disabled);
- 
-+	/* Starting new read, no record skipping is desirable. */
-+	iter->skip_entry = false;
-+
- 	if (*pos != iter->pos) {
- 		iter->ent = NULL;
- 		iter->cpu = 0;
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index 45e6c01..1cf80f2 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -465,7 +465,7 @@ get_return_for_leaf(struct trace_iterator *iter,
- 
- 	/* this is a leaf, now advance the iterator */
- 	if (ring_iter)
--		ring_buffer_read(ring_iter, NULL);
-+		iter->skip_entry = true;
- 
- 	return next;
- }
+Unfortunately I don't have a (mini) PCI analyser... I will look at
+REQ/GNT and similar signals on PCI, though.
+-- 
+Krzysztof Halasa
