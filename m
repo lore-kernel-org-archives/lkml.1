@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbZJTBiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbZJTBjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758159AbZJTBiy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 21:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbZJTBix
+	id S1757536AbZJTBjU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 21:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbZJTBjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 21:38:53 -0400
-Received: from mail-px0-f171.google.com ([209.85.216.171]:36184 "EHLO
-	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757415AbZJTBiw (ORCPT
+	Mon, 19 Oct 2009 21:39:19 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:55603 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757547AbZJTBjR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 21:38:52 -0400
+	Mon, 19 Oct 2009 21:39:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=MStikKE1hI4szCKo8DGHGBPOVGsv1Z6UKNkvZONBAZEHY4D3hWD2CU3wP8rwhAuOm3
-         uM7KvdRZu5Gx4uH5DKwZ6EbZCyffXnM1D7t6sLBvouZxqOTuzQ/cZ5HK7KUP9KzSqTkM
-         7UaL7V86mkr5X5Ql0BG4NBIFM71M8/WQILIws=
-Date: Mon, 19 Oct 2009 18:38:53 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, Constantin Baranov <const@mimas.ru>
-Subject: Re: [PATCH] leds-alix2: add support for button connected to J15
-Message-ID: <20091020013852.GC24370@core.coreip.homeip.net>
-References: <20091016130315.GT28832@buzzloop.caiaq.de> <20091018072738.GF3935@core.coreip.homeip.net> <20091019073728.GC28832@buzzloop.caiaq.de>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=l4NTNSO0x8LOJH75B2aBW5y6PjUt3VXfeuAfYNjShUo8tl7FeL62/1WVZtgj7DJVt3
+         mj5OmceD+TT8rkLH8i0J0I0gKGNgs8M2Hj6IyLVuQ5jzt0w+Otdtec/R3oUWshhSBZoM
+         N1jBQVdhDUh7tXE5TJluNAIrUDvqQBd9tZkLA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091019073728.GC28832@buzzloop.caiaq.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091019125212.GA20983@aftab>
+References: <20091019083329.GA7340@uhli> <20091019125212.GA20983@aftab>
+Date: Tue, 20 Oct 2009 09:39:21 +0800
+Message-ID: <3a3680030910191839g192514bbhfee4612d081ccd86@mail.gmail.com>
+Subject: Re: [PATCH] amd64_edac: fix a wrong goto clause in amd64_edac.c
+From: Li Hong <lihong.hi@gmail.com>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Doug Thompson <dougthompson@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel,
+Just caught by looking at the code. Thanks.
 
-On Mon, Oct 19, 2009 at 09:37:28AM +0200, Daniel Mack wrote:
-> +#else
-> +#define alix_button_register() (0)
-> +#endif
-> +
->  static int __init alix_led_probe(struct platform_device *pdev)
->  {
->  	int i;
-> @@ -89,6 +139,11 @@ static int __init alix_led_probe(struct platform_device *pdev)
->  		if (ret < 0)
->  			goto fail;
->  	}
-> +
-> +	ret = alix_button_register();
-> +	if (ret) 
-> +		goto fail;
-> +
->  	return 0;
->  
->  fail:
-> @@ -103,6 +158,10 @@ static int alix_led_remove(struct platform_device *pdev)
->  
->  	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
->  		led_classdev_unregister(&alix_leds[i].cdev);
-> +	
-> +	if (ipdev)
-> +		input_unregister_polled_device(ipdev);
-> +	
-
-
-I think it will bomb on !CONFIG_LEDS_ALIX2_BUTTON... You need
-alix_button_register() and a dummy wrapper for it as well.
-
--- 
-Dmitry
+2009/10/19 Borislav Petkov <borislav.petkov@amd.com>:
+> On Mon, Oct 19, 2009 at 04:33:29PM +0800, Li Hong wrote:
+>> In amd64_edac_init(void) in amd64_edac.c, cache_k8_northbridges() is called
+>> before pci_register_driver. If it fails, should exit with err directly.
+>>
+>> Signed-off-by: Li Hong <lihong.hi@gmail.com>
+>
+> Thanks, queued for the next .32 update.
+>
+> By the way, is this something you've caught by looking at the code
+> or is it a condition you're hitting on a real system with a specific
+> workload? If it is the second, I'd like to know more wrt to why
+> cache_k8_northbridges() is failing in your particular case.
+>
+> Thanks.
+>
+> --
+> Regards/Gruss,
+> Boris.
+>
+> Operating | Advanced Micro Devices GmbH
+>  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+>  Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+>  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+>  (OSRC)  | Registergericht München, HRB Nr. 43632
+>
+>
