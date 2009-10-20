@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932479AbZJTA4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbZJTA6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932479AbZJTA4d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 20:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932441AbZJTA4d
+	id S932486AbZJTA6L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 20:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932437AbZJTA6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 20:56:33 -0400
-Received: from ozlabs.org ([203.10.76.45]:36413 "EHLO ozlabs.org"
+	Mon, 19 Oct 2009 20:58:10 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:37642 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932448AbZJTA4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 20:56:32 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Carmelo Amoroso <carmelo73@gmail.com>
-Subject: Re: Fast LKM symbol resolution with SysV ELH hash table
-Date: Tue, 20 Oct 2009 11:26:25 +1030
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: Greg KH <greg@kroah.com>, Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-kbuild" <linux-kbuild@vger.kernel.org>
-References: <4ADACD3A.9020803@gmail.com> <20091019132205.GA7192@kroah.com> <2ccd6e3c0910190802w117f8ac1nb562214786904c04@mail.gmail.com>
-In-Reply-To: <2ccd6e3c0910190802w117f8ac1nb562214786904c04@mail.gmail.com>
+	id S932399AbZJTA6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 20:58:10 -0400
+Date: Tue, 20 Oct 2009 02:58:14 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>
+Subject: Re: [RFC PATCH 3/5] cfq-iosched: reimplement priorities using
+	different service trees
+Message-ID: <20091020005813.GD10727@kernel.dk>
+References: <200910192221.23564.czoccolo@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910201126.26110.rusty@rustcorp.com.au>
+In-Reply-To: <200910192221.23564.czoccolo@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Oct 2009 01:32:51 am Carmelo Amoroso wrote:
-> 2009/10/19 Greg KH <greg@kroah.com>:
-> > On Mon, Oct 19, 2009 at 01:45:20PM +0200, Carmelo Amoroso wrote:
-> >> Just a few other notes. The current implementation I did based on SysV
-> >> has a drawback that is not backward compatible, so you cannot use old
-> >> modules with a kernel with the option enabled due to changes on struct
-> >> kernel_symbol.
-> >
-> > Why would this be a problem?  Whenever making a kernel config change,
-> > you should be able to rebuild everything, as lots of other configuration
-> > options are that way.
-> 
-> This is not always true... there could be cases in which you cannot
-> recompile old modules
-> (e.g vendors that provide non GPL modules)
+On Mon, Oct 19 2009, Corrado Zoccolo wrote:
+> We use different service trees for different priority classes.
+> This allows a simplification in the service tree insertion code, that no
+> longer has to consider priority while walking the tree.
 
-And breaking them is a feature.  I do not go out of my way to avoid breaking
-out-of-tree modules; it's certainly more important to have simple maintainable
-code.
+> +enum wl_prio_t {
+> +	IDLE_WL = -1,
+> +	BE_WL = 0,
+> +	RT_WL = 1
+> +};
 
-You guys figure out what the best speed/size tradeoff is, and send me the
-patch for review.
+WL?
 
-Thanks!
-Rusty.
+> +static struct cfq_rb_root *service_tree_for(enum wl_prio_t prio,
+> +					struct cfq_data *cfqd)
+> +{
+> +	return prio == IDLE_WL ? &cfqd->service_tree_idle :
+> +		&cfqd->service_trees[prio];
+> +}
+
+Don't do it...
+
+static struct cfq_rb_root *service_tree_for(enum wl_prio_t prio,
+					struct cfq_data *cfqd)
+{
+        if (prio == IDLE_WL)
+                return &cfqd->service_tree_idle;
+
+        return &cfqd->service_trees[prio];
+}
+
+much cleaner. There are more of these in this patch.
+
+Otherwise it looks sane, and I agree that making the insert cleaner here
+is a good bonus.
+
+-- 
+Jens Axboe
+
