@@ -1,219 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752345AbZJTTBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbZJTTCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752345AbZJTTBo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 15:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZJTTBn
+	id S1752599AbZJTTCE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 15:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZJTTCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 15:01:43 -0400
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:57220 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751782AbZJTTBl (ORCPT
+	Tue, 20 Oct 2009 15:02:03 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:57231 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752419AbZJTTCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 15:01:41 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18sGM+g6cE33UgBnXPvb5B6
-Date: Tue, 20 Oct 2009 12:01:39 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, sameo@linux.intel.com,
-       broonie@opensource.wolfsonmicro.com
-Subject: Re: [PATCH 2/4] OMAP: Platform support for twl4030_codec MFD
-Message-ID: <20091020190138.GK12576@atomide.com>
-References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com> <1255956140-4829-2-git-send-email-peter.ujfalusi@nokia.com> <1255956140-4829-3-git-send-email-peter.ujfalusi@nokia.com>
+	Tue, 20 Oct 2009 15:02:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Ux+KzVLb5U5pIIrU8JhNk9sJG6/v0ubzYGsLiDET//CCpXIVjfOWbUyNrlQXsxQbs5
+         8O1Oc7VReyxVuNjt7sKvDTKeiltyBSunPIqnwflTJy+9uQ1vara5MF+IC+KpXyJhNOvb
+         M0twAT2SyXCRDfthkrOX41o4QH01ll7Pnvn5w=
+Message-ID: <4ADE0928.6080104@clamav.net>
+Date: Tue, 20 Oct 2009 22:02:00 +0300
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwin@clamav.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255956140-4829-3-git-send-email-peter.ujfalusi@nokia.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, aCaB <acab@clamav.net>,
+       Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Mutex vs semaphores scheduler bug
+References: <1255359207.10420.31.camel@twins> <4AD0A0F7.9070700@clamav.net>	 <24718.1255650266@redhat.com> <1255793527.8152.4.camel@laptop>
+In-Reply-To: <1255793527.8152.4.camel@laptop>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Ujfalusi <peter.ujfalusi@nokia.com> [091019 05:42]:
-> Add needed platform data for the twl4030_codec MFD on boards,
-> where the audio part of the twl4030 codec is used.
+On 2009-10-17 18:32, Peter Zijlstra wrote:
+> On Fri, 2009-10-16 at 00:44 +0100, David Howells wrote:
+>> Peter Zijlstra <peterz@infradead.org> wrote:
+>>
+>>> The problem appears to be that rwsem doesn't allow lock-stealing
+>> With good reason.  rwsems can be read or write locked for a long time - so if
+>> readers can jump the queue on read-locked rwsems, then writer starvation is a
+>> real possibility.  I carefully implemented it so that it is a strict FIFO to
+>> avoid certain problems I was having.
 > 
-> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-
-This looks safe to merge with the twl/audio patches to keep
-them together. So not adding to my queue.
-
-Acked-by: Tony Lindgren <tony@atomide.com>
-
-
-
-> ---
->  arch/arm/mach-omap2/board-3430sdp.c      |    9 +++++++++
->  arch/arm/mach-omap2/board-omap3beagle.c  |    9 +++++++++
->  arch/arm/mach-omap2/board-omap3evm.c     |    9 +++++++++
->  arch/arm/mach-omap2/board-omap3pandora.c |    9 +++++++++
->  arch/arm/mach-omap2/board-overo.c        |    9 +++++++++
->  arch/arm/mach-omap2/board-zoom2.c        |    9 +++++++++
->  6 files changed, 54 insertions(+), 0 deletions(-)
+> Well, it kinda sucks that rwsem is slower than a mutex.
 > 
-> diff --git a/arch/arm/mach-omap2/board-3430sdp.c b/arch/arm/mach-omap2/board-3430sdp.c
-> index efaf053..4f91f7a 100644
-> --- a/arch/arm/mach-omap2/board-3430sdp.c
-> +++ b/arch/arm/mach-omap2/board-3430sdp.c
-> @@ -410,6 +410,14 @@ static struct regulator_init_data sdp3430_vpll2 = {
->  	.consumer_supplies	= &sdp3430_vdvi_supply,
->  };
->  
-> +static struct twl4030_codec_audio_data sdp3430_audio = {
-> +	.audio_mclk = 26000000,
-> +};
-> +
-> +static struct twl4030_codec_data sdp3430_codec = {
-> +	.audio = &sdp3430_audio,
-> +};
-> +
->  static struct twl4030_platform_data sdp3430_twldata = {
->  	.irq_base	= TWL4030_IRQ_BASE,
->  	.irq_end	= TWL4030_IRQ_END,
-> @@ -420,6 +428,7 @@ static struct twl4030_platform_data sdp3430_twldata = {
->  	.madc		= &sdp3430_madc_data,
->  	.keypad		= &sdp3430_kp_data,
->  	.usb		= &sdp3430_usb_data,
-> +	.codec		= &sdp3430_codec,
->  
->  	.vaux1		= &sdp3430_vaux1,
->  	.vaux2		= &sdp3430_vaux2,
-> diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-> index 70df6b4..2161d85 100644
-> --- a/arch/arm/mach-omap2/board-omap3beagle.c
-> +++ b/arch/arm/mach-omap2/board-omap3beagle.c
-> @@ -254,6 +254,14 @@ static struct twl4030_usb_data beagle_usb_data = {
->  	.usb_mode	= T2_USB_MODE_ULPI,
->  };
->  
-> +static struct twl4030_codec_audio_data beagle_audio_data = {
-> +	.audio_mclk = 26000000,
-> +};
-> +
-> +static struct twl4030_codec_data beagle_codec_data = {
-> +	.audio = &beagle_audio_data,
-> +};
-> +
->  static struct twl4030_platform_data beagle_twldata = {
->  	.irq_base	= TWL4030_IRQ_BASE,
->  	.irq_end	= TWL4030_IRQ_END,
-> @@ -261,6 +269,7 @@ static struct twl4030_platform_data beagle_twldata = {
->  	/* platform_data for children goes here */
->  	.usb		= &beagle_usb_data,
->  	.gpio		= &beagle_gpio_data,
-> +	.codec		= &beagle_codec_data,
->  	.vmmc1		= &beagle_vmmc1,
->  	.vsim		= &beagle_vsim,
->  	.vdac		= &beagle_vdac,
-> diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-omap2/board-omap3evm.c
-> index e4ec0c5..d9a6103 100644
-> --- a/arch/arm/mach-omap2/board-omap3evm.c
-> +++ b/arch/arm/mach-omap2/board-omap3evm.c
-> @@ -194,6 +194,14 @@ static struct twl4030_madc_platform_data omap3evm_madc_data = {
->  	.irq_line	= 1,
->  };
->  
-> +static struct twl4030_codec_audio_data omap3evm_audio_data = {
-> +	.audio_mclk = 26000000,
-> +};
-> +
-> +static struct twl4030_codec_data omap3evm_codec_data = {
-> +	.audio = &omap3evm_audio_data,
-> +};
-> +
->  static struct twl4030_platform_data omap3evm_twldata = {
->  	.irq_base	= TWL4030_IRQ_BASE,
->  	.irq_end	= TWL4030_IRQ_END,
-> @@ -203,6 +211,7 @@ static struct twl4030_platform_data omap3evm_twldata = {
->  	.madc		= &omap3evm_madc_data,
->  	.usb		= &omap3evm_usb_data,
->  	.gpio		= &omap3evm_gpio_data,
-> +	.codec		= &omap3evm_codec_data,
->  };
->  
->  static struct i2c_board_info __initdata omap3evm_i2c_boardinfo[] = {
-> diff --git a/arch/arm/mach-omap2/board-omap3pandora.c b/arch/arm/mach-omap2/board-omap3pandora.c
-> index 7f6bf87..5036b56 100644
-> --- a/arch/arm/mach-omap2/board-omap3pandora.c
-> +++ b/arch/arm/mach-omap2/board-omap3pandora.c
-> @@ -281,11 +281,20 @@ static struct twl4030_usb_data omap3pandora_usb_data = {
->  	.usb_mode	= T2_USB_MODE_ULPI,
->  };
->  
-> +static struct twl4030_codec_audio_data omap3pandora_audio_data = {
-> +	.audio_mclk = 26000000,
-> +};
-> +
-> +static struct twl4030_codec_data omap3pandora_codec_data = {
-> +	.audio = &omap3pandora_audio_data,
-> +};
-> +
->  static struct twl4030_platform_data omap3pandora_twldata = {
->  	.irq_base	= TWL4030_IRQ_BASE,
->  	.irq_end	= TWL4030_IRQ_END,
->  	.gpio		= &omap3pandora_gpio_data,
->  	.usb		= &omap3pandora_usb_data,
-> +	.codec		= &omap3pandora_codec_data,
->  	.vmmc1		= &pandora_vmmc1,
->  	.vmmc2		= &pandora_vmmc2,
->  	.keypad		= &pandora_kp_data,
-> diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
-> index 9917d2f..dc55008 100644
-> --- a/arch/arm/mach-omap2/board-overo.c
-> +++ b/arch/arm/mach-omap2/board-overo.c
-> @@ -329,6 +329,14 @@ static struct regulator_init_data overo_vmmc1 = {
->  	.consumer_supplies	= &overo_vmmc1_supply,
->  };
->  
-> +static struct twl4030_codec_audio_data overo_audio_data = {
-> +	.audio_mclk = 26000000,
-> +};
-> +
-> +static struct twl4030_codec_data overo_codec_data = {
-> +	.audio = &overo_audio_data,
-> +};
-> +
->  /* mmc2 (WLAN) and Bluetooth don't use twl4030 regulators */
->  
->  static struct twl4030_platform_data overo_twldata = {
-> @@ -336,6 +344,7 @@ static struct twl4030_platform_data overo_twldata = {
->  	.irq_end	= TWL4030_IRQ_END,
->  	.gpio		= &overo_gpio_data,
->  	.usb		= &overo_usb_data,
-> +	.codec		= &overo_codec_data,
->  	.vmmc1		= &overo_vmmc1,
->  };
->  
-> diff --git a/arch/arm/mach-omap2/board-zoom2.c b/arch/arm/mach-omap2/board-zoom2.c
-> index b7b3220..f1b4e7c 100644
-> --- a/arch/arm/mach-omap2/board-zoom2.c
-> +++ b/arch/arm/mach-omap2/board-zoom2.c
-> @@ -229,6 +229,14 @@ static struct twl4030_madc_platform_data zoom2_madc_data = {
->  	.irq_line	= 1,
->  };
->  
-> +static struct twl4030_codec_audio_data zoom2_audio_data = {
-> +	.audio_mclk = 26000000,
-> +};
-> +
-> +static struct twl4030_codec_data zoom2_codec_data = {
-> +	.audio = &zoom2_audio_data,
-> +};
-> +
->  static struct twl4030_platform_data zoom2_twldata = {
->  	.irq_base	= TWL4030_IRQ_BASE,
->  	.irq_end	= TWL4030_IRQ_END,
-> @@ -239,6 +247,7 @@ static struct twl4030_platform_data zoom2_twldata = {
->  	.usb		= &zoom2_usb_data,
->  	.gpio		= &zoom2_gpio_data,
->  	.keypad		= &zoom2_kp_twl4030_data,
-> +	.codec		= &zoom2_codec_data,
->  	.vmmc1          = &zoom2_vmmc1,
->  	.vmmc2          = &zoom2_vmmc2,
->  	.vsim           = &zoom2_vsim,
-> -- 
-> 1.6.5.1
+> What about allowing writer stealing when the next contending task is a
+> writer?
 > 
+
+Also can the scheduler be improved so it doesn't unnecessarily wake up
+processes if they can't take the semaphore?
+
+AFAICT (in linux 2.6.31.3) this is what happens:
+ semaphore fails to get acquired -> rwsem.c:rwsem_down_failed_common
+  -> if nobody holds the semaphore, wake up the process(es) that can
+acquire it
+  -> loop calling schedule(), until woken
+
+ the thread holding the semaphore releases it (no wakeups!), and the
+scheduler will schedule the next process
+
+There are several things that are suboptimal here IMHO:
+1. The task calls schedule(), but does that prevent the scheduler from
+scheduling it again if waiter->task is non-null? If not, then there are
+useless wakeups (task gets scheduled, waiter->task is non-null, task
+calls schedule again).
+
+2. The process in the front of the queue is woken only if there was
+contention, which introduces unnecessary latency for the task in the
+front of the queue waiting for the semaphore.
+
+3. Due to 2) a task on another CPU waiting for the semaphore is only
+woken: when schedule() is called, when another thread tries to acquire
+the lock and fails
+
+Suggested solution:
+schedule() should know that scheduling this process is useless, it won't
+get the lock, so it shouldn't attempt to schedule it (maybe by setting a
+flag in the task state).
+When a thread releases a semaphore, it should also try to wake other
+threads that were waiting on it (if any).
+
+With both of these changes the scheduler will know that when it
+schedules the task it'll be able to acquire the semaphore (it was called
+by wake_up_process in rwsem_do_wake which will clear the do-not-wake
+flag). Also the thread will be scheduled as soon as another thread (on
+another CPU) released the semaphore, and it doesn't need to wait for the
+timeslice to elapse.
+
+Here is a snippet of ftrace of sched_switch:
+<...>-27515 [000] 44338.386867:  27515:120:R   + [000] 27522:120:D <...>
+           <...>-27515 [000] 44338.386868:  27515:120:R   + [000]
+27511:120:D <...>
+           <...>-27515 [000] 44338.386869:  27515:120:R   + [001]
+27523:120:D <...>
+           <...>-27515 [000] 44338.386875:  27515:120:R   + [003]
+27512:120:D <...>
+           <...>-27515 [000] 44338.386877:  27515:120:R   + [000]
+27517:120:S <...>
+           <...>-27515 [000] 44338.386905:  27515:120:D ==> [000]
+27517:120:R <...>
+           <...>-27517 [000] 44338.386907:  27517:120:S ==> [000]
+27522:120:R <...>
+           <...>-27522 [000] 44338.386915:  27522:120:D ==> [000]
+27511:120:R <...>
+           <...>-27511 [000] 44338.386917:  27511:120:R   + [001]
+27523:120:D <...>
+           <...>-27511 [000] 44338.386918:  27511:120:D ==> [000]
+0:140:R <idle>
+          <idle>-0     [000] 44338.386973:      0:140:R ==> [000]
+27522:120:R <...>
+
+If I interpret this correctly 27515 wakes a bunch of readers (27511,
+27523, 27512, 27517), then it switches to 27517.
+However 27517 immediately schedules again (!) after 2ns, wakes 27522, it
+runs for 8ns, then schedules to 27511, which runs for a short while
+again, finally it schedules to idle. All this scheduling ping-pong looks
+like a waste, none of the tasks woken up did useful work.
+
+Another situation is this scheduler ping-pong with md4_raid10, notice
+how 27961 wakes up md4_raid10, switches to it, md4_raid10 schedules back
+to 27961, which then schedules to idle (2ns later). md4_raid10 could
+have gone directly to idle ....:
+
+md4_raid10-982   [000] 44746.579830:    982:115:S ==> [000] 27961:120:R
+lt-clamd
+        lt-clamd-27964 [003] 44746.579892:  27964:120:R   + [001]
+27966:120:D lt-clamd
+        lt-clamd-27964 [003] 44746.580065:  27964:120:D ==> [003]
+0:140:R <idle>
+        lt-clamd-27961 [000] 44746.580069:  27961:120:R   + [003]
+27964:120:D lt-clamd
+          <idle>-0     [003] 44746.580073:      0:140:R ==> [003]
+27964:120:R lt-clamd
+        lt-clamd-27961 [000] 44746.580912:  27961:120:R   + [002]
+27960:120:S lt-clamd
+        lt-clamd-27961 [000] 44746.580945:  27961:120:D   + [000]
+982:115:S md4_raid10
+        lt-clamd-27961 [000] 44746.580946:  27961:120:D ==> [000]
+982:115:R md4_raid10
+      md4_raid10-982   [000] 44746.580948:    982:115:S ==> [000]
+27961:120:D lt-clamd
+        lt-clamd-27961 [000] 44746.580950:  27961:120:D ==> [000]
+0:140:R <idle>
+        lt-clamd-27964 [003] 44746.581054:  27964:120:R   + [000]
+27961:120:D lt-clamd
+          <idle>-0     [000] 44746.581064:      0:140:R ==> [000]
+27961:120:R lt-clamd
+        lt-clamd-27964 [003] 44746.581092:  27964:120:R   + [002]
+27960:120:S lt-clamd
+        lt-clamd-27964 [003] 44746.581125:  27964:120:D   + [000]
+982:115:S md4_raid10
+        lt-clamd-27964 [003] 44746.581128:  27964:120:D ==> [003]
+27965:120:R lt-clamd
+        lt-clamd-27961 [000] 44746.581128:  27961:120:R ==> [000]
+982:115:R md4_raid10
+
+
+Best regards,
+--Edwin
