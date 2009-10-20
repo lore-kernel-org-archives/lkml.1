@@ -1,55 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753055AbZJTUqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbZJTUrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753055AbZJTUqu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 16:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZJTUqt
+	id S1753089AbZJTUrh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 16:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZJTUrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 16:46:49 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:24501 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751389AbZJTUqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 16:46:49 -0400
-Date: Tue, 20 Oct 2009 16:46:36 -0400 (EDT)
-From: John Kacur <jkacur@redhat.com>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       linux-rt-users@vger.kernel.org
-Message-ID: <1953271756.544571256071596329.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-In-Reply-To: <4ADDD81B.3030208@us.ibm.com>
-Subject: Re: [PATCH] futex: Detect mismatched requeue targets
+	Tue, 20 Oct 2009 16:47:36 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:2693 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753012AbZJTUrf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 16:47:35 -0400
+Date: Tue, 20 Oct 2009 14:47:38 -0600
+From: Alex Chiang <achiang@hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: akpm@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 5/5] Documentation: ABI: document
+	/sys/devices/system/cpu/
+Message-ID: <20091020204738.GC23675@ldl.fc.hp.com>
+References: <20091019212740.32729.7171.stgit@bob.kio> <20091019213435.32729.81751.stgit@bob.kio> <alpine.DEB.1.00.0910192022460.25264@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.5.5.72]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.00.0910192022460.25264@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* David Rientjes <rientjes@google.com>:
+> On Mon, 19 Oct 2009, Alex Chiang wrote:
+> 
+> > diff --git a/Documentation/ABI/testing/sysfs-devices-cpu b/Documentation/ABI/testing/sysfs-devices-cpu
+> > new file mode 100644
+> > index 0000000..9070889
+> > --- /dev/null
+> > +++ b/Documentation/ABI/testing/sysfs-devices-cpu
+> 
+> Shouldn't this be called sysfs-devices-system-cpu?
+> 
+> I see what you're doing: /sys/devices/system/node/* files are contained in 
+> sysfs-devices-memory, but I think it would be helpful to have a more 
+> strict naming scheme so that the contents of a sysfs directory are 
+> described by a file of the same name.
 
------ "Darren Hart" <dvhltc@us.ibm.com> wrote:
+Yeah, I was just trying to follow an earlier example. But you're
+right, since I'm creating a brand new file, I can do it the Right
+Way (tm).
 
-> John Kacur wrote:
-> > Hello Darren
+> > @@ -0,0 +1,42 @@
+> > +What:		/sys/devices/system/cpu/
+> > +Date:		October 2009
+> > +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> > +Description:
+> > +		A collection of CPU attributes, including cache information,
+> > +		topology, and frequency. It also contains a mechanism to
+> > +		logically hotplug CPUs.
+> > +
+> > +		The actual attributes present are architecture and
+> > +		configuration dependent.
+> > +
+> > +
+> > +What:		/sys/devices/system/cpu/$cpu/online
+> 
+> cpu# ?
+
+Sure, will change (depending on response to my earlier email).
+
+> > +Date:		January 2006
+> > +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> > +Description:
+> > +		When CONFIG_HOTPLUG_CPU is enabled, allows the user to
+> > +		discover and change the online state of a CPU. To discover
+> > +		the state:
+> 
+> This is present even without CONFIG_HOTPLUG_CPU.
+
+That's what I get for not checking. Thank you for correcting me.
+
+> > +
+> > +		cat /sys/devices/system/cpu/$cpu/online
+> > +
+> > +		A value of 0 indicates the CPU is offline. A value of 1
+> > +		indicates it is online. To change the state, echo the
+> > +		desired new state into the file:
+> > +
+> > +		echo [0|1] > /sys/devices/system/cpu/$cpu/online
+> > +
+> > +		For more information, please read Documentation/cpu-hotplug.txt
+> > +
+> > +
+> > +What:		/sys/devices/system/cpu/$cpu/node
+> > +Date:		October 2009
+> > +Contact:	Linux memory management mailing list <linux-mm@kvack.org>
+> > +Description:
+> > +		When CONFIG_NUMA is enabled, a symbolic link that points
+> > +		to the corresponding NUMA node directory.
+> > +
+> > +		For example, the following symlink is created for cpu42
+> > +		in NUMA node 2:
+> > +
+> > +		/sys/devices/system/cpu/cpu42/node2 -> ../../node/node2
 > > 
-> > I took your patch from commit
-> 84bc4af59081ee974dd80210e694ab59ebe51ce8
-> > and I tried to git-cherry-pick it for v2.6.31.4-rt14
-> > 
-> > I had a little merge-commit to resolve. That wasn't too hard, but as
-> the 
-> > code is a bit different between the two versions, I would appreciate
-> it if 
-> > you could review the patch, and make sure that it still makes sense
-> for 
-> > v2.6.31.r-rt14
 > 
-> Hi John,
 > 
-> It looks good to me.  Where did you have the conflicts?
-> 
-> --
+> Would it be possible for you to document all entities in 
+> /sys/devices/system/cpu/* in this new file (requiring a folding of 
+> Documentation/ABI/testing/sysfs-devices-cache_disable into it)?
+ 
+I'll give it a go. There are quite a few things in that directory
+though, like topology information, frequency, etc. that I wasn't
+so excited about documenting.
 
-The conflict was in the futex_wait_requeue_pi function.
-That's where you really need to double check that the logic still makes sense.
+But if that's the tax to create my new symlinks, I'll pay it. ;)
 
-Thanks.
+Thanks for the review,
+/ac
+
