@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752316AbZJTOB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752375AbZJTOCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752316AbZJTOB2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 10:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZJTOB1
+	id S1752375AbZJTOCe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 10:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbZJTOCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 10:01:27 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:34420 "EHLO mx1.redhat.com"
+	Tue, 20 Oct 2009 10:02:33 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:33780 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751351AbZJTOBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 10:01:24 -0400
+	id S1752180AbZJTOCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 10:02:31 -0400
 From: Jarod Wilson <jarod@redhat.com>
 Organization: Red Hat, Inc.
-To: linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>
-Subject: [PATCH 1/3 v2] lirc core device driver infrastructure
-Date: Tue, 20 Oct 2009 09:58:50 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3 v2] lirc driver for Windows MCE IR transceivers
+Date: Tue, 20 Oct 2009 10:00:00 -0400
 User-Agent: KMail/1.12.1 (Linux/2.6.30.8-64.fc11.x86_64; KDE/4.3.1; x86_64; ; )
 Cc: linux-input@vger.kernel.org, linux-media@vger.kernel.org,
        Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
@@ -23,1266 +23,1296 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910200958.50574.jarod@redhat.com>
+Message-Id: <200910201000.00372.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Core Linux Infrared Remote Control driver and infrastructure
+lirc driver for Windows Media Center Ed. IR transceivers
 
--Add Kconfig and Makefile bits
--Add device driver interface and headers
-
-The initial Kconfig and Makefile bits were done by Mario Limonciello for
-the Ubuntu kernel, but have been tweaked a bit since then. Any errors are
-probably my doing.
+Successfully tested with the mce v2 transceiver and remote that shipped with a
+Hauppauge HVR-1500 expresscard tuner and an mce v1 transceiver from an old HP
+Media Center system.
 
 Changes from prior submission:
-- Now uses dev_dbg instead of its own dprintk
-- Dynamic device numbers used
-- sleep_on() ripped out in favor of wake bits
-- Kconfig text improved and simplified
-- All inline keywords removed where possible
-- Obfuscating #defines and wrapper functions removed
-- We call 'em lirc drivers now instead of lirc plugins
-
+- both v1 and v2 transceivers supported by one driver now
+- transmit works on the v1 devices
+- support for several new devices
+- now uses dev_dbg (and friends) instead of its own dprintk
 
 Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Janne Grunau <j@jannau.net>
 CC: Christoph Bartelmus <lirc@bartelmus.de>
-CC: Mario Limonciello <superm1@ubuntu.com>
+Tested-by: Jarod Wilson <jarod@redhat.com>
 
 ---
- MAINTAINERS                   |    9 
- drivers/input/Kconfig         |    2 
- drivers/input/Makefile        |    1 
- drivers/input/lirc/Kconfig    |   16 
- drivers/input/lirc/Makefile   |    6 
- drivers/input/lirc/lirc.h     |  100 +++++
- drivers/input/lirc/lirc_dev.c |  837 ++++++++++++++++++++++++++++++++++++++++++
- drivers/input/lirc/lirc_dev.h |  194 +++++++++
- 8 files changed, 1165 insertions(+)
+ drivers/input/lirc/Kconfig       |    6 
+ drivers/input/lirc/Makefile      |    1 
+ drivers/input/lirc/lirc_mceusb.c | 1235 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 1241 insertions(+), 1 deletion(-)
 
-Index: b/MAINTAINERS
-===================================================================
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3219,6 +3219,15 @@ W:	http://www.pasemi.com/
- L:	linuxppc-dev@ozlabs.org
- S:	Supported
- 
-+LINUX INFRARED REMOTE CONTROL DRIVERS (LIRC)
-+P:	Jarod Wilson
-+M:	jarod@redhat.com
-+P:	Christoph Bartelmus
-+M:	lirc@bartelmus.de
-+W:	http://www.lirc.org/
-+L:	lirc-list@lists.sourceforge.net
-+S:	Maintained
-+
- LINUX SECURITY MODULE (LSM) FRAMEWORK
- M:	Chris Wright <chrisw@sous-sol.org>
- L:	linux-security-module@vger.kernel.org
-Index: b/drivers/input/Kconfig
-===================================================================
---- a/drivers/input/Kconfig
-+++ b/drivers/input/Kconfig
-@@ -170,6 +170,8 @@ source "drivers/input/tablet/Kconfig"
- 
- source "drivers/input/touchscreen/Kconfig"
- 
-+source "drivers/input/lirc/Kconfig"
-+
- source "drivers/input/misc/Kconfig"
- 
- endif
-Index: b/drivers/input/Makefile
-===================================================================
---- a/drivers/input/Makefile
-+++ b/drivers/input/Makefile
-@@ -20,6 +20,7 @@ obj-$(CONFIG_INPUT_MOUSE)	+= mouse/
- obj-$(CONFIG_INPUT_JOYSTICK)	+= joystick/
- obj-$(CONFIG_INPUT_TABLET)	+= tablet/
- obj-$(CONFIG_INPUT_TOUCHSCREEN)	+= touchscreen/
-+obj-$(CONFIG_INPUT_LIRC)	+= lirc/
- obj-$(CONFIG_INPUT_MISC)	+= misc/
- 
- obj-$(CONFIG_INPUT_APMPOWER)	+= apm-power.o
 Index: b/drivers/input/lirc/Kconfig
 ===================================================================
---- /dev/null
+--- a/drivers/input/lirc/Kconfig
 +++ b/drivers/input/lirc/Kconfig
-@@ -0,0 +1,16 @@
-+#
-+# LIRC driver(s) configuration
-+#
-+menuconfig INPUT_LIRC
-+	bool "Linux Infrared Remote Control IR receiver/transmitter drivers"
+@@ -11,6 +11,10 @@ menuconfig INPUT_LIRC
+ 
+ if INPUT_LIRC
+ 
+-# Device-specific drivers go here
++config LIRC_MCEUSB
++	tristate "Windows Media Center Ed. USB IR Transceiver"
++	depends on LIRC_DEV && USB
 +	help
-+	  Say Y here, and all supported Linux Infrared Remote Control IR and
-+	  RF receiver and transmitter drivers will be displayed. When paired
-+	  with a remote control and the lirc daemon, the receiver drivers
-+	  allow control of your Linux system via remote control.
-+
-+if INPUT_LIRC
-+
-+# Device-specific drivers go here
-+
-+endif
++	  Driver for Windows Media Center Ed. USB IR Transceivers
+ 
+ endif
 Index: b/drivers/input/lirc/Makefile
 ===================================================================
---- /dev/null
+--- a/drivers/input/lirc/Makefile
 +++ b/drivers/input/lirc/Makefile
-@@ -0,0 +1,6 @@
-+# Makefile for the lirc drivers.
-+#
-+
-+# Each configuration option enables a list of files.
-+
-+obj-$(CONFIG_INPUT_LIRC)	+= lirc_dev.o
-Index: b/drivers/input/lirc/lirc.h
+@@ -4,3 +4,4 @@
+ # Each configuration option enables a list of files.
+ 
+ obj-$(CONFIG_INPUT_LIRC)	+= lirc_dev.o
++obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
+Index: b/drivers/input/lirc/lirc_mceusb.c
 ===================================================================
 --- /dev/null
-+++ b/drivers/input/lirc/lirc.h
-@@ -0,0 +1,100 @@
++++ b/drivers/input/lirc/lirc_mceusb.c
+@@ -0,0 +1,1235 @@
 +/*
-+ * lirc.h - linux infrared remote control header file
-+ * last modified 2007/09/27
-+ */
-+
-+#ifndef _LINUX_LIRC_H
-+#define _LINUX_LIRC_H
-+
-+#include <linux/types.h>
-+#include <linux/ioctl.h>
-+
-+#define PULSE_BIT  0x01000000
-+#define PULSE_MASK 0x00FFFFFF
-+
-+/*** lirc compatible hardware features ***/
-+
-+#define LIRC_MODE2SEND(x) (x)
-+#define LIRC_SEND2MODE(x) (x)
-+#define LIRC_MODE2REC(x) ((x) << 16)
-+#define LIRC_REC2MODE(x) ((x) >> 16)
-+
-+#define LIRC_MODE_RAW                  0x00000001
-+#define LIRC_MODE_PULSE                0x00000002
-+#define LIRC_MODE_MODE2                0x00000004
-+#define LIRC_MODE_CODE                 0x00000008
-+#define LIRC_MODE_LIRCCODE             0x00000010
-+#define LIRC_MODE_STRING               0x00000020
-+
-+
-+#define LIRC_CAN_SEND_RAW              LIRC_MODE2SEND(LIRC_MODE_RAW)
-+#define LIRC_CAN_SEND_PULSE            LIRC_MODE2SEND(LIRC_MODE_PULSE)
-+#define LIRC_CAN_SEND_MODE2            LIRC_MODE2SEND(LIRC_MODE_MODE2)
-+#define LIRC_CAN_SEND_CODE             LIRC_MODE2SEND(LIRC_MODE_CODE)
-+#define LIRC_CAN_SEND_LIRCCODE         LIRC_MODE2SEND(LIRC_MODE_LIRCCODE)
-+#define LIRC_CAN_SEND_STRING           LIRC_MODE2SEND(LIRC_MODE_STRING)
-+
-+#define LIRC_CAN_SEND_MASK             0x0000003f
-+
-+#define LIRC_CAN_SET_SEND_CARRIER      0x00000100
-+#define LIRC_CAN_SET_SEND_DUTY_CYCLE   0x00000200
-+#define LIRC_CAN_SET_TRANSMITTER_MASK  0x00000400
-+
-+#define LIRC_CAN_REC_RAW               LIRC_MODE2REC(LIRC_MODE_RAW)
-+#define LIRC_CAN_REC_PULSE             LIRC_MODE2REC(LIRC_MODE_PULSE)
-+#define LIRC_CAN_REC_MODE2             LIRC_MODE2REC(LIRC_MODE_MODE2)
-+#define LIRC_CAN_REC_CODE              LIRC_MODE2REC(LIRC_MODE_CODE)
-+#define LIRC_CAN_REC_LIRCCODE          LIRC_MODE2REC(LIRC_MODE_LIRCCODE)
-+#define LIRC_CAN_REC_STRING            LIRC_MODE2REC(LIRC_MODE_STRING)
-+
-+#define LIRC_CAN_REC_MASK              LIRC_MODE2REC(LIRC_CAN_SEND_MASK)
-+
-+#define LIRC_CAN_SET_REC_CARRIER       (LIRC_CAN_SET_SEND_CARRIER << 16)
-+#define LIRC_CAN_SET_REC_DUTY_CYCLE    (LIRC_CAN_SET_SEND_DUTY_CYCLE << 16)
-+
-+#define LIRC_CAN_SET_REC_DUTY_CYCLE_RANGE 0x40000000
-+#define LIRC_CAN_SET_REC_CARRIER_RANGE    0x80000000
-+#define LIRC_CAN_GET_REC_RESOLUTION       0x20000000
-+
-+#define LIRC_CAN_SEND(x) ((x)&LIRC_CAN_SEND_MASK)
-+#define LIRC_CAN_REC(x) ((x)&LIRC_CAN_REC_MASK)
-+
-+#define LIRC_CAN_NOTIFY_DECODE            0x01000000
-+
-+/*** IOCTL commands for lirc driver ***/
-+
-+#define LIRC_GET_FEATURES              _IOR('i', 0x00000000, unsigned long)
-+
-+#define LIRC_GET_SEND_MODE             _IOR('i', 0x00000001, unsigned long)
-+#define LIRC_GET_REC_MODE              _IOR('i', 0x00000002, unsigned long)
-+#define LIRC_GET_SEND_CARRIER          _IOR('i', 0x00000003, unsigned int)
-+#define LIRC_GET_REC_CARRIER           _IOR('i', 0x00000004, unsigned int)
-+#define LIRC_GET_SEND_DUTY_CYCLE       _IOR('i', 0x00000005, unsigned int)
-+#define LIRC_GET_REC_DUTY_CYCLE        _IOR('i', 0x00000006, unsigned int)
-+#define LIRC_GET_REC_RESOLUTION        _IOR('i', 0x00000007, unsigned int)
-+
-+/* code length in bits, currently only for LIRC_MODE_LIRCCODE */
-+#define LIRC_GET_LENGTH                _IOR('i', 0x0000000f, unsigned long)
-+
-+#define LIRC_SET_SEND_MODE             _IOW('i', 0x00000011, unsigned long)
-+#define LIRC_SET_REC_MODE              _IOW('i', 0x00000012, unsigned long)
-+/* Note: these can reset the according pulse_width */
-+#define LIRC_SET_SEND_CARRIER          _IOW('i', 0x00000013, unsigned int)
-+#define LIRC_SET_REC_CARRIER           _IOW('i', 0x00000014, unsigned int)
-+#define LIRC_SET_SEND_DUTY_CYCLE       _IOW('i', 0x00000015, unsigned int)
-+#define LIRC_SET_REC_DUTY_CYCLE        _IOW('i', 0x00000016, unsigned int)
-+#define LIRC_SET_TRANSMITTER_MASK      _IOW('i', 0x00000017, unsigned int)
-+
-+/*
-+ * to set a range use
-+ * LIRC_SET_REC_DUTY_CYCLE_RANGE/LIRC_SET_REC_CARRIER_RANGE with the
-+ * lower bound first and later
-+ * LIRC_SET_REC_DUTY_CYCLE/LIRC_SET_REC_CARRIER with the upper bound
-+ */
-+
-+#define LIRC_SET_REC_DUTY_CYCLE_RANGE  _IOW('i', 0x0000001e, unsigned int)
-+#define LIRC_SET_REC_CARRIER_RANGE     _IOW('i', 0x0000001f, unsigned int)
-+
-+#define LIRC_NOTIFY_DECODE             _IO('i', 0x00000020)
-+
-+#endif
-Index: b/drivers/input/lirc/lirc_dev.c
-===================================================================
---- /dev/null
-+++ b/drivers/input/lirc/lirc_dev.c
-@@ -0,0 +1,837 @@
-+/*
-+ * LIRC base driver
++ * LIRC driver for Windows Media Center Edition USB Infrared Transceivers
 + *
-+ * by Artur Lipowski <alipowski@interia.pl>
++ * (C) by Martin A. Blatter <martin_a_blatter@yahoo.com>
 + *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
++ * Transmitter support and reception code cleanup.
++ * (C) by Daniel Melander <lirc@rajidae.se>
 + *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
++ * Original lirc_mceusb driver for 1st-gen device:
++ * Copyright (c) 2003-2004 Dan Conti <dconti@acm.wwu.edu>
 + *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ * Original lirc_mceusb driver deprecated in favor of this driver, which
++ * supports the 1st-gen device now too. Transmitting on the 1st-gen device
++ * only functions on port #2 at the moment.
++ *
++ * Support for 1st-gen device added June 2009,
++ * by Jarod Wilson <jarod@wilsonet.com>
++ *
++ * Initial transmission support for 1st-gen device added August 2009,
++ * by Patrick Calhoun <phineas@ou.edu>
++ *
++ * Derived from ATI USB driver by Paul Miller and the original
++ * MCE USB driver by Dan Conti (and now including chunks of the latter
++ * relevant to the 1st-gen device initialization)
++ *
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 + *
 + */
 +
-+#include <linux/module.h>
 +#include <linux/kernel.h>
-+#include <linux/sched.h>
 +#include <linux/errno.h>
-+#include <linux/ioctl.h>
-+#include <linux/fs.h>
-+#include <linux/poll.h>
-+#include <linux/completion.h>
-+#include <linux/errno.h>
-+#include <linux/mutex.h>
-+#include <linux/wait.h>
-+#include <linux/unistd.h>
-+#include <linux/kthread.h>
-+#include <linux/bitops.h>
-+#include <linux/device.h>
-+#include <linux/cdev.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/kmod.h>
 +#include <linux/smp_lock.h>
-+#ifdef CONFIG_COMPAT
-+#include <linux/compat.h>
-+#endif
++#include <linux/completion.h>
++#include <linux/uaccess.h>
++#include <linux/usb.h>
++#include <linux/wait.h>
++#include <linux/time.h>
 +
 +#include "lirc.h"
 +#include "lirc_dev.h"
 +
++#define DRIVER_VERSION	"1.90"
++#define DRIVER_AUTHOR	"Daniel Melander <lirc@rajidae.se>, " \
++			"Martin Blatter <martin_a_blatter@yahoo.com>, " \
++			"Dan Conti <dconti@acm.wwu.edu>"
++#define DRIVER_DESC	"Windows Media Center Edition USB IR Transceiver " \
++			"driver for LIRC"
++#define DRIVER_NAME	"lirc_mceusb"
++
++#define USB_BUFLEN	32	/* USB reception buffer length */
++#define LIRCBUF_SIZE	256	/* LIRC work buffer length */
++
++/* MCE constants */
++#define MCE_CMDBUF_SIZE	384 /* MCE Command buffer length */
++#define MCE_TIME_UNIT	50 /* Approx 50us resolution */
++#define MCE_CODE_LENGTH	5 /* Normal length of packet (with header) */
++#define MCE_PACKET_SIZE	4 /* Normal length of packet (without header) */
++#define MCE_PACKET_HEADER 0x84 /* Actual header format is 0x80 + num_bytes */
++#define MCE_CONTROL_HEADER 0x9F /* MCE status header */
++#define MCE_TX_HEADER_LENGTH 3 /* # of bytes in the initializing tx header */
++#define MCE_MAX_CHANNELS 2 /* Two transmitters, hardware dependent? */
++#define MCE_DEFAULT_TX_MASK 0x03 /* Val opts: TX1=0x01, TX2=0x02, ALL=0x03 */
++#define MCE_PULSE_BIT	0x80 /* Pulse bit, MSB set == PULSE else SPACE */
++#define MCE_PULSE_MASK	0x7F /* Pulse mask */
++#define MCE_MAX_PULSE_LENGTH 0x7F /* Longest transmittable pulse symbol */
++#define MCE_PACKET_LENGTH_MASK  0x7F /* Pulse mask */
++
++
++/* module parameters */
++#ifdef CONFIG_USB_DEBUG
++static int debug = 1;
++#else
 +static int debug;
++#endif
 +
-+#define IRCTL_DEV_NAME	"BaseRemoteCtl"
-+#define NOPLUG		-1
-+#define LOGHEAD		"lirc_dev (%s[%d]): "
++/* general constants */
++#define SEND_FLAG_IN_PROGRESS	1
++#define SEND_FLAG_COMPLETE	2
++#define RECV_FLAG_IN_PROGRESS	3
++#define RECV_FLAG_COMPLETE	4
 +
-+static dev_t lirc_base_dev;
++#define MCEUSB_INBOUND		1
++#define MCEUSB_OUTBOUND		2
 +
-+struct irctl {
-+	struct lirc_driver d;
-+	int attached;
-+	int open;
++#define VENDOR_PHILIPS		0x0471
++#define VENDOR_SMK		0x0609
++#define VENDOR_TATUNG		0x1460
++#define VENDOR_GATEWAY		0x107b
++#define VENDOR_SHUTTLE		0x1308
++#define VENDOR_SHUTTLE2		0x051c
++#define VENDOR_MITSUMI		0x03ee
++#define VENDOR_TOPSEED		0x1784
++#define VENDOR_RICAVISION	0x179d
++#define VENDOR_ITRON		0x195d
++#define VENDOR_FIC		0x1509
++#define VENDOR_LG		0x043e
++#define VENDOR_MICROSOFT	0x045e
++#define VENDOR_FORMOSA		0x147a
++#define VENDOR_FINTEK		0x1934
++#define VENDOR_PINNACLE		0x2304
++#define VENDOR_ECS		0x1019
++#define VENDOR_WISTRON		0x0fb8
++#define VENDOR_COMPRO		0x185b
++#define VENDOR_NORTHSTAR	0x04eb
 +
-+	struct mutex buffer_lock;
-+	struct lirc_buffer *buf;
-+	unsigned int chunk_size;
-+
-+	struct task_struct *task;
-+	long jiffies_to_wait;
-+
-+	struct cdev cdev;
++static struct usb_device_id mceusb_dev_table[] = {
++	/* Original Microsoft MCE IR Transceiver (often HP-branded) */
++	{ USB_DEVICE(VENDOR_MICROSOFT, 0x006d) },
++	/* Philips Infrared Transceiver - Sahara branded */
++	{ USB_DEVICE(VENDOR_PHILIPS, 0x0608) },
++	/* Philips Infrared Transceiver - HP branded */
++	{ USB_DEVICE(VENDOR_PHILIPS, 0x060c) },
++	/* Philips SRM5100 */
++	{ USB_DEVICE(VENDOR_PHILIPS, 0x060d) },
++	/* Philips Infrared Transceiver - Omaura */
++	{ USB_DEVICE(VENDOR_PHILIPS, 0x060f) },
++	/* Philips Infrared Transceiver - Spinel plus */
++	{ USB_DEVICE(VENDOR_PHILIPS, 0x0613) },
++	/* Philips eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_PHILIPS, 0x0815) },
++	/* SMK/Toshiba G83C0004D410 */
++	{ USB_DEVICE(VENDOR_SMK, 0x031d) },
++	/* SMK eHome Infrared Transceiver (Sony VAIO) */
++	{ USB_DEVICE(VENDOR_SMK, 0x0322) },
++	/* bundled with Hauppauge PVR-150 */
++	{ USB_DEVICE(VENDOR_SMK, 0x0334) },
++	/* Tatung eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_TATUNG, 0x9150) },
++	/* Shuttle eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_SHUTTLE, 0xc001) },
++	/* Shuttle eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_SHUTTLE2, 0xc001) },
++	/* Gateway eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_GATEWAY, 0x3009) },
++	/* Mitsumi */
++	{ USB_DEVICE(VENDOR_MITSUMI, 0x2501) },
++	/* Topseed eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_TOPSEED, 0x0001) },
++	/* Topseed HP eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_TOPSEED, 0x0006) },
++	/* Topseed eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_TOPSEED, 0x0007) },
++	/* Topseed eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_TOPSEED, 0x0008) },
++	/* Topseed eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_TOPSEED, 0x000a) },
++	/* Ricavision internal Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_RICAVISION, 0x0010) },
++	/* Itron ione Libra Q-11 */
++	{ USB_DEVICE(VENDOR_ITRON, 0x7002) },
++	/* FIC eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_FIC, 0x9242) },
++	/* LG eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_LG, 0x9803) },
++	/* Microsoft MCE Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_MICROSOFT, 0x00a0) },
++	/* Formosa eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_FORMOSA, 0xe015) },
++	/* Formosa21 / eHome Infrared Receiver */
++	{ USB_DEVICE(VENDOR_FORMOSA, 0xe016) },
++	/* Formosa aim / Trust MCE Infrared Receiver */
++	{ USB_DEVICE(VENDOR_FORMOSA, 0xe017) },
++	/* Formosa Industrial Computing / Beanbag Emulation Device */
++	{ USB_DEVICE(VENDOR_FORMOSA, 0xe018) },
++	/* Formosa21 / eHome Infrared Receiver */
++	{ USB_DEVICE(VENDOR_FORMOSA, 0xe03a) },
++	/* Formosa Industrial Computing AIM IR605/A */
++	{ USB_DEVICE(VENDOR_FORMOSA, 0xe03c) },
++	/* Fintek eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_FINTEK, 0x0602) },
++	/* Fintek eHome Infrared Transceiver (in the AOpen MP45) */
++	{ USB_DEVICE(VENDOR_FINTEK, 0x0702) },
++	/* Pinnacle Remote Kit */
++	{ USB_DEVICE(VENDOR_PINNACLE, 0x0225) },
++	/* Elitegroup Computer Systems IR */
++	{ USB_DEVICE(VENDOR_ECS, 0x0f38) },
++	/* Wistron Corp. eHome Infrared Receiver */
++	{ USB_DEVICE(VENDOR_WISTRON, 0x0002) },
++	/* Compro K100 */
++	{ USB_DEVICE(VENDOR_COMPRO, 0x3020) },
++	/* Compro K100 v2 */
++	{ USB_DEVICE(VENDOR_COMPRO, 0x3082) },
++	/* Northstar Systems, Inc. eHome Infrared Transceiver */
++	{ USB_DEVICE(VENDOR_NORTHSTAR, 0xe004) },
++	/* Terminating entry */
++	{ }
 +};
 +
-+static DEFINE_MUTEX(lirc_dev_lock);
++static struct usb_device_id pinnacle_list[] = {
++	{ USB_DEVICE(VENDOR_PINNACLE, 0x0225) },
++	{}
++};
 +
-+static struct irctl *irctls[MAX_IRCTL_DEVICES];
++static struct usb_device_id microsoft_gen1_list[] = {
++	{ USB_DEVICE(VENDOR_MICROSOFT, 0x006d) },
++	{}
++};
 +
-+/* Only used for sysfs but defined to void otherwise */
-+static struct class *lirc_class;
++static struct usb_device_id transmitter_mask_list[] = {
++	{ USB_DEVICE(VENDOR_MICROSOFT, 0x006d) },
++	{ USB_DEVICE(VENDOR_SMK, 0x031d) },
++	{ USB_DEVICE(VENDOR_SMK, 0x0322) },
++	{ USB_DEVICE(VENDOR_SMK, 0x0334) },
++	{ USB_DEVICE(VENDOR_TOPSEED, 0x0001) },
++	{ USB_DEVICE(VENDOR_TOPSEED, 0x0006) },
++	{ USB_DEVICE(VENDOR_TOPSEED, 0x0007) },
++	{ USB_DEVICE(VENDOR_TOPSEED, 0x0008) },
++	{ USB_DEVICE(VENDOR_TOPSEED, 0x000a) },
++	{ USB_DEVICE(VENDOR_PINNACLE, 0x0225) },
++	{}
++};
 +
-+/*  helper function
-+ *  initializes the irctl structure
-+ */
-+static void init_irctl(struct irctl *ir)
++/* data structure for each usb transceiver */
++struct mceusb_dev {
++
++	/* usb */
++	struct usb_device *usbdev;
++	struct urb *urb_in;
++	int devnum;
++	struct usb_endpoint_descriptor *usb_ep_in;
++	struct usb_endpoint_descriptor *usb_ep_out;
++
++	/* buffers and dma */
++	unsigned char *buf_in;
++	unsigned int len_in;
++	dma_addr_t dma_in;
++	dma_addr_t dma_out;
++	unsigned int overflow_len;
++
++	/* lirc */
++	struct lirc_driver *d;
++	int lircdata;
++	unsigned char is_pulse;
++	struct {
++		u32 connected:1;
++		u32 pinnacle:1;
++		u32 transmitter_mask_inverted:1;
++		u32 microsoft_gen1:1;
++		u32 reserved:28;
++	} flags;
++
++	unsigned char transmitter_mask;
++	unsigned int carrier_freq;
++
++	/* handle sending (init strings) */
++	int send_flags;
++	wait_queue_head_t wait_out;
++
++	struct mutex lock;
++};
++
++/* init strings */
++static char init1[] = {0x00, 0xff, 0xaa, 0xff, 0x0b};
++static char init2[] = {0xff, 0x18};
++
++static char pin_init1[] = { 0x9f, 0x07};
++static char pin_init2[] = { 0x9f, 0x13};
++static char pin_init3[] = { 0x9f, 0x0d};
++
++static void mceusb_dev_printdata(struct mceusb_dev *ir, char *buf, int len)
 +{
-+	dev_dbg(ir->d.dev, LOGHEAD "initializing irctl\n",
-+		ir->d.name, ir->d.minor);
-+	mutex_init(&ir->buffer_lock);
-+	ir->d.minor = NOPLUG;
++	char codes[USB_BUFLEN * 3 + 1];
++	int i;
++
++	if (len <= 0)
++		return;
++
++	if (ir->flags.microsoft_gen1 && len <= 2)
++		return;
++
++	for (i = 0; i < len && i < USB_BUFLEN; i++)
++		snprintf(codes + i * 3, 4, "%02x ", buf[i] & 0xFF);
++
++	dev_info(ir->d->dev, "data received %s (length=%d)\n", codes, len);
 +}
 +
-+static void cleanup(struct irctl *ir)
++static void usb_async_callback(struct urb *urb, struct pt_regs *regs)
 +{
-+	dev_dbg(ir->d.dev, LOGHEAD "cleaning up\n", ir->d.name, ir->d.minor);
++	struct mceusb_dev *ir;
++	int len;
 +
-+	device_destroy(lirc_class, MKDEV(MAJOR(lirc_base_dev), ir->d.minor));
++	if (!urb)
++		return;
 +
-+	if (ir->buf != ir->d.rbuf) {
-+		lirc_buffer_free(ir->buf);
-+		kfree(ir->buf);
++	ir = urb->context;
++	if (ir) {
++		len = urb->actual_length;
++
++		dev_dbg(ir->d->dev, "callback called (status=%d len=%d)\n",
++			urb->status, len);
++
++		if (debug)
++			mceusb_dev_printdata(ir, urb->transfer_buffer, len);
 +	}
-+	ir->buf = NULL;
++
 +}
 +
-+/*  helper function
-+ *  reads key codes from driver and puts them into buffer
-+ *  returns 0 on success
-+ */
-+static int add_to_buf(struct irctl *ir)
++/* request incoming or send outgoing usb packet - used to initialize remote */
++static void request_packet_async(struct mceusb_dev *ir,
++				 struct usb_endpoint_descriptor *ep,
++				 unsigned char *data, int size, int urb_type)
 +{
-+	if (ir->d.add_to_buf) {
-+		int res = -ENODATA;
-+		int got_data = 0;
++	int res;
++	struct urb *async_urb;
++	unsigned char *async_buf;
 +
-+		/*
-+		 * service the device as long as it is returning
-+		 * data and we have space
-+		 */
-+get_data:
-+		res = ir->d.add_to_buf(ir->d.data, ir->buf);
-+		if (res == 0) {
-+			got_data++;
-+			goto get_data;
++	if (urb_type) {
++		async_urb = usb_alloc_urb(0, GFP_KERNEL);
++		if (unlikely(!async_urb))
++			return;
++
++		async_buf = kmalloc(size, GFP_KERNEL);
++		if (!async_buf) {
++			usb_free_urb(async_urb);
++			return;
 +		}
 +
-+		if (res == -ENODEV)
-+			kthread_stop(ir->task);
-+
-+		return got_data ? 0 : res;
-+	}
-+
-+	return 0;
-+}
-+
-+/* main function of the polling thread
-+ */
-+static int lirc_thread(void *irctl)
-+{
-+	struct irctl *ir = irctl;
-+
-+	dev_dbg(ir->d.dev, LOGHEAD "poll thread started\n",
-+		ir->d.name, ir->d.minor);
-+
-+	do {
-+		if (ir->open) {
-+			if (ir->jiffies_to_wait) {
-+				set_current_state(TASK_INTERRUPTIBLE);
-+				schedule_timeout(ir->jiffies_to_wait);
-+			}
-+			if (kthread_should_stop())
-+				break;
-+			if (!add_to_buf(ir))
-+				wake_up_interruptible(&ir->buf->wait_poll);
++		if (urb_type == MCEUSB_OUTBOUND) {
++			/* outbound data */
++			usb_fill_int_urb(async_urb, ir->usbdev,
++				usb_sndintpipe(ir->usbdev,
++					       ep->bEndpointAddress),
++				async_buf, size,
++				(usb_complete_t) usb_async_callback,
++				ir, ep->bInterval);
++			memcpy(async_buf, data, size);
 +		} else {
-+			set_current_state(TASK_INTERRUPTIBLE);
-+			schedule();
++			/* inbound data */
++			usb_fill_int_urb(async_urb, ir->usbdev,
++				usb_rcvintpipe(ir->usbdev,
++					       ep->bEndpointAddress),
++				async_buf, size,
++				(usb_complete_t) usb_async_callback,
++				ir, ep->bInterval);
 +		}
-+	} while (!kthread_should_stop());
 +
-+	dev_dbg(ir->d.dev, LOGHEAD "poll thread ended\n",
-+		ir->d.name, ir->d.minor);
++	} else {
++		/* standard request */
++		async_urb = ir->urb_in;
++		ir->send_flags = RECV_FLAG_IN_PROGRESS;
++	}
++
++	dev_dbg(ir->d->dev, "receive request called (size=%#x)\n", size);
++
++	async_urb->transfer_buffer_length = size;
++	async_urb->dev = ir->usbdev;
++
++	res = usb_submit_urb(async_urb, GFP_ATOMIC);
++	if (res) {
++		dev_dbg(ir->d->dev, "receive request FAILED! (res=%d)\n", res);
++		return;
++	}
++	dev_dbg(ir->d->dev, "receive request complete (res=%d)\n", res);
++}
++
++static int unregister_from_lirc(struct mceusb_dev *ir)
++{
++	struct lirc_driver *d = ir->d;
++	int devnum;
++	int rtn;
++
++	devnum = ir->devnum;
++	dev_dbg(ir->d->dev, "unregister from lirc called\n");
++
++	rtn = lirc_unregister_driver(d->minor);
++	if (rtn > 0) {
++		dev_info(ir->d->dev, "error in lirc_unregister minor: %d\n"
++			 "Trying again...\n", d->minor);
++		if (rtn == -EBUSY) {
++			dev_info(ir->d->dev, "device is opened, will "
++				 "unregister on close\n");
++			return -EAGAIN;
++		}
++		set_current_state(TASK_INTERRUPTIBLE);
++		schedule_timeout(HZ);
++
++		rtn = lirc_unregister_driver(d->minor);
++		if (rtn > 0)
++			dev_info(ir->d->dev, "lirc_unregister failed\n");
++	}
++
++	if (rtn) {
++		dev_info(ir->d->dev, "didn't free resources\n");
++		return -EAGAIN;
++	}
++
++	dev_info(ir->d->dev, "usb remote disconnected\n");
++
++	lirc_buffer_free(d->rbuf);
++	kfree(d->rbuf);
++	kfree(d);
++	kfree(ir);
++	return 0;
++}
++
++static int mceusb_ir_open(void *data)
++{
++	struct mceusb_dev *ir = data;
++
++	if (!ir) {
++		printk(KERN_WARNING DRIVER_NAME
++		       "[?]: %s called with no context\n", __func__);
++		return -EIO;
++	}
++
++	dev_dbg(ir->d->dev, "mceusb IR device opened\n");
++
++	if (!ir->flags.connected) {
++		if (!ir->usbdev)
++			return -ENOENT;
++		ir->flags.connected = 1;
++	}
 +
 +	return 0;
 +}
 +
++static void mceusb_ir_close(void *data)
++{
++	struct mceusb_dev *ir = data;
 +
-+static struct file_operations fops = {
-+	.owner		= THIS_MODULE,
-+	.read		= lirc_dev_fop_read,
-+	.write		= lirc_dev_fop_write,
-+	.poll		= lirc_dev_fop_poll,
-+	.ioctl		= lirc_dev_fop_ioctl,
-+#ifdef CONFIG_COMPAT
-+	.compat_ioctl	= lirc_dev_fop_compat_ioctl,
++	if (!ir) {
++		printk(KERN_WARNING DRIVER_NAME
++		       "[?]: %s called with no context\n", __func__);
++		return;
++	}
++
++	dev_dbg(ir->d->dev, "mceusb IR device closed\n");
++
++	if (ir->flags.connected) {
++		mutex_lock(&ir->lock);
++		ir->flags.connected = 0;
++		mutex_unlock(&ir->lock);
++	}
++}
++
++static void send_packet_to_lirc(struct mceusb_dev *ir)
++{
++	if (ir->lircdata) {
++		lirc_buffer_write(ir->d->rbuf,
++				    (unsigned char *) &ir->lircdata);
++		wake_up(&ir->d->rbuf->wait_poll);
++		ir->lircdata = 0;
++	}
++}
++
++static void mceusb_process_ir_data(struct mceusb_dev *ir, int buf_len)
++{
++	int i, j;
++	int packet_len = 0;
++	int start_index = 0;
++
++	/* skip meaningless 0xb1 0x60 header bytes on orig receiver */
++	if (ir->flags.microsoft_gen1)
++		start_index = 2;
++
++	/* this should only trigger w/the 1st-gen mce receiver */
++	for (i = start_index; i < (start_index + ir->overflow_len) &&
++	     i < buf_len; i++) {
++		/* rising/falling flank */
++		if (ir->is_pulse != (ir->buf_in[i] & MCE_PULSE_BIT)) {
++			send_packet_to_lirc(ir);
++			ir->is_pulse = ir->buf_in[i] & MCE_PULSE_BIT;
++		}
++
++		/* accumulate mce pulse/space values */
++		ir->lircdata += (ir->buf_in[i] & MCE_PULSE_MASK) *
++				MCE_TIME_UNIT;
++		ir->lircdata |= (ir->is_pulse ? PULSE_BIT : 0);
++	}
++	start_index += ir->overflow_len;
++	ir->overflow_len = 0;
++
++	for (i = start_index; i < buf_len; i++) {
++		/* decode mce packets of the form (84),AA,BB,CC,DD */
++
++		/* data headers */
++		if (ir->buf_in[i] >= 0x80 && ir->buf_in[i] <= 0x9e) {
++			/* decode packet data */
++			packet_len = ir->buf_in[i] & MCE_PACKET_LENGTH_MASK;
++			ir->overflow_len = i + 1 + packet_len - buf_len;
++			for (j = 1; j <= packet_len && (i + j < buf_len); j++) {
++				/* rising/falling flank */
++				if (ir->is_pulse !=
++				    (ir->buf_in[i + j] & MCE_PULSE_BIT)) {
++					send_packet_to_lirc(ir);
++					ir->is_pulse =
++						ir->buf_in[i + j] &
++							MCE_PULSE_BIT;
++				}
++
++				/* accumulate mce pulse/space values */
++				ir->lircdata +=
++					(ir->buf_in[i + j] & MCE_PULSE_MASK) *
++						MCE_TIME_UNIT;
++				ir->lircdata |= (ir->is_pulse ? PULSE_BIT : 0);
++			}
++
++			i += packet_len;
++
++		/* status header (0x9F) */
++		} else if (ir->buf_in[i] == MCE_CONTROL_HEADER) {
++			/*
++			 * A transmission containing one or more consecutive ir
++			 * commands always ends with a GAP of 100ms followed by
++			 * the sequence 0x9F 0x01 0x01 0x9F 0x15 0x00 0x00 0x80
++			 */
++
++#if 0
++	Uncomment this if the last 100ms "infinity"-space should be transmitted
++	to lirc directly instead of at the beginning of the next transmission.
++	Changes pulse/space order.
++
++			if (++i < buf_len && ir->buf_in[i] == 0x01)
++				send_packet_to_lirc(ir);
++
 +#endif
++
++			/* end decode loop */
++			dev_dbg(ir->d->dev, "[%d] %s: found control header\n",
++				ir->devnum, __func__);
++			ir->overflow_len = 0;
++			break;
++		} else {
++			dev_dbg(ir->d->dev, "[%d] %s: stray packet?\n",
++				ir->devnum, __func__);
++			ir->overflow_len = 0;
++		}
++	}
++
++	return;
++}
++
++static void mceusb_dev_recv(struct urb *urb, struct pt_regs *regs)
++{
++	struct mceusb_dev *ir;
++	int buf_len;
++
++	if (!urb)
++		return;
++
++	ir = urb->context;
++	if (!ir) {
++		usb_unlink_urb(urb);
++		return;
++	}
++
++	buf_len = urb->actual_length;
++
++	if (debug)
++		mceusb_dev_printdata(ir, urb->transfer_buffer, buf_len);
++
++	if (ir->send_flags == RECV_FLAG_IN_PROGRESS) {
++		ir->send_flags = SEND_FLAG_COMPLETE;
++		dev_dbg(ir->d->dev, "setup answer received %d bytes\n",
++			buf_len);
++	}
++
++	switch (urb->status) {
++	/* success */
++	case 0:
++		mceusb_process_ir_data(ir, buf_len);
++		break;
++
++	case -ECONNRESET:
++	case -ENOENT:
++	case -ESHUTDOWN:
++		usb_unlink_urb(urb);
++		return;
++
++	case -EPIPE:
++	default:
++		break;
++	}
++
++	usb_submit_urb(urb, GFP_ATOMIC);
++}
++
++
++static ssize_t mceusb_transmit_ir(struct file *file, const char *buf,
++				  size_t n, loff_t *ppos)
++{
++	int i, count = 0, cmdcount = 0;
++	struct mceusb_dev *ir = NULL;
++	int wbuf[LIRCBUF_SIZE]; /* Workbuffer with values from lirc */
++	unsigned char cmdbuf[MCE_CMDBUF_SIZE]; /* MCE command buffer */
++	unsigned long signal_duration = 0; /* Singnal length in us */
++	struct timeval start_time, end_time;
++
++	do_gettimeofday(&start_time);
++
++	/* Retrieve lirc_driver data for the device */
++	ir = lirc_get_pdata(file);
++	if (!ir || !ir->usb_ep_out)
++		return -EFAULT;
++
++	if (n % sizeof(int))
++		return -EINVAL;
++	count = n / sizeof(int);
++
++	/* Check if command is within limits */
++	if (count > LIRCBUF_SIZE || count%2 == 0)
++		return -EINVAL;
++	if (copy_from_user(wbuf, buf, n))
++		return -EFAULT;
++
++	/* MCE tx init header */
++	cmdbuf[cmdcount++] = MCE_CONTROL_HEADER;
++	cmdbuf[cmdcount++] = 0x08;
++	cmdbuf[cmdcount++] = ir->transmitter_mask;
++
++	/* Generate mce packet data */
++	for (i = 0; (i < count) && (cmdcount < MCE_CMDBUF_SIZE); i++) {
++		signal_duration += wbuf[i];
++		wbuf[i] = wbuf[i] / MCE_TIME_UNIT;
++
++		do { /* loop to support long pulses/spaces > 127*50us=6.35ms */
++
++			/* Insert mce packet header every 4th entry */
++			if ((cmdcount < MCE_CMDBUF_SIZE) &&
++			    (cmdcount - MCE_TX_HEADER_LENGTH) %
++			     MCE_CODE_LENGTH == 0)
++				cmdbuf[cmdcount++] = MCE_PACKET_HEADER;
++
++			/* Insert mce packet data */
++			if (cmdcount < MCE_CMDBUF_SIZE)
++				cmdbuf[cmdcount++] =
++					(wbuf[i] < MCE_PULSE_BIT ?
++					 wbuf[i] : MCE_MAX_PULSE_LENGTH) |
++					 (i & 1 ? 0x00 : MCE_PULSE_BIT);
++			else
++				return -EINVAL;
++		} while ((wbuf[i] > MCE_MAX_PULSE_LENGTH) &&
++			 (wbuf[i] -= MCE_MAX_PULSE_LENGTH));
++	}
++
++	/* Fix packet length in last header */
++	cmdbuf[cmdcount - (cmdcount - MCE_TX_HEADER_LENGTH) % MCE_CODE_LENGTH] =
++		0x80 + (cmdcount - MCE_TX_HEADER_LENGTH) % MCE_CODE_LENGTH - 1;
++
++	/* Check if we have room for the empty packet at the end */
++	if (cmdcount >= MCE_CMDBUF_SIZE)
++		return -EINVAL;
++
++	/* All mce commands end with an empty packet (0x80) */
++	cmdbuf[cmdcount++] = 0x80;
++
++	/* Transmit the command to the mce device */
++	request_packet_async(ir, ir->usb_ep_out, cmdbuf,
++			     cmdcount, MCEUSB_OUTBOUND);
++
++	/*
++	 * The lircd gap calculation expects the write function to
++	 * wait the time it takes for the ircommand to be sent before
++	 * it returns.
++	 */
++	do_gettimeofday(&end_time);
++	signal_duration -= (end_time.tv_usec - start_time.tv_usec) +
++			   (end_time.tv_sec - start_time.tv_sec) * 1000000;
++
++	/* delay with the closest number of ticks */
++	set_current_state(TASK_INTERRUPTIBLE);
++	schedule_timeout(usecs_to_jiffies(signal_duration));
++
++	return n;
++}
++
++static void set_transmitter_mask(struct mceusb_dev *ir, unsigned int mask)
++{
++	if (ir->flags.transmitter_mask_inverted)
++		ir->transmitter_mask = (mask != 0x03 ? mask ^ 0x03 : mask) << 1;
++	else
++		ir->transmitter_mask = mask;
++}
++
++
++/* Sets the send carrier frequency */
++static int set_send_carrier(struct mceusb_dev *ir, int carrier)
++{
++	int clk = 10000000;
++	int prescaler = 0, divisor = 0;
++	unsigned char cmdbuf[] = { 0x9F, 0x06, 0x01, 0x80 };
++
++	/* Carrier is changed */
++	if (ir->carrier_freq != carrier) {
++
++		if (carrier <= 0) {
++			ir->carrier_freq = carrier;
++			dev_dbg(ir->d->dev, "SET_CARRIER disabling carrier "
++				"modulation\n");
++			request_packet_async(ir, ir->usb_ep_out,
++					     cmdbuf, sizeof(cmdbuf),
++					     MCEUSB_OUTBOUND);
++			return carrier;
++		}
++
++		for (prescaler = 0; prescaler < 4; ++prescaler) {
++			divisor = (clk >> (2 * prescaler)) / carrier;
++			if (divisor <= 0xFF) {
++				ir->carrier_freq = carrier;
++				cmdbuf[2] = prescaler;
++				cmdbuf[3] = divisor;
++				dev_dbg(ir->d->dev, "SET_CARRIER requesting "
++					"%d Hz\n", carrier);
++
++				/* Transmit new carrier to mce device */
++				request_packet_async(ir, ir->usb_ep_out,
++						     cmdbuf, sizeof(cmdbuf),
++						     MCEUSB_OUTBOUND);
++				return carrier;
++			}
++		}
++
++		return -EINVAL;
++
++	}
++
++	return carrier;
++}
++
++
++static int mceusb_lirc_ioctl(struct inode *node, struct file *filep,
++			     unsigned int cmd, unsigned long arg)
++{
++	int result;
++	unsigned int ivalue;
++	unsigned long lvalue;
++	struct mceusb_dev *ir = NULL;
++
++	/* Retrieve lirc_driver data for the device */
++	ir = lirc_get_pdata(filep);
++	if (!ir || !ir->usb_ep_out)
++		return -EFAULT;
++
++
++	switch (cmd) {
++	case LIRC_SET_TRANSMITTER_MASK:
++
++		result = get_user(ivalue, (unsigned int *) arg);
++		if (result)
++			return result;
++		switch (ivalue) {
++		case 0x01: /* Transmitter 1     => 0x04 */
++		case 0x02: /* Transmitter 2     => 0x02 */
++		case 0x03: /* Transmitter 1 & 2 => 0x06 */
++			set_transmitter_mask(ir, ivalue);
++			break;
++
++		default: /* Unsupported transmitter mask */
++			return MCE_MAX_CHANNELS;
++		}
++
++		dev_dbg(ir->d->dev, ": SET_TRANSMITTERS mask=%d\n", ivalue);
++		break;
++
++	case LIRC_GET_SEND_MODE:
++
++		result = put_user(LIRC_SEND2MODE(LIRC_CAN_SEND_PULSE &
++						 LIRC_CAN_SEND_MASK),
++				  (unsigned long *) arg);
++
++		if (result)
++			return result;
++		break;
++
++	case LIRC_SET_SEND_MODE:
++
++		result = get_user(lvalue, (unsigned long *) arg);
++
++		if (result)
++			return result;
++		if (lvalue != (LIRC_MODE_PULSE&LIRC_CAN_SEND_MASK))
++			return -EINVAL;
++		break;
++
++	case LIRC_SET_SEND_CARRIER:
++
++		result = get_user(ivalue, (unsigned int *) arg);
++		if (result)
++			return result;
++
++		set_send_carrier(ir, ivalue);
++		break;
++
++	default:
++		return lirc_dev_fop_ioctl(node, filep, cmd, arg);
++	}
++
++	return 0;
++}
++
++static struct file_operations lirc_fops = {
++	.owner		= THIS_MODULE,
++	.write		= mceusb_transmit_ir,
++	.ioctl		= mceusb_lirc_ioctl,
++	.read		= lirc_dev_fop_read,
++	.poll		= lirc_dev_fop_poll,
 +	.open		= lirc_dev_fop_open,
 +	.release	= lirc_dev_fop_close,
 +};
 +
-+static int lirc_cdev_add(struct irctl *ir)
++static int mceusb_gen1_init(struct mceusb_dev *ir)
 +{
-+	int retval;
-+	struct lirc_driver *d = &ir->d;
++	int i, ret;
++	char junk[64], data[8];
++	int partial = 0;
 +
-+	if (d->fops) {
-+		cdev_init(&ir->cdev, d->fops);
-+		ir->cdev.owner = d->owner;
-+	} else {
-+		cdev_init(&ir->cdev, &fops);
-+		ir->cdev.owner = THIS_MODULE;
-+	}
-+	kobject_set_name(&ir->cdev.kobj, "lirc%d", d->minor);
++	/*
++	 * Clear off the first few messages. These look like calibration
++	 * or test data, I can't really tell. This also flushes in case
++	 * we have random ir data queued up.
++	 */
++	for (i = 0; i < 40; i++)
++		usb_bulk_msg(ir->usbdev,
++			usb_rcvbulkpipe(ir->usbdev,
++				ir->usb_ep_in->bEndpointAddress),
++			junk, 64, &partial, HZ * 10);
 +
-+	retval = cdev_add(&ir->cdev, MKDEV(MAJOR(lirc_base_dev), d->minor), 1);
-+	if (retval)
-+		kobject_put(&ir->cdev.kobj);
++	ir->is_pulse = 1;
 +
-+	return retval;
-+}
++	memset(data, 0, 8);
 +
-+int lirc_register_driver(struct lirc_driver *d)
-+{
-+	struct irctl *ir;
-+	int minor;
-+	int bytes_in_key;
-+	unsigned int chunk_size;
-+	unsigned int buffer_size;
-+	int err;
++	/* Get Status */
++	ret = usb_control_msg(ir->usbdev, usb_rcvctrlpipe(ir->usbdev, 0),
++			      USB_REQ_GET_STATUS, USB_DIR_IN,
++			      0, 0, data, 2, HZ * 3);
 +
-+	if (!d) {
-+		printk(KERN_ERR "lirc_dev: lirc_register_driver: "
-+		       "driver pointer must be not NULL!\n");
-+		err = -EBADRQC;
-+		goto out;
-+	}
++	/*    ret = usb_get_status( ir->usbdev, 0, 0, data ); */
++	dev_dbg(ir->d->dev, "%s - ret = %d status = 0x%x 0x%x\n", __func__,
++		ret, data[0], data[1]);
 +
-+	if (MAX_IRCTL_DEVICES <= d->minor) {
-+		dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-+			"\"minor\" must be between 0 and %d (%d)!\n",
-+			MAX_IRCTL_DEVICES-1, d->minor);
-+		err = -EBADRQC;
-+		goto out;
-+	}
++	/*
++	 * This is a strange one. They issue a set address to the device
++	 * on the receive control pipe and expect a certain value pair back
++	 */
++	memset(data, 0, 8);
 +
-+	if (1 > d->code_length || (BUFLEN * 8) < d->code_length) {
-+		dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-+			"code length in bits for minor (%d) "
-+			"must be less than %d!\n",
-+			d->minor, BUFLEN * 8);
-+		err = -EBADRQC;
-+		goto out;
-+	}
++	ret = usb_control_msg(ir->usbdev, usb_rcvctrlpipe(ir->usbdev, 0),
++			      USB_REQ_SET_ADDRESS, USB_TYPE_VENDOR, 0, 0,
++			      data, 2, HZ * 3);
++	dev_dbg(ir->d->dev, "%s - ret = %d, devnum = %d\n",
++		__func__, ret, ir->usbdev->devnum);
++	dev_dbg(ir->d->dev, "%s - data[0] = %d, data[1] = %d\n",
++		__func__, data[0], data[1]);
 +
-+	dev_dbg(d->dev, "lirc_dev: lirc_register_driver: sample_rate: %d\n",
-+		d->sample_rate);
-+	if (d->sample_rate) {
-+		if (2 > d->sample_rate || HZ < d->sample_rate) {
-+			dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-+				"sample_rate must be between 2 and %d!\n", HZ);
-+			err = -EBADRQC;
-+			goto out;
-+		}
-+		if (!d->add_to_buf) {
-+			dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-+				"add_to_buf cannot be NULL when "
-+				"sample_rate is set\n");
-+			err = -EBADRQC;
-+			goto out;
-+		}
-+	} else if (!(d->fops && d->fops->read) && !d->rbuf) {
-+		dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-+			"fops->read and rbuf cannot all be NULL!\n");
-+		err = -EBADRQC;
-+		goto out;
-+	} else if (!d->rbuf) {
-+		if (!(d->fops && d->fops->read && d->fops->poll &&
-+		      d->fops->ioctl)) {
-+			dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-+				"neither read, poll nor ioctl can be NULL!\n");
-+			err = -EBADRQC;
-+			goto out;
-+		}
-+	}
++	/* set feature: bit rate 38400 bps */
++	ret = usb_control_msg(ir->usbdev, usb_sndctrlpipe(ir->usbdev, 0),
++			      USB_REQ_SET_FEATURE, USB_TYPE_VENDOR,
++			      0xc04e, 0x0000, NULL, 0, HZ * 3);
 +
-+	mutex_lock(&lirc_dev_lock);
++	dev_dbg(ir->d->dev, "%s - ret = %d\n", __func__, ret);
 +
-+	minor = d->minor;
++	/* bRequest 4: set char length to 8 bits */
++	ret = usb_control_msg(ir->usbdev, usb_sndctrlpipe(ir->usbdev, 0),
++			      4, USB_TYPE_VENDOR,
++			      0x0808, 0x0000, NULL, 0, HZ * 3);
++	dev_dbg(ir->d->dev, "%s - retB = %d\n", __func__, ret);
 +
-+	if (minor < 0) {
-+		/* find first free slot for driver */
-+		for (minor = 0; minor < MAX_IRCTL_DEVICES; minor++)
-+			if (!irctls[minor])
-+				break;
-+		if (MAX_IRCTL_DEVICES == minor) {
-+			dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-+				"no free slots for drivers!\n");
-+			err = -ENOMEM;
-+			goto out_lock;
-+		}
-+	} else if (irctls[minor]) {
-+		dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-+			"minor (%d) just registered!\n", minor);
-+		err = -EBUSY;
-+		goto out_lock;
-+	}
-+
-+	ir = kzalloc(sizeof(struct irctl), GFP_KERNEL);
-+	if (!ir) {
-+		err = -ENOMEM;
-+		goto out_lock;
-+	}
-+	init_irctl(ir);
-+	irctls[minor] = ir;
-+	d->minor = minor;
-+
-+	if (d->sample_rate) {
-+		ir->jiffies_to_wait = HZ / d->sample_rate;
-+	} else {
-+		/* it means - wait for external event in task queue */
-+		ir->jiffies_to_wait = 0;
-+	}
-+
-+	/* some safety check 8-) */
-+	d->name[sizeof(d->name)-1] = '\0';
-+
-+	bytes_in_key = BITS_TO_LONGS(d->code_length) +
-+			(d->code_length % 8 ? 1 : 0);
-+	buffer_size = d->buffer_size ? d->buffer_size : BUFLEN / bytes_in_key;
-+	chunk_size  = d->chunk_size  ? d->chunk_size  : bytes_in_key;
-+
-+	if (d->rbuf) {
-+		ir->buf = d->rbuf;
-+	} else {
-+		ir->buf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL);
-+		if (!ir->buf) {
-+			err = -ENOMEM;
-+			goto out_lock;
-+		}
-+		err = lirc_buffer_init(ir->buf, chunk_size, buffer_size);
-+		if (err) {
-+			kfree(ir->buf);
-+			goto out_lock;
-+		}
-+	}
-+	ir->chunk_size = ir->buf->chunk_size;
-+
-+	if (d->features == 0)
-+		d->features = (d->code_length > 8) ?
-+			LIRC_CAN_REC_LIRCCODE : LIRC_CAN_REC_CODE;
-+
-+	ir->d = *d;
-+	ir->d.minor = minor;
-+
-+	device_create(lirc_class, ir->d.dev,
-+		      MKDEV(MAJOR(lirc_base_dev), ir->d.minor), NULL,
-+		      "lirc%u", ir->d.minor);
-+
-+	if (d->sample_rate) {
-+		/* try to fire up polling thread */
-+		ir->task = kthread_run(lirc_thread, (void *)ir, "lirc_dev");
-+		if (IS_ERR(ir->task)) {
-+			dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-+				"cannot run poll thread for minor = %d\n",
-+				d->minor);
-+			err = -ECHILD;
-+			goto out_sysfs;
-+		}
-+	}
-+
-+	err = lirc_cdev_add(ir);
-+	if (err)
-+		goto out_sysfs;
-+
-+	ir->attached = 1;
-+	mutex_unlock(&lirc_dev_lock);
-+
-+	dev_info(ir->d.dev, "lirc_dev: driver %s registered at minor = %d\n",
-+		 ir->d.name, ir->d.minor);
-+	return minor;
-+
-+out_sysfs:
-+	device_destroy(lirc_class, MKDEV(MAJOR(lirc_base_dev), ir->d.minor));
-+out_lock:
-+	mutex_unlock(&lirc_dev_lock);
-+out:
-+	return err;
-+}
-+EXPORT_SYMBOL(lirc_register_driver);
-+
-+int lirc_unregister_driver(int minor)
-+{
-+	struct irctl *ir;
-+
-+	if (minor < 0 || minor >= MAX_IRCTL_DEVICES) {
-+		printk(KERN_ERR "lirc_dev: lirc_unregister_driver: "
-+		       "\"minor (%d)\" must be between 0 and %d!\n",
-+		       minor, MAX_IRCTL_DEVICES-1);
-+		return -EBADRQC;
-+	}
-+
-+	ir = irctls[minor];
-+
-+	mutex_lock(&lirc_dev_lock);
-+
-+	if (ir->d.minor != minor) {
-+		printk(KERN_ERR "lirc_dev: lirc_unregister_driver: "
-+		       "minor (%d) device not registered!", minor);
-+		mutex_unlock(&lirc_dev_lock);
-+		return -ENOENT;
-+	}
-+
-+	/* end up polling thread */
-+	if (ir->task)
-+		kthread_stop(ir->task);
-+
-+	dev_dbg(ir->d.dev, "lirc_dev: driver %s unregistered from minor = %d\n",
-+		ir->d.name, ir->d.minor);
-+
-+	ir->attached = 0;
-+	if (ir->open) {
-+		dev_dbg(ir->d.dev, LOGHEAD "releasing opened driver\n",
-+			ir->d.name, ir->d.minor);
-+		wake_up_interruptible(&ir->buf->wait_poll);
-+		mutex_lock(&ir->buffer_lock);
-+		ir->d.set_use_dec(ir->d.data);
-+		module_put(ir->d.owner);
-+		mutex_unlock(&ir->buffer_lock);
-+		cdev_del(&ir->cdev);
-+	} else {
-+		cleanup(ir);
-+		cdev_del(&ir->cdev);
-+		kfree(ir);
-+		irctls[minor] = NULL;
-+	}
-+
-+	mutex_unlock(&lirc_dev_lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(lirc_unregister_driver);
-+
-+int lirc_dev_fop_open(struct inode *inode, struct file *file)
-+{
-+	struct irctl *ir;
-+	int retval = 0;
-+
-+	if (iminor(inode) >= MAX_IRCTL_DEVICES) {
-+		printk(KERN_WARNING "lirc_dev [%d]: open result = -ENODEV\n",
-+		       iminor(inode));
-+		return -ENODEV;
-+	}
-+
-+	if (mutex_lock_interruptible(&lirc_dev_lock))
-+		return -ERESTARTSYS;
-+
-+	ir = irctls[iminor(inode)];
-+	if (!ir) {
-+		retval = -ENODEV;
-+		goto error;
-+	}
-+
-+	dev_dbg(ir->d.dev, LOGHEAD "open called\n", ir->d.name, ir->d.minor);
-+
-+	if (ir->d.minor == NOPLUG) {
-+		retval = -ENODEV;
-+		goto error;
-+	}
-+
-+	if (ir->open) {
-+		retval = -EBUSY;
-+		goto error;
-+	}
-+
-+	if (try_module_get(ir->d.owner)) {
-+		++ir->open;
-+		retval = ir->d.set_use_inc(ir->d.data);
-+
-+		if (retval) {
-+			module_put(ir->d.owner);
-+			--ir->open;
-+		} else {
-+			lirc_buffer_clear(ir->buf);
-+		}
-+		if (ir->task)
-+			wake_up_process(ir->task);
-+	}
-+
-+error:
-+	if (ir)
-+		dev_dbg(ir->d.dev, LOGHEAD "open result = %d\n",
-+			ir->d.name, ir->d.minor, retval);
-+
-+	mutex_unlock(&lirc_dev_lock);
-+
-+	return retval;
-+}
-+EXPORT_SYMBOL(lirc_dev_fop_open);
-+
-+int lirc_dev_fop_close(struct inode *inode, struct file *file)
-+{
-+	struct irctl *ir = irctls[iminor(inode)];
-+
-+	dev_dbg(ir->d.dev, LOGHEAD "close called\n", ir->d.name, ir->d.minor);
-+
-+	WARN_ON(mutex_lock_killable(&lirc_dev_lock));
-+
-+	--ir->open;
-+	if (ir->attached) {
-+		ir->d.set_use_dec(ir->d.data);
-+		module_put(ir->d.owner);
-+	} else {
-+		cleanup(ir);
-+		irctls[ir->d.minor] = NULL;
-+		kfree(ir);
-+	}
-+
-+	mutex_unlock(&lirc_dev_lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(lirc_dev_fop_close);
-+
-+unsigned int lirc_dev_fop_poll(struct file *file, poll_table *wait)
-+{
-+	struct irctl *ir = irctls[iminor(file->f_dentry->d_inode)];
-+	unsigned int ret;
-+
-+	dev_dbg(ir->d.dev, LOGHEAD "poll called\n", ir->d.name, ir->d.minor);
-+
-+	if (!ir->attached) {
-+		mutex_unlock(&ir->buffer_lock);
-+		return POLLERR;
-+	}
-+
-+	poll_wait(file, &ir->buf->wait_poll, wait);
-+
-+	if (ir->buf)
-+		if (lirc_buffer_empty(ir->buf))
-+			ret = 0;
-+		else
-+			ret = POLLIN | POLLRDNORM;
-+	else
-+		ret = POLLERR;
-+
-+	dev_dbg(ir->d.dev, LOGHEAD "poll result = %d\n",
-+		ir->d.name, ir->d.minor, ret);
++	/* bRequest 2: set handshaking to use DTR/DSR */
++	ret = usb_control_msg(ir->usbdev, usb_sndctrlpipe(ir->usbdev, 0),
++			      2, USB_TYPE_VENDOR,
++			      0x0000, 0x0100, NULL, 0, HZ * 3);
++	dev_dbg(ir->d->dev, "%s - retC = %d\n", __func__, ret);
 +
 +	return ret;
-+}
-+EXPORT_SYMBOL(lirc_dev_fop_poll);
 +
-+int lirc_dev_fop_ioctl(struct inode *inode, struct file *file,
-+		       unsigned int cmd, unsigned long arg)
++};
++
++static int mceusb_dev_probe(struct usb_interface *intf,
++				const struct usb_device_id *id)
 +{
-+	unsigned long mode;
-+	int result = 0;
-+	struct irctl *ir = irctls[iminor(inode)];
++	struct usb_device *dev = interface_to_usbdev(intf);
++	struct usb_host_interface *idesc;
++	struct usb_endpoint_descriptor *ep = NULL;
++	struct usb_endpoint_descriptor *ep_in = NULL;
++	struct usb_endpoint_descriptor *ep_out = NULL;
++	struct usb_host_config *config;
++	struct mceusb_dev *ir = NULL;
++	struct lirc_driver *driver = NULL;
++	struct lirc_buffer *rbuf = NULL;
++	int devnum, pipe, maxp;
++	int minor = 0;
++	int i;
++	char buf[63], name[128] = "";
++	int mem_failure = 0;
++	int is_pinnacle;
++	int is_microsoft_gen1;
 +
-+	dev_dbg(ir->d.dev, LOGHEAD "ioctl called (0x%x)\n",
-+		ir->d.name, ir->d.minor, cmd);
++	dev_dbg(&intf->dev, ": %s called\n", __func__);
 +
-+	if (ir->d.minor == NOPLUG || !ir->attached) {
-+		dev_dbg(ir->d.dev, LOGHEAD "ioctl result = -ENODEV\n",
-+			ir->d.name, ir->d.minor);
++	usb_reset_device(dev);
++
++	config = dev->actconfig;
++
++	idesc = intf->cur_altsetting;
++
++	is_pinnacle = usb_match_id(intf, pinnacle_list) ? 1 : 0;
++
++	is_microsoft_gen1 = usb_match_id(intf, microsoft_gen1_list) ? 1 : 0;
++
++	/* step through the endpoints to find first bulk in and out endpoint */
++	for (i = 0; i < idesc->desc.bNumEndpoints; ++i) {
++		ep = &idesc->endpoint[i].desc;
++
++		if ((ep_in == NULL)
++			&& ((ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK)
++			    == USB_DIR_IN)
++			&& (((ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
++			    == USB_ENDPOINT_XFER_BULK)
++			|| ((ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
++			    == USB_ENDPOINT_XFER_INT))) {
++
++			dev_dbg(&intf->dev, ": acceptable inbound endpoint "
++				"found\n");
++			ep_in = ep;
++			ep_in->bmAttributes = USB_ENDPOINT_XFER_INT;
++			if (is_pinnacle)
++				/*
++				 * setting seems to 1 seem to cause issues with
++				 * Pinnacle timing out on transfer.
++				 */
++				ep_in->bInterval = ep->bInterval;
++			else
++				ep_in->bInterval = 1;
++		}
++
++		if ((ep_out == NULL)
++			&& ((ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK)
++			    == USB_DIR_OUT)
++			&& (((ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
++			    == USB_ENDPOINT_XFER_BULK)
++			|| ((ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
++			    == USB_ENDPOINT_XFER_INT))) {
++
++			dev_dbg(&intf->dev, ": acceptable outbound endpoint "
++				"found\n");
++			ep_out = ep;
++			ep_out->bmAttributes = USB_ENDPOINT_XFER_INT;
++			if (is_pinnacle)
++				/*
++				 * setting seems to 1 seem to cause issues with
++				 * Pinnacle timing out on transfer.
++				 */
++				ep_out->bInterval = ep->bInterval;
++			else
++				ep_out->bInterval = 1;
++		}
++	}
++	if (ep_in == NULL) {
++		dev_dbg(&intf->dev, ": inbound and/or endpoint not found\n");
 +		return -ENODEV;
 +	}
 +
-+	switch (cmd) {
-+	case LIRC_GET_FEATURES:
-+		result = put_user(ir->d.features, (unsigned long *)arg);
-+		break;
-+	case LIRC_GET_REC_MODE:
-+		if (!(ir->d.features & LIRC_CAN_REC_MASK))
-+			return -ENOSYS;
++	devnum = dev->devnum;
++	pipe = usb_rcvintpipe(dev, ep_in->bEndpointAddress);
++	maxp = usb_maxpacket(dev, pipe, usb_pipeout(pipe));
 +
-+		result = put_user(LIRC_REC2MODE
-+				  (ir->d.features & LIRC_CAN_REC_MASK),
-+				  (unsigned long *)arg);
-+		break;
-+	case LIRC_SET_REC_MODE:
-+		if (!(ir->d.features & LIRC_CAN_REC_MASK))
-+			return -ENOSYS;
-+
-+		result = get_user(mode, (unsigned long *)arg);
-+		if (!result && !(LIRC_MODE2REC(mode) & ir->d.features))
-+			result = -EINVAL;
-+		/*
-+		 * FIXME: We should actually set the mode somehow but
-+		 * for now, lirc_serial doesn't support mode changing either
-+		 */
-+		break;
-+	case LIRC_GET_LENGTH:
-+		result = put_user(ir->d.code_length, (unsigned long *)arg);
-+		break;
-+	default:
-+		result = -EINVAL;
++	mem_failure = 0;
++	ir = kzalloc(sizeof(struct mceusb_dev), GFP_KERNEL);
++	if (!ir) {
++		mem_failure = 1;
++		goto mem_failure_switch;
 +	}
 +
-+	dev_dbg(ir->d.dev, LOGHEAD "ioctl result = %d\n",
-+		ir->d.name, ir->d.minor, result);
-+
-+	return result;
-+}
-+EXPORT_SYMBOL(lirc_dev_fop_ioctl);
-+
-+#ifdef CONFIG_COMPAT
-+#define LIRC_GET_FEATURES_COMPAT32     _IOR('i', 0x00000000, __u32)
-+
-+#define LIRC_GET_SEND_MODE_COMPAT32    _IOR('i', 0x00000001, __u32)
-+#define LIRC_GET_REC_MODE_COMPAT32     _IOR('i', 0x00000002, __u32)
-+
-+#define LIRC_GET_LENGTH_COMPAT32       _IOR('i', 0x0000000f, __u32)
-+
-+#define LIRC_SET_SEND_MODE_COMPAT32    _IOW('i', 0x00000011, __u32)
-+#define LIRC_SET_REC_MODE_COMPAT32     _IOW('i', 0x00000012, __u32)
-+
-+long lirc_dev_fop_compat_ioctl(struct file *file,
-+			       unsigned int cmd32,
-+			       unsigned long arg)
-+{
-+	mm_segment_t old_fs;
-+	int ret;
-+	unsigned long val;
-+	unsigned int cmd;
-+
-+	switch (cmd32) {
-+	case LIRC_GET_FEATURES_COMPAT32:
-+	case LIRC_GET_SEND_MODE_COMPAT32:
-+	case LIRC_GET_REC_MODE_COMPAT32:
-+	case LIRC_GET_LENGTH_COMPAT32:
-+	case LIRC_SET_SEND_MODE_COMPAT32:
-+	case LIRC_SET_REC_MODE_COMPAT32:
-+		/*
-+		 * These commands expect (unsigned long *) arg
-+		 * but the 32-bit app supplied (__u32 *).
-+		 * Conversion is required.
-+		 */
-+		if (get_user(val, (__u32 *)compat_ptr(arg)))
-+			return -EFAULT;
-+		lock_kernel();
-+		/*
-+		 * tell lirc_dev_fop_ioctl that it's safe to use the pointer
-+		 * to val which is in kernel address space and not in
-+		 * user address space.
-+		 */
-+		old_fs = get_fs();
-+		set_fs(KERNEL_DS);
-+
-+		cmd = _IOC(_IOC_DIR(cmd32), _IOC_TYPE(cmd32), _IOC_NR(cmd32),
-+		(_IOC_TYPECHECK(unsigned long)));
-+		ret = lirc_dev_fop_ioctl(file->f_path.dentry->d_inode, file,
-+					 cmd, (unsigned long)(&val));
-+
-+		set_fs(old_fs);
-+		unlock_kernel();
-+	switch (cmd) {
-+	case LIRC_GET_FEATURES:
-+	case LIRC_GET_SEND_MODE:
-+	case LIRC_GET_REC_MODE:
-+	case LIRC_GET_LENGTH:
-+		if (!ret && put_user(val, (__u32 *)compat_ptr(arg)))
-+			return -EFAULT;
-+		break;
-+	}
-+	return ret;
-+
-+	case LIRC_GET_SEND_CARRIER:
-+	case LIRC_GET_REC_CARRIER:
-+	case LIRC_GET_SEND_DUTY_CYCLE:
-+	case LIRC_GET_REC_DUTY_CYCLE:
-+	case LIRC_GET_REC_RESOLUTION:
-+	case LIRC_SET_SEND_CARRIER:
-+	case LIRC_SET_REC_CARRIER:
-+	case LIRC_SET_SEND_DUTY_CYCLE:
-+	case LIRC_SET_REC_DUTY_CYCLE:
-+	case LIRC_SET_TRANSMITTER_MASK:
-+	case LIRC_SET_REC_DUTY_CYCLE_RANGE:
-+	case LIRC_SET_REC_CARRIER_RANGE:
-+		/*
-+		 * These commands expect (unsigned int *)arg
-+		 * so no problems here. Just handle the locking.
-+		 */
-+		lock_kernel();
-+		cmd = cmd32;
-+		ret = lirc_dev_fop_ioctl(file->f_path.dentry->d_inode,
-+					 file, cmd, arg);
-+		unlock_kernel();
-+		return ret;
-+	default:
-+		/* unknown */
-+		printk(KERN_ERR "lirc_dev: %s(%s:%d): Unknown cmd %08x\n",
-+		       __func__, current->comm, current->pid, cmd32);
-+		return -ENOIOCTLCMD;
-+	}
-+}
-+EXPORT_SYMBOL(lirc_dev_fop_compat_ioctl);
-+#endif
-+
-+
-+ssize_t lirc_dev_fop_read(struct file *file,
-+			  char *buffer,
-+			  size_t length,
-+			  loff_t *ppos)
-+{
-+	struct irctl *ir = irctls[iminor(file->f_dentry->d_inode)];
-+	unsigned char buf[ir->chunk_size];
-+	int ret = 0, written = 0;
-+	DECLARE_WAITQUEUE(wait, current);
-+
-+	dev_dbg(ir->d.dev, LOGHEAD "read called\n", ir->d.name, ir->d.minor);
-+
-+	if (mutex_lock_interruptible(&ir->buffer_lock))
-+		return -ERESTARTSYS;
-+	if (!ir->attached) {
-+		mutex_unlock(&ir->buffer_lock);
-+		return -ENODEV;
++	driver = kzalloc(sizeof(struct lirc_driver), GFP_KERNEL);
++	if (!driver) {
++		mem_failure = 2;
++		goto mem_failure_switch;
 +	}
 +
-+	if (length % ir->chunk_size) {
-+		dev_dbg(ir->d.dev, LOGHEAD "read result = -EINVAL\n",
-+			ir->d.name, ir->d.minor);
-+		mutex_unlock(&ir->buffer_lock);
-+		return -EINVAL;
++	rbuf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL);
++	if (!rbuf) {
++		mem_failure = 3;
++		goto mem_failure_switch;
++	}
++
++	if (lirc_buffer_init(rbuf, sizeof(int), LIRCBUF_SIZE)) {
++		mem_failure = 4;
++		goto mem_failure_switch;
++	}
++
++	ir->buf_in = usb_buffer_alloc(dev, maxp, GFP_ATOMIC, &ir->dma_in);
++	if (!ir->buf_in) {
++		mem_failure = 5;
++		goto mem_failure_switch;
++	}
++
++	ir->urb_in = usb_alloc_urb(0, GFP_KERNEL);
++	if (!ir->urb_in) {
++		mem_failure = 7;
++		goto mem_failure_switch;
++	}
++
++	strcpy(driver->name, DRIVER_NAME);
++	driver->minor = -1;
++	driver->features = LIRC_CAN_SEND_PULSE |
++		LIRC_CAN_SET_TRANSMITTER_MASK |
++		LIRC_CAN_REC_MODE2 |
++		LIRC_CAN_SET_SEND_CARRIER;
++	driver->data = ir;
++	driver->rbuf = rbuf;
++	driver->set_use_inc = &mceusb_ir_open;
++	driver->set_use_dec = &mceusb_ir_close;
++	driver->code_length = sizeof(int) * 8;
++	driver->fops  = &lirc_fops;
++	driver->dev   = &intf->dev;
++	driver->owner = THIS_MODULE;
++
++	mutex_init(&ir->lock);
++	init_waitqueue_head(&ir->wait_out);
++
++	minor = lirc_register_driver(driver);
++	if (minor < 0)
++		mem_failure = 9;
++
++mem_failure_switch:
++
++	switch (mem_failure) {
++	case 9:
++		usb_free_urb(ir->urb_in);
++	case 7:
++		usb_buffer_free(dev, maxp, ir->buf_in, ir->dma_in);
++	case 5:
++		lirc_buffer_free(rbuf);
++	case 4:
++		kfree(rbuf);
++	case 3:
++		kfree(driver);
++	case 2:
++		kfree(ir);
++	case 1:
++		dev_info(&intf->dev, "out of memory (code=%d)\n", mem_failure);
++		return -ENOMEM;
++	}
++
++	driver->minor = minor;
++	ir->d = driver;
++	ir->devnum = devnum;
++	ir->usbdev = dev;
++	ir->len_in = maxp;
++	ir->overflow_len = 0;
++	ir->flags.connected = 0;
++	ir->flags.pinnacle = is_pinnacle;
++	ir->flags.microsoft_gen1 = is_microsoft_gen1;
++	ir->flags.transmitter_mask_inverted =
++		usb_match_id(intf, transmitter_mask_list) ? 0 : 1;
++
++	ir->lircdata = PULSE_MASK;
++	ir->is_pulse = 0;
++
++	/* ir->flags.transmitter_mask_inverted must be set */
++	set_transmitter_mask(ir, MCE_DEFAULT_TX_MASK);
++	/* Saving usb interface data for use by the transmitter routine */
++	ir->usb_ep_in = ep_in;
++	ir->usb_ep_out = ep_out;
++
++	if (dev->descriptor.iManufacturer
++	    && usb_string(dev, dev->descriptor.iManufacturer,
++			  buf, sizeof(buf)) > 0)
++		strlcpy(name, buf, sizeof(name));
++	if (dev->descriptor.iProduct
++	    && usb_string(dev, dev->descriptor.iProduct,
++			  buf, sizeof(buf)) > 0)
++		snprintf(name + strlen(name), sizeof(name) - strlen(name),
++			 " %s", buf);
++
++	/* inbound data */
++	usb_fill_int_urb(ir->urb_in, dev, pipe, ir->buf_in,
++		maxp, (usb_complete_t) mceusb_dev_recv, ir, ep_in->bInterval);
++	ir->urb_in->transfer_dma = ir->dma_in;
++	ir->urb_in->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
++
++	/* initialize device */
++	if (ir->flags.pinnacle) {
++		int usbret;
++
++		/*
++		 * I have no idea why but this reset seems to be crucial to
++		 * getting the device to do outbound IO correctly - without
++		 * this the device seems to hang, ignoring all input - although
++		 * IR signals are correctly sent from the device, no input is
++		 * interpreted by the device and the host never does the
++		 * completion routine
++		 */
++
++		usbret = usb_reset_configuration(dev);
++		dev_info(ir->d->dev, "usb reset config ret %x\n", usbret);
++
++		/*
++		 * its possible we really should wait for a return
++		 * for each of these...
++		 */
++		request_packet_async(ir, ep_in, NULL, maxp, MCEUSB_INBOUND);
++		request_packet_async(ir, ep_out, pin_init1, sizeof(pin_init1),
++				     MCEUSB_OUTBOUND);
++		request_packet_async(ir, ep_in, NULL, maxp, MCEUSB_INBOUND);
++		request_packet_async(ir, ep_out, pin_init2, sizeof(pin_init2),
++				     MCEUSB_OUTBOUND);
++		request_packet_async(ir, ep_in, NULL, maxp, MCEUSB_INBOUND);
++		request_packet_async(ir, ep_out, pin_init3, sizeof(pin_init3),
++				     MCEUSB_OUTBOUND);
++	} else if (ir->flags.microsoft_gen1) {
++		/* original ms mce device requires some additional setup */
++		mceusb_gen1_init(ir);
++	} else {
++
++		request_packet_async(ir, ep_in, NULL, maxp, MCEUSB_INBOUND);
++		request_packet_async(ir, ep_in, NULL, maxp, MCEUSB_INBOUND);
++		request_packet_async(ir, ep_out, init1,
++				     sizeof(init1), MCEUSB_OUTBOUND);
++		request_packet_async(ir, ep_in, NULL, maxp, MCEUSB_INBOUND);
++		request_packet_async(ir, ep_out, init2,
++				     sizeof(init2), MCEUSB_OUTBOUND);
 +	}
 +
 +	/*
-+	 * we add ourselves to the task queue before buffer check
-+	 * to avoid losing scan code (in case when queue is awaken somewhere
-+	 * between while condition checking and scheduling)
++	 * if we don't issue the correct number of receives (MCEUSB_INBOUND)
++	 * for each outbound, then the first few ir pulses will be interpreted
++	 * by the usb_async_callback routine - we should ensure we have the
++	 * right amount OR less - as the mceusb_dev_recv routine will handle
++	 * the control packets OK - they start with 0x9f - but the async
++	 * callback doesn't handle ir pulse packets
 +	 */
-+	add_wait_queue(&ir->buf->wait_poll, &wait);
-+	set_current_state(TASK_INTERRUPTIBLE);
++	request_packet_async(ir, ep_in, NULL, maxp, 0);
 +
-+	/*
-+	 * while we didn't provide 'length' bytes, device is opened in blocking
-+	 * mode and 'copy_to_user' is happy, wait for data.
-+	 */
-+	while (written < length && ret == 0) {
-+		if (lirc_buffer_empty(ir->buf)) {
-+			/* According to the read(2) man page, 'written' can be
-+			 * returned as less than 'length', instead of blocking
-+			 * again, returning -EWOULDBLOCK, or returning
-+			 * -ERESTARTSYS */
-+			if (written)
-+				break;
-+			if (file->f_flags & O_NONBLOCK) {
-+				ret = -EWOULDBLOCK;
-+				break;
-+			}
-+			if (signal_pending(current)) {
-+				ret = -ERESTARTSYS;
-+				break;
-+			}
++	usb_set_intfdata(intf, ir);
 +
-+			mutex_unlock(&ir->buffer_lock);
-+			schedule();
-+			set_current_state(TASK_INTERRUPTIBLE);
++	dev_info(ir->d->dev, "Registered %s on usb%d:%d\n", name,
++		 dev->bus->busnum, devnum);
 +
-+			if (mutex_lock_interruptible(&ir->buffer_lock)) {
-+				ret = -ERESTARTSYS;
-+				break;
-+			}
-+
-+			if (!ir->attached) {
-+				ret = -ENODEV;
-+				break;
-+			}
-+		} else {
-+			lirc_buffer_read(ir->buf, buf);
-+			ret = copy_to_user((void *)buffer+written, buf,
-+					   ir->buf->chunk_size);
-+			written += ir->buf->chunk_size;
-+		}
-+	}
-+
-+	remove_wait_queue(&ir->buf->wait_poll, &wait);
-+	set_current_state(TASK_RUNNING);
-+	mutex_unlock(&ir->buffer_lock);
-+
-+	dev_dbg(ir->d.dev, LOGHEAD "read result = %s (%d)\n",
-+		ir->d.name, ir->d.minor, ret ? "-EFAULT" : "OK", ret);
-+
-+	return ret ? ret : written;
++	return 0;
 +}
-+EXPORT_SYMBOL(lirc_dev_fop_read);
 +
-+void *lirc_get_pdata(struct file *file)
++
++static void mceusb_dev_disconnect(struct usb_interface *intf)
 +{
-+	void *data = NULL;
++	struct usb_device *dev = interface_to_usbdev(intf);
++	struct mceusb_dev *ir = usb_get_intfdata(intf);
 +
-+	if (file && file->f_dentry && file->f_dentry->d_inode &&
-+	    file->f_dentry->d_inode->i_rdev) {
-+		struct irctl *ir;
-+		ir = irctls[iminor(file->f_dentry->d_inode)];
-+		data = ir->d.data;
-+	}
++	usb_set_intfdata(intf, NULL);
 +
-+	return data;
++	if (!ir || !ir->d)
++		return;
++
++	ir->usbdev = NULL;
++	wake_up_all(&ir->wait_out);
++
++	mutex_lock(&ir->lock);
++	usb_kill_urb(ir->urb_in);
++	usb_free_urb(ir->urb_in);
++	usb_buffer_free(dev, ir->len_in, ir->buf_in, ir->dma_in);
++	mutex_unlock(&ir->lock);
++
++	unregister_from_lirc(ir);
 +}
-+EXPORT_SYMBOL(lirc_get_pdata);
 +
-+
-+ssize_t lirc_dev_fop_write(struct file *file, const char *buffer,
-+			   size_t length, loff_t *ppos)
++static int mceusb_dev_suspend(struct usb_interface *intf, pm_message_t message)
 +{
-+	struct irctl *ir = irctls[iminor(file->f_dentry->d_inode)];
++	struct mceusb_dev *ir = usb_get_intfdata(intf);
++	dev_info(ir->d->dev, "suspend\n");
++	usb_kill_urb(ir->urb_in);
++	return 0;
++}
 +
-+	dev_dbg(ir->d.dev, LOGHEAD "write called\n", ir->d.name, ir->d.minor);
++static int mceusb_dev_resume(struct usb_interface *intf)
++{
++	struct mceusb_dev *ir = usb_get_intfdata(intf);
++	dev_info(ir->d->dev, "resume\n");
++	if (usb_submit_urb(ir->urb_in, GFP_ATOMIC))
++		return -EIO;
++	return 0;
++}
 +
-+	if (!ir->attached)
++static struct usb_driver mceusb_dev_driver = {
++	.name =		DRIVER_NAME,
++	.probe =	mceusb_dev_probe,
++	.disconnect =	mceusb_dev_disconnect,
++	.suspend =	mceusb_dev_suspend,
++	.resume =	mceusb_dev_resume,
++	.reset_resume =	mceusb_dev_resume,
++	.id_table =	mceusb_dev_table
++};
++
++static int __init mceusb_dev_init(void)
++{
++	int i;
++
++	printk(KERN_INFO DRIVER_NAME ": " DRIVER_DESC " " DRIVER_VERSION "\n");
++	printk(KERN_INFO DRIVER_NAME ": " DRIVER_AUTHOR "\n");
++	if (debug)
++		printk(KERN_DEBUG DRIVER_NAME ": debug mode enabled\n");
++
++	i = usb_register(&mceusb_dev_driver);
++	if (i < 0) {
++		printk(KERN_ERR DRIVER_NAME
++		       ": usb register failed, result = %d\n", i);
 +		return -ENODEV;
-+
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL(lirc_dev_fop_write);
-+
-+
-+static int __init lirc_dev_init(void)
-+{
-+	int retval;
-+
-+	lirc_class = class_create(THIS_MODULE, "lirc");
-+	if (IS_ERR(lirc_class)) {
-+		retval = PTR_ERR(lirc_class);
-+		printk(KERN_ERR "lirc_dev: class_create failed\n");
-+		goto error;
 +	}
 +
-+	retval = alloc_chrdev_region(&lirc_base_dev, 0, MAX_IRCTL_DEVICES,
-+				     IRCTL_DEV_NAME);
-+	if (retval) {
-+		class_destroy(lirc_class);
-+		printk(KERN_ERR "lirc_dev: alloc_chrdev_region failed\n");
-+		goto error;
-+	}
-+
-+
-+	printk(KERN_INFO "lirc_dev: IR Remote Control driver registered, "
-+	       "major %d \n", MAJOR(lirc_base_dev));
-+
-+error:
-+	return retval;
++	return 0;
 +}
 +
-+
-+
-+static void __exit lirc_dev_exit(void)
++static void __exit mceusb_dev_exit(void)
 +{
-+	class_destroy(lirc_class);
-+	unregister_chrdev_region(lirc_base_dev, MAX_IRCTL_DEVICES);
-+	printk(KERN_INFO "lirc_dev: module unloaded\n");
++	usb_deregister(&mceusb_dev_driver);
 +}
 +
-+module_init(lirc_dev_init);
-+module_exit(lirc_dev_exit);
++module_init(mceusb_dev_init);
++module_exit(mceusb_dev_exit);
 +
-+MODULE_DESCRIPTION("LIRC base driver module");
-+MODULE_AUTHOR("Artur Lipowski");
++MODULE_DESCRIPTION(DRIVER_DESC);
++MODULE_AUTHOR(DRIVER_AUTHOR);
 +MODULE_LICENSE("GPL");
++MODULE_DEVICE_TABLE(usb, mceusb_dev_table);
++/* this was originally lirc_mceusb2, lirc_mceusb and lirc_mceusb2 merged now */
++MODULE_ALIAS("lirc_mceusb2");
 +
 +module_param(debug, bool, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(debug, "Enable debugging messages");
-Index: b/drivers/input/lirc/lirc_dev.h
-===================================================================
---- /dev/null
-+++ b/drivers/input/lirc/lirc_dev.h
-@@ -0,0 +1,194 @@
-+/*
-+ * LIRC base driver
-+ *
-+ * by Artur Lipowski <alipowski@interia.pl>
-+ *        This code is licensed under GNU GPL
-+ *
-+ */
-+
-+#ifndef _LINUX_LIRC_DEV_H
-+#define _LINUX_LIRC_DEV_H
-+
-+#define MAX_IRCTL_DEVICES 4
-+#define BUFLEN            16
-+
-+#define mod(n, div) ((n) % (div))
-+
-+#include <linux/slab.h>
-+#include <linux/fs.h>
-+#include <linux/ioctl.h>
-+#include <linux/poll.h>
-+#include <linux/kfifo.h>
-+
-+struct lirc_buffer {
-+	wait_queue_head_t wait_poll;
-+	spinlock_t lock;
-+	unsigned int chunk_size;
-+	unsigned int size; /* in chunks */
-+	/* Using chunks instead of bytes pretends to simplify boundary checking
-+	 * And should allow for some performance fine tunning later */
-+	struct kfifo *fifo;
-+};
-+
-+static inline void lirc_buffer_clear(struct lirc_buffer *buf)
-+{
-+	if (buf->fifo)
-+		kfifo_reset(buf->fifo);
-+	else
-+		WARN(1, "calling %s on an uninitialized lirc_buffer\n",
-+		     __func__);
-+}
-+
-+static inline int lirc_buffer_init(struct lirc_buffer *buf,
-+				    unsigned int chunk_size,
-+				    unsigned int size)
-+{
-+	init_waitqueue_head(&buf->wait_poll);
-+	spin_lock_init(&buf->lock);
-+	buf->chunk_size = chunk_size;
-+	buf->size = size;
-+	buf->fifo = kfifo_alloc(size*chunk_size, GFP_KERNEL, &buf->lock);
-+	if (!buf->fifo)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+static inline void lirc_buffer_free(struct lirc_buffer *buf)
-+{
-+	if (buf->fifo)
-+		kfifo_free(buf->fifo);
-+	else
-+		WARN(1, "calling %s on an uninitialized lirc_buffer\n",
-+		     __func__);
-+}
-+
-+static inline int lirc_buffer_full(struct lirc_buffer *buf)
-+{
-+	return kfifo_len(buf->fifo) == buf->size * buf->chunk_size;
-+}
-+
-+static inline int lirc_buffer_empty(struct lirc_buffer *buf)
-+{
-+	return !kfifo_len(buf->fifo);
-+}
-+
-+static inline int lirc_buffer_available(struct lirc_buffer *buf)
-+{
-+	return buf->size - (kfifo_len(buf->fifo) / buf->chunk_size);
-+}
-+
-+static inline void lirc_buffer_read(struct lirc_buffer *buf,
-+			       unsigned char *dest)
-+{
-+	if (kfifo_len(buf->fifo) >= buf->chunk_size)
-+		kfifo_get(buf->fifo, dest, buf->chunk_size);
-+}
-+
-+static inline void lirc_buffer_write(struct lirc_buffer *buf,
-+				unsigned char *orig)
-+{
-+	kfifo_put(buf->fifo, orig, buf->chunk_size);
-+}
-+
-+struct lirc_driver {
-+	char name[40];
-+	int minor;
-+	unsigned long code_length;
-+	unsigned int buffer_size; /* in chunks holding one code each */
-+	int sample_rate;
-+	unsigned long features;
-+
-+	unsigned int chunk_size;
-+
-+	void *data;
-+	int (*add_to_buf) (void *data, struct lirc_buffer *buf);
-+	struct lirc_buffer *rbuf;
-+	int (*set_use_inc) (void *data);
-+	void (*set_use_dec) (void *data);
-+	struct file_operations *fops;
-+	struct device *dev;
-+	struct module *owner;
-+};
-+
-+/* name:
-+ * this string will be used for logs
-+ *
-+ * minor:
-+ * indicates minor device (/dev/lirc) number for registered driver
-+ * if caller fills it with negative value, then the first free minor
-+ * number will be used (if available)
-+ *
-+ * code_length:
-+ * length of the remote control key code expressed in bits
-+ *
-+ * sample_rate:
-+ *
-+ * data:
-+ * it may point to any driver data and this pointer will be passed to
-+ * all callback functions
-+ *
-+ * add_to_buf:
-+ * add_to_buf will be called after specified period of the time or
-+ * triggered by the external event, this behavior depends on value of
-+ * the sample_rate this function will be called in user context. This
-+ * routine should return 0 if data was added to the buffer and
-+ * -ENODATA if none was available. This should add some number of bits
-+ * evenly divisible by code_length to the buffer
-+ *
-+ * rbuf:
-+ * if not NULL, it will be used as a read buffer, you will have to
-+ * write to the buffer by other means, like irq's (see also
-+ * lirc_serial.c).
-+ *
-+ * set_use_inc:
-+ * set_use_inc will be called after device is opened
-+ *
-+ * set_use_dec:
-+ * set_use_dec will be called after device is closed
-+ *
-+ * fops:
-+ * file_operations for drivers which don't fit the current driver model.
-+ *
-+ * Some ioctl's can be directly handled by lirc_dev if the driver's
-+ * ioctl function is NULL or if it returns -ENOIOCTLCMD (see also
-+ * lirc_serial.c).
-+ *
-+ * owner:
-+ * the module owning this struct
-+ *
-+ */
-+
-+
-+/* following functions can be called ONLY from user context
-+ *
-+ * returns negative value on error or minor number
-+ * of the registered device if success
-+ * contents of the structure pointed by p is copied
-+ */
-+extern int lirc_register_driver(struct lirc_driver *d);
-+
-+/* returns negative value on error or 0 if success
-+*/
-+extern int lirc_unregister_driver(int minor);
-+
-+/* Returns the private data stored in the lirc_driver
-+ * associated with the given device file pointer.
-+ */
-+void *lirc_get_pdata(struct file *file);
-+
-+/* default file operations
-+ * used by drivers if they override only some operations
-+ */
-+int lirc_dev_fop_open(struct inode *inode, struct file *file);
-+int lirc_dev_fop_close(struct inode *inode, struct file *file);
-+unsigned int lirc_dev_fop_poll(struct file *file, poll_table *wait);
-+int lirc_dev_fop_ioctl(struct inode *inode, struct file *file,
-+		       unsigned int cmd, unsigned long arg);
-+ssize_t lirc_dev_fop_read(struct file *file, char *buffer, size_t length,
-+			  loff_t *ppos);
-+ssize_t lirc_dev_fop_write(struct file *file, const char *buffer, size_t length,
-+			   loff_t *ppos);
-+long lirc_dev_fop_compat_ioctl(struct file *file, unsigned int cmd32,
-+			       unsigned long arg);
-+
-+#endif
++MODULE_PARM_DESC(debug, "Debug enabled or not");
