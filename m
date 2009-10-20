@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbZJTA4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932479AbZJTA4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932468AbZJTA4F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 20:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932401AbZJTA4E
+	id S932479AbZJTA4d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 20:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932441AbZJTA4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 20:56:04 -0400
-Received: from smtp.zeugmasystems.com ([70.79.96.174]:25008 "EHLO
-	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932396AbZJTA4D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 20:56:03 -0400
-Date: Mon, 19 Oct 2009 17:56:07 -0700 (PDT)
-From: Anirban Sinha <asinha@zeugmasystems.com>
-X-X-Sender: asinha@sleet.zeugmasystems.local
-To: Oleg Nesterov <oleg@redhat.com>
-cc: Anirban Sinha <ani@anirban.org>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: Re: Kernel oops when clearing bgp neighbor info with TCP MD5SUM
- enabled
-In-Reply-To: <20091019121327.GA11423@redhat.com>
-Message-ID: <Pine.LNX.4.64.0910191745050.20086@sleet.zeugmasystems.local>
-References: <Pine.LNX.4.64.0910081514050.18315@sleet.zeugmasystems.local>
- <20091008.155429.02850661.davem@davemloft.net>
- <Pine.LNX.4.64.0910081622400.18315@sleet.zeugmasystems.local>
- <20091008.175703.83006470.davem@davemloft.net>
- <Pine.LNX.4.64.0910171035340.2364@sleet.zeugmasystems.local>
- <4ADA7EDC.5010402@anirban.org> <4ADB7856.7000803@anirban.org>
- <20091019121327.GA11423@redhat.com>
+	Mon, 19 Oct 2009 20:56:33 -0400
+Received: from ozlabs.org ([203.10.76.45]:36413 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932448AbZJTA4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 20:56:32 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Carmelo Amoroso <carmelo73@gmail.com>
+Subject: Re: Fast LKM symbol resolution with SysV ELH hash table
+Date: Tue, 20 Oct 2009 11:26:25 +1030
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Greg KH <greg@kroah.com>, Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-kbuild" <linux-kbuild@vger.kernel.org>
+References: <4ADACD3A.9020803@gmail.com> <20091019132205.GA7192@kroah.com> <2ccd6e3c0910190802w117f8ac1nb562214786904c04@mail.gmail.com>
+In-Reply-To: <2ccd6e3c0910190802w117f8ac1nb562214786904c04@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 20 Oct 2009 00:56:07.0081 (UTC) FILETIME=[1B360990:01CA5120]
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910201126.26110.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 20 Oct 2009 01:32:51 am Carmelo Amoroso wrote:
+> 2009/10/19 Greg KH <greg@kroah.com>:
+> > On Mon, Oct 19, 2009 at 01:45:20PM +0200, Carmelo Amoroso wrote:
+> >> Just a few other notes. The current implementation I did based on SysV
+> >> has a drawback that is not backward compatible, so you cannot use old
+> >> modules with a kernel with the option enabled due to changes on struct
+> >> kernel_symbol.
+> >
+> > Why would this be a problem?  Whenever making a kernel config change,
+> > you should be able to rebuild everything, as lots of other configuration
+> > options are that way.
+> 
+> This is not always true... there could be cases in which you cannot
+> recompile old modules
+> (e.g vendors that provide non GPL modules)
 
-> I'd suppose that this unbalance comes from inet_twdr_hangman() pathes.
->
-> Could you verify this?
+And breaking them is a feature.  I do not go out of my way to avoid breaking
+out-of-tree modules; it's certainly more important to have simple maintainable
+code.
 
+You guys figure out what the best speed/size tradeoff is, and send me the
+patch for review.
 
-Yes, I have now verified this. There is indeed an issue with one of the
-functions called by inet_twdr_hangman(). The call sequence is:
-
-inet_twdr_hangman() -> inet_twdr_do_twkill_work() -> inet_twsk_put() ->
-twsk_destructor().
-
-In this case, the destructor callback is tcp_twsk_destructor() (installed
-from line 1208 in net/ipv4/tcp_ipv4.c and line 906 in net/ipv6/tcp_ipv6.c) .
-Without the TCP_MD5SUM compiled in, the function is a no-op. However, with the MD5SUM
-compiled in, it calls tcp_put_md5_sig_pool() (when keylen is non zero) which
-does an unbalanced put_cpu(). I did a grep across the entire tree.
-tcp_put_md5_sig_pool() is a matching function for tcp_get_md5_sig_pool() and
-in all other TCP IPV4 cases, it is called from net/ipv4/tcp_ipv4.c from
-functions tcp_v4_md5_hash_hdr() and
-
+Thanks!
+Rusty.
