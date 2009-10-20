@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751368AbZJTIj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751446AbZJTIj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751368AbZJTIj1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 04:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbZJTIj1
+	id S1751446AbZJTIj4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 04:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbZJTIjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 04:39:27 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:62211 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751096AbZJTIj0 (ORCPT
+	Tue, 20 Oct 2009 04:39:55 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:44234 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751327AbZJTIjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 04:39:26 -0400
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Subject: Re: [PATCH 2/4] kmemleak: Scan the _ftrace_events section in modules
-References: <20091019144602.14221.27128.stgit@pc1117.cambridge.arm.com>
-	<20091019144928.14221.73541.stgit@pc1117.cambridge.arm.com>
-	<200910201124.18695.rusty@rustcorp.com.au>
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Tue, 20 Oct 2009 09:39:20 +0100
-In-Reply-To: <200910201124.18695.rusty@rustcorp.com.au> (Rusty Russell's message of "Tue\, 20 Oct 2009 11\:24\:18 +1030")
-Message-ID: <tnx7huqa287.fsf@pc1117.cambridge.arm.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Oct 2009 08:39:22.0017 (UTC) FILETIME=[D248B110:01CA5160]
+	Tue, 20 Oct 2009 04:39:54 -0400
+Subject: Re: [Tech-board-discuss] Reminder: Linux Foundation Technical
+ Advisory Board Elections and Nomination process, Election tonight tokyo time
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Tech Board Discuss <Tech-board-discuss@lists.linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       ksummit-2009-discuss@lists.linux-foundation.org
+In-Reply-To: <1255998022.6006.11.camel@localhost.localdomain>
+References: <1255998022.6006.11.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 20 Oct 2009 17:39:54 +0900
+Message-Id: <1256027994.2905.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell <rusty@rustcorp.com.au> wrote:
-> On Tue, 20 Oct 2009 01:19:29 am Catalin Marinas wrote:
->> This section contains pointers to allocated objects and not scanning it
->> leads to false positives.
->
-> Thanks, applied.  Want me to push this for 2.6.32?
+On Tue, 2009-10-20 at 09:20 +0900, James Bottomley wrote:
+> The elections for five of the ten members of the Linux Foundation
+> Technical Advisory Board[TAB] are held every year. This year, the idea
+> is to be open to both KS and JLS attendees who wish to vote (should a
+> joint event between KS and JLS on Tuesday turn up, it will be held there
+> instead).
+> 
+> The election will be held at Gonpachi in Ginza
+> 
+> http://www.gonpachi.jp/en/g_zone/home/location
+> 
+> at 21:00 or shortly afterwards.  Any JLS or KS attendee is welcome to
+> turn up and vote (small quantities of food and beverage will be provided
+> as an incentive).  Nominations will be accepted at the location until
+> shortly after 21:00.
+> 
+> Anyone is eligible to stand for election, simply send your nomination
+> to:
+> 
+> Tech-board-discuss@lists.linux-foundation.org
+> 
+> We currently have Ten nominees for Five places:
+> 
+> Greg KH <greg@kroah.com>
+> Christoph Lameter <christoph@lameter.com>
+> Jonathan Corbet <corbet@lwn.net>
+> Arjan van de Ven <arjan@infradead.org>
+> Christoph Hellwig <hch@lst.de>
+> Roland Dreier <roland@digitalvampire.org>
+> John W. Linville <linville@tuxdriver.com>
+> Theodore Ts'o <tytso@mit.edu>
+> David Woodhouse <dwmw2@infradead.org>
+> Thomas Gleixner <tglx@linutronix.de>
 
-This patch requires 1/4 to be applied as it changes the kmemleak API a
-bit, so it won't even compile on its own. I can push them both
-together with your ack for the second.
+We have three more nominees:
 
-I'm not sure whether API changes make sense during -rc releases, I was
-more thinking of pushing the patches for 2.6.33.
+Grant Likely <grant.likely@secretlab.ca>
+Alan Cox <alan@lxorguk.ukuu.org.uk>
+Matthew Wilcox <matthew@wil.cx>
 
-For the current kernel, I could send you patch with the current API,
-though calling kmemleak_scan_area() for _ftrace_events is a bit ugly.
+> The deadline for receiving nominations by email is also up until the the
+> election is held (on the Evening of 19 October Japan time). Although,
+> please remember if you're not going to be present that things go wrong
+> with both networks and mailing lists, so get your nomination in early).
 
-Thanks.
+There's a typo in here, it's actually the 20th of October (today) not
+the 19th
 
--- 
-Catalin
+James
+
+
