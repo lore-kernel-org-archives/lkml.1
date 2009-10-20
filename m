@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbZJTB7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbZJTCCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbZJTB7j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 21:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758140AbZJTB7i
+	id S1758225AbZJTCCN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 22:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbZJTCCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 21:59:38 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:36149 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756437AbZJTB7i convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 21:59:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XhtzY5IQDDwXVCauDQIiJJLaWo/GVm8xMM3ldFaRAtSDPDoD5h05gkBcKPyVyEoeOg
-         8mM64KSTPM9MSMCZ7+nCURpobVx/B5cPm3e4U//+8iwp1dEoOMo7kxbLHiZbIX2PBJzd
-         Qw17KB+VkacHO1hMYmtrI0s0Ju2haF5v2AhQk=
+	Mon, 19 Oct 2009 22:02:12 -0400
+Received: from cantor.suse.de ([195.135.220.2]:39321 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758145AbZJTCCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 22:02:11 -0400
+Date: Tue, 20 Oct 2009 04:02:14 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64@vger.kernel.org
+Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
+In-Reply-To: <4ADB967A.4080707@suse.com>
+Message-ID: <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz>
+References: <4ADB967A.4080707@suse.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <4ADD049E.9080000@redhat.com>
-References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com>
-	 <ad7a95ae0910191610q6f6200f1n112a71a0cbd483f1@mail.gmail.com>
-	 <4ADD049E.9080000@redhat.com>
-Date: Mon, 19 Oct 2009 21:59:42 -0400
-Message-ID: <ad7a95ae0910191859l6e0246b8u8634fac5b8ec0770@mail.gmail.com>
-Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf 
-	probe and kprobe-tracer bugfixes
-From: Ashwin Chaugule <ashbertslists@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
-       a.p.zijlstra@chello.nl
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 8:30 PM, Masami Hiramatsu <mhiramat@redhat.com> wrote:
->
-> Actually, perf-probe can add tracepoint-like events. It will allow you
-> to probe function inside by both C-source-line level and address level.
-> perf-probe already supports inline function too.
->
-> Currently, even its syntax is unstable, but you can add an event inside
-> some function which is at cfile.c line 100, as below;
->
->  perf probe -P 'p:probe1 cfile.c:100'
->
-> and you can trace it by using perf record as same as other tracepoints
->
->  perf record -f -e kprobes:myprobe:record -F 1 -a ls
->
->
->> Alternately, I think even dynamic trace could provide similar insight
->> with perfevents ? If none of this is already done, I plan to work on
->> this in my spare time and would like to team up with anyone else
->> interested.
->
-> Yes, it's done as I said above.
-> But it still has long TODO list, including support type of arguments,
-> arrays, fields of structures and so on (of course, defining useful
-> syntax too). So any comments and contributes are welcome :-)
->
-Excellent ! Time to give it a spin :)
+On Sun, 18 Oct 2009, Jeff Mahoney wrote:
 
-Cheers,
-Ashwin
+> Hi Peter -
+> 
+> Commit 34d76c41 introduced the update_shares_data percpu, but it ends up
+> causing problems on large ia64 machines. Specifically, ia64 is limited
+> to 64k in percpu vars and with NR_CPUS=4096, that ends up being 32k by
+> itself. It ends up causing link errors since that is how ia64 enforces
+> the 64k limit.
+> 
+> I can take a deeper look at finding a workable solution but thought I'd
+> mention it in case you had ideas already.
+
+I am adding some IA64 CCs, as the failure is solely caused by the ia64 
+percpu implementation/pagefault handler optimization which requires the 
+.percpu section area not be larger than 64k, which blows up with 34d76c41 
+and NR_CPUS high enoufh (due to introduction of percpu array being 
+size-dependent on NR_CPUS).
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
+
