@@ -1,104 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269AbZJTOOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbZJUAjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752269AbZJTOOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 10:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbZJTOOR
+	id S1753136AbZJUAjV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 20:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbZJUAjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 10:14:17 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37379 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752069AbZJTOOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 10:14:16 -0400
-Date: Tue, 20 Oct 2009 15:14:24 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Tobias Oetiker <tobi@oetiker.ch>
-Cc: Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
-       jens.axboe@oracle.com
-Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
-Message-ID: <20091020141423.GH11778@csn.ul.ie>
-References: <alpine.DEB.2.00.0910191613580.8526@sebohet.brgvxre.pu> <20091019145954.GH9036@csn.ul.ie> <alpine.DEB.2.00.0910192211230.27123@sebohet.brgvxre.pu> <alpine.DEB.2.00.0910192215450.27123@sebohet.brgvxre.pu> <20091020105746.GD11778@csn.ul.ie> <alpine.DEB.2.00.0910201338530.27123@sebohet.brgvxre.pu> <20091020125139.GF11778@csn.ul.ie> <alpine.DEB.2.00.0910201456540.27618@sebohet.brgvxre.pu> <20091020133957.GG11778@csn.ul.ie> <alpine.DEB.2.00.0910201545510.27618@sebohet.brgvxre.pu>
+	Tue, 20 Oct 2009 20:39:08 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:34759 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203AbZJUAjF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 20:39:05 -0400
+Date: Tue, 20 Oct 2009 09:16:25 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, randy.dunlap@oracle.com,
+       arnd@arndb.de, linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       Louis.Rilling@kerlabs.com, kosaki.motohiro@jp.fujitsu.com,
+       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
+Message-ID: <20091020141625.GA3645@us.ibm.com>
+References: <20091013044925.GA28181@us.ibm.com> <4AD8C7E4.9000903@free.fr> <20091016194451.GA28706@us.ibm.com> <4ADCCD68.9030003@free.fr> <4ADCDE7F.4090501@librato.com> <20091020005125.GG27627@count0.beaverton.ibm.com> <m1vdiad9jd.fsf@fess.ebiederm.org> <20091020040315.GA26632@us.ibm.com> <m1iqeauyvl.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910201545510.27618@sebohet.brgvxre.pu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <m1iqeauyvl.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20, 2009 at 03:50:12PM +0200, Tobias Oetiker wrote:
-> Hi Mel,
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> The only real argument in favor of doing this in user space is greater
+> flexibility.
+
+Yyyyup.
+
+> I can see checkpointing/restoring a single thread process
+> without a pid namespace.  Anything more and you are just asking for
+> trouble.
 > 
-> Today Mel Gorman wrote:
-> 
-> > On Tue, Oct 20, 2009 at 02:58:53PM +0200, Tobias Oetiker wrote:
-> > > you are saing that the problem might be even older ?
-> > >
-> > > we do have 8GB ram and 16 GB swap, so it should not fail to allocate all that
-> > > often
-> > >
-> > > top - 14:58:34 up 19:54,  6 users,  load average: 2.09, 1.94, 1.97
-> > > Tasks: 451 total,   1 running, 449 sleeping,   0 stopped,   1 zombie
-> > > Cpu(s):  3.5%us, 15.5%sy,  2.0%ni, 72.2%id,  6.5%wa,  0.1%hi,  0.3%si,  0.0%st
-> > > Mem:   8198504k total,  7599132k used,   599372k free,  1212636k buffers
-> > > Swap: 16777208k total,    83568k used, 16693640k free,   610136k cached
-> > >
+> A design that weakens security.
+
+How does it weaken security?  It requires CAP_SYS_ADMIN, and, when
+targeted capabilities are added, it will require CAP_SYS_ADMIN to
+only those pid namespaces in which we choose a pid.
+
+> Increases maintenance costs.
+
+Does it really?  It re-uses most of the existing code.  More so than
+the only existing in-kernel restart code I've seen does.
+
+> All for
+> an unreliable result seems like a bad one to me.
+
+I've personally always been on the fence as to whether we rebuild the
+process tree in user-space or kernel.  And I'm still on the fence, as
+nothing you've said has convinced me otherwise.
+
+> > | The pid assignment code is currently ugly.  I asked that we just pass
+> > | in the min max pid pids that already exist into the core pid
+> > | assignment function and a constrained min/max that only admits a
+> > | single pid when we are allocating a struct pid for restart.  That was
+> > | not done and now we have a weird abortion with unnecessary special cases.
 > >
-> > High-order atomic allocations of the type you are trying at that frequency
-> > were always a very long shot. The most likely outcome is that something
-> > has changed that means a burst of allocations trigger an allocation failure
-> > where as before processes would delay long enough for the system not to notice.
+> > I did post a version of the patch attemptint to implement that. As
+> > pointed out in:
 > >
-> > 1. Have MTU settings changed?
+> > 	http://lkml.org/lkml/2009/8/17/445
+> >
+> > we would need more checks in alloc_pidmap() to cover cases like min or max
+> > being invalid or min being greater than max or max being greater than pid_max
+> > etc. Those checks also made the code ugly (imo).
 > 
-> no not to my knowledge
-> 
-> > 2. As order-5 allocations are required to succeed, I'm surprised in a
-> >    sense that there are only 5 failures because it implies the machine is
-> >    actually recovering and continueing on as normal. Can you think of what
-> >    happens in the morning that causes a burst of allocations to occur?
-> 
-> the burts occur all day while the machine is in use ... its just
-> that I was  writing this at noon so only the morning had passed. So
-> I compared things to the day before ...
-> 
+> If you need more checks you are doing it wrong.  The code already has min
+> and max values, and even a start value.  I was just strongly suggesting
+> we generalize where we get the values from, and then we have not special
+> cases. 
 
-Over the course of a day, how many would you see? By and large, it seems
-that the problem yourself and Frans are similar except his is a lot more
-severe.
+(I'm not sure whether this argument is a separate one - regarding the
+implementation of choosing the pid - from the kernel-vs-userspace one
+or not, so will wait for a response to my other email about your API)
 
-> > 3. Other than the failures, have you noticed any other problems with the
-> >    machine or does it continue along happily?
-> 
-> The machine seems to be fine.
-> 
-> > 4. Does the following patch help by any chance?
-> 
-> should I try this on vanilla 2.6.31.4 or ontop of your previous
-> patch?
-> 
-
-Try on top of vanilla 2.6.31.4 first plase and if failures still occur,
-then on top of the previous patch.
-
-> we are running virtualbox 3.0.8 on this machine, virtualbox is using
-> the physical network interface in bridge mode access the network.
-> Could this have something todo with the problem ?
-> 
-
-I do not know for sure. I'm assuming the configuration is the same on
-both kernels so it's unlikely to be the issue.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+thanks,
+-serge
