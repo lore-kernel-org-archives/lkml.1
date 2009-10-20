@@ -1,66 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZJTGym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbZJTGwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbZJTGym (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 02:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbZJTGyl
+	id S1755177AbZJTGwY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 02:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZJTGwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 02:54:41 -0400
-Received: from mailout-apollo.uni-duesseldorf.de ([134.99.128.36]:55530 "EHLO
-	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754730AbZJTGyl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 02:54:41 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Tue, 20 Oct 2009 08:51:08 +0200 (CEST)
-From: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-Subject: Re: Fwd: [PATCH] [RFC] ataflop: remove buggy IRQ disable from
- do_fd_request()
-In-reply-to: <alpine.LSU.2.00.0910190932030.8582@wotan.suse.de>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       linux-m68k <linux-m68k@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Message-id: <alpine.DEB.2.00.0910200847320.8658@zirkon.biophys.uni-duesseldorf.de>
-References: <alpine.LSU.2.00.0910091141150.19284@wotan.suse.de>
- <10f740e80910100201n30367714uc57ec3c9c39b92af@mail.gmail.com>
- <alpine.DEB.2.00.0910110846420.20140@zirkon.biophys.uni-duesseldorf.de>
- <alpine.LSU.2.00.0910121106330.19284@wotan.suse.de>
- <alpine.DEB.2.00.0910182126120.6395@zirkon.biophys.uni-duesseldorf.de>
- <alpine.LSU.2.00.0910190932030.8582@wotan.suse.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 20 Oct 2009 02:52:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35757 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750874AbZJTGwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 02:52:23 -0400
+Date: Tue, 20 Oct 2009 08:51:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
+	probe and kprobe-tracer bugfixes
+Message-ID: <20091020065151.GM8550@elte.hu>
+References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <20091017080203.GA4155@elte.hu> <20091017103427.GA31238@elte.hu> <4ADAAF50.9040604@redhat.com> <20091019075103.GF17960@elte.hu> <20091019110055.GA5549@nowhere> <20091019112125.GA12829@elte.hu> <4ADCC348.2020800@redhat.com> <4ADCEE1B.40003@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ADCEE1B.40003@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
 
-> > > Please elaborate a little bit more which of the two points above you base 
-> > > your NACK on.
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+
+> Masami Hiramatsu wrote:
+> > Ingo Molnar wrote:
+> >> For example you might want to probe the point within schedule that calls
+> >> switch_mm() - this could be done via:
+> >>
+> >>    perf probe schedule@switch_mm
+> >>
+> >> Or the point where 'next' gets assigned? Sure, you dont need to even
+> >> open the editor, if you know the rough outline of the function you can
+> >> probe it via:
+> >>
+> >>    perf probe schedule@'next ='
+> >>
+> >> Note that i was able to specify both probes without having opened an
+> >> editor - just based on the general knowledge of the scheduler.
 > > 
-> > The removal of local_irq_disable() (which should have been local_irq_enable()) 
-> > just raised a flag, and I didn't immediately see why the interrupt enable had 
-> > been commented out. 
-> 
-> Yes, it has been commented out in a very non-intuitive way.
-
-That. too :-) What I meant to say - the reason why someone chose to comment out 
-the original sti() wasn't really clear. I guess the reason for that particular 
-change has been lost in the pre-git or bk era.
- 
-> > With a bit of further thought on the matter I am satisfied that this patch will 
-> > not impact on driver function at all, and do not wish to sustain my objection.
+> > It may be useful for return probe too :-)
 > > 
-> > IOW: Ack, and my sincere apologies for wasting your time. 
+> >  perf probe schedule@return
 > 
-> Thanks, I have added
+> Hmm, IMHO,
 > 
-> 	Acked-by: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+> >>    perf probe schedule@switch_mm
 > 
-> to the patch changelog in my tree.
+> might be confused as 'probe schedule() called from switch_mm()'.
+> 
+> BTW, there might be several local/inline functions which have
+> same name.
+> I think we'd better provide a syntax for solving this issue.
+> And current syntax uses @ for this purpose as below.
+> 
+>  perf probe localfunc@file
+> 
+> Maybe, we still can use % for special matching,
+> 
+>  perf probe schedule%switch_mm
+> 
+> These can be combined with each other, as below.
+> 
+>  perf probe schedule@kernel/sched.c%switch_mm
+> 
+> Or, supporting lazy string pattern matching
+>  (reusing glob matching in ftrace?)
+> 
+>  perf probe schedule:'switch_mm(*);'
+> 
+> Just my thought.
 
-That's right ...
+I'm not attached to any particular form of syntax here (other than it 
+should be simple and obvious) - we can try and see how it works out.
 
-	Michael
-
+	Ingo
