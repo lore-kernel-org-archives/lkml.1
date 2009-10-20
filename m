@@ -1,252 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbZJSX7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbZJTALz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758044AbZJSX7c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 19:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbZJSX7c
+	id S1758059AbZJTALz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 20:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758017AbZJTALx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 19:59:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:44748 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755889AbZJSX7b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 19:59:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xSWKvryVKL+S5QsBSXQU6Q89yB6HXQGVEB8+8x0HFDrNHpC97fQN+ofZri5AaHVt8X
-         A+jthun21aLTOP/Hgpyyluey1i5fy0a98zLbHVPGc7MSccga/i3dvdDafgnlumHGQ/Av
-         etyDtxJ4URh6getX2HutbBVTqvhOLcWlJTMgw=
-Date: Tue, 20 Oct 2009 04:01:21 +0400
-From: Paul Fertser <fercerpav@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org,
-       Nelson Castillo <arhuaco@freaks-unidos.net>,
-       Balaji Rao <balajirrao@openmoko.org>
-Subject: Re: [PATCH] power: pcf50633: introduces battery charging current
-	control
-Message-ID: <20091020000121.GC19580@home.pavel.comp>
-References: <1255471148-29047-1-git-send-email-fercerpav@gmail.com> <1255471148-29047-2-git-send-email-fercerpav@gmail.com> <20091017170124.GB1526@ucw.cz>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="BwCQnh7xodEAoBMC"
-Content-Disposition: inline
-In-Reply-To: <20091017170124.GB1526@ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-30)
+	Mon, 19 Oct 2009 20:11:53 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:33772 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757988AbZJTALx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 20:11:53 -0400
+Subject: Re: nfs oops in 2.6.32-rc5-00041-g1d91624
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Frans Pop <elendil@planet.nl>
+Cc: Egon Alter <egon.alter@gmx.net>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+In-Reply-To: <200910200151.55016.elendil@planet.nl>
+References: <200910191803.26845.egon.alter@gmx.net>
+	 <200910200151.55016.elendil@planet.nl>
+Content-Type: text/plain
+Date: Tue, 20 Oct 2009 09:11:51 +0900
+Message-Id: <1255997511.2892.8.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 4 msgs/h 1 sum rcpts/h 11 sum msgs/h 2 total rcpts 1705 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 76617B90327C69A1992A0CE40F87175349D55308
+X-UiO-SPAM-Test: remote_host: 220.106.13.183 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 5 max/h 2 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---BwCQnh7xodEAoBMC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hi,
-
-Pavel, thanks for you review.
-
-On Sat, Oct 17, 2009 at 07:01:24PM +0200, Pavel Machek wrote:
-> > From: Balaji Rao <balajirrao@openmoko.org>
+On Tue, 2009-10-20 at 01:51 +0200, Frans Pop wrote:
+> Adding CC to linux-nfs.
 > 
-> Could we get some changelog here? Like 'it adds new file to sysfs
-> interface, ...'
-
-Done.
-
-> > +static ssize_t
-> > +show_chglim(struct device *dev, struct device_attribute *attr, char *buf)
+> =================
+> Hi,
 > 
-> Could we get meaningful function names?
-
-Well, this function name is derived from the sysfs attribute name and
-since we already have "usb_curlim" sysfs attribute and corresponding
-functions show_usblim() and set_usblim() it might be beneficial to
-keep the driver code consistent. I now documented the attribute
-behaviour in the code in the hope that users will look it up if in
-doubt.
-
-> > @@ -31,6 +31,8 @@ struct pcf50633_platform_data {
-> >  
-> >  	int charging_restart_interval;
-> >  
-> > +	int chg_ref_current_ma;
-> > +
+> I got this oops while doing a grep on an nfs4 share.
 > 
-> ...and variable names? This is also inconsistent with name above.
+>  kernel: general protection fault: 0000 [#1] SMP
+>  kernel: last sysfs file: /sys/devices/system/cpu/cpu1/cache/index2/shared_cpu_map
+>  kernel: CPU 0
+>  kernel: Modules linked in: nfs lockd nfs_acl auth_rpcgss sunrpc sit tunnel4 analog it87 hwmon_vid joydev snd_pcm_oss snd_mixer_o
+> ss snd_seq_midi snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_seq cpufreq_conservative cpufreq_userspace cpufreq_
+> powersave snd_hda_codec_realtek snd_emu10k1 snd_rawmidi snd_ac97_codec ac97_bus snd_seq_device snd_hda_intel snd_util_mem snd_hda_codec radeon ttm snd_pcm sn
+> d_timer snd_hwdep emu10k1_gp drm_kms_helper snd k8temp r8169 gameport pcspkr drm soundcore mii snd_page_alloc i2c_piix4 i2c_algo_bit
+>  kernel: Pid: 4337, comm: rpciod/0 Tainted: G        W  2.6.32-rc5-00041-g1d91624 #1 GA-MA69VM-S2
+                                                      ^^^
+What is the warning that preceded this Oops?
 
-I added a comment explaining what this value is supposed to be set
-to. The name is borrowed directly from the datasheet where it is
-called "charger reference current". I hope this is ok.
+>  kernel: RIP: 0010:[<ffffffffa028d9c2>]  [<ffffffffa028d9c2>] rpcauth_checkverf+0x32/0x70 [sunrpc]
+>  kernel: RSP: 0000:ffff8800371add60  EFLAGS: 00010246
+>  kernel: RAX: 6b6b6b6b6b6b6b6b RBX: ffff880017380070 RCX: 000000000000200f
+>  kernel: RDX: 0000000000000000 RSI: ffff880034418290 RDI: ffff880017380070
+>  kernel: RBP: ffff8800371add80 R08: ffff8800371ac000 R09: 0000010f683033fc
+>  kernel: R10: 0000000000000000 R11: ffff880001c14318 R12: ffff880035d54590
+>  kernel: R13: ffff880034418290 R14: ffff88003472dad0 R15: ffff880034c87260
+>  kernel: FS:  000000007ffd8000(0000) GS:ffff880001c00000(0000) knlGS:00000000f73ff6c0
+>  kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+>  kernel: CR2: 000000000e966004 CR3: 00000000140fe000 CR4: 00000000000006f0
+>  kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>  kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>  kernel: Process rpciod/0 (pid: 4337, threadinfo ffff8800371ac000, task ffff8800345f66c0)
+>  kernel: Stack:
+>  kernel:  ffff880038cd2588 ffff880017380070 ffff880034c87260 ffffffffa0320ed0
+>  kernel: <0> ffff8800371adde0 ffffffffa0285449 ffff8800371addb0 ffffffffa0284cba
+>  kernel: <0> 0000000000000000 ffff880017387a38 ffff8800345f6c38 ffff880017380070
+>  kernel: Call Trace:
+>  kernel:  [<ffffffffa0320ed0>] ? nfs4_xdr_dec_read+0x0/0x110 [nfs]
+>  kernel:  [<ffffffffa0285449>] call_decode+0x2d9/0x790 [sunrpc]
+>  kernel:  [<ffffffffa0284cba>] ? call_transmit_status+0x3a/0x80 [sunrpc]
+>  kernel:  [<ffffffffa028cc82>] __rpc_execute+0xb2/0x2b0 [sunrpc]
+>  kernel:  [<ffffffffa028ceb0>] ? rpc_async_schedule+0x0/0x20 [sunrpc]
+>  kernel:  [<ffffffffa028cec0>] rpc_async_schedule+0x10/0x20 [sunrpc]
+>  kernel:  [<ffffffff8106969d>] worker_thread+0x15d/0x280
+>  kernel:  [<ffffffff8106de50>] ? autoremove_wake_function+0x0/0x40
+>  kernel:  [<ffffffff81069540>] ? worker_thread+0x0/0x280
+>  kernel:  [<ffffffff8106da4e>] kthread+0x8e/0xa0
+>  kernel:  [<ffffffff8100ceaa>] child_rip+0xa/0x20
+>  kernel:  [<ffffffff8106d9c0>] ? kthread+0x0/0xa0
+>  kernel:  [<ffffffff8100cea0>] ? child_rip+0x0/0x20
+>  kernel: Code: 20 f6 05 d9 d5 01 00 10 48 89 5d e8 4c 89 6d f8 48 89 fb 4c 89 65 f0 49 89 f5 4c 8b 67 50 75 1c 49 8b 44 24 38 4c 89 ee 48 89 df <ff> 50 38 48 8b 5d e8 4c 8b 65 
+> f0 4c 8b 6d f8 c9 c3 49 8b 44 24
+>  kernel: RIP  [<ffffffffa028d9c2>] rpcauth_checkverf+0x32/0x70 [sunrpc]
+>  kernel:  RSP <ffff8800371add60>
+>  kernel: ---[ end trace 667f1c1d6e9b9476 ]---
 
-Please find the new patch attached.
+Hmm...It looks as though the credential doesn't have a crvalidate
+method. I'll see if I can track this down...
 
-NB: Anton, if you apply this modified version, a new comment in
-include/linux/mfd/pcf50633/core.h will produce a trivial merge
-conflict with the later patch ("get rid of charging restart software
-auto-triggering"). I can resend the whole series for your convenience
-after everything else is sorted out if you prefer.
+Cheers
+  Trond
 
--- 
-Be free, use free (http://www.gnu.org/philosophy/free-sw.html) software!
-mailto:fercerpav@gmail.com
-
---BwCQnh7xodEAoBMC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="0001-power-pcf50633-introduces-battery-charging-current.patch"
-
->From 06206380d4d200371d5da118a6b5ded0105c808e Mon Sep 17 00:00:00 2001
-From: Balaji Rao <balajirrao@openmoko.org>
-Date: Thu, 29 Jan 2009 15:00:37 +0000
-Subject: [PATCH v2] power: pcf50633: introduces battery charging current control
-
-Implement a new sysfs attribute to allow changing MBC charging limit on the
-fly independently of usb current limit. It also gets set automatically
-every time usb current limit is changed.
-
-Limiting charging current also prevents violating USB specification in the
-case when the whole device is shut down and usb current limit is reset to
-the factory default by the pcf50633 state transition.
-
-Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
-Signed-off-by: Paul Fertser <fercerpav@gmail.com>
----
- drivers/power/pcf50633-charger.c  |   78 ++++++++++++++++++++++++++++++++++--
- include/linux/mfd/pcf50633/core.h |    7 +++
- 2 files changed, 80 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/power/pcf50633-charger.c b/drivers/power/pcf50633-charger.c
-index 48e92c0..b789f5b 100644
---- a/drivers/power/pcf50633-charger.c
-+++ b/drivers/power/pcf50633-charger.c
-@@ -48,16 +48,21 @@ int pcf50633_mbc_usb_curlim_set(struct pcf50633 *pcf, int ma)
- 	u8 bits;
- 	int charging_start = 1;
- 	u8 mbcs2, chgmod;
-+	unsigned int mbcc5;
- 
--	if (ma >= 1000)
-+	if (ma >= 1000) {
- 		bits = PCF50633_MBCC7_USB_1000mA;
--	else if (ma >= 500)
-+		ma = 1000;
-+	} else if (ma >= 500) {
- 		bits = PCF50633_MBCC7_USB_500mA;
--	else if (ma >= 100)
-+		ma = 500;
-+	} else if (ma >= 100) {
- 		bits = PCF50633_MBCC7_USB_100mA;
--	else {
-+		ma = 100;
-+	} else {
- 		bits = PCF50633_MBCC7_USB_SUSPEND;
- 		charging_start = 0;
-+		ma = 0;
- 	}
- 
- 	ret = pcf50633_reg_set_bit_mask(pcf, PCF50633_REG_MBCC7,
-@@ -67,7 +72,24 @@ int pcf50633_mbc_usb_curlim_set(struct pcf50633 *pcf, int ma)
- 	else
- 		dev_info(pcf->dev, "usb curlim to %d mA\n", ma);
- 
--	/* Manual charging start */
-+	/*
-+	 * We limit the charging current to be the USB current limit.
-+	 * The reason is that on pcf50633, when it enters PMU Standby mode,
-+	 * which it does when the device goes "off", the USB current limit
-+	 * reverts to the variant default.  In at least one common case, that
-+	 * default is 500mA.  By setting the charging current to be the same
-+	 * as the USB limit we set here before PMU standby, we enforce it only
-+	 * using the correct amount of current even when the USB current limit
-+	 * gets reset to the wrong thing
-+	 */
-+
-+	if (mbc->pcf->pdata->chg_ref_current_ma) {
-+		mbcc5 = (ma << 8) / mbc->pcf->pdata->chg_ref_current_ma;
-+		if (mbcc5 > 255)
-+			mbcc5 = 255;
-+		pcf50633_reg_write(mbc->pcf, PCF50633_REG_MBCC5, mbcc5);
-+	}
-+
- 	mbcs2 = pcf50633_reg_read(pcf, PCF50633_REG_MBCS2);
- 	chgmod = (mbcs2 & PCF50633_MBCS2_MBC_MASK);
- 
-@@ -157,9 +179,55 @@ static ssize_t set_usblim(struct device *dev,
- 
- static DEVICE_ATTR(usb_curlim, S_IRUGO | S_IWUSR, show_usblim, set_usblim);
- 
-+static ssize_t
-+show_chglim(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct pcf50633_mbc *mbc = dev_get_drvdata(dev);
-+	u8 mbcc5 = pcf50633_reg_read(mbc->pcf, PCF50633_REG_MBCC5);
-+	unsigned int ma;
-+
-+	if (!mbc->pcf->pdata->chg_ref_current_ma)
-+		return -ENODEV;
-+
-+	ma = (mbc->pcf->pdata->chg_ref_current_ma *  mbcc5) >> 8;
-+
-+	return sprintf(buf, "%u\n", ma);
-+}
-+
-+static ssize_t set_chglim(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	struct pcf50633_mbc *mbc = dev_get_drvdata(dev);
-+	unsigned long ma;
-+	unsigned int mbcc5;
-+	int ret;
-+
-+	if (!mbc->pcf->pdata->chg_ref_current_ma)
-+		return -ENODEV;
-+
-+	ret = strict_strtoul(buf, 10, &ma);
-+	if (ret)
-+		return -EINVAL;
-+
-+	mbcc5 = (ma << 8) / mbc->pcf->pdata->chg_ref_current_ma;
-+	if (mbcc5 > 255)
-+		mbcc5 = 255;
-+	pcf50633_reg_write(mbc->pcf, PCF50633_REG_MBCC5, mbcc5);
-+
-+	return count;
-+}
-+
-+/*
-+ * This attribute allows to change MBC charging limit on the fly
-+ * independently of usb current limit. It also gets set automatically every
-+ * time usb current limit is changed.
-+ */
-+static DEVICE_ATTR(chg_curlim, S_IRUGO | S_IWUSR, show_chglim, set_chglim);
-+
- static struct attribute *pcf50633_mbc_sysfs_entries[] = {
- 	&dev_attr_chgmode.attr,
- 	&dev_attr_usb_curlim.attr,
-+	&dev_attr_chg_curlim.attr,
- 	NULL,
- };
- 
-diff --git a/include/linux/mfd/pcf50633/core.h b/include/linux/mfd/pcf50633/core.h
-index 9aba7b7..ec9d3de 100644
---- a/include/linux/mfd/pcf50633/core.h
-+++ b/include/linux/mfd/pcf50633/core.h
-@@ -31,6 +31,13 @@ struct pcf50633_platform_data {
- 
- 	int charging_restart_interval;
- 
-+	/*
-+	 * Should be set according to the reference resistor used, see
-+	 * I_{ch(ref)} charger reference current in the pcf50633 User
-+	 * Manual.
-+	 */
-+	int chg_ref_current_ma;
-+
- 	/* Callbacks */
- 	void (*probe_done)(struct pcf50633 *);
- 	void (*mbc_event_callback)(struct pcf50633 *, int);
--- 
-1.6.0.6
-
-
---BwCQnh7xodEAoBMC--
