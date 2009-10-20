@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbZJTUM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbZJTUNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752846AbZJTUM5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 16:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZJTUM5
+	id S1752886AbZJTUNM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 16:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbZJTUNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 16:12:57 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:46006 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752012AbZJTUM4 (ORCPT
+	Tue, 20 Oct 2009 16:13:11 -0400
+Received: from smtp171.iad.emailsrvr.com ([207.97.245.171]:46820 "EHLO
+	smtp171.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbZJTUNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 16:12:56 -0400
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
-       Jean-Christophe Dubois <jcd@tribudubois.net>,
-       James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: [PATCH] ima: remove ACPI dependency
-Date: Tue, 20 Oct 2009 16:12:38 -0400
-Message-Id: <1256069558-4222-1-git-send-email-zohar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.0.6
+	Tue, 20 Oct 2009 16:13:01 -0400
+Message-ID: <4ADE19D0.4060900@librato.com>
+Date: Tue, 20 Oct 2009 16:13:04 -0400
+From: Oren Laadan <orenl@librato.com>
+Organization: Librato
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Matt Helsley <matthltc@us.ibm.com>,
+       Daniel Lezcano <daniel.lezcano@free.fr>, randy.dunlap@oracle.com,
+       arnd@arndb.de, linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       Louis.Rilling@kerlabs.com, kosaki.motohiro@jp.fujitsu.com,
+       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
+References: <20091013044925.GA28181@us.ibm.com> <4AD8C7E4.9000903@free.fr>	<20091016194451.GA28706@us.ibm.com> <4ADCCD68.9030003@free.fr>	<4ADCDE7F.4090501@librato.com>	<20091020005125.GG27627@count0.beaverton.ibm.com>	<m1vdiad9jd.fsf@fess.ebiederm.org> <20091020040315.GA26632@us.ibm.com>	<m1iqeauyvl.fsf@fess.ebiederm.org> <20091020183329.GB22646@us.ibm.com> <m1r5sxsw7w.fsf@fess.ebiederm.org>
+In-Reply-To: <m1r5sxsw7w.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove ACPI dependency on systems without a TPM enabled.
 
-Reported-by: Jean-Christophe Dubois <jcd@tribudubois.net>
-Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
----
- security/integrity/ima/Kconfig |   16 +++++++---------
- 1 files changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/security/integrity/ima/Kconfig b/security/integrity/ima/Kconfig
-index 53d9764..3ca39e7 100644
---- a/security/integrity/ima/Kconfig
-+++ b/security/integrity/ima/Kconfig
-@@ -2,14 +2,12 @@
- #
- config IMA
- 	bool "Integrity Measurement Architecture(IMA)"
--	depends on ACPI
- 	select SECURITYFS
- 	select CRYPTO
- 	select CRYPTO_HMAC
- 	select CRYPTO_MD5
- 	select CRYPTO_SHA1
--	select TCG_TPM
--	select TCG_TIS
-+	select ACPI if TCG_TPM
- 	help
- 	  The Trusted Computing Group(TCG) runtime Integrity
- 	  Measurement Architecture(IMA) maintains a list of hash
-@@ -18,12 +16,12 @@ config IMA
- 	  to change the contents of an important system file
- 	  being measured, we can tell.
- 
--	  If your system has a TPM chip, then IMA also maintains
--	  an aggregate integrity value over this list inside the
--	  TPM hardware, so that the TPM can prove to a third party
--	  whether or not critical system files have been modified.
--	  Read <http://www.usenix.org/events/sec04/tech/sailer.html>
--	  to learn more about IMA.
-+	  If your system has a TPM chip, and it is enabled, then
-+	  IMA also maintains an aggregate integrity value over
-+	  this list inside the TPM hardware, so that the TPM can
-+	  prove to a third party whether or not critical system
-+	  files have been modified. To learn more about IMA, read
-+	  <http://www.usenix.org/events/sec04/tech/sailer.html>
- 	  If unsure, say N.
- 
- config IMA_MEASURE_PCR_IDX
--- 
-1.6.0.6
+Eric W. Biederman wrote:
+> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> 
+>> Eric W. Biederman [ebiederm@xmission.com] wrote:
+>> | > Could you clarify ? How is the call to alloc_pidmap() from clone3() different
+>> | > from the call from clone() itself ?
+>> | 
+>> | I think it is totally inappropriate to assign pids in a pid namespace
+>> | where there are user space processes already running.
+>>
+>> Honestly, I don't understand why it is inappropriate or how this differs
+>> from normal clone() - which also assigns pids in own and ancestor pid
+>> namespaces.
+> 
+> The fact we can specify which pids we want.  I won't claim it is as
+> exploitable as NULL pointer deferences have been but it has that kind
+> of feel to it.
+
+This security concern was first brought up by Linus, and to address it
+we made clone3() require that the user be privileged to select pids.
+
+But, honestly, a clone3() that allows the caller to request a specific
+pid is like a restart() syscall that allows the caller to restore a
+process with its original pid:  you would simply checkpoint, and then
+alter the pid in the checkpoint image and restart, repeat ad infinitum.
+
+>From your security prism, they are equivalent: they practically allow
+a user to have an arbitrary process with a selected pid. So it doesn't
+really matter - for this security concern - if you select the pid in
+the kernel through restart() or from userspace through clone3().
+
+Sure, you can also "choose" a pid today, by repeatedly forking until
+you get what you want... but that is harder to exploit. In contrast,
+both clone3() and restart() allow pid selection, instantaneously.
+Which is why both require privileges if the caller wants to select/
+restore pids.
+
+Oren.
 
