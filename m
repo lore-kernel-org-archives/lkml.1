@@ -1,114 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752333AbZJTN7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752223AbZJTN41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752333AbZJTN7I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 09:59:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZJTN7H
+	id S1752223AbZJTN41 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 09:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbZJTN40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 09:59:07 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:4786 "EHLO mx1.redhat.com"
+	Tue, 20 Oct 2009 09:56:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42576 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751149AbZJTN7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 09:59:05 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3 v2] linux infrared remote control drivers
-Date: Tue, 20 Oct 2009 09:56:33 -0400
-User-Agent: KMail/1.12.1 (Linux/2.6.30.8-64.fc11.x86_64; KDE/4.3.1; x86_64; ; )
-Cc: linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+	id S1751846AbZJTN4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 09:56:25 -0400
+Message-ID: <4ADDC1C6.9090305@kernel.org>
+Date: Tue, 20 Oct 2009 22:57:26 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeff Mahoney <jeffm@suse.com>, Jiri Kosina <jkosina@suse.cz>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
+References: <4ADB967A.4080707@suse.com> <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz> <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz> <20091020061557.GE8550@elte.hu> <alpine.LSU.2.00.0910200820500.8582@wotan.suse.de> <20091020063555.GJ8550@elte.hu> <4ADDB640.4020707@suse.com> <20091020134308.GA3930@elte.hu>
+In-Reply-To: <20091020134308.GA3930@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910200956.33391.jarod@redhat.com>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 20 Oct 2009 13:56:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This here is a second go at submitting linux infrared remote control
-(lirc) drivers for kernel inclusion, with a much smaller patch set that
-includes only the core lirc driver and two device drivers, all three of
-which have been heavily updated since the last submission, based on
-feedback received.
+Ingo Molnar wrote:
+> IA64 should be fixed really - we can get past the 64K of percpu data 
+> limit anytime we add a few more pages of per-cpu data to the kernel - 
+> the scheduler just happened to be the one to cross it this time.
 
-Never meant for it to be more than a year before the second attempt at
-submitting lirc drivers, but day jobs and life tend to get in the way.
-Development work has been ongoing despite all that, just took a bit
-longer than anticipated to address as much of the review comments as
-possible and get up the guts for another submission. ;)
+Christoph (cc'd hi!) was talking about re-purposing one of reserved
+generic registers (for current or something, I don't remember the
+details) for percpu base and just getting the original one via percpu
+access.  With that we should be able to lift the limitation without
+much performance penalty.
 
-For those not in the know, lirc has existed out-of-tree at lirc.org for
-years and years, and is currently patched into the kernels or provided
-as add-on kernel module packages in a number of distributions (its been
-patched into Fedora kernels going on 2.5 years now), so the code is in
-fairly wide use and is reasonably well tested, despite not being in the
-upstream kernel itself.
+> Saying that all static percpu data must be below 64K, which will only be 
+> noticed once IA64 gets its testing act together months after it's been 
+> created is silly. If you want to enforce such a limit make it testable 
+> in a _timely_ fashion. Or fix the limit really.
 
-The drivers included in this submission are for the Windows MCE USB IR
-transceivers and the SoundGraph iMON USB receivers/displays. I have
-multiple devices driven by each of these drivers, and have done fairly
-extensive testing on them, currently primarily on 2.6.31 and 2.6.32.
+Yeah, the problem probably was that it only pushes the perpcu area
+very slightly over the limit depending on configuration so it's not
+too surprising that it didn't get reported for some time.  Also, the
+linker script thing is a sanity check which is intentionally put there
+to trigger when this happens so that it can be found out clearly
+during build time.
 
-The MCE transceiver can handle just about any IR protocol you can throw
-at it on the RX side, thus it passes raw IR through to the userspace
-lircd daemon for processing. An lircd.conf file maps IR codes to key 
-codes, and they can be consumed by the system either via applications
-with lirc client support, or they can be fed back into the input subsys
-via uinput. The transmit side has no input subsys interaction. Note
-that this driver now handles both generations of MCE transceivers.
+In the long term, it will be a good idea to lift that restriction.
+That said, I really don't think we should be adding NR_CPUS sized
+array to percpu area either.  Things like that quickly become very
+scary with N*1024 cpu configurations.
 
-The iMON receivers come in two flavors, an early version that passes
-raw IR, and all more recent versions that do onboard decoding of IR
-signals. The iMON driver now supports running as a pure input device on
-devices with onboard decoding, as well as "classic" lirc mode for the
-ones that don't decode onboard and includes a modparam option to let
-the onboard decode devices continue to operate in "classic" mode, for
-those who prefer it.
-
-There's been talk about a raw IR input device type/ioctls/whatever. But
-it doesn't yet exist, and I know *I* don't have time to write it up...
-lircd and lirc drivers could be adapted to use such a thing if/when it
-sees the light of day, but for now, the lirc_dev ("classic" lirc mode)
-interface is quite well battle-tested, and very capable for both raw IR
-receive and transmit. There's also been a patchset proposed to do raw
-IR decoding in the kernel. I'm fine with that idea too, but only if
-there is *also* a way to get the raw IR out to userspace (lircd), as
-there are some esoteric IR protocols out there and we can be a lot more
-nimble about adding support for decoding new and different protocols
-in userspace than we can in the kernel -- and lircd can now feed all
-the resulting key codes back into the input subsystem via uinput too.
-
-The hope is that we can get lirc_dev (upon which all other lirc drivers
-depend) merged, along with these initial two drivers, then we can start
-reviewing the additional 15 or so lirc drivers for inclusion as well.
-
-Combined diffstat:
-
- MAINTAINERS                      |    9 +
- drivers/input/Kconfig            |    2 +
- drivers/input/Makefile           |    1 +
- drivers/input/lirc/Kconfig       |   26 +
- drivers/input/lirc/Makefile      |    8 +
- drivers/input/lirc/lirc.h        |  100 ++
- drivers/input/lirc/lirc_dev.c    |  837 +++++++++++++
- drivers/input/lirc/lirc_dev.h    |  194 +++
- drivers/input/lirc/lirc_imon.c   | 2471 ++++++++++++++++++++++++++++++++++++++
- drivers/input/lirc/lirc_imon.h   |  209 ++++
- drivers/input/lirc/lirc_mceusb.c | 1235 +++++++++++++++++++
- 11 files changed, 5092 insertions(+), 0 deletions(-)
-
-Git tree:
-* git://git.wilsonet.com/linux-2.6-lirc.git/
-Git web:
-* http://git.wilsonet.com/linux-2.6-lirc.git/
-Upstream lirc project:
-* http://www.lirc.org/
-
-(If you're going to clone, I'd highly suggest adding it as a remote
-to a linus' tree checkout rather than clone'ing directly, as I don't
-have nearly as much bandwidth at home as kernel.org... ;)
+Thanks.
 
 -- 
-Jarod Wilson
-jarod@redhat.com
+tejun
