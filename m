@@ -1,172 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbZJTN2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZJTOic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752092AbZJTN2O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 09:28:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZJTN2O
+	id S1752420AbZJTOic (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 10:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbZJTOib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 09:28:14 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:44951 "EHLO atmel-es2.atmel.fr"
+	Tue, 20 Oct 2009 10:38:31 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:60577 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751832AbZJTN2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 09:28:12 -0400
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: linux-arm-kernel@lists.infradead.org, avictor.za@gmail.com,
-       akpm@linux-foundation.org, linux-mmc@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH] at91: at91sam9g20ek modify dual slot evaluation kit
-Date: Tue, 20 Oct 2009 16:32:53 +0200
-Message-Id: <1256049173-17373-1-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.6.5
+	id S1751136AbZJTOia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 10:38:30 -0400
+Message-ID: <4ADDCB56.60700@redhat.com>
+Date: Tue, 20 Oct 2009 10:38:14 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
+ probe and kprobe-tracer bugfixes
+References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <20091017080203.GA4155@elte.hu> <20091017103427.GA31238@elte.hu> <4ADAAF50.9040604@redhat.com> <20091019075103.GF17960@elte.hu> <20091019110055.GA5549@nowhere> <20091019112125.GA12829@elte.hu> <4ADCC348.2020800@redhat.com> <20091020065055.GL8550@elte.hu>
+In-Reply-To: <20091020065055.GL8550@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-at91sam9g20ek rev. C and onwards embed two SD/MMC slots. This patch modify the
-previous dual slot board definition to match the official rev. C board. It also
-allows the use of at91_mci SD/MMC driver in addition to the atmel-mci one.
+Ingo Molnar wrote:
+>>> The point is to prefer intuitive, non-mechanic, fundamentally human
+>>> expressions of information above mechanic ones (absolute line numbers,
+>>> addresses, ways of probing, etc.) - and to have a rich variety of them.
+>>>
+>>> String based pattern matching and intuitive syntax that reuses existing
+>>> paradigms of arithmetics and pattern-matching is good - limited syntax
+>>> and extra, arbitrary syntactic hoops to jump through is bad.
+>>>
+>>> If we provide all that, people will start using this stuff - and i'd
+>>> only like to merge this upstream once it's clear that people like me
+>>> will (be able to) use this facility for ad-hoc probe insertion.
+>>>
+>>> In other words: this facility has to 'live within' our source code and
+>>> has to be able to interact with it on a very broad basis - for it to be
+>>> maximally useful for everyday development.
+>>
+>> Hmm, so you mean perf-probe should work with source-code? Without 
+>> source code (but with debuginfo), maybe we can't use string matching, 
+>> is that OK?
+> 
+> Well most forms of debuginfo embedd the full source code in the 
+> debuginfo, right? If it's not there (or we dont know where it is) then 
+> we cannot use it, obviously.
 
-Some pins have been re-affected from leds or Ethernet phy IRQ to the SD/MMC
-slot A. This lead to a modification of those definitions.
+Um, actually debuginfo doesn't have the full source code, but has
+the source file path. So, only if there are source files,
+we can use string-based matching. Even if there are no source files,
+that means users can't change their kernel:-). So we don't care
+about kernel-version dependency.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
-This is a modification of the changes introduced by the patch:
-"AT91: atmel-mci: Platform configuration to the the atmel-mci driver" that went
-into mainline through the MMC path (thanks to Andrew Morton).
+> But we obviously want the whole 'perf probe' workflow to primarily 
+> operate on source code - we are humans.
 
-Also move slightly the 2MMC board Kconfig entry.
+Sure :-)
 
- arch/arm/mach-at91/Kconfig                     |   20 +++++++++++---------
- arch/arm/mach-at91/board-sam9g20ek-2slot-mmc.c |   23 +++++++++++++++--------
- 2 files changed, 26 insertions(+), 17 deletions(-)
+Thank you,
 
-diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
-index e35d54d..2fd8843 100644
---- a/arch/arm/mach-at91/Kconfig
-+++ b/arch/arm/mach-at91/Kconfig
-@@ -289,13 +289,6 @@ config MACH_NEOCORE926
- 	help
- 	  Select this if you are using the Adeneo Neocore 926 board.
- 
--config MACH_AT91SAM9G20EK_2MMC
--	bool "Atmel AT91SAM9G20-EK Evaluation Kit modified for 2 MMC Slots"
--	depends on ARCH_AT91SAM9G20
--	help
--	  Select this if you are using an Atmel AT91SAM9G20-EK Evaluation Kit
--	  Rev A or B modified for 2 MMC Slots.
--
- endif
- 
- # ----------------------------------------------------------
-@@ -322,7 +315,16 @@ config MACH_AT91SAM9G20EK
- 	bool "Atmel AT91SAM9G20-EK Evaluation Kit"
- 	depends on ARCH_AT91SAM9G20
- 	help
--	  Select this if you are using Atmel's AT91SAM9G20-EK Evaluation Kit.
-+	  Select this if you are using Atmel's AT91SAM9G20-EK Evaluation Kit
-+	  that embeds only one SD/MMC slot.
-+
-+config MACH_AT91SAM9G20EK_2MMC
-+	bool "Atmel AT91SAM9G20-EK Evaluation Kit with 2 SD/MMC Slots"
-+	depends on ARCH_AT91SAM9G20
-+	help
-+	  Select this if you are using an Atmel AT91SAM9G20-EK Evaluation Kit
-+	  with 2 SD/MMC Slots. This is the case for AT91SAM9G20-EK rev. C and
-+	  onwards.
- 
- config MACH_CPU9G20
- 	bool "Eukrea CPU9G20 board"
-@@ -392,7 +394,7 @@ config MTD_AT91_DATAFLASH_CARD
- 
- config MTD_NAND_ATMEL_BUSWIDTH_16
- 	bool "Enable 16-bit data bus interface to NAND flash"
--	depends on (MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_AT91SAM9G45EKES || MACH_AT91CAP9ADK)
-+	depends on (MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_AT91SAM9G20EK_2MMC || MACH_AT91SAM9G45EKES || MACH_AT91CAP9ADK)
- 	help
- 	  On AT91SAM926x boards both types of NAND flash can be present
- 	  (8 and 16 bit data bus width).
-diff --git a/arch/arm/mach-at91/board-sam9g20ek-2slot-mmc.c b/arch/arm/mach-at91/board-sam9g20ek-2slot-mmc.c
-index a28e53f..a4102d7 100644
---- a/arch/arm/mach-at91/board-sam9g20ek-2slot-mmc.c
-+++ b/arch/arm/mach-at91/board-sam9g20ek-2slot-mmc.c
-@@ -90,7 +90,7 @@ static struct at91_udc_data __initdata ek_udc_data = {
-  * SPI devices.
-  */
- static struct spi_board_info ek_spi_devices[] = {
--#if !defined(CONFIG_MMC_ATMELMCI)
-+#if !(defined(CONFIG_MMC_ATMELMCI) || defined(CONFIG_MMC_AT91))
- 	{	/* DataFlash chip */
- 		.modalias	= "mtd_dataflash",
- 		.chip_select	= 1,
-@@ -113,7 +113,7 @@ static struct spi_board_info ek_spi_devices[] = {
-  * MACB Ethernet device
-  */
- static struct at91_eth_data __initdata ek_macb_data = {
--	.phy_irq_pin	= AT91_PIN_PC12,
-+	.phy_irq_pin	= AT91_PIN_PB0,
- 	.is_rmii	= 1,
- };
- 
-@@ -194,24 +194,27 @@ static void __init ek_add_device_nand(void)
- 
- /*
-  * MCI (SD/MMC)
-- * det_pin and wp_pin are not connected
-+ * wp_pin is not connected
-  */
- #if defined(CONFIG_MMC_ATMELMCI) || defined(CONFIG_MMC_ATMELMCI_MODULE)
- static struct mci_platform_data __initdata ek_mmc_data = {
- 	.slot[0] = {
- 		.bus_width	= 4,
--		.detect_pin	= -ENODEV,
-+		.detect_pin	= AT91_PIN_PC2,
- 		.wp_pin		= -ENODEV,
- 	},
- 	.slot[1] = {
- 		.bus_width	= 4,
--		.detect_pin	= -ENODEV,
-+		.detect_pin	= AT91_PIN_PC9,
- 		.wp_pin		= -ENODEV,
- 	},
- 
- };
- #else
--static struct amci_platform_data __initdata ek_mmc_data = {
-+static struct at91_mmc_data __initdata ek_mmc_data = {
-+	.slot_b		= 1,	/* Only one slot so use slot B */
-+	.wire4		= 1,
-+	.det_pin	= AT91_PIN_PC9,
- };
- #endif
- 
-@@ -221,13 +224,13 @@ static struct amci_platform_data __initdata ek_mmc_data = {
- static struct gpio_led ek_leds[] = {
- 	{	/* "bottom" led, green, userled1 to be defined */
- 		.name			= "ds5",
--		.gpio			= AT91_PIN_PB12,
-+		.gpio			= AT91_PIN_PB8,
- 		.active_low		= 1,
- 		.default_trigger	= "none",
- 	},
- 	{	/* "power" led, yellow */
- 		.name			= "ds1",
--		.gpio			= AT91_PIN_PB13,
-+		.gpio			= AT91_PIN_PB9,
- 		.default_trigger	= "heartbeat",
- 	}
- };
-@@ -254,7 +257,11 @@ static void __init ek_board_init(void)
- 	/* Ethernet */
- 	at91_add_device_eth(&ek_macb_data);
- 	/* MMC */
-+#if defined(CONFIG_MMC_ATMELMCI) || defined(CONFIG_MMC_ATMELMCI_MODULE)
- 	at91_add_device_mci(0, &ek_mmc_data);
-+#else
-+	at91_add_device_mmc(0, &ek_mmc_data);
-+#endif
- 	/* I2C */
- 	at91_add_device_i2c(ek_i2c_devices, ARRAY_SIZE(ek_i2c_devices));
- 	/* LEDs */
 -- 
-1.5.6.5
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
