@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbZJTWr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbZJTWv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752622AbZJTWr5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 18:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZJTWr4
+	id S1752474AbZJTWv1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 18:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbZJTWv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 18:47:56 -0400
-Received: from smtp2.caviumnetworks.com ([209.113.159.134]:9323 "EHLO
-	smtp2.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751319AbZJTWr4 (ORCPT
+	Tue, 20 Oct 2009 18:51:27 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:59087 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751072AbZJTWv0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 18:47:56 -0400
-Message-ID: <4ADE3D3C.1070608@caviumnetworks.com>
-Date: Tue, 20 Oct 2009 15:44:12 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 20 Oct 2009 18:51:26 -0400
+Message-ID: <4ADE3EE9.3090308@us.ibm.com>
+Date: Tue, 20 Oct 2009 15:51:21 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Linus Walleij <linus.walleij@stericsson.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       linux-mips@linux-mips.org, Mikael Pettersson <mikpe@it.uu.se>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH] Make MIPS dynamic clocksource/clockevent clock code 
- generic
-References: <1255819715-19763-1-git-send-email-linus.walleij@stericsson.com>	 <alpine.LFD.2.00.0910200454300.2863@localhost.localdomain>	 <4ADE3225.5050001@caviumnetworks.com> <63386a3d0910201516r71100657y92e3e6c2fab38db9@mail.gmail.com>
-In-Reply-To: <63386a3d0910201516r71100657y92e3e6c2fab38db9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: John Kacur <jkacur@redhat.com>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH] futex: Detect mismatched requeue targets
+References: <1953271756.544571256071596329.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+In-Reply-To: <1953271756.544571256071596329.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Oct 2009 22:44:12.0399 (UTC) FILETIME=[D81B27F0:01CA51D6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Walleij wrote:
-> 2009/10/20 David Daney <ddaney@caviumnetworks.com>:
+John Kacur wrote:
+> ----- "Darren Hart" <dvhltc@us.ibm.com> wrote:
 > 
->>> Please do not make that functions inline. They are too large and there
->>> is no benefit of inlining them.
->> If that is the case, then perhaps they should not be defined in a header
->> file.
+>> John Kacur wrote:
+>>> Hello Darren
+>>>
+>>> I took your patch from commit
+>> 84bc4af59081ee974dd80210e694ab59ebe51ce8
+>>> and I tried to git-cherry-pick it for v2.6.31.4-rt14
+>>>
+>>> I had a little merge-commit to resolve. That wasn't too hard, but as
+>> the 
+>>> code is a bit different between the two versions, I would appreciate
+>> it if 
+>>> you could review the patch, and make sure that it still makes sense
+>> for 
+>>> v2.6.31.r-rt14
+>> Hi John,
+>>
+>> It looks good to me.  Where did you have the conflicts?
+>>
+>> --
 > 
-> Of course not. There are apropriate places to put them, but as stated
-> I think the use as it is today warrants having them inlined.
-> 
+> The conflict was in the futex_wait_requeue_pi function.
+> That's where you really need to double check that the logic still makes sense.
 
-I wasn't trying to imply that they shouldn't be inlined, only that if 
-you  choose (as you did) to define them in a header file, that they 
-*should* be inline.
+Hi John,
 
-David Daney
+Yes, I suspect the conflict was do to the retry: label. You should have 
+already pulled in the spurious wakeup patch, so you should be fine.  The 
+patch looks good to me.
+
+Thanks,
+
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
