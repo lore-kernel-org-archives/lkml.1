@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZJTGQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbZJTGRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbZJTGQF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 02:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbZJTGQD
+	id S1755083AbZJTGRY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 02:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbZJTGRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 02:16:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44383 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751612AbZJTGQC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 02:16:02 -0400
-Date: Tue, 20 Oct 2009 08:15:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jeff Mahoney <jeffm@suse.com>, Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64@vger.kernel.org
-Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
-Message-ID: <20091020061557.GE8550@elte.hu>
-References: <4ADB967A.4080707@suse.com> <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz> <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz>
+	Tue, 20 Oct 2009 02:17:23 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:52015 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754702AbZJTGRW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 02:17:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:reply-to:to:subject:date:user-agent:cc:references
+         :in-reply-to:mime-version:content-type:content-transfer-encoding
+         :message-id;
+        b=x3ze4qT0UYrSO/d/RDbu5PRwdSrugH0vpdQEn8SaMIziM8pkSxRuoUan3AF+0Lex++
+         X8vKXoscAo4lHyfiLUq2X0xvIVwX9iJZokzKeEUYuXbyiXzlpkkSmCwGU1/KWhoOwNVx
+         NW2nhdusKDmeDCPuMcECzCmbegGyqdYh49YBY=
+From: Florian Fainelli <florian@openwrt.org>
+Reply-To: Florian Fainelli <florian@openwrt.org>
+To: myuboot@fastmail.fm
+Subject: Re: serial port 8250 messed up after coverting from little endian to big endian on kernel  2.6.31
+Date: Tue, 20 Oct 2009 08:17:23 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.29-2-686; KDE/4.3.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org, "linux-mips" <linux-mips@linux-mips.org>
+References: <1255735395.30097.1340523469@webmail.messagingengine.com> <4AD906D8.3020404@caviumnetworks.com> <1255996564.10560.1340920621@webmail.messagingengine.com>
+In-Reply-To: <1255996564.10560.1340920621@webmail.messagingengine.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/signed;
+  boundary="nextPart4081583.Nnz8PKjnI1";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910200817.24018.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart4081583.Nnz8PKjnI1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-* Jiri Kosina <jkosina@suse.cz> wrote:
+Hi,
 
-> On Tue, 20 Oct 2009, Jiri Kosina wrote:
-> 
-> > > Commit 34d76c41 introduced the update_shares_data percpu, but it ends up
-> > > causing problems on large ia64 machines. Specifically, ia64 is limited
-> > > to 64k in percpu vars and with NR_CPUS=4096, that ends up being 32k by
-> > > itself. It ends up causing link errors since that is how ia64 enforces
-> > > the 64k limit.
-> > > 
-> > > I can take a deeper look at finding a workable solution but thought I'd
-> > > mention it in case you had ideas already.
-> > 
-> > I am adding some IA64 CCs, as the failure is solely caused by the ia64 
-> > percpu implementation/pagefault handler optimization which requires the 
-> > .percpu section area not be larger than 64k, which blows up with 34d76c41 
-> > and NR_CPUS high enoufh (due to introduction of percpu array being 
-> > size-dependent on NR_CPUS).
-> 
-> How about this one? (untested)
-> 
-> 
-> 
-> From: Jiri Kosina <jkosina@suse.cz>
-> Subject: sched: move rq_weight data array out of .percpu
-> 
-> Commit 34d76c41 introduced percpu array update_shares_data, size of which 
-> being proportional to NR_CPUS. Unfortunately this blows up ia64 for large 
-> NR_CPUS configuration, as ia64 allows only 64k for .percpu section.
-> 
-> Fix this by allocating this array dynamically and keep only pointer to it 
-> percpu.
-> 
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> --- 
->  kernel/sched.c |   15 +++++++--------
->  1 files changed, 7 insertions(+), 8 deletions(-)
+Le mardi 20 octobre 2009 01:56:04, myuboot@fastmail.fm a =E9crit :
+> I am trying to bringup a MIPS32 board using 2.6.31. It is working in
+> little endian mode. After changing the board's hardware from little
+> endian to bit endian, the serial port print messed up. It prints now
+> something like - "=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0" on th=
+e screen. When I trace the
+> execution, I can see the string the kernel is trying print is correct -
+> "Linux version 2.6.31 ..." and etc.
+>=20
+> I guess it means the initialization of the serial port is not properly
+> done. But I am not sure where I should check for the problem. The serial
+> port device I am using is 8250. Please give me some advise.
 
-Seems like an IA64 bug to me. It's _very_ easy to get more than 64K of 
-percpu data - i'm wondering why IA64 only triggered it now? Sure 
-lockdep/lockstat must have triggered it before.
+If the same initialization routine used to work in little-endian, check how=
+=20
+you actually write and read characters from the UART FIFO and especially if=
+=20
+your hardware requires you to do word or byte access to these registers.
 
-	Ingo
+You can have a look at AR7, which has the same code working for Little and =
+Big=20
+Endian modes in arch/mips/ar7/prom.c lines 272 to the end of the file. It a=
+lso=20
+uses a 8250-compatible UART.
+
+--nextPart4081583.Nnz8PKjnI1
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkrdVfMACgkQlyvkmBGtjyYRAwCfR3P8YgiNVpAQw+WPnOke42t/
+aucAoLaDJ/ICmDVQ4RqN7ly1vS/hqwOR
+=ZwRw
+-----END PGP SIGNATURE-----
+
+--nextPart4081583.Nnz8PKjnI1--
