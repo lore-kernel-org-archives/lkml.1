@@ -1,134 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751604AbZJTJUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751660AbZJTJV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751604AbZJTJUc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 05:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZJTJUb
+	id S1751660AbZJTJV2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 05:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZJTJV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 05:20:31 -0400
-Received: from mga12.intel.com ([143.182.124.36]:56824 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751345AbZJTJU3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 05:20:29 -0400
+	Tue, 20 Oct 2009 05:21:26 -0400
+Received: from mga09.intel.com ([134.134.136.24]:11639 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751615AbZJTJVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 05:21:24 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,590,1249282800"; 
-   d="scan'208";a="201129468"
-Date: Tue, 20 Oct 2009 11:22:28 +0200
+   d="scan'208";a="459410690"
+Date: Tue, 20 Oct 2009 11:23:22 +0200
 From: Samuel Ortiz <sameo@linux.intel.com>
-To: List Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 1/5] mfd: twl4030-power: Rename DEVGROUP to DEV_GRP
-Message-ID: <20091020092227.GB5563@sortiz.org>
-References: <1255954211-28496-1-git-send-email-amit.kucheria@verdurent.com>
- <1255954244-28873-1-git-send-email-amit.kucheria@verdurent.com>
- <20091019192646.GC30203@sortiz.org>
- <20091020060713.GV32041@smtp.gmail.com>
+To: Paul Fertser <fercerpav@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Nelson Castillo <arhuaco@freaks-unidos.net>,
+       Lars-Peter Clausen <lars@metafoo.de>
+Subject: Re: [PATCH 5/7] mfd: pcf50633: Cleanup pcf50633_probe error
+ handling
+Message-ID: <20091020092321.GC5563@sortiz.org>
+References: <1255471956-29201-1-git-send-email-fercerpav@gmail.com>
+ <1255471956-29201-2-git-send-email-fercerpav@gmail.com>
+ <1255471956-29201-3-git-send-email-fercerpav@gmail.com>
+ <1255471956-29201-4-git-send-email-fercerpav@gmail.com>
+ <1255471956-29201-5-git-send-email-fercerpav@gmail.com>
+ <20091019150812.GC3885@sortiz.org>
+ <20091019230952.GB19580@home.pavel.comp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091020060713.GV32041@smtp.gmail.com>
+In-Reply-To: <20091019230952.GB19580@home.pavel.comp>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Amit,
-
-On Tue, Oct 20, 2009 at 09:07:13AM +0300, Amit Kucheria wrote:
-> On 09 Oct 19, Samuel Ortiz wrote:
-> > Hi Amit,
-> > 
-> > I've applied patches 1,2 and 3 to my for-next branch.
-> > I dont think patch 4 is really useful, and I'll wait for an ACK from Tony or
-> > Nokia before pushing patch 5.
-> > 
-> > Thanks for your work.
-> > 
-> > Cheers,
-> > Samuel.
+On Tue, Oct 20, 2009 at 03:09:52AM +0400, Paul Fertser wrote:
+> Hi Samuel,
 > 
-> Samuel,
+> Big thanks for your comments, next time i send anything upstream i
+> will certainly provide a minimal changelog for every patch :)
 > 
-> I hope you meant you're taking patches 1, 2, 4 and 5.
-Yes, sorry about it. So, patches 1,2,4 and 5 applied.
+> On Mon, Oct 19, 2009 at 05:08:13PM +0200, Samuel Ortiz wrote:
+> > On Wed, Oct 14, 2009 at 02:12:34AM +0400, Paul Fertser wrote:
+> > >  	if (enable_irq_wake(client->irq) < 0)
+> > > -		dev_err(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
+> > > +		dev_info(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
+> > >  			"in this hardware revision", client->irq);
+> > 2 things here: This doesnt really belong to this patch, and also I'd prefer to
+> > keep that as an error message.
+> [...]
+> > >  	ret = sysfs_create_group(&client->dev.kobj, &pcf_attr_group);
+> > >  	if (ret)
+> > > -		dev_err(pcf->dev, "error creating sysfs entries\n");
+> > > +		dev_info(pcf->dev, "Failed to create sysfs entries\n");
+> > Same here.
+> 
+> Sure. Please find amended version in attachement.
+Patch applied, thanks a lot.
 
 Cheers,
 Samuel.
-
  
-> 3 is the one just moving stuff around and may be discarded.
-> 
-> Thanks.
-> 
-> Regards,
-> Amit
-> 
-> > On Mon, Oct 19, 2009 at 03:10:44PM +0300, Amit Kucheria wrote:
-> > > Stick to the names used in the reference manual
-> > > 
-> > > Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-> > > Cc: sameo@linux.intel.com
-> > > Cc: linux-omap@vger.kernel.org
-> > > ---
-> > >  drivers/mfd/twl4030-power.c |   16 ++++++++--------
-> > >  1 files changed, 8 insertions(+), 8 deletions(-)
-> > > 
-> > > diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
-> > > index d423e0c..82e3bcb 100644
-> > > --- a/drivers/mfd/twl4030-power.c
-> > > +++ b/drivers/mfd/twl4030-power.c
-> > > @@ -69,12 +69,12 @@ static u8 twl4030_start_script_address = 0x2b;
-> > >  
-> > >  /* resource configuration registers */
-> > >  
-> > > -#define DEVGROUP_OFFSET		0
-> > > +#define DEV_GRP_OFFSET		0
-> > >  #define TYPE_OFFSET		1
-> > >  
-> > > -/* Bit positions */
-> > > -#define DEVGROUP_SHIFT		5
-> > > -#define DEVGROUP_MASK		(7 << DEVGROUP_SHIFT)
-> > > +/* Bit positions in the registers */
-> > > +#define DEV_GRP_SHIFT		5
-> > > +#define DEV_GRP_MASK		(7 << DEV_GRP_SHIFT)
-> > >  #define TYPE_SHIFT		0
-> > >  #define TYPE_MASK		(7 << TYPE_SHIFT)
-> > >  #define TYPE2_SHIFT		3
-> > > @@ -328,7 +328,7 @@ static int __init twl4030_configure_resource(struct twl4030_resconfig *rconfig)
-> > >  
-> > >  	/* Set resource group */
-> > >  	err = twl4030_i2c_read_u8(TWL4030_MODULE_PM_RECEIVER, &grp,
-> > > -				rconfig_addr + DEVGROUP_OFFSET);
-> > > +				rconfig_addr + DEV_GRP_OFFSET);
-> > >  	if (err) {
-> > >  		pr_err("TWL4030 Resource %d group could not be read\n",
-> > >  			rconfig->resource);
-> > > @@ -336,10 +336,10 @@ static int __init twl4030_configure_resource(struct twl4030_resconfig *rconfig)
-> > >  	}
-> > >  
-> > >  	if (rconfig->devgroup >= 0) {
-> > > -		grp &= ~DEVGROUP_MASK;
-> > > -		grp |= rconfig->devgroup << DEVGROUP_SHIFT;
-> > > +		grp &= ~DEV_GRP_MASK;
-> > > +		grp |= rconfig->devgroup << DEV_GRP_SHIFT;
-> > >  		err = twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
-> > > -					grp, rconfig_addr + DEVGROUP_OFFSET);
-> > > +					grp, rconfig_addr + DEV_GRP_OFFSET);
-> > >  		if (err < 0) {
-> > >  			pr_err("TWL4030 failed to program devgroup\n");
-> > >  			return err;
-> > > -- 
-> > > 1.6.3.3
-> > > 
-> > 
-> > -- 
-> > Intel Open Source Technology Centre
-> > http://oss.intel.com/
-> 
 > -- 
-> ------------------------------------------------------------
-> Amit Kucheria, Finland
-> ------------------------------------------------------------
+> Be free, use free (http://www.gnu.org/philosophy/free-sw.html) software!
+> mailto:fercerpav@gmail.com
+
+> From 7f982d01515371fcbab0086bf77448f351b09a42 Mon Sep 17 00:00:00 2001
+> From: Lars-Peter Clausen <lars@metafoo.de>
+> Date: Thu, 8 Oct 2009 00:24:54 +0200
+> Subject: [PATCH] mfd: pcf50633: Cleanup pcf50633_probe error handling
+> 
+> Currently the child devices were not freed if the irq could not be requested.
+> This patch restructures the function, that in case of an error all previously
+> allocated resources are freed.
+> 
+> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+> Signed-off-by: Paul Fertser <fercerpav@gmail.com>
+> ---
+>  drivers/mfd/pcf50633-core.c |   43 ++++++++++++++++++++++++++-----------------
+>  1 files changed, 26 insertions(+), 17 deletions(-)
+> 
+> diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
+> index 69cdbdc..5aed527 100644
+> --- a/drivers/mfd/pcf50633-core.c
+> +++ b/drivers/mfd/pcf50633-core.c
+> @@ -553,9 +553,14 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+>  {
+>  	struct pcf50633 *pcf;
+>  	struct pcf50633_platform_data *pdata = client->dev.platform_data;
+> -	int i, ret = 0;
+> +	int i, ret;
+>  	int version, variant;
+>  
+> +	if (!client->irq) {
+> +		dev_err(&client->dev, "Missing IRQ\n");
+> +		return -ENOENT;
+> +	}
+> +
+>  	pcf = kzalloc(sizeof(*pcf), GFP_KERNEL);
+>  	if (!pcf)
+>  		return -ENOMEM;
+> @@ -570,6 +575,12 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+>  	pcf->irq = client->irq;
+>  	pcf->work_queue = create_singlethread_workqueue("pcf50633");
+>  
+> +	if (!pcf->work_queue) {
+> +		dev_err(&client->dev, "Failed to alloc workqueue\n");
+> +		ret = -ENOMEM;
+> +		goto err_free;
+> +	}
+> +
+>  	INIT_WORK(&pcf->irq_work, pcf50633_irq_worker);
+>  
+>  	version = pcf50633_reg_read(pcf, 0);
+> @@ -577,7 +588,7 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+>  	if (version < 0 || variant < 0) {
+>  		dev_err(pcf->dev, "Unable to probe pcf50633\n");
+>  		ret = -ENODEV;
+> -		goto err;
+> +		goto err_destroy_workqueue;
+>  	}
+>  
+>  	dev_info(pcf->dev, "Probed device version %d variant %d\n",
+> @@ -591,6 +602,14 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+>  	pcf50633_reg_write(pcf, PCF50633_REG_INT4M, 0x00);
+>  	pcf50633_reg_write(pcf, PCF50633_REG_INT5M, 0x00);
+>  
+> +	ret = request_irq(client->irq, pcf50633_irq,
+> +					IRQF_TRIGGER_LOW, "pcf50633", pcf);
+> +
+> +	if (ret) {
+> +		dev_err(pcf->dev, "Failed to request IRQ %d\n", ret);
+> +		goto err_destroy_workqueue;
+> +	}
+> +
+>  	/* Create sub devices */
+>  	pcf50633_client_dev_register(pcf, "pcf50633-input",
+>  						&pcf->input_pdev);
+> @@ -606,7 +625,7 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+>  
+>  		pdev = platform_device_alloc("pcf50633-regltr", i);
+>  		if (!pdev) {
+> -			dev_err(pcf->dev, "Cannot create regulator\n");
+> +			dev_err(pcf->dev, "Cannot create regulator %d\n", i);
+>  			continue;
+>  		}
+>  
+> @@ -618,19 +637,6 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+>  		platform_device_add(pdev);
+>  	}
+>  
+> -	if (client->irq) {
+> -		ret = request_irq(client->irq, pcf50633_irq,
+> -				IRQF_TRIGGER_LOW, "pcf50633", pcf);
+> -
+> -		if (ret) {
+> -			dev_err(pcf->dev, "Failed to request IRQ %d\n", ret);
+> -			goto err;
+> -		}
+> -	} else {
+> -		dev_err(pcf->dev, "No IRQ configured\n");
+> -		goto err;
+> -	}
+> -
+>  	if (enable_irq_wake(client->irq) < 0)
+>  		dev_err(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
+>  			"in this hardware revision", client->irq);
+> @@ -644,9 +650,12 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+>  
+>  	return 0;
+>  
+> -err:
+> +err_destroy_workqueue:
+>  	destroy_workqueue(pcf->work_queue);
+> +err_free:
+> +	i2c_set_clientdata(client, NULL);
+>  	kfree(pcf);
+> +
+>  	return ret;
+>  }
+>  
+> -- 
+> 1.6.0.6
+> 
+
 
 -- 
 Intel Open Source Technology Centre
