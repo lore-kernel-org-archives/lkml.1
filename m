@@ -1,129 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758294AbZJTDdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbZJTEbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758294AbZJTDdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 23:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZJTDdS
+	id S1752127AbZJTEbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 00:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbZJTEbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 23:33:18 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:60046 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758274AbZJTDdQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 23:33:16 -0400
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Oren Laadan <orenl@librato.com>, Daniel Lezcano <daniel.lezcano@free.fr>,
-       randy.dunlap@oracle.com, arnd@arndb.de, linux-api@vger.kernel.org,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       Louis.Rilling@kerlabs.com, kosaki.motohiro@jp.fujitsu.com,
-       hpa@zytor.com, mingo@elte.hu,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       torvalds@linux-foundation.org, Alexey Dobriyan <adobriyan@gmail.com>,
-       roland@redhat.com, Pavel Emelyanov <xemul@openvz.org>
-References: <20091013044925.GA28181@us.ibm.com> <4AD8C7E4.9000903@free.fr>
-	<20091016194451.GA28706@us.ibm.com> <4ADCCD68.9030003@free.fr>
-	<4ADCDE7F.4090501@librato.com>
-	<20091020005125.GG27627@count0.beaverton.ibm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 19 Oct 2009 20:33:10 -0700
-In-Reply-To: <20091020005125.GG27627@count0.beaverton.ibm.com> (Matt Helsley's message of "Mon\, 19 Oct 2009 17\:51\:25 -0700")
-Message-ID: <m1vdiad9jd.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 20 Oct 2009 00:31:19 -0400
+Received: from ozlabs.org ([203.10.76.45]:48290 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751936AbZJTEbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 00:31:18 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: [PATCH] BUILD_BUG_ON: make it handle more cases
+Date: Tue, 20 Oct 2009 14:15:33 +1030
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Jan Beulich <JBeulich@novell.com>, sfr@canb.auug.org.au,
+       akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+       kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org
+References: <4AC1E15502000078000516B5@vpn.id2.novell.com> <200910201142.34006.rusty@rustcorp.com.au> <1256002193.6546.2.camel@slab>
+In-Reply-To: <1256002193.6546.2.camel@slab>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Matt Helsley <matthltc@us.ibm.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  1.5 TR_Symld_Words too many words that have symbols inside
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 T_TooManySym_02 5+ unique symbols in subject
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910201415.34361.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Helsley <matthltc@us.ibm.com> writes:
+BUILD_BUG_ON used to use the optimizer to do code elimination or fail
+at link time; it was changed to first the size of a negative array (a
+nicer compile time error), then (in
+8c87df457cb58fe75b9b893007917cf8095660a0) to a bitfield.
 
-> On Mon, Oct 19, 2009 at 05:47:43PM -0400, Oren Laadan wrote:
->> 
->> 
->> Daniel Lezcano wrote:
->> > Sukadev Bhattiprolu wrote:
->> >> Daniel Lezcano [daniel.lezcano@free.fr] wrote:
->> >>   
->> >>> Sukadev Bhattiprolu wrote:
->> >>>     
->> >>>> Subject: [RFC][v8][PATCH 0/10] Implement clone3() system call
->> >>>>
->
-> <snip>
->
->> > Another point. It's another way to extend the exhausted clone  flags as 
->> > the cloneat can be called as a compatibility way, with cloneat(getpid(), 
->> > 0, ... )
->> 
->> Which is what the proposed new clone_....() does.
->
-> Just to be clear -- Suka's proposing to extend the clone flags. However I
-> don't believe reusing the "pid" parameters as Daniel seemed to suggest
-> was ever part of Suka's proposed changes.
->
-> <snip>
->
->> > I don't really see a difference between sys_restart(pid_t pid , int fd, 
->> > long flags) where pid_t is the topmost in the hierarchy, fd is a file 
->> > descriptor to a structure "pid_t * + struct clone_args *" and flags is 
->> > "PROCTREE".
->
-> I think the difference has to do with keeping the code maintainable.
->
-> Clone creates the process so it's already involved in allocating and
-> assigning pids to the new task. Switching pids at sys_restart() would 
-> add another point in the code where pids are allocated and assigned.
-> This suggests we may have to worry about introducing new obscure races
-> for anyone who's working on the pid allocator to be careful of. At
-> least when all the code is "localized" to the clone paths we can be
-> reasonably certain of proper maintenance.
->
-> <snip>
->
->> I really really really hope we can settle down on *a* name,
->> *any* name, and move forward. Amen.
->
-> clone3() seemed to be the leading contender from what I've read so far.
-> Does anyone still object to clone3() after reading the whole thread?
+bitfields: needs a literal constant at parse time, and can't be put under
+	"if (__builtin_constant_p(x))" for example.
+negative array: can handle anything, but if the compiler can't tell it's
+	a constant, silently has no effect.
+link time: breaks link if the compiler can't determine the value, but the
+	linker output is not usually as informative as a compiler error.
 
-I object to what clone3() is.  The name is not particularly interesting.
+If we use the negative-array-size method *and* the link time trick,
+we get the ability to use BUILD_BUG_ON() under __builtin_constant_p()
+branches, and maximal ability for the compiler to detect errors at
+build time.
 
-The sanity checks for assigning pids are missing and there is a todo
-about it.  I am not comfortable with assigning pids to a new process
-in a pid namespace with other processes user space processes executing
-in it.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-How we handle a clone extension depends critically on if we want to
-create a processes for restart in user space or kernel space.
-
-Could some one give me or point me at a strong case for creating the
-processes for restart in user space?
-
-The pid assignment code is currently ugly.  I asked that we just pass
-in the min max pid pids that already exist into the core pid
-assignment function and a constrained min/max that only admits a
-single pid when we are allocating a struct pid for restart.  That was
-not done and now we have a weird abortion with unnecessary special cases.
-
-Eric
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -683,12 +683,6 @@ struct sysinfo {
+ 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
+ };
+ 
+-/* Force a compilation error if condition is true */
+-#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
+-
+-/* Force a compilation error if condition is constant and true */
+-#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
+-
+ /* Force a compilation error if condition is true, but also produce a
+    result (of value 0 and type size_t), so the expression can be used
+    e.g. in a structure initializer (or where-ever else comma expressions
+@@ -696,6 +690,33 @@ struct sysinfo {
+ #define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
+ #define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
+ 
++/**
++ * BUILD_BUG_ON - break compile if a condition is true.
++ * @cond: the condition which the compiler should know is false.
++ *
++ * If you have some code which relies on certain constants being equal, or
++ * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
++ * detect if someone changes it.
++ *
++ * The implementation uses gcc's reluctance to create a negative array, but
++ * gcc (as of 4.4) only emits that error for obvious cases (eg. not arguments
++ * to inline functions).  So as a fallback we use the optimizer; if it can't
++ * prove the condition is false, it will cause a link error on the undefined
++ * "__build_bug_on_failed".  This error message can be harder to track down
++ * though, hence the two different methods.
++ */
++#ifndef __OPTIMIZE__
++#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
++#else
++extern int __build_bug_on_failed;
++#define BUILD_BUG_ON(condition)					\
++	do {							\
++		((void)sizeof(char[1 - 2*!!(condition)]));	\
++		if (condition) __build_bug_on_failed = 1;	\
++	} while(0)
++#endif
++#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
++
+ /* Trap pasters of __FUNCTION__ at compile-time */
+ #define __FUNCTION__ (__func__)
+ 
