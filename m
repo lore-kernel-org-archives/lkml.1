@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbZJTG4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZJTG7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755372AbZJTG4b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 02:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZJTG4b
+	id S1755636AbZJTG7Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 02:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZJTG7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 02:56:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38583 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751383AbZJTG4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 02:56:30 -0400
-Date: Tue, 20 Oct 2009 08:55:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ashwin Chaugule <ashbertslists@gmail.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
-       a.p.zijlstra@chello.nl
-Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
-	probe and kprobe-tracer bugfixes
-Message-ID: <20091020065554.GO8550@elte.hu>
-References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <ad7a95ae0910191610q6f6200f1n112a71a0cbd483f1@mail.gmail.com> <4ADD049E.9080000@redhat.com> <ad7a95ae0910191859l6e0246b8u8634fac5b8ec0770@mail.gmail.com>
+	Tue, 20 Oct 2009 02:59:15 -0400
+Received: from mx51.mymxserver.com ([85.199.173.110]:29411 "EHLO
+	mx51.mymxserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754358AbZJTG7P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 02:59:15 -0400
+From: Holger Schurig <hs4233@mail.mn-solutions.de>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Subject: Re: [PATCH 2/2] rt2x00: Implement support for rt2800pci
+Date: Tue, 20 Oct 2009 08:58:54 +0200
+User-Agent: KMail/1.9.7
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       John Linville <linville@tuxdriver.com>, linux-wireless@vger.kernel.org,
+       users@host1.serialmonkey.com, Alban Browaeys <prahal@yahoo.com>,
+       Benoit PAPILLAULT <benoit.papillault@free.fr>,
+       Felix Fietkau <nbd@openwrt.org>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       Mattias Nissler <mattias.nissler@gmx.de>,
+       Mark Asselstine <asselsm@gmail.com>,
+       Xose Vazquez Perez <xose.vazquez@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <200910152137.58164.IvDoorn@gmail.com> <200910171654.03344.bzolnier@gmail.com> <200910181859.22413.IvDoorn@gmail.com>
+In-Reply-To: <200910181859.22413.IvDoorn@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <ad7a95ae0910191859l6e0246b8u8634fac5b8ec0770@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Message-Id: <200910200858.54683.hs4233@mail.mn-solutions.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I don't agree on this, for starters the whole "abstraction
+> layer as done in the staging driver, really obfuscated the code
+> in multiple areas 
 
-* Ashwin Chaugule <ashbertslists@gmail.com> wrote:
+Ivo, you could look at Orinoco or Libertas. Both WLAN drivers 
+support a multitude of different hardware (Libertas: CF/PCMCIA, 
+SDIO, SD, USB and Orinoco: CF/PCMCIA, PCI, PPC_PMAC). And both 
+have hardware abstraction layers that don't suck, obfuscate or 
+create lots of duplicate code.
 
-> > Yes, it's done as I said above. But it still has long TODO list, 
-> > including support type of arguments, arrays, fields of structures 
-> > and so on (of course, defining useful syntax too). So any comments 
-> > and contributes are welcome :-)
->
-> Excellent ! Time to give it a spin :)
+So AFAIK it's not the question *IF* to do hardware abstraction 
+but only a question *HOW* to do it in an intelligent way. Don't 
+luck at one bad implementation and disregard the whole 
+concept :-)
 
-btw., you can pick it up from:
-
-  http://people.redhat.com/mingo/tip.git/README
-
-  git checkout tip/perf/probes
-
-	Ingo
+-- 
+http://www.holgerschurig.de
