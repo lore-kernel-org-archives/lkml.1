@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbZJTGzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbZJTGyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755747AbZJTGzF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 02:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbZJTGzE
+	id S1755609AbZJTGyt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 02:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbZJTGyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 02:55:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39302 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755664AbZJTGzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 02:55:03 -0400
-Date: Tue, 20 Oct 2009 08:54:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
-	probe and kprobe-tracer bugfixes
-Message-ID: <20091020065426.GN8550@elte.hu>
-References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <20091017080203.GA4155@elte.hu> <20091017103427.GA31238@elte.hu> <4ADAAF50.9040604@redhat.com> <20091019075103.GF17960@elte.hu> <4ADCB655.2020101@redhat.com>
+	Tue, 20 Oct 2009 02:54:47 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:35221 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755515AbZJTGyq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 02:54:46 -0400
+Date: Tue, 20 Oct 2009 15:54:42 +0900
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Crypto Fixes for 2.6.32
+Message-ID: <20091020065442.GA5947@gondor.apana.org.au>
+References: <20081225001724.GA2813@gondor.apana.org.au> <20081225002020.GA2912@gondor.apana.org.au> <20090324044932.GA18245@gondor.apana.org.au> <20090613020512.GA21024@gondor.apana.org.au> <20090910141905.GA17948@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4ADCB655.2020101@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <20090910141905.GA17948@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus:
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+This push fixes a regression in the padlock-sha driver that causes
+faults on 32-bit VIA processors.
 
-> How about the following syntax?
-> <adding>
-> perf probe schedule
-> perf probe --add schedule
-> 
-> <deleting>
-> perf probe --del schedule
-> perf probe --del all	/* delete all probepoints */
-> 
-> So, this doesn't symmetric, but provides simple way to add a probe.
 
-agreed. For deletion, eventually this:
+Please pull from
 
-  perf probe --del "*"
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
-should also work - as should other regexp (or glob) matches on a range 
-of existing probes.
+or
 
-plus there should be a perf probe call to output all current probes as 
-perf probe commands - so that it can be saved (and restored).
+master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
-	Ingo
+
+Herbert Xu (1):
+      crypto: padlock-sha - Fix stack alignment
+
+ drivers/crypto/padlock-sha.c |   14 ++++++++++++--
+ 1 files changed, 12 insertions(+), 2 deletions(-)
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
