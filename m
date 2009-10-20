@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZJTGEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbZJTBMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbZJTGEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 02:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZJTGEp
+	id S1758131AbZJTBMl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 21:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbZJTBMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 02:04:45 -0400
-Received: from biz49.inmotionhosting.com ([74.124.203.185]:39609 "EHLO
-	biz49.inmotionhosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbZJTGEo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 02:04:44 -0400
-X-Greylist: delayed 17589 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Oct 2009 02:04:44 EDT
-Message-ID: <36176.167.216.14.194.1256001083.squirrel@www.concentris-systems.com>
-Date: Mon, 19 Oct 2009 15:11:23 -1000 (HST)
-Subject: [PATCH] RTC: v3020 driver bugfix
-From: "Scott Valentine" <svalentine@concentris-systems.com>
-To: rtc-linux@googlegroups.com
-Cc: a.zummo@towertech.it, raph@8d.com, linux-kernel@vger.kernel.org
-Reply-To: svalentine@concentris-systems.com
-User-Agent: SquirrelMail/1.4.13
+	Mon, 19 Oct 2009 21:12:41 -0400
+Received: from ozlabs.org ([203.10.76.45]:54746 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756130AbZJTBMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 21:12:40 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: linux-next: tree build failure
+Date: Tue, 20 Oct 2009 11:42:32 +1030
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Jan Beulich <JBeulich@novell.com>, sfr@canb.auug.org.au,
+       akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+       kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org
+References: <4AC1E15502000078000516B5@vpn.id2.novell.com> <4AD6EB17020000780001A050@vpn.id2.novell.com> <1255976369.13995.98.camel@slab.beaverton.ibm.com>
+In-Reply-To: <1255976369.13995.98.camel@slab.beaverton.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - biz49.inmotionhosting.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - concentris-systems.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910201142.34006.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v3020 read_bit always returns 0 when left_shift > 7
+On Tue, 20 Oct 2009 04:49:29 am Hollis Blanchard wrote:
+> On Thu, 2009-10-15 at 08:27 +0100, Jan Beulich wrote:
+> > My perspective is that it just uncovered already existing brokenness.
+> 
+> Sorry, I thought it was clear, but to be more explicit: I propose the
+> following patch, which replaces the current BUILD_BUG_ON implementation
+> with Rusty's version.
 
-The v3020 read_bit function's return type is (unsigned char). The code
-returns a value masked by (1 << left_shift) that is casted to the return
-type. If left_shift is larger than 7, the cast will always result in a 0
-return value. The problem was discovered with left_shift = 16, and the
-included patch corrects the problem.
+OK, I switched my brain back on.  Yeah, I agree: we may still want
+BUILD_OR_RUNTIME_BUG_ON one day, but I like this.
 
-The bug was introduced in the last (Apr 3 2009) commit of the file, kernel
-versions 2.6.30 and later.
+It's just missing the giant comment that it needs :)
 
-diff -uNr a/drivers/rtc/rtc-v3020.c b/drivers/rtc/rtc-v3020.c
---- a/drivers/rtc/rtc-v3020.c   2009-10-15 14:41:50.000000000 -1000
-+++ b/drivers/rtc/rtc-v3020.c   2009-10-19 14:06:27.000000000 -1000
-@@ -96,7 +96,7 @@
+/**
+ * BUILD_BUG_ON - break compile if a condition is true.
+ * @cond: the condition which the compiler should know is false.
+ *
+ * If you have some code which relies on certain constants being equal, or
+ * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
+ * detect if someone changes it.
+ *
+ * The implementation uses gcc's reluctance to create a negative array, but
+ * gcc (as of 4.4) only emits that error for obvious cases (eg. not arguments
+ * to inline functions).  So as a fallback we use the optimizer; if it can't
+ * prove the condition is false, it will cause a link error on the undefined
+ * "__build_bug_on_failed".  This error is less neat, and can be harder to
+ * track down.
+ */
 
- static unsigned char v3020_mmio_read_bit(struct v3020 *chip)
- {
--       return readl(chip->ioaddress) & (1 << chip->leftshift);
-+       return ((readl(chip->ioaddress) & (1 << chip->leftshift)) != 0);
- }
-
- static struct v3020_chip_ops v3020_mmio_ops = {
-
-
-
-
-Scott Valentine
-
-Concentris Systems LLC
-Manoa Innovation Center, Suite #238
-2800 Woodlawn Drive
-Honolulu, HI  96822
-
-http://www.Concentris-Systems.com
-
-
+Thanks!
+Rusty.
