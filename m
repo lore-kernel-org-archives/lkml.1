@@ -1,150 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbZJTBDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbZJTBIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbZJTBDL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 21:03:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756174AbZJTBDK
+	id S1758127AbZJTBIT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 21:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251AbZJTBIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 21:03:10 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:37004 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751534AbZJTBDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 21:03:10 -0400
-Date: Tue, 20 Oct 2009 03:03:13 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>
-Subject: Re: [RFC PATCH 5/5] cfq-iosched: fairness for sync no-idle queues
-Message-ID: <20091020010312.GF10727@kernel.dk>
-References: <200910192221.43562.czoccolo@gmail.com>
+	Mon, 19 Oct 2009 21:08:18 -0400
+Received: from smtp.zeugmasystems.com ([70.79.96.174]:2081 "EHLO
+	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756130AbZJTBIR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 21:08:17 -0400
+Date: Mon, 19 Oct 2009 18:08:21 -0700 (PDT)
+From: Anirban Sinha <asinha@zeugmasystems.com>
+X-X-Sender: asinha@sleet.zeugmasystems.local
+To: Oleg Nesterov <oleg@redhat.com>
+cc: Anirban Sinha <ani@anirban.org>, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: [PATCH] Re: Kernel oops when clearing bgp neighbor info with TCP
+ MD5SUM enabled
+In-Reply-To: <Pine.LNX.4.64.0910191745050.20086@sleet.zeugmasystems.local>
+Message-ID: <Pine.LNX.4.64.0910191756420.20086@sleet.zeugmasystems.local>
+References: <Pine.LNX.4.64.0910081514050.18315@sleet.zeugmasystems.local>
+ <20091008.155429.02850661.davem@davemloft.net>
+ <Pine.LNX.4.64.0910081622400.18315@sleet.zeugmasystems.local>
+ <20091008.175703.83006470.davem@davemloft.net>
+ <Pine.LNX.4.64.0910171035340.2364@sleet.zeugmasystems.local>
+ <4ADA7EDC.5010402@anirban.org> <4ADB7856.7000803@anirban.org>
+ <20091019121327.GA11423@redhat.com> <Pine.LNX.4.64.0910191745050.20086@sleet.zeugmasystems.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910192221.43562.czoccolo@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 20 Oct 2009 01:08:21.0955 (UTC) FILETIME=[D13AE930:01CA5121]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19 2009, Corrado Zoccolo wrote:
-> Currently no-idle queues in cfq are not serviced fairly:
-> even if they can only dispatch a small number of requests at a time,
-> they have to compete with idling queues to be serviced, experiencing
-> large latencies.
-> 
-> We should notice, instead, that no-idle queues are the ones that would
-> benefit most from having low latency, in fact they are any of:
-> * processes with large think times (e.g. interactive ones like file
->   managers)
-> * seeky (e.g. programs faulting in their code at startup)
-> * or marked as no-idle from upper levels, to improve latencies of those
->   requests.
-> 
-> This patch improves the fairness and latency for those queues, by:
-> * separating sync idle, sync no-idle and async queues in separate
->   service_trees, for each priority
-> * service all no-idle queues together
-> * and idling when the last no-idle queue has been serviced, to
->   anticipate for more no-idle work
-> * the timeslices allotted for idle and no-idle service_trees are
->   computed proportionally to the number of processes in each set.
-> 
-> Servicing all no-idle queues together should have a performance boost
-> for NCQ-capable drives, without compromising fairness.
 
-Good stuff!
 
-> +enum wl_type_t {
-> +	ASYNC_WL = 0,
-> +	SYNC_NOIDLE_WL = 1,
-> +	SYNC_WL = 2
-> +};
+> I'd suppose that this unbalance comes from inet_twdr_hangman() pathes.
+>
+> Could you verify this?
 
-Again the _WL. WL what?
+Yes, I have now verified this. There is indeed an issue with one of the
+functions called by inet_twdr_hangman(). The call sequence is:
 
->  static inline int cfq_busy_queues_wl(enum wl_prio_t wl, struct cfq_data *cfqd)
->  {
->  	return wl == IDLE_WL ? cfqd->service_tree_idle.count :
-> -		cfqd->service_trees[wl].count;
-> +		cfqd->service_trees[wl][ASYNC_WL].count
-> +		+ cfqd->service_trees[wl][SYNC_NOIDLE_WL].count
-> +		+ cfqd->service_trees[wl][SYNC_WL].count;
+inet_twdr_hangman() -> inet_twdr_do_twkill_work() -> inet_twsk_put() ->
+twsk_destructor().
 
-Unreadable.
+In this case, the destructor callback is tcp_twsk_destructor() (installed
+from line 1208 in net/ipv4/tcp_ipv4.c and line 906 in net/ipv6/tcp_ipv6.c) .
+Without the TCP_MD5SUM compiled in, the function is a no-op. However, with the MD5SUM
+compiled in, it calls tcp_put_md5_sig_pool() (when keylen is non zero) which
+does an unbalanced put_cpu(). I did a grep across the entire tree.
+tcp_put_md5_sig_pool() is a matching function for tcp_get_md5_sig_pool() and
+in all other TCP IPV4 cases, it is called from net/ipv4/tcp_ipv4.c from
+functions tcp_v4_md5_hash_hdr() and tcp_v4_hash_skb() along with the matching
+get()
+function. So I would think that in tcp_twsk_destructor(), the call should be
+replaced by  tcp_free_md5_sig_pool() instead.
 
->  	cfq_slice_expired(cfqd, 0);
->  new_queue:
->  	if (!new_cfqq) {
-> +		enum wl_prio_t previous_prio = cfqd->serving_prio;
-> +
->  		if (cfq_busy_queues_wl(RT_WL, cfqd))
->  			cfqd->serving_prio = RT_WL;
->  		else if (cfq_busy_queues_wl(BE_WL, cfqd))
->  			cfqd->serving_prio = BE_WL;
-> -		else
-> +		else {
->  			cfqd->serving_prio = IDLE_WL;
-> +			cfqd->workload_expires = jiffies + 1;
-> +		}
-> +
-> +		if (cfqd->serving_prio != IDLE_WL) {
-> +			int counts[] = {
-> +				service_tree_for(cfqd->serving_prio,
-> +						 ASYNC_WL, cfqd)->count,
-> +				service_tree_for(cfqd->serving_prio,
-> +						 SYNC_NOIDLE_WL, cfqd)->count,
-> +				service_tree_for(cfqd->serving_prio,
-> +						 SYNC_WL, cfqd)->count
-> +			};
-> +			int nonzero_counts = !!counts[0] + !!counts[1]
-> +				+ !!counts[2];
-> +
-> +			if (previous_prio != cfqd->serving_prio ||
-> +			    (nonzero_counts == 1)) {
-> +				cfqd->serving_type = counts[1] ? SYNC_NOIDLE_WL
-> +					: counts[2] ? SYNC_WL : ASYNC_WL;
-> +			} else {
-> +				if (!counts[cfqd->serving_type] ||
-> +				    time_after(jiffies, cfqd->workload_expires))
-> +					cfqd->serving_type = cfq_choose_wl
-> +						(cfqd, cfqd->serving_prio);
-> +				else
-> +					goto same_wl;
-> +			}
-> +
-> +			{
-> +				unsigned slice = cfq_target_latency;
-> +				slice = slice * counts[cfqd->serving_type] /
-> +					max_t(unsigned, cfqd->busy_queues_avg
-> +						[cfqd->serving_prio],
-> +					      counts[SYNC_WL] +
-> +						counts[SYNC_NOIDLE_WL] +
-> +						counts[ASYNC_WL]);
-> +
-> +				if (cfqd->serving_type == ASYNC_WL)
-> +					slice = max(1U, slice
-> +						* cfqd->cfq_slice[0]
-> +						/ cfqd->cfq_slice[1]);
-> +				else {
-> +					unsigned slice_min =
-> +						2 * cfqd->cfq_slice_idle;
-> +					slice = max(slice, slice_min);
-> +					slice = max_t(unsigned, slice,
-> +						      CFQ_MIN_TT);
-> +				}
-> +				cfqd->workload_expires = jiffies + slice;
-> +			}
-> +		}
+Signed-of-by: Anirban Sinha <asinha@zeugmasystems.com>
+---
 
-This so badly needs comments and code cleanups it's not even funny. It's
-completely unreadable.
+net/ipv4/tcp_minisocks.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Goes for most of this patch. Your goal is great, but please spend some
-time commenting and making this code actually readable and mergeable.
+diff --git a/net/ipv4/tcp_minisocks.c b/net/ipv4/tcp_minisocks.c
+index e48c37d..dccc01e 100644
+--- a/net/ipv4/tcp_minisocks.c
++++ b/net/ipv4/tcp_minisocks.c
+@@ -363,7 +363,7 @@ void tcp_twsk_destructor(struct sock *sk)
+ #ifdef CONFIG_TCP_MD5SIG
+        struct tcp_timewait_sock *twsk = tcp_twsk(sk);
+        if (twsk->tw_md5_keylen)
+-               tcp_put_md5sig_pool();
++               tcp_free_md5sig_pool();
+ #endif
+ }
 
-Remember that reviewer time is valuable. You should provide patches that
-are easily digestable. Huge chunks of unreadable code like the above
-really wants to go into a separate function and be nicely commented.
 
--- 
-Jens Axboe
+
+
+
+
 
