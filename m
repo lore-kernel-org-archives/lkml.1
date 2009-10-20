@@ -1,65 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422AbZJTD0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbZJTD2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756422AbZJTD0e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 23:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZJTD0d
+	id S1757105AbZJTD2I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 23:28:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbZJTD2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 23:26:33 -0400
-Received: from mail-px0-f171.google.com ([209.85.216.171]:44347 "EHLO
-	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752574AbZJTD0c (ORCPT
+	Mon, 19 Oct 2009 23:28:07 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:40964 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752982AbZJTD2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 23:26:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=SD2WLbb8AHgclSZQ8cjVwJeV+e8x0KP0tUm+QKXrIw5FGM6KRt1cBbblPo9+IHGDvk
-         Rz3MHIWCagu6rprmv1+EbzFQqYQjPAqhVrWJlXRTAYpbt8uh93yAOneKfUhwqfDGcJHG
-         JxFtertA0oyNw45bQ0IRCI8+R25Hk2LMEEj/o=
-Date: Mon, 19 Oct 2009 20:26:33 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+	Mon, 19 Oct 2009 23:28:06 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=h9HiPhwkOoNHwnaZ33jjmw9rsv3P499a3HX7PdPRQLnLiqpLH/cYHSulbEVdo8Jqy
+	wvAPmAFNE9CCM9y2Jqeeg==
+Date: Mon, 19 Oct 2009 20:28:03 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Alex Chiang <achiang@hp.com>
-Cc: shaohua.li@intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 1/6] ACPI: dock: convert sysfs attributes to an
-	attribute_group
-Message-ID: <20091020032632.GI24370@core.coreip.homeip.net>
-References: <20091019211132.5412.80438.stgit@bob.kio> <20091019211424.5412.15540.stgit@bob.kio> <20091020013844.GB24370@core.coreip.homeip.net> <20091020025733.GA5814@ldl.fc.hp.com>
+cc: akpm@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 5/5] Documentation: ABI: document
+ /sys/devices/system/cpu/
+In-Reply-To: <20091019213435.32729.81751.stgit@bob.kio>
+Message-ID: <alpine.DEB.1.00.0910192022460.25264@chino.kir.corp.google.com>
+References: <20091019212740.32729.7171.stgit@bob.kio> <20091019213435.32729.81751.stgit@bob.kio>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091020025733.GA5814@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 08:57:33PM -0600, Alex Chiang wrote:
-> * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> > On Mon, Oct 19, 2009 at 03:14:24PM -0600, Alex Chiang wrote:
-> > > As suggested by Dmitry Torokhov, convert the individual sysfs
-> > > attributes into an attribute group.
-> > > 
-> > > This change eliminates quite a bit of copy/paste code in the
-> > > error handling paths.
-> > > 
-> > 
-> > Looks good to me, thank you for making the changes.
+On Mon, 19 Oct 2009, Alex Chiang wrote:
+
+> diff --git a/Documentation/ABI/testing/sysfs-devices-cpu b/Documentation/ABI/testing/sysfs-devices-cpu
+> new file mode 100644
+> index 0000000..9070889
+> --- /dev/null
+> +++ b/Documentation/ABI/testing/sysfs-devices-cpu
+
+Shouldn't this be called sysfs-devices-system-cpu?
+
+I see what you're doing: /sys/devices/system/node/* files are contained in 
+sysfs-devices-memory, but I think it would be helpful to have a more 
+strict naming scheme so that the contents of a sysfs directory are 
+described by a file of the same name.
+
+> @@ -0,0 +1,42 @@
+> +What:		/sys/devices/system/cpu/
+> +Date:		October 2009
+> +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> +Description:
+> +		A collection of CPU attributes, including cache information,
+> +		topology, and frequency. It also contains a mechanism to
+> +		logically hotplug CPUs.
+> +
+> +		The actual attributes present are architecture and
+> +		configuration dependent.
+> +
+> +
+> +What:		/sys/devices/system/cpu/$cpu/online
+
+cpu# ?
+
+> +Date:		January 2006
+> +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> +Description:
+> +		When CONFIG_HOTPLUG_CPU is enabled, allows the user to
+> +		discover and change the online state of a CPU. To discover
+> +		the state:
+
+This is present even without CONFIG_HOTPLUG_CPU.
+
+> +
+> +		cat /sys/devices/system/cpu/$cpu/online
+> +
+> +		A value of 0 indicates the CPU is offline. A value of 1
+> +		indicates it is online. To change the state, echo the
+> +		desired new state into the file:
+> +
+> +		echo [0|1] > /sys/devices/system/cpu/$cpu/online
+> +
+> +		For more information, please read Documentation/cpu-hotplug.txt
+> +
+> +
+> +What:		/sys/devices/system/cpu/$cpu/node
+> +Date:		October 2009
+> +Contact:	Linux memory management mailing list <linux-mm@kvack.org>
+> +Description:
+> +		When CONFIG_NUMA is enabled, a symbolic link that points
+> +		to the corresponding NUMA node directory.
+> +
+> +		For example, the following symlink is created for cpu42
+> +		in NUMA node 2:
+> +
+> +		/sys/devices/system/cpu/cpu42/node2 -> ../../node/node2
 > 
-> Thank you for your patience along the way.
-> 
-> Can I count this as an Acked-by? :)
-> 
 
-Yes, you may add
 
-	Reviewed-by: Dmitry Torokhov <dtor@mail.ru>
-
-I use "Acked-by" for stuff I have authority over which is being merged
-through someone else's tree for one reason or another.
-
-Thanks.
-
--- 
-Dmitry
+Would it be possible for you to document all entities in 
+/sys/devices/system/cpu/* in this new file (requiring a folding of 
+Documentation/ABI/testing/sysfs-devices-cache_disable into it)?
