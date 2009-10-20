@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbZJTT2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbZJTTUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752836AbZJTT2H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 15:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZJTT2H
+	id S1752455AbZJTTUf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 15:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZJTTUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 15:28:07 -0400
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:65462 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251AbZJTT2G (ORCPT
+	Tue, 20 Oct 2009 15:20:35 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:63223 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751733AbZJTTUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 15:28:06 -0400
+	Tue, 20 Oct 2009 15:20:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:from:date:message-id
-         :subject:to:cc:content-type;
-        b=EM9Ym96Wax3lM+EOMWvUM+esfQYDRsDoRjJJsjOpS14pnrTLtO1tlUbBIvrKNp9snN
-         GOnBo83KUpADaTUYQn6VvhC43cyFsJzBfZ0HRGEN20/qJIZM9W12qqQg/U3CreiR9jVR
-         fdC4JeLThZct6Qpz3Y/QBBpKeHj23t/cBdDYo=
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=pghU+gvKk5TxqhdV3HwEJfOvNZp7aQjBe1b85nCbhQ8okjS6eFPPc4gCoezjYoklzH
+         s8KHodujiEkvJ2LB6pW/JPJBFrtL2Vp0elfeNL9JrbfnA3iQKYBcx2yn8mDppTMPTQLm
+         RSykVpFXQrp8KgxKPlOsrfFsrZ0VHbaX2aR6A=
+Message-ID: <4ADE0FDE.5070101@gmail.com>
+Date: Tue, 20 Oct 2009 21:30:38 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Reply-To: davehart_gmail_exchange_tee@davehart.net
-In-Reply-To: <m3iqe9kj18.fsf@lugabout.jhcloos.org>
-References: <m3iqe9kj18.fsf@lugabout.jhcloos.org>
-From: Dave Hart <davehart@gmail.com>
-Date: Tue, 20 Oct 2009 19:27:48 +0000
-Message-ID: <85d954180910201227q528ff210v575df8c1f83e9ada@mail.gmail.com>
-Subject: Re: [ntp:hackers] ntp-dev-4.2.5p235-RC build failure: MOD_NANO not 
-	#defined
-To: James Cloos <cloos@jhcloos.com>
-Cc: hackers@lists.ntp.org, linux-kernel@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>, john stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=UTF-8
+To: Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fbdev: Wrong test on unsigned in fb_set_user_cmap()?
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please see:
+struct fb_cmap_user member start is unsigned.
 
-https://support.ntp.org/bugs/show_bug.cgi?id=1219
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Is this required?
 
-which points the finger at the Linux header and has a reference to:
-
-https://bugzilla.redhat.com/show_bug.cgi?id=505566
-
-titled: timex.h: #define MOD_NANO ADJ_NANO missing
-
-Cheers,
-Dave Hart
+diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
+index f53b9f1..f46f05f 100644
+--- a/drivers/video/fbcmap.c
++++ b/drivers/video/fbcmap.c
+@@ -266,7 +266,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+ 		rc = -ENODEV;
+ 		goto out;
+ 	}
+-	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
++	if ((int)cmap->start < 0 || (!info->fbops->fb_setcolreg &&
+ 				!info->fbops->fb_setcmap)) {
+ 		rc = -EINVAL;
+ 		goto out1;
