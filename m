@@ -1,127 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZJTF6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbZJTGAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753979AbZJTF6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 01:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbZJTF6U
+	id S1754372AbZJTGAv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 02:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbZJTGAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 01:58:20 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44827 "EHLO mx1.suse.de"
+	Tue, 20 Oct 2009 02:00:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54525 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752785AbZJTF6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 01:58:19 -0400
-Date: Tue, 20 Oct 2009 07:58:22 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Tejun Heo <tj@kernel.org>
-Cc: Jeff Mahoney <jeffm@suse.com>, Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64@vger.kernel.org
-Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
-In-Reply-To: <4ADD48D1.1040701@kernel.org>
-Message-ID: <alpine.LSU.2.00.0910200756300.8582@wotan.suse.de>
-References: <4ADB967A.4080707@suse.com> <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz> <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz> <4ADD48D1.1040701@kernel.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	id S1752929AbZJTGAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 02:00:50 -0400
+Date: Tue, 20 Oct 2009 08:00:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Tim Blechmann <tim@klingt.org>, linux-kernel@vger.kernel.org
+Subject: Re: pref record question
+Message-ID: <20091020060043.GB8550@elte.hu>
+References: <4ADC9C2A.5020707@klingt.org> <1256012810.17774.17.camel@laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256012810.17774.17.camel@laptop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Oct 2009, Tejun Heo wrote:
 
-> If the structure can be dynamically allocated at all, just using
-> percpu_alloc() to allocate the whole thing should solve it with the
-> correct numa locality.
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> On Mon, 2009-10-19 at 19:04 +0200, Tim Blechmann wrote:
+>
+> > i am trying to do some profiling with perf (2.6.31.4). while 
+> > thread-level profiling works fine, i haven't been able to record 
+> > profiling data of a whole process (i.e. main thread + child 
+> > threads). from my understanding, this should be enabled by running 
+> > 'perf record -i' on the main thread. this does only collect the data 
+> > from the main thread, though.
+> > 
+> > is this an issue with perf or with my understanding of perf?
 > 
-> Thanks.
+> -i will only inherit the counters on new fork()/clone() calls, so an 
+> existing process/task tree will not automagically get the counters.
 
-So how about something along the lines below? (completely untested as 
-well)
+Looks like something very much worth fixing.
 
-
-
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: sched: move rq_weight data array out of .percpu
-
-Commit 34d76c41 introduced percpu array update_shares_data, size of which
-being proportional to NR_CPUS. Unfortunately this blows up ia64 for large
-NR_CPUS configuration, as ia64 allows only 64k for .percpu section.
-
-Fix this by allocating this array dynamically and keep only pointer to it
-percpu.
-                                                                                                     
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>   
---- 
- kernel/sched.c |   19 +++++++++----------
- 1 files changed, 9 insertions(+), 10 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e886895..071cc66 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1564,11 +1564,7 @@ static unsigned long cpu_avg_load_per_task(int cpu)
- 
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 
--struct update_shares_data {
--	unsigned long rq_weight[NR_CPUS];
--};
--
--static DEFINE_PER_CPU(struct update_shares_data, update_shares_data);
-+unsigned long *update_shares_data;
- 
- static void __set_se_shares(struct sched_entity *se, unsigned long shares);
- 
-@@ -1578,12 +1574,12 @@ static void __set_se_shares(struct sched_entity *se, unsigned long shares);
- static void update_group_shares_cpu(struct task_group *tg, int cpu,
- 				    unsigned long sd_shares,
- 				    unsigned long sd_rq_weight,
--				    struct update_shares_data *usd)
-+				    unsigned long *usd)
- {
- 	unsigned long shares, rq_weight;
- 	int boost = 0;
- 
--	rq_weight = usd->rq_weight[cpu];
-+	rq_weight = usd[cpu];
- 	if (!rq_weight) {
- 		boost = 1;
- 		rq_weight = NICE_0_LOAD;
-@@ -1618,7 +1614,7 @@ static void update_group_shares_cpu(struct task_group *tg, int cpu,
- static int tg_shares_up(struct task_group *tg, void *data)
- {
- 	unsigned long weight, rq_weight = 0, shares = 0;
--	struct update_shares_data *usd;
-+	unsigned long *usd;
- 	struct sched_domain *sd = data;
- 	unsigned long flags;
- 	int i;
-@@ -1627,11 +1623,10 @@ static int tg_shares_up(struct task_group *tg, void *data)
- 		return 0;
- 
- 	local_irq_save(flags);
--	usd = &__get_cpu_var(update_shares_data);
- 
- 	for_each_cpu(i, sched_domain_span(sd)) {
- 		weight = tg->cfs_rq[i]->load.weight;
--		usd->rq_weight[i] = weight;
-+		usd = *per_cpu_ptr(update_shares_data, i) = weight;
- 
- 		/*
- 		 * If there are currently no tasks on the cpu pretend there
-@@ -9407,6 +9402,10 @@ void __init sched_init(void)
- #endif /* CONFIG_USER_SCHED */
- #endif /* CONFIG_GROUP_SCHED */
- 
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+	update_shares_data = __alloc_percpu(NR_CPUS * sizeof(unsigned long),
-+			unsigned long);
-+#endif
- 	for_each_possible_cpu(i) {
- 		struct rq *rq;
- 
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+	Ingo
