@@ -1,90 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751373AbZJTIYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751302AbZJTIdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751373AbZJTIYx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 04:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbZJTIYw
+	id S1751302AbZJTIdf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 04:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbZJTIdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 04:24:52 -0400
-Received: from lider.pardus.org.tr ([193.140.100.216]:36449 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750806AbZJTIYv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 04:24:51 -0400
-Message-ID: <4ADD74FE.4040406@pardus.org.tr>
-Date: Tue, 20 Oct 2009 11:29:50 +0300
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.23 (X11/20071115)
+	Tue, 20 Oct 2009 04:33:35 -0400
+Received: from lucidpixels.com ([75.144.35.66]:40114 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750806AbZJTIde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 04:33:34 -0400
+Date: Tue, 20 Oct 2009 04:33:37 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Dave Chinner <david@fromorbit.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: 2.6.31+2.6.31.4: XFS - All I/O locks up to D-state after 24-48
+ hours (sysrq-t+w available)
+In-Reply-To: <20091020003358.GW9464@discord.disaster>
+Message-ID: <alpine.DEB.2.00.0910200431290.21878@p34.internal.lan>
+References: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan> <alpine.DEB.2.00.0910181607040.27363@p34.internal.lan> <20091019030456.GS9464@discord.disaster> <alpine.DEB.2.00.0910190431180.23395@p34.internal.lan>
+ <20091020003358.GW9464@discord.disaster>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: linux-media@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Subject: Re: uvcvideo causes ehci_hcd to halt
-References: <Pine.LNX.4.44L0.0910131050460.3169-100000@iolanthe.rowland.org> <4AD588DB.4050905@pardus.org.tr>
-In-Reply-To: <4AD588DB.4050905@pardus.org.tr>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ozan Çağlayan wrote On 14-10-2009 11:16:
-> Alan Stern wrote On 13-10-2009 17:53:
->   
->> Can you add a dump_stack() call just after the ehci_err() line in 
->> drivers/usb/host/ehci-hcd.c:handshake_on_error_set_halt()?  It should 
->> provide some clues.
->>
->> At the same time (i.e., during the same test) you should collect a 
->> usbmon trace.
->>
->> Alan Stern
->>   
->>     
->
-> Hi. First the backtrace:
->
-> [  149.510272] uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0203)
-> [  149.515017] input: BisonCam, NB Pro as
-> /devices/pci0000:00/0000:00:1d.7/usb1/1-5/1-5:1.0/input/input10
-> [  149.515588] usbcore: registered new interface driver uvcvideo
-> [  149.516247] USB Video Class driver (v0.1.0)
-> [  149.658012] Pid: 1137, comm: hald-probe-vide Tainted: G         C
-> 2.6.31.4-128 #2
-> [  149.658012] Call Trace:
-> [  149.658012]  [<c0373f62>] handshake_on_error_set_halt+0x36/0x65
-> [  149.658012]  [<c0374073>] enable_periodic+0x32/0x72
-> [  149.658012]  [<c03741c9>] qh_link_periodic+0x116/0x11e
-> [  149.658012]  [<c0374665>] qh_schedule+0x120/0x12c
-> [  149.658012]  [<c03775d0>] intr_submit+0x8c/0x124
-> [  149.658012]  [<c0377d2a>] ehci_urb_enqueue+0x7a/0xa5
-> [  149.658012]  [<c036965f>] usb_hcd_submit_urb+0xbb/0x13c
-> [  149.658012]  [<c0369b1e>] usb_submit_urb+0x1f1/0x20d
-> [  149.658012]  [<f854aaff>] uvc_status_start+0x18/0x1a [uvcvideo]
-> [  149.658012]  [<f8546e23>] uvc_v4l2_open+0x8a/0xcf [uvcvideo]
-> [  149.658012]  [<f7c3d74a>] v4l2_open+0x68/0x7c [videodev]
-> [  149.658012]  [<c01c648e>] chrdev_open+0x125/0x13c
-> [  149.658012]  [<c01c28a9>] __dentry_open+0x119/0x207
-> [  149.658012]  [<c01c2a31>] nameidata_to_filp+0x2c/0x43
-> [  149.658012]  [<c01c6369>] ? chrdev_open+0x0/0x13c
-> [  149.658012]  [<c01ccc28>] do_filp_open+0x3e5/0x741
-> [  149.658012]  [<c01ccfe9>] ? getname+0x20/0xb7
-> [  149.658012]  [<c01d4be8>] ? alloc_fd+0x55/0xbe
-> [  149.658012]  [<c01c2699>] do_sys_open+0x4a/0xe2
-> [  149.658012]  [<c0435527>] ? do_page_fault+0x2d6/0x304
-> [  149.658012]  [<c01c2773>] sys_open+0x1e/0x26
-> [  149.658012]  [<c0103214>] sysenter_do_call+0x12/0x28
-> [  149.658012] ehci_hcd 0000:00:1d.7: force halt; handhake f7c66024
-> 00004000 00000000 -> -110
->
-> And the usbmon trace during "modprobe uvcvideo" can be found at:
->
-> http://cekirdek.pardus.org.tr/~ozan/ivir/logs/usbmon.trace.bad
->
-> I also manage to not reproduce the problem so it's kinda racy. You can
-> find good/bad dmesg/usbmon traces at:
->
-> http://cekirdek.pardus.org.tr/~ozan/ivir/logs
->   
-ping! in case it's got lost between high traffic :)
 
-Thanks.
+
+On Tue, 20 Oct 2009, Dave Chinner wrote:
+
+> On Mon, Oct 19, 2009 at 06:18:58AM -0400, Justin Piszcz wrote:
+>> On Mon, 19 Oct 2009, Dave Chinner wrote:
+>>> On Sun, Oct 18, 2009 at 04:17:42PM -0400, Justin Piszcz wrote:
+>>>> It has happened again, all sysrq-X output was saved this time.
+>>> .....
+>>>
+>>> All pointing to log IO not completing.
+>>>
+> ....
+>> So far I do not have a reproducible test case,
+>
+> Ok. What sort of load is being placed on the machine?
+Hello, generally the load is low, it mainly serves out some samba shares.
+
+>
+>> the only other thing not posted was the output of ps auxww during
+>> the time of the lockup, not sure if it will help, but here it is:
+>>
+>> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+>> root         1  0.0  0.0  10320   684 ?        Ss   Oct16   0:00 init [2]
+> ....
+>> root       371  0.0  0.0      0     0 ?        R<   Oct16   0:01 [xfslogd/0]
+>> root       372  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfslogd/1]
+>> root       373  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfslogd/2]
+>> root       374  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfslogd/3]
+>> root       375  0.0  0.0      0     0 ?        R<   Oct16   0:00 [xfsdatad/0]
+>> root       376  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsdatad/1]
+>> root       377  0.0  0.0      0     0 ?        S<   Oct16   0:03 [xfsdatad/2]
+>> root       378  0.0  0.0      0     0 ?        S<   Oct16   0:01 [xfsdatad/3]
+>> root       379  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/0]
+>> root       380  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/1]
+>> root       381  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/2]
+>> root       382  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/3]
+> .....
+>
+> It appears that both the xfslogd and the xfsdatad on CPU 0 are in
+> the running state but don't appear to be consuming any significant
+> CPU time. If they remain like this then I think that means they are
+> stuck waiting on the run queue.  Do these XFS threads always appear
+> like this when the hang occurs? If so, is there something else that
+> is hogging CPU 0 preventing these threads from getting the CPU?
+Yes, the XFS threads show up like this on each time the kernel crashed.  So far
+with 2.6.30.9 after ~48hrs+ it has not crashed.  So it appears to be some issue
+between 2.6.30.9 and 2.6.31.x when this began happening.  Any recommendations
+on how to catch this bug w/certain options enabled/etc?
+
+
+>
+> Cheers,
+>
+> Dave.
+> -- 
+> Dave Chinner
+> david@fromorbit.com
+>
