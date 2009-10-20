@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbZJTXVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbZJTXcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753000AbZJTXVp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 19:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZJTXVo
+	id S1752964AbZJTXcW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 19:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZJTXcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 19:21:44 -0400
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:45364 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752927AbZJTXVn (ORCPT
+	Tue, 20 Oct 2009 19:32:22 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:4566 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751142AbZJTXcV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 19:21:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=xb2znD135NztgVOz+kV07jXhWEE1VnKcgo5FEJm75swxqas0BxESx+rBV3xv8iKI0j
-         5RjMl5CUyBjpaCz91a7mzyDfxLfGEHnbQZk1Orb4wXDuljw5b22xs9ks8vW+KyW9OFV+
-         5l6N1ty0QQkuhGLTFEXHLw4DGHahHaFh5TdI8=
+	Tue, 20 Oct 2009 19:32:21 -0400
+From: James Cloos <cloos@jhcloos.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: davehart_gmail_exchange_tee@davehart.net, hackers@lists.ntp.org,
+       linux-kernel@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [ntp:hackers] ntp-dev-4.2.5p235-RC build failure: MOD_NANO not  #defined
+In-Reply-To: <1f1b08da0910201345w61f1bb4yb99b5f052ea77ac4@mail.gmail.com>
+	(john stultz's message of "Tue, 20 Oct 2009 13:45:53 -0700")
+References: <m3iqe9kj18.fsf@lugabout.jhcloos.org>
+	<85d954180910201227q528ff210v575df8c1f83e9ada@mail.gmail.com>
+	<1f1b08da0910201345w61f1bb4yb99b5f052ea77ac4@mail.gmail.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.50 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2009 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+Date: Tue, 20 Oct 2009 19:22:00 -0400
+Message-ID: <m3aazlk5vz.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
-In-Reply-To: <e3511b0c31dd03889a221c947dec2c80.squirrel@webmail.xs4all.nl>
-References: <4ADE2773.8020507@gmail.com> <e3511b0c31dd03889a221c947dec2c80.squirrel@webmail.xs4all.nl>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Wed, 21 Oct 2009 08:21:28 +0900
-Message-ID: <43e72e890910201621t6691cf08kb62478fcba2fe097@mail.gmail.com>
-Subject: Re: No support for Fritz!WLAN USB N2.4
-To: Ed Vaessen <evaessen@xs4all.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Hashcash: 1:30:091020:johnstul@us.ibm.com::ySwuUyvz85BwSESQ:00000000000000000000000000000000000000000U/tO4
+X-Hashcash: 1:30:091020:davehart_gmail_exchange_tee@davehart.net::Lcd9zuSVtKY/REzh:00000000000000000000vx03C
+X-Hashcash: 1:30:091020:hackers@lists.ntp.org::dIWxVq9l37yX9PKQ:000000000000000000000000000000000000000UEAF2
+X-Hashcash: 1:30:091020:linux-kernel@vger.kernel.org::q5Vc+QQUbP8s2MMF:00000000000000000000000000000000LhbVQ
+X-Hashcash: 1:30:091020:zippel@linux-m68k.org::4cgNejk6apW2pJtk:000000000000000000000000000000000000000BTuEZ
+X-Hashcash: 1:30:091020:tglx@linutronix.de::Mtg8KWORa8AYbCV9:000000000000000000000000000000000000000000O9IlN
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2009 at 7:10 AM, Ed Vaessen <evaessen@xs4all.nl> wrote:
-> To my surprise I found that it seems that the driver for Fritz!WLAN USB
-> N2.4 is not longer supported. At least, the last tarballs I got do not
-> compile them anymore. Their code is still there but no module with the
-> name ar9170 is built. Modules from the same group, like ath5k and ath9k
-> are built.
-> Am I missing something?
+>>>>> "john" == john stultz <johnstul@us.ibm.com> writes:
 
-What kernel are you on? ar9170 only builds on >= 2.6.29 due to some
-difficulty in backporting some USB code which ar9170 uses.
+john> The kernel has already been fixed, but glibc still needs to pick up the change.
+john> See the kernel commit here:
+john> http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commitdiff;h=c95b4502ad7fe8f3b9954aec794b00ac0046ab3a
 
-  Luis
+Ah.  I only looked in my (up to date) clone of Linus’ tree; I didn’t
+check the trees-to-pull.
+
+Will that be part of a pull request for the current rc or only for the
+next merge window?
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
