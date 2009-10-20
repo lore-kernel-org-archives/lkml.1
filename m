@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbZJTNTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106AbZJTNTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752064AbZJTNTO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 09:19:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZJTNTN
+	id S1752106AbZJTNTo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 09:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbZJTNTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 09:19:13 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:40919 "EHLO kernel.dk"
+	Tue, 20 Oct 2009 09:19:44 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:51560 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750959AbZJTNTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 09:19:13 -0400
-Date: Tue, 20 Oct 2009 15:19:16 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>
-Subject: Re: [RFC PATCH 3/5] cfq-iosched: reimplement priorities using
-	different service trees
-Message-ID: <20091020131916.GI10727@kernel.dk>
-References: <200910192221.23564.czoccolo@gmail.com> <20091020005813.GD10727@kernel.dk> <4e5e476b0910200343s1d7913daq5719d8a4d84fb491@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+	id S1752069AbZJTNTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 09:19:42 -0400
+Subject: Re: [PATCH] perf tools: Shut up compiler warning
+From: Steven Rostedt <srostedt@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <20091020055439.GA29531@elte.hu>
+References: <y> <1255971369-11368-1-git-send-email-acme@redhat.com>
+	 <20091020055439.GA29531@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Red Hat
+Date: Tue, 20 Oct 2009 09:19:19 -0400
+Message-Id: <1256044759.2669.0.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <4e5e476b0910200343s1d7913daq5719d8a4d84fb491@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20 2009, Corrado Zoccolo wrote:
-> On Tue, Oct 20, 2009 at 2:58 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > On Mon, Oct 19 2009, Corrado Zoccolo wrote:
-> >> We use different service trees for different priority classes.
-> >> This allows a simplification in the service tree insertion code, that no
-> >> longer has to consider priority while walking the tree.
-> >
-> >> +enum wl_prio_t {
-> >> +     IDLE_WL = -1,
-> >> +     BE_WL = 0,
-> >> +     RT_WL = 1
-> >> +};
-> >
-> > WL?
-> It stands for "workload". When defining all-caps constants, one has to
-> avoid possible clashes adding pre/suf-fixes.
-> Any suggestion for better naming?
+On Tue, 2009-10-20 at 07:54 +0200, Ingo Molnar wrote:
+> * Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+> 
+> > cc1: warnings being treated as errors
+> > util/trace-event-parse.c: In function â€˜parse_ftrace_printkâ€™:
+> > util/trace-event-parse.c:289: warning: â€˜fmtâ€™ may be used uninitialized in this function
+> > 
+> > Cc: Steven Rostedt <srostedt@redhat.com>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> > Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> > ---
+> >  tools/perf/util/trace-event-parse.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
+> > index 4b61b49..0b8a01b 100644
+> > --- a/tools/perf/util/trace-event-parse.c
+> > +++ b/tools/perf/util/trace-event-parse.c
+> > @@ -286,7 +286,7 @@ void parse_ftrace_printk(char *file, unsigned int size __unused)
+> >  	char *line;
+> >  	char *next = NULL;
+> >  	char *addr_str;
+> > -	char *fmt;
+> > +	char *fmt = NULL;
+> >  	int i;
+> >  
+> >  	line = strtok_r(file, "\n", &next);
+> 
+> Actually, this might be a real bug that GCC pointed out: what makes sure 
+> that strtok_r() does not return a NULL (no more tokens) and hence fmt 
+> remains NULL (crashing the rest of the parser)?
 
-Nobody will guess that. Make variable/enum names as short as possible,
-but not so short that their meaning are incomprehensible. Suggestion
-would be to use IDLE_WORKLOAD etc.
+Ug, yeah that's a bug. That was one of the later changes I did at night.
+I'll go look at it and see how it should really be.
 
--- 
-Jens Axboe
+Thanks,
+
+-- Steve
+
 
