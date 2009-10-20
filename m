@@ -1,193 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751346AbZJTIdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751368AbZJTIj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751346AbZJTIdt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 04:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZJTIdp
+	id S1751368AbZJTIj1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 04:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbZJTIj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 04:33:45 -0400
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:47973 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751301AbZJTIdg convert rfc822-to-8bit (ORCPT
+	Tue, 20 Oct 2009 04:39:27 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:62211 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751096AbZJTIj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 04:33:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SM+VaBcBsPgJnMd8udBOrLo/wcgiKY3Mmq6vafAw0IBWJlaoc/a9I48hC8mzCvZRQu
-         Wpcldvvgb4VXyTrj98JasxL3Nml9tPwCY6B1UzYnW/b9dKXA23LDJ+5GTpB4DQQ/2uxm
-         B6woh+UPQ4djketkg3ZWpCllyC1y9IchAr+fM=
+	Tue, 20 Oct 2009 04:39:26 -0400
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Subject: Re: [PATCH 2/4] kmemleak: Scan the _ftrace_events section in modules
+References: <20091019144602.14221.27128.stgit@pc1117.cambridge.arm.com>
+	<20091019144928.14221.73541.stgit@pc1117.cambridge.arm.com>
+	<200910201124.18695.rusty@rustcorp.com.au>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Tue, 20 Oct 2009 09:39:20 +0100
+In-Reply-To: <200910201124.18695.rusty@rustcorp.com.au> (Rusty Russell's message of "Tue\, 20 Oct 2009 11\:24\:18 +1030")
+Message-ID: <tnx7huqa287.fsf@pc1117.cambridge.arm.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0910190422090.13303@andre.icculuslan>
-References: <alpine.DEB.2.00.0910190422090.13303@andre.icculuslan>
-Date: Tue, 20 Oct 2009 16:33:40 +0800
-Message-ID: <2375c9f90910200133g51c70ce2x8f90cd79885096a4@mail.gmail.com>
-Subject: Re: [RFC][PATCH 2/2] binfmt_elf: FatELF support for kernel modules.
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: "Ryan C. Gordon" <icculus@icculus.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 20 Oct 2009 08:39:22.0017 (UTC) FILETIME=[D248B110:01CA5160]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 10:41 PM, Ryan C. Gordon <icculus@icculus.org> wrote:
+Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Tue, 20 Oct 2009 01:19:29 am Catalin Marinas wrote:
+>> This section contains pointers to allocated objects and not scanning it
+>> leads to false positives.
 >
-> Allows kernel modules to be FatELF binaries.
->
-> Details, rationale, tools, and patches for handling FatELF binaries can be
-> found at http://icculus.org/fatelf/
->
-> Please note that this requires an updated depmod and modprobe to be truly
-> effective, but an unmodified insmod can work with FatELF binaries.
->
-> Signed-off-by: Ryan C. Gordon <icculus@icculus.org>
-> ---
->  kernel/module.c |   72 +++++++++++++++++++++++++++++++++++++++++++++++++++----
->  1 files changed, 67 insertions(+), 5 deletions(-)
->
-> diff --git a/kernel/module.c b/kernel/module.c
-> index 8b7d880..cda8f79 100644
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -2066,13 +2066,69 @@ static inline void kmemleak_load_module(struct module *mod, Elf_Ehdr *hdr,
->  }
->  #endif
->
-> +/*
-> + * See if we're a valid FatELF binary, find the right record, and
-> + *  return the offset of that record within the binary. Returns NULL if there's
-> + *  a problem, or a pointer to the real ELF header if we're okay.
-> + *  If we don't see the FatELF magic number, we assume this is a regular ELF
-> + *  binary and let the regular ELF checks handle it.
-> + *
-> + * This is a simplified version of examine_fatelf in fs/binfmt_elf.c
-> + */
-> +static Elf_Ehdr *examine_fatelf_module(const unsigned char *hdr,
-> +                                      const unsigned long len)
-> +{
-> +       Elf_Ehdr elf;
-> +       int records, i;
-> +       const fatelf_hdr *fatelf = (const fatelf_hdr *) hdr;
+> Thanks, applied.  Want me to push this for 2.6.32?
 
+This patch requires 1/4 to be applied as it changes the kmemleak API a
+bit, so it won't even compile on its own. I can push them both
+together with your ack for the second.
 
-As for 'Elf_Ehdr', isn't 'Fatelf_hdr' better? :)
+I'm not sure whether API changes make sense during -rc releases, I was
+more thinking of pushing the patches for 2.6.33.
 
-> +
-> +       if (likely(le32_to_cpu(fatelf->magic) != FATELF_MAGIC)) {
-> +               return (Elf_Ehdr *) hdr;  /* not FatELF; not an error. */
-> +       } else if (unlikely(le16_to_cpu(fatelf->version) != 1)) {
-> +               return NULL; /* Unrecognized format version. */
-> +       }
-> +
+For the current kernel, I could send you patch with the current API,
+though calling kmemleak_scan_area() for _ftrace_events is a bit ugly.
 
+Thanks.
 
-These braces are unnecessary.
-
-> +       memset(&elf, 0, sizeof (elf));
-> +
-> +       records = (int) fatelf->num_records;  /* uint8, no byteswap needed */
-> +       for (i = 0; i < records; i++) {
-> +               const fatelf_record *record = &fatelf->records[i];
-> +
-> +               /* Fill in the data elf_check_arch() might care about. */
-> +               elf.e_ident[EI_OSABI] = record->osabi;
-> +               elf.e_ident[EI_CLASS] = record->word_size;
-> +               elf.e_ident[EI_DATA] = record->byte_order;
-> +               elf.e_machine = le16_to_cpu(record->machine);
-> +
-> +               if (likely(!elf_check_arch(&elf))) {
-> +                       continue;  /* Unsupported CPU architecture. */
-
-This 'continue' can be removed.
-
-
-> +               } else {
-> +                       const __u64 rec_offset = le64_to_cpu(record->offset);
-> +                       const __u64 rec_size = le64_to_cpu(record->size);
-> +                       const __u64 end_offset = rec_offset + rec_size;
-> +                       const unsigned long uloff = (unsigned long) rec_offset;
-> +
-> +                       if (unlikely(end_offset < rec_offset)) {
-> +                               continue;  /* overflow (corrupt file?)... */
-
-
-ditto
-
-> +                       } else if (unlikely(end_offset > len)) {
-> +                               continue;  /* past EOF. */
-
-ditto
-
-> +                       }
-> +
-> +                       return (Elf_Ehdr *) (hdr + uloff);
-> +               }
-> +       }
-> +
-> +       return NULL;  /* no binaries we could use. */
-> +}
-> +
->  /* Allocate and load the module: note that size of section 0 is always
->    zero, and we rely on this for optional sections. */
->  static noinline struct module *load_module(void __user *umod,
->                                  unsigned long len,
->                                  const char __user *uargs)
->  {
-> -       Elf_Ehdr *hdr;
-> +       Elf_Ehdr *hdr_alloc;  /* returned from vmalloc */
-> +       Elf_Ehdr *hdr;  /* adjusted hdr_alloc for FatELF */
->        Elf_Shdr *sechdrs;
->        char *secstrings, *args, *modmagic, *strtab = NULL;
->        char *staging;
-> @@ -2094,14 +2150,20 @@ static noinline struct module *load_module(void __user *umod,
->
->        /* Suck in entire file: we'll want most of it. */
->        /* vmalloc barfs on "unusual" numbers.  Check here */
-> -       if (len > 64 * 1024 * 1024 || (hdr = vmalloc(len)) == NULL)
-> +       if (len > 64 * 1024 * 1024 || (hdr_alloc = vmalloc(len)) == NULL)
->                return ERR_PTR(-ENOMEM);
->
-> -       if (copy_from_user(hdr, umod, len) != 0) {
-> +       if (copy_from_user(hdr_alloc, umod, len) != 0) {
->                err = -EFAULT;
->                goto free_hdr;
->        }
->
-> +       hdr = examine_fatelf_module((unsigned char *) hdr_alloc, len);
-> +       if (hdr == NULL) {
-> +               err = -ENOEXEC;
-> +               goto free_hdr;
-> +       }
-> +
->        /* Sanity checks against insmoding binaries or wrong arch,
->            weird elf version */
->        if (memcmp(hdr->e_ident, ELFMAG, SELFMAG) != 0
-> @@ -2505,7 +2567,7 @@ static noinline struct module *load_module(void __user *umod,
->        add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
->
->        /* Get rid of temporary copy */
-> -       vfree(hdr);
-> +       vfree(hdr_alloc);
->
->        trace_module_load(mod);
->
-> @@ -2538,7 +2600,7 @@ static noinline struct module *load_module(void __user *umod,
->        kfree(args);
->        kfree(strmap);
->  free_hdr:
-> -       vfree(hdr);
-> +       vfree(hdr_alloc);
->        return ERR_PTR(err);
->
->  truncated:
-> --
-> 1.6.0.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+-- 
+Catalin
