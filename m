@@ -1,90 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbZJTK1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751494AbZJTKnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751783AbZJTK1M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 06:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZJTK1L
+	id S1751494AbZJTKnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 06:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbZJTKnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 06:27:11 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:47849 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751383AbZJTK1J (ORCPT
+	Tue, 20 Oct 2009 06:43:17 -0400
+Received: from mail-gx0-f216.google.com ([209.85.217.216]:55094 "EHLO
+	mail-gx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750899AbZJTKnQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 06:27:09 -0400
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, dlezcano@fr.ibm.com, jack@ucw.cz,
-       andrea@cpushare.com, sukadev@us.ibm.com,
-       Containers <containers@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
-       mingo@elte.hu, Alexey Dobriyan <adobriyan@gmail.com>
-References: <20091020041337.GA31623@us.ibm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 20 Oct 2009 03:27:00 -0700
-In-Reply-To: <20091020041337.GA31623@us.ibm.com> (Sukadev Bhattiprolu's message of "Mon\, 19 Oct 2009 21\:13\:37 -0700")
-Message-ID: <m1r5sywebv.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 20 Oct 2009 06:43:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NKOOq9K2wMVvv2c7uImuOc+xk5ZVMIchZ4sOOCBS0SOIxXPX59uM51M8WeRR90UorD
+         7LAK+reTPjCdRv0awkZ7QpdrrsvyTswZURE49za8TjokPBf5n/CXvzFC0jT2ThuMeTCA
+         EJfCLHdh4jmB+qRIh7k5U/8bRWAHxhEFuvSM8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: **;Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: *  7.0 XM_URI_RBL URI's domain appears in surbl.xmission.com
-	*      [URIs: lkml.org]
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH] pidns: Fix a leak in /proc inodes and dentries
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+In-Reply-To: <20091020005813.GD10727@kernel.dk>
+References: <200910192221.23564.czoccolo@gmail.com>
+	 <20091020005813.GD10727@kernel.dk>
+Date: Tue, 20 Oct 2009 12:43:20 +0200
+Message-ID: <4e5e476b0910200343s1d7913daq5719d8a4d84fb491@mail.gmail.com>
+Subject: Re: [RFC PATCH 3/5] cfq-iosched: reimplement priorities using 
+	different service trees
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+On Tue, Oct 20, 2009 at 2:58 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Mon, Oct 19 2009, Corrado Zoccolo wrote:
+>> We use different service trees for different priority classes.
+>> This allows a simplification in the service tree insertion code, that no
+>> longer has to consider priority while walking the tree.
+>
+>> +enum wl_prio_t {
+>> +     IDLE_WL = -1,
+>> +     BE_WL = 0,
+>> +     RT_WL = 1
+>> +};
+>
+> WL?
+It stands for "workload". When defining all-caps constants, one has to
+avoid possible clashes adding pre/suf-fixes.
+Any suggestion for better naming?
+>
+>> +static struct cfq_rb_root *service_tree_for(enum wl_prio_t prio,
+>> +                                     struct cfq_data *cfqd)
+>> +{
+>> +     return prio == IDLE_WL ? &cfqd->service_tree_idle :
+>> +             &cfqd->service_trees[prio];
+>> +}
+>
+> Don't do it...
+>
+> static struct cfq_rb_root *service_tree_for(enum wl_prio_t prio,
+>                                        struct cfq_data *cfqd)
+> {
+>        if (prio == IDLE_WL)
+>                return &cfqd->service_tree_idle;
+>
+>        return &cfqd->service_trees[prio];
+> }
+>
+> much cleaner. There are more of these in this patch.
+I don't see much difference: my brain just translates the former in
+the latter, and the former takes up less screen space.
+But you are the maintainer, so I'll write it as you want.
 
-> Fix a leak in /proc dentries and inodes with pid namespaces.
->
-> This fix reverts the commit 7766755a2f249e7e0. The leak was reported by
-> Daniel Lezcano - see  http://lkml.org/lkml/2009/10/2/159.
->
-> To summarize the thread, when container-init is terminated, it sets the
-> PF_EXITING flag and then zaps all the other processes in the container.
-> When those processes exit, they are expected to be reaped by the container-
-> init and as a part of reaping, the container-init should flush any /proc
-> dentries associated with the processes. But because the container-init is
-> itself exiting and the following PF_EXITING check, the dentires are not
-> flushed, resulting in leak in /proc inodes and dentries.
+> Otherwise it looks sane, and I agree that making the insert cleaner here
+> is a good bonus.
 
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
-
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-> Reported-by: Daniel Lezcano <dlezcano@fr.ibm.com>
-> Cc: Eric W. Biederman <ebiederm@xmission.com>
-> Cc: Jan Kara <jack@ucw.cz>
-> Cc: Andrea Arcangeli <andrea@cpushare.com>
+Thanks
+Corrado
 >
-> ---
->  fs/proc/base.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+> --
+> Jens Axboe
 >
-> Index: linux-2.6/fs/proc/base.c
-> ===================================================================
-> --- linux-2.6.orig/fs/proc/base.c	2009-10-19 20:28:51.000000000 -0700
-> +++ linux-2.6/fs/proc/base.c	2009-10-19 20:29:03.000000000 -0700
-> @@ -2580,8 +2580,7 @@ static void proc_flush_task_mnt(struct v
->  	name.len = snprintf(buf, sizeof(buf), "%d", pid);
->  	dentry = d_hash_and_lookup(mnt->mnt_root, &name);
->  	if (dentry) {
-> -		if (!(current->flags & PF_EXITING))
-> -			shrink_dcache_parent(dentry);
-> +		shrink_dcache_parent(dentry);
->  		d_drop(dentry);
->  		dput(dentry);
->  	}
+>
