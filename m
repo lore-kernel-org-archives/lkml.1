@@ -1,85 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbZJTA2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932421AbZJTAcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758086AbZJTA2i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 20:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758067AbZJTA2i
+	id S932421AbZJTAcM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 20:32:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbZJTAcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 20:28:38 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:21201 "EHLO mx1.redhat.com"
+	Mon, 19 Oct 2009 20:32:11 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42995 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758035AbZJTA2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 20:28:37 -0400
-Message-ID: <4ADD049E.9080000@redhat.com>
-Date: Mon, 19 Oct 2009 20:30:22 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Ashwin Chaugule <ashbertslists@gmail.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
-       a.p.zijlstra@chello.nl
-Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
- 	probe and kprobe-tracer bugfixes
-References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <ad7a95ae0910191610q6f6200f1n112a71a0cbd483f1@mail.gmail.com>
-In-Reply-To: <ad7a95ae0910191610q6f6200f1n112a71a0cbd483f1@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755918AbZJTAcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 20:32:10 -0400
+Subject: Re: Characters vanishing in the tty layer? (maybe related to [Bug
+ #14388] keyboard under X with 2.6.31)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Michael Neuling <mikey@neuling.org>
+In-Reply-To: <alpine.LFD.2.00.0910200245330.13080@eeepc.linux-foundation.org>
+References: <1255501294.21962.24.camel@concordia>
+	 <alpine.LFD.2.01.0910140748420.6146@localhost.localdomain>
+	 <1255934287.4192.125.camel@concordia>
+	 <alpine.LFD.2.00.0910200245330.13080@eeepc.linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 20 Oct 2009 09:31:31 +0900
+Message-Id: <1255998691.2232.4.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ashwin,
+On Tue, 2009-10-20 at 03:09 +0900, Linus Torvalds wrote:
+> 
+> 
+> > It's a bit unfortunate that n_tty_set_room() lies about the available
+> > space when icanon = 1, but it makes sense in order to handle erase. It
+> > would be nice if n_tty_receive_buf() returned a status to
+> > flush_to_disc() to say "actually I could only fit X chars after all,
+> > please take them back" - but I don't grok how that would play with all
+> > the other logic in there.
+> 
+> Yeah, I don't think that is even worth it. The thing is, we do have to 
+> start dropping characters at some point,
 
-Ashwin Chaugule wrote:
-> Masami,
->            I really like your idea with kprobes ! I havent yet run
-> this stuff on my machine, but I've been planning to utilize kprobes
-> with perfevents too. Please let me know if the following functionality
-> is already possible with your patches.
+Do we ? IE, if we could push the flow control back up to hvc_console,
+telling it how many chars we -really- could put in instead of dropping
+anything, the hvc_console back end can then stop fetching from the
+hypervisor, which would for most cases of virtual consoles push the flow
+control all the way to the client terminal and thus not lose anything.
 
-Thanks! I'm happy to here that you are interested in.
+I haven't looked at the code in details and I may well be missing
+something important, of course, and I agree that if there's no new line
+we do have to impose a limit to our line buffer.
 
-> The basic idea I had was to be able to profile any function in the
-> kernel using kprobes and use the perfevents framework to monitor
-> things like incorrect branch predictions, cache misses etc. for the
-> scope of that function. That way, we can fine tune kernel functions
-> that are in the hot path of kernel control flow, using gcc tricks,
-> inline assembly, or even architecture specific tricks.
+>  so trying to extend the non-drop 
+> case just moves it somewhere else. If you are in canon mode, and the line 
+> is longer than <some-number-that-happens-to-be-4kB>, you're basically 
+> screwed.
 
-Actually, perf-probe can add tracepoint-like events. It will allow you
-to probe function inside by both C-source-line level and address level.
-perf-probe already supports inline function too.
+Right.
 
-Currently, even its syntax is unstable, but you can add an event inside
-some function which is at cfile.c line 100, as below;
+ .../...
 
- perf probe -P 'p:probe1 cfile.c:100'
+> I wonder a bit what in your particular environment makes this problem show 
+> up, but I assume that your simulation environment ends up just blindly 
+> stuffing the tty buffers through the virtual console, so you basically 
+> have "simulated typing" that was (a) started long before the reader was 
+> interested in accepting it and (b) was a huge dump rather than what any 
+> real load would be.
 
-and you can trace it by using perf record as same as other tracepoints
+Yes pretty much
 
- perf record -f -e kprobes:myprobe:record -F 1 -a ls
+> But if you change n_tty_set_termios() to count newlines when it sets 
+> icanon, you might get the behaviour you want, and it would seem to me to 
+> be an improvement over what we have now, so I wouldn't object to it, even 
+> if I suspect nobody else has ever cared, and would ever care in the 
+> future. 
 
+Cheers,
+Ben.
 
-> Alternately, I think even dynamic trace could provide similar insight
-> with perfevents ? If none of this is already done, I plan to work on
-> this in my spare time and would like to team up with anyone else
-> interested.
-
-Yes, it's done as I said above.
-But it still has long TODO list, including support type of arguments,
-arrays, fields of structures and so on (of course, defining useful
-syntax too). So any comments and contributes are welcome :-)
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
 
