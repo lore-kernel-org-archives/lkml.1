@@ -1,94 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZJTDSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422AbZJTD0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbZJTDSt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 23:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbZJTDSt
+	id S1756422AbZJTD0e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 23:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZJTD0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 23:18:49 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:50198 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648AbZJTDSs (ORCPT
+	Mon, 19 Oct 2009 23:26:33 -0400
+Received: from mail-px0-f171.google.com ([209.85.216.171]:44347 "EHLO
+	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752574AbZJTD0c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 23:18:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=qDzj+P3DayGu7Ejnc1kKXu1NICZaQDYnbjXRzYeMtaedE1rTX+Ds8A5KDKofVbNCT
-	YCWSKGpBKpV3lLy93QG+Q==
-Date: Mon, 19 Oct 2009 20:18:46 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
+	Mon, 19 Oct 2009 23:26:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SD2WLbb8AHgclSZQ8cjVwJeV+e8x0KP0tUm+QKXrIw5FGM6KRt1cBbblPo9+IHGDvk
+         Rz3MHIWCagu6rprmv1+EbzFQqYQjPAqhVrWJlXRTAYpbt8uh93yAOneKfUhwqfDGcJHG
+         JxFtertA0oyNw45bQ0IRCI8+R25Hk2LMEEj/o=
+Date: Mon, 19 Oct 2009 20:26:33 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 To: Alex Chiang <achiang@hp.com>
-cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+Cc: shaohua.li@intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] mm: add numa node symlink for cpu devices in sysfs
-In-Reply-To: <20091019213430.32729.78995.stgit@bob.kio>
-Message-ID: <alpine.DEB.1.00.0910192016010.25264@chino.kir.corp.google.com>
-References: <20091019212740.32729.7171.stgit@bob.kio> <20091019213430.32729.78995.stgit@bob.kio>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+Subject: Re: [PATCH v4 1/6] ACPI: dock: convert sysfs attributes to an
+	attribute_group
+Message-ID: <20091020032632.GI24370@core.coreip.homeip.net>
+References: <20091019211132.5412.80438.stgit@bob.kio> <20091019211424.5412.15540.stgit@bob.kio> <20091020013844.GB24370@core.coreip.homeip.net> <20091020025733.GA5814@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091020025733.GA5814@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Oct 2009, Alex Chiang wrote:
-
-> You can discover which CPUs belong to a NUMA node by examining
-> /sys/devices/system/node/$node/
+On Mon, Oct 19, 2009 at 08:57:33PM -0600, Alex Chiang wrote:
+> * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
+> > On Mon, Oct 19, 2009 at 03:14:24PM -0600, Alex Chiang wrote:
+> > > As suggested by Dmitry Torokhov, convert the individual sysfs
+> > > attributes into an attribute group.
+> > > 
+> > > This change eliminates quite a bit of copy/paste code in the
+> > > error handling paths.
+> > > 
+> > 
+> > Looks good to me, thank you for making the changes.
+> 
+> Thank you for your patience along the way.
+> 
+> Can I count this as an Acked-by? :)
 > 
 
-You mean /sys/devices/system/node/node# ?
+Yes, you may add
 
-> However, it's not convenient to go in the other direction, when looking at
-> /sys/devices/system/cpu/$cpu/
-> 
+	Reviewed-by: Dmitry Torokhov <dtor@mail.ru>
 
-.../cpu/cpu# ?
+I use "Acked-by" for stuff I have authority over which is being merged
+through someone else's tree for one reason or another.
 
-> Yes, you can muck about in sysfs, but adding these symlinks makes
-> life a lot more convenient.
-> 
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
-> 
->  drivers/base/node.c |    9 ++++++++-
->  1 files changed, 8 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/base/node.c b/drivers/base/node.c
-> index ffda067..47a4997 100644
-> --- a/drivers/base/node.c
-> +++ b/drivers/base/node.c
-> @@ -227,6 +227,7 @@ struct node node_devices[MAX_NUMNODES];
->   */
->  int register_cpu_under_node(unsigned int cpu, unsigned int nid)
->  {
-> +	int ret;
->  	struct sys_device *obj;
->  
->  	if (!node_online(nid))
-> @@ -236,9 +237,13 @@ int register_cpu_under_node(unsigned int cpu, unsigned int nid)
->  	if (!obj)
->  		return 0;
->  
-> -	return sysfs_create_link(&node_devices[nid].sysdev.kobj,
-> +	ret = sysfs_create_link(&node_devices[nid].sysdev.kobj,
->  				&obj->kobj,
->  				kobject_name(&obj->kobj));
-> +
-> +	return sysfs_create_link(&obj->kobj,
-> +				 &node_devices[nid].sysdev.kobj,
-> +				 kobject_name(&node_devices[nid].sysdev.kobj));
->  }
->  
->  int unregister_cpu_under_node(unsigned int cpu, unsigned int nid)
+Thanks.
 
-That can't be right, you're ignoring the return value of the first 
-sysfs_create_link().
-
-The return values of register_cpu_under_node() and 
-unregister_cpu_under_node() are always ignored, so it would probably be 
-best to convert these to be void functions.  That doesn't mean you can 
-simply ignore the result of the first sysfs_create_link(), though: the 
-second should probably be suppressed if the first returns an error.
+-- 
+Dmitry
