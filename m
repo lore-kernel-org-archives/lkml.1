@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752279AbZJTV1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbZJTVlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752279AbZJTV1x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 17:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZJTV1x
+	id S1752116AbZJTVlb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 17:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZJTVlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 17:27:53 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:63764 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751594AbZJTV1w (ORCPT
+	Tue, 20 Oct 2009 17:41:31 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:49846 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751419AbZJTVla (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 17:27:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=DX0PiqghZrxHucjX46fJJ6bGZl26H0pbfSASllJq3plSywOmHs9Blc69PeT63RlmXV
-         GrpJJMxw04K1EOagRV1VnC4d/0Mwz7nVXuUsAYDKgEJ4CflJIJFoRy57eFcFXLlSUb7V
-         ejEgrxrrnmd971eV7rBissfmd8xLAVJFXHgig=
+	Tue, 20 Oct 2009 17:41:30 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=OfseySnpDUcN0F1+m+vyOApXzPOZjuNQvlq98rAOvHOWxWTvYEuySM9KhqjMsaPbl
+	8ZpQWSsP+JmVwugc8rRhw==
+Date: Tue, 20 Oct 2009 14:41:26 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] slub: allow stats to be cleared
+In-Reply-To: <alpine.DEB.1.10.0910171637180.28063@gentwo.org>
+Message-ID: <alpine.DEB.1.00.0910201439200.539@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0910150215320.1551@chino.kir.corp.google.com> <alpine.DEB.1.10.0910161249100.6120@gentwo.org> <alpine.DEB.1.00.0910161129320.21328@chino.kir.corp.google.com> <alpine.DEB.1.10.0910162126090.26081@gentwo.org>
+ <alpine.DEB.1.00.0910170154580.31277@chino.kir.corp.google.com> <alpine.DEB.1.10.0910171637180.28063@gentwo.org>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0910200454300.2863@localhost.localdomain>
-References: <1255819715-19763-1-git-send-email-linus.walleij@stericsson.com>
-	 <alpine.LFD.2.00.0910200454300.2863@localhost.localdomain>
-Date: Tue, 20 Oct 2009 23:27:55 +0200
-Message-ID: <63386a3d0910201427i1dd8c789i1c9bceeea250d98c@mail.gmail.com>
-Subject: Re: [PATCH] Make MIPS dynamic clocksource/clockevent clock code 
-	generic
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Walleij <linus.walleij@stericsson.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, linux-mips@linux-mips.org,
-       Mikael Pettersson <mikpe@it.uu.se>, Ralf Baechle <ralf@linux-mips.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/10/20 Thomas Gleixner <tglx@linutronix.de>:
+On Sat, 17 Oct 2009, Christoph Lameter wrote:
 
-> On Sun, 18 Oct 2009, Linus Walleij wrote:
->> This moves the clocksource_set_clock() and clockevent_set_clock()
->> from the MIPS timer code into clockchips and clocksource where
->> it belongs.
-> (...)
-> Please do not make that functions inline. They are too large and there
-> is no benefit of inlining them.
+> I'd also like to be able to just do a single echo
+> to clear the all stats instead of everyone trying to improvise something
+> to touch all files. Its highly unlikely that one only wants to zero
+> individual counters.  One way to reset them all would suffice.
+> 
 
-I think there is, because these functions in MIPS if I'm not misreading it, are
-used once each in one and one spot only in the clocksource/clockevent
-set-up at boot time for each platform in which they are currently used.
+Ok, once the stat files are moved to their own directory, I'll make a note 
+to add a writable `clear' file that will do
 
-Further these spots tend to be __init or even __cpuinit code segments,
-so they will be discarded and if we inline the code it will be discarded
-after boot as well.
-
-If you foresee that the code will be used in other ways under other
-circumstances, I will make them non-inlined of course, but I have a
-hard time seeing that.
-
-OK?
-
-Linus Walleij
+	for (i = 0; i < NR_SLUB_STAT_ITEMS; i++)
+		clear_stat(s, i);
