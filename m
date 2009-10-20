@@ -1,192 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751660AbZJTJV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751631AbZJTJ1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751660AbZJTJV2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 05:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZJTJV0
+	id S1751631AbZJTJ1z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 05:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbZJTJ1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 05:21:26 -0400
-Received: from mga09.intel.com ([134.134.136.24]:11639 "EHLO mga09.intel.com"
+	Tue, 20 Oct 2009 05:27:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:19589 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751615AbZJTJVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 05:21:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,590,1249282800"; 
-   d="scan'208";a="459410690"
-Date: Tue, 20 Oct 2009 11:23:22 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Paul Fertser <fercerpav@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Nelson Castillo <arhuaco@freaks-unidos.net>,
-       Lars-Peter Clausen <lars@metafoo.de>
-Subject: Re: [PATCH 5/7] mfd: pcf50633: Cleanup pcf50633_probe error
- handling
-Message-ID: <20091020092321.GC5563@sortiz.org>
-References: <1255471956-29201-1-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-2-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-3-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-4-git-send-email-fercerpav@gmail.com>
- <1255471956-29201-5-git-send-email-fercerpav@gmail.com>
- <20091019150812.GC3885@sortiz.org>
- <20091019230952.GB19580@home.pavel.comp>
+	id S1751547AbZJTJ1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 05:27:53 -0400
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+Cc: Jiri Kosina <jkosina@suse.cz>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-m68k <linux-m68k@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: [PATCH] [RFC] ataflop: remove buggy IRQ disable from do_fd_request()
+References: <alpine.LSU.2.00.0910091141150.19284@wotan.suse.de>
+	<10f740e80910100201n30367714uc57ec3c9c39b92af@mail.gmail.com>
+	<alpine.DEB.2.00.0910110846420.20140@zirkon.biophys.uni-duesseldorf.de>
+	<alpine.LSU.2.00.0910121106330.19284@wotan.suse.de>
+	<alpine.DEB.2.00.0910182126120.6395@zirkon.biophys.uni-duesseldorf.de>
+	<alpine.LSU.2.00.0910190932030.8582@wotan.suse.de>
+	<alpine.DEB.2.00.0910200847320.8658@zirkon.biophys.uni-duesseldorf.de>
+X-Yow: It's strange, but I'm only TRULY ALIVE when I'm covered in POLKA DOTS
+ and TACO SAUCE...
+Date: Tue, 20 Oct 2009 11:24:44 +0200
+In-Reply-To: <alpine.DEB.2.00.0910200847320.8658@zirkon.biophys.uni-duesseldorf.de>
+	(Michael Schmitz's message of "Tue, 20 Oct 2009 08:51:08 +0200
+	(CEST)")
+Message-ID: <m3k4yqfmeb.fsf@hase.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091019230952.GB19580@home.pavel.comp>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20, 2009 at 03:09:52AM +0400, Paul Fertser wrote:
-> Hi Samuel,
-> 
-> Big thanks for your comments, next time i send anything upstream i
-> will certainly provide a minimal changelog for every patch :)
-> 
-> On Mon, Oct 19, 2009 at 05:08:13PM +0200, Samuel Ortiz wrote:
-> > On Wed, Oct 14, 2009 at 02:12:34AM +0400, Paul Fertser wrote:
-> > >  	if (enable_irq_wake(client->irq) < 0)
-> > > -		dev_err(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
-> > > +		dev_info(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
-> > >  			"in this hardware revision", client->irq);
-> > 2 things here: This doesnt really belong to this patch, and also I'd prefer to
-> > keep that as an error message.
-> [...]
-> > >  	ret = sysfs_create_group(&client->dev.kobj, &pcf_attr_group);
-> > >  	if (ret)
-> > > -		dev_err(pcf->dev, "error creating sysfs entries\n");
-> > > +		dev_info(pcf->dev, "Failed to create sysfs entries\n");
-> > Same here.
-> 
-> Sure. Please find amended version in attachement.
-Patch applied, thanks a lot.
+Michael Schmitz <schmitz@biophys.uni-duesseldorf.de> writes:
 
-Cheers,
-Samuel.
- 
-> -- 
-> Be free, use free (http://www.gnu.org/philosophy/free-sw.html) software!
-> mailto:fercerpav@gmail.com
+> That. too :-) What I meant to say - the reason why someone chose to comment out 
+> the original sti() wasn't really clear. I guess the reason for that particular 
+> change has been lost in the pre-git or bk era.
 
-> From 7f982d01515371fcbab0086bf77448f351b09a42 Mon Sep 17 00:00:00 2001
-> From: Lars-Peter Clausen <lars@metafoo.de>
-> Date: Thu, 8 Oct 2009 00:24:54 +0200
-> Subject: [PATCH] mfd: pcf50633: Cleanup pcf50633_probe error handling
-> 
-> Currently the child devices were not freed if the irq could not be requested.
-> This patch restructures the function, that in case of an error all previously
-> allocated resources are freed.
-> 
-> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
-> Signed-off-by: Paul Fertser <fercerpav@gmail.com>
-> ---
->  drivers/mfd/pcf50633-core.c |   43 ++++++++++++++++++++++++++-----------------
->  1 files changed, 26 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
-> index 69cdbdc..5aed527 100644
-> --- a/drivers/mfd/pcf50633-core.c
-> +++ b/drivers/mfd/pcf50633-core.c
-> @@ -553,9 +553,14 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
->  {
->  	struct pcf50633 *pcf;
->  	struct pcf50633_platform_data *pdata = client->dev.platform_data;
-> -	int i, ret = 0;
-> +	int i, ret;
->  	int version, variant;
->  
-> +	if (!client->irq) {
-> +		dev_err(&client->dev, "Missing IRQ\n");
-> +		return -ENOENT;
-> +	}
-> +
->  	pcf = kzalloc(sizeof(*pcf), GFP_KERNEL);
->  	if (!pcf)
->  		return -ENOMEM;
-> @@ -570,6 +575,12 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
->  	pcf->irq = client->irq;
->  	pcf->work_queue = create_singlethread_workqueue("pcf50633");
->  
-> +	if (!pcf->work_queue) {
-> +		dev_err(&client->dev, "Failed to alloc workqueue\n");
-> +		ret = -ENOMEM;
-> +		goto err_free;
-> +	}
-> +
->  	INIT_WORK(&pcf->irq_work, pcf50633_irq_worker);
->  
->  	version = pcf50633_reg_read(pcf, 0);
-> @@ -577,7 +588,7 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
->  	if (version < 0 || variant < 0) {
->  		dev_err(pcf->dev, "Unable to probe pcf50633\n");
->  		ret = -ENODEV;
-> -		goto err;
-> +		goto err_destroy_workqueue;
->  	}
->  
->  	dev_info(pcf->dev, "Probed device version %d variant %d\n",
-> @@ -591,6 +602,14 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
->  	pcf50633_reg_write(pcf, PCF50633_REG_INT4M, 0x00);
->  	pcf50633_reg_write(pcf, PCF50633_REG_INT5M, 0x00);
->  
-> +	ret = request_irq(client->irq, pcf50633_irq,
-> +					IRQF_TRIGGER_LOW, "pcf50633", pcf);
-> +
-> +	if (ret) {
-> +		dev_err(pcf->dev, "Failed to request IRQ %d\n", ret);
-> +		goto err_destroy_workqueue;
-> +	}
-> +
->  	/* Create sub devices */
->  	pcf50633_client_dev_register(pcf, "pcf50633-input",
->  						&pcf->input_pdev);
-> @@ -606,7 +625,7 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
->  
->  		pdev = platform_device_alloc("pcf50633-regltr", i);
->  		if (!pdev) {
-> -			dev_err(pcf->dev, "Cannot create regulator\n");
-> +			dev_err(pcf->dev, "Cannot create regulator %d\n", i);
->  			continue;
->  		}
->  
-> @@ -618,19 +637,6 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
->  		platform_device_add(pdev);
->  	}
->  
-> -	if (client->irq) {
-> -		ret = request_irq(client->irq, pcf50633_irq,
-> -				IRQF_TRIGGER_LOW, "pcf50633", pcf);
-> -
-> -		if (ret) {
-> -			dev_err(pcf->dev, "Failed to request IRQ %d\n", ret);
-> -			goto err;
-> -		}
-> -	} else {
-> -		dev_err(pcf->dev, "No IRQ configured\n");
-> -		goto err;
-> -	}
-> -
->  	if (enable_irq_wake(client->irq) < 0)
->  		dev_err(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
->  			"in this hardware revision", client->irq);
-> @@ -644,9 +650,12 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
->  
->  	return 0;
->  
-> -err:
-> +err_destroy_workqueue:
->  	destroy_workqueue(pcf->work_queue);
-> +err_free:
-> +	i2c_set_clientdata(client, NULL);
->  	kfree(pcf);
-> +
->  	return ret;
->  }
->  
-> -- 
-> 1.6.0.6
-> 
+FWIW, this can be traced back to as much as the 2.0 era (1996).  Going
+back further is difficult because a lot of files on ftp.uni-erlangen.de
+are corrupt.
 
+Andreas.
 
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
