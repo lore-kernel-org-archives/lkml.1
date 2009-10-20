@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbZJTTUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZJTTgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752455AbZJTTUf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 15:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZJTTUf
+	id S1752809AbZJTTgV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 15:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZJTTgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 15:20:35 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:63223 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751733AbZJTTUe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 15:20:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=pghU+gvKk5TxqhdV3HwEJfOvNZp7aQjBe1b85nCbhQ8okjS6eFPPc4gCoezjYoklzH
-         s8KHodujiEkvJ2LB6pW/JPJBFrtL2Vp0elfeNL9JrbfnA3iQKYBcx2yn8mDppTMPTQLm
-         RSykVpFXQrp8KgxKPlOsrfFsrZ0VHbaX2aR6A=
-Message-ID: <4ADE0FDE.5070101@gmail.com>
-Date: Tue, 20 Oct 2009 21:30:38 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fbdev: Wrong test on unsigned in fb_set_user_cmap()?
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Oct 2009 15:36:20 -0400
+Received: from relay3.sgi.com ([192.48.152.1]:35676 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751704AbZJTTgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 15:36:19 -0400
+From: Robin Holt <holt@sgi.com>
+Message-Id: <20091020193620.877322000@alcatraz.americas.sgi.com>
+User-Agent: quilt/0.47-1
+Date: Tue, 20 Oct 2009 14:36:15 -0500
+To: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de
+Cc: Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Martin Hicks <mort@sgi.com>
+Subject: [patch 1/1] x86, UV: uv_hub_send_ipi Needs to set DELIVERY_MODE=4 for vector=NMI_VECTOR - V2.
+References: <20091020193614.821299000@alcatraz.americas.sgi.com>
+Content-Disposition: inline; filename=uv_fix_nmi_delivery.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-struct fb_cmap_user member start is unsigned.
+When sending a NMI_VECTOR IPI using the UV_HUB_IPI_INT register,
+we need to ensure the delivery mode field of that register has NMI
+delivery selected.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+To: tglx@linutronix.de
+Signed-off-by: Robin Holt <holt@sgi.com>
+Acked-by: Jack Steiner <steiner@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: stable@kernel.org
+Cc: Martin Hicks <mort@sgi.com>
+
 ---
-Is this required?
 
-diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
-index f53b9f1..f46f05f 100644
---- a/drivers/video/fbcmap.c
-+++ b/drivers/video/fbcmap.c
-@@ -266,7 +266,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
- 		rc = -ENODEV;
- 		goto out;
- 	}
--	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
-+	if ((int)cmap->start < 0 || (!info->fbops->fb_setcolreg &&
- 				!info->fbops->fb_setcmap)) {
- 		rc = -EINVAL;
- 		goto out1;
+V2 - use dest_* instead of hard coded values for delivery modes.
+
+
+ arch/x86/include/asm/uv/uv_hub.h |    7 +++++++
+ 1 file changed, 7 insertions(+)
+Index: linux-x86/arch/x86/include/asm/uv/uv_hub.h
+===================================================================
+--- linux-x86.orig/arch/x86/include/asm/uv/uv_hub.h	2009-10-20 13:44:17.000000000 -0500
++++ linux-x86/arch/x86/include/asm/uv/uv_hub.h	2009-10-20 13:59:30.000000000 -0500
+@@ -19,6 +19,8 @@
+ #include <asm/types.h>
+ #include <asm/percpu.h>
+ #include <asm/uv/uv_mmrs.h>
++#include <asm/irq_vectors.h>
++#include <asm/io_apic.h>
+ 
+ 
+ /*
+@@ -435,9 +437,14 @@ static inline void uv_set_cpu_scir_bits(
+ static inline void uv_hub_send_ipi(int pnode, int apicid, int vector)
+ {
+ 	unsigned long val;
++	unsigned long dmode = dest_Fixed;
++
++	if (vector == NMI_VECTOR)
++		dmode = dest_NMI;
+ 
+ 	val = (1UL << UVH_IPI_INT_SEND_SHFT) |
+ 			((apicid) << UVH_IPI_INT_APIC_ID_SHFT) |
++			(dmode << UVH_IPI_INT_DELIVERY_MODE_SHFT) |
+ 			(vector << UVH_IPI_INT_VECTOR_SHFT);
+ 	uv_write_global_mmr64(pnode, UVH_IPI_INT, val);
+ }
+
