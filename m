@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbZJTXeC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752988AbZJTX7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752980AbZJTXeC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 19:34:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZJTXeB
+	id S1752988AbZJTX7E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 19:59:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZJTX7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 19:34:01 -0400
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:34747 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbZJTXeA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 19:34:00 -0400
-MIME-Version: 1.0
-In-Reply-To: <x49ljj5og8q.fsf@segfault.boston.devel.redhat.com>
-References: <47c554d90910201458of5dc16eg33940584026bc959@mail.gmail.com>
-	 <x49ljj5og8q.fsf@segfault.boston.devel.redhat.com>
-Date: Tue, 20 Oct 2009 16:34:04 -0700
-Message-ID: <47c554d90910201634n68b359c1n501ed5669deb07be@mail.gmail.com>
-Subject: Re: libaio asynchronous syscall io_getevents blocks on error
-From: Zubin Dittia <zubin@tintri.com>
-To: Jeff Moyer <jmoyer@redhat.com>
+	Tue, 20 Oct 2009 19:59:03 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:2903 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752346AbZJTX7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 19:59:02 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Zubin Dittia <zubin@tintri.com>
 Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Subject: Re: libaio asynchronous syscall io_getevents blocks on error
+References: <47c554d90910201458of5dc16eg33940584026bc959@mail.gmail.com>
+	<x49ljj5og8q.fsf@segfault.boston.devel.redhat.com>
+	<47c554d90910201634n68b359c1n501ed5669deb07be@mail.gmail.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 20 Oct 2009 19:59:04 -0400
+In-Reply-To: <47c554d90910201634n68b359c1n501ed5669deb07be@mail.gmail.com>
+	(Zubin Dittia's message of "Tue, 20 Oct 2009 16:34:04 -0700")
+Message-ID: <x4963a9obw7.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20, 2009 at 3:25 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
-> Zubin Dittia <zubin@tintri.com> writes:
->
->> I'm writing a program that uses the kernel's io_submit/io_getevents
->> system calls.  What I would like to be able to do is submit N
->> operations for i/o on different files, and then call io_getevents with
->> min_nr = nr = N and a timeout of NULL, so that I can block until all N
->> operations have completed.  This works great, except when one of the
->> operations has an error (eg., if one of the descriptors is invalid).
->> In this case, the call to io_getevents appears to block indefinitely.
->> Shouldn't an error on one of the submitted operations count as a
->> completion event for that operation, so I can check the error code
->> when the call returns?  Any help would be appreciated.
->
-> Did you check the return value of io_submit?
->
-> Cheers,
-> Jeff
->
+Zubin Dittia <zubin@tintri.com> writes:
 
+> But this does bring up the interesting question of how to know which
+> of the I/Os I submitted had an error, and what the error was.  Does it
 
-Duh.  I was just checking to see if it returned a negative error, but
-not checking to see if it accepted fewer than all the I/Os I
-submitted.
+If io_submit returned N, then the N+1 iocb had an error.
 
-But this does bring up the interesting question of how to know which
-of the I/Os I submitted had an error, and what the error was.  Does it
-mean I have to call io_submit once for each I/O operation; if so, then
-why does io_submit take an array argument at all?
+> PS: It does seem a little strange that io_submit returns an error if
+> the first IOCB is invalid but not when any of the other IOCBs are
+> invalid (this appears to be the case, at least according to the man
+> page).
 
-Thanks for your help,
--Zubin
+It makes sense that it tells you how many it could successfully submit.
+If it can't submit any, you get the error from the first I/O.
 
-PS: It does seem a little strange that io_submit returns an error if
-the first IOCB is invalid but not when any of the other IOCBs are
-invalid (this appears to be the case, at least according to the man
-page).
+Cheers,
+Jeff
