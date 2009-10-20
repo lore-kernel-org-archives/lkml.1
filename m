@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbZJTFuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbZJTFux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753727AbZJTFuT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 01:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZJTFuS
+	id S1753866AbZJTFux (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 01:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbZJTFuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 01:50:18 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:49377 "EHLO
+	Tue, 20 Oct 2009 01:50:52 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:49381 "EHLO
 	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752484AbZJTFuR (ORCPT
+	with ESMTP id S1752484AbZJTFuv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 01:50:17 -0400
-Date: Mon, 19 Oct 2009 23:50:21 -0600
+	Tue, 20 Oct 2009 01:50:51 -0400
+Date: Mon, 19 Oct 2009 23:50:55 -0600
 From: Matthew Wilcox <matthew@wil.cx>
 To: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
        linux-pci@vger.kernel.org
-Subject: [PATCH 2/3] Sysfs: Allow directories to be populated dynamically
-Message-ID: <20091020055021.GE29158@parisc-linux.org>
+Subject: [PATCH 3/3] Expose MSI-X interrupts through a dynamically
+	generated sysfs directory
+Message-ID: <20091020055055.GF29158@parisc-linux.org>
 References: <20091020054740.GC29158@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,284 +30,207 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Matthew Wilcox <willy@linux.intel.com>
-Date: Mon, 19 Oct 2009 01:02:38 -0400
-Subject: [PATCH 2/3] Sysfs: Allow directories to be populated dynamically
+Date: Mon, 19 Oct 2009 01:35:41 -0400
+Subject: [PATCH 3/3] Expose MSI-X interrupts through a dynamically generated sysfs directory
 
-Use function pointers to populate and depopulate sysfs directories with
-dynamically files.  Include one user, the attribute groups.
+Introduce the ability to dynamically generate the attributes (which are
+then added to sysfs).  Add a user in the form of the PCI MSI code, which
+was why I started on this in the first place.
 ---
- fs/sysfs/dir.c   |   49 ++++++++++++++++-------
- fs/sysfs/group.c |  115 ++++++++++++++++++++++++++++++++++++++++++++++++++++--
- fs/sysfs/sysfs.h |    5 ++
- 3 files changed, 150 insertions(+), 19 deletions(-)
+ drivers/pci/msi.c     |   77 ++++++++++++++++++++++++++++++++++++++++++++++--
+ fs/sysfs/group.c      |    7 ++++-
+ include/linux/pci.h   |    2 +
+ include/linux/sysfs.h |    9 ++++++
+ 4 files changed, 90 insertions(+), 5 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 5fad489..e32a11d 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -294,9 +294,13 @@ void release_sysfs_dirent(struct sysfs_dirent * sd)
- 		goto repeat;
- }
- 
--static void sysfs_d_iput(struct dentry * dentry, struct inode * inode)
-+static void sysfs_d_iput(struct dentry *dentry, struct inode *inode)
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index f9cf317..e0971e6 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -275,6 +275,9 @@ static void free_msi_irqs(struct pci_dev *dev)
  {
--	struct sysfs_dirent * sd = dentry->d_fsdata;
-+	struct sysfs_dirent *sd = dentry->d_fsdata;
-+
-+	if ((sysfs_type(sd) == SYSFS_DIR) && sd->s_dir.depopulate)
-+		sd->s_dir.depopulate(dentry, sd);
-+	sd->s_flags &= ~SYSFS_FLAG_POPULATED;
+ 	struct msi_desc *entry, *tmp;
  
- 	sysfs_put(sd);
- 	iput(inode);
-@@ -574,6 +578,22 @@ repeat:
- 	iput(inode);
++	if (dev->msix_dir.name)
++		sysfs_remove_group(&dev->dev.kobj, &dev->msix_dir);
++
+ 	list_for_each_entry(entry, &dev->msi_list, list) {
+ 		int i, nvec;
+ 		if (!entry->irq)
+@@ -447,13 +450,12 @@ static void __iomem *msix_map_region(struct pci_dev *dev, unsigned pos,
  }
  
-+void sysfs_kill_removed_dirents(struct sysfs_addrm_cxt *acxt)
-+{
-+	/* kill removed sysfs_dirents */
-+	while (acxt->removed) {
-+		struct sysfs_dirent *sd = acxt->removed;
-+
-+		acxt->removed = sd->s_sibling;
-+		sd->s_sibling = NULL;
-+
-+		sysfs_drop_dentry(sd);
-+		sysfs_deactivate(sd);
-+		unmap_bin_file(sd);
-+		sysfs_put(sd);
-+	}
-+}
-+
- /**
-  *	sysfs_addrm_finish - finish up sysfs_dirent add/remove
-  *	@acxt: addrm context to finish up
-@@ -600,18 +620,7 @@ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
- 		iput(inode);
+ static int msix_setup_entries(struct pci_dev *dev, unsigned pos,
+-				void __iomem *base, struct msix_entry *entries,
+-				int nvec)
++				void __iomem *base, struct msix_entry *entries)
+ {
+ 	struct msi_desc *entry;
+ 	int i;
+ 
+-	for (i = 0; i < nvec; i++) {
++	for (i = 0; i < dev->nr_irqs; i++) {
+ 		entry = alloc_msi_entry(dev);
+ 		if (!entry) {
+ 			if (!i)
+@@ -495,6 +497,64 @@ static void msix_program_entries(struct pci_dev *dev,
  	}
- 
--	/* kill removed sysfs_dirents */
--	while (acxt->removed) {
--		struct sysfs_dirent *sd = acxt->removed;
--
--		acxt->removed = sd->s_sibling;
--		sd->s_sibling = NULL;
--
--		sysfs_drop_dentry(sd);
--		sysfs_deactivate(sd);
--		unmap_bin_file(sd);
--		sysfs_put(sd);
--	}
-+	sysfs_kill_removed_dirents(acxt);
  }
  
- /**
-@@ -731,6 +740,17 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 
- 	mutex_lock(&sysfs_mutex);
- 
-+	if (!(parent_sd->s_flags & SYSFS_FLAG_POPULATED)) {
-+		if (parent_sd->s_dir.populate) {
-+			int err = parent_sd->s_dir.populate(dentry->d_parent,
-+								parent_sd);
-+			if (err) {
-+				ret = ERR_PTR(err);
-+				goto out_unlock;
-+			}
-+		}
-+		parent_sd->s_flags |= SYSFS_FLAG_POPULATED;
-+	}
- 	sd = sysfs_find_dirent(parent_sd, dentry->d_name.name);
- 
- 	/* no such entry */
-@@ -1012,7 +1032,6 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
- 	return 0;
- }
- 
--
- const struct file_operations sysfs_dir_operations = {
- 	.read		= generic_read_dir,
- 	.readdir	= sysfs_readdir,
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index 0c4d342..37ac584 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -16,6 +16,102 @@
- #include "sysfs.h"
- 
- 
-+/*
-+ * i_mutex is not held, but this inode is on its way out of the system, so
-+ * nobody gets to mess with it.  We can't take the sysfs_mutex here as it
-+ * leads to a deadlock scenario where it's held in a path that can run
-+ * reclaim, and this function can be called from reclaim context.  I guess
-+ * prayer is the only solution here (other than splitting sysfs_mutex)
-+ */
-+void sysfs_depopulate_group(struct dentry *dentry,
-+					const struct attribute_group *grp)
-+						
++struct pci_msix_attribute {
++	struct device_attribute da;
++	unsigned irq;
++	char name[8];	/* current max is 5: "2047\0" */
++};
++
++static ssize_t
++pci_msix_show(struct device *dev, struct device_attribute *attr, char *buf)
 +{
-+	struct sysfs_dirent *dir_sd = dentry->d_fsdata;
-+	struct sysfs_addrm_cxt acxt;
-+	struct attribute **attrp;
-+
-+	memset(&acxt, 0, sizeof(acxt));
-+	acxt.parent_sd = dir_sd;
-+	acxt.parent_inode = dentry->d_inode;
-+
-+	for (attrp = grp->attrs; *attrp; attrp++) {
-+		struct attribute *attr = *attrp;
-+		struct sysfs_dirent *sd;
-+
-+		sd = sysfs_find_dirent(dir_sd, attr->name);
-+		if (sd)
-+			sysfs_remove_one(&acxt, sd);
-+	}
-+
-+	sysfs_kill_removed_dirents(&acxt);
++	struct pci_msix_attribute *msix_attr;
++	msix_attr = container_of(attr, struct pci_msix_attribute, da);
++	return snprintf(buf, PAGE_SIZE, "%u\n", msix_attr->irq);
 +}
-+EXPORT_SYMBOL(sysfs_depopulate_group);
 +
-+/*
-+ * inode->i_mutex is held by the VFS, and sysfs_mutex is held by
-+ * sysfs_lookup, so there's no need to call sysfs_addrm_start/finish here.
-+ * Nor is there a need to mess around with reference counts.
-+ */
-+int sysfs_populate_group(struct dentry *dentry,
-+					const struct attribute_group *grp)
-+						
++#define kobj_to_pci_dev(obj) to_pci_dev(container_of(obj, struct device, kobj))
++
++static int msix_populate(struct dentry *dentry, struct attribute_group *grp)
 +{
-+	struct sysfs_dirent *dir_sd = dentry->d_fsdata;
-+	struct kobject *kobj = dir_sd->s_dir.kobj;
-+	struct sysfs_addrm_cxt acxt;
-+	struct attribute **attrp;
-+	int i = 0, error = 0;
++	struct pci_dev *pdev = container_of(grp, struct pci_dev, msix_dir);
++	unsigned i, nr_irqs = pdev->nr_irqs;
++	struct pci_msix_attribute *attr;
++	struct attribute **array;
++	struct msi_desc *desc;
 +
-+	memset(&acxt, 0, sizeof(acxt));
-+	acxt.parent_sd = dir_sd;
-+	acxt.parent_inode = dentry->d_inode;
++	array = kmalloc((nr_irqs + 1) * sizeof(void *), GFP_KERNEL);
++	if (!array)
++		return -ENOMEM;
++	attr = kmalloc(nr_irqs * sizeof(*attr), GFP_KERNEL);
++	if (!attr)
++		return -ENOMEM;
 +
-+	for (attrp = grp->attrs; *attrp; attrp++) {
-+		struct attribute *attr = *attrp;
-+		mode_t mode = attr->mode;
-+		struct sysfs_dirent *sd;
++	for (i = 0; i < nr_irqs; i++)
++		array[i] = &attr[i].da.attr;
++	array[i] = NULL;
++	grp->attrs = array;
 +
-+		if (grp->is_visible) {
-+			mode_t vis = grp->is_visible(kobj, attr, i++);
-+			if (!vis)
-+				continue;
-+			mode |= vis;
-+		}
-+
-+		sd = sysfs_new_dirent(attr->name, mode, SYSFS_KOBJ_ATTR);
-+		if (!sd) {
-+			error = -ENOMEM;
-+			break;
-+		}
-+		sd->s_attr.attr = (void *)attr;
-+
-+		error = sysfs_add_one(&acxt, sd);
-+		if (error) {
-+			sysfs_put(sd);
-+			break;
-+		}
++	list_for_each_entry(desc, &pdev->msi_list, list) {
++		attr->irq = desc->irq;
++		snprintf(attr->name, sizeof(attr->name), "%u",
++						desc->msi_attrib.entry_nr);
++		attr->da.attr.name = (const char *)&attr->name;
++		attr->da.attr.mode = 0444;
++		attr->da.show = pci_msix_show;
++		attr++;
 +	}
-+	if (error)
-+		sysfs_depopulate_group(dentry, grp);
-+	return error;
-+}
-+EXPORT_SYMBOL(sysfs_populate_group);
 +
-+static
-+int group_populate(struct dentry *dentry, struct sysfs_dirent *sd)
-+{
-+	struct attribute_group *grp = sd->s_dir.data;
 +	return sysfs_populate_group(dentry, grp);
 +}
 +
-+static
-+void group_depopulate(struct dentry *dentry, struct sysfs_dirent *sd)
++static void msix_depopulate(struct dentry *dentry, struct attribute_group *grp)
 +{
-+	struct attribute_group *grp = sd->s_dir.data;
 +	sysfs_depopulate_group(dentry, grp);
++
++	kfree(grp->attrs[0]);
++	kfree(grp->attrs);
++	grp->attrs = NULL;
 +}
 +
- static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
- 			 const struct attribute_group *grp)
- {
-@@ -32,6 +128,10 @@ static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
- 	struct attribute *const* attr;
- 	int error = 0, i;
+ /**
+  * msix_capability_init - configure device's MSI-X capability
+  * @dev: pointer to the pci_dev data structure of MSI-X device function
+@@ -524,10 +584,19 @@ static int msix_capability_init(struct pci_dev *dev,
+ 	if (!base)
+ 		return -ENOMEM;
  
-+	/* Directory isn't currently instantiated; nothing to do */
-+	if (!(dir_sd->s_flags & SYSFS_FLAG_POPULATED))
-+		return 0;
+-	ret = msix_setup_entries(dev, pos, base, entries, nvec);
++	dev->nr_irqs = nvec;
 +
- 	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++) {
- 		mode_t mode = 0;
++	dev->msix_dir.name = "irqs";
++	dev->msix_dir.populate = msix_populate;
++	dev->msix_dir.depopulate = msix_depopulate;
++	ret = sysfs_create_group(&dev->dev.kobj, &dev->msix_dir);
+ 	if (ret)
+ 		return ret;
  
-@@ -55,7 +155,6 @@ static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
- 	return error;
++	ret = msix_setup_entries(dev, pos, base, entries);
++	if (ret)
++		goto error;
++
+ 	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
+ 	if (ret)
+ 		goto error;
+diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+index 37ac584..c97139f 100644
+--- a/fs/sysfs/group.c
++++ b/fs/sysfs/group.c
+@@ -102,6 +102,8 @@ static
+ int group_populate(struct dentry *dentry, struct sysfs_dirent *sd)
+ {
+ 	struct attribute_group *grp = sd->s_dir.data;
++	if (grp->populate)
++		return grp->populate(dentry, grp);
+ 	return sysfs_populate_group(dentry, grp);
  }
  
--
- static int internal_create_group(struct kobject *kobj, int update,
- 				 const struct attribute_group *grp)
+@@ -109,7 +111,10 @@ static
+ void group_depopulate(struct dentry *dentry, struct sysfs_dirent *sd)
  {
-@@ -82,10 +181,18 @@ static int internal_create_group(struct kobject *kobj, int update,
- 	} else {
- 		sd = sysfs_get(kobj->sd);
- 	}
--	error = create_files(sd, kobj, grp, update);
--	if (error) {
--		if (grp->name)
-+
-+	error = 0;
-+	if (update) {
-+		error = create_files(sd, kobj, grp, update);
-+		if (error && grp->name)
- 			sysfs_remove_subdir(sd);
-+	} else if (!sd->s_dir.populate) {
-+		sd->s_dir.populate = group_populate;
-+		sd->s_dir.depopulate = group_depopulate;
-+		sd->s_dir.data = (void *)grp;
-+	} else if (sd->s_dir.populate != group_populate) {
-+		error = -EEXIST;
- 	}
- 	sysfs_put(sd);
- 	return error;
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index af4c4e7..13843fa 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -17,6 +17,9 @@ struct sysfs_elem_dir {
- 	struct kobject		*kobj;
- 	/* children list starts here and goes through sd->s_sibling */
- 	struct sysfs_dirent	*children;
-+	int (*populate)(struct dentry *, struct sysfs_dirent *);
-+	void (*depopulate)(struct dentry *, struct sysfs_dirent *);
-+	void *data;
+ 	struct attribute_group *grp = sd->s_dir.data;
+-	sysfs_depopulate_group(dentry, grp);
++	if (grp->depopulate)
++		grp->depopulate(dentry, grp);
++	else
++		sysfs_depopulate_group(dentry, grp);
+ }
+ 
+ static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index f5c7cd3..47c7fc6 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -291,6 +291,8 @@ struct pci_dev {
+ 	struct bin_attribute *res_attr_wc[DEVICE_COUNT_RESOURCE]; /* sysfs file for WC mapping of resources */
+ #ifdef CONFIG_PCI_MSI
+ 	struct list_head msi_list;
++	struct attribute_group msix_dir;
++	unsigned short nr_irqs;
+ #endif
+ 	struct pci_vpd *vpd;
+ #ifdef CONFIG_PCI_IOV
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 9d68fed..cf9d200 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -19,6 +19,7 @@
+ 
+ struct kobject;
+ struct module;
++struct dentry;
+ 
+ /* FIXME
+  * The *owner field is no longer used.
+@@ -36,6 +37,10 @@ struct attribute_group {
+ 	mode_t			(*is_visible)(struct kobject *,
+ 					      struct attribute *, int);
+ 	struct attribute	**attrs;
++	int			(*populate)(struct dentry *,
++						struct attribute_group *);
++	void			(*depopulate)(struct dentry *,
++						struct attribute_group *);
  };
  
- struct sysfs_elem_symlink {
-@@ -77,6 +80,7 @@ struct sysfs_dirent {
- #define SYSFS_COPY_NAME			(SYSFS_DIR | SYSFS_KOBJ_LINK)
  
- #define SYSFS_FLAG_MASK			~SYSFS_TYPE_MASK
-+#define SYSFS_FLAG_POPULATED		0x0100
- #define SYSFS_FLAG_REMOVED		0x0200
- 
- static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
-@@ -120,6 +124,7 @@ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
-+void sysfs_kill_removed_dirents(struct sysfs_addrm_cxt *acxt);
- 
- struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
- 				       const unsigned char *name);
+@@ -115,6 +120,10 @@ int sysfs_update_group(struct kobject *kobj,
+ 		       const struct attribute_group *grp);
+ void sysfs_remove_group(struct kobject *kobj,
+ 			const struct attribute_group *grp);
++int sysfs_populate_group(struct dentry *dentry,
++			const struct attribute_group *grp);
++void sysfs_depopulate_group(struct dentry *dentry,
++			const struct attribute_group *grp);
+ int sysfs_add_file_to_group(struct kobject *kobj,
+ 			const struct attribute *attr, const char *group);
+ void sysfs_remove_file_from_group(struct kobject *kobj,
 -- 
 1.6.3.3
 
