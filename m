@@ -1,123 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751752AbZJTKqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751771AbZJTKse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751752AbZJTKqM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 06:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbZJTKqM
+	id S1751771AbZJTKse (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 06:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbZJTKsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 06:46:12 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:40204 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751035AbZJTKqK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 06:46:10 -0400
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Matt Helsley <matthltc@us.ibm.com>, Oren Laadan <orenl@librato.com>,
-       Daniel Lezcano <daniel.lezcano@free.fr>, randy.dunlap@oracle.com,
-       arnd@arndb.de, linux-api@vger.kernel.org,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       Louis.Rilling@kerlabs.com, kosaki.motohiro@jp.fujitsu.com,
-       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
-       Pavel Emelyanov <xemul@openvz.org>
-References: <20091013044925.GA28181@us.ibm.com> <4AD8C7E4.9000903@free.fr>
-	<20091016194451.GA28706@us.ibm.com> <4ADCCD68.9030003@free.fr>
-	<4ADCDE7F.4090501@librato.com>
-	<20091020005125.GG27627@count0.beaverton.ibm.com>
-	<m1vdiad9jd.fsf@fess.ebiederm.org> <20091020040315.GA26632@us.ibm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 20 Oct 2009 03:46:06 -0700
-In-Reply-To: <20091020040315.GA26632@us.ibm.com> (Sukadev Bhattiprolu's message of "Mon\, 19 Oct 2009 21\:03\:15 -0700")
-Message-ID: <m1iqeauyvl.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 20 Oct 2009 06:48:33 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:33762 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751035AbZJTKsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 06:48:32 -0400
+Date: Tue, 20 Oct 2009 11:48:39 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Chris Mason <chris.mason@oracle.com>, Frans Pop <elendil@planet.nl>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+Message-ID: <20091020104839.GC11778@csn.ul.ie>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <20091014103002.GA5027@csn.ul.ie> <200910141510.11059.elendil@planet.nl> <200910190133.33183.elendil@planet.nl> <20091019140151.GC9036@csn.ul.ie> <20091019161815.GA11487@think>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: *****;Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: *  7.0 XM_URI_RBL URI's domain appears in surbl.xmission.com
-	*      [URIs: lkml.org]
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  1.5 TR_Symld_Words too many words that have symbols inside
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 T_TooManySym_02 5+ unique symbols in subject
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091019161815.GA11487@think>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+On Tue, Oct 20, 2009 at 01:18:15AM +0900, Chris Mason wrote:
+> On Mon, Oct 19, 2009 at 03:01:52PM +0100, Mel Gorman wrote:
+> > 
+> > > During the 2nd phase I see the first SKB allocation errors with a music 
+> > > skip between reading commits 95.000 and 110.000.
+> > > About commit 115.000 there is a very long pause during which the counter 
+> > > does not increase, music stops and the desktop freezes completely. The 
+> > > first 30 seconds of that freeze there is only very low disk activity (which 
+> > > seems strange);
+> > 
+> > I'm just going to have to depend on Jens here. Jens, the congestion_wait() is
+> > on BLK_RW_ASYNC after the commit. Reclaim usually writes pages asynchronously
+> > but lumpy reclaim actually waits of pages to write out synchronously so
+> > it's not always async.
+> 
+> Waiting doesn't make it synchronous from the elevator point of view ;)
+> If you're using WB_SYNC_NONE, it's a async write.  WB_SYNC_ALL makes it
+> a sync write.  I only see WB_SYNC_NONE in vmscan.c, so we should be
+> using the async congestion wait.  (the exception is xfs which always
+> does async writes).
+> 
 
-> Eric W. Biederman [ebiederm@xmission.com] wrote:
-> | > clone3() seemed to be the leading contender from what I've read so far.
-> | > Does anyone still object to clone3() after reading the whole thread?
-> | 
-> | I object to what clone3() is.  The name is not particularly interesting.
-> | 
-> | The sanity checks for assigning pids are missing and there is a todo
-> | about it.  I am not comfortable with assigning pids to a new process
-> | in a pid namespace with other processes user space processes executing
-> | in it.
->
-> Could you clarify ? How is the call to alloc_pidmap() from clone3() different
-> from the call from clone() itself ?
+Right, reclaim always queues the pages for async IO but for lumpy reclaim,
+it calls wait_on_page_writeback() but as you say, from an elevator point of
+view, it's still async.
 
-I think it is totally inappropriate to assign pids in a pid namespace
-where there are user space processes already running.
+> But I'm honestly not 100% sure.  Looking back through the emails, the
+> test case is doing IO on top of a whole lot of things on top of
+> dm-crypt?  I just tried to figure out if dm-crypt is turning the async
+> IO into sync IOs, but didn't quite make sense of it.
+> 
 
-> | How we handle a clone extension depends critically on if we want to
-> | create a processes for restart in user space or kernel space.
-> | 
-> | Could some one give me or point me at a strong case for creating the
-> | processes for restart in user space?
->
-> There has been a lot of discussion on this with reference to the
-> Checkpoint/Restart patchset. See http://lkml.org/lkml/2009/4/13/401
-> for instance.
+I'm not overly sure either.
 
-Just read it.  Thank you.  Now I am certain clone_with_pids() is
-not useful functionality to be exporting to userspace.
+> Could you also please include which filesystems were being abused during
+> the test and how?  Reading through the emails, I think you've got:
+> 
+> gitk being run 3 times on some FS (NFS?)
+> streaming reads on NFS
+> swap on dm-crypt
+> 
+> If other filesystems are being used, please correct me.  Also please
+> include if they are on crypto or straight block device.
+> 
 
-The only real argument in favor of doing this in user space is greater
-flexibility.  I can see checkpointing/restoring a single thread process
-without a pid namespace.  Anything more and you are just asking for
-trouble.
+I've attached a patch below that should allow us to cheat. When it's applied,
+it outputs who called congestion_wait(), how long the timeout was and how
+long it waited for. By comparing before and after sleep times, we should
+be able to see which of the callers has significantly changed and if
+it's something easily addressable.
 
-A design that weakens security.  Increases maintenance costs.  All for
-an unreliable result seems like a bad one to me.
+> > Either way, reclaim is usually worried about writing pages but it would appear
+> > after this change that a lot of read activity can also stall a process in
+> > direct reclaim. What might be happening in Frans's particular case is that the
+> > tasklet that allocates high-order pages for the RX buffers is getting stalled
+> > by congestion caused by other processes doing reads from the filesystem.
+> > While it makes sense from a congestion point of view to halt the IO, the
+> > reclaim operations from direct reclaimers is getting delayed for long enough
+> > to cause problems for GFP_ATOMIC.
+> 
+> The congestion_wait code either waits for congestion to clear or for
+> a given timeout.  The part that isn't clear is if before the patch
+> we waited a very short time (congestion cleared quickly) or a very long
+> time (we hit the timeout or congestion cleared slowly).
+> 
 
-> | The pid assignment code is currently ugly.  I asked that we just pass
-> | in the min max pid pids that already exist into the core pid
-> | assignment function and a constrained min/max that only admits a
-> | single pid when we are allocating a struct pid for restart.  That was
-> | not done and now we have a weird abortion with unnecessary special cases.
->
-> I did post a version of the patch attemptint to implement that. As
-> pointed out in:
->
-> 	http://lkml.org/lkml/2009/8/17/445
->
-> we would need more checks in alloc_pidmap() to cover cases like min or max
-> being invalid or min being greater than max or max being greater than pid_max
-> etc. Those checks also made the code ugly (imo).
+Using the instrumentation patch, I found with a very basic test that we
+are waiting for short periods of time more often with the patch applied
 
-If you need more checks you are doing it wrong.  The code already has min
-and max values, and even a start value.  I was just strongly suggesting
-we generalize where we get the values from, and then we have not special
-cases. 
+      1 congestion_wait   rw=1 delay 6 timeout 25 :: before commit
+      7 kswapd            congestion_wait   rw=1 delay 0 timeout 25 :: before commit
+     32 kswapd            congestion_wait sync=0 delay 0 timeout 25 :: after commit
+     61 kswapd            congestion_wait   rw=1 delay 1 timeout 25 :: before commit
+    133 kswapd            congestion_wait sync=0 delay 1 timeout 25 :: after commit
+     16 kswapd            congestion_wait   rw=1 delay 2 timeout 25 :: before commit
+     70 kswapd            congestion_wait sync=0 delay 2 timeout 25 :: after commit
+      1 try_to_free_pages congestion_wait sync=0 delay 2 timeout 25 :: after commit
+     17 kswapd            congestion_wait   rw=1 delay 3 timeout 25 :: before commit
+     28 kswapd            congestion_wait sync=0 delay 3 timeout 25 :: after commit
+      1 try_to_free_pages congestion_wait sync=0 delay 3 timeout 25 :: after commit
+     23 kswapd            congestion_wait   rw=1 delay 4 timeout 25 :: before commit
+     16 kswapd            congestion_wait sync=0 delay 4 timeout 25 :: after commit
+      5 try_to_free_pages congestion_wait sync=0 delay 4 timeout 25 :: after commit
+     20 kswapd            congestion_wait   rw=1 delay 5 timeout 25 :: before commit
+     18 kswapd            congestion_wait sync=0 delay 5 timeout 25 :: after commit
+      3 try_to_free_pages congestion_wait sync=0 delay 5 timeout 25 :: after commit
+     21 kswapd            congestion_wait   rw=1 delay 6 timeout 25 :: before commit
+      8 kswapd            congestion_wait sync=0 delay 6 timeout 25 :: after commit
+      2 try_to_free_pages congestion_wait sync=0 delay 6 timeout 25 :: after commit
+     13 kswapd            congestion_wait   rw=1 delay 7 timeout 25 :: before commit
+     12 kswapd            congestion_wait sync=0 delay 7 timeout 25 :: after commit
+      2 try_to_free_pages congestion_wait sync=0 delay 7 timeout 25 :: after commit
+      8 kswapd            congestion_wait   rw=1 delay 8 timeout 25 :: before commit
+      7 kswapd            congestion_wait sync=0 delay 8 timeout 25 :: after commit
+      9 kswapd            congestion_wait   rw=1 delay 9 timeout 25 :: before commit
+      5 kswapd            congestion_wait sync=0 delay 9 timeout 25 :: after commit
+      2 try_to_free_pages congestion_wait sync=0 delay 9 timeout 25 :: after commit
+      4 kswapd            congestion_wait   rw=1 delay 10 timeout 25 :: before commit
+      5 kswapd            congestion_wait sync=0 delay 10 timeout 25 :: after commit
+      1 try_to_free_pages congestion_wait sync=0 delay 10 timeout 25 :: after commit
+[... remaining output snipped ...]
 
-Eric
+The before and after commit are really 2.6.31 and 2.6.31-patch-reverted.
+The first column is how many times we delayed for that length of time.
+To generate the output, I just took the console log from both kernels with
+a basic test, put the congestion_wait lines into two separate files and
 
+cat congestion-*-sorted | sort -n -k5 | uniq -c
+
+to give a count of how many times we delayed for a particular caller.
+
+> The easiest way to tell is to just replace the congestion_wait() calls
+> in direct reclaim with schedule_timeout_interruptible(10), test, then
+> schedule_timeout_interruptible(HZ/20), then test again.
+> 
+
+Reclaim can also call congestion_wait() and maybe the problem isn't
+within the page allocator at all but that it's indirectly affected by
+timing.
+
+> > 
+> > Does this sound plausible to you? If so, what's the best way of
+> > addressing this? Changing congestion_wait back to WRITE (assuming that
+> > works for Frans)? Changing it to SYNC (again, assuming it actually
+> > works) or a revert?
+> 
+> I don't think changing it to SYNC is a good plan unless we're actually
+> doing sync io.  It would be better to just wait on one of the pages that
+> you've sent down (or its hashed waitqueue since the page can go away).
+> 
+
+Frans, is there any chance you could apply the following patch and get
+the console logs for a vanilla kernel and with the congestion patches
+reverted? I'm hoping it'll be able to tell us which of the callers has
+significantly changed in timing. If there is one caller that has
+significantly changed, it might be enough to address just that caller.
+
+=====
+
+>From 757999066dc41f2e053d59589c673052fc7c1a65 Mon Sep 17 00:00:00 2001
+From: Mel Gorman <mel@csn.ul.ie>
+Date: Tue, 20 Oct 2009 11:01:57 +0100
+Subject: [PATCH] Instrument congestion_wait
+
+This patch instruments how long congestion_wait() really waited for a
+given caller.
+
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index 3d3accb..fc945e0 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -10,6 +10,7 @@
+ #include <linux/module.h>
+ #include <linux/writeback.h>
+ #include <linux/device.h>
++#include <linux/kallsyms.h>
+ 
+ void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
+ {
+@@ -729,6 +730,11 @@ EXPORT_SYMBOL(set_bdi_congested);
+  */
+ long congestion_wait(int sync, long timeout)
+ {
++	unsigned long jiffies_start = jiffies;
++	char *module;
++	char buf[128];
++	const char *symbol;
++	unsigned long offset, symbolsize;
+ 	long ret;
+ 	DEFINE_WAIT(wait);
+ 	wait_queue_head_t *wqh = &congestion_wqh[sync];
+@@ -736,6 +742,13 @@ long congestion_wait(int sync, long timeout)
+ 	prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
+ 	ret = io_schedule_timeout(timeout);
+ 	finish_wait(wqh, &wait);
++
++	symbol = kallsyms_lookup(_RET_IP_, &symbolsize, &offset, &module, buf),
++	printk(KERN_INFO "%-20s congestion_wait sync=%d delay %lu timeout %ld\n",
++		symbol,
++		sync,
++		jiffies - jiffies_start,
++		timeout);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(congestion_wait);
