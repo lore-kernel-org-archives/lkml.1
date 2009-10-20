@@ -1,88 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbZJTGoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbZJTGon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755068AbZJTGoB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 02:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbZJTGoA
+	id S1755318AbZJTGon (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 02:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbZJTGon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 02:44:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50168 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754716AbZJTGoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 02:44:00 -0400
-Date: Tue, 20 Oct 2009 08:43:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
-	probe and kprobe-tracer bugfixes
-Message-ID: <20091020064334.GK8550@elte.hu>
-References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <20091017080203.GA4155@elte.hu> <20091017103427.GA31238@elte.hu> <4ADAAF50.9040604@redhat.com> <20091019075103.GF17960@elte.hu> <20091019110055.GA5549@nowhere> <20091019112125.GA12829@elte.hu> <20091019193248.GB4880@nowhere>
+	Tue, 20 Oct 2009 02:44:43 -0400
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:48757 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755035AbZJTGom convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 02:44:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NltGH3LTdy7CCtH0V6+MrTciErcRG7MkiyS+6EzMKOH8MJe7h93iPVwAjddgE/nFWa
+         YZ3L3ysSM7ej2Pc2TCXkpk8Q6I71l9ThLyM8R2b0Cnw3jokKImsRkRLegHWvTpNqse91
+         A0U3f3kuVc2xSkWQg0+MwTSCwbR2lXU3+Kn1k=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091019193248.GB4880@nowhere>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <ac3eb2510910130945w2e87d84bjfa3291989d85375b@mail.gmail.com>
+References: <20091006074533.GA28889@july>
+	 <ac3eb2510910130945w2e87d84bjfa3291989d85375b@mail.gmail.com>
+Date: Tue, 20 Oct 2009 12:14:46 +0530
+Message-ID: <5d5443650910192344v5c396033g55ad8cd85370dbb4@mail.gmail.com>
+Subject: Re: [PATCH] Haptic class support (v2)
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Kay Sievers <kay.sievers@vrfy.org>, Kyungmin Park <kmpark@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       Greg Kroah-Hartmann <greg@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Kyungmin,
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-[...]
+On Tue, Oct 13, 2009 at 10:15 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On Tue, Oct 6, 2009 at 09:45, Kyungmin Park <kmpark@infradead.org> wrote:
 >
-> I think absolute and relative line modes are not colliding/contending 
-> at all but actually fit two different needs.
+>> +/**
+>> + * haptic_classdev_register - register a new object of haptic_classdev class.
+>> + * @dev: The device to register.
+>> + * @haptic_cdev: the haptic_classdev structure for this device.
+>> + */
+>> +int haptic_classdev_register(struct device *parent,
+>> +                               struct haptic_classdev *haptic_cdev)
+>> +{
+>> +       int ret;
+>> +
+>> +       haptic_cdev->dev = device_create(haptic_class, parent, 0,
+>> +                               haptic_cdev, "%s", haptic_cdev->name);
+>> +       if (IS_ERR(haptic_cdev->dev))
+>> +               return PTR_ERR(haptic_cdev->dev);
+>> +
+>> +       /* register the attributes */
+>> +       ret = class_create_file(haptic_class, &class_attr_enable);
+>> +       if (ret) {
+>> +               printk(KERN_ERR "%s: class_create_file(enable) failed\n",
+>> +                                __func__);
+>> +               return ret;
+>> +       }
+>
+> As mentioned in an earlier mail, this needs some explanation. What are
+> you doing here? Creating a device below a class, and then add a bunch
+> of attributes to the class itself, instead of the device you created?
+>
+> All calls to class_create_file() need to go, we can not allow any new
+> users of this broken interface. As mentioned, if you need
+> subsystem-wide attributes you need to use a bus and not a class,
+> classes are flat and can not handle such things properly.
+>
+> Thanks,
+> Kay
+>
 
-Definitely so.
+Any plan of refreshing these patches?
 
-> - absolute is nice when you are lonely doing kernel debugging.
->   (can be expanded at will once you imagine user probes)
->   You are stuck in your code editor, trying to figure out the
->   origin of your problem and then you think it would be nice
->   to set a probe in branch 1 and in branch 2 inside func_foo().
->   Then you already have absolute lines and relying in
->   perf probe --list func_foo() to resolve an absolute line into
->   a relative one is a very undesired middle step.
 
-Of course - absolute numbers definitely rule for everything that works 
-on a whole-file basis. (I'd argue that if you do that from an editor 
-then you want a short macro that just sets a probe there - much like a 
-breakpoint. Such an editor macro would want to use absolute numbers.))
-
-> - relative is nice in some other cases. When you already have
->   the function target in mind, you even don't need to check your
->   editor, just a quick check to this command and get the relative
->   line. But also when you want to transmit a probe reference
->   in a mailing list because of its better lifetime.
-
-also useful for command line workflows: 'perf probe --list' output - i 
-think we users to generate func_symbol+rel_position kind of probes.
-
-Plus a relative position is more intuitive as well. If you see 
-'schedule+10' versus 'schedule+102', you'll know it immediate that the 
-first one is early in the function while the second one is near the end.
-
-If you see 'schedule@2465' versus 'schedule@2555' that kind of 'where in 
-the function is the probe, roughly' subjective impression is lost.
-
-	Ingo
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
