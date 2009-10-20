@@ -1,40 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbZJTIR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbZJTITT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751399AbZJTIR4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 04:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZJTIRz
+	id S1751287AbZJTITT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 04:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZJTITS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 04:17:55 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58760
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751093AbZJTIRy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 04:17:54 -0400
-Date: Tue, 20 Oct 2009 01:18:16 -0700 (PDT)
-Message-Id: <20091020.011816.194175213.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: acme@redhat.com, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Re: linux-next: net tree build warnings
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091020191457.2e0c073c.sfr@canb.auug.org.au>
-References: <20091017021024.GI25141@ghostprotocols.net>
-	<20091020.010943.162563535.davem@davemloft.net>
-	<20091020191457.2e0c073c.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 20 Oct 2009 04:19:18 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:48728 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750885AbZJTITR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 04:19:17 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19165.29312.300540.500942@pilspetsen.it.uu.se>
+Date: Tue, 20 Oct 2009 10:19:12 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Walleij <linus.walleij@stericsson.com>, linux-mips@linux-mips.org,
+       Ralf Baechle <ralf@linux-mips.org>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] Make MIPS dynamic clocksource/clockevent clock code
+	generic
+In-Reply-To: <alpine.LFD.2.00.0910200454300.2863@localhost.localdomain>
+References: <1255819715-19763-1-git-send-email-linus.walleij@stericsson.com>
+	<alpine.LFD.2.00.0910200454300.2863@localhost.localdomain>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 20 Oct 2009 19:14:57 +1100
+Thomas Gleixner writes:
+ > > +static inline void clockevent_set_clock(struct clock_event_device *dev, u32 hz)
+ > > +{
+ > > +	u64 temp;
+ > > +	u32 shift;
+ > > +
+ > > +	/* Find a shift value */
+ > > +	for (shift = 32; shift > 0; shift--) {
+ > > +		temp = (u64) hz << shift;
+ > > +		do_div(temp, NSEC_PER_SEC);
+ > > +		if ((temp >> 32) == 0)
+ > > +			break;
+ > > +	}
+ > > +	dev->shift = shift;
+ > > +	dev->mult = (u32) temp;
+ > > +}
+ > > +
+ > > +
+ > > +static inline void clocksource_set_clock(struct clocksource *cs, u32 hz)
+ > > +{
+ > > +	u64 temp;
+ > > +	u32 shift;
+ > > +
+ > > +	/* Find a shift value */
+ > > +	for (shift = 32; shift > 0; shift--) {
+ > > +		temp = (u64) NSEC_PER_SEC << shift;
+ > > +		do_div(temp, hz);
+ > > +		if ((temp >> 32) == 0)
+ > > +			break;
+ > > +	}
+ > > +	cs->shift = shift;
+ > > +	cs->mult = (u32) temp;
+ > > +}
+ > > +
+ > 
+ > So that's the same function twice, right ?
 
-> On Tue, 20 Oct 2009 01:09:43 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
->>
->> Applied, please CC: networking patches to netdev in the future.
-> 
-> Should I maybe cc all the linux-next emails about the net tree to netdev?
+They are similar but not identical:
 
-Sure, that would help me track things.
+ > > +		temp = (u64) hz << shift;
+ > > +		do_div(temp, NSEC_PER_SEC);
+
+vs
+
+ > > +		temp = (u64) NSEC_PER_SEC << shift;
+ > > +		do_div(temp, hz);
+
+I suppose both functions could be implemented by a suitably
+parametric third function, but IMO that would just obscure things.
+
+Making them non-inline I fully agree with.
