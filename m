@@ -1,91 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752871AbZJTE4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbZJTE5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752871AbZJTE4k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 00:56:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZJTE4k
+	id S1752936AbZJTE5Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 00:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbZJTE5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 00:56:40 -0400
-Received: from smtp.outflux.net ([198.145.64.163]:59682 "EHLO smtp.outflux.net"
+	Tue, 20 Oct 2009 00:57:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43379 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751186AbZJTE4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 00:56:39 -0400
-Date: Mon, 19 Oct 2009 21:55:13 -0700
-From: Kees Cook <kees.cook@canonical.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH v3] [x86] detect and report lack of NX protections
-Message-ID: <20091020045513.GU5394@outflux.net>
+	id S1751758AbZJTE5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 00:57:22 -0400
+Date: Tue, 20 Oct 2009 06:57:25 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Jeff Mahoney <jeffm@suse.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64@vger.kernel.org
+Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
+In-Reply-To: <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz>
+Message-ID: <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz>
+References: <4ADB967A.4080707@suse.com> <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ADD1E03.4070200@zytor.com>
-Organization: Canonical
-X-HELO: www.outflux.net
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is possible for x86_64 systems to lack the NX bit (see check_efer())
-either due to the hardware lacking support or the BIOS having turned
-off the CPU capability, so NX status should be reported.  Additionally,
-anyone booting NX-capable CPUs in 32bit mode without PAE will lack NX
-functionality, so this change provides feedback for that case as well.
+On Tue, 20 Oct 2009, Jiri Kosina wrote:
 
-v2: use "Alert:" instead of "Warning:" to avoid confusion with WARN_ON()
-v3: use "Notice:" instead of "Alert:" to avoid confusion with KERN_ALERT,
-    and switch to KERN_NOTICE, in keeping with its use for "normal but
-    significant condition" messages.
+> > Commit 34d76c41 introduced the update_shares_data percpu, but it ends up
+> > causing problems on large ia64 machines. Specifically, ia64 is limited
+> > to 64k in percpu vars and with NR_CPUS=4096, that ends up being 32k by
+> > itself. It ends up causing link errors since that is how ia64 enforces
+> > the 64k limit.
+> > 
+> > I can take a deeper look at finding a workable solution but thought I'd
+> > mention it in case you had ideas already.
+> 
+> I am adding some IA64 CCs, as the failure is solely caused by the ia64 
+> percpu implementation/pagefault handler optimization which requires the 
+> .percpu section area not be larger than 64k, which blows up with 34d76c41 
+> and NR_CPUS high enoufh (due to introduction of percpu array being 
+> size-dependent on NR_CPUS).
 
-Signed-off-by: Kees Cook <kees.cook@canonical.com>
----
- arch/x86/mm/init.c     |   10 ++++++++++
- arch/x86/mm/setup_nx.c |    2 ++
- 2 files changed, 12 insertions(+), 0 deletions(-)
+How about this one? (untested)
 
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index 73ffd55..8472293 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -149,6 +149,16 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 	set_nx();
- 	if (nx_enabled)
- 		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
-+	else if (cpu_has_pae)
-+#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-+		/* PAE kernel, PAE CPU, without NX */
-+		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-+		       "missing in CPU or disabled in BIOS!\n");
-+#else
-+		/* 32bit non-PAE kernel, PAE CPU */
-+		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-+		       "cannot be enabled: non-PAE kernel!\n");
-+#endif
+
+
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: sched: move rq_weight data array out of .percpu
+
+Commit 34d76c41 introduced percpu array update_shares_data, size of which 
+being proportional to NR_CPUS. Unfortunately this blows up ia64 for large 
+NR_CPUS configuration, as ia64 allows only 64k for .percpu section.
+
+Fix this by allocating this array dynamically and keep only pointer to it 
+percpu.
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+--- 
+ kernel/sched.c |   15 +++++++--------
+ 1 files changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index e886895..21337da 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1564,11 +1564,9 @@ static unsigned long cpu_avg_load_per_task(int cpu)
  
- 	/* Enable PSE if available */
- 	if (cpu_has_pse)
-diff --git a/arch/x86/mm/setup_nx.c b/arch/x86/mm/setup_nx.c
-index 513d8ed..b039a4c 100644
---- a/arch/x86/mm/setup_nx.c
-+++ b/arch/x86/mm/setup_nx.c
-@@ -53,6 +53,8 @@ void __init set_nx(void)
- #else
- void set_nx(void)
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 
+-struct update_shares_data {
+-	unsigned long rq_weight[NR_CPUS];
+-};
++unsigned long *update_shares_data;
+ 
+-static DEFINE_PER_CPU(struct update_shares_data, update_shares_data);
++static DEFINE_PER_CPU(unsigned long *, update_shares_data);
+ 
+ static void __set_se_shares(struct sched_entity *se, unsigned long shares);
+ 
+@@ -1578,12 +1576,12 @@ static void __set_se_shares(struct sched_entity *se, unsigned long shares);
+ static void update_group_shares_cpu(struct task_group *tg, int cpu,
+ 				    unsigned long sd_shares,
+ 				    unsigned long sd_rq_weight,
+-				    struct update_shares_data *usd)
++				    unsigned long *usd)
  {
-+	/* notice if _PAGE_NX was removed during check_efer() */
-+	nx_enabled = ((__supported_pte_mask & _PAGE_NX) == _PAGE_NX);
- }
- #endif
+ 	unsigned long shares, rq_weight;
+ 	int boost = 0;
  
--- 
-1.6.3.3
+-	rq_weight = usd->rq_weight[cpu];
++	rq_weight = usd[cpu];
+ 	if (!rq_weight) {
+ 		boost = 1;
+ 		rq_weight = NICE_0_LOAD;
+@@ -1618,7 +1616,7 @@ static void update_group_shares_cpu(struct task_group *tg, int cpu,
+ static int tg_shares_up(struct task_group *tg, void *data)
+ {
+ 	unsigned long weight, rq_weight = 0, shares = 0;
+-	struct update_shares_data *usd;
++	unsigned long *usd;
+ 	struct sched_domain *sd = data;
+ 	unsigned long flags;
+ 	int i;
+@@ -1631,7 +1629,7 @@ static int tg_shares_up(struct task_group *tg, void *data)
+ 
+ 	for_each_cpu(i, sched_domain_span(sd)) {
+ 		weight = tg->cfs_rq[i]->load.weight;
+-		usd->rq_weight[i] = weight;
++		usd[i] = weight;
+ 
+ 		/*
+ 		 * If there are currently no tasks on the cpu pretend there
+@@ -9420,6 +9418,7 @@ void __init sched_init(void)
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 		init_task_group.shares = init_task_group_load;
+ 		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
++		__get_cpu_var(update_shares_data) = kmalloc(NR_CPUS * sizeof(unsigned long));
+ #ifdef CONFIG_CGROUP_SCHED
+ 		/*
+ 		 * How much cpu bandwidth does init_task_group get?
 
-
 -- 
-Kees Cook
-Ubuntu Security Team
+Jiri Kosina
+SUSE Labs, Novell Inc.
+
