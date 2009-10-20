@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbZJTQIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbZJTQL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752540AbZJTQIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 12:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZJTQIR
+	id S1752613AbZJTQL3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 12:11:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbZJTQL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 12:08:17 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:38009 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752392AbZJTQIR (ORCPT
+	Tue, 20 Oct 2009 12:11:29 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:38287 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752469AbZJTQL2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 12:08:17 -0400
-Date: Tue, 20 Oct 2009 09:06:27 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Subject: Re: [PATCH 1/4] strip: move driver to staging
-Message-Id: <20091020090627.f36130fb.randy.dunlap@oracle.com>
-In-Reply-To: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
-References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Oct 2009 12:11:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=mwwoQqy8YwF8baHEQW8WOOnupyroduryyFLO9unl78d5noBqSEhFn/sS+tu6FO4q0i
+         0EM6JCu9DTbPLuCUdm4z9MNhlK4qhNhuyGdfLUgqAOiSAAPZSTvqQsPAARXGF2mXIBla
+         yGhLI4M+b1qz490lbXEWp/hfthuDy1AOxXNgM=
+Message-ID: <4ADDE11E.6030502@gmail.com>
+Date: Tue, 20 Oct 2009 12:11:10 -0400
+From: Miles Lane <miles.lane@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net
+Subject: 2.6.32-rc5-git1 -- 2 locks held by cat -- running "find /sys | head
+ -c 4" --> system hang
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4ADDE065.0165:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Oct 2009 14:17:07 +0900 John W. Linville wrote:
-
-> Move the strip ("Starmode Radio IP") driver to drivers/staging.  For
-> several years this driver has only seen API "bombing-run" changes, and
-> few people ever had the hardware.  This driver represents unnecessary
-> ongoing maintenance for no clear benefit.
-> 
-> This patch brought to you by the "hacking" session at the 2009 Kernel
-> Summit in Tokyo, Japan...
-
-is drivers/staging/ a temporary home or a permanent home?
-
-so no explanation of what it means to be in drivers/staging/ and
-no warning to users?  either in Kconfig or in feature-removal-schedule.txt?
-
-
-> Signed-off-by: John W. Linville <linville@tuxdriver.com>
-> ---
->  drivers/net/wireless/Kconfig   |   23 -
->  drivers/net/wireless/Makefile  |    1 -
->  drivers/net/wireless/strip.c   | 2805 ----------------------------------------
->  drivers/staging/Kconfig        |    2 +
->  drivers/staging/Makefile       |    1 +
->  drivers/staging/strip/Kconfig  |   22 +
->  drivers/staging/strip/Makefile |    1 +
->  drivers/staging/strip/strip.c  | 2805 ++++++++++++++++++++++++++++++++++++++++
->  8 files changed, 2831 insertions(+), 2829 deletions(-)
->  delete mode 100644 drivers/net/wireless/strip.c
->  create mode 100644 drivers/staging/strip/Kconfig
->  create mode 100644 drivers/staging/strip/Makefile
->  create mode 100644 drivers/staging/strip/strip.c
-
-
----
-~Randy
+2 locks held by cat/4179:
+  #0:  (&p->lock){+.+.+.}, at: [<c10a3884>] seq_read+0x25/0x315
+  #1:  (&dev_priv->mm.active_list_lock){+.+...}, at: [<c119a854>] i915_batchbuffer_info+0x2b/0x124
+Pid: 4179, comm: cat Not tainted 2.6.32-rc5-git1 #2
+Call Trace:
+  [<c104874f>] ? __debug_show_held_locks+0x1e/0x20
+  [<c1023fb0>] __might_sleep+0xf0/0xf7
+  [<c101c393>] kmap+0x17/0x58
+  [<c119a8d6>] i915_batchbuffer_info+0xad/0x124
+  [<c10a39bf>] seq_read+0x160/0x315
+  [<c108fb8c>] ? rw_verify_area+0x98/0xbb
+  [<c10a385f>] ? seq_read+0x0/0x315
+  [<c1090331>] vfs_read+0x75/0xa9
+  [<c10903f9>] sys_read+0x3b/0x5d
+  [<c1002a8f>] sysenter_do_call+0x12/0x36
