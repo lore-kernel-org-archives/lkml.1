@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbZJTGRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbZJTGYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755083AbZJTGRY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 02:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbZJTGRX
+	id S1754419AbZJTGYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 02:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbZJTGYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 02:17:23 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:52015 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754702AbZJTGRW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 02:17:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:reply-to:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-type:content-transfer-encoding
-         :message-id;
-        b=x3ze4qT0UYrSO/d/RDbu5PRwdSrugH0vpdQEn8SaMIziM8pkSxRuoUan3AF+0Lex++
-         X8vKXoscAo4lHyfiLUq2X0xvIVwX9iJZokzKeEUYuXbyiXzlpkkSmCwGU1/KWhoOwNVx
-         NW2nhdusKDmeDCPuMcECzCmbegGyqdYh49YBY=
-From: Florian Fainelli <florian@openwrt.org>
-Reply-To: Florian Fainelli <florian@openwrt.org>
-To: myuboot@fastmail.fm
-Subject: Re: serial port 8250 messed up after coverting from little endian to big endian on kernel  2.6.31
-Date: Tue, 20 Oct 2009 08:17:23 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.29-2-686; KDE/4.3.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org, "linux-mips" <linux-mips@linux-mips.org>
-References: <1255735395.30097.1340523469@webmail.messagingengine.com> <4AD906D8.3020404@caviumnetworks.com> <1255996564.10560.1340920621@webmail.messagingengine.com>
-In-Reply-To: <1255996564.10560.1340920621@webmail.messagingengine.com>
+	Tue, 20 Oct 2009 02:24:14 -0400
+Received: from k66.ru ([87.224.128.21]:64428 "EHLO k66.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753137AbZJTGYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 02:24:14 -0400
+Date: Tue, 20 Oct 2009 12:21:11 +0600
+From: Andrey Rahmatullin <wrar@altlinux.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: drivers/staging/rt2860 doesn't compile
+Message-ID: <20091020062111.GF19095@wrars-comp.wrarsdomain>
+References: <20091014063824.GD6298@wrars-comp.wrarsdomain>
+ <20091014182729.GC19095@wrars-comp.wrarsdomain>
+ <20091016085738.GG19095@wrars-comp.wrarsdomain>
+ <ada1vl3xixh.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4081583.Nnz8PKjnI1";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910200817.24018.florian@openwrt.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="oFMCfUPuRwe/HdF5"
+Content-Disposition: inline
+In-Reply-To: <ada1vl3xixh.fsf@cisco.com>
+X-Operating-System: ALT Linux Sisyphus
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: Mutt/1.5.20 (2009-06-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4081583.Nnz8PKjnI1
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+
+--oFMCfUPuRwe/HdF5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Fri, Oct 16, 2009 at 12:00:58PM -0700, Roland Dreier wrote:
+>  > For the archives: it just means that CONFIG_WIRELESS_EXT should be ena=
+bled.
+> Which means the driver should probably do "select WIRELESS_EXT" in
+> Kconfig.
+Yes.
 
-Le mardi 20 octobre 2009 01:56:04, myuboot@fastmail.fm a =E9crit :
-> I am trying to bringup a MIPS32 board using 2.6.31. It is working in
-> little endian mode. After changing the board's hardware from little
-> endian to bit endian, the serial port print messed up. It prints now
-> something like - "=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0=E0" on th=
-e screen. When I trace the
-> execution, I can see the string the kernel is trying print is correct -
-> "Linux version 2.6.31 ..." and etc.
->=20
-> I guess it means the initialization of the serial port is not properly
-> done. But I am not sure where I should check for the problem. The serial
-> port device I am using is 8250. Please give me some advise.
+> Would be an easy patch to send if you can test it....
+Of course I can :)
 
-If the same initialization routine used to work in little-endian, check how=
-=20
-you actually write and read characters from the UART FIFO and especially if=
-=20
-your hardware requires you to do word or byte access to these registers.
+--=20
+WBR, wRAR (ALT Linux Team)
 
-You can have a look at AR7, which has the same code working for Little and =
-Big=20
-Endian modes in arch/mips/ar7/prom.c lines 272 to the end of the file. It a=
-lso=20
-uses a 8250-compatible UART.
-
---nextPart4081583.Nnz8PKjnI1
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+--oFMCfUPuRwe/HdF5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkrdVfMACgkQlyvkmBGtjyYRAwCfR3P8YgiNVpAQw+WPnOke42t/
-aucAoLaDJ/ICmDVQ4RqN7ly1vS/hqwOR
-=ZwRw
+iQEcBAEBCAAGBQJK3VbXAAoJEOih81koZvPBU5QH/jZ6NFEOUzyMU6xJjZZWAe4v
+yfuEC1zLqU8gVYM8os58pcy55wD+mv/f/4ZP00RK7VqNOp1XUzLJWCu8RiSf7ZCp
+zAZQfJ1bjt3yeNiLW03lUfxPs4Tucfqp7NFKPpJs7RB26x5UVAxdDZ15rdh8t43p
+rU69uarIDyfzoQK5uIfkD2WB+f01mGEGwUlU8lprpkQ4kvtnzywoFj/1qOU1DVks
+gC/geMlEFYTxpVi+5Us+crsadfht8EHEIylMnGaQ4NmpYvNB9fdv+IqS+y6TrQyX
+G+WXUeLEdpgc3QK6whvwBTrVlN+gqg9bHYLnSEuJijg5DkMrrg1aa1K1UUviSSk=
+=fmKS
 -----END PGP SIGNATURE-----
 
---nextPart4081583.Nnz8PKjnI1--
+--oFMCfUPuRwe/HdF5--
