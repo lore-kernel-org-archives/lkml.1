@@ -1,84 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbZJTGon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZJTGvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755318AbZJTGon (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 02:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbZJTGon
+	id S1755220AbZJTGvY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 02:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZJTGvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 02:44:43 -0400
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:48757 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755035AbZJTGom convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 02:44:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=NltGH3LTdy7CCtH0V6+MrTciErcRG7MkiyS+6EzMKOH8MJe7h93iPVwAjddgE/nFWa
-         YZ3L3ysSM7ej2Pc2TCXkpk8Q6I71l9ThLyM8R2b0Cnw3jokKImsRkRLegHWvTpNqse91
-         A0U3f3kuVc2xSkWQg0+MwTSCwbR2lXU3+Kn1k=
+	Tue, 20 Oct 2009 02:51:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35609 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751103AbZJTGvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 02:51:22 -0400
+Date: Tue, 20 Oct 2009 08:50:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
+	probe and kprobe-tracer bugfixes
+Message-ID: <20091020065055.GL8550@elte.hu>
+References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <20091017080203.GA4155@elte.hu> <20091017103427.GA31238@elte.hu> <4ADAAF50.9040604@redhat.com> <20091019075103.GF17960@elte.hu> <20091019110055.GA5549@nowhere> <20091019112125.GA12829@elte.hu> <4ADCC348.2020800@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <ac3eb2510910130945w2e87d84bjfa3291989d85375b@mail.gmail.com>
-References: <20091006074533.GA28889@july>
-	 <ac3eb2510910130945w2e87d84bjfa3291989d85375b@mail.gmail.com>
-Date: Tue, 20 Oct 2009 12:14:46 +0530
-Message-ID: <5d5443650910192344v5c396033g55ad8cd85370dbb4@mail.gmail.com>
-Subject: Re: [PATCH] Haptic class support (v2)
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Kay Sievers <kay.sievers@vrfy.org>, Kyungmin Park <kmpark@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       Greg Kroah-Hartmann <greg@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ADCC348.2020800@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kyungmin,
 
-On Tue, Oct 13, 2009 at 10:15 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On Tue, Oct 6, 2009 at 09:45, Kyungmin Park <kmpark@infradead.org> wrote:
->
->> +/**
->> + * haptic_classdev_register - register a new object of haptic_classdev class.
->> + * @dev: The device to register.
->> + * @haptic_cdev: the haptic_classdev structure for this device.
->> + */
->> +int haptic_classdev_register(struct device *parent,
->> +                               struct haptic_classdev *haptic_cdev)
->> +{
->> +       int ret;
->> +
->> +       haptic_cdev->dev = device_create(haptic_class, parent, 0,
->> +                               haptic_cdev, "%s", haptic_cdev->name);
->> +       if (IS_ERR(haptic_cdev->dev))
->> +               return PTR_ERR(haptic_cdev->dev);
->> +
->> +       /* register the attributes */
->> +       ret = class_create_file(haptic_class, &class_attr_enable);
->> +       if (ret) {
->> +               printk(KERN_ERR "%s: class_create_file(enable) failed\n",
->> +                                __func__);
->> +               return ret;
->> +       }
->
-> As mentioned in an earlier mail, this needs some explanation. What are
-> you doing here? Creating a device below a class, and then add a bunch
-> of attributes to the class itself, instead of the device you created?
->
-> All calls to class_create_file() need to go, we can not allow any new
-> users of this broken interface. As mentioned, if you need
-> subsystem-wide attributes you need to use a bus and not a class,
-> classes are flat and can not handle such things properly.
->
-> Thanks,
-> Kay
->
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-Any plan of refreshing these patches?
+> Ah, I've gotten what you said, and many lines will be optimized out it 
+> would be better to show line numbers which can be probed, as below.
+> 
+> 000	asmlinkage void __sched schedule(void)
+> 	{
+> 		struct task_struct *prev, *next;
+> 		unsigned long *switch_count;
+> 		struct rq *rq;
+> 		int cpu;
+> 
+> 007	need_resched:
+> 008		preempt_disable();
+> 009		cpu = smp_processor_id();
+> 010		rq = cpu_rq(cpu);
+> 011		rcu_sched_qs(cpu);
+> 012		prev = rq->curr;
+> 013		switch_count = &prev->nivcsw;
+> 
+> 015		release_kernel_lock(prev);
 
+Agreed, that's a very good idea!
 
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+( You could also make use of color_fprintf() to color-code some of the 
+  numbers - for example lines with existing probes might be marked red. )
+
+> > That way the following two are equivalent:
+> >
+> >   perf probe schedule
+> >   perf probe schedule+0
+> >
+> > The advantage of relative line numbers is that they are much more
+> > version invariant than absolute line numbers. Relative line numbers into
+> > schedule() will only change if the function itself changes.
+> >
+> > This means that expressions like 'schedule+16' will have a lot longer
+> > life-time than absolute line number driven probes. You can quote it in
+> > an email and chances are that it will still be valid even a few kernel
+> > releases down the road.
+> 
+> Hmm, I imagines 'schedule() + 16 byte offset' from 'schedule+16', 
+> because many in-kernel(and oops) messages means that. :-) So I'd like 
+> to use 'schedule:16'.
+
+kernel symbol addresses are in the form of schedule+0x16/0x510.
+
+I like the plus sign because it also allows the negative positions: 
+relative position from the _end_ of the function. So for example 
+'schedule-1' would probe the (last) return line of the function. 
+[admittedly this is not as useful as the + operation though.]
+
+But schedule:16 [and schedule:+16] would be fine too i suspect.
+
+> >>> We also want to have functionality that helps people find probe
+> >>> spots within a function:
+> >>>
+> >>>   perf probe --list-lines schedule
+> >>>
+> >>> Would list the line numbers and source code of the schedule()
+> >>> function. (similar to how GDB 'list' works) That way someone can
+> >>> have an ad-hoc session of deciding what place to probe, and the line
+> >>> numbers make for an easy ID of the statement to probe.
+> >>
+> >> Agreed!
+> >
+> > Furthermore - to answer another question you raised above - the
+> > following syntax:
+> >
+> >    perf probe schedule:'switch_count = &prev->nivcsw'
+> >
+> > is basically a 'fuzzy string match' based probe to within a function.
+> >
+> > For example you might want to probe the point within schedule that calls
+> > switch_mm() - this could be done via:
+> >
+> >    perf probe schedule@switch_mm
+> >
+> > Or the point where 'next' gets assigned? Sure, you dont need to even
+> > open the editor, if you know the rough outline of the function you can
+> > probe it via:
+> >
+> >    perf probe schedule@'next ='
+> >
+> > Note that i was able to specify both probes without having opened an
+> > editor - just based on the general knowledge of the scheduler.
+> 
+> It may be useful for return probe too :-)
+> 
+>  perf probe schedule@return
+> 
+> > The point is to prefer intuitive, non-mechanic, fundamentally human
+> > expressions of information above mechanic ones (absolute line numbers,
+> > addresses, ways of probing, etc.) - and to have a rich variety of them.
+> >
+> > String based pattern matching and intuitive syntax that reuses existing
+> > paradigms of arithmetics and pattern-matching is good - limited syntax
+> > and extra, arbitrary syntactic hoops to jump through is bad.
+> >
+> > If we provide all that, people will start using this stuff - and i'd
+> > only like to merge this upstream once it's clear that people like me
+> > will (be able to) use this facility for ad-hoc probe insertion.
+> >
+> > In other words: this facility has to 'live within' our source code and
+> > has to be able to interact with it on a very broad basis - for it to be
+> > maximally useful for everyday development.
+> 
+> Hmm, so you mean perf-probe should work with source-code? Without 
+> source code (but with debuginfo), maybe we can't use string matching, 
+> is that OK?
+
+Well most forms of debuginfo embedd the full source code in the 
+debuginfo, right? If it's not there (or we dont know where it is) then 
+we cannot use it, obviously.
+
+But we obviously want the whole 'perf probe' workflow to primarily 
+operate on source code - we are humans.
+
+	Ingo
