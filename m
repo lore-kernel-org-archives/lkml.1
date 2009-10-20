@@ -1,95 +1,400 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbZJTALz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbZJTAMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758059AbZJTALz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 20:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758017AbZJTALx
+	id S1758073AbZJTAMM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 20:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbZJTAML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 20:11:53 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:33772 "EHLO mail-out2.uio.no"
+	Mon, 19 Oct 2009 20:12:11 -0400
+Received: from claw.goop.org ([74.207.240.146]:49301 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757988AbZJTALx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 20:11:53 -0400
-Subject: Re: nfs oops in 2.6.32-rc5-00041-g1d91624
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Frans Pop <elendil@planet.nl>
-Cc: Egon Alter <egon.alter@gmx.net>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <200910200151.55016.elendil@planet.nl>
-References: <200910191803.26845.egon.alter@gmx.net>
-	 <200910200151.55016.elendil@planet.nl>
-Content-Type: text/plain
-Date: Tue, 20 Oct 2009 09:11:51 +0900
-Message-Id: <1255997511.2892.8.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	id S1752122AbZJTAMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 20:12:10 -0400
+Message-ID: <4ADD005A.4000401@goop.org>
+Date: Tue, 20 Oct 2009 09:12:10 +0900
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: "Ryan C. Gordon" <icculus@icculus.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/2] binfmt_elf: FatELF support in the binary loader.
+References: <alpine.DEB.2.00.0910190418500.13303@andre.icculuslan>
+In-Reply-To: <alpine.DEB.2.00.0910190418500.13303@andre.icculuslan>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 4 msgs/h 1 sum rcpts/h 11 sum msgs/h 2 total rcpts 1705 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 76617B90327C69A1992A0CE40F87175349D55308
-X-UiO-SPAM-Test: remote_host: 220.106.13.183 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 5 max/h 2 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-20 at 01:51 +0200, Frans Pop wrote:
-> Adding CC to linux-nfs.
-> 
-> =================
-> Hi,
-> 
-> I got this oops while doing a grep on an nfs4 share.
-> 
->  kernel: general protection fault: 0000 [#1] SMP
->  kernel: last sysfs file: /sys/devices/system/cpu/cpu1/cache/index2/shared_cpu_map
->  kernel: CPU 0
->  kernel: Modules linked in: nfs lockd nfs_acl auth_rpcgss sunrpc sit tunnel4 analog it87 hwmon_vid joydev snd_pcm_oss snd_mixer_o
-> ss snd_seq_midi snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_seq cpufreq_conservative cpufreq_userspace cpufreq_
-> powersave snd_hda_codec_realtek snd_emu10k1 snd_rawmidi snd_ac97_codec ac97_bus snd_seq_device snd_hda_intel snd_util_mem snd_hda_codec radeon ttm snd_pcm sn
-> d_timer snd_hwdep emu10k1_gp drm_kms_helper snd k8temp r8169 gameport pcspkr drm soundcore mii snd_page_alloc i2c_piix4 i2c_algo_bit
->  kernel: Pid: 4337, comm: rpciod/0 Tainted: G        W  2.6.32-rc5-00041-g1d91624 #1 GA-MA69VM-S2
-                                                      ^^^
-What is the warning that preceded this Oops?
+On 10/19/09 23:39, Ryan C. Gordon wrote:
+> This allows the kernel to load a single file that contains multiple ELF
+> binaries (a "FatELF" file), selecting the correct one for the system.
+>
+> Details, rationale, tools, and patches for handling FatELF binaries can be
+> found at http://icculus.org/fatelf/
+>
+> Please note that this requires userspace changes to be truly effective, 
+> but a simple "hello world" FatELF binary can work with just the kernel 
+> loader.
+>   
 
->  kernel: RIP: 0010:[<ffffffffa028d9c2>]  [<ffffffffa028d9c2>] rpcauth_checkverf+0x32/0x70 [sunrpc]
->  kernel: RSP: 0000:ffff8800371add60  EFLAGS: 00010246
->  kernel: RAX: 6b6b6b6b6b6b6b6b RBX: ffff880017380070 RCX: 000000000000200f
->  kernel: RDX: 0000000000000000 RSI: ffff880034418290 RDI: ffff880017380070
->  kernel: RBP: ffff8800371add80 R08: ffff8800371ac000 R09: 0000010f683033fc
->  kernel: R10: 0000000000000000 R11: ffff880001c14318 R12: ffff880035d54590
->  kernel: R13: ffff880034418290 R14: ffff88003472dad0 R15: ffff880034c87260
->  kernel: FS:  000000007ffd8000(0000) GS:ffff880001c00000(0000) knlGS:00000000f73ff6c0
->  kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
->  kernel: CR2: 000000000e966004 CR3: 00000000140fe000 CR4: 00000000000006f0
->  kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->  kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->  kernel: Process rpciod/0 (pid: 4337, threadinfo ffff8800371ac000, task ffff8800345f66c0)
->  kernel: Stack:
->  kernel:  ffff880038cd2588 ffff880017380070 ffff880034c87260 ffffffffa0320ed0
->  kernel: <0> ffff8800371adde0 ffffffffa0285449 ffff8800371addb0 ffffffffa0284cba
->  kernel: <0> 0000000000000000 ffff880017387a38 ffff8800345f6c38 ffff880017380070
->  kernel: Call Trace:
->  kernel:  [<ffffffffa0320ed0>] ? nfs4_xdr_dec_read+0x0/0x110 [nfs]
->  kernel:  [<ffffffffa0285449>] call_decode+0x2d9/0x790 [sunrpc]
->  kernel:  [<ffffffffa0284cba>] ? call_transmit_status+0x3a/0x80 [sunrpc]
->  kernel:  [<ffffffffa028cc82>] __rpc_execute+0xb2/0x2b0 [sunrpc]
->  kernel:  [<ffffffffa028ceb0>] ? rpc_async_schedule+0x0/0x20 [sunrpc]
->  kernel:  [<ffffffffa028cec0>] rpc_async_schedule+0x10/0x20 [sunrpc]
->  kernel:  [<ffffffff8106969d>] worker_thread+0x15d/0x280
->  kernel:  [<ffffffff8106de50>] ? autoremove_wake_function+0x0/0x40
->  kernel:  [<ffffffff81069540>] ? worker_thread+0x0/0x280
->  kernel:  [<ffffffff8106da4e>] kthread+0x8e/0xa0
->  kernel:  [<ffffffff8100ceaa>] child_rip+0xa/0x20
->  kernel:  [<ffffffff8106d9c0>] ? kthread+0x0/0xa0
->  kernel:  [<ffffffff8100cea0>] ? child_rip+0x0/0x20
->  kernel: Code: 20 f6 05 d9 d5 01 00 10 48 89 5d e8 4c 89 6d f8 48 89 fb 4c 89 65 f0 49 89 f5 4c 8b 67 50 75 1c 49 8b 44 24 38 4c 89 ee 48 89 df <ff> 50 38 48 8b 5d e8 4c 8b 65 
-> f0 4c 8b 6d f8 c9 c3 49 8b 44 24
->  kernel: RIP  [<ffffffffa028d9c2>] rpcauth_checkverf+0x32/0x70 [sunrpc]
->  kernel:  RSP <ffff8800371add60>
->  kernel: ---[ end trace 667f1c1d6e9b9476 ]---
+The idea seem interesting, but does it need to be ELF-specific?  What
+about making the executable a simple archive file format (possibly just
+an "ar" archive?) which contains other executables.  The archive file
+format would be implemented as its own binfmt, and the internal
+executables could be arbitrary other executables.  The outer loader
+would just try execing each executable until one works (or it runs out).
 
-Hmm...It looks as though the credential doesn't have a crvalidate
-method. I'll see if I can track this down...
+That is, what you have here, but without hacking up binfmt_elf more.
 
-Cheers
-  Trond
+    J
+
+> Signed-off-by: Ryan C. Gordon <icculus@icculus.org>
+> ---
+>  arch/ia64/ia32/binfmt_elf32.c |    4 +-
+>  fs/binfmt_elf.c               |  159 +++++++++++++++++++++++++++++++++++------
+>  include/linux/elf.h           |   24 ++++++
+>  3 files changed, 162 insertions(+), 25 deletions(-)
+>
+> diff --git a/arch/ia64/ia32/binfmt_elf32.c b/arch/ia64/ia32/binfmt_elf32.c
+> index c69552b..02d5dd1 100644
+> --- a/arch/ia64/ia32/binfmt_elf32.c
+> +++ b/arch/ia64/ia32/binfmt_elf32.c
+> @@ -223,12 +223,12 @@ elf32_set_personality (void)
+>  
+>  static unsigned long
+>  elf32_map(struct file *filep, unsigned long addr, struct elf_phdr *eppnt,
+> -		int prot, int type, unsigned long unused)
+> +		int prot, int type, unsigned long unused, unsigned long base)
+>  {
+>  	unsigned long pgoff = (eppnt->p_vaddr) & ~IA32_PAGE_MASK;
+>  
+>  	return ia32_do_mmap(filep, (addr & IA32_PAGE_MASK), eppnt->p_filesz + pgoff, prot, type,
+> -			    eppnt->p_offset - pgoff);
+> +			    (eppnt->p_offset + base) - pgoff);
+>  }
+>  
+>  #define cpu_uses_ia32el()	(local_cpu_data->family > 0x1f)
+> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> index b9b3bb5..9ac80f7 100644
+> --- a/fs/binfmt_elf.c
+> +++ b/fs/binfmt_elf.c
+> @@ -37,8 +37,9 @@
+>  
+>  static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs);
+>  static int load_elf_library(struct file *);
+> -static unsigned long elf_map(struct file *, unsigned long, struct elf_phdr *,
+> -				int, int, unsigned long);
+> +static unsigned long 
+> +elf_map(struct file *, unsigned long, struct elf_phdr *,
+> +				int, int, unsigned long, unsigned long);
+>  
+>  /*
+>   * If we don't support core dumping, then supply a NULL so we
+> @@ -319,7 +320,7 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+>  
+>  static unsigned long elf_map(struct file *filep, unsigned long addr,
+>  		struct elf_phdr *eppnt, int prot, int type,
+> -		unsigned long total_size)
+> +		unsigned long total_size, unsigned long base_offset)
+>  {
+>  	unsigned long map_addr;
+>  	unsigned long size = eppnt->p_filesz + ELF_PAGEOFFSET(eppnt->p_vaddr);
+> @@ -343,11 +344,14 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
+>  	*/
+>  	if (total_size) {
+>  		total_size = ELF_PAGEALIGN(total_size);
+> -		map_addr = do_mmap(filep, addr, total_size, prot, type, off);
+> +		map_addr = do_mmap(filep, addr, total_size, prot, type,
+> +		                   off + base_offset);
+>  		if (!BAD_ADDR(map_addr))
+>  			do_munmap(current->mm, map_addr+size, total_size-size);
+> -	} else
+> -		map_addr = do_mmap(filep, addr, size, prot, type, off);
+> +	} else {
+> +		map_addr = do_mmap(filep, addr, size, prot, type,
+> +		                   off + base_offset);
+> +	}
+>  
+>  	up_write(&current->mm->mmap_sem);
+>  	return(map_addr);
+> @@ -381,7 +385,7 @@ static unsigned long total_mapping_size(struct elf_phdr *cmds, int nr)
+>  
+>  static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+>  		struct file *interpreter, unsigned long *interp_map_addr,
+> -		unsigned long no_base)
+> +		unsigned long no_base, unsigned long base_offset)
+>  {
+>  	struct elf_phdr *elf_phdata;
+>  	struct elf_phdr *eppnt;
+> @@ -419,7 +423,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+>  	if (!elf_phdata)
+>  		goto out;
+>  
+> -	retval = kernel_read(interpreter, interp_elf_ex->e_phoff,
+> +	retval = kernel_read(interpreter, interp_elf_ex->e_phoff + base_offset,
+>  			     (char *)elf_phdata,size);
+>  	error = -EIO;
+>  	if (retval != size) {
+> @@ -455,7 +459,8 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+>  				load_addr = -vaddr;
+>  
+>  			map_addr = elf_map(interpreter, load_addr + vaddr,
+> -					eppnt, elf_prot, elf_type, total_size);
+> +					eppnt, elf_prot, elf_type, total_size,
+> +					base_offset);
+>  			total_size = 0;
+>  			if (!*interp_map_addr)
+>  				*interp_map_addr = map_addr;
+> @@ -560,6 +565,94 @@ static unsigned long randomize_stack_top(unsigned long stack_top)
+>  #endif
+>  }
+>  
+> +/*
+> + * See if we're a valid FatELF binary, find the right record, and
+> + *  load (*elf) with the actual ELF header. Sets (*offset) to the
+> + *  base offset of the chosen ELF binary. Returns 0 on success or a negative
+> + *  error code.
+> + * If we're not a FatELF binary, (*elf) is loaded with the existing contents
+> + *  of (buf) and 0 is returned.
+> + */
+> +static int examine_fatelf(struct file *file, const char *filename, char *buf,
+> +		int buflen, unsigned long *offset, struct elfhdr *elf)
+> +{
+> +	int records, i, rc;
+> +	const fatelf_hdr *fatelf = (fatelf_hdr *) buf;
+> +
+> +	if (likely(le32_to_cpu(fatelf->magic) != FATELF_MAGIC)) {
+> +		*elf = *((struct elfhdr *)buf);  /* treat like normal ELF. */
+> +		return 0;  /* not a FatELF binary; not an error. */
+> +	} else if (unlikely(le16_to_cpu(fatelf->version) != 1)) {
+> +		return -ENOEXEC; /* Unrecognized format version. */
+> +	}
+> +
+> +	/*
+> +	 * In theory, there could be 255 separate records packed into this
+> +	 *  binary, but for now, bprm->buf (128 bytes) holds exactly 5
+> +	 *  records with the fatelf header, and that seems reasonable for
+> +	 *  most uses. We could add the complexity to read more records later
+> +	 *  if there's a serious need.
+> +	 */
+> +	records = (int) fatelf->num_records;  /* uint8, no byteswap needed */
+> +
+> +	if (unlikely(records > 5)) {
+> +		records = 5;  /* clamp, in case we find one we can use. */
+> +	}
+> +
+> +	for (i = 0; i < records; i++) {
+> +		const fatelf_record *record = &fatelf->records[i];
+> +		const __u8 osabi = record->osabi;
+> +		const int abiok = likely( likely(osabi == ELFOSABI_NONE) ||
+> +		                          unlikely(osabi == ELFOSABI_LINUX) );
+> +
+> +		/* Fill in the data elf_check_arch() might care about. */
+> +		elf->e_ident[EI_OSABI] = record->osabi;
+> +		elf->e_ident[EI_CLASS] = record->word_size;
+> +		elf->e_ident[EI_DATA] = record->byte_order;
+> +		elf->e_machine = le16_to_cpu(record->machine);
+> +
+> +		if (likely(!elf_check_arch(elf))) {
+> +			continue;  /* Unsupported CPU architecture. */
+> +		} else if (unlikely(!abiok)) {
+> +			continue;  /* Unsupported OS ABI. */
+> +		} else if (unlikely(record->osabi_version != 0)) {
+> +			continue;  /* Unsupported OS ABI version. */
+> +		} else {
+> +			/* We can support this ELF arch/abi. */
+> +			const __u64 rec_offset = le64_to_cpu(record->offset);
+> +			const __u64 rec_size = le64_to_cpu(record->size);
+> +			const __u64 end_offset = rec_offset + rec_size;
+> +			const unsigned long uloff = (unsigned long) rec_offset;
+> +
+> +			if (unlikely(end_offset < rec_offset)) {
+> +				continue;  /* overflow (corrupt file?) */
+> +			} else if (unlikely(ELF_PAGEOFFSET(uloff) != 0)) {
+> +				continue;  /* bad alignment. */
+> +			}
+> +
+> +#if BITS_PER_LONG == 32
+> +			if (unlikely(end_offset > 0xFFFFFFFF)) {
+> +				continue;
+> +			}
+> +#endif
+> +
+> +			/* replace the FatELF data with the real ELF header. */
+> +			rc = kernel_read(file, uloff, (char*) elf, sizeof(*elf));
+> +			if (unlikely((rc != sizeof(*elf)) && (rc >= 0))) {
+> +				rc = -EIO;
+> +			} else if (likely(rc == sizeof(*elf))) {
+> +				*offset = uloff;
+> +				rc = 0;
+> +			}
+> +
+> +			return rc;
+> +		}
+> +	}
+> +
+> +	return -ENOEXEC;  /* no binaries we could use. */
+> +}
+> +
+> +
+>  static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  {
+>  	struct file *interpreter = NULL; /* to shut gcc up */
+> @@ -571,6 +664,8 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  	unsigned long elf_bss, elf_brk;
+>  	int retval, i;
+>  	unsigned int size;
+> +	unsigned long base_offset = 0;
+> +	unsigned long interp_base_offset = 0;
+>  	unsigned long elf_entry;
+>  	unsigned long interp_load_addr = 0;
+>  	unsigned long start_code, end_code, start_data, end_data;
+> @@ -587,9 +682,12 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  		retval = -ENOMEM;
+>  		goto out_ret;
+>  	}
+> -	
+> -	/* Get the exec-header */
+> -	loc->elf_ex = *((struct elfhdr *)bprm->buf);
+> +
+> +	retval = examine_fatelf(bprm->file, bprm->filename, bprm->buf,
+> +	                        BINPRM_BUF_SIZE, &base_offset, &loc->elf_ex);
+> +	if (unlikely(retval < 0)) {
+> +		goto out_ret;
+> +	}
+>  
+>  	retval = -ENOEXEC;
+>  	/* First of all, some simple consistency checks */
+> @@ -615,7 +713,7 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  	if (!elf_phdata)
+>  		goto out;
+>  
+> -	retval = kernel_read(bprm->file, loc->elf_ex.e_phoff,
+> +	retval = kernel_read(bprm->file, loc->elf_ex.e_phoff + base_offset,
+>  			     (char *)elf_phdata, size);
+>  	if (retval != size) {
+>  		if (retval >= 0)
+> @@ -649,7 +747,8 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  			if (!elf_interpreter)
+>  				goto out_free_ph;
+>  
+> -			retval = kernel_read(bprm->file, elf_ppnt->p_offset,
+> +			retval = kernel_read(bprm->file,
+> +					     elf_ppnt->p_offset + base_offset,
+>  					     elf_interpreter,
+>  					     elf_ppnt->p_filesz);
+>  			if (retval != elf_ppnt->p_filesz) {
+> @@ -704,8 +803,13 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  				goto out_free_dentry;
+>  			}
+>  
+> -			/* Get the exec headers */
+> -			loc->interp_elf_ex = *((struct elfhdr *)bprm->buf);
+> +			retval = examine_fatelf(interpreter, elf_interpreter,
+> +			                        bprm->buf, BINPRM_BUF_SIZE,
+> +			                        &interp_base_offset,
+> +			                        &loc->interp_elf_ex);
+> +			if (unlikely(retval < 0)) {
+> +				goto out_free_dentry;
+> +			}
+>  			break;
+>  		}
+>  		elf_ppnt++;
+> @@ -830,7 +934,7 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  		}
+>  
+>  		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
+> -				elf_prot, elf_flags, 0);
+> +				elf_prot, elf_flags, 0, base_offset);
+>  		if (BAD_ADDR(error)) {
+>  			send_sig(SIGKILL, current, 0);
+>  			retval = IS_ERR((void *)error) ?
+> @@ -911,7 +1015,7 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  		elf_entry = load_elf_interp(&loc->interp_elf_ex,
+>  					    interpreter,
+>  					    &interp_map_addr,
+> -					    load_bias);
+> +					    load_bias, interp_base_offset);
+>  		if (!IS_ERR((void *)elf_entry)) {
+>  			/*
+>  			 * load_elf_interp() returns relocation
+> @@ -1026,11 +1130,19 @@ static int load_elf_library(struct file *file)
+>  	unsigned long elf_bss, bss, len;
+>  	int retval, error, i, j;
+>  	struct elfhdr elf_ex;
+> +	unsigned long base_offset = 0;
+> +	char buf[BINPRM_BUF_SIZE];
+>  
+> -	error = -ENOEXEC;
+> -	retval = kernel_read(file, 0, (char *)&elf_ex, sizeof(elf_ex));
+> -	if (retval != sizeof(elf_ex))
+> +	retval = kernel_read(file, 0, buf, sizeof(buf));
+> +	if (unlikely(retval != sizeof(buf))) {
+> +		error = (retval >= 0) ? -EIO : retval;
+>  		goto out;
+> +	}
+> +	error = examine_fatelf(file, 0, buf, sizeof(buf), &base_offset, &elf_ex);
+> +	if (unlikely(retval < 0)) {
+> +		goto out;
+> +	}
+> +	error = -ENOEXEC;
+>  
+>  	if (memcmp(elf_ex.e_ident, ELFMAG, SELFMAG) != 0)
+>  		goto out;
+> @@ -1052,7 +1164,8 @@ static int load_elf_library(struct file *file)
+>  
+>  	eppnt = elf_phdata;
+>  	error = -ENOEXEC;
+> -	retval = kernel_read(file, elf_ex.e_phoff, (char *)eppnt, j);
+> +	retval = kernel_read(file, elf_ex.e_phoff + base_offset,
+> +	                     (char *)eppnt, j);
+>  	if (retval != j)
+>  		goto out_free_ph;
+>  
+> @@ -1074,7 +1187,7 @@ static int load_elf_library(struct file *file)
+>  			PROT_READ | PROT_WRITE | PROT_EXEC,
+>  			MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE,
+>  			(eppnt->p_offset -
+> -			 ELF_PAGEOFFSET(eppnt->p_vaddr)));
+> +			 ELF_PAGEOFFSET(eppnt->p_vaddr)) + base_offset);
+>  	up_write(&current->mm->mmap_sem);
+>  	if (error != ELF_PAGESTART(eppnt->p_vaddr))
+>  		goto out_free_ph;
+> diff --git a/include/linux/elf.h b/include/linux/elf.h
+> index 90a4ed0..7c3a0b7 100644
+> --- a/include/linux/elf.h
+> +++ b/include/linux/elf.h
+> @@ -188,6 +188,30 @@ typedef struct elf64_sym {
+>  } Elf64_Sym;
+>  
+>  
+> +/* FatELF (multiple ELF binaries in one file) support */
+> +#define FATELF_MAGIC (0x1F0E70FA)
+> +
+> +typedef struct fatelf_record {
+> +  __le16 machine;      /* maps to e_machine */
+> +  __u8 osabi;          /* maps to e_ident[EI_OSABI] */
+> +  __u8 osabi_version;  /* maps to e_ident[EI_ABIVERSION] */
+> +  __u8 word_size;      /* maps to e_ident[EI_CLASS] */
+> +  __u8 byte_order;     /* maps to e_ident[EI_DATA] */
+> +  __u8 reserved0;
+> +  __u8 reserved1;
+> +  __le64 offset;
+> +  __le64 size;
+> +} fatelf_record;
+> +
+> +typedef struct fatelf_hdr {
+> +  __le32 magic;
+> +  __le16 version;
+> +  __u8 num_records;
+> +  __u8 reserved0;
+> +  fatelf_record records[];
+> +} fatelf_hdr;
+> +
+> +
+>  #define EI_NIDENT	16
+>  
+>  typedef struct elf32_hdr{
+>   
 
