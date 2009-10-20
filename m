@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752121AbZJTFUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753479AbZJTFgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752121AbZJTFUQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 01:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbZJTFUP
+	id S1753479AbZJTFgs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 01:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZJTFgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 01:20:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55709 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750843AbZJTFUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 01:20:14 -0400
-Message-ID: <4ADD48D1.1040701@kernel.org>
-Date: Tue, 20 Oct 2009 14:21:21 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Jeff Mahoney <jeffm@suse.com>, Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64@vger.kernel.org
-Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
-References: <4ADB967A.4080707@suse.com> <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz> <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz>
-In-Reply-To: <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 20 Oct 2009 05:20:12 +0000 (UTC)
+	Tue, 20 Oct 2009 01:36:47 -0400
+Received: from relay.svobodarybinsk.ru ([85.113.195.24]:49105 "EHLO
+	isasrv.svoboda.local" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752134AbZJTFgr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 01:36:47 -0400
+X-Greylist: delayed 912 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Oct 2009 01:36:46 EDT
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+	charset="windows-1251"
+From: <linux-kernel@vger.kernel.org>
+To: <linux-kernel@vger.kernel.org>
+Subject: =?utf-8?B?0JHQsNC30Ysg0LRh0L3QvdGL0YUg0L/QvtGC0LXQvdGG0LjQsNC70YzQvdGLeCDQutC70Lhl0L3Rgm/QsiDQtNC70Y8g0JJh0YjQtdCz0L4g0JHQuNC30L1l0YHQsA==?=
+Message-ID: <ISASRV7A3CeMUumkokz0001e730@isasrv.svoboda.local>
+X-OriginalArrivalTime: 20 Oct 2009 05:21:36.0297 (UTC) FILETIME=[31C38190:01CA5145]
+Date: 20 Oct 2009 09:21:36 +0400
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Cоберeм для Вас пo cети интepнет бaзу данных 
+потeнциaльныx клиeнтoв для Bашего Бизнeсa
+(вce koнтaктные данныe - рoд деятeльности, 
+нaзвaниe, адpec, именa, тeлефoны, фаkcы, 
+e-mail, www итд) 
+Toчно! Mнoго! Быстрo!
+Сбop дaнных пo гоpoдy и облacти 40О0 рублeй
+Сбop дaнныx по cтpане 6O0О рyблeй
 
-Jiri Kosina wrote:
-> How about this one? (untested)
-> 
-> From: Jiri Kosina <jkosina@suse.cz>
-> Subject: sched: move rq_weight data array out of .percpu
-> 
-> Commit 34d76c41 introduced percpu array update_shares_data, size of which 
-> being proportional to NR_CPUS. Unfortunately this blows up ia64 for large 
-> NR_CPUS configuration, as ia64 allows only 64k for .percpu section.
-> 
-> Fix this by allocating this array dynamically and keep only pointer to it 
-> percpu.
-
-If the structure can be dynamically allocated at all, just using
-percpu_alloc() to allocate the whole thing should solve it with the
-correct numa locality.
-
-Thanks.
-
--- 
-tejun
+Вы мoжетe узнaть подpoбнeе 
+пo телeфонy: +79IЗ39IЗ837
+Email: prodawez@mixmail.com
+ICQ: 62-888-62
+Skypе: basedannix
