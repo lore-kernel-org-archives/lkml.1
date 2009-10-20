@@ -1,25 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbZJTE5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbZJTFC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752936AbZJTE5Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 00:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbZJTE5X
+	id S1753106AbZJTFC5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 01:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZJTFC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 00:57:23 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43379 "EHLO mx1.suse.de"
+	Tue, 20 Oct 2009 01:02:56 -0400
+Received: from tundra.namei.org ([65.99.196.166]:47622 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751758AbZJTE5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 00:57:22 -0400
-Date: Tue, 20 Oct 2009 06:57:25 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Jeff Mahoney <jeffm@suse.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64@vger.kernel.org
-Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
-In-Reply-To: <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz>
-Message-ID: <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz>
-References: <4ADB967A.4080707@suse.com> <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz>
+	id S1752148AbZJTFCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 01:02:55 -0400
+Date: Tue, 20 Oct 2009 16:02:58 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: linux-security-module@vger.kernel.org
+cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: [PATCH][RFC] security: remove root_plug
+Message-ID: <alpine.LRH.2.00.0910201601340.14695@tundra.namei.org>
 User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -27,103 +22,185 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Oct 2009, Jiri Kosina wrote:
 
-> > Commit 34d76c41 introduced the update_shares_data percpu, but it ends up
-> > causing problems on large ia64 machines. Specifically, ia64 is limited
-> > to 64k in percpu vars and with NR_CPUS=4096, that ends up being 32k by
-> > itself. It ends up causing link errors since that is how ia64 enforces
-> > the 64k limit.
-> > 
-> > I can take a deeper look at finding a workable solution but thought I'd
-> > mention it in case you had ideas already.
-> 
-> I am adding some IA64 CCs, as the failure is solely caused by the ia64 
-> percpu implementation/pagefault handler optimization which requires the 
-> .percpu section area not be larger than 64k, which blows up with 34d76c41 
-> and NR_CPUS high enoufh (due to introduction of percpu array being 
-> size-dependent on NR_CPUS).
+    Remove the root_plug example LSM code.  It's unmaintained and
+    increasingly broken in various ways.
+    
+    Made at the 2009 Kernel Summit in Tokyo!
+    
+    Signed-off-by: James Morris <jmorris@namei.org>
 
-How about this one? (untested)
-
-
-
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: sched: move rq_weight data array out of .percpu
-
-Commit 34d76c41 introduced percpu array update_shares_data, size of which 
-being proportional to NR_CPUS. Unfortunately this blows up ia64 for large 
-NR_CPUS configuration, as ia64 allows only 64k for .percpu section.
-
-Fix this by allocating this array dynamically and keep only pointer to it 
-percpu.
-
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
---- 
- kernel/sched.c |   15 +++++++--------
- 1 files changed, 7 insertions(+), 8 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e886895..21337da 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1564,11 +1564,9 @@ static unsigned long cpu_avg_load_per_task(int cpu)
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 6fa7292..5d386b4 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -85,7 +85,6 @@ parameter is applicable:
+ 	PPT	Parallel port support is enabled.
+ 	PS2	Appropriate PS/2 support is enabled.
+ 	RAM	RAM disk support is enabled.
+-	ROOTPLUG The example Root Plug LSM is enabled.
+ 	S390	S390 architecture is enabled.
+ 	SCSI	Appropriate SCSI support is enabled.
+ 			A lot of drivers has their options described inside of
+@@ -2163,15 +2162,6 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			Useful for devices that are detected asynchronously
+ 			(e.g. USB and MMC devices).
  
- #ifdef CONFIG_FAIR_GROUP_SCHED
+-	root_plug.vendor_id=
+-			[ROOTPLUG] Override the default vendor ID
+-
+-	root_plug.product_id=
+-			[ROOTPLUG] Override the default product ID
+-
+-	root_plug.debug=
+-			[ROOTPLUG] Enable debugging output
+-
+ 	rw		[KNL] Mount root device read-write on boot
  
--struct update_shares_data {
--	unsigned long rq_weight[NR_CPUS];
+ 	S		[KNL] Run init in single mode
+diff --git a/security/Kconfig b/security/Kconfig
+index fb363cd..aeea8c2 100644
+--- a/security/Kconfig
++++ b/security/Kconfig
+@@ -100,19 +100,6 @@ config SECURITY_FILE_CAPABILITIES
+ 
+ 	  If in doubt, answer N.
+ 
+-config SECURITY_ROOTPLUG
+-	bool "Root Plug Support"
+-	depends on USB=y && SECURITY
+-	help
+-	  This is a sample LSM module that should only be used as such.
+-	  It prevents any programs running with egid == 0 if a specific
+-	  USB device is not present in the system.
+-
+-	  See <http://www.linuxjournal.com/article.php?sid=6279> for
+-	  more information about this module.
+-
+-	  If you are unsure how to answer this question, answer N.
+-
+ config INTEL_TXT
+ 	bool "Enable Intel(R) Trusted Execution Technology (Intel(R) TXT)"
+ 	depends on HAVE_INTEL_TXT
+diff --git a/security/Makefile b/security/Makefile
+index 95ecc06..bb44e35 100644
+--- a/security/Makefile
++++ b/security/Makefile
+@@ -18,7 +18,6 @@ obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
+ obj-$(CONFIG_SECURITY_SMACK)		+= smack/built-in.o
+ obj-$(CONFIG_AUDIT)			+= lsm_audit.o
+ obj-$(CONFIG_SECURITY_TOMOYO)		+= tomoyo/built-in.o
+-obj-$(CONFIG_SECURITY_ROOTPLUG)		+= root_plug.o
+ obj-$(CONFIG_CGROUP_DEVICE)		+= device_cgroup.o
+ 
+ # Object integrity file lists
+diff --git a/security/commoncap.c b/security/commoncap.c
+index fe30751..45b87af 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -1,4 +1,4 @@
+-/* Common capabilities, needed by capability.o and root_plug.o
++/* Common capabilities, needed by capability.o.
+  *
+  *	This program is free software; you can redistribute it and/or modify
+  *	it under the terms of the GNU General Public License as published by
+diff --git a/security/root_plug.c b/security/root_plug.c
+deleted file mode 100644
+index 2f7ffa6..0000000
+--- a/security/root_plug.c
++++ /dev/null
+@@ -1,90 +0,0 @@
+-/*
+- * Root Plug sample LSM module
+- *
+- * Originally written for a Linux Journal.
+- *
+- * Copyright (C) 2002 Greg Kroah-Hartman <greg@kroah.com>
+- *
+- * Prevents any programs running with egid == 0 if a specific USB device
+- * is not present in the system.  Yes, it can be gotten around, but is a
+- * nice starting point for people to play with, and learn the LSM
+- * interface.
+- *
+- * If you want to turn this into something with a semblance of security,
+- * you need to hook the task_* functions also.
+- *
+- * See http://www.linuxjournal.com/article.php?sid=6279 for more information
+- * about this code.
+- *
+- *	This program is free software; you can redistribute it and/or
+- *	modify it under the terms of the GNU General Public License as
+- *	published by the Free Software Foundation, version 2 of the
+- *	License.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/security.h>
+-#include <linux/usb.h>
+-#include <linux/moduleparam.h>
+-
+-/* default is a generic type of usb to serial converter */
+-static int vendor_id = 0x0557;
+-static int product_id = 0x2008;
+-
+-module_param(vendor_id, uint, 0400);
+-module_param(product_id, uint, 0400);
+-
+-/* should we print out debug messages */
+-static int debug = 0;
+-
+-module_param(debug, bool, 0600);
+-
+-#define MY_NAME "root_plug"
+-
+-#define root_dbg(fmt, arg...)					\
+-	do {							\
+-		if (debug)					\
+-			printk(KERN_DEBUG "%s: %s: " fmt ,	\
+-				MY_NAME , __func__ , 	\
+-				## arg);			\
+-	} while (0)
+-
+-static int rootplug_bprm_check_security (struct linux_binprm *bprm)
+-{
+-	struct usb_device *dev;
+-
+-	root_dbg("file %s, e_uid = %d, e_gid = %d\n",
+-		 bprm->filename, bprm->cred->euid, bprm->cred->egid);
+-
+-	if (bprm->cred->egid == 0) {
+-		dev = usb_find_device(vendor_id, product_id);
+-		if (!dev) {
+-			root_dbg("e_gid = 0, and device not found, "
+-				 "task not allowed to run...\n");
+-			return -EPERM;
+-		}
+-		usb_put_dev(dev);
+-	}
+-
+-	return 0;
+-}
+-
+-static struct security_operations rootplug_security_ops = {
+-	.bprm_check_security =		rootplug_bprm_check_security,
 -};
-+unsigned long *update_shares_data;
- 
--static DEFINE_PER_CPU(struct update_shares_data, update_shares_data);
-+static DEFINE_PER_CPU(unsigned long *, update_shares_data);
- 
- static void __set_se_shares(struct sched_entity *se, unsigned long shares);
- 
-@@ -1578,12 +1576,12 @@ static void __set_se_shares(struct sched_entity *se, unsigned long shares);
- static void update_group_shares_cpu(struct task_group *tg, int cpu,
- 				    unsigned long sd_shares,
- 				    unsigned long sd_rq_weight,
--				    struct update_shares_data *usd)
-+				    unsigned long *usd)
- {
- 	unsigned long shares, rq_weight;
- 	int boost = 0;
- 
--	rq_weight = usd->rq_weight[cpu];
-+	rq_weight = usd[cpu];
- 	if (!rq_weight) {
- 		boost = 1;
- 		rq_weight = NICE_0_LOAD;
-@@ -1618,7 +1616,7 @@ static void update_group_shares_cpu(struct task_group *tg, int cpu,
- static int tg_shares_up(struct task_group *tg, void *data)
- {
- 	unsigned long weight, rq_weight = 0, shares = 0;
--	struct update_shares_data *usd;
-+	unsigned long *usd;
- 	struct sched_domain *sd = data;
- 	unsigned long flags;
- 	int i;
-@@ -1631,7 +1629,7 @@ static int tg_shares_up(struct task_group *tg, void *data)
- 
- 	for_each_cpu(i, sched_domain_span(sd)) {
- 		weight = tg->cfs_rq[i]->load.weight;
--		usd->rq_weight[i] = weight;
-+		usd[i] = weight;
- 
- 		/*
- 		 * If there are currently no tasks on the cpu pretend there
-@@ -9420,6 +9418,7 @@ void __init sched_init(void)
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 		init_task_group.shares = init_task_group_load;
- 		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
-+		__get_cpu_var(update_shares_data) = kmalloc(NR_CPUS * sizeof(unsigned long));
- #ifdef CONFIG_CGROUP_SCHED
- 		/*
- 		 * How much cpu bandwidth does init_task_group get?
+-
+-static int __init rootplug_init (void)
+-{
+-	/* register ourselves with the security framework */
+-	if (register_security (&rootplug_security_ops)) {
+-		printk (KERN_INFO 
+-			"Failure registering Root Plug module with the kernel\n");
+-			return -EINVAL;
+-	}
+-	printk (KERN_INFO "Root Plug module initialized, "
+-		"vendor_id = %4.4x, product id = %4.4x\n", vendor_id, product_id);
+-	return 0;
+-}
+-
+-security_initcall (rootplug_init);
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
-
+James Morris
+<jmorris@namei.org>
