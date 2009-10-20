@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZJTHZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbZJTH0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbZJTHZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 03:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbZJTHZ5
+	id S1756044AbZJTH0z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 03:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755847AbZJTH0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 03:25:57 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57727 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755404AbZJTHZ5 (ORCPT
+	Tue, 20 Oct 2009 03:26:54 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:39318 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751997AbZJTH0y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 03:25:57 -0400
-Message-ID: <4ADD65C5.5000206@zytor.com>
-Date: Tue, 20 Oct 2009 16:24:53 +0900
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Tue, 20 Oct 2009 03:26:54 -0400
+Date: Tue, 20 Oct 2009 16:26:50 +0900
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: Crypto Fixes for 2.6.32
+Message-ID: <20091020072650.GA6621@gondor.apana.org.au>
+References: <20081225001724.GA2813@gondor.apana.org.au> <20081225002020.GA2912@gondor.apana.org.au> <20090324044932.GA18245@gondor.apana.org.au> <20090613020512.GA21024@gondor.apana.org.au> <20090910141905.GA17948@gondor.apana.org.au> <20091020065442.GA5947@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: Jan Beulich <JBeulich@novell.com>, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86-64: adjust ia32entry branches for better static	
- prediction
-References: <4ADD7E6C020000780001AD73@vpn.id2.novell.com> <4ADD64FC.3070006@gmail.com>
-In-Reply-To: <4ADD64FC.3070006@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091020065442.GA5947@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/20/2009 04:21 PM, Eric Dumazet wrote:
->>
->> --- linux-2.6.32-rc5/arch/x86/ia32/ia32entry.S	2009-10-19 13:12:43.000000000 +0200
->> +++ 2.6.32-rc5-x86_64-ia32-syscall-trace-branch-dir/arch/x86/ia32/ia32entry.S	2009-10-19 09:36:39.000000000 +0200
->> @@ -249,9 +249,9 @@ sysenter_tracesys:
->>   	call	syscall_trace_enter
->>   	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
->>   	RESTORE_REST
->> -	cmpl	$(IA32_NR_syscalls-1),%eax
->> -	ja	int_ret_from_sys_call /* sysenter_tracesys has set RAX(%rsp) */
->> -	jmp	sysenter_do_call
->> +	cmpl	$IA32_NR_syscalls,%eax
->> +	jb	sysenter_do_call
->> +	jmp	int_ret_from_sys_call /* sysenter_tracesys has set RAX(%rsp) */
->>   	CFI_ENDPROC
->
-> on cmov enabled build, we could use cmov instruction to load eax with number
-> that calls enosys_syscall(), to avoid loading -ENOSYS,RAX
-> and these branches...
->
+Hi Linus:
 
-It's x86-64, cmov is guaranteed.
+> This push fixes a regression in the padlock-sha driver that causes
+> faults on 32-bit VIA processors.
 
-	-hpa
+I've just added another regression fix that's specific to the
+Intel AESNI instruction where the FPU test was reversed.
+
+
+Please pull from
+
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+
+or
+
+master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+
+
+Herbert Xu (1):
+      crypto: padlock-sha - Fix stack alignment
+
+Huang Ying (1):
+      crypto: aesni-intel - Fix irq_fpu_usable usage
+
+ arch/x86/crypto/aesni-intel_glue.c |   10 +++++-----
+ drivers/crypto/padlock-sha.c       |   14 ++++++++++++--
+ 2 files changed, 17 insertions(+), 7 deletions(-)
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
