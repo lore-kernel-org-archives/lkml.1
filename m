@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbZJTAzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbZJTA4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932478AbZJTAzO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 20:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932401AbZJTAzM
+	id S932468AbZJTA4F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 20:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932401AbZJTA4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 20:55:12 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:55649 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932396AbZJTAzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 20:55:07 -0400
-Date: Tue, 20 Oct 2009 02:55:12 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>
-Subject: Re: [RFC PATCH 2/5] cfq-iosched: preparation to handle multiple
-	service trees
-Message-ID: <20091020005511.GC10727@kernel.dk>
-References: <200910192221.15739.czoccolo@gmail.com>
+	Mon, 19 Oct 2009 20:56:04 -0400
+Received: from smtp.zeugmasystems.com ([70.79.96.174]:25008 "EHLO
+	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932396AbZJTA4D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 20:56:03 -0400
+Date: Mon, 19 Oct 2009 17:56:07 -0700 (PDT)
+From: Anirban Sinha <asinha@zeugmasystems.com>
+X-X-Sender: asinha@sleet.zeugmasystems.local
+To: Oleg Nesterov <oleg@redhat.com>
+cc: Anirban Sinha <ani@anirban.org>, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: Re: Kernel oops when clearing bgp neighbor info with TCP MD5SUM
+ enabled
+In-Reply-To: <20091019121327.GA11423@redhat.com>
+Message-ID: <Pine.LNX.4.64.0910191745050.20086@sleet.zeugmasystems.local>
+References: <Pine.LNX.4.64.0910081514050.18315@sleet.zeugmasystems.local>
+ <20091008.155429.02850661.davem@davemloft.net>
+ <Pine.LNX.4.64.0910081622400.18315@sleet.zeugmasystems.local>
+ <20091008.175703.83006470.davem@davemloft.net>
+ <Pine.LNX.4.64.0910171035340.2364@sleet.zeugmasystems.local>
+ <4ADA7EDC.5010402@anirban.org> <4ADB7856.7000803@anirban.org>
+ <20091019121327.GA11423@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910192221.15739.czoccolo@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 20 Oct 2009 00:56:07.0081 (UTC) FILETIME=[1B360990:01CA5120]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19 2009, Corrado Zoccolo wrote:
-> We embed a pointer to the service tree in each queue, to handle multiple
-> service trees easily.
-> Service trees are enriched with a counter.
-> Queues are enriched with a back pointer to their context.
 
-Looks good.
+> I'd suppose that this unbalance comes from inet_twdr_hangman() pathes.
+>
+> Could you verify this?
 
--- 
-Jens Axboe
+
+Yes, I have now verified this. There is indeed an issue with one of the
+functions called by inet_twdr_hangman(). The call sequence is:
+
+inet_twdr_hangman() -> inet_twdr_do_twkill_work() -> inet_twsk_put() ->
+twsk_destructor().
+
+In this case, the destructor callback is tcp_twsk_destructor() (installed
+from line 1208 in net/ipv4/tcp_ipv4.c and line 906 in net/ipv6/tcp_ipv6.c) .
+Without the TCP_MD5SUM compiled in, the function is a no-op. However, with the MD5SUM
+compiled in, it calls tcp_put_md5_sig_pool() (when keylen is non zero) which
+does an unbalanced put_cpu(). I did a grep across the entire tree.
+tcp_put_md5_sig_pool() is a matching function for tcp_get_md5_sig_pool() and
+in all other TCP IPV4 cases, it is called from net/ipv4/tcp_ipv4.c from
+functions tcp_v4_md5_hash_hdr() and
 
