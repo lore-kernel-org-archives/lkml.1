@@ -1,145 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752273AbZJTOtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbZJTPHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752273AbZJTOtU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 10:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZJTOtS
+	id S1752487AbZJTPHI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 11:07:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZJTPHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 10:49:18 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37529 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752023AbZJTOtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 10:49:17 -0400
-Message-ID: <4ADDCDED.6060706@suse.com>
-Date: Tue, 20 Oct 2009 10:49:17 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-1.1 Thunderbird/3.0b4
+	Tue, 20 Oct 2009 11:07:07 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:52422 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752193AbZJTPHG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 11:07:06 -0400
+Date: Tue, 20 Oct 2009 11:07:09 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+cc: linux-media@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: uvcvideo causes ehci_hcd to halt
+In-Reply-To: <4ADD74FE.4040406@pardus.org.tr>
+Message-ID: <Pine.LNX.4.44L0.0910201101220.2887-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Tejun Heo <tj@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64@vger.kernel.org
-Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
-References: <4ADB967A.4080707@suse.com> <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz> <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz> <4ADD48D1.1040701@kernel.org> <alpine.LSU.2.00.0910200756300.8582@wotan.suse.de> <4ADD54D4.70808@kernel.org> <4ADD5530.3050107@kernel.org> <alpine.LSU.2.00.0910200826220.8582@wotan.suse.de> <4ADDC69A.5000701@suse.com>
-In-Reply-To: <4ADDC69A.5000701@suse.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/20/2009 10:18 AM, Jeff Mahoney wrote:
-> On 10/20/2009 02:27 AM, Jiri Kosina wrote:
->> @@ -1627,11 +1623,10 @@ static int tg_shares_up(struct task_group *tg, void *data)
->>  		return 0;
->>  
->>  	local_irq_save(flags);
->> -	usd = &__get_cpu_var(update_shares_data);
->>  
->>  	for_each_cpu(i, sched_domain_span(sd)) {
->>  		weight = tg->cfs_rq[i]->load.weight;
->> -		usd->rq_weight[i] = weight;
->> +		usd = *per_cpu_ptr(update_shares_data, i) = weight;
->>  
->>  		/*
->>  		 * If there are currently no tasks on the cpu pretend there
-> 
-> I don't think this is what you want here.
-> 
-> In the original version, usd is the percpu var using the current cpu. In
-> your version, usd is the percpu var using i instead of the current cpu.
-> 
-> I'll post my version of the patch shortly. I don't think keeping most of
-> the original version is a bad thing. We can just allocate it dynamically
-> instead.
+On Tue, 20 Oct 2009, [UTF-8] Ozan Çağlayan wrote:
 
-This version fixes a build issue (__alignof__(unsigned long)) and fixes the
-percpu lookup to be usd = percpu array pointer, usd[i] = actual variable.
+> > Hi. First the backtrace:
+> >
+> > [  149.510272] uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0203)
+> > [  149.515017] input: BisonCam, NB Pro as
+> > /devices/pci0000:00/0000:00:1d.7/usb1/1-5/1-5:1.0/input/input10
+> > [  149.515588] usbcore: registered new interface driver uvcvideo
+> > [  149.516247] USB Video Class driver (v0.1.0)
+> > [  149.658012] Pid: 1137, comm: hald-probe-vide Tainted: G         C
+> > 2.6.31.4-128 #2
+> > [  149.658012] Call Trace:
+> > [  149.658012]  [<c0373f62>] handshake_on_error_set_halt+0x36/0x65
+> > [  149.658012]  [<c0374073>] enable_periodic+0x32/0x72
+> > [  149.658012]  [<c03741c9>] qh_link_periodic+0x116/0x11e
+> > [  149.658012]  [<c0374665>] qh_schedule+0x120/0x12c
+> > [  149.658012]  [<c03775d0>] intr_submit+0x8c/0x124
+> > [  149.658012]  [<c0377d2a>] ehci_urb_enqueue+0x7a/0xa5
+...
+> > [  149.658012] ehci_hcd 0000:00:1d.7: force halt; handhake f7c66024
+> > 00004000 00000000 -> -110
+> >
+> > And the usbmon trace during "modprobe uvcvideo" can be found at:
+> >
+> > http://cekirdek.pardus.org.tr/~ozan/ivir/logs/usbmon.trace.bad
+> >
+> > I also manage to not reproduce the problem so it's kinda racy. You can
+> > find good/bad dmesg/usbmon traces at:
+> >
+> > http://cekirdek.pardus.org.tr/~ozan/ivir/logs
+> >   
+> ping! in case it's got lost between high traffic :)
 
--Jeff
+Yes, sorry, my email client tends to hide messages with non-ASCII 
+characters in the From: address.  It's unforunate.  :-(
 
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: sched: move rq_weight data array out of .percpu
+I can't tell exactly what's wrong, but I've got a hunch that the patch 
+below might help.  If it doesn't, send another dmesg log but this time 
+with CONFIG_USB_DEBUG enabled in the kernel.
 
-Commit 34d76c41 introduced percpu array update_shares_data, size of which
-being proportional to NR_CPUS. Unfortunately this blows up ia64 for large
-NR_CPUS configuration, as ia64 allows only 64k for .percpu section.
+Alan Stern
 
-Fix this by allocating this array dynamically and keep only pointer to it
-percpu.
 
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
---- 
- kernel/sched.c |   20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
-
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1564,11 +1564,7 @@ static unsigned long cpu_avg_load_per_ta
- 
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 
--struct update_shares_data {
--	unsigned long rq_weight[NR_CPUS];
--};
--
--static DEFINE_PER_CPU(struct update_shares_data, update_shares_data);
-+unsigned long *update_shares_data;
- 
- static void __set_se_shares(struct sched_entity *se, unsigned long shares);
- 
-@@ -1578,12 +1574,12 @@ static void __set_se_shares(struct sched
- static void update_group_shares_cpu(struct task_group *tg, int cpu,
- 				    unsigned long sd_shares,
- 				    unsigned long sd_rq_weight,
--				    struct update_shares_data *usd)
-+				    unsigned long *usd)
- {
- 	unsigned long shares, rq_weight;
- 	int boost = 0;
- 
--	rq_weight = usd->rq_weight[cpu];
-+	rq_weight = usd[cpu];
- 	if (!rq_weight) {
- 		boost = 1;
- 		rq_weight = NICE_0_LOAD;
-@@ -1618,7 +1614,7 @@ static void update_group_shares_cpu(stru
- static int tg_shares_up(struct task_group *tg, void *data)
- {
- 	unsigned long weight, rq_weight = 0, shares = 0;
--	struct update_shares_data *usd;
-+	unsigned long *usd;
- 	struct sched_domain *sd = data;
- 	unsigned long flags;
- 	int i;
-@@ -1627,11 +1623,11 @@ static int tg_shares_up(struct task_grou
- 		return 0;
- 
- 	local_irq_save(flags);
--	usd = &__get_cpu_var(update_shares_data);
-+	usd = per_cpu_ptr(update_shares_data, smp_processor_id());
- 
- 	for_each_cpu(i, sched_domain_span(sd)) {
- 		weight = tg->cfs_rq[i]->load.weight;
--		usd->rq_weight[i] = weight;
-+		usd[i] = weight;
- 
- 		/*
- 		 * If there are currently no tasks on the cpu pretend there
-@@ -9407,6 +9403,10 @@ void __init sched_init(void)
- #endif /* CONFIG_USER_SCHED */
- #endif /* CONFIG_GROUP_SCHED */
- 
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+	update_shares_data = __alloc_percpu(nr_cpu_ids * sizeof(unsigned long),
-+					    __alignof__(unsigned long));
-+#endif
- 	for_each_possible_cpu(i) {
- 		struct rq *rq;
- 
+Index: usb-2.6/drivers/usb/host/ehci-q.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/host/ehci-q.c
++++ usb-2.6/drivers/usb/host/ehci-q.c
+@@ -818,6 +818,9 @@ qh_make (
+ 				dbg ("intr period %d uframes, NYET!",
+ 						urb->interval);
+ 				goto done;
++			} else if (qh->period > ehci->periodic_size) {
++				qh->period = ehci->periodic_size;
++				urb->interval = qh->period << 3;
+ 			}
+ 		} else {
+ 			int		think_time;
+@@ -840,6 +843,10 @@ qh_make (
+ 					usb_calc_bus_time (urb->dev->speed,
+ 					is_input, 0, max_packet (maxp)));
+ 			qh->period = urb->interval;
++			if (qh->period > ehci->periodic_size) {
++				qh->period = ehci->periodic_size;
++				urb->interval = qh->period;
++			}
+ 		}
+ 	}
  
 
--- 
-Jeff Mahoney
-SUSE Labs
