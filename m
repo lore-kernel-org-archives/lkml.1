@@ -1,149 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751802AbZJTLau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883AbZJTLbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751802AbZJTLau (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 07:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbZJTLat
+	id S1751883AbZJTLbK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 07:31:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZJTLbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 07:30:49 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:18642 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbZJTLas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 07:30:48 -0400
-Date: Tue, 20 Oct 2009 13:30:39 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-cc: linux-rt-users@vger.kernel.org
-Subject: [PATCH] futex: Detect mismatched requeue targets
-Message-ID: <alpine.LFD.2.00.0910201325480.3609@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 20 Oct 2009 07:31:09 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:38791 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751848AbZJTLbH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 07:31:07 -0400
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 4/4] ASoC: TWL4030: Driver registration via twl4030_codec MFD
+Date: Tue, 20 Oct 2009 14:30:49 +0300
+User-Agent: KMail/1.12.2 (Linux/2.6.31-gentoo; KDE/4.3.2; i686; ; )
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "sameo@linux.intel.com" <sameo@linux.intel.com>,
+       "tony@atomide.com" <tony@atomide.com>
+References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com> <1255956140-4829-5-git-send-email-peter.ujfalusi@nokia.com> <20091020102540.GB28592@opensource.wolfsonmicro.com>
+In-Reply-To: <20091020102540.GB28592@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200910201430.49223.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 20 Oct 2009 11:30:49.0946 (UTC) FILETIME=[C65E13A0:01CA5178]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Darren
+On Tuesday 20 October 2009 13:25:40 ext Mark Brown wrote:
+> On Mon, Oct 19, 2009 at 03:42:20PM +0300, Peter Ujfalusi wrote:
+> > TWL4030 codec is now using the device registration via
+> > tlw4030_codec MFD device.
+> 
+> This looks pretty good but obviously depends on the MFD changes.
 
-I took your patch from commit 84bc4af59081ee974dd80210e694ab59ebe51ce8
-and I tried to git-cherry-pick it for v2.6.31.4-rt14
+Thanks, yes it all depends on the MFD changes.
 
-I had a little merge-commit to resolve. That wasn't too hard, but as the 
-code is a bit different between the two versions, I would appreciate it if 
-you could review the patch, and make sure that it still makes sense for 
-v2.6.31.r-rt14
+> The major thing that jumps out at me is the removal of the register
+> definitions from the ASoC headers - it might be nice to have that done
+> as part of the MFD patch, or as a separate patch.
 
-Thanks!
-John
+The reason why I have done it like this is that with one patch I only touch one 
+subsystem at the time:
+1. MFD changes only
+2. OMAP related changes
+3. soc codec driver change
 
->From 7135729cbbc5bf16c95abdca5366ec5de0a01909 Mon Sep 17 00:00:00 2001
-From: Darren Hart <dvhltc@us.ibm.com>
-Date: Thu, 13 Aug 2009 17:36:53 -0700
-Subject: [PATCH] futex: Detect mismatched requeue targets
+In patch 1, the register definitions had to be added, so that the twl4030_codec 
+driver knows the registers (and there could be the vibra driver placed 
+separately from the soc codec driver).
+In patch 3, where I modify the soc codec driver to use the new method, than I 
+remove the definitions and use the existing header file, introduced by the first 
+patch.
+All in all, after each patch the kernel can be builds, boots and works as 
+before.
 
-There is currently no check to ensure that userspace uses the same
-futex requeue target (uaddr2) in futex_requeue() that the waiter used
-in futex_wait_requeue_pi().  A mismatch here could very unexpected
-results as the waiter assumes it either wakes on uaddr1 or uaddr2. We
-could detect this on wakeup in the waiter, but the cleanup is more
-intense after the improper requeue has occured.
+> 
+> You've also got the bias being brought up when the ASoC system comes up
+> rather than when the driver comes up.  To be honest it doesn't really
+> make any difference either way, it's just slightly different to other
+> drivers.
 
-This patch stores the waiter's expected requeue target in a new
-requeue_pi_key pointer in the futex_q which futex_requeue() checks
-prior to attempting to do a proxy lock acquistion or a requeue when
-requeue_pi=1. If they don't match, return -EINVAL from futex_requeue,
-aborting the requeue of any remaining waiters.
+I was thinking that if you built the kernel with SND_SOC_ALL_CODECS on OMAP 
+platform for some reason and you don't actually use the twl4030 as audio device 
+-> no machine driver, which would use it, than the codec part would be off.
+But yes, probably I can move the povering up to the probe function.
 
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: John Kacur <jkacur@redhat.com>
-Cc: Dinakar Guniguntala <dino@in.ibm.com>
-Cc: John Stultz <johnstul@us.ibm.com>
-LKML-Reference: <20090814003650.14634.63916.stgit@Aeon>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- kernel/futex.c |   24 ++++++++++++++++++++----
- 1 files changed, 20 insertions(+), 4 deletions(-)
+> What is useful with things like twl4030 which take a little
+> while to come up is if you can do the bias bringup out of line from
+> device probe, avoiding blocking system startup on CODEC bringup.  That's
+> definitely a separate patch, I'm just mentioning it for interest here.
 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 7c4a6ac..5978a84 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -115,6 +115,9 @@ struct futex_q {
- 	/* rt_waiter storage for requeue_pi: */
- 	struct rt_mutex_waiter *rt_waiter;
- 
-+	/* The expected requeue pi target futex key: */
-+	union futex_key *requeue_pi_key;
-+
- 	/* Bitset for the optional bitmasked wakeup */
- 	u32 bitset;
- };
-@@ -1089,6 +1092,10 @@ static int futex_proxy_trylock_atomic(u32 __user *pifutex,
- 	if (!top_waiter)
- 		return 0;
- 
-+	/* Ensure we requeue to the expected futex. */
-+	if (!match_futex(top_waiter->requeue_pi_key, key2))
-+		return -EINVAL;
-+
- 	/*
- 	 * Try to take the lock for top_waiter.  Set the FUTEX_WAITERS bit in
- 	 * the contended case or if set_waiters is 1.  The pi_state is returned
-@@ -1276,6 +1283,12 @@ retry_private:
- 			continue;
- 		}
- 
-+		/* Ensure we requeue to the expected futex for requeue_pi. */
-+		if (requeue_pi && !match_futex(this->requeue_pi_key, &key2)) {
-+			ret = -EINVAL;
-+			break;
-+		}
-+
- 		/*
- 		 * Requeue nr_requeue waiters and possibly one more in the case
- 		 * of requeue_pi if we couldn't acquire the lock atomically.
-@@ -1742,6 +1755,7 @@ static int futex_wait(u32 __user *uaddr, int fshared,
- 	q.pi_state = NULL;
- 	q.bitset = bitset;
- 	q.rt_waiter = NULL;
-+	q.requeue_pi_key = NULL;
- 
- 	if (abs_time) {
- 		to = &timeout;
-@@ -1855,6 +1869,7 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 
- 	q.pi_state = NULL;
- 	q.rt_waiter = NULL;
-+	q.requeue_pi_key = NULL;
- retry:
- 	q.key = FUTEX_KEY_INIT;
- 	ret = get_futex_key(uaddr, fshared, &q.key, VERIFY_WRITE);
-@@ -2167,16 +2182,17 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, int fshared,
- 	debug_rt_mutex_init_waiter(&rt_waiter);
- 	rt_waiter.task = NULL;
- 
--	q.pi_state = NULL;
--	q.bitset = bitset;
--	q.rt_waiter = &rt_waiter;
--
- retry:
- 	key2 = FUTEX_KEY_INIT;
- 	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-+	q.pi_state = NULL;
-+	q.bitset = bitset;
-+	q.rt_waiter = &rt_waiter;
-+	q.requeue_pi_key = &key2;
-+
- 	/* Prepare to wait on uaddr. */
- 	ret = futex_wait_setup(uaddr, val, fshared, &q, &hb);
- 	if (ret)
+I'm sure there will be another round for this series, so I can make this change 
+at the same time within the patch, since this anyway changes the way how the 
+driver is loaded/probed.
+
+> 
+> There's also a couple of debug prints (like in the remove function) and
+
+I'll get rid of them.
+But at least this time I did not had those unneeded casts, which I usually have 
+;)
+
+> 
+> > +MODULE_ALIAS("platform:twl4030_codec:audio");
+> 
+> Is that second colon right given...
+
+I'm not sure about it at all either. I did not found any other 'nested MFD' 
+drivers around, so this is just a guess
+Should it be:
+
+ +MODULE_ALIAS("platform:twl4030_codec_audio");
+
+
+> 
+> > +	.driver		= {
+> > +		.name	= "twl4030_codec_audio",
+> > +		.owner	= THIS_MODULE,
+> 
+> this.
+> 
+
 -- 
-1.6.0.6
-
+Péter
