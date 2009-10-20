@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752548AbZJTQAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbZJTQIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752548AbZJTQAk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 12:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZJTQAj
+	id S1752540AbZJTQIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 12:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZJTQIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 12:00:39 -0400
-Received: from khc.piap.pl ([195.187.100.11]:38654 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751599AbZJTQAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 12:00:38 -0400
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, <linux-ide@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: sata_via: SError: { UnrecovData Proto TrStaTrns }
-References: <m3my46yo5g.fsf@intrepid.localdomain>
-	<19147.28614.505296.752363@pilspetsen.it.uu.se>
-	<m3vdii51d8.fsf@intrepid.localdomain>
-	<19157.6679.939371.469696@pilspetsen.it.uu.se>
-	<20091014125344.7d0b2597@lxorguk.ukuu.org.uk>
-Date: Tue, 20 Oct 2009 18:00:40 +0200
-In-Reply-To: <20091014125344.7d0b2597@lxorguk.ukuu.org.uk> (Alan Cox's message
-	of "Wed, 14 Oct 2009 12:53:44 +0100")
-Message-ID: <m33a5e5a3b.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 Oct 2009 12:08:17 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:38009 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752392AbZJTQIR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 12:08:17 -0400
+Date: Tue, 20 Oct 2009 09:06:27 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: [PATCH 1/4] strip: move driver to staging
+Message-Id: <20091020090627.f36130fb.randy.dunlap@oracle.com>
+In-Reply-To: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
+References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4ADDE065.0165:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update: I've connected Kingston SSD instead of Transcend's. The same
-errors appear, but now there is a lot of them (> 30 instead of maybe 5
-per my test with Transcend).
+On Tue, 20 Oct 2009 14:17:07 +0900 John W. Linville wrote:
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+> Move the strip ("Starmode Radio IP") driver to drivers/staging.  For
+> several years this driver has only seen API "bombing-run" changes, and
+> few people ever had the hardware.  This driver represents unnecessary
+> ongoing maintenance for no clear benefit.
+> 
+> This patch brought to you by the "hacking" session at the 2009 Kernel
+> Summit in Tokyo, Japan...
 
-> These two may be worth playing with, especially latency. Forcing the
-> latency on the problem board would be interesting given that it is a DMA
-> transfer that is failing.
+is drivers/staging/ a temporary home or a permanent home?
 
-Changing the latency byte doesn't seem to change anything. OTOH the
-VT6421A mini-PCI card is the only PCI device in system (not counting the
-on-CPU AHB-PCI bridge). The problem is also present (to a lesser extent)
-when I plug it into x86-64 machine (using mini-PCI adapter). The SSD
-works fine if connected to motherboard's NVidia MCP55 SATA controller.
+so no explanation of what it means to be in drivers/staging/ and
+no warning to users?  either in Kconfig or in feature-removal-schedule.txt?
 
-I have read the datasheet and tried some changes to PCI registers but it
-doesn't fix it.
 
-I'm going to test x86-64 + VT6421A + Kingston SSD combination soon.
+> Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> ---
+>  drivers/net/wireless/Kconfig   |   23 -
+>  drivers/net/wireless/Makefile  |    1 -
+>  drivers/net/wireless/strip.c   | 2805 ----------------------------------------
+>  drivers/staging/Kconfig        |    2 +
+>  drivers/staging/Makefile       |    1 +
+>  drivers/staging/strip/Kconfig  |   22 +
+>  drivers/staging/strip/Makefile |    1 +
+>  drivers/staging/strip/strip.c  | 2805 ++++++++++++++++++++++++++++++++++++++++
+>  8 files changed, 2831 insertions(+), 2829 deletions(-)
+>  delete mode 100644 drivers/net/wireless/strip.c
+>  create mode 100644 drivers/staging/strip/Kconfig
+>  create mode 100644 drivers/staging/strip/Makefile
+>  create mode 100644 drivers/staging/strip/strip.c
 
-Unfortunately I don't have a (mini) PCI analyser... I will look at
-REQ/GNT and similar signals on PCI, though.
--- 
-Krzysztof Halasa
+
+---
+~Randy
