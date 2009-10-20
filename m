@@ -1,87 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZJTOic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbZJTOnO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752420AbZJTOic (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 10:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbZJTOib
+	id S1752475AbZJTOnO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 10:43:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZJTOnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 10:38:31 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:60577 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751136AbZJTOia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 10:38:30 -0400
-Message-ID: <4ADDCB56.60700@redhat.com>
-Date: Tue, 20 Oct 2009 10:38:14 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Tue, 20 Oct 2009 10:43:13 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:46536 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752452AbZJTOnL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 10:43:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YtherSlma3bhCwZsO5vp/vdQ/H3T8cZCd7ppeJcGNf6ASi+5bnoyrXCElqGcXYyGdF
+         EbmowA9/R+M7phfyzeEoig+WhJnrWHl2PxYhffZUwcRwAvokVX80kvqSBZiQ6UjbnHW6
+         AWsTmyx4AsxgcdJGOE7ShwC4234JDlIIptFHw=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
- probe and kprobe-tracer bugfixes
-References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <20091017080203.GA4155@elte.hu> <20091017103427.GA31238@elte.hu> <4ADAAF50.9040604@redhat.com> <20091019075103.GF17960@elte.hu> <20091019110055.GA5549@nowhere> <20091019112125.GA12829@elte.hu> <4ADCC348.2020800@redhat.com> <20091020065055.GL8550@elte.hu>
-In-Reply-To: <20091020065055.GL8550@elte.hu>
+In-Reply-To: <20091020135835.GB2462@hack>
+References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
+	 <200910201142.34006.rusty@rustcorp.com.au>
+	 <1256002193.6546.2.camel@slab>
+	 <200910201415.34361.rusty@rustcorp.com.au>
+	 <20091020135835.GB2462@hack>
+Date: Tue, 20 Oct 2009 15:43:13 +0100
+Message-ID: <9b2b86520910200743h4e134cf8jd2860d42b3936597@mail.gmail.com>
+Subject: Re: [PATCH] BUILD_BUG_ON: make it handle more cases
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Hollis Blanchard <hollisb@us.ibm.com>,
+       Jan Beulich <JBeulich@novell.com>, sfr@canb.auug.org.au,
+       akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+       kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->>> The point is to prefer intuitive, non-mechanic, fundamentally human
->>> expressions of information above mechanic ones (absolute line numbers,
->>> addresses, ways of probing, etc.) - and to have a rich variety of them.
->>>
->>> String based pattern matching and intuitive syntax that reuses existing
->>> paradigms of arithmetics and pattern-matching is good - limited syntax
->>> and extra, arbitrary syntactic hoops to jump through is bad.
->>>
->>> If we provide all that, people will start using this stuff - and i'd
->>> only like to merge this upstream once it's clear that people like me
->>> will (be able to) use this facility for ad-hoc probe insertion.
->>>
->>> In other words: this facility has to 'live within' our source code and
->>> has to be able to interact with it on a very broad basis - for it to be
->>> maximally useful for everyday development.
+On 10/20/09, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> On Tue, Oct 20, 2009 at 02:15:33PM +1030, Rusty Russell wrote:
+>>BUILD_BUG_ON used to use the optimizer to do code elimination or fail
+>>at link time; it was changed to first the size of a negative array (a
+>>nicer compile time error), then (in
+>>8c87df457cb58fe75b9b893007917cf8095660a0) to a bitfield.
 >>
->> Hmm, so you mean perf-probe should work with source-code? Without 
->> source code (but with debuginfo), maybe we can't use string matching, 
->> is that OK?
-> 
-> Well most forms of debuginfo embedd the full source code in the 
-> debuginfo, right? If it's not there (or we dont know where it is) then 
-> we cannot use it, obviously.
+>>bitfields: needs a literal constant at parse time, and can't be put under
+>>	"if (__builtin_constant_p(x))" for example.
+>>negative array: can handle anything, but if the compiler can't tell it's
+>>	a constant, silently has no effect.
+>>link time: breaks link if the compiler can't determine the value, but the
+>>	linker output is not usually as informative as a compiler error.
+>>
+>>If we use the negative-array-size method *and* the link time trick,
+>>we get the ability to use BUILD_BUG_ON() under __builtin_constant_p()
+>>branches, and maximal ability for the compiler to detect errors at
+>>build time.
+>>
+>>Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>>
+>>diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+>>--- a/include/linux/kernel.h
+>>+++ b/include/linux/kernel.h
+>>@@ -683,12 +683,6 @@ struct sysinfo {
+>> 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
+>> };
+>>
+>>-/* Force a compilation error if condition is true */
+>>-#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
+>>-
+>>-/* Force a compilation error if condition is constant and true */
+>>-#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
+>>-
+>> /* Force a compilation error if condition is true, but also produce a
+>>    result (of value 0 and type size_t), so the expression can be used
+>>    e.g. in a structure initializer (or where-ever else comma expressions
+>>@@ -696,6 +690,33 @@ struct sysinfo {
+>> #define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
+>> #define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
+>>
+>>+/**
+>>+ * BUILD_BUG_ON - break compile if a condition is true.
+>>+ * @cond: the condition which the compiler should know is false.
+>>+ *
+>>+ * If you have some code which relies on certain constants being equal, or
+>>+ * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
+>>+ * detect if someone changes it.
+>>+ *
+>>+ * The implementation uses gcc's reluctance to create a negative array,
+>> but
+>>+ * gcc (as of 4.4) only emits that error for obvious cases (eg. not
+>> arguments
+>>+ * to inline functions).  So as a fallback we use the optimizer; if it
+>> can't
+>>+ * prove the condition is false, it will cause a link error on the
+>> undefined
+>>+ * "__build_bug_on_failed".  This error message can be harder to track
+>> down
+>>+ * though, hence the two different methods.
+>>+ */
+>>+#ifndef __OPTIMIZE__
+>>+#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+>>+#else
+>>+extern int __build_bug_on_failed;
+>
+> Hmm, what exactly is __build_bug_on_failed?
 
-Um, actually debuginfo doesn't have the full source code, but has
-the source file path. So, only if there are source files,
-we can use string-based matching. Even if there are no source files,
-that means users can't change their kernel:-). So we don't care
-about kernel-version dependency.
+Well, we haven't added a definition for it in this patch.  I'm sure
+grep will tell you it wasn't defined before hand either.  So any
+reference to it is an error - which will be reported at link time.
 
-> But we obviously want the whole 'perf probe' workflow to primarily 
-> operate on source code - we are humans.
+>>+#define BUILD_BUG_ON(condition)					\
+>>+	do {							\
+>>+		((void)sizeof(char[1 - 2*!!(condition)]));	\
+>>+		if (condition) __build_bug_on_failed = 1;	\
 
-Sure :-)
+If "condition" is known false at compile time, gcc -O will eliminate
+the code which refers to __build_bug_on_failed.  If it's not proved to
+be false - it will break the build, which is exactly what we want
+BUILD_BUG_ON to do.
 
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+>>+	} while(0)
+>>+#endif
+>>+#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
+>>+
+>> /* Trap pasters of __FUNCTION__ at compile-time */
+>> #define __FUNCTION__ (__func__)
+>>
