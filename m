@@ -1,28 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbZJTGgC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbZJTGoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875AbZJTGgC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 02:36:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbZJTGgA
+	id S1755068AbZJTGoB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 02:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbZJTGoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 02:36:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60881 "EHLO mx2.mail.elte.hu"
+	Tue, 20 Oct 2009 02:44:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50168 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbZJTGgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 02:36:00 -0400
-Date: Tue, 20 Oct 2009 08:35:55 +0200
+	id S1754716AbZJTGoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 02:44:00 -0400
+Date: Tue, 20 Oct 2009 08:43:34 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jeff Mahoney <jeffm@suse.com>, Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64@vger.kernel.org
-Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
-Message-ID: <20091020063555.GJ8550@elte.hu>
-References: <4ADB967A.4080707@suse.com> <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz> <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz> <20091020061557.GE8550@elte.hu> <alpine.LSU.2.00.0910200820500.8582@wotan.suse.de>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip tracing/kprobes 0/9] tracing/kprobes, perf: perf
+	probe and kprobe-tracer bugfixes
+Message-ID: <20091020064334.GK8550@elte.hu>
+References: <20091017000711.16556.69935.stgit@dhcp-100-2-132.bos.redhat.com> <20091017080203.GA4155@elte.hu> <20091017103427.GA31238@elte.hu> <4ADAAF50.9040604@redhat.com> <20091019075103.GF17960@elte.hu> <20091019110055.GA5549@nowhere> <20091019112125.GA12829@elte.hu> <20091019193248.GB4880@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LSU.2.00.0910200820500.8582@wotan.suse.de>
+In-Reply-To: <20091019193248.GB4880@nowhere>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,30 +46,43 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jiri Kosina <jkosina@suse.cz> wrote:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> On Tue, 20 Oct 2009, Ingo Molnar wrote:
-> 
-> > > Commit 34d76c41 introduced percpu array update_shares_data, size of which 
-> > > being proportional to NR_CPUS. Unfortunately this blows up ia64 for large 
-> > > NR_CPUS configuration, as ia64 allows only 64k for .percpu section.
-> > > 
-> > > Fix this by allocating this array dynamically and keep only pointer to it 
-> > > percpu.
-> > > 
-> > > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> > > --- 
-> > >  kernel/sched.c |   15 +++++++--------
-> > >  1 files changed, 7 insertions(+), 8 deletions(-)
-> > 
-> > Seems like an IA64 bug to me. 
-> 
-> IA64 guys actually use that as some kind of optimization for fast 
-> access to the percpu data in their pagefault handler, as far as I 
-> know.
+[...]
+>
+> I think absolute and relative line modes are not colliding/contending 
+> at all but actually fit two different needs.
 
-Still looks like a bug if it causes a breakage (linker error) on IA64, 
-and if the 'fix' (i'd call it a workaround) causes a (small but nonzero) 
-performance regression on other architectures.
+Definitely so.
+
+> - absolute is nice when you are lonely doing kernel debugging.
+>   (can be expanded at will once you imagine user probes)
+>   You are stuck in your code editor, trying to figure out the
+>   origin of your problem and then you think it would be nice
+>   to set a probe in branch 1 and in branch 2 inside func_foo().
+>   Then you already have absolute lines and relying in
+>   perf probe --list func_foo() to resolve an absolute line into
+>   a relative one is a very undesired middle step.
+
+Of course - absolute numbers definitely rule for everything that works 
+on a whole-file basis. (I'd argue that if you do that from an editor 
+then you want a short macro that just sets a probe there - much like a 
+breakpoint. Such an editor macro would want to use absolute numbers.))
+
+> - relative is nice in some other cases. When you already have
+>   the function target in mind, you even don't need to check your
+>   editor, just a quick check to this command and get the relative
+>   line. But also when you want to transmit a probe reference
+>   in a mailing list because of its better lifetime.
+
+also useful for command line workflows: 'perf probe --list' output - i 
+think we users to generate func_symbol+rel_position kind of probes.
+
+Plus a relative position is more intuitive as well. If you see 
+'schedule+10' versus 'schedule+102', you'll know it immediate that the 
+first one is early in the function while the second one is near the end.
+
+If you see 'schedule@2465' versus 'schedule@2555' that kind of 'where in 
+the function is the probe, roughly' subjective impression is lost.
 
 	Ingo
