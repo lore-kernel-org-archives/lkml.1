@@ -1,85 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932421AbZJTAcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbZJTAeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932421AbZJTAcM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 20:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbZJTAcL
+	id S1758118AbZJTAeO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 20:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758099AbZJTAeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 20:32:11 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42995 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755918AbZJTAcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 20:32:10 -0400
-Subject: Re: Characters vanishing in the tty layer? (maybe related to [Bug
- #14388] keyboard under X with 2.6.31)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Michael Ellerman <michael@ellerman.id.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Michael Neuling <mikey@neuling.org>
-In-Reply-To: <alpine.LFD.2.00.0910200245330.13080@eeepc.linux-foundation.org>
-References: <1255501294.21962.24.camel@concordia>
-	 <alpine.LFD.2.01.0910140748420.6146@localhost.localdomain>
-	 <1255934287.4192.125.camel@concordia>
-	 <alpine.LFD.2.00.0910200245330.13080@eeepc.linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 20 Oct 2009 09:31:31 +0900
-Message-Id: <1255998691.2232.4.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Oct 2009 20:34:11 -0400
+Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:50855 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758039AbZJTAeF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 20:34:05 -0400
+Date: Tue, 20 Oct 2009 11:33:58 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: 2.6.31+2.6.31.4: XFS - All I/O locks up to D-state after 24-48
+	hours (sysrq-t+w available)
+Message-ID: <20091020003358.GW9464@discord.disaster>
+References: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan> <alpine.DEB.2.00.0910181607040.27363@p34.internal.lan> <20091019030456.GS9464@discord.disaster> <alpine.DEB.2.00.0910190431180.23395@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0910190431180.23395@p34.internal.lan>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-20 at 03:09 +0900, Linus Torvalds wrote:
-> 
-> 
-> > It's a bit unfortunate that n_tty_set_room() lies about the available
-> > space when icanon = 1, but it makes sense in order to handle erase. It
-> > would be nice if n_tty_receive_buf() returned a status to
-> > flush_to_disc() to say "actually I could only fit X chars after all,
-> > please take them back" - but I don't grok how that would play with all
-> > the other logic in there.
-> 
-> Yeah, I don't think that is even worth it. The thing is, we do have to 
-> start dropping characters at some point,
+On Mon, Oct 19, 2009 at 06:18:58AM -0400, Justin Piszcz wrote:
+> On Mon, 19 Oct 2009, Dave Chinner wrote:
+>> On Sun, Oct 18, 2009 at 04:17:42PM -0400, Justin Piszcz wrote:
+>>> It has happened again, all sysrq-X output was saved this time.
+>> .....
+>>
+>> All pointing to log IO not completing.
+>>
+....
+> So far I do not have a reproducible test case,
 
-Do we ? IE, if we could push the flow control back up to hvc_console,
-telling it how many chars we -really- could put in instead of dropping
-anything, the hvc_console back end can then stop fetching from the
-hypervisor, which would for most cases of virtual consoles push the flow
-control all the way to the client terminal and thus not lose anything.
+Ok. What sort of load is being placed on the machine?
 
-I haven't looked at the code in details and I may well be missing
-something important, of course, and I agree that if there's no new line
-we do have to impose a limit to our line buffer.
+> the only other thing not posted was the output of ps auxww during
+> the time of the lockup, not sure if it will help, but here it is:
+>
+> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+> root         1  0.0  0.0  10320   684 ?        Ss   Oct16   0:00 init [2] 
+....
+> root       371  0.0  0.0      0     0 ?        R<   Oct16   0:01 [xfslogd/0]
+> root       372  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfslogd/1]
+> root       373  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfslogd/2]
+> root       374  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfslogd/3]
+> root       375  0.0  0.0      0     0 ?        R<   Oct16   0:00 [xfsdatad/0]
+> root       376  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsdatad/1]
+> root       377  0.0  0.0      0     0 ?        S<   Oct16   0:03 [xfsdatad/2]
+> root       378  0.0  0.0      0     0 ?        S<   Oct16   0:01 [xfsdatad/3]
+> root       379  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/0]
+> root       380  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/1]
+> root       381  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/2]
+> root       382  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/3]
+.....
 
->  so trying to extend the non-drop 
-> case just moves it somewhere else. If you are in canon mode, and the line 
-> is longer than <some-number-that-happens-to-be-4kB>, you're basically 
-> screwed.
-
-Right.
-
- .../...
-
-> I wonder a bit what in your particular environment makes this problem show 
-> up, but I assume that your simulation environment ends up just blindly 
-> stuffing the tty buffers through the virtual console, so you basically 
-> have "simulated typing" that was (a) started long before the reader was 
-> interested in accepting it and (b) was a huge dump rather than what any 
-> real load would be.
-
-Yes pretty much
-
-> But if you change n_tty_set_termios() to count newlines when it sets 
-> icanon, you might get the behaviour you want, and it would seem to me to 
-> be an improvement over what we have now, so I wouldn't object to it, even 
-> if I suspect nobody else has ever cared, and would ever care in the 
-> future. 
+It appears that both the xfslogd and the xfsdatad on CPU 0 are in
+the running state but don't appear to be consuming any significant
+CPU time. If they remain like this then I think that means they are
+stuck waiting on the run queue.  Do these XFS threads always appear
+like this when the hang occurs? If so, is there something else that
+is hogging CPU 0 preventing these threads from getting the CPU?
 
 Cheers,
-Ben.
 
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
