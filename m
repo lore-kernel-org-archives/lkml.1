@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751504AbZJTMqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751644AbZJTMvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751504AbZJTMqS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 08:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZJTMqS
+	id S1751644AbZJTMvd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 08:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZJTMvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 08:46:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33665 "EHLO mx3.mail.elte.hu"
+	Tue, 20 Oct 2009 08:51:32 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:48985 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750959AbZJTMqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 08:46:17 -0400
-Date: Tue, 20 Oct 2009 14:46:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, Mike Galbraith <efault@gmx.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Tim Blechmann <tim@klingt.org>, linux-kernel@vger.kernel.org
-Subject: Re: pref record question
-Message-ID: <20091020124609.GA18276@elte.hu>
-References: <4ADC9C2A.5020707@klingt.org> <1256012810.17774.17.camel@laptop> <20091020060043.GB8550@elte.hu> <1256030390.17774.35.camel@laptop>
+	id S1750771AbZJTMvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 08:51:32 -0400
+Date: Tue, 20 Oct 2009 13:51:39 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Tobias Oetiker <tobi@oetiker.ch>
+Cc: Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
+       jens.axboe@oracle.com
+Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
+Message-ID: <20091020125139.GF11778@csn.ul.ie>
+References: <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu> <20091019133146.GB9036@csn.ul.ie> <alpine.DEB.2.00.0910191538450.8526@sebohet.brgvxre.pu> <20091019140957.GE9036@csn.ul.ie> <alpine.DEB.2.00.0910191613580.8526@sebohet.brgvxre.pu> <20091019145954.GH9036@csn.ul.ie> <alpine.DEB.2.00.0910192211230.27123@sebohet.brgvxre.pu> <alpine.DEB.2.00.0910192215450.27123@sebohet.brgvxre.pu> <20091020105746.GD11778@csn.ul.ie> <alpine.DEB.2.00.0910201338530.27123@sebohet.brgvxre.pu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1256030390.17774.35.camel@laptop>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <alpine.DEB.2.00.0910201338530.27123@sebohet.brgvxre.pu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Tue, 2009-10-20 at 08:00 +0200, Ingo Molnar wrote:
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > On Mon, 2009-10-19 at 19:04 +0200, Tim Blechmann wrote:
-> > >
-> > > > i am trying to do some profiling with perf (2.6.31.4). while 
-> > > > thread-level profiling works fine, i haven't been able to record 
-> > > > profiling data of a whole process (i.e. main thread + child 
-> > > > threads). from my understanding, this should be enabled by running 
-> > > > 'perf record -i' on the main thread. this does only collect the data 
-> > > > from the main thread, though.
-> > > > 
-> > > > is this an issue with perf or with my understanding of perf?
-> > > 
-> > > -i will only inherit the counters on new fork()/clone() calls, so an 
-> > > existing process/task tree will not automagically get the counters.
-> > 
-> > Looks like something very much worth fixing.
+On Tue, Oct 20, 2009 at 01:44:50PM +0200, Tobias Oetiker wrote:
+> Hi Mel,
 > 
-> Well, maybe.
+> Today Mel Gorman wrote:
 > 
-> There's two ways to go about this, either iterate the tasks in 
-> userspace and attach a counter to each one (repeat until there's no 
-> new ones left).
+> > On Mon, Oct 19, 2009 at 10:17:06PM +0200, Tobias Oetiker wrote:
 > 
-> Or add a new flag in perf_event_attr to iterate the tasks on attach in 
-> an atomic manner.
+> > > Oct 19 22:09:52 johan kernel: [11157.121600]  [<ffffffff813ebd42>] skb_copy+0x32/0xa0 [kern.warning]
+> > > Oct 19 22:09:52 johan kernel: [11157.121615]  [<ffffffffa07dd33c>] vboxNetFltLinuxPacketHandler+0x5c/0xd0 [vboxnetflt] [kern.warning]
+> > > Oct 19 22:09:52 johan kernel: [11157.121620]  [<ffffffff813f2512>] dev_hard_start_xmit+0x142/0x320 [kern.warning]
+> >
+> > Are the number of failures at least reduced or are they occuring at the
+> > same rate?
 > 
-> We cannot simply extend the current attach behaviour as that would 
-> make it impossible to attach to a single thread in a thread group.
+> not that it would have any statistical significance, but I had 5
+> failure (clusters) yesterday morning and 5 this morning ...
+> 
 
-Correct.
+Before the patches were applied, how many failures were you seeing in
+the morning?
 
-> Also, if you extend the interface, it would make sense to allow 
-> automatically attaching to a process group, not only a thread group, 
-> etc.
+> the failures often show up in groups I saved one on
+> http://tobi.oetiker.ch/cluster-2009-10-20-08-31.txt
+> 
+> > Also, what was the last kernel that worked for you with this
+> > configuration?
+> 
+> that would be 2.6.24 ... I have not upgraded in quite some time.
+> But since the io performance of 2.6.31 is about double in my tests
+> I thought it would be a good thing todo ...
+> 
 
-Indeed. This more automated approach sounds like the better solution to 
-me.
+That significant a different in performance may explain differences in timing
+as well. i.e. the allocator is being put under more pressure now than it
+was previously as more processes make forward progress.
 
-	Ingo
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
