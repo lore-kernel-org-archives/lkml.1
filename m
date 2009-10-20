@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbZJTB3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbZJTBnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758113AbZJTB3y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 21:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbZJTB3x
+	id S1758189AbZJTBnz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 21:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757552AbZJTBnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 21:29:53 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:59693 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756276AbZJTB3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 21:29:52 -0400
-Subject: Re: linux-next: tree build failure
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jan Beulich <JBeulich@novell.com>, sfr@canb.auug.org.au,
-       akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
-       kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org
-In-Reply-To: <200910201142.34006.rusty@rustcorp.com.au>
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
-	 <4AD6EB17020000780001A050@vpn.id2.novell.com>
-	 <1255976369.13995.98.camel@slab.beaverton.ibm.com>
-	 <200910201142.34006.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Mon, 19 Oct 2009 18:29:53 -0700
-Message-Id: <1256002193.6546.2.camel@slab>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Oct 2009 21:43:55 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:44655 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757522AbZJTBny (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 21:43:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iMnr1KAWARRR+a8ts6nOpgITZuk6VvB/BIBHNtz/bw9H6BZpQ6VviXYuq/oumPVzx/
+         ovGjUEALNjaGHVTyTCaQ/1CUkQC8LJPBP9D9CrmCJEOWczbbwUOQGINYMn3PU+Ejfaic
+         WF5ap023E85Yq5MBaBFlFFm5kmvHGURTqAgPc=
+Date: Mon, 19 Oct 2009 18:38:44 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: =shaohua.li@intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 1/6] ACPI: dock: convert sysfs attributes to an
+	attribute_group
+Message-ID: <20091020013844.GB24370@core.coreip.homeip.net>
+References: <20091019211132.5412.80438.stgit@bob.kio> <20091019211424.5412.15540.stgit@bob.kio>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091019211424.5412.15540.stgit@bob.kio>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-20 at 11:42 +1030, Rusty Russell wrote:
-> On Tue, 20 Oct 2009 04:49:29 am Hollis Blanchard wrote:
-> > On Thu, 2009-10-15 at 08:27 +0100, Jan Beulich wrote:
-> > > My perspective is that it just uncovered already existing brokenness.
-> > 
-> > Sorry, I thought it was clear, but to be more explicit: I propose the
-> > following patch, which replaces the current BUILD_BUG_ON implementation
-> > with Rusty's version.
+On Mon, Oct 19, 2009 at 03:14:24PM -0600, Alex Chiang wrote:
+> As suggested by Dmitry Torokhov, convert the individual sysfs
+> attributes into an attribute group.
 > 
-> OK, I switched my brain back on.  Yeah, I agree: we may still want
-> BUILD_OR_RUNTIME_BUG_ON one day, but I like this.
+> This change eliminates quite a bit of copy/paste code in the
+> error handling paths.
 > 
-> It's just missing the giant comment that it needs :)
-> 
-> /**
->  * BUILD_BUG_ON - break compile if a condition is true.
->  * @cond: the condition which the compiler should know is false.
->  *
->  * If you have some code which relies on certain constants being equal, or
->  * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
->  * detect if someone changes it.
->  *
->  * The implementation uses gcc's reluctance to create a negative array, but
->  * gcc (as of 4.4) only emits that error for obvious cases (eg. not arguments
->  * to inline functions).  So as a fallback we use the optimizer; if it can't
->  * prove the condition is false, it will cause a link error on the undefined
->  * "__build_bug_on_failed".  This error is less neat, and can be harder to
->  * track down.
->  */
 
-Do you want to put together a signed-off patch Rusty? It's your code, so
-I don't feel comfortable doing that.
-
-Once we have that, can we remove the mysterious MAYBE_BUILD_BUG_ON
-statements introduced in previous patches? (Does it BUG or doesn't it??)
+Looks good to me, thank you for making the changes.
 
 -- 
-Hollis Blanchard
-IBM Linux Technology Center
-
+Dmitry
