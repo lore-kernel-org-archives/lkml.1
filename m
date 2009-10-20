@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751535AbZJTVEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751760AbZJTVJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751535AbZJTVEt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 17:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZJTVEs
+	id S1751760AbZJTVJx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 17:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZJTVJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 17:04:48 -0400
-Received: from shards.monkeyblade.net ([198.137.202.13]:43174 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751319AbZJTVEs (ORCPT
+	Tue, 20 Oct 2009 17:09:52 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:55188 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750923AbZJTVJv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 17:04:48 -0400
-Message-ID: <4ADE2555.80100@kernel.org>
-Date: Tue, 20 Oct 2009 14:02:13 -0700
-From: "J.H." <warthog9@kernel.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 20 Oct 2009 17:09:51 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=wgYRw3KI1bU3fhTjObXlWC2yfq8Hepe42OOm75NZOR4UxKnScABpvUXUpjQTHo9hA
+	nF4tyriyx7oiHKO9PZjEQ==
+Date: Tue, 20 Oct 2009 14:09:45 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Alex Chiang <achiang@hp.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] mm: add numa node symlink for cpu devices in sysfs
+In-Reply-To: <20091020204136.GB23675@ldl.fc.hp.com>
+Message-ID: <alpine.DEB.1.00.0910201407190.27248@chino.kir.corp.google.com>
+References: <20091019212740.32729.7171.stgit@bob.kio> <20091019213430.32729.78995.stgit@bob.kio> <alpine.DEB.1.00.0910192016010.25264@chino.kir.corp.google.com> <20091020204136.GB23675@ldl.fc.hp.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-To: users@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Sheltren <jeff@osuosl.org>, lance@osuosl.org
-CC: "FTPAdmin Kernel.org" <ftpadmin@kernel.org>
-Subject: Re: [KORG] Sneaking in an OS upgrade on master.kernel.org - Tue Oct
- 20 15:00:00 UTC 2009
-References: <4ADC1A53.90304@kernel.org>
-In-Reply-To: <4ADC1A53.90304@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.1.1 (shards.monkeyblade.net [198.137.202.13]); Tue, 20 Oct 2009 14:02:14 -0700 (PDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Tue, 20 Oct 2009, Alex Chiang wrote:
 
-So true to form I used up all of my time, the box is up though and seems
-to be, more or less, functional.  There are a few things I'm still
-tracking down and fixing but I don't think I'll need to reboot it again
-so lets declare it "open for business".
+> * David Rientjes <rientjes@google.com>:
+> > On Mon, 19 Oct 2009, Alex Chiang wrote:
+> > 
+> > > You can discover which CPUs belong to a NUMA node by examining
+> > > /sys/devices/system/node/$node/
+> > > 
+> > 
+> > You mean /sys/devices/system/node/node# ?
+> 
+> Hm, in PCI land, I've been using $foo to indicate a variable in
+> documentation I've written, but I can certainly use foo# if
+> that's the preferred style.
+> 
 
-If there's further issues or I need to run a reboot I'll send another
-e-mail out.
+I'm referring to the directories in /sys/devices/system/node/ being 
+'node13' for example, and not '13' as your changelog indicates.
 
-Thanks for your patience!
+> > > However, it's not convenient to go in the other direction, when looking at
+> > > /sys/devices/system/cpu/$cpu/
+> > > 
+> > 
+> > .../cpu/cpu# ?
+> > 
 
-- - John "Warthog9" Hawley
-Chief Kernel.org Administrator
+Same here.
 
-J.H. wrote:
-| Howdy everyone,
-|
-| While I've got the chance and master.kernel.org is a little on the quiet
-| side, what with all the kernel developers off at Kernel Summit in Japan,
-| I'm going to quietly sneak the distro upgrade for master.kernel.org in
-| while most of the kernel developers are asleep on the other side of the
-| planet.
-|
-| That said this is going to be a two stage upgrade F9 -> F10 -> F11, due
-| to Fedora moving away from compiling for i386 and to i586 between 10 &
-| 11.  I'm going to plan a 6 hour downtime window, this should encompass
-| firmware updates and the two upgrade cycles.  I'm not actually expecting
-| this to take that long but, as with any major OS upgrade, what I don't
-| expect is what's going to take the longest time.
-|
-| The downtime window will open on Tue Oct 20 15:00:00 UTC 2009, and will
-| last until Tue Oct 20 21:00:00 UTC 2009 unless otherwise stated.  If
-| there are problems or updates expect an e-mail through the same channels
-| here.
-|
-| So in summary:
-|
-| What: Downtime master.kernel.org
-| When: Tue Oct 20 15:00:00 UTC 2009 - Tue Oct 20 21:00:00 UTC 2009
-| Why: OS Upgrades and general maintenance
-|
-| - John "Warthog9" Hawley
-| Chief Kernel.org Administrator
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+> > The return values of register_cpu_under_node() and 
+> > unregister_cpu_under_node() are always ignored, so it would probably be 
+> > best to convert these to be void functions.  That doesn't mean you can 
+> > simply ignore the result of the first sysfs_create_link(), though: the 
+> > second should probably be suppressed if the first returns an error.
+> > 
+> 
+> I didn't want to change too much in the patch. Changing the
+> function signature seems a bit overeager, but if you have strong
+> feelings, I can do so.
+> 
 
-iEYEARECAAYFAkreJVQACgkQ/E3kyWU9dice2wCfRWzqVk+8bAmo7q0fmMbeb+0W
-HwUAn1xOQrgfv9XIxBF6Qgbm1gFBQz9C
-=xg9i
------END PGP SIGNATURE-----
+It's entirely up to you if you want to change them to be void.  I thought 
+it would be cleaner if the first patch in the series would convert them to 
+void on the basis that the return value is never actually used and then 
+the following patches simply return on error conditions.
