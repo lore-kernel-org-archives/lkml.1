@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752272AbZJTRj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbZJTRdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752272AbZJTRj4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 13:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbZJTRj4
+	id S1752794AbZJTRdk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 13:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbZJTRdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 13:39:56 -0400
-Received: from mail.nuvation.com ([68.65.78.147]:2024 "EHLO
-	mailguy3.skynet.nuvation.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751941AbZJTRjz convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 13:39:55 -0400
-X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Oct 2009 13:39:55 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 20 Oct 2009 13:33:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:9897 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751136AbZJTRdj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 13:33:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FNSe5cHvmKMIfg5HCTRccvJkv7LZMQG3iqp0sdwgcNoL6ySKMmblpL+NKDZOm1HCTb
+         /pt9o5YmJ2MptON+52ZFMQKgUeJgHtsBaqLADON7gtwTkWJkMqouLsoajmelMfgPzoQN
+         D8O3YEo+qEQWF5GbpAhd61oQTLJAaFuU3tj3Q=
+Date: Tue, 20 Oct 2009 19:33:40 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tracing - fix function graph trace to properly skip
+	records
+Message-ID: <20091020173338.GB4906@nowhere>
+References: <1256054439-24386-1-git-send-email-jolsa@redhat.com> <20091020171147.GA4906@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: FPGA Serial driver
-Date: Tue, 20 Oct 2009 10:24:49 -0700
-Message-ID: <274F7B50569A1B4C9D7BCAB17A9C7BE101D0036F@mailguy3.skynet.nuvation.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: FPGA Serial driver
-Thread-Index: AcpRqjndYtZglXHYRsSj2e2DmjvVBA==
-From: "Jerry Johns" <Jerry.Johns@nuvation.com>
-To: <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091020171147.GA4906@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
-            I'm not exactly sure which mailing list to ask this, and am hoping that this list is the correct one for which this makes sense
+On Tue, Oct 20, 2009 at 07:11:54PM +0200, Frederic Weisbecker wrote:
+> > NOTE:
+> > 
+> > AFAIK patch does not affect "trace_pipe" handling, since the change is
+> > on the ring_buffer_iter level. However the "trace_pipe" suffers from
+> > the same issue -> when the read buffer is filled up, the current trace
+> > entry is not copied to it. Following read will continue with next entry.
+> > It might be harder to fix this, since "trace_pipe" in order to see next
+> > record has to eat the current one... 
+> > 
+> > I'll look at possible solution, but any ideas are welcome.. :)
+> > 
 
-I have an OMAP3530 mated to an FPGA over the GPMC interface (that maps external memory to a known linear space within the OMAP) found on that chip. I have an interrupt controller on the FPGA (and mapped into virtual IRQs in Linux through irqchip and chained handlers) and a few UARTs in it as well - the UART is specifically chosen to be 16550 compatible so that it can directly be mapped as a platform device into the 8250 serial platform driver. This way, I avoid having to write a serial driver, and it is directly compatible with that in Linux.
 
-The FPGA currently is programmed by a separate device on boot, and that process can take up to 20 seconds - hence, the custom interrupt handler and serial driver in Linux cannot really be loaded until the FPGA has completed boot. At the same time, I do not want to hold-off booting Linux till the FPGA is alive.
+Yeah, dealing with the ring buffer consuming mode is more tricky.
+Actually I would feel more comfortable with a generic solution that
+solves consuming and iter modes.
 
-What is the correct solution to this? Should I just load the interrupt and serial drivers anyways (and not use them till the FPGA is up) or should I defer loading them (that doesn't seem possible for the serial at least..)? 
+We have a private field in struct trace_iterator so I guess
+we can store useful things inside.
 
-Any ideas are much appreciated!
+Say we have that in the ring buffer:
 
-Thanks,
-Jerry Johns
-Design Engineer
-Nuvation Research Corp - Canada
+f1 entry
+f1 return
+f2 entry
+
+If we know we are a leaf call, we need to store a copy of the
+f1 entry/f1 return couple in struct trace_iterator::private
+So that we can check that on the next processing and call
+print_graph_entry_leaf() directly.
+
+What remains is the need to check the status of the last
+processing. Was it TRACE_TYPE_HANLED,TRACE_TYPE_PARTIAL_LINE..?
+
+We probably need this info in trace_iterator...
 
