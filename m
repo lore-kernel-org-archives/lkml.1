@@ -1,51 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbZJTMJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbZJTMQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751954AbZJTMJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 08:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZJTMJ1
+	id S1752002AbZJTMQj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 08:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZJTMQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 08:09:27 -0400
-Received: from mail-ew0-f217.google.com ([209.85.219.217]:61812 "EHLO
-	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbZJTMJ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 08:09:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LOc5Kc/HXjlhi3RcIxPJZm926ljNv/TcpqZBrst0YdP4AnIpewEIK3q2scuJMlZ75b
-         7nv6Sb4FCX+LWUHshADVfwvuF7lU7aGFDszx+wwpzZovUGtWARp9m3Nhosw1XgdwUppf
-         QLL11y65Hue+bBgxRcpkEFOjMTz0lsj2hAbwY=
-Date: Tue, 20 Oct 2009 16:09:26 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, dlezcano@fr.ibm.com, ebiederm@xmission.com,
-       jack@ucw.cz, andrea@cpushare.com, sukadev@us.ibm.com,
-       Containers <containers@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
-       mingo@elte.hu
-Subject: Re: [PATCH] pidns: Fix a leak in /proc inodes and dentries
-Message-ID: <20091020120926.GA28909@x200>
-References: <20091020041337.GA31623@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091020041337.GA31623@us.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 20 Oct 2009 08:16:38 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:50232 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751937AbZJTMQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 08:16:37 -0400
+From: Chaithrika U S <chaithrika@ti.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com,
+       vipin.bhandari@ti.com, khilman@deeprootsystems.com,
+       Chaithrika U S <chaithrika@ti.com>
+Subject: [PATCH] davinci: MMC: add cpufreq support
+Date: Tue, 20 Oct 2009 17:40:10 +0530
+Message-Id: <1256040610-30684-1-git-send-email-chaithrika@ti.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 09:13:37PM -0700, Sukadev Bhattiprolu wrote:
-> --- linux-2.6.orig/fs/proc/base.c
-> +++ linux-2.6/fs/proc/base.c
-> @@ -2580,8 +2580,7 @@ static void proc_flush_task_mnt(struct v
->  	name.len = snprintf(buf, sizeof(buf), "%d", pid);
->  	dentry = d_hash_and_lookup(mnt->mnt_root, &name);
->  	if (dentry) {
-> -		if (!(current->flags & PF_EXITING))
-> -			shrink_dcache_parent(dentry);
-> +		shrink_dcache_parent(dentry);
+Add cpufreq support to MMC driver. The clock divider value has to be
+modified according to the controller input frequency.
 
-What to do with original deadlock?
+Signed-off-by: Chaithrika U S <chaithrika@ti.com>
+---
+This patch applies on top of the following two patches submitted to LKML
+http://patchwork.kernel.org/patch/54013/
+http://patchwork.kernel.org/patch/50914/
+
+ drivers/mmc/host/davinci_mmc.c |  100 +++++++++++++++++++++++++++++++++------
+ 1 files changed, 84 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
+index fe8f613..b54c779 100644
+--- a/drivers/mmc/host/davinci_mmc.c
++++ b/drivers/mmc/host/davinci_mmc.c
+@@ -25,6 +25,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/err.h>
++#include <linux/cpufreq.h>
+ #include <linux/mmc/host.h>
+ #include <linux/io.h>
+ #include <linux/irq.h>
+@@ -200,6 +201,9 @@ struct mmc_davinci_host {
+ 	u8 version;
+ 	/* for ns in one cycle calculation */
+ 	unsigned ns_in_one_cycle;
++#ifdef CONFIG_CPU_FREQ
++	struct notifier_block	freq_transition;
++#endif
+ };
+ 
+ 
+@@ -739,27 +743,12 @@ static unsigned int calculate_freq_for_card(struct mmc_davinci_host *host,
+ 	return mmc_push_pull_divisor;
+ }
+ 
+-static void mmc_davinci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
++static void calculate_clk_divider(struct mmc_host *mmc, struct mmc_ios *ios)
+ {
+ 	unsigned int open_drain_freq = 0, mmc_pclk = 0;
+ 	unsigned int mmc_push_pull_freq = 0;
+ 	struct mmc_davinci_host *host = mmc_priv(mmc);
+ 
+-	mmc_pclk = host->mmc_input_clk;
+-	dev_dbg(mmc_dev(host->mmc),
+-		"clock %dHz busmode %d powermode %d Vdd %04x\n",
+-		ios->clock, ios->bus_mode, ios->power_mode,
+-		ios->vdd);
+-	if (ios->bus_width == MMC_BUS_WIDTH_4) {
+-		dev_dbg(mmc_dev(host->mmc), "Enabling 4 bit mode\n");
+-		writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_WIDTH_4_BIT,
+-			host->base + DAVINCI_MMCCTL);
+-	} else {
+-		dev_dbg(mmc_dev(host->mmc), "Disabling 4 bit mode\n");
+-		writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_WIDTH_4_BIT,
+-			host->base + DAVINCI_MMCCTL);
+-	}
+-
+ 	if (ios->bus_mode == MMC_BUSMODE_OPENDRAIN) {
+ 		u32 temp;
+ 
+@@ -798,6 +787,29 @@ static void mmc_davinci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ 
+ 		udelay(10);
+ 	}
++}
++
++static void mmc_davinci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
++{
++	unsigned int mmc_pclk = 0;
++	struct mmc_davinci_host *host = mmc_priv(mmc);
++
++	mmc_pclk = host->mmc_input_clk;
++	dev_dbg(mmc_dev(host->mmc),
++		"clock %dHz busmode %d powermode %d Vdd %04x\n",
++		ios->clock, ios->bus_mode, ios->power_mode,
++		ios->vdd);
++	if (ios->bus_width == MMC_BUS_WIDTH_4) {
++		dev_dbg(mmc_dev(host->mmc), "Enabling 4 bit mode\n");
++		writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_WIDTH_4_BIT,
++			host->base + DAVINCI_MMCCTL);
++	} else {
++		dev_dbg(mmc_dev(host->mmc), "Disabling 4 bit mode\n");
++		writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_WIDTH_4_BIT,
++			host->base + DAVINCI_MMCCTL);
++	}
++
++	calculate_clk_divider(mmc, ios);
+ 
+ 	host->bus_mode = ios->bus_mode;
+ 	if (ios->power_mode == MMC_POWER_UP) {
+@@ -1040,6 +1052,52 @@ static struct mmc_host_ops mmc_davinci_ops = {
+ 
+ /*----------------------------------------------------------------------*/
+ 
++#ifdef CONFIG_CPU_FREQ
++static int mmc_davinci_cpufreq_transition(struct notifier_block *nb,
++				     unsigned long val, void *data)
++{
++	struct mmc_davinci_host *host;
++	unsigned int mmc_pclk;
++	struct mmc_host *mmc;
++	unsigned long flags;
++
++	host = container_of(nb, struct mmc_davinci_host, freq_transition);
++	mmc = host->mmc;
++	mmc_pclk = clk_get_rate(host->clk);
++
++	if (val == CPUFREQ_POSTCHANGE) {
++		spin_lock_irqsave(&mmc->lock, flags);
++		host->mmc_input_clk = mmc_pclk;
++		calculate_clk_divider(mmc, &mmc->ios);
++		spin_unlock_irqrestore(&mmc->lock, flags);
++	}
++
++	return 0;
++}
++
++static inline int mmc_davinci_cpufreq_register(struct mmc_davinci_host *host)
++{
++	host->freq_transition.notifier_call = mmc_davinci_cpufreq_transition;
++
++	return cpufreq_register_notifier(&host->freq_transition,
++					 CPUFREQ_TRANSITION_NOTIFIER);
++}
++
++static inline void mmc_davinci_cpufreq_deregister(struct mmc_davinci_host *host)
++{
++	cpufreq_unregister_notifier(&host->freq_transition,
++				    CPUFREQ_TRANSITION_NOTIFIER);
++}
++#else
++static inline int mmc_davinci_cpufreq_register(struct mmc_davinci_host *host)
++{
++	return 0;
++}
++
++static inline void mmc_davinci_cpufreq_deregister(struct mmc_davinci_host *host)
++{
++}
++#endif
+ static void __init init_mmcsd_host(struct mmc_davinci_host *host)
+ {
+ 	/* DAT line portion is diabled and in reset state */
+@@ -1169,6 +1227,12 @@ static int __init davinci_mmcsd_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, host);
+ 
++	ret = mmc_davinci_cpufreq_register(host);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to register cpufreq\n");
++		goto cpu_freq_fail;
++	}
++
+ 	ret = mmc_add_host(mmc);
+ 	if (ret < 0)
+ 		goto out;
+@@ -1186,6 +1250,8 @@ static int __init davinci_mmcsd_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ out:
++	mmc_davinci_cpufreq_deregister(host);
++cpu_freq_fail:
+ 	if (host) {
+ 		davinci_release_dma_channels(host);
+ 
+@@ -1215,6 +1281,8 @@ static int __exit davinci_mmcsd_remove(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, NULL);
+ 	if (host) {
++		mmc_davinci_cpufreq_deregister(host);
++
+ 		mmc_remove_host(host->mmc);
+ 		free_irq(host->irq, host);
+ 
+-- 
+1.5.6
+
