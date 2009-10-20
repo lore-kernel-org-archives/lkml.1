@@ -1,101 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbZJTEbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757090AbZJTDux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752127AbZJTEbU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 00:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbZJTEbT
+	id S1757090AbZJTDux (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 23:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbZJTDux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 00:31:19 -0400
-Received: from ozlabs.org ([203.10.76.45]:48290 "EHLO ozlabs.org"
+	Mon, 19 Oct 2009 23:50:53 -0400
+Received: from www.tglx.de ([62.245.132.106]:49435 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751936AbZJTEbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 00:31:18 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: [PATCH] BUILD_BUG_ON: make it handle more cases
-Date: Tue, 20 Oct 2009 14:15:33 +1030
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: Jan Beulich <JBeulich@novell.com>, sfr@canb.auug.org.au,
-       akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
-       kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com> <200910201142.34006.rusty@rustcorp.com.au> <1256002193.6546.2.camel@slab>
-In-Reply-To: <1256002193.6546.2.camel@slab>
+	id S1753247AbZJTDuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 23:50:52 -0400
+Date: Tue, 20 Oct 2009 05:50:21 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Walleij <linus.walleij@stericsson.com>
+cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       linux-mips@linux-mips.org, Mikael Pettersson <mikpe@it.uu.se>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH] Make MIPS dynamic clocksource/clockevent clock code
+ generic
+In-Reply-To: <1255819715-19763-1-git-send-email-linus.walleij@stericsson.com>
+Message-ID: <alpine.LFD.2.00.0910200454300.2863@localhost.localdomain>
+References: <1255819715-19763-1-git-send-email-linus.walleij@stericsson.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910201415.34361.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BUILD_BUG_ON used to use the optimizer to do code elimination or fail
-at link time; it was changed to first the size of a negative array (a
-nicer compile time error), then (in
-8c87df457cb58fe75b9b893007917cf8095660a0) to a bitfield.
+On Sun, 18 Oct 2009, Linus Walleij wrote:
+> This moves the clocksource_set_clock() and clockevent_set_clock()
+> from the MIPS timer code into clockchips and clocksource where
+> it belongs. The patch was triggered by code posted by Mikael
+> Pettersson duplicating this code for the IOP ARM system. The
+> function signatures where altered slightly to fit into their
+> destination header files, unsigned int changed to u32 and inlined.
+> 
+> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Mikael Pettersson <mikpe@it.uu.se>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> ---
+> Ralf has stated in earlier conversation that this should be moved,
+> now we risk duplicating code so let's move it.
 
-bitfields: needs a literal constant at parse time, and can't be put under
-	"if (__builtin_constant_p(x))" for example.
-negative array: can handle anything, but if the compiler can't tell it's
-	a constant, silently has no effect.
-link time: breaks link if the compiler can't determine the value, but the
-	linker output is not usually as informative as a compiler error.
+Please do not make that functions inline. They are too large and there
+is no benefit of inlining them.
 
-If we use the negative-array-size method *and* the link time trick,
-we get the ability to use BUILD_BUG_ON() under __builtin_constant_p()
-branches, and maximal ability for the compiler to detect errors at
-build time.
+> +/**
+> + * clockevent_set_clock - dynamically calculates an appropriate shift
+> + *			  and mult value for a clocksource given a
+> + *			  known clock frequency
+> + * @dev:	Clockevent device to initialize
+> + * @hz:		Clockevent clock frequency in Hz
+> + */
+> +static inline void clockevent_set_clock(struct clock_event_device *dev, u32 hz)
+> +{
+> +	u64 temp;
+> +	u32 shift;
+> +
+> +	/* Find a shift value */
+> +	for (shift = 32; shift > 0; shift--) {
+> +		temp = (u64) hz << shift;
+> +		do_div(temp, NSEC_PER_SEC);
+> +		if ((temp >> 32) == 0)
+> +			break;
+> +	}
+> +	dev->shift = shift;
+> +	dev->mult = (u32) temp;
+> +}
+> +
+> +
+> +static inline void clocksource_set_clock(struct clocksource *cs, u32 hz)
+> +{
+> +	u64 temp;
+> +	u32 shift;
+> +
+> +	/* Find a shift value */
+> +	for (shift = 32; shift > 0; shift--) {
+> +		temp = (u64) NSEC_PER_SEC << shift;
+> +		do_div(temp, hz);
+> +		if ((temp >> 32) == 0)
+> +			break;
+> +	}
+> +	cs->shift = shift;
+> +	cs->mult = (u32) temp;
+> +}
+> +
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+So that's the same function twice, right ? The reason for it are the
+different data structures. So could you please do something like:
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -683,12 +683,6 @@ struct sysinfo {
- 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
- };
- 
--/* Force a compilation error if condition is true */
--#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
--
--/* Force a compilation error if condition is constant and true */
--#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
--
- /* Force a compilation error if condition is true, but also produce a
-    result (of value 0 and type size_t), so the expression can be used
-    e.g. in a structure initializer (or where-ever else comma expressions
-@@ -696,6 +690,33 @@ struct sysinfo {
- #define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
- #define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
- 
-+/**
-+ * BUILD_BUG_ON - break compile if a condition is true.
-+ * @cond: the condition which the compiler should know is false.
-+ *
-+ * If you have some code which relies on certain constants being equal, or
-+ * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
-+ * detect if someone changes it.
-+ *
-+ * The implementation uses gcc's reluctance to create a negative array, but
-+ * gcc (as of 4.4) only emits that error for obvious cases (eg. not arguments
-+ * to inline functions).  So as a fallback we use the optimizer; if it can't
-+ * prove the condition is false, it will cause a link error on the undefined
-+ * "__build_bug_on_failed".  This error message can be harder to track down
-+ * though, hence the two different methods.
-+ */
-+#ifndef __OPTIMIZE__
-+#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
-+#else
-+extern int __build_bug_on_failed;
-+#define BUILD_BUG_ON(condition)					\
-+	do {							\
-+		((void)sizeof(char[1 - 2*!!(condition)]));	\
-+		if (condition) __build_bug_on_failed = 1;	\
-+	} while(0)
-+#endif
-+#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
-+
- /* Trap pasters of __FUNCTION__ at compile-time */
- #define __FUNCTION__ (__func__)
- 
+void calc_shift_mult(u32 *shift, u32 *mult, u32 hz)
+{
+	do the magic math
+}
+
+and have wrapper inline functions for clocksource and clockevents
+around it.
+
+Thanks,
+
+	tglx
