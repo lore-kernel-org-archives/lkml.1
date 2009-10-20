@@ -1,112 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883AbZJTLbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751876AbZJTLos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751883AbZJTLbK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 07:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZJTLbJ
+	id S1751876AbZJTLos (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 07:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZJTLos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 07:31:09 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:38791 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbZJTLbH convert rfc822-to-8bit (ORCPT
+	Tue, 20 Oct 2009 07:44:48 -0400
+Received: from james.oetiker.ch ([213.144.138.195]:40812 "EHLO
+	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbZJTLor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 07:31:07 -0400
-From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 4/4] ASoC: TWL4030: Driver registration via twl4030_codec MFD
-Date: Tue, 20 Oct 2009 14:30:49 +0300
-User-Agent: KMail/1.12.2 (Linux/2.6.31-gentoo; KDE/4.3.2; i686; ; )
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "sameo@linux.intel.com" <sameo@linux.intel.com>,
-       "tony@atomide.com" <tony@atomide.com>
-References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com> <1255956140-4829-5-git-send-email-peter.ujfalusi@nokia.com> <20091020102540.GB28592@opensource.wolfsonmicro.com>
-In-Reply-To: <20091020102540.GB28592@opensource.wolfsonmicro.com>
+	Tue, 20 Oct 2009 07:44:47 -0400
+Date: Tue, 20 Oct 2009 13:44:50 +0200 (CEST)
+From: Tobias Oetiker <tobi@oetiker.ch>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
+       jens.axboe@oracle.com
+Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
+In-Reply-To: <20091020105746.GD11778@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0910201338530.27123@sebohet.brgvxre.pu>
+References: <1255912562.6824.9.camel@penberg-laptop> <200910190444.55867.elendil@planet.nl> <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu> <20091019133146.GB9036@csn.ul.ie> <alpine.DEB.2.00.0910191538450.8526@sebohet.brgvxre.pu> <20091019140957.GE9036@csn.ul.ie>
+ <alpine.DEB.2.00.0910191613580.8526@sebohet.brgvxre.pu> <20091019145954.GH9036@csn.ul.ie> <alpine.DEB.2.00.0910192211230.27123@sebohet.brgvxre.pu> <alpine.DEB.2.00.0910192215450.27123@sebohet.brgvxre.pu> <20091020105746.GD11778@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200910201430.49223.peter.ujfalusi@nokia.com>
-X-OriginalArrivalTime: 20 Oct 2009 11:30:49.0946 (UTC) FILETIME=[C65E13A0:01CA5178]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 October 2009 13:25:40 ext Mark Brown wrote:
-> On Mon, Oct 19, 2009 at 03:42:20PM +0300, Peter Ujfalusi wrote:
-> > TWL4030 codec is now using the device registration via
-> > tlw4030_codec MFD device.
-> 
-> This looks pretty good but obviously depends on the MFD changes.
+Hi Mel,
 
-Thanks, yes it all depends on the MFD changes.
+Today Mel Gorman wrote:
 
-> The major thing that jumps out at me is the removal of the register
-> definitions from the ASoC headers - it might be nice to have that done
-> as part of the MFD patch, or as a separate patch.
+> On Mon, Oct 19, 2009 at 10:17:06PM +0200, Tobias Oetiker wrote:
 
-The reason why I have done it like this is that with one patch I only touch one 
-subsystem at the time:
-1. MFD changes only
-2. OMAP related changes
-3. soc codec driver change
+> > Oct 19 22:09:52 johan kernel: [11157.121600]  [<ffffffff813ebd42>] skb_copy+0x32/0xa0 [kern.warning]
+> > Oct 19 22:09:52 johan kernel: [11157.121615]  [<ffffffffa07dd33c>] vboxNetFltLinuxPacketHandler+0x5c/0xd0 [vboxnetflt] [kern.warning]
+> > Oct 19 22:09:52 johan kernel: [11157.121620]  [<ffffffff813f2512>] dev_hard_start_xmit+0x142/0x320 [kern.warning]
+>
+> Are the number of failures at least reduced or are they occuring at the
+> same rate?
 
-In patch 1, the register definitions had to be added, so that the twl4030_codec 
-driver knows the registers (and there could be the vibra driver placed 
-separately from the soc codec driver).
-In patch 3, where I modify the soc codec driver to use the new method, than I 
-remove the definitions and use the existing header file, introduced by the first 
-patch.
-All in all, after each patch the kernel can be builds, boots and works as 
-before.
+not that it would have any statistical significance, but I had 5
+failure (clusters) yesterday morning and 5 this morning ...
 
-> 
-> You've also got the bias being brought up when the ASoC system comes up
-> rather than when the driver comes up.  To be honest it doesn't really
-> make any difference either way, it's just slightly different to other
-> drivers.
+the failures often show up in groups I saved one on
+http://tobi.oetiker.ch/cluster-2009-10-20-08-31.txt
 
-I was thinking that if you built the kernel with SND_SOC_ALL_CODECS on OMAP 
-platform for some reason and you don't actually use the twl4030 as audio device 
--> no machine driver, which would use it, than the codec part would be off.
-But yes, probably I can move the povering up to the probe function.
+> Also, what was the last kernel that worked for you with this
+> configuration?
 
-> What is useful with things like twl4030 which take a little
-> while to come up is if you can do the bias bringup out of line from
-> device probe, avoiding blocking system startup on CODEC bringup.  That's
-> definitely a separate patch, I'm just mentioning it for interest here.
+that would be 2.6.24 ... I have not upgraded in quite some time.
+But since the io performance of 2.6.31 is about double in my tests
+I thought it would be a good thing todo ...
 
-I'm sure there will be another round for this series, so I can make this change 
-at the same time within the patch, since this anyway changes the way how the 
-driver is loaded/probed.
+cheers
+tobi
 
-> 
-> There's also a couple of debug prints (like in the remove function) and
-
-I'll get rid of them.
-But at least this time I did not had those unneeded casts, which I usually have 
-;)
-
-> 
-> > +MODULE_ALIAS("platform:twl4030_codec:audio");
-> 
-> Is that second colon right given...
-
-I'm not sure about it at all either. I did not found any other 'nested MFD' 
-drivers around, so this is just a guess
-Should it be:
-
- +MODULE_ALIAS("platform:twl4030_codec_audio");
-
-
-> 
-> > +	.driver		= {
-> > +		.name	= "twl4030_codec_audio",
-> > +		.owner	= THIS_MODULE,
-> 
-> this.
-> 
+> Thanks
+>
+> > Oct 19 22:09:52 johan kernel: [11157.121632]  [<ffffffff8140a2c1>] __qdisc_run+0x1a1/0x230 [kern.warning]
+> > Oct 19 22:09:52 johan kernel: [11157.121637]  [<ffffffff813f41e0>] dev_queue_xmit+0x2b0/0x3a0 [kern.warning]
+> > Oct 19 22:09:52 johan kernel: [11157.121642]  [<ffffffff8142349b>] ip_finish_output+0x11b/0x2f0 [kern.warning]
+> > Oct 19 22:09:52 johan kernel: [11157.121646]  [<ffffffff814236f9>] ip_output+0x89/0xd0 [kern.warning]
+> > Oct 19 22:09:52 johan kernel: [11157.121650]  [<ffffffff81422710>] ip_local_out+0x20/0x30 [kern.warning]
+> > Oct 19 22:09:52 johan kernel: [11157.121654]  [<ffffffff81422ffb>] ip_queue_xmit+0x22b/0x3f0 [kern.warning]
+> >
+>
+>
 
 -- 
-Péter
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
