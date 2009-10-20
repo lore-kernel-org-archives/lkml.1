@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751876AbZJTLos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751904AbZJTLvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751876AbZJTLos (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 07:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZJTLos
+	id S1751904AbZJTLvF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 07:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbZJTLvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 07:44:48 -0400
-Received: from james.oetiker.ch ([213.144.138.195]:40812 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbZJTLor (ORCPT
+	Tue, 20 Oct 2009 07:51:05 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36769 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751095AbZJTLvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 07:44:47 -0400
-Date: Tue, 20 Oct 2009 13:44:50 +0200 (CEST)
-From: Tobias Oetiker <tobi@oetiker.ch>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
-       jens.axboe@oracle.com
-Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
-In-Reply-To: <20091020105746.GD11778@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0910201338530.27123@sebohet.brgvxre.pu>
-References: <1255912562.6824.9.camel@penberg-laptop> <200910190444.55867.elendil@planet.nl> <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu> <20091019133146.GB9036@csn.ul.ie> <alpine.DEB.2.00.0910191538450.8526@sebohet.brgvxre.pu> <20091019140957.GE9036@csn.ul.ie>
- <alpine.DEB.2.00.0910191613580.8526@sebohet.brgvxre.pu> <20091019145954.GH9036@csn.ul.ie> <alpine.DEB.2.00.0910192211230.27123@sebohet.brgvxre.pu> <alpine.DEB.2.00.0910192215450.27123@sebohet.brgvxre.pu> <20091020105746.GD11778@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 20 Oct 2009 07:51:04 -0400
+Date: Tue, 20 Oct 2009 12:51:06 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "sameo@linux.intel.com" <sameo@linux.intel.com>,
+       "tony@atomide.com" <tony@atomide.com>
+Subject: Re: [PATCH 4/4] ASoC: TWL4030: Driver registration via
+ twl4030_codec MFD
+Message-ID: <20091020115106.GB2909@rakim.wolfsonmicro.main>
+References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com>
+ <1255956140-4829-5-git-send-email-peter.ujfalusi@nokia.com>
+ <20091020102540.GB28592@opensource.wolfsonmicro.com>
+ <200910201430.49223.peter.ujfalusi@nokia.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910201430.49223.peter.ujfalusi@nokia.com>
+X-Cookie: Real programs don't eat cache.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
+On Tue, Oct 20, 2009 at 02:30:49PM +0300, Peter Ujfalusi wrote:
 
-Today Mel Gorman wrote:
+> In patch 1, the register definitions had to be added, so that the twl4030_codec 
+> driver knows the registers (and there could be the vibra driver placed 
+> separately from the soc codec driver).
+> In patch 3, where I modify the soc codec driver to use the new method, than I 
+> remove the definitions and use the existing header file, introduced by the first 
+> patch.
+> All in all, after each patch the kernel can be builds, boots and works as 
+> before.
 
-> On Mon, Oct 19, 2009 at 10:17:06PM +0200, Tobias Oetiker wrote:
+Sure, though I suspect patch 3 could just be split in two happily with
+an include.  I don't really mind either way.  If you are going to keep
+them as one patch it'd be good to call out the move in the changelog.
 
-> > Oct 19 22:09:52 johan kernel: [11157.121600]  [<ffffffff813ebd42>] skb_copy+0x32/0xa0 [kern.warning]
-> > Oct 19 22:09:52 johan kernel: [11157.121615]  [<ffffffffa07dd33c>] vboxNetFltLinuxPacketHandler+0x5c/0xd0 [vboxnetflt] [kern.warning]
-> > Oct 19 22:09:52 johan kernel: [11157.121620]  [<ffffffff813f2512>] dev_hard_start_xmit+0x142/0x320 [kern.warning]
->
-> Are the number of failures at least reduced or are they occuring at the
-> same rate?
+> > You've also got the bias being brought up when the ASoC system comes up
+> > rather than when the driver comes up.  To be honest it doesn't really
+> > make any difference either way, it's just slightly different to other
+> > drivers.
 
-not that it would have any statistical significance, but I had 5
-failure (clusters) yesterday morning and 5 this morning ...
+> I was thinking that if you built the kernel with SND_SOC_ALL_CODECS on OMAP 
+> platform for some reason and you don't actually use the twl4030 as audio device 
+> -> no machine driver, which would use it, than the codec part would be off.
+> But yes, probably I can move the povering up to the probe function.
 
-the failures often show up in groups I saved one on
-http://tobi.oetiker.ch/cluster-2009-10-20-08-31.txt
+That's a good enough reason to leave things as they are, though really
+if you're building SND_SOC_ALL_CODECs in a production system you're
+being a bit strange.
 
-> Also, what was the last kernel that worked for you with this
-> configuration?
+> > > +MODULE_ALIAS("platform:twl4030_codec:audio");
 
-that would be 2.6.24 ... I have not upgraded in quite some time.
-But since the io performance of 2.6.31 is about double in my tests
-I thought it would be a good thing todo ...
+> > Is that second colon right given...
 
-cheers
-tobi
+> I'm not sure about it at all either. I did not found any other 'nested MFD' 
+> drivers around, so this is just a guess
+> Should it be:
 
-> Thanks
->
-> > Oct 19 22:09:52 johan kernel: [11157.121632]  [<ffffffff8140a2c1>] __qdisc_run+0x1a1/0x230 [kern.warning]
-> > Oct 19 22:09:52 johan kernel: [11157.121637]  [<ffffffff813f41e0>] dev_queue_xmit+0x2b0/0x3a0 [kern.warning]
-> > Oct 19 22:09:52 johan kernel: [11157.121642]  [<ffffffff8142349b>] ip_finish_output+0x11b/0x2f0 [kern.warning]
-> > Oct 19 22:09:52 johan kernel: [11157.121646]  [<ffffffff814236f9>] ip_output+0x89/0xd0 [kern.warning]
-> > Oct 19 22:09:52 johan kernel: [11157.121650]  [<ffffffff81422710>] ip_local_out+0x20/0x30 [kern.warning]
-> > Oct 19 22:09:52 johan kernel: [11157.121654]  [<ffffffff81422ffb>] ip_queue_xmit+0x22b/0x3f0 [kern.warning]
-> >
->
->
+>  +MODULE_ALIAS("platform:twl4030_codec_audio");
 
--- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+Yes.  The aliasing makes no reference to the parents of the device, it
+only cares about the device name - for the purposes of module loading
+and driver matching it's identical to any other platform device.
