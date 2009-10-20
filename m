@@ -1,5774 +1,7547 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbZJTFce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbZJTFcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753587AbZJTFce (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 01:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbZJTFcc
+	id S1753506AbZJTFcP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 01:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbZJTFcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 01:32:32 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:39616 "EHLO
+	Tue, 20 Oct 2009 01:32:14 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:39612 "EHLO
 	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752163AbZJTFby (ORCPT
+	with ESMTP id S1750996AbZJTFbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 01:31:54 -0400
+	Tue, 20 Oct 2009 01:31:51 -0400
 From: "John W. Linville" <linville@tuxdriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: gregkh@suse.de, "John W. Linville" <linville@tuxdriver.com>
-Subject: [PATCH 1/4] strip: move driver to staging
-Date: Tue, 20 Oct 2009 14:17:07 +0900
-Message-Id: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
+Subject: [PATCH 2/4] arlan: move driver to staging
+Date: Tue, 20 Oct 2009 14:17:08 +0900
+Message-Id: <1256015830-12700-2-git-send-email-linville@tuxdriver.com>
 X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
+References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the strip ("Starmode Radio IP") driver to drivers/staging.  For
-several years this driver has only seen API "bombing-run" changes, and
-few people ever had the hardware.  This driver represents unnecessary
-ongoing maintenance for no clear benefit.
+Move the arlan driver to drivers/staging.  This is another pre-802.11
+driver that has seen virtually no non-API-fixup activity in years, and
+for which no active hardware is likely to still exist.  This driver
+represents unnecessary ongoing maintenance for no clear benefit.
 
 This patch brought to you by the "hacking" session at the 2009 Kernel
 Summit in Tokyo, Japan...
 
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 ---
- drivers/net/wireless/Kconfig   |   23 -
- drivers/net/wireless/Makefile  |    1 -
- drivers/net/wireless/strip.c   | 2805 ----------------------------------------
- drivers/staging/Kconfig        |    2 +
- drivers/staging/Makefile       |    1 +
- drivers/staging/strip/Kconfig  |   22 +
- drivers/staging/strip/Makefile |    1 +
- drivers/staging/strip/strip.c  | 2805 ++++++++++++++++++++++++++++++++++++++++
- 8 files changed, 2831 insertions(+), 2829 deletions(-)
- delete mode 100644 drivers/net/wireless/strip.c
- create mode 100644 drivers/staging/strip/Kconfig
- create mode 100644 drivers/staging/strip/Makefile
- create mode 100644 drivers/staging/strip/strip.c
+ drivers/net/wireless/Kconfig       |   16 -
+ drivers/net/wireless/Makefile      |    4 -
+ drivers/net/wireless/arlan-main.c  | 1887 ------------------------------------
+ drivers/net/wireless/arlan-proc.c  | 1253 ------------------------
+ drivers/net/wireless/arlan.h       |  539 ----------
+ drivers/staging/Kconfig            |    2 +
+ drivers/staging/Makefile           |    1 +
+ drivers/staging/arlan/Kconfig      |   15 +
+ drivers/staging/arlan/Makefile     |    3 +
+ drivers/staging/arlan/arlan-main.c | 1887 ++++++++++++++++++++++++++++++++++++
+ drivers/staging/arlan/arlan-proc.c | 1253 ++++++++++++++++++++++++
+ drivers/staging/arlan/arlan.h      |  539 ++++++++++
+ 12 files changed, 3700 insertions(+), 3699 deletions(-)
+ delete mode 100644 drivers/net/wireless/arlan-main.c
+ delete mode 100644 drivers/net/wireless/arlan-proc.c
+ delete mode 100644 drivers/net/wireless/arlan.h
+ create mode 100644 drivers/staging/arlan/Kconfig
+ create mode 100644 drivers/staging/arlan/Makefile
+ create mode 100644 drivers/staging/arlan/arlan-main.c
+ create mode 100644 drivers/staging/arlan/arlan-proc.c
+ create mode 100644 drivers/staging/arlan/arlan.h
 
 diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
-index d7a764a..019db8e 100644
+index 019db8e..f38b979 100644
 --- a/drivers/net/wireless/Kconfig
 +++ b/drivers/net/wireless/Kconfig
-@@ -24,29 +24,6 @@ menuconfig WLAN_PRE80211
+@@ -24,22 +24,6 @@ menuconfig WLAN_PRE80211
  	  This option does not affect the kernel build, it only
  	  lets you choose drivers.
  
--config STRIP
--	tristate "STRIP (Metricom starmode radio IP)"
--	depends on INET && WLAN_PRE80211
+-config ARLAN
+-	tristate "Aironet Arlan 655 & IC2200 DS support"
+-	depends on ISA && !64BIT && WLAN_PRE80211
 -	select WIRELESS_EXT
 -	---help---
--	  Say Y if you have a Metricom radio and intend to use Starmode Radio
--	  IP. STRIP is a radio protocol developed for the MosquitoNet project
--	  to send Internet traffic using Metricom radios.  Metricom radios are
--	  small, battery powered, 100kbit/sec packet radio transceivers, about
--	  the size and weight of a cellular telephone. (You may also have heard
--	  them called "Metricom modems" but we avoid the term "modem" because
--	  it misleads many people into thinking that you can plug a Metricom
--	  modem into a phone line and use it as a modem.)
+-	  Aironet makes Arlan, a class of wireless LAN adapters. These use the
+-	  www.Telxon.com chip, which is also used on several similar cards.
+-	  This driver is tested on the 655 and IC2200 series cards. Look at
+-	  <http://www.ylenurme.ee/~elmer/655/> for the latest information.
 -
--	  You can use STRIP on any Linux machine with a serial port, although
--	  it is obviously most useful for people with laptop computers. If you
--	  think you might get a Metricom radio in the future, there is no harm
--	  in saying Y to STRIP now, except that it makes the kernel a bit
--	  bigger.
+-	  The driver is built as two modules, arlan and arlan-proc. The latter
+-	  is the /proc interface and is not needed most of time.
 -
--	  To compile this as a module, choose M here: the module will be
--	  called strip.
+-	  On some computers the card ends up in non-valid state after some
+-	  time. Use a ping-reset script to clear it.
 -
- config ARLAN
- 	tristate "Aironet Arlan 655 & IC2200 DS support"
- 	depends on ISA && !64BIT && WLAN_PRE80211
+ config WAVELAN
+ 	tristate "AT&T/Lucent old WaveLAN & DEC RoamAbout DS ISA support"
+ 	depends on ISA && WLAN_PRE80211
 diff --git a/drivers/net/wireless/Makefile b/drivers/net/wireless/Makefile
-index 7a4647e..527c272 100644
+index 527c272..b56c70f 100644
 --- a/drivers/net/wireless/Makefile
 +++ b/drivers/net/wireless/Makefile
-@@ -5,7 +5,6 @@
+@@ -5,10 +5,6 @@
  obj-$(CONFIG_IPW2100) += ipw2x00/
  obj-$(CONFIG_IPW2200) += ipw2x00/
  
--obj-$(CONFIG_STRIP) += strip.o
- obj-$(CONFIG_ARLAN) += arlan.o 
- 
- arlan-objs := arlan-main.o arlan-proc.o
-diff --git a/drivers/net/wireless/strip.c b/drivers/net/wireless/strip.c
+-obj-$(CONFIG_ARLAN) += arlan.o 
+-
+-arlan-objs := arlan-main.o arlan-proc.o
+-
+ # Obsolete cards
+ obj-$(CONFIG_WAVELAN)		+= wavelan.o
+ obj-$(CONFIG_PCMCIA_NETWAVE)	+= netwave_cs.o
+diff --git a/drivers/net/wireless/arlan-main.c b/drivers/net/wireless/arlan-main.c
 deleted file mode 100644
-index ea6a87c..0000000
---- a/drivers/net/wireless/strip.c
+index 921a082..0000000
+--- a/drivers/net/wireless/arlan-main.c
 +++ /dev/null
-@@ -1,2805 +0,0 @@
+@@ -1,1887 +0,0 @@
 -/*
-- * Copyright 1996 The Board of Trustees of The Leland Stanford
-- * Junior University. All Rights Reserved.
-- *
-- * Permission to use, copy, modify, and distribute this
-- * software and its documentation for any purpose and without
-- * fee is hereby granted, provided that the above copyright
-- * notice appear in all copies.  Stanford University
-- * makes no representations about the suitability of this
-- * software for any purpose.  It is provided "as is" without
-- * express or implied warranty.
-- *
-- * strip.c	This module implements Starmode Radio IP (STRIP)
-- *		for kernel-based devices like TTY.  It interfaces between a
-- *		raw TTY, and the kernel's INET protocol layers (via DDI).
-- *
-- * Version:	@(#)strip.c	1.3	July 1997
-- *
-- * Author:	Stuart Cheshire <cheshire@cs.stanford.edu>
-- *
-- * Fixes:	v0.9 12th Feb 1996 (SC)
-- *		New byte stuffing (2+6 run-length encoding)
-- *		New watchdog timer task
-- *		New Protocol key (SIP0)
-- *		
-- *		v0.9.1 3rd March 1996 (SC)
-- *		Changed to dynamic device allocation -- no more compile
-- *		time (or boot time) limit on the number of STRIP devices.
-- *		
-- *		v0.9.2 13th March 1996 (SC)
-- *		Uses arp cache lookups (but doesn't send arp packets yet)
-- *		
-- *		v0.9.3 17th April 1996 (SC)
-- *		Fixed bug where STR_ERROR flag was getting set unneccessarily
-- *		(causing otherwise good packets to be unneccessarily dropped)
-- *		
-- *		v0.9.4 27th April 1996 (SC)
-- *		First attempt at using "&COMMAND" Starmode AT commands
-- *		
-- *		v0.9.5 29th May 1996 (SC)
-- *		First attempt at sending (unicast) ARP packets
-- *		
-- *		v0.9.6 5th June 1996 (Elliot)
-- *		Put "message level" tags in every "printk" statement
-- *		
-- *		v0.9.7 13th June 1996 (laik)
-- *		Added support for the /proc fs
-- *
-- *              v0.9.8 July 1996 (Mema)
-- *              Added packet logging
-- *
-- *              v1.0 November 1996 (SC)
-- *              Fixed (severe) memory leaks in the /proc fs code
-- *              Fixed race conditions in the logging code
-- *
-- *              v1.1 January 1997 (SC)
-- *              Deleted packet logging (use tcpdump instead)
-- *              Added support for Metricom Firmware v204 features
-- *              (like message checksums)
-- *
-- *              v1.2 January 1997 (SC)
-- *              Put portables list back in
-- *
-- *              v1.3 July 1997 (SC)
-- *              Made STRIP driver set the radio's baud rate automatically.
-- *              It is no longer necessarily to manually set the radio's
-- *              rate permanently to 115200 -- the driver handles setting
-- *              the rate automatically.
+- *  Copyright (C) 1997 Cullen Jennings
+- *  Copyright (C) 1998 Elmer Joandiu, elmer@ylenurme.ee
+- *  GNU General Public License applies
+- * This module provides support for the Arlan 655 card made by Aironet
 - */
 -
--#ifdef MODULE
--static const char StripVersion[] = "1.3A-STUART.CHESHIRE-MODULAR";
--#else
--static const char StripVersion[] = "1.3A-STUART.CHESHIRE";
+-#include "arlan.h"
+-
+-#if BITS_PER_LONG != 32
+-#  error FIXME: this driver requires a 32-bit platform
 -#endif
 -
--#define TICKLE_TIMERS 0
--#define EXT_COUNTERS 1
+-static const char *arlan_version = "C.Jennigs 97 & Elmer.Joandi@ut.ee  Oct'98, http://www.ylenurme.ee/~elmer/655/";
+-
+-struct net_device *arlan_device[MAX_ARLANS];
+-
+-static int SID = SIDUNKNOWN;
+-static int radioNodeId = radioNodeIdUNKNOWN;
+-static char encryptionKey[12] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
+-int arlan_debug = debugUNKNOWN;
+-static int spreadingCode = spreadingCodeUNKNOWN;
+-static int channelNumber = channelNumberUNKNOWN;
+-static int channelSet = channelSetUNKNOWN;
+-static int systemId = systemIdUNKNOWN;
+-static int registrationMode = registrationModeUNKNOWN;
+-static int keyStart;
+-static int tx_delay_ms;
+-static int retries = 5;
+-static int tx_queue_len = 1;
+-static int arlan_EEPROM_bad;
+-
+-#ifdef ARLAN_DEBUGGING
+-
+-static int testMemory = testMemoryUNKNOWN;
+-static int irq = irqUNKNOWN;
+-static int txScrambled = 1;
+-static int mdebug;
+-
+-module_param(irq, int, 0);
+-module_param(mdebug, int, 0);
+-module_param(testMemory, int, 0);
+-module_param(txScrambled, int, 0);
+-MODULE_PARM_DESC(irq, "(unused)");
+-MODULE_PARM_DESC(testMemory, "(unused)");
+-MODULE_PARM_DESC(mdebug, "Arlan multicast debugging (0-1)");
+-#endif
+-
+-module_param_named(debug, arlan_debug, int, 0);
+-module_param(spreadingCode, int, 0);
+-module_param(channelNumber, int, 0);
+-module_param(channelSet, int, 0);
+-module_param(systemId, int, 0);
+-module_param(registrationMode, int, 0);
+-module_param(radioNodeId, int, 0);
+-module_param(SID, int, 0);
+-module_param(keyStart, int, 0);
+-module_param(tx_delay_ms, int, 0);
+-module_param(retries, int, 0);
+-module_param(tx_queue_len, int, 0);
+-module_param_named(EEPROM_bad, arlan_EEPROM_bad, int, 0);
+-MODULE_PARM_DESC(debug, "Arlan debug enable (0-1)");
+-MODULE_PARM_DESC(retries, "Arlan maximum packet retransmisions");
+-#ifdef ARLAN_ENTRY_EXIT_DEBUGGING
+-static int arlan_entry_debug;
+-static int arlan_exit_debug;
+-static int arlan_entry_and_exit_debug;
+-module_param_named(entry_debug, arlan_entry_debug, int, 0);
+-module_param_named(exit_debug, arlan_exit_debug, int, 0);
+-module_param_named(entry_and_exit_debug, arlan_entry_and_exit_debug, int, 0);
+-MODULE_PARM_DESC(entry_debug, "Arlan driver function entry debugging");
+-MODULE_PARM_DESC(exit_debug, "Arlan driver function exit debugging");
+-MODULE_PARM_DESC(entry_and_exit_debug, "Arlan driver function entry and exit debugging");
+-#endif
+-
+-struct arlan_conf_stru arlan_conf[MAX_ARLANS];
+-static int arlans_found;
+-
+-static  int 	arlan_open(struct net_device *dev);
+-static  netdev_tx_t arlan_tx(struct sk_buff *skb, struct net_device *dev);
+-static  irqreturn_t arlan_interrupt(int irq, void *dev_id);
+-static  int 	arlan_close(struct net_device *dev);
+-static  struct net_device_stats *
+-		arlan_statistics		(struct net_device *dev);
+-static  void 	arlan_set_multicast		(struct net_device *dev);
+-static  int 	arlan_hw_tx			(struct net_device* dev, char *buf, int length );
+-static  int	arlan_hw_config			(struct net_device * dev);
+-static  void 	arlan_tx_done_interrupt		(struct net_device * dev, int status);
+-static  void	arlan_rx_interrupt		(struct net_device * dev, u_char rxStatus, u_short, u_short);
+-static  void	arlan_process_interrupt		(struct net_device * dev);
+-static	void	arlan_tx_timeout		(struct net_device *dev);
+-
+-static inline long us2ticks(int us)
+-{
+-	return us * (1000000 / HZ);
+-}
 -
 -
--/************************************************************************/
--/* Header files								*/
+-#ifdef ARLAN_ENTRY_EXIT_DEBUGGING
+-#define ARLAN_DEBUG_ENTRY(name) \
+-	{\
+-	struct timeval timev;\
+-	do_gettimeofday(&timev);\
+-		if (arlan_entry_debug || arlan_entry_and_exit_debug)\
+-			printk("--->>>" name " %ld " "\n",((long int) timev.tv_sec * 1000000 + timev.tv_usec));\
+-	}
+-#define ARLAN_DEBUG_EXIT(name) \
+-	{\
+-	struct timeval timev;\
+-	do_gettimeofday(&timev);\
+-		if (arlan_exit_debug || arlan_entry_and_exit_debug)\
+-			printk("<<<---" name " %ld " "\n",((long int) timev.tv_sec * 1000000 + timev.tv_usec) );\
+-	}
+-#else
+-#define ARLAN_DEBUG_ENTRY(name)
+-#define ARLAN_DEBUG_EXIT(name)
+-#endif
 -
--#include <linux/kernel.h>
+-
+-#define arlan_interrupt_ack(dev)\
+-        clearClearInterrupt(dev);\
+-        setClearInterrupt(dev);
+-
+-static inline int arlan_drop_tx(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-
+-	dev->stats.tx_errors++;
+-	if (priv->Conf->tx_delay_ms)
+-	{
+-		priv->tx_done_delayed = jiffies + priv->Conf->tx_delay_ms * HZ / 1000 + 1;
+-	}
+-	else
+-	{
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_TX;
+-		TXHEAD(dev).offset = 0;
+-		TXTAIL(dev).offset = 0;
+-		priv->txLast = 0;
+-		priv->bad = 0;
+-		if (!priv->under_reset && !priv->under_config)
+-			netif_wake_queue (dev);
+-	}
+-	return 1;
+-}
+-
+-
+-int arlan_command(struct net_device *dev, int command_p)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-	struct arlan_conf_stru *conf = priv->Conf;
+-	int udelayed = 0;
+-	int i = 0;
+-	unsigned long flags;
+-
+-	ARLAN_DEBUG_ENTRY("arlan_command");
+-
+-	if (priv->card_polling_interval)
+-		priv->card_polling_interval = 1;
+-
+-	if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
+-		printk(KERN_DEBUG "arlan_command, %lx commandByte %x waiting %lx incoming %x \n",
+-		jiffies, READSHMB(arlan->commandByte),
+-		       priv->waiting_command_mask, command_p);
+-
+-	priv->waiting_command_mask |= command_p;
+-
+-	if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
+-		if (time_after(jiffies, priv->lastReset + 5 * HZ))
+-			priv->waiting_command_mask &= ~ARLAN_COMMAND_RESET;
+-
+-	if (priv->waiting_command_mask & ARLAN_COMMAND_INT_ACK)
+-	{
+-		arlan_interrupt_ack(dev);
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_ACK;
+-	}
+-	if (priv->waiting_command_mask & ARLAN_COMMAND_INT_ENABLE)
+-	{
+-		setInterruptEnable(dev);
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_ENABLE;
+-	}
+-
+-	/* Card access serializing lock */
+-	spin_lock_irqsave(&priv->lock, flags);
+-
+-	/* Check cards status and waiting */
+-
+-	if (priv->waiting_command_mask & (ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW))
+-	{
+-		while (priv->waiting_command_mask & (ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW))
+-		{
+-			if (READSHMB(arlan->resetFlag) ||
+-				READSHMB(arlan->commandByte))	/* || 
+-								   (readControlRegister(dev) & ARLAN_ACCESS))
+-								 */
+-				udelay(40);
+-			else
+-				priv->waiting_command_mask &= ~(ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW);
+-
+-			udelayed++;
+-
+-			if (priv->waiting_command_mask & ARLAN_COMMAND_LONG_WAIT_NOW)
+-			{
+-				if (udelayed * 40 > 1000000)
+-				{
+-					printk(KERN_ERR "%s long wait too long \n", dev->name);
+-					priv->waiting_command_mask |= ARLAN_COMMAND_RESET;
+-					break;
+-				}
+-			}
+-			else if (priv->waiting_command_mask & ARLAN_COMMAND_WAIT_NOW)
+-			{
+-				if (udelayed * 40 > 1000)
+-				{
+-					printk(KERN_ERR "%s short wait too long \n", dev->name);
+-					goto bad_end;
+-				}
+-			}
+-		}
+-	}
+-	else
+-	{
+-		i = 0;
+-		while ((READSHMB(arlan->resetFlag) ||
+-			READSHMB(arlan->commandByte)) &&
+-			conf->pre_Command_Wait > (i++) * 10)
+-			udelay(10);
+-
+-
+-		if ((READSHMB(arlan->resetFlag) ||
+-			READSHMB(arlan->commandByte)) &&
+-			!(priv->waiting_command_mask & ARLAN_COMMAND_RESET))
+-		{
+-			goto card_busy_end;
+-		}
+-	}
+-	if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
+-		priv->under_reset = 1;
+-	if (priv->waiting_command_mask & ARLAN_COMMAND_CONF)
+-		priv->under_config = 1;
+-
+-	/* Issuing command */
+-	arlan_lock_card_access(dev);
+-	if (priv->waiting_command_mask & ARLAN_COMMAND_POWERUP)
+-	{
+-	//     if (readControlRegister(dev) & (ARLAN_ACCESS && ARLAN_POWER))
+-		setPowerOn(dev);
+-		arlan_interrupt_lancpu(dev);
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_POWERUP;
+-		priv->waiting_command_mask |= ARLAN_COMMAND_RESET;
+-		priv->card_polling_interval = HZ / 10;
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_ACTIVATE)
+-	{
+-		WRITESHMB(arlan->commandByte, ARLAN_COM_ACTIVATE);
+-		arlan_interrupt_lancpu(dev);
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_ACTIVATE;
+-		priv->card_polling_interval = HZ / 10;
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_RX_ABORT)
+-	{
+-		if (priv->rx_command_given)
+-		{
+-			WRITESHMB(arlan->commandByte, ARLAN_COM_RX_ABORT);
+-			arlan_interrupt_lancpu(dev);
+-			priv->rx_command_given = 0;
+-		}
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_RX_ABORT;
+-		priv->card_polling_interval = 1;
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_TX_ABORT)
+-	{
+-		if (priv->tx_command_given)
+-		{
+-			WRITESHMB(arlan->commandByte, ARLAN_COM_TX_ABORT);
+-			arlan_interrupt_lancpu(dev);
+-			priv->tx_command_given = 0;
+-		}
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_TX_ABORT;
+-		priv->card_polling_interval = 1;
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
+-	{
+-		priv->under_reset=1;
+-		netif_stop_queue (dev);
+-
+-		arlan_drop_tx(dev);
+-		if (priv->tx_command_given || priv->rx_command_given)
+-		{
+-			printk(KERN_ERR "%s: Reset under tx or rx command \n", dev->name);
+-		}
+-		netif_stop_queue (dev);
+-		if (arlan_debug & ARLAN_DEBUG_RESET)
+-			printk(KERN_ERR "%s: Doing chip reset\n", dev->name);
+-		priv->lastReset = jiffies;
+-		WRITESHM(arlan->commandByte, 0, u_char);
+-		/* hold card in reset state */
+-		setHardwareReset(dev);
+-		/* set reset flag and then release reset */
+-		WRITESHM(arlan->resetFlag, 0xff, u_char);
+-		clearChannelAttention(dev);
+-		clearHardwareReset(dev);
+-		priv->card_polling_interval = HZ / 4;
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_RESET;
+-		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RACK;
+-//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RENABLE; 
+-//		priv->waiting_command_mask |= ARLAN_COMMAND_RX;
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_INT_RACK)
+-	{
+-		clearHardwareReset(dev);
+-		clearClearInterrupt(dev);
+-		setClearInterrupt(dev);
+-		setInterruptEnable(dev);
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_RACK;
+-		priv->waiting_command_mask |= ARLAN_COMMAND_CONF;
+-		priv->under_config = 1;
+-		priv->under_reset = 0;
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_INT_RENABLE)
+-	{
+-		setInterruptEnable(dev);
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_RENABLE;
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_CONF)
+-	{
+-		if (priv->tx_command_given || priv->rx_command_given)
+-		{
+-			printk(KERN_ERR "%s: Reset under tx or rx command \n", dev->name);
+-		}
+-		arlan_drop_tx(dev);
+-		setInterruptEnable(dev);
+-		arlan_hw_config(dev);
+-		arlan_interrupt_lancpu(dev);
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_CONF;
+-		priv->card_polling_interval = HZ / 10;
+-//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RACK;   
+-//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_ENABLE; 
+-		priv->waiting_command_mask |= ARLAN_COMMAND_CONF_WAIT;
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_CONF_WAIT)
+-	{
+-		if (READSHMB(arlan->configuredStatusFlag) != 0 &&
+-			READSHMB(arlan->diagnosticInfo) == 0xff)
+-		{
+-			priv->waiting_command_mask &= ~ARLAN_COMMAND_CONF_WAIT;
+-			priv->waiting_command_mask |= ARLAN_COMMAND_RX;
+-			priv->waiting_command_mask |= ARLAN_COMMAND_TBUSY_CLEAR;
+-			priv->card_polling_interval = HZ / 10;
+-			priv->tx_command_given = 0;
+-			priv->under_config = 0;
+-		}
+-		else
+-		{
+-			priv->card_polling_interval = 1;
+-			if (arlan_debug & ARLAN_DEBUG_TIMING)
+-				printk(KERN_ERR "configure delayed \n");
+-		}
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_RX)
+-	{
+-		if (!registrationBad(dev))
+-		{
+-			setInterruptEnable(dev);
+-			memset_io(arlan->commandParameter, 0, 0xf);
+-			WRITESHMB(arlan->commandByte, ARLAN_COM_INT | ARLAN_COM_RX_ENABLE);
+-			WRITESHMB(arlan->commandParameter[0], conf->rxParameter);
+-			arlan_interrupt_lancpu(dev);
+-			priv->rx_command_given = 0; // mnjah, bad
+-			priv->waiting_command_mask &= ~ARLAN_COMMAND_RX;
+-			priv->card_polling_interval = 1;
+-		}
+-		else
+-			priv->card_polling_interval = 2;
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_TBUSY_CLEAR)
+-	{
+-		if ( !registrationBad(dev) &&
+-		     (netif_queue_stopped(dev) || !netif_running(dev)) )
+-			{
+-				priv->waiting_command_mask &= ~ARLAN_COMMAND_TBUSY_CLEAR;
+-				netif_wake_queue (dev);
+-			}
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_TX)
+-	{
+-		if (!test_and_set_bit(0, (void *) &priv->tx_command_given))
+-		{
+-			if (time_after(jiffies, 
+-				       priv->tx_last_sent + us2ticks(conf->rx_tweak1))
+-			    || time_before(jiffies,
+-					   priv->last_rx_int_ack_time + us2ticks(conf->rx_tweak2)))
+-			{
+-				setInterruptEnable(dev);
+-				memset_io(arlan->commandParameter, 0, 0xf);
+-				WRITESHMB(arlan->commandByte, ARLAN_COM_TX_ENABLE | ARLAN_COM_INT);
+-				memcpy_toio(arlan->commandParameter, &TXLAST(dev), 14);
+-//				for ( i=1 ; i < 15 ; i++) printk("%02x:",READSHMB(arlan->commandParameter[i]));
+-				priv->tx_last_sent = jiffies;
+-				arlan_interrupt_lancpu(dev);
+-				priv->tx_command_given = 1;
+-				priv->waiting_command_mask &= ~ARLAN_COMMAND_TX;
+-				priv->card_polling_interval = 1;
+-			}
+-			else
+-			{
+-				priv->tx_command_given = 0;
+-				priv->card_polling_interval = 1;
+-			}
+-		} 
+-		else if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
+-			printk(KERN_ERR "tx command when tx chain locked \n");
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_NOOPINT)
+-	{
+-		{
+-			WRITESHMB(arlan->commandByte, ARLAN_COM_NOP | ARLAN_COM_INT);
+-		}
+-		arlan_interrupt_lancpu(dev);
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_NOOPINT;
+-		priv->card_polling_interval = HZ / 3;
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_NOOP)
+-	{
+-		WRITESHMB(arlan->commandByte, ARLAN_COM_NOP);
+-		arlan_interrupt_lancpu(dev);
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_NOOP;
+-		priv->card_polling_interval = HZ / 3;
+-	}
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_SLOW_POLL)
+-	{
+-		WRITESHMB(arlan->commandByte, ARLAN_COM_GOTO_SLOW_POLL);
+-		arlan_interrupt_lancpu(dev);
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_SLOW_POLL;
+-		priv->card_polling_interval = HZ / 3;
+-	} 
+-	else if (priv->waiting_command_mask & ARLAN_COMMAND_POWERDOWN)
+-	{
+-		setPowerOff(dev);
+-		if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
+-			printk(KERN_WARNING "%s: Arlan Going Standby\n", dev->name);
+-		priv->waiting_command_mask &= ~ARLAN_COMMAND_POWERDOWN;
+-		priv->card_polling_interval = 3 * HZ;
+-	}
+-	arlan_unlock_card_access(dev);
+-	for (i = 0; READSHMB(arlan->commandByte) && i < 20; i++)
+-		udelay(10);
+-	if (READSHMB(arlan->commandByte))
+-		if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
+-			printk(KERN_ERR "card busy leaving command %lx\n", priv->waiting_command_mask);
+-
+-	spin_unlock_irqrestore(&priv->lock, flags);
+-	ARLAN_DEBUG_EXIT("arlan_command");
+-	priv->last_command_buff_free_time = jiffies;
+-	return 0;
+-
+-card_busy_end:
+-	if (time_after(jiffies, priv->last_command_buff_free_time + HZ))
+-		priv->waiting_command_mask |= ARLAN_COMMAND_CLEAN_AND_RESET;
+-
+-	if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
+-		printk(KERN_ERR "%s arlan_command card busy end \n", dev->name);
+-	spin_unlock_irqrestore(&priv->lock, flags);
+-	ARLAN_DEBUG_EXIT("arlan_command");
+-	return 1;
+-
+-bad_end:
+-	printk(KERN_ERR "%s arlan_command bad end \n", dev->name);
+-
+-	spin_unlock_irqrestore(&priv->lock, flags);
+-	ARLAN_DEBUG_EXIT("arlan_command");
+-
+-	return -1;
+-}
+-
+-static inline void arlan_command_process(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-
+-	int times = 0;
+-	while (priv->waiting_command_mask && times < 8)
+-	{
+-		if (priv->waiting_command_mask)
+-		{
+-			if (arlan_command(dev, 0))
+-				break;
+-			times++;
+-		}
+-		/* if long command, we won't repeat trying */ ;
+-		if (priv->card_polling_interval > 1)
+-			break;
+-		times++;
+-	}
+-}
+-
+-
+-static inline void arlan_retransmit_now(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-
+-
+-	ARLAN_DEBUG_ENTRY("arlan_retransmit_now");
+-	if (TXLAST(dev).offset == 0)
+-	{
+-		if (TXHEAD(dev).offset)
+-		{
+-			priv->txLast = 0;
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_DEBUG "TX buff switch to head \n");
+-
+-		}
+-		else if (TXTAIL(dev).offset)
+-		{
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_DEBUG "TX buff switch to tail \n");
+-			priv->txLast = 1;
+-		}
+-		else
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_ERR "ReTransmit buff empty");
+-		netif_wake_queue (dev);
+-		return;
+-
+-	}
+-	arlan_command(dev, ARLAN_COMMAND_TX);
+-
+-	priv->Conf->driverRetransmissions++;
+-	priv->retransmissions++;
+-
+-	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk("Retransmit %d bytes \n", TXLAST(dev).length);
+-
+-	ARLAN_DEBUG_EXIT("arlan_retransmit_now");
+-}
+-
+-
+-
+-static void arlan_registration_timer(unsigned long data)
+-{
+-	struct net_device *dev = (struct net_device *) data;
+-	struct arlan_private *priv = netdev_priv(dev);
+-	int bh_mark_needed = 0;
+-	int next_tick = 1;
+-	long lostTime = ((long)jiffies - (long)priv->registrationLastSeen)
+-			* (1000/HZ);
+-
+-	if (registrationBad(dev))
+-	{
+-		priv->registrationLostCount++;
+-		if (lostTime > 7000 && lostTime < 7200)
+-		{
+-			printk(KERN_NOTICE "%s registration Lost \n", dev->name);
+-		}
+-		if (lostTime / priv->reRegisterExp > 2000)
+-			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_CONF);
+-		if (lostTime / (priv->reRegisterExp) > 3500)
+-			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
+-		if (priv->reRegisterExp < 400)
+-			priv->reRegisterExp += 2;
+-		if (lostTime > 7200)
+-		{
+-			next_tick = HZ;
+-			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
+-		}
+-	}
+-	else
+-	{
+-		if (priv->Conf->registrationMode && lostTime > 10000 &&
+-			priv->registrationLostCount)
+-		{
+-			printk(KERN_NOTICE "%s registration is back after %ld milliseconds\n",
+-			       dev->name, lostTime);
+-		}
+-		priv->registrationLastSeen = jiffies;
+-		priv->registrationLostCount = 0;
+-		priv->reRegisterExp = 1;
+-		if (!netif_running(dev) )
+-			netif_wake_queue(dev);
+-		if (time_after(priv->tx_last_sent,priv->tx_last_cleared) &&
+-		    time_after(jiffies, priv->tx_last_sent * 5*HZ) ){
+-			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);		
+-			priv->tx_last_cleared = jiffies;
+-		}
+-	}
+-
+-
+-	if (!registrationBad(dev) && priv->ReTransmitRequested)
+-	{
+-		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-			printk(KERN_ERR "Retransmit from timer \n");
+-		priv->ReTransmitRequested = 0;
+-		arlan_retransmit_now(dev);
+-	}
+-	if (!registrationBad(dev) &&
+-		time_after(jiffies, priv->tx_done_delayed) &&
+-		priv->tx_done_delayed != 0)
+-	{
+-		TXLAST(dev).offset = 0;
+-		if (priv->txLast)
+-			priv->txLast = 0;
+-		else if (TXTAIL(dev).offset)
+-			priv->txLast = 1;
+-		if (TXLAST(dev).offset)
+-		{
+-			arlan_retransmit_now(dev);
+-			dev->trans_start = jiffies;
+-		}
+-		if (!(TXHEAD(dev).offset && TXTAIL(dev).offset))
+-		{
+-			netif_wake_queue (dev);
+-		}
+-		priv->tx_done_delayed = 0;
+-		bh_mark_needed = 1;
+-	}
+-	if (bh_mark_needed)
+-	{
+-		netif_wake_queue (dev);
+-	}
+-	arlan_process_interrupt(dev);
+-
+-	if (next_tick < priv->card_polling_interval)
+-		next_tick = priv->card_polling_interval;
+-
+-	priv->timer.expires = jiffies + next_tick;
+-
+-	add_timer(&priv->timer);
+-}
+-
+-
+-#ifdef ARLAN_DEBUGGING
+-
+-static void arlan_print_registers(struct net_device *dev, int line)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem *arlan = priv->card;
+-
+-	u_char hostcpuLock, lancpuLock, controlRegister, cntrlRegImage,
+-		txStatus, rxStatus, interruptInProgress, commandByte;
+-
+-
+-	ARLAN_DEBUG_ENTRY("arlan_print_registers");
+-	READSHM(interruptInProgress, arlan->interruptInProgress, u_char);
+-	READSHM(hostcpuLock, arlan->hostcpuLock, u_char);
+-	READSHM(lancpuLock, arlan->lancpuLock, u_char);
+-	READSHM(controlRegister, arlan->controlRegister, u_char);
+-	READSHM(cntrlRegImage, arlan->cntrlRegImage, u_char);
+-	READSHM(txStatus, arlan->txStatus, u_char);
+-	READSHM(rxStatus, arlan->rxStatus, u_char);
+-	READSHM(commandByte, arlan->commandByte, u_char);
+-
+-	printk(KERN_WARNING "line %04d IP %02x HL %02x LL %02x CB %02x CR %02x CRI %02x TX %02x RX %02x\n",
+-		line, interruptInProgress, hostcpuLock, lancpuLock, commandByte,
+-		controlRegister, cntrlRegImage, txStatus, rxStatus);
+-
+-	ARLAN_DEBUG_EXIT("arlan_print_registers");
+-}
+-#endif
+-
+-
+-static int arlan_hw_tx(struct net_device *dev, char *buf, int length)
+-{
+-	int i;
+-
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-	struct arlan_conf_stru *conf = priv->Conf;
+-
+-	int tailStarts = 0x800;
+-	int headEnds = 0x0;
+-
+-
+-	ARLAN_DEBUG_ENTRY("arlan_hw_tx");
+-	if (TXHEAD(dev).offset)
+-		headEnds = (((TXHEAD(dev).offset + TXHEAD(dev).length - offsetof(struct arlan_shmem, txBuffer)) / 64) + 1) * 64;
+-	if (TXTAIL(dev).offset)
+-		tailStarts = 0x800 - (((TXTAIL(dev).offset - offsetof(struct arlan_shmem, txBuffer)) / 64) + 2) * 64;
+-
+-
+-	if (!TXHEAD(dev).offset && length < tailStarts)
+-	{
+-		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-			printk(KERN_ERR "TXHEAD insert, tailStart %d\n", tailStarts);
+-
+-		TXHEAD(dev).offset =
+-			offsetof(struct arlan_shmem, txBuffer);
+-		TXHEAD(dev).length = length - ARLAN_FAKE_HDR_LEN;
+-		for (i = 0; i < 6; i++)
+-			TXHEAD(dev).dest[i] = buf[i];
+-		TXHEAD(dev).clear = conf->txClear;
+-		TXHEAD(dev).retries = conf->txRetries;	/* 0 is use default */
+-		TXHEAD(dev).routing = conf->txRouting;
+-		TXHEAD(dev).scrambled = conf->txScrambled;
+-		memcpy_toio((char __iomem *)arlan + TXHEAD(dev).offset, buf + ARLAN_FAKE_HDR_LEN, TXHEAD(dev).length);
+-	}
+-	else if (!TXTAIL(dev).offset && length < (0x800 - headEnds))
+-	{
+-		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-			printk(KERN_ERR "TXTAIL insert, headEnd %d\n", headEnds);
+-
+-		TXTAIL(dev).offset =
+-			offsetof(struct arlan_shmem, txBuffer) + 0x800 - (length / 64 + 2) * 64;
+-		TXTAIL(dev).length = length - ARLAN_FAKE_HDR_LEN;
+-		for (i = 0; i < 6; i++)
+-			TXTAIL(dev).dest[i] = buf[i];
+-		TXTAIL(dev).clear = conf->txClear;
+-		TXTAIL(dev).retries = conf->txRetries;
+-		TXTAIL(dev).routing = conf->txRouting;
+-		TXTAIL(dev).scrambled = conf->txScrambled;
+-		memcpy_toio(((char __iomem *)arlan + TXTAIL(dev).offset), buf + ARLAN_FAKE_HDR_LEN, TXTAIL(dev).length);
+-	}
+-	else
+-	{
+-		netif_stop_queue (dev);
+-		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-			printk(KERN_ERR "TX TAIL & HEAD full, return, tailStart %d headEnd %d\n", tailStarts, headEnds);
+-		return -1;
+-	}
+-	priv->out_bytes += length;
+-	priv->out_bytes10 += length;
+-	if (conf->measure_rate < 1)
+-		conf->measure_rate = 1;
+-	if (time_after(jiffies, priv->out_time + conf->measure_rate * HZ))
+-	{
+-		conf->out_speed = priv->out_bytes / conf->measure_rate;
+-		priv->out_bytes = 0;
+-		priv->out_time = jiffies;
+-	}
+-	if (time_after(jiffies, priv->out_time10 + conf->measure_rate * 10*HZ))
+-	{
+-		conf->out_speed10 = priv->out_bytes10 / (10 * conf->measure_rate);
+-		priv->out_bytes10 = 0;
+-		priv->out_time10 = jiffies;
+-	}
+-	if (TXHEAD(dev).offset && TXTAIL(dev).offset)
+-	{
+-		netif_stop_queue (dev);
+-		return 0;
+-	}
+-	else
+-		netif_start_queue (dev);
+-
+-
+-	IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
+-		printk(KERN_WARNING "%s Transmit t %2x:%2x:%2x:%2x:%2x:%2x f %2x:%2x:%2x:%2x:%2x:%2x \n", dev->name,
+-		   (unsigned char) buf[0], (unsigned char) buf[1], (unsigned char) buf[2], (unsigned char) buf[3],
+-		   (unsigned char) buf[4], (unsigned char) buf[5], (unsigned char) buf[6], (unsigned char) buf[7],
+-		   (unsigned char) buf[8], (unsigned char) buf[9], (unsigned char) buf[10], (unsigned char) buf[11]);
+-
+-	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_ERR "TX command prepare for buffer %d\n", priv->txLast);
+-
+-	arlan_command(dev, ARLAN_COMMAND_TX);
+-
+-	priv->tx_last_sent = jiffies;
+-
+-	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk("%s TX Qued %d bytes \n", dev->name, length);
+-
+-	ARLAN_DEBUG_EXIT("arlan_hw_tx");
+-
+-	return 0;
+-}
+-
+-
+-static int arlan_hw_config(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-	struct arlan_conf_stru *conf = priv->Conf;
+-
+-	ARLAN_DEBUG_ENTRY("arlan_hw_config");
+-
+-	printk(KERN_NOTICE "%s arlan configure called \n", dev->name);
+-	if (arlan_EEPROM_bad)
+-		printk(KERN_NOTICE "arlan configure with eeprom bad option \n");
+-
+-
+-	WRITESHM(arlan->spreadingCode, conf->spreadingCode, u_char);
+-	WRITESHM(arlan->channelSet, conf->channelSet, u_char);
+-
+-	if (arlan_EEPROM_bad)
+-		WRITESHM(arlan->defaultChannelSet, conf->channelSet, u_char);
+-
+-	WRITESHM(arlan->channelNumber, conf->channelNumber, u_char);
+-
+-	WRITESHM(arlan->scramblingDisable, conf->scramblingDisable, u_char);
+-	WRITESHM(arlan->txAttenuation, conf->txAttenuation, u_char);
+-
+-	WRITESHM(arlan->systemId, conf->systemId, u_int);
+-
+-	WRITESHM(arlan->maxRetries, conf->maxRetries, u_char);
+-	WRITESHM(arlan->receiveMode, conf->receiveMode, u_char);
+-	WRITESHM(arlan->priority, conf->priority, u_char);
+-	WRITESHM(arlan->rootOrRepeater, conf->rootOrRepeater, u_char);
+-	WRITESHM(arlan->SID, conf->SID, u_int);
+-
+-	WRITESHM(arlan->registrationMode, conf->registrationMode, u_char);
+-
+-	WRITESHM(arlan->registrationFill, conf->registrationFill, u_char);
+-	WRITESHM(arlan->localTalkAddress, conf->localTalkAddress, u_char);
+-	WRITESHM(arlan->codeFormat, conf->codeFormat, u_char);
+-	WRITESHM(arlan->numChannels, conf->numChannels, u_char);
+-	WRITESHM(arlan->channel1, conf->channel1, u_char);
+-	WRITESHM(arlan->channel2, conf->channel2, u_char);
+-	WRITESHM(arlan->channel3, conf->channel3, u_char);
+-	WRITESHM(arlan->channel4, conf->channel4, u_char);
+-	WRITESHM(arlan->radioNodeId, conf->radioNodeId, u_short);
+-	WRITESHM(arlan->SID, conf->SID, u_int);
+-	WRITESHM(arlan->waitTime, conf->waitTime, u_short);
+-	WRITESHM(arlan->lParameter, conf->lParameter, u_short);
+-	memcpy_toio(&(arlan->_15), &(conf->_15), 3);
+-	WRITESHM(arlan->_15, conf->_15, u_short);
+-	WRITESHM(arlan->headerSize, conf->headerSize, u_short);
+-	if (arlan_EEPROM_bad)
+-		WRITESHM(arlan->hardwareType, conf->hardwareType, u_char);
+-	WRITESHM(arlan->radioType, conf->radioType, u_char);
+-	if (arlan_EEPROM_bad)
+-		WRITESHM(arlan->radioModule, conf->radioType, u_char);
+-
+-	memcpy_toio(arlan->encryptionKey + keyStart, encryptionKey, 8);
+-	memcpy_toio(arlan->name, conf->siteName, 16);
+-
+-	WRITESHMB(arlan->commandByte, ARLAN_COM_INT | ARLAN_COM_CONF);	/* do configure */
+-	memset_io(arlan->commandParameter, 0, 0xf);	/* 0xf */
+-	memset_io(arlan->commandParameter + 1, 0, 2);
+-	if (conf->writeEEPROM)
+-	{
+-		  memset_io(arlan->commandParameter, conf->writeEEPROM, 1);
+-//		conf->writeEEPROM=0;
+-	}
+-	if (conf->registrationMode && conf->registrationInterrupts)
+-		memset_io(arlan->commandParameter + 3, 1, 1);
+-	else
+-		memset_io(arlan->commandParameter + 3, 0, 1);
+-
+-	priv->irq_test_done = 0;
+-
+-	if (conf->tx_queue_len)
+-		dev->tx_queue_len = conf->tx_queue_len;
+-	udelay(100);
+-
+-	ARLAN_DEBUG_EXIT("arlan_hw_config");
+-	return 0;
+-}
+-
+-
+-static int arlan_read_card_configuration(struct net_device *dev)
+-{
+-	u_char tlx415;
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-	struct arlan_conf_stru *conf = priv->Conf;
+-
+-	ARLAN_DEBUG_ENTRY("arlan_read_card_configuration");
+-
+-	if (radioNodeId == radioNodeIdUNKNOWN)
+-	{
+-		READSHM(conf->radioNodeId, arlan->radioNodeId, u_short);
+-	}
+-	else
+-		conf->radioNodeId = radioNodeId;
+-		
+-	if (SID == SIDUNKNOWN)
+-	{
+-		READSHM(conf->SID, arlan->SID, u_int);
+-	}
+-	else conf->SID = SID;
+-		
+-	if (spreadingCode == spreadingCodeUNKNOWN)
+-	{
+-		  READSHM(conf->spreadingCode, arlan->spreadingCode, u_char);
+-	}
+-	else
+-		conf->spreadingCode = spreadingCode;
+-		
+-	if (channelSet == channelSetUNKNOWN)
+-	{
+-		READSHM(conf->channelSet, arlan->channelSet, u_char);
+-	}
+-	else conf->channelSet = channelSet;
+-
+-	if (channelNumber == channelNumberUNKNOWN)
+-	{
+-		READSHM(conf->channelNumber, arlan->channelNumber, u_char);
+-	}
+-	else conf->channelNumber = channelNumber;
+-	
+-	READSHM(conf->scramblingDisable, arlan->scramblingDisable, u_char);
+-	READSHM(conf->txAttenuation, arlan->txAttenuation, u_char);
+-	
+-	if (systemId == systemIdUNKNOWN)
+-	{
+-		READSHM(conf->systemId, arlan->systemId, u_int);
+-	} 
+-	else conf->systemId = systemId;
+-	
+-	READSHM(conf->maxDatagramSize, arlan->maxDatagramSize, u_short);
+-	READSHM(conf->maxFrameSize, arlan->maxFrameSize, u_short);
+-	READSHM(conf->maxRetries, arlan->maxRetries, u_char);
+-	READSHM(conf->receiveMode, arlan->receiveMode, u_char);
+-	READSHM(conf->priority, arlan->priority, u_char);
+-	READSHM(conf->rootOrRepeater, arlan->rootOrRepeater, u_char);
+-
+-	if (SID == SIDUNKNOWN)
+-	{
+-		  READSHM(conf->SID, arlan->SID, u_int);
+-	}
+-	else conf->SID = SID;
+-	
+-	if (registrationMode == registrationModeUNKNOWN)
+-	{
+-		  READSHM(conf->registrationMode, arlan->registrationMode, u_char);
+-	}
+-	else conf->registrationMode = registrationMode;
+-	
+-	READSHM(conf->registrationFill, arlan->registrationFill, u_char);
+-	READSHM(conf->localTalkAddress, arlan->localTalkAddress, u_char);
+-	READSHM(conf->codeFormat, arlan->codeFormat, u_char);
+-	READSHM(conf->numChannels, arlan->numChannels, u_char);
+-	READSHM(conf->channel1, arlan->channel1, u_char);
+-	READSHM(conf->channel2, arlan->channel2, u_char);
+-	READSHM(conf->channel3, arlan->channel3, u_char);
+-	READSHM(conf->channel4, arlan->channel4, u_char);
+-	READSHM(conf->waitTime, arlan->waitTime, u_short);
+-	READSHM(conf->lParameter, arlan->lParameter, u_short);
+-	READSHM(conf->_15, arlan->_15, u_short);
+-	READSHM(conf->headerSize, arlan->headerSize, u_short);
+-	READSHM(conf->hardwareType, arlan->hardwareType, u_char);
+-	READSHM(conf->radioType, arlan->radioModule, u_char);
+-	
+-	if (conf->radioType == 0)
+-		conf->radioType = 0xc;
+-
+-	WRITESHM(arlan->configStatus, 0xA5, u_char);
+-	READSHM(tlx415, arlan->configStatus, u_char);
+-	
+-	if (tlx415 != 0xA5)
+-		printk(KERN_INFO "%s tlx415 chip \n", dev->name);
+-	
+-	conf->txClear = 0;
+-	conf->txRetries = 1;
+-	conf->txRouting = 1;
+-	conf->txScrambled = 0;
+-	conf->rxParameter = 1;
+-	conf->txTimeoutMs = 4000;
+-	conf->waitCardTimeout = 100000;
+-	conf->receiveMode = ARLAN_RCV_CLEAN;
+-	memcpy_fromio(conf->siteName, arlan->name, 16);
+-	conf->siteName[16] = '\0';
+-	conf->retries = retries;
+-	conf->tx_delay_ms = tx_delay_ms;
+-	conf->ReTransmitPacketMaxSize = 200;
+-	conf->waitReTransmitPacketMaxSize = 200;
+-	conf->txAckTimeoutMs = 900;
+-	conf->fastReTransCount = 3;
+-
+-	ARLAN_DEBUG_EXIT("arlan_read_card_configuration");
+-
+-	return 0;
+-}
+-
+-
+-static int lastFoundAt = 0xbe000;
+-
+-
+-/*
+- * This is the real probe routine. Linux has a history of friendly device
+- * probes on the ISA bus. A good device probes avoids doing writes, and
+- * verifies that the correct device exists and functions.
+- */
+-#define ARLAN_SHMEM_SIZE	0x2000
+-static int __init arlan_check_fingerprint(unsigned long memaddr)
+-{
+-	static const char probeText[] = "TELESYSTEM SLW INC.    ARLAN \0";
+-	volatile struct arlan_shmem __iomem *arlan = (struct arlan_shmem *) memaddr;
+-	unsigned long paddr = virt_to_phys((void *) memaddr);
+-	char tempBuf[49];
+-
+-	ARLAN_DEBUG_ENTRY("arlan_check_fingerprint");
+-
+-	if (!request_mem_region(paddr, ARLAN_SHMEM_SIZE, "arlan")) {
+-		// printk(KERN_WARNING "arlan: memory region %lx excluded from probing \n",paddr);
+-		return -ENODEV;
+-	}
+-
+-	memcpy_fromio(tempBuf, arlan->textRegion, 29);
+-	tempBuf[30] = 0;
+-
+-	/* check for card at this address */
+-	if (0 != strncmp(tempBuf, probeText, 29)){
+- 		release_mem_region(paddr, ARLAN_SHMEM_SIZE);
+-		return -ENODEV;
+-	}
+-
+-//   printk(KERN_INFO "arlan found at 0x%x \n",memaddr);
+-	ARLAN_DEBUG_EXIT("arlan_check_fingerprint");
+-
+-	return 0;
+-}
+-
+-static int arlan_change_mtu(struct net_device *dev, int new_mtu)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-	struct arlan_conf_stru *conf = priv->Conf;
+-
+-	ARLAN_DEBUG_ENTRY("arlan_change_mtu");
+-	if (new_mtu > 2032)
+-		return -EINVAL;
+-	dev->mtu = new_mtu;
+-	if (new_mtu < 256)
+-		new_mtu = 256;	/* cards book suggests 1600 */
+-	conf->maxDatagramSize = new_mtu;
+-	conf->maxFrameSize = new_mtu + 48;
+-
+-	arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_CONF);
+-	printk(KERN_NOTICE "%s mtu changed to %d \n", dev->name, new_mtu);
+-
+-	ARLAN_DEBUG_EXIT("arlan_change_mtu");
+-
+-	return 0;
+-}
+-
+-static int arlan_mac_addr(struct net_device *dev, void *p)
+-{
+-	struct sockaddr *addr = p;
+-
+-
+-	ARLAN_DEBUG_ENTRY("arlan_mac_addr");
+-	return -EINVAL;
+-
+-	if (netif_running(dev))
+-		return -EBUSY;
+-	memcpy(dev->dev_addr, addr->sa_data, dev->addr_len);
+-
+-	ARLAN_DEBUG_EXIT("arlan_mac_addr");
+-	return 0;
+-}
+-
+-static const struct net_device_ops arlan_netdev_ops = {
+-	.ndo_open		= arlan_open,
+-	.ndo_stop		= arlan_close,
+-	.ndo_start_xmit		= arlan_tx,
+-	.ndo_get_stats		= arlan_statistics,
+-	.ndo_set_multicast_list = arlan_set_multicast,
+-	.ndo_change_mtu		= arlan_change_mtu,
+-	.ndo_set_mac_address	= arlan_mac_addr,
+-	.ndo_tx_timeout		= arlan_tx_timeout,
+-	.ndo_validate_addr	= eth_validate_addr,
+-};
+-
+-static int __init arlan_setup_device(struct net_device *dev, int num)
+-{
+-	struct arlan_private *ap = netdev_priv(dev);
+-	int err;
+-
+-	ARLAN_DEBUG_ENTRY("arlan_setup_device");
+-
+-	ap->conf = (struct arlan_shmem *)(ap+1);
+-
+-	dev->tx_queue_len = tx_queue_len;
+-	dev->netdev_ops = &arlan_netdev_ops;
+-	dev->watchdog_timeo = 3*HZ;
+-	
+-	ap->irq_test_done = 0;
+-	ap->Conf = &arlan_conf[num];
+-
+-	ap->Conf->pre_Command_Wait = 40;
+-	ap->Conf->rx_tweak1 = 30;
+-	ap->Conf->rx_tweak2 = 0;
+-
+-
+-	err = register_netdev(dev);
+-	if (err) {
+-		release_mem_region(virt_to_phys((void *) dev->mem_start), 
+-			   ARLAN_SHMEM_SIZE);
+-		free_netdev(dev);
+-		return err;
+-	}
+-	arlan_device[num] = dev;
+-	ARLAN_DEBUG_EXIT("arlan_setup_device");
+-	return 0;
+-}
+-
+-static int __init arlan_probe_here(struct net_device *dev, 
+-				   unsigned long memaddr)
+-{
+-	struct arlan_private *ap = netdev_priv(dev);
+-
+-	ARLAN_DEBUG_ENTRY("arlan_probe_here");
+-
+-	if (arlan_check_fingerprint(memaddr))
+-		return -ENODEV;
+-
+-	printk(KERN_NOTICE "%s: Arlan found at %llx, \n ", dev->name, 
+-	       (u64) virt_to_phys((void*)memaddr));
+-
+-	ap->card = (void *) memaddr;
+-	dev->mem_start = memaddr;
+-	dev->mem_end = memaddr + ARLAN_SHMEM_SIZE-1;
+-
+-	if (dev->irq < 2)
+-	{
+-		READSHM(dev->irq, ap->card->irqLevel, u_char);
+-	} else if (dev->irq == 2)
+-		dev->irq = 9;
+-
+-	arlan_read_card_configuration(dev);
+-
+-	ARLAN_DEBUG_EXIT("arlan_probe_here");
+-	return 0;
+-}
+-
+-
+-static int arlan_open(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-	int ret = 0;
+-
+-	ARLAN_DEBUG_ENTRY("arlan_open");
+-
+-	ret = request_irq(dev->irq, &arlan_interrupt, 0, dev->name, dev);
+-	if (ret)
+-	{
+-		printk(KERN_ERR "%s: unable to get IRQ %d .\n",
+-			dev->name, dev->irq);
+-		return ret;
+-	}
+-
+-
+-	priv->bad = 0;
+-	priv->lastReset = 0;
+-	priv->reset = 0;
+-	memcpy_fromio(dev->dev_addr, arlan->lanCardNodeId, 6);
+-	memset(dev->broadcast, 0xff, 6);
+-	dev->tx_queue_len = tx_queue_len;
+-	priv->interrupt_processing_active = 0;
+-	spin_lock_init(&priv->lock);
+-
+-	netif_start_queue (dev);
+-
+-	priv->registrationLostCount = 0;
+-	priv->registrationLastSeen = jiffies;
+-	priv->txLast = 0;
+-	priv->tx_command_given = 0;
+-	priv->rx_command_given = 0;
+-	
+-	priv->reRegisterExp = 1;
+-	priv->tx_last_sent = jiffies - 1;
+-	priv->tx_last_cleared = jiffies;
+-	priv->Conf->writeEEPROM = 0;
+-	priv->Conf->registrationInterrupts = 1;
+-
+-	init_timer(&priv->timer);
+-	priv->timer.expires = jiffies + HZ / 10;
+-	priv->timer.data = (unsigned long) dev;
+-	priv->timer.function = &arlan_registration_timer;	/* timer handler */
+-
+-	arlan_command(dev, ARLAN_COMMAND_POWERUP | ARLAN_COMMAND_LONG_WAIT_NOW);
+-	mdelay(200);
+-	add_timer(&priv->timer);
+-
+-	ARLAN_DEBUG_EXIT("arlan_open");
+-	return 0;
+-}
+-
+-
+-static void arlan_tx_timeout (struct net_device *dev)
+-{
+-	printk(KERN_ERR "%s: arlan transmit timed out, kernel decided\n", dev->name);
+-	/* Try to restart the adaptor. */
+-	arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
+-	// dev->trans_start = jiffies;
+-	// netif_start_queue (dev);
+-}
+-
+-
+-static netdev_tx_t arlan_tx(struct sk_buff *skb, struct net_device *dev)
+-{
+-	short length;
+-	unsigned char *buf;
+-
+-	ARLAN_DEBUG_ENTRY("arlan_tx");
+-	
+-	length = ETH_ZLEN < skb->len ? skb->len : ETH_ZLEN;
+-	buf = skb->data;
+-
+-	if (length + 0x12 > 0x800) {
+-		printk(KERN_ERR "TX RING overflow \n");
+-		netif_stop_queue (dev);
+-	}
+-
+-	if (arlan_hw_tx(dev, buf, length) == -1)
+-		goto bad_end;
+-
+-	dev->trans_start = jiffies;
+-
+-	dev_kfree_skb(skb);
+-
+-	arlan_process_interrupt(dev);
+-	ARLAN_DEBUG_EXIT("arlan_tx");
+-	return NETDEV_TX_OK;
+-
+-bad_end:
+-	arlan_process_interrupt(dev);
+-	netif_stop_queue (dev);
+-	ARLAN_DEBUG_EXIT("arlan_tx");
+-	return NETDEV_TX_BUSY;
+-}
+-
+-
+-static inline int DoNotReTransmitCrap(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-
+-	if (TXLAST(dev).length < priv->Conf->ReTransmitPacketMaxSize)
+-		return 1;
+-	return 0;
+-
+-}
+-
+-static inline int DoNotWaitReTransmitCrap(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-
+-	if (TXLAST(dev).length < priv->Conf->waitReTransmitPacketMaxSize)
+-		return 1;
+-	return 0;
+-}
+-
+-static inline void arlan_queue_retransmit(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-
+-	ARLAN_DEBUG_ENTRY("arlan_queue_retransmit");
+-
+-	if (DoNotWaitReTransmitCrap(dev))
+-	{
+-		  arlan_drop_tx(dev);
+-	} else
+-		priv->ReTransmitRequested++;
+-
+-	ARLAN_DEBUG_EXIT("arlan_queue_retransmit");
+-}
+-
+-static inline void RetryOrFail(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-
+-	ARLAN_DEBUG_ENTRY("RetryOrFail");
+-
+-	if (priv->retransmissions > priv->Conf->retries ||
+-	    DoNotReTransmitCrap(dev))
+-	{
+-		arlan_drop_tx(dev);
+-	}
+-	else if (priv->bad <= priv->Conf->fastReTransCount)
+-	{
+-		arlan_retransmit_now(dev);
+-	}
+-	else arlan_queue_retransmit(dev);
+-
+-	ARLAN_DEBUG_EXIT("RetryOrFail");
+-}
+-
+-
+-static void arlan_tx_done_interrupt(struct net_device *dev, int status)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-
+-	ARLAN_DEBUG_ENTRY("arlan_tx_done_interrupt");
+-
+-	priv->tx_last_cleared = jiffies;
+-	priv->tx_command_given = 0;
+-	switch (status)
+-	{
+-		case 1:
+-		{
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-				printk("arlan intr: transmit OK\n");
+-			dev->stats.tx_packets++;
+-			priv->bad = 0;
+-			priv->reset = 0;
+-			priv->retransmissions = 0;
+-			if (priv->Conf->tx_delay_ms)
+-			{
+-				priv->tx_done_delayed = jiffies + (priv->Conf->tx_delay_ms * HZ) / 1000 + 1;
+-			}
+-			else
+-			{
+-				TXLAST(dev).offset = 0;
+-				if (priv->txLast)
+-					priv->txLast = 0;
+-				else if (TXTAIL(dev).offset)
+-					priv->txLast = 1;
+-				if (TXLAST(dev).offset)
+-				{
+-					arlan_retransmit_now(dev);
+-					dev->trans_start = jiffies;
+-				}
+-				if (!TXHEAD(dev).offset || !TXTAIL(dev).offset)
+-				{
+-					netif_wake_queue (dev);
+-				}
+-			}
+-		}
+-		break;
+-		
+-		case 2:
+-		{
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-				printk("arlan intr: transmit timed out\n");
+-			priv->bad += 1;
+-			//arlan_queue_retransmit(dev);
+-			RetryOrFail(dev);
+-		}
+-		break;
+-
+-		case 3:
+-		{
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-				printk("arlan intr: transmit max retries\n");
+-			priv->bad += 1;
+-			priv->reset = 0;
+-			//arlan_queue_retransmit(dev);
+-			RetryOrFail(dev);
+-		}
+-		break;
+-		
+-		case 4:
+-		{
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-				printk("arlan intr: transmit aborted\n");
+-			priv->bad += 1;
+-			arlan_queue_retransmit(dev);
+-			//RetryOrFail(dev);
+-		}
+-		break;
+-
+-		case 5:
+-		{
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-				printk("arlan intr: transmit not registered\n");
+-			priv->bad += 1;
+-			//debug=101;
+-			arlan_queue_retransmit(dev);
+-		}
+-		break;
+-
+-		case 6:
+-		{
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) 
+-				printk("arlan intr: transmit destination full\n");
+-			priv->bad += 1;
+-			priv->reset = 0;
+-			//arlan_drop_tx(dev);
+-			arlan_queue_retransmit(dev);
+-		}
+-		break;
+-
+-		case 7:
+-		{
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-				printk("arlan intr: transmit unknown ack\n");
+-			priv->bad += 1;
+-			priv->reset = 0;
+-			arlan_queue_retransmit(dev);
+-		}
+-		break;
+-		
+-		case 8:
+-		{
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-				printk("arlan intr: transmit dest mail box full\n");
+-			priv->bad += 1;
+-			priv->reset = 0;
+-			//arlan_drop_tx(dev);
+-			arlan_queue_retransmit(dev);
+-		}
+-		break;
+-
+-		case 9:
+-		{
+-			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
+-				printk("arlan intr: transmit root dest not reg.\n");
+-			priv->bad += 1;
+-			priv->reset = 1;
+-			//arlan_drop_tx(dev);
+-			arlan_queue_retransmit(dev);
+-		}
+-		break;
+-
+-		default:
+-		{
+-			printk(KERN_ERR "arlan intr: transmit status unknown\n");
+-			priv->bad += 1;
+-			priv->reset = 1;
+-			arlan_drop_tx(dev);
+-		}
+-	}
+-
+-	ARLAN_DEBUG_EXIT("arlan_tx_done_interrupt");
+-}
+-
+-
+-static void arlan_rx_interrupt(struct net_device *dev, u_char rxStatus, u_short rxOffset, u_short pkt_len)
+-{
+-	char *skbtmp;
+-	int i = 0;
+-
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-	struct arlan_conf_stru *conf = priv->Conf;
+-
+-
+-	ARLAN_DEBUG_ENTRY("arlan_rx_interrupt");
+-	// by spec,   not                WRITESHMB(arlan->rxStatus,0x00);
+-	// prohibited here              arlan_command(dev, ARLAN_COMMAND_RX);
+-
+-	if (pkt_len < 10 || pkt_len > 2048)
+-	{
+-		printk(KERN_WARNING "%s: got too short or long packet, len %d \n", dev->name, pkt_len);
+-		return;
+-	}
+-	if (rxOffset + pkt_len > 0x2000)
+-	{
+-		printk("%s: got too long packet, len %d offset %x\n", dev->name, pkt_len, rxOffset);
+-		return;
+-	}
+-	priv->in_bytes += pkt_len;
+-	priv->in_bytes10 += pkt_len;
+-	if (conf->measure_rate < 1)
+-		conf->measure_rate = 1;
+-	if (time_after(jiffies, priv->in_time + conf->measure_rate * HZ))
+-	{
+-		conf->in_speed = priv->in_bytes / conf->measure_rate;
+-		priv->in_bytes = 0;
+-		priv->in_time = jiffies;
+-	}
+-	if (time_after(jiffies, priv->in_time10 + conf->measure_rate * 10*HZ))
+-	{
+-		conf->in_speed10 = priv->in_bytes10 / (10 * conf->measure_rate);
+-		priv->in_bytes10 = 0;
+-		priv->in_time10 = jiffies;
+-	}
+-	DEBUGSHM(1, "arlan rcv pkt rxStatus= %d ", arlan->rxStatus, u_char);
+-	switch (rxStatus)
+-	{
+-		case 1:
+-		case 2:
+-		case 3:
+-		{
+-			/* Malloc up new buffer. */
+-			struct sk_buff *skb;
+-
+-			DEBUGSHM(50, "arlan recv pkt offs=%d\n", arlan->rxOffset, u_short);
+-			DEBUGSHM(1, "arlan rxFrmType = %d \n", arlan->rxFrmType, u_char);
+-			DEBUGSHM(1, KERN_INFO "arlan rx scrambled = %d \n", arlan->scrambled, u_char);
+-
+-			/* here we do multicast filtering to avoid slow 8-bit memcopy */
+-#ifdef ARLAN_MULTICAST
+-			if (!(dev->flags & IFF_ALLMULTI) &&
+-				!(dev->flags & IFF_PROMISC) &&
+-				dev->mc_list)
+-			{
+-				char hw_dst_addr[6];
+-				struct dev_mc_list *dmi = dev->mc_list;
+-				int i;
+-
+-				memcpy_fromio(hw_dst_addr, arlan->ultimateDestAddress, 6);
+-				if (hw_dst_addr[0] == 0x01)
+-				{
+-					if (mdebug)
+-						if (hw_dst_addr[1] == 0x00)
+-							printk(KERN_ERR "%s mcast 0x0100 \n", dev->name);
+-						else if (hw_dst_addr[1] == 0x40)
+-							printk(KERN_ERR "%s m/bcast 0x0140 \n", dev->name);
+-					while (dmi)
+-					{
+-						if (dmi->dmi_addrlen == 6) {
+-							if (arlan_debug & ARLAN_DEBUG_HEADER_DUMP)
+-								printk(KERN_ERR "%s mcl %pM\n",
+-								       dev->name, dmi->dmi_addr);
+-							for (i = 0; i < 6; i++)
+-								if (dmi->dmi_addr[i] != hw_dst_addr[i])
+-									break;
+-							if (i == 6)
+-								break;
+-						} else
+-							printk(KERN_ERR "%s: invalid multicast address length given.\n", dev->name);
+-						dmi = dmi->next;
+-					}
+-					/* we reach here if multicast filtering is on and packet 
+-					 * is multicast and not for receive */
+-					goto end_of_interrupt;
+-				}
+-			}
+-#endif				// ARLAN_MULTICAST
+-			/* multicast filtering ends here */
+-			pkt_len += ARLAN_FAKE_HDR_LEN;
+-
+-			skb = dev_alloc_skb(pkt_len + 4);
+-			if (skb == NULL)
+-			{
+-				printk(KERN_ERR "%s: Memory squeeze, dropping packet.\n", dev->name);
+-				dev->stats.rx_dropped++;
+-				break;
+-			}
+-			skb_reserve(skb, 2);
+-			skbtmp = skb_put(skb, pkt_len);
+-
+-			memcpy_fromio(skbtmp + ARLAN_FAKE_HDR_LEN, ((char __iomem *) arlan) + rxOffset, pkt_len - ARLAN_FAKE_HDR_LEN);
+-			memcpy_fromio(skbtmp, arlan->ultimateDestAddress, 6);
+-			memcpy_fromio(skbtmp + 6, arlan->rxSrc, 6);
+-			WRITESHMB(arlan->rxStatus, 0x00);
+-			arlan_command(dev, ARLAN_COMMAND_RX);
+-
+-			IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
+-			{
+-				char immedDestAddress[6];
+-				char immedSrcAddress[6];
+-				memcpy_fromio(immedDestAddress, arlan->immedDestAddress, 6);
+-				memcpy_fromio(immedSrcAddress, arlan->immedSrcAddress, 6);
+-
+-				printk(KERN_WARNING "%s t %pM f %pM imd %pM ims %pM\n",
+-				       dev->name, skbtmp,
+-				       &skbtmp[6],
+-				       immedDestAddress,
+-				       immedSrcAddress);
+-			}
+-			skb->protocol = eth_type_trans(skb, dev);
+-			IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
+-				if (skb->protocol != 0x608 && skb->protocol != 0x8)
+-				{
+-					for (i = 0; i <= 22; i++)
+-						printk("%02x:", (u_char) skbtmp[i + 12]);
+-					printk(KERN_ERR "\n");
+-					printk(KERN_WARNING "arlan kernel pkt type trans %x \n", skb->protocol);
+-				}
+-			netif_rx(skb);
+-			dev->stats.rx_packets++;
+-			dev->stats.rx_bytes += pkt_len;
+-		}
+-		break;
+-		
+-		default:
+-			printk(KERN_ERR "arlan intr: received unknown status\n");
+-			dev->stats.rx_crc_errors++;
+-			break;
+-	}
+-	ARLAN_DEBUG_EXIT("arlan_rx_interrupt");
+-}
+-
+-static void arlan_process_interrupt(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-	u_char rxStatus = READSHMB(arlan->rxStatus);
+-	u_char txStatus = READSHMB(arlan->txStatus);
+-	u_short rxOffset = READSHMS(arlan->rxOffset);
+-	u_short pkt_len = READSHMS(arlan->rxLength);
+-	int interrupt_count = 0;
+-
+-	ARLAN_DEBUG_ENTRY("arlan_process_interrupt");
+-
+-	if (test_and_set_bit(0, (void *) &priv->interrupt_processing_active))
+-	{
+-		if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
+-			printk(KERN_ERR "interrupt chain reentering \n");
+-		goto end_int_process;
+-	}
+-	while ((rxStatus || txStatus || priv->interrupt_ack_requested)
+-			&& (interrupt_count < 5))
+-	{
+-		if (rxStatus)
+-			priv->last_rx_int_ack_time = jiffies;
+-
+-		arlan_command(dev, ARLAN_COMMAND_INT_ACK);
+-		arlan_command(dev, ARLAN_COMMAND_INT_ENABLE);
+-		
+-		IFDEBUG(ARLAN_DEBUG_INTERRUPT)
+-			printk(KERN_ERR "%s:  got IRQ rx %x tx %x comm %x rxOff %x rxLen %x \n",
+-					dev->name, rxStatus, txStatus, READSHMB(arlan->commandByte),
+-					rxOffset, pkt_len);
+-
+-		if (rxStatus == 0 && txStatus == 0)
+-		{
+-			if (priv->irq_test_done)
+-			{
+-				if (!registrationBad(dev))
+-					IFDEBUG(ARLAN_DEBUG_INTERRUPT) printk(KERN_ERR "%s unknown interrupt(nop? regLost ?) reason tx %d rx %d ",
+-										    dev->name, txStatus, rxStatus);
+-			} else {
+-				IFDEBUG(ARLAN_DEBUG_INTERRUPT)
+-					printk(KERN_INFO "%s irq $%d test OK \n", dev->name, dev->irq);
+-
+-			}
+-			priv->interrupt_ack_requested = 0;
+-			goto ends;
+-		}
+-		if (txStatus != 0)
+-		{
+-			WRITESHMB(arlan->txStatus, 0x00);
+-			arlan_tx_done_interrupt(dev, txStatus);
+-			goto ends;
+-		}
+-		if (rxStatus == 1 || rxStatus == 2)
+-		{		/* a packet waiting */
+-			arlan_rx_interrupt(dev, rxStatus, rxOffset, pkt_len);
+-			goto ends;
+-		}
+-		if (rxStatus > 2 && rxStatus < 0xff)
+-		{
+-			WRITESHMB(arlan->rxStatus, 0x00);
+-			printk(KERN_ERR "%s unknown rxStatus reason tx %d rx %d ",
+-				dev->name, txStatus, rxStatus);
+-			goto ends;
+-		}
+-		if (rxStatus == 0xff)
+-		{
+-			WRITESHMB(arlan->rxStatus, 0x00);
+-			arlan_command(dev, ARLAN_COMMAND_RX);
+-			if (registrationBad(dev))
+-				netif_device_detach(dev);
+-			if (!registrationBad(dev))
+-			{
+-				priv->registrationLastSeen = jiffies;
+-				if (!netif_queue_stopped(dev) && !priv->under_reset && !priv->under_config)
+-					netif_wake_queue (dev);
+-			}
+-			goto ends;
+-		}
+-ends:
+-
+-		arlan_command_process(dev);
+-
+-		rxStatus = READSHMB(arlan->rxStatus);
+-		txStatus = READSHMB(arlan->txStatus);
+-		rxOffset = READSHMS(arlan->rxOffset);
+-		pkt_len = READSHMS(arlan->rxLength);
+-
+-
+-		priv->irq_test_done = 1;
+-
+-		interrupt_count++;
+-	}
+-	priv->interrupt_processing_active = 0;
+-
+-end_int_process:
+-	arlan_command_process(dev);
+-
+-	ARLAN_DEBUG_EXIT("arlan_process_interrupt");
+-	return;
+-}
+-
+-static irqreturn_t arlan_interrupt(int irq, void *dev_id)
+-{
+-	struct net_device *dev = dev_id;
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-	u_char rxStatus = READSHMB(arlan->rxStatus);
+-	u_char txStatus = READSHMB(arlan->txStatus);
+-
+-	ARLAN_DEBUG_ENTRY("arlan_interrupt");
+-
+-
+-	if (!rxStatus && !txStatus)
+-		priv->interrupt_ack_requested++;
+-
+-	arlan_process_interrupt(dev);
+-	
+-	priv->irq_test_done = 1;
+-
+-	ARLAN_DEBUG_EXIT("arlan_interrupt");
+-	return IRQ_HANDLED;
+-
+-}
+-
+-
+-static int arlan_close(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-
+-	ARLAN_DEBUG_ENTRY("arlan_close");
+-
+-	del_timer_sync(&priv->timer);
+-
+-	arlan_command(dev, ARLAN_COMMAND_POWERDOWN);
+-
+-	IFDEBUG(ARLAN_DEBUG_STARTUP)
+-		printk(KERN_NOTICE "%s: Closing device\n", dev->name);
+-
+-	netif_stop_queue(dev);
+-	free_irq(dev->irq, dev);
+-
+-	ARLAN_DEBUG_EXIT("arlan_close");
+-	return 0;
+-}
+-
+-#ifdef ARLAN_DEBUGGING
+-static long alignLong(volatile u_char * ptr)
+-{
+-	long ret;
+-	memcpy_fromio(&ret, (void *) ptr, 4);
+-	return ret;
+-}
+-#endif
+-
+-/*
+- * Get the current statistics.
+- * This may be called with the card open or closed.
+- */
+-
+-static struct net_device_stats *arlan_statistics(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-
+-
+-	ARLAN_DEBUG_ENTRY("arlan_statistics");
+-
+-	/* Update the statistics from the device registers. */
+-
+-	READSHM(dev->stats.collisions, arlan->numReTransmissions, u_int);
+-	READSHM(dev->stats.rx_crc_errors, arlan->numCRCErrors, u_int);
+-	READSHM(dev->stats.rx_dropped, arlan->numFramesDiscarded, u_int);
+-	READSHM(dev->stats.rx_fifo_errors, arlan->numRXBufferOverflows, u_int);
+-	READSHM(dev->stats.rx_frame_errors, arlan->numReceiveFramesLost, u_int);
+-	READSHM(dev->stats.rx_over_errors, arlan->numRXOverruns, u_int);
+-	READSHM(dev->stats.rx_packets, arlan->numDatagramsReceived, u_int);
+-	READSHM(dev->stats.tx_aborted_errors, arlan->numAbortErrors, u_int);
+-	READSHM(dev->stats.tx_carrier_errors, arlan->numStatusTimeouts, u_int);
+-	READSHM(dev->stats.tx_dropped, arlan->numDatagramsDiscarded, u_int);
+-	READSHM(dev->stats.tx_fifo_errors, arlan->numTXUnderruns, u_int);
+-	READSHM(dev->stats.tx_packets, arlan->numDatagramsTransmitted, u_int);
+-	READSHM(dev->stats.tx_window_errors, arlan->numHoldOffs, u_int);
+-
+-	ARLAN_DEBUG_EXIT("arlan_statistics");
+-
+-	return &dev->stats;
+-}
+-
+-
+-static void arlan_set_multicast(struct net_device *dev)
+-{
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-	struct arlan_conf_stru *conf = priv->Conf;
+-	int board_conf_needed = 0;
+-
+-
+-	ARLAN_DEBUG_ENTRY("arlan_set_multicast");
+-
+-	if (dev->flags & IFF_PROMISC)
+-	{
+-		unsigned char recMode;
+-		READSHM(recMode, arlan->receiveMode, u_char);
+-		conf->receiveMode = (ARLAN_RCV_PROMISC | ARLAN_RCV_CONTROL);
+-		if (conf->receiveMode != recMode)
+-			board_conf_needed = 1;
+-	}
+-	else
+-	{
+-		/* turn off promiscuous mode  */
+-		unsigned char recMode;
+-		READSHM(recMode, arlan->receiveMode, u_char);
+-		conf->receiveMode = ARLAN_RCV_CLEAN | ARLAN_RCV_CONTROL;
+-		if (conf->receiveMode != recMode)
+-			board_conf_needed = 1;
+-	}
+-	if (board_conf_needed)
+-		arlan_command(dev, ARLAN_COMMAND_CONF);
+-
+-	ARLAN_DEBUG_EXIT("arlan_set_multicast");
+-}
+-
+-
+-struct net_device * __init arlan_probe(int unit)
+-{
+-	struct net_device *dev;
+-	int err;
+-	int m;
+-
+-	ARLAN_DEBUG_ENTRY("arlan_probe");
+-
+-	if (arlans_found == MAX_ARLANS)
+-		return ERR_PTR(-ENODEV);
+-
+-	/* 
+-	 * Reserve space for local data and a copy of the shared memory
+-	 * that is used by the /proc interface.
+-	 */
+-	dev = alloc_etherdev(sizeof(struct arlan_private)
+-			     + sizeof(struct arlan_shmem));
+-	if (!dev)
+-		return ERR_PTR(-ENOMEM);
+-
+-	if (unit >= 0) {
+-		sprintf(dev->name, "eth%d", unit);
+-		netdev_boot_setup_check(dev);
+-		
+-		if (dev->mem_start) {
+-			if (arlan_probe_here(dev, dev->mem_start) == 0)
+-				goto found;
+-			goto not_found;
+-		}
+-			
+-	}
+-
+-
+-	for (m = (int)phys_to_virt(lastFoundAt) + ARLAN_SHMEM_SIZE; 
+-	     m <= (int)phys_to_virt(0xDE000); 
+-	     m += ARLAN_SHMEM_SIZE)
+-	{
+-		if (arlan_probe_here(dev, m) == 0)
+-		{
+-			lastFoundAt = (int)virt_to_phys((void*)m);
+-			goto found;
+-		}
+-	}
+-
+-	if (lastFoundAt == 0xbe000)
+-		printk(KERN_ERR "arlan: No Arlan devices found \n");
+-
+- not_found:
+-	free_netdev(dev);
+-	return ERR_PTR(-ENODEV);
+-
+- found:
+-	err = arlan_setup_device(dev, arlans_found);
+-	if (err)
+-		dev = ERR_PTR(err);
+-	else if (!arlans_found++)
+-		printk(KERN_INFO "Arlan driver %s\n", arlan_version);
+-
+-	return dev;
+-}
+-
+-#ifdef  MODULE
+-int __init init_module(void)
+-{
+-	int i = 0;
+-
+-	ARLAN_DEBUG_ENTRY("init_module");
+-
+-	if (channelSet != channelSetUNKNOWN || channelNumber != channelNumberUNKNOWN || systemId != systemIdUNKNOWN)
+-		return -EINVAL;
+-
+-	for (i = 0; i < MAX_ARLANS; i++) {
+-		struct net_device *dev = arlan_probe(i);
+-
+-		if (IS_ERR(dev)) 
+-			return PTR_ERR(dev);
+-	}
+-	init_arlan_proc();
+-	printk(KERN_INFO "Arlan driver %s\n", arlan_version);
+-	ARLAN_DEBUG_EXIT("init_module");
+-	return 0;
+-}
+-
+-
+-void __exit cleanup_module(void)
+-{
+-	int i = 0;
+-	struct net_device *dev;
+-
+-	ARLAN_DEBUG_ENTRY("cleanup_module");
+-
+-	IFDEBUG(ARLAN_DEBUG_SHUTDOWN)
+-		printk(KERN_INFO "arlan: unloading module\n");
+-
+-	cleanup_arlan_proc();
+-
+-	for (i = 0; i < MAX_ARLANS; i++)
+-	{
+-		dev = arlan_device[i];
+-		if (dev) {
+-			arlan_command(dev, ARLAN_COMMAND_POWERDOWN );
+-
+-			unregister_netdev(dev);
+-			release_mem_region(virt_to_phys((void *) dev->mem_start), 
+-					   ARLAN_SHMEM_SIZE);
+-			free_netdev(dev);
+-			arlan_device[i] = NULL;
+-		}
+-	}
+-
+-	ARLAN_DEBUG_EXIT("cleanup_module");
+-}
+-
+-
+-#endif
+-MODULE_LICENSE("GPL");
+diff --git a/drivers/net/wireless/arlan-proc.c b/drivers/net/wireless/arlan-proc.c
+deleted file mode 100644
+index a8b6896..0000000
+--- a/drivers/net/wireless/arlan-proc.c
++++ /dev/null
+@@ -1,1253 +0,0 @@
+-#include "arlan.h"
+-
+-#include <linux/sysctl.h>
+-
+-#ifdef CONFIG_PROC_FS
+-
+-/* void enableReceive(struct net_device* dev);
+-*/
+-
+-
+-
+-#define ARLAN_STR_SIZE 	0x2ff0
+-#define DEV_ARLAN_INFO 	1
+-#define DEV_ARLAN 	1
+-#define SARLG(type,var) {\
+-	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n", #var, READSHMB(priva->card->var));	\
+-	}
+-
+-#define SARLBN(type,var,nn) {\
+-	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x",#var);\
+-	for (i=0; i < nn; i++ ) pos += sprintf(arlan_drive_info+pos, "%02x",READSHMB(priva->card->var[i]));\
+-	pos += sprintf(arlan_drive_info+pos, "\n");	\
+-	}
+-
+-#define SARLBNpln(type,var,nn) {\
+-	for (i=0; i < nn; i++ ) pos += sprintf(arlan_drive_info+pos, "%02x",READSHMB(priva->card->var[i]));\
+-	}
+-
+-#define SARLSTR(var,nn) {\
+-	char tmpStr[400];\
+-	int  tmpLn = nn;\
+-	if (nn > 399 ) tmpLn = 399; \
+-	memcpy(tmpStr,(char *) priva->conf->var,tmpLn);\
+-	tmpStr[tmpLn] = 0; \
+-	pos += sprintf(arlan_drive_info+pos, "%s\t=\t%s \n",#var,priva->conf->var);\
+-	}
+-
+-#define SARLUC(var)  	SARLG(u_char, var)
+-#define SARLUCN(var,nn) SARLBN(u_char,var, nn)
+-#define SARLUS(var)	SARLG(u_short, var)
+-#define SARLUSN(var,nn)	SARLBN(u_short,var, nn)
+-#define SARLUI(var)	SARLG(u_int, var)
+-
+-#define SARLUSA(var) {\
+-	u_short tmpVar;\
+-	memcpy(&tmpVar, (short *) priva->conf->var,2); \
+-	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n",#var, tmpVar);\
+-}
+-
+-#define SARLUIA(var) {\
+-	u_int tmpVar;\
+-	memcpy(&tmpVar, (int* )priva->conf->var,4); \
+-	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n",#var, tmpVar);\
+-}
+-
+-
+-static const char *arlan_diagnostic_info_string(struct net_device *dev)
+-{
+-
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-	u_char diagnosticInfo;
+-
+-	READSHM(diagnosticInfo, arlan->diagnosticInfo, u_char);
+-
+-	switch (diagnosticInfo)
+-	{
+-		case 0xFF:
+-			return "Diagnostic info is OK";
+-		case 0xFE:
+-			return "ERROR EPROM Checksum error ";
+-		case 0xFD:
+-			return "ERROR Local Ram Test Failed ";
+-		case 0xFC:
+-			return "ERROR SCC failure ";
+-		case 0xFB:
+-			return "ERROR BackBone failure ";
+-		case 0xFA:
+-			return "ERROR transceiver not found ";
+-		case 0xF9:
+-			return "ERROR no more address space ";
+-		case 0xF8:
+-			return "ERROR Checksum error  ";
+-		case 0xF7:
+-			return "ERROR Missing SS Code";
+-		case 0xF6:
+-			return "ERROR Invalid config format";
+-		case 0xF5:
+-			return "ERROR Reserved errorcode F5";
+-		case 0xF4:
+-			return "ERROR Invalid spreading code/channel number";
+-		case 0xF3:
+-			return "ERROR Load Code Error";
+-		case 0xF2:
+-			return "ERROR Reserver errorcode F2 ";
+-		case 0xF1:
+-			return "ERROR Invalid command receivec by LAN card ";
+-		case 0xF0:
+-			return "ERROR Invalid parameter found in command ";
+-		case 0xEF:
+-			return "ERROR On-chip timer failure ";
+-		case 0xEE:
+-			return "ERROR T410 timer failure ";
+-		case 0xED:
+-			return "ERROR Too Many TxEnable commands ";
+-		case 0xEC:
+-			return "ERROR EEPROM error on radio module ";
+-		default:
+-			return "ERROR unknown Diagnostic info reply code ";
+-	  }
+-}
+-
+-static const char *arlan_hardware_type_string(struct net_device *dev)
+-{
+-	u_char hardwareType;
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-
+-	READSHM(hardwareType, arlan->hardwareType, u_char);
+-	switch (hardwareType)
+-	{
+-		case 0x00:
+-			return "type A450";
+-		case 0x01:
+-			return "type A650 ";
+-		case 0x04:
+-			return "type TMA coproc";
+-		case 0x0D:
+-			return "type A650E ";
+-		case 0x18:
+-			return "type TMA coproc Australian";
+-		case 0x19:
+-			return "type A650A ";
+-		case 0x26:
+-			return "type TMA coproc European";
+-		case 0x2E:
+-			return "type A655 ";
+-		case 0x2F:
+-			return "type A655A ";
+-		case 0x30:
+-			return "type A655E ";
+-		case 0x0B:
+-			return "type A670 ";
+-		case 0x0C:
+-			return "type A670E ";
+-		case 0x2D:
+-			return "type A670A ";
+-		case 0x0F:
+-			return "type A411T";
+-		case 0x16:
+-			return "type A411TA";
+-		case 0x1B:
+-			return "type A440T";
+-		case 0x1C:
+-			return "type A412T";
+-		case 0x1E:
+-			return "type A412TA";
+-		case 0x22:
+-			return "type A411TE";
+-		case 0x24:
+-			return "type A412TE";
+-		case 0x27:
+-			return "type A671T ";
+-		case 0x29:
+-			return "type A671TA ";
+-		case 0x2B:
+-			return "type A671TE ";
+-		case 0x31:
+-			return "type A415T ";
+-		case 0x33:
+-			return "type A415TA ";
+-		case 0x35:
+-			return "type A415TE ";
+-		case 0x37:
+-			return "type A672";
+-		case 0x39:
+-			return "type A672A ";
+-		case 0x3B:
+-			return "type A672T";
+-		case 0x6B:
+-			return "type IC2200";
+-		default:
+-			return "type A672T";
+-	}
+-}
+-#ifdef ARLAN_DEBUGGING
+-static void arlan_print_diagnostic_info(struct net_device *dev)
+-{
+-	int i;
+-	u_char diagnosticInfo;
+-	u_short diagnosticOffset;
+-	u_char hardwareType;
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-
+-	//  ARLAN_DEBUG_ENTRY("arlan_print_diagnostic_info");
+-
+-	if (READSHMB(arlan->configuredStatusFlag) == 0)
+-		printk("Arlan: Card NOT configured\n");
+-	else
+-		printk("Arlan: Card is configured\n");
+-
+-	READSHM(diagnosticInfo, arlan->diagnosticInfo, u_char);
+-	READSHM(diagnosticOffset, arlan->diagnosticOffset, u_short);
+-
+-	printk(KERN_INFO "%s\n", arlan_diagnostic_info_string(dev));
+-
+-	if (diagnosticInfo != 0xff)
+-		printk("%s arlan: Diagnostic Offset %d \n", dev->name, diagnosticOffset);
+-
+-	printk("arlan: LAN CODE ID = ");
+-	for (i = 0; i < 6; i++)
+-		DEBUGSHM(1, "%03d:", arlan->lanCardNodeId[i], u_char);
+-	printk("\n");
+-
+-	printk("arlan: Arlan BroadCast address  = ");
+-	for (i = 0; i < 6; i++)
+-		DEBUGSHM(1, "%03d:", arlan->broadcastAddress[i], u_char);
+-	printk("\n");
+-
+-	READSHM(hardwareType, arlan->hardwareType, u_char);
+-	printk(KERN_INFO "%s\n", arlan_hardware_type_string(dev));
+-
+-
+-	DEBUGSHM(1, "arlan: channelNumber=%d\n", arlan->channelNumber, u_char);
+-	DEBUGSHM(1, "arlan: channelSet=%d\n", arlan->channelSet, u_char);
+-	DEBUGSHM(1, "arlan: spreadingCode=%d\n", arlan->spreadingCode, u_char);
+-	DEBUGSHM(1, "arlan: radioNodeId=%d\n", arlan->radioNodeId, u_short);
+-	DEBUGSHM(1, "arlan: SID	=%d\n", arlan->SID, u_short);
+-	DEBUGSHM(1, "arlan: rxOffset=%d\n", arlan->rxOffset, u_short);
+-
+-	DEBUGSHM(1, "arlan: registration mode is %d\n", arlan->registrationMode, u_char);
+-
+-	printk("arlan: name= ");
+-	IFDEBUG(1)
+-	
+-	for (i = 0; i < 16; i++)
+-	{
+-		char c;
+-		READSHM(c, arlan->name[i], char);
+-		if (c)
+-			printk("%c", c);
+-	}
+-	printk("\n");
+-
+-//   ARLAN_DEBUG_EXIT("arlan_print_diagnostic_info");
+-
+-}
+-
+-
+-/******************************		TEST 	MEMORY	**************/
+-
+-static int arlan_hw_test_memory(struct net_device *dev)
+-{
+-	u_char *ptr;
+-	int i;
+-	int memlen = sizeof(struct arlan_shmem) - 0xF;	/* avoid control register */
+-	volatile char *arlan_mem = (char *) (dev->mem_start);
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-	char pattern;
+-
+-	ptr = NULL;
+-
+-	/* hold card in reset state */
+-	setHardwareReset(dev);
+-
+-	/* test memory */
+-	pattern = 0;
+-	for (i = 0; i < memlen; i++)
+-		WRITESHM(arlan_mem[i], ((u_char) pattern++), u_char);
+-
+-	pattern = 0;
+-	for (i = 0; i < memlen; i++)
+-	{
+-		char res;
+-		READSHM(res, arlan_mem[i], char);
+-		if (res != pattern++)
+-		{
+-			printk(KERN_ERR "Arlan driver memory test 1 failed \n");
+-			return -1;
+-		}
+-	}
+-
+-	pattern = 0;
+-	for (i = 0; i < memlen; i++)
+-		WRITESHM(arlan_mem[i], ~(pattern++), char);
+-
+-	pattern = 0;
+-	for (i = 0; i < memlen; i++)
+-	{
+-		char res;
+-		READSHM(res, arlan_mem[i], char);
+-		if (res != ~(pattern++))
+-		{
+-			printk(KERN_ERR "Arlan driver memory test 2 failed \n");
+-			return -1;
+-		}
+-	}
+-
+-	/* zero memory */
+-	for (i = 0; i < memlen; i++)
+-		WRITESHM(arlan_mem[i], 0x00, char);
+-
+-	IFDEBUG(1) printk(KERN_INFO "Arlan: memory tests ok\n");
+-
+-	/* set reset flag and then release reset */
+-	WRITESHM(arlan->resetFlag, 0xff, u_char);
+-
+-	clearChannelAttention(dev);
+-	clearHardwareReset(dev);
+-
+-	/* wait for reset flag to become zero, we'll wait for two seconds */
+-	if (arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW))
+-	{
+-		printk(KERN_ERR "%s arlan: failed to come back from memory test\n", dev->name);
+-		return -1;
+-	}
+-	return 0;
+-}
+-
+-static int arlan_setup_card_by_book(struct net_device *dev)
+-{
+-	u_char irqLevel, configuredStatusFlag;
+-	struct arlan_private *priv = netdev_priv(dev);
+-	volatile struct arlan_shmem __iomem *arlan = priv->card;
+-
+-//	ARLAN_DEBUG_ENTRY("arlan_setup_card");
+-
+-	READSHM(configuredStatusFlag, arlan->configuredStatusFlag, u_char);
+-
+-	IFDEBUG(10)
+-	if (configuredStatusFlag != 0)
+-		IFDEBUG(10) printk("arlan: CARD IS CONFIGURED\n");
+-	else
+-		IFDEBUG(10) printk("arlan: card is NOT configured\n");
+-
+-	if (testMemory || (READSHMB(arlan->diagnosticInfo) != 0xff))
+-		if (arlan_hw_test_memory(dev))
+-			return -1;
+-
+-	DEBUGSHM(4, "arlan configuredStatus = %d \n", arlan->configuredStatusFlag, u_char);
+-	DEBUGSHM(4, "arlan driver diagnostic: 0x%2x\n", arlan->diagnosticInfo, u_char);
+-
+-	/* issue nop command - no interrupt */
+-	arlan_command(dev, ARLAN_COMMAND_NOOP);
+-	if (arlan_command(dev, ARLAN_COMMAND_WAIT_NOW) != 0)
+-		return -1;
+-
+-	IFDEBUG(50) printk("1st Noop successfully executed !!\n");
+-
+-	/* try to turn on the arlan interrupts */
+-	clearClearInterrupt(dev);
+-	setClearInterrupt(dev);
+-	setInterruptEnable(dev);
+-
+-	/* issue nop command - with interrupt */
+-
+-	arlan_command(dev, ARLAN_COMMAND_NOOPINT);
+-	if (arlan_command(dev, ARLAN_COMMAND_WAIT_NOW) != 0)
+-		return -1;
+-
+-
+-	IFDEBUG(50) printk("2nd Noop successfully executed !!\n");
+-
+-	READSHM(irqLevel, arlan->irqLevel, u_char)
+-	
+-	if (irqLevel != dev->irq)
+-	{
+-		IFDEBUG(1) printk(KERN_WARNING "arlan dip switches set irq to %d\n", irqLevel);
+-		printk(KERN_WARNING "device driver irq set to %d - does not match\n", dev->irq);
+-		dev->irq = irqLevel;
+-	}
+-	else
+-		IFDEBUG(2) printk("irq level is OK\n");
+-
+-
+-	IFDEBUG(3) arlan_print_diagnostic_info(dev);
+-
+-	arlan_command(dev, ARLAN_COMMAND_CONF);
+-
+-	READSHM(configuredStatusFlag, arlan->configuredStatusFlag, u_char);
+-	if (configuredStatusFlag == 0)
+-	{
+-		printk(KERN_WARNING "arlan configure failed\n");
+-		return -1;
+-	}
+-	arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW);
+-	arlan_command(dev, ARLAN_COMMAND_RX);
+-	arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW);
+-	printk(KERN_NOTICE "%s: arlan driver version %s loaded\n",
+-	       dev->name, arlan_version);
+-
+-//	ARLAN_DEBUG_EXIT("arlan_setup_card");
+-
+-	return 0;		/* no errors */
+-}
+-#endif
+-
+-#ifdef ARLAN_PROC_INTERFACE
+-#ifdef ARLAN_PROC_SHM_DUMP
+-
+-static char arlan_drive_info[ARLAN_STR_SIZE] = "A655\n\0";
+-
+-static int arlan_sysctl_info(ctl_table * ctl, int write,
+-		      void __user *buffer, size_t * lenp, loff_t *ppos)
+-{
+-	int i;
+-	int retv, pos, devnum;
+-	struct arlan_private *priva = NULL;
+-	struct net_device *dev;
+-	pos = 0;
+-	if (write)
+-	{
+-		printk("wrirte: ");
+-		for (i = 0; i < 100; i++)
+-			printk("adi %x \n", arlan_drive_info[i]);
+-	}
+-	if (ctl->procname == NULL || arlan_drive_info == NULL)
+-	{
+-		printk(KERN_WARNING " procname is NULL in sysctl_table or arlan_drive_info is NULL \n at arlan module\n ");
+-		return -1;
+-	}
+-	devnum = ctl->procname[5] - '0';
+-	if (devnum < 0 || devnum > MAX_ARLANS - 1)
+-	{
+-		printk(KERN_WARNING "too strange devnum in procfs parse\n ");
+-		return -1;
+-	}
+-	else if (arlan_device[devnum] == NULL)
+-	{
+-		if (ctl->procname)
+-			pos += sprintf(arlan_drive_info + pos, "\t%s\n\n", ctl->procname);
+-		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
+-		goto final;
+-	}
+-	else
+-		priva = netdev_priv(arlan_device[devnum]);
+-
+-	if (priva == NULL)
+-	{
+-		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
+-		return -1;
+-	}
+-	dev = arlan_device[devnum];
+-
+-	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
+-
+-	pos = sprintf(arlan_drive_info, "Arlan  info \n");
+-	/* Header Signature */
+-	SARLSTR(textRegion, 48);
+-	SARLUC(resetFlag);
+-	pos += sprintf(arlan_drive_info + pos, "diagnosticInfo\t=\t%s \n", arlan_diagnostic_info_string(dev));
+-	SARLUC(diagnosticInfo);
+-	SARLUS(diagnosticOffset);
+-	SARLUCN(_1, 12);
+-	SARLUCN(lanCardNodeId, 6);
+-	SARLUCN(broadcastAddress, 6);
+-	pos += sprintf(arlan_drive_info + pos, "hardwareType =\t  %s \n", arlan_hardware_type_string(dev));
+-	SARLUC(hardwareType);
+-	SARLUC(majorHardwareVersion);
+-	SARLUC(minorHardwareVersion);
+-	SARLUC(radioModule);
+-	SARLUC(defaultChannelSet);
+-	SARLUCN(_2, 47);
+-
+-	/* Control/Status Block - 0x0080 */
+-	SARLUC(interruptInProgress);
+-	SARLUC(cntrlRegImage);
+-
+-	SARLUCN(_3, 14);
+-	SARLUC(commandByte);
+-	SARLUCN(commandParameter, 15);
+-
+-	/* Receive Status - 0x00a0 */
+-	SARLUC(rxStatus);
+-	SARLUC(rxFrmType);
+-	SARLUS(rxOffset);
+-	SARLUS(rxLength);
+-	SARLUCN(rxSrc, 6);
+-	SARLUC(rxBroadcastFlag);
+-	SARLUC(rxQuality);
+-	SARLUC(scrambled);
+-	SARLUCN(_4, 1);
+-
+-	/* Transmit Status - 0x00b0 */
+-	SARLUC(txStatus);
+-	SARLUC(txAckQuality);
+-	SARLUC(numRetries);
+-	SARLUCN(_5, 14);
+-	SARLUCN(registeredRouter, 6);
+-	SARLUCN(backboneRouter, 6);
+-	SARLUC(registrationStatus);
+-	SARLUC(configuredStatusFlag);
+-	SARLUCN(_6, 1);
+-	SARLUCN(ultimateDestAddress, 6);
+-	SARLUCN(immedDestAddress, 6);
+-	SARLUCN(immedSrcAddress, 6);
+-	SARLUS(rxSequenceNumber);
+-	SARLUC(assignedLocaltalkAddress);
+-	SARLUCN(_7, 27);
+-
+-	/* System Parameter Block */
+-
+-	/* - Driver Parameters (Novell Specific) */
+-
+-	SARLUS(txTimeout);
+-	SARLUS(transportTime);
+-	SARLUCN(_8, 4);
+-
+-	/* - Configuration Parameters */
+-	SARLUC(irqLevel);
+-	SARLUC(spreadingCode);
+-	SARLUC(channelSet);
+-	SARLUC(channelNumber);
+-	SARLUS(radioNodeId);
+-	SARLUCN(_9, 2);
+-	SARLUC(scramblingDisable);
+-	SARLUC(radioType);
+-	SARLUS(routerId);
+-	SARLUCN(_10, 9);
+-	SARLUC(txAttenuation);
+-	SARLUIA(systemId);
+-	SARLUS(globalChecksum);
+-	SARLUCN(_11, 4);
+-	SARLUS(maxDatagramSize);
+-	SARLUS(maxFrameSize);
+-	SARLUC(maxRetries);
+-	SARLUC(receiveMode);
+-	SARLUC(priority);
+-	SARLUC(rootOrRepeater);
+-	SARLUCN(specifiedRouter, 6);
+-	SARLUS(fastPollPeriod);
+-	SARLUC(pollDecay);
+-	SARLUSA(fastPollDelay);
+-	SARLUC(arlThreshold);
+-	SARLUC(arlDecay);
+-	SARLUCN(_12, 1);
+-	SARLUS(specRouterTimeout);
+-	SARLUCN(_13, 5);
+-
+-	/* Scrambled Area */
+-	SARLUIA(SID);
+-	SARLUCN(encryptionKey, 12);
+-	SARLUIA(_14);
+-	SARLUSA(waitTime);
+-	SARLUSA(lParameter);
+-	SARLUCN(_15, 3);
+-	SARLUS(headerSize);
+-	SARLUS(sectionChecksum);
+-
+-	SARLUC(registrationMode);
+-	SARLUC(registrationFill);
+-	SARLUS(pollPeriod);
+-	SARLUS(refreshPeriod);
+-	SARLSTR(name, 16);
+-	SARLUCN(NID, 6);
+-	SARLUC(localTalkAddress);
+-	SARLUC(codeFormat);
+-	SARLUC(numChannels);
+-	SARLUC(channel1);
+-	SARLUC(channel2);
+-	SARLUC(channel3);
+-	SARLUC(channel4);
+-	SARLUCN(SSCode, 59);
+-
+-/*      SARLUCN( _16, 0x140);
+- */
+-	/* Statistics Block - 0x0300 */
+-	SARLUC(hostcpuLock);
+-	SARLUC(lancpuLock);
+-	SARLUCN(resetTime, 18);
+-	SARLUIA(numDatagramsTransmitted);
+-	SARLUIA(numReTransmissions);
+-	SARLUIA(numFramesDiscarded);
+-	SARLUIA(numDatagramsReceived);
+-	SARLUIA(numDuplicateReceivedFrames);
+-	SARLUIA(numDatagramsDiscarded);
+-	SARLUS(maxNumReTransmitDatagram);
+-	SARLUS(maxNumReTransmitFrames);
+-	SARLUS(maxNumConsecutiveDuplicateFrames);
+-	/* misaligned here so we have to go to characters */
+-	SARLUIA(numBytesTransmitted);
+-	SARLUIA(numBytesReceived);
+-	SARLUIA(numCRCErrors);
+-	SARLUIA(numLengthErrors);
+-	SARLUIA(numAbortErrors);
+-	SARLUIA(numTXUnderruns);
+-	SARLUIA(numRXOverruns);
+-	SARLUIA(numHoldOffs);
+-	SARLUIA(numFramesTransmitted);
+-	SARLUIA(numFramesReceived);
+-	SARLUIA(numReceiveFramesLost);
+-	SARLUIA(numRXBufferOverflows);
+-	SARLUIA(numFramesDiscardedAddrMismatch);
+-	SARLUIA(numFramesDiscardedSIDMismatch);
+-	SARLUIA(numPollsTransmistted);
+-	SARLUIA(numPollAcknowledges);
+-	SARLUIA(numStatusTimeouts);
+-	SARLUIA(numNACKReceived);
+-	SARLUS(auxCmd);
+-	SARLUCN(dumpPtr, 4);
+-	SARLUC(dumpVal);
+-	SARLUC(wireTest);
+-	
+-	/* next 4 seems too long for procfs, over single page ?
+-	SARLUCN( _17, 0x86);
+-	SARLUCN( txBuffer, 0x800);
+-	SARLUCN( rxBuffer,  0x800); 
+-	SARLUCN( _18, 0x0bff);
+-	 */
+-
+-	pos += sprintf(arlan_drive_info + pos, "rxRing\t=\t0x");
+-	for (i = 0; i < 0x50; i++)
+-		pos += sprintf(arlan_drive_info + pos, "%02x", ((char *) priva->conf)[priva->conf->rxOffset + i]);
+-	pos += sprintf(arlan_drive_info + pos, "\n");
+-
+-	SARLUC(configStatus);
+-	SARLUC(_22);
+-	SARLUC(progIOCtrl);
+-	SARLUC(shareMBase);
+-	SARLUC(controlRegister);
+-
+-	pos += sprintf(arlan_drive_info + pos, " total %d chars\n", pos);
+-	if (ctl)
+-		if (ctl->procname)
+-			pos += sprintf(arlan_drive_info + pos, " driver name : %s\n", ctl->procname);
+-final:
+-	*lenp = pos;
+-
+-	if (!write)
+-		retv = proc_dostring(ctl, write, buffer, lenp, ppos);
+-	else
+-	{
+-		*lenp = 0;
+-		return -1;
+-	}
+-	return retv;
+-}
+-
+-
+-static int arlan_sysctl_info161719(ctl_table * ctl, int write,
+-			    void __user *buffer, size_t * lenp, loff_t *ppos)
+-{
+-	int i;
+-	int retv, pos, devnum;
+-	struct arlan_private *priva = NULL;
+-
+-	pos = 0;
+-	devnum = ctl->procname[5] - '0';
+-	if (arlan_device[devnum] == NULL)
+-	{
+-		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
+-		goto final;
+-	}
+-	else
+-		priva = netdev_priv(arlan_device[devnum]);
+-	if (priva == NULL)
+-	{
+-		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
+-		return -1;
+-	}
+-	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
+-	SARLUCN(_16, 0xC0);
+-	SARLUCN(_17, 0x6A);
+-	SARLUCN(_18, 14);
+-	SARLUCN(_19, 0x86);
+-	SARLUCN(_21, 0x3fd);
+-
+-final:
+-	*lenp = pos;
+-	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
+-	return retv;
+-}
+-
+-static int arlan_sysctl_infotxRing(ctl_table * ctl, int write,
+-			    void __user *buffer, size_t * lenp, loff_t *ppos)
+-{
+-	int i;
+-	int retv, pos, devnum;
+-	struct arlan_private *priva = NULL;
+-
+-	pos = 0;
+-	devnum = ctl->procname[5] - '0';
+-	if (arlan_device[devnum] == NULL)
+-	{
+-		  pos += sprintf(arlan_drive_info + pos, "No device found here \n");
+-		  goto final;
+-	}
+-	else
+-		priva = netdev_priv(arlan_device[devnum]);
+-	if (priva == NULL)
+-	{
+-		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
+-		return -1;
+-	}
+-	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
+-	SARLBNpln(u_char, txBuffer, 0x800);
+-final:
+-	*lenp = pos;
+-	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
+-	return retv;
+-}
+-
+-static int arlan_sysctl_inforxRing(ctl_table * ctl, int write,
+-			    void __user *buffer, size_t * lenp, loff_t *ppos)
+-{
+-	int i;
+-	int retv, pos, devnum;
+-	struct arlan_private *priva = NULL;
+-
+-	pos = 0;
+-	devnum = ctl->procname[5] - '0';
+-	if (arlan_device[devnum] == NULL)
+-	{
+-		  pos += sprintf(arlan_drive_info + pos, "No device found here \n");
+-		  goto final;
+-	} else
+-		priva = netdev_priv(arlan_device[devnum]);
+-	if (priva == NULL)
+-	{
+-		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
+-		return -1;
+-	}
+-	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
+-	SARLBNpln(u_char, rxBuffer, 0x800);
+-final:
+-	*lenp = pos;
+-	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
+-	return retv;
+-}
+-
+-static int arlan_sysctl_info18(ctl_table * ctl, int write,
+-			void __user *buffer, size_t * lenp, loff_t *ppos)
+-{
+-	int i;
+-	int retv, pos, devnum;
+-	struct arlan_private *priva = NULL;
+-
+-	pos = 0;
+-	devnum = ctl->procname[5] - '0';
+-	if (arlan_device[devnum] == NULL)
+-	{
+-		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
+-		goto final;
+-	}
+-	else
+-		priva = netdev_priv(arlan_device[devnum]);
+-	if (priva == NULL)
+-	{
+-		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
+-		return -1;
+-	}
+-	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
+-	SARLBNpln(u_char, _18, 0x800);
+-
+-final:
+-	*lenp = pos;
+-	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
+-	return retv;
+-}
+-
+-
+-#endif				/* #ifdef ARLAN_PROC_SHM_DUMP */
+-
+-
+-static char conf_reset_result[200];
+-
+-static int arlan_configure(ctl_table * ctl, int write,
+-		    void __user *buffer, size_t * lenp, loff_t *ppos)
+-{
+-	int pos = 0;
+-	int devnum = ctl->procname[6] - '0';
+-	struct arlan_private *priv;
+-
+-	if (devnum < 0 || devnum > MAX_ARLANS - 1)
+-	{
+-		  printk(KERN_WARNING "too strange devnum in procfs parse\n ");
+-		  return -1;
+-	}
+-	else if (arlan_device[devnum] != NULL)
+-	{
+-		  priv = netdev_priv(arlan_device[devnum]);
+-
+-		  arlan_command(arlan_device[devnum], ARLAN_COMMAND_CLEAN_AND_CONF);
+-	}
+-	else
+-		return -1;
+-
+-	*lenp = pos;
+-	return proc_dostring(ctl, write, buffer, lenp, ppos);
+-}
+-
+-static int arlan_sysctl_reset(ctl_table * ctl, int write,
+-		       void __user *buffer, size_t * lenp, loff_t *ppos)
+-{
+-	int pos = 0;
+-	int devnum = ctl->procname[5] - '0';
+-	struct arlan_private *priv;
+-
+-	if (devnum < 0 || devnum > MAX_ARLANS - 1)
+-	{
+-		  printk(KERN_WARNING "too strange devnum in procfs parse\n ");
+-		  return -1;
+-	}
+-	else if (arlan_device[devnum] != NULL)
+-	{
+-		priv = netdev_priv(arlan_device[devnum]);
+-		arlan_command(arlan_device[devnum], ARLAN_COMMAND_CLEAN_AND_RESET);
+-
+-	} else
+-		return -1;
+-	*lenp = pos + 3;
+-	return proc_dostring(ctl, write, buffer, lenp, ppos);
+-}
+-
+-
+-/* Place files in /proc/sys/dev/arlan */
+-#define CTBLN(num,card,nam) \
+-        { .ctl_name = num,\
+-          .procname = #nam,\
+-          .data = &(arlan_conf[card].nam),\
+-          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec}
+-#ifdef ARLAN_DEBUGGING
+-
+-#define ARLAN_PROC_DEBUG_ENTRIES \
+-        { .ctl_name = 48, .procname = "entry_exit_debug",\
+-          .data = &arlan_entry_and_exit_debug,\
+-          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec},\
+-	{ .ctl_name = 49, .procname = "debug", .data = &arlan_debug,\
+-          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec},
+-#else 
+-#define ARLAN_PROC_DEBUG_ENTRIES
+-#endif
+-
+-#define ARLAN_SYSCTL_TABLE_TOTAL(cardNo)\
+-	CTBLN(1,cardNo,spreadingCode),\
+-	CTBLN(2,cardNo, channelNumber),\
+-	CTBLN(3,cardNo, scramblingDisable),\
+-	CTBLN(4,cardNo, txAttenuation),\
+-	CTBLN(5,cardNo, systemId), \
+-	CTBLN(6,cardNo, maxDatagramSize),\
+-	CTBLN(7,cardNo, maxFrameSize),\
+-	CTBLN(8,cardNo, maxRetries),\
+-	CTBLN(9,cardNo, receiveMode),\
+-	CTBLN(10,cardNo, priority),\
+-	CTBLN(11,cardNo, rootOrRepeater),\
+-	CTBLN(12,cardNo, SID),\
+-	CTBLN(13,cardNo, registrationMode),\
+-	CTBLN(14,cardNo, registrationFill),\
+-	CTBLN(15,cardNo, localTalkAddress),\
+-	CTBLN(16,cardNo, codeFormat),\
+-	CTBLN(17,cardNo, numChannels),\
+-	CTBLN(18,cardNo, channel1),\
+-	CTBLN(19,cardNo, channel2),\
+-	CTBLN(20,cardNo, channel3),\
+-	CTBLN(21,cardNo, channel4),\
+-	CTBLN(22,cardNo, txClear),\
+-	CTBLN(23,cardNo, txRetries),\
+-	CTBLN(24,cardNo, txRouting),\
+-	CTBLN(25,cardNo, txScrambled),\
+-	CTBLN(26,cardNo, rxParameter),\
+-	CTBLN(27,cardNo, txTimeoutMs),\
+-	CTBLN(28,cardNo, waitCardTimeout),\
+-	CTBLN(29,cardNo, channelSet), \
+-	{.ctl_name = 30, .procname = "name",\
+-	 .data = arlan_conf[cardNo].siteName,\
+-	 .maxlen = 16, .mode = 0600, .proc_handler = &proc_dostring},\
+-	CTBLN(31,cardNo,waitTime),\
+-	CTBLN(32,cardNo,lParameter),\
+-	CTBLN(33,cardNo,_15),\
+-	CTBLN(34,cardNo,headerSize),\
+-	CTBLN(36,cardNo,tx_delay_ms),\
+-	CTBLN(37,cardNo,retries),\
+-	CTBLN(38,cardNo,ReTransmitPacketMaxSize),\
+-	CTBLN(39,cardNo,waitReTransmitPacketMaxSize),\
+-	CTBLN(40,cardNo,fastReTransCount),\
+-	CTBLN(41,cardNo,driverRetransmissions),\
+-	CTBLN(42,cardNo,txAckTimeoutMs),\
+-	CTBLN(43,cardNo,registrationInterrupts),\
+-	CTBLN(44,cardNo,hardwareType),\
+-	CTBLN(45,cardNo,radioType),\
+-	CTBLN(46,cardNo,writeEEPROM),\
+-	CTBLN(47,cardNo,writeRadioType),\
+-	ARLAN_PROC_DEBUG_ENTRIES\
+-	CTBLN(50,cardNo,in_speed),\
+-	CTBLN(51,cardNo,out_speed),\
+-	CTBLN(52,cardNo,in_speed10),\
+-	CTBLN(53,cardNo,out_speed10),\
+-	CTBLN(54,cardNo,in_speed_max),\
+-	CTBLN(55,cardNo,out_speed_max),\
+-	CTBLN(56,cardNo,measure_rate),\
+-	CTBLN(57,cardNo,pre_Command_Wait),\
+-	CTBLN(58,cardNo,rx_tweak1),\
+-	CTBLN(59,cardNo,rx_tweak2),\
+-	CTBLN(60,cardNo,tx_queue_len),\
+-
+-
+-
+-static ctl_table arlan_conf_table0[] =
+-{
+-	ARLAN_SYSCTL_TABLE_TOTAL(0)
+-
+-#ifdef ARLAN_PROC_SHM_DUMP
+-	{
+-		.ctl_name	= 150,
+-		.procname	= "arlan0-txRing",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_infotxRing,
+-	},
+-	{
+-		.ctl_name	= 151,
+-		.procname	= "arlan0-rxRing",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_inforxRing,
+-	},
+-	{
+-		.ctl_name	= 152,
+-		.procname	= "arlan0-18",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info18,
+-	},
+-	{
+-		.ctl_name	= 153,
+-		.procname	= "arlan0-ring",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info161719,
+-	},
+-	{
+-		.ctl_name	= 154,
+-		.procname	= "arlan0-shm-cpy",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info,
+-	},
+-#endif
+-	{
+-		.ctl_name	= 155,
+-		.procname	= "config0",
+-		.data		= &conf_reset_result,
+-		.maxlen		= 100,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_configure
+-	},
+-	{
+-		.ctl_name	= 156,
+-		.procname	= "reset0",
+-		.data		= &conf_reset_result,
+-		.maxlen		= 100,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_reset,
+-	},
+-	{ .ctl_name = 0 }
+-};
+-
+-static ctl_table arlan_conf_table1[] =
+-{
+-
+-	ARLAN_SYSCTL_TABLE_TOTAL(1)
+-
+-#ifdef ARLAN_PROC_SHM_DUMP
+-	{
+-		.ctl_name	= 150,
+-		.procname	= "arlan1-txRing",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_infotxRing,
+-	},
+-	{
+-		.ctl_name	= 151,
+-		.procname	= "arlan1-rxRing",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_inforxRing,
+-	},
+-	{
+-		.ctl_name	= 152,
+-		.procname	= "arlan1-18",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info18,
+-	},
+-	{
+-		.ctl_name	= 153,
+-		.procname	= "arlan1-ring",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info161719,
+-	},
+-	{
+-		.ctl_name	= 154,
+-		.procname	= "arlan1-shm-cpy",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info,
+-	},
+-#endif
+-	{
+-		.ctl_name	= 155,
+-		.procname	= "config1",
+-		.data		= &conf_reset_result,
+-		.maxlen		= 100,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_configure,
+-	},
+-	{
+-		.ctl_name	= 156,
+-		.procname	= "reset1",
+-		.data		= &conf_reset_result,
+-		.maxlen		= 100,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_reset,
+-	},
+-	{ .ctl_name = 0 }
+-};
+-
+-static ctl_table arlan_conf_table2[] =
+-{
+-
+-	ARLAN_SYSCTL_TABLE_TOTAL(2)
+-
+-#ifdef ARLAN_PROC_SHM_DUMP
+-	{
+-		.ctl_name	= 150,
+-		.procname	= "arlan2-txRing",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_infotxRing,
+-	},
+-	{
+-		.ctl_name	= 151,
+-		.procname	= "arlan2-rxRing",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_inforxRing,
+-	},
+-	{
+-		.ctl_name	= 152,
+-		.procname	= "arlan2-18",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info18,
+-	},
+-	{
+-		.ctl_name	= 153,
+-		.procname	= "arlan2-ring",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info161719,
+-	},
+-	{
+-		.ctl_name	= 154,
+-		.procname	= "arlan2-shm-cpy",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info,
+-	},
+-#endif
+-	{
+-		.ctl_name	= 155,
+-		.procname	= "config2",
+-		.data		= &conf_reset_result,
+-		.maxlen		= 100,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_configure,
+-	},
+-	{
+-		.ctl_name	= 156,
+-		.procname	= "reset2",
+-		.data		= &conf_reset_result,
+-		.maxlen		= 100,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_reset,
+-	},
+-	{ .ctl_name = 0 }
+-};
+-
+-static ctl_table arlan_conf_table3[] =
+-{
+-
+-	ARLAN_SYSCTL_TABLE_TOTAL(3)
+-
+-#ifdef ARLAN_PROC_SHM_DUMP
+-	{
+-		.ctl_name	= 150,
+-		.procname	= "arlan3-txRing",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_infotxRing,
+-	},
+-	{
+-		.ctl_name	= 151,
+-		.procname	= "arlan3-rxRing",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_inforxRing,
+-	},
+-	{
+-		.ctl_name	= 152,
+-		.procname	= "arlan3-18",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info18,
+-	},
+-	{
+-		.ctl_name	= 153,
+-		.procname	= "arlan3-ring",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info161719,
+-	},
+-	{
+-		.ctl_name	= 154,
+-		.procname	= "arlan3-shm-cpy",
+-		.data		= &arlan_drive_info,
+-		.maxlen		= ARLAN_STR_SIZE,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_info,
+-	},
+-#endif
+-	{
+-		.ctl_name	= 155,
+-		.procname	= "config3",
+-		.data		= &conf_reset_result,
+-		.maxlen		= 100,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_configure,
+-	},
+-	{
+-		.ctl_name	= 156,
+-		.procname	= "reset3",
+-		.data		= &conf_reset_result,
+-		.maxlen		= 100,
+-		.mode		= 0400,
+-		.proc_handler	= &arlan_sysctl_reset,
+-	},
+-	{ .ctl_name = 0 }
+-};
+-
+-
+-
+-static ctl_table arlan_table[] =
+-{
+-	{
+-		.ctl_name	= 0,
+-		.procname	= "arlan0",
+-		.maxlen		= 0,
+-		.mode		= 0600,
+-		.child		= arlan_conf_table0,
+-	},
+-	{
+-		.ctl_name	= 0,
+-		.procname	= "arlan1",
+-		.maxlen		= 0,
+-		.mode		= 0600,
+-		.child		= arlan_conf_table1,
+-	},
+-	{
+-		.ctl_name	= 0,
+-		.procname	= "arlan2",
+-		.maxlen		= 0,
+-		.mode		= 0600,
+-		.child		= arlan_conf_table2,
+-	},
+-	{
+-		.ctl_name	= 0,
+-		.procname	= "arlan3",
+-		.maxlen		= 0,
+-		.mode		= 0600,
+-		.child		= arlan_conf_table3,
+-	},
+-	{ .ctl_name = 0 }
+-};
+-
+-#else
+-
+-static ctl_table arlan_table[MAX_ARLANS + 1] =
+-{
+-	{ .ctl_name = 0 }
+-};
+-#endif
+-
+-
+-// static int mmtu = 1234;
+-
+-static ctl_table arlan_root_table[] =
+-{
+-	{
+-		.ctl_name	= CTL_ARLAN,
+-		.procname	= "arlan",
+-		.maxlen		= 0,
+-		.mode		= 0555,
+-		.child		= arlan_table,
+-	},
+-	{ .ctl_name = 0 }
+-};
+-
+-/* Make sure that /proc/sys/dev is there */
+-//static ctl_table arlan_device_root_table[] =
+-//{
+-//	{CTL_DEV, "dev", NULL, 0, 0555, arlan_root_table},
+-//	{0}
+-//};
+-
+-
+-static struct ctl_table_header *arlan_device_sysctl_header;
+-
+-int __init init_arlan_proc(void)
+-{
+-
+-	int i = 0;
+-	if (arlan_device_sysctl_header)
+-		return 0;
+-	for (i = 0; i < MAX_ARLANS && arlan_device[i]; i++)
+-		arlan_table[i].ctl_name = i + 1;
+-	arlan_device_sysctl_header = register_sysctl_table(arlan_root_table);
+-	if (!arlan_device_sysctl_header)
+-		return -1;
+-
+-	return 0;
+-
+-}
+-
+-void __exit cleanup_arlan_proc(void)
+-{
+-	unregister_sysctl_table(arlan_device_sysctl_header);
+-	arlan_device_sysctl_header = NULL;
+-
+-}
+-#endif
+diff --git a/drivers/net/wireless/arlan.h b/drivers/net/wireless/arlan.h
+deleted file mode 100644
+index fb3ad51..0000000
+--- a/drivers/net/wireless/arlan.h
++++ /dev/null
+@@ -1,539 +0,0 @@
+-/*
+- *  Copyright (C) 1997 Cullen Jennings
+- *  Copyright (C) 1998 Elmer.Joandi@ut.ee, +37-255-13500	
+- *  GNU General Public License applies
+- */
+-
 -#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/types.h>
+-#include <linux/skbuff.h>
+-#include <linux/if_ether.h>	/* For the statistics structure. */
+-#include <linux/if_arp.h>	/* For ARPHRD_ETHER */
+-#include <linux/ptrace.h>
+-#include <linux/ioport.h>
+-#include <linux/in.h>
+-#include <linux/slab.h>
+-#include <linux/string.h>
+-#include <linux/timer.h>
+-
 -#include <linux/init.h>
 -#include <linux/bitops.h>
 -#include <asm/system.h>
--#include <asm/uaccess.h>
--
--# include <linux/ctype.h>
--#include <linux/string.h>
--#include <linux/mm.h>
--#include <linux/interrupt.h>
--#include <linux/in.h>
--#include <linux/tty.h>
+-#include <asm/io.h>
 -#include <linux/errno.h>
+-#include <linux/delay.h>
 -#include <linux/netdevice.h>
--#include <linux/inetdevice.h>
 -#include <linux/etherdevice.h>
--#include <linux/skbuff.h>
--#include <linux/if_arp.h>
--#include <linux/if_strip.h>
--#include <linux/proc_fs.h>
--#include <linux/seq_file.h>
--#include <linux/serial.h>
--#include <linux/serialP.h>
--#include <linux/rcupdate.h>
--#include <net/arp.h>
--#include <net/net_namespace.h>
 -
--#include <linux/ip.h>
--#include <linux/tcp.h>
--#include <linux/time.h>
--#include <linux/jiffies.h>
 -
--/************************************************************************/
--/* Useful structures and definitions					*/
+-//#define ARLAN_DEBUGGING 1
 -
--/*
-- * A MetricomKey identifies the protocol being carried inside a Metricom
-- * Starmode packet.
-- */
+-#define ARLAN_PROC_INTERFACE
+-#define MAX_ARLANS 4 /* not more than 4 ! */
+-#define ARLAN_PROC_SHM_DUMP /* shows all card registers, makes driver way larger */
 -
--typedef union {
--	__u8 c[4];
--	__u32 l;
--} MetricomKey;
+-#define ARLAN_MAX_MULTICAST_ADDRS 16
+-#define ARLAN_RCV_CLEAN 	0
+-#define ARLAN_RCV_PROMISC 1
+-#define ARLAN_RCV_CONTROL 2
 -
--/*
-- * An IP address can be viewed as four bytes in memory (which is what it is) or as
-- * a single 32-bit long (which is convenient for assignment, equality testing etc.)
-- */
--
--typedef union {
--	__u8 b[4];
--	__u32 l;
--} IPaddr;
--
--/*
-- * A MetricomAddressString is used to hold a printable representation of
-- * a Metricom address.
-- */
--
--typedef struct {
--	__u8 c[24];
--} MetricomAddressString;
--
--/* Encapsulation can expand packet of size x to 65/64x + 1
-- * Sent packet looks like "<CR>*<address>*<key><encaps payload><CR>"
-- *                           1 1   1-18  1  4         ?         1
-- * eg.                     <CR>*0000-1234*SIP0<encaps payload><CR>
-- * We allow 31 bytes for the stars, the key, the address and the <CR>s
-- */
--#define STRIP_ENCAP_SIZE(X) (32 + (X)*65L/64L)
--
--/*
-- * A STRIP_Header is never really sent over the radio, but making a dummy
-- * header for internal use within the kernel that looks like an Ethernet
-- * header makes certain other software happier. For example, tcpdump
-- * already understands Ethernet headers.
-- */
--
--typedef struct {
--	MetricomAddress dst_addr;	/* Destination address, e.g. "0000-1234"   */
--	MetricomAddress src_addr;	/* Source address, e.g. "0000-5678"        */
--	unsigned short protocol;	/* The protocol type, using Ethernet codes */
--} STRIP_Header;
--
--typedef struct {
--	char c[60];
--} MetricomNode;
--
--#define NODE_TABLE_SIZE 32
--typedef struct {
--	struct timeval timestamp;
--	int num_nodes;
--	MetricomNode node[NODE_TABLE_SIZE];
--} MetricomNodeTable;
--
--enum { FALSE = 0, TRUE = 1 };
--
--/*
-- * Holds the radio's firmware version.
-- */
--typedef struct {
--	char c[50];
--} FirmwareVersion;
--
--/*
-- * Holds the radio's serial number.
-- */
--typedef struct {
--	char c[18];
--} SerialNumber;
--
--/*
-- * Holds the radio's battery voltage.
-- */
--typedef struct {
--	char c[11];
--} BatteryVoltage;
--
--typedef struct {
--	char c[8];
--} char8;
--
--enum {
--	NoStructure = 0,	/* Really old firmware */
--	StructuredMessages = 1,	/* Parsable AT response msgs */
--	ChecksummedMessages = 2	/* Parsable AT response msgs with checksums */
--};
--
--struct strip {
--	int magic;
--	/*
--	 * These are pointers to the malloc()ed frame buffers.
--	 */
--
--	unsigned char *rx_buff;	/* buffer for received IP packet */
--	unsigned char *sx_buff;	/* buffer for received serial data */
--	int sx_count;		/* received serial data counter */
--	int sx_size;		/* Serial buffer size           */
--	unsigned char *tx_buff;	/* transmitter buffer           */
--	unsigned char *tx_head;	/* pointer to next byte to XMIT */
--	int tx_left;		/* bytes left in XMIT queue     */
--	int tx_size;		/* Serial buffer size           */
--
--	/*
--	 * STRIP interface statistics.
--	 */
--
--	unsigned long rx_packets;	/* inbound frames counter       */
--	unsigned long tx_packets;	/* outbound frames counter      */
--	unsigned long rx_errors;	/* Parity, etc. errors          */
--	unsigned long tx_errors;	/* Planned stuff                */
--	unsigned long rx_dropped;	/* No memory for skb            */
--	unsigned long tx_dropped;	/* When MTU change              */
--	unsigned long rx_over_errors;	/* Frame bigger than STRIP buf. */
--
--	unsigned long pps_timer;	/* Timer to determine pps       */
--	unsigned long rx_pps_count;	/* Counter to determine pps     */
--	unsigned long tx_pps_count;	/* Counter to determine pps     */
--	unsigned long sx_pps_count;	/* Counter to determine pps     */
--	unsigned long rx_average_pps;	/* rx packets per second * 8    */
--	unsigned long tx_average_pps;	/* tx packets per second * 8    */
--	unsigned long sx_average_pps;	/* sent packets per second * 8  */
--
--#ifdef EXT_COUNTERS
--	unsigned long rx_bytes;		/* total received bytes */
--	unsigned long tx_bytes;		/* total received bytes */
--	unsigned long rx_rbytes;	/* bytes thru radio i/f */
--	unsigned long tx_rbytes;	/* bytes thru radio i/f */
--	unsigned long rx_sbytes;	/* tot bytes thru serial i/f */
--	unsigned long tx_sbytes;	/* tot bytes thru serial i/f */
--	unsigned long rx_ebytes;	/* tot stat/err bytes */
--	unsigned long tx_ebytes;	/* tot stat/err bytes */
--#endif
--
--	/*
--	 * Internal variables.
--	 */
--
--	struct list_head  list;		/* Linked list of devices */
--
--	int discard;			/* Set if serial error          */
--	int working;			/* Is radio working correctly?  */
--	int firmware_level;		/* Message structuring level    */
--	int next_command;		/* Next periodic command        */
--	unsigned int user_baud;		/* The user-selected baud rate  */
--	int mtu;			/* Our mtu (to spot changes!)   */
--	long watchdog_doprobe;		/* Next time to test the radio  */
--	long watchdog_doreset;		/* Time to do next reset        */
--	long gratuitous_arp;		/* Time to send next ARP refresh */
--	long arp_interval;		/* Next ARP interval            */
--	struct timer_list idle_timer;	/* For periodic wakeup calls    */
--	MetricomAddress true_dev_addr;	/* True address of radio        */
--	int manual_dev_addr;		/* Hack: See note below         */
--
--	FirmwareVersion firmware_version;	/* The radio's firmware version */
--	SerialNumber serial_number;	/* The radio's serial number    */
--	BatteryVoltage battery_voltage;	/* The radio's battery voltage  */
--
--	/*
--	 * Other useful structures.
--	 */
--
--	struct tty_struct *tty;		/* ptr to TTY structure         */
--	struct net_device *dev;		/* Our device structure         */
--
--	/*
--	 * Neighbour radio records
--	 */
--
--	MetricomNodeTable portables;
--	MetricomNodeTable poletops;
--};
--
--/*
-- * Note: manual_dev_addr hack
-- * 
-- * It is not possible to change the hardware address of a Metricom radio,
-- * or to send packets with a user-specified hardware source address, thus
-- * trying to manually set a hardware source address is a questionable
-- * thing to do.  However, if the user *does* manually set the hardware
-- * source address of a STRIP interface, then the kernel will believe it,
-- * and use it in certain places. For example, the hardware address listed
-- * by ifconfig will be the manual address, not the true one.
-- * (Both addresses are listed in /proc/net/strip.)
-- * Also, ARP packets will be sent out giving the user-specified address as
-- * the source address, not the real address. This is dangerous, because
-- * it means you won't receive any replies -- the ARP replies will go to
-- * the specified address, which will be some other radio. The case where
-- * this is useful is when that other radio is also connected to the same
-- * machine. This allows you to connect a pair of radios to one machine,
-- * and to use one exclusively for inbound traffic, and the other
-- * exclusively for outbound traffic. Pretty neat, huh?
-- * 
-- * Here's the full procedure to set this up:
-- * 
-- * 1. "slattach" two interfaces, e.g. st0 for outgoing packets,
-- *    and st1 for incoming packets
-- * 
-- * 2. "ifconfig" st0 (outbound radio) to have the hardware address
-- *    which is the real hardware address of st1 (inbound radio).
-- *    Now when it sends out packets, it will masquerade as st1, and
-- *    replies will be sent to that radio, which is exactly what we want.
-- * 
-- * 3. Set the route table entry ("route add default ..." or
-- *    "route add -net ...", as appropriate) to send packets via the st0
-- *    interface (outbound radio). Do not add any route which sends packets
-- *    out via the st1 interface -- that radio is for inbound traffic only.
-- * 
-- * 4. "ifconfig" st1 (inbound radio) to have hardware address zero.
-- *    This tells the STRIP driver to "shut down" that interface and not
-- *    send any packets through it. In particular, it stops sending the
-- *    periodic gratuitous ARP packets that a STRIP interface normally sends.
-- *    Also, when packets arrive on that interface, it will search the
-- *    interface list to see if there is another interface who's manual
-- *    hardware address matches its own real address (i.e. st0 in this
-- *    example) and if so it will transfer ownership of the skbuff to
-- *    that interface, so that it looks to the kernel as if the packet
-- *    arrived on that interface. This is necessary because when the
-- *    kernel sends an ARP packet on st0, it expects to get a reply on
-- *    st0, and if it sees the reply come from st1 then it will ignore
-- *    it (to be accurate, it puts the entry in the ARP table, but
-- *    labelled in such a way that st0 can't use it).
-- * 
-- * Thanks to Petros Maniatis for coming up with the idea of splitting
-- * inbound and outbound traffic between two interfaces, which turned
-- * out to be really easy to implement, even if it is a bit of a hack.
-- * 
-- * Having set a manual address on an interface, you can restore it
-- * to automatic operation (where the address is automatically kept
-- * consistent with the real address of the radio) by setting a manual
-- * address of all ones, e.g. "ifconfig st0 hw strip FFFFFFFFFFFF"
-- * This 'turns off' manual override mode for the device address.
-- * 
-- * Note: The IEEE 802 headers reported in tcpdump will show the *real*
-- * radio addresses the packets were sent and received from, so that you
-- * can see what is really going on with packets, and which interfaces
-- * they are really going through.
-- */
--
--
--/************************************************************************/
--/* Constants								*/
--
--/*
-- * CommandString1 works on all radios
-- * Other CommandStrings are only used with firmware that provides structured responses.
-- * 
-- * ats319=1 Enables Info message for node additions and deletions
-- * ats319=2 Enables Info message for a new best node
-- * ats319=4 Enables checksums
-- * ats319=8 Enables ACK messages
-- */
--
--static const int MaxCommandStringLength = 32;
--static const int CompatibilityCommand = 1;
--
--static const char CommandString0[] = "*&COMMAND*ATS319=7";	/* Turn on checksums & info messages */
--static const char CommandString1[] = "*&COMMAND*ATS305?";	/* Query radio name */
--static const char CommandString2[] = "*&COMMAND*ATS325?";	/* Query battery voltage */
--static const char CommandString3[] = "*&COMMAND*ATS300?";	/* Query version information */
--static const char CommandString4[] = "*&COMMAND*ATS311?";	/* Query poletop list */
--static const char CommandString5[] = "*&COMMAND*AT~LA";		/* Query portables list */
--typedef struct {
--	const char *string;
--	long length;
--} StringDescriptor;
--
--static const StringDescriptor CommandString[] = {
--	{CommandString0, sizeof(CommandString0) - 1},
--	{CommandString1, sizeof(CommandString1) - 1},
--	{CommandString2, sizeof(CommandString2) - 1},
--	{CommandString3, sizeof(CommandString3) - 1},
--	{CommandString4, sizeof(CommandString4) - 1},
--	{CommandString5, sizeof(CommandString5) - 1}
--};
--
--#define GOT_ALL_RADIO_INFO(S)      \
--    ((S)->firmware_version.c[0] && \
--     (S)->battery_voltage.c[0]  && \
--     memcmp(&(S)->true_dev_addr, zero_address.c, sizeof(zero_address)))
--
--static const char hextable[16] = "0123456789ABCDEF";
--
--static const MetricomAddress zero_address;
--static const MetricomAddress broadcast_address =
--    { {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF} };
--
--static const MetricomKey SIP0Key = { "SIP0" };
--static const MetricomKey ARP0Key = { "ARP0" };
--static const MetricomKey ATR_Key = { "ATR " };
--static const MetricomKey ACK_Key = { "ACK_" };
--static const MetricomKey INF_Key = { "INF_" };
--static const MetricomKey ERR_Key = { "ERR_" };
--
--static const long MaxARPInterval = 60 * HZ;	/* One minute */
--
--/*
-- * Maximum Starmode packet length is 1183 bytes. Allowing 4 bytes for
-- * protocol key, 4 bytes for checksum, one byte for CR, and 65/64 expansion
-- * for STRIP encoding, that translates to a maximum payload MTU of 1155.
-- * Note: A standard NFS 1K data packet is a total of 0x480 (1152) bytes
-- * long, including IP header, UDP header, and NFS header. Setting the STRIP
-- * MTU to 1152 allows us to send default sized NFS packets without fragmentation.
-- */
--static const unsigned short MAX_SEND_MTU = 1152;
--static const unsigned short MAX_RECV_MTU = 1500;	/* Hoping for Ethernet sized packets in the future! */
--static const unsigned short DEFAULT_STRIP_MTU = 1152;
--static const int STRIP_MAGIC = 0x5303;
--static const long LongTime = 0x7FFFFFFF;
--
--/************************************************************************/
--/* Global variables							*/
--
--static LIST_HEAD(strip_list);
--static DEFINE_SPINLOCK(strip_lock);
--
--/************************************************************************/
--/* Macros								*/
--
--/* Returns TRUE if text T begins with prefix P */
--#define has_prefix(T,L,P) (((L) >= sizeof(P)-1) && !strncmp((T), (P), sizeof(P)-1))
--
--/* Returns TRUE if text T of length L is equal to string S */
--#define text_equal(T,L,S) (((L) == sizeof(S)-1) && !strncmp((T), (S), sizeof(S)-1))
--
--#define READHEX(X) ((X)>='0' && (X)<='9' ? (X)-'0' :      \
--                    (X)>='a' && (X)<='f' ? (X)-'a'+10 :   \
--                    (X)>='A' && (X)<='F' ? (X)-'A'+10 : 0 )
--
--#define READHEX16(X) ((__u16)(READHEX(X)))
--
--#define READDEC(X) ((X)>='0' && (X)<='9' ? (X)-'0' : 0)
--
--#define ARRAY_END(X) (&((X)[ARRAY_SIZE(X)]))
--
--#define JIFFIE_TO_SEC(X) ((X) / HZ)
--
--
--/************************************************************************/
--/* Utility routines							*/
--
--static int arp_query(unsigned char *haddr, u32 paddr,
--		     struct net_device *dev)
--{
--	struct neighbour *neighbor_entry;
--	int ret = 0;
--
--	neighbor_entry = neigh_lookup(&arp_tbl, &paddr, dev);
--
--	if (neighbor_entry != NULL) {
--		neighbor_entry->used = jiffies;
--		if (neighbor_entry->nud_state & NUD_VALID) {
--			memcpy(haddr, neighbor_entry->ha, dev->addr_len);
--			ret = 1;
--		}
--		neigh_release(neighbor_entry);
--	}
--	return ret;
--}
--
--static void DumpData(char *msg, struct strip *strip_info, __u8 * ptr,
--		     __u8 * end)
--{
--	static const int MAX_DumpData = 80;
--	__u8 pkt_text[MAX_DumpData], *p = pkt_text;
--
--	*p++ = '\"';
--
--	while (ptr < end && p < &pkt_text[MAX_DumpData - 4]) {
--		if (*ptr == '\\') {
--			*p++ = '\\';
--			*p++ = '\\';
--		} else {
--			if (*ptr >= 32 && *ptr <= 126) {
--				*p++ = *ptr;
--			} else {
--				sprintf(p, "\\%02X", *ptr);
--				p += 3;
--			}
--		}
--		ptr++;
--	}
--
--	if (ptr == end)
--		*p++ = '\"';
--	*p++ = 0;
--
--	printk(KERN_INFO "%s: %-13s%s\n", strip_info->dev->name, msg, pkt_text);
--}
--
--
--/************************************************************************/
--/* Byte stuffing/unstuffing routines					*/
--
--/* Stuffing scheme:
-- * 00    Unused (reserved character)
-- * 01-3F Run of 2-64 different characters
-- * 40-7F Run of 1-64 different characters plus a single zero at the end
-- * 80-BF Run of 1-64 of the same character
-- * C0-FF Run of 1-64 zeroes (ASCII 0)
-- */
--
--typedef enum {
--	Stuff_Diff = 0x00,
--	Stuff_DiffZero = 0x40,
--	Stuff_Same = 0x80,
--	Stuff_Zero = 0xC0,
--	Stuff_NoCode = 0xFF,	/* Special code, meaning no code selected */
--
--	Stuff_CodeMask = 0xC0,
--	Stuff_CountMask = 0x3F,
--	Stuff_MaxCount = 0x3F,
--	Stuff_Magic = 0x0D	/* The value we are eliminating */
--} StuffingCode;
--
--/* StuffData encodes the data starting at "src" for "length" bytes.
-- * It writes it to the buffer pointed to by "dst" (which must be at least
-- * as long as 1 + 65/64 of the input length). The output may be up to 1.6%
-- * larger than the input for pathological input, but will usually be smaller.
-- * StuffData returns the new value of the dst pointer as its result.
-- * "code_ptr_ptr" points to a "__u8 *" which is used to hold encoding state
-- * between calls, allowing an encoded packet to be incrementally built up
-- * from small parts. On the first call, the "__u8 *" pointed to should be
-- * initialized to NULL; between subsequent calls the calling routine should
-- * leave the value alone and simply pass it back unchanged so that the
-- * encoder can recover its current state.
-- */
--
--#define StuffData_FinishBlock(X) \
--(*code_ptr = (X) ^ Stuff_Magic, code = Stuff_NoCode)
--
--static __u8 *StuffData(__u8 * src, __u32 length, __u8 * dst,
--		       __u8 ** code_ptr_ptr)
--{
--	__u8 *end = src + length;
--	__u8 *code_ptr = *code_ptr_ptr;
--	__u8 code = Stuff_NoCode, count = 0;
--
--	if (!length)
--		return (dst);
--
--	if (code_ptr) {
--		/*
--		 * Recover state from last call, if applicable
--		 */
--		code = (*code_ptr ^ Stuff_Magic) & Stuff_CodeMask;
--		count = (*code_ptr ^ Stuff_Magic) & Stuff_CountMask;
--	}
--
--	while (src < end) {
--		switch (code) {
--			/* Stuff_NoCode: If no current code, select one */
--		case Stuff_NoCode:
--			/* Record where we're going to put this code */
--			code_ptr = dst++;
--			count = 0;	/* Reset the count (zero means one instance) */
--			/* Tentatively start a new block */
--			if (*src == 0) {
--				code = Stuff_Zero;
--				src++;
--			} else {
--				code = Stuff_Same;
--				*dst++ = *src++ ^ Stuff_Magic;
--			}
--			/* Note: We optimistically assume run of same -- */
--			/* which will be fixed later in Stuff_Same */
--			/* if it turns out not to be true. */
--			break;
--
--			/* Stuff_Zero: We already have at least one zero encoded */
--		case Stuff_Zero:
--			/* If another zero, count it, else finish this code block */
--			if (*src == 0) {
--				count++;
--				src++;
--			} else {
--				StuffData_FinishBlock(Stuff_Zero + count);
--			}
--			break;
--
--			/* Stuff_Same: We already have at least one byte encoded */
--		case Stuff_Same:
--			/* If another one the same, count it */
--			if ((*src ^ Stuff_Magic) == code_ptr[1]) {
--				count++;
--				src++;
--				break;
--			}
--			/* else, this byte does not match this block. */
--			/* If we already have two or more bytes encoded, finish this code block */
--			if (count) {
--				StuffData_FinishBlock(Stuff_Same + count);
--				break;
--			}
--			/* else, we only have one so far, so switch to Stuff_Diff code */
--			code = Stuff_Diff;
--			/* and fall through to Stuff_Diff case below
--			 * Note cunning cleverness here: case Stuff_Diff compares 
--			 * the current character with the previous two to see if it
--			 * has a run of three the same. Won't this be an error if
--			 * there aren't two previous characters stored to compare with?
--			 * No. Because we know the current character is *not* the same
--			 * as the previous one, the first test below will necessarily
--			 * fail and the send half of the "if" won't be executed.
--			 */
--
--			/* Stuff_Diff: We have at least two *different* bytes encoded */
--		case Stuff_Diff:
--			/* If this is a zero, must encode a Stuff_DiffZero, and begin a new block */
--			if (*src == 0) {
--				StuffData_FinishBlock(Stuff_DiffZero +
--						      count);
--			}
--			/* else, if we have three in a row, it is worth starting a Stuff_Same block */
--			else if ((*src ^ Stuff_Magic) == dst[-1]
--				 && dst[-1] == dst[-2]) {
--				/* Back off the last two characters we encoded */
--				code += count - 2;
--				/* Note: "Stuff_Diff + 0" is an illegal code */
--				if (code == Stuff_Diff + 0) {
--					code = Stuff_Same + 0;
--				}
--				StuffData_FinishBlock(code);
--				code_ptr = dst - 2;
--				/* dst[-1] already holds the correct value */
--				count = 2;	/* 2 means three bytes encoded */
--				code = Stuff_Same;
--			}
--			/* else, another different byte, so add it to the block */
--			else {
--				*dst++ = *src ^ Stuff_Magic;
--				count++;
--			}
--			src++;	/* Consume the byte */
--			break;
--		}
--		if (count == Stuff_MaxCount) {
--			StuffData_FinishBlock(code + count);
--		}
--	}
--	if (code == Stuff_NoCode) {
--		*code_ptr_ptr = NULL;
--	} else {
--		*code_ptr_ptr = code_ptr;
--		StuffData_FinishBlock(code + count);
--	}
--	return (dst);
--}
--
--/*
-- * UnStuffData decodes the data at "src", up to (but not including) "end".
-- * It writes the decoded data into the buffer pointed to by "dst", up to a
-- * maximum of "dst_length", and returns the new value of "src" so that a
-- * follow-on call can read more data, continuing from where the first left off.
-- * 
-- * There are three types of results:
-- * 1. The source data runs out before extracting "dst_length" bytes:
-- *    UnStuffData returns NULL to indicate failure.
-- * 2. The source data produces exactly "dst_length" bytes:
-- *    UnStuffData returns new_src = end to indicate that all bytes were consumed.
-- * 3. "dst_length" bytes are extracted, with more remaining.
-- *    UnStuffData returns new_src < end to indicate that there are more bytes
-- *    to be read.
-- * 
-- * Note: The decoding may be destructive, in that it may alter the source
-- * data in the process of decoding it (this is necessary to allow a follow-on
-- * call to resume correctly).
-- */
--
--static __u8 *UnStuffData(__u8 * src, __u8 * end, __u8 * dst,
--			 __u32 dst_length)
--{
--	__u8 *dst_end = dst + dst_length;
--	/* Sanity check */
--	if (!src || !end || !dst || !dst_length)
--		return (NULL);
--	while (src < end && dst < dst_end) {
--		int count = (*src ^ Stuff_Magic) & Stuff_CountMask;
--		switch ((*src ^ Stuff_Magic) & Stuff_CodeMask) {
--		case Stuff_Diff:
--			if (src + 1 + count >= end)
--				return (NULL);
--			do {
--				*dst++ = *++src ^ Stuff_Magic;
--			}
--			while (--count >= 0 && dst < dst_end);
--			if (count < 0)
--				src += 1;
--			else {
--				if (count == 0)
--					*src = Stuff_Same ^ Stuff_Magic;
--				else
--					*src =
--					    (Stuff_Diff +
--					     count) ^ Stuff_Magic;
--			}
--			break;
--		case Stuff_DiffZero:
--			if (src + 1 + count >= end)
--				return (NULL);
--			do {
--				*dst++ = *++src ^ Stuff_Magic;
--			}
--			while (--count >= 0 && dst < dst_end);
--			if (count < 0)
--				*src = Stuff_Zero ^ Stuff_Magic;
--			else
--				*src =
--				    (Stuff_DiffZero + count) ^ Stuff_Magic;
--			break;
--		case Stuff_Same:
--			if (src + 1 >= end)
--				return (NULL);
--			do {
--				*dst++ = src[1] ^ Stuff_Magic;
--			}
--			while (--count >= 0 && dst < dst_end);
--			if (count < 0)
--				src += 2;
--			else
--				*src = (Stuff_Same + count) ^ Stuff_Magic;
--			break;
--		case Stuff_Zero:
--			do {
--				*dst++ = 0;
--			}
--			while (--count >= 0 && dst < dst_end);
--			if (count < 0)
--				src += 1;
--			else
--				*src = (Stuff_Zero + count) ^ Stuff_Magic;
--			break;
--		}
--	}
--	if (dst < dst_end)
--		return (NULL);
--	else
--		return (src);
--}
--
--
--/************************************************************************/
--/* General routines for STRIP						*/
--
--/*
-- * set_baud sets the baud rate to the rate defined by baudcode
-- */
--static void set_baud(struct tty_struct *tty, speed_t baudrate)
--{
--	struct ktermios old_termios;
--
--	mutex_lock(&tty->termios_mutex);
--	old_termios =*(tty->termios);
--	tty_encode_baud_rate(tty, baudrate, baudrate);
--	tty->ops->set_termios(tty, &old_termios);
--	mutex_unlock(&tty->termios_mutex);
--}
--
--/*
-- * Convert a string to a Metricom Address.
-- */
--
--#define IS_RADIO_ADDRESS(p) (                                                 \
--  isdigit((p)[0]) && isdigit((p)[1]) && isdigit((p)[2]) && isdigit((p)[3]) && \
--  (p)[4] == '-' &&                                                            \
--  isdigit((p)[5]) && isdigit((p)[6]) && isdigit((p)[7]) && isdigit((p)[8])    )
--
--static int string_to_radio_address(MetricomAddress * addr, __u8 * p)
--{
--	if (!IS_RADIO_ADDRESS(p))
--		return (1);
--	addr->c[0] = 0;
--	addr->c[1] = 0;
--	addr->c[2] = READHEX(p[0]) << 4 | READHEX(p[1]);
--	addr->c[3] = READHEX(p[2]) << 4 | READHEX(p[3]);
--	addr->c[4] = READHEX(p[5]) << 4 | READHEX(p[6]);
--	addr->c[5] = READHEX(p[7]) << 4 | READHEX(p[8]);
--	return (0);
--}
--
--/*
-- * Convert a Metricom Address to a string.
-- */
--
--static __u8 *radio_address_to_string(const MetricomAddress * addr,
--				     MetricomAddressString * p)
--{
--	sprintf(p->c, "%02X%02X-%02X%02X", addr->c[2], addr->c[3],
--		addr->c[4], addr->c[5]);
--	return (p->c);
--}
--
--/*
-- * Note: Must make sure sx_size is big enough to receive a stuffed
-- * MAX_RECV_MTU packet. Additionally, we also want to ensure that it's
-- * big enough to receive a large radio neighbour list (currently 4K).
-- */
--
--static int allocate_buffers(struct strip *strip_info, int mtu)
--{
--	struct net_device *dev = strip_info->dev;
--	int sx_size = max_t(int, STRIP_ENCAP_SIZE(MAX_RECV_MTU), 4096);
--	int tx_size = STRIP_ENCAP_SIZE(mtu) + MaxCommandStringLength;
--	__u8 *r = kmalloc(MAX_RECV_MTU, GFP_ATOMIC);
--	__u8 *s = kmalloc(sx_size, GFP_ATOMIC);
--	__u8 *t = kmalloc(tx_size, GFP_ATOMIC);
--	if (r && s && t) {
--		strip_info->rx_buff = r;
--		strip_info->sx_buff = s;
--		strip_info->tx_buff = t;
--		strip_info->sx_size = sx_size;
--		strip_info->tx_size = tx_size;
--		strip_info->mtu = dev->mtu = mtu;
--		return (1);
--	}
--	kfree(r);
--	kfree(s);
--	kfree(t);
--	return (0);
--}
--
--/*
-- * MTU has been changed by the IP layer. 
-- * We could be in
-- * an upcall from the tty driver, or in an ip packet queue.
-- */
--static int strip_change_mtu(struct net_device *dev, int new_mtu)
--{
--	struct strip *strip_info = netdev_priv(dev);
--	int old_mtu = strip_info->mtu;
--	unsigned char *orbuff = strip_info->rx_buff;
--	unsigned char *osbuff = strip_info->sx_buff;
--	unsigned char *otbuff = strip_info->tx_buff;
--
--	if (new_mtu > MAX_SEND_MTU) {
--		printk(KERN_ERR
--		       "%s: MTU exceeds maximum allowable (%d), MTU change cancelled.\n",
--		       strip_info->dev->name, MAX_SEND_MTU);
--		return -EINVAL;
--	}
--
--	spin_lock_bh(&strip_lock);
--	if (!allocate_buffers(strip_info, new_mtu)) {
--		printk(KERN_ERR "%s: unable to grow strip buffers, MTU change cancelled.\n",
--		       strip_info->dev->name);
--		spin_unlock_bh(&strip_lock);
--		return -ENOMEM;
--	}
--
--	if (strip_info->sx_count) {
--		if (strip_info->sx_count <= strip_info->sx_size)
--			memcpy(strip_info->sx_buff, osbuff,
--			       strip_info->sx_count);
--		else {
--			strip_info->discard = strip_info->sx_count;
--			strip_info->rx_over_errors++;
--		}
--	}
--
--	if (strip_info->tx_left) {
--		if (strip_info->tx_left <= strip_info->tx_size)
--			memcpy(strip_info->tx_buff, strip_info->tx_head,
--			       strip_info->tx_left);
--		else {
--			strip_info->tx_left = 0;
--			strip_info->tx_dropped++;
--		}
--	}
--	strip_info->tx_head = strip_info->tx_buff;
--	spin_unlock_bh(&strip_lock);
--
--	printk(KERN_NOTICE "%s: strip MTU changed fom %d to %d.\n",
--	       strip_info->dev->name, old_mtu, strip_info->mtu);
--
--	kfree(orbuff);
--	kfree(osbuff);
--	kfree(otbuff);
--	return 0;
--}
--
--static void strip_unlock(struct strip *strip_info)
--{
--	/*
--	 * Set the timer to go off in one second.
--	 */
--	strip_info->idle_timer.expires = jiffies + 1 * HZ;
--	add_timer(&strip_info->idle_timer);
--	netif_wake_queue(strip_info->dev);
--}
--
--
--
--/*
-- * If the time is in the near future, time_delta prints the number of
-- * seconds to go into the buffer and returns the address of the buffer.
-- * If the time is not in the near future, it returns the address of the
-- * string "Not scheduled" The buffer must be long enough to contain the
-- * ascii representation of the number plus 9 charactes for the " seconds"
-- * and the null character.
-- */
 -#ifdef CONFIG_PROC_FS
--static char *time_delta(char buffer[], long time)
--{
--	time -= jiffies;
--	if (time > LongTime / 2)
--		return ("Not scheduled");
--	if (time < 0)
--		time = 0;	/* Don't print negative times */
--	sprintf(buffer, "%ld seconds", time / HZ);
--	return (buffer);
--}
--
--/* get Nth element of the linked list */
--static struct strip *strip_get_idx(loff_t pos) 
--{
--	struct strip *str;
--	int i = 0;
--
--	list_for_each_entry_rcu(str, &strip_list, list) {
--		if (pos == i)
--			return str;
--		++i;
--	}
--	return NULL;
--}
--
--static void *strip_seq_start(struct seq_file *seq, loff_t *pos)
--	__acquires(RCU)
--{
--	rcu_read_lock();
--	return *pos ? strip_get_idx(*pos - 1) : SEQ_START_TOKEN;
--}
--
--static void *strip_seq_next(struct seq_file *seq, void *v, loff_t *pos)
--{
--	struct list_head *l;
--	struct strip *s;
--
--	++*pos;
--	if (v == SEQ_START_TOKEN)
--		return strip_get_idx(1);
--
--	s = v;
--	l = &s->list;
--	list_for_each_continue_rcu(l, &strip_list) {
--		return list_entry(l, struct strip, list);
--	}
--	return NULL;
--}
--
--static void strip_seq_stop(struct seq_file *seq, void *v)
--	__releases(RCU)
--{
--	rcu_read_unlock();
--}
--
--static void strip_seq_neighbours(struct seq_file *seq,
--			   const MetricomNodeTable * table,
--			   const char *title)
--{
--	/* We wrap this in a do/while loop, so if the table changes */
--	/* while we're reading it, we just go around and try again. */
--	struct timeval t;
--
--	do {
--		int i;
--		t = table->timestamp;
--		if (table->num_nodes)
--			seq_printf(seq, "\n %s\n", title);
--		for (i = 0; i < table->num_nodes; i++) {
--			MetricomNode node;
--
--			spin_lock_bh(&strip_lock);
--			node = table->node[i];
--			spin_unlock_bh(&strip_lock);
--			seq_printf(seq, "  %s\n", node.c);
--		}
--	} while (table->timestamp.tv_sec != t.tv_sec
--		 || table->timestamp.tv_usec != t.tv_usec);
--}
--
--/*
-- * This function prints radio status information via the seq_file
-- * interface.  The interface takes care of buffer size and over
-- * run issues. 
-- *
-- * The buffer in seq_file is PAGESIZE (4K) 
-- * so this routine should never print more or it will get truncated.
-- * With the maximum of 32 portables and 32 poletops
-- * reported, the routine outputs 3107 bytes into the buffer.
-- */
--static void strip_seq_status_info(struct seq_file *seq, 
--				  const struct strip *strip_info)
--{
--	char temp[32];
--	MetricomAddressString addr_string;
--
--	/* First, we must copy all of our data to a safe place, */
--	/* in case a serial interrupt comes in and changes it.  */
--	int tx_left = strip_info->tx_left;
--	unsigned long rx_average_pps = strip_info->rx_average_pps;
--	unsigned long tx_average_pps = strip_info->tx_average_pps;
--	unsigned long sx_average_pps = strip_info->sx_average_pps;
--	int working = strip_info->working;
--	int firmware_level = strip_info->firmware_level;
--	long watchdog_doprobe = strip_info->watchdog_doprobe;
--	long watchdog_doreset = strip_info->watchdog_doreset;
--	long gratuitous_arp = strip_info->gratuitous_arp;
--	long arp_interval = strip_info->arp_interval;
--	FirmwareVersion firmware_version = strip_info->firmware_version;
--	SerialNumber serial_number = strip_info->serial_number;
--	BatteryVoltage battery_voltage = strip_info->battery_voltage;
--	char *if_name = strip_info->dev->name;
--	MetricomAddress true_dev_addr = strip_info->true_dev_addr;
--	MetricomAddress dev_dev_addr =
--	    *(MetricomAddress *) strip_info->dev->dev_addr;
--	int manual_dev_addr = strip_info->manual_dev_addr;
--#ifdef EXT_COUNTERS
--	unsigned long rx_bytes = strip_info->rx_bytes;
--	unsigned long tx_bytes = strip_info->tx_bytes;
--	unsigned long rx_rbytes = strip_info->rx_rbytes;
--	unsigned long tx_rbytes = strip_info->tx_rbytes;
--	unsigned long rx_sbytes = strip_info->rx_sbytes;
--	unsigned long tx_sbytes = strip_info->tx_sbytes;
--	unsigned long rx_ebytes = strip_info->rx_ebytes;
--	unsigned long tx_ebytes = strip_info->tx_ebytes;
--#endif
--
--	seq_printf(seq, "\nInterface name\t\t%s\n", if_name);
--	seq_printf(seq, " Radio working:\t\t%s\n", working ? "Yes" : "No");
--	radio_address_to_string(&true_dev_addr, &addr_string);
--	seq_printf(seq, " Radio address:\t\t%s\n", addr_string.c);
--	if (manual_dev_addr) {
--		radio_address_to_string(&dev_dev_addr, &addr_string);
--		seq_printf(seq, " Device address:\t%s\n", addr_string.c);
--	}
--	seq_printf(seq, " Firmware version:\t%s", !working ? "Unknown" :
--		     !firmware_level ? "Should be upgraded" :
--		     firmware_version.c);
--	if (firmware_level >= ChecksummedMessages)
--		seq_printf(seq, " (Checksums Enabled)");
--	seq_printf(seq, "\n");
--	seq_printf(seq, " Serial number:\t\t%s\n", serial_number.c);
--	seq_printf(seq, " Battery voltage:\t%s\n", battery_voltage.c);
--	seq_printf(seq, " Transmit queue (bytes):%d\n", tx_left);
--	seq_printf(seq, " Receive packet rate:   %ld packets per second\n",
--		     rx_average_pps / 8);
--	seq_printf(seq, " Transmit packet rate:  %ld packets per second\n",
--		     tx_average_pps / 8);
--	seq_printf(seq, " Sent packet rate:      %ld packets per second\n",
--		     sx_average_pps / 8);
--	seq_printf(seq, " Next watchdog probe:\t%s\n",
--		     time_delta(temp, watchdog_doprobe));
--	seq_printf(seq, " Next watchdog reset:\t%s\n",
--		     time_delta(temp, watchdog_doreset));
--	seq_printf(seq, " Next gratuitous ARP:\t");
--
--	if (!memcmp
--	    (strip_info->dev->dev_addr, zero_address.c,
--	     sizeof(zero_address)))
--		seq_printf(seq, "Disabled\n");
--	else {
--		seq_printf(seq, "%s\n", time_delta(temp, gratuitous_arp));
--		seq_printf(seq, " Next ARP interval:\t%ld seconds\n",
--			     JIFFIE_TO_SEC(arp_interval));
--	}
--
--	if (working) {
--#ifdef EXT_COUNTERS
--		seq_printf(seq, "\n");
--		seq_printf(seq,
--			     " Total bytes:         \trx:\t%lu\ttx:\t%lu\n",
--			     rx_bytes, tx_bytes);
--		seq_printf(seq,
--			     "  thru radio:         \trx:\t%lu\ttx:\t%lu\n",
--			     rx_rbytes, tx_rbytes);
--		seq_printf(seq,
--			     "  thru serial port:   \trx:\t%lu\ttx:\t%lu\n",
--			     rx_sbytes, tx_sbytes);
--		seq_printf(seq,
--			     " Total stat/err bytes:\trx:\t%lu\ttx:\t%lu\n",
--			     rx_ebytes, tx_ebytes);
--#endif
--		strip_seq_neighbours(seq, &strip_info->poletops,
--					"Poletops:");
--		strip_seq_neighbours(seq, &strip_info->portables,
--					"Portables:");
--	}
--}
--
--/*
-- * This function is exports status information from the STRIP driver through
-- * the /proc file system.
-- */
--static int strip_seq_show(struct seq_file *seq, void *v)
--{
--	if (v == SEQ_START_TOKEN)
--		seq_printf(seq, "strip_version: %s\n", StripVersion);
--	else
--		strip_seq_status_info(seq, (const struct strip *)v);
--	return 0;
--}
--
--
--static const struct seq_operations strip_seq_ops = {
--	.start = strip_seq_start,
--	.next  = strip_seq_next,
--	.stop  = strip_seq_stop,
--	.show  = strip_seq_show,
--};
--
--static int strip_seq_open(struct inode *inode, struct file *file)
--{
--	return seq_open(file, &strip_seq_ops);
--}
--
--static const struct file_operations strip_seq_fops = {
--	.owner	 = THIS_MODULE,
--	.open    = strip_seq_open,
--	.read    = seq_read,
--	.llseek  = seq_lseek,
--	.release = seq_release,
--};
--#endif
--
--
--
--/************************************************************************/
--/* Sending routines							*/
--
--static void ResetRadio(struct strip *strip_info)
--{
--	struct tty_struct *tty = strip_info->tty;
--	static const char init[] = "ate0q1dt**starmode\r**";
--	StringDescriptor s = { init, sizeof(init) - 1 };
--
--	/* 
--	 * If the radio isn't working anymore,
--	 * we should clear the old status information.
--	 */
--	if (strip_info->working) {
--		printk(KERN_INFO "%s: No response: Resetting radio.\n",
--		       strip_info->dev->name);
--		strip_info->firmware_version.c[0] = '\0';
--		strip_info->serial_number.c[0] = '\0';
--		strip_info->battery_voltage.c[0] = '\0';
--		strip_info->portables.num_nodes = 0;
--		do_gettimeofday(&strip_info->portables.timestamp);
--		strip_info->poletops.num_nodes = 0;
--		do_gettimeofday(&strip_info->poletops.timestamp);
--	}
--
--	strip_info->pps_timer = jiffies;
--	strip_info->rx_pps_count = 0;
--	strip_info->tx_pps_count = 0;
--	strip_info->sx_pps_count = 0;
--	strip_info->rx_average_pps = 0;
--	strip_info->tx_average_pps = 0;
--	strip_info->sx_average_pps = 0;
--
--	/* Mark radio address as unknown */
--	*(MetricomAddress *) & strip_info->true_dev_addr = zero_address;
--	if (!strip_info->manual_dev_addr)
--		*(MetricomAddress *) strip_info->dev->dev_addr =
--		    zero_address;
--	strip_info->working = FALSE;
--	strip_info->firmware_level = NoStructure;
--	strip_info->next_command = CompatibilityCommand;
--	strip_info->watchdog_doprobe = jiffies + 10 * HZ;
--	strip_info->watchdog_doreset = jiffies + 1 * HZ;
--
--	/* If the user has selected a baud rate above 38.4 see what magic we have to do */
--	if (strip_info->user_baud > 38400) {
--		/*
--		 * Subtle stuff: Pay attention :-)
--		 * If the serial port is currently at the user's selected (>38.4) rate,
--		 * then we temporarily switch to 19.2 and issue the ATS304 command
--		 * to tell the radio to switch to the user's selected rate.
--		 * If the serial port is not currently at that rate, that means we just
--		 * issued the ATS304 command last time through, so this time we restore
--		 * the user's selected rate and issue the normal starmode reset string.
--		 */
--		if (strip_info->user_baud == tty_get_baud_rate(tty)) {
--			static const char b0[] = "ate0q1s304=57600\r";
--			static const char b1[] = "ate0q1s304=115200\r";
--			static const StringDescriptor baudstring[2] =
--			    { {b0, sizeof(b0) - 1}
--			, {b1, sizeof(b1) - 1}
--			};
--			set_baud(tty, 19200);
--			if (strip_info->user_baud == 57600)
--				s = baudstring[0];
--			else if (strip_info->user_baud == 115200)
--				s = baudstring[1];
--			else
--				s = baudstring[1];	/* For now */
--		} else
--			set_baud(tty, strip_info->user_baud);
--	}
--
--	tty->ops->write(tty, s.string, s.length);
--#ifdef EXT_COUNTERS
--	strip_info->tx_ebytes += s.length;
--#endif
--}
--
--/*
-- * Called by the driver when there's room for more data.  If we have
-- * more packets to send, we send them here.
-- */
--
--static void strip_write_some_more(struct tty_struct *tty)
--{
--	struct strip *strip_info = tty->disc_data;
--
--	/* First make sure we're connected. */
--	if (!strip_info || strip_info->magic != STRIP_MAGIC ||
--	    !netif_running(strip_info->dev))
--		return;
--
--	if (strip_info->tx_left > 0) {
--		int num_written =
--		    tty->ops->write(tty, strip_info->tx_head,
--				      strip_info->tx_left);
--		strip_info->tx_left -= num_written;
--		strip_info->tx_head += num_written;
--#ifdef EXT_COUNTERS
--		strip_info->tx_sbytes += num_written;
--#endif
--	} else {		/* Else start transmission of another packet */
--
--		clear_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
--		strip_unlock(strip_info);
--	}
--}
--
--static __u8 *add_checksum(__u8 * buffer, __u8 * end)
--{
--	__u16 sum = 0;
--	__u8 *p = buffer;
--	while (p < end)
--		sum += *p++;
--	end[3] = hextable[sum & 0xF];
--	sum >>= 4;
--	end[2] = hextable[sum & 0xF];
--	sum >>= 4;
--	end[1] = hextable[sum & 0xF];
--	sum >>= 4;
--	end[0] = hextable[sum & 0xF];
--	return (end + 4);
--}
--
--static unsigned char *strip_make_packet(unsigned char *buffer,
--					struct strip *strip_info,
--					struct sk_buff *skb)
--{
--	__u8 *ptr = buffer;
--	__u8 *stuffstate = NULL;
--	STRIP_Header *header = (STRIP_Header *) skb->data;
--	MetricomAddress haddr = header->dst_addr;
--	int len = skb->len - sizeof(STRIP_Header);
--	MetricomKey key;
--
--	/*HexDump("strip_make_packet", strip_info, skb->data, skb->data + skb->len); */
--
--	if (header->protocol == htons(ETH_P_IP))
--		key = SIP0Key;
--	else if (header->protocol == htons(ETH_P_ARP))
--		key = ARP0Key;
--	else {
--		printk(KERN_ERR
--		       "%s: strip_make_packet: Unknown packet type 0x%04X\n",
--		       strip_info->dev->name, ntohs(header->protocol));
--		return (NULL);
--	}
--
--	if (len > strip_info->mtu) {
--		printk(KERN_ERR
--		       "%s: Dropping oversized transmit packet: %d bytes\n",
--		       strip_info->dev->name, len);
--		return (NULL);
--	}
--
--	/*
--	 * If we're sending to ourselves, discard the packet.
--	 * (Metricom radios choke if they try to send a packet to their own address.)
--	 */
--	if (!memcmp(haddr.c, strip_info->true_dev_addr.c, sizeof(haddr))) {
--		printk(KERN_ERR "%s: Dropping packet addressed to self\n",
--		       strip_info->dev->name);
--		return (NULL);
--	}
--
--	/*
--	 * If this is a broadcast packet, send it to our designated Metricom
--	 * 'broadcast hub' radio (First byte of address being 0xFF means broadcast)
--	 */
--	if (haddr.c[0] == 0xFF) {
--		__be32 brd = 0;
--		struct in_device *in_dev;
--
--		rcu_read_lock();
--		in_dev = __in_dev_get_rcu(strip_info->dev);
--		if (in_dev == NULL) {
--			rcu_read_unlock();
--			return NULL;
--		}
--		if (in_dev->ifa_list)
--			brd = in_dev->ifa_list->ifa_broadcast;
--		rcu_read_unlock();
--
--		/* arp_query returns 1 if it succeeds in looking up the address, 0 if it fails */
--		if (!arp_query(haddr.c, brd, strip_info->dev)) {
--			printk(KERN_ERR
--			       "%s: Unable to send packet (no broadcast hub configured)\n",
--			       strip_info->dev->name);
--			return (NULL);
--		}
--		/*
--		 * If we are the broadcast hub, don't bother sending to ourselves.
--		 * (Metricom radios choke if they try to send a packet to their own address.)
--		 */
--		if (!memcmp
--		    (haddr.c, strip_info->true_dev_addr.c, sizeof(haddr)))
--			return (NULL);
--	}
--
--	*ptr++ = 0x0D;
--	*ptr++ = '*';
--	*ptr++ = hextable[haddr.c[2] >> 4];
--	*ptr++ = hextable[haddr.c[2] & 0xF];
--	*ptr++ = hextable[haddr.c[3] >> 4];
--	*ptr++ = hextable[haddr.c[3] & 0xF];
--	*ptr++ = '-';
--	*ptr++ = hextable[haddr.c[4] >> 4];
--	*ptr++ = hextable[haddr.c[4] & 0xF];
--	*ptr++ = hextable[haddr.c[5] >> 4];
--	*ptr++ = hextable[haddr.c[5] & 0xF];
--	*ptr++ = '*';
--	*ptr++ = key.c[0];
--	*ptr++ = key.c[1];
--	*ptr++ = key.c[2];
--	*ptr++ = key.c[3];
--
--	ptr =
--	    StuffData(skb->data + sizeof(STRIP_Header), len, ptr,
--		      &stuffstate);
--
--	if (strip_info->firmware_level >= ChecksummedMessages)
--		ptr = add_checksum(buffer + 1, ptr);
--
--	*ptr++ = 0x0D;
--	return (ptr);
--}
--
--static void strip_send(struct strip *strip_info, struct sk_buff *skb)
--{
--	MetricomAddress haddr;
--	unsigned char *ptr = strip_info->tx_buff;
--	int doreset = (long) jiffies - strip_info->watchdog_doreset >= 0;
--	int doprobe = (long) jiffies - strip_info->watchdog_doprobe >= 0
--	    && !doreset;
--	__be32 addr, brd;
--
--	/*
--	 * 1. If we have a packet, encapsulate it and put it in the buffer
--	 */
--	if (skb) {
--		char *newptr = strip_make_packet(ptr, strip_info, skb);
--		strip_info->tx_pps_count++;
--		if (!newptr)
--			strip_info->tx_dropped++;
--		else {
--			ptr = newptr;
--			strip_info->sx_pps_count++;
--			strip_info->tx_packets++;	/* Count another successful packet */
--#ifdef EXT_COUNTERS
--			strip_info->tx_bytes += skb->len;
--			strip_info->tx_rbytes += ptr - strip_info->tx_buff;
--#endif
--			/*DumpData("Sending:", strip_info, strip_info->tx_buff, ptr); */
--			/*HexDump("Sending", strip_info, strip_info->tx_buff, ptr); */
--		}
--	}
--
--	/*
--	 * 2. If it is time for another tickle, tack it on, after the packet
--	 */
--	if (doprobe) {
--		StringDescriptor ts = CommandString[strip_info->next_command];
--#if TICKLE_TIMERS
--		{
--			struct timeval tv;
--			do_gettimeofday(&tv);
--			printk(KERN_INFO "**** Sending tickle string %d      at %02d.%06d\n",
--			       strip_info->next_command, tv.tv_sec % 100,
--			       tv.tv_usec);
--		}
--#endif
--		if (ptr == strip_info->tx_buff)
--			*ptr++ = 0x0D;
--
--		*ptr++ = '*';	/* First send "**" to provoke an error message */
--		*ptr++ = '*';
--
--		/* Then add the command */
--		memcpy(ptr, ts.string, ts.length);
--
--		/* Add a checksum ? */
--		if (strip_info->firmware_level < ChecksummedMessages)
--			ptr += ts.length;
--		else
--			ptr = add_checksum(ptr, ptr + ts.length);
--
--		*ptr++ = 0x0D;	/* Terminate the command with a <CR> */
--
--		/* Cycle to next periodic command? */
--		if (strip_info->firmware_level >= StructuredMessages)
--			if (++strip_info->next_command >=
--			    ARRAY_SIZE(CommandString))
--				strip_info->next_command = 0;
--#ifdef EXT_COUNTERS
--		strip_info->tx_ebytes += ts.length;
--#endif
--		strip_info->watchdog_doprobe = jiffies + 10 * HZ;
--		strip_info->watchdog_doreset = jiffies + 1 * HZ;
--		/*printk(KERN_INFO "%s: Routine radio test.\n", strip_info->dev->name); */
--	}
--
--	/*
--	 * 3. Set up the strip_info ready to send the data (if any).
--	 */
--	strip_info->tx_head = strip_info->tx_buff;
--	strip_info->tx_left = ptr - strip_info->tx_buff;
--	set_bit(TTY_DO_WRITE_WAKEUP, &strip_info->tty->flags);
--	/*
--	 * 4. Debugging check to make sure we're not overflowing the buffer.
--	 */
--	if (strip_info->tx_size - strip_info->tx_left < 20)
--		printk(KERN_ERR "%s: Sending%5d bytes;%5d bytes free.\n",
--		       strip_info->dev->name, strip_info->tx_left,
--		       strip_info->tx_size - strip_info->tx_left);
--
--	/*
--	 * 5. If watchdog has expired, reset the radio. Note: if there's data waiting in
--	 * the buffer, strip_write_some_more will send it after the reset has finished
--	 */
--	if (doreset) {
--		ResetRadio(strip_info);
--		return;
--	}
--
--	if (1) {
--		struct in_device *in_dev;
--
--		brd = addr = 0;
--		rcu_read_lock();
--		in_dev = __in_dev_get_rcu(strip_info->dev);
--		if (in_dev) {
--			if (in_dev->ifa_list) {
--				brd = in_dev->ifa_list->ifa_broadcast;
--				addr = in_dev->ifa_list->ifa_local;
--			}
--		}
--		rcu_read_unlock();
--	}
--
--
--	/*
--	 * 6. If it is time for a periodic ARP, queue one up to be sent.
--	 * We only do this if:
--	 *  1. The radio is working
--	 *  2. It's time to send another periodic ARP
--	 *  3. We really know what our address is (and it is not manually set to zero)
--	 *  4. We have a designated broadcast address configured
--	 * If we queue up an ARP packet when we don't have a designated broadcast
--	 * address configured, then the packet will just have to be discarded in
--	 * strip_make_packet. This is not fatal, but it causes misleading information
--	 * to be displayed in tcpdump. tcpdump will report that periodic APRs are
--	 * being sent, when in fact they are not, because they are all being dropped
--	 * in the strip_make_packet routine.
--	 */
--	if (strip_info->working
--	    && (long) jiffies - strip_info->gratuitous_arp >= 0
--	    && memcmp(strip_info->dev->dev_addr, zero_address.c,
--		      sizeof(zero_address))
--	    && arp_query(haddr.c, brd, strip_info->dev)) {
--		/*printk(KERN_INFO "%s: Sending gratuitous ARP with interval %ld\n",
--		   strip_info->dev->name, strip_info->arp_interval / HZ); */
--		strip_info->gratuitous_arp =
--		    jiffies + strip_info->arp_interval;
--		strip_info->arp_interval *= 2;
--		if (strip_info->arp_interval > MaxARPInterval)
--			strip_info->arp_interval = MaxARPInterval;
--		if (addr)
--			arp_send(ARPOP_REPLY, ETH_P_ARP, addr,	/* Target address of ARP packet is our address */
--				 strip_info->dev,	/* Device to send packet on */
--				 addr,	/* Source IP address this ARP packet comes from */
--				 NULL,	/* Destination HW address is NULL (broadcast it) */
--				 strip_info->dev->dev_addr,	/* Source HW address is our HW address */
--				 strip_info->dev->dev_addr);	/* Target HW address is our HW address (redundant) */
--	}
--
--	/*
--	 * 7. All ready. Start the transmission
--	 */
--	strip_write_some_more(strip_info->tty);
--}
--
--/* Encapsulate a datagram and kick it into a TTY queue. */
--static netdev_tx_t strip_xmit(struct sk_buff *skb, struct net_device *dev)
--{
--	struct strip *strip_info = netdev_priv(dev);
--
--	if (!netif_running(dev)) {
--		printk(KERN_ERR "%s: xmit call when iface is down\n",
--		       dev->name);
--		return NETDEV_TX_BUSY;
--	}
--
--	netif_stop_queue(dev);
--
--	del_timer(&strip_info->idle_timer);
--
--
--	if (time_after(jiffies, strip_info->pps_timer + HZ)) {
--		unsigned long t = jiffies - strip_info->pps_timer;
--		unsigned long rx_pps_count =
--			DIV_ROUND_CLOSEST(strip_info->rx_pps_count*HZ*8, t);
--		unsigned long tx_pps_count =
--			DIV_ROUND_CLOSEST(strip_info->tx_pps_count*HZ*8, t);
--		unsigned long sx_pps_count =
--			DIV_ROUND_CLOSEST(strip_info->sx_pps_count*HZ*8, t);
--
--		strip_info->pps_timer = jiffies;
--		strip_info->rx_pps_count = 0;
--		strip_info->tx_pps_count = 0;
--		strip_info->sx_pps_count = 0;
--
--		strip_info->rx_average_pps = (strip_info->rx_average_pps + rx_pps_count + 1) / 2;
--		strip_info->tx_average_pps = (strip_info->tx_average_pps + tx_pps_count + 1) / 2;
--		strip_info->sx_average_pps = (strip_info->sx_average_pps + sx_pps_count + 1) / 2;
--
--		if (rx_pps_count / 8 >= 10)
--			printk(KERN_INFO "%s: WARNING: Receiving %ld packets per second.\n",
--			       strip_info->dev->name, rx_pps_count / 8);
--		if (tx_pps_count / 8 >= 10)
--			printk(KERN_INFO "%s: WARNING: Tx        %ld packets per second.\n",
--			       strip_info->dev->name, tx_pps_count / 8);
--		if (sx_pps_count / 8 >= 10)
--			printk(KERN_INFO "%s: WARNING: Sending   %ld packets per second.\n",
--			       strip_info->dev->name, sx_pps_count / 8);
--	}
--
--	spin_lock_bh(&strip_lock);
--
--	strip_send(strip_info, skb);
--
--	spin_unlock_bh(&strip_lock);
--
--	if (skb)
--		dev_kfree_skb(skb);
--	return NETDEV_TX_OK;
--}
--
--/*
-- * IdleTask periodically calls strip_xmit, so even when we have no IP packets
-- * to send for an extended period of time, the watchdog processing still gets
-- * done to ensure that the radio stays in Starmode
-- */
--
--static void strip_IdleTask(unsigned long parameter)
--{
--	strip_xmit(NULL, (struct net_device *) parameter);
--}
--
--/*
-- * Create the MAC header for an arbitrary protocol layer
-- *
-- * saddr!=NULL        means use this specific address (n/a for Metricom)
-- * saddr==NULL        means use default device source address
-- * daddr!=NULL        means use this destination address
-- * daddr==NULL        means leave destination address alone
-- *                 (e.g. unresolved arp -- kernel will call
-- *                 rebuild_header later to fill in the address)
-- */
--
--static int strip_header(struct sk_buff *skb, struct net_device *dev,
--			unsigned short type, const void *daddr,
--			const void *saddr, unsigned len)
--{
--	struct strip *strip_info = netdev_priv(dev);
--	STRIP_Header *header = (STRIP_Header *) skb_push(skb, sizeof(STRIP_Header));
--
--	/*printk(KERN_INFO "%s: strip_header 0x%04X %s\n", dev->name, type,
--	   type == ETH_P_IP ? "IP" : type == ETH_P_ARP ? "ARP" : ""); */
--
--	header->src_addr = strip_info->true_dev_addr;
--	header->protocol = htons(type);
--
--	/*HexDump("strip_header", netdev_priv(dev), skb->data, skb->data + skb->len); */
--
--	if (!daddr)
--		return (-dev->hard_header_len);
--
--	header->dst_addr = *(MetricomAddress *) daddr;
--	return (dev->hard_header_len);
--}
--
--/*
-- * Rebuild the MAC header. This is called after an ARP
-- * (or in future other address resolution) has completed on this
-- * sk_buff. We now let ARP fill in the other fields.
-- * I think this should return zero if packet is ready to send,
-- * or non-zero if it needs more time to do an address lookup
-- */
--
--static int strip_rebuild_header(struct sk_buff *skb)
--{
--#ifdef CONFIG_INET
--	STRIP_Header *header = (STRIP_Header *) skb->data;
--
--	/* Arp find returns zero if if knows the address, */
--	/* or if it doesn't know the address it sends an ARP packet and returns non-zero */
--	return arp_find(header->dst_addr.c, skb) ? 1 : 0;
+-extern int init_arlan_proc(void);
+-extern void cleanup_arlan_proc(void);
 -#else
--	return 0;
--#endif
--}
--
--
--/************************************************************************/
--/* Receiving routines							*/
--
--/*
-- * This function parses the response to the ATS300? command,
-- * extracting the radio version and serial number.
-- */
--static void get_radio_version(struct strip *strip_info, __u8 * ptr, __u8 * end)
--{
--	__u8 *p, *value_begin, *value_end;
--	int len;
--
--	/* Determine the beginning of the second line of the payload */
--	p = ptr;
--	while (p < end && *p != 10)
--		p++;
--	if (p >= end)
--		return;
--	p++;
--	value_begin = p;
--
--	/* Determine the end of line */
--	while (p < end && *p != 10)
--		p++;
--	if (p >= end)
--		return;
--	value_end = p;
--	p++;
--
--	len = value_end - value_begin;
--	len = min_t(int, len, sizeof(FirmwareVersion) - 1);
--	if (strip_info->firmware_version.c[0] == 0)
--		printk(KERN_INFO "%s: Radio Firmware: %.*s\n",
--		       strip_info->dev->name, len, value_begin);
--	sprintf(strip_info->firmware_version.c, "%.*s", len, value_begin);
--
--	/* Look for the first colon */
--	while (p < end && *p != ':')
--		p++;
--	if (p >= end)
--		return;
--	/* Skip over the space */
--	p += 2;
--	len = sizeof(SerialNumber) - 1;
--	if (p + len <= end) {
--		sprintf(strip_info->serial_number.c, "%.*s", len, p);
--	} else {
--		printk(KERN_DEBUG
--		       "STRIP: radio serial number shorter (%zd) than expected (%d)\n",
--		       end - p, len);
--	}
--}
--
--/*
-- * This function parses the response to the ATS325? command,
-- * extracting the radio battery voltage.
-- */
--static void get_radio_voltage(struct strip *strip_info, __u8 * ptr, __u8 * end)
--{
--	int len;
--
--	len = sizeof(BatteryVoltage) - 1;
--	if (ptr + len <= end) {
--		sprintf(strip_info->battery_voltage.c, "%.*s", len, ptr);
--	} else {
--		printk(KERN_DEBUG
--		       "STRIP: radio voltage string shorter (%zd) than expected (%d)\n",
--		       end - ptr, len);
--	}
--}
--
--/*
-- * This function parses the responses to the AT~LA and ATS311 commands,
-- * which list the radio's neighbours.
-- */
--static void get_radio_neighbours(MetricomNodeTable * table, __u8 * ptr, __u8 * end)
--{
--	table->num_nodes = 0;
--	while (ptr < end && table->num_nodes < NODE_TABLE_SIZE) {
--		MetricomNode *node = &table->node[table->num_nodes++];
--		char *dst = node->c, *limit = dst + sizeof(*node) - 1;
--		while (ptr < end && *ptr <= 32)
--			ptr++;
--		while (ptr < end && dst < limit && *ptr != 10)
--			*dst++ = *ptr++;
--		*dst++ = 0;
--		while (ptr < end && ptr[-1] != 10)
--			ptr++;
--	}
--	do_gettimeofday(&table->timestamp);
--}
--
--static int get_radio_address(struct strip *strip_info, __u8 * p)
--{
--	MetricomAddress addr;
--
--	if (string_to_radio_address(&addr, p))
--		return (1);
--
--	/* See if our radio address has changed */
--	if (memcmp(strip_info->true_dev_addr.c, addr.c, sizeof(addr))) {
--		MetricomAddressString addr_string;
--		radio_address_to_string(&addr, &addr_string);
--		printk(KERN_INFO "%s: Radio address = %s\n",
--		       strip_info->dev->name, addr_string.c);
--		strip_info->true_dev_addr = addr;
--		if (!strip_info->manual_dev_addr)
--			*(MetricomAddress *) strip_info->dev->dev_addr =
--			    addr;
--		/* Give the radio a few seconds to get its head straight, then send an arp */
--		strip_info->gratuitous_arp = jiffies + 15 * HZ;
--		strip_info->arp_interval = 1 * HZ;
--	}
--	return (0);
--}
--
--static int verify_checksum(struct strip *strip_info)
--{
--	__u8 *p = strip_info->sx_buff;
--	__u8 *end = strip_info->sx_buff + strip_info->sx_count - 4;
--	u_short sum =
--	    (READHEX16(end[0]) << 12) | (READHEX16(end[1]) << 8) |
--	    (READHEX16(end[2]) << 4) | (READHEX16(end[3]));
--	while (p < end)
--		sum -= *p++;
--	if (sum == 0 && strip_info->firmware_level == StructuredMessages) {
--		strip_info->firmware_level = ChecksummedMessages;
--		printk(KERN_INFO "%s: Radio provides message checksums\n",
--		       strip_info->dev->name);
--	}
--	return (sum == 0);
--}
--
--static void RecvErr(char *msg, struct strip *strip_info)
--{
--	__u8 *ptr = strip_info->sx_buff;
--	__u8 *end = strip_info->sx_buff + strip_info->sx_count;
--	DumpData(msg, strip_info, ptr, end);
--	strip_info->rx_errors++;
--}
--
--static void RecvErr_Message(struct strip *strip_info, __u8 * sendername,
--			    const __u8 * msg, u_long len)
--{
--	if (has_prefix(msg, len, "001")) {	/* Not in StarMode! */
--		RecvErr("Error Msg:", strip_info);
--		printk(KERN_INFO "%s: Radio %s is not in StarMode\n",
--		       strip_info->dev->name, sendername);
--	}
--
--	else if (has_prefix(msg, len, "002")) {	/* Remap handle */
--		/* We ignore "Remap handle" messages for now */
--	}
--
--	else if (has_prefix(msg, len, "003")) {	/* Can't resolve name */
--		RecvErr("Error Msg:", strip_info);
--		printk(KERN_INFO "%s: Destination radio name is unknown\n",
--		       strip_info->dev->name);
--	}
--
--	else if (has_prefix(msg, len, "004")) {	/* Name too small or missing */
--		strip_info->watchdog_doreset = jiffies + LongTime;
--#if TICKLE_TIMERS
--		{
--			struct timeval tv;
--			do_gettimeofday(&tv);
--			printk(KERN_INFO
--			       "**** Got ERR_004 response         at %02d.%06d\n",
--			       tv.tv_sec % 100, tv.tv_usec);
--		}
--#endif
--		if (!strip_info->working) {
--			strip_info->working = TRUE;
--			printk(KERN_INFO "%s: Radio now in starmode\n",
--			       strip_info->dev->name);
--			/*
--			 * If the radio has just entered a working state, we should do our first
--			 * probe ASAP, so that we find out our radio address etc. without delay.
--			 */
--			strip_info->watchdog_doprobe = jiffies;
--		}
--		if (strip_info->firmware_level == NoStructure && sendername) {
--			strip_info->firmware_level = StructuredMessages;
--			strip_info->next_command = 0;	/* Try to enable checksums ASAP */
--			printk(KERN_INFO
--			       "%s: Radio provides structured messages\n",
--			       strip_info->dev->name);
--		}
--		if (strip_info->firmware_level >= StructuredMessages) {
--			/*
--			 * If this message has a valid checksum on the end, then the call to verify_checksum
--			 * will elevate the firmware_level to ChecksummedMessages for us. (The actual return
--			 * code from verify_checksum is ignored here.)
--			 */
--			verify_checksum(strip_info);
--			/*
--			 * If the radio has structured messages but we don't yet have all our information about it,
--			 * we should do probes without delay, until we have gathered all the information
--			 */
--			if (!GOT_ALL_RADIO_INFO(strip_info))
--				strip_info->watchdog_doprobe = jiffies;
--		}
--	}
--
--	else if (has_prefix(msg, len, "005"))	/* Bad count specification */
--		RecvErr("Error Msg:", strip_info);
--
--	else if (has_prefix(msg, len, "006"))	/* Header too big */
--		RecvErr("Error Msg:", strip_info);
--
--	else if (has_prefix(msg, len, "007")) {	/* Body too big */
--		RecvErr("Error Msg:", strip_info);
--		printk(KERN_ERR
--		       "%s: Error! Packet size too big for radio.\n",
--		       strip_info->dev->name);
--	}
--
--	else if (has_prefix(msg, len, "008")) {	/* Bad character in name */
--		RecvErr("Error Msg:", strip_info);
--		printk(KERN_ERR
--		       "%s: Radio name contains illegal character\n",
--		       strip_info->dev->name);
--	}
--
--	else if (has_prefix(msg, len, "009"))	/* No count or line terminator */
--		RecvErr("Error Msg:", strip_info);
--
--	else if (has_prefix(msg, len, "010"))	/* Invalid checksum */
--		RecvErr("Error Msg:", strip_info);
--
--	else if (has_prefix(msg, len, "011"))	/* Checksum didn't match */
--		RecvErr("Error Msg:", strip_info);
--
--	else if (has_prefix(msg, len, "012"))	/* Failed to transmit packet */
--		RecvErr("Error Msg:", strip_info);
--
--	else
--		RecvErr("Error Msg:", strip_info);
--}
--
--static void process_AT_response(struct strip *strip_info, __u8 * ptr,
--				__u8 * end)
--{
--	u_long len;
--	__u8 *p = ptr;
--	while (p < end && p[-1] != 10)
--		p++;		/* Skip past first newline character */
--	/* Now ptr points to the AT command, and p points to the text of the response. */
--	len = p - ptr;
--
--#if TICKLE_TIMERS
--	{
--		struct timeval tv;
--		do_gettimeofday(&tv);
--		printk(KERN_INFO "**** Got AT response %.7s      at %02d.%06d\n",
--		       ptr, tv.tv_sec % 100, tv.tv_usec);
--	}
+-#define init_arlan_proc()	({ 0; })
+-#define cleanup_arlan_proc()	do { } while (0)
 -#endif
 -
--	if (has_prefix(ptr, len, "ATS300?"))
--		get_radio_version(strip_info, p, end);
--	else if (has_prefix(ptr, len, "ATS305?"))
--		get_radio_address(strip_info, p);
--	else if (has_prefix(ptr, len, "ATS311?"))
--		get_radio_neighbours(&strip_info->poletops, p, end);
--	else if (has_prefix(ptr, len, "ATS319=7"))
--		verify_checksum(strip_info);
--	else if (has_prefix(ptr, len, "ATS325?"))
--		get_radio_voltage(strip_info, p, end);
--	else if (has_prefix(ptr, len, "AT~LA"))
--		get_radio_neighbours(&strip_info->portables, p, end);
--	else
--		RecvErr("Unknown AT Response:", strip_info);
--}
+-extern struct net_device *arlan_device[MAX_ARLANS];
+-extern int	arlan_debug;
+-extern int	arlan_entry_debug;
+-extern int	arlan_exit_debug;
+-extern int	testMemory;
+-extern int     arlan_command(struct net_device * dev, int command);
+- 
+-#define SIDUNKNOWN -1
+-#define radioNodeIdUNKNOWN -1
+-#define irqUNKNOWN 0
+-#define debugUNKNOWN 0
+-#define testMemoryUNKNOWN 1
+-#define spreadingCodeUNKNOWN 0
+-#define channelNumberUNKNOWN 0
+-#define channelSetUNKNOWN 0
+-#define systemIdUNKNOWN -1
+-#define registrationModeUNKNOWN -1
 -
--static void process_ACK(struct strip *strip_info, __u8 * ptr, __u8 * end)
--{
--	/* Currently we don't do anything with ACKs from the radio */
--}
 -
--static void process_Info(struct strip *strip_info, __u8 * ptr, __u8 * end)
--{
--	if (ptr + 16 > end)
--		RecvErr("Bad Info Msg:", strip_info);
--}
+-#define IFDEBUG( L ) if ( (L) & arlan_debug ) 
+-#define ARLAN_FAKE_HDR_LEN 12 
 -
--static struct net_device *get_strip_dev(struct strip *strip_info)
--{
--	/* If our hardware address is *manually set* to zero, and we know our */
--	/* real radio hardware address, try to find another strip device that has been */
--	/* manually set to that address that we can 'transfer ownership' of this packet to  */
--	if (strip_info->manual_dev_addr &&
--	    !memcmp(strip_info->dev->dev_addr, zero_address.c,
--		    sizeof(zero_address))
--	    && memcmp(&strip_info->true_dev_addr, zero_address.c,
--		      sizeof(zero_address))) {
--		struct net_device *dev;
--		read_lock_bh(&dev_base_lock);
--		for_each_netdev(&init_net, dev) {
--			if (dev->type == strip_info->dev->type &&
--			    !memcmp(dev->dev_addr,
--				    &strip_info->true_dev_addr,
--				    sizeof(MetricomAddress))) {
--				printk(KERN_INFO
--				       "%s: Transferred packet ownership to %s.\n",
--				       strip_info->dev->name, dev->name);
--				read_unlock_bh(&dev_base_lock);
--				return (dev);
--			}
--		}
--		read_unlock_bh(&dev_base_lock);
--	}
--	return (strip_info->dev);
--}
--
--/*
-- * Send one completely decapsulated datagram to the next layer.
-- */
--
--static void deliver_packet(struct strip *strip_info, STRIP_Header * header,
--			   __u16 packetlen)
--{
--	struct sk_buff *skb = dev_alloc_skb(sizeof(STRIP_Header) + packetlen);
--	if (!skb) {
--		printk(KERN_ERR "%s: memory squeeze, dropping packet.\n",
--		       strip_info->dev->name);
--		strip_info->rx_dropped++;
--	} else {
--		memcpy(skb_put(skb, sizeof(STRIP_Header)), header,
--		       sizeof(STRIP_Header));
--		memcpy(skb_put(skb, packetlen), strip_info->rx_buff,
--		       packetlen);
--		skb->dev = get_strip_dev(strip_info);
--		skb->protocol = header->protocol;
--		skb_reset_mac_header(skb);
--
--		/* Having put a fake header on the front of the sk_buff for the */
--		/* benefit of tools like tcpdump, skb_pull now 'consumes' that  */
--		/* fake header before we hand the packet up to the next layer.  */
--		skb_pull(skb, sizeof(STRIP_Header));
--
--		/* Finally, hand the packet up to the next layer (e.g. IP or ARP, etc.) */
--		strip_info->rx_packets++;
--		strip_info->rx_pps_count++;
--#ifdef EXT_COUNTERS
--		strip_info->rx_bytes += packetlen;
--#endif
--		netif_rx(skb);
--	}
--}
--
--static void process_IP_packet(struct strip *strip_info,
--			      STRIP_Header * header, __u8 * ptr,
--			      __u8 * end)
--{
--	__u16 packetlen;
--
--	/* Decode start of the IP packet header */
--	ptr = UnStuffData(ptr, end, strip_info->rx_buff, 4);
--	if (!ptr) {
--		RecvErr("IP Packet too short", strip_info);
--		return;
--	}
--
--	packetlen = ((__u16) strip_info->rx_buff[2] << 8) | strip_info->rx_buff[3];
--
--	if (packetlen > MAX_RECV_MTU) {
--		printk(KERN_INFO "%s: Dropping oversized received IP packet: %d bytes\n",
--		       strip_info->dev->name, packetlen);
--		strip_info->rx_dropped++;
--		return;
--	}
--
--	/*printk(KERN_INFO "%s: Got %d byte IP packet\n", strip_info->dev->name, packetlen); */
--
--	/* Decode remainder of the IP packet */
--	ptr =
--	    UnStuffData(ptr, end, strip_info->rx_buff + 4, packetlen - 4);
--	if (!ptr) {
--		RecvErr("IP Packet too short", strip_info);
--		return;
--	}
--
--	if (ptr < end) {
--		RecvErr("IP Packet too long", strip_info);
--		return;
--	}
--
--	header->protocol = htons(ETH_P_IP);
--
--	deliver_packet(strip_info, header, packetlen);
--}
--
--static void process_ARP_packet(struct strip *strip_info,
--			       STRIP_Header * header, __u8 * ptr,
--			       __u8 * end)
--{
--	__u16 packetlen;
--	struct arphdr *arphdr = (struct arphdr *) strip_info->rx_buff;
--
--	/* Decode start of the ARP packet */
--	ptr = UnStuffData(ptr, end, strip_info->rx_buff, 8);
--	if (!ptr) {
--		RecvErr("ARP Packet too short", strip_info);
--		return;
--	}
--
--	packetlen = 8 + (arphdr->ar_hln + arphdr->ar_pln) * 2;
--
--	if (packetlen > MAX_RECV_MTU) {
--		printk(KERN_INFO
--		       "%s: Dropping oversized received ARP packet: %d bytes\n",
--		       strip_info->dev->name, packetlen);
--		strip_info->rx_dropped++;
--		return;
--	}
--
--	/*printk(KERN_INFO "%s: Got %d byte ARP %s\n",
--	   strip_info->dev->name, packetlen,
--	   ntohs(arphdr->ar_op) == ARPOP_REQUEST ? "request" : "reply"); */
--
--	/* Decode remainder of the ARP packet */
--	ptr =
--	    UnStuffData(ptr, end, strip_info->rx_buff + 8, packetlen - 8);
--	if (!ptr) {
--		RecvErr("ARP Packet too short", strip_info);
--		return;
--	}
--
--	if (ptr < end) {
--		RecvErr("ARP Packet too long", strip_info);
--		return;
--	}
--
--	header->protocol = htons(ETH_P_ARP);
--
--	deliver_packet(strip_info, header, packetlen);
--}
--
--/*
-- * process_text_message processes a <CR>-terminated block of data received
-- * from the radio that doesn't begin with a '*' character. All normal
-- * Starmode communication messages with the radio begin with a '*',
-- * so any text that does not indicates a serial port error, a radio that
-- * is in Hayes command mode instead of Starmode, or a radio with really
-- * old firmware that doesn't frame its Starmode responses properly.
-- */
--static void process_text_message(struct strip *strip_info)
--{
--	__u8 *msg = strip_info->sx_buff;
--	int len = strip_info->sx_count;
--
--	/* Check for anything that looks like it might be our radio name */
--	/* (This is here for backwards compatibility with old firmware)  */
--	if (len == 9 && get_radio_address(strip_info, msg) == 0)
--		return;
--
--	if (text_equal(msg, len, "OK"))
--		return;		/* Ignore 'OK' responses from prior commands */
--	if (text_equal(msg, len, "ERROR"))
--		return;		/* Ignore 'ERROR' messages */
--	if (has_prefix(msg, len, "ate0q1"))
--		return;		/* Ignore character echo back from the radio */
--
--	/* Catch other error messages */
--	/* (This is here for backwards compatibility with old firmware) */
--	if (has_prefix(msg, len, "ERR_")) {
--		RecvErr_Message(strip_info, NULL, &msg[4], len - 4);
--		return;
--	}
--
--	RecvErr("No initial *", strip_info);
--}
--
--/*
-- * process_message processes a <CR>-terminated block of data received
-- * from the radio. If the radio is not in Starmode or has old firmware,
-- * it may be a line of text in response to an AT command. Ideally, with
-- * a current radio that's properly in Starmode, all data received should
-- * be properly framed and checksummed radio message blocks, containing
-- * either a starmode packet, or a other communication from the radio
-- * firmware, like "INF_" Info messages and &COMMAND responses.
-- */
--static void process_message(struct strip *strip_info)
--{
--	STRIP_Header header = { zero_address, zero_address, 0 };
--	__u8 *ptr = strip_info->sx_buff;
--	__u8 *end = strip_info->sx_buff + strip_info->sx_count;
--	__u8 sendername[32], *sptr = sendername;
--	MetricomKey key;
--
--	/*HexDump("Receiving", strip_info, ptr, end); */
--
--	/* Check for start of address marker, and then skip over it */
--	if (*ptr == '*')
--		ptr++;
--	else {
--		process_text_message(strip_info);
--		return;
--	}
--
--	/* Copy out the return address */
--	while (ptr < end && *ptr != '*'
--	       && sptr < ARRAY_END(sendername) - 1)
--		*sptr++ = *ptr++;
--	*sptr = 0;		/* Null terminate the sender name */
--
--	/* Check for end of address marker, and skip over it */
--	if (ptr >= end || *ptr != '*') {
--		RecvErr("No second *", strip_info);
--		return;
--	}
--	ptr++;			/* Skip the second '*' */
--
--	/* If the sender name is "&COMMAND", ignore this 'packet'       */
--	/* (This is here for backwards compatibility with old firmware) */
--	if (!strcmp(sendername, "&COMMAND")) {
--		strip_info->firmware_level = NoStructure;
--		strip_info->next_command = CompatibilityCommand;
--		return;
--	}
--
--	if (ptr + 4 > end) {
--		RecvErr("No proto key", strip_info);
--		return;
--	}
--
--	/* Get the protocol key out of the buffer */
--	key.c[0] = *ptr++;
--	key.c[1] = *ptr++;
--	key.c[2] = *ptr++;
--	key.c[3] = *ptr++;
--
--	/* If we're using checksums, verify the checksum at the end of the packet */
--	if (strip_info->firmware_level >= ChecksummedMessages) {
--		end -= 4;	/* Chop the last four bytes off the packet (they're the checksum) */
--		if (ptr > end) {
--			RecvErr("Missing Checksum", strip_info);
--			return;
--		}
--		if (!verify_checksum(strip_info)) {
--			RecvErr("Bad Checksum", strip_info);
--			return;
--		}
--	}
--
--	/*printk(KERN_INFO "%s: Got packet from \"%s\".\n", strip_info->dev->name, sendername); */
--
--	/*
--	 * Fill in (pseudo) source and destination addresses in the packet.
--	 * We assume that the destination address was our address (the radio does not
--	 * tell us this). If the radio supplies a source address, then we use it.
--	 */
--	header.dst_addr = strip_info->true_dev_addr;
--	string_to_radio_address(&header.src_addr, sendername);
--
--#ifdef EXT_COUNTERS
--	if (key.l == SIP0Key.l) {
--		strip_info->rx_rbytes += (end - ptr);
--		process_IP_packet(strip_info, &header, ptr, end);
--	} else if (key.l == ARP0Key.l) {
--		strip_info->rx_rbytes += (end - ptr);
--		process_ARP_packet(strip_info, &header, ptr, end);
--	} else if (key.l == ATR_Key.l) {
--		strip_info->rx_ebytes += (end - ptr);
--		process_AT_response(strip_info, ptr, end);
--	} else if (key.l == ACK_Key.l) {
--		strip_info->rx_ebytes += (end - ptr);
--		process_ACK(strip_info, ptr, end);
--	} else if (key.l == INF_Key.l) {
--		strip_info->rx_ebytes += (end - ptr);
--		process_Info(strip_info, ptr, end);
--	} else if (key.l == ERR_Key.l) {
--		strip_info->rx_ebytes += (end - ptr);
--		RecvErr_Message(strip_info, sendername, ptr, end - ptr);
--	} else
--		RecvErr("Unrecognized protocol key", strip_info);
+-#ifdef ARLAN_DEBUGGING
+-	#define DEBUG 1
+-	#define ARLAN_ENTRY_EXIT_DEBUGGING 1
+-	#define ARLAN_DEBUG(a,b) printk(KERN_DEBUG a, b)
 -#else
--	if (key.l == SIP0Key.l)
--		process_IP_packet(strip_info, &header, ptr, end);
--	else if (key.l == ARP0Key.l)
--		process_ARP_packet(strip_info, &header, ptr, end);
--	else if (key.l == ATR_Key.l)
--		process_AT_response(strip_info, ptr, end);
--	else if (key.l == ACK_Key.l)
--		process_ACK(strip_info, ptr, end);
--	else if (key.l == INF_Key.l)
--		process_Info(strip_info, ptr, end);
--	else if (key.l == ERR_Key.l)
--		RecvErr_Message(strip_info, sendername, ptr, end - ptr);
--	else
--		RecvErr("Unrecognized protocol key", strip_info);
--#endif
--}
--
--#define TTYERROR(X) ((X) == TTY_BREAK   ? "Break"            : \
--                     (X) == TTY_FRAME   ? "Framing Error"    : \
--                     (X) == TTY_PARITY  ? "Parity Error"     : \
--                     (X) == TTY_OVERRUN ? "Hardware Overrun" : "Unknown Error")
--
--/*
-- * Handle the 'receiver data ready' interrupt.
-- * This function is called by the 'tty_io' module in the kernel when
-- * a block of STRIP data has been received, which can now be decapsulated
-- * and sent on to some IP layer for further processing.
-- */
--
--static void strip_receive_buf(struct tty_struct *tty, const unsigned char *cp,
--		  char *fp, int count)
--{
--	struct strip *strip_info = tty->disc_data;
--	const unsigned char *end = cp + count;
--
--	if (!strip_info || strip_info->magic != STRIP_MAGIC
--	    || !netif_running(strip_info->dev))
--		return;
--
--	spin_lock_bh(&strip_lock);
--#if 0
--	{
--		struct timeval tv;
--		do_gettimeofday(&tv);
--		printk(KERN_INFO
--		       "**** strip_receive_buf: %3d bytes at %02d.%06d\n",
--		       count, tv.tv_sec % 100, tv.tv_usec);
--	}
+-	#define ARLAN_DEBUG(a,b) 
 -#endif
 -
--#ifdef EXT_COUNTERS
--	strip_info->rx_sbytes += count;
--#endif
+-#define ARLAN_SHMEM_SIZE	0x2000
 -
--	/* Read the characters out of the buffer */
--	while (cp < end) {
--		if (fp && *fp)
--			printk(KERN_INFO "%s: %s on serial port\n",
--			       strip_info->dev->name, TTYERROR(*fp));
--		if (fp && *fp++ && !strip_info->discard) {	/* If there's a serial error, record it */
--			/* If we have some characters in the buffer, discard them */
--			strip_info->discard = strip_info->sx_count;
--			strip_info->rx_errors++;
--		}
--
--		/* Leading control characters (CR, NL, Tab, etc.) are ignored */
--		if (strip_info->sx_count > 0 || *cp >= ' ') {
--			if (*cp == 0x0D) {	/* If end of packet, decide what to do with it */
--				if (strip_info->sx_count > 3000)
--					printk(KERN_INFO
--					       "%s: Cut a %d byte packet (%zd bytes remaining)%s\n",
--					       strip_info->dev->name,
--					       strip_info->sx_count,
--					       end - cp - 1,
--					       strip_info->
--					       discard ? " (discarded)" :
--					       "");
--				if (strip_info->sx_count >
--				    strip_info->sx_size) {
--					strip_info->rx_over_errors++;
--					printk(KERN_INFO
--					       "%s: sx_buff overflow (%d bytes total)\n",
--					       strip_info->dev->name,
--					       strip_info->sx_count);
--				} else if (strip_info->discard)
--					printk(KERN_INFO
--					       "%s: Discarding bad packet (%d/%d)\n",
--					       strip_info->dev->name,
--					       strip_info->discard,
--					       strip_info->sx_count);
--				else
--					process_message(strip_info);
--				strip_info->discard = 0;
--				strip_info->sx_count = 0;
--			} else {
--				/* Make sure we have space in the buffer */
--				if (strip_info->sx_count <
--				    strip_info->sx_size)
--					strip_info->sx_buff[strip_info->
--							    sx_count] =
--					    *cp;
--				strip_info->sx_count++;
--			}
--		}
--		cp++;
--	}
--	spin_unlock_bh(&strip_lock);
--}
--
--
--/************************************************************************/
--/* General control routines						*/
--
--static int set_mac_address(struct strip *strip_info,
--			   MetricomAddress * addr)
+-struct arlan_shmem
 -{
--	/*
--	 * We're using a manually specified address if the address is set
--	 * to anything other than all ones. Setting the address to all ones
--	 * disables manual mode and goes back to automatic address determination
--	 * (tracking the true address that the radio has).
--	 */
--	strip_info->manual_dev_addr =
--	    memcmp(addr->c, broadcast_address.c,
--		   sizeof(broadcast_address));
--	if (strip_info->manual_dev_addr)
--		*(MetricomAddress *) strip_info->dev->dev_addr = *addr;
--	else
--		*(MetricomAddress *) strip_info->dev->dev_addr =
--		    strip_info->true_dev_addr;
--	return 0;
--}
+-      /* Header Signature */ 
+-      volatile	char textRegion[48];
+-      volatile	u_char resetFlag;
+-      volatile	u_char  diagnosticInfo;
+-      volatile	u_short diagnosticOffset;
+-      volatile	u_char _1[12];
+-      volatile	u_char lanCardNodeId[6];
+-      volatile	u_char broadcastAddress[6];
+-      volatile	u_char hardwareType;
+-      volatile	u_char majorHardwareVersion;
+-      volatile	u_char minorHardwareVersion;
+-      volatile	u_char radioModule;// shows EEPROM, can be overridden at 0x111
+-      volatile	u_char defaultChannelSet; // shows EEProm, can be overriiden at 0x10A
+-      volatile	u_char _2[47];
+-      
+-      /* Control/Status Block - 0x0080 */
+-      volatile	u_char interruptInProgress; /* not used by lancpu */
+-      volatile	u_char cntrlRegImage; /* not used by lancpu */
+-      volatile	u_char _3[13];
+-      volatile	u_char dumpByte;
+-      volatile	u_char commandByte; /* non-zero = active */
+-      volatile	u_char commandParameter[15];
 -
--static int strip_set_mac_address(struct net_device *dev, void *addr)
+-      /* Receive Status - 0x00a0 */
+-      volatile	u_char rxStatus; /* 1- data, 2-control, 0xff - registr change */
+-      volatile	u_char rxFrmType;
+-      volatile	u_short rxOffset;
+-      volatile	u_short rxLength;
+-      volatile	u_char rxSrc[6];
+-      volatile	u_char rxBroadcastFlag;
+-      volatile	u_char rxQuality;
+-      volatile	u_char scrambled;
+-      volatile	u_char _4[1];
+-      
+-      /* Transmit Status - 0x00b0 */
+-      volatile	u_char txStatus;
+-      volatile	u_char txAckQuality;
+-      volatile	u_char numRetries;
+-      volatile	u_char _5[14];
+-      volatile	u_char registeredRouter[6];
+-      volatile	u_char backboneRouter[6];
+-      volatile	u_char registrationStatus;
+-      volatile	u_char configuredStatusFlag;
+-      volatile	u_char _6[1];
+-      volatile	u_char ultimateDestAddress[6];
+-      volatile	u_char immedDestAddress[6];
+-      volatile	u_char immedSrcAddress[6];
+-      volatile	u_short rxSequenceNumber;
+-      volatile	u_char assignedLocaltalkAddress;
+-      volatile	u_char _7[27];
+-
+-      /* System Parameter Block */
+-
+-      /* - Driver Parameters (Novell Specific) */
+-
+-      volatile	u_short txTimeout;
+-      volatile	u_short transportTime;
+-      volatile	u_char _8[4];
+-
+-      /* - Configuration Parameters */
+-      volatile	u_char irqLevel;
+-      volatile	u_char spreadingCode;
+-      volatile	u_char channelSet;
+-      volatile	u_char channelNumber;
+-      volatile	u_short radioNodeId;
+-      volatile	u_char _9[2];
+-      volatile	u_char scramblingDisable;
+-      volatile	u_char radioType;
+-      volatile	u_short routerId;
+-      volatile	u_char _10[9];
+-      volatile	u_char txAttenuation;
+-      volatile	u_char systemId[4]; 
+-      volatile	u_short globalChecksum;
+-      volatile	u_char _11[4];
+-      volatile	u_short maxDatagramSize;
+-      volatile	u_short maxFrameSize;
+-      volatile	u_char maxRetries;
+-      volatile	u_char receiveMode;
+-      volatile	u_char priority;
+-      volatile	u_char rootOrRepeater;
+-      volatile	u_char specifiedRouter[6];
+-      volatile	u_short fastPollPeriod;
+-      volatile	u_char pollDecay;
+-      volatile	u_char fastPollDelay[2];
+-      volatile	u_char arlThreshold;
+-      volatile	u_char arlDecay;
+-      volatile	u_char _12[1];
+-      volatile	u_short specRouterTimeout;
+-      volatile	u_char _13[5];
+-
+-      /* Scrambled Area */
+-      volatile	u_char SID[4];
+-      volatile	u_char encryptionKey[12];
+-      volatile	u_char _14[2];
+-      volatile	u_char waitTime[2];
+-      volatile	u_char lParameter[2];
+-      volatile	u_char _15[3];
+-      volatile	u_short headerSize;
+-      volatile	u_short sectionChecksum;
+-
+-      volatile	u_char registrationMode;
+-      volatile	u_char registrationFill;
+-      volatile	u_short pollPeriod;
+-      volatile	u_short refreshPeriod;
+-      volatile	u_char name[16];
+-      volatile	u_char NID[6];
+-      volatile	u_char localTalkAddress;
+-      volatile	u_char codeFormat;
+-      volatile	u_char numChannels;
+-      volatile	u_char channel1;
+-      volatile	u_char channel2;
+-      volatile	u_char channel3;
+-      volatile	u_char channel4;
+-      volatile	u_char SSCode[59];
+-
+-      volatile	u_char _16[0xC0];
+-      volatile	u_short auxCmd;
+-      volatile	u_char  dumpPtr[4];
+-      volatile	u_char dumpVal;
+-      volatile	u_char _17[0x6A];
+-      volatile	u_char wireTest;
+-      volatile	u_char _18[14];
+-
+-      /* Statistics Block - 0x0300 */
+-      volatile	u_char hostcpuLock;
+-      volatile	u_char lancpuLock;
+-      volatile	u_char resetTime[18];
+-      
+-      volatile	u_char numDatagramsTransmitted[4];
+-      volatile	u_char numReTransmissions[4];
+-      volatile	u_char numFramesDiscarded[4];
+-      volatile	u_char numDatagramsReceived[4];
+-      volatile	u_char numDuplicateReceivedFrames[4];
+-      volatile	u_char numDatagramsDiscarded[4];
+-      
+-      volatile	u_short maxNumReTransmitDatagram;
+-      volatile	u_short maxNumReTransmitFrames;
+-      volatile	u_short maxNumConsecutiveDuplicateFrames;
+-      /* misaligned here so we have to go to characters */
+-     
+-      volatile	u_char numBytesTransmitted[4];
+-      volatile	u_char numBytesReceived[4];
+-      volatile	u_char numCRCErrors[4];
+-      volatile	u_char numLengthErrors[4];
+-      volatile	u_char numAbortErrors[4];
+-      volatile	u_char numTXUnderruns[4];
+-      volatile	u_char numRXOverruns[4];
+-      volatile	u_char numHoldOffs[4];
+-      volatile	u_char numFramesTransmitted[4];
+-      volatile	u_char numFramesReceived[4];
+-      volatile	u_char numReceiveFramesLost[4];
+-      volatile	u_char numRXBufferOverflows[4];
+-      volatile	u_char numFramesDiscardedAddrMismatch[4];
+-      volatile	u_char numFramesDiscardedSIDMismatch[4];
+-      volatile	u_char numPollsTransmistted[4];
+-      volatile	u_char numPollAcknowledges[4];
+-      volatile	u_char numStatusTimeouts[4];
+-      volatile	u_char numNACKReceived[4];
+-
+-      volatile	u_char _19[0x86];
+-
+-      volatile	u_char txBuffer[0x800];
+-      volatile	u_char rxBuffer[0x800];
+-
+-      volatile	u_char _20[0x800];
+-      volatile	u_char _21[0x3fb];
+-      volatile	u_char configStatus;
+-      volatile	u_char _22;
+-      volatile	u_char progIOCtrl;
+-      volatile	u_char shareMBase;
+-      volatile	u_char controlRegister;
+-};
+-
+-struct arlan_conf_stru {
+-      int spreadingCode;
+-      int channelSet;
+-      int channelNumber;
+-      int scramblingDisable;
+-      int txAttenuation;
+-      int systemId; 
+-      int maxDatagramSize;
+-      int maxFrameSize;
+-      int maxRetries;
+-      int receiveMode;
+-      int priority;
+-      int rootOrRepeater;
+-      int SID;
+-      int radioNodeId;
+-      int registrationMode;
+-      int registrationFill;
+-      int localTalkAddress;
+-      int codeFormat;
+-      int numChannels;
+-      int channel1;
+-      int channel2;
+-      int channel3;
+-      int channel4;
+-      int txClear;
+-      int txRetries;
+-      int txRouting;
+-      int txScrambled;
+-      int rxParameter;
+-      int txTimeoutMs;
+-      int txAckTimeoutMs;
+-      int waitCardTimeout;
+-      int	waitTime;
+-      int	lParameter;
+-      int	_15;
+-      int	headerSize;
+-      int retries;
+-      int tx_delay_ms;
+-      int waitReTransmitPacketMaxSize;
+-      int ReTransmitPacketMaxSize;
+-      int fastReTransCount;
+-      int driverRetransmissions;
+-      int registrationInterrupts;
+-      int hardwareType;
+-      int radioType;
+-      int writeRadioType;
+-      int writeEEPROM;
+-      char siteName[17];
+-      int measure_rate;
+-      int in_speed;
+-      int out_speed;
+-      int in_speed10;
+-      int out_speed10;
+-      int in_speed_max;
+-      int out_speed_max;
+-      int pre_Command_Wait;
+-      int rx_tweak1;
+-      int rx_tweak2;
+-      int tx_queue_len;
+-};
+-
+-extern struct arlan_conf_stru arlan_conf[MAX_ARLANS];
+-
+-struct TxParam
 -{
--	struct strip *strip_info = netdev_priv(dev);
--	struct sockaddr *sa = addr;
--	printk(KERN_INFO "%s: strip_set_dev_mac_address called\n", dev->name);
--	set_mac_address(strip_info, (MetricomAddress *) sa->sa_data);
--	return 0;
--}
+-      volatile	short 		offset;
+-      volatile 	short 		length;
+-      volatile	u_char 		dest[6];
+-      volatile	unsigned	char clear;
+-      volatile	unsigned	char retries;
+-      volatile	unsigned	char routing;
+-      volatile	unsigned	char scrambled;
+-};
 -
--static struct net_device_stats *strip_get_stats(struct net_device *dev)
--{
--	struct strip *strip_info = netdev_priv(dev);
--	static struct net_device_stats stats;
+-#define TX_RING_SIZE 2
+-/* Information that need to be kept for each board. */
+-struct arlan_private {
+-      struct arlan_shmem __iomem * card;
+-      struct arlan_shmem * conf;
 -
--	memset(&stats, 0, sizeof(struct net_device_stats));
+-      struct arlan_conf_stru * Conf;	     
+-      int	bad;
+-      int 	reset;
+-      unsigned long lastReset;
+-      struct timer_list timer;
+-      struct timer_list tx_delay_timer;
+-      struct timer_list tx_retry_timer;
+-      struct timer_list rx_check_timer;
 -
--	stats.rx_packets = strip_info->rx_packets;
--	stats.tx_packets = strip_info->tx_packets;
--	stats.rx_dropped = strip_info->rx_dropped;
--	stats.tx_dropped = strip_info->tx_dropped;
--	stats.tx_errors = strip_info->tx_errors;
--	stats.rx_errors = strip_info->rx_errors;
--	stats.rx_over_errors = strip_info->rx_over_errors;
--	return (&stats);
--}
+-      int registrationLostCount;
+-      int reRegisterExp;
+-      int irq_test_done;
 -
+-      struct TxParam txRing[TX_RING_SIZE];
+-      char reTransmitBuff[0x800];
+-      int txLast;
+-      unsigned ReTransmitRequested;
+-      unsigned long tx_done_delayed;
+-      unsigned long registrationLastSeen;
 -
--/************************************************************************/
--/* Opening and closing							*/
+-      unsigned long	tx_last_sent;
+-      unsigned long	tx_last_cleared;
+-      unsigned long	retransmissions;
+-      unsigned long 	interrupt_ack_requested;
+-      spinlock_t	lock;
+-      unsigned long	waiting_command_mask;
+-      unsigned long 	card_polling_interval;
+-      unsigned long 	last_command_buff_free_time;
 -
--/*
-- * Here's the order things happen:
-- * When the user runs "slattach -p strip ..."
-- *  1. The TTY module calls strip_open;;
-- *  2. strip_open calls strip_alloc
-- *  3.                  strip_alloc calls register_netdev
-- *  4.                  register_netdev calls strip_dev_init
-- *  5. then strip_open finishes setting up the strip_info
-- *
-- * When the user runs "ifconfig st<x> up address netmask ..."
-- *  6. strip_open_low gets called
-- *
-- * When the user runs "ifconfig st<x> down"
-- *  7. strip_close_low gets called
-- *
-- * When the user kills the slattach process
-- *  8. strip_close gets called
-- *  9. strip_close calls dev_close
-- * 10. if the device is still up, then dev_close calls strip_close_low
-- * 11. strip_close calls strip_free
-- */
--
--/* Open the low-level part of the STRIP channel. Easy! */
--
--static int strip_open_low(struct net_device *dev)
--{
--	struct strip *strip_info = netdev_priv(dev);
--
--	if (strip_info->tty == NULL)
--		return (-ENODEV);
--
--	if (!allocate_buffers(strip_info, dev->mtu))
--		return (-ENOMEM);
--
--	strip_info->sx_count = 0;
--	strip_info->tx_left = 0;
--
--	strip_info->discard = 0;
--	strip_info->working = FALSE;
--	strip_info->firmware_level = NoStructure;
--	strip_info->next_command = CompatibilityCommand;
--	strip_info->user_baud = tty_get_baud_rate(strip_info->tty);
--
--	printk(KERN_INFO "%s: Initializing Radio.\n",
--	       strip_info->dev->name);
--	ResetRadio(strip_info);
--	strip_info->idle_timer.expires = jiffies + 1 * HZ;
--	add_timer(&strip_info->idle_timer);
--	netif_wake_queue(dev);
--	return (0);
--}
--
--
--/*
-- * Close the low-level part of the STRIP channel. Easy!
-- */
--
--static int strip_close_low(struct net_device *dev)
--{
--	struct strip *strip_info = netdev_priv(dev);
--
--	if (strip_info->tty == NULL)
--		return -EBUSY;
--	clear_bit(TTY_DO_WRITE_WAKEUP, &strip_info->tty->flags);
--	netif_stop_queue(dev);
--
--	/*
--	 * Free all STRIP frame buffers.
--	 */
--	kfree(strip_info->rx_buff);
--	strip_info->rx_buff = NULL;
--	kfree(strip_info->sx_buff);
--	strip_info->sx_buff = NULL;
--	kfree(strip_info->tx_buff);
--	strip_info->tx_buff = NULL;
--
--	del_timer(&strip_info->idle_timer);
--	return 0;
--}
--
--static const struct header_ops strip_header_ops = {
--	.create = strip_header,
--	.rebuild = strip_rebuild_header,
+-      int 		under_reset;
+-      int 		under_config;
+-      int 		rx_command_given;
+-      int	 	tx_command_given;
+-      unsigned  long	interrupt_processing_active;
+-      unsigned long	last_rx_int_ack_time;
+-      unsigned long	in_bytes;
+-      unsigned long 	out_bytes;
+-      unsigned long	in_time;
+-      unsigned long	out_time;
+-      unsigned long	in_time10;
+-      unsigned long	out_time10;
+-      unsigned long	in_bytes10;
+-      unsigned long 	out_bytes10;
+-      int	init_etherdev_alloc;
 -};
 -
 -
--static const struct net_device_ops strip_netdev_ops = {
--	.ndo_open 	= strip_open_low,
--	.ndo_stop 	= strip_close_low,
--	.ndo_start_xmit = strip_xmit,
--	.ndo_set_mac_address = strip_set_mac_address,
--	.ndo_get_stats	= strip_get_stats,
--	.ndo_change_mtu = strip_change_mtu,
--};
 -
--/*
-- * This routine is called by DDI when the
-- * (dynamically assigned) device is registered
-- */
+-#define ARLAN_CLEAR		0x00
+-#define ARLAN_RESET 		0x01
+-#define ARLAN_CHANNEL_ATTENTION 0x02
+-#define ARLAN_INTERRUPT_ENABLE 	0x04
+-#define ARLAN_CLEAR_INTERRUPT 	0x08
+-#define ARLAN_POWER 		0x40
+-#define ARLAN_ACCESS		0x80
 -
--static void strip_dev_setup(struct net_device *dev)
--{
--	/*
--	 * Finish setting up the DEVICE info.
--	 */
--
--	dev->trans_start = 0;
--	dev->tx_queue_len = 30;	/* Drop after 30 frames queued */
--
--	dev->flags = 0;
--	dev->mtu = DEFAULT_STRIP_MTU;
--	dev->type = ARPHRD_METRICOM;	/* dtang */
--	dev->hard_header_len = sizeof(STRIP_Header);
--	/*
--	 *  netdev_priv(dev) Already holds a pointer to our struct strip
--	 */
--
--	*(MetricomAddress *)dev->broadcast = broadcast_address;
--	dev->dev_addr[0] = 0;
--	dev->addr_len = sizeof(MetricomAddress);
--
--	dev->header_ops = &strip_header_ops,
--	dev->netdev_ops = &strip_netdev_ops;
--}
--
--/*
-- * Free a STRIP channel.
-- */
--
--static void strip_free(struct strip *strip_info)
--{
--	spin_lock_bh(&strip_lock);
--	list_del_rcu(&strip_info->list);
--	spin_unlock_bh(&strip_lock);
--
--	strip_info->magic = 0;
--
--	free_netdev(strip_info->dev);
--}
+-#define ARLAN_COM_CONF                0x01
+-#define ARLAN_COM_RX_ENABLE           0x03
+-#define ARLAN_COM_RX_ABORT            0x04
+-#define ARLAN_COM_TX_ENABLE           0x05
+-#define ARLAN_COM_TX_ABORT            0x06
+-#define ARLAN_COM_NOP		      0x07
+-#define ARLAN_COM_STANDBY             0x08
+-#define ARLAN_COM_ACTIVATE            0x09
+-#define ARLAN_COM_GOTO_SLOW_POLL      0x0a
+-#define ARLAN_COM_INT                 0x80
 -
 -
--/*
-- * Allocate a new free STRIP channel
-- */
--static struct strip *strip_alloc(void)
--{
--	struct list_head *n;
--	struct net_device *dev;
--	struct strip *strip_info;
+-#define TXLAST(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[((struct arlan_private *)netdev_priv(dev))->txLast])
+-#define TXHEAD(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[0])
+-#define TXTAIL(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[1])
 -
--	dev = alloc_netdev(sizeof(struct strip), "st%d",
--			   strip_dev_setup);
--
--	if (!dev)
--		return NULL;	/* If no more memory, return */
--
--
--	strip_info = netdev_priv(dev);
--	strip_info->dev = dev;
--
--	strip_info->magic = STRIP_MAGIC;
--	strip_info->tty = NULL;
--
--	strip_info->gratuitous_arp = jiffies + LongTime;
--	strip_info->arp_interval = 0;
--	init_timer(&strip_info->idle_timer);
--	strip_info->idle_timer.data = (long) dev;
--	strip_info->idle_timer.function = strip_IdleTask;
--
--
--	spin_lock_bh(&strip_lock);
-- rescan:
--	/*
--	 * Search the list to find where to put our new entry
--	 * (and in the process decide what channel number it is
--	 * going to be)
--	 */
--	list_for_each(n, &strip_list) {
--		struct strip *s = hlist_entry(n, struct strip, list);
--
--		if (s->dev->base_addr == dev->base_addr) {
--			++dev->base_addr;
--			goto rescan;
--		}
+-#define TXBuffStart(dev) offsetof(struct arlan_shmem, txBuffer)
+-#define TXBuffEnd(dev) offsetof(struct arlan_shmem, xxBuffer)
+- 
+-#define READSHM(to,from,atype) {\
+-	atype tmp;\
+-	memcpy_fromio(&(tmp),&(from),sizeof(atype));\
+-	to = tmp;\
 -	}
 -
--	sprintf(dev->name, "st%ld", dev->base_addr);
+-#define READSHMEM(from,atype)\
+-	atype from; \
+-	READSHM(from, arlan->from, atype);
 -
--	list_add_tail_rcu(&strip_info->list, &strip_list);
--	spin_unlock_bh(&strip_lock);
--
--	return strip_info;
--}
--
--/*
-- * Open the high-level part of the STRIP channel.
-- * This function is called by the TTY module when the
-- * STRIP line discipline is called for.  Because we are
-- * sure the tty line exists, we only have to link it to
-- * a free STRIP channel...
-- */
--
--static int strip_open(struct tty_struct *tty)
--{
--	struct strip *strip_info = tty->disc_data;
--
--	/*
--	 * First make sure we're not already connected.
--	 */
--
--	if (strip_info && strip_info->magic == STRIP_MAGIC)
--		return -EEXIST;
--
--	/*
--	 * We need a write method.
--	 */
--
--	if (tty->ops->write == NULL || tty->ops->set_termios == NULL)
--		return -EOPNOTSUPP;
--
--	/*
--	 * OK.  Find a free STRIP channel to use.
--	 */
--	if ((strip_info = strip_alloc()) == NULL)
--		return -ENFILE;
--
--	/*
--	 * Register our newly created device so it can be ifconfig'd
--	 * strip_dev_init() will be called as a side-effect
--	 */
--
--	if (register_netdev(strip_info->dev) != 0) {
--		printk(KERN_ERR "strip: register_netdev() failed.\n");
--		strip_free(strip_info);
--		return -ENFILE;
+-#define WRITESHM(to,from,atype) \
+-	{ atype tmpSHM = from;\
+-	memcpy_toio(&(to),&tmpSHM,sizeof(atype));\
 -	}
 -
--	strip_info->tty = tty;
--	tty->disc_data = strip_info;
--	tty->receive_room = 65536;
--
--	tty_driver_flush_buffer(tty);
--
--	/*
--	 * Restore default settings
--	 */
--
--	strip_info->dev->type = ARPHRD_METRICOM;	/* dtang */
--
--	/*
--	 * Set tty options
--	 */
--
--	tty->termios->c_iflag |= IGNBRK | IGNPAR;	/* Ignore breaks and parity errors. */
--	tty->termios->c_cflag |= CLOCAL;	/* Ignore modem control signals. */
--	tty->termios->c_cflag &= ~HUPCL;	/* Don't close on hup */
--
--	printk(KERN_INFO "STRIP: device \"%s\" activated\n",
--	       strip_info->dev->name);
--
--	/*
--	 * Done.  We have linked the TTY line to a channel.
--	 */
--	return (strip_info->dev->base_addr);
--}
--
--/*
-- * Close down a STRIP channel.
-- * This means flushing out any pending queues, and then restoring the
-- * TTY line discipline to what it was before it got hooked to STRIP
-- * (which usually is TTY again).
-- */
--
--static void strip_close(struct tty_struct *tty)
--{
--	struct strip *strip_info = tty->disc_data;
--
--	/*
--	 * First make sure we're connected.
--	 */
--
--	if (!strip_info || strip_info->magic != STRIP_MAGIC)
--		return;
--
--	unregister_netdev(strip_info->dev);
--
--	tty->disc_data = NULL;
--	strip_info->tty = NULL;
--	printk(KERN_INFO "STRIP: device \"%s\" closed down\n",
--	       strip_info->dev->name);
--	strip_free(strip_info);
--	tty->disc_data = NULL;
--}
--
--
--/************************************************************************/
--/* Perform I/O control calls on an active STRIP channel.		*/
--
--static int strip_ioctl(struct tty_struct *tty, struct file *file,
--		       unsigned int cmd, unsigned long arg)
--{
--	struct strip *strip_info = tty->disc_data;
--
--	/*
--	 * First make sure we're connected.
--	 */
--
--	if (!strip_info || strip_info->magic != STRIP_MAGIC)
--		return -EINVAL;
--
--	switch (cmd) {
--	case SIOCGIFNAME:
--		if(copy_to_user((void __user *) arg, strip_info->dev->name, strlen(strip_info->dev->name) + 1))
--			return -EFAULT;
--		break;
--	case SIOCSIFHWADDR:
--	{
--		MetricomAddress addr;
--		//printk(KERN_INFO "%s: SIOCSIFHWADDR\n", strip_info->dev->name);
--		if(copy_from_user(&addr, (void __user *) arg, sizeof(MetricomAddress)))
--			return -EFAULT;
--		return set_mac_address(strip_info, &addr);
--	}
--	default:
--		return tty_mode_ioctl(tty, file, cmd, arg);
--		break;
--	}
--	return 0;
--}
--
--
--/************************************************************************/
--/* Initialization							*/
--
--static struct tty_ldisc_ops strip_ldisc = {
--	.magic = TTY_LDISC_MAGIC,
--	.name = "strip",
--	.owner = THIS_MODULE,
--	.open = strip_open,
--	.close = strip_close,
--	.ioctl = strip_ioctl,
--	.receive_buf = strip_receive_buf,
--	.write_wakeup = strip_write_some_more,
--};
--
--/*
-- * Initialize the STRIP driver.
-- * This routine is called at boot time, to bootstrap the multi-channel
-- * STRIP driver
-- */
--
--static char signon[] __initdata =
--    KERN_INFO "STRIP: Version %s (unlimited channels)\n";
--
--static int __init strip_init_driver(void)
--{
--	int status;
--
--	printk(signon, StripVersion);
--
--	
--	/*
--	 * Fill in our line protocol discipline, and register it
--	 */
--	if ((status = tty_register_ldisc(N_STRIP, &strip_ldisc)))
--		printk(KERN_ERR "STRIP: can't register line discipline (err = %d)\n",
--		       status);
--
--	/*
--	 * Register the status file with /proc
--	 */
--	proc_net_fops_create(&init_net, "strip", S_IFREG | S_IRUGO, &strip_seq_fops);
--
--	return status;
--}
--
--module_init(strip_init_driver);
--
--static const char signoff[] __exitdata =
--    KERN_INFO "STRIP: Module Unloaded\n";
--
--static void __exit strip_exit_driver(void)
--{
--	int i;
--	struct list_head *p,*n;
--
--	/* module ref count rules assure that all entries are unregistered */
--	list_for_each_safe(p, n, &strip_list) {
--		struct strip *s = list_entry(p, struct strip, list);
--		strip_free(s);
+-#define DEBUGSHM(levelSHM,stringSHM,stuff,atype) \
+-	{	atype tmpSHM; \
+-		memcpy_fromio(&tmpSHM,&(stuff),sizeof(atype));\
+-		IFDEBUG(levelSHM) printk(stringSHM,tmpSHM);\
 -	}
 -
--	/* Unregister with the /proc/net file here. */
--	proc_net_remove(&init_net, "strip");
+-#define WRITESHMB(to, val) \
+-	writeb(val,&(to))
+-#define READSHMB(to) \
+-	readb(&(to))
+-#define WRITESHMS(to, val) \
+-	writew(val,&(to))
+-#define READSHMS(to) \
+-	readw(&(to))
+-#define WRITESHMI(to, val) \
+-	writel(val,&(to))
+-#define READSHMI(to) \
+-	readl(&(to))
 -
--	if ((i = tty_unregister_ldisc(N_STRIP)))
--		printk(KERN_ERR "STRIP: can't unregister line discipline (err = %d)\n", i);
 -
--	printk(signoff);
+-
+-
+-
+-#define registrationBad(dev)\
+-   ( (   READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationMode)    > 0) && \
+-     (   READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationStatus) == 0)    )
+-
+-
+-#define readControlRegister(dev)\
+- 	READSHMB(((struct arlan_private *)netdev_priv(dev))->card->cntrlRegImage)
+-
+-#define writeControlRegister(dev, v){\
+-   WRITESHMB(((struct arlan_private *)netdev_priv(dev))->card->cntrlRegImage	,((v) &0xF) );\
+-   WRITESHMB(((struct arlan_private *)netdev_priv(dev))->card->controlRegister	,(v) 	);}
+-
+-
+-#define arlan_interrupt_lancpu(dev) {\
+-   int cr;   \
+-   \
+-   cr = readControlRegister(dev);\
+-   if (cr & ARLAN_CHANNEL_ATTENTION){ \
+-      writeControlRegister(dev, (cr & ~ARLAN_CHANNEL_ATTENTION));\
+-   }else  \
+-      writeControlRegister(dev, (cr | ARLAN_CHANNEL_ATTENTION));\
 -}
 -
--module_exit(strip_exit_driver);
+-#define clearChannelAttention(dev){ \
+-   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_CHANNEL_ATTENTION);}
+-#define setHardwareReset(dev) {\
+-   writeControlRegister(dev,readControlRegister(dev) | ARLAN_RESET);}
+-#define clearHardwareReset(dev) {\
+-   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_RESET);}
+-#define setInterruptEnable(dev){\
+-   writeControlRegister(dev,readControlRegister(dev) | ARLAN_INTERRUPT_ENABLE)  ;}
+-#define clearInterruptEnable(dev){\
+-   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_INTERRUPT_ENABLE)  ;}
+-#define setClearInterrupt(dev){\
+-   writeControlRegister(dev,readControlRegister(dev) | ARLAN_CLEAR_INTERRUPT)   ;}
+-#define clearClearInterrupt(dev){\
+-   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_CLEAR_INTERRUPT);}
+-#define setPowerOff(dev){\
+-   writeControlRegister(dev,readControlRegister(dev) | (ARLAN_POWER && ARLAN_ACCESS));\
+-   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_ACCESS);}
+-#define setPowerOn(dev){\
+-   writeControlRegister(dev,readControlRegister(dev) & ~(ARLAN_POWER));   }
+-#define arlan_lock_card_access(dev){\
+-   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_ACCESS);}
+-#define arlan_unlock_card_access(dev){\
+-   writeControlRegister(dev,readControlRegister(dev) | ARLAN_ACCESS ); }  
 -
--MODULE_AUTHOR("Stuart Cheshire <cheshire@cs.stanford.edu>");
--MODULE_DESCRIPTION("Starmode Radio IP (STRIP) Device Driver");
--MODULE_LICENSE("Dual BSD/GPL");
 -
--MODULE_SUPPORTED_DEVICE("Starmode Radio IP (STRIP) modem");
+-
+-
+-#define ARLAN_COMMAND_RX		0x000001
+-#define ARLAN_COMMAND_NOOP		0x000002
+-#define ARLAN_COMMAND_NOOPINT		0x000004
+-#define ARLAN_COMMAND_TX		0x000008
+-#define ARLAN_COMMAND_CONF		0x000010
+-#define ARLAN_COMMAND_RESET		0x000020
+-#define ARLAN_COMMAND_TX_ABORT		0x000040
+-#define ARLAN_COMMAND_RX_ABORT		0x000080
+-#define ARLAN_COMMAND_POWERDOWN		0x000100
+-#define ARLAN_COMMAND_POWERUP		0x000200
+-#define ARLAN_COMMAND_SLOW_POLL 	0x000400
+-#define ARLAN_COMMAND_ACTIVATE 		0x000800
+-#define ARLAN_COMMAND_INT_ACK		0x001000
+-#define ARLAN_COMMAND_INT_ENABLE	0x002000
+-#define ARLAN_COMMAND_WAIT_NOW		0x004000
+-#define ARLAN_COMMAND_LONG_WAIT_NOW	0x008000
+-#define ARLAN_COMMAND_STANDBY		0x010000
+-#define ARLAN_COMMAND_INT_RACK		0x020000
+-#define ARLAN_COMMAND_INT_RENABLE	0x040000
+-#define ARLAN_COMMAND_CONF_WAIT		0x080000
+-#define ARLAN_COMMAND_TBUSY_CLEAR	0x100000
+-#define ARLAN_COMMAND_CLEAN_AND_CONF	(ARLAN_COMMAND_TX_ABORT\
+-					| ARLAN_COMMAND_RX_ABORT\
+-					| ARLAN_COMMAND_CONF)
+-#define ARLAN_COMMAND_CLEAN_AND_RESET   (ARLAN_COMMAND_TX_ABORT\
+-					| ARLAN_COMMAND_RX_ABORT\
+-					| ARLAN_COMMAND_RESET)
+-
+-
+- 
+-#define ARLAN_DEBUG_CHAIN_LOCKS		0x00001
+-#define ARLAN_DEBUG_RESET		0x00002
+-#define ARLAN_DEBUG_TIMING		0x00004
+-#define ARLAN_DEBUG_CARD_STATE		0x00008
+-#define ARLAN_DEBUG_TX_CHAIN		0x00010
+-#define ARLAN_DEBUG_MULTICAST		0x00020
+-#define ARLAN_DEBUG_HEADER_DUMP		0x00040
+-#define ARLAN_DEBUG_INTERRUPT		0x00080
+-#define ARLAN_DEBUG_STARTUP		0x00100
+-#define ARLAN_DEBUG_SHUTDOWN		0x00200
+- 
 diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
-index 7df3ba4..dffc820 100644
+index dffc820..0603cc5 100644
 --- a/drivers/staging/Kconfig
 +++ b/drivers/staging/Kconfig
-@@ -127,5 +127,7 @@ source "drivers/staging/sep/Kconfig"
+@@ -129,5 +129,7 @@ source "drivers/staging/iio/Kconfig"
  
- source "drivers/staging/iio/Kconfig"
+ source "drivers/staging/strip/Kconfig"
  
-+source "drivers/staging/strip/Kconfig"
++source "drivers/staging/arlan/Kconfig"
 +
  endif # !STAGING_EXCLUDE_BUILD
  endif # STAGING
 diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
-index 7475711..e91391d 100644
+index e91391d..cfc16fd 100644
 --- a/drivers/staging/Makefile
 +++ b/drivers/staging/Makefile
-@@ -45,3 +45,4 @@ obj-$(CONFIG_VME_BUS)		+= vme/
- obj-$(CONFIG_RAR_REGISTER)	+= rar/
+@@ -46,3 +46,4 @@ obj-$(CONFIG_RAR_REGISTER)	+= rar/
  obj-$(CONFIG_DX_SEP)		+= sep/
  obj-$(CONFIG_IIO)		+= iio/
-+obj-$(CONFIG_STRIP)		+= strip/
-diff --git a/drivers/staging/strip/Kconfig b/drivers/staging/strip/Kconfig
+ obj-$(CONFIG_STRIP)		+= strip/
++obj-$(CONFIG_ARLAN)		+= arlan/
+diff --git a/drivers/staging/arlan/Kconfig b/drivers/staging/arlan/Kconfig
 new file mode 100644
-index 0000000..36257b5
+index 0000000..0585ed8
 --- /dev/null
-+++ b/drivers/staging/strip/Kconfig
-@@ -0,0 +1,22 @@
-+config STRIP
-+	tristate "STRIP (Metricom starmode radio IP)"
-+	depends on INET
++++ b/drivers/staging/arlan/Kconfig
+@@ -0,0 +1,15 @@
++config ARLAN
++	tristate "Aironet Arlan 655 & IC2200 DS support"
++	depends on ISA && !64BIT
 +	select WIRELESS_EXT
 +	---help---
-+	  Say Y if you have a Metricom radio and intend to use Starmode Radio
-+	  IP. STRIP is a radio protocol developed for the MosquitoNet project
-+	  to send Internet traffic using Metricom radios.  Metricom radios are
-+	  small, battery powered, 100kbit/sec packet radio transceivers, about
-+	  the size and weight of a cellular telephone. (You may also have heard
-+	  them called "Metricom modems" but we avoid the term "modem" because
-+	  it misleads many people into thinking that you can plug a Metricom
-+	  modem into a phone line and use it as a modem.)
++	  Aironet makes Arlan, a class of wireless LAN adapters. These use the
++	  www.Telxon.com chip, which is also used on several similar cards.
++	  This driver is tested on the 655 and IC2200 series cards. Look at
++	  <http://www.ylenurme.ee/~elmer/655/> for the latest information.
 +
-+	  You can use STRIP on any Linux machine with a serial port, although
-+	  it is obviously most useful for people with laptop computers. If you
-+	  think you might get a Metricom radio in the future, there is no harm
-+	  in saying Y to STRIP now, except that it makes the kernel a bit
-+	  bigger.
++	  The driver is built as two modules, arlan and arlan-proc. The latter
++	  is the /proc interface and is not needed most of time.
 +
-+	  To compile this as a module, choose M here: the module will be
-+	  called strip.
-diff --git a/drivers/staging/strip/Makefile b/drivers/staging/strip/Makefile
++	  On some computers the card ends up in non-valid state after some
++	  time. Use a ping-reset script to clear it.
+diff --git a/drivers/staging/arlan/Makefile b/drivers/staging/arlan/Makefile
 new file mode 100644
-index 0000000..6417bdc
+index 0000000..9e58e5f
 --- /dev/null
-+++ b/drivers/staging/strip/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_STRIP) += strip.o
-diff --git a/drivers/staging/strip/strip.c b/drivers/staging/strip/strip.c
++++ b/drivers/staging/arlan/Makefile
+@@ -0,0 +1,3 @@
++obj-$(CONFIG_ARLAN) += arlan.o 
++
++arlan-objs := arlan-main.o arlan-proc.o
+diff --git a/drivers/staging/arlan/arlan-main.c b/drivers/staging/arlan/arlan-main.c
 new file mode 100644
-index 0000000..ea6a87c
+index 0000000..921a082
 --- /dev/null
-+++ b/drivers/staging/strip/strip.c
-@@ -0,0 +1,2805 @@
++++ b/drivers/staging/arlan/arlan-main.c
+@@ -0,0 +1,1887 @@
 +/*
-+ * Copyright 1996 The Board of Trustees of The Leland Stanford
-+ * Junior University. All Rights Reserved.
-+ *
-+ * Permission to use, copy, modify, and distribute this
-+ * software and its documentation for any purpose and without
-+ * fee is hereby granted, provided that the above copyright
-+ * notice appear in all copies.  Stanford University
-+ * makes no representations about the suitability of this
-+ * software for any purpose.  It is provided "as is" without
-+ * express or implied warranty.
-+ *
-+ * strip.c	This module implements Starmode Radio IP (STRIP)
-+ *		for kernel-based devices like TTY.  It interfaces between a
-+ *		raw TTY, and the kernel's INET protocol layers (via DDI).
-+ *
-+ * Version:	@(#)strip.c	1.3	July 1997
-+ *
-+ * Author:	Stuart Cheshire <cheshire@cs.stanford.edu>
-+ *
-+ * Fixes:	v0.9 12th Feb 1996 (SC)
-+ *		New byte stuffing (2+6 run-length encoding)
-+ *		New watchdog timer task
-+ *		New Protocol key (SIP0)
-+ *		
-+ *		v0.9.1 3rd March 1996 (SC)
-+ *		Changed to dynamic device allocation -- no more compile
-+ *		time (or boot time) limit on the number of STRIP devices.
-+ *		
-+ *		v0.9.2 13th March 1996 (SC)
-+ *		Uses arp cache lookups (but doesn't send arp packets yet)
-+ *		
-+ *		v0.9.3 17th April 1996 (SC)
-+ *		Fixed bug where STR_ERROR flag was getting set unneccessarily
-+ *		(causing otherwise good packets to be unneccessarily dropped)
-+ *		
-+ *		v0.9.4 27th April 1996 (SC)
-+ *		First attempt at using "&COMMAND" Starmode AT commands
-+ *		
-+ *		v0.9.5 29th May 1996 (SC)
-+ *		First attempt at sending (unicast) ARP packets
-+ *		
-+ *		v0.9.6 5th June 1996 (Elliot)
-+ *		Put "message level" tags in every "printk" statement
-+ *		
-+ *		v0.9.7 13th June 1996 (laik)
-+ *		Added support for the /proc fs
-+ *
-+ *              v0.9.8 July 1996 (Mema)
-+ *              Added packet logging
-+ *
-+ *              v1.0 November 1996 (SC)
-+ *              Fixed (severe) memory leaks in the /proc fs code
-+ *              Fixed race conditions in the logging code
-+ *
-+ *              v1.1 January 1997 (SC)
-+ *              Deleted packet logging (use tcpdump instead)
-+ *              Added support for Metricom Firmware v204 features
-+ *              (like message checksums)
-+ *
-+ *              v1.2 January 1997 (SC)
-+ *              Put portables list back in
-+ *
-+ *              v1.3 July 1997 (SC)
-+ *              Made STRIP driver set the radio's baud rate automatically.
-+ *              It is no longer necessarily to manually set the radio's
-+ *              rate permanently to 115200 -- the driver handles setting
-+ *              the rate automatically.
++ *  Copyright (C) 1997 Cullen Jennings
++ *  Copyright (C) 1998 Elmer Joandiu, elmer@ylenurme.ee
++ *  GNU General Public License applies
++ * This module provides support for the Arlan 655 card made by Aironet
 + */
 +
-+#ifdef MODULE
-+static const char StripVersion[] = "1.3A-STUART.CHESHIRE-MODULAR";
-+#else
-+static const char StripVersion[] = "1.3A-STUART.CHESHIRE";
++#include "arlan.h"
++
++#if BITS_PER_LONG != 32
++#  error FIXME: this driver requires a 32-bit platform
 +#endif
 +
-+#define TICKLE_TIMERS 0
-+#define EXT_COUNTERS 1
++static const char *arlan_version = "C.Jennigs 97 & Elmer.Joandi@ut.ee  Oct'98, http://www.ylenurme.ee/~elmer/655/";
++
++struct net_device *arlan_device[MAX_ARLANS];
++
++static int SID = SIDUNKNOWN;
++static int radioNodeId = radioNodeIdUNKNOWN;
++static char encryptionKey[12] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
++int arlan_debug = debugUNKNOWN;
++static int spreadingCode = spreadingCodeUNKNOWN;
++static int channelNumber = channelNumberUNKNOWN;
++static int channelSet = channelSetUNKNOWN;
++static int systemId = systemIdUNKNOWN;
++static int registrationMode = registrationModeUNKNOWN;
++static int keyStart;
++static int tx_delay_ms;
++static int retries = 5;
++static int tx_queue_len = 1;
++static int arlan_EEPROM_bad;
++
++#ifdef ARLAN_DEBUGGING
++
++static int testMemory = testMemoryUNKNOWN;
++static int irq = irqUNKNOWN;
++static int txScrambled = 1;
++static int mdebug;
++
++module_param(irq, int, 0);
++module_param(mdebug, int, 0);
++module_param(testMemory, int, 0);
++module_param(txScrambled, int, 0);
++MODULE_PARM_DESC(irq, "(unused)");
++MODULE_PARM_DESC(testMemory, "(unused)");
++MODULE_PARM_DESC(mdebug, "Arlan multicast debugging (0-1)");
++#endif
++
++module_param_named(debug, arlan_debug, int, 0);
++module_param(spreadingCode, int, 0);
++module_param(channelNumber, int, 0);
++module_param(channelSet, int, 0);
++module_param(systemId, int, 0);
++module_param(registrationMode, int, 0);
++module_param(radioNodeId, int, 0);
++module_param(SID, int, 0);
++module_param(keyStart, int, 0);
++module_param(tx_delay_ms, int, 0);
++module_param(retries, int, 0);
++module_param(tx_queue_len, int, 0);
++module_param_named(EEPROM_bad, arlan_EEPROM_bad, int, 0);
++MODULE_PARM_DESC(debug, "Arlan debug enable (0-1)");
++MODULE_PARM_DESC(retries, "Arlan maximum packet retransmisions");
++#ifdef ARLAN_ENTRY_EXIT_DEBUGGING
++static int arlan_entry_debug;
++static int arlan_exit_debug;
++static int arlan_entry_and_exit_debug;
++module_param_named(entry_debug, arlan_entry_debug, int, 0);
++module_param_named(exit_debug, arlan_exit_debug, int, 0);
++module_param_named(entry_and_exit_debug, arlan_entry_and_exit_debug, int, 0);
++MODULE_PARM_DESC(entry_debug, "Arlan driver function entry debugging");
++MODULE_PARM_DESC(exit_debug, "Arlan driver function exit debugging");
++MODULE_PARM_DESC(entry_and_exit_debug, "Arlan driver function entry and exit debugging");
++#endif
++
++struct arlan_conf_stru arlan_conf[MAX_ARLANS];
++static int arlans_found;
++
++static  int 	arlan_open(struct net_device *dev);
++static  netdev_tx_t arlan_tx(struct sk_buff *skb, struct net_device *dev);
++static  irqreturn_t arlan_interrupt(int irq, void *dev_id);
++static  int 	arlan_close(struct net_device *dev);
++static  struct net_device_stats *
++		arlan_statistics		(struct net_device *dev);
++static  void 	arlan_set_multicast		(struct net_device *dev);
++static  int 	arlan_hw_tx			(struct net_device* dev, char *buf, int length );
++static  int	arlan_hw_config			(struct net_device * dev);
++static  void 	arlan_tx_done_interrupt		(struct net_device * dev, int status);
++static  void	arlan_rx_interrupt		(struct net_device * dev, u_char rxStatus, u_short, u_short);
++static  void	arlan_process_interrupt		(struct net_device * dev);
++static	void	arlan_tx_timeout		(struct net_device *dev);
++
++static inline long us2ticks(int us)
++{
++	return us * (1000000 / HZ);
++}
 +
 +
-+/************************************************************************/
-+/* Header files								*/
++#ifdef ARLAN_ENTRY_EXIT_DEBUGGING
++#define ARLAN_DEBUG_ENTRY(name) \
++	{\
++	struct timeval timev;\
++	do_gettimeofday(&timev);\
++		if (arlan_entry_debug || arlan_entry_and_exit_debug)\
++			printk("--->>>" name " %ld " "\n",((long int) timev.tv_sec * 1000000 + timev.tv_usec));\
++	}
++#define ARLAN_DEBUG_EXIT(name) \
++	{\
++	struct timeval timev;\
++	do_gettimeofday(&timev);\
++		if (arlan_exit_debug || arlan_entry_and_exit_debug)\
++			printk("<<<---" name " %ld " "\n",((long int) timev.tv_sec * 1000000 + timev.tv_usec) );\
++	}
++#else
++#define ARLAN_DEBUG_ENTRY(name)
++#define ARLAN_DEBUG_EXIT(name)
++#endif
 +
-+#include <linux/kernel.h>
++
++#define arlan_interrupt_ack(dev)\
++        clearClearInterrupt(dev);\
++        setClearInterrupt(dev);
++
++static inline int arlan_drop_tx(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++
++	dev->stats.tx_errors++;
++	if (priv->Conf->tx_delay_ms)
++	{
++		priv->tx_done_delayed = jiffies + priv->Conf->tx_delay_ms * HZ / 1000 + 1;
++	}
++	else
++	{
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_TX;
++		TXHEAD(dev).offset = 0;
++		TXTAIL(dev).offset = 0;
++		priv->txLast = 0;
++		priv->bad = 0;
++		if (!priv->under_reset && !priv->under_config)
++			netif_wake_queue (dev);
++	}
++	return 1;
++}
++
++
++int arlan_command(struct net_device *dev, int command_p)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++	struct arlan_conf_stru *conf = priv->Conf;
++	int udelayed = 0;
++	int i = 0;
++	unsigned long flags;
++
++	ARLAN_DEBUG_ENTRY("arlan_command");
++
++	if (priv->card_polling_interval)
++		priv->card_polling_interval = 1;
++
++	if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
++		printk(KERN_DEBUG "arlan_command, %lx commandByte %x waiting %lx incoming %x \n",
++		jiffies, READSHMB(arlan->commandByte),
++		       priv->waiting_command_mask, command_p);
++
++	priv->waiting_command_mask |= command_p;
++
++	if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
++		if (time_after(jiffies, priv->lastReset + 5 * HZ))
++			priv->waiting_command_mask &= ~ARLAN_COMMAND_RESET;
++
++	if (priv->waiting_command_mask & ARLAN_COMMAND_INT_ACK)
++	{
++		arlan_interrupt_ack(dev);
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_ACK;
++	}
++	if (priv->waiting_command_mask & ARLAN_COMMAND_INT_ENABLE)
++	{
++		setInterruptEnable(dev);
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_ENABLE;
++	}
++
++	/* Card access serializing lock */
++	spin_lock_irqsave(&priv->lock, flags);
++
++	/* Check cards status and waiting */
++
++	if (priv->waiting_command_mask & (ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW))
++	{
++		while (priv->waiting_command_mask & (ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW))
++		{
++			if (READSHMB(arlan->resetFlag) ||
++				READSHMB(arlan->commandByte))	/* || 
++								   (readControlRegister(dev) & ARLAN_ACCESS))
++								 */
++				udelay(40);
++			else
++				priv->waiting_command_mask &= ~(ARLAN_COMMAND_LONG_WAIT_NOW | ARLAN_COMMAND_WAIT_NOW);
++
++			udelayed++;
++
++			if (priv->waiting_command_mask & ARLAN_COMMAND_LONG_WAIT_NOW)
++			{
++				if (udelayed * 40 > 1000000)
++				{
++					printk(KERN_ERR "%s long wait too long \n", dev->name);
++					priv->waiting_command_mask |= ARLAN_COMMAND_RESET;
++					break;
++				}
++			}
++			else if (priv->waiting_command_mask & ARLAN_COMMAND_WAIT_NOW)
++			{
++				if (udelayed * 40 > 1000)
++				{
++					printk(KERN_ERR "%s short wait too long \n", dev->name);
++					goto bad_end;
++				}
++			}
++		}
++	}
++	else
++	{
++		i = 0;
++		while ((READSHMB(arlan->resetFlag) ||
++			READSHMB(arlan->commandByte)) &&
++			conf->pre_Command_Wait > (i++) * 10)
++			udelay(10);
++
++
++		if ((READSHMB(arlan->resetFlag) ||
++			READSHMB(arlan->commandByte)) &&
++			!(priv->waiting_command_mask & ARLAN_COMMAND_RESET))
++		{
++			goto card_busy_end;
++		}
++	}
++	if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
++		priv->under_reset = 1;
++	if (priv->waiting_command_mask & ARLAN_COMMAND_CONF)
++		priv->under_config = 1;
++
++	/* Issuing command */
++	arlan_lock_card_access(dev);
++	if (priv->waiting_command_mask & ARLAN_COMMAND_POWERUP)
++	{
++	//     if (readControlRegister(dev) & (ARLAN_ACCESS && ARLAN_POWER))
++		setPowerOn(dev);
++		arlan_interrupt_lancpu(dev);
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_POWERUP;
++		priv->waiting_command_mask |= ARLAN_COMMAND_RESET;
++		priv->card_polling_interval = HZ / 10;
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_ACTIVATE)
++	{
++		WRITESHMB(arlan->commandByte, ARLAN_COM_ACTIVATE);
++		arlan_interrupt_lancpu(dev);
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_ACTIVATE;
++		priv->card_polling_interval = HZ / 10;
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_RX_ABORT)
++	{
++		if (priv->rx_command_given)
++		{
++			WRITESHMB(arlan->commandByte, ARLAN_COM_RX_ABORT);
++			arlan_interrupt_lancpu(dev);
++			priv->rx_command_given = 0;
++		}
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_RX_ABORT;
++		priv->card_polling_interval = 1;
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_TX_ABORT)
++	{
++		if (priv->tx_command_given)
++		{
++			WRITESHMB(arlan->commandByte, ARLAN_COM_TX_ABORT);
++			arlan_interrupt_lancpu(dev);
++			priv->tx_command_given = 0;
++		}
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_TX_ABORT;
++		priv->card_polling_interval = 1;
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_RESET)
++	{
++		priv->under_reset=1;
++		netif_stop_queue (dev);
++
++		arlan_drop_tx(dev);
++		if (priv->tx_command_given || priv->rx_command_given)
++		{
++			printk(KERN_ERR "%s: Reset under tx or rx command \n", dev->name);
++		}
++		netif_stop_queue (dev);
++		if (arlan_debug & ARLAN_DEBUG_RESET)
++			printk(KERN_ERR "%s: Doing chip reset\n", dev->name);
++		priv->lastReset = jiffies;
++		WRITESHM(arlan->commandByte, 0, u_char);
++		/* hold card in reset state */
++		setHardwareReset(dev);
++		/* set reset flag and then release reset */
++		WRITESHM(arlan->resetFlag, 0xff, u_char);
++		clearChannelAttention(dev);
++		clearHardwareReset(dev);
++		priv->card_polling_interval = HZ / 4;
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_RESET;
++		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RACK;
++//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RENABLE; 
++//		priv->waiting_command_mask |= ARLAN_COMMAND_RX;
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_INT_RACK)
++	{
++		clearHardwareReset(dev);
++		clearClearInterrupt(dev);
++		setClearInterrupt(dev);
++		setInterruptEnable(dev);
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_RACK;
++		priv->waiting_command_mask |= ARLAN_COMMAND_CONF;
++		priv->under_config = 1;
++		priv->under_reset = 0;
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_INT_RENABLE)
++	{
++		setInterruptEnable(dev);
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_INT_RENABLE;
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_CONF)
++	{
++		if (priv->tx_command_given || priv->rx_command_given)
++		{
++			printk(KERN_ERR "%s: Reset under tx or rx command \n", dev->name);
++		}
++		arlan_drop_tx(dev);
++		setInterruptEnable(dev);
++		arlan_hw_config(dev);
++		arlan_interrupt_lancpu(dev);
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_CONF;
++		priv->card_polling_interval = HZ / 10;
++//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_RACK;   
++//		priv->waiting_command_mask |= ARLAN_COMMAND_INT_ENABLE; 
++		priv->waiting_command_mask |= ARLAN_COMMAND_CONF_WAIT;
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_CONF_WAIT)
++	{
++		if (READSHMB(arlan->configuredStatusFlag) != 0 &&
++			READSHMB(arlan->diagnosticInfo) == 0xff)
++		{
++			priv->waiting_command_mask &= ~ARLAN_COMMAND_CONF_WAIT;
++			priv->waiting_command_mask |= ARLAN_COMMAND_RX;
++			priv->waiting_command_mask |= ARLAN_COMMAND_TBUSY_CLEAR;
++			priv->card_polling_interval = HZ / 10;
++			priv->tx_command_given = 0;
++			priv->under_config = 0;
++		}
++		else
++		{
++			priv->card_polling_interval = 1;
++			if (arlan_debug & ARLAN_DEBUG_TIMING)
++				printk(KERN_ERR "configure delayed \n");
++		}
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_RX)
++	{
++		if (!registrationBad(dev))
++		{
++			setInterruptEnable(dev);
++			memset_io(arlan->commandParameter, 0, 0xf);
++			WRITESHMB(arlan->commandByte, ARLAN_COM_INT | ARLAN_COM_RX_ENABLE);
++			WRITESHMB(arlan->commandParameter[0], conf->rxParameter);
++			arlan_interrupt_lancpu(dev);
++			priv->rx_command_given = 0; // mnjah, bad
++			priv->waiting_command_mask &= ~ARLAN_COMMAND_RX;
++			priv->card_polling_interval = 1;
++		}
++		else
++			priv->card_polling_interval = 2;
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_TBUSY_CLEAR)
++	{
++		if ( !registrationBad(dev) &&
++		     (netif_queue_stopped(dev) || !netif_running(dev)) )
++			{
++				priv->waiting_command_mask &= ~ARLAN_COMMAND_TBUSY_CLEAR;
++				netif_wake_queue (dev);
++			}
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_TX)
++	{
++		if (!test_and_set_bit(0, (void *) &priv->tx_command_given))
++		{
++			if (time_after(jiffies, 
++				       priv->tx_last_sent + us2ticks(conf->rx_tweak1))
++			    || time_before(jiffies,
++					   priv->last_rx_int_ack_time + us2ticks(conf->rx_tweak2)))
++			{
++				setInterruptEnable(dev);
++				memset_io(arlan->commandParameter, 0, 0xf);
++				WRITESHMB(arlan->commandByte, ARLAN_COM_TX_ENABLE | ARLAN_COM_INT);
++				memcpy_toio(arlan->commandParameter, &TXLAST(dev), 14);
++//				for ( i=1 ; i < 15 ; i++) printk("%02x:",READSHMB(arlan->commandParameter[i]));
++				priv->tx_last_sent = jiffies;
++				arlan_interrupt_lancpu(dev);
++				priv->tx_command_given = 1;
++				priv->waiting_command_mask &= ~ARLAN_COMMAND_TX;
++				priv->card_polling_interval = 1;
++			}
++			else
++			{
++				priv->tx_command_given = 0;
++				priv->card_polling_interval = 1;
++			}
++		} 
++		else if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
++			printk(KERN_ERR "tx command when tx chain locked \n");
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_NOOPINT)
++	{
++		{
++			WRITESHMB(arlan->commandByte, ARLAN_COM_NOP | ARLAN_COM_INT);
++		}
++		arlan_interrupt_lancpu(dev);
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_NOOPINT;
++		priv->card_polling_interval = HZ / 3;
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_NOOP)
++	{
++		WRITESHMB(arlan->commandByte, ARLAN_COM_NOP);
++		arlan_interrupt_lancpu(dev);
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_NOOP;
++		priv->card_polling_interval = HZ / 3;
++	}
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_SLOW_POLL)
++	{
++		WRITESHMB(arlan->commandByte, ARLAN_COM_GOTO_SLOW_POLL);
++		arlan_interrupt_lancpu(dev);
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_SLOW_POLL;
++		priv->card_polling_interval = HZ / 3;
++	} 
++	else if (priv->waiting_command_mask & ARLAN_COMMAND_POWERDOWN)
++	{
++		setPowerOff(dev);
++		if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
++			printk(KERN_WARNING "%s: Arlan Going Standby\n", dev->name);
++		priv->waiting_command_mask &= ~ARLAN_COMMAND_POWERDOWN;
++		priv->card_polling_interval = 3 * HZ;
++	}
++	arlan_unlock_card_access(dev);
++	for (i = 0; READSHMB(arlan->commandByte) && i < 20; i++)
++		udelay(10);
++	if (READSHMB(arlan->commandByte))
++		if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
++			printk(KERN_ERR "card busy leaving command %lx\n", priv->waiting_command_mask);
++
++	spin_unlock_irqrestore(&priv->lock, flags);
++	ARLAN_DEBUG_EXIT("arlan_command");
++	priv->last_command_buff_free_time = jiffies;
++	return 0;
++
++card_busy_end:
++	if (time_after(jiffies, priv->last_command_buff_free_time + HZ))
++		priv->waiting_command_mask |= ARLAN_COMMAND_CLEAN_AND_RESET;
++
++	if (arlan_debug & ARLAN_DEBUG_CARD_STATE)
++		printk(KERN_ERR "%s arlan_command card busy end \n", dev->name);
++	spin_unlock_irqrestore(&priv->lock, flags);
++	ARLAN_DEBUG_EXIT("arlan_command");
++	return 1;
++
++bad_end:
++	printk(KERN_ERR "%s arlan_command bad end \n", dev->name);
++
++	spin_unlock_irqrestore(&priv->lock, flags);
++	ARLAN_DEBUG_EXIT("arlan_command");
++
++	return -1;
++}
++
++static inline void arlan_command_process(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++
++	int times = 0;
++	while (priv->waiting_command_mask && times < 8)
++	{
++		if (priv->waiting_command_mask)
++		{
++			if (arlan_command(dev, 0))
++				break;
++			times++;
++		}
++		/* if long command, we won't repeat trying */ ;
++		if (priv->card_polling_interval > 1)
++			break;
++		times++;
++	}
++}
++
++
++static inline void arlan_retransmit_now(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++
++
++	ARLAN_DEBUG_ENTRY("arlan_retransmit_now");
++	if (TXLAST(dev).offset == 0)
++	{
++		if (TXHEAD(dev).offset)
++		{
++			priv->txLast = 0;
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_DEBUG "TX buff switch to head \n");
++
++		}
++		else if (TXTAIL(dev).offset)
++		{
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_DEBUG "TX buff switch to tail \n");
++			priv->txLast = 1;
++		}
++		else
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_ERR "ReTransmit buff empty");
++		netif_wake_queue (dev);
++		return;
++
++	}
++	arlan_command(dev, ARLAN_COMMAND_TX);
++
++	priv->Conf->driverRetransmissions++;
++	priv->retransmissions++;
++
++	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk("Retransmit %d bytes \n", TXLAST(dev).length);
++
++	ARLAN_DEBUG_EXIT("arlan_retransmit_now");
++}
++
++
++
++static void arlan_registration_timer(unsigned long data)
++{
++	struct net_device *dev = (struct net_device *) data;
++	struct arlan_private *priv = netdev_priv(dev);
++	int bh_mark_needed = 0;
++	int next_tick = 1;
++	long lostTime = ((long)jiffies - (long)priv->registrationLastSeen)
++			* (1000/HZ);
++
++	if (registrationBad(dev))
++	{
++		priv->registrationLostCount++;
++		if (lostTime > 7000 && lostTime < 7200)
++		{
++			printk(KERN_NOTICE "%s registration Lost \n", dev->name);
++		}
++		if (lostTime / priv->reRegisterExp > 2000)
++			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_CONF);
++		if (lostTime / (priv->reRegisterExp) > 3500)
++			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
++		if (priv->reRegisterExp < 400)
++			priv->reRegisterExp += 2;
++		if (lostTime > 7200)
++		{
++			next_tick = HZ;
++			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
++		}
++	}
++	else
++	{
++		if (priv->Conf->registrationMode && lostTime > 10000 &&
++			priv->registrationLostCount)
++		{
++			printk(KERN_NOTICE "%s registration is back after %ld milliseconds\n",
++			       dev->name, lostTime);
++		}
++		priv->registrationLastSeen = jiffies;
++		priv->registrationLostCount = 0;
++		priv->reRegisterExp = 1;
++		if (!netif_running(dev) )
++			netif_wake_queue(dev);
++		if (time_after(priv->tx_last_sent,priv->tx_last_cleared) &&
++		    time_after(jiffies, priv->tx_last_sent * 5*HZ) ){
++			arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);		
++			priv->tx_last_cleared = jiffies;
++		}
++	}
++
++
++	if (!registrationBad(dev) && priv->ReTransmitRequested)
++	{
++		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++			printk(KERN_ERR "Retransmit from timer \n");
++		priv->ReTransmitRequested = 0;
++		arlan_retransmit_now(dev);
++	}
++	if (!registrationBad(dev) &&
++		time_after(jiffies, priv->tx_done_delayed) &&
++		priv->tx_done_delayed != 0)
++	{
++		TXLAST(dev).offset = 0;
++		if (priv->txLast)
++			priv->txLast = 0;
++		else if (TXTAIL(dev).offset)
++			priv->txLast = 1;
++		if (TXLAST(dev).offset)
++		{
++			arlan_retransmit_now(dev);
++			dev->trans_start = jiffies;
++		}
++		if (!(TXHEAD(dev).offset && TXTAIL(dev).offset))
++		{
++			netif_wake_queue (dev);
++		}
++		priv->tx_done_delayed = 0;
++		bh_mark_needed = 1;
++	}
++	if (bh_mark_needed)
++	{
++		netif_wake_queue (dev);
++	}
++	arlan_process_interrupt(dev);
++
++	if (next_tick < priv->card_polling_interval)
++		next_tick = priv->card_polling_interval;
++
++	priv->timer.expires = jiffies + next_tick;
++
++	add_timer(&priv->timer);
++}
++
++
++#ifdef ARLAN_DEBUGGING
++
++static void arlan_print_registers(struct net_device *dev, int line)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem *arlan = priv->card;
++
++	u_char hostcpuLock, lancpuLock, controlRegister, cntrlRegImage,
++		txStatus, rxStatus, interruptInProgress, commandByte;
++
++
++	ARLAN_DEBUG_ENTRY("arlan_print_registers");
++	READSHM(interruptInProgress, arlan->interruptInProgress, u_char);
++	READSHM(hostcpuLock, arlan->hostcpuLock, u_char);
++	READSHM(lancpuLock, arlan->lancpuLock, u_char);
++	READSHM(controlRegister, arlan->controlRegister, u_char);
++	READSHM(cntrlRegImage, arlan->cntrlRegImage, u_char);
++	READSHM(txStatus, arlan->txStatus, u_char);
++	READSHM(rxStatus, arlan->rxStatus, u_char);
++	READSHM(commandByte, arlan->commandByte, u_char);
++
++	printk(KERN_WARNING "line %04d IP %02x HL %02x LL %02x CB %02x CR %02x CRI %02x TX %02x RX %02x\n",
++		line, interruptInProgress, hostcpuLock, lancpuLock, commandByte,
++		controlRegister, cntrlRegImage, txStatus, rxStatus);
++
++	ARLAN_DEBUG_EXIT("arlan_print_registers");
++}
++#endif
++
++
++static int arlan_hw_tx(struct net_device *dev, char *buf, int length)
++{
++	int i;
++
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++	struct arlan_conf_stru *conf = priv->Conf;
++
++	int tailStarts = 0x800;
++	int headEnds = 0x0;
++
++
++	ARLAN_DEBUG_ENTRY("arlan_hw_tx");
++	if (TXHEAD(dev).offset)
++		headEnds = (((TXHEAD(dev).offset + TXHEAD(dev).length - offsetof(struct arlan_shmem, txBuffer)) / 64) + 1) * 64;
++	if (TXTAIL(dev).offset)
++		tailStarts = 0x800 - (((TXTAIL(dev).offset - offsetof(struct arlan_shmem, txBuffer)) / 64) + 2) * 64;
++
++
++	if (!TXHEAD(dev).offset && length < tailStarts)
++	{
++		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++			printk(KERN_ERR "TXHEAD insert, tailStart %d\n", tailStarts);
++
++		TXHEAD(dev).offset =
++			offsetof(struct arlan_shmem, txBuffer);
++		TXHEAD(dev).length = length - ARLAN_FAKE_HDR_LEN;
++		for (i = 0; i < 6; i++)
++			TXHEAD(dev).dest[i] = buf[i];
++		TXHEAD(dev).clear = conf->txClear;
++		TXHEAD(dev).retries = conf->txRetries;	/* 0 is use default */
++		TXHEAD(dev).routing = conf->txRouting;
++		TXHEAD(dev).scrambled = conf->txScrambled;
++		memcpy_toio((char __iomem *)arlan + TXHEAD(dev).offset, buf + ARLAN_FAKE_HDR_LEN, TXHEAD(dev).length);
++	}
++	else if (!TXTAIL(dev).offset && length < (0x800 - headEnds))
++	{
++		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++			printk(KERN_ERR "TXTAIL insert, headEnd %d\n", headEnds);
++
++		TXTAIL(dev).offset =
++			offsetof(struct arlan_shmem, txBuffer) + 0x800 - (length / 64 + 2) * 64;
++		TXTAIL(dev).length = length - ARLAN_FAKE_HDR_LEN;
++		for (i = 0; i < 6; i++)
++			TXTAIL(dev).dest[i] = buf[i];
++		TXTAIL(dev).clear = conf->txClear;
++		TXTAIL(dev).retries = conf->txRetries;
++		TXTAIL(dev).routing = conf->txRouting;
++		TXTAIL(dev).scrambled = conf->txScrambled;
++		memcpy_toio(((char __iomem *)arlan + TXTAIL(dev).offset), buf + ARLAN_FAKE_HDR_LEN, TXTAIL(dev).length);
++	}
++	else
++	{
++		netif_stop_queue (dev);
++		IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++			printk(KERN_ERR "TX TAIL & HEAD full, return, tailStart %d headEnd %d\n", tailStarts, headEnds);
++		return -1;
++	}
++	priv->out_bytes += length;
++	priv->out_bytes10 += length;
++	if (conf->measure_rate < 1)
++		conf->measure_rate = 1;
++	if (time_after(jiffies, priv->out_time + conf->measure_rate * HZ))
++	{
++		conf->out_speed = priv->out_bytes / conf->measure_rate;
++		priv->out_bytes = 0;
++		priv->out_time = jiffies;
++	}
++	if (time_after(jiffies, priv->out_time10 + conf->measure_rate * 10*HZ))
++	{
++		conf->out_speed10 = priv->out_bytes10 / (10 * conf->measure_rate);
++		priv->out_bytes10 = 0;
++		priv->out_time10 = jiffies;
++	}
++	if (TXHEAD(dev).offset && TXTAIL(dev).offset)
++	{
++		netif_stop_queue (dev);
++		return 0;
++	}
++	else
++		netif_start_queue (dev);
++
++
++	IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
++		printk(KERN_WARNING "%s Transmit t %2x:%2x:%2x:%2x:%2x:%2x f %2x:%2x:%2x:%2x:%2x:%2x \n", dev->name,
++		   (unsigned char) buf[0], (unsigned char) buf[1], (unsigned char) buf[2], (unsigned char) buf[3],
++		   (unsigned char) buf[4], (unsigned char) buf[5], (unsigned char) buf[6], (unsigned char) buf[7],
++		   (unsigned char) buf[8], (unsigned char) buf[9], (unsigned char) buf[10], (unsigned char) buf[11]);
++
++	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk(KERN_ERR "TX command prepare for buffer %d\n", priv->txLast);
++
++	arlan_command(dev, ARLAN_COMMAND_TX);
++
++	priv->tx_last_sent = jiffies;
++
++	IFDEBUG(ARLAN_DEBUG_TX_CHAIN) printk("%s TX Qued %d bytes \n", dev->name, length);
++
++	ARLAN_DEBUG_EXIT("arlan_hw_tx");
++
++	return 0;
++}
++
++
++static int arlan_hw_config(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++	struct arlan_conf_stru *conf = priv->Conf;
++
++	ARLAN_DEBUG_ENTRY("arlan_hw_config");
++
++	printk(KERN_NOTICE "%s arlan configure called \n", dev->name);
++	if (arlan_EEPROM_bad)
++		printk(KERN_NOTICE "arlan configure with eeprom bad option \n");
++
++
++	WRITESHM(arlan->spreadingCode, conf->spreadingCode, u_char);
++	WRITESHM(arlan->channelSet, conf->channelSet, u_char);
++
++	if (arlan_EEPROM_bad)
++		WRITESHM(arlan->defaultChannelSet, conf->channelSet, u_char);
++
++	WRITESHM(arlan->channelNumber, conf->channelNumber, u_char);
++
++	WRITESHM(arlan->scramblingDisable, conf->scramblingDisable, u_char);
++	WRITESHM(arlan->txAttenuation, conf->txAttenuation, u_char);
++
++	WRITESHM(arlan->systemId, conf->systemId, u_int);
++
++	WRITESHM(arlan->maxRetries, conf->maxRetries, u_char);
++	WRITESHM(arlan->receiveMode, conf->receiveMode, u_char);
++	WRITESHM(arlan->priority, conf->priority, u_char);
++	WRITESHM(arlan->rootOrRepeater, conf->rootOrRepeater, u_char);
++	WRITESHM(arlan->SID, conf->SID, u_int);
++
++	WRITESHM(arlan->registrationMode, conf->registrationMode, u_char);
++
++	WRITESHM(arlan->registrationFill, conf->registrationFill, u_char);
++	WRITESHM(arlan->localTalkAddress, conf->localTalkAddress, u_char);
++	WRITESHM(arlan->codeFormat, conf->codeFormat, u_char);
++	WRITESHM(arlan->numChannels, conf->numChannels, u_char);
++	WRITESHM(arlan->channel1, conf->channel1, u_char);
++	WRITESHM(arlan->channel2, conf->channel2, u_char);
++	WRITESHM(arlan->channel3, conf->channel3, u_char);
++	WRITESHM(arlan->channel4, conf->channel4, u_char);
++	WRITESHM(arlan->radioNodeId, conf->radioNodeId, u_short);
++	WRITESHM(arlan->SID, conf->SID, u_int);
++	WRITESHM(arlan->waitTime, conf->waitTime, u_short);
++	WRITESHM(arlan->lParameter, conf->lParameter, u_short);
++	memcpy_toio(&(arlan->_15), &(conf->_15), 3);
++	WRITESHM(arlan->_15, conf->_15, u_short);
++	WRITESHM(arlan->headerSize, conf->headerSize, u_short);
++	if (arlan_EEPROM_bad)
++		WRITESHM(arlan->hardwareType, conf->hardwareType, u_char);
++	WRITESHM(arlan->radioType, conf->radioType, u_char);
++	if (arlan_EEPROM_bad)
++		WRITESHM(arlan->radioModule, conf->radioType, u_char);
++
++	memcpy_toio(arlan->encryptionKey + keyStart, encryptionKey, 8);
++	memcpy_toio(arlan->name, conf->siteName, 16);
++
++	WRITESHMB(arlan->commandByte, ARLAN_COM_INT | ARLAN_COM_CONF);	/* do configure */
++	memset_io(arlan->commandParameter, 0, 0xf);	/* 0xf */
++	memset_io(arlan->commandParameter + 1, 0, 2);
++	if (conf->writeEEPROM)
++	{
++		  memset_io(arlan->commandParameter, conf->writeEEPROM, 1);
++//		conf->writeEEPROM=0;
++	}
++	if (conf->registrationMode && conf->registrationInterrupts)
++		memset_io(arlan->commandParameter + 3, 1, 1);
++	else
++		memset_io(arlan->commandParameter + 3, 0, 1);
++
++	priv->irq_test_done = 0;
++
++	if (conf->tx_queue_len)
++		dev->tx_queue_len = conf->tx_queue_len;
++	udelay(100);
++
++	ARLAN_DEBUG_EXIT("arlan_hw_config");
++	return 0;
++}
++
++
++static int arlan_read_card_configuration(struct net_device *dev)
++{
++	u_char tlx415;
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++	struct arlan_conf_stru *conf = priv->Conf;
++
++	ARLAN_DEBUG_ENTRY("arlan_read_card_configuration");
++
++	if (radioNodeId == radioNodeIdUNKNOWN)
++	{
++		READSHM(conf->radioNodeId, arlan->radioNodeId, u_short);
++	}
++	else
++		conf->radioNodeId = radioNodeId;
++		
++	if (SID == SIDUNKNOWN)
++	{
++		READSHM(conf->SID, arlan->SID, u_int);
++	}
++	else conf->SID = SID;
++		
++	if (spreadingCode == spreadingCodeUNKNOWN)
++	{
++		  READSHM(conf->spreadingCode, arlan->spreadingCode, u_char);
++	}
++	else
++		conf->spreadingCode = spreadingCode;
++		
++	if (channelSet == channelSetUNKNOWN)
++	{
++		READSHM(conf->channelSet, arlan->channelSet, u_char);
++	}
++	else conf->channelSet = channelSet;
++
++	if (channelNumber == channelNumberUNKNOWN)
++	{
++		READSHM(conf->channelNumber, arlan->channelNumber, u_char);
++	}
++	else conf->channelNumber = channelNumber;
++	
++	READSHM(conf->scramblingDisable, arlan->scramblingDisable, u_char);
++	READSHM(conf->txAttenuation, arlan->txAttenuation, u_char);
++	
++	if (systemId == systemIdUNKNOWN)
++	{
++		READSHM(conf->systemId, arlan->systemId, u_int);
++	} 
++	else conf->systemId = systemId;
++	
++	READSHM(conf->maxDatagramSize, arlan->maxDatagramSize, u_short);
++	READSHM(conf->maxFrameSize, arlan->maxFrameSize, u_short);
++	READSHM(conf->maxRetries, arlan->maxRetries, u_char);
++	READSHM(conf->receiveMode, arlan->receiveMode, u_char);
++	READSHM(conf->priority, arlan->priority, u_char);
++	READSHM(conf->rootOrRepeater, arlan->rootOrRepeater, u_char);
++
++	if (SID == SIDUNKNOWN)
++	{
++		  READSHM(conf->SID, arlan->SID, u_int);
++	}
++	else conf->SID = SID;
++	
++	if (registrationMode == registrationModeUNKNOWN)
++	{
++		  READSHM(conf->registrationMode, arlan->registrationMode, u_char);
++	}
++	else conf->registrationMode = registrationMode;
++	
++	READSHM(conf->registrationFill, arlan->registrationFill, u_char);
++	READSHM(conf->localTalkAddress, arlan->localTalkAddress, u_char);
++	READSHM(conf->codeFormat, arlan->codeFormat, u_char);
++	READSHM(conf->numChannels, arlan->numChannels, u_char);
++	READSHM(conf->channel1, arlan->channel1, u_char);
++	READSHM(conf->channel2, arlan->channel2, u_char);
++	READSHM(conf->channel3, arlan->channel3, u_char);
++	READSHM(conf->channel4, arlan->channel4, u_char);
++	READSHM(conf->waitTime, arlan->waitTime, u_short);
++	READSHM(conf->lParameter, arlan->lParameter, u_short);
++	READSHM(conf->_15, arlan->_15, u_short);
++	READSHM(conf->headerSize, arlan->headerSize, u_short);
++	READSHM(conf->hardwareType, arlan->hardwareType, u_char);
++	READSHM(conf->radioType, arlan->radioModule, u_char);
++	
++	if (conf->radioType == 0)
++		conf->radioType = 0xc;
++
++	WRITESHM(arlan->configStatus, 0xA5, u_char);
++	READSHM(tlx415, arlan->configStatus, u_char);
++	
++	if (tlx415 != 0xA5)
++		printk(KERN_INFO "%s tlx415 chip \n", dev->name);
++	
++	conf->txClear = 0;
++	conf->txRetries = 1;
++	conf->txRouting = 1;
++	conf->txScrambled = 0;
++	conf->rxParameter = 1;
++	conf->txTimeoutMs = 4000;
++	conf->waitCardTimeout = 100000;
++	conf->receiveMode = ARLAN_RCV_CLEAN;
++	memcpy_fromio(conf->siteName, arlan->name, 16);
++	conf->siteName[16] = '\0';
++	conf->retries = retries;
++	conf->tx_delay_ms = tx_delay_ms;
++	conf->ReTransmitPacketMaxSize = 200;
++	conf->waitReTransmitPacketMaxSize = 200;
++	conf->txAckTimeoutMs = 900;
++	conf->fastReTransCount = 3;
++
++	ARLAN_DEBUG_EXIT("arlan_read_card_configuration");
++
++	return 0;
++}
++
++
++static int lastFoundAt = 0xbe000;
++
++
++/*
++ * This is the real probe routine. Linux has a history of friendly device
++ * probes on the ISA bus. A good device probes avoids doing writes, and
++ * verifies that the correct device exists and functions.
++ */
++#define ARLAN_SHMEM_SIZE	0x2000
++static int __init arlan_check_fingerprint(unsigned long memaddr)
++{
++	static const char probeText[] = "TELESYSTEM SLW INC.    ARLAN \0";
++	volatile struct arlan_shmem __iomem *arlan = (struct arlan_shmem *) memaddr;
++	unsigned long paddr = virt_to_phys((void *) memaddr);
++	char tempBuf[49];
++
++	ARLAN_DEBUG_ENTRY("arlan_check_fingerprint");
++
++	if (!request_mem_region(paddr, ARLAN_SHMEM_SIZE, "arlan")) {
++		// printk(KERN_WARNING "arlan: memory region %lx excluded from probing \n",paddr);
++		return -ENODEV;
++	}
++
++	memcpy_fromio(tempBuf, arlan->textRegion, 29);
++	tempBuf[30] = 0;
++
++	/* check for card at this address */
++	if (0 != strncmp(tempBuf, probeText, 29)){
++ 		release_mem_region(paddr, ARLAN_SHMEM_SIZE);
++		return -ENODEV;
++	}
++
++//   printk(KERN_INFO "arlan found at 0x%x \n",memaddr);
++	ARLAN_DEBUG_EXIT("arlan_check_fingerprint");
++
++	return 0;
++}
++
++static int arlan_change_mtu(struct net_device *dev, int new_mtu)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++	struct arlan_conf_stru *conf = priv->Conf;
++
++	ARLAN_DEBUG_ENTRY("arlan_change_mtu");
++	if (new_mtu > 2032)
++		return -EINVAL;
++	dev->mtu = new_mtu;
++	if (new_mtu < 256)
++		new_mtu = 256;	/* cards book suggests 1600 */
++	conf->maxDatagramSize = new_mtu;
++	conf->maxFrameSize = new_mtu + 48;
++
++	arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_CONF);
++	printk(KERN_NOTICE "%s mtu changed to %d \n", dev->name, new_mtu);
++
++	ARLAN_DEBUG_EXIT("arlan_change_mtu");
++
++	return 0;
++}
++
++static int arlan_mac_addr(struct net_device *dev, void *p)
++{
++	struct sockaddr *addr = p;
++
++
++	ARLAN_DEBUG_ENTRY("arlan_mac_addr");
++	return -EINVAL;
++
++	if (netif_running(dev))
++		return -EBUSY;
++	memcpy(dev->dev_addr, addr->sa_data, dev->addr_len);
++
++	ARLAN_DEBUG_EXIT("arlan_mac_addr");
++	return 0;
++}
++
++static const struct net_device_ops arlan_netdev_ops = {
++	.ndo_open		= arlan_open,
++	.ndo_stop		= arlan_close,
++	.ndo_start_xmit		= arlan_tx,
++	.ndo_get_stats		= arlan_statistics,
++	.ndo_set_multicast_list = arlan_set_multicast,
++	.ndo_change_mtu		= arlan_change_mtu,
++	.ndo_set_mac_address	= arlan_mac_addr,
++	.ndo_tx_timeout		= arlan_tx_timeout,
++	.ndo_validate_addr	= eth_validate_addr,
++};
++
++static int __init arlan_setup_device(struct net_device *dev, int num)
++{
++	struct arlan_private *ap = netdev_priv(dev);
++	int err;
++
++	ARLAN_DEBUG_ENTRY("arlan_setup_device");
++
++	ap->conf = (struct arlan_shmem *)(ap+1);
++
++	dev->tx_queue_len = tx_queue_len;
++	dev->netdev_ops = &arlan_netdev_ops;
++	dev->watchdog_timeo = 3*HZ;
++	
++	ap->irq_test_done = 0;
++	ap->Conf = &arlan_conf[num];
++
++	ap->Conf->pre_Command_Wait = 40;
++	ap->Conf->rx_tweak1 = 30;
++	ap->Conf->rx_tweak2 = 0;
++
++
++	err = register_netdev(dev);
++	if (err) {
++		release_mem_region(virt_to_phys((void *) dev->mem_start), 
++			   ARLAN_SHMEM_SIZE);
++		free_netdev(dev);
++		return err;
++	}
++	arlan_device[num] = dev;
++	ARLAN_DEBUG_EXIT("arlan_setup_device");
++	return 0;
++}
++
++static int __init arlan_probe_here(struct net_device *dev, 
++				   unsigned long memaddr)
++{
++	struct arlan_private *ap = netdev_priv(dev);
++
++	ARLAN_DEBUG_ENTRY("arlan_probe_here");
++
++	if (arlan_check_fingerprint(memaddr))
++		return -ENODEV;
++
++	printk(KERN_NOTICE "%s: Arlan found at %llx, \n ", dev->name, 
++	       (u64) virt_to_phys((void*)memaddr));
++
++	ap->card = (void *) memaddr;
++	dev->mem_start = memaddr;
++	dev->mem_end = memaddr + ARLAN_SHMEM_SIZE-1;
++
++	if (dev->irq < 2)
++	{
++		READSHM(dev->irq, ap->card->irqLevel, u_char);
++	} else if (dev->irq == 2)
++		dev->irq = 9;
++
++	arlan_read_card_configuration(dev);
++
++	ARLAN_DEBUG_EXIT("arlan_probe_here");
++	return 0;
++}
++
++
++static int arlan_open(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++	int ret = 0;
++
++	ARLAN_DEBUG_ENTRY("arlan_open");
++
++	ret = request_irq(dev->irq, &arlan_interrupt, 0, dev->name, dev);
++	if (ret)
++	{
++		printk(KERN_ERR "%s: unable to get IRQ %d .\n",
++			dev->name, dev->irq);
++		return ret;
++	}
++
++
++	priv->bad = 0;
++	priv->lastReset = 0;
++	priv->reset = 0;
++	memcpy_fromio(dev->dev_addr, arlan->lanCardNodeId, 6);
++	memset(dev->broadcast, 0xff, 6);
++	dev->tx_queue_len = tx_queue_len;
++	priv->interrupt_processing_active = 0;
++	spin_lock_init(&priv->lock);
++
++	netif_start_queue (dev);
++
++	priv->registrationLostCount = 0;
++	priv->registrationLastSeen = jiffies;
++	priv->txLast = 0;
++	priv->tx_command_given = 0;
++	priv->rx_command_given = 0;
++	
++	priv->reRegisterExp = 1;
++	priv->tx_last_sent = jiffies - 1;
++	priv->tx_last_cleared = jiffies;
++	priv->Conf->writeEEPROM = 0;
++	priv->Conf->registrationInterrupts = 1;
++
++	init_timer(&priv->timer);
++	priv->timer.expires = jiffies + HZ / 10;
++	priv->timer.data = (unsigned long) dev;
++	priv->timer.function = &arlan_registration_timer;	/* timer handler */
++
++	arlan_command(dev, ARLAN_COMMAND_POWERUP | ARLAN_COMMAND_LONG_WAIT_NOW);
++	mdelay(200);
++	add_timer(&priv->timer);
++
++	ARLAN_DEBUG_EXIT("arlan_open");
++	return 0;
++}
++
++
++static void arlan_tx_timeout (struct net_device *dev)
++{
++	printk(KERN_ERR "%s: arlan transmit timed out, kernel decided\n", dev->name);
++	/* Try to restart the adaptor. */
++	arlan_command(dev, ARLAN_COMMAND_CLEAN_AND_RESET);
++	// dev->trans_start = jiffies;
++	// netif_start_queue (dev);
++}
++
++
++static netdev_tx_t arlan_tx(struct sk_buff *skb, struct net_device *dev)
++{
++	short length;
++	unsigned char *buf;
++
++	ARLAN_DEBUG_ENTRY("arlan_tx");
++	
++	length = ETH_ZLEN < skb->len ? skb->len : ETH_ZLEN;
++	buf = skb->data;
++
++	if (length + 0x12 > 0x800) {
++		printk(KERN_ERR "TX RING overflow \n");
++		netif_stop_queue (dev);
++	}
++
++	if (arlan_hw_tx(dev, buf, length) == -1)
++		goto bad_end;
++
++	dev->trans_start = jiffies;
++
++	dev_kfree_skb(skb);
++
++	arlan_process_interrupt(dev);
++	ARLAN_DEBUG_EXIT("arlan_tx");
++	return NETDEV_TX_OK;
++
++bad_end:
++	arlan_process_interrupt(dev);
++	netif_stop_queue (dev);
++	ARLAN_DEBUG_EXIT("arlan_tx");
++	return NETDEV_TX_BUSY;
++}
++
++
++static inline int DoNotReTransmitCrap(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++
++	if (TXLAST(dev).length < priv->Conf->ReTransmitPacketMaxSize)
++		return 1;
++	return 0;
++
++}
++
++static inline int DoNotWaitReTransmitCrap(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++
++	if (TXLAST(dev).length < priv->Conf->waitReTransmitPacketMaxSize)
++		return 1;
++	return 0;
++}
++
++static inline void arlan_queue_retransmit(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++
++	ARLAN_DEBUG_ENTRY("arlan_queue_retransmit");
++
++	if (DoNotWaitReTransmitCrap(dev))
++	{
++		  arlan_drop_tx(dev);
++	} else
++		priv->ReTransmitRequested++;
++
++	ARLAN_DEBUG_EXIT("arlan_queue_retransmit");
++}
++
++static inline void RetryOrFail(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++
++	ARLAN_DEBUG_ENTRY("RetryOrFail");
++
++	if (priv->retransmissions > priv->Conf->retries ||
++	    DoNotReTransmitCrap(dev))
++	{
++		arlan_drop_tx(dev);
++	}
++	else if (priv->bad <= priv->Conf->fastReTransCount)
++	{
++		arlan_retransmit_now(dev);
++	}
++	else arlan_queue_retransmit(dev);
++
++	ARLAN_DEBUG_EXIT("RetryOrFail");
++}
++
++
++static void arlan_tx_done_interrupt(struct net_device *dev, int status)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++
++	ARLAN_DEBUG_ENTRY("arlan_tx_done_interrupt");
++
++	priv->tx_last_cleared = jiffies;
++	priv->tx_command_given = 0;
++	switch (status)
++	{
++		case 1:
++		{
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++				printk("arlan intr: transmit OK\n");
++			dev->stats.tx_packets++;
++			priv->bad = 0;
++			priv->reset = 0;
++			priv->retransmissions = 0;
++			if (priv->Conf->tx_delay_ms)
++			{
++				priv->tx_done_delayed = jiffies + (priv->Conf->tx_delay_ms * HZ) / 1000 + 1;
++			}
++			else
++			{
++				TXLAST(dev).offset = 0;
++				if (priv->txLast)
++					priv->txLast = 0;
++				else if (TXTAIL(dev).offset)
++					priv->txLast = 1;
++				if (TXLAST(dev).offset)
++				{
++					arlan_retransmit_now(dev);
++					dev->trans_start = jiffies;
++				}
++				if (!TXHEAD(dev).offset || !TXTAIL(dev).offset)
++				{
++					netif_wake_queue (dev);
++				}
++			}
++		}
++		break;
++		
++		case 2:
++		{
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++				printk("arlan intr: transmit timed out\n");
++			priv->bad += 1;
++			//arlan_queue_retransmit(dev);
++			RetryOrFail(dev);
++		}
++		break;
++
++		case 3:
++		{
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++				printk("arlan intr: transmit max retries\n");
++			priv->bad += 1;
++			priv->reset = 0;
++			//arlan_queue_retransmit(dev);
++			RetryOrFail(dev);
++		}
++		break;
++		
++		case 4:
++		{
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++				printk("arlan intr: transmit aborted\n");
++			priv->bad += 1;
++			arlan_queue_retransmit(dev);
++			//RetryOrFail(dev);
++		}
++		break;
++
++		case 5:
++		{
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++				printk("arlan intr: transmit not registered\n");
++			priv->bad += 1;
++			//debug=101;
++			arlan_queue_retransmit(dev);
++		}
++		break;
++
++		case 6:
++		{
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN) 
++				printk("arlan intr: transmit destination full\n");
++			priv->bad += 1;
++			priv->reset = 0;
++			//arlan_drop_tx(dev);
++			arlan_queue_retransmit(dev);
++		}
++		break;
++
++		case 7:
++		{
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++				printk("arlan intr: transmit unknown ack\n");
++			priv->bad += 1;
++			priv->reset = 0;
++			arlan_queue_retransmit(dev);
++		}
++		break;
++		
++		case 8:
++		{
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++				printk("arlan intr: transmit dest mail box full\n");
++			priv->bad += 1;
++			priv->reset = 0;
++			//arlan_drop_tx(dev);
++			arlan_queue_retransmit(dev);
++		}
++		break;
++
++		case 9:
++		{
++			IFDEBUG(ARLAN_DEBUG_TX_CHAIN)
++				printk("arlan intr: transmit root dest not reg.\n");
++			priv->bad += 1;
++			priv->reset = 1;
++			//arlan_drop_tx(dev);
++			arlan_queue_retransmit(dev);
++		}
++		break;
++
++		default:
++		{
++			printk(KERN_ERR "arlan intr: transmit status unknown\n");
++			priv->bad += 1;
++			priv->reset = 1;
++			arlan_drop_tx(dev);
++		}
++	}
++
++	ARLAN_DEBUG_EXIT("arlan_tx_done_interrupt");
++}
++
++
++static void arlan_rx_interrupt(struct net_device *dev, u_char rxStatus, u_short rxOffset, u_short pkt_len)
++{
++	char *skbtmp;
++	int i = 0;
++
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++	struct arlan_conf_stru *conf = priv->Conf;
++
++
++	ARLAN_DEBUG_ENTRY("arlan_rx_interrupt");
++	// by spec,   not                WRITESHMB(arlan->rxStatus,0x00);
++	// prohibited here              arlan_command(dev, ARLAN_COMMAND_RX);
++
++	if (pkt_len < 10 || pkt_len > 2048)
++	{
++		printk(KERN_WARNING "%s: got too short or long packet, len %d \n", dev->name, pkt_len);
++		return;
++	}
++	if (rxOffset + pkt_len > 0x2000)
++	{
++		printk("%s: got too long packet, len %d offset %x\n", dev->name, pkt_len, rxOffset);
++		return;
++	}
++	priv->in_bytes += pkt_len;
++	priv->in_bytes10 += pkt_len;
++	if (conf->measure_rate < 1)
++		conf->measure_rate = 1;
++	if (time_after(jiffies, priv->in_time + conf->measure_rate * HZ))
++	{
++		conf->in_speed = priv->in_bytes / conf->measure_rate;
++		priv->in_bytes = 0;
++		priv->in_time = jiffies;
++	}
++	if (time_after(jiffies, priv->in_time10 + conf->measure_rate * 10*HZ))
++	{
++		conf->in_speed10 = priv->in_bytes10 / (10 * conf->measure_rate);
++		priv->in_bytes10 = 0;
++		priv->in_time10 = jiffies;
++	}
++	DEBUGSHM(1, "arlan rcv pkt rxStatus= %d ", arlan->rxStatus, u_char);
++	switch (rxStatus)
++	{
++		case 1:
++		case 2:
++		case 3:
++		{
++			/* Malloc up new buffer. */
++			struct sk_buff *skb;
++
++			DEBUGSHM(50, "arlan recv pkt offs=%d\n", arlan->rxOffset, u_short);
++			DEBUGSHM(1, "arlan rxFrmType = %d \n", arlan->rxFrmType, u_char);
++			DEBUGSHM(1, KERN_INFO "arlan rx scrambled = %d \n", arlan->scrambled, u_char);
++
++			/* here we do multicast filtering to avoid slow 8-bit memcopy */
++#ifdef ARLAN_MULTICAST
++			if (!(dev->flags & IFF_ALLMULTI) &&
++				!(dev->flags & IFF_PROMISC) &&
++				dev->mc_list)
++			{
++				char hw_dst_addr[6];
++				struct dev_mc_list *dmi = dev->mc_list;
++				int i;
++
++				memcpy_fromio(hw_dst_addr, arlan->ultimateDestAddress, 6);
++				if (hw_dst_addr[0] == 0x01)
++				{
++					if (mdebug)
++						if (hw_dst_addr[1] == 0x00)
++							printk(KERN_ERR "%s mcast 0x0100 \n", dev->name);
++						else if (hw_dst_addr[1] == 0x40)
++							printk(KERN_ERR "%s m/bcast 0x0140 \n", dev->name);
++					while (dmi)
++					{
++						if (dmi->dmi_addrlen == 6) {
++							if (arlan_debug & ARLAN_DEBUG_HEADER_DUMP)
++								printk(KERN_ERR "%s mcl %pM\n",
++								       dev->name, dmi->dmi_addr);
++							for (i = 0; i < 6; i++)
++								if (dmi->dmi_addr[i] != hw_dst_addr[i])
++									break;
++							if (i == 6)
++								break;
++						} else
++							printk(KERN_ERR "%s: invalid multicast address length given.\n", dev->name);
++						dmi = dmi->next;
++					}
++					/* we reach here if multicast filtering is on and packet 
++					 * is multicast and not for receive */
++					goto end_of_interrupt;
++				}
++			}
++#endif				// ARLAN_MULTICAST
++			/* multicast filtering ends here */
++			pkt_len += ARLAN_FAKE_HDR_LEN;
++
++			skb = dev_alloc_skb(pkt_len + 4);
++			if (skb == NULL)
++			{
++				printk(KERN_ERR "%s: Memory squeeze, dropping packet.\n", dev->name);
++				dev->stats.rx_dropped++;
++				break;
++			}
++			skb_reserve(skb, 2);
++			skbtmp = skb_put(skb, pkt_len);
++
++			memcpy_fromio(skbtmp + ARLAN_FAKE_HDR_LEN, ((char __iomem *) arlan) + rxOffset, pkt_len - ARLAN_FAKE_HDR_LEN);
++			memcpy_fromio(skbtmp, arlan->ultimateDestAddress, 6);
++			memcpy_fromio(skbtmp + 6, arlan->rxSrc, 6);
++			WRITESHMB(arlan->rxStatus, 0x00);
++			arlan_command(dev, ARLAN_COMMAND_RX);
++
++			IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
++			{
++				char immedDestAddress[6];
++				char immedSrcAddress[6];
++				memcpy_fromio(immedDestAddress, arlan->immedDestAddress, 6);
++				memcpy_fromio(immedSrcAddress, arlan->immedSrcAddress, 6);
++
++				printk(KERN_WARNING "%s t %pM f %pM imd %pM ims %pM\n",
++				       dev->name, skbtmp,
++				       &skbtmp[6],
++				       immedDestAddress,
++				       immedSrcAddress);
++			}
++			skb->protocol = eth_type_trans(skb, dev);
++			IFDEBUG(ARLAN_DEBUG_HEADER_DUMP)
++				if (skb->protocol != 0x608 && skb->protocol != 0x8)
++				{
++					for (i = 0; i <= 22; i++)
++						printk("%02x:", (u_char) skbtmp[i + 12]);
++					printk(KERN_ERR "\n");
++					printk(KERN_WARNING "arlan kernel pkt type trans %x \n", skb->protocol);
++				}
++			netif_rx(skb);
++			dev->stats.rx_packets++;
++			dev->stats.rx_bytes += pkt_len;
++		}
++		break;
++		
++		default:
++			printk(KERN_ERR "arlan intr: received unknown status\n");
++			dev->stats.rx_crc_errors++;
++			break;
++	}
++	ARLAN_DEBUG_EXIT("arlan_rx_interrupt");
++}
++
++static void arlan_process_interrupt(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++	u_char rxStatus = READSHMB(arlan->rxStatus);
++	u_char txStatus = READSHMB(arlan->txStatus);
++	u_short rxOffset = READSHMS(arlan->rxOffset);
++	u_short pkt_len = READSHMS(arlan->rxLength);
++	int interrupt_count = 0;
++
++	ARLAN_DEBUG_ENTRY("arlan_process_interrupt");
++
++	if (test_and_set_bit(0, (void *) &priv->interrupt_processing_active))
++	{
++		if (arlan_debug & ARLAN_DEBUG_CHAIN_LOCKS)
++			printk(KERN_ERR "interrupt chain reentering \n");
++		goto end_int_process;
++	}
++	while ((rxStatus || txStatus || priv->interrupt_ack_requested)
++			&& (interrupt_count < 5))
++	{
++		if (rxStatus)
++			priv->last_rx_int_ack_time = jiffies;
++
++		arlan_command(dev, ARLAN_COMMAND_INT_ACK);
++		arlan_command(dev, ARLAN_COMMAND_INT_ENABLE);
++		
++		IFDEBUG(ARLAN_DEBUG_INTERRUPT)
++			printk(KERN_ERR "%s:  got IRQ rx %x tx %x comm %x rxOff %x rxLen %x \n",
++					dev->name, rxStatus, txStatus, READSHMB(arlan->commandByte),
++					rxOffset, pkt_len);
++
++		if (rxStatus == 0 && txStatus == 0)
++		{
++			if (priv->irq_test_done)
++			{
++				if (!registrationBad(dev))
++					IFDEBUG(ARLAN_DEBUG_INTERRUPT) printk(KERN_ERR "%s unknown interrupt(nop? regLost ?) reason tx %d rx %d ",
++										    dev->name, txStatus, rxStatus);
++			} else {
++				IFDEBUG(ARLAN_DEBUG_INTERRUPT)
++					printk(KERN_INFO "%s irq $%d test OK \n", dev->name, dev->irq);
++
++			}
++			priv->interrupt_ack_requested = 0;
++			goto ends;
++		}
++		if (txStatus != 0)
++		{
++			WRITESHMB(arlan->txStatus, 0x00);
++			arlan_tx_done_interrupt(dev, txStatus);
++			goto ends;
++		}
++		if (rxStatus == 1 || rxStatus == 2)
++		{		/* a packet waiting */
++			arlan_rx_interrupt(dev, rxStatus, rxOffset, pkt_len);
++			goto ends;
++		}
++		if (rxStatus > 2 && rxStatus < 0xff)
++		{
++			WRITESHMB(arlan->rxStatus, 0x00);
++			printk(KERN_ERR "%s unknown rxStatus reason tx %d rx %d ",
++				dev->name, txStatus, rxStatus);
++			goto ends;
++		}
++		if (rxStatus == 0xff)
++		{
++			WRITESHMB(arlan->rxStatus, 0x00);
++			arlan_command(dev, ARLAN_COMMAND_RX);
++			if (registrationBad(dev))
++				netif_device_detach(dev);
++			if (!registrationBad(dev))
++			{
++				priv->registrationLastSeen = jiffies;
++				if (!netif_queue_stopped(dev) && !priv->under_reset && !priv->under_config)
++					netif_wake_queue (dev);
++			}
++			goto ends;
++		}
++ends:
++
++		arlan_command_process(dev);
++
++		rxStatus = READSHMB(arlan->rxStatus);
++		txStatus = READSHMB(arlan->txStatus);
++		rxOffset = READSHMS(arlan->rxOffset);
++		pkt_len = READSHMS(arlan->rxLength);
++
++
++		priv->irq_test_done = 1;
++
++		interrupt_count++;
++	}
++	priv->interrupt_processing_active = 0;
++
++end_int_process:
++	arlan_command_process(dev);
++
++	ARLAN_DEBUG_EXIT("arlan_process_interrupt");
++	return;
++}
++
++static irqreturn_t arlan_interrupt(int irq, void *dev_id)
++{
++	struct net_device *dev = dev_id;
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++	u_char rxStatus = READSHMB(arlan->rxStatus);
++	u_char txStatus = READSHMB(arlan->txStatus);
++
++	ARLAN_DEBUG_ENTRY("arlan_interrupt");
++
++
++	if (!rxStatus && !txStatus)
++		priv->interrupt_ack_requested++;
++
++	arlan_process_interrupt(dev);
++	
++	priv->irq_test_done = 1;
++
++	ARLAN_DEBUG_EXIT("arlan_interrupt");
++	return IRQ_HANDLED;
++
++}
++
++
++static int arlan_close(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++
++	ARLAN_DEBUG_ENTRY("arlan_close");
++
++	del_timer_sync(&priv->timer);
++
++	arlan_command(dev, ARLAN_COMMAND_POWERDOWN);
++
++	IFDEBUG(ARLAN_DEBUG_STARTUP)
++		printk(KERN_NOTICE "%s: Closing device\n", dev->name);
++
++	netif_stop_queue(dev);
++	free_irq(dev->irq, dev);
++
++	ARLAN_DEBUG_EXIT("arlan_close");
++	return 0;
++}
++
++#ifdef ARLAN_DEBUGGING
++static long alignLong(volatile u_char * ptr)
++{
++	long ret;
++	memcpy_fromio(&ret, (void *) ptr, 4);
++	return ret;
++}
++#endif
++
++/*
++ * Get the current statistics.
++ * This may be called with the card open or closed.
++ */
++
++static struct net_device_stats *arlan_statistics(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++
++
++	ARLAN_DEBUG_ENTRY("arlan_statistics");
++
++	/* Update the statistics from the device registers. */
++
++	READSHM(dev->stats.collisions, arlan->numReTransmissions, u_int);
++	READSHM(dev->stats.rx_crc_errors, arlan->numCRCErrors, u_int);
++	READSHM(dev->stats.rx_dropped, arlan->numFramesDiscarded, u_int);
++	READSHM(dev->stats.rx_fifo_errors, arlan->numRXBufferOverflows, u_int);
++	READSHM(dev->stats.rx_frame_errors, arlan->numReceiveFramesLost, u_int);
++	READSHM(dev->stats.rx_over_errors, arlan->numRXOverruns, u_int);
++	READSHM(dev->stats.rx_packets, arlan->numDatagramsReceived, u_int);
++	READSHM(dev->stats.tx_aborted_errors, arlan->numAbortErrors, u_int);
++	READSHM(dev->stats.tx_carrier_errors, arlan->numStatusTimeouts, u_int);
++	READSHM(dev->stats.tx_dropped, arlan->numDatagramsDiscarded, u_int);
++	READSHM(dev->stats.tx_fifo_errors, arlan->numTXUnderruns, u_int);
++	READSHM(dev->stats.tx_packets, arlan->numDatagramsTransmitted, u_int);
++	READSHM(dev->stats.tx_window_errors, arlan->numHoldOffs, u_int);
++
++	ARLAN_DEBUG_EXIT("arlan_statistics");
++
++	return &dev->stats;
++}
++
++
++static void arlan_set_multicast(struct net_device *dev)
++{
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++	struct arlan_conf_stru *conf = priv->Conf;
++	int board_conf_needed = 0;
++
++
++	ARLAN_DEBUG_ENTRY("arlan_set_multicast");
++
++	if (dev->flags & IFF_PROMISC)
++	{
++		unsigned char recMode;
++		READSHM(recMode, arlan->receiveMode, u_char);
++		conf->receiveMode = (ARLAN_RCV_PROMISC | ARLAN_RCV_CONTROL);
++		if (conf->receiveMode != recMode)
++			board_conf_needed = 1;
++	}
++	else
++	{
++		/* turn off promiscuous mode  */
++		unsigned char recMode;
++		READSHM(recMode, arlan->receiveMode, u_char);
++		conf->receiveMode = ARLAN_RCV_CLEAN | ARLAN_RCV_CONTROL;
++		if (conf->receiveMode != recMode)
++			board_conf_needed = 1;
++	}
++	if (board_conf_needed)
++		arlan_command(dev, ARLAN_COMMAND_CONF);
++
++	ARLAN_DEBUG_EXIT("arlan_set_multicast");
++}
++
++
++struct net_device * __init arlan_probe(int unit)
++{
++	struct net_device *dev;
++	int err;
++	int m;
++
++	ARLAN_DEBUG_ENTRY("arlan_probe");
++
++	if (arlans_found == MAX_ARLANS)
++		return ERR_PTR(-ENODEV);
++
++	/* 
++	 * Reserve space for local data and a copy of the shared memory
++	 * that is used by the /proc interface.
++	 */
++	dev = alloc_etherdev(sizeof(struct arlan_private)
++			     + sizeof(struct arlan_shmem));
++	if (!dev)
++		return ERR_PTR(-ENOMEM);
++
++	if (unit >= 0) {
++		sprintf(dev->name, "eth%d", unit);
++		netdev_boot_setup_check(dev);
++		
++		if (dev->mem_start) {
++			if (arlan_probe_here(dev, dev->mem_start) == 0)
++				goto found;
++			goto not_found;
++		}
++			
++	}
++
++
++	for (m = (int)phys_to_virt(lastFoundAt) + ARLAN_SHMEM_SIZE; 
++	     m <= (int)phys_to_virt(0xDE000); 
++	     m += ARLAN_SHMEM_SIZE)
++	{
++		if (arlan_probe_here(dev, m) == 0)
++		{
++			lastFoundAt = (int)virt_to_phys((void*)m);
++			goto found;
++		}
++	}
++
++	if (lastFoundAt == 0xbe000)
++		printk(KERN_ERR "arlan: No Arlan devices found \n");
++
++ not_found:
++	free_netdev(dev);
++	return ERR_PTR(-ENODEV);
++
++ found:
++	err = arlan_setup_device(dev, arlans_found);
++	if (err)
++		dev = ERR_PTR(err);
++	else if (!arlans_found++)
++		printk(KERN_INFO "Arlan driver %s\n", arlan_version);
++
++	return dev;
++}
++
++#ifdef  MODULE
++int __init init_module(void)
++{
++	int i = 0;
++
++	ARLAN_DEBUG_ENTRY("init_module");
++
++	if (channelSet != channelSetUNKNOWN || channelNumber != channelNumberUNKNOWN || systemId != systemIdUNKNOWN)
++		return -EINVAL;
++
++	for (i = 0; i < MAX_ARLANS; i++) {
++		struct net_device *dev = arlan_probe(i);
++
++		if (IS_ERR(dev)) 
++			return PTR_ERR(dev);
++	}
++	init_arlan_proc();
++	printk(KERN_INFO "Arlan driver %s\n", arlan_version);
++	ARLAN_DEBUG_EXIT("init_module");
++	return 0;
++}
++
++
++void __exit cleanup_module(void)
++{
++	int i = 0;
++	struct net_device *dev;
++
++	ARLAN_DEBUG_ENTRY("cleanup_module");
++
++	IFDEBUG(ARLAN_DEBUG_SHUTDOWN)
++		printk(KERN_INFO "arlan: unloading module\n");
++
++	cleanup_arlan_proc();
++
++	for (i = 0; i < MAX_ARLANS; i++)
++	{
++		dev = arlan_device[i];
++		if (dev) {
++			arlan_command(dev, ARLAN_COMMAND_POWERDOWN );
++
++			unregister_netdev(dev);
++			release_mem_region(virt_to_phys((void *) dev->mem_start), 
++					   ARLAN_SHMEM_SIZE);
++			free_netdev(dev);
++			arlan_device[i] = NULL;
++		}
++	}
++
++	ARLAN_DEBUG_EXIT("cleanup_module");
++}
++
++
++#endif
++MODULE_LICENSE("GPL");
+diff --git a/drivers/staging/arlan/arlan-proc.c b/drivers/staging/arlan/arlan-proc.c
+new file mode 100644
+index 0000000..a8b6896
+--- /dev/null
++++ b/drivers/staging/arlan/arlan-proc.c
+@@ -0,0 +1,1253 @@
++#include "arlan.h"
++
++#include <linux/sysctl.h>
++
++#ifdef CONFIG_PROC_FS
++
++/* void enableReceive(struct net_device* dev);
++*/
++
++
++
++#define ARLAN_STR_SIZE 	0x2ff0
++#define DEV_ARLAN_INFO 	1
++#define DEV_ARLAN 	1
++#define SARLG(type,var) {\
++	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n", #var, READSHMB(priva->card->var));	\
++	}
++
++#define SARLBN(type,var,nn) {\
++	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x",#var);\
++	for (i=0; i < nn; i++ ) pos += sprintf(arlan_drive_info+pos, "%02x",READSHMB(priva->card->var[i]));\
++	pos += sprintf(arlan_drive_info+pos, "\n");	\
++	}
++
++#define SARLBNpln(type,var,nn) {\
++	for (i=0; i < nn; i++ ) pos += sprintf(arlan_drive_info+pos, "%02x",READSHMB(priva->card->var[i]));\
++	}
++
++#define SARLSTR(var,nn) {\
++	char tmpStr[400];\
++	int  tmpLn = nn;\
++	if (nn > 399 ) tmpLn = 399; \
++	memcpy(tmpStr,(char *) priva->conf->var,tmpLn);\
++	tmpStr[tmpLn] = 0; \
++	pos += sprintf(arlan_drive_info+pos, "%s\t=\t%s \n",#var,priva->conf->var);\
++	}
++
++#define SARLUC(var)  	SARLG(u_char, var)
++#define SARLUCN(var,nn) SARLBN(u_char,var, nn)
++#define SARLUS(var)	SARLG(u_short, var)
++#define SARLUSN(var,nn)	SARLBN(u_short,var, nn)
++#define SARLUI(var)	SARLG(u_int, var)
++
++#define SARLUSA(var) {\
++	u_short tmpVar;\
++	memcpy(&tmpVar, (short *) priva->conf->var,2); \
++	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n",#var, tmpVar);\
++}
++
++#define SARLUIA(var) {\
++	u_int tmpVar;\
++	memcpy(&tmpVar, (int* )priva->conf->var,4); \
++	pos += sprintf(arlan_drive_info+pos, "%s\t=\t0x%x\n",#var, tmpVar);\
++}
++
++
++static const char *arlan_diagnostic_info_string(struct net_device *dev)
++{
++
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++	u_char diagnosticInfo;
++
++	READSHM(diagnosticInfo, arlan->diagnosticInfo, u_char);
++
++	switch (diagnosticInfo)
++	{
++		case 0xFF:
++			return "Diagnostic info is OK";
++		case 0xFE:
++			return "ERROR EPROM Checksum error ";
++		case 0xFD:
++			return "ERROR Local Ram Test Failed ";
++		case 0xFC:
++			return "ERROR SCC failure ";
++		case 0xFB:
++			return "ERROR BackBone failure ";
++		case 0xFA:
++			return "ERROR transceiver not found ";
++		case 0xF9:
++			return "ERROR no more address space ";
++		case 0xF8:
++			return "ERROR Checksum error  ";
++		case 0xF7:
++			return "ERROR Missing SS Code";
++		case 0xF6:
++			return "ERROR Invalid config format";
++		case 0xF5:
++			return "ERROR Reserved errorcode F5";
++		case 0xF4:
++			return "ERROR Invalid spreading code/channel number";
++		case 0xF3:
++			return "ERROR Load Code Error";
++		case 0xF2:
++			return "ERROR Reserver errorcode F2 ";
++		case 0xF1:
++			return "ERROR Invalid command receivec by LAN card ";
++		case 0xF0:
++			return "ERROR Invalid parameter found in command ";
++		case 0xEF:
++			return "ERROR On-chip timer failure ";
++		case 0xEE:
++			return "ERROR T410 timer failure ";
++		case 0xED:
++			return "ERROR Too Many TxEnable commands ";
++		case 0xEC:
++			return "ERROR EEPROM error on radio module ";
++		default:
++			return "ERROR unknown Diagnostic info reply code ";
++	  }
++}
++
++static const char *arlan_hardware_type_string(struct net_device *dev)
++{
++	u_char hardwareType;
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++
++	READSHM(hardwareType, arlan->hardwareType, u_char);
++	switch (hardwareType)
++	{
++		case 0x00:
++			return "type A450";
++		case 0x01:
++			return "type A650 ";
++		case 0x04:
++			return "type TMA coproc";
++		case 0x0D:
++			return "type A650E ";
++		case 0x18:
++			return "type TMA coproc Australian";
++		case 0x19:
++			return "type A650A ";
++		case 0x26:
++			return "type TMA coproc European";
++		case 0x2E:
++			return "type A655 ";
++		case 0x2F:
++			return "type A655A ";
++		case 0x30:
++			return "type A655E ";
++		case 0x0B:
++			return "type A670 ";
++		case 0x0C:
++			return "type A670E ";
++		case 0x2D:
++			return "type A670A ";
++		case 0x0F:
++			return "type A411T";
++		case 0x16:
++			return "type A411TA";
++		case 0x1B:
++			return "type A440T";
++		case 0x1C:
++			return "type A412T";
++		case 0x1E:
++			return "type A412TA";
++		case 0x22:
++			return "type A411TE";
++		case 0x24:
++			return "type A412TE";
++		case 0x27:
++			return "type A671T ";
++		case 0x29:
++			return "type A671TA ";
++		case 0x2B:
++			return "type A671TE ";
++		case 0x31:
++			return "type A415T ";
++		case 0x33:
++			return "type A415TA ";
++		case 0x35:
++			return "type A415TE ";
++		case 0x37:
++			return "type A672";
++		case 0x39:
++			return "type A672A ";
++		case 0x3B:
++			return "type A672T";
++		case 0x6B:
++			return "type IC2200";
++		default:
++			return "type A672T";
++	}
++}
++#ifdef ARLAN_DEBUGGING
++static void arlan_print_diagnostic_info(struct net_device *dev)
++{
++	int i;
++	u_char diagnosticInfo;
++	u_short diagnosticOffset;
++	u_char hardwareType;
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++
++	//  ARLAN_DEBUG_ENTRY("arlan_print_diagnostic_info");
++
++	if (READSHMB(arlan->configuredStatusFlag) == 0)
++		printk("Arlan: Card NOT configured\n");
++	else
++		printk("Arlan: Card is configured\n");
++
++	READSHM(diagnosticInfo, arlan->diagnosticInfo, u_char);
++	READSHM(diagnosticOffset, arlan->diagnosticOffset, u_short);
++
++	printk(KERN_INFO "%s\n", arlan_diagnostic_info_string(dev));
++
++	if (diagnosticInfo != 0xff)
++		printk("%s arlan: Diagnostic Offset %d \n", dev->name, diagnosticOffset);
++
++	printk("arlan: LAN CODE ID = ");
++	for (i = 0; i < 6; i++)
++		DEBUGSHM(1, "%03d:", arlan->lanCardNodeId[i], u_char);
++	printk("\n");
++
++	printk("arlan: Arlan BroadCast address  = ");
++	for (i = 0; i < 6; i++)
++		DEBUGSHM(1, "%03d:", arlan->broadcastAddress[i], u_char);
++	printk("\n");
++
++	READSHM(hardwareType, arlan->hardwareType, u_char);
++	printk(KERN_INFO "%s\n", arlan_hardware_type_string(dev));
++
++
++	DEBUGSHM(1, "arlan: channelNumber=%d\n", arlan->channelNumber, u_char);
++	DEBUGSHM(1, "arlan: channelSet=%d\n", arlan->channelSet, u_char);
++	DEBUGSHM(1, "arlan: spreadingCode=%d\n", arlan->spreadingCode, u_char);
++	DEBUGSHM(1, "arlan: radioNodeId=%d\n", arlan->radioNodeId, u_short);
++	DEBUGSHM(1, "arlan: SID	=%d\n", arlan->SID, u_short);
++	DEBUGSHM(1, "arlan: rxOffset=%d\n", arlan->rxOffset, u_short);
++
++	DEBUGSHM(1, "arlan: registration mode is %d\n", arlan->registrationMode, u_char);
++
++	printk("arlan: name= ");
++	IFDEBUG(1)
++	
++	for (i = 0; i < 16; i++)
++	{
++		char c;
++		READSHM(c, arlan->name[i], char);
++		if (c)
++			printk("%c", c);
++	}
++	printk("\n");
++
++//   ARLAN_DEBUG_EXIT("arlan_print_diagnostic_info");
++
++}
++
++
++/******************************		TEST 	MEMORY	**************/
++
++static int arlan_hw_test_memory(struct net_device *dev)
++{
++	u_char *ptr;
++	int i;
++	int memlen = sizeof(struct arlan_shmem) - 0xF;	/* avoid control register */
++	volatile char *arlan_mem = (char *) (dev->mem_start);
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++	char pattern;
++
++	ptr = NULL;
++
++	/* hold card in reset state */
++	setHardwareReset(dev);
++
++	/* test memory */
++	pattern = 0;
++	for (i = 0; i < memlen; i++)
++		WRITESHM(arlan_mem[i], ((u_char) pattern++), u_char);
++
++	pattern = 0;
++	for (i = 0; i < memlen; i++)
++	{
++		char res;
++		READSHM(res, arlan_mem[i], char);
++		if (res != pattern++)
++		{
++			printk(KERN_ERR "Arlan driver memory test 1 failed \n");
++			return -1;
++		}
++	}
++
++	pattern = 0;
++	for (i = 0; i < memlen; i++)
++		WRITESHM(arlan_mem[i], ~(pattern++), char);
++
++	pattern = 0;
++	for (i = 0; i < memlen; i++)
++	{
++		char res;
++		READSHM(res, arlan_mem[i], char);
++		if (res != ~(pattern++))
++		{
++			printk(KERN_ERR "Arlan driver memory test 2 failed \n");
++			return -1;
++		}
++	}
++
++	/* zero memory */
++	for (i = 0; i < memlen; i++)
++		WRITESHM(arlan_mem[i], 0x00, char);
++
++	IFDEBUG(1) printk(KERN_INFO "Arlan: memory tests ok\n");
++
++	/* set reset flag and then release reset */
++	WRITESHM(arlan->resetFlag, 0xff, u_char);
++
++	clearChannelAttention(dev);
++	clearHardwareReset(dev);
++
++	/* wait for reset flag to become zero, we'll wait for two seconds */
++	if (arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW))
++	{
++		printk(KERN_ERR "%s arlan: failed to come back from memory test\n", dev->name);
++		return -1;
++	}
++	return 0;
++}
++
++static int arlan_setup_card_by_book(struct net_device *dev)
++{
++	u_char irqLevel, configuredStatusFlag;
++	struct arlan_private *priv = netdev_priv(dev);
++	volatile struct arlan_shmem __iomem *arlan = priv->card;
++
++//	ARLAN_DEBUG_ENTRY("arlan_setup_card");
++
++	READSHM(configuredStatusFlag, arlan->configuredStatusFlag, u_char);
++
++	IFDEBUG(10)
++	if (configuredStatusFlag != 0)
++		IFDEBUG(10) printk("arlan: CARD IS CONFIGURED\n");
++	else
++		IFDEBUG(10) printk("arlan: card is NOT configured\n");
++
++	if (testMemory || (READSHMB(arlan->diagnosticInfo) != 0xff))
++		if (arlan_hw_test_memory(dev))
++			return -1;
++
++	DEBUGSHM(4, "arlan configuredStatus = %d \n", arlan->configuredStatusFlag, u_char);
++	DEBUGSHM(4, "arlan driver diagnostic: 0x%2x\n", arlan->diagnosticInfo, u_char);
++
++	/* issue nop command - no interrupt */
++	arlan_command(dev, ARLAN_COMMAND_NOOP);
++	if (arlan_command(dev, ARLAN_COMMAND_WAIT_NOW) != 0)
++		return -1;
++
++	IFDEBUG(50) printk("1st Noop successfully executed !!\n");
++
++	/* try to turn on the arlan interrupts */
++	clearClearInterrupt(dev);
++	setClearInterrupt(dev);
++	setInterruptEnable(dev);
++
++	/* issue nop command - with interrupt */
++
++	arlan_command(dev, ARLAN_COMMAND_NOOPINT);
++	if (arlan_command(dev, ARLAN_COMMAND_WAIT_NOW) != 0)
++		return -1;
++
++
++	IFDEBUG(50) printk("2nd Noop successfully executed !!\n");
++
++	READSHM(irqLevel, arlan->irqLevel, u_char)
++	
++	if (irqLevel != dev->irq)
++	{
++		IFDEBUG(1) printk(KERN_WARNING "arlan dip switches set irq to %d\n", irqLevel);
++		printk(KERN_WARNING "device driver irq set to %d - does not match\n", dev->irq);
++		dev->irq = irqLevel;
++	}
++	else
++		IFDEBUG(2) printk("irq level is OK\n");
++
++
++	IFDEBUG(3) arlan_print_diagnostic_info(dev);
++
++	arlan_command(dev, ARLAN_COMMAND_CONF);
++
++	READSHM(configuredStatusFlag, arlan->configuredStatusFlag, u_char);
++	if (configuredStatusFlag == 0)
++	{
++		printk(KERN_WARNING "arlan configure failed\n");
++		return -1;
++	}
++	arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW);
++	arlan_command(dev, ARLAN_COMMAND_RX);
++	arlan_command(dev, ARLAN_COMMAND_LONG_WAIT_NOW);
++	printk(KERN_NOTICE "%s: arlan driver version %s loaded\n",
++	       dev->name, arlan_version);
++
++//	ARLAN_DEBUG_EXIT("arlan_setup_card");
++
++	return 0;		/* no errors */
++}
++#endif
++
++#ifdef ARLAN_PROC_INTERFACE
++#ifdef ARLAN_PROC_SHM_DUMP
++
++static char arlan_drive_info[ARLAN_STR_SIZE] = "A655\n\0";
++
++static int arlan_sysctl_info(ctl_table * ctl, int write,
++		      void __user *buffer, size_t * lenp, loff_t *ppos)
++{
++	int i;
++	int retv, pos, devnum;
++	struct arlan_private *priva = NULL;
++	struct net_device *dev;
++	pos = 0;
++	if (write)
++	{
++		printk("wrirte: ");
++		for (i = 0; i < 100; i++)
++			printk("adi %x \n", arlan_drive_info[i]);
++	}
++	if (ctl->procname == NULL || arlan_drive_info == NULL)
++	{
++		printk(KERN_WARNING " procname is NULL in sysctl_table or arlan_drive_info is NULL \n at arlan module\n ");
++		return -1;
++	}
++	devnum = ctl->procname[5] - '0';
++	if (devnum < 0 || devnum > MAX_ARLANS - 1)
++	{
++		printk(KERN_WARNING "too strange devnum in procfs parse\n ");
++		return -1;
++	}
++	else if (arlan_device[devnum] == NULL)
++	{
++		if (ctl->procname)
++			pos += sprintf(arlan_drive_info + pos, "\t%s\n\n", ctl->procname);
++		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
++		goto final;
++	}
++	else
++		priva = netdev_priv(arlan_device[devnum]);
++
++	if (priva == NULL)
++	{
++		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
++		return -1;
++	}
++	dev = arlan_device[devnum];
++
++	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
++
++	pos = sprintf(arlan_drive_info, "Arlan  info \n");
++	/* Header Signature */
++	SARLSTR(textRegion, 48);
++	SARLUC(resetFlag);
++	pos += sprintf(arlan_drive_info + pos, "diagnosticInfo\t=\t%s \n", arlan_diagnostic_info_string(dev));
++	SARLUC(diagnosticInfo);
++	SARLUS(diagnosticOffset);
++	SARLUCN(_1, 12);
++	SARLUCN(lanCardNodeId, 6);
++	SARLUCN(broadcastAddress, 6);
++	pos += sprintf(arlan_drive_info + pos, "hardwareType =\t  %s \n", arlan_hardware_type_string(dev));
++	SARLUC(hardwareType);
++	SARLUC(majorHardwareVersion);
++	SARLUC(minorHardwareVersion);
++	SARLUC(radioModule);
++	SARLUC(defaultChannelSet);
++	SARLUCN(_2, 47);
++
++	/* Control/Status Block - 0x0080 */
++	SARLUC(interruptInProgress);
++	SARLUC(cntrlRegImage);
++
++	SARLUCN(_3, 14);
++	SARLUC(commandByte);
++	SARLUCN(commandParameter, 15);
++
++	/* Receive Status - 0x00a0 */
++	SARLUC(rxStatus);
++	SARLUC(rxFrmType);
++	SARLUS(rxOffset);
++	SARLUS(rxLength);
++	SARLUCN(rxSrc, 6);
++	SARLUC(rxBroadcastFlag);
++	SARLUC(rxQuality);
++	SARLUC(scrambled);
++	SARLUCN(_4, 1);
++
++	/* Transmit Status - 0x00b0 */
++	SARLUC(txStatus);
++	SARLUC(txAckQuality);
++	SARLUC(numRetries);
++	SARLUCN(_5, 14);
++	SARLUCN(registeredRouter, 6);
++	SARLUCN(backboneRouter, 6);
++	SARLUC(registrationStatus);
++	SARLUC(configuredStatusFlag);
++	SARLUCN(_6, 1);
++	SARLUCN(ultimateDestAddress, 6);
++	SARLUCN(immedDestAddress, 6);
++	SARLUCN(immedSrcAddress, 6);
++	SARLUS(rxSequenceNumber);
++	SARLUC(assignedLocaltalkAddress);
++	SARLUCN(_7, 27);
++
++	/* System Parameter Block */
++
++	/* - Driver Parameters (Novell Specific) */
++
++	SARLUS(txTimeout);
++	SARLUS(transportTime);
++	SARLUCN(_8, 4);
++
++	/* - Configuration Parameters */
++	SARLUC(irqLevel);
++	SARLUC(spreadingCode);
++	SARLUC(channelSet);
++	SARLUC(channelNumber);
++	SARLUS(radioNodeId);
++	SARLUCN(_9, 2);
++	SARLUC(scramblingDisable);
++	SARLUC(radioType);
++	SARLUS(routerId);
++	SARLUCN(_10, 9);
++	SARLUC(txAttenuation);
++	SARLUIA(systemId);
++	SARLUS(globalChecksum);
++	SARLUCN(_11, 4);
++	SARLUS(maxDatagramSize);
++	SARLUS(maxFrameSize);
++	SARLUC(maxRetries);
++	SARLUC(receiveMode);
++	SARLUC(priority);
++	SARLUC(rootOrRepeater);
++	SARLUCN(specifiedRouter, 6);
++	SARLUS(fastPollPeriod);
++	SARLUC(pollDecay);
++	SARLUSA(fastPollDelay);
++	SARLUC(arlThreshold);
++	SARLUC(arlDecay);
++	SARLUCN(_12, 1);
++	SARLUS(specRouterTimeout);
++	SARLUCN(_13, 5);
++
++	/* Scrambled Area */
++	SARLUIA(SID);
++	SARLUCN(encryptionKey, 12);
++	SARLUIA(_14);
++	SARLUSA(waitTime);
++	SARLUSA(lParameter);
++	SARLUCN(_15, 3);
++	SARLUS(headerSize);
++	SARLUS(sectionChecksum);
++
++	SARLUC(registrationMode);
++	SARLUC(registrationFill);
++	SARLUS(pollPeriod);
++	SARLUS(refreshPeriod);
++	SARLSTR(name, 16);
++	SARLUCN(NID, 6);
++	SARLUC(localTalkAddress);
++	SARLUC(codeFormat);
++	SARLUC(numChannels);
++	SARLUC(channel1);
++	SARLUC(channel2);
++	SARLUC(channel3);
++	SARLUC(channel4);
++	SARLUCN(SSCode, 59);
++
++/*      SARLUCN( _16, 0x140);
++ */
++	/* Statistics Block - 0x0300 */
++	SARLUC(hostcpuLock);
++	SARLUC(lancpuLock);
++	SARLUCN(resetTime, 18);
++	SARLUIA(numDatagramsTransmitted);
++	SARLUIA(numReTransmissions);
++	SARLUIA(numFramesDiscarded);
++	SARLUIA(numDatagramsReceived);
++	SARLUIA(numDuplicateReceivedFrames);
++	SARLUIA(numDatagramsDiscarded);
++	SARLUS(maxNumReTransmitDatagram);
++	SARLUS(maxNumReTransmitFrames);
++	SARLUS(maxNumConsecutiveDuplicateFrames);
++	/* misaligned here so we have to go to characters */
++	SARLUIA(numBytesTransmitted);
++	SARLUIA(numBytesReceived);
++	SARLUIA(numCRCErrors);
++	SARLUIA(numLengthErrors);
++	SARLUIA(numAbortErrors);
++	SARLUIA(numTXUnderruns);
++	SARLUIA(numRXOverruns);
++	SARLUIA(numHoldOffs);
++	SARLUIA(numFramesTransmitted);
++	SARLUIA(numFramesReceived);
++	SARLUIA(numReceiveFramesLost);
++	SARLUIA(numRXBufferOverflows);
++	SARLUIA(numFramesDiscardedAddrMismatch);
++	SARLUIA(numFramesDiscardedSIDMismatch);
++	SARLUIA(numPollsTransmistted);
++	SARLUIA(numPollAcknowledges);
++	SARLUIA(numStatusTimeouts);
++	SARLUIA(numNACKReceived);
++	SARLUS(auxCmd);
++	SARLUCN(dumpPtr, 4);
++	SARLUC(dumpVal);
++	SARLUC(wireTest);
++	
++	/* next 4 seems too long for procfs, over single page ?
++	SARLUCN( _17, 0x86);
++	SARLUCN( txBuffer, 0x800);
++	SARLUCN( rxBuffer,  0x800); 
++	SARLUCN( _18, 0x0bff);
++	 */
++
++	pos += sprintf(arlan_drive_info + pos, "rxRing\t=\t0x");
++	for (i = 0; i < 0x50; i++)
++		pos += sprintf(arlan_drive_info + pos, "%02x", ((char *) priva->conf)[priva->conf->rxOffset + i]);
++	pos += sprintf(arlan_drive_info + pos, "\n");
++
++	SARLUC(configStatus);
++	SARLUC(_22);
++	SARLUC(progIOCtrl);
++	SARLUC(shareMBase);
++	SARLUC(controlRegister);
++
++	pos += sprintf(arlan_drive_info + pos, " total %d chars\n", pos);
++	if (ctl)
++		if (ctl->procname)
++			pos += sprintf(arlan_drive_info + pos, " driver name : %s\n", ctl->procname);
++final:
++	*lenp = pos;
++
++	if (!write)
++		retv = proc_dostring(ctl, write, buffer, lenp, ppos);
++	else
++	{
++		*lenp = 0;
++		return -1;
++	}
++	return retv;
++}
++
++
++static int arlan_sysctl_info161719(ctl_table * ctl, int write,
++			    void __user *buffer, size_t * lenp, loff_t *ppos)
++{
++	int i;
++	int retv, pos, devnum;
++	struct arlan_private *priva = NULL;
++
++	pos = 0;
++	devnum = ctl->procname[5] - '0';
++	if (arlan_device[devnum] == NULL)
++	{
++		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
++		goto final;
++	}
++	else
++		priva = netdev_priv(arlan_device[devnum]);
++	if (priva == NULL)
++	{
++		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
++		return -1;
++	}
++	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
++	SARLUCN(_16, 0xC0);
++	SARLUCN(_17, 0x6A);
++	SARLUCN(_18, 14);
++	SARLUCN(_19, 0x86);
++	SARLUCN(_21, 0x3fd);
++
++final:
++	*lenp = pos;
++	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
++	return retv;
++}
++
++static int arlan_sysctl_infotxRing(ctl_table * ctl, int write,
++			    void __user *buffer, size_t * lenp, loff_t *ppos)
++{
++	int i;
++	int retv, pos, devnum;
++	struct arlan_private *priva = NULL;
++
++	pos = 0;
++	devnum = ctl->procname[5] - '0';
++	if (arlan_device[devnum] == NULL)
++	{
++		  pos += sprintf(arlan_drive_info + pos, "No device found here \n");
++		  goto final;
++	}
++	else
++		priva = netdev_priv(arlan_device[devnum]);
++	if (priva == NULL)
++	{
++		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
++		return -1;
++	}
++	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
++	SARLBNpln(u_char, txBuffer, 0x800);
++final:
++	*lenp = pos;
++	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
++	return retv;
++}
++
++static int arlan_sysctl_inforxRing(ctl_table * ctl, int write,
++			    void __user *buffer, size_t * lenp, loff_t *ppos)
++{
++	int i;
++	int retv, pos, devnum;
++	struct arlan_private *priva = NULL;
++
++	pos = 0;
++	devnum = ctl->procname[5] - '0';
++	if (arlan_device[devnum] == NULL)
++	{
++		  pos += sprintf(arlan_drive_info + pos, "No device found here \n");
++		  goto final;
++	} else
++		priva = netdev_priv(arlan_device[devnum]);
++	if (priva == NULL)
++	{
++		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
++		return -1;
++	}
++	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
++	SARLBNpln(u_char, rxBuffer, 0x800);
++final:
++	*lenp = pos;
++	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
++	return retv;
++}
++
++static int arlan_sysctl_info18(ctl_table * ctl, int write,
++			void __user *buffer, size_t * lenp, loff_t *ppos)
++{
++	int i;
++	int retv, pos, devnum;
++	struct arlan_private *priva = NULL;
++
++	pos = 0;
++	devnum = ctl->procname[5] - '0';
++	if (arlan_device[devnum] == NULL)
++	{
++		pos += sprintf(arlan_drive_info + pos, "No device found here \n");
++		goto final;
++	}
++	else
++		priva = netdev_priv(arlan_device[devnum]);
++	if (priva == NULL)
++	{
++		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
++		return -1;
++	}
++	memcpy_fromio(priva->conf, priva->card, sizeof(struct arlan_shmem));
++	SARLBNpln(u_char, _18, 0x800);
++
++final:
++	*lenp = pos;
++	retv = proc_dostring(ctl, write, buffer, lenp, ppos);
++	return retv;
++}
++
++
++#endif				/* #ifdef ARLAN_PROC_SHM_DUMP */
++
++
++static char conf_reset_result[200];
++
++static int arlan_configure(ctl_table * ctl, int write,
++		    void __user *buffer, size_t * lenp, loff_t *ppos)
++{
++	int pos = 0;
++	int devnum = ctl->procname[6] - '0';
++	struct arlan_private *priv;
++
++	if (devnum < 0 || devnum > MAX_ARLANS - 1)
++	{
++		  printk(KERN_WARNING "too strange devnum in procfs parse\n ");
++		  return -1;
++	}
++	else if (arlan_device[devnum] != NULL)
++	{
++		  priv = netdev_priv(arlan_device[devnum]);
++
++		  arlan_command(arlan_device[devnum], ARLAN_COMMAND_CLEAN_AND_CONF);
++	}
++	else
++		return -1;
++
++	*lenp = pos;
++	return proc_dostring(ctl, write, buffer, lenp, ppos);
++}
++
++static int arlan_sysctl_reset(ctl_table * ctl, int write,
++		       void __user *buffer, size_t * lenp, loff_t *ppos)
++{
++	int pos = 0;
++	int devnum = ctl->procname[5] - '0';
++	struct arlan_private *priv;
++
++	if (devnum < 0 || devnum > MAX_ARLANS - 1)
++	{
++		  printk(KERN_WARNING "too strange devnum in procfs parse\n ");
++		  return -1;
++	}
++	else if (arlan_device[devnum] != NULL)
++	{
++		priv = netdev_priv(arlan_device[devnum]);
++		arlan_command(arlan_device[devnum], ARLAN_COMMAND_CLEAN_AND_RESET);
++
++	} else
++		return -1;
++	*lenp = pos + 3;
++	return proc_dostring(ctl, write, buffer, lenp, ppos);
++}
++
++
++/* Place files in /proc/sys/dev/arlan */
++#define CTBLN(num,card,nam) \
++        { .ctl_name = num,\
++          .procname = #nam,\
++          .data = &(arlan_conf[card].nam),\
++          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec}
++#ifdef ARLAN_DEBUGGING
++
++#define ARLAN_PROC_DEBUG_ENTRIES \
++        { .ctl_name = 48, .procname = "entry_exit_debug",\
++          .data = &arlan_entry_and_exit_debug,\
++          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec},\
++	{ .ctl_name = 49, .procname = "debug", .data = &arlan_debug,\
++          .maxlen = sizeof(int), .mode = 0600, .proc_handler = &proc_dointvec},
++#else 
++#define ARLAN_PROC_DEBUG_ENTRIES
++#endif
++
++#define ARLAN_SYSCTL_TABLE_TOTAL(cardNo)\
++	CTBLN(1,cardNo,spreadingCode),\
++	CTBLN(2,cardNo, channelNumber),\
++	CTBLN(3,cardNo, scramblingDisable),\
++	CTBLN(4,cardNo, txAttenuation),\
++	CTBLN(5,cardNo, systemId), \
++	CTBLN(6,cardNo, maxDatagramSize),\
++	CTBLN(7,cardNo, maxFrameSize),\
++	CTBLN(8,cardNo, maxRetries),\
++	CTBLN(9,cardNo, receiveMode),\
++	CTBLN(10,cardNo, priority),\
++	CTBLN(11,cardNo, rootOrRepeater),\
++	CTBLN(12,cardNo, SID),\
++	CTBLN(13,cardNo, registrationMode),\
++	CTBLN(14,cardNo, registrationFill),\
++	CTBLN(15,cardNo, localTalkAddress),\
++	CTBLN(16,cardNo, codeFormat),\
++	CTBLN(17,cardNo, numChannels),\
++	CTBLN(18,cardNo, channel1),\
++	CTBLN(19,cardNo, channel2),\
++	CTBLN(20,cardNo, channel3),\
++	CTBLN(21,cardNo, channel4),\
++	CTBLN(22,cardNo, txClear),\
++	CTBLN(23,cardNo, txRetries),\
++	CTBLN(24,cardNo, txRouting),\
++	CTBLN(25,cardNo, txScrambled),\
++	CTBLN(26,cardNo, rxParameter),\
++	CTBLN(27,cardNo, txTimeoutMs),\
++	CTBLN(28,cardNo, waitCardTimeout),\
++	CTBLN(29,cardNo, channelSet), \
++	{.ctl_name = 30, .procname = "name",\
++	 .data = arlan_conf[cardNo].siteName,\
++	 .maxlen = 16, .mode = 0600, .proc_handler = &proc_dostring},\
++	CTBLN(31,cardNo,waitTime),\
++	CTBLN(32,cardNo,lParameter),\
++	CTBLN(33,cardNo,_15),\
++	CTBLN(34,cardNo,headerSize),\
++	CTBLN(36,cardNo,tx_delay_ms),\
++	CTBLN(37,cardNo,retries),\
++	CTBLN(38,cardNo,ReTransmitPacketMaxSize),\
++	CTBLN(39,cardNo,waitReTransmitPacketMaxSize),\
++	CTBLN(40,cardNo,fastReTransCount),\
++	CTBLN(41,cardNo,driverRetransmissions),\
++	CTBLN(42,cardNo,txAckTimeoutMs),\
++	CTBLN(43,cardNo,registrationInterrupts),\
++	CTBLN(44,cardNo,hardwareType),\
++	CTBLN(45,cardNo,radioType),\
++	CTBLN(46,cardNo,writeEEPROM),\
++	CTBLN(47,cardNo,writeRadioType),\
++	ARLAN_PROC_DEBUG_ENTRIES\
++	CTBLN(50,cardNo,in_speed),\
++	CTBLN(51,cardNo,out_speed),\
++	CTBLN(52,cardNo,in_speed10),\
++	CTBLN(53,cardNo,out_speed10),\
++	CTBLN(54,cardNo,in_speed_max),\
++	CTBLN(55,cardNo,out_speed_max),\
++	CTBLN(56,cardNo,measure_rate),\
++	CTBLN(57,cardNo,pre_Command_Wait),\
++	CTBLN(58,cardNo,rx_tweak1),\
++	CTBLN(59,cardNo,rx_tweak2),\
++	CTBLN(60,cardNo,tx_queue_len),\
++
++
++
++static ctl_table arlan_conf_table0[] =
++{
++	ARLAN_SYSCTL_TABLE_TOTAL(0)
++
++#ifdef ARLAN_PROC_SHM_DUMP
++	{
++		.ctl_name	= 150,
++		.procname	= "arlan0-txRing",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_infotxRing,
++	},
++	{
++		.ctl_name	= 151,
++		.procname	= "arlan0-rxRing",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_inforxRing,
++	},
++	{
++		.ctl_name	= 152,
++		.procname	= "arlan0-18",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info18,
++	},
++	{
++		.ctl_name	= 153,
++		.procname	= "arlan0-ring",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info161719,
++	},
++	{
++		.ctl_name	= 154,
++		.procname	= "arlan0-shm-cpy",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info,
++	},
++#endif
++	{
++		.ctl_name	= 155,
++		.procname	= "config0",
++		.data		= &conf_reset_result,
++		.maxlen		= 100,
++		.mode		= 0400,
++		.proc_handler	= &arlan_configure
++	},
++	{
++		.ctl_name	= 156,
++		.procname	= "reset0",
++		.data		= &conf_reset_result,
++		.maxlen		= 100,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_reset,
++	},
++	{ .ctl_name = 0 }
++};
++
++static ctl_table arlan_conf_table1[] =
++{
++
++	ARLAN_SYSCTL_TABLE_TOTAL(1)
++
++#ifdef ARLAN_PROC_SHM_DUMP
++	{
++		.ctl_name	= 150,
++		.procname	= "arlan1-txRing",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_infotxRing,
++	},
++	{
++		.ctl_name	= 151,
++		.procname	= "arlan1-rxRing",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_inforxRing,
++	},
++	{
++		.ctl_name	= 152,
++		.procname	= "arlan1-18",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info18,
++	},
++	{
++		.ctl_name	= 153,
++		.procname	= "arlan1-ring",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info161719,
++	},
++	{
++		.ctl_name	= 154,
++		.procname	= "arlan1-shm-cpy",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info,
++	},
++#endif
++	{
++		.ctl_name	= 155,
++		.procname	= "config1",
++		.data		= &conf_reset_result,
++		.maxlen		= 100,
++		.mode		= 0400,
++		.proc_handler	= &arlan_configure,
++	},
++	{
++		.ctl_name	= 156,
++		.procname	= "reset1",
++		.data		= &conf_reset_result,
++		.maxlen		= 100,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_reset,
++	},
++	{ .ctl_name = 0 }
++};
++
++static ctl_table arlan_conf_table2[] =
++{
++
++	ARLAN_SYSCTL_TABLE_TOTAL(2)
++
++#ifdef ARLAN_PROC_SHM_DUMP
++	{
++		.ctl_name	= 150,
++		.procname	= "arlan2-txRing",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_infotxRing,
++	},
++	{
++		.ctl_name	= 151,
++		.procname	= "arlan2-rxRing",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_inforxRing,
++	},
++	{
++		.ctl_name	= 152,
++		.procname	= "arlan2-18",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info18,
++	},
++	{
++		.ctl_name	= 153,
++		.procname	= "arlan2-ring",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info161719,
++	},
++	{
++		.ctl_name	= 154,
++		.procname	= "arlan2-shm-cpy",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info,
++	},
++#endif
++	{
++		.ctl_name	= 155,
++		.procname	= "config2",
++		.data		= &conf_reset_result,
++		.maxlen		= 100,
++		.mode		= 0400,
++		.proc_handler	= &arlan_configure,
++	},
++	{
++		.ctl_name	= 156,
++		.procname	= "reset2",
++		.data		= &conf_reset_result,
++		.maxlen		= 100,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_reset,
++	},
++	{ .ctl_name = 0 }
++};
++
++static ctl_table arlan_conf_table3[] =
++{
++
++	ARLAN_SYSCTL_TABLE_TOTAL(3)
++
++#ifdef ARLAN_PROC_SHM_DUMP
++	{
++		.ctl_name	= 150,
++		.procname	= "arlan3-txRing",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_infotxRing,
++	},
++	{
++		.ctl_name	= 151,
++		.procname	= "arlan3-rxRing",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_inforxRing,
++	},
++	{
++		.ctl_name	= 152,
++		.procname	= "arlan3-18",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info18,
++	},
++	{
++		.ctl_name	= 153,
++		.procname	= "arlan3-ring",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info161719,
++	},
++	{
++		.ctl_name	= 154,
++		.procname	= "arlan3-shm-cpy",
++		.data		= &arlan_drive_info,
++		.maxlen		= ARLAN_STR_SIZE,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_info,
++	},
++#endif
++	{
++		.ctl_name	= 155,
++		.procname	= "config3",
++		.data		= &conf_reset_result,
++		.maxlen		= 100,
++		.mode		= 0400,
++		.proc_handler	= &arlan_configure,
++	},
++	{
++		.ctl_name	= 156,
++		.procname	= "reset3",
++		.data		= &conf_reset_result,
++		.maxlen		= 100,
++		.mode		= 0400,
++		.proc_handler	= &arlan_sysctl_reset,
++	},
++	{ .ctl_name = 0 }
++};
++
++
++
++static ctl_table arlan_table[] =
++{
++	{
++		.ctl_name	= 0,
++		.procname	= "arlan0",
++		.maxlen		= 0,
++		.mode		= 0600,
++		.child		= arlan_conf_table0,
++	},
++	{
++		.ctl_name	= 0,
++		.procname	= "arlan1",
++		.maxlen		= 0,
++		.mode		= 0600,
++		.child		= arlan_conf_table1,
++	},
++	{
++		.ctl_name	= 0,
++		.procname	= "arlan2",
++		.maxlen		= 0,
++		.mode		= 0600,
++		.child		= arlan_conf_table2,
++	},
++	{
++		.ctl_name	= 0,
++		.procname	= "arlan3",
++		.maxlen		= 0,
++		.mode		= 0600,
++		.child		= arlan_conf_table3,
++	},
++	{ .ctl_name = 0 }
++};
++
++#else
++
++static ctl_table arlan_table[MAX_ARLANS + 1] =
++{
++	{ .ctl_name = 0 }
++};
++#endif
++
++
++// static int mmtu = 1234;
++
++static ctl_table arlan_root_table[] =
++{
++	{
++		.ctl_name	= CTL_ARLAN,
++		.procname	= "arlan",
++		.maxlen		= 0,
++		.mode		= 0555,
++		.child		= arlan_table,
++	},
++	{ .ctl_name = 0 }
++};
++
++/* Make sure that /proc/sys/dev is there */
++//static ctl_table arlan_device_root_table[] =
++//{
++//	{CTL_DEV, "dev", NULL, 0, 0555, arlan_root_table},
++//	{0}
++//};
++
++
++static struct ctl_table_header *arlan_device_sysctl_header;
++
++int __init init_arlan_proc(void)
++{
++
++	int i = 0;
++	if (arlan_device_sysctl_header)
++		return 0;
++	for (i = 0; i < MAX_ARLANS && arlan_device[i]; i++)
++		arlan_table[i].ctl_name = i + 1;
++	arlan_device_sysctl_header = register_sysctl_table(arlan_root_table);
++	if (!arlan_device_sysctl_header)
++		return -1;
++
++	return 0;
++
++}
++
++void __exit cleanup_arlan_proc(void)
++{
++	unregister_sysctl_table(arlan_device_sysctl_header);
++	arlan_device_sysctl_header = NULL;
++
++}
++#endif
+diff --git a/drivers/staging/arlan/arlan.h b/drivers/staging/arlan/arlan.h
+new file mode 100644
+index 0000000..fb3ad51
+--- /dev/null
++++ b/drivers/staging/arlan/arlan.h
+@@ -0,0 +1,539 @@
++/*
++ *  Copyright (C) 1997 Cullen Jennings
++ *  Copyright (C) 1998 Elmer.Joandi@ut.ee, +37-255-13500	
++ *  GNU General Public License applies
++ */
++
 +#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/skbuff.h>
++#include <linux/if_ether.h>	/* For the statistics structure. */
++#include <linux/if_arp.h>	/* For ARPHRD_ETHER */
++#include <linux/ptrace.h>
++#include <linux/ioport.h>
++#include <linux/in.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/timer.h>
++
 +#include <linux/init.h>
 +#include <linux/bitops.h>
 +#include <asm/system.h>
-+#include <asm/uaccess.h>
-+
-+# include <linux/ctype.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/interrupt.h>
-+#include <linux/in.h>
-+#include <linux/tty.h>
++#include <asm/io.h>
 +#include <linux/errno.h>
++#include <linux/delay.h>
 +#include <linux/netdevice.h>
-+#include <linux/inetdevice.h>
 +#include <linux/etherdevice.h>
-+#include <linux/skbuff.h>
-+#include <linux/if_arp.h>
-+#include <linux/if_strip.h>
-+#include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
-+#include <linux/serial.h>
-+#include <linux/serialP.h>
-+#include <linux/rcupdate.h>
-+#include <net/arp.h>
-+#include <net/net_namespace.h>
 +
-+#include <linux/ip.h>
-+#include <linux/tcp.h>
-+#include <linux/time.h>
-+#include <linux/jiffies.h>
 +
-+/************************************************************************/
-+/* Useful structures and definitions					*/
++//#define ARLAN_DEBUGGING 1
 +
-+/*
-+ * A MetricomKey identifies the protocol being carried inside a Metricom
-+ * Starmode packet.
-+ */
++#define ARLAN_PROC_INTERFACE
++#define MAX_ARLANS 4 /* not more than 4 ! */
++#define ARLAN_PROC_SHM_DUMP /* shows all card registers, makes driver way larger */
 +
-+typedef union {
-+	__u8 c[4];
-+	__u32 l;
-+} MetricomKey;
++#define ARLAN_MAX_MULTICAST_ADDRS 16
++#define ARLAN_RCV_CLEAN 	0
++#define ARLAN_RCV_PROMISC 1
++#define ARLAN_RCV_CONTROL 2
 +
-+/*
-+ * An IP address can be viewed as four bytes in memory (which is what it is) or as
-+ * a single 32-bit long (which is convenient for assignment, equality testing etc.)
-+ */
-+
-+typedef union {
-+	__u8 b[4];
-+	__u32 l;
-+} IPaddr;
-+
-+/*
-+ * A MetricomAddressString is used to hold a printable representation of
-+ * a Metricom address.
-+ */
-+
-+typedef struct {
-+	__u8 c[24];
-+} MetricomAddressString;
-+
-+/* Encapsulation can expand packet of size x to 65/64x + 1
-+ * Sent packet looks like "<CR>*<address>*<key><encaps payload><CR>"
-+ *                           1 1   1-18  1  4         ?         1
-+ * eg.                     <CR>*0000-1234*SIP0<encaps payload><CR>
-+ * We allow 31 bytes for the stars, the key, the address and the <CR>s
-+ */
-+#define STRIP_ENCAP_SIZE(X) (32 + (X)*65L/64L)
-+
-+/*
-+ * A STRIP_Header is never really sent over the radio, but making a dummy
-+ * header for internal use within the kernel that looks like an Ethernet
-+ * header makes certain other software happier. For example, tcpdump
-+ * already understands Ethernet headers.
-+ */
-+
-+typedef struct {
-+	MetricomAddress dst_addr;	/* Destination address, e.g. "0000-1234"   */
-+	MetricomAddress src_addr;	/* Source address, e.g. "0000-5678"        */
-+	unsigned short protocol;	/* The protocol type, using Ethernet codes */
-+} STRIP_Header;
-+
-+typedef struct {
-+	char c[60];
-+} MetricomNode;
-+
-+#define NODE_TABLE_SIZE 32
-+typedef struct {
-+	struct timeval timestamp;
-+	int num_nodes;
-+	MetricomNode node[NODE_TABLE_SIZE];
-+} MetricomNodeTable;
-+
-+enum { FALSE = 0, TRUE = 1 };
-+
-+/*
-+ * Holds the radio's firmware version.
-+ */
-+typedef struct {
-+	char c[50];
-+} FirmwareVersion;
-+
-+/*
-+ * Holds the radio's serial number.
-+ */
-+typedef struct {
-+	char c[18];
-+} SerialNumber;
-+
-+/*
-+ * Holds the radio's battery voltage.
-+ */
-+typedef struct {
-+	char c[11];
-+} BatteryVoltage;
-+
-+typedef struct {
-+	char c[8];
-+} char8;
-+
-+enum {
-+	NoStructure = 0,	/* Really old firmware */
-+	StructuredMessages = 1,	/* Parsable AT response msgs */
-+	ChecksummedMessages = 2	/* Parsable AT response msgs with checksums */
-+};
-+
-+struct strip {
-+	int magic;
-+	/*
-+	 * These are pointers to the malloc()ed frame buffers.
-+	 */
-+
-+	unsigned char *rx_buff;	/* buffer for received IP packet */
-+	unsigned char *sx_buff;	/* buffer for received serial data */
-+	int sx_count;		/* received serial data counter */
-+	int sx_size;		/* Serial buffer size           */
-+	unsigned char *tx_buff;	/* transmitter buffer           */
-+	unsigned char *tx_head;	/* pointer to next byte to XMIT */
-+	int tx_left;		/* bytes left in XMIT queue     */
-+	int tx_size;		/* Serial buffer size           */
-+
-+	/*
-+	 * STRIP interface statistics.
-+	 */
-+
-+	unsigned long rx_packets;	/* inbound frames counter       */
-+	unsigned long tx_packets;	/* outbound frames counter      */
-+	unsigned long rx_errors;	/* Parity, etc. errors          */
-+	unsigned long tx_errors;	/* Planned stuff                */
-+	unsigned long rx_dropped;	/* No memory for skb            */
-+	unsigned long tx_dropped;	/* When MTU change              */
-+	unsigned long rx_over_errors;	/* Frame bigger than STRIP buf. */
-+
-+	unsigned long pps_timer;	/* Timer to determine pps       */
-+	unsigned long rx_pps_count;	/* Counter to determine pps     */
-+	unsigned long tx_pps_count;	/* Counter to determine pps     */
-+	unsigned long sx_pps_count;	/* Counter to determine pps     */
-+	unsigned long rx_average_pps;	/* rx packets per second * 8    */
-+	unsigned long tx_average_pps;	/* tx packets per second * 8    */
-+	unsigned long sx_average_pps;	/* sent packets per second * 8  */
-+
-+#ifdef EXT_COUNTERS
-+	unsigned long rx_bytes;		/* total received bytes */
-+	unsigned long tx_bytes;		/* total received bytes */
-+	unsigned long rx_rbytes;	/* bytes thru radio i/f */
-+	unsigned long tx_rbytes;	/* bytes thru radio i/f */
-+	unsigned long rx_sbytes;	/* tot bytes thru serial i/f */
-+	unsigned long tx_sbytes;	/* tot bytes thru serial i/f */
-+	unsigned long rx_ebytes;	/* tot stat/err bytes */
-+	unsigned long tx_ebytes;	/* tot stat/err bytes */
-+#endif
-+
-+	/*
-+	 * Internal variables.
-+	 */
-+
-+	struct list_head  list;		/* Linked list of devices */
-+
-+	int discard;			/* Set if serial error          */
-+	int working;			/* Is radio working correctly?  */
-+	int firmware_level;		/* Message structuring level    */
-+	int next_command;		/* Next periodic command        */
-+	unsigned int user_baud;		/* The user-selected baud rate  */
-+	int mtu;			/* Our mtu (to spot changes!)   */
-+	long watchdog_doprobe;		/* Next time to test the radio  */
-+	long watchdog_doreset;		/* Time to do next reset        */
-+	long gratuitous_arp;		/* Time to send next ARP refresh */
-+	long arp_interval;		/* Next ARP interval            */
-+	struct timer_list idle_timer;	/* For periodic wakeup calls    */
-+	MetricomAddress true_dev_addr;	/* True address of radio        */
-+	int manual_dev_addr;		/* Hack: See note below         */
-+
-+	FirmwareVersion firmware_version;	/* The radio's firmware version */
-+	SerialNumber serial_number;	/* The radio's serial number    */
-+	BatteryVoltage battery_voltage;	/* The radio's battery voltage  */
-+
-+	/*
-+	 * Other useful structures.
-+	 */
-+
-+	struct tty_struct *tty;		/* ptr to TTY structure         */
-+	struct net_device *dev;		/* Our device structure         */
-+
-+	/*
-+	 * Neighbour radio records
-+	 */
-+
-+	MetricomNodeTable portables;
-+	MetricomNodeTable poletops;
-+};
-+
-+/*
-+ * Note: manual_dev_addr hack
-+ * 
-+ * It is not possible to change the hardware address of a Metricom radio,
-+ * or to send packets with a user-specified hardware source address, thus
-+ * trying to manually set a hardware source address is a questionable
-+ * thing to do.  However, if the user *does* manually set the hardware
-+ * source address of a STRIP interface, then the kernel will believe it,
-+ * and use it in certain places. For example, the hardware address listed
-+ * by ifconfig will be the manual address, not the true one.
-+ * (Both addresses are listed in /proc/net/strip.)
-+ * Also, ARP packets will be sent out giving the user-specified address as
-+ * the source address, not the real address. This is dangerous, because
-+ * it means you won't receive any replies -- the ARP replies will go to
-+ * the specified address, which will be some other radio. The case where
-+ * this is useful is when that other radio is also connected to the same
-+ * machine. This allows you to connect a pair of radios to one machine,
-+ * and to use one exclusively for inbound traffic, and the other
-+ * exclusively for outbound traffic. Pretty neat, huh?
-+ * 
-+ * Here's the full procedure to set this up:
-+ * 
-+ * 1. "slattach" two interfaces, e.g. st0 for outgoing packets,
-+ *    and st1 for incoming packets
-+ * 
-+ * 2. "ifconfig" st0 (outbound radio) to have the hardware address
-+ *    which is the real hardware address of st1 (inbound radio).
-+ *    Now when it sends out packets, it will masquerade as st1, and
-+ *    replies will be sent to that radio, which is exactly what we want.
-+ * 
-+ * 3. Set the route table entry ("route add default ..." or
-+ *    "route add -net ...", as appropriate) to send packets via the st0
-+ *    interface (outbound radio). Do not add any route which sends packets
-+ *    out via the st1 interface -- that radio is for inbound traffic only.
-+ * 
-+ * 4. "ifconfig" st1 (inbound radio) to have hardware address zero.
-+ *    This tells the STRIP driver to "shut down" that interface and not
-+ *    send any packets through it. In particular, it stops sending the
-+ *    periodic gratuitous ARP packets that a STRIP interface normally sends.
-+ *    Also, when packets arrive on that interface, it will search the
-+ *    interface list to see if there is another interface who's manual
-+ *    hardware address matches its own real address (i.e. st0 in this
-+ *    example) and if so it will transfer ownership of the skbuff to
-+ *    that interface, so that it looks to the kernel as if the packet
-+ *    arrived on that interface. This is necessary because when the
-+ *    kernel sends an ARP packet on st0, it expects to get a reply on
-+ *    st0, and if it sees the reply come from st1 then it will ignore
-+ *    it (to be accurate, it puts the entry in the ARP table, but
-+ *    labelled in such a way that st0 can't use it).
-+ * 
-+ * Thanks to Petros Maniatis for coming up with the idea of splitting
-+ * inbound and outbound traffic between two interfaces, which turned
-+ * out to be really easy to implement, even if it is a bit of a hack.
-+ * 
-+ * Having set a manual address on an interface, you can restore it
-+ * to automatic operation (where the address is automatically kept
-+ * consistent with the real address of the radio) by setting a manual
-+ * address of all ones, e.g. "ifconfig st0 hw strip FFFFFFFFFFFF"
-+ * This 'turns off' manual override mode for the device address.
-+ * 
-+ * Note: The IEEE 802 headers reported in tcpdump will show the *real*
-+ * radio addresses the packets were sent and received from, so that you
-+ * can see what is really going on with packets, and which interfaces
-+ * they are really going through.
-+ */
-+
-+
-+/************************************************************************/
-+/* Constants								*/
-+
-+/*
-+ * CommandString1 works on all radios
-+ * Other CommandStrings are only used with firmware that provides structured responses.
-+ * 
-+ * ats319=1 Enables Info message for node additions and deletions
-+ * ats319=2 Enables Info message for a new best node
-+ * ats319=4 Enables checksums
-+ * ats319=8 Enables ACK messages
-+ */
-+
-+static const int MaxCommandStringLength = 32;
-+static const int CompatibilityCommand = 1;
-+
-+static const char CommandString0[] = "*&COMMAND*ATS319=7";	/* Turn on checksums & info messages */
-+static const char CommandString1[] = "*&COMMAND*ATS305?";	/* Query radio name */
-+static const char CommandString2[] = "*&COMMAND*ATS325?";	/* Query battery voltage */
-+static const char CommandString3[] = "*&COMMAND*ATS300?";	/* Query version information */
-+static const char CommandString4[] = "*&COMMAND*ATS311?";	/* Query poletop list */
-+static const char CommandString5[] = "*&COMMAND*AT~LA";		/* Query portables list */
-+typedef struct {
-+	const char *string;
-+	long length;
-+} StringDescriptor;
-+
-+static const StringDescriptor CommandString[] = {
-+	{CommandString0, sizeof(CommandString0) - 1},
-+	{CommandString1, sizeof(CommandString1) - 1},
-+	{CommandString2, sizeof(CommandString2) - 1},
-+	{CommandString3, sizeof(CommandString3) - 1},
-+	{CommandString4, sizeof(CommandString4) - 1},
-+	{CommandString5, sizeof(CommandString5) - 1}
-+};
-+
-+#define GOT_ALL_RADIO_INFO(S)      \
-+    ((S)->firmware_version.c[0] && \
-+     (S)->battery_voltage.c[0]  && \
-+     memcmp(&(S)->true_dev_addr, zero_address.c, sizeof(zero_address)))
-+
-+static const char hextable[16] = "0123456789ABCDEF";
-+
-+static const MetricomAddress zero_address;
-+static const MetricomAddress broadcast_address =
-+    { {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF} };
-+
-+static const MetricomKey SIP0Key = { "SIP0" };
-+static const MetricomKey ARP0Key = { "ARP0" };
-+static const MetricomKey ATR_Key = { "ATR " };
-+static const MetricomKey ACK_Key = { "ACK_" };
-+static const MetricomKey INF_Key = { "INF_" };
-+static const MetricomKey ERR_Key = { "ERR_" };
-+
-+static const long MaxARPInterval = 60 * HZ;	/* One minute */
-+
-+/*
-+ * Maximum Starmode packet length is 1183 bytes. Allowing 4 bytes for
-+ * protocol key, 4 bytes for checksum, one byte for CR, and 65/64 expansion
-+ * for STRIP encoding, that translates to a maximum payload MTU of 1155.
-+ * Note: A standard NFS 1K data packet is a total of 0x480 (1152) bytes
-+ * long, including IP header, UDP header, and NFS header. Setting the STRIP
-+ * MTU to 1152 allows us to send default sized NFS packets without fragmentation.
-+ */
-+static const unsigned short MAX_SEND_MTU = 1152;
-+static const unsigned short MAX_RECV_MTU = 1500;	/* Hoping for Ethernet sized packets in the future! */
-+static const unsigned short DEFAULT_STRIP_MTU = 1152;
-+static const int STRIP_MAGIC = 0x5303;
-+static const long LongTime = 0x7FFFFFFF;
-+
-+/************************************************************************/
-+/* Global variables							*/
-+
-+static LIST_HEAD(strip_list);
-+static DEFINE_SPINLOCK(strip_lock);
-+
-+/************************************************************************/
-+/* Macros								*/
-+
-+/* Returns TRUE if text T begins with prefix P */
-+#define has_prefix(T,L,P) (((L) >= sizeof(P)-1) && !strncmp((T), (P), sizeof(P)-1))
-+
-+/* Returns TRUE if text T of length L is equal to string S */
-+#define text_equal(T,L,S) (((L) == sizeof(S)-1) && !strncmp((T), (S), sizeof(S)-1))
-+
-+#define READHEX(X) ((X)>='0' && (X)<='9' ? (X)-'0' :      \
-+                    (X)>='a' && (X)<='f' ? (X)-'a'+10 :   \
-+                    (X)>='A' && (X)<='F' ? (X)-'A'+10 : 0 )
-+
-+#define READHEX16(X) ((__u16)(READHEX(X)))
-+
-+#define READDEC(X) ((X)>='0' && (X)<='9' ? (X)-'0' : 0)
-+
-+#define ARRAY_END(X) (&((X)[ARRAY_SIZE(X)]))
-+
-+#define JIFFIE_TO_SEC(X) ((X) / HZ)
-+
-+
-+/************************************************************************/
-+/* Utility routines							*/
-+
-+static int arp_query(unsigned char *haddr, u32 paddr,
-+		     struct net_device *dev)
-+{
-+	struct neighbour *neighbor_entry;
-+	int ret = 0;
-+
-+	neighbor_entry = neigh_lookup(&arp_tbl, &paddr, dev);
-+
-+	if (neighbor_entry != NULL) {
-+		neighbor_entry->used = jiffies;
-+		if (neighbor_entry->nud_state & NUD_VALID) {
-+			memcpy(haddr, neighbor_entry->ha, dev->addr_len);
-+			ret = 1;
-+		}
-+		neigh_release(neighbor_entry);
-+	}
-+	return ret;
-+}
-+
-+static void DumpData(char *msg, struct strip *strip_info, __u8 * ptr,
-+		     __u8 * end)
-+{
-+	static const int MAX_DumpData = 80;
-+	__u8 pkt_text[MAX_DumpData], *p = pkt_text;
-+
-+	*p++ = '\"';
-+
-+	while (ptr < end && p < &pkt_text[MAX_DumpData - 4]) {
-+		if (*ptr == '\\') {
-+			*p++ = '\\';
-+			*p++ = '\\';
-+		} else {
-+			if (*ptr >= 32 && *ptr <= 126) {
-+				*p++ = *ptr;
-+			} else {
-+				sprintf(p, "\\%02X", *ptr);
-+				p += 3;
-+			}
-+		}
-+		ptr++;
-+	}
-+
-+	if (ptr == end)
-+		*p++ = '\"';
-+	*p++ = 0;
-+
-+	printk(KERN_INFO "%s: %-13s%s\n", strip_info->dev->name, msg, pkt_text);
-+}
-+
-+
-+/************************************************************************/
-+/* Byte stuffing/unstuffing routines					*/
-+
-+/* Stuffing scheme:
-+ * 00    Unused (reserved character)
-+ * 01-3F Run of 2-64 different characters
-+ * 40-7F Run of 1-64 different characters plus a single zero at the end
-+ * 80-BF Run of 1-64 of the same character
-+ * C0-FF Run of 1-64 zeroes (ASCII 0)
-+ */
-+
-+typedef enum {
-+	Stuff_Diff = 0x00,
-+	Stuff_DiffZero = 0x40,
-+	Stuff_Same = 0x80,
-+	Stuff_Zero = 0xC0,
-+	Stuff_NoCode = 0xFF,	/* Special code, meaning no code selected */
-+
-+	Stuff_CodeMask = 0xC0,
-+	Stuff_CountMask = 0x3F,
-+	Stuff_MaxCount = 0x3F,
-+	Stuff_Magic = 0x0D	/* The value we are eliminating */
-+} StuffingCode;
-+
-+/* StuffData encodes the data starting at "src" for "length" bytes.
-+ * It writes it to the buffer pointed to by "dst" (which must be at least
-+ * as long as 1 + 65/64 of the input length). The output may be up to 1.6%
-+ * larger than the input for pathological input, but will usually be smaller.
-+ * StuffData returns the new value of the dst pointer as its result.
-+ * "code_ptr_ptr" points to a "__u8 *" which is used to hold encoding state
-+ * between calls, allowing an encoded packet to be incrementally built up
-+ * from small parts. On the first call, the "__u8 *" pointed to should be
-+ * initialized to NULL; between subsequent calls the calling routine should
-+ * leave the value alone and simply pass it back unchanged so that the
-+ * encoder can recover its current state.
-+ */
-+
-+#define StuffData_FinishBlock(X) \
-+(*code_ptr = (X) ^ Stuff_Magic, code = Stuff_NoCode)
-+
-+static __u8 *StuffData(__u8 * src, __u32 length, __u8 * dst,
-+		       __u8 ** code_ptr_ptr)
-+{
-+	__u8 *end = src + length;
-+	__u8 *code_ptr = *code_ptr_ptr;
-+	__u8 code = Stuff_NoCode, count = 0;
-+
-+	if (!length)
-+		return (dst);
-+
-+	if (code_ptr) {
-+		/*
-+		 * Recover state from last call, if applicable
-+		 */
-+		code = (*code_ptr ^ Stuff_Magic) & Stuff_CodeMask;
-+		count = (*code_ptr ^ Stuff_Magic) & Stuff_CountMask;
-+	}
-+
-+	while (src < end) {
-+		switch (code) {
-+			/* Stuff_NoCode: If no current code, select one */
-+		case Stuff_NoCode:
-+			/* Record where we're going to put this code */
-+			code_ptr = dst++;
-+			count = 0;	/* Reset the count (zero means one instance) */
-+			/* Tentatively start a new block */
-+			if (*src == 0) {
-+				code = Stuff_Zero;
-+				src++;
-+			} else {
-+				code = Stuff_Same;
-+				*dst++ = *src++ ^ Stuff_Magic;
-+			}
-+			/* Note: We optimistically assume run of same -- */
-+			/* which will be fixed later in Stuff_Same */
-+			/* if it turns out not to be true. */
-+			break;
-+
-+			/* Stuff_Zero: We already have at least one zero encoded */
-+		case Stuff_Zero:
-+			/* If another zero, count it, else finish this code block */
-+			if (*src == 0) {
-+				count++;
-+				src++;
-+			} else {
-+				StuffData_FinishBlock(Stuff_Zero + count);
-+			}
-+			break;
-+
-+			/* Stuff_Same: We already have at least one byte encoded */
-+		case Stuff_Same:
-+			/* If another one the same, count it */
-+			if ((*src ^ Stuff_Magic) == code_ptr[1]) {
-+				count++;
-+				src++;
-+				break;
-+			}
-+			/* else, this byte does not match this block. */
-+			/* If we already have two or more bytes encoded, finish this code block */
-+			if (count) {
-+				StuffData_FinishBlock(Stuff_Same + count);
-+				break;
-+			}
-+			/* else, we only have one so far, so switch to Stuff_Diff code */
-+			code = Stuff_Diff;
-+			/* and fall through to Stuff_Diff case below
-+			 * Note cunning cleverness here: case Stuff_Diff compares 
-+			 * the current character with the previous two to see if it
-+			 * has a run of three the same. Won't this be an error if
-+			 * there aren't two previous characters stored to compare with?
-+			 * No. Because we know the current character is *not* the same
-+			 * as the previous one, the first test below will necessarily
-+			 * fail and the send half of the "if" won't be executed.
-+			 */
-+
-+			/* Stuff_Diff: We have at least two *different* bytes encoded */
-+		case Stuff_Diff:
-+			/* If this is a zero, must encode a Stuff_DiffZero, and begin a new block */
-+			if (*src == 0) {
-+				StuffData_FinishBlock(Stuff_DiffZero +
-+						      count);
-+			}
-+			/* else, if we have three in a row, it is worth starting a Stuff_Same block */
-+			else if ((*src ^ Stuff_Magic) == dst[-1]
-+				 && dst[-1] == dst[-2]) {
-+				/* Back off the last two characters we encoded */
-+				code += count - 2;
-+				/* Note: "Stuff_Diff + 0" is an illegal code */
-+				if (code == Stuff_Diff + 0) {
-+					code = Stuff_Same + 0;
-+				}
-+				StuffData_FinishBlock(code);
-+				code_ptr = dst - 2;
-+				/* dst[-1] already holds the correct value */
-+				count = 2;	/* 2 means three bytes encoded */
-+				code = Stuff_Same;
-+			}
-+			/* else, another different byte, so add it to the block */
-+			else {
-+				*dst++ = *src ^ Stuff_Magic;
-+				count++;
-+			}
-+			src++;	/* Consume the byte */
-+			break;
-+		}
-+		if (count == Stuff_MaxCount) {
-+			StuffData_FinishBlock(code + count);
-+		}
-+	}
-+	if (code == Stuff_NoCode) {
-+		*code_ptr_ptr = NULL;
-+	} else {
-+		*code_ptr_ptr = code_ptr;
-+		StuffData_FinishBlock(code + count);
-+	}
-+	return (dst);
-+}
-+
-+/*
-+ * UnStuffData decodes the data at "src", up to (but not including) "end".
-+ * It writes the decoded data into the buffer pointed to by "dst", up to a
-+ * maximum of "dst_length", and returns the new value of "src" so that a
-+ * follow-on call can read more data, continuing from where the first left off.
-+ * 
-+ * There are three types of results:
-+ * 1. The source data runs out before extracting "dst_length" bytes:
-+ *    UnStuffData returns NULL to indicate failure.
-+ * 2. The source data produces exactly "dst_length" bytes:
-+ *    UnStuffData returns new_src = end to indicate that all bytes were consumed.
-+ * 3. "dst_length" bytes are extracted, with more remaining.
-+ *    UnStuffData returns new_src < end to indicate that there are more bytes
-+ *    to be read.
-+ * 
-+ * Note: The decoding may be destructive, in that it may alter the source
-+ * data in the process of decoding it (this is necessary to allow a follow-on
-+ * call to resume correctly).
-+ */
-+
-+static __u8 *UnStuffData(__u8 * src, __u8 * end, __u8 * dst,
-+			 __u32 dst_length)
-+{
-+	__u8 *dst_end = dst + dst_length;
-+	/* Sanity check */
-+	if (!src || !end || !dst || !dst_length)
-+		return (NULL);
-+	while (src < end && dst < dst_end) {
-+		int count = (*src ^ Stuff_Magic) & Stuff_CountMask;
-+		switch ((*src ^ Stuff_Magic) & Stuff_CodeMask) {
-+		case Stuff_Diff:
-+			if (src + 1 + count >= end)
-+				return (NULL);
-+			do {
-+				*dst++ = *++src ^ Stuff_Magic;
-+			}
-+			while (--count >= 0 && dst < dst_end);
-+			if (count < 0)
-+				src += 1;
-+			else {
-+				if (count == 0)
-+					*src = Stuff_Same ^ Stuff_Magic;
-+				else
-+					*src =
-+					    (Stuff_Diff +
-+					     count) ^ Stuff_Magic;
-+			}
-+			break;
-+		case Stuff_DiffZero:
-+			if (src + 1 + count >= end)
-+				return (NULL);
-+			do {
-+				*dst++ = *++src ^ Stuff_Magic;
-+			}
-+			while (--count >= 0 && dst < dst_end);
-+			if (count < 0)
-+				*src = Stuff_Zero ^ Stuff_Magic;
-+			else
-+				*src =
-+				    (Stuff_DiffZero + count) ^ Stuff_Magic;
-+			break;
-+		case Stuff_Same:
-+			if (src + 1 >= end)
-+				return (NULL);
-+			do {
-+				*dst++ = src[1] ^ Stuff_Magic;
-+			}
-+			while (--count >= 0 && dst < dst_end);
-+			if (count < 0)
-+				src += 2;
-+			else
-+				*src = (Stuff_Same + count) ^ Stuff_Magic;
-+			break;
-+		case Stuff_Zero:
-+			do {
-+				*dst++ = 0;
-+			}
-+			while (--count >= 0 && dst < dst_end);
-+			if (count < 0)
-+				src += 1;
-+			else
-+				*src = (Stuff_Zero + count) ^ Stuff_Magic;
-+			break;
-+		}
-+	}
-+	if (dst < dst_end)
-+		return (NULL);
-+	else
-+		return (src);
-+}
-+
-+
-+/************************************************************************/
-+/* General routines for STRIP						*/
-+
-+/*
-+ * set_baud sets the baud rate to the rate defined by baudcode
-+ */
-+static void set_baud(struct tty_struct *tty, speed_t baudrate)
-+{
-+	struct ktermios old_termios;
-+
-+	mutex_lock(&tty->termios_mutex);
-+	old_termios =*(tty->termios);
-+	tty_encode_baud_rate(tty, baudrate, baudrate);
-+	tty->ops->set_termios(tty, &old_termios);
-+	mutex_unlock(&tty->termios_mutex);
-+}
-+
-+/*
-+ * Convert a string to a Metricom Address.
-+ */
-+
-+#define IS_RADIO_ADDRESS(p) (                                                 \
-+  isdigit((p)[0]) && isdigit((p)[1]) && isdigit((p)[2]) && isdigit((p)[3]) && \
-+  (p)[4] == '-' &&                                                            \
-+  isdigit((p)[5]) && isdigit((p)[6]) && isdigit((p)[7]) && isdigit((p)[8])    )
-+
-+static int string_to_radio_address(MetricomAddress * addr, __u8 * p)
-+{
-+	if (!IS_RADIO_ADDRESS(p))
-+		return (1);
-+	addr->c[0] = 0;
-+	addr->c[1] = 0;
-+	addr->c[2] = READHEX(p[0]) << 4 | READHEX(p[1]);
-+	addr->c[3] = READHEX(p[2]) << 4 | READHEX(p[3]);
-+	addr->c[4] = READHEX(p[5]) << 4 | READHEX(p[6]);
-+	addr->c[5] = READHEX(p[7]) << 4 | READHEX(p[8]);
-+	return (0);
-+}
-+
-+/*
-+ * Convert a Metricom Address to a string.
-+ */
-+
-+static __u8 *radio_address_to_string(const MetricomAddress * addr,
-+				     MetricomAddressString * p)
-+{
-+	sprintf(p->c, "%02X%02X-%02X%02X", addr->c[2], addr->c[3],
-+		addr->c[4], addr->c[5]);
-+	return (p->c);
-+}
-+
-+/*
-+ * Note: Must make sure sx_size is big enough to receive a stuffed
-+ * MAX_RECV_MTU packet. Additionally, we also want to ensure that it's
-+ * big enough to receive a large radio neighbour list (currently 4K).
-+ */
-+
-+static int allocate_buffers(struct strip *strip_info, int mtu)
-+{
-+	struct net_device *dev = strip_info->dev;
-+	int sx_size = max_t(int, STRIP_ENCAP_SIZE(MAX_RECV_MTU), 4096);
-+	int tx_size = STRIP_ENCAP_SIZE(mtu) + MaxCommandStringLength;
-+	__u8 *r = kmalloc(MAX_RECV_MTU, GFP_ATOMIC);
-+	__u8 *s = kmalloc(sx_size, GFP_ATOMIC);
-+	__u8 *t = kmalloc(tx_size, GFP_ATOMIC);
-+	if (r && s && t) {
-+		strip_info->rx_buff = r;
-+		strip_info->sx_buff = s;
-+		strip_info->tx_buff = t;
-+		strip_info->sx_size = sx_size;
-+		strip_info->tx_size = tx_size;
-+		strip_info->mtu = dev->mtu = mtu;
-+		return (1);
-+	}
-+	kfree(r);
-+	kfree(s);
-+	kfree(t);
-+	return (0);
-+}
-+
-+/*
-+ * MTU has been changed by the IP layer. 
-+ * We could be in
-+ * an upcall from the tty driver, or in an ip packet queue.
-+ */
-+static int strip_change_mtu(struct net_device *dev, int new_mtu)
-+{
-+	struct strip *strip_info = netdev_priv(dev);
-+	int old_mtu = strip_info->mtu;
-+	unsigned char *orbuff = strip_info->rx_buff;
-+	unsigned char *osbuff = strip_info->sx_buff;
-+	unsigned char *otbuff = strip_info->tx_buff;
-+
-+	if (new_mtu > MAX_SEND_MTU) {
-+		printk(KERN_ERR
-+		       "%s: MTU exceeds maximum allowable (%d), MTU change cancelled.\n",
-+		       strip_info->dev->name, MAX_SEND_MTU);
-+		return -EINVAL;
-+	}
-+
-+	spin_lock_bh(&strip_lock);
-+	if (!allocate_buffers(strip_info, new_mtu)) {
-+		printk(KERN_ERR "%s: unable to grow strip buffers, MTU change cancelled.\n",
-+		       strip_info->dev->name);
-+		spin_unlock_bh(&strip_lock);
-+		return -ENOMEM;
-+	}
-+
-+	if (strip_info->sx_count) {
-+		if (strip_info->sx_count <= strip_info->sx_size)
-+			memcpy(strip_info->sx_buff, osbuff,
-+			       strip_info->sx_count);
-+		else {
-+			strip_info->discard = strip_info->sx_count;
-+			strip_info->rx_over_errors++;
-+		}
-+	}
-+
-+	if (strip_info->tx_left) {
-+		if (strip_info->tx_left <= strip_info->tx_size)
-+			memcpy(strip_info->tx_buff, strip_info->tx_head,
-+			       strip_info->tx_left);
-+		else {
-+			strip_info->tx_left = 0;
-+			strip_info->tx_dropped++;
-+		}
-+	}
-+	strip_info->tx_head = strip_info->tx_buff;
-+	spin_unlock_bh(&strip_lock);
-+
-+	printk(KERN_NOTICE "%s: strip MTU changed fom %d to %d.\n",
-+	       strip_info->dev->name, old_mtu, strip_info->mtu);
-+
-+	kfree(orbuff);
-+	kfree(osbuff);
-+	kfree(otbuff);
-+	return 0;
-+}
-+
-+static void strip_unlock(struct strip *strip_info)
-+{
-+	/*
-+	 * Set the timer to go off in one second.
-+	 */
-+	strip_info->idle_timer.expires = jiffies + 1 * HZ;
-+	add_timer(&strip_info->idle_timer);
-+	netif_wake_queue(strip_info->dev);
-+}
-+
-+
-+
-+/*
-+ * If the time is in the near future, time_delta prints the number of
-+ * seconds to go into the buffer and returns the address of the buffer.
-+ * If the time is not in the near future, it returns the address of the
-+ * string "Not scheduled" The buffer must be long enough to contain the
-+ * ascii representation of the number plus 9 charactes for the " seconds"
-+ * and the null character.
-+ */
 +#ifdef CONFIG_PROC_FS
-+static char *time_delta(char buffer[], long time)
-+{
-+	time -= jiffies;
-+	if (time > LongTime / 2)
-+		return ("Not scheduled");
-+	if (time < 0)
-+		time = 0;	/* Don't print negative times */
-+	sprintf(buffer, "%ld seconds", time / HZ);
-+	return (buffer);
-+}
-+
-+/* get Nth element of the linked list */
-+static struct strip *strip_get_idx(loff_t pos) 
-+{
-+	struct strip *str;
-+	int i = 0;
-+
-+	list_for_each_entry_rcu(str, &strip_list, list) {
-+		if (pos == i)
-+			return str;
-+		++i;
-+	}
-+	return NULL;
-+}
-+
-+static void *strip_seq_start(struct seq_file *seq, loff_t *pos)
-+	__acquires(RCU)
-+{
-+	rcu_read_lock();
-+	return *pos ? strip_get_idx(*pos - 1) : SEQ_START_TOKEN;
-+}
-+
-+static void *strip_seq_next(struct seq_file *seq, void *v, loff_t *pos)
-+{
-+	struct list_head *l;
-+	struct strip *s;
-+
-+	++*pos;
-+	if (v == SEQ_START_TOKEN)
-+		return strip_get_idx(1);
-+
-+	s = v;
-+	l = &s->list;
-+	list_for_each_continue_rcu(l, &strip_list) {
-+		return list_entry(l, struct strip, list);
-+	}
-+	return NULL;
-+}
-+
-+static void strip_seq_stop(struct seq_file *seq, void *v)
-+	__releases(RCU)
-+{
-+	rcu_read_unlock();
-+}
-+
-+static void strip_seq_neighbours(struct seq_file *seq,
-+			   const MetricomNodeTable * table,
-+			   const char *title)
-+{
-+	/* We wrap this in a do/while loop, so if the table changes */
-+	/* while we're reading it, we just go around and try again. */
-+	struct timeval t;
-+
-+	do {
-+		int i;
-+		t = table->timestamp;
-+		if (table->num_nodes)
-+			seq_printf(seq, "\n %s\n", title);
-+		for (i = 0; i < table->num_nodes; i++) {
-+			MetricomNode node;
-+
-+			spin_lock_bh(&strip_lock);
-+			node = table->node[i];
-+			spin_unlock_bh(&strip_lock);
-+			seq_printf(seq, "  %s\n", node.c);
-+		}
-+	} while (table->timestamp.tv_sec != t.tv_sec
-+		 || table->timestamp.tv_usec != t.tv_usec);
-+}
-+
-+/*
-+ * This function prints radio status information via the seq_file
-+ * interface.  The interface takes care of buffer size and over
-+ * run issues. 
-+ *
-+ * The buffer in seq_file is PAGESIZE (4K) 
-+ * so this routine should never print more or it will get truncated.
-+ * With the maximum of 32 portables and 32 poletops
-+ * reported, the routine outputs 3107 bytes into the buffer.
-+ */
-+static void strip_seq_status_info(struct seq_file *seq, 
-+				  const struct strip *strip_info)
-+{
-+	char temp[32];
-+	MetricomAddressString addr_string;
-+
-+	/* First, we must copy all of our data to a safe place, */
-+	/* in case a serial interrupt comes in and changes it.  */
-+	int tx_left = strip_info->tx_left;
-+	unsigned long rx_average_pps = strip_info->rx_average_pps;
-+	unsigned long tx_average_pps = strip_info->tx_average_pps;
-+	unsigned long sx_average_pps = strip_info->sx_average_pps;
-+	int working = strip_info->working;
-+	int firmware_level = strip_info->firmware_level;
-+	long watchdog_doprobe = strip_info->watchdog_doprobe;
-+	long watchdog_doreset = strip_info->watchdog_doreset;
-+	long gratuitous_arp = strip_info->gratuitous_arp;
-+	long arp_interval = strip_info->arp_interval;
-+	FirmwareVersion firmware_version = strip_info->firmware_version;
-+	SerialNumber serial_number = strip_info->serial_number;
-+	BatteryVoltage battery_voltage = strip_info->battery_voltage;
-+	char *if_name = strip_info->dev->name;
-+	MetricomAddress true_dev_addr = strip_info->true_dev_addr;
-+	MetricomAddress dev_dev_addr =
-+	    *(MetricomAddress *) strip_info->dev->dev_addr;
-+	int manual_dev_addr = strip_info->manual_dev_addr;
-+#ifdef EXT_COUNTERS
-+	unsigned long rx_bytes = strip_info->rx_bytes;
-+	unsigned long tx_bytes = strip_info->tx_bytes;
-+	unsigned long rx_rbytes = strip_info->rx_rbytes;
-+	unsigned long tx_rbytes = strip_info->tx_rbytes;
-+	unsigned long rx_sbytes = strip_info->rx_sbytes;
-+	unsigned long tx_sbytes = strip_info->tx_sbytes;
-+	unsigned long rx_ebytes = strip_info->rx_ebytes;
-+	unsigned long tx_ebytes = strip_info->tx_ebytes;
-+#endif
-+
-+	seq_printf(seq, "\nInterface name\t\t%s\n", if_name);
-+	seq_printf(seq, " Radio working:\t\t%s\n", working ? "Yes" : "No");
-+	radio_address_to_string(&true_dev_addr, &addr_string);
-+	seq_printf(seq, " Radio address:\t\t%s\n", addr_string.c);
-+	if (manual_dev_addr) {
-+		radio_address_to_string(&dev_dev_addr, &addr_string);
-+		seq_printf(seq, " Device address:\t%s\n", addr_string.c);
-+	}
-+	seq_printf(seq, " Firmware version:\t%s", !working ? "Unknown" :
-+		     !firmware_level ? "Should be upgraded" :
-+		     firmware_version.c);
-+	if (firmware_level >= ChecksummedMessages)
-+		seq_printf(seq, " (Checksums Enabled)");
-+	seq_printf(seq, "\n");
-+	seq_printf(seq, " Serial number:\t\t%s\n", serial_number.c);
-+	seq_printf(seq, " Battery voltage:\t%s\n", battery_voltage.c);
-+	seq_printf(seq, " Transmit queue (bytes):%d\n", tx_left);
-+	seq_printf(seq, " Receive packet rate:   %ld packets per second\n",
-+		     rx_average_pps / 8);
-+	seq_printf(seq, " Transmit packet rate:  %ld packets per second\n",
-+		     tx_average_pps / 8);
-+	seq_printf(seq, " Sent packet rate:      %ld packets per second\n",
-+		     sx_average_pps / 8);
-+	seq_printf(seq, " Next watchdog probe:\t%s\n",
-+		     time_delta(temp, watchdog_doprobe));
-+	seq_printf(seq, " Next watchdog reset:\t%s\n",
-+		     time_delta(temp, watchdog_doreset));
-+	seq_printf(seq, " Next gratuitous ARP:\t");
-+
-+	if (!memcmp
-+	    (strip_info->dev->dev_addr, zero_address.c,
-+	     sizeof(zero_address)))
-+		seq_printf(seq, "Disabled\n");
-+	else {
-+		seq_printf(seq, "%s\n", time_delta(temp, gratuitous_arp));
-+		seq_printf(seq, " Next ARP interval:\t%ld seconds\n",
-+			     JIFFIE_TO_SEC(arp_interval));
-+	}
-+
-+	if (working) {
-+#ifdef EXT_COUNTERS
-+		seq_printf(seq, "\n");
-+		seq_printf(seq,
-+			     " Total bytes:         \trx:\t%lu\ttx:\t%lu\n",
-+			     rx_bytes, tx_bytes);
-+		seq_printf(seq,
-+			     "  thru radio:         \trx:\t%lu\ttx:\t%lu\n",
-+			     rx_rbytes, tx_rbytes);
-+		seq_printf(seq,
-+			     "  thru serial port:   \trx:\t%lu\ttx:\t%lu\n",
-+			     rx_sbytes, tx_sbytes);
-+		seq_printf(seq,
-+			     " Total stat/err bytes:\trx:\t%lu\ttx:\t%lu\n",
-+			     rx_ebytes, tx_ebytes);
-+#endif
-+		strip_seq_neighbours(seq, &strip_info->poletops,
-+					"Poletops:");
-+		strip_seq_neighbours(seq, &strip_info->portables,
-+					"Portables:");
-+	}
-+}
-+
-+/*
-+ * This function is exports status information from the STRIP driver through
-+ * the /proc file system.
-+ */
-+static int strip_seq_show(struct seq_file *seq, void *v)
-+{
-+	if (v == SEQ_START_TOKEN)
-+		seq_printf(seq, "strip_version: %s\n", StripVersion);
-+	else
-+		strip_seq_status_info(seq, (const struct strip *)v);
-+	return 0;
-+}
-+
-+
-+static const struct seq_operations strip_seq_ops = {
-+	.start = strip_seq_start,
-+	.next  = strip_seq_next,
-+	.stop  = strip_seq_stop,
-+	.show  = strip_seq_show,
-+};
-+
-+static int strip_seq_open(struct inode *inode, struct file *file)
-+{
-+	return seq_open(file, &strip_seq_ops);
-+}
-+
-+static const struct file_operations strip_seq_fops = {
-+	.owner	 = THIS_MODULE,
-+	.open    = strip_seq_open,
-+	.read    = seq_read,
-+	.llseek  = seq_lseek,
-+	.release = seq_release,
-+};
-+#endif
-+
-+
-+
-+/************************************************************************/
-+/* Sending routines							*/
-+
-+static void ResetRadio(struct strip *strip_info)
-+{
-+	struct tty_struct *tty = strip_info->tty;
-+	static const char init[] = "ate0q1dt**starmode\r**";
-+	StringDescriptor s = { init, sizeof(init) - 1 };
-+
-+	/* 
-+	 * If the radio isn't working anymore,
-+	 * we should clear the old status information.
-+	 */
-+	if (strip_info->working) {
-+		printk(KERN_INFO "%s: No response: Resetting radio.\n",
-+		       strip_info->dev->name);
-+		strip_info->firmware_version.c[0] = '\0';
-+		strip_info->serial_number.c[0] = '\0';
-+		strip_info->battery_voltage.c[0] = '\0';
-+		strip_info->portables.num_nodes = 0;
-+		do_gettimeofday(&strip_info->portables.timestamp);
-+		strip_info->poletops.num_nodes = 0;
-+		do_gettimeofday(&strip_info->poletops.timestamp);
-+	}
-+
-+	strip_info->pps_timer = jiffies;
-+	strip_info->rx_pps_count = 0;
-+	strip_info->tx_pps_count = 0;
-+	strip_info->sx_pps_count = 0;
-+	strip_info->rx_average_pps = 0;
-+	strip_info->tx_average_pps = 0;
-+	strip_info->sx_average_pps = 0;
-+
-+	/* Mark radio address as unknown */
-+	*(MetricomAddress *) & strip_info->true_dev_addr = zero_address;
-+	if (!strip_info->manual_dev_addr)
-+		*(MetricomAddress *) strip_info->dev->dev_addr =
-+		    zero_address;
-+	strip_info->working = FALSE;
-+	strip_info->firmware_level = NoStructure;
-+	strip_info->next_command = CompatibilityCommand;
-+	strip_info->watchdog_doprobe = jiffies + 10 * HZ;
-+	strip_info->watchdog_doreset = jiffies + 1 * HZ;
-+
-+	/* If the user has selected a baud rate above 38.4 see what magic we have to do */
-+	if (strip_info->user_baud > 38400) {
-+		/*
-+		 * Subtle stuff: Pay attention :-)
-+		 * If the serial port is currently at the user's selected (>38.4) rate,
-+		 * then we temporarily switch to 19.2 and issue the ATS304 command
-+		 * to tell the radio to switch to the user's selected rate.
-+		 * If the serial port is not currently at that rate, that means we just
-+		 * issued the ATS304 command last time through, so this time we restore
-+		 * the user's selected rate and issue the normal starmode reset string.
-+		 */
-+		if (strip_info->user_baud == tty_get_baud_rate(tty)) {
-+			static const char b0[] = "ate0q1s304=57600\r";
-+			static const char b1[] = "ate0q1s304=115200\r";
-+			static const StringDescriptor baudstring[2] =
-+			    { {b0, sizeof(b0) - 1}
-+			, {b1, sizeof(b1) - 1}
-+			};
-+			set_baud(tty, 19200);
-+			if (strip_info->user_baud == 57600)
-+				s = baudstring[0];
-+			else if (strip_info->user_baud == 115200)
-+				s = baudstring[1];
-+			else
-+				s = baudstring[1];	/* For now */
-+		} else
-+			set_baud(tty, strip_info->user_baud);
-+	}
-+
-+	tty->ops->write(tty, s.string, s.length);
-+#ifdef EXT_COUNTERS
-+	strip_info->tx_ebytes += s.length;
-+#endif
-+}
-+
-+/*
-+ * Called by the driver when there's room for more data.  If we have
-+ * more packets to send, we send them here.
-+ */
-+
-+static void strip_write_some_more(struct tty_struct *tty)
-+{
-+	struct strip *strip_info = tty->disc_data;
-+
-+	/* First make sure we're connected. */
-+	if (!strip_info || strip_info->magic != STRIP_MAGIC ||
-+	    !netif_running(strip_info->dev))
-+		return;
-+
-+	if (strip_info->tx_left > 0) {
-+		int num_written =
-+		    tty->ops->write(tty, strip_info->tx_head,
-+				      strip_info->tx_left);
-+		strip_info->tx_left -= num_written;
-+		strip_info->tx_head += num_written;
-+#ifdef EXT_COUNTERS
-+		strip_info->tx_sbytes += num_written;
-+#endif
-+	} else {		/* Else start transmission of another packet */
-+
-+		clear_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
-+		strip_unlock(strip_info);
-+	}
-+}
-+
-+static __u8 *add_checksum(__u8 * buffer, __u8 * end)
-+{
-+	__u16 sum = 0;
-+	__u8 *p = buffer;
-+	while (p < end)
-+		sum += *p++;
-+	end[3] = hextable[sum & 0xF];
-+	sum >>= 4;
-+	end[2] = hextable[sum & 0xF];
-+	sum >>= 4;
-+	end[1] = hextable[sum & 0xF];
-+	sum >>= 4;
-+	end[0] = hextable[sum & 0xF];
-+	return (end + 4);
-+}
-+
-+static unsigned char *strip_make_packet(unsigned char *buffer,
-+					struct strip *strip_info,
-+					struct sk_buff *skb)
-+{
-+	__u8 *ptr = buffer;
-+	__u8 *stuffstate = NULL;
-+	STRIP_Header *header = (STRIP_Header *) skb->data;
-+	MetricomAddress haddr = header->dst_addr;
-+	int len = skb->len - sizeof(STRIP_Header);
-+	MetricomKey key;
-+
-+	/*HexDump("strip_make_packet", strip_info, skb->data, skb->data + skb->len); */
-+
-+	if (header->protocol == htons(ETH_P_IP))
-+		key = SIP0Key;
-+	else if (header->protocol == htons(ETH_P_ARP))
-+		key = ARP0Key;
-+	else {
-+		printk(KERN_ERR
-+		       "%s: strip_make_packet: Unknown packet type 0x%04X\n",
-+		       strip_info->dev->name, ntohs(header->protocol));
-+		return (NULL);
-+	}
-+
-+	if (len > strip_info->mtu) {
-+		printk(KERN_ERR
-+		       "%s: Dropping oversized transmit packet: %d bytes\n",
-+		       strip_info->dev->name, len);
-+		return (NULL);
-+	}
-+
-+	/*
-+	 * If we're sending to ourselves, discard the packet.
-+	 * (Metricom radios choke if they try to send a packet to their own address.)
-+	 */
-+	if (!memcmp(haddr.c, strip_info->true_dev_addr.c, sizeof(haddr))) {
-+		printk(KERN_ERR "%s: Dropping packet addressed to self\n",
-+		       strip_info->dev->name);
-+		return (NULL);
-+	}
-+
-+	/*
-+	 * If this is a broadcast packet, send it to our designated Metricom
-+	 * 'broadcast hub' radio (First byte of address being 0xFF means broadcast)
-+	 */
-+	if (haddr.c[0] == 0xFF) {
-+		__be32 brd = 0;
-+		struct in_device *in_dev;
-+
-+		rcu_read_lock();
-+		in_dev = __in_dev_get_rcu(strip_info->dev);
-+		if (in_dev == NULL) {
-+			rcu_read_unlock();
-+			return NULL;
-+		}
-+		if (in_dev->ifa_list)
-+			brd = in_dev->ifa_list->ifa_broadcast;
-+		rcu_read_unlock();
-+
-+		/* arp_query returns 1 if it succeeds in looking up the address, 0 if it fails */
-+		if (!arp_query(haddr.c, brd, strip_info->dev)) {
-+			printk(KERN_ERR
-+			       "%s: Unable to send packet (no broadcast hub configured)\n",
-+			       strip_info->dev->name);
-+			return (NULL);
-+		}
-+		/*
-+		 * If we are the broadcast hub, don't bother sending to ourselves.
-+		 * (Metricom radios choke if they try to send a packet to their own address.)
-+		 */
-+		if (!memcmp
-+		    (haddr.c, strip_info->true_dev_addr.c, sizeof(haddr)))
-+			return (NULL);
-+	}
-+
-+	*ptr++ = 0x0D;
-+	*ptr++ = '*';
-+	*ptr++ = hextable[haddr.c[2] >> 4];
-+	*ptr++ = hextable[haddr.c[2] & 0xF];
-+	*ptr++ = hextable[haddr.c[3] >> 4];
-+	*ptr++ = hextable[haddr.c[3] & 0xF];
-+	*ptr++ = '-';
-+	*ptr++ = hextable[haddr.c[4] >> 4];
-+	*ptr++ = hextable[haddr.c[4] & 0xF];
-+	*ptr++ = hextable[haddr.c[5] >> 4];
-+	*ptr++ = hextable[haddr.c[5] & 0xF];
-+	*ptr++ = '*';
-+	*ptr++ = key.c[0];
-+	*ptr++ = key.c[1];
-+	*ptr++ = key.c[2];
-+	*ptr++ = key.c[3];
-+
-+	ptr =
-+	    StuffData(skb->data + sizeof(STRIP_Header), len, ptr,
-+		      &stuffstate);
-+
-+	if (strip_info->firmware_level >= ChecksummedMessages)
-+		ptr = add_checksum(buffer + 1, ptr);
-+
-+	*ptr++ = 0x0D;
-+	return (ptr);
-+}
-+
-+static void strip_send(struct strip *strip_info, struct sk_buff *skb)
-+{
-+	MetricomAddress haddr;
-+	unsigned char *ptr = strip_info->tx_buff;
-+	int doreset = (long) jiffies - strip_info->watchdog_doreset >= 0;
-+	int doprobe = (long) jiffies - strip_info->watchdog_doprobe >= 0
-+	    && !doreset;
-+	__be32 addr, brd;
-+
-+	/*
-+	 * 1. If we have a packet, encapsulate it and put it in the buffer
-+	 */
-+	if (skb) {
-+		char *newptr = strip_make_packet(ptr, strip_info, skb);
-+		strip_info->tx_pps_count++;
-+		if (!newptr)
-+			strip_info->tx_dropped++;
-+		else {
-+			ptr = newptr;
-+			strip_info->sx_pps_count++;
-+			strip_info->tx_packets++;	/* Count another successful packet */
-+#ifdef EXT_COUNTERS
-+			strip_info->tx_bytes += skb->len;
-+			strip_info->tx_rbytes += ptr - strip_info->tx_buff;
-+#endif
-+			/*DumpData("Sending:", strip_info, strip_info->tx_buff, ptr); */
-+			/*HexDump("Sending", strip_info, strip_info->tx_buff, ptr); */
-+		}
-+	}
-+
-+	/*
-+	 * 2. If it is time for another tickle, tack it on, after the packet
-+	 */
-+	if (doprobe) {
-+		StringDescriptor ts = CommandString[strip_info->next_command];
-+#if TICKLE_TIMERS
-+		{
-+			struct timeval tv;
-+			do_gettimeofday(&tv);
-+			printk(KERN_INFO "**** Sending tickle string %d      at %02d.%06d\n",
-+			       strip_info->next_command, tv.tv_sec % 100,
-+			       tv.tv_usec);
-+		}
-+#endif
-+		if (ptr == strip_info->tx_buff)
-+			*ptr++ = 0x0D;
-+
-+		*ptr++ = '*';	/* First send "**" to provoke an error message */
-+		*ptr++ = '*';
-+
-+		/* Then add the command */
-+		memcpy(ptr, ts.string, ts.length);
-+
-+		/* Add a checksum ? */
-+		if (strip_info->firmware_level < ChecksummedMessages)
-+			ptr += ts.length;
-+		else
-+			ptr = add_checksum(ptr, ptr + ts.length);
-+
-+		*ptr++ = 0x0D;	/* Terminate the command with a <CR> */
-+
-+		/* Cycle to next periodic command? */
-+		if (strip_info->firmware_level >= StructuredMessages)
-+			if (++strip_info->next_command >=
-+			    ARRAY_SIZE(CommandString))
-+				strip_info->next_command = 0;
-+#ifdef EXT_COUNTERS
-+		strip_info->tx_ebytes += ts.length;
-+#endif
-+		strip_info->watchdog_doprobe = jiffies + 10 * HZ;
-+		strip_info->watchdog_doreset = jiffies + 1 * HZ;
-+		/*printk(KERN_INFO "%s: Routine radio test.\n", strip_info->dev->name); */
-+	}
-+
-+	/*
-+	 * 3. Set up the strip_info ready to send the data (if any).
-+	 */
-+	strip_info->tx_head = strip_info->tx_buff;
-+	strip_info->tx_left = ptr - strip_info->tx_buff;
-+	set_bit(TTY_DO_WRITE_WAKEUP, &strip_info->tty->flags);
-+	/*
-+	 * 4. Debugging check to make sure we're not overflowing the buffer.
-+	 */
-+	if (strip_info->tx_size - strip_info->tx_left < 20)
-+		printk(KERN_ERR "%s: Sending%5d bytes;%5d bytes free.\n",
-+		       strip_info->dev->name, strip_info->tx_left,
-+		       strip_info->tx_size - strip_info->tx_left);
-+
-+	/*
-+	 * 5. If watchdog has expired, reset the radio. Note: if there's data waiting in
-+	 * the buffer, strip_write_some_more will send it after the reset has finished
-+	 */
-+	if (doreset) {
-+		ResetRadio(strip_info);
-+		return;
-+	}
-+
-+	if (1) {
-+		struct in_device *in_dev;
-+
-+		brd = addr = 0;
-+		rcu_read_lock();
-+		in_dev = __in_dev_get_rcu(strip_info->dev);
-+		if (in_dev) {
-+			if (in_dev->ifa_list) {
-+				brd = in_dev->ifa_list->ifa_broadcast;
-+				addr = in_dev->ifa_list->ifa_local;
-+			}
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+
-+	/*
-+	 * 6. If it is time for a periodic ARP, queue one up to be sent.
-+	 * We only do this if:
-+	 *  1. The radio is working
-+	 *  2. It's time to send another periodic ARP
-+	 *  3. We really know what our address is (and it is not manually set to zero)
-+	 *  4. We have a designated broadcast address configured
-+	 * If we queue up an ARP packet when we don't have a designated broadcast
-+	 * address configured, then the packet will just have to be discarded in
-+	 * strip_make_packet. This is not fatal, but it causes misleading information
-+	 * to be displayed in tcpdump. tcpdump will report that periodic APRs are
-+	 * being sent, when in fact they are not, because they are all being dropped
-+	 * in the strip_make_packet routine.
-+	 */
-+	if (strip_info->working
-+	    && (long) jiffies - strip_info->gratuitous_arp >= 0
-+	    && memcmp(strip_info->dev->dev_addr, zero_address.c,
-+		      sizeof(zero_address))
-+	    && arp_query(haddr.c, brd, strip_info->dev)) {
-+		/*printk(KERN_INFO "%s: Sending gratuitous ARP with interval %ld\n",
-+		   strip_info->dev->name, strip_info->arp_interval / HZ); */
-+		strip_info->gratuitous_arp =
-+		    jiffies + strip_info->arp_interval;
-+		strip_info->arp_interval *= 2;
-+		if (strip_info->arp_interval > MaxARPInterval)
-+			strip_info->arp_interval = MaxARPInterval;
-+		if (addr)
-+			arp_send(ARPOP_REPLY, ETH_P_ARP, addr,	/* Target address of ARP packet is our address */
-+				 strip_info->dev,	/* Device to send packet on */
-+				 addr,	/* Source IP address this ARP packet comes from */
-+				 NULL,	/* Destination HW address is NULL (broadcast it) */
-+				 strip_info->dev->dev_addr,	/* Source HW address is our HW address */
-+				 strip_info->dev->dev_addr);	/* Target HW address is our HW address (redundant) */
-+	}
-+
-+	/*
-+	 * 7. All ready. Start the transmission
-+	 */
-+	strip_write_some_more(strip_info->tty);
-+}
-+
-+/* Encapsulate a datagram and kick it into a TTY queue. */
-+static netdev_tx_t strip_xmit(struct sk_buff *skb, struct net_device *dev)
-+{
-+	struct strip *strip_info = netdev_priv(dev);
-+
-+	if (!netif_running(dev)) {
-+		printk(KERN_ERR "%s: xmit call when iface is down\n",
-+		       dev->name);
-+		return NETDEV_TX_BUSY;
-+	}
-+
-+	netif_stop_queue(dev);
-+
-+	del_timer(&strip_info->idle_timer);
-+
-+
-+	if (time_after(jiffies, strip_info->pps_timer + HZ)) {
-+		unsigned long t = jiffies - strip_info->pps_timer;
-+		unsigned long rx_pps_count =
-+			DIV_ROUND_CLOSEST(strip_info->rx_pps_count*HZ*8, t);
-+		unsigned long tx_pps_count =
-+			DIV_ROUND_CLOSEST(strip_info->tx_pps_count*HZ*8, t);
-+		unsigned long sx_pps_count =
-+			DIV_ROUND_CLOSEST(strip_info->sx_pps_count*HZ*8, t);
-+
-+		strip_info->pps_timer = jiffies;
-+		strip_info->rx_pps_count = 0;
-+		strip_info->tx_pps_count = 0;
-+		strip_info->sx_pps_count = 0;
-+
-+		strip_info->rx_average_pps = (strip_info->rx_average_pps + rx_pps_count + 1) / 2;
-+		strip_info->tx_average_pps = (strip_info->tx_average_pps + tx_pps_count + 1) / 2;
-+		strip_info->sx_average_pps = (strip_info->sx_average_pps + sx_pps_count + 1) / 2;
-+
-+		if (rx_pps_count / 8 >= 10)
-+			printk(KERN_INFO "%s: WARNING: Receiving %ld packets per second.\n",
-+			       strip_info->dev->name, rx_pps_count / 8);
-+		if (tx_pps_count / 8 >= 10)
-+			printk(KERN_INFO "%s: WARNING: Tx        %ld packets per second.\n",
-+			       strip_info->dev->name, tx_pps_count / 8);
-+		if (sx_pps_count / 8 >= 10)
-+			printk(KERN_INFO "%s: WARNING: Sending   %ld packets per second.\n",
-+			       strip_info->dev->name, sx_pps_count / 8);
-+	}
-+
-+	spin_lock_bh(&strip_lock);
-+
-+	strip_send(strip_info, skb);
-+
-+	spin_unlock_bh(&strip_lock);
-+
-+	if (skb)
-+		dev_kfree_skb(skb);
-+	return NETDEV_TX_OK;
-+}
-+
-+/*
-+ * IdleTask periodically calls strip_xmit, so even when we have no IP packets
-+ * to send for an extended period of time, the watchdog processing still gets
-+ * done to ensure that the radio stays in Starmode
-+ */
-+
-+static void strip_IdleTask(unsigned long parameter)
-+{
-+	strip_xmit(NULL, (struct net_device *) parameter);
-+}
-+
-+/*
-+ * Create the MAC header for an arbitrary protocol layer
-+ *
-+ * saddr!=NULL        means use this specific address (n/a for Metricom)
-+ * saddr==NULL        means use default device source address
-+ * daddr!=NULL        means use this destination address
-+ * daddr==NULL        means leave destination address alone
-+ *                 (e.g. unresolved arp -- kernel will call
-+ *                 rebuild_header later to fill in the address)
-+ */
-+
-+static int strip_header(struct sk_buff *skb, struct net_device *dev,
-+			unsigned short type, const void *daddr,
-+			const void *saddr, unsigned len)
-+{
-+	struct strip *strip_info = netdev_priv(dev);
-+	STRIP_Header *header = (STRIP_Header *) skb_push(skb, sizeof(STRIP_Header));
-+
-+	/*printk(KERN_INFO "%s: strip_header 0x%04X %s\n", dev->name, type,
-+	   type == ETH_P_IP ? "IP" : type == ETH_P_ARP ? "ARP" : ""); */
-+
-+	header->src_addr = strip_info->true_dev_addr;
-+	header->protocol = htons(type);
-+
-+	/*HexDump("strip_header", netdev_priv(dev), skb->data, skb->data + skb->len); */
-+
-+	if (!daddr)
-+		return (-dev->hard_header_len);
-+
-+	header->dst_addr = *(MetricomAddress *) daddr;
-+	return (dev->hard_header_len);
-+}
-+
-+/*
-+ * Rebuild the MAC header. This is called after an ARP
-+ * (or in future other address resolution) has completed on this
-+ * sk_buff. We now let ARP fill in the other fields.
-+ * I think this should return zero if packet is ready to send,
-+ * or non-zero if it needs more time to do an address lookup
-+ */
-+
-+static int strip_rebuild_header(struct sk_buff *skb)
-+{
-+#ifdef CONFIG_INET
-+	STRIP_Header *header = (STRIP_Header *) skb->data;
-+
-+	/* Arp find returns zero if if knows the address, */
-+	/* or if it doesn't know the address it sends an ARP packet and returns non-zero */
-+	return arp_find(header->dst_addr.c, skb) ? 1 : 0;
++extern int init_arlan_proc(void);
++extern void cleanup_arlan_proc(void);
 +#else
-+	return 0;
-+#endif
-+}
-+
-+
-+/************************************************************************/
-+/* Receiving routines							*/
-+
-+/*
-+ * This function parses the response to the ATS300? command,
-+ * extracting the radio version and serial number.
-+ */
-+static void get_radio_version(struct strip *strip_info, __u8 * ptr, __u8 * end)
-+{
-+	__u8 *p, *value_begin, *value_end;
-+	int len;
-+
-+	/* Determine the beginning of the second line of the payload */
-+	p = ptr;
-+	while (p < end && *p != 10)
-+		p++;
-+	if (p >= end)
-+		return;
-+	p++;
-+	value_begin = p;
-+
-+	/* Determine the end of line */
-+	while (p < end && *p != 10)
-+		p++;
-+	if (p >= end)
-+		return;
-+	value_end = p;
-+	p++;
-+
-+	len = value_end - value_begin;
-+	len = min_t(int, len, sizeof(FirmwareVersion) - 1);
-+	if (strip_info->firmware_version.c[0] == 0)
-+		printk(KERN_INFO "%s: Radio Firmware: %.*s\n",
-+		       strip_info->dev->name, len, value_begin);
-+	sprintf(strip_info->firmware_version.c, "%.*s", len, value_begin);
-+
-+	/* Look for the first colon */
-+	while (p < end && *p != ':')
-+		p++;
-+	if (p >= end)
-+		return;
-+	/* Skip over the space */
-+	p += 2;
-+	len = sizeof(SerialNumber) - 1;
-+	if (p + len <= end) {
-+		sprintf(strip_info->serial_number.c, "%.*s", len, p);
-+	} else {
-+		printk(KERN_DEBUG
-+		       "STRIP: radio serial number shorter (%zd) than expected (%d)\n",
-+		       end - p, len);
-+	}
-+}
-+
-+/*
-+ * This function parses the response to the ATS325? command,
-+ * extracting the radio battery voltage.
-+ */
-+static void get_radio_voltage(struct strip *strip_info, __u8 * ptr, __u8 * end)
-+{
-+	int len;
-+
-+	len = sizeof(BatteryVoltage) - 1;
-+	if (ptr + len <= end) {
-+		sprintf(strip_info->battery_voltage.c, "%.*s", len, ptr);
-+	} else {
-+		printk(KERN_DEBUG
-+		       "STRIP: radio voltage string shorter (%zd) than expected (%d)\n",
-+		       end - ptr, len);
-+	}
-+}
-+
-+/*
-+ * This function parses the responses to the AT~LA and ATS311 commands,
-+ * which list the radio's neighbours.
-+ */
-+static void get_radio_neighbours(MetricomNodeTable * table, __u8 * ptr, __u8 * end)
-+{
-+	table->num_nodes = 0;
-+	while (ptr < end && table->num_nodes < NODE_TABLE_SIZE) {
-+		MetricomNode *node = &table->node[table->num_nodes++];
-+		char *dst = node->c, *limit = dst + sizeof(*node) - 1;
-+		while (ptr < end && *ptr <= 32)
-+			ptr++;
-+		while (ptr < end && dst < limit && *ptr != 10)
-+			*dst++ = *ptr++;
-+		*dst++ = 0;
-+		while (ptr < end && ptr[-1] != 10)
-+			ptr++;
-+	}
-+	do_gettimeofday(&table->timestamp);
-+}
-+
-+static int get_radio_address(struct strip *strip_info, __u8 * p)
-+{
-+	MetricomAddress addr;
-+
-+	if (string_to_radio_address(&addr, p))
-+		return (1);
-+
-+	/* See if our radio address has changed */
-+	if (memcmp(strip_info->true_dev_addr.c, addr.c, sizeof(addr))) {
-+		MetricomAddressString addr_string;
-+		radio_address_to_string(&addr, &addr_string);
-+		printk(KERN_INFO "%s: Radio address = %s\n",
-+		       strip_info->dev->name, addr_string.c);
-+		strip_info->true_dev_addr = addr;
-+		if (!strip_info->manual_dev_addr)
-+			*(MetricomAddress *) strip_info->dev->dev_addr =
-+			    addr;
-+		/* Give the radio a few seconds to get its head straight, then send an arp */
-+		strip_info->gratuitous_arp = jiffies + 15 * HZ;
-+		strip_info->arp_interval = 1 * HZ;
-+	}
-+	return (0);
-+}
-+
-+static int verify_checksum(struct strip *strip_info)
-+{
-+	__u8 *p = strip_info->sx_buff;
-+	__u8 *end = strip_info->sx_buff + strip_info->sx_count - 4;
-+	u_short sum =
-+	    (READHEX16(end[0]) << 12) | (READHEX16(end[1]) << 8) |
-+	    (READHEX16(end[2]) << 4) | (READHEX16(end[3]));
-+	while (p < end)
-+		sum -= *p++;
-+	if (sum == 0 && strip_info->firmware_level == StructuredMessages) {
-+		strip_info->firmware_level = ChecksummedMessages;
-+		printk(KERN_INFO "%s: Radio provides message checksums\n",
-+		       strip_info->dev->name);
-+	}
-+	return (sum == 0);
-+}
-+
-+static void RecvErr(char *msg, struct strip *strip_info)
-+{
-+	__u8 *ptr = strip_info->sx_buff;
-+	__u8 *end = strip_info->sx_buff + strip_info->sx_count;
-+	DumpData(msg, strip_info, ptr, end);
-+	strip_info->rx_errors++;
-+}
-+
-+static void RecvErr_Message(struct strip *strip_info, __u8 * sendername,
-+			    const __u8 * msg, u_long len)
-+{
-+	if (has_prefix(msg, len, "001")) {	/* Not in StarMode! */
-+		RecvErr("Error Msg:", strip_info);
-+		printk(KERN_INFO "%s: Radio %s is not in StarMode\n",
-+		       strip_info->dev->name, sendername);
-+	}
-+
-+	else if (has_prefix(msg, len, "002")) {	/* Remap handle */
-+		/* We ignore "Remap handle" messages for now */
-+	}
-+
-+	else if (has_prefix(msg, len, "003")) {	/* Can't resolve name */
-+		RecvErr("Error Msg:", strip_info);
-+		printk(KERN_INFO "%s: Destination radio name is unknown\n",
-+		       strip_info->dev->name);
-+	}
-+
-+	else if (has_prefix(msg, len, "004")) {	/* Name too small or missing */
-+		strip_info->watchdog_doreset = jiffies + LongTime;
-+#if TICKLE_TIMERS
-+		{
-+			struct timeval tv;
-+			do_gettimeofday(&tv);
-+			printk(KERN_INFO
-+			       "**** Got ERR_004 response         at %02d.%06d\n",
-+			       tv.tv_sec % 100, tv.tv_usec);
-+		}
-+#endif
-+		if (!strip_info->working) {
-+			strip_info->working = TRUE;
-+			printk(KERN_INFO "%s: Radio now in starmode\n",
-+			       strip_info->dev->name);
-+			/*
-+			 * If the radio has just entered a working state, we should do our first
-+			 * probe ASAP, so that we find out our radio address etc. without delay.
-+			 */
-+			strip_info->watchdog_doprobe = jiffies;
-+		}
-+		if (strip_info->firmware_level == NoStructure && sendername) {
-+			strip_info->firmware_level = StructuredMessages;
-+			strip_info->next_command = 0;	/* Try to enable checksums ASAP */
-+			printk(KERN_INFO
-+			       "%s: Radio provides structured messages\n",
-+			       strip_info->dev->name);
-+		}
-+		if (strip_info->firmware_level >= StructuredMessages) {
-+			/*
-+			 * If this message has a valid checksum on the end, then the call to verify_checksum
-+			 * will elevate the firmware_level to ChecksummedMessages for us. (The actual return
-+			 * code from verify_checksum is ignored here.)
-+			 */
-+			verify_checksum(strip_info);
-+			/*
-+			 * If the radio has structured messages but we don't yet have all our information about it,
-+			 * we should do probes without delay, until we have gathered all the information
-+			 */
-+			if (!GOT_ALL_RADIO_INFO(strip_info))
-+				strip_info->watchdog_doprobe = jiffies;
-+		}
-+	}
-+
-+	else if (has_prefix(msg, len, "005"))	/* Bad count specification */
-+		RecvErr("Error Msg:", strip_info);
-+
-+	else if (has_prefix(msg, len, "006"))	/* Header too big */
-+		RecvErr("Error Msg:", strip_info);
-+
-+	else if (has_prefix(msg, len, "007")) {	/* Body too big */
-+		RecvErr("Error Msg:", strip_info);
-+		printk(KERN_ERR
-+		       "%s: Error! Packet size too big for radio.\n",
-+		       strip_info->dev->name);
-+	}
-+
-+	else if (has_prefix(msg, len, "008")) {	/* Bad character in name */
-+		RecvErr("Error Msg:", strip_info);
-+		printk(KERN_ERR
-+		       "%s: Radio name contains illegal character\n",
-+		       strip_info->dev->name);
-+	}
-+
-+	else if (has_prefix(msg, len, "009"))	/* No count or line terminator */
-+		RecvErr("Error Msg:", strip_info);
-+
-+	else if (has_prefix(msg, len, "010"))	/* Invalid checksum */
-+		RecvErr("Error Msg:", strip_info);
-+
-+	else if (has_prefix(msg, len, "011"))	/* Checksum didn't match */
-+		RecvErr("Error Msg:", strip_info);
-+
-+	else if (has_prefix(msg, len, "012"))	/* Failed to transmit packet */
-+		RecvErr("Error Msg:", strip_info);
-+
-+	else
-+		RecvErr("Error Msg:", strip_info);
-+}
-+
-+static void process_AT_response(struct strip *strip_info, __u8 * ptr,
-+				__u8 * end)
-+{
-+	u_long len;
-+	__u8 *p = ptr;
-+	while (p < end && p[-1] != 10)
-+		p++;		/* Skip past first newline character */
-+	/* Now ptr points to the AT command, and p points to the text of the response. */
-+	len = p - ptr;
-+
-+#if TICKLE_TIMERS
-+	{
-+		struct timeval tv;
-+		do_gettimeofday(&tv);
-+		printk(KERN_INFO "**** Got AT response %.7s      at %02d.%06d\n",
-+		       ptr, tv.tv_sec % 100, tv.tv_usec);
-+	}
++#define init_arlan_proc()	({ 0; })
++#define cleanup_arlan_proc()	do { } while (0)
 +#endif
 +
-+	if (has_prefix(ptr, len, "ATS300?"))
-+		get_radio_version(strip_info, p, end);
-+	else if (has_prefix(ptr, len, "ATS305?"))
-+		get_radio_address(strip_info, p);
-+	else if (has_prefix(ptr, len, "ATS311?"))
-+		get_radio_neighbours(&strip_info->poletops, p, end);
-+	else if (has_prefix(ptr, len, "ATS319=7"))
-+		verify_checksum(strip_info);
-+	else if (has_prefix(ptr, len, "ATS325?"))
-+		get_radio_voltage(strip_info, p, end);
-+	else if (has_prefix(ptr, len, "AT~LA"))
-+		get_radio_neighbours(&strip_info->portables, p, end);
-+	else
-+		RecvErr("Unknown AT Response:", strip_info);
-+}
++extern struct net_device *arlan_device[MAX_ARLANS];
++extern int	arlan_debug;
++extern int	arlan_entry_debug;
++extern int	arlan_exit_debug;
++extern int	testMemory;
++extern int     arlan_command(struct net_device * dev, int command);
++ 
++#define SIDUNKNOWN -1
++#define radioNodeIdUNKNOWN -1
++#define irqUNKNOWN 0
++#define debugUNKNOWN 0
++#define testMemoryUNKNOWN 1
++#define spreadingCodeUNKNOWN 0
++#define channelNumberUNKNOWN 0
++#define channelSetUNKNOWN 0
++#define systemIdUNKNOWN -1
++#define registrationModeUNKNOWN -1
 +
-+static void process_ACK(struct strip *strip_info, __u8 * ptr, __u8 * end)
-+{
-+	/* Currently we don't do anything with ACKs from the radio */
-+}
 +
-+static void process_Info(struct strip *strip_info, __u8 * ptr, __u8 * end)
-+{
-+	if (ptr + 16 > end)
-+		RecvErr("Bad Info Msg:", strip_info);
-+}
++#define IFDEBUG( L ) if ( (L) & arlan_debug ) 
++#define ARLAN_FAKE_HDR_LEN 12 
 +
-+static struct net_device *get_strip_dev(struct strip *strip_info)
-+{
-+	/* If our hardware address is *manually set* to zero, and we know our */
-+	/* real radio hardware address, try to find another strip device that has been */
-+	/* manually set to that address that we can 'transfer ownership' of this packet to  */
-+	if (strip_info->manual_dev_addr &&
-+	    !memcmp(strip_info->dev->dev_addr, zero_address.c,
-+		    sizeof(zero_address))
-+	    && memcmp(&strip_info->true_dev_addr, zero_address.c,
-+		      sizeof(zero_address))) {
-+		struct net_device *dev;
-+		read_lock_bh(&dev_base_lock);
-+		for_each_netdev(&init_net, dev) {
-+			if (dev->type == strip_info->dev->type &&
-+			    !memcmp(dev->dev_addr,
-+				    &strip_info->true_dev_addr,
-+				    sizeof(MetricomAddress))) {
-+				printk(KERN_INFO
-+				       "%s: Transferred packet ownership to %s.\n",
-+				       strip_info->dev->name, dev->name);
-+				read_unlock_bh(&dev_base_lock);
-+				return (dev);
-+			}
-+		}
-+		read_unlock_bh(&dev_base_lock);
-+	}
-+	return (strip_info->dev);
-+}
-+
-+/*
-+ * Send one completely decapsulated datagram to the next layer.
-+ */
-+
-+static void deliver_packet(struct strip *strip_info, STRIP_Header * header,
-+			   __u16 packetlen)
-+{
-+	struct sk_buff *skb = dev_alloc_skb(sizeof(STRIP_Header) + packetlen);
-+	if (!skb) {
-+		printk(KERN_ERR "%s: memory squeeze, dropping packet.\n",
-+		       strip_info->dev->name);
-+		strip_info->rx_dropped++;
-+	} else {
-+		memcpy(skb_put(skb, sizeof(STRIP_Header)), header,
-+		       sizeof(STRIP_Header));
-+		memcpy(skb_put(skb, packetlen), strip_info->rx_buff,
-+		       packetlen);
-+		skb->dev = get_strip_dev(strip_info);
-+		skb->protocol = header->protocol;
-+		skb_reset_mac_header(skb);
-+
-+		/* Having put a fake header on the front of the sk_buff for the */
-+		/* benefit of tools like tcpdump, skb_pull now 'consumes' that  */
-+		/* fake header before we hand the packet up to the next layer.  */
-+		skb_pull(skb, sizeof(STRIP_Header));
-+
-+		/* Finally, hand the packet up to the next layer (e.g. IP or ARP, etc.) */
-+		strip_info->rx_packets++;
-+		strip_info->rx_pps_count++;
-+#ifdef EXT_COUNTERS
-+		strip_info->rx_bytes += packetlen;
-+#endif
-+		netif_rx(skb);
-+	}
-+}
-+
-+static void process_IP_packet(struct strip *strip_info,
-+			      STRIP_Header * header, __u8 * ptr,
-+			      __u8 * end)
-+{
-+	__u16 packetlen;
-+
-+	/* Decode start of the IP packet header */
-+	ptr = UnStuffData(ptr, end, strip_info->rx_buff, 4);
-+	if (!ptr) {
-+		RecvErr("IP Packet too short", strip_info);
-+		return;
-+	}
-+
-+	packetlen = ((__u16) strip_info->rx_buff[2] << 8) | strip_info->rx_buff[3];
-+
-+	if (packetlen > MAX_RECV_MTU) {
-+		printk(KERN_INFO "%s: Dropping oversized received IP packet: %d bytes\n",
-+		       strip_info->dev->name, packetlen);
-+		strip_info->rx_dropped++;
-+		return;
-+	}
-+
-+	/*printk(KERN_INFO "%s: Got %d byte IP packet\n", strip_info->dev->name, packetlen); */
-+
-+	/* Decode remainder of the IP packet */
-+	ptr =
-+	    UnStuffData(ptr, end, strip_info->rx_buff + 4, packetlen - 4);
-+	if (!ptr) {
-+		RecvErr("IP Packet too short", strip_info);
-+		return;
-+	}
-+
-+	if (ptr < end) {
-+		RecvErr("IP Packet too long", strip_info);
-+		return;
-+	}
-+
-+	header->protocol = htons(ETH_P_IP);
-+
-+	deliver_packet(strip_info, header, packetlen);
-+}
-+
-+static void process_ARP_packet(struct strip *strip_info,
-+			       STRIP_Header * header, __u8 * ptr,
-+			       __u8 * end)
-+{
-+	__u16 packetlen;
-+	struct arphdr *arphdr = (struct arphdr *) strip_info->rx_buff;
-+
-+	/* Decode start of the ARP packet */
-+	ptr = UnStuffData(ptr, end, strip_info->rx_buff, 8);
-+	if (!ptr) {
-+		RecvErr("ARP Packet too short", strip_info);
-+		return;
-+	}
-+
-+	packetlen = 8 + (arphdr->ar_hln + arphdr->ar_pln) * 2;
-+
-+	if (packetlen > MAX_RECV_MTU) {
-+		printk(KERN_INFO
-+		       "%s: Dropping oversized received ARP packet: %d bytes\n",
-+		       strip_info->dev->name, packetlen);
-+		strip_info->rx_dropped++;
-+		return;
-+	}
-+
-+	/*printk(KERN_INFO "%s: Got %d byte ARP %s\n",
-+	   strip_info->dev->name, packetlen,
-+	   ntohs(arphdr->ar_op) == ARPOP_REQUEST ? "request" : "reply"); */
-+
-+	/* Decode remainder of the ARP packet */
-+	ptr =
-+	    UnStuffData(ptr, end, strip_info->rx_buff + 8, packetlen - 8);
-+	if (!ptr) {
-+		RecvErr("ARP Packet too short", strip_info);
-+		return;
-+	}
-+
-+	if (ptr < end) {
-+		RecvErr("ARP Packet too long", strip_info);
-+		return;
-+	}
-+
-+	header->protocol = htons(ETH_P_ARP);
-+
-+	deliver_packet(strip_info, header, packetlen);
-+}
-+
-+/*
-+ * process_text_message processes a <CR>-terminated block of data received
-+ * from the radio that doesn't begin with a '*' character. All normal
-+ * Starmode communication messages with the radio begin with a '*',
-+ * so any text that does not indicates a serial port error, a radio that
-+ * is in Hayes command mode instead of Starmode, or a radio with really
-+ * old firmware that doesn't frame its Starmode responses properly.
-+ */
-+static void process_text_message(struct strip *strip_info)
-+{
-+	__u8 *msg = strip_info->sx_buff;
-+	int len = strip_info->sx_count;
-+
-+	/* Check for anything that looks like it might be our radio name */
-+	/* (This is here for backwards compatibility with old firmware)  */
-+	if (len == 9 && get_radio_address(strip_info, msg) == 0)
-+		return;
-+
-+	if (text_equal(msg, len, "OK"))
-+		return;		/* Ignore 'OK' responses from prior commands */
-+	if (text_equal(msg, len, "ERROR"))
-+		return;		/* Ignore 'ERROR' messages */
-+	if (has_prefix(msg, len, "ate0q1"))
-+		return;		/* Ignore character echo back from the radio */
-+
-+	/* Catch other error messages */
-+	/* (This is here for backwards compatibility with old firmware) */
-+	if (has_prefix(msg, len, "ERR_")) {
-+		RecvErr_Message(strip_info, NULL, &msg[4], len - 4);
-+		return;
-+	}
-+
-+	RecvErr("No initial *", strip_info);
-+}
-+
-+/*
-+ * process_message processes a <CR>-terminated block of data received
-+ * from the radio. If the radio is not in Starmode or has old firmware,
-+ * it may be a line of text in response to an AT command. Ideally, with
-+ * a current radio that's properly in Starmode, all data received should
-+ * be properly framed and checksummed radio message blocks, containing
-+ * either a starmode packet, or a other communication from the radio
-+ * firmware, like "INF_" Info messages and &COMMAND responses.
-+ */
-+static void process_message(struct strip *strip_info)
-+{
-+	STRIP_Header header = { zero_address, zero_address, 0 };
-+	__u8 *ptr = strip_info->sx_buff;
-+	__u8 *end = strip_info->sx_buff + strip_info->sx_count;
-+	__u8 sendername[32], *sptr = sendername;
-+	MetricomKey key;
-+
-+	/*HexDump("Receiving", strip_info, ptr, end); */
-+
-+	/* Check for start of address marker, and then skip over it */
-+	if (*ptr == '*')
-+		ptr++;
-+	else {
-+		process_text_message(strip_info);
-+		return;
-+	}
-+
-+	/* Copy out the return address */
-+	while (ptr < end && *ptr != '*'
-+	       && sptr < ARRAY_END(sendername) - 1)
-+		*sptr++ = *ptr++;
-+	*sptr = 0;		/* Null terminate the sender name */
-+
-+	/* Check for end of address marker, and skip over it */
-+	if (ptr >= end || *ptr != '*') {
-+		RecvErr("No second *", strip_info);
-+		return;
-+	}
-+	ptr++;			/* Skip the second '*' */
-+
-+	/* If the sender name is "&COMMAND", ignore this 'packet'       */
-+	/* (This is here for backwards compatibility with old firmware) */
-+	if (!strcmp(sendername, "&COMMAND")) {
-+		strip_info->firmware_level = NoStructure;
-+		strip_info->next_command = CompatibilityCommand;
-+		return;
-+	}
-+
-+	if (ptr + 4 > end) {
-+		RecvErr("No proto key", strip_info);
-+		return;
-+	}
-+
-+	/* Get the protocol key out of the buffer */
-+	key.c[0] = *ptr++;
-+	key.c[1] = *ptr++;
-+	key.c[2] = *ptr++;
-+	key.c[3] = *ptr++;
-+
-+	/* If we're using checksums, verify the checksum at the end of the packet */
-+	if (strip_info->firmware_level >= ChecksummedMessages) {
-+		end -= 4;	/* Chop the last four bytes off the packet (they're the checksum) */
-+		if (ptr > end) {
-+			RecvErr("Missing Checksum", strip_info);
-+			return;
-+		}
-+		if (!verify_checksum(strip_info)) {
-+			RecvErr("Bad Checksum", strip_info);
-+			return;
-+		}
-+	}
-+
-+	/*printk(KERN_INFO "%s: Got packet from \"%s\".\n", strip_info->dev->name, sendername); */
-+
-+	/*
-+	 * Fill in (pseudo) source and destination addresses in the packet.
-+	 * We assume that the destination address was our address (the radio does not
-+	 * tell us this). If the radio supplies a source address, then we use it.
-+	 */
-+	header.dst_addr = strip_info->true_dev_addr;
-+	string_to_radio_address(&header.src_addr, sendername);
-+
-+#ifdef EXT_COUNTERS
-+	if (key.l == SIP0Key.l) {
-+		strip_info->rx_rbytes += (end - ptr);
-+		process_IP_packet(strip_info, &header, ptr, end);
-+	} else if (key.l == ARP0Key.l) {
-+		strip_info->rx_rbytes += (end - ptr);
-+		process_ARP_packet(strip_info, &header, ptr, end);
-+	} else if (key.l == ATR_Key.l) {
-+		strip_info->rx_ebytes += (end - ptr);
-+		process_AT_response(strip_info, ptr, end);
-+	} else if (key.l == ACK_Key.l) {
-+		strip_info->rx_ebytes += (end - ptr);
-+		process_ACK(strip_info, ptr, end);
-+	} else if (key.l == INF_Key.l) {
-+		strip_info->rx_ebytes += (end - ptr);
-+		process_Info(strip_info, ptr, end);
-+	} else if (key.l == ERR_Key.l) {
-+		strip_info->rx_ebytes += (end - ptr);
-+		RecvErr_Message(strip_info, sendername, ptr, end - ptr);
-+	} else
-+		RecvErr("Unrecognized protocol key", strip_info);
++#ifdef ARLAN_DEBUGGING
++	#define DEBUG 1
++	#define ARLAN_ENTRY_EXIT_DEBUGGING 1
++	#define ARLAN_DEBUG(a,b) printk(KERN_DEBUG a, b)
 +#else
-+	if (key.l == SIP0Key.l)
-+		process_IP_packet(strip_info, &header, ptr, end);
-+	else if (key.l == ARP0Key.l)
-+		process_ARP_packet(strip_info, &header, ptr, end);
-+	else if (key.l == ATR_Key.l)
-+		process_AT_response(strip_info, ptr, end);
-+	else if (key.l == ACK_Key.l)
-+		process_ACK(strip_info, ptr, end);
-+	else if (key.l == INF_Key.l)
-+		process_Info(strip_info, ptr, end);
-+	else if (key.l == ERR_Key.l)
-+		RecvErr_Message(strip_info, sendername, ptr, end - ptr);
-+	else
-+		RecvErr("Unrecognized protocol key", strip_info);
-+#endif
-+}
-+
-+#define TTYERROR(X) ((X) == TTY_BREAK   ? "Break"            : \
-+                     (X) == TTY_FRAME   ? "Framing Error"    : \
-+                     (X) == TTY_PARITY  ? "Parity Error"     : \
-+                     (X) == TTY_OVERRUN ? "Hardware Overrun" : "Unknown Error")
-+
-+/*
-+ * Handle the 'receiver data ready' interrupt.
-+ * This function is called by the 'tty_io' module in the kernel when
-+ * a block of STRIP data has been received, which can now be decapsulated
-+ * and sent on to some IP layer for further processing.
-+ */
-+
-+static void strip_receive_buf(struct tty_struct *tty, const unsigned char *cp,
-+		  char *fp, int count)
-+{
-+	struct strip *strip_info = tty->disc_data;
-+	const unsigned char *end = cp + count;
-+
-+	if (!strip_info || strip_info->magic != STRIP_MAGIC
-+	    || !netif_running(strip_info->dev))
-+		return;
-+
-+	spin_lock_bh(&strip_lock);
-+#if 0
-+	{
-+		struct timeval tv;
-+		do_gettimeofday(&tv);
-+		printk(KERN_INFO
-+		       "**** strip_receive_buf: %3d bytes at %02d.%06d\n",
-+		       count, tv.tv_sec % 100, tv.tv_usec);
-+	}
++	#define ARLAN_DEBUG(a,b) 
 +#endif
 +
-+#ifdef EXT_COUNTERS
-+	strip_info->rx_sbytes += count;
-+#endif
++#define ARLAN_SHMEM_SIZE	0x2000
 +
-+	/* Read the characters out of the buffer */
-+	while (cp < end) {
-+		if (fp && *fp)
-+			printk(KERN_INFO "%s: %s on serial port\n",
-+			       strip_info->dev->name, TTYERROR(*fp));
-+		if (fp && *fp++ && !strip_info->discard) {	/* If there's a serial error, record it */
-+			/* If we have some characters in the buffer, discard them */
-+			strip_info->discard = strip_info->sx_count;
-+			strip_info->rx_errors++;
-+		}
-+
-+		/* Leading control characters (CR, NL, Tab, etc.) are ignored */
-+		if (strip_info->sx_count > 0 || *cp >= ' ') {
-+			if (*cp == 0x0D) {	/* If end of packet, decide what to do with it */
-+				if (strip_info->sx_count > 3000)
-+					printk(KERN_INFO
-+					       "%s: Cut a %d byte packet (%zd bytes remaining)%s\n",
-+					       strip_info->dev->name,
-+					       strip_info->sx_count,
-+					       end - cp - 1,
-+					       strip_info->
-+					       discard ? " (discarded)" :
-+					       "");
-+				if (strip_info->sx_count >
-+				    strip_info->sx_size) {
-+					strip_info->rx_over_errors++;
-+					printk(KERN_INFO
-+					       "%s: sx_buff overflow (%d bytes total)\n",
-+					       strip_info->dev->name,
-+					       strip_info->sx_count);
-+				} else if (strip_info->discard)
-+					printk(KERN_INFO
-+					       "%s: Discarding bad packet (%d/%d)\n",
-+					       strip_info->dev->name,
-+					       strip_info->discard,
-+					       strip_info->sx_count);
-+				else
-+					process_message(strip_info);
-+				strip_info->discard = 0;
-+				strip_info->sx_count = 0;
-+			} else {
-+				/* Make sure we have space in the buffer */
-+				if (strip_info->sx_count <
-+				    strip_info->sx_size)
-+					strip_info->sx_buff[strip_info->
-+							    sx_count] =
-+					    *cp;
-+				strip_info->sx_count++;
-+			}
-+		}
-+		cp++;
-+	}
-+	spin_unlock_bh(&strip_lock);
-+}
-+
-+
-+/************************************************************************/
-+/* General control routines						*/
-+
-+static int set_mac_address(struct strip *strip_info,
-+			   MetricomAddress * addr)
++struct arlan_shmem
 +{
-+	/*
-+	 * We're using a manually specified address if the address is set
-+	 * to anything other than all ones. Setting the address to all ones
-+	 * disables manual mode and goes back to automatic address determination
-+	 * (tracking the true address that the radio has).
-+	 */
-+	strip_info->manual_dev_addr =
-+	    memcmp(addr->c, broadcast_address.c,
-+		   sizeof(broadcast_address));
-+	if (strip_info->manual_dev_addr)
-+		*(MetricomAddress *) strip_info->dev->dev_addr = *addr;
-+	else
-+		*(MetricomAddress *) strip_info->dev->dev_addr =
-+		    strip_info->true_dev_addr;
-+	return 0;
-+}
++      /* Header Signature */ 
++      volatile	char textRegion[48];
++      volatile	u_char resetFlag;
++      volatile	u_char  diagnosticInfo;
++      volatile	u_short diagnosticOffset;
++      volatile	u_char _1[12];
++      volatile	u_char lanCardNodeId[6];
++      volatile	u_char broadcastAddress[6];
++      volatile	u_char hardwareType;
++      volatile	u_char majorHardwareVersion;
++      volatile	u_char minorHardwareVersion;
++      volatile	u_char radioModule;// shows EEPROM, can be overridden at 0x111
++      volatile	u_char defaultChannelSet; // shows EEProm, can be overriiden at 0x10A
++      volatile	u_char _2[47];
++      
++      /* Control/Status Block - 0x0080 */
++      volatile	u_char interruptInProgress; /* not used by lancpu */
++      volatile	u_char cntrlRegImage; /* not used by lancpu */
++      volatile	u_char _3[13];
++      volatile	u_char dumpByte;
++      volatile	u_char commandByte; /* non-zero = active */
++      volatile	u_char commandParameter[15];
 +
-+static int strip_set_mac_address(struct net_device *dev, void *addr)
++      /* Receive Status - 0x00a0 */
++      volatile	u_char rxStatus; /* 1- data, 2-control, 0xff - registr change */
++      volatile	u_char rxFrmType;
++      volatile	u_short rxOffset;
++      volatile	u_short rxLength;
++      volatile	u_char rxSrc[6];
++      volatile	u_char rxBroadcastFlag;
++      volatile	u_char rxQuality;
++      volatile	u_char scrambled;
++      volatile	u_char _4[1];
++      
++      /* Transmit Status - 0x00b0 */
++      volatile	u_char txStatus;
++      volatile	u_char txAckQuality;
++      volatile	u_char numRetries;
++      volatile	u_char _5[14];
++      volatile	u_char registeredRouter[6];
++      volatile	u_char backboneRouter[6];
++      volatile	u_char registrationStatus;
++      volatile	u_char configuredStatusFlag;
++      volatile	u_char _6[1];
++      volatile	u_char ultimateDestAddress[6];
++      volatile	u_char immedDestAddress[6];
++      volatile	u_char immedSrcAddress[6];
++      volatile	u_short rxSequenceNumber;
++      volatile	u_char assignedLocaltalkAddress;
++      volatile	u_char _7[27];
++
++      /* System Parameter Block */
++
++      /* - Driver Parameters (Novell Specific) */
++
++      volatile	u_short txTimeout;
++      volatile	u_short transportTime;
++      volatile	u_char _8[4];
++
++      /* - Configuration Parameters */
++      volatile	u_char irqLevel;
++      volatile	u_char spreadingCode;
++      volatile	u_char channelSet;
++      volatile	u_char channelNumber;
++      volatile	u_short radioNodeId;
++      volatile	u_char _9[2];
++      volatile	u_char scramblingDisable;
++      volatile	u_char radioType;
++      volatile	u_short routerId;
++      volatile	u_char _10[9];
++      volatile	u_char txAttenuation;
++      volatile	u_char systemId[4]; 
++      volatile	u_short globalChecksum;
++      volatile	u_char _11[4];
++      volatile	u_short maxDatagramSize;
++      volatile	u_short maxFrameSize;
++      volatile	u_char maxRetries;
++      volatile	u_char receiveMode;
++      volatile	u_char priority;
++      volatile	u_char rootOrRepeater;
++      volatile	u_char specifiedRouter[6];
++      volatile	u_short fastPollPeriod;
++      volatile	u_char pollDecay;
++      volatile	u_char fastPollDelay[2];
++      volatile	u_char arlThreshold;
++      volatile	u_char arlDecay;
++      volatile	u_char _12[1];
++      volatile	u_short specRouterTimeout;
++      volatile	u_char _13[5];
++
++      /* Scrambled Area */
++      volatile	u_char SID[4];
++      volatile	u_char encryptionKey[12];
++      volatile	u_char _14[2];
++      volatile	u_char waitTime[2];
++      volatile	u_char lParameter[2];
++      volatile	u_char _15[3];
++      volatile	u_short headerSize;
++      volatile	u_short sectionChecksum;
++
++      volatile	u_char registrationMode;
++      volatile	u_char registrationFill;
++      volatile	u_short pollPeriod;
++      volatile	u_short refreshPeriod;
++      volatile	u_char name[16];
++      volatile	u_char NID[6];
++      volatile	u_char localTalkAddress;
++      volatile	u_char codeFormat;
++      volatile	u_char numChannels;
++      volatile	u_char channel1;
++      volatile	u_char channel2;
++      volatile	u_char channel3;
++      volatile	u_char channel4;
++      volatile	u_char SSCode[59];
++
++      volatile	u_char _16[0xC0];
++      volatile	u_short auxCmd;
++      volatile	u_char  dumpPtr[4];
++      volatile	u_char dumpVal;
++      volatile	u_char _17[0x6A];
++      volatile	u_char wireTest;
++      volatile	u_char _18[14];
++
++      /* Statistics Block - 0x0300 */
++      volatile	u_char hostcpuLock;
++      volatile	u_char lancpuLock;
++      volatile	u_char resetTime[18];
++      
++      volatile	u_char numDatagramsTransmitted[4];
++      volatile	u_char numReTransmissions[4];
++      volatile	u_char numFramesDiscarded[4];
++      volatile	u_char numDatagramsReceived[4];
++      volatile	u_char numDuplicateReceivedFrames[4];
++      volatile	u_char numDatagramsDiscarded[4];
++      
++      volatile	u_short maxNumReTransmitDatagram;
++      volatile	u_short maxNumReTransmitFrames;
++      volatile	u_short maxNumConsecutiveDuplicateFrames;
++      /* misaligned here so we have to go to characters */
++     
++      volatile	u_char numBytesTransmitted[4];
++      volatile	u_char numBytesReceived[4];
++      volatile	u_char numCRCErrors[4];
++      volatile	u_char numLengthErrors[4];
++      volatile	u_char numAbortErrors[4];
++      volatile	u_char numTXUnderruns[4];
++      volatile	u_char numRXOverruns[4];
++      volatile	u_char numHoldOffs[4];
++      volatile	u_char numFramesTransmitted[4];
++      volatile	u_char numFramesReceived[4];
++      volatile	u_char numReceiveFramesLost[4];
++      volatile	u_char numRXBufferOverflows[4];
++      volatile	u_char numFramesDiscardedAddrMismatch[4];
++      volatile	u_char numFramesDiscardedSIDMismatch[4];
++      volatile	u_char numPollsTransmistted[4];
++      volatile	u_char numPollAcknowledges[4];
++      volatile	u_char numStatusTimeouts[4];
++      volatile	u_char numNACKReceived[4];
++
++      volatile	u_char _19[0x86];
++
++      volatile	u_char txBuffer[0x800];
++      volatile	u_char rxBuffer[0x800];
++
++      volatile	u_char _20[0x800];
++      volatile	u_char _21[0x3fb];
++      volatile	u_char configStatus;
++      volatile	u_char _22;
++      volatile	u_char progIOCtrl;
++      volatile	u_char shareMBase;
++      volatile	u_char controlRegister;
++};
++
++struct arlan_conf_stru {
++      int spreadingCode;
++      int channelSet;
++      int channelNumber;
++      int scramblingDisable;
++      int txAttenuation;
++      int systemId; 
++      int maxDatagramSize;
++      int maxFrameSize;
++      int maxRetries;
++      int receiveMode;
++      int priority;
++      int rootOrRepeater;
++      int SID;
++      int radioNodeId;
++      int registrationMode;
++      int registrationFill;
++      int localTalkAddress;
++      int codeFormat;
++      int numChannels;
++      int channel1;
++      int channel2;
++      int channel3;
++      int channel4;
++      int txClear;
++      int txRetries;
++      int txRouting;
++      int txScrambled;
++      int rxParameter;
++      int txTimeoutMs;
++      int txAckTimeoutMs;
++      int waitCardTimeout;
++      int	waitTime;
++      int	lParameter;
++      int	_15;
++      int	headerSize;
++      int retries;
++      int tx_delay_ms;
++      int waitReTransmitPacketMaxSize;
++      int ReTransmitPacketMaxSize;
++      int fastReTransCount;
++      int driverRetransmissions;
++      int registrationInterrupts;
++      int hardwareType;
++      int radioType;
++      int writeRadioType;
++      int writeEEPROM;
++      char siteName[17];
++      int measure_rate;
++      int in_speed;
++      int out_speed;
++      int in_speed10;
++      int out_speed10;
++      int in_speed_max;
++      int out_speed_max;
++      int pre_Command_Wait;
++      int rx_tweak1;
++      int rx_tweak2;
++      int tx_queue_len;
++};
++
++extern struct arlan_conf_stru arlan_conf[MAX_ARLANS];
++
++struct TxParam
 +{
-+	struct strip *strip_info = netdev_priv(dev);
-+	struct sockaddr *sa = addr;
-+	printk(KERN_INFO "%s: strip_set_dev_mac_address called\n", dev->name);
-+	set_mac_address(strip_info, (MetricomAddress *) sa->sa_data);
-+	return 0;
-+}
++      volatile	short 		offset;
++      volatile 	short 		length;
++      volatile	u_char 		dest[6];
++      volatile	unsigned	char clear;
++      volatile	unsigned	char retries;
++      volatile	unsigned	char routing;
++      volatile	unsigned	char scrambled;
++};
 +
-+static struct net_device_stats *strip_get_stats(struct net_device *dev)
-+{
-+	struct strip *strip_info = netdev_priv(dev);
-+	static struct net_device_stats stats;
++#define TX_RING_SIZE 2
++/* Information that need to be kept for each board. */
++struct arlan_private {
++      struct arlan_shmem __iomem * card;
++      struct arlan_shmem * conf;
 +
-+	memset(&stats, 0, sizeof(struct net_device_stats));
++      struct arlan_conf_stru * Conf;	     
++      int	bad;
++      int 	reset;
++      unsigned long lastReset;
++      struct timer_list timer;
++      struct timer_list tx_delay_timer;
++      struct timer_list tx_retry_timer;
++      struct timer_list rx_check_timer;
 +
-+	stats.rx_packets = strip_info->rx_packets;
-+	stats.tx_packets = strip_info->tx_packets;
-+	stats.rx_dropped = strip_info->rx_dropped;
-+	stats.tx_dropped = strip_info->tx_dropped;
-+	stats.tx_errors = strip_info->tx_errors;
-+	stats.rx_errors = strip_info->rx_errors;
-+	stats.rx_over_errors = strip_info->rx_over_errors;
-+	return (&stats);
-+}
++      int registrationLostCount;
++      int reRegisterExp;
++      int irq_test_done;
 +
++      struct TxParam txRing[TX_RING_SIZE];
++      char reTransmitBuff[0x800];
++      int txLast;
++      unsigned ReTransmitRequested;
++      unsigned long tx_done_delayed;
++      unsigned long registrationLastSeen;
 +
-+/************************************************************************/
-+/* Opening and closing							*/
++      unsigned long	tx_last_sent;
++      unsigned long	tx_last_cleared;
++      unsigned long	retransmissions;
++      unsigned long 	interrupt_ack_requested;
++      spinlock_t	lock;
++      unsigned long	waiting_command_mask;
++      unsigned long 	card_polling_interval;
++      unsigned long 	last_command_buff_free_time;
 +
-+/*
-+ * Here's the order things happen:
-+ * When the user runs "slattach -p strip ..."
-+ *  1. The TTY module calls strip_open;;
-+ *  2. strip_open calls strip_alloc
-+ *  3.                  strip_alloc calls register_netdev
-+ *  4.                  register_netdev calls strip_dev_init
-+ *  5. then strip_open finishes setting up the strip_info
-+ *
-+ * When the user runs "ifconfig st<x> up address netmask ..."
-+ *  6. strip_open_low gets called
-+ *
-+ * When the user runs "ifconfig st<x> down"
-+ *  7. strip_close_low gets called
-+ *
-+ * When the user kills the slattach process
-+ *  8. strip_close gets called
-+ *  9. strip_close calls dev_close
-+ * 10. if the device is still up, then dev_close calls strip_close_low
-+ * 11. strip_close calls strip_free
-+ */
-+
-+/* Open the low-level part of the STRIP channel. Easy! */
-+
-+static int strip_open_low(struct net_device *dev)
-+{
-+	struct strip *strip_info = netdev_priv(dev);
-+
-+	if (strip_info->tty == NULL)
-+		return (-ENODEV);
-+
-+	if (!allocate_buffers(strip_info, dev->mtu))
-+		return (-ENOMEM);
-+
-+	strip_info->sx_count = 0;
-+	strip_info->tx_left = 0;
-+
-+	strip_info->discard = 0;
-+	strip_info->working = FALSE;
-+	strip_info->firmware_level = NoStructure;
-+	strip_info->next_command = CompatibilityCommand;
-+	strip_info->user_baud = tty_get_baud_rate(strip_info->tty);
-+
-+	printk(KERN_INFO "%s: Initializing Radio.\n",
-+	       strip_info->dev->name);
-+	ResetRadio(strip_info);
-+	strip_info->idle_timer.expires = jiffies + 1 * HZ;
-+	add_timer(&strip_info->idle_timer);
-+	netif_wake_queue(dev);
-+	return (0);
-+}
-+
-+
-+/*
-+ * Close the low-level part of the STRIP channel. Easy!
-+ */
-+
-+static int strip_close_low(struct net_device *dev)
-+{
-+	struct strip *strip_info = netdev_priv(dev);
-+
-+	if (strip_info->tty == NULL)
-+		return -EBUSY;
-+	clear_bit(TTY_DO_WRITE_WAKEUP, &strip_info->tty->flags);
-+	netif_stop_queue(dev);
-+
-+	/*
-+	 * Free all STRIP frame buffers.
-+	 */
-+	kfree(strip_info->rx_buff);
-+	strip_info->rx_buff = NULL;
-+	kfree(strip_info->sx_buff);
-+	strip_info->sx_buff = NULL;
-+	kfree(strip_info->tx_buff);
-+	strip_info->tx_buff = NULL;
-+
-+	del_timer(&strip_info->idle_timer);
-+	return 0;
-+}
-+
-+static const struct header_ops strip_header_ops = {
-+	.create = strip_header,
-+	.rebuild = strip_rebuild_header,
++      int 		under_reset;
++      int 		under_config;
++      int 		rx_command_given;
++      int	 	tx_command_given;
++      unsigned  long	interrupt_processing_active;
++      unsigned long	last_rx_int_ack_time;
++      unsigned long	in_bytes;
++      unsigned long 	out_bytes;
++      unsigned long	in_time;
++      unsigned long	out_time;
++      unsigned long	in_time10;
++      unsigned long	out_time10;
++      unsigned long	in_bytes10;
++      unsigned long 	out_bytes10;
++      int	init_etherdev_alloc;
 +};
 +
 +
-+static const struct net_device_ops strip_netdev_ops = {
-+	.ndo_open 	= strip_open_low,
-+	.ndo_stop 	= strip_close_low,
-+	.ndo_start_xmit = strip_xmit,
-+	.ndo_set_mac_address = strip_set_mac_address,
-+	.ndo_get_stats	= strip_get_stats,
-+	.ndo_change_mtu = strip_change_mtu,
-+};
 +
-+/*
-+ * This routine is called by DDI when the
-+ * (dynamically assigned) device is registered
-+ */
++#define ARLAN_CLEAR		0x00
++#define ARLAN_RESET 		0x01
++#define ARLAN_CHANNEL_ATTENTION 0x02
++#define ARLAN_INTERRUPT_ENABLE 	0x04
++#define ARLAN_CLEAR_INTERRUPT 	0x08
++#define ARLAN_POWER 		0x40
++#define ARLAN_ACCESS		0x80
 +
-+static void strip_dev_setup(struct net_device *dev)
-+{
-+	/*
-+	 * Finish setting up the DEVICE info.
-+	 */
-+
-+	dev->trans_start = 0;
-+	dev->tx_queue_len = 30;	/* Drop after 30 frames queued */
-+
-+	dev->flags = 0;
-+	dev->mtu = DEFAULT_STRIP_MTU;
-+	dev->type = ARPHRD_METRICOM;	/* dtang */
-+	dev->hard_header_len = sizeof(STRIP_Header);
-+	/*
-+	 *  netdev_priv(dev) Already holds a pointer to our struct strip
-+	 */
-+
-+	*(MetricomAddress *)dev->broadcast = broadcast_address;
-+	dev->dev_addr[0] = 0;
-+	dev->addr_len = sizeof(MetricomAddress);
-+
-+	dev->header_ops = &strip_header_ops,
-+	dev->netdev_ops = &strip_netdev_ops;
-+}
-+
-+/*
-+ * Free a STRIP channel.
-+ */
-+
-+static void strip_free(struct strip *strip_info)
-+{
-+	spin_lock_bh(&strip_lock);
-+	list_del_rcu(&strip_info->list);
-+	spin_unlock_bh(&strip_lock);
-+
-+	strip_info->magic = 0;
-+
-+	free_netdev(strip_info->dev);
-+}
++#define ARLAN_COM_CONF                0x01
++#define ARLAN_COM_RX_ENABLE           0x03
++#define ARLAN_COM_RX_ABORT            0x04
++#define ARLAN_COM_TX_ENABLE           0x05
++#define ARLAN_COM_TX_ABORT            0x06
++#define ARLAN_COM_NOP		      0x07
++#define ARLAN_COM_STANDBY             0x08
++#define ARLAN_COM_ACTIVATE            0x09
++#define ARLAN_COM_GOTO_SLOW_POLL      0x0a
++#define ARLAN_COM_INT                 0x80
 +
 +
-+/*
-+ * Allocate a new free STRIP channel
-+ */
-+static struct strip *strip_alloc(void)
-+{
-+	struct list_head *n;
-+	struct net_device *dev;
-+	struct strip *strip_info;
++#define TXLAST(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[((struct arlan_private *)netdev_priv(dev))->txLast])
++#define TXHEAD(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[0])
++#define TXTAIL(dev) (((struct arlan_private *)netdev_priv(dev))->txRing[1])
 +
-+	dev = alloc_netdev(sizeof(struct strip), "st%d",
-+			   strip_dev_setup);
-+
-+	if (!dev)
-+		return NULL;	/* If no more memory, return */
-+
-+
-+	strip_info = netdev_priv(dev);
-+	strip_info->dev = dev;
-+
-+	strip_info->magic = STRIP_MAGIC;
-+	strip_info->tty = NULL;
-+
-+	strip_info->gratuitous_arp = jiffies + LongTime;
-+	strip_info->arp_interval = 0;
-+	init_timer(&strip_info->idle_timer);
-+	strip_info->idle_timer.data = (long) dev;
-+	strip_info->idle_timer.function = strip_IdleTask;
-+
-+
-+	spin_lock_bh(&strip_lock);
-+ rescan:
-+	/*
-+	 * Search the list to find where to put our new entry
-+	 * (and in the process decide what channel number it is
-+	 * going to be)
-+	 */
-+	list_for_each(n, &strip_list) {
-+		struct strip *s = hlist_entry(n, struct strip, list);
-+
-+		if (s->dev->base_addr == dev->base_addr) {
-+			++dev->base_addr;
-+			goto rescan;
-+		}
++#define TXBuffStart(dev) offsetof(struct arlan_shmem, txBuffer)
++#define TXBuffEnd(dev) offsetof(struct arlan_shmem, xxBuffer)
++ 
++#define READSHM(to,from,atype) {\
++	atype tmp;\
++	memcpy_fromio(&(tmp),&(from),sizeof(atype));\
++	to = tmp;\
 +	}
 +
-+	sprintf(dev->name, "st%ld", dev->base_addr);
++#define READSHMEM(from,atype)\
++	atype from; \
++	READSHM(from, arlan->from, atype);
 +
-+	list_add_tail_rcu(&strip_info->list, &strip_list);
-+	spin_unlock_bh(&strip_lock);
-+
-+	return strip_info;
-+}
-+
-+/*
-+ * Open the high-level part of the STRIP channel.
-+ * This function is called by the TTY module when the
-+ * STRIP line discipline is called for.  Because we are
-+ * sure the tty line exists, we only have to link it to
-+ * a free STRIP channel...
-+ */
-+
-+static int strip_open(struct tty_struct *tty)
-+{
-+	struct strip *strip_info = tty->disc_data;
-+
-+	/*
-+	 * First make sure we're not already connected.
-+	 */
-+
-+	if (strip_info && strip_info->magic == STRIP_MAGIC)
-+		return -EEXIST;
-+
-+	/*
-+	 * We need a write method.
-+	 */
-+
-+	if (tty->ops->write == NULL || tty->ops->set_termios == NULL)
-+		return -EOPNOTSUPP;
-+
-+	/*
-+	 * OK.  Find a free STRIP channel to use.
-+	 */
-+	if ((strip_info = strip_alloc()) == NULL)
-+		return -ENFILE;
-+
-+	/*
-+	 * Register our newly created device so it can be ifconfig'd
-+	 * strip_dev_init() will be called as a side-effect
-+	 */
-+
-+	if (register_netdev(strip_info->dev) != 0) {
-+		printk(KERN_ERR "strip: register_netdev() failed.\n");
-+		strip_free(strip_info);
-+		return -ENFILE;
++#define WRITESHM(to,from,atype) \
++	{ atype tmpSHM = from;\
++	memcpy_toio(&(to),&tmpSHM,sizeof(atype));\
 +	}
 +
-+	strip_info->tty = tty;
-+	tty->disc_data = strip_info;
-+	tty->receive_room = 65536;
-+
-+	tty_driver_flush_buffer(tty);
-+
-+	/*
-+	 * Restore default settings
-+	 */
-+
-+	strip_info->dev->type = ARPHRD_METRICOM;	/* dtang */
-+
-+	/*
-+	 * Set tty options
-+	 */
-+
-+	tty->termios->c_iflag |= IGNBRK | IGNPAR;	/* Ignore breaks and parity errors. */
-+	tty->termios->c_cflag |= CLOCAL;	/* Ignore modem control signals. */
-+	tty->termios->c_cflag &= ~HUPCL;	/* Don't close on hup */
-+
-+	printk(KERN_INFO "STRIP: device \"%s\" activated\n",
-+	       strip_info->dev->name);
-+
-+	/*
-+	 * Done.  We have linked the TTY line to a channel.
-+	 */
-+	return (strip_info->dev->base_addr);
-+}
-+
-+/*
-+ * Close down a STRIP channel.
-+ * This means flushing out any pending queues, and then restoring the
-+ * TTY line discipline to what it was before it got hooked to STRIP
-+ * (which usually is TTY again).
-+ */
-+
-+static void strip_close(struct tty_struct *tty)
-+{
-+	struct strip *strip_info = tty->disc_data;
-+
-+	/*
-+	 * First make sure we're connected.
-+	 */
-+
-+	if (!strip_info || strip_info->magic != STRIP_MAGIC)
-+		return;
-+
-+	unregister_netdev(strip_info->dev);
-+
-+	tty->disc_data = NULL;
-+	strip_info->tty = NULL;
-+	printk(KERN_INFO "STRIP: device \"%s\" closed down\n",
-+	       strip_info->dev->name);
-+	strip_free(strip_info);
-+	tty->disc_data = NULL;
-+}
-+
-+
-+/************************************************************************/
-+/* Perform I/O control calls on an active STRIP channel.		*/
-+
-+static int strip_ioctl(struct tty_struct *tty, struct file *file,
-+		       unsigned int cmd, unsigned long arg)
-+{
-+	struct strip *strip_info = tty->disc_data;
-+
-+	/*
-+	 * First make sure we're connected.
-+	 */
-+
-+	if (!strip_info || strip_info->magic != STRIP_MAGIC)
-+		return -EINVAL;
-+
-+	switch (cmd) {
-+	case SIOCGIFNAME:
-+		if(copy_to_user((void __user *) arg, strip_info->dev->name, strlen(strip_info->dev->name) + 1))
-+			return -EFAULT;
-+		break;
-+	case SIOCSIFHWADDR:
-+	{
-+		MetricomAddress addr;
-+		//printk(KERN_INFO "%s: SIOCSIFHWADDR\n", strip_info->dev->name);
-+		if(copy_from_user(&addr, (void __user *) arg, sizeof(MetricomAddress)))
-+			return -EFAULT;
-+		return set_mac_address(strip_info, &addr);
-+	}
-+	default:
-+		return tty_mode_ioctl(tty, file, cmd, arg);
-+		break;
-+	}
-+	return 0;
-+}
-+
-+
-+/************************************************************************/
-+/* Initialization							*/
-+
-+static struct tty_ldisc_ops strip_ldisc = {
-+	.magic = TTY_LDISC_MAGIC,
-+	.name = "strip",
-+	.owner = THIS_MODULE,
-+	.open = strip_open,
-+	.close = strip_close,
-+	.ioctl = strip_ioctl,
-+	.receive_buf = strip_receive_buf,
-+	.write_wakeup = strip_write_some_more,
-+};
-+
-+/*
-+ * Initialize the STRIP driver.
-+ * This routine is called at boot time, to bootstrap the multi-channel
-+ * STRIP driver
-+ */
-+
-+static char signon[] __initdata =
-+    KERN_INFO "STRIP: Version %s (unlimited channels)\n";
-+
-+static int __init strip_init_driver(void)
-+{
-+	int status;
-+
-+	printk(signon, StripVersion);
-+
-+	
-+	/*
-+	 * Fill in our line protocol discipline, and register it
-+	 */
-+	if ((status = tty_register_ldisc(N_STRIP, &strip_ldisc)))
-+		printk(KERN_ERR "STRIP: can't register line discipline (err = %d)\n",
-+		       status);
-+
-+	/*
-+	 * Register the status file with /proc
-+	 */
-+	proc_net_fops_create(&init_net, "strip", S_IFREG | S_IRUGO, &strip_seq_fops);
-+
-+	return status;
-+}
-+
-+module_init(strip_init_driver);
-+
-+static const char signoff[] __exitdata =
-+    KERN_INFO "STRIP: Module Unloaded\n";
-+
-+static void __exit strip_exit_driver(void)
-+{
-+	int i;
-+	struct list_head *p,*n;
-+
-+	/* module ref count rules assure that all entries are unregistered */
-+	list_for_each_safe(p, n, &strip_list) {
-+		struct strip *s = list_entry(p, struct strip, list);
-+		strip_free(s);
++#define DEBUGSHM(levelSHM,stringSHM,stuff,atype) \
++	{	atype tmpSHM; \
++		memcpy_fromio(&tmpSHM,&(stuff),sizeof(atype));\
++		IFDEBUG(levelSHM) printk(stringSHM,tmpSHM);\
 +	}
 +
-+	/* Unregister with the /proc/net file here. */
-+	proc_net_remove(&init_net, "strip");
++#define WRITESHMB(to, val) \
++	writeb(val,&(to))
++#define READSHMB(to) \
++	readb(&(to))
++#define WRITESHMS(to, val) \
++	writew(val,&(to))
++#define READSHMS(to) \
++	readw(&(to))
++#define WRITESHMI(to, val) \
++	writel(val,&(to))
++#define READSHMI(to) \
++	readl(&(to))
 +
-+	if ((i = tty_unregister_ldisc(N_STRIP)))
-+		printk(KERN_ERR "STRIP: can't unregister line discipline (err = %d)\n", i);
 +
-+	printk(signoff);
++
++
++
++#define registrationBad(dev)\
++   ( (   READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationMode)    > 0) && \
++     (   READSHMB(((struct arlan_private *)netdev_priv(dev))->card->registrationStatus) == 0)    )
++
++
++#define readControlRegister(dev)\
++ 	READSHMB(((struct arlan_private *)netdev_priv(dev))->card->cntrlRegImage)
++
++#define writeControlRegister(dev, v){\
++   WRITESHMB(((struct arlan_private *)netdev_priv(dev))->card->cntrlRegImage	,((v) &0xF) );\
++   WRITESHMB(((struct arlan_private *)netdev_priv(dev))->card->controlRegister	,(v) 	);}
++
++
++#define arlan_interrupt_lancpu(dev) {\
++   int cr;   \
++   \
++   cr = readControlRegister(dev);\
++   if (cr & ARLAN_CHANNEL_ATTENTION){ \
++      writeControlRegister(dev, (cr & ~ARLAN_CHANNEL_ATTENTION));\
++   }else  \
++      writeControlRegister(dev, (cr | ARLAN_CHANNEL_ATTENTION));\
 +}
 +
-+module_exit(strip_exit_driver);
++#define clearChannelAttention(dev){ \
++   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_CHANNEL_ATTENTION);}
++#define setHardwareReset(dev) {\
++   writeControlRegister(dev,readControlRegister(dev) | ARLAN_RESET);}
++#define clearHardwareReset(dev) {\
++   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_RESET);}
++#define setInterruptEnable(dev){\
++   writeControlRegister(dev,readControlRegister(dev) | ARLAN_INTERRUPT_ENABLE)  ;}
++#define clearInterruptEnable(dev){\
++   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_INTERRUPT_ENABLE)  ;}
++#define setClearInterrupt(dev){\
++   writeControlRegister(dev,readControlRegister(dev) | ARLAN_CLEAR_INTERRUPT)   ;}
++#define clearClearInterrupt(dev){\
++   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_CLEAR_INTERRUPT);}
++#define setPowerOff(dev){\
++   writeControlRegister(dev,readControlRegister(dev) | (ARLAN_POWER && ARLAN_ACCESS));\
++   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_ACCESS);}
++#define setPowerOn(dev){\
++   writeControlRegister(dev,readControlRegister(dev) & ~(ARLAN_POWER));   }
++#define arlan_lock_card_access(dev){\
++   writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_ACCESS);}
++#define arlan_unlock_card_access(dev){\
++   writeControlRegister(dev,readControlRegister(dev) | ARLAN_ACCESS ); }  
 +
-+MODULE_AUTHOR("Stuart Cheshire <cheshire@cs.stanford.edu>");
-+MODULE_DESCRIPTION("Starmode Radio IP (STRIP) Device Driver");
-+MODULE_LICENSE("Dual BSD/GPL");
 +
-+MODULE_SUPPORTED_DEVICE("Starmode Radio IP (STRIP) modem");
++
++
++#define ARLAN_COMMAND_RX		0x000001
++#define ARLAN_COMMAND_NOOP		0x000002
++#define ARLAN_COMMAND_NOOPINT		0x000004
++#define ARLAN_COMMAND_TX		0x000008
++#define ARLAN_COMMAND_CONF		0x000010
++#define ARLAN_COMMAND_RESET		0x000020
++#define ARLAN_COMMAND_TX_ABORT		0x000040
++#define ARLAN_COMMAND_RX_ABORT		0x000080
++#define ARLAN_COMMAND_POWERDOWN		0x000100
++#define ARLAN_COMMAND_POWERUP		0x000200
++#define ARLAN_COMMAND_SLOW_POLL 	0x000400
++#define ARLAN_COMMAND_ACTIVATE 		0x000800
++#define ARLAN_COMMAND_INT_ACK		0x001000
++#define ARLAN_COMMAND_INT_ENABLE	0x002000
++#define ARLAN_COMMAND_WAIT_NOW		0x004000
++#define ARLAN_COMMAND_LONG_WAIT_NOW	0x008000
++#define ARLAN_COMMAND_STANDBY		0x010000
++#define ARLAN_COMMAND_INT_RACK		0x020000
++#define ARLAN_COMMAND_INT_RENABLE	0x040000
++#define ARLAN_COMMAND_CONF_WAIT		0x080000
++#define ARLAN_COMMAND_TBUSY_CLEAR	0x100000
++#define ARLAN_COMMAND_CLEAN_AND_CONF	(ARLAN_COMMAND_TX_ABORT\
++					| ARLAN_COMMAND_RX_ABORT\
++					| ARLAN_COMMAND_CONF)
++#define ARLAN_COMMAND_CLEAN_AND_RESET   (ARLAN_COMMAND_TX_ABORT\
++					| ARLAN_COMMAND_RX_ABORT\
++					| ARLAN_COMMAND_RESET)
++
++
++ 
++#define ARLAN_DEBUG_CHAIN_LOCKS		0x00001
++#define ARLAN_DEBUG_RESET		0x00002
++#define ARLAN_DEBUG_TIMING		0x00004
++#define ARLAN_DEBUG_CARD_STATE		0x00008
++#define ARLAN_DEBUG_TX_CHAIN		0x00010
++#define ARLAN_DEBUG_MULTICAST		0x00020
++#define ARLAN_DEBUG_HEADER_DUMP		0x00040
++#define ARLAN_DEBUG_INTERRUPT		0x00080
++#define ARLAN_DEBUG_STARTUP		0x00100
++#define ARLAN_DEBUG_SHUTDOWN		0x00200
++ 
 -- 
 1.6.2.5
 
