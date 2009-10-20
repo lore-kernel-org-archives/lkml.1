@@ -1,148 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbZJTPbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbZJTPcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752535AbZJTPbO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 11:31:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZJTPbO
+	id S1752568AbZJTPcx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 11:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbZJTPcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 11:31:14 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:42486 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbZJTPbN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 11:31:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=AigYUXnuH5q91a+fk3eWVM7RnwGQWV16xt0LYpa0fchRhUNSFsMjIEkfePKclbGL33
-         TY6KcOuaa1qt9Us/oPa7uLUfgL0+7cKnn7gpG+fVp7avVRAMVLE1GHkfChq6LjtDwydG
-         R/OnVnHTn7uXs4PV001rn14MZxJ6Jt368GEHw=
-Subject: Re: ftrace for MIPS
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: rostedt@goodmis.org
-Cc: Thomas Gleixner <tglx@linutronix.de>, Nicholas Mc Guire <der.herr@hofr.at>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1255997319.18347.576.camel@gandalf.stny.rr.com>
-References: <1255995599.17795.15.camel@falcon>
-	 <1255997319.18347.576.camel@gandalf.stny.rr.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Tue, 20 Oct 2009 23:31:07 +0800
-Message-Id: <1256052667.8149.56.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 20 Oct 2009 11:32:52 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:34603 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752447AbZJTPcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 11:32:51 -0400
+Message-ID: <4ADDD81B.3030208@us.ibm.com>
+Date: Tue, 20 Oct 2009 08:32:43 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: John Kacur <jkacur@redhat.com>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH] futex: Detect mismatched requeue targets
+References: <alpine.LFD.2.00.0910201325480.3609@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0910201325480.3609@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-added CC to linux-mips and lkml.
-
-> On Tue, 2009-10-20 at 07:39 +0800, Wu Zhangjin wrote:
+John Kacur wrote:
+> Hello Darren
 > 
-> > 3. to handle the non-leaf function(hijack the return address), we need
-> > to get the stack address of the return address, but it's not easy to get
-> > it in MIPS, search the return address in the stack space is not
-> > reliable, searching the text is dangerous(pagefault..., have tried
-> > probe_kernel_read(), just hang there!), so, a clean solution maybe
-> > hacking gcc via pushing ra to 0(sp) or another "fixed"(fixed offset)
-> > stack address or recording the offset and transfer it to _mcount.
+> I took your patch from commit 84bc4af59081ee974dd80210e694ab59ebe51ce8
+> and I tried to git-cherry-pick it for v2.6.31.4-rt14
 > 
-> Have you figured out why you can't find the text? If mcount is called,
-> you most definitely must have stored ra somewhere.
+> I had a little merge-commit to resolve. That wasn't too hard, but as the 
+> code is a bit different between the two versions, I would appreciate it if 
+> you could review the patch, and make sure that it still makes sense for 
+> v2.6.31.r-rt14
+
+Hi John,
+
+It looks good to me.  Where did you have the conflicts?
+
+--
+Darren
+
 > 
-> As for the hang with probe kernel read, I wonder if you need to disable
-> tracing before using it. Or at least have a way not to recurs. I'm
-> looking at probe_kernel_read, and it looks like it would also be traced.
+> Thanks!
+> John
 > 
-> Looking at x86 and powerpc, we hand do the probing.
+> From 7135729cbbc5bf16c95abdca5366ec5de0a01909 Mon Sep 17 00:00:00 2001
+> From: Darren Hart <dvhltc@us.ibm.com>
+> Date: Thu, 13 Aug 2009 17:36:53 -0700
+> Subject: [PATCH] futex: Detect mismatched requeue targets
 > 
+> There is currently no check to ensure that userspace uses the same
+> futex requeue target (uaddr2) in futex_requeue() that the waiter used
+> in futex_wait_requeue_pi().  A mismatch here could very unexpected
+> results as the waiter assumes it either wakes on uaddr1 or uaddr2. We
+> could detect this on wakeup in the waiter, but the cleanup is more
+> intense after the improper requeue has occured.
+> 
+> This patch stores the waiter's expected requeue target in a new
+> requeue_pi_key pointer in the futex_q which futex_requeue() checks
+> prior to attempting to do a proxy lock acquistion or a requeue when
+> requeue_pi=1. If they don't match, return -EINVAL from futex_requeue,
+> aborting the requeue of any remaining waiters.
+> 
+> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Eric Dumazet <eric.dumazet@gmail.com>
+> Cc: John Kacur <jkacur@redhat.com>
+> Cc: Dinakar Guniguntala <dino@in.ibm.com>
+> Cc: John Stultz <johnstul@us.ibm.com>
+> LKML-Reference: <20090814003650.14634.63916.stgit@Aeon>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: John Kacur <jkacur@redhat.com>
+> ---
+>  kernel/futex.c |   24 ++++++++++++++++++++----
+>  1 files changed, 20 insertions(+), 4 deletions(-)
+> 
+> diff --git a/kernel/futex.c b/kernel/futex.c
+> index 7c4a6ac..5978a84 100644
+> --- a/kernel/futex.c
+> +++ b/kernel/futex.c
+> @@ -115,6 +115,9 @@ struct futex_q {
+>  	/* rt_waiter storage for requeue_pi: */
+>  	struct rt_mutex_waiter *rt_waiter;
+> 
+> +	/* The expected requeue pi target futex key: */
+> +	union futex_key *requeue_pi_key;
+> +
+>  	/* Bitset for the optional bitmasked wakeup */
+>  	u32 bitset;
+>  };
+> @@ -1089,6 +1092,10 @@ static int futex_proxy_trylock_atomic(u32 __user *pifutex,
+>  	if (!top_waiter)
+>  		return 0;
+> 
+> +	/* Ensure we requeue to the expected futex. */
+> +	if (!match_futex(top_waiter->requeue_pi_key, key2))
+> +		return -EINVAL;
+> +
+>  	/*
+>  	 * Try to take the lock for top_waiter.  Set the FUTEX_WAITERS bit in
+>  	 * the contended case or if set_waiters is 1.  The pi_state is returned
+> @@ -1276,6 +1283,12 @@ retry_private:
+>  			continue;
+>  		}
+> 
+> +		/* Ensure we requeue to the expected futex for requeue_pi. */
+> +		if (requeue_pi && !match_futex(this->requeue_pi_key, &key2)) {
+> +			ret = -EINVAL;
+> +			break;
+> +		}
+> +
+>  		/*
+>  		 * Requeue nr_requeue waiters and possibly one more in the case
+>  		 * of requeue_pi if we couldn't acquire the lock atomically.
+> @@ -1742,6 +1755,7 @@ static int futex_wait(u32 __user *uaddr, int fshared,
+>  	q.pi_state = NULL;
+>  	q.bitset = bitset;
+>  	q.rt_waiter = NULL;
+> +	q.requeue_pi_key = NULL;
+> 
+>  	if (abs_time) {
+>  		to = &timeout;
+> @@ -1855,6 +1869,7 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
+> 
+>  	q.pi_state = NULL;
+>  	q.rt_waiter = NULL;
+> +	q.requeue_pi_key = NULL;
+>  retry:
+>  	q.key = FUTEX_KEY_INIT;
+>  	ret = get_futex_key(uaddr, fshared, &q.key, VERIFY_WRITE);
+> @@ -2167,16 +2182,17 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, int fshared,
+>  	debug_rt_mutex_init_waiter(&rt_waiter);
+>  	rt_waiter.task = NULL;
+> 
+> -	q.pi_state = NULL;
+> -	q.bitset = bitset;
+> -	q.rt_waiter = &rt_waiter;
+> -
+>  retry:
+>  	key2 = FUTEX_KEY_INIT;
+>  	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
+>  	if (unlikely(ret != 0))
+>  		goto out;
+> 
+> +	q.pi_state = NULL;
+> +	q.bitset = bitset;
+> +	q.rt_waiter = &rt_waiter;
+> +	q.requeue_pi_key = &key2;
+> +
+>  	/* Prepare to wait on uaddr. */
+>  	ret = futex_wait_setup(uaddr, val, fshared, &q, &hb);
+>  	if (ret)
 
-Just added tracing_stop() and tracing_start() around
-probe_kernel_read(), it works(not hang again), and i can get the stack
-address of the ra register(return address) now, but failed when trying
-to hijack the return address via writing &return_to_handler in the stack
-address:
 
-I can write hijack some of the addresses, but failed with this error at
-last:
-
-Unable to handle kernel paging request at 0000000000000000, epc =
-0000000000000000, ra = 000000000000.
-
-Need to check which registers is missing when saving/restoring for
-_mcount:
-
-
-NESTED(ftrace_graph_caller, PT_SIZE, ra) 
-        MCOUNT_SAVE_REGS
-        PTR_S   v0, PT_R2(sp)
-
-        MCOUNT_SET_ARGS
-        jal     prepare_ftrace_return
-        nop
-
-        /* overwrite the parent as &return_to_handler: v0 -> $1(at) */
-        move    $1,     v0  
-
-        PTR_L   v0, PT_R2(sp)
-        MCOUNT_RESTORE_REGS
-        RETURN_BACK
-        END(ftrace_graph_caller)
-
-        .align  2
-        .globl  return_to_handler
-return_to_handler:
-        PTR_SUBU        sp, PT_SIZE
-        PTR_S   v0, PT_R2(sp)
-
-        jal     ftrace_return_to_handler
-        nop
-
-        /* restore the real parent address: v0 -> ra */
-        move    ra, v0
-
-        PTR_L   v0, PT_R2(sp)
-        PTR_ADDIU       sp, PT_SIZE
-
-        jr      ra
-
-...
-
-        .macro MCOUNT_SAVE_REGS
-        PTR_SUBU        sp, PT_SIZE
-        PTR_S   ra, PT_R31(sp)
-        PTR_S   AT, PT_R1(sp)
-        PTR_S   a0, PT_R4(sp)
-        PTR_S   a1, PT_R5(sp)
-        PTR_S   a2, PT_R6(sp)
-        PTR_S   a3, PT_R7(sp)
-#ifdef CONFIG_64BIT
-        PTR_S   a4, PT_R8(sp)
-        PTR_S   a5, PT_R9(sp)
-        PTR_S   a6, PT_R10(sp)
-        PTR_S   a7, PT_R11(sp)
-#endif
-        .endm
-
-        .macro MCOUNT_RESTORE_REGS
-        PTR_L   ra, PT_R31(sp)
-        PTR_L   AT, PT_R1(sp)
-        PTR_L   a0, PT_R4(sp)
-        PTR_L   a1, PT_R5(sp)
-        PTR_L   a2, PT_R6(sp)
-        PTR_L   a3, PT_R7(sp)
-#ifdef CONFIG_64BIT
-        PTR_L   a4, PT_R8(sp)
-        PTR_L   a5, PT_R9(sp)
-        PTR_L   a6, PT_R10(sp)
-        PTR_L   a7, PT_R11(sp)
-#endif
-        PTR_ADDIU       sp, PT_SIZE
-
-Regards,
-	Wu Zhangjin
-
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
