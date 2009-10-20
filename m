@@ -1,103 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbZJTNXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752136AbZJTNiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752140AbZJTNXi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 09:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZJTNXi
+	id S1752136AbZJTNiB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 09:38:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZJTNiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 09:23:38 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:63442 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752097AbZJTNXf (ORCPT
+	Tue, 20 Oct 2009 09:38:00 -0400
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:53746 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752070AbZJTNh7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 09:23:35 -0400
-From: Ilkka Koskinen <ilkka.koskinen@nokia.com>
-To: sameo@linux.intel.com
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-Subject: [Resend PATCH 2/2] twl4030: Enable low-power mode to 32kHz oscillator
-Date: Tue, 20 Oct 2009 16:22:53 +0300
-Message-Id: <1256044973-14548-2-git-send-email-ilkka.koskinen@nokia.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1256044973-14548-1-git-send-email-ilkka.koskinen@nokia.com>
-References: <1256044973-14548-1-git-send-email-ilkka.koskinen@nokia.com>
-X-OriginalArrivalTime: 20 Oct 2009 13:23:27.0450 (UTC) FILETIME=[82275BA0:01CA5188]
-X-Nokia-AV: Clean
+	Tue, 20 Oct 2009 09:37:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=VkjZZOwSouv980f5fIOBZyJmEKMyLHEbUhKMjOz7/ED2DeQW/JIW9iFXw7beer8gst
+         4dEmn3KR5Ehdqj8MAa2ARhOVlLAoyFp01NM2+w+hXqdI7Mym7+cyPymzPY4l5uYDLtvd
+         Y22ZURkfUZ1nAET2q9ITpOZiefKVyPt/EylwQ=
+Message-ID: <4ADDBD2A.7070807@gmail.com>
+Date: Tue, 20 Oct 2009 09:37:46 -0400
+From: Miles Lane <miles.lane@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       olger Schurig <hs4233@mail.mn-solutions.de>
+Subject: 2.6.32-rc5-git1 -- INFO: possible circular locking dependency detected
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allows TWL's 32kHz oscillator to go in low-power mode when
-main battery voltage is running low.
+Resending with wrapping off and time info removed:
 
-Signed-off-by: Ilkka Koskinen <ilkka.koskinen@nokia.com>
----
- drivers/mfd/twl4030-core.c  |    9 +++++++--
- include/linux/i2c/twl4030.h |    5 +++++
- 2 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
-index 8cf0a02..5596bb4 100644
---- a/drivers/mfd/twl4030-core.c
-+++ b/drivers/mfd/twl4030-core.c
-@@ -177,6 +177,7 @@
- #define HFCLK_FREQ_26_MHZ		(2 << 0)
- #define HFCLK_FREQ_38p4_MHZ		(3 << 0)
- #define HIGH_PERF_SQ			(1 << 3)
-+#define CK32K_LOWPWR_EN			(1 << 7)
+[ INFO: possible circular locking dependency detected ]
+ 2.6.32-rc5-git1 #1
+ -------------------------------------------------------
+ events/0/9 is trying to acquire lock:
+  (&rfkill->sync_work){+.+.+.}, at: [<c1039083>] 
+__cancel_work_timer+0x81/0x181
+ 
+ but task is already holding lock:
+  (&ehotk->hotplug_lock){+.+.+.}, at: [<f8587708>] 
+eeepc_rfkill_hotplug+0x45/0xda [eeepc_laptop]
+ 
+ which lock already depends on the new lock.
  
  
- /* chip-specific feature flags, for i2c_device_id.driver_data */
-@@ -678,7 +679,8 @@ static inline int __init unprotect_pm_master(void)
- 	return e;
- }
+ the existing dependency chain (in reverse order) is:
  
--static void clocks_init(struct device *dev)
-+static void clocks_init(struct device *dev,
-+			struct twl4030_clock_init_data *clock)
- {
- 	int e = 0;
- 	struct clk *osc;
-@@ -725,6 +727,9 @@ static void clocks_init(struct device *dev)
- 	}
+ -> #2 (&ehotk->hotplug_lock){+.+.+.}:
+        [<c104ac60>] __lock_acquire+0x9fb/0xb6d
+        [<c104ae2e>] lock_acquire+0x5c/0x73
+        [<c129e223>] __mutex_lock_common+0x39/0x375
+        [<c129e5ee>] mutex_lock_nested+0x2b/0x33
+        [<f8587708>] eeepc_rfkill_hotplug+0x45/0xda [eeepc_laptop]
+        [<f858787c>] eeepc_rfkill_set+0x1d/0x2d [eeepc_laptop]
+        [<f83f4a9f>] rfkill_set_block+0x6f/0xb1 [rfkill]
+        [<f83f4b78>] __rfkill_switch_all+0x2e/0x51 [rfkill]
+        [<f83f4c12>] rfkill_switch_all+0x33/0x41 [rfkill]
+        [<f83f51b0>] rfkill_op_handler+0xf0/0x11e [rfkill]
+        [<c1038965>] worker_thread+0x161/0x233
+        [<c103b883>] kthread+0x5f/0x64
+        [<c1003613>] kernel_thread_helper+0x7/0x10
  
- 	ctrl |= HIGH_PERF_SQ;
-+	if (clock && clock->ck32k_lowpwr_enable)
-+		ctrl |= CK32K_LOWPWR_EN;
-+
- 	e |= unprotect_pm_master();
- 	/* effect->MADC+USB ck en */
- 	e |= twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER, ctrl, R_CFG_BOOT);
-@@ -805,7 +810,7 @@ twl4030_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 	inuse = true;
+ -> #1 (rfkill_global_mutex){+.+.+.}:
+        [<c104ac60>] __lock_acquire+0x9fb/0xb6d
+        [<c104ae2e>] lock_acquire+0x5c/0x73
+        [<c129e223>] __mutex_lock_common+0x39/0x375
+        [<c129e5ee>] mutex_lock_nested+0x2b/0x33
+        [<f83f4c36>] rfkill_sync_work+0x16/0x35 [rfkill]
+        [<c1038965>] worker_thread+0x161/0x233
+        [<c103b883>] kthread+0x5f/0x64
+        [<c1003613>] kernel_thread_helper+0x7/0x10
  
- 	/* setup clock framework */
--	clocks_init(&client->dev);
-+	clocks_init(&client->dev, pdata->clock);
+ -> #0 (&rfkill->sync_work){+.+.+.}:
+        [<c104ab62>] __lock_acquire+0x8fd/0xb6d
+        [<c104ae2e>] lock_acquire+0x5c/0x73
+        [<c10390ab>] __cancel_work_timer+0xa9/0x181
+        [<c103919a>] cancel_work_sync+0xa/0xc
+        [<f83f4e55>] rfkill_unregister+0x37/0x93 [rfkill]
+        [<f84d95bc>] wiphy_unregister+0x21/0x14c [cfg80211]
+        [<f885a0ed>] ieee80211_unregister_hw+0xa7/0xc5 [mac80211]
+        [<f89805d9>] ath_detach+0x73/0x11b [ath9k]
+        [<f898068c>] ath_cleanup+0xb/0x35 [ath9k]
+        [<f8987305>] ath_pci_remove+0x15/0x17 [ath9k]
+        [<c112c7a7>] pci_device_remove+0x19/0x39
+        [<c11c5076>] __device_release_driver+0x59/0x9d
+        [<c11c5157>] device_release_driver+0x18/0x23
+        [<c11c470b>] bus_remove_device+0x71/0x7e
+        [<c11c3425>] device_del+0xf0/0x131
+        [<c11c3471>] device_unregister+0xb/0x15
+        [<c1128d11>] pci_stop_bus_device+0x45/0x61
+        [<c1128d91>] pci_remove_bus_device+0xd/0x90
+        [<f8587780>] eeepc_rfkill_hotplug+0xbd/0xda [eeepc_laptop]
+        [<f858787c>] eeepc_rfkill_set+0x1d/0x2d [eeepc_laptop]
+        [<f83f4a9f>] rfkill_set_block+0x6f/0xb1 [rfkill]
+        [<f83f4b78>] __rfkill_switch_all+0x2e/0x51 [rfkill]
+        [<f83f4c12>] rfkill_switch_all+0x33/0x41 [rfkill]
+        [<f83f51b0>] rfkill_op_handler+0xf0/0x11e [rfkill]
+        [<c1038965>] worker_thread+0x161/0x233
+        [<c103b883>] kthread+0x5f/0x64
+        [<c1003613>] kernel_thread_helper+0x7/0x10
  
- 	/* load power event scripts */
- 	if (twl_has_power() && pdata->power)
-diff --git a/include/linux/i2c/twl4030.h b/include/linux/i2c/twl4030.h
-index 508824e..c8d5078 100644
---- a/include/linux/i2c/twl4030.h
-+++ b/include/linux/i2c/twl4030.h
-@@ -312,6 +312,10 @@ int twl4030_i2c_read(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes);
+ other info that might help us debug this:
  
- /*----------------------------------------------------------------------*/
+ 4 locks held by events/0/9:
+  #0:  (events){+.+.+.}, at: [<c1038923>] worker_thread+0x11f/0x233
+  #1:  ((rfkill_op_work).work){+.+.+.}, at: [<c1038923>] 
+worker_thread+0x11f/0x233
+  #2:  (rfkill_global_mutex){+.+.+.}, at: [<f83f4bfd>] 
+rfkill_switch_all+0x1e/0x41 [rfkill]
+  #3:  (&ehotk->hotplug_lock){+.+.+.}, at: [<f8587708>] 
+eeepc_rfkill_hotplug+0x45/0xda [eeepc_laptop]
  
-+struct twl4030_clock_init_data {
-+	int ck32k_lowpwr_enable;
-+};
-+
- struct twl4030_bci_platform_data {
- 	int *battery_tmp_tbl;
- 	unsigned int tblsize;
-@@ -403,6 +407,7 @@ extern void twl4030_power_init(struct twl4030_power_data *triton2_scripts);
- 
- struct twl4030_platform_data {
- 	unsigned				irq_base, irq_end;
-+	struct twl4030_clock_init_data		*clock;
- 	struct twl4030_bci_platform_data	*bci;
- 	struct twl4030_gpio_platform_data	*gpio;
- 	struct twl4030_madc_platform_data	*madc;
--- 
-1.6.0.4
-
+ stack backtrace:
+ Pid: 9, comm: events/0 Not tainted 2.6.32-rc5-git1 #1
+ Call Trace:
+  [<c129d1e0>] ? printk+0xf/0x17
+  [<c1049f29>] print_circular_bug+0x8a/0x96
+  [<c104ab62>] __lock_acquire+0x8fd/0xb6d
+  [<c104ae2e>] lock_acquire+0x5c/0x73
+  [<c1039083>] ? __cancel_work_timer+0x81/0x181
+  [<c10390ab>] __cancel_work_timer+0xa9/0x181
+  [<c1039083>] ? __cancel_work_timer+0x81/0x181
+  [<c104974c>] ? mark_lock+0x1e/0x1e2
+  [<c1049953>] ? mark_held_locks+0x43/0x5b
+  [<c108b0d1>] ? kfree+0xbf/0xcb
+  [<c103919a>] cancel_work_sync+0xa/0xc
+  [<f83f4e55>] rfkill_unregister+0x37/0x93 [rfkill]
+  [<f84d95bc>] wiphy_unregister+0x21/0x14c [cfg80211]
+  [<c1038d10>] ? destroy_workqueue+0x72/0x77
+  [<f885a0ed>] ieee80211_unregister_hw+0xa7/0xc5 [mac80211]
+  [<f89805d9>] ath_detach+0x73/0x11b [ath9k]
+  [<f898068c>] ath_cleanup+0xb/0x35 [ath9k]
+  [<f8987305>] ath_pci_remove+0x15/0x17 [ath9k]
+  [<c112c7a7>] pci_device_remove+0x19/0x39
+  [<c11c5076>] __device_release_driver+0x59/0x9d
+  [<c11c5157>] device_release_driver+0x18/0x23
+  [<c11c470b>] bus_remove_device+0x71/0x7e
+  [<c11c3425>] device_del+0xf0/0x131
+  [<c11c3471>] device_unregister+0xb/0x15
+  [<c1128d11>] pci_stop_bus_device+0x45/0x61
+  [<c1128d91>] pci_remove_bus_device+0xd/0x90
+  [<f8587780>] eeepc_rfkill_hotplug+0xbd/0xda [eeepc_laptop]
+  [<f858787c>] eeepc_rfkill_set+0x1d/0x2d [eeepc_laptop]
+  [<f83f4a9f>] rfkill_set_block+0x6f/0xb1 [rfkill]
+  [<f83f4b78>] __rfkill_switch_all+0x2e/0x51 [rfkill]
+  [<f83f4c12>] rfkill_switch_all+0x33/0x41 [rfkill]
+  [<f83f51b0>] rfkill_op_handler+0xf0/0x11e [rfkill]
+  [<c1038965>] worker_thread+0x161/0x233
+  [<c1038923>] ? worker_thread+0x11f/0x233
+  [<f83f50c0>] ? rfkill_op_handler+0x0/0x11e [rfkill]
+  [<c103ba7d>] ? autoremove_wake_function+0x0/0x2f
+  [<c1038804>] ? worker_thread+0x0/0x233
+  [<c103b883>] kthread+0x5f/0x64
+  [<c103b824>] ? kthread+0x0/0x64
+  [<c1003613>] kernel_thread_helper+0x7/0x10
