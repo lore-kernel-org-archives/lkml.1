@@ -1,53 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbZJTCCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbZJTCLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758225AbZJTCCN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Oct 2009 22:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbZJTCCM
+	id S1758216AbZJTCLB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Oct 2009 22:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbZJTCLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Oct 2009 22:02:12 -0400
-Received: from cantor.suse.de ([195.135.220.2]:39321 "EHLO mx1.suse.de"
+	Mon, 19 Oct 2009 22:11:00 -0400
+Received: from smtp.outflux.net ([198.145.64.163]:39319 "EHLO smtp.outflux.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758145AbZJTCCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Oct 2009 22:02:11 -0400
-Date: Tue, 20 Oct 2009 04:02:14 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64@vger.kernel.org
-Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
-In-Reply-To: <4ADB967A.4080707@suse.com>
-Message-ID: <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz>
-References: <4ADB967A.4080707@suse.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S1757173AbZJTCLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Oct 2009 22:11:00 -0400
+Date: Mon, 19 Oct 2009 19:04:26 -0700
+From: Kees Cook <kees.cook@canonical.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Jan Beulich <jbeulich@novell.com>, Vegard Nossum <vegardno@ifi.uio.no>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] [x86] detect and report lack of NX protections
+Message-ID: <20091020020426.GS5394@outflux.net>
+References: <20091019184234.GN5394@outflux.net>
+ <20091020084335.4e8d97e9@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091020084335.4e8d97e9@infradead.org>
+Organization: Canonical
+X-HELO: www.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Oct 2009, Jeff Mahoney wrote:
+It is possible for x86_64 systems to lack the NX bit (see check_efer())
+either due to the hardware lacking support or the BIOS having turned
+off the CPU capability, so NX status should be reported.  Additionally,
+anyone booting NX-capable CPUs in 32bit mode without PAE will lack NX
+functionality, so this change provides feedback for that case as well.
 
-> Hi Peter -
-> 
-> Commit 34d76c41 introduced the update_shares_data percpu, but it ends up
-> causing problems on large ia64 machines. Specifically, ia64 is limited
-> to 64k in percpu vars and with NR_CPUS=4096, that ends up being 32k by
-> itself. It ends up causing link errors since that is how ia64 enforces
-> the 64k limit.
-> 
-> I can take a deeper look at finding a workable solution but thought I'd
-> mention it in case you had ideas already.
+v2: use "Alert:" instead of "Warning:" to avoid confusiong with WARN_ON()
 
-I am adding some IA64 CCs, as the failure is solely caused by the ia64 
-percpu implementation/pagefault handler optimization which requires the 
-.percpu section area not be larger than 64k, which blows up with 34d76c41 
-and NR_CPUS high enoufh (due to introduction of percpu array being 
-size-dependent on NR_CPUS).
+Signed-off-by: Kees Cook <kees.cook@canonical.com>
+---
+ arch/x86/mm/init.c     |   10 ++++++++++
+ arch/x86/mm/setup_nx.c |    2 ++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index 73ffd55..8472293 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -149,6 +149,16 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 	set_nx();
+ 	if (nx_enabled)
+ 		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
++	else if (cpu_has_pae)
++#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
++		/* PAE kernel, PAE CPU, without NX */
++		printk(KERN_WARNING "Alert: NX (Execute Disable) protection "
++		       "missing in CPU or disabled in BIOS!\n");
++#else
++		/* 32bit non-PAE kernel, PAE CPU */
++		printk(KERN_WARNING "Alert: NX (Execute Disable) protection "
++		       "cannot be enabled: non-PAE kernel!\n");
++#endif
+ 
+ 	/* Enable PSE if available */
+ 	if (cpu_has_pse)
+diff --git a/arch/x86/mm/setup_nx.c b/arch/x86/mm/setup_nx.c
+index 513d8ed..b039a4c 100644
+--- a/arch/x86/mm/setup_nx.c
++++ b/arch/x86/mm/setup_nx.c
+@@ -53,6 +53,8 @@ void __init set_nx(void)
+ #else
+ void set_nx(void)
+ {
++	/* notice if _PAGE_NX was removed during check_efer() */
++	nx_enabled = ((__supported_pte_mask & _PAGE_NX) == _PAGE_NX);
+ }
+ #endif
+ 
+-- 
+1.6.3.3
+
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
-
+Kees Cook
+Ubuntu Security Team
