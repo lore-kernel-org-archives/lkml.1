@@ -1,113 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751766AbZJTScZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752518AbZJTTLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751766AbZJTScZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 14:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZJTScY
+	id S1752518AbZJTTLq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 15:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZJTTLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 14:32:24 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:58692 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751136AbZJTScX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 14:32:23 -0400
-Date: Tue, 20 Oct 2009 11:33:29 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Matt Helsley <matthltc@us.ibm.com>, Oren Laadan <orenl@librato.com>,
-       Daniel Lezcano <daniel.lezcano@free.fr>, randy.dunlap@oracle.com,
-       arnd@arndb.de, linux-api@vger.kernel.org,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       Louis.Rilling@kerlabs.com, kosaki.motohiro@jp.fujitsu.com,
-       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
-Message-ID: <20091020183329.GB22646@us.ibm.com>
-References: <20091013044925.GA28181@us.ibm.com> <4AD8C7E4.9000903@free.fr> <20091016194451.GA28706@us.ibm.com> <4ADCCD68.9030003@free.fr> <4ADCDE7F.4090501@librato.com> <20091020005125.GG27627@count0.beaverton.ibm.com> <m1vdiad9jd.fsf@fess.ebiederm.org> <20091020040315.GA26632@us.ibm.com> <m1iqeauyvl.fsf@fess.ebiederm.org>
+	Tue, 20 Oct 2009 15:11:45 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:2207 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbZJTTLo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 15:11:44 -0400
+From: James Cloos <cloos@jhcloos.com>
+To: hackers@lists.ntp.org, linux-kernel@vger.kernel.org
+Cc: Roman Zippel <zippel@linux-m68k.org>, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>
+Subject: ntp-dev-4.2.5p235-RC build failure: MOD_NANO not #defined
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.50 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2009 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+Date: Tue, 20 Oct 2009 14:38:03 -0400
+Message-ID: <m3iqe9kj18.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1iqeauyvl.fsf@fess.ebiederm.org>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Hashcash: 1:30:091020:hackers@lists.ntp.org::RjPUp5gzF0JdlCav:000000000000000000000000000000000000000g1qf3
+X-Hashcash: 1:30:091020:linux-kernel@vger.kernel.org::pqdVmDC6UBTuixn8:00000000000000000000000000000000DwPWG
+X-Hashcash: 1:30:091020:zippel@linux-m68k.org::vibRoYJkCKVU1haT:000000000000000000000000000000000000000sVryH
+X-Hashcash: 1:30:091020:tglx@linutronix.de::QTLseCC9J6yT8rBv:000000000000000000000000000000000000000000YgBIq
+X-Hashcash: 1:30:091020:johnstul@us.ibm.com::K4likwx7jZ7INcxC:00000000000000000000000000000000000000000C/Ank
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman [ebiederm@xmission.com] wrote:
-| > Could you clarify ? How is the call to alloc_pidmap() from clone3() different
-| > from the call from clone() itself ?
-| 
-| I think it is totally inappropriate to assign pids in a pid namespace
-| where there are user space processes already running.
+I get this when trying to build the 235 RC:
 
-Honestly, I don't understand why it is inappropriate or how this differs
-from normal clone() - which also assigns pids in own and ancestor pid
-namespaces.
+make[1]: Entering directory `.../work/ntp-dev-4.2.5p235-RC/ntpd'
+if i686-pc-linux-gnu-gcc -DHAVE_CONFIG_H -I. -I. -I..  -I../include -I../lib/isc/include -I../lib/isc/nothreads/include -I../lib/isc/unix/include -I../libopts -I/usr/include  -march=pentium3 -O2 -Wno-error   -Wall -Wcast-qual -Wmissing-prototypes -Wpointer-arith -Wshadow -Winit-self -Wstrict-overflow -Wno-strict-prototypes -MT ntp_loopfilter.o -MD -MP -MF ".deps/ntp_loopfilter.Tpo" -c -o ntp_loopfilter.o ntp_loopfilter.c; \
+        then mv -f ".deps/ntp_loopfilter.Tpo" ".deps/ntp_loopfilter.Po"; else rm -f ".deps/ntp_loopfilter.Tpo"; exit 1; fi
+ntp_loopfilter.c: In function 'local_clock':
+ntp_loopfilter.c:521: error: 'MOD_NANO' undeclared (first use in this function)
+ntp_loopfilter.c:521: error: (Each undeclared identifier is reported only once
+ntp_loopfilter.c:521: error: for each function it appears in.)
+make[1]: *** [ntp_loopfilter.o] Error 1
+make[1]: Leaving directory `.../work/ntp-dev-4.2.5p235-RC/ntpd'
+make: *** [all] Error 2
 
-| 
-| > | How we handle a clone extension depends critically on if we want to
-| > | create a processes for restart in user space or kernel space.
-| > | 
-| > | Could some one give me or point me at a strong case for creating the
-| > | processes for restart in user space?
-| >
-| > There has been a lot of discussion on this with reference to the
-| > Checkpoint/Restart patchset. See http://lkml.org/lkml/2009/4/13/401
-| > for instance.
-| 
-| Just read it.  Thank you.
+In ntp_loopfilter.c, MOD_NANO is protected w/in an #ifdef STA_NANO.
 
-Sorry. I should have mentioned the reason here. (Like you mention below),
-flexibility is the main reason.
+I find STA_NANO #defined in <linux/timex.h>, but I cannot find a
+definition for MOD_NANO anywhere.
 
-| Now I am certain clone_with_pids() is not useful functionality to be
-| exporting to userspace.
-| 
-| The only real argument in favor of doing this in user space is greater
-| flexibility.  I can see checkpointing/restoring a single thread process
-| without a pid namespace.  Anything more and you are just asking for
-| trouble.
-| 
-| A design that weakens security.  Increases maintenance costs.  All for
-| an unreliable result seems like a bad one to me.
-| 
-| > | The pid assignment code is currently ugly.  I asked that we just pass
-| > | in the min max pid pids that already exist into the core pid
-| > | assignment function and a constrained min/max that only admits a
-| > | single pid when we are allocating a struct pid for restart.  That was
-| > | not done and now we have a weird abortion with unnecessary special cases.
-| >
-| > I did post a version of the patch attemptint to implement that. As
-| > pointed out in:
-| >
-| > 	http://lkml.org/lkml/2009/8/17/445
-| >
-| > we would need more checks in alloc_pidmap() to cover cases like min or max
-| > being invalid or min being greater than max or max being greater than pid_max
-| > etc. Those checks also made the code ugly (imo).
-| 
-| If you need more checks you are doing it wrong.  The code already has min
-| and max values, and even a start value.  I was just strongly suggesting
-| we generalize where we get the values from, and then we have not special
-| cases. 
+That said, <linux/timex.h> does #define several MOD_ defines in a block
+called /* xntp 3.4 compatibility names */ to match the ADJ_ defines;
+it #defines ADJ_NANO, but does not include a MOD_NANO #define in that
+compatability block.
 
-Well, if alloc_pidmap(pid_ns, min, max) does not have to check the
-parameters passed in (ie assumes that callers pass it in correctly)
-it might be simple. But when user specifies the pid, the 
+Also, my <sys/timex.h> (from glibc-2.10.1) says:
 
-	min == max == user's target pid
+sys/timex.h> /* These definitions from linux/timex.h as of 2.6.30.  */
 
-so we will need to check the values either here or in callers.
 
-Yes the code already has values and a start value. But these are
-controlled by alloc_pidmap() and not passed in from the user space.
+Should ntp_loopfilter.c be using ADJ_NANO instead of MOD_NANO?
 
-alloc_pidmap() needs to assign the next available pid or a specific
-target pid.  Generalizing it to alloc a pid in a range seemed be a
-bit of an over kill for currently known usages.
+Or should timex.h #define MOD_NANO ADJ_NANO?
 
-I will post a version of the patch outside this patchset with min
-and max parameters and we can see if it can be optimized/beautified.
+All of the additions to linux/timex.h since 2.6.30 then are protected
+within an #ifdef __KERNEL__ and would, therefore, make no difference.
 
-Sukadev
+(In case it is an lk issue, I've included lkml and (following lkml style)
+my best guess at the relevant CCs; in case it is an ntpd issue it is also
+sent to the ntp hackers list; I do not know whether the latter list
+requires subscription to post....)
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
