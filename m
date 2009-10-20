@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbZJTM6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752017AbZJTNBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751984AbZJTM6v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 08:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZJTM6u
+	id S1752017AbZJTNBj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 09:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbZJTNBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 08:58:50 -0400
-Received: from james.oetiker.ch ([213.144.138.195]:60185 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751271AbZJTM6u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 08:58:50 -0400
-Date: Tue, 20 Oct 2009 14:58:53 +0200 (CEST)
-From: Tobias Oetiker <tobi@oetiker.ch>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
-       jens.axboe@oracle.com
-Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
-In-Reply-To: <20091020125139.GF11778@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0910201456540.27618@sebohet.brgvxre.pu>
-References: <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu> <20091019133146.GB9036@csn.ul.ie> <alpine.DEB.2.00.0910191538450.8526@sebohet.brgvxre.pu> <20091019140957.GE9036@csn.ul.ie> <alpine.DEB.2.00.0910191613580.8526@sebohet.brgvxre.pu>
- <20091019145954.GH9036@csn.ul.ie> <alpine.DEB.2.00.0910192211230.27123@sebohet.brgvxre.pu> <alpine.DEB.2.00.0910192215450.27123@sebohet.brgvxre.pu> <20091020105746.GD11778@csn.ul.ie> <alpine.DEB.2.00.0910201338530.27123@sebohet.brgvxre.pu>
- <20091020125139.GF11778@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 20 Oct 2009 09:01:39 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:59544 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751599AbZJTNBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 09:01:38 -0400
+Message-ID: <4ADDB492.40405@atmel.com>
+Date: Tue, 20 Oct 2009 15:01:06 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg KH <greg@kroah.com>
+CC: David Brownell <david-b@pacbell.net>, linux-usb@vger.kernel.org,
+       avictor.za@gmail.com, linux-arm-kernel@lists.infradead.org,
+       patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org,
+       Hong Xu <hong.xu@atmel.com>
+Subject: Re: [PATCH 4/5] at91/USB: USB drivers modifications for at91sam9g10
+References: <1245341772-1689-1-git-send-email-nicolas.ferre@atmel.com> <4AB0D325.9080407@atmel.com> <4ABC9A4C.8000702@atmel.com> <200909251051.34916.david-b@pacbell.net> <4AC1BE68.2080504@atmel.com> <20090929174017.GC7209@kroah.com>
+In-Reply-To: <20090929174017.GC7209@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
+Greg KH :
+> On Tue, Sep 29, 2009 at 09:59:36AM +0200, Nicolas Ferre wrote:
+>> David Brownell :
+>>> On Friday 25 September 2009, Nicolas Ferre wrote:
+>>>> Greg,
+>>>>
+>>>> Please, can you consider the inclusion of this patch. I have no news
+>>>> about it for a long time...
+>>> ISTR either acking this or suggesting it go with the rest
+>>> of the G10 patches ... regardless, seems OK to me now that
+>>> its precursors have merged.
+>> Good.
+>>
+>> Greg, can you handle this for inclusion in mainline soon ?
+> 
+> I'll dig it out and work on this after the x.org conference this week...
 
-Today Mel Gorman wrote:
+Ping ?
 
-> On Tue, Oct 20, 2009 at 01:44:50PM +0200, Tobias Oetiker wrote:
-> > Hi Mel,
-> >
-> > Today Mel Gorman wrote:
-> >
-> > > On Mon, Oct 19, 2009 at 10:17:06PM +0200, Tobias Oetiker wrote:
-> >
-> > > > Oct 19 22:09:52 johan kernel: [11157.121600]  [<ffffffff813ebd42>] skb_copy+0x32/0xa0 [kern.warning]
-> > > > Oct 19 22:09:52 johan kernel: [11157.121615]  [<ffffffffa07dd33c>] vboxNetFltLinuxPacketHandler+0x5c/0xd0 [vboxnetflt] [kern.warning]
-> > > > Oct 19 22:09:52 johan kernel: [11157.121620]  [<ffffffff813f2512>] dev_hard_start_xmit+0x142/0x320 [kern.warning]
-> > >
-> > > Are the number of failures at least reduced or are they occuring at the
-> > > same rate?
-> >
-> > not that it would have any statistical significance, but I had 5
-> > failure (clusters) yesterday morning and 5 this morning ...
-> >
->
-> Before the patches were applied, how many failures were you seeing in
-> the morning?
-
-5 as well ... before an after ...
-
-> > the failures often show up in groups I saved one on
-> > http://tobi.oetiker.ch/cluster-2009-10-20-08-31.txt
-> >
-> > > Also, what was the last kernel that worked for you with this
-> > > configuration?
-> >
-> > that would be 2.6.24 ... I have not upgraded in quite some time.
-> > But since the io performance of 2.6.31 is about double in my tests
-> > I thought it would be a good thing todo ...
-> >
->
-> That significant a different in performance may explain differences in timing
-> as well. i.e. the allocator is being put under more pressure now than it
-> was previously as more processes make forward progress.
-
-you are saing that the problem might be even older ?
-
-we do have 8GB ram and 16 GB swap, so it should not fail to allocate all that
-often
-
-top - 14:58:34 up 19:54,  6 users,  load average: 2.09, 1.94, 1.97
-Tasks: 451 total,   1 running, 449 sleeping,   0 stopped,   1 zombie
-Cpu(s):  3.5%us, 15.5%sy,  2.0%ni, 72.2%id,  6.5%wa,  0.1%hi,  0.3%si,  0.0%st
-Mem:   8198504k total,  7599132k used,   599372k free,  1212636k buffers
-Swap: 16777208k total,    83568k used, 16693640k free,   610136k cached
-
-
-cheers
-tobi
-
+Thanks, Bye,
 -- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+Nicolas Ferre
+
