@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752194AbZJTVNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751708AbZJTVHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752194AbZJTVNS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 17:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbZJTVNR
+	id S1751708AbZJTVHs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 17:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbZJTVHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 17:13:17 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:55841 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbZJTVNQ (ORCPT
+	Tue, 20 Oct 2009 17:07:47 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:63562 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750914AbZJTVHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 17:13:16 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=SH4aobEky87xLAOQFi0YFOHnJ9tyRaE2koZvupcjlRrirPOyPLeXKUL4QhNZ3qYvq
-	bFlCtW0Xd9q60M+q5HC9w==
-Date: Tue, 20 Oct 2009 14:13:15 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Alex Chiang <achiang@hp.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 5/5] Documentation: ABI: document
- /sys/devices/system/cpu/
-In-Reply-To: <20091020204738.GC23675@ldl.fc.hp.com>
-Message-ID: <alpine.DEB.1.00.0910201410280.27248@chino.kir.corp.google.com>
-References: <20091019212740.32729.7171.stgit@bob.kio> <20091019213435.32729.81751.stgit@bob.kio> <alpine.DEB.1.00.0910192022460.25264@chino.kir.corp.google.com> <20091020204738.GC23675@ldl.fc.hp.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Tue, 20 Oct 2009 17:07:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Frxe4oTiqu00f3HUh+GE+v1zyLQdd4xR4M0hfpLOhPpcNO49E092p2gfPJUyM2yMyw
+         Zths3KmUKKCWkb68FA7XElvMh8awpMYH4DyD1HyCU0j5ZvDFR5grA17XIYAQnntn8OVG
+         G51iLZT9dx8160E+9x8AGII2DlNb7uwVdXfsE=
+Message-ID: <4ADE28FF.6090503@gmail.com>
+Date: Tue, 20 Oct 2009 23:17:51 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Sergey S. Kostyliov" <rathamahata@php4.ru>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] befs: redundant test on unsigned in befs_get_block()?
+References: <4AD88DE1.1080900@gmail.com> <20091016142518.998c41a2.akpm@linux-foundation.org>
+In-Reply-To: <20091016142518.998c41a2.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Oct 2009, Alex Chiang wrote:
+block is unsigned, check whether it is not too large.
 
-> > Would it be possible for you to document all entities in 
-> > /sys/devices/system/cpu/* in this new file (requiring a folding of 
-> > Documentation/ABI/testing/sysfs-devices-cache_disable into it)?
->  
-> I'll give it a go. There are quite a few things in that directory
-> though, like topology information, frequency, etc. that I wasn't
-> so excited about documenting.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+> As far as the VFS is concerned, `block' is indeed unsigned and may well
+> be in the range 2G-4G with a 32-bit sector_t.  Perhaps not possible on
+> befs but still legal to the VFS.
 > 
-
-Those are usually the ones where documentation is the most valuable and 
-I'm sure would be greatly appreciated.
-
-> But if that's the tax to create my new symlinks, I'll pay it. ;)
+> So the test is wrong from that POV.
 > 
+> However it is possible that befs is defending itself here.  Perhaps code
+> internal to befs will explode if passed a "negative" block number.  Due
+> to coding errors within the fs implementation.
+> 
+> So really, we'd need to check all code paths called by
+> befs_get_block() and check that they are signednessly clean.
 
-It's definitely not required, I just thought it was a good opportunity to 
-document all the contents under /sys/devices/system/cpu if you're going to 
-do some of them.  It's up to you.
+This appears to be already noted by Jesper Juhl in 2004, however it
+was never fixed: http://search.luky.org/linux-kernel.2004/msg01392.html
+
+It's getting late here, but what do you think about this:
+befs_get_block() calls befs_fblock2brun() and there occurs a 
+
+
+pos = fblock << BEFS_SB(sb)->block_shift;
+
+and in effect:
+if (pos >= data->max_double_indirect_range)
+	error out.
+
+So if I'm not mistaken, this should provide protection:
+
+diff --git a/fs/befs/linuxvfs.c b/fs/befs/linuxvfs.c
+index 33baf27..eeb4625 100644
+--- a/fs/befs/linuxvfs.c
++++ b/fs/befs/linuxvfs.c
+@@ -128,9 +128,9 @@ befs_get_block(struct inode *inode, sector_t block,
+ 	befs_debug(sb, "---> befs_get_block() for inode %lu, block %ld",
+ 		   inode->i_ino, block);
+ 
+-	if (block < 0) {
+-		befs_error(sb, "befs_get_block() was asked for a block "
+-			   "number less than zero: block %ld in inode %lu",
++	if (block >= ds->max_double_indirect_range >>
++			BEFS_SB(sb)->block_shift) {
++		befs_error(sb, "befs_get_block() was asked for a too large block: block %ld in inode %lu",
+ 			   block, inode->i_ino);
+ 		return -EIO;
+ 	}
