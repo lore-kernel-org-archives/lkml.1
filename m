@@ -1,102 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751720AbZJTK5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbZJTLQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751720AbZJTK5l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 06:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZJTK5k
+	id S1751838AbZJTLQe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 07:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZJTLQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 06:57:40 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:52074 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750934AbZJTK5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 06:57:39 -0400
-Date: Tue, 20 Oct 2009 11:57:46 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Tobias Oetiker <tobi@oetiker.ch>
-Cc: Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
-       jens.axboe@oracle.com
-Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
-Message-ID: <20091020105746.GD11778@csn.ul.ie>
-References: <1255912562.6824.9.camel@penberg-laptop> <200910190444.55867.elendil@planet.nl> <alpine.DEB.2.00.0910191146110.1306@sebohet.brgvxre.pu> <20091019133146.GB9036@csn.ul.ie> <alpine.DEB.2.00.0910191538450.8526@sebohet.brgvxre.pu> <20091019140957.GE9036@csn.ul.ie> <alpine.DEB.2.00.0910191613580.8526@sebohet.brgvxre.pu> <20091019145954.GH9036@csn.ul.ie> <alpine.DEB.2.00.0910192211230.27123@sebohet.brgvxre.pu> <alpine.DEB.2.00.0910192215450.27123@sebohet.brgvxre.pu>
+	Tue, 20 Oct 2009 07:16:32 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:36810 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751580AbZJTLQb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 07:16:31 -0400
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: alsa-devel@alsa-project.org
+Subject: Re: [alsa-devel] [PATCH 1/4] MFD: twl4030: add twl4030_codec MFD as a new 
+ =?iso-8859-1?q?child=09to_the?= core
+Date: Tue, 20 Oct 2009 14:16:15 +0300
+User-Agent: KMail/1.12.2 (Linux/2.6.31-gentoo; KDE/4.3.2; i686; ; )
+Cc: ext Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "sameo@linux.intel.com" <sameo@linux.intel.com>
+References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com> <1255956140-4829-2-git-send-email-peter.ujfalusi@nokia.com> <20091020100334.GA28592@opensource.wolfsonmicro.com>
+In-Reply-To: <20091020100334.GA28592@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910192215450.27123@sebohet.brgvxre.pu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200910201416.15172.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 20 Oct 2009 11:16:20.0895 (UTC) FILETIME=[C05F6AF0:01CA5176]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 10:17:06PM +0200, Tobias Oetiker wrote:
-> Hi Mel,
-> 
-> Today Tobias Oetiker wrote:
-> 
-> > Hi Mel,
+On Tuesday 20 October 2009 13:03:34 ext Mark Brown wrote:
+> On Mon, Oct 19, 2009 at 03:42:17PM +0300, Peter Ujfalusi wrote:
+> > New MFD child to twl4030 MFD device.
+> > This MFD device will be used by the drivers, which needs resources
+> > from the twl4030 codec like audio and vibra.
 > >
-> > Today Mel Gorman wrote:
+> > The platform specific configuration data is passed along to the
+> > child drivers (audio, vibra).
 > >
-> > > >
-> > > > if you can send me a consolidated patch which does apply to
-> > > > 2.6.31.4 I will be glad to try ...
-> > > >
-> > >
-> > > Sure
-> > >
-> > > ==== CUT HERE ====
-> > >
-> > > From 6c0215af3b7c39ef7b8083ea38ca3ad93cd3f51f Mon Sep 17 00:00:00 2001
-> > > From: Mel Gorman <mel@csn.ul.ie>
-> > > Date: Mon, 19 Oct 2009 15:40:43 +0100
-> > > Subject: [PATCH] Kick off kswapd after direct reclaim and revert congestion changes
-> > >
-> > > The following patch is http://lkml.org/lkml/2009/10/16/89 on top of
-> > > 2.6.31.4 as well as patches 373c0a7e and 8aa7e847 reverted.
+> > Signed-off-by: Peter Ujfalusi <peter.ujfalusi@nokia.com>
 > >
-> > it seems to help ... the server has been running for 3 hours now
-> > without incident, but then again it is not as active as during the
-> > day, ... will report tomorrow.
+> > +config TWL4030_CODEC
+> > +	bool "Support codec part of the TWL4030 family chips"
 > 
-> while I was writing, the system found that the patch does not realy
-> help:
-> 
-> Oct 19 22:09:52 johan kernel: [11157.121506] smtpd: page allocation failure. order:5, mode:0x4020 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121514] Pid: 19324, comm: smtpd Tainted: G      D    2.6.31.4-oep #1 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121518] Call Trace: [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121521]  <IRQ>  [<ffffffff810cb599>] __alloc_pages_nodemask+0x549/0x650 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121563]  [<ffffffffa02bde3b>] ? __nf_ct_refresh_acct+0xab/0x110 [nf_conntrack] [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121572]  [<ffffffffa02a8337>] ? ipt_do_table+0x2f7/0x610 [ip_tables] [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121580]  [<ffffffff810fac18>] kmalloc_large_node+0x68/0xc0 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121585]  [<ffffffff810fe90a>] __kmalloc_node_track_caller+0x11a/0x180 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121592]  [<ffffffff813ebd42>] ? skb_copy+0x32/0xa0 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121596]  [<ffffffff813e9606>] __alloc_skb+0x76/0x180 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121600]  [<ffffffff813ebd42>] skb_copy+0x32/0xa0 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121615]  [<ffffffffa07dd33c>] vboxNetFltLinuxPacketHandler+0x5c/0xd0 [vboxnetflt] [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121620]  [<ffffffff813f2512>] dev_hard_start_xmit+0x142/0x320 [kern.warning]
+> This seems like something that users shouldn't really have to worry
+> about selecting explicitly - might it be better to have it selected by
+> the drivers that use it instead?  It feels like it's an implementation
+> detail of the driver.
 
-Are the number of failures at least reduced or are they occuring at the
-same rate? Also, what was the last kernel that worked for you with this
-configuration?
+Yes, first I had the TWL4030_CODEC selected in the sound/soc/codecs/Kconfig, but 
+for some reason I have decided to add user selectable config option instead and 
+use the depends on in the codecs Makefile.
+I'll make the change as you suggested.
 
-Thanks
-
-> Oct 19 22:09:52 johan kernel: [11157.121632]  [<ffffffff8140a2c1>] __qdisc_run+0x1a1/0x230 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121637]  [<ffffffff813f41e0>] dev_queue_xmit+0x2b0/0x3a0 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121642]  [<ffffffff8142349b>] ip_finish_output+0x11b/0x2f0 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121646]  [<ffffffff814236f9>] ip_output+0x89/0xd0 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121650]  [<ffffffff81422710>] ip_local_out+0x20/0x30 [kern.warning]
-> Oct 19 22:09:52 johan kernel: [11157.121654]  [<ffffffff81422ffb>] ip_queue_xmit+0x22b/0x3f0 [kern.warning]
-> 
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Péter
