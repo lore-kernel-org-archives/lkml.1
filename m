@@ -1,94 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752152AbZJTNuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbZJTNyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752152AbZJTNuM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 09:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZJTNuL
+	id S1752230AbZJTNyL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 09:54:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbZJTNyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 09:50:11 -0400
-Received: from james.oetiker.ch ([213.144.138.195]:34679 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752020AbZJTNuJ (ORCPT
+	Tue, 20 Oct 2009 09:54:10 -0400
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:44738 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752193AbZJTNyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 09:50:09 -0400
-Date: Tue, 20 Oct 2009 15:50:12 +0200 (CEST)
-From: Tobias Oetiker <tobi@oetiker.ch>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
-       jens.axboe@oracle.com
-Subject: Re: [Bug #14141] order 2 page allocation failures (generic)
-In-Reply-To: <20091020133957.GG11778@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0910201545510.27618@sebohet.brgvxre.pu>
-References: <alpine.DEB.2.00.0910191538450.8526@sebohet.brgvxre.pu> <20091019140957.GE9036@csn.ul.ie> <alpine.DEB.2.00.0910191613580.8526@sebohet.brgvxre.pu> <20091019145954.GH9036@csn.ul.ie> <alpine.DEB.2.00.0910192211230.27123@sebohet.brgvxre.pu>
- <alpine.DEB.2.00.0910192215450.27123@sebohet.brgvxre.pu> <20091020105746.GD11778@csn.ul.ie> <alpine.DEB.2.00.0910201338530.27123@sebohet.brgvxre.pu> <20091020125139.GF11778@csn.ul.ie> <alpine.DEB.2.00.0910201456540.27618@sebohet.brgvxre.pu>
- <20091020133957.GG11778@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 20 Oct 2009 09:54:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=na1mcQ1b6dW8vl+w5/NAE6gO8QW+0FRzD3/cTGbFgFfPSoWk7tYKTkYt0inIHqyGDa
+         nHW7tWROqpeYTy7soEz+Q2cm1pRtn5MlpvWvSJP7T6ZjF46t1Kb+gdCI/MmwofLLZNJt
+         wpl5QAYdMlHDP/L4vrkMUc3DhcQ0Ez0IdN9+Y=
+Message-ID: <4ADDC0F9.4010601@gmail.com>
+Date: Tue, 20 Oct 2009 09:54:01 -0400
+From: Miles Lane <miles.lane@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Holger Schurig <hs4233@mail.mn-solutions.de>
+Subject: 2.6.32-rc5-git1 -- INFO: possible circular locking dependency detected
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
+Try one more time to get wrapping turned off.  Sorry!
+ 
 
-Today Mel Gorman wrote:
-
-> On Tue, Oct 20, 2009 at 02:58:53PM +0200, Tobias Oetiker wrote:
-> > you are saing that the problem might be even older ?
-> >
-> > we do have 8GB ram and 16 GB swap, so it should not fail to allocate all that
-> > often
-> >
-> > top - 14:58:34 up 19:54,  6 users,  load average: 2.09, 1.94, 1.97
-> > Tasks: 451 total,   1 running, 449 sleeping,   0 stopped,   1 zombie
-> > Cpu(s):  3.5%us, 15.5%sy,  2.0%ni, 72.2%id,  6.5%wa,  0.1%hi,  0.3%si,  0.0%st
-> > Mem:   8198504k total,  7599132k used,   599372k free,  1212636k buffers
-> > Swap: 16777208k total,    83568k used, 16693640k free,   610136k cached
-> >
->
-> High-order atomic allocations of the type you are trying at that frequency
-> were always a very long shot. The most likely outcome is that something
-> has changed that means a burst of allocations trigger an allocation failure
-> where as before processes would delay long enough for the system not to notice.
->
-> 1. Have MTU settings changed?
-
-no not to my knowledge
-
-> 2. As order-5 allocations are required to succeed, I'm surprised in a
->    sense that there are only 5 failures because it implies the machine is
->    actually recovering and continueing on as normal. Can you think of what
->    happens in the morning that causes a burst of allocations to occur?
-
-the burts occur all day while the machine is in use ... its just
-that I was  writing this at noon so only the morning had passed. So
-I compared things to the day before ...
-
-> 3. Other than the failures, have you noticed any other problems with the
->    machine or does it continue along happily?
-
-The machine seems to be fine.
-
-> 4. Does the following patch help by any chance?
-
-should I try this on vanilla 2.6.31.4 or ontop of your previous
-patch?
-
-we are running virtualbox 3.0.8 on this machine, virtualbox is using
-the physical network interface in bridge mode access the network.
-Could this have something todo with the problem ?
-
-cheers
-tobi
-
--- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+2.6.32-rc5-git1 #1
+ -------------------------------------------------------
+ events/0/9 is trying to acquire lock:
+  (&rfkill->sync_work){+.+.+.}, at: [<c1039083>] 
+__cancel_work_timer+0x81/0x181
+ 
+ but task is already holding lock:
+  (&ehotk->hotplug_lock){+.+.+.}, at: [<f8587708>] 
+eeepc_rfkill_hotplug+0x45/0xda [eeepc_laptop]
+ 
+ which lock already depends on the new lock.
+ 
+ 
+ the existing dependency chain (in reverse order) is:
+ 
+ -> #2 (&ehotk->hotplug_lock){+.+.+.}:
+        [<c104ac60>] __lock_acquire+0x9fb/0xb6d
+        [<c104ae2e>] lock_acquire+0x5c/0x73
+        [<c129e223>] __mutex_lock_common+0x39/0x375
+        [<c129e5ee>] mutex_lock_nested+0x2b/0x33
+        [<f8587708>] eeepc_rfkill_hotplug+0x45/0xda [eeepc_laptop]
+        [<f858787c>] eeepc_rfkill_set+0x1d/0x2d [eeepc_laptop]
+        [<f83f4a9f>] rfkill_set_block+0x6f/0xb1 [rfkill]
+        [<f83f4b78>] __rfkill_switch_all+0x2e/0x51 [rfkill]
+        [<f83f4c12>] rfkill_switch_all+0x33/0x41 [rfkill]
+        [<f83f51b0>] rfkill_op_handler+0xf0/0x11e [rfkill]
+        [<c1038965>] worker_thread+0x161/0x233
+        [<c103b883>] kthread+0x5f/0x64
+        [<c1003613>] kernel_thread_helper+0x7/0x10
+ 
+ -> #1 (rfkill_global_mutex){+.+.+.}:
+        [<c104ac60>] __lock_acquire+0x9fb/0xb6d
+        [<c104ae2e>] lock_acquire+0x5c/0x73
+        [<c129e223>] __mutex_lock_common+0x39/0x375
+        [<c129e5ee>] mutex_lock_nested+0x2b/0x33
+        [<f83f4c36>] rfkill_sync_work+0x16/0x35 [rfkill]
+        [<c1038965>] worker_thread+0x161/0x233
+        [<c103b883>] kthread+0x5f/0x64
+        [<c1003613>] kernel_thread_helper+0x7/0x10
+ 
+ -> #0 (&rfkill->sync_work){+.+.+.}:
+        [<c104ab62>] __lock_acquire+0x8fd/0xb6d
+        [<c104ae2e>] lock_acquire+0x5c/0x73
+        [<c10390ab>] __cancel_work_timer+0xa9/0x181
+        [<c103919a>] cancel_work_sync+0xa/0xc
+        [<f83f4e55>] rfkill_unregister+0x37/0x93 [rfkill]
+        [<f84d95bc>] wiphy_unregister+0x21/0x14c [cfg80211]
+        [<f885a0ed>] ieee80211_unregister_hw+0xa7/0xc5 [mac80211]
+        [<f89805d9>] ath_detach+0x73/0x11b [ath9k]
+        [<f898068c>] ath_cleanup+0xb/0x35 [ath9k]
+        [<f8987305>] ath_pci_remove+0x15/0x17 [ath9k]
+        [<c112c7a7>] pci_device_remove+0x19/0x39
+        [<c11c5076>] __device_release_driver+0x59/0x9d
+        [<c11c5157>] device_release_driver+0x18/0x23
+        [<c11c470b>] bus_remove_device+0x71/0x7e
+        [<c11c3425>] device_del+0xf0/0x131
+        [<c11c3471>] device_unregister+0xb/0x15
+        [<c1128d11>] pci_stop_bus_device+0x45/0x61
+        [<c1128d91>] pci_remove_bus_device+0xd/0x90
+        [<f8587780>] eeepc_rfkill_hotplug+0xbd/0xda [eeepc_laptop]
+        [<f858787c>] eeepc_rfkill_set+0x1d/0x2d [eeepc_laptop]
+        [<f83f4a9f>] rfkill_set_block+0x6f/0xb1 [rfkill]
+        [<f83f4b78>] __rfkill_switch_all+0x2e/0x51 [rfkill]
+        [<f83f4c12>] rfkill_switch_all+0x33/0x41 [rfkill]
+        [<f83f51b0>] rfkill_op_handler+0xf0/0x11e [rfkill]
+        [<c1038965>] worker_thread+0x161/0x233
+        [<c103b883>] kthread+0x5f/0x64
+        [<c1003613>] kernel_thread_helper+0x7/0x10
+ 
+ other info that might help us debug this:
+ 
+ 4 locks held by events/0/9:
+  #0:  (events){+.+.+.}, at: [<c1038923>] worker_thread+0x11f/0x233
+  #1:  ((rfkill_op_work).work){+.+.+.}, at: [<c1038923>] 
+worker_thread+0x11f/0x233
+  #2:  (rfkill_global_mutex){+.+.+.}, at: [<f83f4bfd>] 
+rfkill_switch_all+0x1e/0x41 [rfkill]
+  #3:  (&ehotk->hotplug_lock){+.+.+.}, at: [<f8587708>] 
+eeepc_rfkill_hotplug+0x45/0xda [eeepc_laptop]
+ 
+ stack backtrace:
+ Pid: 9, comm: events/0 Not tainted 2.6.32-rc5-git1 #1
+ Call Trace:
+  [<c129d1e0>] ? printk+0xf/0x17
+  [<c1049f29>] print_circular_bug+0x8a/0x96
+  [<c104ab62>] __lock_acquire+0x8fd/0xb6d
+  [<c104ae2e>] lock_acquire+0x5c/0x73
+  [<c1039083>] ? __cancel_work_timer+0x81/0x181
+  [<c10390ab>] __cancel_work_timer+0xa9/0x181
+  [<c1039083>] ? __cancel_work_timer+0x81/0x181
+  [<c104974c>] ? mark_lock+0x1e/0x1e2
+  [<c1049953>] ? mark_held_locks+0x43/0x5b
+  [<c108b0d1>] ? kfree+0xbf/0xcb
+  [<c103919a>] cancel_work_sync+0xa/0xc
+  [<f83f4e55>] rfkill_unregister+0x37/0x93 [rfkill]
+  [<f84d95bc>] wiphy_unregister+0x21/0x14c [cfg80211]
+  [<c1038d10>] ? destroy_workqueue+0x72/0x77
+  [<f885a0ed>] ieee80211_unregister_hw+0xa7/0xc5 [mac80211]
+  [<f89805d9>] ath_detach+0x73/0x11b [ath9k]
+  [<f898068c>] ath_cleanup+0xb/0x35 [ath9k]
+  [<f8987305>] ath_pci_remove+0x15/0x17 [ath9k]
+  [<c112c7a7>] pci_device_remove+0x19/0x39
+  [<c11c5076>] __device_release_driver+0x59/0x9d
+  [<c11c5157>] device_release_driver+0x18/0x23
+  [<c11c470b>] bus_remove_device+0x71/0x7e
+  [<c11c3425>] device_del+0xf0/0x131
+  [<c11c3471>] device_unregister+0xb/0x15
+  [<c1128d11>] pci_stop_bus_device+0x45/0x61
+  [<c1128d91>] pci_remove_bus_device+0xd/0x90
+  [<f8587780>] eeepc_rfkill_hotplug+0xbd/0xda [eeepc_laptop]
+  [<f858787c>] eeepc_rfkill_set+0x1d/0x2d [eeepc_laptop]
+  [<f83f4a9f>] rfkill_set_block+0x6f/0xb1 [rfkill]
+  [<f83f4b78>] __rfkill_switch_all+0x2e/0x51 [rfkill]
+  [<f83f4c12>] rfkill_switch_all+0x33/0x41 [rfkill]
+  [<f83f51b0>] rfkill_op_handler+0xf0/0x11e [rfkill]
+  [<c1038965>] worker_thread+0x161/0x233
+  [<c1038923>] ? worker_thread+0x11f/0x233
+  [<f83f50c0>] ? rfkill_op_handler+0x0/0x11e [rfkill]
+  [<c103ba7d>] ? autoremove_wake_function+0x0/0x2f
+  [<c1038804>] ? worker_thread+0x0/0x233
+  [<c103b883>] kthread+0x5f/0x64
+  [<c103b824>] ? kthread+0x0/0x64
+  [<c1003613>] kernel_thread_helper+0x7/0x10
