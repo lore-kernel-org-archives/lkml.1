@@ -1,88 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751302AbZJTIdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751346AbZJTIdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751302AbZJTIdf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 04:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbZJTIdf
+	id S1751346AbZJTIdt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 04:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZJTIdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 04:33:35 -0400
-Received: from lucidpixels.com ([75.144.35.66]:40114 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750806AbZJTIde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 04:33:34 -0400
-Date: Tue, 20 Oct 2009 04:33:37 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Dave Chinner <david@fromorbit.com>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: 2.6.31+2.6.31.4: XFS - All I/O locks up to D-state after 24-48
- hours (sysrq-t+w available)
-In-Reply-To: <20091020003358.GW9464@discord.disaster>
-Message-ID: <alpine.DEB.2.00.0910200431290.21878@p34.internal.lan>
-References: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan> <alpine.DEB.2.00.0910181607040.27363@p34.internal.lan> <20091019030456.GS9464@discord.disaster> <alpine.DEB.2.00.0910190431180.23395@p34.internal.lan>
- <20091020003358.GW9464@discord.disaster>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 20 Oct 2009 04:33:45 -0400
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:47973 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301AbZJTIdg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 04:33:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SM+VaBcBsPgJnMd8udBOrLo/wcgiKY3Mmq6vafAw0IBWJlaoc/a9I48hC8mzCvZRQu
+         Wpcldvvgb4VXyTrj98JasxL3Nml9tPwCY6B1UzYnW/b9dKXA23LDJ+5GTpB4DQQ/2uxm
+         B6woh+UPQ4djketkg3ZWpCllyC1y9IchAr+fM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+In-Reply-To: <alpine.DEB.2.00.0910190422090.13303@andre.icculuslan>
+References: <alpine.DEB.2.00.0910190422090.13303@andre.icculuslan>
+Date: Tue, 20 Oct 2009 16:33:40 +0800
+Message-ID: <2375c9f90910200133g51c70ce2x8f90cd79885096a4@mail.gmail.com>
+Subject: Re: [RFC][PATCH 2/2] binfmt_elf: FatELF support for kernel modules.
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: "Ryan C. Gordon" <icculus@icculus.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 20 Oct 2009, Dave Chinner wrote:
-
-> On Mon, Oct 19, 2009 at 06:18:58AM -0400, Justin Piszcz wrote:
->> On Mon, 19 Oct 2009, Dave Chinner wrote:
->>> On Sun, Oct 18, 2009 at 04:17:42PM -0400, Justin Piszcz wrote:
->>>> It has happened again, all sysrq-X output was saved this time.
->>> .....
->>>
->>> All pointing to log IO not completing.
->>>
-> ....
->> So far I do not have a reproducible test case,
+On Mon, Oct 19, 2009 at 10:41 PM, Ryan C. Gordon <icculus@icculus.org> wrote:
 >
-> Ok. What sort of load is being placed on the machine?
-Hello, generally the load is low, it mainly serves out some samba shares.
+> Allows kernel modules to be FatELF binaries.
+>
+> Details, rationale, tools, and patches for handling FatELF binaries can be
+> found at http://icculus.org/fatelf/
+>
+> Please note that this requires an updated depmod and modprobe to be truly
+> effective, but an unmodified insmod can work with FatELF binaries.
+>
+> Signed-off-by: Ryan C. Gordon <icculus@icculus.org>
+> ---
+>  kernel/module.c |   72 +++++++++++++++++++++++++++++++++++++++++++++++++++----
+>  1 files changed, 67 insertions(+), 5 deletions(-)
+>
+> diff --git a/kernel/module.c b/kernel/module.c
+> index 8b7d880..cda8f79 100644
+> --- a/kernel/module.c
+> +++ b/kernel/module.c
+> @@ -2066,13 +2066,69 @@ static inline void kmemleak_load_module(struct module *mod, Elf_Ehdr *hdr,
+>  }
+>  #endif
+>
+> +/*
+> + * See if we're a valid FatELF binary, find the right record, and
+> + *  return the offset of that record within the binary. Returns NULL if there's
+> + *  a problem, or a pointer to the real ELF header if we're okay.
+> + *  If we don't see the FatELF magic number, we assume this is a regular ELF
+> + *  binary and let the regular ELF checks handle it.
+> + *
+> + * This is a simplified version of examine_fatelf in fs/binfmt_elf.c
+> + */
+> +static Elf_Ehdr *examine_fatelf_module(const unsigned char *hdr,
+> +                                      const unsigned long len)
+> +{
+> +       Elf_Ehdr elf;
+> +       int records, i;
+> +       const fatelf_hdr *fatelf = (const fatelf_hdr *) hdr;
 
->
->> the only other thing not posted was the output of ps auxww during
->> the time of the lockup, not sure if it will help, but here it is:
->>
->> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
->> root         1  0.0  0.0  10320   684 ?        Ss   Oct16   0:00 init [2]
-> ....
->> root       371  0.0  0.0      0     0 ?        R<   Oct16   0:01 [xfslogd/0]
->> root       372  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfslogd/1]
->> root       373  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfslogd/2]
->> root       374  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfslogd/3]
->> root       375  0.0  0.0      0     0 ?        R<   Oct16   0:00 [xfsdatad/0]
->> root       376  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsdatad/1]
->> root       377  0.0  0.0      0     0 ?        S<   Oct16   0:03 [xfsdatad/2]
->> root       378  0.0  0.0      0     0 ?        S<   Oct16   0:01 [xfsdatad/3]
->> root       379  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/0]
->> root       380  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/1]
->> root       381  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/2]
->> root       382  0.0  0.0      0     0 ?        S<   Oct16   0:00 [xfsconvertd/3]
-> .....
->
-> It appears that both the xfslogd and the xfsdatad on CPU 0 are in
-> the running state but don't appear to be consuming any significant
-> CPU time. If they remain like this then I think that means they are
-> stuck waiting on the run queue.  Do these XFS threads always appear
-> like this when the hang occurs? If so, is there something else that
-> is hogging CPU 0 preventing these threads from getting the CPU?
-Yes, the XFS threads show up like this on each time the kernel crashed.  So far
-with 2.6.30.9 after ~48hrs+ it has not crashed.  So it appears to be some issue
-between 2.6.30.9 and 2.6.31.x when this began happening.  Any recommendations
-on how to catch this bug w/certain options enabled/etc?
+
+As for 'Elf_Ehdr', isn't 'Fatelf_hdr' better? :)
+
+> +
+> +       if (likely(le32_to_cpu(fatelf->magic) != FATELF_MAGIC)) {
+> +               return (Elf_Ehdr *) hdr;  /* not FatELF; not an error. */
+> +       } else if (unlikely(le16_to_cpu(fatelf->version) != 1)) {
+> +               return NULL; /* Unrecognized format version. */
+> +       }
+> +
 
 
+These braces are unnecessary.
+
+> +       memset(&elf, 0, sizeof (elf));
+> +
+> +       records = (int) fatelf->num_records;  /* uint8, no byteswap needed */
+> +       for (i = 0; i < records; i++) {
+> +               const fatelf_record *record = &fatelf->records[i];
+> +
+> +               /* Fill in the data elf_check_arch() might care about. */
+> +               elf.e_ident[EI_OSABI] = record->osabi;
+> +               elf.e_ident[EI_CLASS] = record->word_size;
+> +               elf.e_ident[EI_DATA] = record->byte_order;
+> +               elf.e_machine = le16_to_cpu(record->machine);
+> +
+> +               if (likely(!elf_check_arch(&elf))) {
+> +                       continue;  /* Unsupported CPU architecture. */
+
+This 'continue' can be removed.
+
+
+> +               } else {
+> +                       const __u64 rec_offset = le64_to_cpu(record->offset);
+> +                       const __u64 rec_size = le64_to_cpu(record->size);
+> +                       const __u64 end_offset = rec_offset + rec_size;
+> +                       const unsigned long uloff = (unsigned long) rec_offset;
+> +
+> +                       if (unlikely(end_offset < rec_offset)) {
+> +                               continue;  /* overflow (corrupt file?)... */
+
+
+ditto
+
+> +                       } else if (unlikely(end_offset > len)) {
+> +                               continue;  /* past EOF. */
+
+ditto
+
+> +                       }
+> +
+> +                       return (Elf_Ehdr *) (hdr + uloff);
+> +               }
+> +       }
+> +
+> +       return NULL;  /* no binaries we could use. */
+> +}
+> +
+>  /* Allocate and load the module: note that size of section 0 is always
+>    zero, and we rely on this for optional sections. */
+>  static noinline struct module *load_module(void __user *umod,
+>                                  unsigned long len,
+>                                  const char __user *uargs)
+>  {
+> -       Elf_Ehdr *hdr;
+> +       Elf_Ehdr *hdr_alloc;  /* returned from vmalloc */
+> +       Elf_Ehdr *hdr;  /* adjusted hdr_alloc for FatELF */
+>        Elf_Shdr *sechdrs;
+>        char *secstrings, *args, *modmagic, *strtab = NULL;
+>        char *staging;
+> @@ -2094,14 +2150,20 @@ static noinline struct module *load_module(void __user *umod,
 >
-> Cheers,
+>        /* Suck in entire file: we'll want most of it. */
+>        /* vmalloc barfs on "unusual" numbers.  Check here */
+> -       if (len > 64 * 1024 * 1024 || (hdr = vmalloc(len)) == NULL)
+> +       if (len > 64 * 1024 * 1024 || (hdr_alloc = vmalloc(len)) == NULL)
+>                return ERR_PTR(-ENOMEM);
 >
-> Dave.
-> -- 
-> Dave Chinner
-> david@fromorbit.com
+> -       if (copy_from_user(hdr, umod, len) != 0) {
+> +       if (copy_from_user(hdr_alloc, umod, len) != 0) {
+>                err = -EFAULT;
+>                goto free_hdr;
+>        }
+>
+> +       hdr = examine_fatelf_module((unsigned char *) hdr_alloc, len);
+> +       if (hdr == NULL) {
+> +               err = -ENOEXEC;
+> +               goto free_hdr;
+> +       }
+> +
+>        /* Sanity checks against insmoding binaries or wrong arch,
+>            weird elf version */
+>        if (memcmp(hdr->e_ident, ELFMAG, SELFMAG) != 0
+> @@ -2505,7 +2567,7 @@ static noinline struct module *load_module(void __user *umod,
+>        add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+>
+>        /* Get rid of temporary copy */
+> -       vfree(hdr);
+> +       vfree(hdr_alloc);
+>
+>        trace_module_load(mod);
+>
+> @@ -2538,7 +2600,7 @@ static noinline struct module *load_module(void __user *umod,
+>        kfree(args);
+>        kfree(strmap);
+>  free_hdr:
+> -       vfree(hdr);
+> +       vfree(hdr_alloc);
+>        return ERR_PTR(err);
+>
+>  truncated:
+> --
+> 1.6.0.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 >
