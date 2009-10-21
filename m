@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZJUNQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbZJUNR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbZJUNQY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 09:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZJUNQX
+	id S1753452AbZJUNR6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 09:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZJUNR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 09:16:23 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:44981 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753148AbZJUNQX (ORCPT
+	Wed, 21 Oct 2009 09:17:57 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:47279 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752013AbZJUNR5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 09:16:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=VjkzGqDcYs9rJbsTfX6Eop3DPjw37zDaysvQ4b5YROEc66CMAWxayUkOomeTxIIDbs
-         M4j8PG9RXA1wVO1mUFepWJI4UuhIpdYiWfTby4WgiBTGgqugFfQWYpSq0J+alkNbq4Ji
-         9SSQqmIazqdy16S/9NdqvEdfrMP/nSE55FpF0=
-From: Arnd Bergmann <arndbergmann@googlemail.com>
-To: John Kacur <jkacur@redhat.com>
-Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
-Date: Wed, 21 Oct 2009 15:16:20 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
-Cc: Arnd Bergmann <arndbergmann@googlemail.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mattia Dongili <malattia@linux.it>
-References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain> <200910211029.21702.arnd@arndb.de> <alpine.LFD.2.00.0910211226180.3526@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0910211226180.3526@localhost.localdomain>
+	Wed, 21 Oct 2009 09:17:57 -0400
+Date: Wed, 21 Oct 2009 15:17:47 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4] powerpc/5200: Add mpc5200-spi (non-PSC) device
+	driver
+Message-ID: <20091021131747.GG12819@pengutronix.de>
+References: <20090618025030.12363.69402.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910211516.20614.arnd@arndb.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="gm5TwAJMO0F2iVRz"
+Content-Disposition: inline
+In-Reply-To: <20090618025030.12363.69402.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 October 2009, John Kacur wrote:
-> From 96872f13a510db69fbb32f9e956615cd826f8986 Mon Sep 17 00:00:00 2001
-> From: John Kacur <jkacur@redhat.com>
-> Date: Sun, 18 Oct 2009 23:49:49 +0200
-> Subject: [PATCH] sony_pi: Remove the BKL from open and ioctl
-> 
-> The BKL is in this function because of the BKL pushdown
-> (see commit f8f2c79d594463427f7114cedb1555110d547d89)
-> 
-> It is not needed here because the mutex_lock sonypi_device.lock
-> provides the necessary locking.
-> 
-> sonpi_misc_ioctl can be converted to unlocked ioctls since it relies on
-> its own locking (the mutex sonypi_device.lock) and not the bkl
-> 
-> Document that llseek is not needed by explictly setting it to no_llseek
-> 
-> Signed-off-by: John Kacur <jkacur@redhat.com>
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+--gm5TwAJMO0F2iVRz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This looks perfect to me now. Just a few hundred more of these,
-and we're done with the drivers ;-)
+Hi Grant,
+
+On Wed, Jun 17, 2009 at 08:55:01PM -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>=20
+> Adds support for the dedicated SPI device on the Freescale MPC5200(b)
+> SoC.
+>=20
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+
+do you have an updated version to share? Or is V4 still 'status quo'?
+
+Genki de ;)
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--gm5TwAJMO0F2iVRz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkrfCfsACgkQD27XaX1/VRvKKQCghwigd52gAcPc1AxAiz9EZs9b
+kBsAoK9sRHJ8TfJ5x9ezMXr+qcdAG6bs
+=QfgA
+-----END PGP SIGNATURE-----
+
+--gm5TwAJMO0F2iVRz--
