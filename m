@@ -1,108 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbZJWTKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbZJUPTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752851AbZJWTKW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 15:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZJWTKV
+	id S1753951AbZJUPTD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 11:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbZJUPTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 15:10:21 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:35053 "EHLO mx1.redhat.com"
+	Wed, 21 Oct 2009 11:19:00 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39428 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752646AbZJWTKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 15:10:21 -0400
-Date: Wed, 21 Oct 2009 11:16:02 -0400
-Message-Id: <200910211516.n9LFG27p031289@segfault.boston.devel.redhat.com>
-X-Draft-From: ("nnimap+mail.corp.redhat.com:INBOX" 415086)
-References: <200910202011.53858.czoccolo@gmail.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC V2 PATCH 1/5] cfq-iosched: adapt slice to number of processes doing I/O
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-From: Jeff Moyer <jmoyer@redhat.com>
-Gcc: nnfolder+archive:sent-mail
+	id S1753500AbZJUPTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 11:19:00 -0400
+Message-ID: <4ADF2691.7070304@kernel.org>
+Date: Thu, 22 Oct 2009 00:19:45 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeff Mahoney <jeffm@suse.com>, Jiri Kosina <jkosina@suse.cz>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64@vger.kernel.org
+Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
+References: <4ADB967A.4080707@suse.com> <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz> <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz> <4ADD48D1.1040701@kernel.org> <alpine.LSU.2.00.0910200756300.8582@wotan.suse.de> <4ADD54D4.70808@kernel.org> <4ADD5530.3050107@kernel.org> <alpine.LSU.2.00.0910200826220.8582@wotan.suse.de> <4ADDC69A.5000701@suse.com> <4ADDCDED.6060706@suse.com> <20091021061109.GA27195@elte.hu>
+In-Reply-To: <20091021061109.GA27195@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Corrado!
+Ingo Molnar wrote:
+> * Jeff Mahoney <jeffm@suse.com> wrote:
+> 
+>> This version fixes a build issue (__alignof__(unsigned long)) and 
+>> fixes the percpu lookup to be usd = percpu array pointer, usd[i] = 
+>> actual variable.
+> 
+> Before applying this part-workaround i'd like to see confirmation that 
+> the IA64 limitation is being fixed. It would be bad for such bugs to pop 
+> up again and again in the future, with a 2 months bug fixing latency.
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
+I talked with Christoph earlier and he basically said that the
+constant can just be bumped up without any ill effect (it would be
+great if Tony Luck can confirm this).  So, it's an annoying thing and
+in the long term removing would be a good idea but I don't think it's
+anything major as long as it blows up during build not runtime.
 
-> When the number of processes performing I/O concurrently increases,
-> a fixed time slice per process will cause large latencies.
->
-> This patch, if low_latency mode is enabled,  will scale the time slice
-> assigned to each process according to a 300ms target latency.
->
-> In order to keep fairness among processes:
-> * The number of active processes is computed using a special form of
-> running average, that quickly follows sudden increases (to keep latency low),
-> and decrease slowly (to have fairness in spite of rapid decreases of this
-> value).
->
-> To safeguard sequential bandwidth, we impose a minimum time slice
-> (computed using 2*cfq_slice_idle as base, adjusted according to priority
-> and async-ness).
+Thanks.
 
-I like the idea as well, but I have a question and some nits to pick.
-
->  static inline void
->  cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->  {
-> -	cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) + jiffies;
-> +	unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
-> +	if (cfqd->cfq_latency) {
-> +		unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));
-> +		unsigned process_thr = cfq_target_latency / cfqd->cfq_slice[1];
-> +		if (iq > process_thr) {
-> +			unsigned low_slice = 2 * slice * cfqd->cfq_slice_idle
-> +				/ cfqd->cfq_slice[1];
-> +			slice = max(slice * cfq_target_latency /
-> +				(cfqd->cfq_slice[1] * iq),
-
-Couldn't you have just divided the slice by iq?  And why iq?  Why not
-nr_qs or avg_qlen or something?  It's a minor nit; I can live with it.
-
-> +				min(slice, low_slice));
-> +		}
-> +	}
-> +	cfqq->slice_end = jiffies + slice;
->  	cfq_log_cfqq(cfqd, cfqq, "set_slice=%lu", cfqq->slice_end - jiffies);
-
-Wow.  That function is *dense*.  I tried to write it in a more
-readable fashion, but please chime in if I misinterpreted anything.
-
-static inline void
-cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-{
-        unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
-
-	if (cfqd->cfq_latency) {
-		unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));
-		unsigned slice_sync = cfqd->cfq_slice[1];
-		unsigned process_thr = cfq_target_latency / slice_sync;
-
-		if (iq > process_thr) {
-			/*
-			 * Minimum slice is computed using 2*slice_idle as
-			 * a base, and then scaling it by priority and
-			 * async-ness.
-			 */
-			unsigned total_sync = slice_sync * iq;
-			unsigned slice_fraction = cfq_target_latency / total_sync;
-			unsigned min_slice = (2 * cfqd->cfq_slice_idle) *
-				(slice / slice_sync);
-			min_slice = min(slice, min_slice);
-			slice *= slice_fraction;
-			slice = max(slice, min_slice);
-		}
-	}
-	cfqq->slice_end = jiffies + slice;
-	cfq_log_cfqq(cfqd, cfqq, "set_slice=%lu", cfqq->slice_end - jiffies);
-}
-
-
-Cheers,
-Jeff
+-- 
+tejun
