@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZJURvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbZJUSAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbZJURvN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 13:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbZJURvL
+	id S1754647AbZJUSAH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 14:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbZJUSAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 13:51:11 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:8370 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754064AbZJURvJ (ORCPT
+	Wed, 21 Oct 2009 14:00:06 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50070 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754064AbZJUSAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 13:51:09 -0400
-Message-ID: <4ADF4982.9010306@caviumnetworks.com>
-Date: Wed, 21 Oct 2009 10:48:50 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Wu Zhangjin <wuzhangjin@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-Subject: Re: [PATCH -v4 9/9] tracing: add function graph tracer support for
- MIPS
-References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>	 <96110ea5dd4d3d54eb97d0bb708a5bd81c7a50b5.1256135456.git.wuzhangjin@gmail.com>	 <5dda13e8e3a9c9dba4bb7179183941bda502604f.1256135456.git.wuzhangjin@gmail.com>	 <af3ec1b5cd06b6f6a461c9fa7d09a51fabccb08d.1256135456.git.wuzhangjin@gmail.com>	 <a6f2959a69b6a77dd32cc36a5c8202f97d524f1e.1256135456.git.wuzhangjin@gmail.com>	 <53bdfdd95ec4fa00d4cc505bb5972cf21243a14d.1256135456.git.wuzhangjin@gmail.com>	 <1256141540.18347.3118.camel@gandalf.stny.rr.com>	 <4ADF38D5.9060100@caviumnetworks.com>	 <1256143568.18347.3169.camel@gandalf.stny.rr.com>	 <4ADF3FE0.5090104@caviumnetworks.com> <1256145813.18347.3210.camel@gandalf.stny.rr.com>
-In-Reply-To: <1256145813.18347.3210.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 21 Oct 2009 14:00:05 -0400
+Date: Wed, 21 Oct 2009 11:00:53 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Dave Jones <davej@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, esandeen@redhat.com,
+       cebbert@redhat.com, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Unnecessary overhead with stack protector.
+Message-ID: <20091021110053.26ab9982@infradead.org>
+In-Reply-To: <4ADF2DAA.9030604@redhat.com>
+References: <20091015183540.GA8098@redhat.com>
+	<20091015190720.GA19467@elte.hu>
+	<4ADF2DAA.9030604@redhat.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Oct 2009 17:48:50.0836 (UTC) FILETIME=[BFA4FD40:01CA5276]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Wed, 2009-10-21 at 10:07 -0700, David Daney wrote:
+On Wed, 21 Oct 2009 10:50:02 -0500
+Eric Sandeen <sandeen@redhat.com> wrote:
+
+> Ingo Molnar wrote:
+> > (Cc:-ed Arjan too.)
+> > 
+> > * Dave Jones <davej@redhat.com> wrote:
+> > 
+> >> 113c5413cf9051cc50b88befdc42e3402bb92115 introduced a change that
+> >> made CC_STACKPROTECTOR_ALL not-selectable if someone enables 
+> >> CC_STACKPROTECTOR.
+> >>
+> >> We've noticed in Fedora that this has introduced noticable
+> >> overhead on some functions, including those which don't even have
+> >> any on-stack variables.
+> >>
+> >> According to the gcc manpage, -fstack-protector will protect
+> >> functions with as little as 8 bytes of stack usage. So we're
+> >> introducing a huge amount of overhead, to close a small amount of
+> >> vulnerability (the >0 && <8 case).
+> >>
+> >> The overhead as it stands right now means this whole option is 
+> >> unusable for a distro kernel without reverting the above commit.
+> > 
+> > Exactly what workload showed overhead, and how much?
+> > 
+> > 	Ingo
 > 
->> I have not used -pg, so I don't know for sure, I think all it does is 
->> add the calls to _mcount.  Someone could investigate 
->> -fno-omit-frame-pointer, with that you may be able to use:
-> 
-> Note, -pg assumes -fno-omit-frame-pointer, since -fomit-frame-pointer
-> and -pg are incompatible.
-> 
->>     move    s8,sp
->>
->> To identify function prologs, but it would still be ad hoc, as modern 
->> versions of GCC will reorder instructions in the prolog for better 
->> scheduling.
-> 
-> I'll have to search the ABI documentation about calling _mcount in MIPS.
-> There are assumptions with _mcount that are made. It may very well be
-> safe to assume that the move s8,sp will always be there before an mcount
-> call.
+> I had xfs blowing up pretty nicely; granted, xfs is not svelte but it
+> was never this bad before.
 > 
 
-Although I am quite interested in ftrace for MIPS, I a haven't spent the 
-effort to try to figure out how many levels of backtrace we need to be 
-generating here.
+do you have any indication that SP actually increases the stack
+footprint by that much? it's only a few bytes....
 
-If you only need the caller's address, that is passed in register 'at'. 
-  If you need more than that, then things get tricky.  I would do one of 
-two things:
 
-1) Use the mechanism used by the OOPS dump.
-
-2) Implement back traces based on DWARF2 unwinding data that is 
-generated by the compiler.
-
-David Daney
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
