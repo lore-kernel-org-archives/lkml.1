@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbZJUSHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZJUS0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbZJUSHl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 14:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbZJUSHk
+	id S1754737AbZJUS0X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 14:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbZJUS0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 14:07:40 -0400
-Received: from smtp.wp.pl ([212.77.101.1]:40490 "EHLO mx1.wp.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753991AbZJUSHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 14:07:40 -0400
-Date: Wed, 21 Oct 2009 20:25:04 +0200
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       jfs-discussion@lists.sourceforge.net
-Subject: Re: [Jfs-discussion] [PATCH] jfs: lockdep fix
-Message-Id: <20091021202504.0daf2be7.krzysztof.h1@wp.pl>
-In-Reply-To: <1256068823.3708.30.camel@norville.austin.ibm.com>
-References: <4ade05f0af05a2.00981454@wp.pl>
-	<1256068823.3708.30.camel@norville.austin.ibm.com>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Oct 2009 14:26:22 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:9747 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754689AbZJUS0V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 14:26:21 -0400
+Message-ID: <4ADF5225.40701@caviumnetworks.com>
+Date: Wed, 21 Oct 2009 11:25:41 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: rostedt@goodmis.org
+CC: Wu Zhangjin <wuzhangjin@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>
+Subject: Re: [PATCH -v4 9/9] tracing: add function graph tracer support for
+ MIPS
+References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>	 <96110ea5dd4d3d54eb97d0bb708a5bd81c7a50b5.1256135456.git.wuzhangjin@gmail.com>	 <5dda13e8e3a9c9dba4bb7179183941bda502604f.1256135456.git.wuzhangjin@gmail.com>	 <af3ec1b5cd06b6f6a461c9fa7d09a51fabccb08d.1256135456.git.wuzhangjin@gmail.com>	 <a6f2959a69b6a77dd32cc36a5c8202f97d524f1e.1256135456.git.wuzhangjin@gmail.com>	 <53bdfdd95ec4fa00d4cc505bb5972cf21243a14d.1256135456.git.wuzhangjin@gmail.com>	 <1256141540.18347.3118.camel@gandalf.stny.rr.com>	 <4ADF38D5.9060100@caviumnetworks.com>	 <1256143568.18347.3169.camel@gandalf.stny.rr.com>	 <4ADF3FE0.5090104@caviumnetworks.com>	 <1256145813.18347.3210.camel@gandalf.stny.rr.com>	 <4ADF4982.9010306@caviumnetworks.com> <1256148562.18347.3264.camel@gandalf.stny.rr.com>
+In-Reply-To: <1256148562.18347.3264.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
-X-WP-SPAM: NO 0000000 [MfO0]                               
+X-OriginalArrivalTime: 21 Oct 2009 18:25:42.0038 (UTC) FILETIME=[E59FA360:01CA527B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Oct 2009 15:00:23 -0500
-Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
-> I proposed another fix here:
-> http://bugzilla.kernel.org/show_bug.cgi?id=13613
+Steven Rostedt wrote:
+[...]
+> We're not doing back traces. We need to modify the return of the
+> function being called. Note, the above functions that end with ";" are
+> leaf functions. Non leaf functions show "{" and end with "}".
 > 
-> It seems I haven't followed up and submitted it to the vfs maintainer.
-> Could you please give that patch a try and see if it fixes the problem
-> for you?
+> The trick here is to find a reliable way to modify the return address.
 > 
 
-Your patch fixes the previously reported (old) lockdep problem.  I am not able to trigger 
-the lockdep report while it takes a few minutes without the patch. 
+Well that's what I get for chiming in without fully understanding the 
+context.
 
-Tested-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+I think it is fine to search backwards from the ($ra - 8) of the call to 
+_mcount until you encounter the adjustment of $sp.  If you encounter a 
+store of $ra, you can assume that the function will use the stored value 
+when returning, otherwise modify the value restored to $ra (passed in 
+$at).  That is probably what you were doing to begin with.
 
-Your fix I have tested is below:
-
-VFS: Fix potential deadlock in __read_cache_page()
-
-lockdep reports a potential deadlock when using jfs because
-add_to_page_cache_lru() is called from __read_cache_page() with GFP_KERNEL.
-
-Detailed lockdep output can be found at
-http://bugzilla.kernel.org/show_bug.cgi?id=13613
-
-Passing mapping_gfp_mask(mapping) instead of GFP_KERNEL fixes the problem.
-
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-diff --git a/mm/filemap.c b/mm/filemap.c
-index ccea3b6..59f5406 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1702,7 +1702,8 @@ repeat:
- 		page = page_cache_alloc_cold(mapping);
- 		if (!page)
- 			return ERR_PTR(-ENOMEM);
--		err = add_to_page_cache_lru(page, mapping, index, GFP_KERNEL);
-+		err = add_to_page_cache_lru(page, mapping, index,
-+					    mapping_gfp_mask(mapping));
- 		if (unlikely(err)) {
- 			page_cache_release(page);
- 			if (err == -EEXIST)
-
+David Daney
