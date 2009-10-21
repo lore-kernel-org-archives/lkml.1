@@ -1,63 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZJUVOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZJUVQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbZJUVOo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 17:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZJUVOo
+	id S1754848AbZJUVQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 17:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbZJUVQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 17:14:44 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41143 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753970AbZJUVOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 17:14:43 -0400
-Date: Wed, 21 Oct 2009 23:13:26 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Vincent Sanders <vince@simtec.co.uk>, Jonathan Corbet <corbet@lwn.net>,
-       Christoph Hellwig <hch@infradead.org>,
-       Arnd Bergmann <arndbergmann@googlemail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Subject: [PATCH] rtc: Explicitly set llseek to no_llseek
-In-Reply-To: <20091010153350.046644063@linutronix.de>
-Message-ID: <alpine.LFD.2.00.0910212312270.3526@localhost.localdomain>
-References: <20091010153314.827301943@linutronix.de> <20091010153350.046644063@linutronix.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 21 Oct 2009 17:16:59 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:34660 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbZJUVQ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 17:16:58 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Rejvi2IYsj4/NAZ1gfPmR97qBN/cmgx1YnILh8iQyRJwh5l/2N/TasMakJFW9Mvtk
+	/MwJK2ao2utwRzuowA6DA==
+Date: Wed, 21 Oct 2009 14:16:56 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Jiri Kosina <jkosina@suse.cz>
+cc: Stephan von Krawczynski <skraw@ithnet.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Frans Pop <elendil@planet.nl>,
+       Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: page allocation failure message kernel 2.6.31.4 (tty-related)
+In-Reply-To: <alpine.LRH.2.00.0910211848510.20992@twin.jikos.cz>
+Message-ID: <alpine.DEB.2.00.0910211409390.20010@chino.kir.corp.google.com>
+References: <20091020153838.665bc39c.skraw@ithnet.com> <alpine.LRH.2.00.0910211848510.20992@twin.jikos.cz>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From e1b7175258b33da3b0564ef04a0b1956f04f0cc7 Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Wed, 21 Oct 2009 23:10:30 +0200
-Subject: [PATCH] rtc: Explicitly set llseek to no_llseek
+On Wed, 21 Oct 2009, Jiri Kosina wrote:
 
-Now that we've removed the BKL here, lets explicitly set llseek to no_llseek
-since the default llseek is not used here.
+> [ tty related CCs added ]
+> 
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- drivers/char/efirtc.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I think this is probably a duplicate of the GFP_ATOMIC page allocator 
+issue at http://bugzilla.kernel.org/show_bug.cgi?id=14141 more than a tty 
+issue.
 
-diff --git a/drivers/char/efirtc.c b/drivers/char/efirtc.c
-index 26a47dc..53c524e 100644
---- a/drivers/char/efirtc.c
-+++ b/drivers/char/efirtc.c
-@@ -285,6 +285,7 @@ static const struct file_operations efi_rtc_fops = {
- 	.unlocked_ioctl	= efi_rtc_ioctl,
- 	.open		= efi_rtc_open,
- 	.release	= efi_rtc_close,
-+	.llseek		= no_llseek,
- };
- 
- static struct miscdevice efi_rtc_dev= {
--- 
-1.6.0.6
+Have we tried rolling back the refactored page allocator changes in 2.6.31 
+to see if the logic has changed in other ways unrelated to kswapd?  
+There's subtleties like where rt tasks are given ALLOC_HARDER even when 
+in_interrupt() that are different from previous kernels and could reduce 
+the amount of ALLOC_HIGH and ALLOC_HARDER memory that can be allocated.
 
-
+> On Tue, 20 Oct 2009, Stephan von Krawczynski wrote:
+> 
+> > Hello all,
+> > 
+> > is this something to worry about, I saw several of those:
+> > 
+> > Oct 20 11:25:41 box kernel: ssh: page allocation failure. order:1, mode:0x20
+> > Oct 20 11:25:41 box kernel: Pid: 2970, comm: ssh Tainted: G   M       2.6.31.4 #1
+> > Oct 20 11:25:41 box kernel: Call Trace:
+> > Oct 20 11:25:41 box kernel:  [<c105545c>] ? __alloc_pages_nodemask+0x404/0x446
+> > Oct 20 11:25:41 box kernel:  [<c106e1d1>] ? cache_alloc_refill+0x249/0x42d
+> > Oct 20 11:25:41 box kernel:  [<c106e41c>] ? __kmalloc+0x67/0x9e
+> > Oct 20 11:25:41 box kernel:  [<c1147c5a>] ? tty_buffer_request_room+0xa9/0x112
+> > Oct 20 11:25:42 box kernel:  [<c1147deb>] ? tty_insert_flip_string+0x24/0x90
+> > Oct 20 11:25:42 box kernel:  [<c114869e>] ? pty_write+0x25/0x3f
+> > Oct 20 11:25:42 box kernel:  [<c1144b6f>] ? n_tty_write+0x23d/0x2d5
+> > Oct 20 11:25:42 box kernel:  [<c1021cc7>] ? default_wake_function+0x0/0x8
+> > Oct 20 11:25:42 box kernel:  [<c1142ab7>] ? tty_write+0x144/0x1b3
+> > Oct 20 11:25:42 box kernel:  [<c1144932>] ? n_tty_write+0x0/0x2d5
+> > Oct 20 11:25:42 box kernel:  [<c1142973>] ? tty_write+0x0/0x1b3
+> > Oct 20 11:25:42 box kernel:  [<c107238b>] ? vfs_write+0x84/0x105
+> > Oct 20 11:25:42 box kernel:  [<c10724a4>] ? sys_write+0x3c/0x63
+> > Oct 20 11:25:42 box kernel:  [<c1002804>] ? sysenter_do_call+0x12/0x22
+> > Oct 20 11:25:44 box kernel: DMA per-cpu:
+> > Oct 20 11:25:44 box kernel: CPU    0: hi:    0, btch:   1 usd:   0
+> > Oct 20 11:25:44 box kernel: CPU    1: hi:    0, btch:   1 usd:   0
+> > Oct 20 11:25:44 box kernel: Normal per-cpu:
+> > Oct 20 11:25:44 box kernel: CPU    0: hi:  186, btch:  31 usd: 193
+> > Oct 20 11:25:44 box kernel: CPU    1: hi:  186, btch:  31 usd:  46
+> > Oct 20 11:25:44 box kernel: HighMem per-cpu:
+> > Oct 20 11:25:44 box kernel: CPU    0: hi:  186, btch:  31 usd: 157
+> > Oct 20 11:25:44 box kernel: CPU    1: hi:  186, btch:  31 usd: 142
+> > Oct 20 11:25:44 box kernel: Active_anon:89762 active_file:96664 inactive_anon:23257
+> > Oct 20 11:25:44 box kernel:  inactive_file:119147 unevictable:0 dirty:53 writeback:0 unstable:0
+> > Oct 20 11:25:45 box kernel:  free:569624 slab:38452 mapped:14421 pagetables:977 bounce:0
+> > Oct 20 11:25:45 box kernel: DMA free:3488kB min:64kB low:80kB high:96kB active_anon:0kB inactive_anon:0kB active_file:8980kB inactive_file:3024kB unevictable:0kB present:15804kB pages_scanned:0 all_unreclaima
+> > Oct 20 11:25:45 box kernel: lowmem_reserve[]: 0 865 3698 3698
+> > Oct 20 11:25:45 box kernel: Normal free:5468kB min:3728kB low:4660kB high:5592kB active_anon:0kB inactive_anon:0kB active_file:324840kB inactive_file:330196kB unevictable:0kB present:885944kB pages_scanned:0
+> > Oct 20 11:25:45 box kernel: lowmem_reserve[]: 0 0 22669 22669
+> > Oct 20 11:25:45 box kernel: HighMem free:2269540kB min:512kB low:3564kB high:6616kB active_anon:359048kB inactive_anon:93028kB active_file:52836kB inactive_file:143368kB unevictable:0kB present:2901640kB page
+> > Oct 20 11:25:45 box kernel: lowmem_reserve[]: 0 0 0 0
+> > Oct 20 11:25:45 box kernel: DMA: 172*4kB 6*8kB 0*16kB 0*32kB 3*64kB 2*128kB 3*256kB 3*512kB 0*1024kB 0*2048kB 0*4096kB = 3488kB
+> > Oct 20 11:25:45 box kernel: Normal: 1232*4kB 83*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 5592kB
+> > Oct 20 11:25:45 box kernel: HighMem: 45*4kB 80*8kB 69*16kB 29*32kB 29*64kB 22*128kB 14*256kB 9*512kB 3*1024kB 3*2048kB 548*4096kB = 2269540kB
+> > Oct 20 11:25:45 box kernel: 216788 total pagecache pages
+> > Oct 20 11:25:45 box kernel: 0 pages in swap cache
+> > Oct 20 11:25:45 box kernel: Swap cache stats: add 0, delete 0, find 0/0
+> > Oct 20 11:25:45 box kernel: Free swap  = 2104472kB
+> > Oct 20 11:25:45 box kernel: Total swap = 2104472kB
