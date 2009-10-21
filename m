@@ -1,41 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbZJULxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbZJUL6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753415AbZJULxt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 07:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbZJULxt
+	id S1753429AbZJUL6Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 07:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbZJUL6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 07:53:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48230 "EHLO mx2.mail.elte.hu"
+	Wed, 21 Oct 2009 07:58:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39413 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753345AbZJULxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 07:53:48 -0400
-Date: Wed, 21 Oct 2009 13:52:59 +0200
+	id S1753341AbZJUL6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 07:58:24 -0400
+Date: Wed, 21 Oct 2009 13:57:34 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Thomas Schlichter <thomas.schlichter@web.de>,
-       Jan Beulich <JBeulich@novell.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       "hancockrwd@gmail.com" <hancockrwd@gmail.com>,
-       "hmh@hmh.eng.br" <hmh@hmh.eng.br>, "hpa@zytor.com" <hpa@zytor.com>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "jeremy.fitzhardinge@citrix.com" <jeremy.fitzhardinge@citrix.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "thellstrom@vmware.com" <thellstrom@vmware.com>,
-       "tj@kernel.org" <tj@kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "yinghai@kernel.org" <yinghai@kernel.org>
+To: Thomas Schlichter <thomas.schlichter@web.de>
+Cc: Jan Beulich <JBeulich@novell.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Tejun Heo <tj@kernel.org>, x86@kernel.org,
+       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       dri-devel@lists.sourceforge.net, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       Thomas Hellstrom <thellstrom@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
 	available
-Message-ID: <20091021115259.GE16586@elte.hu>
-References: <1392906098@web.de> <20091019153134.GA18198@elte.hu> <200910202235.12277.thomas.schlichter@web.de> <1256075963.2685.7.camel@sbs-t61>
+Message-ID: <20091021115734.GG16586@elte.hu>
+References: <1392884759@web.de> <200910202154.20195.thomas.schlichter@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1256075963.2685.7.camel@sbs-t61>
+In-Reply-To: <200910202154.20195.thomas.schlichter@web.de>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
@@ -48,18 +45,33 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+* Thomas Schlichter <thomas.schlichter@web.de> wrote:
 
-> On Tue, 2009-10-20 at 13:35 -0700, Thomas Schlichter wrote:
-> > What do you think about the latest version of my patch series I just sent?
+> Jan Beulich wrote:
+>
+> > Functionality-wise this looks fine to me; whether the core sysfs 
+> > changes are acceptable I can't judge, though.
 > 
-> I think we can simplify this by just using mtrr_add_page() and avoid 
-> all the complexity that comes with mtrr_add_unaligned().
+> OK, I think I should have addressed your comments. Unfortunately I had 
+> to use a little "hack" to make pci_mmap_page_range() work for sysfs 
+> and proc. I placed a "private" pointer in the beginning of both 
+> per-file private structures. So this pointer can be accessed 
+> independent from the caller. I hope this is acceptable.
 > 
-> pci_mmap_range() should call one mtrr_add_page() if the base and size 
-> are nicely aligned. Almost all the cases, this is the usage sequence 
-> here anyway.
+> I dropped the ioremap() and set_memory_wc() patches, I could not 
+> implement reference counting for them and it may interact too much 
+> with existing GPU drivers.
+> 
+> Again, this series should not change the current behavior if either 
+> MTRR is disabled or PAT is enabled. But it helps in the case that MTRR 
+> is enabled and PAT is not available.
+> 
+> What should be done now to get this series on the right "track"?
 
-yep, keeping it simple is a must.
+Can we eliminate mtrr_add_unaligned() as Suresh suggested, and still 
+make it work on your testbox?
+
+Once that's done i'll look at putting it into the x86 tree for testing. 
+The acks of Suresh/Venki/Jan would be nice to have.
 
 	Ingo
