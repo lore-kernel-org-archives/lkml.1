@@ -1,75 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbZJUNR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbZJUNZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452AbZJUNR6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 09:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZJUNR5
+	id S1753404AbZJUNZc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 09:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZJUNZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 09:17:57 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:47279 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752013AbZJUNR5 (ORCPT
+	Wed, 21 Oct 2009 09:25:32 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:59342 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753231AbZJUNZb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 09:17:57 -0400
-Date: Wed, 21 Oct 2009 15:17:47 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] powerpc/5200: Add mpc5200-spi (non-PSC) device
-	driver
-Message-ID: <20091021131747.GG12819@pengutronix.de>
-References: <20090618025030.12363.69402.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gm5TwAJMO0F2iVRz"
-Content-Disposition: inline
-In-Reply-To: <20090618025030.12363.69402.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Wed, 21 Oct 2009 09:25:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=ckqE4p2CWyjMfZg0Vgj0qa8Vl92sNLy0wORmds6vM2aZ1rp3JRJRuNXlc97IybJOO3
+         EXOuwNKYjSWyiUYJBXw+z9WJsYjguO4La6yqtrrS1RaztHz3pmkfIyqw1oUnz8mVTJnP
+         nlJrxhtaw5yLEZlvTvADM3k+ZEx62V423SknM=
+Subject: Re: ftrace for MIPS
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4ADF093D.10403@ru.mvista.com>
+References: <1255995599.17795.15.camel@falcon>
+	 <1255997319.18347.576.camel@gandalf.stny.rr.com>
+	 <1256052667.8149.56.camel@falcon>
+	 <1256055714.18347.1608.camel@gandalf.stny.rr.com>
+	 <4ADF093D.10403@ru.mvista.com>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Wed, 21 Oct 2009 21:20:11 +0800
+Message-Id: <1256131211.11274.1.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-10-21 at 17:14 +0400, Sergei Shtylyov wrote:
+> Hello.
+> 
+> Steven Rostedt wrote:
+> 
+> >>Need to check which registers is missing when saving/restoring for
+> >>_mcount:
+> 
+> >>NESTED(ftrace_graph_caller, PT_SIZE, ra) 
+> >>        MCOUNT_SAVE_REGS
+> >>        PTR_S   v0, PT_R2(sp)
+> >>
+> >>        MCOUNT_SET_ARGS
+> >>        jal     prepare_ftrace_return
+> >>        nop
+> >>
+> >>        /* overwrite the parent as &return_to_handler: v0 -> $1(at) */
+> >>        move    $1,     v0  
+> 
+> > I'm confused here? I'm not exactly sure what the above is doing. Is $1 a
+> > register (AT)?
+> 
+>     Yes.
 
---gm5TwAJMO0F2iVRz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Have replaced it by AT, thanks!
 
-Hi Grant,
+> 
+> > And how is this register used before calling mcount?
+> 
+> >>        PTR_L   v0, PT_R2(sp)
+> >>        MCOUNT_RESTORE_REGS
+> >>        RETURN_BACK
+> >>        END(ftrace_graph_caller)
+> 
+> >>        .align  2
+> >>        .globl  return_to_handler
+> >>return_to_handler:
+> >>        PTR_SUBU        sp, PT_SIZE
+> >>        PTR_S   v0, PT_R2(sp)
+> 
+> > BTW, is v0 the only return register? I know x86 can return two different
+> > registers depending on what it returns. What happens if a function
+> > returns a 64 bit value on a 32bit box? Does it use two registers for
+> > that?
+> 
+>     Yes, there's also v1 register.
+> 
 
-On Wed, Jun 17, 2009 at 08:55:01PM -0600, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->=20
-> Adds support for the dedicated SPI device on the Freescale MPC5200(b)
-> SoC.
->=20
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Thanks, added.
 
-do you have an updated version to share? Or is V4 still 'status quo'?
+Regards,
+	Wu Zhangjin
 
-Genki de ;)
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---gm5TwAJMO0F2iVRz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkrfCfsACgkQD27XaX1/VRvKKQCghwigd52gAcPc1AxAiz9EZs9b
-kBsAoK9sRHJ8TfJ5x9ezMXr+qcdAG6bs
-=QfgA
------END PGP SIGNATURE-----
-
---gm5TwAJMO0F2iVRz--
