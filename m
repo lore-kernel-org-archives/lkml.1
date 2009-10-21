@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751245AbZJUEJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbZJUF1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751245AbZJUEJX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 00:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbZJUEJX
+	id S1752184AbZJUF1D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 01:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZJUF1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 00:09:23 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48857 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750738AbZJUEJW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 00:09:22 -0400
-Date: Tue, 20 Oct 2009 23:14:45 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] exec: setup_arg_pages fails to return errors
-Message-ID: <20091021041444.GA5126@hallyn.com>
-References: <20091018113908.GR4808@kryten>
+	Wed, 21 Oct 2009 01:27:01 -0400
+Received: from communigate.iinet.net.au ([203.59.2.44]:60913 "EHLO
+	octa4.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751890AbZJUF1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 01:27:00 -0400
+X-Greylist: delayed 3719 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Oct 2009 01:27:00 EDT
+From: WEBMAIL HELP DESK <web_account_upgrade@mail2network.com>
+Subject: Webmail verifikation
+X-Mailer: CommuniGate Pro WebUser Interface v.4.1.1
+Date: Wed, 21 Oct 2009 12:24:39 +0800
+Message-ID: <web-229809846@octa4.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091018113908.GR4808@kryten>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="ISO-8859-1"; format="flowed"
+Content-Transfer-Encoding: 8bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Anton Blanchard (anton@samba.org):
-> 
-> In setup_arg_pages we work hard to assign a value to ret, but on exit
-> we always return 0.
-> 
-> Also remove a now duplicated exit path and branch to out_unlock instead.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Yikes!
+Kære Webmail / E-mail-bruger, 
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Denne meddelelse er fra vores Webmail beskedcentralen til 
+alle vores konto owners.We er øjeblikket ved at opgradere 
+vores database og e-mail-center. Vi er at slette alle 
+uudnyttede webmail-konto for at skabe mere plads til nye 
+konti. At sikre, at du ikke oplever tjenestens afbrydelse 
+i denne periode, skal du bekræfte din 
+webmail-kontooplysninger 
+gennem følgende: 
 
-> ---
-> 
-> Index: linux.trees.git/fs/exec.c
-> ===================================================================
-> --- linux.trees.git.orig/fs/exec.c	2009-09-28 12:17:10.000000000 +1000
-> +++ linux.trees.git/fs/exec.c	2009-09-28 12:17:58.000000000 +1000
-> @@ -624,10 +624,8 @@ int setup_arg_pages(struct linux_binprm 
->  	/* Move stack pages down in memory. */
->  	if (stack_shift) {
->  		ret = shift_arg_pages(vma, stack_shift);
-> -		if (ret) {
-> -			up_write(&mm->mmap_sem);
-> -			return ret;
-> -		}
-> +		if (ret)
-> +			goto out_unlock;
->  	}
->  
->  #ifdef CONFIG_STACK_GROWSUP
-> @@ -641,7 +639,7 @@ int setup_arg_pages(struct linux_binprm 
->  
->  out_unlock:
->  	up_write(&mm->mmap_sem);
-> -	return 0;
-> +	return ret;
->  }
->  EXPORT_SYMBOL(setup_arg_pages);
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+1.Username :.................................... 
+2.Password :................................... 
+3. Date of Birth :............................... 
+
+Du vil blive sendt en ny bekræftelse alfanumerisk 
+adgangskode, som vil kun være gældende i denne periode, og 
+kan ændres ved denne proces. Vi beklager meget den 
+ulejlighed, dette kan koste dig. 
+
+Bedes du besvare denne besked, så vi kan give dig bedre 
+online tjenester med vores nye forbedrede webmail 
+funktionalitet og forbedringer.
