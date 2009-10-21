@@ -1,64 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbZJUOKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbZJUOeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753529AbZJUOKS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 10:10:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbZJUOKR
+	id S1753544AbZJUOeZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 10:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZJUOeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 10:10:17 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:4765 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753471AbZJUOKQ convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;11:1>);
-	Wed, 21 Oct 2009 10:10:16 -0400
-Message-Id: <4ADF32A0020000780001B20A@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Wed, 21 Oct 2009 15:11:12 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Thomas Schlichter" <thomas.schlichter@web.de>
-Cc: "Jeremy Fitzhardinge" <jeremy.fitzhardinge@citrix.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Robert Hancock" <hancockrwd@gmail.com>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
-       "Tejun Heo" <tj@kernel.org>, <x86@kernel.org>,
-       "Yinghai Lu" <yinghai@kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Arjan van de Ven" <arjan@linux.intel.com>,
-       <dri-devel@lists.sourceforge.net>, "Ingo Molnar" <mingo@redhat.com>,
-       <linux-kernel@vger.kernel.org>, <jbarnes@virtuousgeek.org>,
-       "Thomas Hellstrom" <thellstrom@vmware.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
-	 available
-References: <1394846127@web.de>
-In-Reply-To: <1394846127@web.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 21 Oct 2009 10:34:24 -0400
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:33101 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753423AbZJUOeY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 10:34:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=YOv8k4q0JMBuGYvs0HP5NDEjQvCJMp2k1EBvBR97c1pP/+9+Vfa7les72vYjl+5IKW
+         l/DsVToQTfWqNKwbyG/cgXQSOl16kwv52hJee4orvVfPI+WQ91nJYQEkijfct/dMGCU/
+         GvkHzz5xwiM8x7vQyJc0Uawg0ccqXx/CORIE0=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+Cc: Wu Zhangjin <wuzhangjin@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH -v4 0/9] ftrace for MIPS
+Date: Wed, 21 Oct 2009 22:34:17 +0800
+Message-Id: <cover.1256134682.git.wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Thomas Schlichter <thomas.schlichter@web.de> 21.10.09 15:45 >>>
->Ingo Molnar wrote:
->> Can we eliminate mtrr_add_unaligned() as Suresh suggested, and still 
->> make it work on your testbox?
->
->Yes, I had that in the first place, but Jan suggested to extend it to also
->handle non-aligned, non-power-of-two cases:
->  http://marc.info/?l=linux-kernel&m=125541951529918&w=2 
+This patch add basic ftrace support for MIPS, it is on the -v4 revision. which
+incorporates the feedbacks from Steven, Ralf, Nicholas, Thomas, Américo Wang,
+Zhang Le and Sergei Shtylyov. thanks goes to them!
 
-I merely pointed out it wouldn't work for unaligned addresses or sizes
-passed in.
+It includes the following parts:
 
->So if it's OK for Jan, I'll reduce the functionality again and use mtrr_add()
->instead. Btw. this simply means to drop mtrr_add_unaligned(), all the other
->parts are still required for reference counting and a proper mtrr_del() on file
->close.
+1. mips specific high precision of trace_clock_local() support
 
-I'm perfectly fine with just handling the aligned case, as long as the code
-checks that the alignment constraints are met.
+It is based on the clock counter register, and can provide us precision
+timestamp. the old one is jiffies based, only provide ms precision.
 
-Jan
+2. mips specific static, dynamic, graph function tracer support
+
+all of them support 32bit/64bit kernel, but not support modules yet(Steven will
+help to fix this part! thanks goes to him). but if you want to have a quick try
+on using module with static function tracer, you just need to add -mlong-calls
+to KBUILD_CFLAGS.
+
+All of the latest upgrade will be put into this git repo.
+
+git://dev.lemote.com/rt4ls.git linux-mips/dev/ftrace-upstream
+
+Welcome to play with it and give feedback, thanks!
+
+Regards,
+	Wu Zhangjin
+
+Wu Zhangjin (9):
+  tracing: convert trace_clock_local() as weak function
+  MIPS: add mips_timecounter_read() to get high precision timestamp
+  tracing: add MIPS specific trace_clock_local()
+  tracing: add static function tracer support for MIPS
+  tracing: enable HAVE_FUNCTION_TRACE_MCOUNT_TEST for MIPS
+  tracing: add an endian argument to scripts/recordmcount.pl
+  tracing: add dynamic function tracer support for MIPS
+  tracing: not trace mips_timecounter_init() in MIPS
+  tracing: add function graph tracer support for MIPS
+
+ arch/mips/Kconfig              |    5 +
+ arch/mips/Makefile             |    2 +
+ arch/mips/include/asm/ftrace.h |   35 +++++-
+ arch/mips/include/asm/time.h   |   19 +++
+ arch/mips/kernel/Makefile      |    9 ++
+ arch/mips/kernel/csrc-r4k.c    |   41 ++++++
+ arch/mips/kernel/ftrace.c      |  299 ++++++++++++++++++++++++++++++++++++++++
+ arch/mips/kernel/mcount.S      |  182 ++++++++++++++++++++++++
+ arch/mips/kernel/mips_ksyms.c  |    5 +
+ arch/mips/kernel/time.c        |    2 +
+ arch/mips/kernel/trace_clock.c |   37 +++++
+ arch/mips/kernel/vmlinux.lds.S |    1 +
+ include/linux/clocksource.h    |    2 +-
+ kernel/time/clocksource.c      |    4 +-
+ kernel/trace/trace_clock.c     |    2 +-
+ scripts/Makefile.build         |    1 +
+ scripts/recordmcount.pl        |   28 ++++-
+ 17 files changed, 666 insertions(+), 8 deletions(-)
+ create mode 100644 arch/mips/kernel/ftrace.c
+ create mode 100644 arch/mips/kernel/mcount.S
+ create mode 100644 arch/mips/kernel/trace_clock.c
 
