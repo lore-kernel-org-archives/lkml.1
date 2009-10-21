@@ -1,112 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbZJUOid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbZJUOgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753893AbZJUOid (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 10:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZJUOfF
+	id S1753795AbZJUOgX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 10:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbZJUOgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 10:35:05 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:38002 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753593AbZJUOfD (ORCPT
-	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Wed, 21 Oct 2009 10:35:03 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH 2/2] KVM: Remove unecessary irqfd-cleanup-wq
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net
-Date: Wed, 21 Oct 2009 10:34:59 -0400
-Message-ID: <20091021143458.14955.23897.stgit@dev.haskins.net>
-In-Reply-To: <20091021143042.14955.22470.stgit@dev.haskins.net>
-References: <20091021143042.14955.22470.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Oct 2009 10:36:21 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:64251 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753700AbZJUOff (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 10:35:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=v1zIlRRhc/e3gN7Z0tAbCEQse9hlU+YbNgX0xUABF4fbrQdRJZJ1Hb5zLqBRCO7c1l
+         hbzQmc6en6sWe8mXJYpRoPoytODnHBuvhEg2PmkJbLOMoXBEmS6Yffh3fOmX3RqtsvFr
+         z/xST/+Rtouzl6TXlquLm9Ony2kq4IFCgUojs=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+Cc: Wu Zhangjin <wuzhangjin@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Steven Rostedt <rostedt@goodmis.org>, Wu Zhangjin <wuzj@lemote.com>
+Subject: [PATCH -v4 6/9] tracing: add an endian argument to scripts/recordmcount.pl
+Date: Wed, 21 Oct 2009 22:35:00 +0800
+Message-Id: <5dda13e8e3a9c9dba4bb7179183941bda502604f.1256135456.git.wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <96110ea5dd4d3d54eb97d0bb708a5bd81c7a50b5.1256135456.git.wuzhangjin@gmail.com>
+References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
+ <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
+ <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
+ <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
+ <96110ea5dd4d3d54eb97d0bb708a5bd81c7a50b5.1256135456.git.wuzhangjin@gmail.com>
+In-Reply-To: <cover.1256135456.git.wuzhangjin@gmail.com>
+References: <cover.1256135456.git.wuzhangjin@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We originally created the irqfd-cleanup-wq so that we could safely
-implement a shutdown that blocked on outstanding injection-requests
-that may have been in flight.  We couldn't reuse something like kevent
-to shutdown since the injection path was also using kevent and that may
-have caused a deadlock if we tried.
+MIPS architecture need this argument to handle big/little endian
+respectively.
 
-Since the injection path is now no longer utilizing a work-item, it is
-no longer necessary to maintain a separate cleanup WQ.  The standard
-kevent queues should be sufficient, and thus we can eliminate an extra
-kthread from the system.
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
 ---
+ scripts/Makefile.build  |    1 +
+ scripts/recordmcount.pl |    6 +++---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
- virt/kvm/eventfd.c |   30 +++---------------------------
- 1 files changed, 3 insertions(+), 27 deletions(-)
-
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index 1a529d4..fb698f4 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -52,8 +52,6 @@ struct _irqfd {
- 	struct work_struct        shutdown;
- };
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 341b589..0b94d2f 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -207,6 +207,7 @@ endif
  
--static struct workqueue_struct *irqfd_cleanup_wq;
--
- static void
- irqfd_inject(struct _irqfd *irqfd)
- {
-@@ -104,7 +102,7 @@ irqfd_deactivate(struct _irqfd *irqfd)
+ ifdef CONFIG_FTRACE_MCOUNT_RECORD
+ cmd_record_mcount = set -e ; perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
++	"$(if $(CONFIG_CPU_BIG_ENDIAN),big,little)" \
+ 	"$(if $(CONFIG_64BIT),64,32)" \
+ 	"$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" "$(MV)" \
+ 	"$(if $(part-of-module),1,0)" "$(@)";
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 090d300..daee038 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -99,13 +99,13 @@ $P =~ s@.*/@@g;
  
- 	list_del_init(&irqfd->list);
+ my $V = '0.1';
  
--	queue_work(irqfd_cleanup_wq, &irqfd->shutdown);
-+	schedule_work(&irqfd->shutdown);
+-if ($#ARGV < 7) {
+-	print "usage: $P arch bits objdump objcopy cc ld nm rm mv is_module inputfile\n";
++if ($#ARGV < 8) {
++	print "usage: $P arch endian bits objdump objcopy cc ld nm rm mv is_module inputfile\n";
+ 	print "version: $V\n";
+ 	exit(1);
  }
  
- /*
-@@ -262,7 +260,7 @@ kvm_irqfd_deassign(struct kvm *kvm, int fd, int gsi)
- 	 * so that we guarantee there will not be any more interrupts on this
- 	 * gsi once this deassign function returns.
- 	 */
--	flush_workqueue(irqfd_cleanup_wq);
-+	flush_scheduled_work();
+-my ($arch, $bits, $objdump, $objcopy, $cc,
++my ($arch, $endian, $bits, $objdump, $objcopy, $cc,
+     $ld, $nm, $rm, $mv, $is_module, $inputfile) = @ARGV;
  
- 	return 0;
- }
-@@ -296,33 +294,11 @@ kvm_irqfd_release(struct kvm *kvm)
- 	 * Block until we know all outstanding shutdown jobs have completed
- 	 * since we do not take a kvm* reference.
- 	 */
--	flush_workqueue(irqfd_cleanup_wq);
-+	flush_scheduled_work();
- 
- }
- 
- /*
-- * create a host-wide workqueue for issuing deferred shutdown requests
-- * aggregated from all vm* instances. We need our own isolated single-thread
-- * queue to prevent deadlock against flushing the normal work-queue.
-- */
--static int __init irqfd_module_init(void)
--{
--	irqfd_cleanup_wq = create_singlethread_workqueue("kvm-irqfd-cleanup");
--	if (!irqfd_cleanup_wq)
--		return -ENOMEM;
--
--	return 0;
--}
--
--static void __exit irqfd_module_exit(void)
--{
--	destroy_workqueue(irqfd_cleanup_wq);
--}
--
--module_init(irqfd_module_init);
--module_exit(irqfd_module_exit);
--
--/*
-  * --------------------------------------------------------------------
-  * ioeventfd: translate a PIO/MMIO memory write to an eventfd signal.
-  *
+ # This file refers to mcount and shouldn't be ftraced, so lets' ignore it
+-- 
+1.6.2.1
 
