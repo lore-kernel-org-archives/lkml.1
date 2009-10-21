@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751725AbZJUXed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbZJUXhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751725AbZJUXed (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 19:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbZJUXec
+	id S1752553AbZJUXhv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 19:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbZJUXhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 19:34:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43464 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750749AbZJUXeb (ORCPT
+	Wed, 21 Oct 2009 19:37:51 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:35087 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbZJUXhu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 19:34:31 -0400
-Date: Thu, 22 Oct 2009 08:33:11 +0900 (JST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Artem Bityutskiy <dedekind1@gmail.com>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v11 4/5] core: Add kernel message dumper to call on oopses
- and panics
-In-Reply-To: <20091019125017.GA9030@elte.hu>
-Message-ID: <alpine.LFD.2.00.0910220832580.9771@eeepc.linux-foundation.org>
-References: <20091015093133.GF10546@elte.hu> <20091015161052.0752208e@marrow.netinsight.se> <20091015154640.GA11408@elte.hu> <20091016094601.4e2c2d3e@marrow.netinsight.se> <20091016080935.GA3895@elte.hu> <1255681467.32489.360.camel@localhost>
- <20091016112556.6902b2dc@marrow.netinsight.se> <20091016101045.GA3263@elte.hu> <20091016140918.3981cfa2@marrow.netinsight.se> <1255952922.32489.505.camel@localhost> <20091019125017.GA9030@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 21 Oct 2009 19:37:50 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>
+Subject: Re: uvcvideo causes ehci_hcd to halt
+Date: Thu, 22 Oct 2009 01:38:06 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.31.1; KDE/4.3.2; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-media@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0910211052200.2847-100000@iolanthe.rowland.org> <200910211927.00298.laurent.pinchart@ideasonboard.com> <4ADF6A8A.3070109@pardus.org.tr>
+In-Reply-To: <4ADF6A8A.3070109@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200910220138.06878.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 19 Oct 2009, Ingo Molnar wrote:
-> > 
-> > I wonder, via which tree this should go in. We are going to have mtdoops
-> > depend on this. Should we go one of these ways:
-> > 
-> >    * this patch goes to one of Ingo's tip trees, so we can pull it and
-> >      work on top.
-> >    * we have Ingo's / Linus' acks, and this goes via the MTD tree.
-> > ?
+On Wednesday 21 October 2009 22:09:46 Ozan Çağlayan wrote:
+> Laurent Pinchart wrote:
+> > Probably because hal opens the device to query its capabilities and
+> > closes it right after. The driver submits the interrupt URB when the
+> > first user opens the device and cancels it when the last user closes the
+> > device.
 > 
-> Either way is good to me. Linus, do you have any preferences?
+> So who's guilty now?
+> 
+> :)
 
-Either works for me.
+Not me :-)
 
-		Linus
+I don't think there's anything wrong with submitting an interrupt URB and 
+canceling it soon after.
+
+-- 
+Regards,
+
+Laurent Pinchart
