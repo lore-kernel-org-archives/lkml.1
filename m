@@ -1,102 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZJUVQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbZJUVSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848AbZJUVQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 17:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbZJUVQ7
+	id S1755338AbZJUVSP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 17:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZJUVSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 17:16:59 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:34660 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753838AbZJUVQ6 (ORCPT
+	Wed, 21 Oct 2009 17:18:14 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:44367 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754015AbZJUVSN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 17:16:58 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Rejvi2IYsj4/NAZ1gfPmR97qBN/cmgx1YnILh8iQyRJwh5l/2N/TasMakJFW9Mvtk
-	/MwJK2ao2utwRzuowA6DA==
-Date: Wed, 21 Oct 2009 14:16:56 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Jiri Kosina <jkosina@suse.cz>
-cc: Stephan von Krawczynski <skraw@ithnet.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Frans Pop <elendil@planet.nl>,
-       Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: page allocation failure message kernel 2.6.31.4 (tty-related)
-In-Reply-To: <alpine.LRH.2.00.0910211848510.20992@twin.jikos.cz>
-Message-ID: <alpine.DEB.2.00.0910211409390.20010@chino.kir.corp.google.com>
-References: <20091020153838.665bc39c.skraw@ithnet.com> <alpine.LRH.2.00.0910211848510.20992@twin.jikos.cz>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Wed, 21 Oct 2009 17:18:13 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; CHARSET=US-ASCII; delsp=yes; format=flowed
+Date: Wed, 21 Oct 2009 15:17:38 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 15/41] whiteout: ext2 whiteout support
+In-reply-to: <1256152779-10054-16-git-send-email-vaurora@redhat.com>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Theodore Tso <tytso@mit.edu>,
+       linux-ext4@vger.kernel.org
+Message-id: <1983FB3A-C88F-4EF4-A2E1-8B18DF97F0AB@sun.com>
+X-Mailer: Apple Mail (2.936)
+References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-2-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-3-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-4-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-5-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-6-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-7-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-8-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-9-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-10-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-11-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-12-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-13-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-14-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-15-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-16-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Oct 2009, Jiri Kosina wrote:
+On 2009-10-21, at 13:19, Valerie Aurora wrote:
+> This patch adds whiteout support to EXT2. A whiteout is an empty  
+> directory
+> entry (inode == 0) with the file type set to EXT2_FT_WHT. Therefore it
+> allocates space in directories. Due to being implemented as a  
+> filetype it is
+> necessary to have the EXT2_FEATURE_INCOMPAT_FILETYPE flag set.
+>
+> diff --git a/include/linux/ext2_fs.h b/include/linux/ext2_fs.h
+> index 121720d..bd10826 100644
+> --- a/include/linux/ext2_fs.h
+> +++ b/include/linux/ext2_fs.h
+> @@ -189,6 +189,7 @@ struct ext2_group_desc
+> +#define EXT2_OPAQUE_FL			0x00040000
 
-> [ tty related CCs added ]
-> 
+Please check in the upstream e2fsprogs ext2_fs.h before defining new  
+flag
+values for ext2/3/4.  In this case, 0x40000 conflicts with  
+EXT4_HUGE_FILE_FL,
+which is of course bad.
 
-I think this is probably a duplicate of the GFP_ATOMIC page allocator 
-issue at http://bugzilla.kernel.org/show_bug.cgi?id=14141 more than a tty 
-issue.
 
-Have we tried rolling back the refactored page allocator changes in 2.6.31 
-to see if the logic has changed in other ways unrelated to kswapd?  
-There's subtleties like where rt tasks are given ALLOC_HARDER even when 
-in_interrupt() that are different from previous kernels and could reduce 
-the amount of ALLOC_HIGH and ALLOC_HARDER memory that can be allocated.
+> @@ -503,10 +504,12 @@ struct ext2_super_block {
+> #define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
+> +#define EXT2_FEATURE_INCOMPAT_WHITEOUT		0x0020
 
-> On Tue, 20 Oct 2009, Stephan von Krawczynski wrote:
-> 
-> > Hello all,
-> > 
-> > is this something to worry about, I saw several of those:
-> > 
-> > Oct 20 11:25:41 box kernel: ssh: page allocation failure. order:1, mode:0x20
-> > Oct 20 11:25:41 box kernel: Pid: 2970, comm: ssh Tainted: G   M       2.6.31.4 #1
-> > Oct 20 11:25:41 box kernel: Call Trace:
-> > Oct 20 11:25:41 box kernel:  [<c105545c>] ? __alloc_pages_nodemask+0x404/0x446
-> > Oct 20 11:25:41 box kernel:  [<c106e1d1>] ? cache_alloc_refill+0x249/0x42d
-> > Oct 20 11:25:41 box kernel:  [<c106e41c>] ? __kmalloc+0x67/0x9e
-> > Oct 20 11:25:41 box kernel:  [<c1147c5a>] ? tty_buffer_request_room+0xa9/0x112
-> > Oct 20 11:25:42 box kernel:  [<c1147deb>] ? tty_insert_flip_string+0x24/0x90
-> > Oct 20 11:25:42 box kernel:  [<c114869e>] ? pty_write+0x25/0x3f
-> > Oct 20 11:25:42 box kernel:  [<c1144b6f>] ? n_tty_write+0x23d/0x2d5
-> > Oct 20 11:25:42 box kernel:  [<c1021cc7>] ? default_wake_function+0x0/0x8
-> > Oct 20 11:25:42 box kernel:  [<c1142ab7>] ? tty_write+0x144/0x1b3
-> > Oct 20 11:25:42 box kernel:  [<c1144932>] ? n_tty_write+0x0/0x2d5
-> > Oct 20 11:25:42 box kernel:  [<c1142973>] ? tty_write+0x0/0x1b3
-> > Oct 20 11:25:42 box kernel:  [<c107238b>] ? vfs_write+0x84/0x105
-> > Oct 20 11:25:42 box kernel:  [<c10724a4>] ? sys_write+0x3c/0x63
-> > Oct 20 11:25:42 box kernel:  [<c1002804>] ? sysenter_do_call+0x12/0x22
-> > Oct 20 11:25:44 box kernel: DMA per-cpu:
-> > Oct 20 11:25:44 box kernel: CPU    0: hi:    0, btch:   1 usd:   0
-> > Oct 20 11:25:44 box kernel: CPU    1: hi:    0, btch:   1 usd:   0
-> > Oct 20 11:25:44 box kernel: Normal per-cpu:
-> > Oct 20 11:25:44 box kernel: CPU    0: hi:  186, btch:  31 usd: 193
-> > Oct 20 11:25:44 box kernel: CPU    1: hi:  186, btch:  31 usd:  46
-> > Oct 20 11:25:44 box kernel: HighMem per-cpu:
-> > Oct 20 11:25:44 box kernel: CPU    0: hi:  186, btch:  31 usd: 157
-> > Oct 20 11:25:44 box kernel: CPU    1: hi:  186, btch:  31 usd: 142
-> > Oct 20 11:25:44 box kernel: Active_anon:89762 active_file:96664 inactive_anon:23257
-> > Oct 20 11:25:44 box kernel:  inactive_file:119147 unevictable:0 dirty:53 writeback:0 unstable:0
-> > Oct 20 11:25:45 box kernel:  free:569624 slab:38452 mapped:14421 pagetables:977 bounce:0
-> > Oct 20 11:25:45 box kernel: DMA free:3488kB min:64kB low:80kB high:96kB active_anon:0kB inactive_anon:0kB active_file:8980kB inactive_file:3024kB unevictable:0kB present:15804kB pages_scanned:0 all_unreclaima
-> > Oct 20 11:25:45 box kernel: lowmem_reserve[]: 0 865 3698 3698
-> > Oct 20 11:25:45 box kernel: Normal free:5468kB min:3728kB low:4660kB high:5592kB active_anon:0kB inactive_anon:0kB active_file:324840kB inactive_file:330196kB unevictable:0kB present:885944kB pages_scanned:0
-> > Oct 20 11:25:45 box kernel: lowmem_reserve[]: 0 0 22669 22669
-> > Oct 20 11:25:45 box kernel: HighMem free:2269540kB min:512kB low:3564kB high:6616kB active_anon:359048kB inactive_anon:93028kB active_file:52836kB inactive_file:143368kB unevictable:0kB present:2901640kB page
-> > Oct 20 11:25:45 box kernel: lowmem_reserve[]: 0 0 0 0
-> > Oct 20 11:25:45 box kernel: DMA: 172*4kB 6*8kB 0*16kB 0*32kB 3*64kB 2*128kB 3*256kB 3*512kB 0*1024kB 0*2048kB 0*4096kB = 3488kB
-> > Oct 20 11:25:45 box kernel: Normal: 1232*4kB 83*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 5592kB
-> > Oct 20 11:25:45 box kernel: HighMem: 45*4kB 80*8kB 69*16kB 29*32kB 29*64kB 22*128kB 14*256kB 9*512kB 3*1024kB 3*2048kB 548*4096kB = 2269540kB
-> > Oct 20 11:25:45 box kernel: 216788 total pagecache pages
-> > Oct 20 11:25:45 box kernel: 0 pages in swap cache
-> > Oct 20 11:25:45 box kernel: Swap cache stats: add 0, delete 0, find 0/0
-> > Oct 20 11:25:45 box kernel: Free swap  = 2104472kB
-> > Oct 20 11:25:45 box kernel: Total swap = 2104472kB
+This one doesn't conflict, probably due to luck, because 0x0040-0x0200  
+are
+already in use for other features.  I'm not sure if 0x0020 was  
+reserved for
+some other use, or just skipped to avoid potential conflicts.
+
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
