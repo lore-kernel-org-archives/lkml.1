@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932434AbZJUTZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932402AbZJUTYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932434AbZJUTZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932286AbZJUTZZ
+	id S932402AbZJUTYm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932074AbZJUTYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:25:25 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:59082 "EHLO mx1.redhat.com"
+	Wed, 21 Oct 2009 15:24:40 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:33711 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755174AbZJUTVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 15:21:16 -0400
+	id S1755156AbZJUTVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 15:21:23 -0400
 From: Valerie Aurora <vaurora@redhat.com>
 To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
@@ -21,10 +21,10 @@ To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Felix Fietkau <nbd@openwrt.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        Jan Blunck <jblunck@suse.de>
-Subject: [PATCH 28/41] union-mount: call do_whiteout() on unlink and rmdir
-Date: Wed, 21 Oct 2009 12:19:26 -0700
-Message-Id: <1256152779-10054-29-git-send-email-vaurora@redhat.com>
-In-Reply-To: <1256152779-10054-28-git-send-email-vaurora@redhat.com>
+Subject: [PATCH 29/41] union-mount: Always create topmost directory on open
+Date: Wed, 21 Oct 2009 12:19:27 -0700
+Message-Id: <1256152779-10054-30-git-send-email-vaurora@redhat.com>
+In-Reply-To: <1256152779-10054-29-git-send-email-vaurora@redhat.com>
 References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-2-git-send-email-vaurora@redhat.com>
  <1256152779-10054-3-git-send-email-vaurora@redhat.com>
@@ -53,57 +53,75 @@ References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-26-git-send-email-vaurora@redhat.com>
  <1256152779-10054-27-git-send-email-vaurora@redhat.com>
  <1256152779-10054-28-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-29-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Blunck <jblunck@suse.de>
+When we open a directory, always create a matching directory on the
+top-level.  This way we don't have to go back and create all the
+directories on the path to an element when we want to copy it up.
 
-Call do_whiteout() when removing files and directories.
+XXX - Turn into #ifdef'able function
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 ---
- fs/namei.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+ fs/namei.c |   34 ++++++++++++++++++++++++++++++----
+ 1 files changed, 30 insertions(+), 4 deletions(-)
 
 diff --git a/fs/namei.c b/fs/namei.c
-index f7ef769..1f2a214 100644
+index 1f2a214..8d95eb1 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2898,6 +2898,10 @@ static int do_whiteout(struct nameidata *nd, struct path *path, int isdir)
- 	if (err)
- 		goto out;
+@@ -1284,8 +1284,31 @@ static int __link_path_walk(const char *name, struct nameidata *nd)
+ 		if (err)
+ 			break;
  
-+	err = -ENOENT;
-+	if (!dentry->d_inode)
-+		goto out;
+-		if ((nd->flags & LOOKUP_TOPMOST) &&
+-		    (nd->um_flags & LAST_LOWLEVEL)) {
++		/*
++		 * We want to create this element on the top level
++		 * file system in two cases:
++		 *
++		 * - We are specifically told to - LOOKUP_TOPMOST.
++		 * - This is a directory, and it does not yet exist on
++		 *   the top level.  Various tricks only work if
++		 *   directories always exist on the top level.
++		 *
++		 * In either case, only create this element on the top
++		 * level if the last element is located on the lower
++		 * level.  If the last element is located on the top
++		 * level, then every single element in the path
++		 * already exists on the top level.
++		 *
++		 * Note that we can assume that the parent is on the
++		 * top level since we always create the directory on
++		 * the top level.
++		 */
 +
- 	err = -ENOTEMPTY;
- 	if (isdir && !directory_is_empty(path->dentry, path->mnt))
- 		goto out;
-@@ -3012,6 +3016,10 @@ static long do_rmdir(int dfd, const char __user *pathname)
- 	error = hash_lookup_union(&nd, &nd.last, &path);
- 	if (error)
- 		goto exit2;
-+	if (is_unionized(nd.path.dentry, nd.path.mnt)) {
-+		error = do_whiteout(&nd, &path, 1);
-+		goto exit3;
-+	}
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto exit3;
-@@ -3100,6 +3108,10 @@ static long do_unlinkat(int dfd, const char __user *pathname)
- 		inode = path.dentry->d_inode;
- 		if (inode)
- 			atomic_inc(&inode->i_count);
-+		if (is_unionized(nd.path.dentry, nd.path.mnt)) {
-+			error = do_whiteout(&nd, &path, 0);
-+			goto exit2;
-+		}
- 		error = mnt_want_write(nd.path.mnt);
- 		if (error)
- 			goto exit2;
++		if ((nd->um_flags & LAST_LOWLEVEL) &&
++		    ((next.dentry->d_inode &&
++		      S_ISDIR(next.dentry->d_inode->i_mode) &&
++		      (nd->path.mnt != next.mnt)) ||
++		     (nd->flags & LOOKUP_TOPMOST))) {
+ 			struct dentry *dentry;
+ 
+ 			dentry = union_create_topmost(nd, &this, &next);
+@@ -1349,8 +1372,11 @@ last_component:
+ 		if (err)
+ 			break;
+ 
+-		if ((nd->flags & LOOKUP_TOPMOST) &&
+-		    (nd->um_flags & LAST_LOWLEVEL)) {
++		if ((nd->um_flags & LAST_LOWLEVEL) &&
++		    ((next.dentry->d_inode &&
++		      S_ISDIR(next.dentry->d_inode->i_mode) &&
++		      (nd->path.mnt != next.mnt)) ||
++		     (nd->flags & LOOKUP_TOPMOST))) {
+ 			struct dentry *dentry;
+ 
+ 			dentry = union_create_topmost(nd, &this, &next);
 -- 
 1.6.3.3
 
