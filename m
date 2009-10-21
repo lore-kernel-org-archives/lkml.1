@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751210AbZJUEIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751245AbZJUEJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751210AbZJUEIA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 00:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbZJUEH7
+	id S1751245AbZJUEJX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 00:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbZJUEJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 00:07:59 -0400
-Received: from mail-px0-f171.google.com ([209.85.216.171]:36659 "EHLO
-	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbZJUEH6 (ORCPT
+	Wed, 21 Oct 2009 00:09:23 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48857 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbZJUEJW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 00:07:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=tGxGGoFQlgN58rr4daSZqi7zPj1BTqmJhPyo0nhu4FO6/HIX0P8WqQuEzwVZ9f+2TD
-         HjcM6RANZqOd/JqaC6F3Lt1aRCWECzgWzO9nj/f4CNUKZyo0GAXnkTwcvNL59ksRFF8j
-         hmbTC3OjQwU+ntyBOuK9AohQvKTGlJ2ZZwS8Y=
+	Wed, 21 Oct 2009 00:09:22 -0400
+Date: Tue, 20 Oct 2009 23:14:45 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Anton Blanchard <anton@samba.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] exec: setup_arg_pages fails to return errors
+Message-ID: <20091021041444.GA5126@hallyn.com>
+References: <20091018113908.GR4808@kryten>
 MIME-Version: 1.0
-In-Reply-To: <1256016346.12592.15.camel@heimdal.trondhjem.org>
-References: <f2201a0b0910190116w29cd5e3w1ae2c76bd677f9ed@mail.gmail.com>
-	 <1255940788.14447.7.camel@heimdal.trondhjem.org>
-	 <6149e97b0910190138k5791351dmc95d9cc636aaef2f@mail.gmail.com>
-	 <1256016346.12592.15.camel@heimdal.trondhjem.org>
-Date: Wed, 21 Oct 2009 12:08:03 +0800
-X-Google-Sender-Auth: 67717d75117e41fb
-Message-ID: <6149e97b0910202108i3f66bdfesa4425ed1eab8bcb8@mail.gmail.com>
-Subject: Re: Question about invalidate_inode_pages2_range()
-From: Peng Tao <lkml.bergwolf@gmail.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091018113908.GR4808@kryten>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20, 2009 at 1:25 PM, Trond Myklebust
-<trond.myklebust@fys.uio.no> wrote:
-> On Mon, 2009-10-19 at 16:38 +0800, Peng Tao wrote:
->> On Mon, Oct 19, 2009 at 4:26 PM, Trond Myklebust
->> <trond.myklebust@fys.uio.no> wrote:
->> > On Mon, 2009-10-19 at 16:16 +0800, Peng Tao wrote:
->> >> Hi,
->> >>
->> >> I've a question about invalidate_inode_pages2_range().
->> >>
->> >> When does invalidate_inode_pages2_range() returns -EBUSY? It locks and
->> >> writes back the page. Why invalidate_complete_page2() still may fail
->> >> due to page dirtiness?
->> >
->> > A lot of those requirements were set by NFS, which uses
->> > invalidate_inode_pages2() in order to invalidate the page cache when it
->> > detects that a file has been changed on the server (either due to an
->> > O_DIRECT write, or due to another client modifying the file).
->> >
->> > In such cases, you want to try to keep the dirty data by writing it out
->> > instead of discarding it.
->> Thanks for your quick response. But I have two more questions about this.
->> 1. invalidate_inode_pages2_range() calls wait_on_page_writeback().
->> Does the latter actually write out the dirty page?
->
-> No. It just waits for any outstanding writeback activity on that page to
-> finish.
-Got it. Thank you.
->
->> 2. Is there any interface in the mm subsystem forces discarding a page cache?
->
-> You mean that also discards dirty pages? Yes. That is what
-> truncate_inode_pages() does...
-But truncate_inode_pages() truncates all pages beyond lstart.
-Is there any way to discard a single page?
-truncate_inode_page() seems to be able to do the magic. But it is not exported.
+Quoting Anton Blanchard (anton@samba.org):
+> 
+> In setup_arg_pages we work hard to assign a value to ret, but on exit
+> we always return 0.
+> 
+> Also remove a now duplicated exit path and branch to out_unlock instead.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
->
->
->
+Yikes!
 
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-
--- 
-Cheers,
-Peng Tao
-State Key Laboratory of Networking and Switching Technology
-Beijing Univ. of Posts and Telecoms.
+> ---
+> 
+> Index: linux.trees.git/fs/exec.c
+> ===================================================================
+> --- linux.trees.git.orig/fs/exec.c	2009-09-28 12:17:10.000000000 +1000
+> +++ linux.trees.git/fs/exec.c	2009-09-28 12:17:58.000000000 +1000
+> @@ -624,10 +624,8 @@ int setup_arg_pages(struct linux_binprm 
+>  	/* Move stack pages down in memory. */
+>  	if (stack_shift) {
+>  		ret = shift_arg_pages(vma, stack_shift);
+> -		if (ret) {
+> -			up_write(&mm->mmap_sem);
+> -			return ret;
+> -		}
+> +		if (ret)
+> +			goto out_unlock;
+>  	}
+>  
+>  #ifdef CONFIG_STACK_GROWSUP
+> @@ -641,7 +639,7 @@ int setup_arg_pages(struct linux_binprm 
+>  
+>  out_unlock:
+>  	up_write(&mm->mmap_sem);
+> -	return 0;
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL(setup_arg_pages);
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
