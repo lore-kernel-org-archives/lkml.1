@@ -1,100 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbZJUOmD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753779AbZJUOpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753604AbZJUOmD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 10:42:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZJUOmC
+	id S1753779AbZJUOpV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 10:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbZJUOpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 10:42:02 -0400
-Received: from mail.tre.it ([62.13.171.46]:58844 "EHLO relay2.tre.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753392AbZJUOmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 10:42:00 -0400
-Date: Wed, 21 Oct 2009 16:44:31 +0200
-From: Daniele Calore <orkaan@orkaan.org>
-To: <rth@twiddle.net>, <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: orkaan@orkaan.org
-Subject: [PATCH] alpha: Wire up missing/new syscalls
-Message-ID: <20091021164431.6193d96b@buddha>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Oct 2009 10:45:21 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:58488 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbZJUOpU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 10:45:20 -0400
+MIME-Version: 1.0
+In-Reply-To: <20091021131747.GG12819@pengutronix.de>
+References: <20090618025030.12363.69402.stgit@localhost.localdomain> 
+	<20091021131747.GG12819@pengutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 21 Oct 2009 23:45:05 +0900
+X-Google-Sender-Auth: 2f817e653fd95a38
+Message-ID: <fa686aa40910210745l7d19d6ecq303ee990bed82c62@mail.gmail.com>
+Subject: Re: [PATCH v4] powerpc/5200: Add mpc5200-spi (non-PSC) device driver
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This wire up the: fallocate, timerfd_create, timerfd_settime, timerfd_gettime
-signalfd4, eventfd2, epoll_create1, dup3, pipe2, inotify_init1, preadv,
-pwritev and rt_tgsigqueueinfo syscalls for the alpha port.
+On Wed, Oct 21, 2009 at 10:17 PM, Wolfram Sang <w.sang@pengutronix.de> wrote:
+> Hi Grant,
+>
+> On Wed, Jun 17, 2009 at 08:55:01PM -0600, Grant Likely wrote:
+>> From: Grant Likely <grant.likely@secretlab.ca>
+>>
+>> Adds support for the dedicated SPI device on the Freescale MPC5200(b)
+>> SoC.
+>>
+>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>
+> do you have an updated version to share? Or is V4 still 'status quo'?
 
-For umount2, alpha have an "old" and "new" version called: oldumount and umount;
-so ignore umount2.
+V4 was supposed to go in during the merge window.  But I haven't heard
+anything from David (and I didn't pursue it either).  Unless David
+objects, I'll put it into either my -merge or my -next tree; depending
+on what Ben and Linus prefer.
 
-Signed-off-by: Daniele Calore <orkaan@orkaan.org>
-    
----
-diff --git a/arch/alpha/include/asm/unistd.h b/arch/alpha/include/asm/unistd.h
-index 5b5c174..17f72b7 100644
---- a/arch/alpha/include/asm/unistd.h
-+++ b/arch/alpha/include/asm/unistd.h
-@@ -247,6 +247,7 @@
- #define __IGNORE_pause
- #define __IGNORE_time
- #define __IGNORE_utime
-+#define __IGNORE_umount2
- 
- /*
-  * Linux-specific system calls begin at 300
-@@ -433,10 +434,23 @@
- #define __NR_signalfd			476
- #define __NR_timerfd			477
- #define __NR_eventfd			478
-+#define __NR_fallocate			479
-+#define __NR_timerfd_create		480
-+#define __NR_timerfd_settime		481
-+#define __NR_timerfd_gettime		482
-+#define __NR_signalfd4			483
-+#define __NR_eventfd2			484
-+#define __NR_epoll_create1		485
-+#define __NR_dup3			486
-+#define __NR_pipe2			487
-+#define __NR_inotify_init1		488
-+#define __NR_preadv			489
-+#define __NR_pwritev			490
-+#define __NR_rt_tgsigqueueinfo		491
- 
- #ifdef __KERNEL__
- 
--#define NR_SYSCALLS			479
-+#define NR_SYSCALLS			492
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
-diff --git a/arch/alpha/kernel/systbls.S b/arch/alpha/kernel/systbls.S
-index 95c9aef..78199b9 100644
---- a/arch/alpha/kernel/systbls.S
-+++ b/arch/alpha/kernel/systbls.S
-@@ -495,8 +495,21 @@ sys_call_table:
- 	.quad sys_epoll_pwait
- 	.quad sys_utimensat			/* 475 */
- 	.quad sys_signalfd
--	.quad sys_ni_syscall
-+	.quad sys_ni_syscall			/* sys_timerfd */
- 	.quad sys_eventfd
-+	.quad sys_fallocate
-+	.quad sys_timerfd_create		/* 480 */
-+	.quad sys_timerfd_settime
-+	.quad sys_timerfd_gettime
-+	.quad sys_signalfd4
-+	.quad sys_eventfd2
-+	.quad sys_epoll_create1			/* 485 */
-+	.quad sys_dup3
-+	.quad sys_pipe2
-+	.quad sys_inotify_init1
-+	.quad sys_preadv
-+	.quad sys_pwritev			/* 490 */
-+	.quad sys_rt_tgsigqueueinfo
- 
- 	.size sys_call_table, . - sys_call_table
- 	.type sys_call_table, @object
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
