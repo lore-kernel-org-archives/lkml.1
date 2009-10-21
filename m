@@ -1,114 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbZJUSqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZJUSaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbZJUSqv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 14:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZJUSqv
+	id S1754730AbZJUSaq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 14:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbZJUSap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 14:46:51 -0400
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:39583 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753610AbZJUSqu (ORCPT
+	Wed, 21 Oct 2009 14:30:45 -0400
+Received: from smtp240.poczta.interia.pl ([217.74.64.240]:11134 "EHLO
+	smtp240.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753945AbZJUSap (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 14:46:50 -0400
-X-Sasl-enc: ITcuJdUsjP6fYw/yQSCa/5FAr4wQGabAkSP2KbhZbBhE 1256150813
-Message-ID: <4ADF5710.4030505@imap.cc>
-Date: Wed, 21 Oct 2009 20:46:40 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@gmail.com>
-CC: David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
-       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-wireless@vger.kernel.org,
-       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org
-Subject: Re: NOHZ: local_softirq_pending 08
-References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local> <4AD76184.6030900@gmail.com>
-In-Reply-To: <4AD76184.6030900@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig5AFD4289CAEBB63DCDBBFEB4"
+	Wed, 21 Oct 2009 14:30:45 -0400
+Date: Wed, 21 Oct 2009 20:47:22 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Wrong test on unsigned in
+ fb_set_user_cmap()?
+Message-Id: <20091021204722.20ccb7a9.krzysztof.h1@poczta.fm>
+In-Reply-To: <4ADF2449.7090902@gmail.com>
+References: <20091021065018.7625046CCF3@f46.poczta.interia.pl>
+	<4ADF2449.7090902@gmail.com>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-EMID: dae2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig5AFD4289CAEBB63DCDBBFEB4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, 21 Oct 2009 17:10:01 +0200
+Roel Kluin <roel.kluin@gmail.com> wrote:
 
-On 15.10.2009 19:53 Jarek Poplawski wrote:
-> Jarek Poplawski wrote, On 10/15/2009 01:40 PM:
->=20
->> On 12-10-2009 13:25, Tilman Schmidt wrote:
+> struct fb_cmap_user member start is unsigned. The same condition
+> is already checked in fb_set_cmap(), so this should be safe.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> >> Is this required?
+> > 
 
->>> I have encountered the message in the subject during a test of
->>> the Gigaset CAPI driver, and would like to determine whether
->>> it's a bug in the driver, a bug somewhere else, or no bug at
->>> all. The test scenario was PPP over ISDN with pppd+capiplugin.
->>> In an alternative scenario, also PPP over ISDN but with
->>> smpppd+capidrv, the message did not occur.
+> 
+> > Anyway, the check of the cmap->start < 0 does
+> > not make any sense as the start is u32 value (most userspace
+> > addresses will be lower then 2GB on 32 bit system so the error cannot
+> > be caught by the check). I vote for removing the (cmap->start < 0) in
+> > the fb_set_cmap as well as most drivers check the start value already
+> > in driver's fb_setcolreg() function.
+> 
+> In fb_set_cmap() this is not `cmap->start' but `start' which has type
+> int. Therefore I think the test makes some sense there, so I left it.
+> 
 
-I'm sorry, I had confused the two cases. The message occurs in
-the smpppd+capidrv scenario, not with pppd+capiplugin.
+No, it does not. If one converts u32 value to int it must be over 2GB to be negative. 
+The value is not in most cases as the user space is mapped below 3GB. On the other hand,
+each driver receives unsigned value of the start (converted back to unsigned). It means that the
+start here should be unsigned int.
+Each driver should check the value it receives. I have checked and there are only 3 drivers 
+which do not check properly the start value:
+atafb
+ep93xxfb
+maxinefb
 
->>> Johannes' answer pointed me to the netif_rx() function.
->>> The Gigaset driver itself doesn't call that function at all.
->>> In the scenario where I saw the message, it was the SYNC_PPP
->>> line discipline that did.
+The fixes are very easy.
 
-This analysis was therefore wrong. It would be the netif_rx()
-call towards the end of isdn_ppp_push_higher() in
-drivers/isdn/i4l/isdn_ppp.c L1177.
-
->> Anyway, I agree with Michael Buesch there is no reason to waste time
->> for tracking all netif_rx vs netif_rx_ni uses, and it seems we could
->> avoid it by using the "proper" version of raise_softirq_irqoff() in
->> __napi_schedule(). Could anybody try if I'm not wrong?
->>
->>  net/core/dev.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/net/core/dev.c b/net/core/dev.c
->> index 28b0b9e..7fc4009 100644
->> --- a/net/core/dev.c
->> +++ b/net/core/dev.c
->> @@ -2728,7 +2728,7 @@ void __napi_schedule(struct napi_struct *n)
->> =20
->>  	local_irq_save(flags);
->>  	list_add_tail(&n->poll_list, &__get_cpu_var(softnet_data).poll_list)=
-;
->> -	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
->> +	raise_softirq_irqoff(NET_RX_SOFTIRQ);
->>  	local_irq_restore(flags);
->>  }
->>  EXPORT_SYMBOL(__napi_schedule);
-
-I have tested your patch and I can confirm that it fixes the messages.
-I have not noticed any ill effects.
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+> > 
+> > Best regards,
+> > Krzysztof
+> 
+> Thanks, here:
+> 
+> diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
+> index f53b9f1..f46d617 100644
+> --- a/drivers/video/fbcmap.c
+> +++ b/drivers/video/fbcmap.c
+> @@ -266,11 +266,6 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+>  		rc = -ENODEV;
+>  		goto out;
+>  	}
+> -	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
+> -				!info->fbops->fb_setcmap)) {
+> -		rc = -EINVAL;
+> -		goto out1;
+> -	}
+>  	rc = fb_set_cmap(&umap, info);
+>  out1:
+>  	unlock_fb_info(info);
 
 
---------------enig5AFD4289CAEBB63DCDBBFEB4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-iD8DBQFK31cZQ3+did9BuFsRAlWeAJ93rbAD2D/9sgXqn7IkoKQndzDfEQCeMlEL
-Z4A+PxVoA1bD0gc2OvUqD/k=
-=yorf
------END PGP SIGNATURE-----
+----------------------------------------------------------------------
+Zobacz najlepsze walki Adamka.
+Ogladaj >>> http://link.interia.pl/f23e8
 
---------------enig5AFD4289CAEBB63DCDBBFEB4--
