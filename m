@@ -1,96 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZJUMoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbZJUMmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308AbZJUMoD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 08:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbZJUMoB
+	id S1753170AbZJUMmD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 08:42:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZJUMmC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 08:44:01 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:50773 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752734AbZJUMoA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 08:44:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:message-id;
-        b=v4+ykMcu9ghgRWzdfGyK1AR0kHh61A0piNZIxIawaJMiv7m8QXMbgmIkR/B3c6Ytkg
-         sFpDASOlGg6LAHiazWib04GaZOsYyKgag8/4jLECNqVpgbjszCd+1sW12akDdbhI5QCw
-         lAw0MSMQNV6B8DAQj1e5e3WMAkI/hvxhedfBo=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Subject: [PATCH] Staging: update TODO files
-Date: Wed, 21 Oct 2009 14:42:11 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31.1-56.fc12.x86_64; KDE/4.3.1; x86_64; ; )
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
+	Wed, 21 Oct 2009 08:42:02 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:44607 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752597AbZJUMmA (ORCPT
+	<rfc822;groupwise-SJayaraman@novell.com;0:0>);
+	Wed, 21 Oct 2009 08:42:00 -0400
+Message-ID: <4ADF01E9.4030404@suse.de>
+Date: Wed, 21 Oct 2009 18:13:21 +0530
+From: Suresh Jayaraman <sjayaraman@suse.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Rafael Wysocki <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] swapfile: avoid NULL pointer dereference in swapon when
+ s_bdev is NULL
+References: <4AC1FC41.2060807@suse.de> <Pine.LNX.4.64.0910011052330.7682@sister.anvils> <4AC492E2.7060205@suse.de> <Pine.LNX.4.64.0910011252220.13515@sister.anvils> <4AC49B95.2040504@suse.de> <Pine.LNX.4.64.0910062157300.16308@sister.anvils> <4ACC111A.8020500@suse.de>
+In-Reply-To: <4ACC111A.8020500@suse.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910211442.11785.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: update TODO files
+Suresh Jayaraman wrote:
+> Hugh Dickins wrote:
+>> On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
+>>> Hugh Dickins wrote:
+>>>> On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
+>>>>> The call sequence is add_to_swap() -> get_swap_page() ->  scan_swap_map()
+>>>>> -> discard_swap_cluster() -> blkdev_issue_discard().
+>>>>>
+>>>>> Wrapping the code around a NULL check fixes the Oops for me.
+>>>> That's odd: scan_swap_map() should only discard_swap_cluster() if
+>>>> SWP_DISCARDABLE got set, and your first patch made sure that it wasn't.
+>>> I forgot to mention, this is not on loopback NFS mount but an remote NFS
+>>> mount (so possibly s_bdev is not NULL) when doing swapon. The oops was
+>>> triggered when memhog program tries to use the swap space on the newly
+>>> created swapfile on NFS. I have not completely investigated the issue,
+>>> perhaps s_bdev is not being set when it ought to be..
+>> I'm happy to see your first patch already in 2.6.32-rc3, but still
+>> suspicious of this second patch you sent afterwards.  A quick skim
+>> through your patchset suggests 23/31 is probably responsible:
+> 
+> Thanks for skimming through those patches. I noticed this already during
+> my review and thought I had already fixed this, but apparently I missed
+> out. I'll test after fixing this and report.
 
-Remove my mail address.
+Sorry about the delay. I tested by fixing SWP_FILE macro only now after
+returning from vacation. I was not able to reproduce this. Please ignore
+the second patch and it's no longer necessary as noted by Hugh already.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/staging/rtl8187se/TODO |    3 +--
- drivers/staging/rtl8192su/TODO |    3 +--
- drivers/staging/vt6655/TODO    |    5 ++---
- drivers/staging/vt6656/TODO    |    5 ++---
- 4 files changed, 6 insertions(+), 10 deletions(-)
+Thanks,
 
-Index: b/drivers/staging/rtl8187se/TODO
-===================================================================
---- a/drivers/staging/rtl8187se/TODO
-+++ b/drivers/staging/rtl8187se/TODO
-@@ -11,5 +11,4 @@ TODO:
- - sparse fixes
- - integrate with drivers/net/wireless/rtl818x
- 
--Please send any patches to Greg Kroah-Hartman <greg@kroah.com> and
--Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>.
-+Please send any patches to Greg Kroah-Hartman <greg@kroah.com>.
-Index: b/drivers/staging/rtl8192su/TODO
-===================================================================
---- a/drivers/staging/rtl8192su/TODO
-+++ b/drivers/staging/rtl8192su/TODO
-@@ -14,5 +14,4 @@ TODO:
- - sparse fixes
- - integrate with drivers/net/wireless/rtl818x
- 
--Please send any patches to Greg Kroah-Hartman <greg@kroah.com> and
--Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>.
-+Please send any patches to Greg Kroah-Hartman <greg@kroah.com>.
-Index: b/drivers/staging/vt6655/TODO
-===================================================================
---- a/drivers/staging/vt6655/TODO
-+++ b/drivers/staging/vt6655/TODO
-@@ -16,6 +16,5 @@ TODO:
- - sparse fixes
- - integrate with drivers/net/wireless
- 
--Please send any patches to Greg Kroah-Hartman <greg@kroah.com>,
--Forest Bond <forest@alittletooquiet.net> and Bartlomiej Zolnierkiewicz
--<bzolnier@gmail.com>.
-+Please send any patches to Greg Kroah-Hartman <greg@kroah.com>
-+and Forest Bond <forest@alittletooquiet.net>.
-Index: b/drivers/staging/vt6656/TODO
-===================================================================
---- a/drivers/staging/vt6656/TODO
-+++ b/drivers/staging/vt6656/TODO
-@@ -15,6 +15,5 @@ TODO:
- - sparse fixes
- - integrate with drivers/net/wireless
- 
--Please send any patches to Greg Kroah-Hartman <greg@kroah.com>,
--Forest Bond <forest@alittletooquiet.net> and Bartlomiej Zolnierkiewicz
--<bzolnier@gmail.com>.
-+Please send any patches to Greg Kroah-Hartman <greg@kroah.com>
-+and Forest Bond <forest@alittletooquiet.net>.
+
+>> --- mmotm.orig/include/linux/swap.h
+>> +++ mmotm/include/linux/swap.h
+>> @@ -120,6 +120,7 @@ struct swap_extent {
+>>  enum {
+>>  	SWP_USED	= (1 << 0),	/* is slot in swap_info[] used? */
+>>  	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
+>> +	SWP_FILE	= (1 << 2),	/* file swap area */
+>>  	SWP_DISCARDABLE = (1 << 2),	/* blkdev supports discard */
+>>  	SWP_DISCARDING	= (1 << 3),	/* now discarding a free cluster */
+>>  	SWP_SOLIDSTATE	= (1 << 4),	/* blkdev seeks are cheap */
+>>
+>> Hugh
+> 
+> Thanks,
+> 
+
+
+-- 
+Suresh Jayaraman
