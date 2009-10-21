@@ -1,62 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbZJUQgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbZJUQhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754443AbZJUQgw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 12:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZJUQgw
+	id S1754482AbZJUQhi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 12:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZJUQhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 12:36:52 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:45762 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753992AbZJUQgv convert rfc822-to-8bit (ORCPT
+	Wed, 21 Oct 2009 12:37:38 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:33529 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752615AbZJUQhh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 12:36:51 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
+	Wed, 21 Oct 2009 12:37:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=T+zGV5aCT+sdikQA2b+DqbuhNugO8lvfxdidD3+tqUceyfjll+kRnFw20Q1XR+Qx9R
+         9p1Cigo3Vlj1vTirMGg4p1PSqfGIk+znufzlTcKSFovCeNl5NnE80qIW4uMNYrO2WTWE
+         VNCiwvaHLRLnu1xjuUYMxJ2EEcOyrRIPPpD+8=
+MIME-Version: 1.0
+In-Reply-To: <x49eiow9202.fsf@segfault.boston.devel.redhat.com>
+References: <200910202012.12007.czoccolo@gmail.com>
+	 <x49eiow9202.fsf@segfault.boston.devel.redhat.com>
+Date: Wed, 21 Oct 2009 18:37:41 +0200
+Message-ID: <4e5e476b0910210937y71d2018en2b8b4a23c4bb1aa1@mail.gmail.com>
+Subject: Re: [RFC V2 PATCH 3/5] cfq-iosched: reimplement priorities using 
+	different service trees
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jeff Moyer <jmoyer@redhat.com>
 Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC V2 PATCH 1/5] cfq-iosched: adapt slice to number of  processes doing I/O
-References: <200910202011.53858.czoccolo@gmail.com>
-	<x49aazk91uj.fsf@segfault.boston.devel.redhat.com>
-	<4e5e476b0910210932l2dffdabdv67a449ca162efd0f@mail.gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 21 Oct 2009 12:36:49 -0400
-In-Reply-To: <4e5e476b0910210932l2dffdabdv67a449ca162efd0f@mail.gmail.com>
-	(Corrado Zoccolo's message of "Wed, 21 Oct 2009 18:32:37 +0200")
-Message-ID: <x49tyxs7lge.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
-
->> Couldn't you have just divided the slice by iq?  And why iq?  Why not
->> nr_qs or avg_qlen or something?  It's a minor nit; I can live with it.
+On Wed, Oct 21, 2009 at 5:54 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
+> Corrado Zoccolo <czoccolo@gmail.com> writes:
 >
-> iq stands for interested queues, because we are restricting the count
-> just to the same priority class, not all queues in the system.
+>> We use different service trees for different priority classes.
+>> This allows a simplification in the service tree insertion code, that no
+>> longer has to consider priority while walking the tree.
+>
+> This is kind of funny, considering things used to be divied up into
+> lists by class and priority.
+>
+>> + * Index in the service_trees.
+>> + * IDLE is handled separately, so it has negative index
+>> + */
+>> +enum wl_prio_t {
+>> +     IDLE_WORKLOAD = -1,
+>> +     BE_WORKLOAD = 0,
+>> +     RT_WORKLOAD = 1
+>> +};
+>
+> What's wrong with IOPRIO_CLASS_(RT|BE|IDLE)?  Why invent another enum?
+Because I want to index inside my internal structures, and I have no
+control over the former ones.
+>
+>> +
+>> +/*
+>>   * Per block device queue structure
+>>   */
+>>  struct cfq_data {
+> [...]
+>> +     struct cfq_rb_root service_trees[2];
+>> +     struct cfq_rb_root service_tree_idle;
+>
+> Why separate out the idle service tree from the others?
+>
+In a subsequent patch, I will transform the first [2] in a [2][3],
+while the idle tree will remain unchanged.
 
-Ah, that makes sense.  A comment would make that clear.
+>> +static struct cfq_rb_root *service_tree_for(enum wl_prio_t prio,
+>> +                                         struct cfq_data *cfqd)
+>> +{
+>> +     if (prio == IDLE_WORKLOAD)
+>> +             return &cfqd->service_tree_idle;
+>> +
+>> +     return &cfqd->service_trees[prio];
+>> +}
+>
+> This should just turn into cfqd->service_trees[IOPRIO_CLASS_*] in the
+> callers.
+I need the special treatment for idle in next patches, so I had chosen
+the different approach.
 
-> I don't think this is equivalent. You seem to compute some divisions
-> too early, losing in precision.
+>
+> [...]
+>
+>>  /*
+>> @@ -1106,6 +1134,10 @@ static struct cfq_queue *cfq_close_cooperator(struct cfq_data *cfqd,
+>>       if (cfq_cfqq_coop(cfqq))
+>>               return NULL;
+>>
+>> +     /* we don't want to mix processes with different characteristics */
+>> +     if (cfqq->service_tree != cur_cfqq->service_tree)
+>> +             return NULL;
+>> +
+>
+> Hmm, that looks like a current bug in the close cooperator code.  It
+> shouldn't allow cooperation between differring scheduling classes.
 
-OK, I figured as much.
+Maybe. Anyway, this check for me has more impact, when the service
+trees are subsequently splitted in SYNC, SYNC_NOIDLE, and ASYNC. I
+don't want close cooperation between them as well.
 
-> slice * cfq_target_latency / (cfqd->cfq_slice[1] * iq)
-> is not generally equivalent to:
-> slice * (cfq_target_latency / (cfqd->cfq_slice[1] * iq))
-> that is what you are computing.
-> There is an other such case in your simplification.
+Corrado
 
-OK.  The idea was to try to make the thing a bit more digestable.
-Honestly, I had to re-write it to figure out what it was doing.  Could
-you rework it so the logic is more obvious to others and still correct?
+>
+> Cheers,
+> Jeff
+>
 
-Thanks!
-Jeff
+
+
+-- 
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
+The self-confidence of a warrior is not the self-confidence of the average
+man. The average man seeks certainty in the eyes of the onlooker and calls
+that self-confidence. The warrior seeks impeccability in his own eyes and
+calls that humbleness.
+                               Tales of Power - C. Castaneda
