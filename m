@@ -1,168 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZJUGSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbZJUGY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752470AbZJUGSx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 02:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZJUGSw
+	id S1752607AbZJUGY2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 02:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbZJUGY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 02:18:52 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:54824 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbZJUGSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 02:18:51 -0400
-Date: Tue, 20 Oct 2009 23:20:21 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Matt Helsley <matthltc@us.ibm.com>, Oren Laadan <orenl@librato.com>,
-       Daniel Lezcano <daniel.lezcano@free.fr>, randy.dunlap@oracle.com,
-       arnd@arndb.de, linux-api@vger.kernel.org,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       Louis.Rilling@kerlabs.com, kosaki.motohiro@jp.fujitsu.com,
-       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
-Message-ID: <20091021062021.GA2667@us.ibm.com>
-References: <4AD8C7E4.9000903@free.fr> <20091016194451.GA28706@us.ibm.com> <4ADCCD68.9030003@free.fr> <4ADCDE7F.4090501@librato.com> <20091020005125.GG27627@count0.beaverton.ibm.com> <m1vdiad9jd.fsf@fess.ebiederm.org> <20091020040315.GA26632@us.ibm.com> <m1iqeauyvl.fsf@fess.ebiederm.org> <20091020183329.GB22646@us.ibm.com> <m1r5sxsw7w.fsf@fess.ebiederm.org>
+	Wed, 21 Oct 2009 02:24:26 -0400
+Received: from smtp.wp.pl ([212.77.101.1]:24870 "EHLO mx1.wp.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751907AbZJUGYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 02:24:24 -0400
+Date: Wed, 21 Oct 2009 08:24:27 +0200
+From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       jfs-discussion <jfs-discussion@lists.sourceforge.net>
+Subject: Re: [Jfs-discussion] [PATCH] jfs: lockdep fix
+Message-ID: <4adea91bbfcf65.02080900@wp.pl>
+References: <4ade05f0af05a2.00981454@wp.pl> <1256068823.3708.30.camel@norville.austin.ibm.com>
+In-reply-to: <4ade05f0af05a2.00981454@wp.pl> <1256068823.3708.30.camel@norville.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <m1r5sxsw7w.fsf@fess.ebiederm.org>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Mailer: Interfejs WWW nowej poczty Wirtualnej Polski
+X-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.3) Gecko/20090909 Fedora/3.5.3-1.fc11 Firefox/3.5.3
+Organization: Nowa Poczta Wirtualnej Polski S.A. http://www.wp.pl/
+X-WP-IP: 83.17.101.58
+X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
+X-WP-SPAM: NO 0000000 [sVN0]                               
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman [ebiederm@xmission.com] wrote:
-| > I will post a version of the patch outside this patchset with min
-| > and max parameters and we can see if it can be optimized/beautified.
-| 
-| Thanks,
-| Eric
+Dnia 20-10-2009 o godz. 22:00 Dave Kleikamp napisa³(a):
+> On Tue, 2009-10-20 at 20:48 +0200, Krzysztof Helt wrote:
+> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > 
+> > Release rdwrlock semaphore during memory allocation.
+> > This fixes the locked already reported here:
+> > 
+> > http://www.mail-archive.com/jfs-discussion@lists.sourceforge.net/msg01389.html
+> > 
+> > The problem here is that memory allocation is done with rdwrlock
+> > semaphore taken and the VM can get into the jfs layer taking the
+> > rdwrlock again.
+> > 
+> > Also, the patch fixes the lockdep below. This problem is created because
+> > the rdwrlock semaphore acquires the commit_mutex and it is called with
+> > interrupts enabled. The interrupt may hit with the commit_mutex taken
+> > and take the rdwrlock (again) inside the interrupt context.
+> 
+> The rdwrlock should never be taken in interrupt context.
+> 
 
-Here is the patch.  alloc_pid() calls alloc_pidmap() as follows:
+Right. It is taken in the RECLAIM_FS context.
 
--		nr = alloc_pidmap(tmp);
-+		min = max = 0;
-+		if (target_pids) {
-+			min = target_pids[i];
-+			max = min + 1;
-+		}
-+		nr = alloc_pidmap(tmp, min, max);
+> > =========================================================
+> > [ INFO: possible irq lock inversion dependency detected ]
+> > 2.6.32-rc3 #99
+> > ---------------------------------------------------------
+> > kswapd0/180 just changed the state of lock:
+> >  (&jfs_ip->rdwrlock#2){++++-.}, at: [<c02e2207>] jfs_get_block+0x47/0x280
+> > but this lock took another, RECLAIM_FS-unsafe lock in the past:
+> >  (&jfs_ip->commit_mutex){+.+.+.}
+> > 
+> > and interrupts could create inverse lock ordering between them.
+> > 
+> > 
+> > other info that might help us debug this:
+> > no locks held by kswapd0/180.
+> > 
+> > the shortest dependencies between 2nd lock and 1st lock:
+> >  -> (&jfs_ip->commit_mutex){+.+.+.} ops: 7937 {
+> >     HARDIRQ-ON-W at:
+> 
+> <snip>
+> 
+> > ---
+> > 
+> > I am not sure if this is the right fix to the problem. The heavy use of
+> > the jfs volume can lock up a machine (e.g. hit me in Ubuntu 9.04).
+> 
+> I don't think we can just drop the mutex, since it protects the inode's
+> xtree from being modified while another thread is either reading or
+> writing it.
+> 
+> I proposed another fix here:
+> http://bugzilla.kernel.org/show_bug.cgi?id=13613
+> 
+> It seems I haven't followed up and submitted it to the vfs maintainer.
+> Could you please give that patch a try and see if it fixes the problem
+> for you?
+> 
 
-It does look like this patch executes a bit more code even in the common
-case but let me know if you think this is better.
-	
----
+I have tested it a little and I will do some more. At least, there is no 
+easy way to trigger the previous lockdep (with rdwrlock only reported to 
+the 2.6.30). It seems your fix helps here.
 
-From: Sukadev Bhattiprolu <suka@suka.(none)>
-Date: Tue, 20 Oct 2009 17:01:18 -0700
-Subject: [PATCH] Add min and max parameters to alloc_pidmap()
+However, I think it does not help with this new lockdep I have reported. 
+The new locked is due to the fact that commit_mutex is taken with the 
+rdwrlock hold and enabled interrupts. The kswapd may start and create 
+the inverse locking order.  The kswapd takes the rdwrlock and some other 
+task may hold the commit_mutex. The rdwrlock is taken in jfs_get_block() 
+and calls the extAlloc() which takes the commit_mutex. One possible fix 
+is to move the commit mutex to the jfs_get_block() before the rdwrlock. 
+The extAlloc() is called from the jfs_get_block() only.
 
-With support for setting a specific pid number for a process, alloc_pidmap()
-will need a 'min' and a 'max' parameter.
+Kind regards,
+Krzysztof
 
----
- kernel/pid.c |   47 ++++++++++++++++++++++++++++++++++-------------
- 1 files changed, 34 insertions(+), 13 deletions(-)
+----------------------------------------------------
+WYGRAJ wycieczkê kolejow± po pó³nocnej Hiszpanii!
+http://klik.wp.pl/?adr=http%3A%2F%2Fwww.navigeo.pl%2Fcontest%2Fidea_tour&sid=885
 
-diff --git a/kernel/pid.c b/kernel/pid.c
-index c4d9914..56e13c1 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -147,18 +147,30 @@ static int alloc_pidmap_page(struct pidmap *map)
- 	return 0;
- }
- 
--static int alloc_pidmap(struct pid_namespace *pid_ns)
-+static int alloc_pidmap(struct pid_namespace *pid_ns, int min, int max)
- {
- 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
- 	int rc = -EAGAIN;
- 	struct pidmap *map;
- 
--	pid = last + 1;
--	if (pid >= pid_max)
--		pid = RESERVED_PIDS;
-+	if (min < 0 || max < 0 || max > pid_max)
-+		return -EINVAL;
-+
-+	if (!max)
-+		max = pid_max;
-+
-+	pid = min;
-+	if (pid && pid >= max)
-+		return -EINVAL;
-+	else if (!pid) {
-+		pid = last + 1;
-+		if (pid >= pid_max)
-+			pid = RESERVED_PIDS;
-+	}
-+
- 	offset = pid & BITS_PER_PAGE_MASK;
- 	map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
--	max_scan = (pid_max + BITS_PER_PAGE - 1)/BITS_PER_PAGE - !offset;
-+	max_scan = (max + BITS_PER_PAGE - 1)/BITS_PER_PAGE - !offset;
- 	for (i = 0; i <= max_scan; ++i) {
- 		rc = alloc_pidmap_page(map);
- 		if (rc)
-@@ -168,7 +180,12 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
- 			do {
- 				if (!test_and_set_bit(offset, map->page)) {
- 					atomic_dec(&map->nr_free);
--					pid_ns->last_pid = pid;
-+					/*
-+					 * 'last_pid' only makes sense when
-+					 * choosing from entire range
-+					 */
-+					if (!min)
-+						pid_ns->last_pid = pid;
- 					return pid;
- 				}
- 				offset = find_next_offset(map, offset);
-@@ -179,22 +196,26 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
- 			 * bitmap block and the final block was the same
- 			 * as the starting point, pid is before last_pid.
- 			 */
--			} while (offset < BITS_PER_PAGE && pid < pid_max &&
-+			} while (offset < BITS_PER_PAGE && pid < max &&
- 					(i != max_scan || pid < last ||
- 					    !((last+1) & BITS_PER_PAGE_MASK)));
- 		}
--		if (map < &pid_ns->pidmap[(pid_max-1)/BITS_PER_PAGE]) {
-+		if (map < &pid_ns->pidmap[(max-1)/BITS_PER_PAGE]) {
- 			++map;
- 			offset = 0;
- 		} else {
- 			map = &pid_ns->pidmap[0];
- 			offset = RESERVED_PIDS;
--			if (unlikely(last == offset)) {
--				rc = -EAGAIN;
--				break;
--			}
- 		}
- 		pid = mk_pid(pid_ns, map, offset);
-+		/*
-+		 * If we are back to where we started, well, no pids are
-+		 * currently available in selected range.
-+		 */
-+		if (pid < min || unlikely(last == offset)) {
-+			rc = -EAGAIN;
-+			break;
-+		}
- 	}
- 	return rc;
- }
-@@ -272,7 +293,7 @@ struct pid *alloc_pid(struct pid_namespace *ns)
- 
- 	tmp = ns;
- 	for (i = ns->level; i >= 0; i--) {
--		nr = alloc_pidmap(tmp);
-+		nr = alloc_pidmap(tmp, 0, 0);
- 		if (nr < 0)
- 			goto out_free;
- 
--- 
-1.6.0.4
 
