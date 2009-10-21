@@ -1,74 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbZJUVVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbZJUVZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755510AbZJUVVk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 17:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbZJUVVj
+	id S1755444AbZJUVZn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 17:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbZJUVZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 17:21:39 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:43526 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754800AbZJUVVi (ORCPT
+	Wed, 21 Oct 2009 17:25:42 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:58187 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754219AbZJUVZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 17:21:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YeN/khm5XqAFHK6U+1f5Nhk0N3K8expoyHMmRY0cOMUmIVVtCtnbwaV/ImzhyY3UPJ
-         iwBqQofCVhGGZFQFwGtpcYsqQlbOkUB5I3vJ3vch7cz99BdXgwbNNY4Qhjh7+0XohN94
-         RfMYcO3kb8HPc0WIHpezuj2tWL2JW9TRG0Yrw=
-Date: Wed, 21 Oct 2009 23:21:38 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: John Kacur <jkacur@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jonathan Corbet <corbet@lwn.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arnd Bergmann <arndbergmann@googlemail.com>
-Subject: Re: [PATCH] macintosh: Explicitly set llseek to no_llseek in
-	ans-lcd
-Message-ID: <20091021212137.GB4880@nowhere>
-References: <20091010153314.827301943@linutronix.de> <20091010153349.966159859@linutronix.de> <alpine.LFD.2.00.0910212305090.3526@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0910212305090.3526@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 21 Oct 2009 17:25:41 -0400
+Subject: Re: [PATCH] net: Adjust softirq raising in __napi_schedule
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Tilman Schmidt <tilman@imap.cc>, David Miller <davem@davemloft.net>,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless@vger.kernel.org,
+       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
+       Michael Buesch <mb@bu3sch.de>, Oliver Hartkopp <oliver@hartkopp.net>
+In-Reply-To: <20091021211906.GA11401@ami.dom.local>
+References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local>
+	 <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc>
+	 <20091021211906.GA11401@ami.dom.local>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-j0zV5AKGwGs/wyJFAi3L"
+Date: Thu, 22 Oct 2009 06:25:30 +0900
+Message-Id: <1256160330.12174.2.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2009 at 11:07:18PM +0200, John Kacur wrote:
-> From 0c2b412cdccf73bdeb19bb866bfe556942eaeca2 Mon Sep 17 00:00:00 2001
-> From: John Kacur <jkacur@redhat.com>
-> Date: Wed, 21 Oct 2009 23:01:12 +0200
-> Subject: [PATCH] macintosh: Explicitly set llseek to no_llseek in ans-lcd
-> 
-> Now that we've removed the BKL here, let's explicitly set lleek to no_llseek
-> 
-> Signed-off-by: John Kacur <jkacur@redhat.com>
+
+--=-j0zV5AKGwGs/wyJFAi3L
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2009-10-21 at 23:19 +0200, Jarek Poplawski wrote:
+> On Wed, Oct 21, 2009 at 08:46:40PM +0200, Tilman Schmidt wrote:
+> ...
+> > I have tested your patch and I can confirm that it fixes the messages.
+> > I have not noticed any ill effects.
+>=20
+> OK. So, in any case, here is this next variant/proposal.
+>=20
+> Thanks,
+> Jarek P.
+> ------------------------>
+> net: Adjust softirq raising in __napi_schedule
+>=20
+> This patch changes __raise_softirq_irqoff() to raise_softirq_irqoff()
+> in __napi_schedule() to enable proper softirq scheduling from process
+> context. The main intent is to let use netif_rx() universally, and
+> make netif_rx_ni() redundant.
+>=20
+> Currently using netif_rx() instead of netif_rx_ni() triggers:
+> "NOHZ: local_softirq_pending 08" warnings, but additional cost of one
+> "if" on the fast path doesn't seem to justify maintaining it
+> separately.
+>=20
+> This patch is based on the analysis, suggestions and the original
+> patch for mac80211 by: Michael Buesch <mb@bu3sch.de>
+>=20
+> Another patch calling netif_rx variants conditionally was done by:
+> Oliver Hartkopp <oliver@hartkopp.net>
+>=20
+> Reported-by: Michael Buesch <mb@bu3sch.de>
+> Reported-by: Oliver Hartkopp <oliver@hartkopp.net>
+> Reported-by: Tilman Schmidt <tilman@imap.cc>
+> Diagnosed-by: Michael Buesch <mb@bu3sch.de>
+> Tested-by: Tilman Schmidt <tilman@imap.cc>
+> Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
 > ---
->  drivers/macintosh/ans-lcd.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
-> index 4ae8ec9..a1a1bde 100644
-> --- a/drivers/macintosh/ans-lcd.c
-> +++ b/drivers/macintosh/ans-lcd.c
-> @@ -137,6 +137,7 @@ const struct file_operations anslcd_fops = {
->  	.write		= anslcd_write,
->  	.unlocked_ioctl	= anslcd_ioctl,
->  	.open		= anslcd_open,
-> +	.llseedk	= no_llseek,
+>=20
+>  net/core/dev.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/net/core/dev.c b/net/core/dev.c
+> index 28b0b9e..7fc4009 100644
+> --- a/net/core/dev.c
+> +++ b/net/core/dev.c
+> @@ -2728,7 +2728,7 @@ void __napi_schedule(struct napi_struct *n)
+> =20
+>  	local_irq_save(flags);
+>  	list_add_tail(&n->poll_list, &__get_cpu_var(softnet_data).poll_list);
+> -	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
+> +	raise_softirq_irqoff(NET_RX_SOFTIRQ);
 
+This still doesn't make any sense.
 
-llseedk? :)
+There may or may not be a lot of code that assumes that everything else
+is run with other tasklets disabled, and that it cannot be interrupted
+by a tasklet and thus create a race.
 
+Can you prove that is not the case, across the entire networking layer?
 
-Should we better pushdown default_llseek to every to every
-file operations that don't implement llseek?
-I don't know how many of them don't implement llseek() though.
+johannes
 
-That said we can't continue anymore with this default attribution
-of default_llseek() on new fops.
+--=-j0zV5AKGwGs/wyJFAi3L
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJK33xHAAoJEODzc/N7+Qmaw0EP/1qoDK426hpAZzoIeMk7ajeU
+AuI/BeRu6AyZrqm3JXGJEWS1iGK2oarAS7UsqomzPD40NYb7G7is6TBkjVmhAq2c
+d7LbkrxO1o1gsaHXrJB09u96dvQ8vLizBaewFo/MV5bUmYaB85HkVt6EOzjcWN54
+FRa+umsMduLRPks5GZlNwsMLPNZ6RqB+SyUSvGNpv+6/NYQ3d/jAmXdNOIcWH6bE
+kGv0T+/4HFh/c9iMxfFvQiuOHrrtpeyL+hIUBFUQyp3rE1Ir/H518+I3n/I1E3YD
+m4V/1+9csJcQurLj1cE+v6tpYfIk37b7JW+BjFekTivS+i/5AqsrD5fAyT3kFnif
+UmaBEjoipZ/FhGzhjAEoQc2K82YFGGpiCnaJYmlq004LZZcXcnYCBP4yTjDBu0/l
+Rt+4lu+IMZWIyJjUY3uWKMbvE68EjY+CrW598CASs/+13mJJfrgOQZAsSGXrxWdL
+LR9k837Z1OuqK6QG/gv/27q/rrQsMLfF/wBGrDdzhd0qebVQZGAYoCc1kSxYmT/m
+zrnTeSJwT3wAWU5Gru/tHvDxwnjZUThKZkd2O84ASXZ0w94bZ5TsULADUlZz4Ri9
+5G9x91Pz6pxUQ7qoxxnJBnGMrgf7HvmDM0w5aeZfRwhJC9RPHSnwM/SalAFZNt/b
+nbemF7khc5FqSgPjwuPe
+=k3eI
+-----END PGP SIGNATURE-----
+
+--=-j0zV5AKGwGs/wyJFAi3L--
 
