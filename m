@@ -1,50 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbZJUNMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbZJUNJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753367AbZJUNMJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 09:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbZJUNMI
+	id S1753293AbZJUNJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 09:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZJUNJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 09:12:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38193 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753110AbZJUNMG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 09:12:06 -0400
-Message-ID: <4ADF06B7.50508@zytor.com>
-Date: Wed, 21 Oct 2009 22:03:51 +0900
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 21 Oct 2009 09:09:56 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:12450 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751746AbZJUNJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 09:09:56 -0400
+Date: Wed, 21 Oct 2009 15:09:23 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arnd Bergmann <arndbergmann@googlemail.com>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Felix Beck <felix.beck@de.ibm.com>,
+       Ralph Wuerthner <ralph.wuerthner@de.ibm.com>, linux390@de.ibm.com,
+       linux-s390@vger.kernel.org
+Subject: Re: Subject: [PATCH] crypto: s390: Remove BKL in zcrypt_open
+In-Reply-To: <alpine.LFD.2.00.0910190046540.3405@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0910211505320.3526@localhost.localdomain>
+References: <alpine.LFD.2.00.0910190046540.3405@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: mtk.manpages@gmail.com
-CC: Matt Helsley <matthltc@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       randy.dunlap@oracle.com, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       Louis.Rilling@kerlabs.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu,
-       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v8][PATCH 9/10]: Define clone3() syscall
-References: <20091013044925.GA28181@us.ibm.com>	 <20091013045439.GI28435@us.ibm.com> <20091016042041.GA7220@us.ibm.com>	 <cfd18e0f0910152325m4a9125c2q18f36f5bd7d4a0@mail.gmail.com>	 <20091016180631.GA31036@us.ibm.com>	 <20091019174405.GE27627@count0.beaverton.ibm.com>	 <4ADCDAA8.5080408@zytor.com>	 <20091019235012.GF27627@count0.beaverton.ibm.com> <cfd18e0f0910202126w1ebfa2e2u2ecbaa23b198d100@mail.gmail.com>
-In-Reply-To: <cfd18e0f0910202126w1ebfa2e2u2ecbaa23b198d100@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/21/2009 01:26 PM, Michael Kerrisk wrote:
->
-> My question here is: what does "3" actually mean? In general, system
-> calls have not followed any convention of numbering to indicate
-> successive versions -- clone2() being the one possible exception that
-> I know of.
->
 
-"3" is number of arguments.  It's better than "extended" or something 
-like that simply because "extended" just means "more than", and a number 
-at least tells you *how much more than*.
+I took a deeper look at this after all of the great information form folks 
+like Arnd and Thomas about what to be careful of. I think this patch is 
+safe to do. I have respun it and explicitly set llseek to nollseek.
 
-	-hpa
+It is still RFC, or pending an ack by the S390 zcrypt folks who can 
+actually test it.
+
+Thanks
+
+>From 6d3fad58dbeae2e37aeb093197c25a57018ab8fd Mon Sep 17 00:00:00 2001
+From: John Kacur <jkacur@redhat.com>
+Date: Mon, 19 Oct 2009 00:44:03 +0200
+Subject: [PATCH] crypto: s390: Remove BKL in zcrypt_open
+
+Remove the BKL in zcrypt_open and explicitly set llseek = nollseek.
+
+- zcrypt_read, zcrypt_write, just return -EPERM
+- zcrypt_open only has an atomic_inc which doesn't need to be locked.
+- The bkl in the zcrypt_open function could conceivably be serializing the misc_register() in zcrypt_api_init(). However, the rest of the code is protected by the zcrypt_rng_mutex and the ioctl is already an unlocked_ioctl kind.
+
+Signed-off-by: John Kacur <jkacur@redhat.com>
+---
+ drivers/s390/crypto/zcrypt_api.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/s390/crypto/zcrypt_api.c b/drivers/s390/crypto/zcrypt_api.c
+index 65b6a96..22c9b0a 100644
+--- a/drivers/s390/crypto/zcrypt_api.c
++++ b/drivers/s390/crypto/zcrypt_api.c
+@@ -34,7 +34,6 @@
+ #include <linux/fs.h>
+ #include <linux/proc_fs.h>
+ #include <linux/compat.h>
+-#include <linux/smp_lock.h>
+ #include <asm/atomic.h>
+ #include <asm/uaccess.h>
+ #include <linux/hw_random.h>
+@@ -299,9 +298,7 @@ static ssize_t zcrypt_write(struct file *filp, const char __user *buf,
+  */
+ static int zcrypt_open(struct inode *inode, struct file *filp)
+ {
+-	lock_kernel();
+ 	atomic_inc(&zcrypt_open_count);
+-	unlock_kernel();
+ 	return 0;
+ }
+ 
+@@ -888,6 +885,7 @@ static long zcrypt_compat_ioctl(struct file *filp, unsigned int cmd,
+  */
+ static const struct file_operations zcrypt_fops = {
+ 	.owner		= THIS_MODULE,
++	.llseek		= no_llseek,
+ 	.read		= zcrypt_read,
+ 	.write		= zcrypt_write,
+ 	.unlocked_ioctl	= zcrypt_unlocked_ioctl,
+-- 
+1.6.0.6
+
+
