@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbZJUTVD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932453AbZJUT0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932235AbZJUTVD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:21:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932215AbZJUTVB
+	id S932453AbZJUT0A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbZJUTVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:21:01 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:2492 "EHLO mx1.redhat.com"
+	Wed, 21 Oct 2009 15:21:06 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:3787 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932151AbZJUTU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 15:20:58 -0400
+	id S932215AbZJUTVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 15:21:04 -0400
 From: Valerie Aurora <vaurora@redhat.com>
 To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
@@ -20,11 +20,11 @@ To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Vladimir Dronnikov <dronnikov@gmail.com>,
        Felix Fietkau <nbd@openwrt.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jan Blunck <jblunck@suse.de>
-Subject: [PATCH 21/41] union-mount: Drive the union cache via dcache
-Date: Wed, 21 Oct 2009 12:19:19 -0700
-Message-Id: <1256152779-10054-22-git-send-email-vaurora@redhat.com>
-In-Reply-To: <1256152779-10054-21-git-send-email-vaurora@redhat.com>
+       Jan Blunck <jblunck@suse.de>, Miklos Szeredi <mszeredi@suse.cz>
+Subject: [PATCH 22/41] union-mount: Some checks during namespace changes
+Date: Wed, 21 Oct 2009 12:19:20 -0700
+Message-Id: <1256152779-10054-23-git-send-email-vaurora@redhat.com>
+In-Reply-To: <1256152779-10054-22-git-send-email-vaurora@redhat.com>
 References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-2-git-send-email-vaurora@redhat.com>
  <1256152779-10054-3-git-send-email-vaurora@redhat.com>
@@ -46,224 +46,102 @@ References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-19-git-send-email-vaurora@redhat.com>
  <1256152779-10054-20-git-send-email-vaurora@redhat.com>
  <1256152779-10054-21-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-22-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jan Blunck <jblunck@suse.de>
 
-If a dentry is removed from dentry cache because its usage count drops to
-zero, the references to the underlying layer of the unions the dentry is in
-are droped too. Therefore the union cache is driven by the dentry cache.
+Add some additional checks when mounting something into an union.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 ---
- fs/dcache.c            |   10 ++++++-
- fs/union.c             |   74 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/dcache.h |    8 +++++
- include/linux/union.h  |    6 ++++
- 4 files changed, 97 insertions(+), 1 deletions(-)
+ fs/namespace.c |   34 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 34 insertions(+), 0 deletions(-)
 
-diff --git a/fs/dcache.c b/fs/dcache.c
-index 56bd05f..d80a3bb 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -18,6 +18,7 @@
- #include <linux/string.h>
- #include <linux/mm.h>
- #include <linux/fs.h>
+diff --git a/fs/namespace.c b/fs/namespace.c
+index 81b3188..dc01385 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -29,6 +29,7 @@
+ #include <linux/log2.h>
+ #include <linux/idr.h>
+ #include <linux/fs_struct.h>
 +#include <linux/union.h>
- #include <linux/fsnotify.h>
- #include <linux/slab.h>
- #include <linux/init.h>
-@@ -188,11 +189,14 @@ static struct dentry *__d_kill(struct dentry *dentry, struct list_head *list,
- 		list_add(&dentry->d_lru, list);
- 		spin_unlock(&dentry->d_lock);
- 		spin_unlock(&dcache_lock);
-+		__shrink_d_unions(dentry, list);
- 		return NULL;
- 	}
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+ #include "pnode.h"
+@@ -1427,6 +1428,10 @@ static int do_change_type(struct path *path, int flag)
+ 	if (path->dentry != path->mnt->mnt_root)
+ 		return -EINVAL;
  
--	/*drops the locks, at that point nobody can reach this dentry */
-+	/* drops the locks, at that point nobody can reach this dentry */
- 	dentry_iput(dentry);
-+	/* If the dentry was in an union delete them */
-+	__shrink_d_unions(dentry, list);
- 	if (IS_ROOT(dentry))
- 		parent = NULL;
- 	else
-@@ -784,6 +788,7 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
- 					iput(inode);
- 			}
++	/* Don't change the type of union mounts */
++	if (IS_MNT_UNION(path->mnt))
++		return -EINVAL;
++
+ 	down_write(&namespace_sem);
+ 	if (type == MS_SHARED) {
+ 		err = invent_group_ids(mnt, recurse);
+@@ -1478,6 +1483,18 @@ static int do_loopback(struct path *path, char *old_name, int recurse,
+ 	if (!mnt)
+ 		goto out;
  
-+			shrink_d_unions(dentry);
- 			d_free(dentry);
++	/*
++	 * Unions couldn't be writable if the filesystem doesn't know about
++	 * whiteouts
++	 */
++	err = -ENOTSUPP;
++	if ((mnt_flags & MNT_UNION) &&
++	    !(mnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
++		goto out;
++
++	if (mnt_flags & MNT_UNION)
++		mnt->mnt_flags |= MNT_UNION;
++
+ 	err = graft_tree(mnt, path);
+ 	if (err) {
+ 		LIST_HEAD(umount_list);
+@@ -1571,6 +1588,13 @@ static int do_move_mount(struct path *path, char *old_name)
+ 	if (err)
+ 		return err;
  
- 			/* finished when we fall off the top of the tree,
-@@ -1614,7 +1619,9 @@ void d_delete(struct dentry * dentry)
- 	spin_lock(&dentry->d_lock);
- 	isdir = S_ISDIR(dentry->d_inode->i_mode);
- 	if (atomic_read(&dentry->d_count) == 1) {
-+		__d_drop_unions(dentry);
- 		dentry_iput(dentry);
-+		shrink_d_unions(dentry);
- 		fsnotify_nameremove(dentry, isdir);
- 		return;
- 	}
-@@ -1625,6 +1632,7 @@ void d_delete(struct dentry * dentry)
- 	spin_unlock(&dentry->d_lock);
- 	spin_unlock(&dcache_lock);
- 
-+	shrink_d_unions(dentry);
- 	fsnotify_nameremove(dentry, isdir);
++	/* moving to or from a union mount is not supported */
++	err = -EINVAL;
++	if (IS_MNT_UNION(path->mnt))
++		goto exit;
++	if (IS_MNT_UNION(old_path.mnt))
++		goto exit;
++
+ 	down_write(&namespace_sem);
+ 	while (d_mountpoint(path->dentry) &&
+ 	       follow_down(path))
+@@ -1628,6 +1652,7 @@ out:
+ 	up_write(&namespace_sem);
+ 	if (!err)
+ 		path_put(&parent_path);
++exit:
+ 	path_put(&old_path);
+ 	return err;
  }
+@@ -1685,6 +1710,15 @@ int do_add_mount(struct vfsmount *newmnt, struct path *path,
+ 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
+ 		goto unlock;
  
-diff --git a/fs/union.c b/fs/union.c
-index d1950c2..6b99393 100644
---- a/fs/union.c
-+++ b/fs/union.c
-@@ -14,6 +14,7 @@
- 
- #include <linux/bootmem.h>
- #include <linux/init.h>
-+#include <linux/module.h>
- #include <linux/types.h>
- #include <linux/hash.h>
- #include <linux/fs.h>
-@@ -255,6 +256,8 @@ int append_to_union(struct vfsmount *mnt, struct dentry *dentry,
- 		union_put(this);
- 		return 0;
- 	}
-+	list_add(&this->u_unions, &dentry->d_unions);
-+	dest_dentry->d_unionized++;
- 	__union_hash(this);
- 	spin_unlock(&union_lock);
- 	return 0;
-@@ -330,3 +333,74 @@ int follow_union_mount(struct vfsmount **mnt, struct dentry **dentry)
- 
- 	return res;
- }
++	/*
++	 * Unions couldn't be writable if the filesystem doesn't know about
++	 * whiteouts
++	 */
++	err = -ENOTSUPP;
++	if ((mnt_flags & MNT_UNION) &&
++	    !(newmnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
++		goto unlock;
 +
-+/*
-+ * This must be called when unhashing a dentry. This is called with dcache_lock
-+ * and unhashes all unions this dentry is in.
-+ */
-+void __d_drop_unions(struct dentry *dentry)
-+{
-+	struct union_mount *this, *next;
-+
-+	spin_lock(&union_lock);
-+	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions)
-+		__union_unhash(this);
-+	spin_unlock(&union_lock);
-+}
-+EXPORT_SYMBOL_GPL(__d_drop_unions);
-+
-+/*
-+ * This must be called after __d_drop_unions() without holding any locks.
-+ * Note: The dentry might still be reachable via a lookup but at that time it
-+ * already a negative dentry. Otherwise it would be unhashed. The union_mount
-+ * structure itself is still reachable through mnt->mnt_unions (which we
-+ * protect against with union_lock).
-+ */
-+void shrink_d_unions(struct dentry *dentry)
-+{
-+	struct union_mount *this, *next;
-+
-+repeat:
-+	spin_lock(&union_lock);
-+	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions) {
-+		BUG_ON(!hlist_unhashed(&this->u_hash));
-+		BUG_ON(!hlist_unhashed(&this->u_rhash));
-+		list_del(&this->u_unions);
-+		this->u_next.dentry->d_unionized--;
-+		spin_unlock(&union_lock);
-+		union_put(this);
-+		goto repeat;
-+	}
-+	spin_unlock(&union_lock);
-+}
-+
-+extern void __dput(struct dentry *, struct list_head *, int);
-+
-+/*
-+ * This is the special variant for use in dput() only.
-+ */
-+void __shrink_d_unions(struct dentry *dentry, struct list_head *list)
-+{
-+	struct union_mount *this, *next;
-+
-+	BUG_ON(!d_unhashed(dentry));
-+
-+repeat:
-+	spin_lock(&union_lock);
-+	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions) {
-+		struct dentry *n_dentry = this->u_next.dentry;
-+		struct vfsmount *n_mnt = this->u_next.mnt;
-+
-+		BUG_ON(!hlist_unhashed(&this->u_hash));
-+		BUG_ON(!hlist_unhashed(&this->u_rhash));
-+		list_del(&this->u_unions);
-+		this->u_next.dentry->d_unionized--;
-+		spin_unlock(&union_lock);
-+		if (__union_put(this)) {
-+			__dput(n_dentry, list, 0);
-+			mntput(n_mnt);
-+		}
-+		goto repeat;
-+	}
-+	spin_unlock(&union_lock);
-+}
-diff --git a/include/linux/dcache.h b/include/linux/dcache.h
-index 4d48c20..730c432 100644
---- a/include/linux/dcache.h
-+++ b/include/linux/dcache.h
-@@ -215,12 +215,20 @@ extern seqlock_t rename_lock;
-  * __d_drop requires dentry->d_lock.
-  */
- 
-+#ifdef CONFIG_UNION_MOUNT
-+extern void __d_drop_unions(struct dentry *);
-+#endif
-+
- static inline void __d_drop(struct dentry *dentry)
- {
- 	if (!(dentry->d_flags & DCACHE_UNHASHED)) {
- 		dentry->d_flags |= DCACHE_UNHASHED;
- 		hlist_del_rcu(&dentry->d_hash);
- 	}
-+#ifdef CONFIG_UNION_MOUNT
-+	/* remove dentry from the union hashtable */
-+	__d_drop_unions(dentry);
-+#endif
- }
- 
- static inline void d_drop(struct dentry *dentry)
-diff --git a/include/linux/union.h b/include/linux/union.h
-index 0c85312..b035a82 100644
---- a/include/linux/union.h
-+++ b/include/linux/union.h
-@@ -46,6 +46,9 @@ extern int append_to_union(struct vfsmount *, struct dentry *,
- 			   struct vfsmount *, struct dentry *);
- extern int follow_union_down(struct vfsmount **, struct dentry **);
- extern int follow_union_mount(struct vfsmount **, struct dentry **);
-+extern void __d_drop_unions(struct dentry *);
-+extern void shrink_d_unions(struct dentry *);
-+extern void __shrink_d_unions(struct dentry *, struct list_head *);
- 
- #else /* CONFIG_UNION_MOUNT */
- 
-@@ -55,6 +58,9 @@ extern int follow_union_mount(struct vfsmount **, struct dentry **);
- #define append_to_union(x1, y1, x2, y2)	({ BUG(); (0); })
- #define follow_union_down(x, y)		({ (0); })
- #define follow_union_mount(x, y)	({ (0); })
-+#define __d_drop_unions(x)		do { } while (0)
-+#define shrink_d_unions(x)		do { } while (0)
-+#define __shrink_d_unions(x,y)		do { } while (0)
- 
- #endif	/* CONFIG_UNION_MOUNT */
- #endif	/* __KERNEL__ */
+ 	newmnt->mnt_flags = mnt_flags;
+ 	if ((err = graft_tree(newmnt, path)))
+ 		goto unlock;
 -- 
 1.6.3.3
 
