@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbZJUH7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752168AbZJUIGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753236AbZJUH7V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 03:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZJUH7V
+	id S1752168AbZJUIGv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 04:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbZJUIGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 03:59:21 -0400
-Received: from icculus.org ([67.106.77.212]:52342 "EHLO icculus.org"
+	Wed, 21 Oct 2009 04:06:50 -0400
+Received: from icculus.org ([67.106.77.212]:40277 "EHLO icculus.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753180AbZJUH7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 03:59:20 -0400
-Date: Wed, 21 Oct 2009 03:59:10 -0400 (EDT)
+	id S1750896AbZJUIGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 04:06:49 -0400
+Date: Wed, 21 Oct 2009 04:06:33 -0400 (EDT)
 From: "Ryan C. Gordon" <icculus@icculus.org>
 X-X-Sender: icculus@andre.icculuslan
-To: Andreas Schwab <schwab@redhat.com>
+To: =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
 cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] binfmt_elf: Reorder objects in Makefile to favor platform
- default.
-In-Reply-To: <alpine.DEB.2.00.0910192223350.18342@andre.icculuslan>
-Message-ID: <alpine.DEB.2.00.0910210346110.19091@andre.icculuslan>
-References: <alpine.DEB.2.00.0910190415430.13303@andre.icculuslan> <m3r5szfizl.fsf@hase.home> <alpine.DEB.2.00.0910192223350.18342@andre.icculuslan>
+Subject: Re: [RFC][PATCH 2/2] binfmt_elf: FatELF support for kernel
+ modules.
+In-Reply-To: <2375c9f90910200133g51c70ce2x8f90cd79885096a4@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0910210401480.19091@andre.icculuslan>
+References: <alpine.DEB.2.00.0910190422090.13303@andre.icculuslan> <2375c9f90910200133g51c70ce2x8f90cd79885096a4@mail.gmail.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -27,83 +27,147 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> > Perhaps this should be configurable.  For a 64-bit arch with mostly
-> > 32-bit userspace the compat format should probably be tried first.
-> 
-> How about this, then?
+> As for 'Elf_Ehdr', isn't 'Fatelf_hdr' better? :)
 
-I didn't realize that commit 74641f584da8eccf30becfbb5507ab457187db22 
-changed the behaviour of register_binfmt, so the previous patch had it 
-backwards. Here's an updated patch with the order corrected to match the 
-config option; no other changes over the previous attempt.
+Yeah, I struggled with that for awhile...the structs around it in elf.h 
+were all lowercase (elf32_hdr), but I moved it somewhere more appropriate 
+and fixed the case.
+
+These were all good suggestions, so here's an updated version of the patch 
+with the changes you noted. Thank you for taking the time to review my 
+work!
+
+--ryan.
 
 
->From 78c3a0bb3025fa6b6a31b259b49663a72a59a1bf Mon Sep 17 00:00:00 2001
+
+>From 38cbb068c3970e9981549578c20207458a2b6659 Mon Sep 17 00:00:00 2001
 From: Ryan C. Gordon <icculus@icculus.org>
-Date: Wed, 21 Oct 2009 03:49:30 -0400
-Subject: [PATCH] binfmt_elf: Reordered object list so compat_binfmt_elf optionally comes first.
+Date: Tue, 20 Oct 2009 20:36:05 -0400
+Subject: [PATCH] binfmt_elf: FatELF support for kernel modules.
 
-This will make it call register_binfmt() after normal binfmt_elf, inserting it
-at the end of the list of binfmts.
+Allows kernel modules to be FatELF binaries.
 
-Now the kernel will try the compatibility formats as a backup if the actual
-system format rejects the binary. As almost all binaries loaded won't be
-compatibility formats, this saves a few cycles for each process.
+Details, rationale, tools, and patches for handling FatELF binaries can be
+found at http://icculus.org/fatelf/
 
-For scenarios where favoring compatibility binaries makes sense, this can
-be chosen via the configuration, reversing the order.
+Please note that this requires an updated depmod and modprobe to be truly
+effective, but an unmodified insmod can work with FatELF binaries.
 
 Signed-off-by: Ryan C. Gordon <icculus@icculus.org>
 ---
- fs/Kconfig.binfmt |   14 ++++++++++++++
- fs/Makefile       |    7 +++++++
- 2 files changed, 21 insertions(+), 0 deletions(-)
+ kernel/module.c |   65 ++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 60 insertions(+), 5 deletions(-)
 
-diff --git a/fs/Kconfig.binfmt b/fs/Kconfig.binfmt
-index bb4cc5b..b296ab6 100644
---- a/fs/Kconfig.binfmt
-+++ b/fs/Kconfig.binfmt
-@@ -27,6 +27,20 @@ config COMPAT_BINFMT_ELF
- 	bool
- 	depends on COMPAT && BINFMT_ELF
+diff --git a/kernel/module.c b/kernel/module.c
+index 8b7d880..e8b2e8f 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2066,13 +2066,62 @@ static inline void kmemleak_load_module(struct module *mod, Elf_Ehdr *hdr,
+ }
+ #endif
  
-+config FAVOR_COMPAT_BINFMT_ELF
-+	bool "Favor compatibility ELF binaries"
-+	depends on COMPAT_BINFMT_ELF
-+	default n
-+	---help---
-+	  Favor "compatibility" ELF binaries. The system will work either way,
-+	  but you can save a few cycles per process by choosing the type of
-+	  binary you expect to be loading most of the time. This scenario 
-+	  makes sense if you have a 64-bit kernel to manage 4+ gigabytes of
-+	  physical RAM but want to run mostly 32-bit processes to conserve
-+	  that RAM.
++/*
++ * See if we're a valid FatELF binary, find the right record, and
++ *  return the offset of that record within the binary. Returns NULL if there's
++ *  a problem, or a pointer to the real ELF header if we're okay.
++ *  If we don't see the FatELF magic number, we assume this is a regular ELF
++ *  binary and let the regular ELF checks handle it.
++ *
++ * This is a simplified version of examine_fatelf in fs/binfmt_elf.c
++ */
++static Elf_Ehdr *examine_fatelf_module(const unsigned char *hdr,
++				       const unsigned long len)
++{
++	Elf_Ehdr elf;
++	int records, i;
++	const Fatelf_hdr *fatelf = (const Fatelf_hdr *) hdr;
 +
-+	  If unsure, say N.
++	if (likely(le32_to_cpu(fatelf->magic) != FATELF_MAGIC))
++		return (Elf_Ehdr *) hdr;  /* not FatELF; not an error. */
++	else if (unlikely(le16_to_cpu(fatelf->version) != 1))
++		return NULL; /* Unrecognized format version. */
 +
- config BINFMT_ELF_FDPIC
- 	bool "Kernel support for FDPIC ELF binaries"
- 	default y
-diff --git a/fs/Makefile b/fs/Makefile
-index af6d047..d835dba 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -40,8 +40,15 @@ obj-$(CONFIG_BINFMT_MISC)	+= binfmt_misc.o
- # binfmt_script is always there
- obj-y				+= binfmt_script.o
++	memset(&elf, 0, sizeof (elf));
++
++	records = (int) fatelf->num_records;  /* uint8, no byteswap needed */
++	for (i = 0; i < records; i++) {
++		const Fatelf_record *record = &fatelf->records[i];
++
++		/* Fill in the data elf_check_arch() might care about. */
++		elf.e_ident[EI_OSABI] = record->osabi;
++		elf.e_ident[EI_CLASS] = record->word_size;
++		elf.e_ident[EI_DATA] = record->byte_order;
++		elf.e_machine = le16_to_cpu(record->machine);
++
++		if (unlikely(elf_check_arch(&elf))) {
++			const __u64 rec_offset = le64_to_cpu(record->offset);
++			const __u64 rec_size = le64_to_cpu(record->size);
++			const __u64 end_offset = rec_offset + rec_size;
++			const unsigned long uloff = (unsigned long) rec_offset;
++
++			/* check for overflow and past-EOF before choosing this record */
++			if (likely((end_offset >= rec_offset) && (end_offset <= len)))
++				return (Elf_Ehdr *) (hdr + uloff);
++		}
++	}
++
++	return NULL;  /* no binaries we could use. */
++}
++
+ /* Allocate and load the module: note that size of section 0 is always
+    zero, and we rely on this for optional sections. */
+ static noinline struct module *load_module(void __user *umod,
+ 				  unsigned long len,
+ 				  const char __user *uargs)
+ {
+-	Elf_Ehdr *hdr;
++	Elf_Ehdr *hdr_alloc;  /* returned from vmalloc */
++	Elf_Ehdr *hdr;  /* adjusted hdr_alloc for FatELF */
+ 	Elf_Shdr *sechdrs;
+ 	char *secstrings, *args, *modmagic, *strtab = NULL;
+ 	char *staging;
+@@ -2094,14 +2143,20 @@ static noinline struct module *load_module(void __user *umod,
  
-+# binfmts are registered in order listed here. First registered, first tried!
-+ifeq ($(CONFIG_FAVOR_COMPAT_BINFMT_ELF),y)
-+obj-$(CONFIG_COMPAT_BINFMT_ELF)	+= compat_binfmt_elf.o
-+obj-$(CONFIG_BINFMT_ELF)	+= binfmt_elf.o
-+else
- obj-$(CONFIG_BINFMT_ELF)	+= binfmt_elf.o
- obj-$(CONFIG_COMPAT_BINFMT_ELF)	+= compat_binfmt_elf.o
-+endif
+ 	/* Suck in entire file: we'll want most of it. */
+ 	/* vmalloc barfs on "unusual" numbers.  Check here */
+-	if (len > 64 * 1024 * 1024 || (hdr = vmalloc(len)) == NULL)
++	if (len > 64 * 1024 * 1024 || (hdr_alloc = vmalloc(len)) == NULL)
+ 		return ERR_PTR(-ENOMEM);
+ 
+-	if (copy_from_user(hdr, umod, len) != 0) {
++	if (copy_from_user(hdr_alloc, umod, len) != 0) {
+ 		err = -EFAULT;
+ 		goto free_hdr;
+ 	}
+ 
++	hdr = examine_fatelf_module((unsigned char *) hdr_alloc, len);
++	if (hdr == NULL) {
++		err = -ENOEXEC;
++		goto free_hdr;
++	}
 +
- obj-$(CONFIG_BINFMT_ELF_FDPIC)	+= binfmt_elf_fdpic.o
- obj-$(CONFIG_BINFMT_SOM)	+= binfmt_som.o
- obj-$(CONFIG_BINFMT_FLAT)	+= binfmt_flat.o
+ 	/* Sanity checks against insmoding binaries or wrong arch,
+            weird elf version */
+ 	if (memcmp(hdr->e_ident, ELFMAG, SELFMAG) != 0
+@@ -2505,7 +2560,7 @@ static noinline struct module *load_module(void __user *umod,
+ 	add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+ 
+ 	/* Get rid of temporary copy */
+-	vfree(hdr);
++	vfree(hdr_alloc);
+ 
+ 	trace_module_load(mod);
+ 
+@@ -2538,7 +2593,7 @@ static noinline struct module *load_module(void __user *umod,
+ 	kfree(args);
+ 	kfree(strmap);
+  free_hdr:
+-	vfree(hdr);
++	vfree(hdr_alloc);
+ 	return ERR_PTR(err);
+ 
+  truncated:
 -- 
 1.6.0.4
 
