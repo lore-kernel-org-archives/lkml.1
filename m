@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbZJUS5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZJUS7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754810AbZJUS5N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 14:57:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZJUS5N
+	id S1754775AbZJUS7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 14:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbZJUS7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 14:57:13 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:25350 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754664AbZJUS5M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 14:57:12 -0400
-Date: Wed, 21 Oct 2009 12:57:15 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big
-	range for pcie devices
-Message-ID: <20091021185715.GJ23948@ldl.fc.hp.com>
-References: <4ADEB601.8020200@kernel.org>
+	Wed, 21 Oct 2009 14:59:46 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:65012 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753934AbZJUS7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 14:59:45 -0400
+Message-ID: <4ADF59F8.7010205@redhat.com>
+Date: Wed, 21 Oct 2009 13:59:04 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ADEB601.8020200@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Dave Jones <davej@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, esandeen@redhat.com,
+       cebbert@redhat.com, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Unnecessary overhead with stack protector.
+References: <20091015183540.GA8098@redhat.com>	<20091015190720.GA19467@elte.hu>	<4ADF2DAA.9030604@redhat.com> <20091021110053.26ab9982@infradead.org>
+In-Reply-To: <20091021110053.26ab9982@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Yinghai Lu <yinghai@kernel.org>:
-> @@ -144,9 +182,6 @@ static void pci_setup_bridge(struct pci_
->  	u32 l, bu, lu, io_upper16;
->  	int pref_mem64;
->  
-> -	if (pci_is_enabled(bridge))
-> -		return;
-> -
->  	dev_info(&bridge->dev, "PCI bridge, secondary bus %04x:%02x\n",
->  		 pci_domain_nr(bus), bus->number);
+Arjan van de Ven wrote:
+> On Wed, 21 Oct 2009 10:50:02 -0500
+> Eric Sandeen <sandeen@redhat.com> wrote:
+> 
+>> Ingo Molnar wrote:
+>>> (Cc:-ed Arjan too.)
+>>>
+>>> * Dave Jones <davej@redhat.com> wrote:
+>>>
+>>>> 113c5413cf9051cc50b88befdc42e3402bb92115 introduced a change that
+>>>> made CC_STACKPROTECTOR_ALL not-selectable if someone enables 
+>>>> CC_STACKPROTECTOR.
+>>>>
+>>>> We've noticed in Fedora that this has introduced noticable
+>>>> overhead on some functions, including those which don't even have
+>>>> any on-stack variables.
+>>>>
+>>>> According to the gcc manpage, -fstack-protector will protect
+>>>> functions with as little as 8 bytes of stack usage. So we're
+>>>> introducing a huge amount of overhead, to close a small amount of
+>>>> vulnerability (the >0 && <8 case).
+>>>>
+>>>> The overhead as it stands right now means this whole option is 
+>>>> unusable for a distro kernel without reverting the above commit.
+>>> Exactly what workload showed overhead, and how much?
+>>>
+>>> 	Ingo
+>> I had xfs blowing up pretty nicely; granted, xfs is not svelte but it
+>> was never this bad before.
+>>
+> 
+> do you have any indication that SP actually increases the stack
+> footprint by that much? it's only a few bytes....
+> 
+> 
 
-Have you tested this with the hotplug facilities I added a while
-back?
+Here's a sample of some of the largest xfs stack users,
+and the effect stack-protector had on them.  This was just
+done with objdump -d xfs.ko | scripts/checkstack.pl; I don't
+know if there's extra runtime stack overhead w/ stackprotector?
 
-Basically, what happens when you offline a bridge using
+-Eric
 
-	/sys/bus/pci/devices/.../remove
-
-And then re-add it using:
-
-	/sys/bus/pci/rescan
-
-Please try this both for bridges that are claimed by pciehp as
-well as bridges that are not claimed.
-
-Thanks.
-
-/ac
+function                  nostack stackprot delta delta %
+xfs_bmapi                      376      408    32  9%
+xfs_bulkstat                   328      344    16  5%
+_xfs_trans_commit              296      312    16  5%
+xfs_iomap_write_delay          264      280    16  6%
+xfs_file_ioctl                 248      312    64 26%
+xfs_symlink                    248      264    16  6%
+xfs_bunmapi                    232      280    48 21%
+xlog_do_recovery_pass          232      248    16  7%
+xfs_trans_unreserve_and_mod_sb 224      240    16  7%
+xfs_bmap_del_extent            216      248    32 15%
+xfs_cluster_write              216      232    16  7%
+xfs_file_compat_ioctl          216      296    80 37%
+xfs_attr_set_int               200      216    16  8%
+xfs_bmap_add_extent_delay_real 200      248    48 24%
 
