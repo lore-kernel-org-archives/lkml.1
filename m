@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZJUTW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932332AbZJUTWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755379AbZJUTW5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZJUTVq
+	id S932332AbZJUTWL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932273AbZJUTWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:21:46 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:5092 "EHLO mx1.redhat.com"
+	Wed, 21 Oct 2009 15:22:10 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:42011 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755260AbZJUTVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 15:21:41 -0400
+	id S1755260AbZJUTVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 15:21:47 -0400
 From: Valerie Aurora <vaurora@redhat.com>
 To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
@@ -20,10 +20,10 @@ To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Vladimir Dronnikov <dronnikov@gmail.com>,
        Felix Fietkau <nbd@openwrt.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 39/41] union-mount: Ignore read-only file system in permission checks
-Date: Wed, 21 Oct 2009 12:19:37 -0700
-Message-Id: <1256152779-10054-40-git-send-email-vaurora@redhat.com>
-In-Reply-To: <1256152779-10054-39-git-send-email-vaurora@redhat.com>
+Subject: [PATCH 40/41] union-mount: Make truncate work in all its glorious UNIX variations
+Date: Wed, 21 Oct 2009 12:19:38 -0700
+Message-Id: <1256152779-10054-41-git-send-email-vaurora@redhat.com>
+In-Reply-To: <1256152779-10054-40-git-send-email-vaurora@redhat.com>
 References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-2-git-send-email-vaurora@redhat.com>
  <1256152779-10054-3-git-send-email-vaurora@redhat.com>
@@ -63,226 +63,302 @@ References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-37-git-send-email-vaurora@redhat.com>
  <1256152779-10054-38-git-send-email-vaurora@redhat.com>
  <1256152779-10054-39-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-40-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In certain cases, we check a file for write access before it has been
-copied up to the top-level fs.  We don't want to fail because the
-bottom layer is read-only - of course it is - so skip that check in
-those cases.
+Implement truncate(), ftruncate(), and open(O_TRUNC) for union mounts.
 
-Thanks to Felix Fietkau <nbd@openwrt.org> for a bug fix.
+This moves the union_copyup() in do_filp_open() down below may_open()
+- this way you don't copy up a file you don't even have permission to
+open.
 
-XXX - Document when to call union_permission() vs. inode_permission()
-XXX - Kinda gross.  Probably a simpler solution.
+may_open() now takes a nameidata * because it may have to do a
+union_copyup() internally if O_TRUNC is specified.  It's a trivial
+change, all callers were just doing "may_open(&nd.path, ...)" anyway.
+It kinda sucks, but may_open() auto-magically doing a truncate also
+sucks (may open? may truncate, too!).
+
+XXX - Only copy up the bytes that won't be truncated.
+XXX - Re-organize code. may_open() especially blah.
+XXX - truncate() implemented as in-kernel file open and ftruncate()
+XXX - Split up into smaller pieces
 
 Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 ---
- fs/namei.c            |   21 +++++++++++++++++----
- fs/open.c             |    8 ++++++--
- fs/union.c            |   32 ++++++++++++++++++++++++++++++--
- include/linux/fs.h    |    1 +
- include/linux/union.h |    2 ++
- 5 files changed, 56 insertions(+), 8 deletions(-)
+ fs/namei.c         |   22 +++++----
+ fs/nfsctl.c        |    6 +-
+ fs/open.c          |  124 ++++++++++++++++++++--------------------------------
+ include/linux/fs.h |    2 +-
+ 4 files changed, 64 insertions(+), 90 deletions(-)
 
 diff --git a/fs/namei.c b/fs/namei.c
-index 61e94aa..a8d3acf 100644
+index a8d3acf..e3e8e98 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -230,16 +230,17 @@ int generic_permission(struct inode *inode, int mask,
+@@ -2115,8 +2115,9 @@ int vfs_create(struct inode *dir, struct dentry *dentry, int mode,
+ 	return error;
  }
  
- /**
-- * inode_permission  -  check for access rights to a given inode
-+ * __inode_permission  -  check for access rights to a given inode
-  * @inode:	inode to check permission on
-  * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
-+ * @rofs:	check for read-only fs
-  *
-  * Used to check for read/write/execute permissions on an inode.
-  * We use "fsuid" for this, letting us set arbitrary permissions
-  * for filesystem access without changing the "normal" uids which
-  * are used for other things.
-  */
--int inode_permission(struct inode *inode, int mask)
-+int __inode_permission(struct inode *inode, int mask, int rofs)
+-int may_open(struct path *path, int acc_mode, int flag)
++int may_open(struct nameidata *nd, int acc_mode, int flag)
  {
- 	int retval;
++	struct path *path = &nd->path;
+ 	struct dentry *dentry = path->dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+@@ -2188,6 +2189,9 @@ int may_open(struct path *path, int acc_mode, int flag)
+ 		if (!error)
+ 			error = security_path_truncate(path, 0,
+ 					       ATTR_MTIME|ATTR_CTIME|ATTR_OPEN);
++		/* XXX don't copy up file data */
++		if (is_unionized(path->dentry, path->mnt))
++			error = union_copyup(nd, flag /* XXX not used */);
+ 		if (!error) {
+ 			vfs_dq_init(inode);
  
-@@ -249,7 +250,7 @@ int inode_permission(struct inode *inode, int mask)
- 		/*
- 		 * Nobody gets write access to a read-only fs.
- 		 */
--		if (IS_RDONLY(inode) &&
-+		if ((rofs & IS_RDONLY(inode)) &&
- 		    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
- 			return -EROFS;
- 
-@@ -277,6 +278,18 @@ int inode_permission(struct inode *inode, int mask)
- }
- 
- /**
-+ * inode_permission  -  check for access rights to a given inode
-+ * @inode:	inode to check permission on
-+ * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
-+ *
-+ * This version pays attention to the MS_RDONLY flag on the fs.
-+ */
-+int inode_permission(struct inode *inode, int mask)
-+{
-+	return __inode_permission(inode, mask, 1);
-+}
-+
-+/**
-  * file_permission  -  check for additional access rights to a given file
-  * @file:	file to check access rights for
-  * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
-@@ -2129,7 +2142,7 @@ int may_open(struct path *path, int acc_mode, int flag)
- 		break;
- 	}
- 
--	error = inode_permission(inode, acc_mode);
-+	error = union_permission(path, acc_mode);
+@@ -2234,7 +2238,7 @@ out_unlock:
  	if (error)
  		return error;
+ 	/* Don't check for write permission, don't truncate */
+-	return may_open(&nd->path, 0, flag & ~O_TRUNC);
++	return may_open(nd, 0, flag & ~O_TRUNC);
+ }
  
-diff --git a/fs/open.c b/fs/open.c
-index dd98e80..3df5a1b 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -30,6 +30,7 @@
- #include <linux/audit.h>
- #include <linux/falloc.h>
- #include <linux/fs_struct.h>
-+#include <linux/union.h>
- 
- int vfs_statfs(struct dentry *dentry, struct kstatfs *buf)
- {
-@@ -333,6 +334,7 @@ static long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
- 		error = security_path_truncate(&file->f_path, length,
- 					       ATTR_MTIME|ATTR_CTIME);
- 	if (!error)
-+		/* Already copied up for union, opened with write */
- 		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
- out_putf:
- 	fput(file);
-@@ -493,7 +495,8 @@ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
- 			goto out_path_release;
+ /*
+@@ -2309,12 +2313,6 @@ struct file *do_filp_open(int dfd, const char *pathname,
+ 					 &nd, flag);
+ 		if (error)
+ 			return ERR_PTR(error);
+-		if (unlikely(flag & FMODE_WRITE)) {
+-			/* Check for union, etc. in union_copyup */
+-			error = union_copyup(&nd, flag /* XXX not used */);
+-			if (error)
+-				return ERR_PTR(error);
+-		}
+ 		goto ok;
  	}
  
--	res = inode_permission(inode, mode | MAY_ACCESS);
-+	res = union_permission(&path, mode | MAY_ACCESS);
-+
- 	/* SuS v2 requires we report a read only fs too */
- 	if (res || !(mode & S_IWOTH) || special_file(inode->i_mode))
- 		goto out_path_release;
-@@ -507,7 +510,8 @@ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
- 	 * inherently racy and know that the fs may change
- 	 * state before we even see this result.
- 	 */
--	if (__mnt_is_readonly(path.mnt))
-+	if ((!is_unionized(path.dentry, path.mnt) &&
-+	     (__mnt_is_readonly(path.mnt))))
- 		res = -EROFS;
+@@ -2452,12 +2450,18 @@ ok:
+ 		if (error)
+ 			goto exit;
+ 	}
+-	error = may_open(&nd.path, acc_mode, flag);
++	error = may_open(&nd, acc_mode, flag);
+ 	if (error) {
+ 		if (will_write)
+ 			mnt_drop_write(nd.path.mnt);
+ 		goto exit;
+ 	}
++	/* Okay, all permissions go, now copy up */
++	if (!(flag & O_CREAT) && (flag & FMODE_WRITE)) {
++		error = union_copyup(&nd, flag /* XXX not used */);
++		if (error)
++			goto exit;
++	}
+ 	filp = nameidata_to_filp(&nd, open_flag);
+ 	if (IS_ERR(filp))
+ 		ima_counts_put(&nd.path,
+diff --git a/fs/nfsctl.c b/fs/nfsctl.c
+index 8f9a205..e3b733e 100644
+--- a/fs/nfsctl.c
++++ b/fs/nfsctl.c
+@@ -38,10 +38,10 @@ static struct file *do_open(char *name, int flags)
+ 		return ERR_PTR(error);
  
- out_path_release:
-diff --git a/fs/union.c b/fs/union.c
-index d56b829..8d94b22 100644
---- a/fs/union.c
-+++ b/fs/union.c
-@@ -390,6 +390,30 @@ static int union_relookup_topmost(struct nameidata *nd, int flags)
+ 	if (flags == O_RDWR)
+-		error = may_open(&nd.path, MAY_READ|MAY_WRITE,
+-					   FMODE_READ|FMODE_WRITE);
++		error = may_open(&nd, MAY_READ|MAY_WRITE,
++				 FMODE_READ|FMODE_WRITE);
+ 	else
+-		error = may_open(&nd.path, MAY_WRITE, FMODE_WRITE);
++		error = may_open(&nd, MAY_WRITE, FMODE_WRITE);
+ 
+ 	if (!error)
+ 		return dentry_open(nd.path.dentry, nd.path.mnt, flags,
+diff --git a/fs/open.c b/fs/open.c
+index 3df5a1b..a1da3a0 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -223,69 +223,69 @@ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
  	return err;
  }
  
-+
-+/**
-+ * union_permission  -  check for access rights to a given inode
-+ * @inode:	inode to check permission on
-+ * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
-+ *
-+ * In a union mount, the top layer is always read-write and the bottom
-+ * is always read-only.  Ignore the read-only flag on the lower fs.
-+ *
-+ * Only need for certain activities, like checking to see if write
-+ * access is ok.
-+ */
-+
-+int union_permission(struct path *path, int mask)
-+{
-+	struct inode *inode = path->dentry->d_inode;
-+
-+	if (!is_unionized(path->dentry, path->mnt))
-+		return inode_permission(inode, mask);
-+
-+	/* Tell __inode_permission to ignore MS_RDONLY */
-+	return __inode_permission(inode, mask, 0);
-+}
-+
- /*
-  * union_create_topmost - create the topmost path component
-  * @nd: pointer to nameidata of the base directory
-@@ -489,6 +513,9 @@ static int union_copy_file(struct dentry *old_dentry, struct vfsmount *old_mnt,
- 	if (IS_ERR(new_file))
- 		goto fput_old;
- 
-+	/* XXX be smart by using a length param, which indicates max
-+	 * data we'll want (e.g., we are about to truncate to 0 or 10
-+	 * bytes or something */
- 	size = i_size_read(old_file->f_path.dentry->d_inode);
- 	if (((size_t)size != size) || ((ssize_t)size != size)) {
- 		ret = -EFBIG;
-@@ -516,7 +543,8 @@ static int union_copy_file(struct dentry *old_dentry, struct vfsmount *old_mnt,
-  * The topmost directory @new_nd must already be locked. Creates the topmost
-  * file if it doesn't exist yet.
-  */
--int __union_copyup(struct path *old, struct nameidata *new_nd, struct path *new)
-+int __union_copyup(struct path *old, struct nameidata *new_nd,
-+		   struct path *new)
+-static long do_sys_truncate(const char __user *pathname, loff_t length)
++static int __do_ftruncate(struct file *file, unsigned long length, int small)
  {
- 	struct dentry *dentry;
+-	struct path path;
+-	struct inode *inode;
++	struct inode * inode;
++	struct dentry *dentry;
  	int error;
-@@ -581,7 +609,7 @@ out_dput:
-  * @nd: nameidata pointer to the file
-  * @flags: flags given to open_namei
-  */
--int union_copyup(struct nameidata *nd, int flags)
-+int union_copyup(struct nameidata *nd, int flags /* XXX not used */)
+ 
+ 	error = -EINVAL;
+-	if (length < 0)	/* sorry, but loff_t says... */
++	if (length < 0)
+ 		goto out;
++	/* explicitly opened as large or we are on 64-bit box */
++	if (file->f_flags & O_LARGEFILE)
++		small = 0;
+ 
+-	error = user_path(pathname, &path);
+-	if (error)
++	dentry = file->f_path.dentry;
++	inode = dentry->d_inode;
++	error = -EINVAL;
++	if (!S_ISREG(inode->i_mode) || !(file->f_mode & FMODE_WRITE))
+ 		goto out;
+-	inode = path.dentry->d_inode;
+-
+-	/* For directories it's -EISDIR, for other non-regulars - -EINVAL */
+-	error = -EISDIR;
+-	if (S_ISDIR(inode->i_mode))
+-		goto dput_and_out;
+ 
+ 	error = -EINVAL;
+-	if (!S_ISREG(inode->i_mode))
+-		goto dput_and_out;
+-
+-	error = mnt_want_write(path.mnt);
+-	if (error)
+-		goto dput_and_out;
++	/* Cannot ftruncate over 2^31 bytes without large file support */
++	if (small && length > MAX_NON_LFS)
+ 
+-	error = inode_permission(inode, MAY_WRITE);
+-	if (error)
+-		goto mnt_drop_write_and_out;
++		goto out;
+ 
+ 	error = -EPERM;
+ 	if (IS_APPEND(inode))
+-		goto mnt_drop_write_and_out;
++		goto out;
+ 
+-	error = get_write_access(inode);
+-	if (error)
+-		goto mnt_drop_write_and_out;
++	error = locks_verify_truncate(inode, file, length);
++	if (!error)
++		error = security_path_truncate(&file->f_path, length,
++					       ATTR_MTIME|ATTR_CTIME);
++	if (!error)
++		/* Already copied up for union, opened with write */
++		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
++out:
++	return error;
++}
+ 
+-	/*
+-	 * Make sure that there are no leases.  get_write_access() protects
+-	 * against the truncate racing with a lease-granting setlease().
+-	 */
+-	error = break_lease(inode, FMODE_WRITE);
+-	if (error)
+-		goto put_write_and_out;
++static long do_sys_truncate(const char __user *pathname, loff_t length)
++{
++	struct file *file;
++	char *tmp;
++	int error;
+ 
+-	error = locks_verify_truncate(inode, NULL, length);
+-	if (!error)
+-		error = security_path_truncate(&path, length, 0);
+-	if (!error) {
+-		vfs_dq_init(inode);
+-		error = do_truncate(path.dentry, length, 0, NULL);
+-	}
++	error = -EINVAL;
++	if (length < 0)	/* sorry, but loff_t says... */
++		return error;
+ 
+-put_write_and_out:
+-	put_write_access(inode);
+-mnt_drop_write_and_out:
+-	mnt_drop_write(path.mnt);
+-dput_and_out:
+-	path_put(&path);
+-out:
++	tmp = getname(pathname);
++	if (IS_ERR(tmp))
++		return PTR_ERR(tmp);
++
++	file = filp_open(tmp, O_RDWR | O_LARGEFILE, 0);
++	putname(tmp);
++
++	if (IS_ERR(file))
++		return PTR_ERR(file);
++
++	error = __do_ftruncate(file, length, 0);
++
++	fput(file);
+ 	return error;
+ }
+ 
+@@ -297,46 +297,16 @@ SYSCALL_DEFINE2(truncate, const char __user *, path, unsigned long, length)
+ 
+ static long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
  {
- 	struct qstr this;
- 	char *name;
+-	struct inode * inode;
+-	struct dentry *dentry;
+ 	struct file * file;
+ 	int error;
+ 
+-	error = -EINVAL;
+-	if (length < 0)
+-		goto out;
+ 	error = -EBADF;
+ 	file = fget(fd);
+ 	if (!file)
+ 		goto out;
+ 
+-	/* explicitly opened as large or we are on 64-bit box */
+-	if (file->f_flags & O_LARGEFILE)
+-		small = 0;
++	error = __do_ftruncate(file, length, small);
+ 
+-	dentry = file->f_path.dentry;
+-	inode = dentry->d_inode;
+-	error = -EINVAL;
+-	if (!S_ISREG(inode->i_mode) || !(file->f_mode & FMODE_WRITE))
+-		goto out_putf;
+-
+-	error = -EINVAL;
+-	/* Cannot ftruncate over 2^31 bytes without large file support */
+-	if (small && length > MAX_NON_LFS)
+-		goto out_putf;
+-
+-	error = -EPERM;
+-	if (IS_APPEND(inode))
+-		goto out_putf;
+-
+-	error = locks_verify_truncate(inode, file, length);
+-	if (!error)
+-		error = security_path_truncate(&file->f_path, length,
+-					       ATTR_MTIME|ATTR_CTIME);
+-	if (!error)
+-		/* Already copied up for union, opened with write */
+-		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
+-out_putf:
+ 	fput(file);
+ out:
+ 	return error;
 diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 57690ab..38fb113 100644
+index 38fb113..8eb0e0e 100644
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -2106,6 +2106,7 @@ extern void emergency_remount(void);
- extern sector_t bmap(struct inode *, sector_t);
- #endif
- extern int notify_change(struct dentry *, struct iattr *);
-+extern int __inode_permission(struct inode *inode, int mask, int rofs);
- extern int inode_permission(struct inode *, int);
- extern int generic_permission(struct inode *, int,
- 		int (*check_acl)(struct inode *, int));
-diff --git a/include/linux/union.h b/include/linux/union.h
-index a0656b3..92654e0 100644
---- a/include/linux/union.h
-+++ b/include/linux/union.h
-@@ -58,6 +58,7 @@ extern struct dentry *union_create_topmost(struct nameidata *, struct qstr *,
- extern int __union_copyup(struct path *, struct nameidata *, struct path *);
- extern int union_copyup(struct nameidata *, int);
- extern int union_copyup_dir(struct path *path);
-+extern int union_permission(struct path *, int);
+@@ -2134,7 +2134,7 @@ extern void free_write_pipe(struct file *);
  
- #else /* CONFIG_UNION_MOUNT */
+ extern struct file *do_filp_open(int dfd, const char *pathname,
+ 		int open_flag, int mode, int acc_mode);
+-extern int may_open(struct path *, int, int);
++extern int may_open(struct nameidata *, int, int);
  
-@@ -76,6 +77,7 @@ extern int union_copyup_dir(struct path *path);
- #define __union_copyup(x, y, z)		({ BUG(); (0); })
- #define union_copyup(x, y)		({ (0); })
- #define union_copyup_dir(x)		({ BUG(); (0); })
-+#define union_permission(x, y)		inode_permission((x)->dentry->d_inode, y)
- 
- #endif	/* CONFIG_UNION_MOUNT */
- #endif	/* __KERNEL__ */
+ extern int kernel_read(struct file *, loff_t, char *, unsigned long);
+ extern struct file * open_exec(const char *);
 -- 
 1.6.3.3
 
