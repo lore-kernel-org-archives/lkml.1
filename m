@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbZJUP0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZJUPwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754101AbZJUP0t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 11:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZJUP0t
+	id S1754156AbZJUPwN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 11:52:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbZJUPwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 11:26:49 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:50493 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754077AbZJUP0s (ORCPT
+	Wed, 21 Oct 2009 11:52:12 -0400
+Received: from 17.mail-out.ovh.net ([91.121.30.212]:50138 "HELO
+	17.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753999AbZJUPwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 11:26:48 -0400
-Subject: Re: [PATCH -v4 6/9] tracing: add an endian argument to
- scripts/recordmcount.pl
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>, Wu Zhangjin <wuzj@lemote.com>
-In-Reply-To: <5dda13e8e3a9c9dba4bb7179183941bda502604f.1256135456.git.wuzhangjin@gmail.com>
-References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
-	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
-	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
-	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
-	 <96110ea5dd4d3d54eb97d0bb708a5bd81c7a50b5.1256135456.git.wuzhangjin@gmail.com>
-	 <5dda13e8e3a9c9dba4bb7179183941bda502604f.1256135456.git.wuzhangjin@gmail.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 21 Oct 2009 11:26:52 -0400
-Message-Id: <1256138812.18347.3043.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Oct 2009 11:52:11 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Oct 2009 11:52:11 EDT
+Date: Wed, 21 Oct 2009 17:26:53 +0200
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: linux-arm-kernel@lists.infradead.org, avictor.za@gmail.com,
+       akpm@linux-foundation.org, linux-mmc@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] at91: at91sam9g20ek modify dual slot evaluation kit
+Message-ID: <20091021152653.GF19714@game.jcrosoft.org>
+References: <1256049173-17373-1-git-send-email-nicolas.ferre@atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256049173-17373-1-git-send-email-nicolas.ferre@atmel.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Ovh-Tracer-Id: 3317464076251540332
+X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|U 0.5/N
+X-Ovh-Tracer-Id: 3216696035067931415
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-21 at 22:35 +0800, Wu Zhangjin wrote:
-> MIPS architecture need this argument to handle big/little endian
-> respectively.
-> 
-> Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
-> ---
->  scripts/Makefile.build  |    1 +
->  scripts/recordmcount.pl |    6 +++---
->  2 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-> index 341b589..0b94d2f 100644
-> --- a/scripts/Makefile.build
-> +++ b/scripts/Makefile.build
-> @@ -207,6 +207,7 @@ endif
+> +	  that embeds only one SD/MMC slot.
+> +
+> +config MACH_AT91SAM9G20EK_2MMC
+> +	bool "Atmel AT91SAM9G20-EK Evaluation Kit with 2 SD/MMC Slots"
+> +	depends on ARCH_AT91SAM9G20
+> +	help
+> +	  Select this if you are using an Atmel AT91SAM9G20-EK Evaluation Kit
+> +	  with 2 SD/MMC Slots. This is the case for AT91SAM9G20-EK rev. C and
+> +	  onwards.
 >  
->  ifdef CONFIG_FTRACE_MCOUNT_RECORD
->  cmd_record_mcount = set -e ; perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
-> +	"$(if $(CONFIG_CPU_BIG_ENDIAN),big,little)" \
-
-I thought I added this already??
-
-/me goes and looks
-
-Hmm, not there. Did a patch get lost?
-
-Thanks,
-
--- Steve
-
->  	"$(if $(CONFIG_64BIT),64,32)" \
->  	"$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" "$(MV)" \
->  	"$(if $(part-of-module),1,0)" "$(@)";
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 090d300..daee038 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -99,13 +99,13 @@ $P =~ s@.*/@@g;
+>  config MACH_CPU9G20
+>  	bool "Eukrea CPU9G20 board"
+> @@ -392,7 +394,7 @@ config MTD_AT91_DATAFLASH_CARD
 >  
->  my $V = '0.1';
->  
-> -if ($#ARGV < 7) {
-> -	print "usage: $P arch bits objdump objcopy cc ld nm rm mv is_module inputfile\n";
-> +if ($#ARGV < 8) {
-> +	print "usage: $P arch endian bits objdump objcopy cc ld nm rm mv is_module inputfile\n";
->  	print "version: $V\n";
->  	exit(1);
->  }
->  
-> -my ($arch, $bits, $objdump, $objcopy, $cc,
-> +my ($arch, $endian, $bits, $objdump, $objcopy, $cc,
->      $ld, $nm, $rm, $mv, $is_module, $inputfile) = @ARGV;
->  
->  # This file refers to mcount and shouldn't be ftraced, so lets' ignore it
+>  config MTD_NAND_ATMEL_BUSWIDTH_16
+>  	bool "Enable 16-bit data bus interface to NAND flash"
+> -	depends on (MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_AT91SAM9G45EKES || MACH_AT91CAP9ADK)
+> +	depends on (MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_AT91SAM9G20EK_2MMC || MACH_AT91SAM9G45EKES || MACH_AT91CAP9ADK)
+it's time to replace this by select it at machine config state
 
+> @@ -254,7 +257,11 @@ static void __init ek_board_init(void)
+>  	/* Ethernet */
+>  	at91_add_device_eth(&ek_macb_data);
+>  	/* MMC */
+> +#if defined(CONFIG_MMC_ATMELMCI) || defined(CONFIG_MMC_ATMELMCI_MODULE)
+>  	at91_add_device_mci(0, &ek_mmc_data);
+> +#else
+> +	at91_add_device_mmc(0, &ek_mmc_data);
+> +#endif
+do we really need to do this choice at board level?
+
+Best Regards,
+J.
