@@ -1,76 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZJUVzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbZJUWCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbZJUVzy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 17:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbZJUVzy
+	id S1755390AbZJUWCY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 18:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924AbZJUWCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 17:55:54 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:42356 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754816AbZJUVzx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 17:55:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ux4Bemc38UlS77DIoC3AHgbBb/pSejzqXzRznreqaEtmYY/jcH2qGVpus5pVF9ySnm
-         rFM1E2fa9bSB5HoiOMotAQuETfAbZ7uF4BpxM3QtYtubQFr+vmaaZzz51N+1IKPsAwE5
-         whvavRQ+hqUGzxJGIfFUrPSBTD+7/P4OJRr38=
-Date: Wed, 21 Oct 2009 23:55:54 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: John Kacur <jkacur@redhat.com>
-Cc: Arnd Bergmann <arndbergmann@googlemail.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
-Message-ID: <20091021215553.GE4880@nowhere>
-References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain> <alpine.LFD.2.00.0910192019420.3563@localhost.localdomain> <200910200000.24574.arnd@arndb.de> <200910200008.57468.arnd@arndb.de> <20091021213139.GC4880@nowhere> <alpine.LFD.2.00.0910212336290.3526@localhost.localdomain>
+	Wed, 21 Oct 2009 18:02:23 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:46355 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754726AbZJUWCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 18:02:23 -0400
+Date: Thu, 22 Oct 2009 00:02:04 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] tracing: fix trace_seq_printf return value
+Message-ID: <20091021220204.GA2462@jolsa.redhat.com>
+References: <1256135801-1849-1-git-send-email-jolsa@redhat.com> <1256135801-1849-3-git-send-email-jolsa@redhat.com> <1256142035.18347.3133.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0910212336290.3526@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1256142035.18347.3133.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2009 at 11:41:07PM +0200, John Kacur wrote:
-> > What about a pusdown of default_lseek attribution for these
-> > fops that don't have any llseek() (and rename it to
-> > deprecated_default_lseek() )
+On Wed, Oct 21, 2009 at 12:20:35PM -0400, Steven Rostedt wrote:
+> On Wed, 2009-10-21 at 16:36 +0200, Jiri Olsa wrote:
+> > I believe we want to return the number of written characters,
+> > instead of the available buffer length.
 > > 
-> > Because we can probably fix these fops one by one but what
-> > about the next drivers that will have no llseek() ?
+> > wbr,
+> > jirka
 > > 
-> > We can't attribute default_llseek() by default anymore for
-> > further fops that are to come.
+> > Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+> > ---
+> >  kernel/trace/trace_output.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
 > > 
-> > 
+> > diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+> > index ed17565..e871125 100644
+> > --- a/kernel/trace/trace_output.c
+> > +++ b/kernel/trace/trace_output.c
+> > @@ -95,7 +95,7 @@ trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
+> >  
+> >  	s->len += ret;
+> >  
+> > -	return len;
+> > +	return ret;
 > 
-> Frederic, I think it is still useful to explicity set to no_llseek, 
-> drivers that don't use llseek.
+> Actually the return value here is ambiguous. Returning len is actually
+> safer. It probably should only return 0 (buffer not big enough to write
+> to) or 1 (buffer is big enough).
+> 
+> Because this should actually return non zero:
+> 
+>   trace_seq_printf(s, "");
+> 
+> -- Steve
+> 
+> >  }
+> >  EXPORT_SYMBOL_GPL(trace_seq_printf);
+> >  
+>
 
+I made the suggested fix, plus spot not used function.
 
-Yeah, I agreed.
+---
+Making trace_seq_printf return 0 if the trace oversizes the buffer's free
+space, 1 otherwise.  Removing not used trace_seq_vprintf function.
 
+wbr,
+jirka
 
+Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+---
+ include/linux/trace_seq.h   |    2 --
+ kernel/trace/trace_output.c |   37 ++++---------------------------------
+ 2 files changed, 4 insertions(+), 35 deletions(-)
+
+diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
+index c134dd1..6fc4651 100644
+--- a/include/linux/trace_seq.h
++++ b/include/linux/trace_seq.h
+@@ -29,8 +29,6 @@ trace_seq_init(struct trace_seq *s)
+ #ifdef CONFIG_TRACING
+ extern int trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
+ 	__attribute__ ((format (printf, 2, 3)));
+-extern int trace_seq_vprintf(struct trace_seq *s, const char *fmt, va_list args)
+-	__attribute__ ((format (printf, 2, 0)));
+ extern int
+ trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary);
+ extern void trace_print_seq(struct seq_file *m, struct trace_seq *s);
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index ed17565..11bd0e5 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -69,6 +69,9 @@ enum print_line_t trace_print_printk_msg_only(struct trace_iterator *iter)
+  * @s: trace sequence descriptor
+  * @fmt: printf format string
+  *
++ * It returns 0 if the trace oversizes the buffer's free
++ * space, 1 otherwise.
++ *
+  * The tracer may use either sequence operations or its own
+  * copy to user routines. To simplify formating of a trace
+  * trace_seq_printf is used to store strings into a special
+@@ -95,42 +98,10 @@ trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
  
-> I also have to agree with you, that we should no longer be using a 
-> default_llseek that relies on the BKL.
-> 
-> That is a rather large effort though. All drivers that don't specify an 
-> llseek function, need to either set it to no_llseek, or as you are 
-> proposing a deprecated default_llseek that uses the bkl.
-> 
-> thinking of how to start this.
-> 
-> John
-
-
-This is a rather large effort indeed but this pushdown seems
-the only way to remove default_llseek as the default llseek()
-callback.
-
-The more we wait, the more code we'll need to review and fix.
-
+ 	s->len += ret;
+ 
+-	return len;
++	return 1;
+ }
+ EXPORT_SYMBOL_GPL(trace_seq_printf);
+ 
+-/**
+- * trace_seq_vprintf - sequence printing of trace information
+- * @s: trace sequence descriptor
+- * @fmt: printf format string
+- *
+- * The tracer may use either sequence operations or its own
+- * copy to user routines. To simplify formating of a trace
+- * trace_seq_printf is used to store strings into a special
+- * buffer (@s). Then the output may be either used by
+- * the sequencer or pulled into another buffer.
+- */
+-int
+-trace_seq_vprintf(struct trace_seq *s, const char *fmt, va_list args)
+-{
+-	int len = (PAGE_SIZE - 1) - s->len;
+-	int ret;
+-
+-	if (!len)
+-		return 0;
+-
+-	ret = vsnprintf(s->buffer + s->len, len, fmt, args);
+-
+-	/* If we can't write it all, don't bother writing anything */
+-	if (ret >= len)
+-		return 0;
+-
+-	s->len += ret;
+-
+-	return len;
+-}
+-EXPORT_SYMBOL_GPL(trace_seq_vprintf);
+-
+ int trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary)
+ {
+ 	int len = (PAGE_SIZE - 1) - s->len;
+ 
