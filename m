@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbZJUAoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbZJUAtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752772AbZJUAoB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 20:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbZJUAoA
+	id S1753122AbZJUAtD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 20:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZJUAtC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 20:44:00 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:47460 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbZJUAoA (ORCPT
+	Tue, 20 Oct 2009 20:49:02 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:36731 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751417AbZJUAtB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 20:44:00 -0400
-Subject: Re: [ntp:hackers] ntp-dev-4.2.5p235-RC build failure: MOD_NANO not
- #defined
-From: john stultz <johnstul@us.ibm.com>
-To: James Cloos <cloos@jhcloos.com>
-Cc: davehart_gmail_exchange_tee@davehart.net, hackers@lists.ntp.org,
-       linux-kernel@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <m3aazlk5vz.fsf@lugabout.jhcloos.org>
-References: <m3iqe9kj18.fsf@lugabout.jhcloos.org>
-	 <85d954180910201227q528ff210v575df8c1f83e9ada@mail.gmail.com>
-	 <1f1b08da0910201345w61f1bb4yb99b5f052ea77ac4@mail.gmail.com>
-	 <m3aazlk5vz.fsf@lugabout.jhcloos.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 20 Oct 2009 17:43:58 -0700
-Message-Id: <1256085838.3346.45.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 20 Oct 2009 20:49:01 -0400
+Date: Wed, 21 Oct 2009 09:47:49 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.32-rc6
+Message-ID: <20091021004749.GA17730@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-20 at 19:22 -0400, James Cloos wrote:
-> >>>>> "john" == john stultz <johnstul@us.ibm.com> writes:
-> 
-> john> The kernel has already been fixed, but glibc still needs to pick up the change.
-> john> See the kernel commit here:
-> john> http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commitdiff;h=c95b4502ad7fe8f3b9954aec794b00ac0046ab3a
-> 
-> Ah.  I only looked in my (up to date) clone of Linus’ tree; I didn’t
-> check the trees-to-pull.
+Please pull from:
 
-Huh. I guess I was mistaken and had mixed up my bookmarks. You're right,
-I thought it was already upstream, but I've been looking at the wrong
-tree. The patch is not yet in mainline.
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.32
 
-> Will that be part of a pull request for the current rc or only for the
-> next merge window?
+Which contains:
 
-Ingo, any eta on when commit c95b4502ad7fe8f3b9954aec794b00ac0046ab3a
-will be pushed? Not sure how it got missed this last cycle.
+Magnus Damm (1):
+      sh: disabled cache handling fix.
 
-thanks
--john
+Paul Mundt (1):
+      sh: Kill off stray HAVE_FTRACE_SYSCALLS reference.
 
+Thomas Gleixner (1):
+      sh: Remove BKL from landisk gio.
 
+Valentin Sitdikov (1):
+      sh: Fix up single page flushing to use PAGE_SIZE.
+
+ arch/sh/Kconfig                   |    1 -
+ arch/sh/boards/mach-landisk/gio.c |   10 ++++------
+ arch/sh/mm/cache-sh4.c            |   22 ++++++++++------------
+ arch/sh/mm/cache.c                |   10 ++++++++++
+ 4 files changed, 24 insertions(+), 19 deletions(-)
