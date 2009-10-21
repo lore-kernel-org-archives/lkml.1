@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932266AbZJUTVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZJUTW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932266AbZJUTVu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbZJUTVt
+	id S1755379AbZJUTW5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZJUTVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:21:49 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:11042 "EHLO mx1.redhat.com"
+	Wed, 21 Oct 2009 15:21:46 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:5092 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755258AbZJUTVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755260AbZJUTVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Oct 2009 15:21:41 -0400
 From: Valerie Aurora <vaurora@redhat.com>
 To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
@@ -20,10 +20,10 @@ To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Vladimir Dronnikov <dronnikov@gmail.com>,
        Felix Fietkau <nbd@openwrt.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 38/41] union-mount: Make pivot_root work with union mounts
-Date: Wed, 21 Oct 2009 12:19:36 -0700
-Message-Id: <1256152779-10054-39-git-send-email-vaurora@redhat.com>
-In-Reply-To: <1256152779-10054-38-git-send-email-vaurora@redhat.com>
+Subject: [PATCH 39/41] union-mount: Ignore read-only file system in permission checks
+Date: Wed, 21 Oct 2009 12:19:37 -0700
+Message-Id: <1256152779-10054-40-git-send-email-vaurora@redhat.com>
+In-Reply-To: <1256152779-10054-39-git-send-email-vaurora@redhat.com>
 References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-2-git-send-email-vaurora@redhat.com>
  <1256152779-10054-3-git-send-email-vaurora@redhat.com>
@@ -62,38 +62,227 @@ References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-36-git-send-email-vaurora@redhat.com>
  <1256152779-10054-37-git-send-email-vaurora@redhat.com>
  <1256152779-10054-38-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-39-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When moving a union mount, follow it down to the bottom layer and move
-that instead of just the top layer.
+In certain cases, we check a file for write access before it has been
+copied up to the top-level fs.  We don't want to fail because the
+bottom layer is read-only - of course it is - so skip that check in
+those cases.
+
+Thanks to Felix Fietkau <nbd@openwrt.org> for a bug fix.
+
+XXX - Document when to call union_permission() vs. inode_permission()
+XXX - Kinda gross.  Probably a simpler solution.
 
 Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 ---
- fs/namespace.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ fs/namei.c            |   21 +++++++++++++++++----
+ fs/open.c             |    8 ++++++--
+ fs/union.c            |   32 ++++++++++++++++++++++++++++++--
+ include/linux/fs.h    |    1 +
+ include/linux/union.h |    2 ++
+ 5 files changed, 56 insertions(+), 8 deletions(-)
 
-diff --git a/fs/namespace.c b/fs/namespace.c
-index 9b71743..6ac5fc1 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -2282,6 +2282,15 @@ SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
- 	if (d_unlinked(old.dentry))
- 		goto out2;
- 	error = -EBUSY;
-+	/*
-+	 * follow_union_down() only goes one layer down.  We want the
-+	 * bottom-most layer here - if we move that around, all the
-+	 * layers on top move with it.  But if we ever allow more than
-+	 * two layers, the below two will both need to be in while()
-+	 * loops.
-+	 */
-+	follow_union_down(&new.mnt, &new.dentry);
-+	follow_union_down(&root.mnt, &root.dentry);
- 	if (new.mnt == root.mnt ||
- 	    old.mnt == root.mnt)
- 		goto out2; /* loop, on the same file system  */
+diff --git a/fs/namei.c b/fs/namei.c
+index 61e94aa..a8d3acf 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -230,16 +230,17 @@ int generic_permission(struct inode *inode, int mask,
+ }
+ 
+ /**
+- * inode_permission  -  check for access rights to a given inode
++ * __inode_permission  -  check for access rights to a given inode
+  * @inode:	inode to check permission on
+  * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
++ * @rofs:	check for read-only fs
+  *
+  * Used to check for read/write/execute permissions on an inode.
+  * We use "fsuid" for this, letting us set arbitrary permissions
+  * for filesystem access without changing the "normal" uids which
+  * are used for other things.
+  */
+-int inode_permission(struct inode *inode, int mask)
++int __inode_permission(struct inode *inode, int mask, int rofs)
+ {
+ 	int retval;
+ 
+@@ -249,7 +250,7 @@ int inode_permission(struct inode *inode, int mask)
+ 		/*
+ 		 * Nobody gets write access to a read-only fs.
+ 		 */
+-		if (IS_RDONLY(inode) &&
++		if ((rofs & IS_RDONLY(inode)) &&
+ 		    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
+ 			return -EROFS;
+ 
+@@ -277,6 +278,18 @@ int inode_permission(struct inode *inode, int mask)
+ }
+ 
+ /**
++ * inode_permission  -  check for access rights to a given inode
++ * @inode:	inode to check permission on
++ * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
++ *
++ * This version pays attention to the MS_RDONLY flag on the fs.
++ */
++int inode_permission(struct inode *inode, int mask)
++{
++	return __inode_permission(inode, mask, 1);
++}
++
++/**
+  * file_permission  -  check for additional access rights to a given file
+  * @file:	file to check access rights for
+  * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
+@@ -2129,7 +2142,7 @@ int may_open(struct path *path, int acc_mode, int flag)
+ 		break;
+ 	}
+ 
+-	error = inode_permission(inode, acc_mode);
++	error = union_permission(path, acc_mode);
+ 	if (error)
+ 		return error;
+ 
+diff --git a/fs/open.c b/fs/open.c
+index dd98e80..3df5a1b 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -30,6 +30,7 @@
+ #include <linux/audit.h>
+ #include <linux/falloc.h>
+ #include <linux/fs_struct.h>
++#include <linux/union.h>
+ 
+ int vfs_statfs(struct dentry *dentry, struct kstatfs *buf)
+ {
+@@ -333,6 +334,7 @@ static long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
+ 		error = security_path_truncate(&file->f_path, length,
+ 					       ATTR_MTIME|ATTR_CTIME);
+ 	if (!error)
++		/* Already copied up for union, opened with write */
+ 		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
+ out_putf:
+ 	fput(file);
+@@ -493,7 +495,8 @@ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
+ 			goto out_path_release;
+ 	}
+ 
+-	res = inode_permission(inode, mode | MAY_ACCESS);
++	res = union_permission(&path, mode | MAY_ACCESS);
++
+ 	/* SuS v2 requires we report a read only fs too */
+ 	if (res || !(mode & S_IWOTH) || special_file(inode->i_mode))
+ 		goto out_path_release;
+@@ -507,7 +510,8 @@ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
+ 	 * inherently racy and know that the fs may change
+ 	 * state before we even see this result.
+ 	 */
+-	if (__mnt_is_readonly(path.mnt))
++	if ((!is_unionized(path.dentry, path.mnt) &&
++	     (__mnt_is_readonly(path.mnt))))
+ 		res = -EROFS;
+ 
+ out_path_release:
+diff --git a/fs/union.c b/fs/union.c
+index d56b829..8d94b22 100644
+--- a/fs/union.c
++++ b/fs/union.c
+@@ -390,6 +390,30 @@ static int union_relookup_topmost(struct nameidata *nd, int flags)
+ 	return err;
+ }
+ 
++
++/**
++ * union_permission  -  check for access rights to a given inode
++ * @inode:	inode to check permission on
++ * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
++ *
++ * In a union mount, the top layer is always read-write and the bottom
++ * is always read-only.  Ignore the read-only flag on the lower fs.
++ *
++ * Only need for certain activities, like checking to see if write
++ * access is ok.
++ */
++
++int union_permission(struct path *path, int mask)
++{
++	struct inode *inode = path->dentry->d_inode;
++
++	if (!is_unionized(path->dentry, path->mnt))
++		return inode_permission(inode, mask);
++
++	/* Tell __inode_permission to ignore MS_RDONLY */
++	return __inode_permission(inode, mask, 0);
++}
++
+ /*
+  * union_create_topmost - create the topmost path component
+  * @nd: pointer to nameidata of the base directory
+@@ -489,6 +513,9 @@ static int union_copy_file(struct dentry *old_dentry, struct vfsmount *old_mnt,
+ 	if (IS_ERR(new_file))
+ 		goto fput_old;
+ 
++	/* XXX be smart by using a length param, which indicates max
++	 * data we'll want (e.g., we are about to truncate to 0 or 10
++	 * bytes or something */
+ 	size = i_size_read(old_file->f_path.dentry->d_inode);
+ 	if (((size_t)size != size) || ((ssize_t)size != size)) {
+ 		ret = -EFBIG;
+@@ -516,7 +543,8 @@ static int union_copy_file(struct dentry *old_dentry, struct vfsmount *old_mnt,
+  * The topmost directory @new_nd must already be locked. Creates the topmost
+  * file if it doesn't exist yet.
+  */
+-int __union_copyup(struct path *old, struct nameidata *new_nd, struct path *new)
++int __union_copyup(struct path *old, struct nameidata *new_nd,
++		   struct path *new)
+ {
+ 	struct dentry *dentry;
+ 	int error;
+@@ -581,7 +609,7 @@ out_dput:
+  * @nd: nameidata pointer to the file
+  * @flags: flags given to open_namei
+  */
+-int union_copyup(struct nameidata *nd, int flags)
++int union_copyup(struct nameidata *nd, int flags /* XXX not used */)
+ {
+ 	struct qstr this;
+ 	char *name;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 57690ab..38fb113 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2106,6 +2106,7 @@ extern void emergency_remount(void);
+ extern sector_t bmap(struct inode *, sector_t);
+ #endif
+ extern int notify_change(struct dentry *, struct iattr *);
++extern int __inode_permission(struct inode *inode, int mask, int rofs);
+ extern int inode_permission(struct inode *, int);
+ extern int generic_permission(struct inode *, int,
+ 		int (*check_acl)(struct inode *, int));
+diff --git a/include/linux/union.h b/include/linux/union.h
+index a0656b3..92654e0 100644
+--- a/include/linux/union.h
++++ b/include/linux/union.h
+@@ -58,6 +58,7 @@ extern struct dentry *union_create_topmost(struct nameidata *, struct qstr *,
+ extern int __union_copyup(struct path *, struct nameidata *, struct path *);
+ extern int union_copyup(struct nameidata *, int);
+ extern int union_copyup_dir(struct path *path);
++extern int union_permission(struct path *, int);
+ 
+ #else /* CONFIG_UNION_MOUNT */
+ 
+@@ -76,6 +77,7 @@ extern int union_copyup_dir(struct path *path);
+ #define __union_copyup(x, y, z)		({ BUG(); (0); })
+ #define union_copyup(x, y)		({ (0); })
+ #define union_copyup_dir(x)		({ BUG(); (0); })
++#define union_permission(x, y)		inode_permission((x)->dentry->d_inode, y)
+ 
+ #endif	/* CONFIG_UNION_MOUNT */
+ #endif	/* __KERNEL__ */
 -- 
 1.6.3.3
 
