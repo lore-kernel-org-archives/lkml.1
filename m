@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754325AbZJUQMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbZJUQVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754325AbZJUQMa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 12:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbZJUQM3
+	id S1754329AbZJUQVc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 12:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbZJUQVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 12:12:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:62109 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754289AbZJUQM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 12:12:28 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC V2 PATCH 4/5] cfq-iosched: enable idling for last queue on priority class
-References: <200910202012.21469.czoccolo@gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 21 Oct 2009 12:12:27 -0400
-In-Reply-To: <200910202012.21469.czoccolo@gmail.com> (Corrado Zoccolo's
-	message of "Tue, 20 Oct 2009 20:12:21 +0200")
-Message-ID: <x4963a8915g.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	Wed, 21 Oct 2009 12:21:31 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:60803 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754005AbZJUQVb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 12:21:31 -0400
+Date: Wed, 21 Oct 2009 19:14:36 +0300
+From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org
+Subject: [PATCH 2/2] Disk hot removal causing oopses and fixes
+Message-ID: <20091021161436.GA17973@angel.research.nokia.com>
+Reply-To: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+References: <20091021161201.GA16968@angel.research.nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091021161201.GA16968@angel.research.nokia.com>
+X-Operating-System: GNU/Linux angel.research.nokia.com
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 21 Oct 2009 16:21:25.0581 (UTC) FILETIME=[893A97D0:01CA526A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
+>From ff822af94f86dbe559b7649b7f71c464260ef353 Mon Sep 17 00:00:00 2001
+From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+Date: Wed, 21 Oct 2009 18:53:20 +0300
+Subject: [PATCH 2/2] block: Protect elevator from too early release
 
-> cfq can disable idling for queues in various circumstances.
-> When workloads of different priorities are competing, if the higher
-> priority queue has idling disabled, lower priority queues may steal
-> its disk share. For example, in a scenario with an RT process
-> performing seeky reads vs a BE process performing sequential reads,
-> on an NCQ enabled hardware, with low_latency unset,
-> the RT process will dispatch only the few pending requests every full
-> slice of service for the BE process.
->
-> The patch solves this issue by always performing idle on the last
-> queue at a given priority class > idle. If the same process, or one
-> that can pre-empt it (so at the same priority or higher), submits a
-> new request within the idle window, the lower priority queue won't
-> dispatch, saving the disk bandwidth for higher priority ones.
->
-> Note: this doesn't touch the non_rotational + NCQ case (no hardware
-> to test if this is a benefit in that case).
->
-> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+When a disk is being removed, blk_put_queue calls elevator exit function
+which will release the elevator while the elevator may still be in use.
 
-This looks OK at first glance.
+Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+---
+ block/blk-core.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-Cheers,
-Jeff
+diff --git a/block/blk-core.c b/block/blk-core.c
+index ac0fa10..da56586 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1173,6 +1173,13 @@ static int __make_request(struct request_queue *q, struct bio *bio)
+ 	 */
+ 	blk_queue_bounce(q, &bio);
+ 
++	mutex_lock(&q->elevator->sysfs_lock);
++	if (test_bit(QUEUE_FLAG_DEAD, &q->queue_flags)) {
++		mutex_unlock(&q->elevator->sysfs_lock);
++		bio_endio(bio, -EIO);
++		return 0;
++	}
++
+ 	spin_lock_irq(q->queue_lock);
+ 
+ 	if (unlikely(bio_rw_flagged(bio, BIO_RW_BARRIER)) || elv_queue_empty(q))
+@@ -1275,6 +1282,8 @@ out:
+ 	if (unplug || !queue_should_plug(q))
+ 		__generic_unplug_device(q);
+ 	spin_unlock_irq(q->queue_lock);
++	mutex_unlock(&q->elevator->sysfs_lock);
++
+ 	return 0;
+ }
+ 
+-- 
+1.6.3.3
+
