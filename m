@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbZJUMmD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbZJUNMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170AbZJUMmD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 08:42:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZJUMmC
+	id S1753367AbZJUNMJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 09:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbZJUNMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 08:42:02 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:44607 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752597AbZJUMmA (ORCPT
-	<rfc822;groupwise-SJayaraman@novell.com;0:0>);
-	Wed, 21 Oct 2009 08:42:00 -0400
-Message-ID: <4ADF01E9.4030404@suse.de>
-Date: Wed, 21 Oct 2009 18:13:21 +0530
-From: Suresh Jayaraman <sjayaraman@suse.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 21 Oct 2009 09:12:08 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38193 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753110AbZJUNMG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 09:12:06 -0400
+Message-ID: <4ADF06B7.50508@zytor.com>
+Date: Wed, 21 Oct 2009 22:03:51 +0900
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Rafael Wysocki <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] swapfile: avoid NULL pointer dereference in swapon when
- s_bdev is NULL
-References: <4AC1FC41.2060807@suse.de> <Pine.LNX.4.64.0910011052330.7682@sister.anvils> <4AC492E2.7060205@suse.de> <Pine.LNX.4.64.0910011252220.13515@sister.anvils> <4AC49B95.2040504@suse.de> <Pine.LNX.4.64.0910062157300.16308@sister.anvils> <4ACC111A.8020500@suse.de>
-In-Reply-To: <4ACC111A.8020500@suse.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: mtk.manpages@gmail.com
+CC: Matt Helsley <matthltc@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       randy.dunlap@oracle.com, arnd@arndb.de,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       Louis.Rilling@kerlabs.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu,
+       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v8][PATCH 9/10]: Define clone3() syscall
+References: <20091013044925.GA28181@us.ibm.com>	 <20091013045439.GI28435@us.ibm.com> <20091016042041.GA7220@us.ibm.com>	 <cfd18e0f0910152325m4a9125c2q18f36f5bd7d4a0@mail.gmail.com>	 <20091016180631.GA31036@us.ibm.com>	 <20091019174405.GE27627@count0.beaverton.ibm.com>	 <4ADCDAA8.5080408@zytor.com>	 <20091019235012.GF27627@count0.beaverton.ibm.com> <cfd18e0f0910202126w1ebfa2e2u2ecbaa23b198d100@mail.gmail.com>
+In-Reply-To: <cfd18e0f0910202126w1ebfa2e2u2ecbaa23b198d100@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Jayaraman wrote:
-> Hugh Dickins wrote:
->> On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
->>> Hugh Dickins wrote:
->>>> On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
->>>>> The call sequence is add_to_swap() -> get_swap_page() ->  scan_swap_map()
->>>>> -> discard_swap_cluster() -> blkdev_issue_discard().
->>>>>
->>>>> Wrapping the code around a NULL check fixes the Oops for me.
->>>> That's odd: scan_swap_map() should only discard_swap_cluster() if
->>>> SWP_DISCARDABLE got set, and your first patch made sure that it wasn't.
->>> I forgot to mention, this is not on loopback NFS mount but an remote NFS
->>> mount (so possibly s_bdev is not NULL) when doing swapon. The oops was
->>> triggered when memhog program tries to use the swap space on the newly
->>> created swapfile on NFS. I have not completely investigated the issue,
->>> perhaps s_bdev is not being set when it ought to be..
->> I'm happy to see your first patch already in 2.6.32-rc3, but still
->> suspicious of this second patch you sent afterwards.  A quick skim
->> through your patchset suggests 23/31 is probably responsible:
-> 
-> Thanks for skimming through those patches. I noticed this already during
-> my review and thought I had already fixed this, but apparently I missed
-> out. I'll test after fixing this and report.
+On 10/21/2009 01:26 PM, Michael Kerrisk wrote:
+>
+> My question here is: what does "3" actually mean? In general, system
+> calls have not followed any convention of numbering to indicate
+> successive versions -- clone2() being the one possible exception that
+> I know of.
+>
 
-Sorry about the delay. I tested by fixing SWP_FILE macro only now after
-returning from vacation. I was not able to reproduce this. Please ignore
-the second patch and it's no longer necessary as noted by Hugh already.
+"3" is number of arguments.  It's better than "extended" or something 
+like that simply because "extended" just means "more than", and a number 
+at least tells you *how much more than*.
 
-Thanks,
-
-
->> --- mmotm.orig/include/linux/swap.h
->> +++ mmotm/include/linux/swap.h
->> @@ -120,6 +120,7 @@ struct swap_extent {
->>  enum {
->>  	SWP_USED	= (1 << 0),	/* is slot in swap_info[] used? */
->>  	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
->> +	SWP_FILE	= (1 << 2),	/* file swap area */
->>  	SWP_DISCARDABLE = (1 << 2),	/* blkdev supports discard */
->>  	SWP_DISCARDING	= (1 << 3),	/* now discarding a free cluster */
->>  	SWP_SOLIDSTATE	= (1 << 4),	/* blkdev seeks are cheap */
->>
->> Hugh
-> 
-> Thanks,
-> 
-
-
--- 
-Suresh Jayaraman
+	-hpa
