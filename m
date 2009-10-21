@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755745AbZJUWZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755853AbZJUW17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755745AbZJUWZL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 18:25:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbZJUWZK
+	id S1755853AbZJUW17 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 18:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbZJUW17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 18:25:10 -0400
-Received: from mga12.intel.com ([143.182.124.36]:23800 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755038AbZJUWZK (ORCPT
+	Wed, 21 Oct 2009 18:27:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:43843 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755700AbZJUW16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 18:25:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,600,1249282800"; 
-   d="scan'208";a="201941110"
-Date: Thu, 22 Oct 2009 00:26:28 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Amit Kucheria <amit.kucheria@verdurent.com>
-Cc: List Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mfd: fix more undefined twl4030-power resconfig value
- checks
-Message-ID: <20091021222627.GD17796@sortiz.org>
-References: <1256125762-10069-1-git-send-email-amit.kucheria@verdurent.com>
+	Wed, 21 Oct 2009 18:27:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xonlkxq38KQnp9DHtd0AIdAZv/7vhGfjPuu15WHUQ8QuZtVHGc9vHmL7moufdZNd0D
+         hPEzkz6oD/NWVyYJbYMj/Gkvh9xR52dyFjrsCHKF3NNzW5pk1FREEUw/PE8Qldc9d0aw
+         d3s3O1quNn2AwTZx5ggZoGjwcUmSz4pfENoUQ=
+Date: Thu, 22 Oct 2009 00:27:59 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: John Kacur <jkacur@redhat.com>
+Cc: Arnd Bergmann <arndbergmann@googlemail.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
+Message-ID: <20091021222758.GG4880@nowhere>
+References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain> <alpine.LFD.2.00.0910192019420.3563@localhost.localdomain> <200910200000.24574.arnd@arndb.de> <200910200008.57468.arnd@arndb.de> <20091021213139.GC4880@nowhere> <alpine.LFD.2.00.0910212336290.3526@localhost.localdomain> <20091021215553.GE4880@nowhere> <alpine.LFD.2.00.0910220001470.3526@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1256125762-10069-1-git-send-email-amit.kucheria@verdurent.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <alpine.LFD.2.00.0910220001470.3526@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2009 at 02:49:22PM +0300, Amit Kucheria wrote:
-> Based on Aaro's previous fix, this needs to be fixed for the newly added
-> remap_off and remap_sleep resources as well.
+On Thu, Oct 22, 2009 at 12:06:32AM +0200, John Kacur wrote:
+> Okay, I'm sure there is something wrong in this methodology, but it's late 
+> at night. At least for a ballpark figure, hopefully it's right.
 > 
-> The code tries to skip values initialized with -1, but since the values
-> are unsigned the comparison is always true.
+> Files that mentions "file_operations" - 
+> Files that mention "file_operations" and mention "llseek"
+> = 1172 - 596 = 572 (in my particular git repo)
 > 
-> The patch eliminates the following compiler warnings:
+> So, over 550 files that need to be set to no_llseek, locked_llseek, or 
+> unlocked_llseek. Yikes!
 > 
-> drivers/mfd/twl4030-power.c: In function 'twl4030_configure_resource':
-> drivers/mfd/twl4030-power.c:338: warning: comparison is always true due to
-> limited range of data type
-Thanks Amit, patch applied.
-
-Cheers,
-Samuel.
-
- 
-> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-> Cc: Samuel Ortiz <sameo@linux.intel.com>
-> ---
->  drivers/mfd/twl4030-power.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
-> index 9f98c36..3048f18 100644
-> --- a/drivers/mfd/twl4030-power.c
-> +++ b/drivers/mfd/twl4030-power.c
-> @@ -398,12 +398,12 @@ static int __init twl4030_configure_resource(struct twl4030_resconfig *rconfig)
->  		return err;
->  	}
->  
-> -	if (rconfig->remap_off >= 0) {
-> +	if (rconfig->remap_off != TWL4030_RESCONFIG_UNDEF) {
->  		remap &= ~OFF_STATE_MASK;
->  		remap |= rconfig->remap_off << OFF_STATE_SHIFT;
->  	}
->  
-> -	if (rconfig->remap_sleep >= 0) {
-> +	if (rconfig->remap_sleep != TWL4030_RESCONFIG_UNDEF) {
->  		remap &= ~SLEEP_STATE_MASK;
->  		remap |= rconfig->remap_off << SLEEP_STATE_SHIFT;
->  	}
-> -- 
-> 1.6.3.3
+> [jkacur@tycho rt.linux.git]$ git-grep -l file_operations | grep -v 
+> Documentation | wc -l
+> 1172
+> [jkacur@tycho rt.linux.git]$ git-grep -l llseek $(git-grep -l 
+> file_operations | grep -v Documentation) | wc -l
+> 596
 > 
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+
+So much?
+
+Ok, a default_lseek pushdown patch wouldn't be accepted :)
+
+Well, I guess we first need to fix the sites that explicitly use the
+bkl, one by one, and after that probably propose a new locked version but
+without the bkl...
+
