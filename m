@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZJUWMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbZJUWH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbZJUWMi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 18:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbZJUWMi
+	id S1755437AbZJUWH0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 18:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbZJUWH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 18:12:38 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:52777 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755196AbZJUWMh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 18:12:37 -0400
-Message-ID: <4ADF8530.7070703@zytor.com>
-Date: Thu, 22 Oct 2009 07:03:28 +0900
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 21 Oct 2009 18:07:26 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:34337 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755223AbZJUWHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 18:07:25 -0400
+Date: Thu, 22 Oct 2009 00:06:32 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Arnd Bergmann <arndbergmann@googlemail.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
+In-Reply-To: <20091021215553.GE4880@nowhere>
+Message-ID: <alpine.LFD.2.00.0910220001470.3526@localhost.localdomain>
+References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain> <alpine.LFD.2.00.0910192019420.3563@localhost.localdomain> <200910200000.24574.arnd@arndb.de> <200910200008.57468.arnd@arndb.de> <20091021213139.GC4880@nowhere>
+ <alpine.LFD.2.00.0910212336290.3526@localhost.localdomain> <20091021215553.GE4880@nowhere>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-CC: mtk.manpages@gmail.com, Matt Helsley <matthltc@us.ibm.com>,
-       randy.dunlap@oracle.com, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       Louis.Rilling@kerlabs.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu,
-       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v8][PATCH 9/10]: Define clone3() syscall
-References: <20091013044925.GA28181@us.ibm.com> <20091013045439.GI28435@us.ibm.com> <20091016042041.GA7220@us.ibm.com> <cfd18e0f0910152325m4a9125c2q18f36f5bd7d4a0@mail.gmail.com> <20091016180631.GA31036@us.ibm.com> <20091019174405.GE27627@count0.beaverton.ibm.com> <4ADCDAA8.5080408@zytor.com> <20091019235012.GF27627@count0.beaverton.ibm.com> <cfd18e0f0910202126w1ebfa2e2u2ecbaa23b198d100@mail.gmail.com> <4ADF06B7.50508@zytor.com> <20091021194440.GA1283@us.ibm.com>
-In-Reply-To: <20091021194440.GA1283@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/22/2009 04:44 AM, Sukadev Bhattiprolu wrote:
->>
->> "3" is number of arguments.
->
-> To me, it is a version number.
->
-> mmap() and mmap2() both have 6 parameters.
->
 
-You keep bringing this up.  mmap2() is (a) a non-user-visible call; (b) 
-an exception (a mistake, if you want.)
 
-> Besides if wait4() were born before wait3(), would it still be wait4() :-)
+On Wed, 21 Oct 2009, Frederic Weisbecker wrote:
 
-Yes.  wait3() came before wait4(), but there never was a wait2().
+> On Wed, Oct 21, 2009 at 11:41:07PM +0200, John Kacur wrote:
+> > > What about a pusdown of default_lseek attribution for these
+> > > fops that don't have any llseek() (and rename it to
+> > > deprecated_default_lseek() )
+> > > 
+> > > Because we can probably fix these fops one by one but what
+> > > about the next drivers that will have no llseek() ?
+> > > 
+> > > We can't attribute default_llseek() by default anymore for
+> > > further fops that are to come.
+> > > 
+> > > 
+> > 
+> > Frederic, I think it is still useful to explicity set to no_llseek, 
+> > drivers that don't use llseek.
+> 
+> 
+> Yeah, I agreed.
+> 
+> 
+>  
+> > I also have to agree with you, that we should no longer be using a 
+> > default_llseek that relies on the BKL.
+> > 
+> > That is a rather large effort though. All drivers that don't specify an 
+> > llseek function, need to either set it to no_llseek, or as you are 
+> > proposing a deprecated default_llseek that uses the bkl.
+> > 
+> > thinking of how to start this.
+> > 
+> > John
+> 
+> 
+> This is a rather large effort indeed but this pushdown seems
+> the only way to remove default_llseek as the default llseek()
+> callback.
+> 
+> The more we wait, the more code we'll need to review and fix.
+> 
 
-> But I see that it is hard to get one-convention-that-fits-all.
->
->> It's better than "extended" or something
->> like that simply because "extended" just means "more than", and a number
->> at least tells you *how much more than*.
->
-> And extended assumes we wont extend again.
+Okay, I'm sure there is something wrong in this methodology, but it's late 
+at night. At least for a ballpark figure, hopefully it's right.
 
-Exactly.
+Files that mentions "file_operations" - 
+Files that mention "file_operations" and mention "llseek"
+= 1172 - 596 = 572 (in my particular git repo)
 
-	-hpa
+So, over 550 files that need to be set to no_llseek, locked_llseek, or 
+unlocked_llseek. Yikes!
+
+[jkacur@tycho rt.linux.git]$ git-grep -l file_operations | grep -v 
+Documentation | wc -l
+1172
+[jkacur@tycho rt.linux.git]$ git-grep -l llseek $(git-grep -l 
+file_operations | grep -v Documentation) | wc -l
+596
+
