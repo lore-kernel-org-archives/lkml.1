@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbZJUNLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbZJUNOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753321AbZJUNLG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 09:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbZJUNLG
+	id S1753382AbZJUNOR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 09:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZJUNOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 09:11:06 -0400
-Received: from ozlabs.org ([203.10.76.45]:43563 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751897AbZJUNLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 09:11:05 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: Problems with string (charp) module parameters
-Date: Wed, 21 Oct 2009 23:41:03 +1030
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <s5haazv1sw5.wl%tiwai@suse.de>
-In-Reply-To: <s5haazv1sw5.wl%tiwai@suse.de>
+	Wed, 21 Oct 2009 09:14:16 -0400
+Received: from ru.mvista.com ([213.79.90.228]:4322 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753110AbZJUNOP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 09:14:15 -0400
+Message-ID: <4ADF093D.10403@ru.mvista.com>
+Date: Wed, 21 Oct 2009 17:14:37 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: rostedt@goodmis.org
+Cc: wuzhangjin@gmail.com, Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: ftrace for MIPS
+References: <1255995599.17795.15.camel@falcon>	 <1255997319.18347.576.camel@gandalf.stny.rr.com>	 <1256052667.8149.56.camel@falcon> <1256055714.18347.1608.camel@gandalf.stny.rr.com>
+In-Reply-To: <1256055714.18347.1608.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910212341.06025.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009 09:07:46 pm Takashi Iwai wrote:
-> While I tried to add some debug option to a driver, I found that a module
-> parameter taking a string (charp) gives Oops when set via sysfs:
+Hello.
 
-Hi Takashi,
+Steven Rostedt wrote:
 
-   Always nice to receive a good analysis like this: thanks!
+>>Need to check which registers is missing when saving/restoring for
+>>_mcount:
 
-> * Each struct kernel_param instance is defined as const, and is put
->   into __param section, which is read-only.
->   I guess this causes the page fault above.  And...
+>>NESTED(ftrace_graph_caller, PT_SIZE, ra) 
+>>        MCOUNT_SAVE_REGS
+>>        PTR_S   v0, PT_R2(sp)
+>>
+>>        MCOUNT_SET_ARGS
+>>        jal     prepare_ftrace_return
+>>        nop
+>>
+>>        /* overwrite the parent as &return_to_handler: v0 -> $1(at) */
+>>        move    $1,     v0  
 
-Ah yes, that's bad, but we could fix that.
+> I'm confused here? I'm not exactly sure what the above is doing. Is $1 a
+> register (AT)?
 
-> * The above NULL check is invalid.  It should be
-> 		if (!*(char **)kp->arg)
-> 			return -ENOMEM
->   This is easy, however...
+    Yes.
 
-Good spotting.
+> And how is this register used before calling mcount?
 
-> * The handling of parameter array is pretty buggy now.
->   kp->perm and kp->flags aren't properly initialized in
->   param_array().  Thus, you might call kfree() with invalid pointers,
->   or pass a wrong type for bool.
+>>        PTR_L   v0, PT_R2(sp)
+>>        MCOUNT_RESTORE_REGS
+>>        RETURN_BACK
+>>        END(ftrace_graph_caller)
 
-Yes, an array of charp isn't going to work.  Erk, I switched one bug for
-another :(
+>>        .align  2
+>>        .globl  return_to_handler
+>>return_to_handler:
+>>        PTR_SUBU        sp, PT_SIZE
+>>        PTR_S   v0, PT_R2(sp)
 
-> So, the situation looks messy right now, not only about the section
-> issue.  If we allow kmalloc of each parameter array element, the flag
-> must be associated to each element, not a global one to the array.
-> 
-> Thoughts?
+> BTW, is v0 the only return register? I know x86 can return two different
+> registers depending on what it returns. What happens if a function
+> returns a 64 bit value on a 32bit box? Does it use two registers for
+> that?
 
-Yes, that's hard.  There's only one place which currently has a writable
-array parameter: drivers/usb/atm/ueagle-atm.c, and it's root only.
+    Yes, there's also v1 register.
 
-OK, for 2.6.32, we remove the const.  In the longer term, I'm reworking how
-this is done entirely.
-
-Thanks!
-Rusty.
+WBR, Sergei
