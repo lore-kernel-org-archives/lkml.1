@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753591AbZJUOnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbZJUOjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753591AbZJUOnK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 10:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbZJUOnJ
+	id S1753767AbZJUOjl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 10:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbZJUOjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 10:43:09 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:40962 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750756AbZJUOnI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 10:43:08 -0400
-Message-ID: <4ADF1DE1.2070303@austin.ibm.com>
-Date: Wed, 21 Oct 2009 09:42:41 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 21 Oct 2009 10:39:40 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:48365 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753626AbZJUOjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 10:39:39 -0400
+Message-ID: <4ADF1E0B.5010708@redhat.com>
+Date: Wed, 21 Oct 2009 10:43:23 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5 v4] move of_drconf_cell definition to prom.h
-References: <4ADF1C49.2030201@austin.ibm.com>
-In-Reply-To: <4ADF1C49.2030201@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, Jim Keniston <jkenisto@us.ibm.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip perf/probes 0/2] x86 insn decoder bugfixes
+References: <20091020165518.4145.94115.stgit@dhcp-100-2-132.bos.redhat.com> <20091021112619.GA16586@elte.hu> <20091021122131.GA20626@elte.hu>
+In-Reply-To: <20091021122131.GA20626@elte.hu>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the definition of the of_drconf_cell struct from numa.c to prom.h.  This
-is needed so that we can parse the ibm,dynamic-memory device-tree property
-when DLPAR adding and removing memory.
+Ingo Molnar wrote:
+> 
+> there's still build failures:
+> 
+>    TEST    posttest
+>   Error: ffffffff8103b917:        c5 59 fc ff             vpaddb %xmm7,%xmm4,%xmm15
+>   Error: objdump says 4 bytes, but insn_get_length() says 3 (attr:8000)
+>   make[1]: *** [posttest] Error 2
+>   make: *** [bzImage] Error 2
 
-Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com>
----
+Aah, that's the AVX code...
+I assume, random-data-byte-sequence in the kernel binary
+contains it.
 
-Index: powerpc/arch/powerpc/include/asm/prom.h
-===================================================================
---- powerpc.orig/arch/powerpc/include/asm/prom.h	2009-10-19 11:56:51.000000000 -0500
-+++ powerpc/arch/powerpc/include/asm/prom.h	2009-10-19 11:59:31.000000000 -0500
-@@ -349,6 +349,18 @@
-  */
- extern void __iomem *of_iomap(struct device_node *device, int index);
- 
-+struct of_drconf_cell {
-+	u64	base_addr;
-+	u32	drc_index;
-+	u32	reserved;
-+	u32	aa_index;
-+	u32	flags;
-+};
-+
-+#define DRCONF_MEM_ASSIGNED	0x00000008
-+#define DRCONF_MEM_AI_INVALID	0x00000040
-+#define DRCONF_MEM_RESERVED	0x00000080
-+
- /*
-  * NB:  This is here while we transition from using asm/prom.h
-  * to linux/of.h
-Index: powerpc/arch/powerpc/mm/numa.c
-===================================================================
---- powerpc.orig/arch/powerpc/mm/numa.c	2009-10-19 11:56:51.000000000 -0500
-+++ powerpc/arch/powerpc/mm/numa.c	2009-10-19 11:59:31.000000000 -0500
-@@ -296,18 +296,6 @@
- 	return result;
- }
- 
--struct of_drconf_cell {
--	u64	base_addr;
--	u32	drc_index;
--	u32	reserved;
--	u32	aa_index;
--	u32	flags;
--};
--
--#define DRCONF_MEM_ASSIGNED	0x00000008
--#define DRCONF_MEM_AI_INVALID	0x00000040
--#define DRCONF_MEM_RESERVED	0x00000080
--
- /*
-  * Read the next lmb list entry from the ibm,dynamic-memory property
-  * and return the information in the provided of_drconf_cell structure.
+> config attached.
+
+I'll try to reproduce and fix it.
+Thank you!
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
