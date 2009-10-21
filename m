@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbZJUTUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbZJUTUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755025AbZJUTUc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbZJUTU3
+	id S1755065AbZJUTUk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbZJUTUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:20:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:25855 "EHLO mx1.redhat.com"
+	Wed, 21 Oct 2009 15:20:37 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:48672 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754961AbZJUTU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 15:20:27 -0400
+	id S1754997AbZJUTU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 15:20:29 -0400
 From: Valerie Aurora <vaurora@redhat.com>
 To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
@@ -21,10 +21,10 @@ To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Felix Fietkau <nbd@openwrt.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        Jan Blunck <jblunck@suse.de>
-Subject: [PATCH 11/41] whiteout: Set S_OPAQUE inode flag when creating directories
-Date: Wed, 21 Oct 2009 12:19:09 -0700
-Message-Id: <1256152779-10054-12-git-send-email-vaurora@redhat.com>
-In-Reply-To: <1256152779-10054-11-git-send-email-vaurora@redhat.com>
+Subject: [PATCH 12/41] union-mount: Allow removal of a directory
+Date: Wed, 21 Oct 2009 12:19:10 -0700
+Message-Id: <1256152779-10054-13-git-send-email-vaurora@redhat.com>
+In-Reply-To: <1256152779-10054-12-git-send-email-vaurora@redhat.com>
 References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-2-git-send-email-vaurora@redhat.com>
  <1256152779-10054-3-git-send-email-vaurora@redhat.com>
@@ -36,77 +36,129 @@ References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-9-git-send-email-vaurora@redhat.com>
  <1256152779-10054-10-git-send-email-vaurora@redhat.com>
  <1256152779-10054-11-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-12-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jan Blunck <jblunck@suse.de>
 
-In case of an union directory we don't want that the directories on lower
-layers of the union "show through". So to prevent that the contents of
-underlying directories magically shows up after a mkdir() we set the S_OPAQUE
-flag if directories are created where a whiteout existed before.
+do_whiteout() allows removal of a directory when it has whiteouts but
+is logically empty.
+
+XXX - This patch abuses readdir() to check if the union directory is
+logically empty - that is, all the entries are whiteouts (or "." or
+"..").  Currently, we have no clean VFS interface to ask the lower
+file system if a directory is empty.
+
+Fixes:
+ - Add ->is_directory_empty() op
+ - Add is_directory_empty flag to dentry (ugly dcache populate)
+ - Ask underlying fs to remove it and look for an error return
+ - (your idea here)
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 ---
- fs/namei.c         |   12 +++++++++++-
- include/linux/fs.h |    3 +++
- 2 files changed, 14 insertions(+), 1 deletions(-)
+ fs/namei.c |   85 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 85 insertions(+), 0 deletions(-)
 
 diff --git a/fs/namei.c b/fs/namei.c
-index d2fc8c9..5da1635 100644
+index 5da1635..9a62c75 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2108,6 +2108,7 @@ SYSCALL_DEFINE3(mknod, const char __user *, filename, int, mode, unsigned, dev)
- int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- {
- 	int error = may_create(dir, dentry);
-+	int opaque = 0;
- 
- 	if (error)
- 		return error;
-@@ -2121,9 +2122,18 @@ int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- 		return error;
- 
- 	vfs_dq_init(dir);
-+
-+	if (d_is_whiteout(dentry))
-+		opaque = 1;
-+
- 	error = dir->i_op->mkdir(dir, dentry, mode);
--	if (!error)
-+	if (!error) {
- 		fsnotify_mkdir(dir, dentry);
-+		if (opaque) {
-+			dentry->d_inode->i_flags |= S_OPAQUE;
-+			mark_inode_dirty(dentry->d_inode);
-+		}
-+	}
- 	return error;
+@@ -2284,6 +2284,91 @@ int vfs_whiteout(struct inode *dir, struct dentry *dentry, int isdir)
  }
  
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 04a9870..b741e50 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -232,6 +232,7 @@ struct inodes_stat_t {
- #define S_NOCMTIME	128	/* Do not update file c/mtime */
- #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
- #define S_PRIVATE	512	/* Inode is fs-internal */
-+#define S_OPAQUE	1024	/* Directory is opaque */
- 
  /*
-  * Note that nosuid etc flags are inode-specific: setting some file-system
-@@ -267,6 +268,8 @@ struct inodes_stat_t {
- #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
- #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
- 
-+#define IS_OPAQUE(inode)	((inode)->i_flags & S_OPAQUE)
++ * This is abusing readdir to check if a union directory is logically empty.
++ * Al Viro barfed when he saw this, but Val said: "Well, at this point I'm
++ * aiming for working, pretty can come later"
++ */
++static int filldir_is_empty(void *__buf, const char *name, int namlen,
++			    loff_t offset, u64 ino, unsigned int d_type)
++{
++	int *is_empty = (int *)__buf;
 +
- /* the read-only stuff doesn't really belong here, but any other place is
-    probably as bad and I don't want to create yet another include file. */
- 
++	switch (namlen) {
++	case 2:
++		if (name[1] != '.')
++			break;
++	case 1:
++		if (name[0] != '.')
++			break;
++		return 0;
++	}
++
++	if (d_type == DT_WHT)
++		return 0;
++
++	(*is_empty) = 0;
++	return 0;
++}
++
++static int directory_is_empty(struct dentry *dentry, struct vfsmount *mnt)
++{
++	struct file *file;
++	int err;
++	int is_empty = 1;
++
++	BUG_ON(!S_ISDIR(dentry->d_inode->i_mode));
++
++	/* references for the file pointer */
++	dget(dentry);
++	mntget(mnt);
++
++	file = dentry_open(dentry, mnt, O_RDONLY, current_cred());
++	if (IS_ERR(file))
++		return 0;
++
++	err = vfs_readdir(file, filldir_is_empty, &is_empty);
++
++	fput(file);
++	return is_empty;
++}
++
++static int do_whiteout(struct nameidata *nd, struct path *path, int isdir)
++{
++	struct path safe = { .dentry = dget(nd->path.dentry),
++			     .mnt = mntget(nd->path.mnt) };
++	struct dentry *dentry = path->dentry;
++	int err;
++
++	err = may_whiteout(nd->path.dentry->d_inode, dentry, isdir);
++	if (err)
++		goto out;
++
++	err = -ENOTEMPTY;
++	if (isdir && !directory_is_empty(path->dentry, path->mnt))
++		goto out;
++
++	if (nd->path.dentry != dentry->d_parent) {
++		dentry = __lookup_hash(&path->dentry->d_name, nd->path.dentry,
++				       nd);
++		err = PTR_ERR(dentry);
++		if (IS_ERR(dentry))
++			goto out;
++
++		dput(path->dentry);
++		if (path->mnt != safe.mnt)
++			mntput(path->mnt);
++		path->mnt = nd->path.mnt;
++		path->dentry = dentry;
++	}
++
++	err = vfs_whiteout(nd->path.dentry->d_inode, dentry, isdir);
++
++out:
++	path_put(&safe);
++	return err;
++}
++
++/*
+  * We try to drop the dentry early: we should have
+  * a usage count of 2 if we're the only user of this
+  * dentry, and if that is true (possibly after pruning
 -- 
 1.6.3.3
 
