@@ -1,111 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZJUTQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbZJUTUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbZJUTQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbZJUTQ6
+	id S1754902AbZJUTUQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:20:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbZJUTUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:16:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40435 "EHLO mx3.mail.elte.hu"
+	Wed, 21 Oct 2009 15:20:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:44325 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754663AbZJUTQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 15:16:57 -0400
-Date: Wed, 21 Oct 2009 21:16:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Dave Jones <davej@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, esandeen@redhat.com,
-       cebbert@redhat.com, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: XFS stack overhead
-Message-ID: <20091021191648.GA12259@elte.hu>
-References: <20091015183540.GA8098@redhat.com> <20091015190720.GA19467@elte.hu> <4ADF2DAA.9030604@redhat.com> <20091021110053.26ab9982@infradead.org> <4ADF59F8.7010205@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ADF59F8.7010205@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754812AbZJUTUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 15:20:10 -0400
+From: Valerie Aurora <vaurora@redhat.com>
+To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [RFC PATCH 00/40] Writable overlays (union mounts)
+Date: Wed, 21 Oct 2009 12:18:58 -0700
+Message-Id: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here is the current patch set for writable overlays (union mounts).
+It needs lots of review!  Especially the bits where we do nasty things
+with readdir().
 
-* Eric Sandeen <sandeen@redhat.com> wrote:
+Writable overlays let you mount one read-write file system
+transparently over another read-only file system.  This is useful for
+things like LiveCDs.  Detailed documentation and HOWTO here:
 
-> Arjan van de Ven wrote:
-> > On Wed, 21 Oct 2009 10:50:02 -0500
-> > Eric Sandeen <sandeen@redhat.com> wrote:
-> > 
-> >> Ingo Molnar wrote:
-> >>> (Cc:-ed Arjan too.)
-> >>>
-> >>> * Dave Jones <davej@redhat.com> wrote:
-> >>>
-> >>>> 113c5413cf9051cc50b88befdc42e3402bb92115 introduced a change that
-> >>>> made CC_STACKPROTECTOR_ALL not-selectable if someone enables 
-> >>>> CC_STACKPROTECTOR.
-> >>>>
-> >>>> We've noticed in Fedora that this has introduced noticable
-> >>>> overhead on some functions, including those which don't even have
-> >>>> any on-stack variables.
-> >>>>
-> >>>> According to the gcc manpage, -fstack-protector will protect
-> >>>> functions with as little as 8 bytes of stack usage. So we're
-> >>>> introducing a huge amount of overhead, to close a small amount of
-> >>>> vulnerability (the >0 && <8 case).
-> >>>>
-> >>>> The overhead as it stands right now means this whole option is 
-> >>>> unusable for a distro kernel without reverting the above commit.
-> >>> Exactly what workload showed overhead, and how much?
-> >>>
-> >>> 	Ingo
-> >> I had xfs blowing up pretty nicely; granted, xfs is not svelte but it
-> >> was never this bad before.
-> >>
-> > 
-> > do you have any indication that SP actually increases the stack
-> > footprint by that much? it's only a few bytes....
-> > 
-> > 
-> 
-> Here's a sample of some of the largest xfs stack users,
-> and the effect stack-protector had on them.  This was just
-> done with objdump -d xfs.ko | scripts/checkstack.pl; I don't
-> know if there's extra runtime stack overhead w/ stackprotector?
-> 
-> -Eric
-> 
-> function                  nostack stackprot delta delta %
-> xfs_bmapi                      376      408    32  9%
-> xfs_bulkstat                   328      344    16  5%
-> _xfs_trans_commit              296      312    16  5%
-> xfs_iomap_write_delay          264      280    16  6%
-> xfs_file_ioctl                 248      312    64 26%
-> xfs_symlink                    248      264    16  6%
-> xfs_bunmapi                    232      280    48 21%
-> xlog_do_recovery_pass          232      248    16  7%
-> xfs_trans_unreserve_and_mod_sb 224      240    16  7%
-> xfs_bmap_del_extent            216      248    32 15%
-> xfs_cluster_write              216      232    16  7%
-> xfs_file_compat_ioctl          216      296    80 37%
-> xfs_attr_set_int               200      216    16  8%
-> xfs_bmap_add_extent_delay_real 200      248    48 24%
+http://valerieaurora.org/union/
 
-Note that those are very large stack frames to begin with.
+The git version is in branch "overlay" of:
 
-3496 bytes - that's a _lot_ - can anyone even run XFS with 4K stacks on? 
+http://git.kernel.org/?p=linux/kernel/git/val/linux-2.6.git;a=summary
 
-With stackprotector it's 3928 - a 12% increase - which certainly does 
-not help - but the basic problem is the large stack footprint to begin 
-with.
+Call for maintainer: Neither Jan nor I can give this patch set the
+long term love that it needs.  If you are interested in becoming the
+maintainer for union mounts at some point in the future, please drop
+me an email.
 
-Also, the posting apparently mixes 'stack overhead' with 'runtime 
-overhead'.
+-VAL
 
-	Ingo
+Felix Fietkau (2):
+  whiteout: jffs2 whiteout support
+  fallthru: jffs2 fallthru support
+
+Jan Blunck (25):
+  VFS: BUG() if somebody tries to rehash an already hashed dentry
+  VFS: propagate mnt_flags into do_loopback
+  VFS: Make lookup_hash() return a struct path
+  VFS: Remove unnecessary micro-optimization in cached_lookup()
+  VFS: Make real_lookup() return a struct path
+  VFS: Introduce dput() variant that maintains a kill-list
+  Don't replace nameidata path when following links
+  whiteout: Don't return information about whiteouts to userspace
+  whiteout: Add vfs_whiteout() and whiteout inode operation
+  whiteout: Set S_OPAQUE inode flag when creating directories
+  union-mount: Allow removal of a directory
+  whiteout: tmpfs whiteout support
+  whiteout: Split of ext2_append_link() from ext2_add_link()
+  whiteout: ext2 whiteout support
+  whiteout: Add path_whiteout() helper
+  union-mount: Introduce MNT_UNION and MS_UNION flags
+  union-mount: Introduce union_mount structure
+  union-mount: Drive the union cache via dcache
+  union-mount: Some checks during namespace changes
+  union-mount: Changes to the namespace handling
+  union-mount: Make lookup work for union-mounted file systems
+  union-mount: stop lookup when directory has S_OPAQUE flag set
+  union-mount: stop lookup when finding a whiteout
+  union-mount: call do_whiteout() on unlink and rmdir
+  union-mount: Add support for rename by __union_copyup()
+
+Valerie Aurora (14):
+  VFS: Add read-only users count to superblock
+  union-mount: Documentation
+  union-mount: in-kernel file copy between union mounted filesystems
+  union-mount: Always create topmost directory on open
+  fallthru: Basic fallthru definitions
+  fallthru: Support for fallthru entries in union mount lookup
+  fallthru: ext2 fallthru support
+  fallthru: tmpfs fallthru support
+  union-mount: Copy up directory entries on first readdir()
+  union-mount: Increment read-only users count for read-only layer
+  union-mount: Check read-only/read-write status of layers
+  union-mount: Make pivot_root work with union mounts
+  union-mount: Ignore read-only file system in permission checks
+  union-mount: Make truncate work in all its glorious UNIX variations
+
+ Documentation/filesystems/union-mounts.txt |  708 ++++++++++++++
+ fs/Kconfig                                 |   13 +
+ fs/Makefile                                |    1 +
+ fs/autofs4/autofs_i.h                      |    1 +
+ fs/autofs4/init.c                          |   11 +-
+ fs/autofs4/root.c                          |    6 +
+ fs/compat.c                                |    9 +
+ fs/dcache.c                                |  143 +++-
+ fs/ext2/dir.c                              |  248 +++++-
+ fs/ext2/ext2.h                             |    4 +
+ fs/ext2/inode.c                            |   11 +-
+ fs/ext2/namei.c                            |   85 ++-
+ fs/ext2/super.c                            |    7 +
+ fs/jffs2/dir.c                             |  108 ++-
+ fs/jffs2/fs.c                              |    4 +
+ fs/jffs2/super.c                           |    2 +-
+ fs/libfs.c                                 |   21 +-
+ fs/namei.c                                 | 1424 +++++++++++++++++++++++++---
+ fs/namespace.c                             |  120 +++-
+ fs/nfsctl.c                                |    6 +-
+ fs/nfsd/nfs3xdr.c                          |    5 +
+ fs/nfsd/nfs4xdr.c                          |    2 +-
+ fs/nfsd/nfsxdr.c                           |    4 +
+ fs/open.c                                  |  130 +--
+ fs/readdir.c                               |   26 +
+ fs/super.c                                 |   14 +
+ fs/union.c                                 |  978 +++++++++++++++++++
+ include/linux/dcache.h                     |   29 +
+ include/linux/ext2_fs.h                    |    5 +
+ include/linux/fs.h                         |   15 +-
+ include/linux/jffs2.h                      |    8 +
+ include/linux/mount.h                      |    4 +
+ include/linux/namei.h                      |    6 +
+ include/linux/union.h                      |   84 ++
+ mm/shmem.c                                 |  195 ++++-
+ 35 files changed, 4172 insertions(+), 265 deletions(-)
+ create mode 100644 Documentation/filesystems/union-mounts.txt
+ create mode 100644 fs/union.c
+ create mode 100644 include/linux/union.h
+
