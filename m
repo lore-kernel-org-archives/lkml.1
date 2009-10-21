@@ -1,50 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZJUBix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbZJUBv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbZJUBix (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Oct 2009 21:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZJUBiw
+	id S1752755AbZJUBv0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Oct 2009 21:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZJUBv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Oct 2009 21:38:52 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:50235 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751284AbZJUBiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Oct 2009 21:38:51 -0400
-Date: Wed, 21 Oct 2009 10:38:46 +0900
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Nix <nix@esperi.org.uk>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-net@vger.kernel.org
-Subject: Re: [PATCH] Allow renaming of network interfaces that are up.
-Message-ID: <20091021103846.2f985ea1@s6510>
-In-Reply-To: <87vdi9ew1h.fsf_-_@spindle.srvr.nix>
-References: <87zl7rp1jy.fsf@spindle.srvr.nix>
-	<1255723078.14249.16.camel@calx>
-	<87k4yup9bd.fsf@spindle.srvr.nix>
-	<87vdi9ew1h.fsf_-_@spindle.srvr.nix>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Tue, 20 Oct 2009 21:51:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32911
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751247AbZJUBvZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Oct 2009 21:51:25 -0400
+Date: Tue, 20 Oct 2009 18:51:48 -0700 (PDT)
+Message-Id: <20091020.185148.193710136.davem@davemloft.net>
+To: sfking@fdwdc.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2] fix section mismatch in fec.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200910201600.10545.sfking@fdwdc.com>
+References: <200910201600.10545.sfking@fdwdc.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Oct 2009 19:54:02 +0100
-Nix <nix@esperi.org.uk> wrote:
+From: Steven King <sfking@fdwdc.com>
+Date: Tue, 20 Oct 2009 16:00:10 -0700
 
-> The ancient restriction banning renaming of busy network interfaces appears
-> to be purposeless. Everything that depends on a network interface's name is
-> done under the dev_base_lock in any case.
+> fec_enet_init is called by both fec_probe and fec_resume, so it shouldn't 
+> be marked as __init.
 > 
-> This makes it much easier to use things like netconsole which bring up a
-> network interface before userspace has started: presently these will cause
-> interface renamings to fail, breaking any userspace that relies on renaming
-> devices to avoid reliance on the potentially-unstable kernel-assigned name.
-> 
-> Signed-off-by: Nick Alcock <nix@esperi.org.uk>
-> ---
->  net/core/dev.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
+> Signed-off-by: Steven King <sfking@fdwdc.com>
 
-This breaks quagga and other applications that track renames.
+Applied, thanks.
