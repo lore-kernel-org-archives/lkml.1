@@ -1,91 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbZJUWH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbZJUWJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437AbZJUWH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 18:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbZJUWH0
+	id S1755654AbZJUWJM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 18:09:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbZJUWJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 18:07:26 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:34337 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755223AbZJUWHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 18:07:25 -0400
-Date: Thu, 22 Oct 2009 00:06:32 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Arnd Bergmann <arndbergmann@googlemail.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
-In-Reply-To: <20091021215553.GE4880@nowhere>
-Message-ID: <alpine.LFD.2.00.0910220001470.3526@localhost.localdomain>
-References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain> <alpine.LFD.2.00.0910192019420.3563@localhost.localdomain> <200910200000.24574.arnd@arndb.de> <200910200008.57468.arnd@arndb.de> <20091021213139.GC4880@nowhere>
- <alpine.LFD.2.00.0910212336290.3526@localhost.localdomain> <20091021215553.GE4880@nowhere>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 21 Oct 2009 18:09:11 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:13732 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754937AbZJUWJK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 18:09:10 -0400
+Date: Thu, 22 Oct 2009 03:09:09 +0500
+From: Constantin Baranov <const@mimas.ru>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH] leds-alix2: add support for button connected to J15
+Message-Id: <20091022030909.742b3ba1.const@mimas.ru>
+In-Reply-To: <20091022023928.2a8afea8.const@mimas.ru>
+References: <20091016130315.GT28832@buzzloop.caiaq.de>
+	<20091018072738.GF3935@core.coreip.homeip.net>
+	<20091019073728.GC28832@buzzloop.caiaq.de>
+	<20091020013852.GC24370@core.coreip.homeip.net>
+	<20091020101357.GR28832@buzzloop.caiaq.de>
+	<20091021043553.GA378@core.coreip.homeip.net>
+	<20091021193347.GL14091@buzzloop.caiaq.de>
+	<20091022012121.5b35ff22.const@mimas.ru>
+	<20091021204158.GN14091@buzzloop.caiaq.de>
+	<20091022023928.2a8afea8.const@mimas.ru>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 21 Oct 2009, Frederic Weisbecker wrote:
-
-> On Wed, Oct 21, 2009 at 11:41:07PM +0200, John Kacur wrote:
-> > > What about a pusdown of default_lseek attribution for these
-> > > fops that don't have any llseek() (and rename it to
-> > > deprecated_default_lseek() )
-> > > 
-> > > Because we can probably fix these fops one by one but what
-> > > about the next drivers that will have no llseek() ?
-> > > 
-> > > We can't attribute default_llseek() by default anymore for
-> > > further fops that are to come.
-> > > 
-> > > 
+On Thu, 22 Oct 2009 02:39:28 +0500 Constantin Baranov <const@mimas.ru> wrote:
+> On Wed, 21 Oct 2009 22:41:58 +0200 Daniel Mack <daniel@caiaq.de> wrote:
+> > On Thu, Oct 22, 2009 at 01:21:21AM +0500, Constantin Baranov wrote:
+> > > I wonder why do you integrate the input driver into the leds driver. They
+> > > should be separated. Or at least the complex driver should be moved to the
+> > > "X86 Platform Specific Device Drivers" and renamed to some like "PC Engines
+> > > ALIX Extras". I personally would prefer the separation way.
 > > 
-> > Frederic, I think it is still useful to explicity set to no_llseek, 
-> > drivers that don't use llseek.
+> > I would as well, yes. And I was of course considerating this when I
+> > hacked these lines. However, the major part of the LED driver and what
+> > it currently shares with the button implementation is the BIOS detection
+> > code which is so ugly that I didn't want to duplicate it ;) That would,
+> > however, be the only option if you wanted to split the drivers up. Or
+> > do you have any better idea?
 > 
-> 
-> Yeah, I agreed.
-> 
-> 
->  
-> > I also have to agree with you, that we should no longer be using a 
-> > default_llseek that relies on the BKL.
-> > 
-> > That is a rather large effort though. All drivers that don't specify an 
-> > llseek function, need to either set it to no_llseek, or as you are 
-> > proposing a deprecated default_llseek that uses the bkl.
-> > 
-> > thinking of how to start this.
-> > 
-> > John
-> 
-> 
-> This is a rather large effort indeed but this pushdown seems
-> the only way to remove default_llseek as the default llseek()
-> callback.
-> 
-> The more we wait, the more code we'll need to review and fix.
-> 
+> We may introduce new ALIX2 extended platform (module in arch/x86/kernel).
+> In the init function it shall perform detection. The module shall export
+> the is_alix2() function which shall be called from init functions of drivers.
+> Also the cs5535_gpio driver could be reused for gpio access (the previous
+> patch for leds-alix2 is copy&paste from cs5535_gpio).
 
-Okay, I'm sure there is something wrong in this methodology, but it's late 
-at night. At least for a ballpark figure, hopefully it's right.
+Moreover, the cs5535_gpio driver itself could be reworked and ported to
+the gpiolib. This goes far from initial task (button support) indeed :)
 
-Files that mentions "file_operations" - 
-Files that mention "file_operations" and mention "llseek"
-= 1172 - 596 = 572 (in my particular git repo)
-
-So, over 550 files that need to be set to no_llseek, locked_llseek, or 
-unlocked_llseek. Yikes!
-
-[jkacur@tycho rt.linux.git]$ git-grep -l file_operations | grep -v 
-Documentation | wc -l
-1172
-[jkacur@tycho rt.linux.git]$ git-grep -l llseek $(git-grep -l 
-file_operations | grep -v Documentation) | wc -l
-596
-
+Constantin
