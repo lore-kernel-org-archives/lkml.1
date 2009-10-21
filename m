@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbZJUFSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751731AbZJUFBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751981AbZJUFSq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 01:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZJUFSp
+	id S1751731AbZJUFBJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 01:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZJUFBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 01:18:45 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:48187 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbZJUFSo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 01:18:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=QMRP6y9puAtuMdS+8V3mTuwp928okDlXuP0M8FWU5UljLtjSuh0ZWnEmdNxnvmibv7
-         ywoqd0DgIqjmvGwZz0TVVpNdRnwlDOVbZ1KYav1pq6gGa0A1XFIVbHddSF6pSTJ02yO+
-         UC1+L3SSvvpZyGwgaVYZy72kRtf8+HrBmt+J8=
+	Wed, 21 Oct 2009 01:01:08 -0400
+Received: from thunk.org ([69.25.196.29]:57929 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751404AbZJUFBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 01:01:07 -0400
+Date: Wed, 21 Oct 2009 00:48:34 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Eric Anholt <eric@anholt.net>,
+       linux-kernel@vger.kernel.org, Keith Packard <keithp@keithp.com>,
+       Chris Wilson <chris@chris-wilson.co.uk>
+Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with
+	T400 laptops
+Message-ID: <20091021044834.GA18788@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	"Carlos R. Mafra" <crmafra2@gmail.com>,
+	Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+	Keith Packard <keithp@keithp.com>,
+	Chris Wilson <chris@chris-wilson.co.uk>
+References: <20091012120510.16bd1194@jbarnes-g45> <20091013023146.GA8414@mit.edu> <20091013100135.2b3d914f@jbarnes-g45> <20091013190055.GI8175@mit.edu> <20091013121426.35f409ff@jbarnes-g45> <20091014142252.009d03a5@jbarnes-g45> <20091015022645.GA8286@mit.edu> <20091015040204.GE8286@mit.edu> <20091019100437.22b6ea36@jbarnes-x200> <20091019101526.5496d5ed@jbarnes-x200>
 MIME-Version: 1.0
-In-Reply-To: <20091018113908.GR4808@kryten>
-References: <20091018113908.GR4808@kryten>
-Date: Wed, 21 Oct 2009 12:47:47 +0800
-Message-ID: <2375c9f90910202147p5af0eb86oe2cad800a74ce40a@mail.gmail.com>
-Subject: Re: [PATCH] exec: setup_arg_pages fails to return errors
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091019101526.5496d5ed@jbarnes-x200>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 18, 2009 at 7:39 PM, Anton Blanchard <anton@samba.org> wrote:
->
-> In setup_arg_pages we work hard to assign a value to ret, but on exit
-> we always return 0.
->
-> Also remove a now duplicated exit path and branch to out_unlock instead.
->
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
+On Mon, Oct 19, 2009 at 10:15:26AM +0900, Jesse Barnes wrote:
+> > 
+> > Ok, hopefully this is the "correct" patch.  It works for me, can you
+> > give it a try?
+> 
+> Here's an even more "final" patchset with some spurious hunks removed.
 
+This seems to work for me, thanks!!!
 
-Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
-
->
-> Index: linux.trees.git/fs/exec.c
-> ===================================================================
-> --- linux.trees.git.orig/fs/exec.c      2009-09-28 12:17:10.000000000 +1000
-> +++ linux.trees.git/fs/exec.c   2009-09-28 12:17:58.000000000 +1000
-> @@ -624,10 +624,8 @@ int setup_arg_pages(struct linux_binprm
->        /* Move stack pages down in memory. */
->        if (stack_shift) {
->                ret = shift_arg_pages(vma, stack_shift);
-> -               if (ret) {
-> -                       up_write(&mm->mmap_sem);
-> -                       return ret;
-> -               }
-> +               if (ret)
-> +                       goto out_unlock;
->        }
->
->  #ifdef CONFIG_STACK_GROWSUP
-> @@ -641,7 +639,7 @@ int setup_arg_pages(struct linux_binprm
->
->  out_unlock:
->        up_write(&mm->mmap_sem);
-> -       return 0;
-> +       return ret;
->  }
->  EXPORT_SYMBOL(setup_arg_pages);
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+					- Ted
