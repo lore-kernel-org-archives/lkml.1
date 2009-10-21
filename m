@@ -1,89 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZJUS7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbZJUTJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbZJUS7q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 14:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbZJUS7q
+	id S1754798AbZJUTJN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbZJUTJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 14:59:46 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:65012 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753934AbZJUS7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 14:59:45 -0400
-Message-ID: <4ADF59F8.7010205@redhat.com>
-Date: Wed, 21 Oct 2009 13:59:04 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Dave Jones <davej@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, esandeen@redhat.com,
-       cebbert@redhat.com, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Unnecessary overhead with stack protector.
-References: <20091015183540.GA8098@redhat.com>	<20091015190720.GA19467@elte.hu>	<4ADF2DAA.9030604@redhat.com> <20091021110053.26ab9982@infradead.org>
-In-Reply-To: <20091021110053.26ab9982@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Oct 2009 15:09:12 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:65418 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754111AbZJUTJM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 15:09:12 -0400
+Message-id: <4ADF5C49.2040101@acm.org>
+Date: Wed, 21 Oct 2009 14:08:57 -0500
+From: Corey Minyard <minyard@acm.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+MIME-version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] MAINTAINERS: openipmi list is moderated
+References: <20091021104039.dfb0d771.randy.dunlap@oracle.com>
+In-reply-to: <20091021104039.dfb0d771.randy.dunlap@oracle.com>
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Wed, 21 Oct 2009 10:50:02 -0500
-> Eric Sandeen <sandeen@redhat.com> wrote:
-> 
->> Ingo Molnar wrote:
->>> (Cc:-ed Arjan too.)
->>>
->>> * Dave Jones <davej@redhat.com> wrote:
->>>
->>>> 113c5413cf9051cc50b88befdc42e3402bb92115 introduced a change that
->>>> made CC_STACKPROTECTOR_ALL not-selectable if someone enables 
->>>> CC_STACKPROTECTOR.
->>>>
->>>> We've noticed in Fedora that this has introduced noticable
->>>> overhead on some functions, including those which don't even have
->>>> any on-stack variables.
->>>>
->>>> According to the gcc manpage, -fstack-protector will protect
->>>> functions with as little as 8 bytes of stack usage. So we're
->>>> introducing a huge amount of overhead, to close a small amount of
->>>> vulnerability (the >0 && <8 case).
->>>>
->>>> The overhead as it stands right now means this whole option is 
->>>> unusable for a distro kernel without reverting the above commit.
->>> Exactly what workload showed overhead, and how much?
->>>
->>> 	Ingo
->> I had xfs blowing up pretty nicely; granted, xfs is not svelte but it
->> was never this bad before.
->>
-> 
-> do you have any indication that SP actually increases the stack
-> footprint by that much? it's only a few bytes....
-> 
-> 
+Yes, it is true, got too many spam complaints.
 
-Here's a sample of some of the largest xfs stack users,
-and the effect stack-protector had on them.  This was just
-done with objdump -d xfs.ko | scripts/checkstack.pl; I don't
-know if there's extra runtime stack overhead w/ stackprotector?
+Acked-by: Corey Minyard <cminyard@mvista.com>
 
--Eric
-
-function                  nostack stackprot delta delta %
-xfs_bmapi                      376      408    32  9%
-xfs_bulkstat                   328      344    16  5%
-_xfs_trans_commit              296      312    16  5%
-xfs_iomap_write_delay          264      280    16  6%
-xfs_file_ioctl                 248      312    64 26%
-xfs_symlink                    248      264    16  6%
-xfs_bunmapi                    232      280    48 21%
-xlog_do_recovery_pass          232      248    16  7%
-xfs_trans_unreserve_and_mod_sb 224      240    16  7%
-xfs_bmap_del_extent            216      248    32 15%
-xfs_cluster_write              216      232    16  7%
-xfs_file_compat_ioctl          216      296    80 37%
-xfs_attr_set_int               200      216    16  8%
-xfs_bmap_add_extent_delay_real 200      248    48 24%
+Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> openipmi list is moderated.
+>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  MAINTAINERS |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> --- lnx-2632-rc5.orig/MAINTAINERS
+> +++ lnx-2632-rc5/MAINTAINERS
+> @@ -2829,7 +2829,7 @@ F:	drivers/infiniband/hw/ipath/
+>  
+>  IPMI SUBSYSTEM
+>  M:	Corey Minyard <minyard@acm.org>
+> -L:	openipmi-developer@lists.sourceforge.net
+> +L:	openipmi-developer@lists.sourceforge.net (moderated for non-subscribers)
+>  W:	http://openipmi.sourceforge.net/
+>  S:	Supported
+>  F:	Documentation/IPMI.txt
+>
+>   
 
