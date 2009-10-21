@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZJUN5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbZJUOKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbZJUN5I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 09:57:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbZJUN5H
+	id S1753529AbZJUOKS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 10:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbZJUOKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 09:57:07 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:60556 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751980AbZJUN5G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 09:57:06 -0400
-Date: Wed, 21 Oct 2009 15:56:53 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Alan Cox <alan@linux.intel.com>
-Subject: Re: [PATCH] serial/atmel_serial: Fix another fallout of the change
-	to BUILD_BUG_ON
-Message-ID: <20091021135653.GA2064@pengutronix.de>
-References: <1255417680-25609-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091013092644.72c78334@hskinnemoen-d830> <20091013082447.GA3194@pengutronix.de> <20091021122709.GA332@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 21 Oct 2009 10:10:17 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:4765 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbZJUOKQ convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;11:1>);
+	Wed, 21 Oct 2009 10:10:16 -0400
+Message-Id: <4ADF32A0020000780001B20A@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Wed, 21 Oct 2009 15:11:12 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Thomas Schlichter" <thomas.schlichter@web.de>
+Cc: "Jeremy Fitzhardinge" <jeremy.fitzhardinge@citrix.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Robert Hancock" <hancockrwd@gmail.com>,
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       "Suresh Siddha" <suresh.b.siddha@intel.com>,
+       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
+       "Tejun Heo" <tj@kernel.org>, <x86@kernel.org>,
+       "Yinghai Lu" <yinghai@kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Arjan van de Ven" <arjan@linux.intel.com>,
+       <dri-devel@lists.sourceforge.net>, "Ingo Molnar" <mingo@redhat.com>,
+       <linux-kernel@vger.kernel.org>, <jbarnes@virtuousgeek.org>,
+       "Thomas Hellstrom" <thellstrom@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
+	 available
+References: <1394846127@web.de>
+In-Reply-To: <1394846127@web.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091021122709.GA332@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+>>> Thomas Schlichter <thomas.schlichter@web.de> 21.10.09 15:45 >>>
+>Ingo Molnar wrote:
+>> Can we eliminate mtrr_add_unaligned() as Suresh suggested, and still 
+>> make it work on your testbox?
+>
+>Yes, I had that in the first place, but Jan suggested to extend it to also
+>handle non-aligned, non-power-of-two cases:
+>  http://marc.info/?l=linux-kernel&m=125541951529918&w=2 
 
-On Wed, Oct 21, 2009 at 01:27:09PM +0100, Russell King - ARM Linux wrote:
-> On Tue, Oct 13, 2009 at 10:24:47AM +0200, Uwe Kleine-König wrote:
-> > Hello Andrew,
-> > 
-> > On Tue, Oct 13, 2009 at 09:26:44AM +0200, Haavard Skinnemoen wrote:
-> > > Uwe Kleine-König <u.kleine-koenig@pengutronix.de> wrote:
-> > > > Commit 8c87df457cb5 fixed BUILD_BUG_ON with the result that some
-> > > > expressions (e.g. "not really constant" ones) result in a build failure.
-> > > > 
-> > > > Some of these were fixed in 8c87df457cb5, but not serial/atmel_serial.
-> > > 
-> > > This patch fixes the same issue:
-> > > 
-> > > http://lkml.org/lkml/2009/10/6/305
-> > Can you please take this and add my Ack?
-> > 
-> > If you cannot find it anymore in your inbox, you can get it from
-> > http://article.gmane.org/gmane.linux.kernel/898575/raw
-> 
-> So what's happening with this?
-The patch by Haavard Skinnemoen is in -mm as
+I merely pointed out it wouldn't work for unaligned addresses or sizes
+passed in.
 
-	atmel_serial-fix-bad-build_bug_on-usage.patch
+>So if it's OK for Jan, I'll reduce the functionality again and use mtrr_add()
+>instead. Btw. this simply means to drop mtrr_add_unaligned(), all the other
+>parts are still required for reference counting and a proper mtrr_del() on file
+>close.
 
-.
+I'm perfectly fine with just handling the aligned case, as long as the code
+checks that the alignment constraints are met.
 
-Best regards
-Uwe
+Jan
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
