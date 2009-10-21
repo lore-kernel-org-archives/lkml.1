@@ -1,948 +1,527 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZJUTeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZJUTeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbZJUTeX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbZJUTeW
+	id S1755027AbZJUTeV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbZJUTeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:34:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37637 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754819AbZJUTeS (ORCPT
+	Wed, 21 Oct 2009 15:34:20 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:30838 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754853AbZJUTeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 15:34:18 -0400
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
-Subject: [PATCH 1/1] perf tools: Unify debug messages mechanisms
-Date: Wed, 21 Oct 2009 17:34:06 -0200
-Message-Id: <1256153646-10097-1-git-send-email-acme@redhat.com>
-X-Mailer: git-send-email 1.6.2.5
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 21 Oct 2009 15:34:17 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -14.389
+Message-ID: <4ADF6237.9070004@tremplin-utc.net>
+Date: Wed, 21 Oct 2009 21:34:15 +0200
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091009 Mandriva/2.0.0.23-3mdv2010.0 (2010.0) Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work	anymore
+References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <4AD75AC0.6020705@tremplin-utc.net> <20091015181336.GB8544@core.coreip.homeip.net> <4AD778C7.4070707@tremplin-utc.net> <20091015195136.GD8544@core.coreip.homeip.net> <4AD7953B.5040506@tremplin-utc.net> <20091015215944.GA9845@core.coreip.homeip.net>
+In-Reply-To: <20091015215944.GA9845@core.coreip.homeip.net>
+Content-Type: multipart/mixed;
+ boundary="------------030306060809090904070809"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We were using eprintf in some places, that looks at a global 'verbose'
-level, and at other places passing a 'v' parameter to specify the
-verbosity level, unify it by introducing pr_{err,warning,debug,etc},
-just like in the kernel.
+This is a multi-part message in MIME format.
+--------------030306060809090904070809
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/builtin-annotate.c          |    3 +-
- tools/perf/builtin-probe.c             |   20 +++---
- tools/perf/builtin-record.c            |    2 +-
- tools/perf/builtin-report.c            |    9 +-
- tools/perf/builtin-sched.c             |    4 +-
- tools/perf/builtin-timechart.c         |   13 ++--
- tools/perf/builtin-top.c               |    2 +-
- tools/perf/builtin-trace.c             |    4 +-
- tools/perf/util/callchain.c            |    2 +-
- tools/perf/util/debug.c                |    4 +-
- tools/perf/util/debug.h                |    3 +-
- tools/perf/util/event.h                |    3 +-
- tools/perf/util/header.c               |    2 +-
- tools/perf/util/include/linux/kernel.h |   17 ++++
- tools/perf/util/map.c                  |   17 ++--
- tools/perf/util/probe-finder.c         |   12 ++--
- tools/perf/util/symbol.c               |  134 ++++++++++++++------------------
- tools/perf/util/symbol.h               |    5 +-
- tools/perf/util/thread.c               |    6 +-
- 19 files changed, 130 insertions(+), 132 deletions(-)
+Op 15-10-09 23:59, Dmitry Torokhov schreef:
 
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 99bac6a..6d63c2e 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -203,8 +203,7 @@ static int
- process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
- {
- 	struct map *map = map__new(&event->mmap, NULL, 0,
--				   sizeof(struct sym_priv), symbol_filter,
--				   verbose);
-+				   sizeof(struct sym_priv), symbol_filter);
- 	struct thread *thread = threads__findnew(event->mmap.pid);
- 
- 	dump_printf("%p [%p]: PERF_RECORD_MMAP %d: [%p(%p) @ %p]: %s\n",
-diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-index b5ad86a..dcb406c 100644
---- a/tools/perf/builtin-probe.c
-+++ b/tools/perf/builtin-probe.c
-@@ -78,7 +78,7 @@ static int parse_probepoint(const struct option *opt __used,
- 	if (!str)	/* The end of probe points */
- 		return 0;
- 
--	eprintf("probe-definition(%d): %s\n", session.nr_probe, str);
-+	pr_debug("probe-definition(%d): %s\n", session.nr_probe, str);
- 	if (++session.nr_probe == MAX_PROBES)
- 		semantic_error("Too many probes");
- 
-@@ -103,7 +103,7 @@ static int parse_probepoint(const struct option *opt __used,
- 				die("strndup");
- 			if (++argc == MAX_PROBE_ARGS)
- 				semantic_error("Too many arguments");
--			eprintf("argv[%d]=%s\n", argc, argv[argc - 1]);
-+			pr_debug("argv[%d]=%s\n", argc, argv[argc - 1]);
- 		}
- 	} while (*str != '\0');
- 	if (argc < 2)
-@@ -133,7 +133,7 @@ static int parse_probepoint(const struct option *opt __used,
- 		pp->line = atoi(ptr);
- 		if (!pp->file || !pp->line)
- 			semantic_error("Failed to parse line.");
--		eprintf("file:%s line:%d\n", pp->file, pp->line);
-+		pr_debug("file:%s line:%d\n", pp->file, pp->line);
- 	} else {
- 		/* Function name */
- 		ptr = strchr(arg, '+');
-@@ -150,8 +150,8 @@ static int parse_probepoint(const struct option *opt __used,
- 			pp->file = strdup(ptr);
- 		}
- 		pp->function = strdup(arg);
--		eprintf("symbol:%s file:%s offset:%d\n",
--		      pp->function, pp->file, pp->offset);
-+		pr_debug("symbol:%s file:%s offset:%d\n",
-+			 pp->function, pp->file, pp->offset);
- 	}
- 	free(argv[1]);
- 	if (pp->file)
-@@ -175,7 +175,7 @@ static int parse_probepoint(const struct option *opt __used,
- 			session.need_dwarf = 1;
- 		}
- 
--	eprintf("%d arguments\n", pp->nr_args);
-+	pr_debug("%d arguments\n", pp->nr_args);
- 	return 0;
- }
- 
-@@ -188,7 +188,7 @@ static int open_default_vmlinux(void)
- 
- 	ret = uname(&uts);
- 	if (ret) {
--		eprintf("uname() failed.\n");
-+		pr_debug("uname() failed.\n");
- 		return -errno;
- 	}
- 	session.release = uts.release;
-@@ -196,12 +196,12 @@ static int open_default_vmlinux(void)
- 		ret = snprintf(fname, MAX_PATH_LEN,
- 			       default_search_path[i], session.release);
- 		if (ret >= MAX_PATH_LEN || ret < 0) {
--			eprintf("Filename(%d,%s) is too long.\n", i,
-+			pr_debug("Filename(%d,%s) is too long.\n", i,
- 				uts.release);
- 			errno = E2BIG;
- 			return -E2BIG;
- 		}
--		eprintf("try to open %s\n", fname);
-+		pr_debug("try to open %s\n", fname);
- 		fd = open(fname, O_RDONLY);
- 		if (fd >= 0)
- 			break;
-@@ -341,7 +341,7 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
- 		ret = find_probepoint(fd, pp);
- 		if (ret <= 0)
- 			die("No probe point found.\n");
--		eprintf("probe event %s found\n", session.events[j]);
-+		pr_debug("probe event %s found\n", session.events[j]);
- 	}
- 	close(fd);
- 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index f0467ff..ac5ddff 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -630,7 +630,7 @@ static int __cmd_record(int argc, const char **argv)
- 
- 		param.sched_priority = realtime_prio;
- 		if (sched_setscheduler(0, SCHED_FIFO, &param)) {
--			printf("Could not set realtime priority.\n");
-+			pr_err("Could not set realtime priority.\n");
- 			exit(-1);
- 		}
- 	}
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index bee207c..4150f9e 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -619,7 +619,8 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- 		dump_printf("... chain: nr:%Lu\n", chain->nr);
- 
- 		if (validate_chain(chain, event) < 0) {
--			eprintf("call-chain problem with event, skipping it.\n");
-+			pr_debug("call-chain problem with event, "
-+				 "skipping it.\n");
- 			return 0;
- 		}
- 
-@@ -630,7 +631,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- 	}
- 
- 	if (thread == NULL) {
--		eprintf("problem processing %d event, skipping it.\n",
-+		pr_debug("problem processing %d event, skipping it.\n",
- 			event->header.type);
- 		return -1;
- 	}
-@@ -668,7 +669,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- 
- 	if (hist_entry__add(thread, map, sym, ip,
- 			    chain, level, period)) {
--		eprintf("problem incrementing symbol count, skipping event\n");
-+		pr_debug("problem incrementing symbol count, skipping event\n");
- 		return -1;
- 	}
- 
-@@ -680,7 +681,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- static int
- process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
- {
--	struct map *map = map__new(&event->mmap, cwd, cwdlen, 0, NULL, verbose);
-+	struct map *map = map__new(&event->mmap, cwd, cwdlen, 0, NULL);
- 	struct thread *thread = threads__findnew(event->mmap.pid);
- 
- 	dump_printf("%p [%p]: PERF_RECORD_MMAP %d/%d: [%p(%p) @ %p]: %s\n",
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index 807ca66..9a48d96 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -1666,8 +1666,8 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- 		(long long)period);
- 
- 	if (thread == NULL) {
--		eprintf("problem processing %d event, skipping it.\n",
--			event->header.type);
-+		pr_debug("problem processing %d event, skipping it.\n",
-+			 event->header.type);
- 		return -1;
- 	}
- 
-diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
-index 34fad57..0a2f222 100644
---- a/tools/perf/builtin-timechart.c
-+++ b/tools/perf/builtin-timechart.c
-@@ -1162,12 +1162,10 @@ more:
- 	size = event->header.size;
- 
- 	if (!size || process_event(event) < 0) {
--
--		printf("%p [%p]: skipping unknown header type: %d\n",
--			(void *)(offset + head),
--			(void *)(long)(event->header.size),
--			event->header.type);
--
-+		pr_warning("%p [%p]: skipping unknown header type: %d\n",
-+			   (void *)(offset + head),
-+			   (void *)(long)(event->header.size),
-+			   event->header.type);
- 		/*
- 		 * assume we lost track of the stream, check alignment, and
- 		 * increment a single u64 in the hope to catch on again 'soon'.
-@@ -1200,7 +1198,8 @@ done:
- 
- 	write_svg_file(output_name);
- 
--	printf("Written %2.1f seconds of trace to %s.\n", (last_time - first_time) / 1000000000.0, output_name);
-+	pr_info("Written %2.1f seconds of trace to %s.\n",
-+		(last_time - first_time) / 1000000000.0, output_name);
- 
- 	return rc;
- }
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index fa20345..4a9fe22 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -809,7 +809,7 @@ static int symbol_filter(struct map *map, struct symbol *sym)
- static int parse_symbols(void)
- {
- 	if (dsos__load_kernel(vmlinux_name, sizeof(struct sym_entry),
--			      symbol_filter, verbose, 1) <= 0)
-+			      symbol_filter, 1) <= 0)
- 		return -1;
- 
- 	if (dump_symtab)
-diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
-index 4c129ff..e566bbe 100644
---- a/tools/perf/builtin-trace.c
-+++ b/tools/perf/builtin-trace.c
-@@ -81,8 +81,8 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- 		(long long)period);
- 
- 	if (thread == NULL) {
--		eprintf("problem processing %d event, skipping it.\n",
--			event->header.type);
-+		pr_debug("problem processing %d event, skipping it.\n",
-+			 event->header.type);
- 		return -1;
- 	}
- 
-diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
-index 3b8380f..b3b7125 100644
---- a/tools/perf/util/callchain.c
-+++ b/tools/perf/util/callchain.c
-@@ -206,7 +206,7 @@ fill_node(struct callchain_node *node, struct ip_callchain *chain,
- 	}
- 	node->val_nr = chain->nr - start;
- 	if (!node->val_nr)
--		printf("Warning: empty node in callchain tree\n");
-+		pr_warning("Warning: empty node in callchain tree\n");
- }
- 
- static void
-diff --git a/tools/perf/util/debug.c b/tools/perf/util/debug.c
-index e8ca98f..28d520d 100644
---- a/tools/perf/util/debug.c
-+++ b/tools/perf/util/debug.c
-@@ -13,12 +13,12 @@
- int verbose = 0;
- int dump_trace = 0;
- 
--int eprintf(const char *fmt, ...)
-+int eprintf(int level, const char *fmt, ...)
- {
- 	va_list args;
- 	int ret = 0;
- 
--	if (verbose) {
-+	if (verbose >= level) {
- 		va_start(args, fmt);
- 		ret = vfprintf(stderr, fmt, args);
- 		va_end(args);
-diff --git a/tools/perf/util/debug.h b/tools/perf/util/debug.h
-index 02d1fa1..e8b18a1 100644
---- a/tools/perf/util/debug.h
-+++ b/tools/perf/util/debug.h
-@@ -5,7 +5,8 @@
- extern int verbose;
- extern int dump_trace;
- 
--int eprintf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
-+int eprintf(int level,
-+	    const char *fmt, ...) __attribute__((format(printf, 2, 3)));
- int dump_printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
- void trace_event(event_t *event);
- 
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index db59c8b..d972b4b 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -106,8 +106,7 @@ struct symbol;
- typedef int (*symbol_filter_t)(struct map *map, struct symbol *sym);
- 
- struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen,
--		     unsigned int sym_priv_size, symbol_filter_t filter,
--		     int v);
-+		     unsigned int sym_priv_size, symbol_filter_t filter);
- struct map *map__clone(struct map *self);
- int map__overlap(struct map *l, struct map *r);
- size_t map__fprintf(struct map *self, FILE *fp);
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index 622c60e..7d26659 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -93,7 +93,7 @@ static struct perf_trace_event_type *events;
- void perf_header__push_event(u64 id, const char *name)
- {
- 	if (strlen(name) > MAX_EVENT_NAME)
--		printf("Event %s will be truncated\n", name);
-+		pr_warning("Event %s will be truncated\n", name);
- 
- 	if (!events) {
- 		events = malloc(sizeof(struct perf_trace_event_type));
-diff --git a/tools/perf/util/include/linux/kernel.h b/tools/perf/util/include/linux/kernel.h
-index 4b9204d..21c0274 100644
---- a/tools/perf/util/include/linux/kernel.h
-+++ b/tools/perf/util/include/linux/kernel.h
-@@ -85,4 +85,21 @@ simple_strtoul(const char *nptr, char **endptr, int base)
- 	return strtoul(nptr, endptr, base);
- }
- 
-+#ifndef pr_fmt
-+#define pr_fmt(fmt) fmt
-+#endif
-+
-+#define pr_err(fmt, ...) \
-+	do { fprintf(stderr, pr_fmt(fmt), ##__VA_ARGS__); } while (0)
-+#define pr_warning(fmt, ...) \
-+	do { fprintf(stderr, pr_fmt(fmt), ##__VA_ARGS__); } while (0)
-+#define pr_info(fmt, ...) \
-+	do { fprintf(stderr, pr_fmt(fmt), ##__VA_ARGS__); } while (0)
-+#define pr_debug(fmt, ...) \
-+	eprintf(1, pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_debugN(n, fmt, ...) \
-+	eprintf(n, pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_debug2(fmt, ...) pr_debugN(2, pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_debug3(fmt, ...) pr_debugN(3, pr_fmt(fmt), ##__VA_ARGS__)
-+
- #endif
-diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
-index 55079c0..c1c5568 100644
---- a/tools/perf/util/map.c
-+++ b/tools/perf/util/map.c
-@@ -21,8 +21,7 @@ static int strcommon(const char *pathname, char *cwd, int cwdlen)
- }
- 
- struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen,
--		     unsigned int sym_priv_size, symbol_filter_t filter,
--		     int v)
-+		     unsigned int sym_priv_size, symbol_filter_t filter)
- {
- 	struct map *self = malloc(sizeof(*self));
- 
-@@ -58,16 +57,16 @@ struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen,
- 			goto out_delete;
- 
- 		if (new_dso) {
--			int nr = dso__load(self->dso, self, filter, v);
-+			int nr = dso__load(self->dso, self, filter);
- 
- 			if (nr < 0)
--				eprintf("Failed to open %s, continuing "
--					"without symbols\n",
--					self->dso->long_name);
-+				pr_warning("Failed to open %s, continuing "
-+					   "without symbols\n",
-+					   self->dso->long_name);
- 			else if (nr == 0)
--				eprintf("No symbols found in %s, maybe "
--					"install a debug package?\n",
--					self->dso->long_name);
-+				pr_warning("No symbols found in %s, maybe "
-+					   "install a debug package?\n",
-+					   self->dso->long_name);
- 		}
- 
- 		if (self->dso == vdso || anon)
-diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
-index be997ab..54e7071 100644
---- a/tools/perf/util/probe-finder.c
-+++ b/tools/perf/util/probe-finder.c
-@@ -136,7 +136,7 @@ static Dwarf_Unsigned die_get_fileno(Dwarf_Die cu_die, const char *fname)
- 		dwarf_dealloc(__dw_debug, srcs, DW_DLA_LIST);
- 	}
- 	if (found)
--		eprintf("found fno: %d\n", (int)found);
-+		pr_debug("found fno: %d\n", (int)found);
- 	return found;
- }
- 
-@@ -442,7 +442,7 @@ static void find_variable(Dwarf_Die sp_die, struct probe_finder *pf)
- 		return ;
- 	}
- 
--	eprintf("Searching '%s' variable in context.\n", pf->var);
-+	pr_debug("Searching '%s' variable in context.\n", pf->var);
- 	/* Search child die for local variables and parameters. */
- 	ret = search_die_from_children(sp_die, variable_callback, pf);
- 	if (!ret)
-@@ -552,7 +552,7 @@ static void find_by_line(Dwarf_Die cu_die, struct probe_finder *pf)
- 
- 		ret = dwarf_lineaddr(lines[i], &addr, &__dw_error);
- 		DIE_IF(ret != DW_DLV_OK);
--		eprintf("Probe point found: 0x%llx\n", addr);
-+		pr_debug("Probe point found: 0x%llx\n", addr);
- 		pf->addr = addr;
- 		/* Search a real subprogram including this line, */
- 		ret = search_die_from_children(cu_die, probeaddr_callback, pf);
-@@ -583,8 +583,8 @@ static int probefunc_callback(struct die_link *dlink, void *data)
- 							  &pf->inl_offs,
- 							  &__dw_error);
- 				DIE_IF(ret != DW_DLV_OK);
--				eprintf("inline definition offset %lld\n",
--					pf->inl_offs);
-+				pr_debug("inline definition offset %lld\n",
-+					 pf->inl_offs);
- 				return 0;
- 			}
- 			/* Get probe address */
-@@ -599,7 +599,7 @@ static int probefunc_callback(struct die_link *dlink, void *data)
- 			/* Get probe address */
- 			pf->addr = die_get_entrypc(dlink->die);
- 			pf->addr += pp->offset;
--			eprintf("found inline addr: 0x%llx\n", pf->addr);
-+			pr_debug("found inline addr: 0x%llx\n", pf->addr);
- 			/* Inlined function. Get a real subprogram */
- 			for (lk = dlink->parent; lk != NULL; lk = lk->parent) {
- 				tag = 0;
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 0a48984..8f0208c 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -76,7 +76,7 @@ static void kernel_maps__fixup_end(void)
- }
- 
- static struct symbol *symbol__new(u64 start, u64 len, const char *name,
--				  unsigned int priv_size, int v)
-+				  unsigned int priv_size)
- {
- 	size_t namelen = strlen(name) + 1;
- 	struct symbol *self = calloc(1, priv_size + sizeof(*self) + namelen);
-@@ -91,8 +91,7 @@ static struct symbol *symbol__new(u64 start, u64 len, const char *name,
- 	self->start = start;
- 	self->end   = len ? start + len - 1 : start;
- 
--	if (v > 2)
--		printf("%s: %s %#Lx-%#Lx\n", __func__, name, start, self->end);
-+	pr_debug3("%s: %s %#Lx-%#Lx\n", __func__, name, start, self->end);
- 
- 	memcpy(self->name, name, namelen);
- 
-@@ -209,7 +208,7 @@ size_t dso__fprintf(struct dso *self, FILE *fp)
-  * so that we can in the next step set the symbol ->end address and then
-  * call kernel_maps__split_kallsyms.
-  */
--static int kernel_maps__load_all_kallsyms(int v)
-+static int kernel_maps__load_all_kallsyms(void)
- {
- 	char *line = NULL;
- 	size_t n;
-@@ -252,7 +251,7 @@ static int kernel_maps__load_all_kallsyms(int v)
- 		 * Will fix up the end later, when we have all symbols sorted.
- 		 */
- 		sym = symbol__new(start, 0, symbol_name,
--				  kernel_map->dso->sym_priv_size, v);
-+				  kernel_map->dso->sym_priv_size);
- 
- 		if (sym == NULL)
- 			goto out_delete_line;
-@@ -300,8 +299,8 @@ static int kernel_maps__split_kallsyms(symbol_filter_t filter, int use_modules)
- 			if (strcmp(map->dso->name, module)) {
- 				map = kernel_maps__find_by_dso_name(module);
- 				if (!map) {
--					fputs("/proc/{kallsyms,modules} "
--					      "inconsistency!\n", stderr);
-+					pr_err("/proc/{kallsyms,modules} "
-+					       "inconsistency!\n");
- 					return -1;
- 				}
- 			}
-@@ -351,10 +350,9 @@ delete_symbol:
- }
- 
- 
--static int kernel_maps__load_kallsyms(symbol_filter_t filter,
--				      int use_modules, int v)
-+static int kernel_maps__load_kallsyms(symbol_filter_t filter, int use_modules)
- {
--	if (kernel_maps__load_all_kallsyms(v))
-+	if (kernel_maps__load_all_kallsyms())
- 		return -1;
- 
- 	dso__fixup_sym_end(kernel_map->dso);
-@@ -362,9 +360,9 @@ static int kernel_maps__load_kallsyms(symbol_filter_t filter,
- 	return kernel_maps__split_kallsyms(filter, use_modules);
- }
- 
--static size_t kernel_maps__fprintf(FILE *fp, int v)
-+static size_t kernel_maps__fprintf(FILE *fp)
- {
--	size_t printed = fprintf(stderr, "Kernel maps:\n");
-+	size_t printed = fprintf(fp, "Kernel maps:\n");
- 	struct rb_node *nd;
- 
- 	for (nd = rb_first(&kernel_maps); nd; nd = rb_next(nd)) {
-@@ -372,17 +370,17 @@ static size_t kernel_maps__fprintf(FILE *fp, int v)
- 
- 		printed += fprintf(fp, "Map:");
- 		printed += map__fprintf(pos, fp);
--		if (v > 1) {
-+		if (verbose > 1) {
- 			printed += dso__fprintf(pos->dso, fp);
- 			printed += fprintf(fp, "--\n");
- 		}
- 	}
- 
--	return printed + fprintf(stderr, "END kernel maps\n");
-+	return printed + fprintf(fp, "END kernel maps\n");
- }
- 
- static int dso__load_perf_map(struct dso *self, struct map *map,
--			      symbol_filter_t filter, int v)
-+			      symbol_filter_t filter)
- {
- 	char *line = NULL;
- 	size_t n;
-@@ -420,7 +418,7 @@ static int dso__load_perf_map(struct dso *self, struct map *map,
- 			continue;
- 
- 		sym = symbol__new(start, size, line + len,
--				  self->sym_priv_size, v);
-+				  self->sym_priv_size);
- 
- 		if (sym == NULL)
- 			goto out_delete_line;
-@@ -534,7 +532,7 @@ static Elf_Scn *elf_section_by_name(Elf *elf, GElf_Ehdr *ep,
-  * And always look at the original dso, not at debuginfo packages, that
-  * have the PLT data stripped out (shdr_rel_plt.sh_type == SHT_NOBITS).
-  */
--static int dso__synthesize_plt_symbols(struct  dso *self, int v)
-+static int dso__synthesize_plt_symbols(struct  dso *self)
- {
- 	uint32_t nr_rel_entries, idx;
- 	GElf_Sym sym;
-@@ -618,7 +616,7 @@ static int dso__synthesize_plt_symbols(struct  dso *self, int v)
- 				 "%s@plt", elf_sym__name(&sym, symstrs));
- 
- 			f = symbol__new(plt_offset, shdr_plt.sh_entsize,
--					sympltname, self->sym_priv_size, v);
-+					sympltname, self->sym_priv_size);
- 			if (!f)
- 				goto out_elf_end;
- 
-@@ -636,7 +634,7 @@ static int dso__synthesize_plt_symbols(struct  dso *self, int v)
- 				 "%s@plt", elf_sym__name(&sym, symstrs));
- 
- 			f = symbol__new(plt_offset, shdr_plt.sh_entsize,
--					sympltname, self->sym_priv_size, v);
-+					sympltname, self->sym_priv_size);
- 			if (!f)
- 				goto out_elf_end;
- 
-@@ -654,14 +652,14 @@ out_close:
- 	if (err == 0)
- 		return nr;
- out:
--	fprintf(stderr, "%s: problems reading %s PLT info.\n",
--		__func__, self->long_name);
-+	pr_warning("%s: problems reading %s PLT info.\n",
-+		   __func__, self->long_name);
- 	return 0;
- }
- 
- static int dso__load_sym(struct dso *self, struct map *map, const char *name,
- 			 int fd, symbol_filter_t filter, int kernel,
--			 int kmodule, int v)
-+			 int kmodule)
- {
- 	struct map *curr_map = map;
- 	struct dso *curr_dso = self;
-@@ -680,15 +678,12 @@ static int dso__load_sym(struct dso *self, struct map *map, const char *name,
- 
- 	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
- 	if (elf == NULL) {
--		if (v)
--			fprintf(stderr, "%s: cannot read %s ELF file.\n",
--				__func__, name);
-+		pr_err("%s: cannot read %s ELF file.\n", __func__, name);
- 		goto out_close;
- 	}
- 
- 	if (gelf_getehdr(elf, &ehdr) == NULL) {
--		if (v)
--			fprintf(stderr, "%s: cannot get elf header.\n", __func__);
-+		pr_err("%s: cannot get elf header.\n", __func__);
- 		goto out_elf_end;
- 	}
- 
-@@ -794,10 +789,9 @@ static int dso__load_sym(struct dso *self, struct map *map, const char *name,
- 		}
- 
- 		if (curr_dso->adjust_symbols) {
--			if (v > 2)
--				printf("adjusting symbol: st_value: %Lx sh_addr: %Lx sh_offset: %Lx\n",
--					(u64)sym.st_value, (u64)shdr.sh_addr, (u64)shdr.sh_offset);
--
-+			pr_debug2("adjusting symbol: st_value: %Lx sh_addr: "
-+				  "%Lx sh_offset: %Lx\n", (u64)sym.st_value,
-+				  (u64)shdr.sh_addr, (u64)shdr.sh_offset);
- 			sym.st_value -= shdr.sh_addr - shdr.sh_offset;
- 		}
- 		/*
-@@ -810,7 +804,7 @@ static int dso__load_sym(struct dso *self, struct map *map, const char *name,
- 			elf_name = demangled;
- new_symbol:
- 		f = symbol__new(sym.st_value, sym.st_size, elf_name,
--				curr_dso->sym_priv_size, v);
-+				curr_dso->sym_priv_size);
- 		free(demangled);
- 		if (!f)
- 			goto out_elf_end;
-@@ -837,7 +831,7 @@ out_close:
- 
- #define BUILD_ID_SIZE 128
- 
--static char *dso__read_build_id(struct dso *self, int v)
-+static char *dso__read_build_id(struct dso *self)
- {
- 	int i;
- 	GElf_Ehdr ehdr;
-@@ -854,15 +848,13 @@ static char *dso__read_build_id(struct dso *self, int v)
- 
- 	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
- 	if (elf == NULL) {
--		if (v)
--			fprintf(stderr, "%s: cannot read %s ELF file.\n",
--				__func__, self->long_name);
-+		pr_err("%s: cannot read %s ELF file.\n", __func__,
-+		       self->long_name);
- 		goto out_close;
- 	}
- 
- 	if (gelf_getehdr(elf, &ehdr) == NULL) {
--		if (v)
--			fprintf(stderr, "%s: cannot get elf header.\n", __func__);
-+		pr_err("%s: cannot get elf header.\n", __func__);
- 		goto out_elf_end;
- 	}
- 
-@@ -884,8 +876,7 @@ static char *dso__read_build_id(struct dso *self, int v)
- 		++raw;
- 		bid += 2;
- 	}
--	if (v >= 2)
--		printf("%s(%s): %s\n", __func__, self->long_name, build_id);
-+	pr_debug2("%s(%s): %s\n", __func__, self->long_name, build_id);
- out_elf_end:
- 	elf_end(elf);
- out_close:
-@@ -911,8 +902,7 @@ char dso__symtab_origin(const struct dso *self)
- 	return origin[self->origin];
- }
- 
--int dso__load(struct dso *self, struct map *map,
--	      symbol_filter_t filter, int v)
-+int dso__load(struct dso *self, struct map *map, symbol_filter_t filter)
- {
- 	int size = PATH_MAX;
- 	char *name = malloc(size), *build_id = NULL;
-@@ -925,7 +915,7 @@ int dso__load(struct dso *self, struct map *map,
- 	self->adjust_symbols = 0;
- 
- 	if (strncmp(self->name, "/tmp/perf-", 10) == 0) {
--		ret = dso__load_perf_map(self, map, filter, v);
-+		ret = dso__load_perf_map(self, map, filter);
- 		self->origin = ret > 0 ? DSO__ORIG_JAVA_JIT :
- 					 DSO__ORIG_NOT_FOUND;
- 		return ret;
-@@ -946,7 +936,7 @@ more:
- 				 self->long_name);
- 			break;
- 		case DSO__ORIG_BUILDID:
--			build_id = dso__read_build_id(self, v);
-+			build_id = dso__read_build_id(self);
- 			if (build_id != NULL) {
- 				snprintf(name, size,
- 					 "/usr/lib/debug/.build-id/%.2s/%s.debug",
-@@ -967,7 +957,7 @@ more:
- 		fd = open(name, O_RDONLY);
- 	} while (fd < 0);
- 
--	ret = dso__load_sym(self, map, name, fd, filter, 0, 0, v);
-+	ret = dso__load_sym(self, map, name, fd, filter, 0, 0);
- 	close(fd);
- 
- 	/*
-@@ -977,7 +967,7 @@ more:
- 		goto more;
- 
- 	if (ret > 0) {
--		int nr_plt = dso__synthesize_plt_symbols(self, v);
-+		int nr_plt = dso__synthesize_plt_symbols(self);
- 		if (nr_plt > 0)
- 			ret += nr_plt;
- 	}
-@@ -1025,34 +1015,29 @@ struct map *kernel_maps__find_by_dso_name(const char *name)
- }
- 
- static int dso__load_module_sym(struct dso *self, struct map *map,
--				symbol_filter_t filter, int v)
-+				symbol_filter_t filter)
- {
- 	int err = 0, fd = open(self->long_name, O_RDONLY);
- 
- 	if (fd < 0) {
--		if (v)
--			fprintf(stderr, "%s: cannot open %s\n",
--				__func__, self->long_name);
-+		pr_err("%s: cannot open %s\n", __func__, self->long_name);
- 		return err;
- 	}
- 
--	err = dso__load_sym(self, map, self->long_name, fd, filter, 0, 1, v);
-+	err = dso__load_sym(self, map, self->long_name, fd, filter, 0, 1);
- 	close(fd);
- 
- 	return err;
- }
- 
--static int dsos__load_modules_sym_dir(char *dirname,
--				      symbol_filter_t filter, int v)
-+static int dsos__load_modules_sym_dir(char *dirname, symbol_filter_t filter)
- {
- 	struct dirent *dent;
- 	int nr_symbols = 0, err;
- 	DIR *dir = opendir(dirname);
- 
- 	if (!dir) {
--		if (v)
--			fprintf(stderr, "%s: cannot open %s dir\n", __func__,
--				dirname);
-+		pr_err("%s: cannot open %s dir\n", __func__, dirname);
- 		return -1;
- 	}
- 
-@@ -1066,7 +1051,7 @@ static int dsos__load_modules_sym_dir(char *dirname,
- 
- 			snprintf(path, sizeof(path), "%s/%s",
- 				 dirname, dent->d_name);
--			err = dsos__load_modules_sym_dir(path, filter, v);
-+			err = dsos__load_modules_sym_dir(path, filter);
- 			if (err < 0)
- 				goto failure;
- 		} else {
-@@ -1092,7 +1077,7 @@ static int dsos__load_modules_sym_dir(char *dirname,
- 			if (map->dso->long_name == NULL)
- 				goto failure;
- 
--			err = dso__load_module_sym(map->dso, map, filter, v);
-+			err = dso__load_module_sym(map->dso, map, filter);
- 			if (err < 0)
- 				goto failure;
- 			last = rb_last(&map->dso->syms);
-@@ -1119,7 +1104,7 @@ failure:
- 	return -1;
- }
- 
--static int dsos__load_modules_sym(symbol_filter_t filter, int v)
-+static int dsos__load_modules_sym(symbol_filter_t filter)
- {
- 	struct utsname uts;
- 	char modules_path[PATH_MAX];
-@@ -1130,7 +1115,7 @@ static int dsos__load_modules_sym(symbol_filter_t filter, int v)
- 	snprintf(modules_path, sizeof(modules_path), "/lib/modules/%s/kernel",
- 		 uts.release);
- 
--	return dsos__load_modules_sym_dir(modules_path, filter, v);
-+	return dsos__load_modules_sym_dir(modules_path, filter);
- }
- 
- /*
-@@ -1225,15 +1210,14 @@ out_failure:
- }
- 
- static int dso__load_vmlinux(struct dso *self, struct map *map,
--			     const char *vmlinux,
--			     symbol_filter_t filter, int v)
-+			     const char *vmlinux, symbol_filter_t filter)
- {
- 	int err, fd = open(vmlinux, O_RDONLY);
- 
- 	if (fd < 0)
- 		return -1;
- 
--	err = dso__load_sym(self, map, self->long_name, fd, filter, 1, 0, v);
-+	err = dso__load_sym(self, map, self->long_name, fd, filter, 1, 0);
- 
- 	close(fd);
- 
-@@ -1241,7 +1225,7 @@ static int dso__load_vmlinux(struct dso *self, struct map *map,
- }
- 
- int dsos__load_kernel(const char *vmlinux, unsigned int sym_priv_size,
--		      symbol_filter_t filter, int v, int use_modules)
-+		      symbol_filter_t filter, int use_modules)
- {
- 	int err = -1;
- 	struct dso *dso = dso__new(vmlinux, sym_priv_size);
-@@ -1257,26 +1241,26 @@ int dsos__load_kernel(const char *vmlinux, unsigned int sym_priv_size,
- 	kernel_map->map_ip = kernel_map->unmap_ip = identity__map_ip;
- 
- 	if (use_modules && dsos__load_modules(sym_priv_size) < 0) {
--		fprintf(stderr, "Failed to load list of modules in use! "
--				"Continuing...\n");
-+		pr_warning("Failed to load list of modules in use! "
-+			   "Continuing...\n");
- 		use_modules = 0;
- 	}
- 
- 	if (vmlinux) {
--		err = dso__load_vmlinux(dso, kernel_map, vmlinux, filter, v);
-+		err = dso__load_vmlinux(dso, kernel_map, vmlinux, filter);
- 		if (err > 0 && use_modules) {
--			int syms = dsos__load_modules_sym(filter, v);
-+			int syms = dsos__load_modules_sym(filter);
- 
- 			if (syms < 0)
--				fprintf(stderr, "Failed to read module symbols!"
--					" Continuing...\n");
-+				pr_warning("Failed to read module symbols!"
-+					   " Continuing...\n");
- 			else
- 				err += syms;
- 		}
- 	}
- 
- 	if (err <= 0)
--		err = kernel_maps__load_kallsyms(filter, use_modules, v);
-+		err = kernel_maps__load_kallsyms(filter, use_modules);
- 
- 	if (err > 0) {
- 		struct rb_node *node = rb_first(&dso->syms);
-@@ -1296,8 +1280,8 @@ int dsos__load_kernel(const char *vmlinux, unsigned int sym_priv_size,
- 		kernel_maps__fixup_end();
- 		dsos__add(dso);
- 
--		if (v > 0)
--			kernel_maps__fprintf(stderr, v);
-+		if (verbose)
-+			kernel_maps__fprintf(stderr);
- 	}
- 
- 	return err;
-@@ -1355,8 +1339,8 @@ void dsos__fprintf(FILE *fp)
- 
- int load_kernel(unsigned int sym_priv_size, symbol_filter_t filter)
- {
--	if (dsos__load_kernel(vmlinux_name, sym_priv_size,
--			      filter, verbose, modules) <= 0)
-+	if (dsos__load_kernel(vmlinux_name, sym_priv_size, filter,
-+			      modules) <= 0)
- 		return -1;
- 
- 	vdso = dso__new("[vdso]", 0);
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index c2a777d..77b7b3e 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -63,11 +63,10 @@ static inline void *dso__sym_priv(struct dso *self, struct symbol *sym)
- struct symbol *dso__find_symbol(struct dso *self, u64 ip);
- 
- int dsos__load_kernel(const char *vmlinux, unsigned int sym_priv_size,
--		      symbol_filter_t filter, int verbose, int modules);
-+		      symbol_filter_t filter, int modules);
- struct dso *dsos__findnew(const char *name, unsigned int sym_priv_size,
- 			  bool *is_new);
--int dso__load(struct dso *self, struct map *map,
--	      symbol_filter_t filter, int v);
-+int dso__load(struct dso *self, struct map *map, symbol_filter_t filter);
- void dsos__fprintf(FILE *fp);
- 
- size_t dso__fprintf(struct dso *self, FILE *fp);
-diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
-index f53fad7..aa2dae7 100644
---- a/tools/perf/util/thread.c
-+++ b/tools/perf/util/thread.c
-@@ -116,9 +116,9 @@ static void thread__remove_overlappings(struct thread *self, struct map *map)
- 			continue;
- 
- 		if (verbose >= 2) {
--			printf("overlapping maps:\n");
--			map__fprintf(map, stdout);
--			map__fprintf(pos, stdout);
-+			fputs("overlapping maps:\n", stderr);
-+			map__fprintf(map, stderr);
-+			map__fprintf(pos, stderr);
- 		}
- 
- 		rb_erase(&pos->rb_node, &self->maps);
--- 
-1.6.2.5
+> 
+> Hm, this is wierd... In the dmesg you sent me in the previous mail I see:
+> 
+> input: AT Raw Set 2 keyboard as /devices/platform/i8042/serio0/input/input4
+> 
+> So it looks like sometimes it is in raw and sometimes it is in
+> translated mode. The i8042.reset might be affecting it. Also, are you
+> using BIOS password at resume by any chance?
+> 
+> I guess we'll have to wait till you get back to the box and then I want
+> fresh debug dmesgs (after poweroff) of older (with bind/unbind) and latest
+> kernels, going through boot, 1st (make sure to type qwerty) and 2nd
+> resume (qwerty again). Make sure you don't have any other i8042 or atkbd
+> switches besides i8042.debug.
+Hello,
+Back with some results :-)
 
+Attached is a (bzip-compressed) log [1] of a 2.6.30 kernel started with
+i8042.debug (nothing else important).
+
+The log contains 4 suspend-resumes (look for "Back to C"):
+* from the console, using "echo mem > /sys/power/state", keyboard fine
+* from the console, using "pm-suspend" (aka "all the nasty stuff done by
+the distro"), keyboard fine
+* from X, using "echo mem > /sys/power/state", keyboard gone
+* a unbind-bind cycle, keyboard back
+* from X, using "echo mem > /sys/power/state", keyboard fine
+
+
+What I realised during this experiment, is that the keyboard goes away
+after the first suspend-resume _in X_. Each time, I typed on the
+keyboard "qwerty" (and almost nothing else).
+
+Do you see what goes wrong in resuming the keyboard?
+
+I can provide a similar log for a 2.6.32-rc3 kernel, if you are
+interested? BTW, once the keyboard is gone, a rmmod-modprobe cycle of
+psmouse doesn't recover it, it has to be a rmmod-modprobe cycle of atkbd.
+
+See you,
+Eric
+
+[1] Also available uncompressed at
+http://pieleric.free.fr/unorder/i8042-2.6.30-unbind-bind.dmesg
+
+--------------030306060809090904070809
+Content-Type: application/x-bzip;
+ name="i8042-2.6.30-unbind-bind.dmesg.bz2"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="i8042-2.6.30-unbind-bind.dmesg.bz2"
+
+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
+V43HeWP8i5+8ofsKKNxyPV8+k4cnzgK1x/yT7H8W7z1PT16NuivU+P7QERERERFHUCOp3zxu
+d/D6lVQ1G6rLq54tVVVVVU5zx2nOxERERERERERERERDEREREQ2BEABsRAAbEQAGxEABsRCO
+oBERDAAEQwBERDEREBPIAAOdSIiIiIbAiIiIiGwIiIiIhsCIiIiIbAiIiIiGwIiIiIiIERER
+ERERAd7deKu++wREREREUdQI6nO+3O/PUqqiNaltnjvqqqqqqpznPA52IiIiIiIAiIiIiIhi
+IiIiIbAiAA2IgANiIADYiAA2IhHUAiIhgACIYAiIhiIiAnnMwZmHOpERERENgRERERDYERER
+EQ2BERERENgRERERDYEREREREACIiAIiIDvbreKqrrVXffYIiIiIiKOoEdTnfbnfnqVVDVLb
+Vm8d9VVVVVVc54wNNd99ud87c5EREREREREREQxERERENgRAAbEQAGxEABsRAAbEQjqAREQw
+ABEMAREQxERA88bm4AMVzqRERERDYEREREQ2BERERENgRERERDYEREREQ2BERERERAiIiIiA
+IgO9uutuc4REREREXnnKMSNGw6NGqrrNZbXnx1VVU454u3fbu52IiIiIiIiAIiIiAGIiIHOc
+53nOducbAiAA2IgANiIADYiB333333znO+bc5EI6gEREMAARDAEREMRERTTyAAJzDAiIiIiI
+iIiIgCIiGIiIiIhtHUEREREQ2BERERENgRERERDYEREREQ2BERERERAiIiIiIiIpu9tvFXff
+YIiIiIiKOoEdTvne87x4rSUNUttWbx31VVVVVU5zx2nOwBEREREREREREREMRERERDYEQAGx
+EABsRAAbEQAGxEI6gEREMAARDAEREMREQE8gAA51AIiIiGwIiIiIhsCIiIiIbAiIiIiGwIiI
+iIhsCIiAIiIERERERES1Wta1rYJvHl6f0y9R/CHU7hy4fb96aGvXG96Qd4fIMjBrS9lv0SO7
+N3aQQkmukCElE9zwDsRFiKMRFiKMRFgCMEFgiBERYip1fzsYxjGMY7CgIVL5o+rs8ElP3bnp
+KwbmZAkgM+SbAD+oC909R8etLIDIXT70d3VnjbDpD7xRvpm2N+d0SPtdelDgNM24STQgeFRH
+RM009Y7egAj5PEbrDLFImC1DEDZXpaMLHw+F8JJlockk1+69yZjwJ0FCxJgVRFFFFCwWKI6R
+QsRKJR+BMFiXOssdxQlFSR86iItl4niEC+iQJCQxaftK1HbeGcDYjykb78dWShmjGMZe32Dz
+0+q5Fgy0M+Dk5720wYcM3/HygA7wdnG9KHu0tyyCdic56zOszIGZHnATHOmHdG0rQkkkBvTz
+8TpjuoPA8hGkygryYWIHpQK4qtfDqSQ9KhLkTsjpiZl52uDKbvyjL51OX1nN8g2ojjskl0gc
+cseLc5E87L6ZyWJ0/4Zl/8aymDBc+QuMfLIZSrnzyOq/3VqMWNaaYfLbND5zKxnChLR+lkcv
+abCh1gB/d7vh7uvXGGAPswUCRkLofP4YVdcUIUfdLutjs86qpVYQzZ3krhn8k5JhM+CfekBA
+IBYEA81UBa1gEtu98oDmgCRAUkjKaRubFjQyNjM1NTcaGhmZixoXLli1ipqWKLGZqamRgyLE
+ampmZmpoZmhpg1LGhoZZE4DxjsBOHNK53yeaE4prxSggXzCYJjG2L3qrXzyLlhkZGZgyKLFh
+gwZFyi5cuZGDBgu9e/VdXNSZReFCLJVFVAoIBAgQCVJHhinOhQhjhnOl1m9MVA1DaCRAgSJA
+gSSSSSUUUUKFGm//YsUanbc0IiEmtjU88LQFYE4XAGJI6QUkfUZcBYV0DLn9soLyuyKP4/vP
+j+cY9hdJacebieH6evMojqD18hBEF/IezQ+9PT2fO+Zl5w7RBEF8fWRQ42/5xdPK8iCILoOO
+/5Go7qKAHf9nbleI5RR4MB9qzM9JJwMzMEsLqHv5MQ6YIkKY5eXP01221B4G6tfyicSK5IdP
+R5EhEVIEFUhIQRSayQkqEFUhIQRTCD9SAdjBSiAUwUogFMFKIBTFSiAUxQ6d11uHBOmnMn4Y
+4SSdygVUlFVgagsgsgsgsgnadKCiqCiqSy1iy1nFFf94jead3YjhmG7laT3dWn0jsDLeU8OW
+SQdeOgdhQo247OrNJlXN+7+jXCcqjJuNv2fq5ZCbuXIbDzWLRwLCxzixRYsUUUJ3lGXCIkmN
+dcunP/vq1TtZ/IUSVQ3liwUSgqSDSQ4/6YH5wzHYCGa52nRnDCI0C/QpUp0VnNSRce/otKUC
+BVRTJFRFlKHmOn0t+bAqVB0mwKJnh22CpvkA0SSmOEXk6qZJlFifnqWJRRN5gsok1GoWLCi+
+Kte27PxvMqjWRFIkAVonNK0sMF+kyZPGjqcpmh26TnzqpUyRC1jYo4mhkbhYrW2VY0um/Tx3
+3szthWrTypttw1UlrFCoy014Edjpc2Y1MRiTeZjAZFE+H2TMifsFEQ9tSRI/oooVR9YAPfs+
+vaeN+yV3aWXAmlAh1BOoolFmM89Ox08GjTfZuOyK4t5tqbYUpz0Q0/4YIxCXtvqd4duqgcGK
+5B4hVkIQ29tSDQEPYKTeqDXHl1PMku8akRA6ipMHRw1LngTIVGkpYubrjfON71Va562tZa1v
+4GzXSzVqvipxmel+0bDTSaZC+bhoSpXsCwNdJq0A08uW9AYrbVbKKkJBNMm+0h2KvuA3fMKE
+UoB77C0RG5QAAANAgVXoV5+T35Gl+j59nmvXbszLC25azremuDL1mwQUTwOKDzSJ094ueV0A
+eIUc3E2LiwoxfhC8tVRTjZJ7aHSkEAlaAgPBoJsX9FSAQ+6xZIjtvQ1gNmtdNWJp49mV233d
+N3oIadF8OPLfvm+pVcK04ba1gZzoxhKaLoujF00z34hPzlRPlELG0ynVUHVOIVw6Dk3l7Cpc
+32S0uUc5eG1dClUjHBpDrvJdi4yQlIZxQmJJUnPNoSTEoe2ARgSMjIhGSQjmYqVK5OsBQG/t
+jB9LTWQe6xxJzh7nD8TIF9FTgEXGSkKEVBqFaHV5pzD/G7kJIQna+Qa3gklVUkkkQkapCmMY
+x7Jwkqqq22MYxjo5ttgxj3aSSYw4YEZHQPkF2xjGMYakkaYxhJJNNZJJqluGMYwNSE95bdRI
+AkHUSD9w/QBZABIHF36rnH47ZZktr7IVhQLSJOoL6p8TvWs5OfQGh+HkHMroFdcBbTzFKsG2
+sgSgkIScXQVAQa0CCI2rTLlIijtKh+4AbykBVs4iUnQdM9S0K2JJRyIGo7bSqlSoloZ2OOun
+Q6YQuq7R99TJqzju4L1CzGhlrcR3U/xGyHFO/sDVb4ceZVSVgDHB7gtC8UPYBGsokqgNs66A
+gQQFP6XmEoJWBmFoKO0igV9R7+vFvSl9bswaxbYOFu7MDUqh+P4jingcEEDloDhTlwBmA585
+JOxDOaTNSfAkiMwklyJIlKUYSTliyQr7Qz6drGrx2VBZBaan29AWBZAH2oIVQ89edSRKY8I5
+5gH2m6CDxiziCq7poimQDRomqTAy/BZ3TxHYd1PbDw62XZ3U8FggV7Irug3G42EXe6uynMHb
+UoGoZkrW3iaUOrtRvA3CDvmTcqq3wriJkkg4vNVUlf1cs50P35suxY8jzZe4kt2C4SMogA1Q
+omr7wqqKqx2Yh89aV00kk4NiaQxELzepKzKu8oaMV7/XgbkYGI7ccVVlVK5ViY8RPvuJ/Flh
+PpUsRVdM+NXUxY+euUViMJBeHlVqmRZ/XUNIMs+dtD+qZwze7EukwUFlEiP31CZionXhUKoK
+klHSWVE8jdE3IiaiEYYUPaLARLSAID4JE59it2C5+FeS0hXmn/rguBw8hx9PqF5osDmIPEbT
+U/N+eT8/OF6cZBS23Mce4fs2TsmObnu05c5Z5Dd9cY7u9aDop4ARJHvKxNqtxieOYywOdgft
+87b26FQoCrLS21y87jmy1trdaLjbxnpRq6wP3IzEwBMKoXxfD8zCnMzAvXhB0156ZmyD2hvR
+ce569WujAG8g2DA+5kFazPTMcWy1boJ4AJJHvKxBtVxy4cyRTClE+yjmB3sBzQdSFTi3pxDI
+b0bw3c71tpoxnjFZ22qf+tvv83Tl8nPI2I2NRYsUVHYZ+SjBkZFFi/tYjGck9+vdUV8WDZED
+GtBqFJS9+pQfT0+pqmcvr+v04iA/WLpP74BUk8FiKjz7MWizqVUDJFT8xARNIghiABpBGBFW
+iKLIHtlSQf0kVhUkL0SLMrEL1AqoVQBINkQKgyCyCkiqkhrVMkklVVVUVRXb0PAYMVD4xpn2
+49/KyfD3eFRv8wifIE6eiSJIkiSJsETf9fPTzqqqqqqqqqs+2SSSS01S/s9f+Y/7wwD/gMLG
+Vr3JtrefNgBPJCghNobNlRIHgwQQeY4zw4SqtXo1OHlXrwPA9g3GdHtFseY9ZmeRzFj5lGjq
+5gknb4rE4jBJQtOiZLRtBP13QvCzC1KSpb76vfU/HXjlr7LP3Somv14jUTHDz2j4I8LRaTtN
+AaHS6sXWyXLmWdo+yucYMiUUUL/6VSksRcKtqp57B/oPUFDYCw9rAIyaQ24Zkk+mUMj0lJpb
+SezbPhgK313/PonYcHjtq7qcIrjGSE784TeOrEOQr8j822JPi9YvLF2ed5udmtW9I63WJmG0
+LrXTBWlTTSr+XQA2CAwNfd2qd23uskuOs7coa9CSFPOSAd5MpGHTStCqqqrPOQaCM0haSQT+
+ALq/5OmhMoED7fXEIQm3958tK4nXw1l3YgKyWxHf28/lGqw1QsEUKCEDrVRUU2KDishBn7h9
+EHQoK4KiK8H2z1zAQY/Idaw40yTQEjdkGXZvDn18qh+of+l9/5/7PwfX65zavq12F9mmt6ay
+SU9LfwQPJOVJo+3TXuo8eVXB8LQQ/GPIS0kXUgjMthC1bNlIsfT8SBQpEfT0SS/sFSDRJLMa
+73wGRUA/BfqRyvXnHmBJY8aS76gqlVZvn2SJJuV5B7Nk2l+YC+DzlZip+h5b2PFOs+zgKaNw
+40ZZ/L5Q+GhQ/cIoMj3Xr8qpA17gTLXp/I/Xp3MUZIku7p3hQKxYss4NoeiBVOqPmh9I4265
+9o6SIyQvxX4ATbbhp0O+EVQRGBb9wHoQQyjVdIVSVSyCnz6IeRvZ9YskbuOWrs47Hqqh0duD
+S4IVFmsAKNooXBM4oilVCrE894/XA948UerbmW7F2rUyYck6Ip0T5xoPeVxyVc9MVmkMXiz8
+b5X99aIpqKKKtKIT4FjJ14Y/Hp8PwlLd3Zqs6/ye4r/I7Gr8mhpuPdJl8xfdhwY85uWLvDK2
+cJ3lHRHu6EIzJoHNzLSBu5HUD5kuXeR/wedp4vPG++Fg9zEwdw8I8vRuXx86U8kgodyzt+bj
+D35o9XfceVXkl43qh7ijnp7EfdnI9a82ED3CXSW+gMwxjzvuOXYbhoK3dFEZk0c36zgBqkxA
+0l80mdLK15vsUQ0YGsuepbRmxUPjkXCzO1sa/hn+Hbybzxfr7CEspBepA40QLHupB7YIGUOz
+OevyKfKMnv/ah3WhOIVUm18XS946MuyEBF0Zb7ySQGXWRp6qSMkhIRCMQjEIxGMQgfP47Zkk
+ZmZmZEwESk4egPwE4gRGcZ+raekXwpUtR6R6f6uh8wfT+KdAwqqgT4aigIXOknl6YEW4yONK
+UVSpRemtPxtCWcq2Y6kiIScXwZSy6W4VC9EmpTZ5C5Ra8LuXjW/AwfuWesyL6zSUVOWdpQ+n
+6oteVPqvR+OEOSEdwgBxbzSyFQleW2XQI17KaGO6ahnswhrYUOI7VISkMYCh8YhtHTQhOCPc
+ND8Tln17/HJ0rMlXeuA5h0gEiMnHpyLbjdGYOUOepRUqKlKzKHiBJQFXRr0RQkBBBr2Zz63L
+sfQv5nH13e3spNDIpeZ7oUPnmUZuiGqBgIKAA+AAioAakJJVAN++pX5PeP3ennPGxzltMuYc
+3jfjO9Mj0CDFQjFIMAyEFp24Qod2OFSKFsXgQkhaKGHNIA4xClRJUKBElSSUisYCJQRAGVJI
+EISRjy00hvnLCSEJnJJdkJ0oQJVBUqNGj+3T55z50/T11F6W+z0q+KV+I+UqjOmsq9WqbplN
+MYx4t2y2EqQlEeFvLTSGcRmhVQjGMYxjGOGlqQiwgO1FQzrqaYQwx3jrDjLIumhJflx2eU6b
+TXLJiE6ZmDhVZyWXdwl5mPDh3c+7xNf0dru+Hcc3jKf2MqfAKECuxaNfX6s52E/gtGadluwZ
+kggl879+Do03TDrsAQYPKCfhRYAlkJ2R97HjDWGKORs8oUSxVBURW1iFE1XAChhgmGISNsQt
+iDbnHQyTfXSG2c7TNab3qSYlaUTQvdHRO4AeAGjuc11xISkMPSkMwbzkhLGmPgFYbQtUI0HH
+YDCmGARgumhpUKqjCYVJRzwa7alj5bJisXY+EO8y1mE5fgAHQK7QNAHTpVVVUW8BAWMVFjRS
+iVFRJABZRF4RM5mKCVC0LWoMKQoLjTI3ZTcG6jQMOLvRyms4yqrEuXJO32ANSU7Ou16WpgXl
+y4LQg6Es+fZjhFbuRTHr6/T6Fq3i/Bh/hWTL7vNxaeZNXFFfJpzGz7vY8czH0W/PsjT3vCvo
+wwz6BaK1rbl6mo4Tr93bjBw+WAZ0oOdRvFs+O5GXVhRDPjD0zuG9upwD58aA32ZMe5tk4MRt
+DxYS16Xw+CP2OO7wE2+nN7mDF2mYGOxcWMvezsRLdYt6HgEevu6cIPL2DqHndd48qfAxl33b
+jfqajICR1XW5CVDRlCejshjUXWF4rQnI3DBlH2MeKpvF8ArhkKMnvMy/c5nEHWk9CVIkUlSJ
+FJQkIBERYMRQ+8E0gkJJIpIJCSSKSCQkkikgkgkkkikgkJJN7kkkkkpahISEhGfyP9/D7+un
+H0+43ouvtzgjoW7LOTpKXPUUhAwNZkO2gSAJSmMXh+QVDN7u70dGhtMoyg96YLFV6bOFzGo6
+5ct1EHXWSRKag1mBQ8o1ZygWheYQkhSFsRLLCQpC2D/Wmvjpr8sS9JgwSrzZ5gvBULhZYwj7
+t2Yzui/PQAH8FgIA/X8/m70QNC4QhxtE5z7My5ZmUhgsJCxeihRV1CAWhZsd1lgRkhimowWO
+alolLvfpiLWTH9XI8uTG8jy/5vPwPQKNUaokCayEocx0jzjI8DPKVLA1K0lSwDaNsEFUAbtE
+F0hRNAkCvgWAV3fU7wWncRBtJK7lwRjldVfceGhmaET5KJoBaQqAlVQfAxWS/hQScoDjpCkR
+WZSoCYdQToAgk1W3gILFCxYJRWFzz3OzEWNInDGrJXCnEXhhP3APAAaIobEkCVTskEBwxEqV
+K9AfM80bhPq5HPfZ7jJIR93cEOpu4stNu5fsCed3ZxRl+AxzzESTmZkSUbcqwQZDCkL0mSYT
+Qyy0i6FEgAAO7JwJN0ydMWTMEBUnmFVmxS7zZbdKiLlIzpAtQk20pprsrNe975pAMKJAoULp
+IXbauNEJzDWXQqqmYy7ZikjoUKBJJFzscfWGbJ0u1diRsOIlgDKFVQ4QLI3ORRwKm5ZBFp2L
+TRkcgloorzzRTm6iTt2AQRao344i2pB2eWHJaJmRSC2PQNX2ktHWUUGSCXy0CPO5ZJWKl92j
+TmZqHJGzRbA6w4NdzupDy9ix+tu829gsiMZGM17u9+wQeDGgkg2/RBBDqMyILipeCqCoEVLI
+xRFAo2cSNgW7bbSXFeIJd84SfXl3eI7ckx6r3LxH0P48CAAQCqgM/aB41VM0wQP3Zs6F8+hH
+H79oNYuLOcaGwXhSQySZsL353ssHu4PS9vCsAEvM51bHt0enZsrUnYzmC8e1cn7vAhZ1Rh7M
+4WBnd11zn2PiFjaG8Joe4/nPxfifN61PN+8vQLw0dFaUXlUe3PIb1lfZcRW43umH3n2mP3Dk
+tD3zqS96LCUjAjmcUn1nXRKc7W1N6NZlOMd3PHUYezOFg4Buuc+ALK3WknFxrXrmgWV2/59+
+6B/VW/YCs/fFB9BA/ChiCslpkj+H4G3I+Hw4W5uOUVR+lC9HZnYTjG5z8dfl2gB96coZ/Pac
+HFEkMYtMOKJIYxaJUQJghVCVFVEkOOhKiB/NQA/b56dD1ikkkkkk1BPPhOfTr8uG+Zsp68dm
+rD8ICc/yDoCSSghsQGKXinL0MVRv4I+E5gb0RomStR732SDQpAfYPms2iU2xYFGlQzqVE1s3
+bsWVcuXHLZqqDhaBToUoESieD95VmUCQWBbPN+/bF65l42HVdIxxgkbNl3rd9obQwVpBOtUE
+kGSW1QAZAFpUKKBR7LgEKYbJbQIdlglKQFsmMokHFDEF3M7lH6FJC8ivMF3MxW4kJcV5VVQA
+oCqxQXNUKQKR+gEQJtgQeQL4qRo5tMseNllIpEQgqjw35bZPtu7Kbty5LzGTceYfWfsEBAFA
+DmnoJPzsBIJYKMZJJ8dQEwCOmokiUCJCSSDS9X15np3eLMt5eZkyevXiGEXoIPngNhJYUSSd
+zCGstlApgKFkyFsFFaqQDGPszot67bYgy1eWGsEskFW0tODbWbuAT+LzgwhGG69FrccqY3XN
+TnMKy63NzVUaCLKCSS+UF2a+e169Lc074b25yPzGZbw85zvuhoHlEGA0TrSQSIVOkEAwSXSQ
+JAPorvo54d8wS9OG8YKzL6BQgYN0dDGAIEFTSA4CQCUQECcofvSVebvoHyE+6SI5nMttvKca
+LGBMokR3A22liojU3SAjpskxUQnXgghYqelBHztmgSimqx87KGXmXskvE4sioLb4JR5QI1sj
+BGR4grgN1Mm9uW+am8mxwpHLx2D9DQnh7xDV+i7pO7FuU8pM0Z4+Wt4UiM7NXFTXn0WWN6xH
+6zwnF9vduXbea1jeSU67u70mHO1LWbw2+7LF2ub8HHAMR6DLw9Xz3VBDg7gihFx2jzAWP2X0
+OazxuRnO0Ynd7xfHiNObt7tGZ5yZm4DVAtHCKHPQ+Ga3ncV24FdR1DW2pDu6uMhWnmd6rtr0
+xzfg44N0UmDLnq9e3lRJRc+MXTSmdRPJ0HPPKjop6InaNcGUeVItIcPfydYR7dA4cA+R3/Oi
+qoqpCiq2R3h3SSSSSWGJvfDw93X49D5bI/9w8Q3ygqBu+jGMYxjGKvnAgBEr3vy4hvzQSVe3
+G+pmliZpoKISVQOTCUxQ8YBdySkKZAqHwTrWN6k321om94gcmWJI76aRkFuEtpNXBd5YkjwX
+AyB7FhUjSo1+sbSotEgj8X9OsxkrsKUjv1tgNBAkqu+vELsEWiSQgQT67qk4TfryYFzc0QZs
+RTeixHWmtpV0nsFSu0qVUDV0a4WrXO7qi1X3gkWDBjF7exAl4L3d0SLR35+wdzT1BGmAx45U
+qkAg0iK9ln1PIcY+Z7U3HmvdVtYpIbXy9oiEOjXKlFClRA8OJFw9yWdj7tvZhBySWD+kfbo3
+mCiL5m5rKYX2inrMpdLFpSEshoVQTIlvz2dv29pbgOTcFmR0UUHZDImlmb0yaTGLDeWHDgih
+UFBHLAFOlhvOTIEzaW3AhQGQpgsdzaq6Et5RvFXzxMZsmTMrkHboPBA5wA4xSHECYUBQBH2Q
+QA58v2vrLXPp9Ppe6OzJs3czBsdqY011vrFMw0ZGDlFIRUgQRkBhBqA1AEjAWMEI00C0wVjA
+lI1VIUaQBAovzjEO3xFvyw3dWldh3LMZKMgSu6bsflQICofl/0fL+757iS8r1PntN+vhlwpW
+LF80MXwHMeWRzjHiF296hsJ1ac8+ODvdLa9TtVMqa2WKnbrXbiMa2xhHTwtucTmCnllXt8w6
+S9PgazfaEvUwl0eRHVM+1eWfM97vLKmgsZ6KnUYofU/D3zoDL8J93rHr5DXPcivb2OavDAr7
+QzB4zzeDB0G7CCp6mFxNbMZm7NV4DrvCk7ydFzFuVe3xDpL0+BrozEl6mEuhEdVbmvUpHd+t
+9afV+fPfXPw+Z8+r76nffff/XoaYTrzxe890uJdUDv0Pz9nmDz9eZCkJEJRCkJEJRCkJEJTC
+kJJAJRCkGYC+gsQwiEWZmZma39SSRY/hKpWnTewaqMnkHEjlo77ciXU18LIHpFSlBRQUoKph
+eWQ/4faeYzezLSSK3b++R0pUPaYPnoKTtYRhGeDKYRhBpgYUIwAJFCMQxEQoKCgCLAaYqEYo
+bMQpw0jTcG6hQh31Q1HAkiEvFoZg4iJGKhGDjekS2AMYiRgrG/Q0vSaGHEu5XncuizErw0DY
+AwVhoUOUaACIBBAQpjvG7Hdu7l5ZvNcWPLwvMQbWYhl4933YGGhykEaJoGgVvTMVvnW7CWZT
+c8YUnIyHAlkpuV8H93o8w0KQCw7Q9qkiKCogUjQBv0Ge+nyccOWVsr4vjcRHCRzifafdhM5w
+qHGcbBeoJAvhCkLKpEqAyUlM6w06FZ16Y6dN+FYOZzg5mMa8tM2Nveiu8tEnyUtAA+wFUFRF
+UKABwgj1zqqMtTLRF3zKblkUhLMIsnEibTkl3Tcv6tDgFCqFEXSrDXlEEs16Av2l6rhnLcMh
+FyeS8mKqoBegqoPNuu2vplZlissYuuxdpgbFJNA/mvIixikYBHgQoWCRUjTAaUUYwqhQNEAU
+M8fbXh8AKZeZdZJeS7hMZLEu5edMumMZmNUAZEBCBrENYrqQkkvNbqkDaImGCEYPCVKkrSXk
+vSVLtW5ufb98oIAqiR6/MfN1fTonkXS/T4OZulCT6kZeZyGjdUW+zmo5FqAz3A3bhvFc4txr
+dXOQ8hJzvZmmajqyYuyLlifbpGdX3AeVVjZ3Vxe6CR0OrXrw7509OquaKcr+IhU205RjFUxf
+CIzwvXCuW4cuX2aX89XX7B4tGaW+VrjWvm+0vUJEL2ZqqI3Qsr7dozq+7PU1lVdeU3RzdCh0
+nOJQnfCXLlRkKpNwqRyZCyjAHfMAc18yZmRkZHtpW/sO37ojuk0D5hcCkIECvADlteQymDxP
+Cu6zTx4Tus4jtB3U7FLLSTrs0NxXKmVKHBmUGInnGYlMqhoiQaNGipTFAdJ9ZwHDIFDC2mZF
+9XgGjCAResBi6FUAqbLVuJFtJ35KjbjTmIYm0qXpMY000byYmqIhnVpUWMEUCDPXLLu7lmxc
+toxWndwqqoUNdLBGB+IhApUaAogb2F6slhHrdnBgLcwIfQAfot4K2hRJIAJ4PVtBQuSkyomW
+iimXJSfvlVXvaBBJJJPpeieeEm7kdu7BN2kQiGy3I7d34kP7Yrc2IIW2GSKoFELis18vPQvp
+z3gOErPWMDS8zQkTNveBaPCW1qiEoLQf0kV1w0Dpobyt6ve5eeGDJZDTEKtyWLFSgOYKIIXE
+SCeURUILSQVMC5BCgPV0jc5wG+ZfLhMkkNWru7hsSiKs0QVSAth1+2UqxW803bD3l54tdzOa
+1zmjXTTF66dwA+6HrBWBAJ9467aycJ51e7+3u4YSfizjdzHA+7jvAbNrQVq7Y5aHQgHzMQxK
+499PWLeUm2Oe1tvdXjCVcFBgHNcN0HoM2ghgsN4py5aVlxA9Dvn8r9NXefe65PHy2qaon4Or
+wZulGQXtKxtZrsftnYhyAnbvT0iUnbJcu+fm4+LM28Y54mSLxlLo6Acl2hbyGh9XNaWcW6c5
+MmO8PRNKX6R9QALr86AHB959lv58A+n9DURK1NmHBOQbTXHXPZB+OaHwis9urn4EjP0RGcb1
+DnKkFlCxUgsoWKkFlCxSykFKFipJNePGcJieZyjwo0TqU+CeOO3wz2HtmQ7Qrt+pARom+OPZ
+eMqvzQuzNx3GIf4t8/A6Joc7eP7BUBBdHOJJKDAeUxiHsDkX5eLw0bwUXRRiS655yWbZ7JxS
+wDgFMMwo2CcKXqbPguyiSbu4lFCqTkUXvPY6B0VX5aFfPK9+lvbuWkT8SaRMC96H6JjnzYdn
+zDMivd4leZkU3nwD55vOJE+SvABJJkigLd0BYNACIGQXI2LsOEg2DzwpLwRghDisMTU2clww
+3TnseqA+485boeqoePwkHuWaC9WDYSXljDdICWSDKuAWdBv3nsLqtpo4xdYMXKNzfOLDSMgE
+jIyMjIyC7zYoqrDOwElLnMklRTObCqoLxISuJFAAgXdXCScsXg0xrC9ivsjaznjT3Yt3nM76
+qhiE73CUAl54KomCAmxBVNkMBM6YSDgRQE8KL8OAzESU0GW2ySTiEojISS2SC2SSq11VBUKq
+URQUJJTBF8OhEdtaR3c2IvsWzCEdLO4kcvyhpnFfOgIhtSmnGSTdxghKxiSSrQwSRqnCST5K
+XmYJFx9c1bq2G3kb2OTTh9uzfGlVVVW1qpd0gpVtAiXELAbaqqoBmqFBa7J96VcGxArHcFse
+frViv2b2mNPv0Ib8ED55w8PF6uCCYNN8PZekPoOi+GqQAXVQuzveszdd274kw0ut8JevYibn
+FxYwu56wbe26QIsT9vgdNfLu4+teZlQMniiSptAkW6Vm4/T559035q1eoSc4oZr5Hrc8oJq9
+3PNRfAgeWZi803TmnPcvd11Tzm+3R7Iua1aenXlZuS29i65znjD3LWtV2nJ2a/b4Di6u7j7L
+teeBbqRKm0CRLuD8MfT3z7sj7f6fn1PfZ/dL4vtOGdPWcEngAaCD2+vWjYhN+7ZVD78CKL8u
+fXvA5hAIDtRCd/BgrAIoBclklCoWcJQIGLhh8DLjGSErLZyhCu7XOLsm2cUxYWDfmulMyOyV
+nsUK+ngJ4M8J6noVq8eS3geFYe43XXoz0VVvNegvNaCqsWcCwEs9VkK/WzDcQWRNlGHwUK31
+NJRgQdTclCJvFWRRmWhBMYIVQps2XVChUZRgSlZbv0vL8ZuEcldksxKuqsxngCCum9gpnSlR
+OBMXfkYUQ4wZBL00sQxGA6Zxmi5cwbwNIrZto3SVdUNuYhE/UBtt4ebJKhfoJA7reShTisTT
+ZDgurvHhAqBLAxFhHEW1aqrWtq61qOpDqur1eqarRhGGWmiMCEky9tthGECQzWapltEkITTB
+VkkCBJCEITQJRJJCECMcZkuqKbkhJIhJCOTJCbDIZxt5uWXI8aEtVaTau14K+3nRWg0SCD78
+URJi5CBGMYyQhGSGu3GoS8SEhCSMY6GhJbbJCMgSGkKgRjBmjo1bCEJJJJnSQl3CEYxjBjGM
+CEJLJBYYJBog1cQVhstzfNDI4WLfHBLx1XLvDHpDiW7mKVKyjRokCtGUhVmibPElaKbHhoUM
+o1SMNq0Wm2BdRtRlhpp+qsAxX4ua8w2w7t5lp3asYxWhHRriaCShI7VULu/CsKwME2yYggnC
+QdvNGwpLgJNtBFG7bFrsFd3CSWB2mkJeKqiqsU3YZIEYzOc1VVVYBwwS6NVdSw73gxrLzh7Y
+07echIu1y85rApTAkknVCu0ei+5iSYbeCynYKSVwkHt07sknu69h6LSUyRq3Df2zhuiPyNjz
+1z0PL9Vkg6/St5B28OPuoPmXd6z0czIGzWIL5wtYK9S9GyNVs3WSRtwZp174ikvuo5Hds0ua
+QCaTTDSAI82je3s82rr0P00vcim5tzHueee3A7Qi8Ps6q9rW6X2zp3DW7w8djEnqXo2dGKus
+6mLu32nmELQYd2zS5vZnVGmVJCE9pzaN7dcLLXS81f2PSNRm9B+/vAp6MQqZmQ0v3H/p4xMN
+AP6neIGSP31SnuuCf2US/6VT1e3mXKrcj9eSWH/kbqfz7UoUqKYgi8YJqc7HhgDRCumi6uRD
+T9/hjIOn6NUdTNCuIHeRWz8KVc/7fHuMCL1TjQ7HWgIenddxVVXk3k6RQo/ui1+xbG+P+PNi
+Y4tL8VWvVYXaRuhivnngSt2Fxm0r6H8dJg+T8LvPraT32b+38XRZjDutOaCzIeSa1DYxwBSL
+gTw7WnmQzODQV761A9Suz0Tneyd3RKJADwSCtBQQioukoowMMd18i5gWFVS1j5098kPAeh74
+PgxB2NxhgLYUwZCeJljQgq4rgnDoOwop9c9Nob/G972+zQ1MN5n0bay6b4tFVV+tkxi9oaT2
+H/U1P8sby0uXpLw1togHVoBDutrx6JkZkk6BMOAT6K7aRmx0bu9/TmzhwhrI9PBBeZq4Xnuj
+OP7z2YSSRMlzOWio9YxISEbXYdHNG1+3NGvU5c26aq3xZ9qyUvllz3q9iUUUdvD07eTRppVa
+utw4wcFmNisnSmAZKX1Hve7Rl0VykSlKUsgH4MGZqRqWNSxcolywscwosSjBguXKFFi5gYMF
+CUUKKCiijBRYUUSUUXKCxMGDBRgwbGDI2Noz4WftrUxDQUSxRRsYuN/QOF6dHy6v88idxf7f
+yxElT2bSpz/09Hz0nz+O0udZQo7iw9RRJgFWAvLXXl6B566qMmuumBECq0qpPNBBne9mVTfV
+VIjKqoKKIzKO1jC8d96CVSaSCMABXL76SvzZ6fpOCZgf0mqdv87fZUk62bdfWiPKh1ftD4kS
+JG+kh1Or3beXE81rnyfvftX/+JW1X0crTdXAfzF2H4xaJkeVEvgAgJksWchCSAO7iLLIQV+r
+o6Oj0/WYUP2/54931irs6AtbJkrT+8MAONSge6KS7TXVzuDwwj/EX++FCsAIDFRI3/iFyWz9
+2USz8yW5ffJqSv8f5mRv5sPPhKqrF9+OsIp/DtosT8P1V72eESRFPEOMRaAiD5YGZatKU33F
+mGg8ekGtt9DCToB+gteyJFl35smUDIZMf2JcQtaGEZ+RA2A9e53wr3FrzzuvG/TGZMYqlkb/
+p5tpm/Q/v5674XLQ2UPyrJZgLKAKD2B2Jx2qJOH4tPb61wPCfDvDwOiO8+xuqSgFKlKioocC
+awzNfQHctzBggpkTgE7otAEiVSFAKpFs7CbphJ9jPvRnx78Cy6w1TRFIwgKfxH+Xj4+KeHDU
+Z9k+0hn3dDRRP25R3n7oeAOhmbdBO0nUxHc89kk9xP6It3Z2/5usGVYnA9Szr7MfPHvhwIiQ
+J/lVEIL6fH2/fy7wPWZnj5+jDdNUrwih5b/g3nnrl4p8OV5on6AgPtB+HgHmD2gzrYf60rSE
+Th+rcH9fe+oaERmWIThOXpuuJz6hxz17OO+IAZGQmSGR18jaEzwmez16B4i7jisn4wEDtn4k
+A8A8A0iFB9U9xXxHTuVfUfIt/2gLiH748yI/EQ+Z8hpCgwjDboQBKiDaNyKqyQiyg0GgW2yp
+ADEuWVQVB//xsGwbgOSqCIBbmqiieYVUIJ9CP2QfNIUbJTMVCgfrPBJ7z5nfsjhRXY5VRFlJ
+R3fIQlrdQQTX3rWs810DaB7kgOMcjSCdikF73JCCDHj53YcRfgLo1d3dEV5DMF4PA6xRkfae
+S+PsAPn7jQQ/TA4ziMp9oP0fuANqHAbZeJ+AJklkGF3a6c/HpMB7oVugGYV/PVoxaSx507oi
+cPL4t1xzqKbNgLmVOk8zbvap/wk0Jo2JSPGG0k9THRk7yUCPaEPKKyASSJPZ9msO4vvD1193
+X2cB0B2FxwDVfV8kdTAZEVygfBSJsBMwDuTPfOfWi4E4UdsehPqF0Bn/gcuKbbGYQWkmWhAy
+SymvEtxJ17e+xHESNEd0iyLAb4uCQSjtnXAHTUimmanIHv5C5PMrwigBE81rnXBt/94cFRPb
+BSRQCC50wyYJ4+2srAAPp7aWH+WPZ18b0Doxe7xWn2E16KK/9ueF+1UP+1JN9Emyekg4lRUq
+Hqdw78o4YE61U6OiIKUtJgWoepcJJQORIrECHzG3mHJOaBFSBBcDpx+nfPoQTw0rs9ShbHfs
+JDlU18vXj1qiyI9Q7TSHRTm9HN0Dr9LocUDrRcTsOZ5+E41FCorlG7mdWQ7+9Z/mZHSdeG6l
+VBRSKKKUOEN3VuqHsOfh2IC8adTy3Ta1N6sIaBa4TwmvP2ZD6Wr4q9DoAvjUL3XpaEisD3Tn
+oYRZ0i3KcgCNfK0lfH9d3ek9VIkzVI/FKkTx9+cHeebgHH0ZHpG1j86TnqWpE9dfxPsSTyGe
+JNCUJajl61XvuHBx9RMeNOngi03qT3VOeib+wnWDWk35Ub4pNXoOtNsxeknRT8e/+uT+B/DP
+8IPokWJARUT+UBKSICKB8Bg9oyQFgoIckHADh1sfn+vQ72/OKPh8Hbvvhf9x88ZJ++Z54raN
+66eTxDLnd2clibubzMwpvArQSbTi2zd6busNbZFSfEydZBOkvBRcXAPCoqgAxXGkFzLyaHCJ
+X60kkrN0InDX2bk33UNu0N+e5PWvZx22SCbWq4EcUcEDAVxEXwEcwpeB9ydc7lwzcH0xJZ9G
+YKbhzvELKXweUrN0ds3foD9NGe0+Q2FXnPOHuBF0/D7cajHWZm16tI9Jc9OjzPWHPkeeWMWk
+65nuXTmdZzjtNIh9lMgwzvYuwPiqHnD3d2vuh2+drp3dXpz8C1y6wyQMm3KDnl9FPR6jn0W9
+utd3u76C6sobZ7eLpOhodo9uuebI0Td2yier0Bdd9Nx1Oqa3j3tvpNpKtzxcB6NGedsMYPOk
+5zi4dzNvxxdGoGPe7l5irwkYj1DgbZh9IescSZJVqSSQkAFLxV8lG25a5Ir3de7vAQujlYbQ
+G66Og7pwua9ZrSSSosskSQASakbb5S93cJUuXYrbJDRJ0aonAbRbbFZalmsg2gC1Ely1JJIS
+Dukjfcla228ibfcdFnGAEtt2kmkkluCgaOOyWOJJODuttqeN2mgSSSPMct7uknXu6q2JK82A
+HapBJIAJPXEfdJ0MsqSVSJJtDEbdk0ypLuIHjrand0ttgeaGDwZNSBkrLZOH0d7IvW+Wefkk
++Vy3k31JyemS8sMOEgdH04CS12+y6NSRJ8rbbSfEk221JJJW1ti0d1bbbY7h3O2gCpK2SQm2
+23ciXJKu7bQBbfIAWiT0kiAE9LbbbfW222222ZRaSSTu7ttttuugk8iTu7pNdPiSTbbbbbbb
+62gC27u6A2OtIANttA0DM20AW9m5bbXZbbbaIKLR3Dutvm2wA293dctt9c3Rtt3d22231ttt
+tskkAEklAFttttYwPRaTd3dtpJ8Sbbbd3dtJJ8Tbbbd3Ukc3RpKtpJJNvReDkxrs0Prj98fz
+bmWpe8yevTV3t+V93dSZevYznHpq8YJnt3afDJ7095zw93vVGme1W2mZyyJW5u5vTLUxK2i+
+vcZeZto05lIaq5V1o63kXxOnww9MkPo/e3u7PdHQ+m7hjndQt+U0jjxzKXtRmvx6btNPGPci
+LHIm9cXmtfwKdywi8czPXEu25kQXReWl9u9J4mCZ3VXITF10aFDWk+sgPCAarXuNs7q0QvIE
+kSYkCx0hKtr83ndHX0obXlAPCtN3d3UifBVsI+KXMmt67FtYXL1vPCfE8XK2+tJNmEoMPRX4
+0Wu+oDdvgPC8MfHkH2zRhcQ3vDos92rzNskzN85F5e1uPVKoknqi8cO9UThSzSRmHjmk+7yL
+lPRSrkjqj3Tx0IXY324kpeaK70e9sZg3RsKaVJ9T7W1zhvd3WkSyrQ2tLA7oiUrb1TIds1iL
+rL7uLvtSWvm2+1daqaAlqo8YcCzwKfsoux/OA2Txz3ezvEzeLcW7PXND6ewldYzoAlGvB0Mb
+WeeCaXcj7i5M64+4rB3YZcu8VJAPatzvREqOJMkq1JJISACl4q+SjbctckV7ut0mqIcrDaA3
+XR0HdEPAVttpJKANttJABJqxtvlL3dwlS5ditr2xvnVROA2i22Ky1LB3UDdtiJJciSSQDA1t
+x9yV8kksdbncYLsw9zVcpJHcO5JiAbTu22RJIWDuhbTLYfQCySRvMct7u5vrZwRXW9UAJapB
+JIAJLmYz262XVEkokSTaGI27Ekql04BaeUq7uliSUAFQhNBCtrJRKAADbbt293JIk+VttpPi
+Sbbakkkra2xaO6tttsdw7nbQBUlaJJErbbdiWpKu7bQBbfIAWiT0kiAE9LbbbfW22222nLbU
+SSBmAq2223bndyRJ3d0q2nxJJtokkkUl9bQBbd3QA2DaACbbQAOzdtAFt8cltNtttttAFto7
+h3W3W4BIZN3dltt9c3Rtt3d22231tttttttoAttt7u7rbbbX7LoF63d3baSfEm223d3aSSfG
+2223d1JZgAJKtpJJNt+Q78rge+WYieXXV3e7193bemebpswOJ7CUtLv2PX6jr45T9Hl7yxfP
+p+me+wAl+etR+SH1UUvmtsdZGEXsHSG3t24j6JUVV1VXXV+O5qZTVYH8cYH1FASk++Ydmg4b
+fvc8i4xHYw2i1K8Df9gHvJ5h+Z+T9v2ysiZKp+wm7/4M37jYZj/lP3/KvMiTxP0P/1/PpRq0
+PE63i3MRIk3SiP4bzy/ozWSl+tgVkX1RD6xeAHeVTBcAsMlAQLT+16j9/37h9R+sTx5nZ17I
+rIoSA/dUkkkklKyCEgqyIsgqyIsgqyIKSIsgqyAJISAKSEgCkhIIrIqhISKIa4PhAeyVEA8+
+AKUyQ9xCcL5I/eR9P+bWq/tcGrZjY3Ikt+vkvDNwDIqlRHMY0PRMutQYRJ4KgaEn8FR3f1Er
+H9FQ8/+pezUopQVQSBFViRGDISBEYpgoaCAQKM6n02AQTvQgRQnn7kXVVxj8A/ek/f7Deb5h
+Wi9ExX2UjuQzyV7AnJHSLzIZMiInQ+zG320C0bc3l2gH7UGczZT9BAXn2/7XSPeHmXwPZ6WP
+mXBkoY5KQsk9B+HiYHu11Pf1Y+qZcHHeN6SqiZ5tNJtrkPpZ3GKEqkVVfEefkBS+S7+k5+a7
+HHkDwRRAKBMCPnkJEEhitl9D40AtNOxrAUJmVRNGI8DRgHYhyVVV5e9PYTYReqnUDtiB02Tl
+BlRy3sd7TIPDpKZ0Rzm4jMQjcRZGKsFyLSb0ZqbmQ/ljpNYWnGcNo+zqHAsFRNOaqvooBLKF
+ey+AHhE8dcWenDg4iA4CISUX7Y6j13pX6a1QENpREB0VCwBcctkECIXbYJ+5UKzKhgHVJaLf
+qGnT7/gXf7sFkpRQpKPlP1x30VaXh0URqzkSoSnzU+qD+z6/IWjVxKzf39sblBbvB81G0iCk
+QKSKxXfU+GOt51vph/W97RJ8Pu0bSfikh+GZh5WPTRFSfWxicFOrNIKyR/XHziviHrmK2SQh
+Tr2ByacB9XQiZPHGUGAbHhqln2ioQsnPtEWlV1ILLaVXieknWHrdkZHbWKSdvnyHKWYedAJt
+22YKVe60VoN1W0NQHOFfiaknLOA9YgzAigKjt+SgIjwEgKQSIgCtK+HXsk16Bye7iHiSREtD
+4NFPspXyEXoGTLx/Xxdngf2+epX7AScCkVUrn3JHlDIQhUCRCJEIFUhQkgkip6e7vD2ykwaR
+kBLDsRcfAOCanA4TmcMqYRdIuQ8FGgGhMCuhyT9/60QDqKxgDEiKLPFgC8k30DoVIEIlyty4
+ZYK9p57DDK2+WOlIUnnRht5lTQv5IiBQ0uktEiR00bykj1UGffJaGsUp66VqVXZOCaRPFHz5
+J2QEyGhST8KQtNhBpffCoDUBKitQVKQhSYKkCRkkAhJJFR3g4i+0Igm4ALwQMnsNVMhc1jkK
+r56ySSVcQkSRMkItVPPYWpSMIu31WAxsWSSi9iPjVwwUWEllJFMrSN0vFiqhO4ULsWiSytNl
+kzKS1b9LRMIiBRMnpWbnWkhYTH0tnUSqD7CBfPllzZr9VPjjCJlACBYoQMpadD0YK1ytVrgB
+8wZZTuHJNIumMUC5coheALYJIGN6GLpmOwYoqEWal+RDToV26WdeY/SwfRVOYfQiqFmhTp6I
+W2qxfy1aJb1aMuiRnmi/reS8GiKguUlEbFpz02kk4KOgG/cmhxihUhpBJxqQcGuQVKMvJkk6
+xKA+ZGSZQKCb1qUDS5BGAGVBQQ/+mSACBIIyCoq1/zH7Pu3PA7SgOfI/FjneOj+6/b3qbm4M
+Tj2fCaaUBMhinGPWkOk1nuCWEzipH5h8X5IgXwEfakAhEU0WIM4QzR7OSQEuy2t7hbXE7/Fk
+ldBOArpEltzE6bDtW0c5AQT3nbwyU0c4mZg02MG0Ze8LYbyY3fdpum2wWjXF76LTjOTazQ3F
+8Tebtpj4zBvYtbJleLxRvoy3xxwJhGW9teReNtLJSbb8NTUdjTKjkTQLtbR2Ql2gvu7Yh2d9
+H9c77qhVXLWR6I8ooAPobb7psHyBQ5cNNJJJNa1EUkVp8F/hgSJ893CJlhCc3338E89Evwcm
+zMOvv0IIiRNAKScjTs2lNhxCgnAouYrg5Ch3oI6JQIhmb1ToBFJv0sjvJbzIiqdUhQJR/oDT
+JkPKdvnoZ0/l8ANk24VIDoe1fhWAwF4TKdAwg1AJAdCBxitXQVaJQXAkCQKorSrRhex1wOAs
+ZObK2loYjEw3IxgXahykuTzx3rGWS0HG66G/AlxOGeN5vRA1gm4RB4QdJsGoDXAbDhnzb4XV
+XK2GkmF8xLRrvLG6M7cKHWjbGWCcoyOqxzqb5yyL6uUkwc7wxNiNz91AtHiAcuLaj/agRYyD
+BO0lT2giaRXJ9zl0JDrFc8ULIFODn+osl+/ThDV+hmzSO6VKSUjI6bvwVKqXdBzZnR0xNcEd
+vSZEewqSbawT43Myl4WDw/mesCLg1iXyToYSn6CLe4erAO/bG3eeF0HRI3neRKNE7YtD0Z5c
++1djWxaKIS4CPvX8TUvJpWEJ23iQ95KIaZKQ8aKNQTwDKYtdAtAbQpFVWcNDW7GSAPhkBsgA
+Pu7nziQg8RAUF0UcnSAfo/zjwOnPPbjzFfcGAERTtgTCIiC/3wGd2DoCE9Z6+lEfLI8kTgAx
+056GuS3heFiMs0ql2OA7rEH7FHphTbYpTghEpF2+XdqHUNBUEoDUeiJ4QBBPaQuB3EDET0st
+KwnVD4yH93ZxiKyScZI9h7Bdtx4yE0Qf4Mb7lHBEKOFKKoqQL81UplJJcyj8RTpOoFzI3GA3
+MDuSFxQB7WF1ggGEjVs91zMzQ8f41+Of2WZzTqkVvQpyIHEA7ASv8eTkIGhxuOFNhzWRk4G6
+EklfhmSfffBu19jaO9kSJJNzwJLCeuTo8tF+LL6MW4VGx+w6TLtP5uE0gP+uxVKpKUpSt80I
+bt3fa+iRe1+rruwhSTRQqNdleDEDRrytmUaGl/AZZfl8O/kjdk13ZLrVbLEcSQjQ/oXzRRTI
+rIh5+4rsD2lCJp8UPptgE3qB9xSScc/R4t4hH8OY0j03Wk48IiIehDSIVAUqJcFQWyIFAIJF
+FoPvoFnsh3hOAY9+iqVD7YDQRDYoV7T7fEJfs/dEGhSqCMYgwJSnUe0q9VrI2pvSDplnQ1Yc
+2AxJyyamLdpSNJcho7NWZ9y9WstJiFumpkQqRMjXnASlIppAU7kUXsFdRSHUBeQiQESCJEiX
+K/5bB/LixpKGAnbwrjGRQMCZVg49Cf5EE/VoIH8Uk89VLReCfETUwDMEPMu0g+IYwIRFxqKj
+uMClEebrC4Hhj8kiDmCuIyCkNRBQF+KgIjuRVEVog0jWD8rc2IK7hA9+yj+X5V8FwBU5+FHq
+kHdMnASPtU/b9lFRggVFU/pNQQ4/tyHLYOfcfL+ROWwUY9DIdZ7ixICRwIkj6/A0BprcCFn2
+1AHRiK6ayhCO5wRnPydWJOcaaEN4PhcESx/s4e5Hn2f1s2a8DYB9B5Z4kUD7iIyXvClVPbVp
+DkoeOnxy5OIadKbopx4+DXJ2qaJQhGu7rX8k3r4PEqzsDOzM62kWxJR3iEZaH1ZQ3laMozS5
+3GkW4mTI+WJCX6yt+w3ZJc4i+DLJKTENS9v4YjbkbGeo302G84GSxY4Z5EZoo7jpnooPr7JM
+yopG7Hnp7ySSEdQTJhwI/YgIKQ1OY0kSEdGB68gFEFqqEwL1RO+EfvIrSjEJYGInH2Dg8Cj5
+vD7EPi/FP+MD2ny5CEisJPirQIPMNwEeCRFgQKPTK2pjtBAzp7TvHb0MO2dXwu7PkAeLRKCQ
+G1GgEipG1bkl07N9S3NUgiJMrj7gWzCoYSHAwtwqEUWGgmQepj2MqylL0b3B7eiHraUUKeM9
+DoQcjwfKbk45mojyEkF6FeFKTGahc0NszZ7HjluwLV25DTw1lIN6yzvkqwoRSUUP+6gps5YG
+y8UhJUkoCgMS8UgxS6Uq8WsNvNXNweeTjdoMaety4bOrWCbQ4XNyY2xEYnMuy9NvRM6kXCs3
+NYvWCmLLrljlua4kJNBUUKJmboFoNqkin6DkBrv2g8SAyPDWIbDWibQ6oC0nGGVTmOPZo3Nk
+3UOsoU4oyJb2Wb+r300a4ScSFnPFLl6vFG6RHr8BlMFCXEZWHmz+eaM33uBGnSAqzWiCQBVq
+Tbm566FCXFyp4bHqMk9O08WT4/r3iXiYpVRLbql1JFynZDGB8Rk5kl04uXpcs5BuOfRIxSdP
+riRA3ehmtuzsXVP8MLoqGge1APedhk4lUGx8egtLt7zrewqmwDoEkRVVs6VXqwoZkOAFcyao
+qB5QaXsRebrpGVI3SORYsmW1RZOO+bnZHAmT6BNedKEAjQEXnEfoXSuFqqWIVVCbo2VNW7R1
+mLUKJBqZqmr7y9BAmTalKBhAgaAUJS9LvvfctfxbpIdpRuT2W7NTXKH/5tiGM0JxhqOIwScw
+u3AYIFCIgFElGAiP0CA4BJlAwJZEoItQqSAESDHl0XgHcRLznUXs8NUAwZRRThTtFQiSqA3E
+Ofttn/jmzOFrBqqpFZQqZWiyJytxVZviL1H0rTpWRps5xcL1E8vePDCggi4CpxTV2u5xHoWp
+VaFIyakUWjjbFEjgvAYMAEQjASKiCmRS1IIEwTEzK0XGhZeQbTp7kR1gajBKsMWhElAETv/h
+Se+ZSDCRzHFtBC69YAogv0CGYJ3LkMdhB/Um40ezqFJlF+VHP7qwnQfqBx3OoFVUYQOoECro
+paKLwaW8Dit+StKoJyDj+PU+1eYoe9U5AHCxg/bQnBTgp2egmijkwEoWEEhBnRQPEWguffFE
+QCEW0TaKlULtcaSkO2VAY2NUTt8vACp4YzIwOT8g4C5T/4XSf09QCLlFFPPoh2J9/bzHRKIg
+5hQhCIRH06z93uBtJHglu2fgbx3Dp4TUb/l2x/OhnSXgQgTwrJHAJoK52oKKT6+mYMOnEe4i
+wZwRG4eXL5nqr8eaR41u5t05iI+lEnhcQX69H2/RHx/mDYJabe1ChL6auASAVNrJw/rJXBxx
+0KHeYGtwGh2CeL2I/qYSEqfluYmUTR0E8TMzrzCbye5B7tombPPd7iZyHFOxGKAfAAryU9gL
+jCeCeGh6p+EY516sFo+WeeQyi2XBmuz6bxOuJCMXdEuK8okkknPYvWhvLi8PVCHthVFVBS1o
+T9svc1+pciXnPznekbR1xFf+kBK07ewKOB5hjoopyghkPNMJ/p12Ayb96OVO9Oj9fFaTR2Jp
+He8pvZNHhZvUh3izvIlSKKlyHMrBt0Zpcvfehkn27WhuVsp56k7PtjU2UUN2guIiJfZ6FBz6
+J5A/asH3qCCLhwdiIQ+dFdIHV/HtqwHUCSSIjEkiQhBkWEhESIxTpVEkk1qkkkLjREJGEFJE
+CQVYCe2kAAChWSVDmhEvvKT+yNSxgSt/6uKJrEkkk8PS1E95f/G/MeqBOOx2mvPQHCXNIiug
+HjGgDND3W+d1iigYM4BQFJR84D7PRlahyA2iFIUQbdD7XutFh6tR30J6KqkboUOUamZrGDG/
+1JeE5IqB1yNZi10kIthBZSjkSVoWQ3kOqJPpUdgPdOwQjSoUUOYTVBIScfnPpmAIJLTqfKBJ
+GCrIMggiC2HeTeqKLpSDNlGVeBO5UMkIhAiY+3LZh6nepwFgeaTPYIHii+F+iUqegia67Rcj
+v70dUcdTs4UqHKj9gEEQVMQYQQRBZOoBACgqCEgqxkdTzCUlqQCBFiOqufX29gCIpYp7/ZGx
+qxscLl1CyvK53PTZ8bVf23/9VL+GeUrzf9JqLvEU+ByIszUSOUFUWkknRwAgm+XcKSaPjaRW
+jXzSvflgZTx0+nHhlXiCQMrdiZ3QmQuCuC+uTbTghsK0AbImtrtegUFrlErfV7W8DWXUOXQ3
+7stYadxWY6c9Kvy0LoRCSg+W8tux0IuXoZqGmquTr78aGft44jTI4UqBDl3NiDgiLIJnzBfc
+f9YUEZET9NJxqf8UMA7pNaqN1WVFN4Ut2aQdYu5hOWGsSuiOisziJEJOCLkNDDa5HWIRSakk
+1o7uMi3U8Inl5kYcJOcObIu02incFSQkAgTuTs/MYU0ZPdwpKzlA3c7oumJFzKZRF6Lw9FMi
+QSQDHeBQJzBJ5c9Fd2I+yZMYsIvypB/T+75krZTSZiDQScizfsIhQRU6e2ghgrtkhSdRBUzK
+j6rCEXuiySpJlOwsHnOhIstQyTho81+sTkWF6Jj32zydyWlyEVIohHg9ngTXDLrhpIpGI0zk
+y1l2e41ar7yZIvM1hlpM7GRGm187LX2WNtRCMpqRoNRpatPBUcMn3Brdxtx24INwkRL1CSCz
+i3vkEdHWnHDVBFBZnklWoZj9kJEMFJbK9+WzSNVtWmNM9qQJoiS1gXcyKeySTRsXJ+BUlsoW
+I1pEbh4aNoLjil3EOVUPnUoKOBlGdd0gGZJCFcCKVdEsQd1QpAe5CyDY1r2zeWERVVwoPYAx
+AsVoCIIinIIdhzeBFh1wiUh04B2uOKjohu6eI2OuRIDSew5FqPTjDgwOHA/889XPAAHRcGwC
+CdaO3UpCgLsiA7jLDu1prRXdJMClFRODBYaWaJyvvISk3YRR1hpVMQQTkhthj2bbUZskAeoi
+fSOQHqDvz3vO3DwTh/Yuoj1BHiPYJ9eKuvGtbdRAi0gnH6Bh+9MgmBe+Ur7CPfw8UTRJYawB
+WY5RGAcxz66zE41Q6xXbwgwJBTOCQGRDZDtjNOvxv3eJVKwXgjYjJIKbGSyiX+ShBO7v7+sw
+lfqTHTLp4EoyKiso2QsNAiKQ7UCA929qEFCwi+AgE8WKBQh1pKD8xx5HkolMntII0sJuFE8c
+y1+qjVSM6kcw+wmZDhSCkIRJSds77DoHmOg3pweqTg5BmVaT9SYbvxTl7Dc8fx30zOpNWOMK
+BW4iF0qu5BPaJaWkIhJdJQxIReO1MDTEnwHfx72JGsUKiiUjfUBeNFpFlJt5/CkfTt7IwTAm
+O8BBICa/RioZLIW8yaouG0oxG0tIhHCLR0uRSR6Ifb90/nlJ/gIo7xFRTipBQ1TgHARcyqI7
+4qA1FIiUlqCklJ/Hs22pSe4fVA9PglDgfQHPMCwiTDthuWHpqgOU00L+wVG+uAKm3NMIdgi7
+VnyJ3UMzLWJ9tD1zGZvRUkORPzkGDwiM3oAoDl7hn/gXckU4UJCVvPNo
+--------------030306060809090904070809--
