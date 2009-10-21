@@ -1,126 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbZJUPLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbZJUPNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754088AbZJUPLS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 11:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbZJUPLR
+	id S1753937AbZJUPNs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 11:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbZJUPNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 11:11:17 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:62809 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753520AbZJUPLQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 11:11:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=nfmmCN+rvTz8k7hcViGb7982+jNVFQDgf4PLV092goezUgj34VVwLYaeIwoWCwD0B5
-         mWY6wZXUHHzs4TYDmxIDtdJDN36K9OaNY5A+zmVZ0z0a2W8gbG0BixRjU5pgPUQ3GsHT
-         GlCTX5ADREt++23egusOX0fFTtZA9U2bU625s=
-Subject: Re: [PATCH -v4 3/9] tracing: add MIPS specific trace_clock_local()
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: rostedt@goodmis.org
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-In-Reply-To: <1256136393.18347.2997.camel@gandalf.stny.rr.com>
-References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
-	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
-	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
-	 <1256136393.18347.2997.camel@gandalf.stny.rr.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Wed, 21 Oct 2009 23:11:07 +0800
-Message-Id: <1256137867.11274.8.camel@falcon>
+	Wed, 21 Oct 2009 11:13:47 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:10322 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbZJUPNr convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;11:1>);
+	Wed, 21 Oct 2009 11:13:47 -0400
+Message-Id: <4ADF4184020000780001B25B@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Wed, 21 Oct 2009 16:14:44 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Thomas Schlichter" <thomas.schlichter@web.de>
+Cc: "Jeremy Fitzhardinge" <jeremy.fitzhardinge@citrix.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Robert Hancock" <hancockrwd@gmail.com>,
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       "Suresh Siddha" <suresh.b.siddha@intel.com>,
+       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
+       "Tejun Heo" <tj@kernel.org>, <x86@kernel.org>,
+       "Yinghai Lu" <yinghai@kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Arjan van de Ven" <arjan@linux.intel.com>,
+       <dri-devel@lists.sourceforge.net>, "Ingo Molnar" <mingo@redhat.com>,
+       <linux-kernel@vger.kernel.org>, <jbarnes@virtuousgeek.org>,
+       "Thomas Hellstrom" <thellstrom@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not 
+	 available
+References: <1394923769@web.de>
+In-Reply-To: <1394923769@web.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-21 at 10:46 -0400, Steven Rostedt wrote:
-> On Wed, 2009-10-21 at 22:34 +0800, Wu Zhangjin wrote:
-> > This patch add the mips_timecounter_read() based high precision version
-> > of trace_clock_local().
-> > 
-> > Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
-> > ---
-> >  arch/mips/kernel/Makefile      |    6 ++++++
-> >  arch/mips/kernel/trace_clock.c |   37 +++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 43 insertions(+), 0 deletions(-)
-> >  create mode 100644 arch/mips/kernel/trace_clock.c
-> > 
-> > diff --git a/arch/mips/kernel/Makefile b/arch/mips/kernel/Makefile
-> > index 8e26e9c..f228868 100644
-> > --- a/arch/mips/kernel/Makefile
-> > +++ b/arch/mips/kernel/Makefile
-> > @@ -8,6 +8,10 @@ obj-y		+= cpu-probe.o branch.o entry.o genex.o irq.o process.o \
-> >  		   ptrace.o reset.o setup.o signal.o syscall.o \
-> >  		   time.o topology.o traps.o unaligned.o watch.o
-> >  
-> > +ifdef CONFIG_FUNCTION_TRACER
-> > +CFLAGS_REMOVE_trace_clock.o = -pg
-> > +endif
-> > +
-> >  obj-$(CONFIG_CEVT_BCM1480)	+= cevt-bcm1480.o
-> >  obj-$(CONFIG_CEVT_R4K_LIB)	+= cevt-r4k.o
-> >  obj-$(CONFIG_MIPS_MT_SMTC)	+= cevt-smtc.o
-> > @@ -24,6 +28,8 @@ obj-$(CONFIG_SYNC_R4K)		+= sync-r4k.o
-> >  obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
-> >  obj-$(CONFIG_MODULES)		+= mips_ksyms.o module.o
-> >  
-> > +obj-$(CONFIG_FTRACE)		+= trace_clock.o
-> > +
-> >  obj-$(CONFIG_CPU_LOONGSON2)	+= r4k_fpu.o r4k_switch.o
-> >  obj-$(CONFIG_CPU_MIPS32)	+= r4k_fpu.o r4k_switch.o
-> >  obj-$(CONFIG_CPU_MIPS64)	+= r4k_fpu.o r4k_switch.o
-> > diff --git a/arch/mips/kernel/trace_clock.c b/arch/mips/kernel/trace_clock.c
-> > new file mode 100644
-> > index 0000000..2e3475f
-> > --- /dev/null
-> > +++ b/arch/mips/kernel/trace_clock.c
-> > @@ -0,0 +1,37 @@
-> > +/*
-> > + * This file is subject to the terms and conditions of the GNU General Public
-> > + * License.  See the file "COPYING" in the main directory of this archive for
-> > + * more details.
-> > + *
-> > + * Copyright (C) 2009 Lemote Inc. & DSLab, Lanzhou University, China
-> > + * Author: Wu Zhangjin <wuzj@lemote.com>
-> > + */
-> > +
-> > +#include <linux/clocksource.h>
-> > +#include <linux/sched.h>
-> > +
-> > +#include <asm/time.h>
-> > +
-> > +/*
-> > + * trace_clock_local(): the simplest and least coherent tracing clock.
-> > + *
-> > + * Useful for tracing that does not cross to other CPUs nor
-> > + * does it go through idle events.
-> > + */
-> > +u64 trace_clock_local(void)
-> > +{
-> > +	unsigned long flags;
-> > +	u64 clock;
-> > +
-> > +	raw_local_irq_save(flags);
-> > +
-> > +	preempt_disable_notrace();
-> 
-> Why have the preempt_disable? You disable interrupts already, that will
-> prevent any preemption at that point.
-> 
+>>> Thomas Schlichter <thomas.schlichter@web.de> 21.10.09 16:38 >>>
+>Hmm, as far as I see mtrr_add() and mtrr_add_page() already check these
+>constraints. Do you want me to check them additionally? Or do you want to
+>completely fail the mmap() if these constraints are violated?
 
-just removed it.
+I'd say you should check it explicitly in the caller, to avoid the warning
+message being printed otherwise.
 
-Thanks!
+>I'd let mmap() succeed even if the mtrr_add() fails...
 
-Regards,
-	Wu Zhangjin
+Yes, of course.
+
+Jan
 
