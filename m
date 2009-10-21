@@ -1,106 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbZJUOfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbZJUOfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753615AbZJUOfG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 10:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbZJUOfE
+	id S1753636AbZJUOfS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 10:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZJUOfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 10:35:04 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:60073 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753520AbZJUOfC (ORCPT
-	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Wed, 21 Oct 2009 10:35:02 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH 1/2] KVM: Directly inject interrupts via irqfd
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net
-Date: Wed, 21 Oct 2009 10:34:53 -0400
-Message-ID: <20091021143453.14955.80578.stgit@dev.haskins.net>
-In-Reply-To: <20091021143042.14955.22470.stgit@dev.haskins.net>
-References: <20091021143042.14955.22470.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Oct 2009 10:35:15 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:64251 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753523AbZJUOfL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 10:35:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=f+u9j+rG8W/in3qIeV74JaH/8S0pv58xuL3yrWZpcOUDIt8nSKvXhk2F8SGWBAmcq5
+         goJQnCBf6I0Lb+kI+A1CSqpsgKdH8yb61FvVoPH80XwjCn65SRfxHUxdOvrqQs6v5gqS
+         66N0poDkrTCYPFzfyyrUBlm5Ks4Tldbl0wBPM=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+Cc: Wu Zhangjin <wuzhangjin@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH -v4 1/9] tracing: convert trace_clock_local() as weak function
+Date: Wed, 21 Oct 2009 22:34:55 +0800
+Message-Id: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <cover.1256135456.git.wuzhangjin@gmail.com>
+References: <cover.1256135456.git.wuzhangjin@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IRQFD currently uses a deferred workqueue item to execute the injection
-operation.  It was originally designed this way because kvm_set_irq()
-required the caller to hold the irq_lock mutex, and the eventfd callback
-is invoked from within a non-preemptible critical section.
+trace_clock_local() is based on the arch-specific sched_clock(), in X86,
+it is tsc(64bit) based, which can give very high precision(about 1ns
+with 1GHz). but in MIPS, the sched_clock() is jiffies based, which can
+give only 10ms precison with 1000 HZ. which is not enough for tracing,
+especially for Real Time system.
 
-With the advent of lockless injection support in kvm_set_irq, the deferment
-mechanism is no longer technically needed. Since context switching to the
-workqueue is a source of interrupt latency, lets switch to a direct
-method.
+so, we need to implement a MIPS specific sched_clock() to get higher
+precision. There is a tsc like clock counter register in MIPS, whose
+frequency is half of the processor, so, if the cpu frequency is 800MHz,
+the time precision reaches 2.5ns, which is very good for tracing, even
+for Real Time system.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+but 'Cause it is only 32bit long, which will rollover quickly, so, such
+a sched_clock() will bring with extra load, which is not good for the
+whole system. so, we only need to implement a arch-specific
+trace_clock_local() for tracing. as a preparation, we convert it as a
+weak function.
+
+The MIPS specific trace_clock_local() is coming in the next two patches.
+
+Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
 ---
+ kernel/trace/trace_clock.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- virt/kvm/eventfd.c |   15 +++------------
- 1 files changed, 3 insertions(+), 12 deletions(-)
-
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index 30f70fd..1a529d4 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -49,16 +49,14 @@ struct _irqfd {
- 	poll_table                pt;
- 	wait_queue_head_t        *wqh;
- 	wait_queue_t              wait;
--	struct work_struct        inject;
- 	struct work_struct        shutdown;
- };
- 
- static struct workqueue_struct *irqfd_cleanup_wq;
- 
- static void
--irqfd_inject(struct work_struct *work)
-+irqfd_inject(struct _irqfd *irqfd)
+diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
+index 20c5f92..06b8cd2 100644
+--- a/kernel/trace/trace_clock.c
++++ b/kernel/trace/trace_clock.c
+@@ -26,7 +26,7 @@
+  * Useful for tracing that does not cross to other CPUs nor
+  * does it go through idle events.
+  */
+-u64 notrace trace_clock_local(void)
++u64 __weak notrace trace_clock_local(void)
  {
--	struct _irqfd *irqfd = container_of(work, struct _irqfd, inject);
- 	struct kvm *kvm = irqfd->kvm;
- 
- 	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
-@@ -80,12 +78,6 @@ irqfd_shutdown(struct work_struct *work)
- 	remove_wait_queue(irqfd->wqh, &irqfd->wait);
- 
- 	/*
--	 * We know no new events will be scheduled at this point, so block
--	 * until all previously outstanding events have completed
--	 */
--	flush_work(&irqfd->inject);
--
--	/*
- 	 * It is now safe to release the object's resources
- 	 */
- 	eventfd_ctx_put(irqfd->eventfd);
-@@ -126,7 +118,7 @@ irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
- 
- 	if (flags & POLLIN)
- 		/* An event has been signaled, inject an interrupt */
--		schedule_work(&irqfd->inject);
-+		irqfd_inject(irqfd);
- 
- 	if (flags & POLLHUP) {
- 		/* The eventfd is closing, detach from KVM */
-@@ -179,7 +171,6 @@ kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
- 	irqfd->kvm = kvm;
- 	irqfd->gsi = gsi;
- 	INIT_LIST_HEAD(&irqfd->list);
--	INIT_WORK(&irqfd->inject, irqfd_inject);
- 	INIT_WORK(&irqfd->shutdown, irqfd_shutdown);
- 
- 	file = eventfd_fget(fd);
-@@ -214,7 +205,7 @@ kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
- 	 * before we registered, and trigger it as if we didn't miss it.
- 	 */
- 	if (events & POLLIN)
--		schedule_work(&irqfd->inject);
-+		irqfd_inject(irqfd);
- 
- 	/*
- 	 * do not drop the file until the irqfd is fully initialized, otherwise
+ 	unsigned long flags;
+ 	u64 clock;
+-- 
+1.6.2.1
 
