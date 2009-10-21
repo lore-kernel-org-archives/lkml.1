@@ -1,89 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbZJUQYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbZJUQYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754381AbZJUQYR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 12:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbZJUQYQ
+	id S1754425AbZJUQYx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 12:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbZJUQYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 12:24:16 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63088 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754360AbZJUQYQ (ORCPT
+	Wed, 21 Oct 2009 12:24:52 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:41532 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754335AbZJUQYv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 12:24:16 -0400
-Subject: Re: [PATCH 4/4] tracing: removing cpu arg from rb_time_stamp
- function
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <1256135801-1849-5-git-send-email-jolsa@redhat.com>
-References: <1256135801-1849-1-git-send-email-jolsa@redhat.com>
-	 <1256135801-1849-5-git-send-email-jolsa@redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 21 Oct 2009 12:24:19 -0400
-Message-Id: <1256142259.18347.3138.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Oct 2009 12:24:51 -0400
+X-Sasl-enc: MQO1HGUpPwWNUffU+g27fqn88JHkgzj02ibWf8JcDxPi 1256142295
+Message-ID: <4ADF35CA.5020207@imap.cc>
+Date: Wed, 21 Oct 2009 18:24:42 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Xiaotian Feng <xtfeng@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       isdn4linux <isdn4linux@listserv.isdn4linux.de>,
+       Netdev <netdev@vger.kernel.org>, Karsten Keil <isdn@linux-pingi.de>
+Subject: Re: possible circular locking dependency in ISDN PPP
+References: <4ADB93C4.4090607@imap.cc> <7b6bb4a50910182227y1281b40bj3fcc082d32cf4496@mail.gmail.com>
+In-Reply-To: <7b6bb4a50910182227y1281b40bj3fcc082d32cf4496@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig239C4265D1F2F745A65DB119"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-21 at 16:36 +0200, Jiri Olsa wrote:
-> The cpu argument is not used inside rb_time_stamp function. Plus typo fix.
-> 
-> Signed-off-by: Jiri Olsa <jolsa@redhat.com>
-> ---
->  include/linux/trace_seq.h  |    2 +-
->  kernel/trace/ring_buffer.c |   10 +++++-----
->  2 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
-> index c134dd1..09077f6 100644
-> --- a/include/linux/trace_seq.h
-> +++ b/include/linux/trace_seq.h
-> @@ -7,7 +7,7 @@
->  
->  /*
->   * Trace sequences are used to allow a function to call several other functions
-> - * to create a string of data to use (up to a max of PAGE_SIZE.
-> + * to create a string of data to use (up to a max of PAGE_SIZE).
->   */
->  
->  struct trace_seq {
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index d33e5ca..63446f1 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -486,7 +486,7 @@ struct ring_buffer_iter {
->  /* Up this if you want to test the TIME_EXTENTS and normalization */
->  #define DEBUG_SHIFT 0
->  
-> -static inline u64 rb_time_stamp(struct ring_buffer *buffer, int cpu)
-> +static inline u64 rb_time_stamp(struct ring_buffer *buffer)
->  {
->  	/* shift to debug/test normalization and TIME_EXTENTS */
->  	return buffer->clock() << DEBUG_SHIFT;
-> @@ -497,7 +497,7 @@ u64 ring_buffer_time_stamp(struct ring_buffer *buffer, int cpu)
->  	u64 time;
->  
->  	preempt_disable_notrace();
-> -	time = rb_time_stamp(buffer, cpu);
-> +	time = rb_time_stamp(buffer);
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig239C4265D1F2F745A65DB119
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Yeah, originally this was to deal with cpu_clock() which takes cpu as
-its parameter. But we now just call "raw_smp_processor_id" instead
-directly when using cpu_clock.
+Thanks for your analysis. The patch you propose does indeed prevent the
+"circular locking dependency" message, with no noticeable ill effect.
+
+I cannot say why xmit_lock was taken around isdn_net_lp_busy() in the
+first place. The ISDN4Linux people would be the ones to comment on that.
+If none of them objects, I propose you add a Signed-off-by line to your
+patch and submit it to Karsten Keil, the ISDN maintainer, for inclusion.
+You can also add a "Tested-by: Tilman Schmidt <tilman@imap.cc>" line.
 
 Thanks,
+Tilman
 
--- Steve
+Am 19.10.2009 07:27 schrieb Xiaotian Feng:
+> So there's a circular locking dependency.. Looking into isdn_net_get_lo=
+cked_lp()
+[...]
+> Why do we need to hold xmit_lock while using
+> isdn_net_lp_busy(nd->queue) ? Can following patch fix this bug?
+>=20
+> ---
+> diff --git a/drivers/isdn/i4l/isdn_net.h b/drivers/isdn/i4l/isdn_net.h
+> index 74032d0..7511f08 100644
+> --- a/drivers/isdn/i4l/isdn_net.h
+> +++ b/drivers/isdn/i4l/isdn_net.h
+> @@ -83,19 +83,19 @@ static __inline__ isdn_net_local *
+> isdn_net_get_locked_lp(isdn_net_dev *nd)
+>=20
+>         spin_lock_irqsave(&nd->queue_lock, flags);
+>         lp =3D nd->queue;         /* get lp on top of queue */
+> -       spin_lock(&nd->queue->xmit_lock);
+>         while (isdn_net_lp_busy(nd->queue)) {
+> -               spin_unlock(&nd->queue->xmit_lock);
+>                 nd->queue =3D nd->queue->next;
+>                 if (nd->queue =3D=3D lp) { /* not found -- should never=
+ happen */
+>                         lp =3D NULL;
+>                         goto errout;
+>                 }
+> -               spin_lock(&nd->queue->xmit_lock);
+>         }
+>         lp =3D nd->queue;
+>         nd->queue =3D nd->queue->next;
+> +       spin_unlock_irqrestore(&nd->queue_lock, flags);
+> +       spin_lock(&lp->xmit_lock);
+>         local_bh_disable();
+> +       return lp;
+>  errout:
+>         spin_unlock_irqrestore(&nd->queue_lock, flags);
+>         return lp;
+>=20
 
->  	preempt_enable_no_resched_notrace();
->  
->  	return time;
-> @@ -602,7 +602,7 @@ static struct list_head *rb_list_head(struct list_head *list)
->  }
->  
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
 
+
+--------------enig239C4265D1F2F745A65DB119
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFK3zXUQ3+did9BuFsRAjW8AJwL3SzKAXohbqJ3wCBkXpHdV+26ewCfbOHY
+0SAccy0ec6LHrkgNx2bWfcI=
+=e2Vg
+-----END PGP SIGNATURE-----
+
+--------------enig239C4265D1F2F745A65DB119--
