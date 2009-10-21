@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZJUWp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbZJUWpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbZJUWp1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 18:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbZJUWp0
+	id S1755885AbZJUWpg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 18:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZJUWpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 18:45:26 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44224 "EHLO mx1.suse.de"
+	Wed, 21 Oct 2009 18:45:35 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44227 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755797AbZJUWp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 18:45:26 -0400
-Date: Wed, 21 Oct 2009 15:43:37 -0700
+	id S1755869AbZJUWpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 18:45:30 -0400
+Date: Wed, 21 Oct 2009 15:45:20 -0700
 From: Greg KH <gregkh@suse.de>
 To: Haiyang Zhang <haiyangz@microsoft.com>
 Cc: Hank Janssen <hjanssen@microsoft.com>,
        "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] Fix null pointer error after vmbus loading
-Message-ID: <20091021224337.GA8550@suse.de>
+Message-ID: <20091021224520.GA8569@suse.de>
 References: <1FB5E1D5CA062146B38059374562DF72180B39CA@TK5EX14MBXC126.redmond.corp.microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -48,9 +48,14 @@ On Wed, Oct 21, 2009 at 07:24:23PM +0000, Haiyang Zhang wrote:
 > +       if (dev_name(&child_device_ctx->device) != NULL &&
 > +           strlen(dev_name(&child_device_ctx->device)) != 0) {
 
-Why would the device name ever be NULL?  Why would you need to check it
-here?
+Also, this patch was sent in html format, and all of the tabs were
+converted to spaces, making it impossible to apply.
 
-confused,
+Please read the file, Documentation/email-clients.txt and follow the
+suggestions there in order to be able to send patches that will both
+appear on the linux-kernel mailing list, and be able to be applied
+properly.
+
+thanks,
 
 greg k-h
