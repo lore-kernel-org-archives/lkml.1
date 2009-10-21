@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbZJUNpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbZJUODU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbZJUNpK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 09:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbZJUNpK
+	id S1753504AbZJUODU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 10:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZJUODT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 09:45:10 -0400
-Received: from fmmailgate07.web.de ([217.72.192.248]:56054 "EHLO
-	fmmailgate07.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753419AbZJUNpJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 09:45:09 -0400
-Date: Wed, 21 Oct 2009 15:45:12 +0200
-Message-Id: <1394846127@web.de>
+	Wed, 21 Oct 2009 10:03:19 -0400
+Received: from kroah.org ([198.145.64.141]:55826 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753207AbZJUODS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 10:03:18 -0400
+Date: Wed, 21 Oct 2009 06:48:00 -0700
+From: Greg KH <greg@kroah.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Carmelo Amoroso <carmelo73@gmail.com>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: Fast LKM symbol resolution with SysV ELH hash table
+Message-ID: <20091021134800.GA3332@kroah.com>
+References: <4ADACD3A.9020803@gmail.com> <9b2b86520910180544g94ecc8fuf0d7849e18cd8937@mail.gmail.com> <20091018214704.GA26592@kroah.com> <2ccd6e3c0910190445va8ff4a8x94dc4044ac01057d@mail.gmail.com> <20091019132205.GA7192@kroah.com> <2ccd6e3c0910190802w117f8ac1nb562214786904c04@mail.gmail.com> <4ADE9F90.8060608@gmail.com>
 MIME-Version: 1.0
-From: Thomas Schlichter <thomas.schlichter@web.de>
-To: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Jan Beulich <JBeulich@novell.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       dri-devel@lists.sourceforge.net, Robert Hancock <hancockrwd@gmail.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "H. Peter Anvin" <hpa@zytor.com>, jbarnes@virtuousgeek.org,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Thomas Hellstrom <thellstrom@vmware.com>, Tejun Heo <tj@kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, x86@kernel.org,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: =?iso-8859-15?Q?Re:_[RFC_Patch]_use_MTRR_for_write_combining_if_PAT_is?=
- =?iso-8859-15?Q?_not_available?=
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1+kjfHCRhu1AX2o54aE0LDaYF77abZcLpWljyBowLOVaXKL5
- IvPJwOELpR5SyiW52MG2f6Nk1y7Z6Wh2g+YFsrbipmzQWxC8d3WTJnkuZ6dp
- g==
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ADE9F90.8060608@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
-> I think we can simplify this  by just using mtrr_add_page() and avoid
-> all the complexity that comes with mtrr_add_unaligned().
-> 
-> pci_mmap_range() should call one mtrr_add_page() if the base and size
-> are nicely aligned. Almost all the cases, this is the usage sequence
-> here anyway.
+On Tue, Oct 20, 2009 at 11:43:44PM -0600, Robert Hancock wrote:
+> On 10/19/2009 09:02 AM, Carmelo Amoroso wrote:
+>> 2009/10/19 Greg KH<greg@kroah.com>:
+>>> On Mon, Oct 19, 2009 at 01:45:20PM +0200, Carmelo Amoroso wrote:
+>>>> Just a few other notes. The current implementation I did based on SysV
+>>>> has a drawback that is not backward compatible, so you cannot use old
+>>>> modules with a kernel with the option enabled due to changes on struct
+>>>> kernel_symbol.
+>>>
+>>> Why would this be a problem?  Whenever making a kernel config change,
+>>> you should be able to rebuild everything, as lots of other configuration
+>>> options are that way.
+>>>
+>>
+>> This is not always true... there could be cases in which you cannot
+>> recompile old modules
+>> (e.g vendors that provide non GPL modules)
+>
+> Even non-GPL modules can normally be rebuilt as far as the module format is 
+> concerned, there's usually an object file blob that gets compiled into a 
+> module on install or something, like the Nvidia graphics driver. If 
+> anyone's providing binary-only fully built modules (which would be 
+> inherently tied to one exact kernel version and one configuration) they 
+> really need to have their head examined..
 
-Ingo Molnar wrote:
-> Can we eliminate mtrr_add_unaligned() as Suresh suggested, and still 
-> make it work on your testbox?
-
-Yes, I had that in the first place, but Jan suggested to extend it to also
-handle non-aligned, non-power-of-two cases:
-  http://marc.info/?l=linux-kernel&m=125541951529918&w=2
-
-So if it's OK for Jan, I'll reduce the functionality again and use mtrr_add()
-instead. Btw. this simply means to drop mtrr_add_unaligned(), all the other
-parts are still required for reference counting and a proper mtrr_del() on file
-close.
-
-Kind regards,
-  Thomas
+Welcome to embedded Linux :)
