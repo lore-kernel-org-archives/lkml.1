@@ -1,54 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752045AbZJUM2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZJUMoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752045AbZJUM2I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 08:28:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZJUM2H
+	id S1753308AbZJUMoD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 08:44:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbZJUMoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 08:28:07 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34655 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751470AbZJUM2G (ORCPT
+	Wed, 21 Oct 2009 08:44:01 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:50773 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752734AbZJUMoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 08:28:06 -0400
-Date: Wed, 21 Oct 2009 13:27:09 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Alan Cox <alan@linux.intel.com>
-Subject: Re: [PATCH] serial/atmel_serial: Fix another fallout of the change
-	to BUILD_BUG_ON
-Message-ID: <20091021122709.GA332@n2100.arm.linux.org.uk>
-References: <1255417680-25609-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091013092644.72c78334@hskinnemoen-d830> <20091013082447.GA3194@pengutronix.de>
+	Wed, 21 Oct 2009 08:44:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:message-id;
+        b=v4+ykMcu9ghgRWzdfGyK1AR0kHh61A0piNZIxIawaJMiv7m8QXMbgmIkR/B3c6Ytkg
+         sFpDASOlGg6LAHiazWib04GaZOsYyKgag8/4jLECNqVpgbjszCd+1sW12akDdbhI5QCw
+         lAw0MSMQNV6B8DAQj1e5e3WMAkI/hvxhedfBo=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Subject: [PATCH] Staging: update TODO files
+Date: Wed, 21 Oct 2009 14:42:11 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31.1-56.fc12.x86_64; KDE/4.3.1; x86_64; ; )
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091013082447.GA3194@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910211442.11785.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 10:24:47AM +0200, Uwe Kleine-König wrote:
-> Hello Andrew,
-> 
-> On Tue, Oct 13, 2009 at 09:26:44AM +0200, Haavard Skinnemoen wrote:
-> > Uwe Kleine-König <u.kleine-koenig@pengutronix.de> wrote:
-> > > Commit 8c87df457cb5 fixed BUILD_BUG_ON with the result that some
-> > > expressions (e.g. "not really constant" ones) result in a build failure.
-> > > 
-> > > Some of these were fixed in 8c87df457cb5, but not serial/atmel_serial.
-> > 
-> > This patch fixes the same issue:
-> > 
-> > http://lkml.org/lkml/2009/10/6/305
-> Can you please take this and add my Ack?
-> 
-> If you cannot find it anymore in your inbox, you can get it from
-> http://article.gmane.org/gmane.linux.kernel/898575/raw
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] Staging: update TODO files
 
-So what's happening with this?
+Remove my mail address.
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/staging/rtl8187se/TODO |    3 +--
+ drivers/staging/rtl8192su/TODO |    3 +--
+ drivers/staging/vt6655/TODO    |    5 ++---
+ drivers/staging/vt6656/TODO    |    5 ++---
+ 4 files changed, 6 insertions(+), 10 deletions(-)
+
+Index: b/drivers/staging/rtl8187se/TODO
+===================================================================
+--- a/drivers/staging/rtl8187se/TODO
++++ b/drivers/staging/rtl8187se/TODO
+@@ -11,5 +11,4 @@ TODO:
+ - sparse fixes
+ - integrate with drivers/net/wireless/rtl818x
+ 
+-Please send any patches to Greg Kroah-Hartman <greg@kroah.com> and
+-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>.
++Please send any patches to Greg Kroah-Hartman <greg@kroah.com>.
+Index: b/drivers/staging/rtl8192su/TODO
+===================================================================
+--- a/drivers/staging/rtl8192su/TODO
++++ b/drivers/staging/rtl8192su/TODO
+@@ -14,5 +14,4 @@ TODO:
+ - sparse fixes
+ - integrate with drivers/net/wireless/rtl818x
+ 
+-Please send any patches to Greg Kroah-Hartman <greg@kroah.com> and
+-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>.
++Please send any patches to Greg Kroah-Hartman <greg@kroah.com>.
+Index: b/drivers/staging/vt6655/TODO
+===================================================================
+--- a/drivers/staging/vt6655/TODO
++++ b/drivers/staging/vt6655/TODO
+@@ -16,6 +16,5 @@ TODO:
+ - sparse fixes
+ - integrate with drivers/net/wireless
+ 
+-Please send any patches to Greg Kroah-Hartman <greg@kroah.com>,
+-Forest Bond <forest@alittletooquiet.net> and Bartlomiej Zolnierkiewicz
+-<bzolnier@gmail.com>.
++Please send any patches to Greg Kroah-Hartman <greg@kroah.com>
++and Forest Bond <forest@alittletooquiet.net>.
+Index: b/drivers/staging/vt6656/TODO
+===================================================================
+--- a/drivers/staging/vt6656/TODO
++++ b/drivers/staging/vt6656/TODO
+@@ -15,6 +15,5 @@ TODO:
+ - sparse fixes
+ - integrate with drivers/net/wireless
+ 
+-Please send any patches to Greg Kroah-Hartman <greg@kroah.com>,
+-Forest Bond <forest@alittletooquiet.net> and Bartlomiej Zolnierkiewicz
+-<bzolnier@gmail.com>.
++Please send any patches to Greg Kroah-Hartman <greg@kroah.com>
++and Forest Bond <forest@alittletooquiet.net>.
