@@ -1,92 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbZJUVSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbZJUVTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755338AbZJUVSP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 17:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZJUVSO
+	id S1755427AbZJUVTP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 17:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZJUVTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 17:18:14 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:44367 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754015AbZJUVSN (ORCPT
+	Wed, 21 Oct 2009 17:19:15 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:52429 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754147AbZJUVTN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 17:18:13 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; CHARSET=US-ASCII; delsp=yes; format=flowed
-Date: Wed, 21 Oct 2009 15:17:38 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH 15/41] whiteout: ext2 whiteout support
-In-reply-to: <1256152779-10054-16-git-send-email-vaurora@redhat.com>
-To: Valerie Aurora <vaurora@redhat.com>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
-       Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Theodore Tso <tytso@mit.edu>,
-       linux-ext4@vger.kernel.org
-Message-id: <1983FB3A-C88F-4EF4-A2E1-8B18DF97F0AB@sun.com>
-X-Mailer: Apple Mail (2.936)
-References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
- <1256152779-10054-2-git-send-email-vaurora@redhat.com>
- <1256152779-10054-3-git-send-email-vaurora@redhat.com>
- <1256152779-10054-4-git-send-email-vaurora@redhat.com>
- <1256152779-10054-5-git-send-email-vaurora@redhat.com>
- <1256152779-10054-6-git-send-email-vaurora@redhat.com>
- <1256152779-10054-7-git-send-email-vaurora@redhat.com>
- <1256152779-10054-8-git-send-email-vaurora@redhat.com>
- <1256152779-10054-9-git-send-email-vaurora@redhat.com>
- <1256152779-10054-10-git-send-email-vaurora@redhat.com>
- <1256152779-10054-11-git-send-email-vaurora@redhat.com>
- <1256152779-10054-12-git-send-email-vaurora@redhat.com>
- <1256152779-10054-13-git-send-email-vaurora@redhat.com>
- <1256152779-10054-14-git-send-email-vaurora@redhat.com>
- <1256152779-10054-15-git-send-email-vaurora@redhat.com>
- <1256152779-10054-16-git-send-email-vaurora@redhat.com>
+	Wed, 21 Oct 2009 17:19:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JZ72rzqskUJWCyOkph+jxnsoWwCDDYF0EcIu1wGj7PExG5v3s3B10d10CgOqgKFEOn
+         W+rUBKMHXMLPep61EYybZgBb64uXMbb74XoqqJD+zjexdjM/NB7GvL6Yt6QKRPOvVHTu
+         HvYDJm2XgJyD8U0xnfkVG7RCy2r25SYzu5g7w=
+Date: Wed, 21 Oct 2009 23:19:06 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless@vger.kernel.org,
+       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
+       Michael Buesch <mb@bu3sch.de>, Oliver Hartkopp <oliver@hartkopp.net>
+Subject: [PATCH] net: Adjust softirq raising in __napi_schedule
+Message-ID: <20091021211906.GA11401@ami.dom.local>
+References: <4AD31213.6020006@imap.cc>
+ <20091015114052.GA9870@ff.dom.local>
+ <4AD76184.6030900@gmail.com>
+ <4ADF5710.4030505@imap.cc>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ADF5710.4030505@imap.cc>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-10-21, at 13:19, Valerie Aurora wrote:
-> This patch adds whiteout support to EXT2. A whiteout is an empty  
-> directory
-> entry (inode == 0) with the file type set to EXT2_FT_WHT. Therefore it
-> allocates space in directories. Due to being implemented as a  
-> filetype it is
-> necessary to have the EXT2_FEATURE_INCOMPAT_FILETYPE flag set.
->
-> diff --git a/include/linux/ext2_fs.h b/include/linux/ext2_fs.h
-> index 121720d..bd10826 100644
-> --- a/include/linux/ext2_fs.h
-> +++ b/include/linux/ext2_fs.h
-> @@ -189,6 +189,7 @@ struct ext2_group_desc
-> +#define EXT2_OPAQUE_FL			0x00040000
+On Wed, Oct 21, 2009 at 08:46:40PM +0200, Tilman Schmidt wrote:
+...
+> I have tested your patch and I can confirm that it fixes the messages.
+> I have not noticed any ill effects.
 
-Please check in the upstream e2fsprogs ext2_fs.h before defining new  
-flag
-values for ext2/3/4.  In this case, 0x40000 conflicts with  
-EXT4_HUGE_FILE_FL,
-which is of course bad.
+OK. So, in any case, here is this next variant/proposal.
 
+Thanks,
+Jarek P.
+------------------------>
+net: Adjust softirq raising in __napi_schedule
 
-> @@ -503,10 +504,12 @@ struct ext2_super_block {
-> #define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
-> +#define EXT2_FEATURE_INCOMPAT_WHITEOUT		0x0020
+This patch changes __raise_softirq_irqoff() to raise_softirq_irqoff()
+in __napi_schedule() to enable proper softirq scheduling from process
+context. The main intent is to let use netif_rx() universally, and
+make netif_rx_ni() redundant.
 
-This one doesn't conflict, probably due to luck, because 0x0040-0x0200  
-are
-already in use for other features.  I'm not sure if 0x0020 was  
-reserved for
-some other use, or just skipped to avoid potential conflicts.
+Currently using netif_rx() instead of netif_rx_ni() triggers:
+"NOHZ: local_softirq_pending 08" warnings, but additional cost of one
+"if" on the fast path doesn't seem to justify maintaining it
+separately.
 
+This patch is based on the analysis, suggestions and the original
+patch for mac80211 by: Michael Buesch <mb@bu3sch.de>
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+Another patch calling netif_rx variants conditionally was done by:
+Oliver Hartkopp <oliver@hartkopp.net>
 
+Reported-by: Michael Buesch <mb@bu3sch.de>
+Reported-by: Oliver Hartkopp <oliver@hartkopp.net>
+Reported-by: Tilman Schmidt <tilman@imap.cc>
+Diagnosed-by: Michael Buesch <mb@bu3sch.de>
+Tested-by: Tilman Schmidt <tilman@imap.cc>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+---
+
+ net/core/dev.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 28b0b9e..7fc4009 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2728,7 +2728,7 @@ void __napi_schedule(struct napi_struct *n)
+ 
+ 	local_irq_save(flags);
+ 	list_add_tail(&n->poll_list, &__get_cpu_var(softnet_data).poll_list);
+-	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
++	raise_softirq_irqoff(NET_RX_SOFTIRQ);
+ 	local_irq_restore(flags);
+ }
+ EXPORT_SYMBOL(__napi_schedule);
