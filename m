@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbZJUPHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbZJUO7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754079AbZJUPHs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 11:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZJUPHr
+	id S1753844AbZJUO7x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 10:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZJUO7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 11:07:47 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:34494 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751190AbZJUPHr (ORCPT
+	Wed, 21 Oct 2009 10:59:52 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:39862 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753456AbZJUO7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 11:07:47 -0400
-Date: Wed, 21 Oct 2009 11:07:51 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-cc: linux-media@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: uvcvideo causes ehci_hcd to halt
-In-Reply-To: <4ADEC4C5.8010707@pardus.org.tr>
-Message-ID: <Pine.LNX.4.44L0.0910211052200.2847-100000@iolanthe.rowland.org>
+	Wed, 21 Oct 2009 10:59:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=DXaOO96jShmQ8gNGkjd/mzgFoxIGvRBoFwEtTVUliTPKe5QdTRpbYMTQp6iuQ1KnNy
+         wtVfH55CryIKWvAXLjia/YUEDJ29glKqHrcMR1UTNJw3ea2OUTIaBnn/O105n75NOydr
+         Cdi/nlJ4elA7CPGv5reZ3+3IlzZ2DdVDU0JsE=
+Message-ID: <4ADF2449.7090902@gmail.com>
+Date: Wed, 21 Oct 2009 17:10:01 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: krzysztof.h1@poczta.fm
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Wrong test on unsigned in
+ fb_set_user_cmap()?
+References: <20091021065018.7625046CCF3@f46.poczta.interia.pl>
+In-Reply-To: <20091021065018.7625046CCF3@f46.poczta.interia.pl>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Oct 2009, [UTF-8] Ozan Çağlayan wrote:
+struct fb_cmap_user member start is unsigned. The same condition
+is already checked in fb_set_cmap(), so this should be safe.
 
-> Nope it didn't help. Here's the DEBUG enabled dmesg output:
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+>> Is this required?
+> 
+> Drop the whole if() as exactly the same condition is checked in the
+> fb_set_cmap() again.
 
-...
-> [  420.737748] usb 1-5: link qh1024-0001/f6ffe280 start 1 [1/0 us]
+Ok
 
-The periodic schedule was enabled here.
+> Anyway, the check of the cmap->start < 0 does
+> not make any sense as the start is u32 value (most userspace
+> addresses will be lower then 2GB on 32 bit system so the error cannot
+> be caught by the check). I vote for removing the (cmap->start < 0) in
+> the fb_set_cmap as well as most drivers check the start value already
+> in driver's fb_setcolreg() function.
 
-> [  420.737891] usb 1-5: unlink qh1024-0001/f6ffe280 start 1 [1/0 us]
+In fb_set_cmap() this is not `cmap->start' but `start' which has type
+int. Therefore I think the test makes some sense there, so I left it.
 
-And it was disabled here.  Do you have any idea why the uvcvideo driver 
-submits an interrupt URB and then cancels it 150 us later?  The same 
-thing shows up in the usbmon traces.
+> 
+> Best regards,
+> Krzysztof
 
-> [  420.741605] usb 1-5:1.0: uevent
-> [  420.741957] usb 1-5: uevent
-> [  420.745592] usb 1-5:1.0: uevent
-> [  420.807880] ehci_hcd 0000:00:1d.7: reused qh f6ffe280 schedule
-> [  420.807894] usb 1-5: link qh1024-0001/f6ffe280 start 1 [1/0 us]
+Thanks, here:
 
-Now ehci-hcd tried to re-enable the periodic schedule.  Note that 
-this is 70 ms after it was supposed to be disabled.
-
-> [  420.808780] ehci_hcd 0000:00:1d.7: force halt; handhake f7c6a024
-> 00004000 00000000 -> -110
-
-This error message means that the disable request from 70 ms earlier
-hasn't taken effect.  It looks like a nasty hardware bug -- the
-controller is supposed to disable the schedule no more than 2 ms after
-being told to do so.
-
-Has this device ever worked with any earlier kernels?
-
-A little more debugging information could confirm this.  After the
-error occurs, go into /sys/kernel/debug/usb/ehci/0000:00:1d.7 and post
-a copy of the "registers" file.  If there's anything of interest in the
-other files, post them too.
-
-Alan Stern
-
+diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
+index f53b9f1..f46d617 100644
+--- a/drivers/video/fbcmap.c
++++ b/drivers/video/fbcmap.c
+@@ -266,11 +266,6 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+ 		rc = -ENODEV;
+ 		goto out;
+ 	}
+-	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
+-				!info->fbops->fb_setcmap)) {
+-		rc = -EINVAL;
+-		goto out1;
+-	}
+ 	rc = fb_set_cmap(&umap, info);
+ out1:
+ 	unlock_fb_info(info);
