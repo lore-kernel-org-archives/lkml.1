@@ -1,119 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbZJUS0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbZJUSev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710AbZJUS0L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 14:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZJUS0K
+	id S1754735AbZJUSev (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 14:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbZJUSeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 14:26:10 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:39892 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754029AbZJUS0J (ORCPT
+	Wed, 21 Oct 2009 14:34:50 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47308 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753532AbZJUSeu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 14:26:09 -0400
-Date: Wed, 21 Oct 2009 11:27:15 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
-       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
-       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>, arnd@arndb.de,
-       peterz@infradead.org, Louis.Rilling@kerlabs.com, roland@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, randy.dunlap@oracle.com,
-       linux-api@vger.kernel.org,
-       Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
-Subject: Re: [RFC][v8][PATCH 10/10]: Document clone3() syscall
-Message-ID: <20091021182714.GA12955@us.ibm.com>
-References: <20091013044925.GA28181@us.ibm.com> <20091013045556.GJ28435@us.ibm.com> <20091019213636.GB1482@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091019213636.GB1482@ucw.cz>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 21 Oct 2009 14:34:50 -0400
+Subject: Re: [PATCH -v4 9/9] tracing: add function graph tracer support for
+ MIPS
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Nicholas Mc Guire <der.herr@hofr.at>
+Cc: David Daney <ddaney@caviumnetworks.com>,
+       Wu Zhangjin <wuzhangjin@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>
+In-Reply-To: <20091021181705.GA5218@opentech.at>
+References: <af3ec1b5cd06b6f6a461c9fa7d09a51fabccb08d.1256135456.git.wuzhangjin@gmail.com>
+	 <a6f2959a69b6a77dd32cc36a5c8202f97d524f1e.1256135456.git.wuzhangjin@gmail.com>
+	 <53bdfdd95ec4fa00d4cc505bb5972cf21243a14d.1256135456.git.wuzhangjin@gmail.com>
+	 <1256141540.18347.3118.camel@gandalf.stny.rr.com>
+	 <4ADF38D5.9060100@caviumnetworks.com>
+	 <1256143568.18347.3169.camel@gandalf.stny.rr.com>
+	 <4ADF3FE0.5090104@caviumnetworks.com>
+	 <1256145813.18347.3210.camel@gandalf.stny.rr.com>
+	 <4ADF4982.9010306@caviumnetworks.com>
+	 <1256148562.18347.3264.camel@gandalf.stny.rr.com>
+	 <20091021181705.GA5218@opentech.at>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Wed, 21 Oct 2009 14:34:52 -0400
+Message-Id: <1256150092.18347.3294.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek [pavel@ucw.cz] wrote:
-| Hi!
-| 
-| > This gives a brief overview of the clone3() system call.  We should
-| 
-| Thanks!
-| 
-| > eventually describe more details in existing clone(2) man page or in
-| > a new man page.
-| 
-| M. Kerrisk (see MAINTAINERS) maintains man pages...
+On Wed, 2009-10-21 at 20:17 +0200, Nicholas Mc Guire wrote:
+> > 
+> > 
+> > We're not doing back traces. We need to modify the return of the
+> > function being called. Note, the above functions that end with ";" are
+> > leaf functions. Non leaf functions show "{" and end with "}".
+> > 
+> > The trick here is to find a reliable way to modify the return address.
+> >
+> would it not more or less be the same thing if you used -finstrument-functions
+> then and provide a stub __cyg_profile_func_enter/exit initialized to an empty
+> function until you replace it during tracing. This does give you an overhead
+> when you are not tracing - but it would make the tracer implementation quite
+> generic.
 
-Ok. I copied linux-api and M. Kerrisk is looking at this patchset.
+-finstrument-functions adds a substantial overhead when not tracing, and
+there's no easy way to remove it. The beauty with this approach is that
+-pg only adds a couple of instructions (one on x86). When tracing is
+disabled, that one line is converted to a nop.
 
-| 
-| > Changelog[v8]:
-| > 	- clone2() is already in use in IA64. Rename syscall to clone3()
-| ...
-| > Index: linux-2.6/Documentation/clone2
-| > ===================================================================
-| > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-| > +++ linux-2.6/Documentation/clone2	2009-10-12 19:54:38.000000000 -0700
-| 
-| clone3?
+On x86, hackbench reports no difference between running with dynamic
+ftrace configured but disabled (includes function graph configured) and
+without it configured.
 
-Ah, yes, will fix.
+This allows function tracing to be configured in on production
+environments.
 
-| 
-| > +struct clone_struct {
-| > +	u64 flags;
-| > +	u64 child_stack;
-| 
-| u64 seems wrong  on 32 bit platforms. ulong?
-| 
-| > +	u32 nr_pids;
-| 
-| So nr_pids is either 1 or 2?
+-- Steve
 
-No. With pid namespaces, which can be nested to arbitrary levels, each
-process has several pid numbers - one in its own namespace and one in
-each ancestor pid namespaces.
 
-nr_pids specifies the number of pids the user cares about. IOW, if you
-checkpoint a process that is 3 levels below the init-pid-ns, and you
-care about the pids for those three levels, you would pass in an
-array of 4 pid_ts and nr_pids would be 4.
-
-| 
-| > +	u32 reserved1;
-| > +	u64 parent_tid;
-| > +	u64 child_tid;
-| > +	u64 reserved2;
-| > +};
-| > +
-| 
-| 
-| > +	See CLONE_NEWPID section of clone(2) man page for details about pid
-| > +	namespaces.
-| > +
-| > +	The order pids in @pids corresponds to the nesting order of pid-
-| > +	namespaces, with @pids[0] corresponding to the init_pid_ns.
-| 
-| Ok, so I'm confused.
-
-Hope the above note on pid-namespaces helps, if not let me know.
-
-| 
-| > +	If a pid in the @pids list is 0, the kernel will assign the next
-| > +	available pid in the pid namespace, for the process.
-| > +
-| > +	If a pid in the @pids list is non-zero, the kernel tries to assign
-| > +	the specified pid in that namespace.  If that pid is already in use
-| > +	by another process, the system call fails with -EBUSY.
-| ...
-| > +	On failure, clone3() returns -1 and sets 'errno' to one of following
-| > +	values (the child process is not created).
-| 
-| Inconsistent with above. Syscalls really return -ERRCODE, errno is
-| glibc magic.
-
-Ok.  Will make it consistent to say that it returns one of the error codes.
