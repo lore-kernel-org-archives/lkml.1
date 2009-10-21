@@ -1,116 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbZJUGY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752705AbZJUGZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752607AbZJUGY2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 02:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbZJUGY0
+	id S1752705AbZJUGZQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 02:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZJUGZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 02:24:26 -0400
-Received: from smtp.wp.pl ([212.77.101.1]:24870 "EHLO mx1.wp.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751907AbZJUGYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 02:24:24 -0400
-Date: Wed, 21 Oct 2009 08:24:27 +0200
-From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       jfs-discussion <jfs-discussion@lists.sourceforge.net>
-Subject: Re: [Jfs-discussion] [PATCH] jfs: lockdep fix
-Message-ID: <4adea91bbfcf65.02080900@wp.pl>
-References: <4ade05f0af05a2.00981454@wp.pl> <1256068823.3708.30.camel@norville.austin.ibm.com>
-In-reply-to: <4ade05f0af05a2.00981454@wp.pl> <1256068823.3708.30.camel@norville.austin.ibm.com>
+	Wed, 21 Oct 2009 02:25:15 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:31408 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbZJUGZO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 02:25:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type;
+        b=rRejxhCwyACsT3Q5R0Qddqpxle5Iy14FLWilMQQJby3tLnxoGcI7StnJ1PpouRQQqv
+         fbLyczBmbnz3CBe3QYG8QjC0Tdj5nPaxr2/VP80IjdMXGDIriPhTJF9MI2ekAC66iORD
+         qAxzT/yBSqI1TKEl/Hmh1KKmQOPZcSbG4J8u0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-X-Mailer: Interfejs WWW nowej poczty Wirtualnej Polski
-X-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.3) Gecko/20090909 Fedora/3.5.3-1.fc11 Firefox/3.5.3
-Organization: Nowa Poczta Wirtualnej Polski S.A. http://www.wp.pl/
-X-WP-IP: 83.17.101.58
-X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
-X-WP-SPAM: NO 0000000 [sVN0]                               
+In-Reply-To: <df9815e70910202324o1af88a3cg82093fc5e0bf7929@mail.gmail.com>
+References: <df9815e70910202204q5a0593e1gd14b9d36c368861e@mail.gmail.com>
+	 <1256105727.9801.105.camel@ben-desktop>
+	 <df9815e70910202324o1af88a3cg82093fc5e0bf7929@mail.gmail.com>
+Date: Wed, 21 Oct 2009 14:25:18 +0800
+Message-ID: <df9815e70910202325r1004ef7exe7bed24e1fc14a17@mail.gmail.com>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference at 
+	0000000000000004
+From: Jike Song <albcamus@gmail.com>
+To: Ben Nizette <bn@niasdigital.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dnia 20-10-2009 o godz. 22:00 Dave Kleikamp napisa³(a):
-> On Tue, 2009-10-20 at 20:48 +0200, Krzysztof Helt wrote:
-> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > 
-> > Release rdwrlock semaphore during memory allocation.
-> > This fixes the locked already reported here:
-> > 
-> > http://www.mail-archive.com/jfs-discussion@lists.sourceforge.net/msg01389.html
-> > 
-> > The problem here is that memory allocation is done with rdwrlock
-> > semaphore taken and the VM can get into the jfs layer taking the
-> > rdwrlock again.
-> > 
-> > Also, the patch fixes the lockdep below. This problem is created because
-> > the rdwrlock semaphore acquires the commit_mutex and it is called with
-> > interrupts enabled. The interrupt may hit with the commit_mutex taken
-> > and take the rdwrlock (again) inside the interrupt context.
-> 
-> The rdwrlock should never be taken in interrupt context.
-> 
+On Wed, Oct 21, 2009 at 2:15 PM, Ben Nizette <bn@niasdigital.com> wrote:
+> On Wed, 2009-10-21 at 13:04 +0800, Jike Song wrote:
+>
+>> Pid: 3427, comm: Xorg Tainted: G      D    2.6.32-rc5-00011-g2fdc246
+>
+> the "D" means this isn't the first oops/bug since boot; please post all
+> bugs and/or full dmesg.  Given all the invalid ioctl noise an Xorg
+> version might help too.
+>
+> Thx,
+>        --Ben.
 
-Right. It is taken in the RECLAIM_FS context.
+Ben,
 
-> > =========================================================
-> > [ INFO: possible irq lock inversion dependency detected ]
-> > 2.6.32-rc3 #99
-> > ---------------------------------------------------------
-> > kswapd0/180 just changed the state of lock:
-> >  (&jfs_ip->rdwrlock#2){++++-.}, at: [<c02e2207>] jfs_get_block+0x47/0x280
-> > but this lock took another, RECLAIM_FS-unsafe lock in the past:
-> >  (&jfs_ip->commit_mutex){+.+.+.}
-> > 
-> > and interrupts could create inverse lock ordering between them.
-> > 
-> > 
-> > other info that might help us debug this:
-> > no locks held by kswapd0/180.
-> > 
-> > the shortest dependencies between 2nd lock and 1st lock:
-> >  -> (&jfs_ip->commit_mutex){+.+.+.} ops: 7937 {
-> >     HARDIRQ-ON-W at:
-> 
-> <snip>
-> 
-> > ---
-> > 
-> > I am not sure if this is the right fix to the problem. The heavy use of
-> > the jfs volume can lock up a machine (e.g. hit me in Ubuntu 9.04).
-> 
-> I don't think we can just drop the mutex, since it protects the inode's
-> xtree from being modified while another thread is either reading or
-> writing it.
-> 
-> I proposed another fix here:
-> http://bugzilla.kernel.org/show_bug.cgi?id=13613
-> 
-> It seems I haven't followed up and submitted it to the vfs maintainer.
-> Could you please give that patch a try and see if it fixes the problem
-> for you?
-> 
+Thank you for telling me this. The whole dmesg output is attached.
 
-I have tested it a little and I will do some more. At least, there is no 
-easy way to trigger the previous lockdep (with rdwrlock only reported to 
-the 2.6.30). It seems your fix helps here.
-
-However, I think it does not help with this new lockdep I have reported. 
-The new locked is due to the fact that commit_mutex is taken with the 
-rdwrlock hold and enabled interrupts. The kswapd may start and create 
-the inverse locking order.  The kswapd takes the rdwrlock and some other 
-task may hold the commit_mutex. The rdwrlock is taken in jfs_get_block() 
-and calls the extAlloc() which takes the commit_mutex. One possible fix 
-is to move the commit mutex to the jfs_get_block() before the rdwrlock. 
-The extAlloc() is called from the jfs_get_block() only.
-
-Kind regards,
-Krzysztof
-
-----------------------------------------------------
-WYGRAJ wycieczkê kolejow± po pó³nocnej Hiszpanii!
-http://klik.wp.pl/?adr=http%3A%2F%2Fwww.navigeo.pl%2Fcontest%2Fidea_tour&sid=885
-
-
+--
+Thanks,
+Jike
