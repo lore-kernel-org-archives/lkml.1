@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbZJUWQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZJUWPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755793AbZJUWQV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 18:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbZJUWQU
+	id S1755754AbZJUWPX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 18:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbZJUWPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 18:16:20 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:43016 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755587AbZJUWQT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 18:16:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Fz0FzAAk0pUeqio4yGEYevKejKTbMaQTkOByWGMo2P2V9tvYKk1WMEQhL8eTFPCm8Q
-         nCHrjAsvXmO2+JNH/nNKM+TojvqdsKNGcnJeqO+ynKopUmHFBlYG0rgVJQn/aFHPqG13
-         lamlJxREmktW9K7gGj0V4epShc14PzKxAPVbY=
-Date: Thu, 22 Oct 2009 00:16:21 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: John Kacur <jkacur@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jonathan Corbet <corbet@lwn.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arnd Bergmann <arndbergmann@googlemail.com>
-Subject: Re: [PATCH] macintosh: Explicitly set llseek to no_llseek in
-	ans-lcd
-Message-ID: <20091021221619.GF4880@nowhere>
-References: <20091010153314.827301943@linutronix.de> <20091010153349.966159859@linutronix.de> <alpine.LFD.2.00.0910212305090.3526@localhost.localdomain> <20091021212137.GB4880@nowhere> <alpine.LFD.2.00.0910212327160.3526@localhost.localdomain> <20091021214537.GD4880@nowhere> <alpine.LFD.2.00.0910212350210.3526@localhost.localdomain>
+	Wed, 21 Oct 2009 18:15:22 -0400
+Received: from mga09.intel.com ([134.134.136.24]:19463 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755226AbZJUWPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 18:15:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,600,1249282800"; 
+   d="scan'208";a="561973465"
+Date: Thu, 22 Oct 2009 00:17:19 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Ilkka Koskinen <ilkka.koskinen@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+Subject: Re: [Resend PATCH 2/2] twl4030: Enable low-power mode to 32kHz
+ oscillator
+Message-ID: <20091021221718.GB17796@sortiz.org>
+References: <1256044973-14548-1-git-send-email-ilkka.koskinen@nokia.com>
+ <1256044973-14548-2-git-send-email-ilkka.koskinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0910212350210.3526@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1256044973-14548-2-git-send-email-ilkka.koskinen@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2009 at 11:53:21PM +0200, John Kacur wrote:
-> > No problem with that. Setting no_llseek or generic_file_llseek_unlocked,
-> > depending on the context is the right thing to do.
-> > 
-> > What I'm wondering about concerns the future code that will have
-> > no llsek() implemented in their fops.
-> > 
-> > We can't continue to use default_llseek() for future code unless we
-> > want to continue these post reviews and fixes forever.
-> > 
+Hi Ilkka,
+
+On Tue, Oct 20, 2009 at 04:22:53PM +0300, Ilkka Koskinen wrote:
+> +struct twl4030_clock_init_data {
+> +	int ck32k_lowpwr_enable;
+I guess you could use a bool here ?
+
+Cheers,
+Samuel.
+
+
+> +};
+> +
+>  struct twl4030_bci_platform_data {
+>  	int *battery_tmp_tbl;
+>  	unsigned int tblsize;
+> @@ -403,6 +407,7 @@ extern void twl4030_power_init(struct twl4030_power_data *triton2_scripts);
+>  
+>  struct twl4030_platform_data {
+>  	unsigned				irq_base, irq_end;
+> +	struct twl4030_clock_init_data		*clock;
+>  	struct twl4030_bci_platform_data	*bci;
+>  	struct twl4030_gpio_platform_data	*gpio;
+>  	struct twl4030_madc_platform_data	*madc;
+> -- 
+> 1.6.0.4
 > 
-> I'm thinking that the simplier approach, would be to make the 
-> default_llseek the unlocked one. Then you only have to audit the drivers 
-> that have the BKL - ie the ones we are auditing anyway, and explicitly set 
-> them to the bkl locked llseek.
-> 
-> There might be a hidden interaction though between the non-unlocked 
-> variety of ioctls and default llseek though.
 
-
-I fear that won't work because the bkl in default_llseek() does not
-only synchronizes with others uses of the bkl in a driver, it also
-synchronizes lseek() itself.
-
-As an example offset change is not atomic. This is a long long, so
-updating its value is not atomic in 32 bits archs.
-
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
