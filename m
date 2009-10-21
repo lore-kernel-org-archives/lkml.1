@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932453AbZJUT0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932512AbZJUT0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932453AbZJUT0A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbZJUTVG
+	id S932512AbZJUT0l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932483AbZJUT0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:21:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:3787 "EHLO mx1.redhat.com"
+	Wed, 21 Oct 2009 15:26:40 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:40102 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932215AbZJUTVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 15:21:04 -0400
+	id S932236AbZJUTVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 15:21:03 -0400
 From: Valerie Aurora <vaurora@redhat.com>
 To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
@@ -20,11 +20,11 @@ To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Vladimir Dronnikov <dronnikov@gmail.com>,
        Felix Fietkau <nbd@openwrt.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jan Blunck <jblunck@suse.de>, Miklos Szeredi <mszeredi@suse.cz>
-Subject: [PATCH 22/41] union-mount: Some checks during namespace changes
-Date: Wed, 21 Oct 2009 12:19:20 -0700
-Message-Id: <1256152779-10054-23-git-send-email-vaurora@redhat.com>
-In-Reply-To: <1256152779-10054-22-git-send-email-vaurora@redhat.com>
+       Jan Blunck <jblunck@suse.de>
+Subject: [PATCH 23/41] union-mount: Changes to the namespace handling
+Date: Wed, 21 Oct 2009 12:19:21 -0700
+Message-Id: <1256152779-10054-24-git-send-email-vaurora@redhat.com>
+In-Reply-To: <1256152779-10054-23-git-send-email-vaurora@redhat.com>
 References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-2-git-send-email-vaurora@redhat.com>
  <1256152779-10054-3-git-send-email-vaurora@redhat.com>
@@ -47,101 +47,214 @@ References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-20-git-send-email-vaurora@redhat.com>
  <1256152779-10054-21-git-send-email-vaurora@redhat.com>
  <1256152779-10054-22-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-23-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jan Blunck <jblunck@suse.de>
 
-Add some additional checks when mounting something into an union.
+Creates the proper struct union_mount when mounting something into a
+union. If the topmost filesystem isn't capable of handling the white-out
+filetype it could only be mount read-only.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 ---
- fs/namespace.c |   34 ++++++++++++++++++++++++++++++++++
- 1 files changed, 34 insertions(+), 0 deletions(-)
+ fs/namespace.c        |    7 ++++++
+ fs/union.c            |   57 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/mount.h |    3 ++
+ include/linux/union.h |   10 +++++++-
+ 4 files changed, 75 insertions(+), 2 deletions(-)
 
 diff --git a/fs/namespace.c b/fs/namespace.c
-index 81b3188..dc01385 100644
+index dc01385..0280e5b 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -29,6 +29,7 @@
- #include <linux/log2.h>
- #include <linux/idr.h>
- #include <linux/fs_struct.h>
-+#include <linux/union.h>
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
- #include "pnode.h"
-@@ -1427,6 +1428,10 @@ static int do_change_type(struct path *path, int flag)
- 	if (path->dentry != path->mnt->mnt_root)
- 		return -EINVAL;
+@@ -158,6 +158,9 @@ struct vfsmount *alloc_vfsmnt(const char *name)
+ #else
+ 		mnt->mnt_writers = 0;
+ #endif
++#ifdef CONFIG_UNION_MOUNT
++		INIT_LIST_HEAD(&mnt->mnt_unions);
++#endif
+ 	}
+ 	return mnt;
  
-+	/* Don't change the type of union mounts */
-+	if (IS_MNT_UNION(path->mnt))
-+		return -EINVAL;
-+
- 	down_write(&namespace_sem);
- 	if (type == MS_SHARED) {
- 		err = invent_group_ids(mnt, recurse);
-@@ -1478,6 +1483,18 @@ static int do_loopback(struct path *path, char *old_name, int recurse,
- 	if (!mnt)
- 		goto out;
+@@ -470,6 +473,7 @@ static void __touch_mnt_namespace(struct mnt_namespace *ns)
  
-+	/*
-+	 * Unions couldn't be writable if the filesystem doesn't know about
-+	 * whiteouts
-+	 */
-+	err = -ENOTSUPP;
-+	if ((mnt_flags & MNT_UNION) &&
-+	    !(mnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
-+		goto out;
-+
-+	if (mnt_flags & MNT_UNION)
-+		mnt->mnt_flags |= MNT_UNION;
-+
- 	err = graft_tree(mnt, path);
- 	if (err) {
- 		LIST_HEAD(umount_list);
-@@ -1571,6 +1588,13 @@ static int do_move_mount(struct path *path, char *old_name)
- 	if (err)
- 		return err;
- 
-+	/* moving to or from a union mount is not supported */
-+	err = -EINVAL;
-+	if (IS_MNT_UNION(path->mnt))
-+		goto exit;
-+	if (IS_MNT_UNION(old_path.mnt))
-+		goto exit;
-+
- 	down_write(&namespace_sem);
- 	while (d_mountpoint(path->dentry) &&
- 	       follow_down(path))
-@@ -1628,6 +1652,7 @@ out:
- 	up_write(&namespace_sem);
- 	if (!err)
- 		path_put(&parent_path);
-+exit:
- 	path_put(&old_path);
- 	return err;
+ static void detach_mnt(struct vfsmount *mnt, struct path *old_path)
+ {
++	detach_mnt_union(mnt);
+ 	old_path->dentry = mnt->mnt_mountpoint;
+ 	old_path->mnt = mnt->mnt_parent;
+ 	mnt->mnt_parent = mnt;
+@@ -493,6 +497,7 @@ static void attach_mnt(struct vfsmount *mnt, struct path *path)
+ 	list_add_tail(&mnt->mnt_hash, mount_hashtable +
+ 			hash(path->mnt, path->dentry));
+ 	list_add_tail(&mnt->mnt_child, &path->mnt->mnt_mounts);
++	attach_mnt_union(mnt, path->mnt, path->dentry);
  }
-@@ -1685,6 +1710,15 @@ int do_add_mount(struct vfsmount *newmnt, struct path *path,
- 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
- 		goto unlock;
  
-+	/*
-+	 * Unions couldn't be writable if the filesystem doesn't know about
-+	 * whiteouts
-+	 */
-+	err = -ENOTSUPP;
-+	if ((mnt_flags & MNT_UNION) &&
-+	    !(newmnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
-+		goto unlock;
+ /*
+@@ -515,6 +520,7 @@ static void commit_tree(struct vfsmount *mnt)
+ 	list_add_tail(&mnt->mnt_hash, mount_hashtable +
+ 				hash(parent, mnt->mnt_mountpoint));
+ 	list_add_tail(&mnt->mnt_child, &parent->mnt_mounts);
++	attach_mnt_union(mnt, mnt->mnt_parent, mnt->mnt_mountpoint);
+ 	touch_mnt_namespace(n);
+ }
+ 
+@@ -986,6 +992,7 @@ void release_mounts(struct list_head *head)
+ 			struct dentry *dentry;
+ 			struct vfsmount *m;
+ 			spin_lock(&vfsmount_lock);
++			detach_mnt_union(mnt);
+ 			dentry = mnt->mnt_mountpoint;
+ 			m = mnt->mnt_parent;
+ 			mnt->mnt_mountpoint = mnt->mnt_root;
+diff --git a/fs/union.c b/fs/union.c
+index 6b99393..341fc03 100644
+--- a/fs/union.c
++++ b/fs/union.c
+@@ -113,6 +113,7 @@ struct union_mount *union_alloc(struct dentry *this, struct vfsmount *this_mnt,
+ 
+ 	atomic_set(&um->u_count, 1);
+ 	INIT_LIST_HEAD(&um->u_unions);
++	INIT_LIST_HEAD(&um->u_list);
+ 	INIT_HLIST_NODE(&um->u_hash);
+ 	INIT_HLIST_NODE(&um->u_rhash);
+ 
+@@ -256,6 +257,7 @@ int append_to_union(struct vfsmount *mnt, struct dentry *dentry,
+ 		union_put(this);
+ 		return 0;
+ 	}
++	list_add(&this->u_list, &mnt->mnt_unions);
+ 	list_add(&this->u_unions, &dentry->d_unions);
+ 	dest_dentry->d_unionized++;
+ 	__union_hash(this);
+@@ -365,6 +367,7 @@ repeat:
+ 	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions) {
+ 		BUG_ON(!hlist_unhashed(&this->u_hash));
+ 		BUG_ON(!hlist_unhashed(&this->u_rhash));
++		list_del(&this->u_list);
+ 		list_del(&this->u_unions);
+ 		this->u_next.dentry->d_unionized--;
+ 		spin_unlock(&union_lock);
+@@ -393,6 +396,7 @@ repeat:
+ 
+ 		BUG_ON(!hlist_unhashed(&this->u_hash));
+ 		BUG_ON(!hlist_unhashed(&this->u_rhash));
++		list_del(&this->u_list);
+ 		list_del(&this->u_unions);
+ 		this->u_next.dentry->d_unionized--;
+ 		spin_unlock(&union_lock);
+@@ -404,3 +408,56 @@ repeat:
+ 	}
+ 	spin_unlock(&union_lock);
+ }
 +
- 	newmnt->mnt_flags = mnt_flags;
- 	if ((err = graft_tree(newmnt, path)))
- 		goto unlock;
++/*
++ * Remove all union_mounts structures belonging to this vfsmount from the
++ * union lookup hashtable and so on ...
++ */
++void shrink_mnt_unions(struct vfsmount *mnt)
++{
++	struct union_mount *this, *next;
++
++repeat:
++	spin_lock(&union_lock);
++	list_for_each_entry_safe(this, next, &mnt->mnt_unions, u_list) {
++		if (this->u_this.dentry == mnt->mnt_root)
++			continue;
++		__union_unhash(this);
++		list_del(&this->u_list);
++		list_del(&this->u_unions);
++		this->u_next.dentry->d_unionized--;
++		spin_unlock(&union_lock);
++		union_put(this);
++		goto repeat;
++	}
++	spin_unlock(&union_lock);
++}
++
++int attach_mnt_union(struct vfsmount *mnt, struct vfsmount *dest_mnt,
++		     struct dentry *dest_dentry)
++{
++	if (!IS_MNT_UNION(mnt))
++		return 0;
++
++	return append_to_union(mnt, mnt->mnt_root, dest_mnt, dest_dentry);
++}
++
++void detach_mnt_union(struct vfsmount *mnt)
++{
++	struct union_mount *um;
++
++	if (!IS_MNT_UNION(mnt))
++		return;
++
++	shrink_mnt_unions(mnt);
++
++	spin_lock(&union_lock);
++	um = union_lookup(mnt->mnt_root, mnt);
++	__union_unhash(um);
++	list_del(&um->u_list);
++	list_del(&um->u_unions);
++	um->u_next.dentry->d_unionized--;
++	spin_unlock(&union_lock);
++	union_put(um);
++	return;
++}
+diff --git a/include/linux/mount.h b/include/linux/mount.h
+index e175c47..70c4f1f 100644
+--- a/include/linux/mount.h
++++ b/include/linux/mount.h
+@@ -54,6 +54,9 @@ struct vfsmount {
+ 	struct list_head mnt_slave_list;/* list of slave mounts */
+ 	struct list_head mnt_slave;	/* slave list entry */
+ 	struct vfsmount *mnt_master;	/* slave is on master->mnt_slave_list */
++#ifdef CONFIG_UNION_MOUNT
++	struct list_head mnt_unions;	/* list of union_mount structures */
++#endif
+ 	struct mnt_namespace *mnt_ns;	/* containing namespace */
+ 	int mnt_id;			/* mount identifier */
+ 	int mnt_group_id;		/* peer group identifier */
+diff --git a/include/linux/union.h b/include/linux/union.h
+index b035a82..0b6f356 100644
+--- a/include/linux/union.h
++++ b/include/linux/union.h
+@@ -30,8 +30,9 @@ struct union_mount {
+ 	atomic_t u_count;		/* reference count */
+ 	struct mutex u_mutex;
+ 	struct list_head u_unions;	/* list head for d_unions */
+-	struct hlist_node u_hash;	/* list head for searching */
+-	struct hlist_node u_rhash;	/* list head for reverse searching */
++	struct list_head u_list;	/* list head for mnt_unions */
++	struct hlist_node u_hash;	/* list head for seaching */
++	struct hlist_node u_rhash;	/* list head for reverse seaching */
+ 
+ 	struct path u_this;		/* this is me */
+ 	struct path u_next;		/* this is what I overlay */
+@@ -49,6 +50,9 @@ extern int follow_union_mount(struct vfsmount **, struct dentry **);
+ extern void __d_drop_unions(struct dentry *);
+ extern void shrink_d_unions(struct dentry *);
+ extern void __shrink_d_unions(struct dentry *, struct list_head *);
++extern int attach_mnt_union(struct vfsmount *, struct vfsmount *,
++			    struct dentry *);
++extern void detach_mnt_union(struct vfsmount *);
+ 
+ #else /* CONFIG_UNION_MOUNT */
+ 
+@@ -61,6 +65,8 @@ extern void __shrink_d_unions(struct dentry *, struct list_head *);
+ #define __d_drop_unions(x)		do { } while (0)
+ #define shrink_d_unions(x)		do { } while (0)
+ #define __shrink_d_unions(x,y)		do { } while (0)
++#define attach_mnt_union(x, y, z)	do { } while (0)
++#define detach_mnt_union(x)		do { } while (0)
+ 
+ #endif	/* CONFIG_UNION_MOUNT */
+ #endif	/* __KERNEL__ */
 -- 
 1.6.3.3
 
