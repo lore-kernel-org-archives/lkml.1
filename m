@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbZJUTUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932105AbZJUTUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbZJUTUz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbZJUTUx
+	id S932105AbZJUTUo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbZJUTUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:20:53 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:35211 "EHLO mx1.redhat.com"
+	Wed, 21 Oct 2009 15:20:43 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59413 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932095AbZJUTUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 15:20:46 -0400
+	id S1755061AbZJUTUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 15:20:41 -0400
 From: Valerie Aurora <vaurora@redhat.com>
 To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
@@ -20,12 +20,12 @@ To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Vladimir Dronnikov <dronnikov@gmail.com>,
        Felix Fietkau <nbd@openwrt.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jan Blunck <jblunck@suse.de>, Theodore Tso <tytso@mit.edu>,
-       linux-ext4@vger.kernel.org
-Subject: [PATCH 15/41] whiteout: ext2 whiteout support
-Date: Wed, 21 Oct 2009 12:19:13 -0700
-Message-Id: <1256152779-10054-16-git-send-email-vaurora@redhat.com>
-In-Reply-To: <1256152779-10054-15-git-send-email-vaurora@redhat.com>
+       Felix Fietkau <nbd@openwrt.org>, David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd@lists.infradead.org
+Subject: [PATCH 16/41] whiteout: jffs2 whiteout support
+Date: Wed, 21 Oct 2009 12:19:14 -0700
+Message-Id: <1256152779-10054-17-git-send-email-vaurora@redhat.com>
+In-Reply-To: <1256152779-10054-16-git-send-email-vaurora@redhat.com>
 References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-2-git-send-email-vaurora@redhat.com>
  <1256152779-10054-3-git-send-email-vaurora@redhat.com>
@@ -41,396 +41,183 @@ References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-13-git-send-email-vaurora@redhat.com>
  <1256152779-10054-14-git-send-email-vaurora@redhat.com>
  <1256152779-10054-15-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-16-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Blunck <jblunck@suse.de>
+From: Felix Fietkau <nbd@openwrt.org>
 
-This patch adds whiteout support to EXT2. A whiteout is an empty directory
-entry (inode == 0) with the file type set to EXT2_FT_WHT. Therefore it
-allocates space in directories. Due to being implemented as a filetype it is
-necessary to have the EXT2_FEATURE_INCOMPAT_FILETYPE flag set.
+Add support for whiteout dentries to jffs2.
 
-XXX - Whiteouts could be implemented as special symbolic links
-
-Signed-off-by: Jan Blunck <jblunck@suse.de>
+Signed-off-by: Felix Fietkau <nbd@openwrt.org>
 Signed-off-by: Valerie Aurora <vaurora@redhat.com>
-Cc: Theodore Tso <tytso@mit.edu>
-Cc: linux-ext4@vger.kernel.org
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-mtd@lists.infradead.org
 ---
- fs/ext2/dir.c           |   96 +++++++++++++++++++++++++++++++++++++++++++++--
- fs/ext2/ext2.h          |    3 +
- fs/ext2/inode.c         |   11 ++++-
- fs/ext2/namei.c         |   65 ++++++++++++++++++++++++++++++-
- fs/ext2/super.c         |    7 +++
- include/linux/ext2_fs.h |    4 ++
- 6 files changed, 176 insertions(+), 10 deletions(-)
+ fs/jffs2/dir.c        |   77 +++++++++++++++++++++++++++++++++++++++++++++++-
+ fs/jffs2/fs.c         |    4 ++
+ fs/jffs2/super.c      |    2 +-
+ include/linux/jffs2.h |    2 +
+ 4 files changed, 82 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
-index cb8ceff..d4628c0 100644
---- a/fs/ext2/dir.c
-+++ b/fs/ext2/dir.c
-@@ -219,7 +219,7 @@ static inline int ext2_match (int len, const char * const name,
- {
- 	if (len != de->name_len)
- 		return 0;
--	if (!de->inode)
-+	if (!de->inode && (de->file_type != EXT2_FT_WHT))
- 		return 0;
- 	return !memcmp(name, de->name, len);
- }
-@@ -255,6 +255,7 @@ static unsigned char ext2_filetype_table[EXT2_FT_MAX] = {
- 	[EXT2_FT_FIFO]		= DT_FIFO,
- 	[EXT2_FT_SOCK]		= DT_SOCK,
- 	[EXT2_FT_SYMLINK]	= DT_LNK,
-+	[EXT2_FT_WHT]		= DT_WHT,
- };
+diff --git a/fs/jffs2/dir.c b/fs/jffs2/dir.c
+index 6f60cc9..46a2e1b 100644
+--- a/fs/jffs2/dir.c
++++ b/fs/jffs2/dir.c
+@@ -34,6 +34,8 @@ static int jffs2_mknod (struct inode *,struct dentry *,int,dev_t);
+ static int jffs2_rename (struct inode *, struct dentry *,
+ 			 struct inode *, struct dentry *);
  
- #define S_SHIFT 12
-@@ -448,6 +449,26 @@ ino_t ext2_inode_by_name(struct inode *dir, struct qstr *child)
- 	return res;
- }
- 
-+/* Special version for filetype based whiteout support */
-+ino_t ext2_inode_by_dentry(struct inode *dir, struct dentry *dentry)
-+{
-+	ino_t res = 0;
-+	struct ext2_dir_entry_2 *de;
-+	struct page *page;
++static int jffs2_whiteout (struct inode *, struct dentry *, struct dentry *);
 +
-+	de = ext2_find_entry (dir, &dentry->d_name, &page);
-+	if (de) {
-+		res = le32_to_cpu(de->inode);
-+		if (!res && de->file_type == EXT2_FT_WHT) {
-+			spin_lock(&dentry->d_lock);
-+			dentry->d_flags |= DCACHE_WHITEOUT;
-+			spin_unlock(&dentry->d_lock);
+ const struct file_operations jffs2_dir_operations =
+ {
+ 	.read =		generic_read_dir,
+@@ -55,6 +57,7 @@ const struct inode_operations jffs2_dir_inode_operations =
+ 	.rmdir =	jffs2_rmdir,
+ 	.mknod =	jffs2_mknod,
+ 	.rename =	jffs2_rename,
++	.whiteout =     jffs2_whiteout,
+ 	.permission =	jffs2_permission,
+ 	.setattr =	jffs2_setattr,
+ 	.setxattr =	jffs2_setxattr,
+@@ -98,8 +101,18 @@ static struct dentry *jffs2_lookup(struct inode *dir_i, struct dentry *target,
+ 			fd = fd_list;
+ 		}
+ 	}
+-	if (fd)
+-		ino = fd->ino;
++	if (fd) {
++		spin_lock(&target->d_lock);
++		switch(fd->type) {
++		case DT_WHT:
++			target->d_flags |= DCACHE_WHITEOUT;
++			break;
++		default:
++			ino = fd->ino;
++			break;
 +		}
-+		ext2_put_page(page);
++		spin_unlock(&target->d_lock);
 +	}
-+	return res;
-+}
-+
- /* Releases the page */
- void ext2_set_link(struct inode *dir, struct ext2_dir_entry_2 *de,
- 		   struct page *page, struct inode *inode, int update_times)
-@@ -523,7 +544,8 @@ static ext2_dirent * ext2_append_entry(struct dentry * dentry,
- 				goto got_it;
- 			name_len = EXT2_DIR_REC_LEN(de->name_len);
- 			rec_len = ext2_rec_len_from_disk(de->rec_len);
--			if (!de->inode && rec_len >= reclen)
-+			if (!de->inode && (de->file_type != EXT2_FT_WHT) &&
-+			    (rec_len >= reclen))
- 				goto got_it;
- 			if (rec_len >= name_len + reclen)
- 				goto got_it;
-@@ -564,8 +586,11 @@ int ext2_add_link (struct dentry *dentry, struct inode *inode)
- 		return PTR_ERR(de);
- 
- 	err = -EEXIST;
--	if (ext2_match (namelen, name, de))
-+	if (ext2_match (namelen, name, de)) {
-+		if (de->file_type == EXT2_FT_WHT)
-+			goto got_it;
- 		goto out_unlock;
-+	}
- 
- got_it:
- 	name_len = EXT2_DIR_REC_LEN(de->name_len);
-@@ -577,7 +602,8 @@ got_it:
- 							&page, NULL);
- 	if (err)
- 		goto out_unlock;
--	if (de->inode) {
-+	if (de->inode || ((de->file_type == EXT2_FT_WHT) &&
-+			  !ext2_match (namelen, name, de))) {
- 		ext2_dirent *de1 = (ext2_dirent *) ((char *) de + name_len);
- 		de1->rec_len = ext2_rec_len_to_disk(rec_len - name_len);
- 		de->rec_len = ext2_rec_len_to_disk(name_len);
-@@ -646,6 +672,68 @@ out:
- 	return err;
- }
- 
-+int ext2_whiteout_entry (struct inode * dir, struct dentry * dentry,
-+			 struct ext2_dir_entry_2 * de, struct page * page)
-+{
-+	const char *name = dentry->d_name.name;
-+	int namelen = dentry->d_name.len;
-+	unsigned short rec_len, name_len;
-+	loff_t pos;
-+	int err;
-+
-+	if (!de) {
-+		de = ext2_append_entry(dentry, &page);
-+		BUG_ON(!de);
-+	}
-+
-+	err = -EEXIST;
-+	if (ext2_match (namelen, name, de) &&
-+	    (de->file_type == EXT2_FT_WHT)) {
-+		ext2_error(dir->i_sb, __func__,
-+			   "entry is already a whiteout in directory #%lu",
-+			   dir->i_ino);
-+		goto out_unlock;
-+	}
-+
-+	name_len = EXT2_DIR_REC_LEN(de->name_len);
-+	rec_len = ext2_rec_len_from_disk(de->rec_len);
-+
-+	pos = page_offset(page) +
-+		(char*)de - (char*)page_address(page);
-+	err = __ext2_write_begin(NULL, page->mapping, pos, rec_len, 0,
-+							&page, NULL);
-+	if (err)
-+		goto out_unlock;
-+	/*
-+	 * We whiteout an existing entry. Do what ext2_delete_entry() would do,
-+	 * except that we don't need to merge with the previous entry since
-+	 * we are going to reuse it.
-+	 */
-+	if (ext2_match (namelen, name, de))
-+		de->inode = 0;
-+	if (de->inode || (de->file_type == EXT2_FT_WHT)) {
-+		ext2_dirent *de1 = (ext2_dirent *) ((char *) de + name_len);
-+		de1->rec_len = ext2_rec_len_to_disk(rec_len - name_len);
-+		de->rec_len = ext2_rec_len_to_disk(name_len);
-+		de = de1;
-+	}
-+	de->name_len = namelen;
-+	memcpy(de->name, name, namelen);
-+	de->inode = 0;
-+	de->file_type = EXT2_FT_WHT;
-+	err = ext2_commit_chunk(page, pos, rec_len);
-+	dir->i_mtime = dir->i_ctime = CURRENT_TIME_SEC;
-+	EXT2_I(dir)->i_flags &= ~EXT2_BTREE_FL;
-+	mark_inode_dirty(dir);
-+	/* OFFSET_CACHE */
-+out_put:
-+	ext2_put_page(page);
-+	return err;
-+out_unlock:
-+	unlock_page(page);
-+	goto out_put;
-+}
-+
- /*
-  * Set the first fragment of directory.
-  */
-diff --git a/fs/ext2/ext2.h b/fs/ext2/ext2.h
-index 9a8a8e2..a7f057f 100644
---- a/fs/ext2/ext2.h
-+++ b/fs/ext2/ext2.h
-@@ -102,9 +102,12 @@ extern void ext2_rsv_window_add(struct super_block *sb, struct ext2_reserve_wind
- /* dir.c */
- extern int ext2_add_link (struct dentry *, struct inode *);
- extern ino_t ext2_inode_by_name(struct inode *, struct qstr *);
-+extern ino_t ext2_inode_by_dentry(struct inode *, struct dentry *);
- extern int ext2_make_empty(struct inode *, struct inode *);
- extern struct ext2_dir_entry_2 * ext2_find_entry (struct inode *,struct qstr *, struct page **);
- extern int ext2_delete_entry (struct ext2_dir_entry_2 *, struct page *);
-+extern int ext2_whiteout_entry (struct inode *, struct dentry *,
-+				struct ext2_dir_entry_2 *, struct page *);
- extern int ext2_empty_dir (struct inode *);
- extern struct ext2_dir_entry_2 * ext2_dotdot (struct inode *, struct page **);
- extern void ext2_set_link(struct inode *, struct ext2_dir_entry_2 *, struct page *, struct inode *, int);
-diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-index e271303..5f76e44 100644
---- a/fs/ext2/inode.c
-+++ b/fs/ext2/inode.c
-@@ -1176,7 +1176,8 @@ void ext2_set_inode_flags(struct inode *inode)
- {
- 	unsigned int flags = EXT2_I(inode)->i_flags;
- 
--	inode->i_flags &= ~(S_SYNC|S_APPEND|S_IMMUTABLE|S_NOATIME|S_DIRSYNC);
-+	inode->i_flags &= ~(S_SYNC|S_APPEND|S_IMMUTABLE|S_NOATIME|S_DIRSYNC|
-+			    S_OPAQUE);
- 	if (flags & EXT2_SYNC_FL)
- 		inode->i_flags |= S_SYNC;
- 	if (flags & EXT2_APPEND_FL)
-@@ -1187,6 +1188,8 @@ void ext2_set_inode_flags(struct inode *inode)
- 		inode->i_flags |= S_NOATIME;
- 	if (flags & EXT2_DIRSYNC_FL)
- 		inode->i_flags |= S_DIRSYNC;
-+	if (flags & EXT2_OPAQUE_FL)
-+		inode->i_flags |= S_OPAQUE;
- }
- 
- /* Propagate flags from i_flags to EXT2_I(inode)->i_flags */
-@@ -1194,8 +1197,8 @@ void ext2_get_inode_flags(struct ext2_inode_info *ei)
- {
- 	unsigned int flags = ei->vfs_inode.i_flags;
- 
--	ei->i_flags &= ~(EXT2_SYNC_FL|EXT2_APPEND_FL|
--			EXT2_IMMUTABLE_FL|EXT2_NOATIME_FL|EXT2_DIRSYNC_FL);
-+	ei->i_flags &= ~(EXT2_SYNC_FL|EXT2_APPEND_FL|EXT2_IMMUTABLE_FL|
-+			 EXT2_NOATIME_FL|EXT2_DIRSYNC_FL|EXT2_OPAQUE_FL);
- 	if (flags & S_SYNC)
- 		ei->i_flags |= EXT2_SYNC_FL;
- 	if (flags & S_APPEND)
-@@ -1206,6 +1209,8 @@ void ext2_get_inode_flags(struct ext2_inode_info *ei)
- 		ei->i_flags |= EXT2_NOATIME_FL;
- 	if (flags & S_DIRSYNC)
- 		ei->i_flags |= EXT2_DIRSYNC_FL;
-+	if (flags & S_OPAQUE)
-+		ei->i_flags |= EXT2_OPAQUE_FL;
- }
- 
- struct inode *ext2_iget (struct super_block *sb, unsigned long ino)
-diff --git a/fs/ext2/namei.c b/fs/ext2/namei.c
-index 78d9b92..9c4eef2 100644
---- a/fs/ext2/namei.c
-+++ b/fs/ext2/namei.c
-@@ -54,15 +54,16 @@ static inline int ext2_add_nondir(struct dentry *dentry, struct inode *inode)
-  * Methods themselves.
-  */
- 
--static struct dentry *ext2_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
-+static struct dentry *ext2_lookup(struct inode * dir, struct dentry *dentry,
-+				  struct nameidata *nd)
- {
- 	struct inode * inode;
- 	ino_t ino;
--	
-+
- 	if (dentry->d_name.len > EXT2_NAME_LEN)
- 		return ERR_PTR(-ENAMETOOLONG);
- 
--	ino = ext2_inode_by_name(dir, &dentry->d_name);
-+	ino = ext2_inode_by_dentry(dir, dentry);
- 	inode = NULL;
+ 	mutex_unlock(&dir_f->sem);
  	if (ino) {
- 		inode = ext2_iget(dir->i_sb, ino);
-@@ -230,6 +231,10 @@ static int ext2_mkdir(struct inode * dir, struct dentry * dentry, int mode)
- 	else
- 		inode->i_mapping->a_ops = &ext2_aops;
+ 		inode = jffs2_iget(dir_i->i_sb, ino);
+@@ -498,6 +511,11 @@ static int jffs2_mkdir (struct inode *dir_i, struct dentry *dentry, int mode)
+ 		return PTR_ERR(inode);
+ 	}
  
-+	/* if we call mkdir on a whiteout create an opaque directory */
-+	if (dentry->d_flags & DCACHE_WHITEOUT)
++	if (dentry->d_flags & DCACHE_WHITEOUT) {
 +		inode->i_flags |= S_OPAQUE;
++		ri->flags = cpu_to_je16(JFFS2_INO_FLAG_OPAQUE);
++	}
 +
- 	inode_inc_link_count(inode);
+ 	inode->i_op = &jffs2_dir_inode_operations;
+ 	inode->i_fop = &jffs2_dir_operations;
  
- 	err = ext2_make_empty(inode, dir);
-@@ -293,6 +298,59 @@ static int ext2_rmdir (struct inode * dir, struct dentry *dentry)
- 	return err;
+@@ -779,6 +797,61 @@ static int jffs2_mknod (struct inode *dir_i, struct dentry *dentry, int mode, de
+ 	return 0;
  }
  
-+/*
-+ * Create a whiteout for the dentry
-+ */
-+static int ext2_whiteout(struct inode *dir, struct dentry *dentry,
-+			 struct dentry *new_dentry)
++static int jffs2_whiteout (struct inode *dir, struct dentry *old_dentry,
++			   struct dentry *new_dentry)
 +{
-+	struct inode * inode = dentry->d_inode;
-+	struct ext2_dir_entry_2 * de = NULL;
-+	struct page * page;
-+	int err = -ENOTEMPTY;
++	struct jffs2_sb_info *c = JFFS2_SB_INFO(dir->i_sb);
++	struct jffs2_inode_info *victim_f = NULL;
++	uint32_t now;
++	int ret;
 +
-+	if (!EXT2_HAS_INCOMPAT_FEATURE(dir->i_sb,
-+				       EXT2_FEATURE_INCOMPAT_FILETYPE)) {
-+		ext2_error (dir->i_sb, "ext2_whiteout",
-+			    "can't set whiteout filetype");
-+		err = -EPERM;
-+		goto out;
++	/* If it's a directory, then check whether it is really empty
++	 */
++	if (new_dentry->d_inode) {
++		victim_f = JFFS2_INODE_INFO(old_dentry->d_inode);
++		if (S_ISDIR(old_dentry->d_inode->i_mode)) {
++			struct jffs2_full_dirent *fd;
++
++			mutex_lock(&victim_f->sem);
++			for (fd = victim_f->dents; fd; fd = fd->next) {
++				if (fd->ino) {
++					mutex_unlock(&victim_f->sem);
++					return -ENOTEMPTY;
++				}
++			}
++			mutex_unlock(&victim_f->sem);
++		}
 +	}
 +
-+	if (inode) {
-+		if (S_ISDIR(inode->i_mode) && !ext2_empty_dir(inode))
-+			goto out;
-+
-+		err = -ENOENT;
-+		de = ext2_find_entry (dir, &dentry->d_name, &page);
-+		if (!de)
-+			goto out;
-+		lock_page(page);
-+	}
-+
-+	err = ext2_whiteout_entry (dir, dentry, de, page);
-+	if (err)
-+		goto out;
++	now = get_seconds();
++	ret = jffs2_do_link(c, JFFS2_INODE_INFO(dir), 0, DT_WHT,
++			    new_dentry->d_name.name, new_dentry->d_name.len, now);
++	if (ret)
++		return ret;
 +
 +	spin_lock(&new_dentry->d_lock);
 +	new_dentry->d_flags |= DCACHE_WHITEOUT;
 +	spin_unlock(&new_dentry->d_lock);
 +	d_add(new_dentry, NULL);
 +
-+	if (inode) {
-+		inode->i_ctime = dir->i_ctime;
-+		inode_dec_link_count(inode);
-+		if (S_ISDIR(inode->i_mode)) {
-+			inode->i_size = 0;
-+			inode_dec_link_count(inode);
-+			inode_dec_link_count(dir);
++	if (victim_f) {
++		/* There was a victim. Kill it off nicely */
++		drop_nlink(old_dentry->d_inode);
++		/* Don't oops if the victim was a dirent pointing to an
++		   inode which didn't exist. */
++		if (victim_f->inocache) {
++			mutex_lock(&victim_f->sem);
++			if (S_ISDIR(old_dentry->d_inode->i_mode))
++				victim_f->inocache->pino_nlink = 0;
++			else
++				victim_f->inocache->pino_nlink--;
++			mutex_unlock(&victim_f->sem);
 +		}
 +	}
-+	err = 0;
-+out:
-+	return err;
++
++	return 0;
 +}
 +
- static int ext2_rename (struct inode * old_dir, struct dentry * old_dentry,
- 	struct inode * new_dir,	struct dentry * new_dentry )
+ static int jffs2_rename (struct inode *old_dir_i, struct dentry *old_dentry,
+ 			 struct inode *new_dir_i, struct dentry *new_dentry)
  {
-@@ -392,6 +450,7 @@ const struct inode_operations ext2_dir_inode_operations = {
- 	.mkdir		= ext2_mkdir,
- 	.rmdir		= ext2_rmdir,
- 	.mknod		= ext2_mknod,
-+	.whiteout	= ext2_whiteout,
- 	.rename		= ext2_rename,
- #ifdef CONFIG_EXT2_FS_XATTR
- 	.setxattr	= generic_setxattr,
-diff --git a/fs/ext2/super.c b/fs/ext2/super.c
-index 1a9ffee..c414c6d 100644
---- a/fs/ext2/super.c
-+++ b/fs/ext2/super.c
-@@ -1062,6 +1062,13 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
- 	if (EXT2_HAS_COMPAT_FEATURE(sb, EXT3_FEATURE_COMPAT_HAS_JOURNAL))
- 		ext2_warning(sb, __func__,
- 			"mounting ext3 filesystem as ext2");
+diff --git a/fs/jffs2/fs.c b/fs/jffs2/fs.c
+index 3451a81..c1e333c 100644
+--- a/fs/jffs2/fs.c
++++ b/fs/jffs2/fs.c
+@@ -301,6 +301,10 @@ struct inode *jffs2_iget(struct super_block *sb, unsigned long ino)
+ 
+ 		inode->i_op = &jffs2_dir_inode_operations;
+ 		inode->i_fop = &jffs2_dir_operations;
 +
-+	/*
-+	 * Whiteouts (and fallthrus) require explicit whiteout support.
-+	 */
-+	if (EXT2_HAS_INCOMPAT_FEATURE(sb, EXT2_FEATURE_INCOMPAT_WHITEOUT))
-+		sb->s_flags |= MS_WHITEOUT;
++		if (je16_to_cpu(latest_node.flags) & JFFS2_INO_FLAG_OPAQUE)
++			inode->i_flags |= S_OPAQUE;
 +
- 	ext2_setup_super (sb, es, sb->s_flags & MS_RDONLY);
- 	return 0;
+ 		break;
+ 	}
+ 	case S_IFREG:
+diff --git a/fs/jffs2/super.c b/fs/jffs2/super.c
+index 0035c02..6607f0b 100644
+--- a/fs/jffs2/super.c
++++ b/fs/jffs2/super.c
+@@ -172,7 +172,7 @@ static int jffs2_fill_super(struct super_block *sb, void *data, int silent)
  
-diff --git a/include/linux/ext2_fs.h b/include/linux/ext2_fs.h
-index 121720d..bd10826 100644
---- a/include/linux/ext2_fs.h
-+++ b/include/linux/ext2_fs.h
-@@ -189,6 +189,7 @@ struct ext2_group_desc
- #define EXT2_NOTAIL_FL			FS_NOTAIL_FL	/* file tail should not be merged */
- #define EXT2_DIRSYNC_FL			FS_DIRSYNC_FL	/* dirsync behaviour (directories only) */
- #define EXT2_TOPDIR_FL			FS_TOPDIR_FL	/* Top of directory hierarchies*/
-+#define EXT2_OPAQUE_FL			0x00040000
- #define EXT2_RESERVED_FL		FS_RESERVED_FL	/* reserved for ext2 lib */
+ 	sb->s_op = &jffs2_super_operations;
+ 	sb->s_export_op = &jffs2_export_ops;
+-	sb->s_flags = sb->s_flags | MS_NOATIME;
++	sb->s_flags = sb->s_flags | MS_NOATIME | MS_WHITEOUT;
+ 	sb->s_xattr = jffs2_xattr_handlers;
+ #ifdef CONFIG_JFFS2_FS_POSIX_ACL
+ 	sb->s_flags |= MS_POSIXACL;
+diff --git a/include/linux/jffs2.h b/include/linux/jffs2.h
+index 2b32d63..65533bb 100644
+--- a/include/linux/jffs2.h
++++ b/include/linux/jffs2.h
+@@ -87,6 +87,8 @@
+ #define JFFS2_INO_FLAG_USERCOMPR  2	/* User has requested a specific
+ 					   compression type */
  
- #define EXT2_FL_USER_VISIBLE		FS_FL_USER_VISIBLE	/* User visible flags */
-@@ -503,10 +504,12 @@ struct ext2_super_block {
- #define EXT3_FEATURE_INCOMPAT_RECOVER		0x0004
- #define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV	0x0008
- #define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
-+#define EXT2_FEATURE_INCOMPAT_WHITEOUT		0x0020
- #define EXT2_FEATURE_INCOMPAT_ANY		0xffffffff
++#define JFFS2_INO_FLAG_OPAQUE     4	/* Directory is opaque (for union mounts) */
++
  
- #define EXT2_FEATURE_COMPAT_SUPP	EXT2_FEATURE_COMPAT_EXT_ATTR
- #define EXT2_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE| \
-+					 EXT2_FEATURE_INCOMPAT_WHITEOUT| \
- 					 EXT2_FEATURE_INCOMPAT_META_BG)
- #define EXT2_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER| \
- 					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE| \
-@@ -573,6 +576,7 @@ enum {
- 	EXT2_FT_FIFO,
- 	EXT2_FT_SOCK,
- 	EXT2_FT_SYMLINK,
-+	EXT2_FT_WHT,
- 	EXT2_FT_MAX
- };
- 
+ /* These can go once we've made sure we've caught all uses without
+    byteswapping */
 -- 
 1.6.3.3
 
