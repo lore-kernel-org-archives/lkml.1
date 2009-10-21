@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbZJUUYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZJUUl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755019AbZJUUYM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 16:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbZJUUYL
+	id S1755096AbZJUUl7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 16:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbZJUUl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 16:24:11 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:35462 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753426AbZJUUYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 16:24:11 -0400
-Date: Wed, 21 Oct 2009 16:22:31 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Dave Jones <davej@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, esandeen@redhat.com,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: XFS stack overhead
-Message-ID: <20091021162231.0238a79c@katamari.usersys.redhat.com>
-In-Reply-To: <4ADF5F52.10508@redhat.com>
-References: <20091015183540.GA8098@redhat.com>
-	<20091015190720.GA19467@elte.hu>
-	<4ADF2DAA.9030604@redhat.com>
-	<20091021110053.26ab9982@infradead.org>
-	<4ADF59F8.7010205@redhat.com>
-	<20091021191648.GA12259@elte.hu>
-	<4ADF5F52.10508@redhat.com>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Oct 2009 16:41:58 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:37365 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754819AbZJUUl5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 16:41:57 -0400
+Date: Wed, 21 Oct 2009 22:41:58 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Constantin Baranov <const@mimas.ru>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH] leds-alix2: add support for button connected to J15
+Message-ID: <20091021204158.GN14091@buzzloop.caiaq.de>
+References: <20091016130315.GT28832@buzzloop.caiaq.de>
+ <20091018072738.GF3935@core.coreip.homeip.net>
+ <20091019073728.GC28832@buzzloop.caiaq.de>
+ <20091020013852.GC24370@core.coreip.homeip.net>
+ <20091020101357.GR28832@buzzloop.caiaq.de>
+ <20091021043553.GA378@core.coreip.homeip.net>
+ <20091021193347.GL14091@buzzloop.caiaq.de>
+ <20091022012121.5b35ff22.const@mimas.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091022012121.5b35ff22.const@mimas.ru>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Oct 2009 14:21:54 -0500
-Eric Sandeen <sandeen@redhat.com> wrote:
+On Thu, Oct 22, 2009 at 01:21:21AM +0500, Constantin Baranov wrote:
+> I wonder why do you integrate the input driver into the leds driver. They
+> should be separated. Or at least the complex driver should be moved to the
+> "X86 Platform Specific Device Drivers" and renamed to some like "PC Engines
+> ALIX Extras". I personally would prefer the separation way.
 
-> > Also, the posting apparently mixes 'stack overhead' with 'runtime 
-> > overhead'.
-> 
-> right, that's why I asked, I'm not sure if stackprotector has runtime
-> overhead as well.
-> 
+I would as well, yes. And I was of course considerating this when I
+hacked these lines. However, the major part of the LED driver and what
+it currently shares with the button implementation is the BIOS detection
+code which is so ugly that I didn't want to duplicate it ;) That would,
+however, be the only option if you wanted to split the drivers up. Or
+do you have any better idea?
 
-A bigger stack causes runtime overhead too because it increases the cache
-footprint of the workload.
+> Also ALIX.2 documentation describes the "Mode switch" driven by GPIO which is a
+> small button on front side of a board. I guessed your driver is not for this
+> button. If so, would it be better to provide the mode switch as KEY_PROG1 and
+> the J15 connected button as KEY_PROG2 at once?
 
-For the function I looked at the insn overhead was substantial:
+Correct, the button this code is for is not the one on the 'front' side
+of the PCB. The other one I didn't try yet, but according the the
+CS5536A datasheet, the alternate function for that pin is WORK_AUX which
+can be used for power switching purposes. So that might need some extra
+care probably.
 
-On entry:
-ffffffff8113ffa0:       48 83 ec 10             sub    $0x10,%rsp
-...
-ffffffff8113ffa9:       65 48 8b 04 25 28 00    mov    %gs:0x28,%rax
-ffffffff8113ffb0:       00 00
-ffffffff8113ffb2:       48 89 45 f8             mov    %rax,-0x8(%rbp)
+However, if you can make any suggestion of how to split the code without
+copying more than half of the lines for that, I'd be happy with that as
+well, of course :)
 
-On exit:
-ffffffff81140000:       48 8b 55 f8             mov    -0x8(%rbp),%rdx
-ffffffff81140004:       65 48 33 14 25 28 00    xor    %gs:0x28,%rdx
-ffffffff8114000b:       00 00
-ffffffff8114000d:       74 13                   je     ffffffff81140022 <mem_cgroup_get_reclaim_stat_from_page+0x86>
-...
-ffffffff8114001d:       e8 ef 42 f2 ff          callq  ffffffff81064311 <__stack_chk_fail>
-
-So that's 37 extra bytes of code: 1 subtract, 4 reg/mem moves, an xor
-and a conditional jump that always get executed -- on every function
-call.
-
-And all that, in this case, for a function that doesn't even have any
-on-stack variables and can hardly be expected to be vulnerable to
-stack-smashing attacks.
+Daniel
