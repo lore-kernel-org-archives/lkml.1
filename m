@@ -1,184 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbZJUSpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbZJUSqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779AbZJUSpi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 14:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbZJUSpi
+	id S1754794AbZJUSqv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 14:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZJUSqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 14:45:38 -0400
-Received: from smtp151.iad.emailsrvr.com ([207.97.245.151]:39913 "EHLO
-	smtp151.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753610AbZJUSph (ORCPT
+	Wed, 21 Oct 2009 14:46:51 -0400
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:39583 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753610AbZJUSqu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 14:45:37 -0400
-Message-ID: <4ADF56D4.8030405@librato.com>
-Date: Wed, 21 Oct 2009 14:45:40 -0400
-From: Oren Laadan <orenl@librato.com>
-Organization: Librato
+	Wed, 21 Oct 2009 14:46:50 -0400
+X-Sasl-enc: ITcuJdUsjP6fYw/yQSCa/5FAr4wQGabAkSP2KbhZbBhE 1256150813
+Message-ID: <4ADF5710.4030505@imap.cc>
+Date: Wed, 21 Oct 2009 20:46:40 +0200
+From: Tilman Schmidt <tilman@imap.cc>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Daniel Lezcano <daniel.lezcano@free.fr>
-CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, randy.dunlap@oracle.com,
-       arnd@arndb.de, linux-api@vger.kernel.org,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       Louis.Rilling@kerlabs.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       kosaki.motohiro@jp.fujitsu.com, hpa@zytor.com, mingo@elte.hu,
-       torvalds@linux-foundation.org, Alexey Dobriyan <adobriyan@gmail.com>,
-       roland@redhat.com, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
-References: <20091013044925.GA28181@us.ibm.com> <4AD8C7E4.9000903@free.fr>	<20091016194451.GA28706@us.ibm.com> <4ADCCD68.9030003@free.fr> <4ADCDE7F.4090501@librato.com> <4ADF2E75.1020801@free.fr>
-In-Reply-To: <4ADF2E75.1020801@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Jarek Poplawski <jarkao2@gmail.com>
+CC: David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless@vger.kernel.org,
+       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org
+Subject: Re: NOHZ: local_softirq_pending 08
+References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local> <4AD76184.6030900@gmail.com>
+In-Reply-To: <4AD76184.6030900@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig5AFD4289CAEBB63DCDBBFEB4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig5AFD4289CAEBB63DCDBBFEB4
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
+On 15.10.2009 19:53 Jarek Poplawski wrote:
+> Jarek Poplawski wrote, On 10/15/2009 01:40 PM:
+>=20
+>> On 12-10-2009 13:25, Tilman Schmidt wrote:
 
-Daniel Lezcano wrote:
-> Oren Laadan wrote:
+>>> I have encountered the message in the subject during a test of
+>>> the Gigaset CAPI driver, and would like to determine whether
+>>> it's a bug in the driver, a bug somewhere else, or no bug at
+>>> all. The test scenario was PPP over ISDN with pppd+capiplugin.
+>>> In an alternative scenario, also PPP over ISDN but with
+>>> smpppd+capidrv, the message did not occur.
+
+I'm sorry, I had confused the two cases. The message occurs in
+the smpppd+capidrv scenario, not with pppd+capiplugin.
+
+>>> Johannes' answer pointed me to the netif_rx() function.
+>>> The Gigaset driver itself doesn't call that function at all.
+>>> In the scenario where I saw the message, it was the SYNC_PPP
+>>> line discipline that did.
+
+This analysis was therefore wrong. It would be the netif_rx()
+call towards the end of isdn_ppp_push_higher() in
+drivers/isdn/i4l/isdn_ppp.c L1177.
+
+>> Anyway, I agree with Michael Buesch there is no reason to waste time
+>> for tracking all netif_rx vs netif_rx_ni uses, and it seems we could
+>> avoid it by using the "proper" version of raise_softirq_irqoff() in
+>> __napi_schedule(). Could anybody try if I'm not wrong?
 >>
->> Daniel Lezcano wrote:
-> [ ... ]
-> 
->>> I forgot to mention a constraint with the specified pid : P2 has to
->>> be child of P1.
->>> In other word, you can not specify a pid to clonat which is not your
->>> descendant (including yourself).
->>> With this constraint I think there is no security issues.
+>>  net/core/dev.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
 >>
->> Sounds dangerous. What if your descendant executed a setuid program ?
-> 
-> That does not happen because you inherit the context of the caller.
-> 
->>> Concerning of forking on behalf of another process, we can consider
->>> it is up to the caller / programmer to know what it does. If a
->>> process in 
->>
->> Before the user can program with this syscall, _you_ need to define
->> the semantics of this syscall. 
-> Yes, you are right. Here it is the proposition of the semantics.
-> 
-> Function prototype is:
-> 
-> pid_t cloneat(pid_t pid, pid_t hint, struct clone_args *args);
-> 
-> Structure types are:
-> 
-> typedef int clone_flag_t;
-> 
-> struct clone_args {
->     clone_flag_t *flags;
->     int flags_size;
->     u32 reserved1;
->     u32 reserved2;
->     u64 child_stack_base;
->     u64 child_stack_size;
->     u64 parent_tid_ptr;
->     u64 child_tid_ptr;
->     u64 reserved3;
-> };
-> 
-> With the helper macros:
-> 
-> void CLONE_SET(int flag, clone_flag_t *flags);
-> void CLONE_CLR(int flag, clone_flag_t *flags);
-> bool CLONE_ISSET(int flag, clone_flag_t *flags);
-> void CLONE_ZERO(flag_t *clone_flags);
-> 
-> And:
-> 
-> #define CLONEXT_VM      0x20  /* CLONE_VM>>3 */ #define CLONEXT_FS     
-> 0x21
-> #define CLONEXT_FILES   0x22
-> ...
-> 
+>> diff --git a/net/core/dev.c b/net/core/dev.c
+>> index 28b0b9e..7fc4009 100644
+>> --- a/net/core/dev.c
+>> +++ b/net/core/dev.c
+>> @@ -2728,7 +2728,7 @@ void __napi_schedule(struct napi_struct *n)
+>> =20
+>>  	local_irq_save(flags);
+>>  	list_add_tail(&n->poll_list, &__get_cpu_var(softnet_data).poll_list)=
+;
+>> -	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
+>> +	raise_softirq_irqoff(NET_RX_SOFTIRQ);
+>>  	local_irq_restore(flags);
+>>  }
+>>  EXPORT_SYMBOL(__napi_schedule);
 
-The main motivation for your new syscall is to make it possible to
-inject a process into a namespace. IOW, what you are proposing is
-a new incarnation of sys_hijack().
+I have tested your patch and I can confirm that it fixes the messages.
+I have not noticed any ill effects.
 
-This is _orthogonal_ to the current discussion, which is about an
-extension for clone to allow (a) choosing target pid(s), (b) more
-flags, and (c) future extensions.
+Thanks,
+Tilman
 
-(Your suggested syscall may, too, allow the request a specific set
-of pids for the child process, and reuse the current code for that).
-
-I suggest that you start a new thread about your RFC. This will
-reduce distractions on the current thread, and bring more focus to
-your proposal. I surely will post some comments there :)
-
-[...]
-
-> The cloneat syscall can be used for the following use cases:
-> 
-> * checkpoint / restart:
-> 
-> The restart can be done with a clone(.., CLONE_NEWPID|...);
-> Then the new pid (aka pid 1) retrieves the proctree from the statefile
-> and creates the different tasks with the process hierarchy with the
-> cloneat syscall.
-
-s/cloneat/$CLONE3/
-(hint: this is how it's done now)
-
-> 
-> The proctree creation can be done from outside of the pid namespace or
-> from inside.
-
-Ew .. why would you do that ?
-
-> Concerning nested pid namespaces, IMHO I would not try to checkpoint /
-> restart them. The checkpoint of a nested pid namespace should be
-> forbidden except for the leaf of a pid namespaces tree. That should
-
-Others (me included) *will* try and may get upset if forbidden...
-Seriously, there is no technical reason to restrict this.
-
- >> Can you define more precisely what you mean by "enter" the container ?
->>
->> If you simply want create a new process in the container, you can
->> achieve the same thing with a daemon, or a smart init process (in
->> there), or even ptrace tricks.
-> 
-> Yes, you can launch a daemon inside the container, that works for a
-> system container because the container is killed by killing the first
-> process of the container or by a shutdown inside the container (not
-> fully implemented in the kernel).
-> But this is unreliable for application containers, I won't enter in the
-> details but the container exits when the application exits, with a
-> daemon inside the container, this is no longer the case because you can
-> not detect the application death as the daemon is always there.
-> 
-> With cloneat you restrict the life cycle of the command you launched,
-> that is the container exits as soon as all the processes exited the
-> container, including the spawned command itself.
-
-Then start a daemon _in addition_ to the application, or write a
-daemon that will launch the application and monitor it... And also
-there is ptrace -
-
-But, please let's take this off to a new thread about adding how to
-add a process into a namespace from the outside. FYI, I do think
-such an interface may be useful and nicer than the two alternatives
-I suggested above.
-
->> Also, there is a reason why sys_hijack() was hijacked away ... And
->> I honestly think that a syscall to force another process to clone
->> would be shot down by the kernel guys.
-> Maybe, maybe not. CLONE_PARENT exists and looks similar to cloneat.
-
-Actually, I misread previously; I mean not forcing another process
-to clone, but instead forcing another process to become a parent (and
-I shall ignore the ethical issues :)
-
-I still suspect it won't be welcome. Several people would have liked
-to see CLONE_PARENT go away, too, if that was possible without breaking
-userspace applications. Yet another reason to take it to a discussion
-of its own.
-
-Oren.
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
+--------------enig5AFD4289CAEBB63DCDBBFEB4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFK31cZQ3+did9BuFsRAlWeAJ93rbAD2D/9sgXqn7IkoKQndzDfEQCeMlEL
+Z4A+PxVoA1bD0gc2OvUqD/k=
+=yorf
+-----END PGP SIGNATURE-----
+
+--------------enig5AFD4289CAEBB63DCDBBFEB4--
