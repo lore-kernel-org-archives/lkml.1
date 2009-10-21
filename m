@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbZJUS1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbZJUSHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbZJUS1T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 14:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbZJUS1Q
+	id S1754685AbZJUSHl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 14:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbZJUSHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 14:27:16 -0400
-Received: from hofr.at ([212.69.189.236]:49888 "EHLO mail.hofr.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754719AbZJUS1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 14:27:14 -0400
-X-Greylist: delayed 612 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Oct 2009 14:27:14 EDT
-Date: Wed, 21 Oct 2009 20:17:05 +0200
-From: Nicholas Mc Guire <der.herr@hofr.at>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: David Daney <ddaney@caviumnetworks.com>,
-       Wu Zhangjin <wuzhangjin@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH -v4 9/9] tracing: add function graph tracer support for
-	MIPS
-Message-ID: <20091021181705.GA5218@opentech.at>
-References: <af3ec1b5cd06b6f6a461c9fa7d09a51fabccb08d.1256135456.git.wuzhangjin@gmail.com> <a6f2959a69b6a77dd32cc36a5c8202f97d524f1e.1256135456.git.wuzhangjin@gmail.com> <53bdfdd95ec4fa00d4cc505bb5972cf21243a14d.1256135456.git.wuzhangjin@gmail.com> <1256141540.18347.3118.camel@gandalf.stny.rr.com> <4ADF38D5.9060100@caviumnetworks.com> <1256143568.18347.3169.camel@gandalf.stny.rr.com> <4ADF3FE0.5090104@caviumnetworks.com> <1256145813.18347.3210.camel@gandalf.stny.rr.com> <4ADF4982.9010306@caviumnetworks.com> <1256148562.18347.3264.camel@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256148562.18347.3264.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 21 Oct 2009 14:07:40 -0400
+Received: from smtp.wp.pl ([212.77.101.1]:40490 "EHLO mx1.wp.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753991AbZJUSHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 14:07:40 -0400
+Date: Wed, 21 Oct 2009 20:25:04 +0200
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       jfs-discussion@lists.sourceforge.net
+Subject: Re: [Jfs-discussion] [PATCH] jfs: lockdep fix
+Message-Id: <20091021202504.0daf2be7.krzysztof.h1@wp.pl>
+In-Reply-To: <1256068823.3708.30.camel@norville.austin.ibm.com>
+References: <4ade05f0af05a2.00981454@wp.pl>
+	<1256068823.3708.30.camel@norville.austin.ibm.com>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
+X-WP-SPAM: NO 0000000 [MfO0]                               
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 20 Oct 2009 15:00:23 -0500
+Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
+> I proposed another fix here:
+> http://bugzilla.kernel.org/show_bug.cgi?id=13613
 > 
+> It seems I haven't followed up and submitted it to the vfs maintainer.
+> Could you please give that patch a try and see if it fixes the problem
+> for you?
 > 
-> We're not doing back traces. We need to modify the return of the
-> function being called. Note, the above functions that end with ";" are
-> leaf functions. Non leaf functions show "{" and end with "}".
-> 
-> The trick here is to find a reliable way to modify the return address.
->
-would it not more or less be the same thing if you used -finstrument-functions
-then and provide a stub __cyg_profile_func_enter/exit initialized to an empty
-function until you replace it during tracing. This does give you an overhead
-when you are not tracing - but it would make the tracer implementation quite
-generic.
 
-hofrat 
+Your patch fixes the previously reported (old) lockdep problem.  I am not able to trigger 
+the lockdep report while it takes a few minutes without the patch. 
+
+Tested-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+Your fix I have tested is below:
+
+VFS: Fix potential deadlock in __read_cache_page()
+
+lockdep reports a potential deadlock when using jfs because
+add_to_page_cache_lru() is called from __read_cache_page() with GFP_KERNEL.
+
+Detailed lockdep output can be found at
+http://bugzilla.kernel.org/show_bug.cgi?id=13613
+
+Passing mapping_gfp_mask(mapping) instead of GFP_KERNEL fixes the problem.
+
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+diff --git a/mm/filemap.c b/mm/filemap.c
+index ccea3b6..59f5406 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1702,7 +1702,8 @@ repeat:
+ 		page = page_cache_alloc_cold(mapping);
+ 		if (!page)
+ 			return ERR_PTR(-ENOMEM);
+-		err = add_to_page_cache_lru(page, mapping, index, GFP_KERNEL);
++		err = add_to_page_cache_lru(page, mapping, index,
++					    mapping_gfp_mask(mapping));
+ 		if (unlikely(err)) {
+ 			page_cache_release(page);
+ 			if (err == -EEXIST)
+
