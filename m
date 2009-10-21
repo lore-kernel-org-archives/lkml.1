@@ -1,102 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbZJUJdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbZJUJiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbZJUJdm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 05:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZJUJdl
+	id S1753270AbZJUJiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 05:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbZJUJiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 05:33:41 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34566 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753088AbZJUJdl (ORCPT
+	Wed, 21 Oct 2009 05:38:19 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:59529 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbZJUJiS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 05:33:41 -0400
-Date: Wed, 21 Oct 2009 11:33:38 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Arnd Bergmann <arndbergmann@googlemail.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
-       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
-       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>,
-       peterz@infradead.org, Louis.Rilling@kerlabs.com, roland@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, randy.dunlap@oracle.com,
-       linux-api@vger.kernel.org,
-       Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
-Subject: Re: [RFC][v8][PATCH 10/10]: Document clone3() syscall
-Message-ID: <20091021093338.GA11670@elf.ucw.cz>
-References: <20091013044925.GA28181@us.ibm.com>
- <20091013045556.GJ28435@us.ibm.com>
- <20091019213636.GB1482@ucw.cz>
- <200910211037.38413.arnd@arndb.de>
+	Wed, 21 Oct 2009 05:38:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Nuq9P4fn3VzG/jj4VFv+OPiVt525P9JvYuiFM9lHBgx6UQDVa0/r1wlUX6RX4003QX
+         tbyu/34bnEeOUjQwe8KchUVgNYJnkhpxIsmbFelaQeSWNcTU6zAuqL1hJHvPZTbTE8x4
+         vXZ6c/Uf8IAQ6U8gion2B9R632stAjZfJ8lok=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910211037.38413.arnd@arndb.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4ADCEE6D.6050008@agilent.com>
+References: <4AD8852E.2090302@agilent.com> <4ADCAC33.4070908@agilent.com>
+	 <4ADCDB9A.7050701@agilent.com> <4ADCEE6D.6050008@agilent.com>
+Date: Wed, 21 Oct 2009 17:38:22 +0800
+Message-ID: <2375c9f90910210238i744fec42gb4d9a1c5229696f0@mail.gmail.com>
+Subject: Re: [PATCH v4 1/1]: fs: pipe.c null pointer dereference + really sign 
+	off + unmangled diffs
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Earl Chew <earl_chew@agilent.com>
+Cc: linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-10-21 10:37:38, Arnd Bergmann wrote:
-> > 
-> > > +struct clone_struct {
-> > > +	u64 flags;
-> > > +	u64 child_stack;
-> > 
-> > u64 seems wrong  on 32 bit platforms. ulong?
-> 
-> That would make it incompatible between 64 bit kernels and
-> 32 bit user space, requiring a wrapper. Better leave it at u64.
+On Tue, Oct 20, 2009 at 6:55 AM, Earl Chew <earl_chew@agilent.com> wrote:
+> [ Exactly as before, but really sign off and tabs preserved ]
+>
+>
+> This patch fixes a null pointer exception in pipe_rdwr_open() which
+> generates the stack trace:
+>
+>
+>> Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
+>>  [<ffffffff802899a5>] pipe_rdwr_open+0x35/0x70
+>>  [<ffffffff8028125c>] __dentry_open+0x13c/0x230
+>>  [<ffffffff8028143d>] do_filp_open+0x2d/0x40
+>>  [<ffffffff802814aa>] do_sys_open+0x5a/0x100
+>>  [<ffffffff8021faf3>] sysenter_do_call+0x1b/0x67
+>
+>
+> The failure mode is triggered by an attempt to open an anonymous
+> pipe via /proc/pid/fd/* as exemplified by this script:
+>
+> =============================================================
+> #!/bin/sh
+> while : ; do
+>   { echo y ; sleep 1 ; } | { while read ; do echo z$REPLY; done ; } &
+>   PID=$!
+>   OUT=$(ps -efl | grep 'sleep 1' | grep -v grep |
+>        { read PID REST ; echo $PID; } )
+>   OUT="${OUT%% *}"
 
-Ok.
 
-> > > +	If a pid in the @pids list is 0, the kernel will assign the next
-> > > +	available pid in the pid namespace, for the process.
-> > > +
-> > > +	If a pid in the @pids list is non-zero, the kernel tries to assign
-> > > +	the specified pid in that namespace.  If that pid is already in use
-> > > +	by another process, the system call fails with -EBUSY.
-> > ...
-> > > +	On failure, clone3() returns -1 and sets 'errno' to one of following
-> > > +	values (the child process is not created).
-> > 
-> > Inconsistent with above. Syscalls really return -ERRCODE, errno is
-> > glibc magic.
-> 
-> Quite the opposite is true.
+Well, you can use 'pgrep', it will save you a lot here.
+Try: pgrep -f 'sleep 1' -n
 
-Well, it is still inconsistent. Half the docs talks -ERRCODE, half
-talks -1/errno=ERRCODE.
+>   DELAY=$((RANDOM * 1000 / 32768))
+>   usleep $((DELAY * 1000 + RANDOM % 1000 ))
+>   echo n > /proc/$OUT/fd/1                 # Trigger defect
+> done
+> =============================================================
+>
 
-> > > +	pid_t pids[] = { 77, 99 };
-> > > +	struct clone_struct cs;
-> > > +
-> > > +	cs.flags = (u64) SIGCHLD;
-> > > +	cs.child_stack = (u64) setup_child_stack();
-> > > +	cs.nr_pids = 2;
-> > > +	cs.parent_tid = 0LL;
-> > > +	cs.child_tid = 0LL;
-> > > +
-> > > +	rc = syscall(__NR_clone3, &cs, pids);
-> > 
-> > Hmm, is there reason why pids are not at the end of struct
-> > clone_struct? Passing most parameters in special structure, then pids
-> > separately is strange...
-> 
-> I suggested doing that, it's a lot easier to handle fixed length data
-> structures than an array at the end.
+This still has very little chance to trigger it, I am afraid.
+I tried on my machine, didn't get any oops.
 
-You could still put the something * pids at the end of (fixed length)
-structure.
+Trying to use C to write it may be better.
 
-(Not that I agree with the argument, pid array is variable-length,
-anyway, and inlining it at the end of structure should not make code
-more complex).
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Note that the failure window is quite small and I could only
+> reliably reproduce the defect by inserting a small delay
+> in pipe_rdwr_open(). For example:
+>
+>  static int
+>  pipe_rdwr_open(struct inode *inode, struct file *filp)
+>  {
+>       msleep(100);
+>       mutex_lock(&inode->i_mutex);
+>
+>
+> Although the defect was observed in pipe_rdwr_open(), I think it
+> makes sense to replicate the change through all the pipe_*_open()
+> functions.
+>
+> The core of the change is to verify that inode->i_pipe has not
+> been released before attempting to manipulate it. If inode->i_pipe
+> is no longer present, return ENOENT to indicate so.
+>
+> The comment about potentially using atomic_t for i_pipe->readers
+> and i_pipe->writers has also been removed because it is no longer
+> relevant in this context. The inode->i_mutex lock must be used so
+> that inode->i_pipe can be dealt with correctly.
+
+
+So, if I understand you correctly, you mean we have a small window
+between calling sys_open() and fifo_open(), during this little period,
+we don't have i_mutex held, thun another process have a chance
+to release that pipe and make i_pipe NULL. Right?
+
+Hmm, sounds reasonable. :-/
+
+I'd like you to put the explanations into the code, as comments.
+
+>
+>
+> Signed-off-by: Earl Chew <earl_chew@agilent.com>
+
+
+Add some Cc, fs-devel and Al.
+
+
+>
+>
+> --- linux-2.6.21_mvlcge500/fs/pipe.c.orig       2009-10-15 20:33:53.000000000 -0700
+> +++ linux-2.6.21_mvlcge500/fs/pipe.c    2009-10-15 21:21:25.000000000 -0700
+> @@ -712,36 +712,55 @@ pipe_rdwr_release(struct inode *inode, s
+>  static int
+>  pipe_read_open(struct inode *inode, struct file *filp)
+>  {
+> -       /* We could have perhaps used atomic_t, but this and friends
+> -          below are the only places.  So it doesn't seem worthwhile.  */
+> +       int ret = -ENOENT;
+> +
+>        mutex_lock(&inode->i_mutex);
+> -       inode->i_pipe->readers++;
+> +
+> +       if (inode->i_pipe) {
+> +               ret = 0;
+> +               inode->i_pipe->readers++;
+> +       }
+> +
+>        mutex_unlock(&inode->i_mutex);
+>
+> -       return 0;
+> +       return ret;
+>  }
+>
+>  static int
+>  pipe_write_open(struct inode *inode, struct file *filp)
+>  {
+> +       int ret = -ENOENT;
+> +
+>        mutex_lock(&inode->i_mutex);
+> -       inode->i_pipe->writers++;
+> +
+> +       if (inode->i_pipe) {
+> +               ret = 0;
+> +               inode->i_pipe->writers++;
+> +       }
+> +
+>        mutex_unlock(&inode->i_mutex);
+>
+> -       return 0;
+> +       return ret;
+>  }
+>
+>  static int
+>  pipe_rdwr_open(struct inode *inode, struct file *filp)
+>  {
+> +       int ret = -ENOENT;
+> +
+>        mutex_lock(&inode->i_mutex);
+> -       if (filp->f_mode & FMODE_READ)
+> -               inode->i_pipe->readers++;
+> -       if (filp->f_mode & FMODE_WRITE)
+> -               inode->i_pipe->writers++;
+> +
+> +       if (inode->i_pipe) {
+> +               ret = 0;
+> +               if (filp->f_mode & FMODE_READ)
+> +                       inode->i_pipe->readers++;
+> +               if (filp->f_mode & FMODE_WRITE)
+> +                       inode->i_pipe->writers++;
+> +       }
+> +
+>        mutex_unlock(&inode->i_mutex);
+>
+> -       return 0;
+> +       return ret;
+>  }
+>
+>  /*
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
