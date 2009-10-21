@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbZJUI30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbZJUIhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753229AbZJUI30 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 04:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZJUI3Z
+	id S1753245AbZJUIhm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 04:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbZJUIhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 04:29:25 -0400
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:57449 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751321AbZJUI3Z (ORCPT
+	Wed, 21 Oct 2009 04:37:41 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:14900 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753032AbZJUIhk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 04:29:25 -0400
+	Wed, 21 Oct 2009 04:37:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
          :mime-version:content-type:content-transfer-encoding:message-id;
-        b=phdMGLdtjWCEE/p5opXtXl4DJYxUbjFGyTAskTptcI/XsFK9dBVQlzb+lH+gSChTO3
-         LEoztUHBsVL7J0L61yv7zGdCpp1R2GjUyo9N0ie9Na8I5j0fCoX89brOPvgfu4A/hdqL
-         QSUpIc2i6ZMmhWV2FzjuF1elThcwYVImv4ghU=
+        b=wucbzWzzd5bMXghmGuRyr54UXmi2oNuXvwNzeIRsH8JT7QuKQJzPv1/BCWNaANTTWw
+         DzStgMXAKiRPtwGz4Wx6wdZTkFv1VpbEf3EFK4/FRvgzpp9pqNteEDCsPf4YbNIfrApC
+         IflH0uGBr1943JQXF7fwe8NiPd/9FsJxMZLNU=
 From: Arnd Bergmann <arndbergmann@googlemail.com>
-To: John Kacur <jkacur@redhat.com>
-Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
-Date: Wed, 21 Oct 2009 10:29:21 +0200
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][v8][PATCH 10/10]: Document clone3() syscall
+Date: Wed, 21 Oct 2009 10:37:38 +0200
 User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
-Cc: Arnd Bergmann <arndbergmann@googlemail.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mattia Dongili <malattia@linux.it>
-References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain> <200910200008.57468.arnd@arndb.de> <alpine.LFD.2.00.0910210157170.8674@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0910210157170.8674@localhost.localdomain>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>,
+       peterz@infradead.org, Louis.Rilling@kerlabs.com, roland@redhat.com,
+       kosaki.motohiro@jp.fujitsu.com, randy.dunlap@oracle.com,
+       linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
+References: <20091013044925.GA28181@us.ibm.com> <20091013045556.GJ28435@us.ibm.com> <20091019213636.GB1482@ucw.cz>
+In-Reply-To: <20091019213636.GB1482@ucw.cz>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910211029.21702.arnd@arndb.de>
+Message-Id: <200910211037.38413.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 October 2009, John Kacur wrote:
-> From 11e6a3b690413c3926e6db1c53a53410b5214c3d Mon Sep 17 00:00:00 2001
-> From: John Kacur <jkacur@redhat.com>
-> Date: Wed, 21 Oct 2009 01:51:41 +0200
-> Subject: [PATCH] sonypi: Use non-BKL version of llseek.
 > 
-> The default version of llseek uses the BKL.
-> We have removed the use of the BKL in open and the ioctl.
-> Now lets remove the last use of the BKL by explictly calling the
-> generic unlocked llseek, under the sonypi_device.lock mutex
+> > +struct clone_struct {
+> > +	u64 flags;
+> > +	u64 child_stack;
 > 
-> Signed-off-by: John Kacur <jkacur@redhat.com>
+> u64 seems wrong  on 32 bit platforms. ulong?
 
-Well, for this specific case, the driver does not actually need to seek,
-because the read function never looks at the position and there is no
-write function. For annotation purposes, IMHO we should have a simple
-'.llseek = no_llseek' in there.
+That would make it incompatible between 64 bit kernels and
+32 bit user space, requiring a wrapper. Better leave it at u64.
 
-In other files, the best solution may be to just point to generic_file_llseek
-and make sure we hold the i_mutex when accessing the file->f_pos explicitly.
+> > +	If a pid in the @pids list is 0, the kernel will assign the next
+> > +	available pid in the pid namespace, for the process.
+> > +
+> > +	If a pid in the @pids list is non-zero, the kernel tries to assign
+> > +	the specified pid in that namespace.  If that pid is already in use
+> > +	by another process, the system call fails with -EBUSY.
+> ...
+> > +	On failure, clone3() returns -1 and sets 'errno' to one of following
+> > +	values (the child process is not created).
+> 
+> Inconsistent with above. Syscalls really return -ERRCODE, errno is
+> glibc magic.
 
-Interestingly, atomicity of updates to f_pos is currently maintained through
-file_pos_write(), which does not hold any lock but assumes that a store to
-an loff_t is atomic. It is not atomic in general, so concurrent lseek and
-read/write operations seem to have undefined behaviour no matter what kind
-of locking we have in the llseek function.
+Quite the opposite is true.
+
+The man page describes what the user space sees, which is errno. Returning
+-ERRCODE to libc from the kernel is part of the architecture specific
+kernel ABI and should not be documented in this place but in the architecture
+documentation.
+
+> > +	pid_t pids[] = { 77, 99 };
+> > +	struct clone_struct cs;
+> > +
+> > +	cs.flags = (u64) SIGCHLD;
+> > +	cs.child_stack = (u64) setup_child_stack();
+> > +	cs.nr_pids = 2;
+> > +	cs.parent_tid = 0LL;
+> > +	cs.child_tid = 0LL;
+> > +
+> > +	rc = syscall(__NR_clone3, &cs, pids);
+> 
+> Hmm, is there reason why pids are not at the end of struct
+> clone_struct? Passing most parameters in special structure, then pids
+> separately is strange...
+
+I suggested doing that, it's a lot easier to handle fixed length data
+structures than an array at the end.
 
 	Arnd <><
