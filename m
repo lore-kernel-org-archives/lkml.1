@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZJUUl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753614AbZJUUn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbZJUUl7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 16:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbZJUUl6
+	id S1753614AbZJUUn7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 16:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbZJUUn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 16:41:58 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:37365 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754819AbZJUUl5 (ORCPT
+	Wed, 21 Oct 2009 16:43:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:37138 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbZJUUn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 16:41:57 -0400
-Date: Wed, 21 Oct 2009 22:41:58 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: Constantin Baranov <const@mimas.ru>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH] leds-alix2: add support for button connected to J15
-Message-ID: <20091021204158.GN14091@buzzloop.caiaq.de>
-References: <20091016130315.GT28832@buzzloop.caiaq.de>
- <20091018072738.GF3935@core.coreip.homeip.net>
- <20091019073728.GC28832@buzzloop.caiaq.de>
- <20091020013852.GC24370@core.coreip.homeip.net>
- <20091020101357.GR28832@buzzloop.caiaq.de>
- <20091021043553.GA378@core.coreip.homeip.net>
- <20091021193347.GL14091@buzzloop.caiaq.de>
- <20091022012121.5b35ff22.const@mimas.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091022012121.5b35ff22.const@mimas.ru>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 21 Oct 2009 16:43:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=q2fh5hKmAw8HMByGxKIceDV8z6KiZFlMslQSD47cRlKUPcDg9wu8tyG8i/GUulpty8
+         UvH62NX+f+TkjG7EATvd2+52K7HCExrYbRYU5w1R2ySTr4VWR7DjjePW+7QqpXlUeVLB
+         dDpPtqhnzfxL7osWDR4yPZNCG7EpeLcoGp/Bk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Greg Kroah-Hartman" <gregkh@suse.de>
+Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Wed, 21 Oct 2009 22:43:44 +0200
+Message-Id: <20091021204344.4593.99070.sendpatchset@localhost.localdomain>
+Subject: [PATCH 00/12] Staging: rt28x0 cleanups
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 01:21:21AM +0500, Constantin Baranov wrote:
-> I wonder why do you integrate the input driver into the leds driver. They
-> should be separated. Or at least the complex driver should be moved to the
-> "X86 Platform Specific Device Drivers" and renamed to some like "PC Engines
-> ALIX Extras". I personally would prefer the separation way.
 
-I would as well, yes. And I was of course considerating this when I
-hacked these lines. However, the major part of the LED driver and what
-it currently shares with the button implementation is the BIOS detection
-code which is so ugly that I didn't want to duplicate it ;) That would,
-however, be the only option if you wanted to split the drivers up. Or
-do you have any better idea?
+Cleanups for rt28x0 drivers (almost 8 KLOC gone) removing private
+driver parameters, ioctls, WEXT handlers and unused features..
 
-> Also ALIX.2 documentation describes the "Mode switch" driven by GPIO which is a
-> small button on front side of a board. I guessed your driver is not for this
-> button. If so, would it be better to provide the mode switch as KEY_PROG1 and
-> the J15 connected button as KEY_PROG2 at once?
+Tested with RT2860 and RT3070 (both still work for me :).
 
-Correct, the button this code is for is not the one on the 'front' side
-of the PCB. The other one I didn't try yet, but according the the
-CS5536A datasheet, the alternate function for that pin is WORK_AUX which
-can be used for power switching purposes. So that might need some extra
-care probably.
-
-However, if you can make any suggestion of how to split the code without
-copying more than half of the lines for that, I'd be happy with that as
-well, of course :)
-
-Daniel
+diffstat:
+ drivers/staging/rt2860/Makefile             |    2 
+ drivers/staging/rt2860/chip/rtmp_phy.h      |   36 
+ drivers/staging/rt2860/chips/rt30xx.c       |    2 
+ drivers/staging/rt2860/common/cmm_asic.c    |    6 
+ drivers/staging/rt2860/common/cmm_info.c    | 4039 +++++-----------------------
+ drivers/staging/rt2860/common/cmm_mac_pci.c |    7 
+ drivers/staging/rt2860/common/cmm_profile.c | 1779 ------------
+ drivers/staging/rt2860/common/crypt_hmac.c  |   85 
+ drivers/staging/rt2860/common/crypt_sha2.c  |  257 -
+ drivers/staging/rt2860/common/ee_efuse.c    | 1145 -------
+ drivers/staging/rt2860/common/ee_prom.c     |   48 
+ drivers/staging/rt2860/common/eeprom.c      |    6 
+ drivers/staging/rt2860/common/mlme.c        |    1 
+ drivers/staging/rt2860/common/rtmp_init.c   |   21 
+ drivers/staging/rt2860/common/rtmp_mcu.c    |    2 
+ drivers/staging/rt2860/crypt_hmac.h         |   11 
+ drivers/staging/rt2860/crypt_sha2.h         |   28 
+ drivers/staging/rt2860/eeprom.h             |   15 
+ drivers/staging/rt2860/oid.h                |   19 
+ drivers/staging/rt2860/pci_main_dev.c       |   35 
+ drivers/staging/rt2860/rt_config.h          |    8 
+ drivers/staging/rt2860/rt_linux.c           |   30 
+ drivers/staging/rt2860/rt_linux.h           |   10 
+ drivers/staging/rt2860/rt_main_dev.c        |    6 
+ drivers/staging/rt2860/rt_profile.c         |   95 
+ drivers/staging/rt2860/rtmp.h               |  300 --
+ drivers/staging/rt2860/rtmp_chip.h          |    4 
+ drivers/staging/rt2860/rtmp_def.h           |    9 
+ drivers/staging/rt2860/sta/connect.c        |    1 
+ drivers/staging/rt2860/sta_ioctl.c          | 1315 ---------
+ drivers/staging/rt2860/usb_main_dev.c       |    7 
+ drivers/staging/rt2870/Makefile             |    2 
+ drivers/staging/rt2870/common/rtusb_io.c    |   11 
+ 33 files changed, 819 insertions(+), 8523 deletions(-)
