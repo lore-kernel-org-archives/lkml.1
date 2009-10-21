@@ -1,116 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbZJUHNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbZJUGuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752411AbZJUHNB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 03:13:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbZJUHNB
+	id S1752751AbZJUGuj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 02:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZJUGui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 03:13:01 -0400
-Received: from smtp240.poczta.interia.pl ([217.74.64.240]:42848 "EHLO
-	smtp240.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbZJUHNA convert rfc822-to-8bit (ORCPT
+	Wed, 21 Oct 2009 02:50:38 -0400
+Received: from icebox.esperi.org.uk ([81.187.191.129]:56883 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752411AbZJUGui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 03:13:00 -0400
-X-Greylist: delayed 1363 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Oct 2009 03:13:00 EDT
-Date: 21 Oct 2009 08:50:18 +0200
-From: krzysztof.h1@poczta.fm
-Subject: =?UTF-8?q?Re:_[Linux-fbdev-devel]_[PATCH]_fbdev:_Wrong_test_on_unsigned_in_fb=5Fset=5Fuser=5Fcmap()=3F?=
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
+	Wed, 21 Oct 2009 02:50:38 -0400
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] Allow renaming of network interfaces that are up.
+References: <87zl7rp1jy.fsf@spindle.srvr.nix> <1255723078.14249.16.camel@calx>
+	<87k4yup9bd.fsf@spindle.srvr.nix> <87vdi9ew1h.fsf_-_@spindle.srvr.nix>
+	<20091021103846.2f985ea1@s6510>
+From: Nix <nix@esperi.org.uk>
+Emacs: the definitive fritterware.
+Date: Wed, 21 Oct 2009 07:50:30 +0100
+In-Reply-To: <20091021103846.2f985ea1@s6510> (Stephen Hemminger's message of "Wed, 21 Oct 2009 10:38:46 +0900")
+Message-ID: <874optb5qh.fsf@spindle.srvr.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b29 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-ORIGINATE-IP: 83.17.101.58
-X-PRIORITY: 3
-X-Mailer: PSE3
-Message-Id: <20091021065018.7625046CCF3@f46.poczta.interia.pl>
-X-EMID: 25540acc
+Content-Type: text/plain; charset=us-ascii
+X-DCC-URT-Metrics: spindle 1060; Body=4 Fuz1=4 Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Cc:s adjusted, thanks davem]
 
+On 21 Oct 2009, Stephen Hemminger said:
 
-"Roel Kluin" <roel.kluin@gmail.com> pisze:
-> struct fb_cmap_user member start is unsigned.
+> On Tue, 20 Oct 2009 19:54:02 +0100
+> Nix <nix@esperi.org.uk> wrote:
+[...]
+>> This makes it much easier to use things like netconsole which bring up a
+>> network interface before userspace has started: presently these will cause
+>> interface renamings to fail, breaking any userspace that relies on renaming
+>> devices to avoid reliance on the potentially-unstable kernel-assigned name.
+[...]
+> This breaks quagga and other applications that track renames.
 
-> 
+So it's only userspace that's the problem? We have a choice of breaking
+apps that assume that only downed interfaces can be renamed, and thus
+breaking routing while the system is running, or breaking userspaces
+that assume that they can rename interfaces, and thus breaking routing
+at bootup when netconsole is on? Great :/
 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-
-> ---
-
-> Is this required?
-
-> 
-
-
-Drop the whole if() as exactly the same condition is checked in the fb_set_cmap() again. Anyway, the check of the cmap->start < 0 does not make any sense as the start is u32 value (most userspace addresses will be lower then 2GB on 32 bit system so the error cannot be caught by the check). I vote for removing the (cmap->start < 0) in the fb_set_cmap as well as most drivers check the start value already in driver's fb_setcolreg() function.
-
-Best regards,
-Krzysztof
-
-
-> diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
-
-> index f53b9f1..f46f05f 100644
-
-> --- a/drivers/video/fbcmap.c
-
-> +++ b/drivers/video/fbcmap.c
-
-> @@ -266,7 +266,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct
-> fb_info *info)
-
->  		rc = -ENODEV;
-
->  		goto out;
-
->  	}
-
-> -	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
-
-> +	if ((int)cmap->start < 0 || (!info->fbops->fb_setcolreg &&
-
->  				!info->fbops->fb_setcmap)) {
-
->  		rc = -EINVAL;
-
->  		goto out1;
-
-> 
-
-> ------------------------------------------------------------------------------
-
-> Come build with us! The BlackBerry(R) Developer Conference in SF, CA
-
-> is the only developer event you need to attend this year. Jumpstart your
-
-> developing skills, take BlackBerry mobile applications to market and stay
-> 
-
-> ahead of the curve. Join us from November 9 - 12, 2009. Register now!
-
-> http://p.sf.net/sfu/devconference
-
-> _______________________________________________
-
-> Linux-fbdev-devel mailing list
-
-> Linux-fbdev-devel@lists.sourceforge.net
-
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
-> 
-> 
-
-
-
-
-
-
-----------------------------------------------------------------------
-Zobacz najwiekszy samolot na swiecie!  
-Kliknij >>> http://link.interia.pl/f238f
-
+(How many systems run things that track renames? Is this, ew, a reason
+to make this constraint configurable, maybe even at runtime, so you
+could start with interfaces renameable and then lock them down once
+static route assignment is up, just before you fire up quagga?)
