@@ -1,114 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbZJUT1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932205AbZJUTaD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755270AbZJUT1s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbZJUT1r
+	id S932205AbZJUTaD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:30:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbZJUTaC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:27:47 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:55680 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755169AbZJUT1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 15:27:45 -0400
-Subject: Re: request_module vs. modprobe blacklist (and security subsystem 
- implications)
-From: Eric Paris <eparis@redhat.com>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, arjan@infradead.org, randy.dunlap@oracle.com,
-       rusty@rustcorp.com.au, andi@firstfloor.org, dhowells@redhat.com,
-       akpm@linux-foundation.org
-In-Reply-To: <9b2b86520910211211o30fab495r3a43cc4de9d4e968@mail.gmail.com>
-References: <1256137348.4443.39.camel@dhcp231-106.rdu.redhat.com>
-	 <9b2b86520910211211o30fab495r3a43cc4de9d4e968@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 21 Oct 2009 15:27:28 -0400
-Message-Id: <1256153248.4443.49.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Oct 2009 15:30:02 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:24747 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932147AbZJUT37 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 15:29:59 -0400
+Date: Wed, 21 Oct 2009 13:30:02 -0600
+From: Alex Chiang <achiang@hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] mm: add numa node symlink for cpu devices in sysfs
+Message-ID: <20091021193002.GI14102@ldl.fc.hp.com>
+References: <20091019212740.32729.7171.stgit@bob.kio> <20091019213430.32729.78995.stgit@bob.kio> <alpine.DEB.1.00.0910192016010.25264@chino.kir.corp.google.com> <20091020204136.GB23675@ldl.fc.hp.com> <alpine.DEB.1.00.0910201407190.27248@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.DEB.1.00.0910201407190.27248@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-21 at 20:11 +0100, Alan Jenkins wrote:
-> On 10/21/09, Eric Paris <eparis@redhat.com> wrote:
-> > I recently added a new LSM hook into __request_module(),
-> > security_kernel_module_request().  This new hook checks if a process
-> > should have permission to trigger the loading of a kernel module.  The
-> > attack vector imagined was that some module (IPX for example) has a
-> > vulnerability.  An attack program (which doesn't have permission to load
-> > the IPX module directly) might be able to get the networking stack to
-> > try to autoload the module.  Once loaded the attack program could then
-> > use the larger surface area to exploit the kernel.
-> >
-> > We have found that many users disable the IPv6 module by setting their
-> > modprobe config to look like:
-> >
-> > blacklist ipv6
-> > install ipv6 /bin/true
-> >
-> > The problem is that a number of programs (sendmail, procmail, sshd, and
-> > more) have all been seen to do operations which tried to load the ipv6
-> > module.  These get into request_module(), hit the security hook, and are
-> > obviously denied since the security system doesn't see a need for those
-> > programs to be able to request a module be loaded.
-> >
-> > What I really want is a way for the kernel to know that a module has
-> > been disabled and to not even call the security hook.  My thought would
-> > be something like adding the ability to do
-> >
-> > echo "ipv6 -l" > /proc/sys/kernel/modules_disabled
-> >
-> > which would add "ipv6" to a list of strings.  This list of strings could
-> > be checked in request_module() and if the module was explicitly denied
-> > autoloading ability we wouldn't make the call out to userspace (or the
-> > security hook)
-> >
-> > echo "ipv6 +l" > /proc/sys/kernel/modules_disabled
-> >
-> > would reenable the ability of a module to be autoloaded.
-> >
-> > cat /proc/sys/kernel/modules_disabled
-> >
-> > would be a multiline output, first line would be the 0/1 state we know
-> > today, rest of the lines would be the list of modules being denied
-> > autoload.
-> >
-> > What do others think?  What's a better way to stop calling out to
-> > userspace looking for the ipv6 module when userspace knows it's
-> > disabled?
-> >
-> > -Eric
+* David Rientjes <rientjes@google.com>:
+> On Tue, 20 Oct 2009, Alex Chiang wrote:
+> > * David Rientjes <rientjes@google.com>:
+> > > The return values of register_cpu_under_node() and 
+> > > unregister_cpu_under_node() are always ignored, so it would probably be 
+> > > best to convert these to be void functions.  That doesn't mean you can 
+> > > simply ignore the result of the first sysfs_create_link(), though: the 
+> > > second should probably be suppressed if the first returns an error.
+> > 
+> > I didn't want to change too much in the patch. Changing the
+> > function signature seems a bit overeager, but if you have strong
+> > feelings, I can do so.
 > 
-> You don't explain why :-/.  All I can see is that you want to correct
-> the error code from "permission denied" to "not supported".  But
-> "permission denied" can often cover a variety of issues, no?
-> 
-> I don't see why a module blacklist implemented by extending
-> modules_disabled should return anything other than "permission
-> denied".  If you disable modules completely, don't you get "permission
-> denied"?
-> 
-> And what would be the difference between "permission denied, you do
-> not have the right to load IPX", and "ipv6 is not supported due to a
-> policy decision by the system administrator"?  I'd have thought
-> "permission denied" would suffice for either.
-> 
-> I'm sure I'm missing something important here :-)
+> It's entirely up to you if you want to change them to be void.  I thought 
+> it would be cleaner if the first patch in the series would convert them to 
+> void on the basis that the return value is never actually used and then 
+> the following patches simply return on error conditions.
 
-Ah yes, not your fault though  :)  The problem is that SELinux reports
-these denials and users get scared.  We can (and now do) silence all of
-these SELinux caused denials, but now we have no notification if a
-malicious program tried to cause the auto loading of a module.  What we
-want is a way to inform users when their system is doing bad things,
-like trying to load the IPX module, but not to cause these notifications
-when SELinux is denying something that would have been effectively
-"denied" by modprobe later when it called /bin/true instead of loading
-the IPv6 module.
+I made the conversion as you suggested, but discovered under
+sparse that:
 
-Basically I don't want to log a denial and put up a warning in front of
-a user when the system administrator explicitly told modprobe to fail on
-those.
+	drivers/base/node.c: In function ‘register_cpu_under_node’:
+	drivers/base/node.c:245: warning: ignoring return value of
+	‘sysfs_create_link’, declared with attribute warn_unused_result
 
-Make a little more sense?  I honestly don't care what the retval is, I
-just care that I'm able to put up an SELinux message saying we stopped
-something bad while not putting up lots of false positives...
+I wasn't very happy with the result after doing something with
+the return value of sysfs_create_link to make sparse shutup.
+Seemed unnatural and very much had the feeling of jumping through
+hoops just to make an automated tool be quiet.
+
+So, I'll just leave [un]register_cpu_under_node() as returning
+int. It not only makes the patch feel better, but if we do ever
+want to decide to unroll due to an error in sysfs_create_link,
+we'll have the information available at the callsites.
+
+Thanks.
+/ac
 
