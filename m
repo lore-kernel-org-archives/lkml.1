@@ -1,213 +1,948 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbZJUTdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZJUTeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754911AbZJUTdt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbZJUTdt
+	id S1755236AbZJUTeX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbZJUTeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:33:49 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:39596 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330AbZJUTdr (ORCPT
+	Wed, 21 Oct 2009 15:34:22 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37637 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754819AbZJUTeS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 15:33:47 -0400
-Date: Wed, 21 Oct 2009 21:33:47 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, Constantin Baranov <const@mimas.ru>
-Subject: Re: [PATCH] leds-alix2: add support for button connected to J15
-Message-ID: <20091021193347.GL14091@buzzloop.caiaq.de>
-References: <20091016130315.GT28832@buzzloop.caiaq.de>
- <20091018072738.GF3935@core.coreip.homeip.net>
- <20091019073728.GC28832@buzzloop.caiaq.de>
- <20091020013852.GC24370@core.coreip.homeip.net>
- <20091020101357.GR28832@buzzloop.caiaq.de>
- <20091021043553.GA378@core.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091021043553.GA378@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 21 Oct 2009 15:34:18 -0400
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
+Subject: [PATCH 1/1] perf tools: Unify debug messages mechanisms
+Date: Wed, 21 Oct 2009 17:34:06 -0200
+Message-Id: <1256153646-10097-1-git-send-email-acme@redhat.com>
+X-Mailer: git-send-email 1.6.2.5
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
+We were using eprintf in some places, that looks at a global 'verbose'
+level, and at other places passing a 'v' parameter to specify the
+verbosity level, unify it by introducing pr_{err,warning,debug,etc},
+just like in the kernel.
 
-On Tue, Oct 20, 2009 at 09:35:53PM -0700, Dmitry Torokhov wrote:
-> On Tue, Oct 20, 2009 at 12:13:57PM +0200, Daniel Mack wrote:
-> > +
-> > +	ret = input_register_polled_device(ipdev);
-> > +	
-> > +	if (ret) {
-> > +		input_free_polled_device(ipdev);
-> > +		ipdev = NULL;
-> > +	}
-> > +
-> > +	return ret;
-> > +}
-> 
-> Ah, don't be lazy ;)
-
-Ok ok, you're right, let's do it the clean way. Agreed :)
-
-See the one below.
-
-Thanks!
-
-Daniel
-
-
->From 66953e5dda7bbbc22b92541ed3a6020773c62140 Mon Sep 17 00:00:00 2001
-From: Daniel Mack <daniel@caiaq.de>
-Date: Tue, 13 Oct 2009 12:42:52 +0800
-Subject: [PATCH] leds-alix2: add support for button connected to J15
-
-The ALIX2 boards have one GPIO pin which is reachable at connector J15.
-One possible application for this feature is to connect a button which
-closes the two pins.
-
-This patch adds support to query these button and export its state via
-an input device.
-
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-input@vger.kernel.org
-Cc: Constantin Baranov <const@mimas.ru>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- drivers/leds/Kconfig      |   14 +++++++++
- drivers/leds/leds-alix2.c |   71 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 85 insertions(+), 0 deletions(-)
+ tools/perf/builtin-annotate.c          |    3 +-
+ tools/perf/builtin-probe.c             |   20 +++---
+ tools/perf/builtin-record.c            |    2 +-
+ tools/perf/builtin-report.c            |    9 +-
+ tools/perf/builtin-sched.c             |    4 +-
+ tools/perf/builtin-timechart.c         |   13 ++--
+ tools/perf/builtin-top.c               |    2 +-
+ tools/perf/builtin-trace.c             |    4 +-
+ tools/perf/util/callchain.c            |    2 +-
+ tools/perf/util/debug.c                |    4 +-
+ tools/perf/util/debug.h                |    3 +-
+ tools/perf/util/event.h                |    3 +-
+ tools/perf/util/header.c               |    2 +-
+ tools/perf/util/include/linux/kernel.h |   17 ++++
+ tools/perf/util/map.c                  |   17 ++--
+ tools/perf/util/probe-finder.c         |   12 ++--
+ tools/perf/util/symbol.c               |  134 ++++++++++++++------------------
+ tools/perf/util/symbol.h               |    5 +-
+ tools/perf/util/thread.c               |    6 +-
+ 19 files changed, 130 insertions(+), 132 deletions(-)
 
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index e4f599f..2faba0a 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -77,6 +77,20 @@ config LEDS_ALIX2
- 	  This option enables support for the PCEngines ALIX.2 and ALIX.3 LEDs.
- 	  You have to set leds-alix2.force=1 for boards with Award BIOS.
- 
-+config LEDS_ALIX2_BUTTON
-+	bool "Input device support for button on ALIX boards"
-+	depends on LEDS_ALIX2 && INPUT
-+	select INPUT_POLLDEV
-+	help
-+	  This option enables support for a button connected to J15 of ALIX
-+	  boards.
-+	  
-+	  Note that for this feature to work, there is need for a minor
-+	  modification to the hardware: R1 needs to be removed, and R4 needs
-+	  to be placed as 100 KOhms pull-up.
-+	  
-+	  Only select that option if you modified your ALIX board like this.
-+
- config LEDS_H1940
- 	tristate "LED Support for iPAQ H1940 device"
- 	depends on LEDS_CLASS && ARCH_H1940
-diff --git a/drivers/leds/leds-alix2.c b/drivers/leds/leds-alix2.c
-index f59ffad..c981edf 100644
---- a/drivers/leds/leds-alix2.c
-+++ b/drivers/leds/leds-alix2.c
-@@ -12,6 +12,7 @@
- #include <linux/platform_device.h>
- #include <linux/string.h>
- #include <linux/pci.h>
-+#include <linux/input-polldev.h>
- 
- static int force = 0;
- module_param(force, bool, 0444);
-@@ -78,6 +79,68 @@ static struct alix_led alix_leds[] = {
- 	},
- };
- 
-+#ifdef CONFIG_LEDS_ALIX2_BUTTON
-+
-+#define POLL_INTERVAL_DEFAULT 250
-+static struct input_polled_dev *ipdev;
-+
-+static void alix_button_poll(struct input_polled_dev *ipdev)
-+{
-+	unsigned int val = !(inl(gpio_base + 0x30) & (1 << 1));
-+
-+	input_report_key(ipdev->input, KEY_PROG1, val);
-+	input_sync(ipdev->input);
-+}
-+
-+static int alix_button_register(void)
-+{
-+	int ret;
-+
-+	/* enable button input */
-+	outl(1 << 1, gpio_base + 0x20);
-+
-+	/* enable pullup on input pin */
-+	outl(1 << 1, gpio_base + 0x18);
-+
-+	ipdev = input_allocate_polled_device();
-+	if (!ipdev)
-+		return -ENOMEM;
-+
-+	ipdev->poll = alix_button_poll;
-+	ipdev->poll_interval = POLL_INTERVAL_DEFAULT;
-+	ipdev->input->name = "ALIX2 button";
-+	ipdev->input->phys = "alix2/input0";
-+	ipdev->input->id.bustype = BUS_HOST;
-+
-+	set_bit(EV_KEY, ipdev->input->evbit);
-+	ipdev->input->keybit[BIT_WORD(KEY_PROG1)] = BIT_MASK(KEY_PROG1);
-+
-+	ret = input_register_polled_device(ipdev);
-+
-+	if (ret) {
-+		input_free_polled_device(ipdev);
-+		ipdev = NULL;
-+	}
-+
-+	return ret;
-+}
-+
-+static void alix_button_unregister(void)
-+{
-+	if (!ipdev)
-+		return;
-+
-+	input_unregister_polled_device(ipdev);
-+	/* Yes, polled devices need to be freed */
-+	input_free_polled_device(ipdev);
-+	ipdev = NULL;
-+}
-+
-+#else
-+static inline int alix_button_register(void) { return 0; }
-+static inline void alix_button_unregister(void) { }
-+#endif
-+
- static int __init alix_led_probe(struct platform_device *pdev)
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 99bac6a..6d63c2e 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -203,8 +203,7 @@ static int
+ process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
  {
- 	int i;
-@@ -89,6 +152,11 @@ static int __init alix_led_probe(struct platform_device *pdev)
- 		if (ret < 0)
- 			goto fail;
+ 	struct map *map = map__new(&event->mmap, NULL, 0,
+-				   sizeof(struct sym_priv), symbol_filter,
+-				   verbose);
++				   sizeof(struct sym_priv), symbol_filter);
+ 	struct thread *thread = threads__findnew(event->mmap.pid);
+ 
+ 	dump_printf("%p [%p]: PERF_RECORD_MMAP %d: [%p(%p) @ %p]: %s\n",
+diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
+index b5ad86a..dcb406c 100644
+--- a/tools/perf/builtin-probe.c
++++ b/tools/perf/builtin-probe.c
+@@ -78,7 +78,7 @@ static int parse_probepoint(const struct option *opt __used,
+ 	if (!str)	/* The end of probe points */
+ 		return 0;
+ 
+-	eprintf("probe-definition(%d): %s\n", session.nr_probe, str);
++	pr_debug("probe-definition(%d): %s\n", session.nr_probe, str);
+ 	if (++session.nr_probe == MAX_PROBES)
+ 		semantic_error("Too many probes");
+ 
+@@ -103,7 +103,7 @@ static int parse_probepoint(const struct option *opt __used,
+ 				die("strndup");
+ 			if (++argc == MAX_PROBE_ARGS)
+ 				semantic_error("Too many arguments");
+-			eprintf("argv[%d]=%s\n", argc, argv[argc - 1]);
++			pr_debug("argv[%d]=%s\n", argc, argv[argc - 1]);
+ 		}
+ 	} while (*str != '\0');
+ 	if (argc < 2)
+@@ -133,7 +133,7 @@ static int parse_probepoint(const struct option *opt __used,
+ 		pp->line = atoi(ptr);
+ 		if (!pp->file || !pp->line)
+ 			semantic_error("Failed to parse line.");
+-		eprintf("file:%s line:%d\n", pp->file, pp->line);
++		pr_debug("file:%s line:%d\n", pp->file, pp->line);
+ 	} else {
+ 		/* Function name */
+ 		ptr = strchr(arg, '+');
+@@ -150,8 +150,8 @@ static int parse_probepoint(const struct option *opt __used,
+ 			pp->file = strdup(ptr);
+ 		}
+ 		pp->function = strdup(arg);
+-		eprintf("symbol:%s file:%s offset:%d\n",
+-		      pp->function, pp->file, pp->offset);
++		pr_debug("symbol:%s file:%s offset:%d\n",
++			 pp->function, pp->file, pp->offset);
  	}
-+
-+	ret = alix_button_register();
-+	if (ret)
-+		goto fail;
-+
- 	return 0;
+ 	free(argv[1]);
+ 	if (pp->file)
+@@ -175,7 +175,7 @@ static int parse_probepoint(const struct option *opt __used,
+ 			session.need_dwarf = 1;
+ 		}
  
- fail:
-@@ -103,6 +171,9 @@ static int alix_led_remove(struct platform_device *pdev)
- 
- 	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
- 		led_classdev_unregister(&alix_leds[i].cdev);
-+
-+	alix_button_unregister();
-+
+-	eprintf("%d arguments\n", pp->nr_args);
++	pr_debug("%d arguments\n", pp->nr_args);
  	return 0;
  }
  
+@@ -188,7 +188,7 @@ static int open_default_vmlinux(void)
+ 
+ 	ret = uname(&uts);
+ 	if (ret) {
+-		eprintf("uname() failed.\n");
++		pr_debug("uname() failed.\n");
+ 		return -errno;
+ 	}
+ 	session.release = uts.release;
+@@ -196,12 +196,12 @@ static int open_default_vmlinux(void)
+ 		ret = snprintf(fname, MAX_PATH_LEN,
+ 			       default_search_path[i], session.release);
+ 		if (ret >= MAX_PATH_LEN || ret < 0) {
+-			eprintf("Filename(%d,%s) is too long.\n", i,
++			pr_debug("Filename(%d,%s) is too long.\n", i,
+ 				uts.release);
+ 			errno = E2BIG;
+ 			return -E2BIG;
+ 		}
+-		eprintf("try to open %s\n", fname);
++		pr_debug("try to open %s\n", fname);
+ 		fd = open(fname, O_RDONLY);
+ 		if (fd >= 0)
+ 			break;
+@@ -341,7 +341,7 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
+ 		ret = find_probepoint(fd, pp);
+ 		if (ret <= 0)
+ 			die("No probe point found.\n");
+-		eprintf("probe event %s found\n", session.events[j]);
++		pr_debug("probe event %s found\n", session.events[j]);
+ 	}
+ 	close(fd);
+ 
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index f0467ff..ac5ddff 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -630,7 +630,7 @@ static int __cmd_record(int argc, const char **argv)
+ 
+ 		param.sched_priority = realtime_prio;
+ 		if (sched_setscheduler(0, SCHED_FIFO, &param)) {
+-			printf("Could not set realtime priority.\n");
++			pr_err("Could not set realtime priority.\n");
+ 			exit(-1);
+ 		}
+ 	}
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index bee207c..4150f9e 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -619,7 +619,8 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 		dump_printf("... chain: nr:%Lu\n", chain->nr);
+ 
+ 		if (validate_chain(chain, event) < 0) {
+-			eprintf("call-chain problem with event, skipping it.\n");
++			pr_debug("call-chain problem with event, "
++				 "skipping it.\n");
+ 			return 0;
+ 		}
+ 
+@@ -630,7 +631,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 	}
+ 
+ 	if (thread == NULL) {
+-		eprintf("problem processing %d event, skipping it.\n",
++		pr_debug("problem processing %d event, skipping it.\n",
+ 			event->header.type);
+ 		return -1;
+ 	}
+@@ -668,7 +669,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 
+ 	if (hist_entry__add(thread, map, sym, ip,
+ 			    chain, level, period)) {
+-		eprintf("problem incrementing symbol count, skipping event\n");
++		pr_debug("problem incrementing symbol count, skipping event\n");
+ 		return -1;
+ 	}
+ 
+@@ -680,7 +681,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ static int
+ process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	struct map *map = map__new(&event->mmap, cwd, cwdlen, 0, NULL, verbose);
++	struct map *map = map__new(&event->mmap, cwd, cwdlen, 0, NULL);
+ 	struct thread *thread = threads__findnew(event->mmap.pid);
+ 
+ 	dump_printf("%p [%p]: PERF_RECORD_MMAP %d/%d: [%p(%p) @ %p]: %s\n",
+diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
+index 807ca66..9a48d96 100644
+--- a/tools/perf/builtin-sched.c
++++ b/tools/perf/builtin-sched.c
+@@ -1666,8 +1666,8 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 		(long long)period);
+ 
+ 	if (thread == NULL) {
+-		eprintf("problem processing %d event, skipping it.\n",
+-			event->header.type);
++		pr_debug("problem processing %d event, skipping it.\n",
++			 event->header.type);
+ 		return -1;
+ 	}
+ 
+diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
+index 34fad57..0a2f222 100644
+--- a/tools/perf/builtin-timechart.c
++++ b/tools/perf/builtin-timechart.c
+@@ -1162,12 +1162,10 @@ more:
+ 	size = event->header.size;
+ 
+ 	if (!size || process_event(event) < 0) {
+-
+-		printf("%p [%p]: skipping unknown header type: %d\n",
+-			(void *)(offset + head),
+-			(void *)(long)(event->header.size),
+-			event->header.type);
+-
++		pr_warning("%p [%p]: skipping unknown header type: %d\n",
++			   (void *)(offset + head),
++			   (void *)(long)(event->header.size),
++			   event->header.type);
+ 		/*
+ 		 * assume we lost track of the stream, check alignment, and
+ 		 * increment a single u64 in the hope to catch on again 'soon'.
+@@ -1200,7 +1198,8 @@ done:
+ 
+ 	write_svg_file(output_name);
+ 
+-	printf("Written %2.1f seconds of trace to %s.\n", (last_time - first_time) / 1000000000.0, output_name);
++	pr_info("Written %2.1f seconds of trace to %s.\n",
++		(last_time - first_time) / 1000000000.0, output_name);
+ 
+ 	return rc;
+ }
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index fa20345..4a9fe22 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -809,7 +809,7 @@ static int symbol_filter(struct map *map, struct symbol *sym)
+ static int parse_symbols(void)
+ {
+ 	if (dsos__load_kernel(vmlinux_name, sizeof(struct sym_entry),
+-			      symbol_filter, verbose, 1) <= 0)
++			      symbol_filter, 1) <= 0)
+ 		return -1;
+ 
+ 	if (dump_symtab)
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+index 4c129ff..e566bbe 100644
+--- a/tools/perf/builtin-trace.c
++++ b/tools/perf/builtin-trace.c
+@@ -81,8 +81,8 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 		(long long)period);
+ 
+ 	if (thread == NULL) {
+-		eprintf("problem processing %d event, skipping it.\n",
+-			event->header.type);
++		pr_debug("problem processing %d event, skipping it.\n",
++			 event->header.type);
+ 		return -1;
+ 	}
+ 
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+index 3b8380f..b3b7125 100644
+--- a/tools/perf/util/callchain.c
++++ b/tools/perf/util/callchain.c
+@@ -206,7 +206,7 @@ fill_node(struct callchain_node *node, struct ip_callchain *chain,
+ 	}
+ 	node->val_nr = chain->nr - start;
+ 	if (!node->val_nr)
+-		printf("Warning: empty node in callchain tree\n");
++		pr_warning("Warning: empty node in callchain tree\n");
+ }
+ 
+ static void
+diff --git a/tools/perf/util/debug.c b/tools/perf/util/debug.c
+index e8ca98f..28d520d 100644
+--- a/tools/perf/util/debug.c
++++ b/tools/perf/util/debug.c
+@@ -13,12 +13,12 @@
+ int verbose = 0;
+ int dump_trace = 0;
+ 
+-int eprintf(const char *fmt, ...)
++int eprintf(int level, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	int ret = 0;
+ 
+-	if (verbose) {
++	if (verbose >= level) {
+ 		va_start(args, fmt);
+ 		ret = vfprintf(stderr, fmt, args);
+ 		va_end(args);
+diff --git a/tools/perf/util/debug.h b/tools/perf/util/debug.h
+index 02d1fa1..e8b18a1 100644
+--- a/tools/perf/util/debug.h
++++ b/tools/perf/util/debug.h
+@@ -5,7 +5,8 @@
+ extern int verbose;
+ extern int dump_trace;
+ 
+-int eprintf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
++int eprintf(int level,
++	    const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+ int dump_printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+ void trace_event(event_t *event);
+ 
+diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
+index db59c8b..d972b4b 100644
+--- a/tools/perf/util/event.h
++++ b/tools/perf/util/event.h
+@@ -106,8 +106,7 @@ struct symbol;
+ typedef int (*symbol_filter_t)(struct map *map, struct symbol *sym);
+ 
+ struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen,
+-		     unsigned int sym_priv_size, symbol_filter_t filter,
+-		     int v);
++		     unsigned int sym_priv_size, symbol_filter_t filter);
+ struct map *map__clone(struct map *self);
+ int map__overlap(struct map *l, struct map *r);
+ size_t map__fprintf(struct map *self, FILE *fp);
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index 622c60e..7d26659 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -93,7 +93,7 @@ static struct perf_trace_event_type *events;
+ void perf_header__push_event(u64 id, const char *name)
+ {
+ 	if (strlen(name) > MAX_EVENT_NAME)
+-		printf("Event %s will be truncated\n", name);
++		pr_warning("Event %s will be truncated\n", name);
+ 
+ 	if (!events) {
+ 		events = malloc(sizeof(struct perf_trace_event_type));
+diff --git a/tools/perf/util/include/linux/kernel.h b/tools/perf/util/include/linux/kernel.h
+index 4b9204d..21c0274 100644
+--- a/tools/perf/util/include/linux/kernel.h
++++ b/tools/perf/util/include/linux/kernel.h
+@@ -85,4 +85,21 @@ simple_strtoul(const char *nptr, char **endptr, int base)
+ 	return strtoul(nptr, endptr, base);
+ }
+ 
++#ifndef pr_fmt
++#define pr_fmt(fmt) fmt
++#endif
++
++#define pr_err(fmt, ...) \
++	do { fprintf(stderr, pr_fmt(fmt), ##__VA_ARGS__); } while (0)
++#define pr_warning(fmt, ...) \
++	do { fprintf(stderr, pr_fmt(fmt), ##__VA_ARGS__); } while (0)
++#define pr_info(fmt, ...) \
++	do { fprintf(stderr, pr_fmt(fmt), ##__VA_ARGS__); } while (0)
++#define pr_debug(fmt, ...) \
++	eprintf(1, pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_debugN(n, fmt, ...) \
++	eprintf(n, pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_debug2(fmt, ...) pr_debugN(2, pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_debug3(fmt, ...) pr_debugN(3, pr_fmt(fmt), ##__VA_ARGS__)
++
+ #endif
+diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
+index 55079c0..c1c5568 100644
+--- a/tools/perf/util/map.c
++++ b/tools/perf/util/map.c
+@@ -21,8 +21,7 @@ static int strcommon(const char *pathname, char *cwd, int cwdlen)
+ }
+ 
+ struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen,
+-		     unsigned int sym_priv_size, symbol_filter_t filter,
+-		     int v)
++		     unsigned int sym_priv_size, symbol_filter_t filter)
+ {
+ 	struct map *self = malloc(sizeof(*self));
+ 
+@@ -58,16 +57,16 @@ struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen,
+ 			goto out_delete;
+ 
+ 		if (new_dso) {
+-			int nr = dso__load(self->dso, self, filter, v);
++			int nr = dso__load(self->dso, self, filter);
+ 
+ 			if (nr < 0)
+-				eprintf("Failed to open %s, continuing "
+-					"without symbols\n",
+-					self->dso->long_name);
++				pr_warning("Failed to open %s, continuing "
++					   "without symbols\n",
++					   self->dso->long_name);
+ 			else if (nr == 0)
+-				eprintf("No symbols found in %s, maybe "
+-					"install a debug package?\n",
+-					self->dso->long_name);
++				pr_warning("No symbols found in %s, maybe "
++					   "install a debug package?\n",
++					   self->dso->long_name);
+ 		}
+ 
+ 		if (self->dso == vdso || anon)
+diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
+index be997ab..54e7071 100644
+--- a/tools/perf/util/probe-finder.c
++++ b/tools/perf/util/probe-finder.c
+@@ -136,7 +136,7 @@ static Dwarf_Unsigned die_get_fileno(Dwarf_Die cu_die, const char *fname)
+ 		dwarf_dealloc(__dw_debug, srcs, DW_DLA_LIST);
+ 	}
+ 	if (found)
+-		eprintf("found fno: %d\n", (int)found);
++		pr_debug("found fno: %d\n", (int)found);
+ 	return found;
+ }
+ 
+@@ -442,7 +442,7 @@ static void find_variable(Dwarf_Die sp_die, struct probe_finder *pf)
+ 		return ;
+ 	}
+ 
+-	eprintf("Searching '%s' variable in context.\n", pf->var);
++	pr_debug("Searching '%s' variable in context.\n", pf->var);
+ 	/* Search child die for local variables and parameters. */
+ 	ret = search_die_from_children(sp_die, variable_callback, pf);
+ 	if (!ret)
+@@ -552,7 +552,7 @@ static void find_by_line(Dwarf_Die cu_die, struct probe_finder *pf)
+ 
+ 		ret = dwarf_lineaddr(lines[i], &addr, &__dw_error);
+ 		DIE_IF(ret != DW_DLV_OK);
+-		eprintf("Probe point found: 0x%llx\n", addr);
++		pr_debug("Probe point found: 0x%llx\n", addr);
+ 		pf->addr = addr;
+ 		/* Search a real subprogram including this line, */
+ 		ret = search_die_from_children(cu_die, probeaddr_callback, pf);
+@@ -583,8 +583,8 @@ static int probefunc_callback(struct die_link *dlink, void *data)
+ 							  &pf->inl_offs,
+ 							  &__dw_error);
+ 				DIE_IF(ret != DW_DLV_OK);
+-				eprintf("inline definition offset %lld\n",
+-					pf->inl_offs);
++				pr_debug("inline definition offset %lld\n",
++					 pf->inl_offs);
+ 				return 0;
+ 			}
+ 			/* Get probe address */
+@@ -599,7 +599,7 @@ static int probefunc_callback(struct die_link *dlink, void *data)
+ 			/* Get probe address */
+ 			pf->addr = die_get_entrypc(dlink->die);
+ 			pf->addr += pp->offset;
+-			eprintf("found inline addr: 0x%llx\n", pf->addr);
++			pr_debug("found inline addr: 0x%llx\n", pf->addr);
+ 			/* Inlined function. Get a real subprogram */
+ 			for (lk = dlink->parent; lk != NULL; lk = lk->parent) {
+ 				tag = 0;
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 0a48984..8f0208c 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -76,7 +76,7 @@ static void kernel_maps__fixup_end(void)
+ }
+ 
+ static struct symbol *symbol__new(u64 start, u64 len, const char *name,
+-				  unsigned int priv_size, int v)
++				  unsigned int priv_size)
+ {
+ 	size_t namelen = strlen(name) + 1;
+ 	struct symbol *self = calloc(1, priv_size + sizeof(*self) + namelen);
+@@ -91,8 +91,7 @@ static struct symbol *symbol__new(u64 start, u64 len, const char *name,
+ 	self->start = start;
+ 	self->end   = len ? start + len - 1 : start;
+ 
+-	if (v > 2)
+-		printf("%s: %s %#Lx-%#Lx\n", __func__, name, start, self->end);
++	pr_debug3("%s: %s %#Lx-%#Lx\n", __func__, name, start, self->end);
+ 
+ 	memcpy(self->name, name, namelen);
+ 
+@@ -209,7 +208,7 @@ size_t dso__fprintf(struct dso *self, FILE *fp)
+  * so that we can in the next step set the symbol ->end address and then
+  * call kernel_maps__split_kallsyms.
+  */
+-static int kernel_maps__load_all_kallsyms(int v)
++static int kernel_maps__load_all_kallsyms(void)
+ {
+ 	char *line = NULL;
+ 	size_t n;
+@@ -252,7 +251,7 @@ static int kernel_maps__load_all_kallsyms(int v)
+ 		 * Will fix up the end later, when we have all symbols sorted.
+ 		 */
+ 		sym = symbol__new(start, 0, symbol_name,
+-				  kernel_map->dso->sym_priv_size, v);
++				  kernel_map->dso->sym_priv_size);
+ 
+ 		if (sym == NULL)
+ 			goto out_delete_line;
+@@ -300,8 +299,8 @@ static int kernel_maps__split_kallsyms(symbol_filter_t filter, int use_modules)
+ 			if (strcmp(map->dso->name, module)) {
+ 				map = kernel_maps__find_by_dso_name(module);
+ 				if (!map) {
+-					fputs("/proc/{kallsyms,modules} "
+-					      "inconsistency!\n", stderr);
++					pr_err("/proc/{kallsyms,modules} "
++					       "inconsistency!\n");
+ 					return -1;
+ 				}
+ 			}
+@@ -351,10 +350,9 @@ delete_symbol:
+ }
+ 
+ 
+-static int kernel_maps__load_kallsyms(symbol_filter_t filter,
+-				      int use_modules, int v)
++static int kernel_maps__load_kallsyms(symbol_filter_t filter, int use_modules)
+ {
+-	if (kernel_maps__load_all_kallsyms(v))
++	if (kernel_maps__load_all_kallsyms())
+ 		return -1;
+ 
+ 	dso__fixup_sym_end(kernel_map->dso);
+@@ -362,9 +360,9 @@ static int kernel_maps__load_kallsyms(symbol_filter_t filter,
+ 	return kernel_maps__split_kallsyms(filter, use_modules);
+ }
+ 
+-static size_t kernel_maps__fprintf(FILE *fp, int v)
++static size_t kernel_maps__fprintf(FILE *fp)
+ {
+-	size_t printed = fprintf(stderr, "Kernel maps:\n");
++	size_t printed = fprintf(fp, "Kernel maps:\n");
+ 	struct rb_node *nd;
+ 
+ 	for (nd = rb_first(&kernel_maps); nd; nd = rb_next(nd)) {
+@@ -372,17 +370,17 @@ static size_t kernel_maps__fprintf(FILE *fp, int v)
+ 
+ 		printed += fprintf(fp, "Map:");
+ 		printed += map__fprintf(pos, fp);
+-		if (v > 1) {
++		if (verbose > 1) {
+ 			printed += dso__fprintf(pos->dso, fp);
+ 			printed += fprintf(fp, "--\n");
+ 		}
+ 	}
+ 
+-	return printed + fprintf(stderr, "END kernel maps\n");
++	return printed + fprintf(fp, "END kernel maps\n");
+ }
+ 
+ static int dso__load_perf_map(struct dso *self, struct map *map,
+-			      symbol_filter_t filter, int v)
++			      symbol_filter_t filter)
+ {
+ 	char *line = NULL;
+ 	size_t n;
+@@ -420,7 +418,7 @@ static int dso__load_perf_map(struct dso *self, struct map *map,
+ 			continue;
+ 
+ 		sym = symbol__new(start, size, line + len,
+-				  self->sym_priv_size, v);
++				  self->sym_priv_size);
+ 
+ 		if (sym == NULL)
+ 			goto out_delete_line;
+@@ -534,7 +532,7 @@ static Elf_Scn *elf_section_by_name(Elf *elf, GElf_Ehdr *ep,
+  * And always look at the original dso, not at debuginfo packages, that
+  * have the PLT data stripped out (shdr_rel_plt.sh_type == SHT_NOBITS).
+  */
+-static int dso__synthesize_plt_symbols(struct  dso *self, int v)
++static int dso__synthesize_plt_symbols(struct  dso *self)
+ {
+ 	uint32_t nr_rel_entries, idx;
+ 	GElf_Sym sym;
+@@ -618,7 +616,7 @@ static int dso__synthesize_plt_symbols(struct  dso *self, int v)
+ 				 "%s@plt", elf_sym__name(&sym, symstrs));
+ 
+ 			f = symbol__new(plt_offset, shdr_plt.sh_entsize,
+-					sympltname, self->sym_priv_size, v);
++					sympltname, self->sym_priv_size);
+ 			if (!f)
+ 				goto out_elf_end;
+ 
+@@ -636,7 +634,7 @@ static int dso__synthesize_plt_symbols(struct  dso *self, int v)
+ 				 "%s@plt", elf_sym__name(&sym, symstrs));
+ 
+ 			f = symbol__new(plt_offset, shdr_plt.sh_entsize,
+-					sympltname, self->sym_priv_size, v);
++					sympltname, self->sym_priv_size);
+ 			if (!f)
+ 				goto out_elf_end;
+ 
+@@ -654,14 +652,14 @@ out_close:
+ 	if (err == 0)
+ 		return nr;
+ out:
+-	fprintf(stderr, "%s: problems reading %s PLT info.\n",
+-		__func__, self->long_name);
++	pr_warning("%s: problems reading %s PLT info.\n",
++		   __func__, self->long_name);
+ 	return 0;
+ }
+ 
+ static int dso__load_sym(struct dso *self, struct map *map, const char *name,
+ 			 int fd, symbol_filter_t filter, int kernel,
+-			 int kmodule, int v)
++			 int kmodule)
+ {
+ 	struct map *curr_map = map;
+ 	struct dso *curr_dso = self;
+@@ -680,15 +678,12 @@ static int dso__load_sym(struct dso *self, struct map *map, const char *name,
+ 
+ 	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
+ 	if (elf == NULL) {
+-		if (v)
+-			fprintf(stderr, "%s: cannot read %s ELF file.\n",
+-				__func__, name);
++		pr_err("%s: cannot read %s ELF file.\n", __func__, name);
+ 		goto out_close;
+ 	}
+ 
+ 	if (gelf_getehdr(elf, &ehdr) == NULL) {
+-		if (v)
+-			fprintf(stderr, "%s: cannot get elf header.\n", __func__);
++		pr_err("%s: cannot get elf header.\n", __func__);
+ 		goto out_elf_end;
+ 	}
+ 
+@@ -794,10 +789,9 @@ static int dso__load_sym(struct dso *self, struct map *map, const char *name,
+ 		}
+ 
+ 		if (curr_dso->adjust_symbols) {
+-			if (v > 2)
+-				printf("adjusting symbol: st_value: %Lx sh_addr: %Lx sh_offset: %Lx\n",
+-					(u64)sym.st_value, (u64)shdr.sh_addr, (u64)shdr.sh_offset);
+-
++			pr_debug2("adjusting symbol: st_value: %Lx sh_addr: "
++				  "%Lx sh_offset: %Lx\n", (u64)sym.st_value,
++				  (u64)shdr.sh_addr, (u64)shdr.sh_offset);
+ 			sym.st_value -= shdr.sh_addr - shdr.sh_offset;
+ 		}
+ 		/*
+@@ -810,7 +804,7 @@ static int dso__load_sym(struct dso *self, struct map *map, const char *name,
+ 			elf_name = demangled;
+ new_symbol:
+ 		f = symbol__new(sym.st_value, sym.st_size, elf_name,
+-				curr_dso->sym_priv_size, v);
++				curr_dso->sym_priv_size);
+ 		free(demangled);
+ 		if (!f)
+ 			goto out_elf_end;
+@@ -837,7 +831,7 @@ out_close:
+ 
+ #define BUILD_ID_SIZE 128
+ 
+-static char *dso__read_build_id(struct dso *self, int v)
++static char *dso__read_build_id(struct dso *self)
+ {
+ 	int i;
+ 	GElf_Ehdr ehdr;
+@@ -854,15 +848,13 @@ static char *dso__read_build_id(struct dso *self, int v)
+ 
+ 	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
+ 	if (elf == NULL) {
+-		if (v)
+-			fprintf(stderr, "%s: cannot read %s ELF file.\n",
+-				__func__, self->long_name);
++		pr_err("%s: cannot read %s ELF file.\n", __func__,
++		       self->long_name);
+ 		goto out_close;
+ 	}
+ 
+ 	if (gelf_getehdr(elf, &ehdr) == NULL) {
+-		if (v)
+-			fprintf(stderr, "%s: cannot get elf header.\n", __func__);
++		pr_err("%s: cannot get elf header.\n", __func__);
+ 		goto out_elf_end;
+ 	}
+ 
+@@ -884,8 +876,7 @@ static char *dso__read_build_id(struct dso *self, int v)
+ 		++raw;
+ 		bid += 2;
+ 	}
+-	if (v >= 2)
+-		printf("%s(%s): %s\n", __func__, self->long_name, build_id);
++	pr_debug2("%s(%s): %s\n", __func__, self->long_name, build_id);
+ out_elf_end:
+ 	elf_end(elf);
+ out_close:
+@@ -911,8 +902,7 @@ char dso__symtab_origin(const struct dso *self)
+ 	return origin[self->origin];
+ }
+ 
+-int dso__load(struct dso *self, struct map *map,
+-	      symbol_filter_t filter, int v)
++int dso__load(struct dso *self, struct map *map, symbol_filter_t filter)
+ {
+ 	int size = PATH_MAX;
+ 	char *name = malloc(size), *build_id = NULL;
+@@ -925,7 +915,7 @@ int dso__load(struct dso *self, struct map *map,
+ 	self->adjust_symbols = 0;
+ 
+ 	if (strncmp(self->name, "/tmp/perf-", 10) == 0) {
+-		ret = dso__load_perf_map(self, map, filter, v);
++		ret = dso__load_perf_map(self, map, filter);
+ 		self->origin = ret > 0 ? DSO__ORIG_JAVA_JIT :
+ 					 DSO__ORIG_NOT_FOUND;
+ 		return ret;
+@@ -946,7 +936,7 @@ more:
+ 				 self->long_name);
+ 			break;
+ 		case DSO__ORIG_BUILDID:
+-			build_id = dso__read_build_id(self, v);
++			build_id = dso__read_build_id(self);
+ 			if (build_id != NULL) {
+ 				snprintf(name, size,
+ 					 "/usr/lib/debug/.build-id/%.2s/%s.debug",
+@@ -967,7 +957,7 @@ more:
+ 		fd = open(name, O_RDONLY);
+ 	} while (fd < 0);
+ 
+-	ret = dso__load_sym(self, map, name, fd, filter, 0, 0, v);
++	ret = dso__load_sym(self, map, name, fd, filter, 0, 0);
+ 	close(fd);
+ 
+ 	/*
+@@ -977,7 +967,7 @@ more:
+ 		goto more;
+ 
+ 	if (ret > 0) {
+-		int nr_plt = dso__synthesize_plt_symbols(self, v);
++		int nr_plt = dso__synthesize_plt_symbols(self);
+ 		if (nr_plt > 0)
+ 			ret += nr_plt;
+ 	}
+@@ -1025,34 +1015,29 @@ struct map *kernel_maps__find_by_dso_name(const char *name)
+ }
+ 
+ static int dso__load_module_sym(struct dso *self, struct map *map,
+-				symbol_filter_t filter, int v)
++				symbol_filter_t filter)
+ {
+ 	int err = 0, fd = open(self->long_name, O_RDONLY);
+ 
+ 	if (fd < 0) {
+-		if (v)
+-			fprintf(stderr, "%s: cannot open %s\n",
+-				__func__, self->long_name);
++		pr_err("%s: cannot open %s\n", __func__, self->long_name);
+ 		return err;
+ 	}
+ 
+-	err = dso__load_sym(self, map, self->long_name, fd, filter, 0, 1, v);
++	err = dso__load_sym(self, map, self->long_name, fd, filter, 0, 1);
+ 	close(fd);
+ 
+ 	return err;
+ }
+ 
+-static int dsos__load_modules_sym_dir(char *dirname,
+-				      symbol_filter_t filter, int v)
++static int dsos__load_modules_sym_dir(char *dirname, symbol_filter_t filter)
+ {
+ 	struct dirent *dent;
+ 	int nr_symbols = 0, err;
+ 	DIR *dir = opendir(dirname);
+ 
+ 	if (!dir) {
+-		if (v)
+-			fprintf(stderr, "%s: cannot open %s dir\n", __func__,
+-				dirname);
++		pr_err("%s: cannot open %s dir\n", __func__, dirname);
+ 		return -1;
+ 	}
+ 
+@@ -1066,7 +1051,7 @@ static int dsos__load_modules_sym_dir(char *dirname,
+ 
+ 			snprintf(path, sizeof(path), "%s/%s",
+ 				 dirname, dent->d_name);
+-			err = dsos__load_modules_sym_dir(path, filter, v);
++			err = dsos__load_modules_sym_dir(path, filter);
+ 			if (err < 0)
+ 				goto failure;
+ 		} else {
+@@ -1092,7 +1077,7 @@ static int dsos__load_modules_sym_dir(char *dirname,
+ 			if (map->dso->long_name == NULL)
+ 				goto failure;
+ 
+-			err = dso__load_module_sym(map->dso, map, filter, v);
++			err = dso__load_module_sym(map->dso, map, filter);
+ 			if (err < 0)
+ 				goto failure;
+ 			last = rb_last(&map->dso->syms);
+@@ -1119,7 +1104,7 @@ failure:
+ 	return -1;
+ }
+ 
+-static int dsos__load_modules_sym(symbol_filter_t filter, int v)
++static int dsos__load_modules_sym(symbol_filter_t filter)
+ {
+ 	struct utsname uts;
+ 	char modules_path[PATH_MAX];
+@@ -1130,7 +1115,7 @@ static int dsos__load_modules_sym(symbol_filter_t filter, int v)
+ 	snprintf(modules_path, sizeof(modules_path), "/lib/modules/%s/kernel",
+ 		 uts.release);
+ 
+-	return dsos__load_modules_sym_dir(modules_path, filter, v);
++	return dsos__load_modules_sym_dir(modules_path, filter);
+ }
+ 
+ /*
+@@ -1225,15 +1210,14 @@ out_failure:
+ }
+ 
+ static int dso__load_vmlinux(struct dso *self, struct map *map,
+-			     const char *vmlinux,
+-			     symbol_filter_t filter, int v)
++			     const char *vmlinux, symbol_filter_t filter)
+ {
+ 	int err, fd = open(vmlinux, O_RDONLY);
+ 
+ 	if (fd < 0)
+ 		return -1;
+ 
+-	err = dso__load_sym(self, map, self->long_name, fd, filter, 1, 0, v);
++	err = dso__load_sym(self, map, self->long_name, fd, filter, 1, 0);
+ 
+ 	close(fd);
+ 
+@@ -1241,7 +1225,7 @@ static int dso__load_vmlinux(struct dso *self, struct map *map,
+ }
+ 
+ int dsos__load_kernel(const char *vmlinux, unsigned int sym_priv_size,
+-		      symbol_filter_t filter, int v, int use_modules)
++		      symbol_filter_t filter, int use_modules)
+ {
+ 	int err = -1;
+ 	struct dso *dso = dso__new(vmlinux, sym_priv_size);
+@@ -1257,26 +1241,26 @@ int dsos__load_kernel(const char *vmlinux, unsigned int sym_priv_size,
+ 	kernel_map->map_ip = kernel_map->unmap_ip = identity__map_ip;
+ 
+ 	if (use_modules && dsos__load_modules(sym_priv_size) < 0) {
+-		fprintf(stderr, "Failed to load list of modules in use! "
+-				"Continuing...\n");
++		pr_warning("Failed to load list of modules in use! "
++			   "Continuing...\n");
+ 		use_modules = 0;
+ 	}
+ 
+ 	if (vmlinux) {
+-		err = dso__load_vmlinux(dso, kernel_map, vmlinux, filter, v);
++		err = dso__load_vmlinux(dso, kernel_map, vmlinux, filter);
+ 		if (err > 0 && use_modules) {
+-			int syms = dsos__load_modules_sym(filter, v);
++			int syms = dsos__load_modules_sym(filter);
+ 
+ 			if (syms < 0)
+-				fprintf(stderr, "Failed to read module symbols!"
+-					" Continuing...\n");
++				pr_warning("Failed to read module symbols!"
++					   " Continuing...\n");
+ 			else
+ 				err += syms;
+ 		}
+ 	}
+ 
+ 	if (err <= 0)
+-		err = kernel_maps__load_kallsyms(filter, use_modules, v);
++		err = kernel_maps__load_kallsyms(filter, use_modules);
+ 
+ 	if (err > 0) {
+ 		struct rb_node *node = rb_first(&dso->syms);
+@@ -1296,8 +1280,8 @@ int dsos__load_kernel(const char *vmlinux, unsigned int sym_priv_size,
+ 		kernel_maps__fixup_end();
+ 		dsos__add(dso);
+ 
+-		if (v > 0)
+-			kernel_maps__fprintf(stderr, v);
++		if (verbose)
++			kernel_maps__fprintf(stderr);
+ 	}
+ 
+ 	return err;
+@@ -1355,8 +1339,8 @@ void dsos__fprintf(FILE *fp)
+ 
+ int load_kernel(unsigned int sym_priv_size, symbol_filter_t filter)
+ {
+-	if (dsos__load_kernel(vmlinux_name, sym_priv_size,
+-			      filter, verbose, modules) <= 0)
++	if (dsos__load_kernel(vmlinux_name, sym_priv_size, filter,
++			      modules) <= 0)
+ 		return -1;
+ 
+ 	vdso = dso__new("[vdso]", 0);
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index c2a777d..77b7b3e 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -63,11 +63,10 @@ static inline void *dso__sym_priv(struct dso *self, struct symbol *sym)
+ struct symbol *dso__find_symbol(struct dso *self, u64 ip);
+ 
+ int dsos__load_kernel(const char *vmlinux, unsigned int sym_priv_size,
+-		      symbol_filter_t filter, int verbose, int modules);
++		      symbol_filter_t filter, int modules);
+ struct dso *dsos__findnew(const char *name, unsigned int sym_priv_size,
+ 			  bool *is_new);
+-int dso__load(struct dso *self, struct map *map,
+-	      symbol_filter_t filter, int v);
++int dso__load(struct dso *self, struct map *map, symbol_filter_t filter);
+ void dsos__fprintf(FILE *fp);
+ 
+ size_t dso__fprintf(struct dso *self, FILE *fp);
+diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
+index f53fad7..aa2dae7 100644
+--- a/tools/perf/util/thread.c
++++ b/tools/perf/util/thread.c
+@@ -116,9 +116,9 @@ static void thread__remove_overlappings(struct thread *self, struct map *map)
+ 			continue;
+ 
+ 		if (verbose >= 2) {
+-			printf("overlapping maps:\n");
+-			map__fprintf(map, stdout);
+-			map__fprintf(pos, stdout);
++			fputs("overlapping maps:\n", stderr);
++			map__fprintf(map, stderr);
++			map__fprintf(pos, stderr);
+ 		}
+ 
+ 		rb_erase(&pos->rb_node, &self->maps);
 -- 
-1.6.0.4
+1.6.2.5
 
