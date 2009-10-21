@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbZJUW1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZJUWp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755815AbZJUW1k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 18:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbZJUW1k
+	id S1755849AbZJUWp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 18:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbZJUWp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 18:27:40 -0400
-Received: from mga05.intel.com ([192.55.52.89]:50108 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755588AbZJUW1j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 18:27:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,600,1249282800"; 
-   d="scan'208";a="505969366"
-Date: Thu, 22 Oct 2009 00:29:11 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mfd: Allow platforms to specify an IRQ base for WM8350
-Message-ID: <20091021222910.GE17796@sortiz.org>
-References: <1256148694-23312-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Wed, 21 Oct 2009 18:45:26 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44224 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755797AbZJUWp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 18:45:26 -0400
+Date: Wed, 21 Oct 2009 15:43:37 -0700
+From: Greg KH <gregkh@suse.de>
+To: Haiyang Zhang <haiyangz@microsoft.com>
+Cc: Hank Janssen <hjanssen@microsoft.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix null pointer error after vmbus loading
+Message-ID: <20091021224337.GA8550@suse.de>
+References: <1FB5E1D5CA062146B38059374562DF72180B39CA@TK5EX14MBXC126.redmond.corp.microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1256148694-23312-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1FB5E1D5CA062146B38059374562DF72180B39CA@TK5EX14MBXC126.redmond.corp.microsoft.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
-
-On Wed, Oct 21, 2009 at 07:11:34PM +0100, Mark Brown wrote:
-> This is currently unused by the wm8350 drivers but getting it merged
-> now will reduce merge issues in the future when implementing wm8350
-> genirq support.
-Patch applied, thanks.
-
-Cheers,
-Samuel.
-
-
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+On Wed, Oct 21, 2009 at 07:24:23PM +0000, Haiyang Zhang wrote:
+> From: Haiyang Zhang <haiyangz@microsoft.com>
+> 
+> Fix null pointer error after vmbus loading.
+> 
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-off-by: Hank Janssen <hjanssen@microsoft.com>
+> Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
+> 
 > ---
->  include/linux/mfd/wm8350/core.h |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+> diff --git a/drivers/staging/hv/vmbus_drv.c b/drivers/staging/hv/vmbus_drv.c
+> index 582318f..11431cc 100644
+> --- a/drivers/staging/hv/vmbus_drv.c
+> +++ b/drivers/staging/hv/vmbus_drv.c
+> @@ -538,9 +538,10 @@ static int vmbus_child_device_register(struct hv_device *root_device_obj,
+>                    child_device_ctx);
 > 
-> diff --git a/include/linux/mfd/wm8350/core.h b/include/linux/mfd/wm8350/core.h
-> index 32197fd..ffce508 100644
-> --- a/include/linux/mfd/wm8350/core.h
-> +++ b/include/linux/mfd/wm8350/core.h
-> @@ -646,10 +646,12 @@ struct wm8350 {
->   * @init: Function called during driver initialisation.  Should be
->   *        used by the platform to configure GPIO functions and similar.
->   * @irq_high: Set if WM8350 IRQ is active high.
-> + * @irq_base: Base IRQ for genirq (not currently used).
->   */
->  struct wm8350_platform_data {
->  	int (*init)(struct wm8350 *wm8350);
->  	int irq_high;
-> +	int irq_base;
->  };
->  
->  
-> -- 
-> 1.6.5
-> 
+>         /* Make sure we are not registered already */
+> -       if (strlen(dev_name(&child_device_ctx->device)) != 0) {
+> +       if (dev_name(&child_device_ctx->device) != NULL &&
+> +           strlen(dev_name(&child_device_ctx->device)) != 0) {
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Why would the device name ever be NULL?  Why would you need to check it
+here?
+
+confused,
+
+greg k-h
