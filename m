@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZJUTVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbZJUTVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbZJUTVR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbZJUTVO
+	id S1755150AbZJUTVN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbZJUTVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:21:14 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:4513 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754917AbZJUTVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Oct 2009 15:21:11 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:48384 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932238AbZJUTVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 15:21:08 -0400
 From: Valerie Aurora <vaurora@redhat.com>
 To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
@@ -21,10 +21,10 @@ To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Felix Fietkau <nbd@openwrt.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        Jan Blunck <jblunck@suse.de>
-Subject: [PATCH 25/41] union-mount: stop lookup when directory has S_OPAQUE flag set
-Date: Wed, 21 Oct 2009 12:19:23 -0700
-Message-Id: <1256152779-10054-26-git-send-email-vaurora@redhat.com>
-In-Reply-To: <1256152779-10054-25-git-send-email-vaurora@redhat.com>
+Subject: [PATCH 26/41] union-mount: stop lookup when finding a whiteout
+Date: Wed, 21 Oct 2009 12:19:24 -0700
+Message-Id: <1256152779-10054-27-git-send-email-vaurora@redhat.com>
+In-Reply-To: <1256152779-10054-26-git-send-email-vaurora@redhat.com>
 References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-2-git-send-email-vaurora@redhat.com>
  <1256152779-10054-3-git-send-email-vaurora@redhat.com>
@@ -50,83 +50,127 @@ References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-23-git-send-email-vaurora@redhat.com>
  <1256152779-10054-24-git-send-email-vaurora@redhat.com>
  <1256152779-10054-25-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-26-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jan Blunck <jblunck@suse.de>
 
-Honor the S_OPAQUE flag in the union path lookup.
+Stop the lookup if we find a whiteout during union path lookup.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 ---
- fs/namei.c |   17 ++++++++++++++---
- 1 files changed, 14 insertions(+), 3 deletions(-)
+ fs/namei.c |   30 ++++++++++++++++++++++--------
+ 1 files changed, 22 insertions(+), 8 deletions(-)
 
 diff --git a/fs/namei.c b/fs/namei.c
-index b279686..8ebbf4f 100644
+index 8ebbf4f..fb463ac 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -523,6 +523,9 @@ static int __cache_lookup_build_union(struct nameidata *nd, struct qstr *name,
- 			path_put(&last);
- 		last.dentry = dentry;
- 		last.mnt = mntget(nd->path.mnt);
-+
-+		if (IS_OPAQUE(last.dentry->d_inode))
+@@ -442,10 +442,10 @@ static int __cache_lookup_topmost(struct nameidata *nd, struct qstr *name,
+ 	path->dentry = dentry;
+ 	path->mnt = dentry ? nd->path.mnt : NULL;
+ 
+-	if (!dentry || dentry->d_inode)
++	if (!dentry || (dentry->d_inode || d_is_whiteout(dentry)))
+ 		return !dentry;
+ 
+-	/* look for the first non-negative dentry */
++	/* look for the first non-negative or whiteout dentry */
+ 
+ 	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
+ 		dentry = d_hash_and_lookup(nd->path.dentry, name);
+@@ -467,7 +467,7 @@ static int __cache_lookup_topmost(struct nameidata *nd, struct qstr *name,
+ 				goto out_dput;
+ 		}
+ 
+-		if (dentry->d_inode)
++		if (dentry->d_inode || d_is_whiteout(dentry))
+ 			goto out_dput;
+ 
+ 		dput(dentry);
+@@ -505,6 +505,11 @@ static int __cache_lookup_build_union(struct nameidata *nd, struct qstr *name,
+ 				return 1;
+ 		}
+ 
++		if (d_is_whiteout(dentry)) {
++			dput(dentry);
 +			break;
- 	}
++		}
++
+ 		if (!dentry->d_inode) {
+ 			dput(dentry);
+ 			continue;
+@@ -716,7 +721,6 @@ out_unlock:
+  * type mismatch and whiteouts.
+  *
+  * FIXME:
+- * - handle DT_WHT
+  * - handle union stacks in use
+  * - handle union stacks mounted upon union stacks
+  * - avoid unnecessary allocations of union locks
+@@ -731,7 +735,7 @@ static int __real_lookup_topmost(struct nameidata *nd, struct qstr *name,
+ 	if (err)
+ 		return err;
  
- 	if (last.dentry != path->dentry)
-@@ -562,7 +565,8 @@ static int cache_lookup_union(struct nameidata *nd, struct qstr *name,
+-	if (path->dentry->d_inode)
++	if (path->dentry->d_inode || d_is_whiteout(path->dentry))
+ 		return 0;
  
- 		/* only directories can be part of a union stack */
- 		if (!path->dentry->d_inode ||
--		    !S_ISDIR(path->dentry->d_inode->i_mode))
-+		    !S_ISDIR(path->dentry->d_inode->i_mode) ||
-+		    IS_OPAQUE(path->dentry->d_inode))
+ 	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
+@@ -747,7 +751,7 @@ static int __real_lookup_topmost(struct nameidata *nd, struct qstr *name,
+ 		if (err)
  			goto out;
  
- 		/* Build the union stack for this part */
-@@ -804,6 +808,9 @@ static int __real_lookup_build_union(struct nameidata *nd, struct qstr *name,
- 			path_put(&last);
- 		last.dentry = next.dentry;
- 		last.mnt = mntget(next.mnt);
-+
-+		if (IS_OPAQUE(last.dentry->d_inode))
+-		if (next.dentry->d_inode) {
++		if (next.dentry->d_inode || d_is_whiteout(next.dentry)) {
+ 			dput(path->dentry);
+ 			mntget(next.mnt);
+ 			*path = next;
+@@ -790,6 +794,11 @@ static int __real_lookup_build_union(struct nameidata *nd, struct qstr *name,
+ 		if (err)
+ 			goto out;
+ 
++		if (d_is_whiteout(next.dentry)) {
++			dput(next.dentry);
 +			break;
- 	}
- 
- 	if (last.dentry != path->dentry)
-@@ -825,7 +832,8 @@ static int real_lookup_union(struct nameidata *nd, struct qstr *name,
- 
- 	/* only directories can be part of a union stack */
- 	if (!path->dentry->d_inode ||
--	    !S_ISDIR(path->dentry->d_inode->i_mode))
-+	    !S_ISDIR(path->dentry->d_inode->i_mode) ||
-+	    IS_OPAQUE(path->dentry->d_inode))
- 		goto out;
- 
- 	/* Build the union stack for this part */
-@@ -1111,7 +1119,7 @@ static int do_lookup(struct nameidata *nd, struct qstr *name,
- {
- 	int err;
- 
--	if (IS_MNT_UNION(nd->path.mnt))
-+	if (IS_MNT_UNION(nd->path.mnt) && !IS_OPAQUE(nd->path.dentry->d_inode))
- 		goto need_union_lookup;
- 
- 	path->dentry = __d_lookup(nd->path.dentry, name);
-@@ -1676,6 +1684,9 @@ static int __hash_lookup_build_union(struct nameidata *nd, struct qstr *name,
- 			path_put(&last);
- 		last.dentry = next.dentry;
- 		last.mnt = mntget(next.mnt);
++		}
 +
-+		if (IS_OPAQUE(last.dentry->d_inode))
-+			break;
- 	}
+ 		if (!next.dentry->d_inode) {
+ 			dput(next.dentry);
+ 			continue;
+@@ -1610,7 +1619,7 @@ static int __hash_lookup_topmost(struct nameidata *nd, struct qstr *name,
+ 	if (err)
+ 		return err;
  
- 	if (last.dentry != path->dentry)
+-	if (path->dentry->d_inode)
++	if (path->dentry->d_inode || d_is_whiteout(path->dentry))
+ 		return 0;
+ 
+ 	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
+@@ -1628,7 +1637,7 @@ static int __hash_lookup_topmost(struct nameidata *nd, struct qstr *name,
+ 		if (err)
+ 			goto out;
+ 
+-		if (next.dentry->d_inode) {
++		if (next.dentry->d_inode || d_is_whiteout(next.dentry)) {
+ 			dput(path->dentry);
+ 			mntget(next.mnt);
+ 			*path = next;
+@@ -1666,6 +1675,11 @@ static int __hash_lookup_build_union(struct nameidata *nd, struct qstr *name,
+ 		if (err)
+ 			goto out;
+ 
++		if (d_is_whiteout(next.dentry)) {
++			dput(next.dentry);
++			break;
++		}
++
+ 		if (!next.dentry->d_inode) {
+ 			dput(next.dentry);
+ 			continue;
 -- 
 1.6.3.3
 
