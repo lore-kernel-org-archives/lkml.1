@@ -1,245 +1,435 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbZJUUoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbZJUUoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753774AbZJUUoK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 16:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZJUUoI
+	id S1753831AbZJUUoS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 16:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbZJUUoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 16:44:08 -0400
+	Wed, 21 Oct 2009 16:44:17 -0400
 Received: from mail-fx0-f218.google.com ([209.85.220.218]:39437 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753686AbZJUUoF (ORCPT
+	with ESMTP id S1753792AbZJUUoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 16:44:05 -0400
+	Wed, 21 Oct 2009 16:44:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=xpPuAM2gJp5wfUVjlHylPTv8gOp3J7Ro0kK7kdssgoXmVntknmwBIhk0uRUkHaSWsG
-         HpB2AWESgLDFhRvPAOQm806dqnjYBccJC4cweEyCSZzBhQt/msBVzqIrJhGzHSaIk+kY
-         f1pnGQXD29+5ZjEyIpMIXf+TItRo6ceHKm5NI=
+        b=k3f5D/gDJ2Fb5LWWpLmZTwU7Hio3+vIcX/h+gAyy7OrUG93OrecT8Bm6wh9Z2u59F9
+         UQtIULHsJ4x/MoUNDt00SHbwnCLwrbRpLFFiWsBUlqOpK6lbB/2CanRkrtV3GMoFDCW1
+         f8pL3OjKsLCIiZOJd4PFKjtOn9N/RSuECCRc4=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Wed, 21 Oct 2009 22:43:51 +0200
-Message-Id: <20091021204351.4593.80897.sendpatchset@localhost.localdomain>
+Date: Wed, 21 Oct 2009 22:43:57 +0200
+Message-Id: <20091021204357.4593.77969.sendpatchset@localhost.localdomain>
 In-Reply-To: <20091021204344.4593.99070.sendpatchset@localhost.localdomain>
 References: <20091021204344.4593.99070.sendpatchset@localhost.localdomain>
-Subject: [PATCH 01/12] Staging: rt28x0: remove unused ->eewrite methods
+Subject: [PATCH 02/12] Staging: rt28x0: remove unused code from common/ee_efuse-c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rt28x0: remove unused ->eewrite methods
+Subject: [PATCH] Staging: rt28x0: remove unused code from common/ee_efuse-c
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rt2860/common/ee_efuse.c |   17 ----------
- drivers/staging/rt2860/common/ee_prom.c  |   48 -------------------------------
- drivers/staging/rt2860/common/eeprom.c   |    3 -
- drivers/staging/rt2860/eeprom.h          |   15 ---------
- drivers/staging/rt2860/rtmp.h            |    1 
- drivers/staging/rt2860/rtmp_chip.h       |    4 --
- drivers/staging/rt2870/common/rtusb_io.c |   11 -------
- 7 files changed, 99 deletions(-)
+ drivers/staging/rt2860/common/ee_efuse.c |  340 -------------------------------
+ drivers/staging/rt2860/rtmp.h            |   12 -
+ 2 files changed, 352 deletions(-)
 
 Index: b/drivers/staging/rt2860/common/ee_efuse.c
 ===================================================================
 --- a/drivers/staging/rt2860/common/ee_efuse.c
 +++ b/drivers/staging/rt2860/common/ee_efuse.c
-@@ -1271,23 +1271,6 @@ int rtmp_ee_efuse_read16(
- 	return (*pValue);
- }
+@@ -67,31 +67,6 @@ typedef	union	_EFUSE_CTRL_STRUC {
+ 	UINT32			word;
+ }	EFUSE_CTRL_STRUC, *PEFUSE_CTRL_STRUC;
  
+-static UCHAR eFuseReadRegisters(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	USHORT Offset,
+-	IN	USHORT Length,
+-	OUT	USHORT* pData);
 -
--int rtmp_ee_efuse_write16(
--	IN RTMP_ADAPTER *pAd,
--	IN USHORT Offset,
--	IN USHORT data)
+-static VOID eFuseReadPhysical(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PUSHORT lpInBuffer,
+-	IN	ULONG nInBufferSize,
+-	OUT	PUSHORT lpOutBuffer,
+-	IN	ULONG nOutBufferSize);
+-
+-static VOID eFusePhysicalWriteRegisters(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	USHORT Offset,
+-	IN	USHORT Length,
+-	OUT	USHORT* pData);
+-
+-static NTSTATUS eFuseWriteRegisters(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	USHORT Offset,
+-	IN	USHORT Length,
+-	IN	USHORT* pData);
+-
+ static VOID eFuseWritePhysical(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	PUSHORT lpInBuffer,
+@@ -306,37 +281,6 @@ static VOID eFuseReadPhysical(
+ 
+ ========================================================================
+ */
+-NTSTATUS eFuseRead(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	USHORT			Offset,
+-	OUT	PUCHAR			pData,
+-	IN	USHORT			Length)
 -{
--    if(pAd->bFroceEEPROMBuffer||pAd->bEEPROMFile)
--    {
--        DBGPRINT(RT_DEBUG_TRACE,  ("Write to EEPROM Buffer\n"));
--        NdisMoveMemory(&(pAd->EEPROMImage[Offset]), &data, 2);
--    }
--    else
--        eFuseWriteRegisters(pAd, Offset, 2, &data);
--	return 0;
+-	USHORT* pOutBuf = (USHORT*)pData;
+-	NTSTATUS Status = STATUS_SUCCESS;
+-	UCHAR	EFSROM_AOUT;
+-	int	i;
+-
+-	for(i=0; i<Length; i+=2)
+-	{
+-		EFSROM_AOUT = eFuseReadRegisters(pAd, Offset+i, 2, &pOutBuf[i/2]);
+-	}
+-	return Status;
 -}
 -
+-/*
+-========================================================================
 -
- int RtmpEfuseSupportCheck(
- 	IN RTMP_ADAPTER *pAd)
- {
-Index: b/drivers/staging/rt2860/common/ee_prom.c
-===================================================================
---- a/drivers/staging/rt2860/common/ee_prom.c
-+++ b/drivers/staging/rt2860/common/ee_prom.c
-@@ -220,51 +220,3 @@ int rtmp_ee_prom_read16(
+-	Routine Description:
+-
+-	Arguments:
+-
+-	Return Value:
+-
+-	Note:
+-
+-========================================================================
+-*/
+ static VOID eFusePhysicalWriteRegisters(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	IN	USHORT Offset,
+@@ -450,247 +394,6 @@ static VOID eFusePhysicalWriteRegisters(
  
- 	return NDIS_STATUS_SUCCESS;
- }
--
--
--int rtmp_ee_prom_write16(
--    IN  PRTMP_ADAPTER	pAd,
--    IN  USHORT Offset,
--    IN  USHORT Data)
+ ========================================================================
+ */
+-static NTSTATUS eFuseWriteRegisters(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	USHORT Offset,
+-	IN	USHORT Length,
+-	IN	USHORT* pData)
 -{
--	UINT32 x;
+-	USHORT	i,Loop=0;
+-	USHORT	eFuseData;
+-	USHORT	LogicalAddress, BlkNum = 0xffff;
+-	UCHAR	EFSROM_AOUT;
 -
+-	USHORT addr,tmpaddr, InBuf[3], tmpOffset;
+-	USHORT buffer[8];
+-	BOOLEAN		bWriteSuccess = TRUE;
 -
--	Offset /= 2;
+-	DBGPRINT(RT_DEBUG_TRACE, ("eFuseWriteRegisters Offset=%x, pData=%x\n", Offset, *pData));
 -
--	EWEN(pAd);
+-	//Step 0. find the entry in the mapping table
+-	//The address of EEPROM is 2-bytes alignment.
+-	//The last bit is used for alignment, so it must be 0.
+-	tmpOffset = Offset & 0xfffe;
+-	EFSROM_AOUT = eFuseReadRegisters(pAd, tmpOffset, 2, &eFuseData);
 -
--	// reset bits and set EECS
--	RTMP_IO_READ32(pAd, E2PROM_CSR, &x);
--	x &= ~(EEDI | EEDO | EESK);
--	x |= EECS;
--	RTMP_IO_WRITE32(pAd, E2PROM_CSR, x);
--
--	// patch can not access e-Fuse issue
--	if (!(IS_RT3090(pAd) || IS_RT3572(pAd) || IS_RT3390(pAd)))
+-	if( EFSROM_AOUT == 0x3f)
+-	{	//find available logical address pointer
+-		//the logical address does not exist, find an empty one
+-		//from the first address of block 45=16*45=0x2d0 to the last address of block 47
+-		//==>48*16-3(reserved)=2FC
+-		for (i=EFUSE_USAGE_MAP_START; i<=EFUSE_USAGE_MAP_END; i+=2)
+-		{
+-			//Retrive the logical block nubmer form each logical address pointer
+-			//It will access two logical address pointer each time.
+-			eFusePhysicalReadRegisters(pAd, i, 2, &LogicalAddress);
+-			if( (LogicalAddress & 0xff) == 0)
+-			{//Not used logical address pointer
+-				BlkNum = i-EFUSE_USAGE_MAP_START;
+-				break;
+-			}
+-			else if(( (LogicalAddress >> 8) & 0xff) == 0)
+-			{//Not used logical address pointer
+-				if (i != EFUSE_USAGE_MAP_END)
+-				{
+-					BlkNum = i-EFUSE_USAGE_MAP_START+1;
+-				}
+-				break;
+-			}
+-		}
+-	}
+-	else
 -	{
--		// kick a pulse
--		RaiseClock(pAd, &x);
--		LowerClock(pAd, &x);
+-		BlkNum = EFSROM_AOUT;
 -	}
 -
--	// output the read_opcode ,register number and data in that order
--	ShiftOutBits(pAd, EEPROM_WRITE_OPCODE, 3);
--	ShiftOutBits(pAd, Offset, pAd->EEPROMAddressNum);
--	ShiftOutBits(pAd, Data, 16);		// 16-bit access
+-	DBGPRINT(RT_DEBUG_TRACE, ("eFuseWriteRegisters BlkNum = %d \n", BlkNum));
 -
--	// read DO status
--	RTMP_IO_READ32(pAd, E2PROM_CSR, &x);
+-	if(BlkNum == 0xffff)
+-	{
+-		DBGPRINT(RT_DEBUG_TRACE, ("eFuseWriteRegisters: out of free E-fuse space!!!\n"));
+-		return FALSE;
+-	}
 -
--	EEpromCleanup(pAd);
+-	//Step 1. Save data of this block	which is pointed by the avaible logical address pointer
+-	// read and save the original block data
+-	for(i =0; i<8; i++)
+-	{
+-		addr = BlkNum * 0x10 ;
 -
--	RTMPusecDelay(10000);	//delay for twp(MAX)=10ms
+-		InBuf[0] = addr+2*i;
+-		InBuf[1] = 2;
+-		InBuf[2] = 0x0;
 -
--	EWDS(pAd);
+-		eFuseReadPhysical(pAd, &InBuf[0], 4, &InBuf[2], 2);
 -
--	EEpromCleanup(pAd);
+-		buffer[i] = InBuf[2];
+-	}
 -
+-	//Step 2. Update the data in buffer, and write the data to Efuse
+-	buffer[ (Offset >> 1) % 8] = pData[0];
 -
--	return NDIS_STATUS_SUCCESS;
+-	do
+-	{	Loop++;
+-		//Step 3. Write the data to Efuse
+-		if(!bWriteSuccess)
+-		{
+-			for(i =0; i<8; i++)
+-			{
+-				addr = BlkNum * 0x10 ;
 -
+-				InBuf[0] = addr+2*i;
+-				InBuf[1] = 2;
+-				InBuf[2] = buffer[i];
+-
+-				eFuseWritePhysical(pAd, &InBuf[0], 6, NULL, 2);
+-			}
+-		}
+-		else
+-		{
+-				addr = BlkNum * 0x10 ;
+-
+-				InBuf[0] = addr+(Offset % 16);
+-				InBuf[1] = 2;
+-				InBuf[2] = pData[0];
+-
+-				eFuseWritePhysical(pAd, &InBuf[0], 6, NULL, 2);
+-		}
+-
+-		//Step 4. Write mapping table
+-		addr = EFUSE_USAGE_MAP_START+BlkNum;
+-
+-		tmpaddr = addr;
+-
+-		if(addr % 2 != 0)
+-			addr = addr -1;
+-		InBuf[0] = addr;
+-		InBuf[1] = 2;
+-
+-		//convert the address from 10 to 8 bit ( bit7, 6 = parity and bit5 ~ 0 = bit9~4), and write to logical map entry
+-		tmpOffset = Offset;
+-		tmpOffset >>= 4;
+-		tmpOffset |= ((~((tmpOffset & 0x01) ^ ( tmpOffset >> 1 & 0x01) ^  (tmpOffset >> 2 & 0x01) ^  (tmpOffset >> 3 & 0x01))) << 6) & 0x40;
+-		tmpOffset |= ((~( (tmpOffset >> 2 & 0x01) ^ (tmpOffset >> 3 & 0x01) ^ (tmpOffset >> 4 & 0x01) ^ ( tmpOffset >> 5 & 0x01))) << 7) & 0x80;
+-
+-		// write the logical address
+-		if(tmpaddr%2 != 0)
+-			InBuf[2] = tmpOffset<<8;
+-		else
+-			InBuf[2] = tmpOffset;
+-
+-		eFuseWritePhysical(pAd,&InBuf[0], 6, NULL, 0);
+-
+-		//Step 5. Compare data if not the same, invalidate the mapping entry, then re-write the data until E-fuse is exhausted
+-		bWriteSuccess = TRUE;
+-		for(i =0; i<8; i++)
+-		{
+-			addr = BlkNum * 0x10 ;
+-
+-			InBuf[0] = addr+2*i;
+-			InBuf[1] = 2;
+-			InBuf[2] = 0x0;
+-
+-			eFuseReadPhysical(pAd, &InBuf[0], 4, &InBuf[2], 2);
+-
+-			if(buffer[i] != InBuf[2])
+-			{
+-				bWriteSuccess = FALSE;
+-				break;
+-			}
+-		}
+-
+-		//Step 6. invlidate mapping entry and find a free mapping entry if not succeed
+-		if (!bWriteSuccess)
+-		{
+-			DBGPRINT(RT_DEBUG_TRACE, ("Not bWriteSuccess BlkNum = %d\n", BlkNum));
+-
+-			// the offset of current mapping entry
+-			addr = EFUSE_USAGE_MAP_START+BlkNum;
+-
+-			//find a new mapping entry
+-			BlkNum = 0xffff;
+-			for (i=EFUSE_USAGE_MAP_START; i<=EFUSE_USAGE_MAP_END; i+=2)
+-			{
+-				eFusePhysicalReadRegisters(pAd, i, 2, &LogicalAddress);
+-				if( (LogicalAddress & 0xff) == 0)
+-				{
+-					BlkNum = i-EFUSE_USAGE_MAP_START;
+-					break;
+-				}
+-				else if(( (LogicalAddress >> 8) & 0xff) == 0)
+-				{
+-					if (i != EFUSE_USAGE_MAP_END)
+-					{
+-						BlkNum = i+1-EFUSE_USAGE_MAP_START;
+-					}
+-					break;
+-				}
+-			}
+-			DBGPRINT(RT_DEBUG_TRACE, ("Not bWriteSuccess new BlkNum = %d\n", BlkNum));
+-			if(BlkNum == 0xffff)
+-			{
+-				DBGPRINT(RT_DEBUG_TRACE, ("eFuseWriteRegisters: out of free E-fuse space!!!\n"));
+-				return FALSE;
+-			}
+-
+-			//invalidate the original mapping entry if new entry is not found
+-			tmpaddr = addr;
+-
+-			if(addr % 2 != 0)
+-				addr = addr -1;
+-			InBuf[0] = addr;
+-			InBuf[1] = 2;
+-
+-			eFuseReadPhysical(pAd, &InBuf[0], 4, &InBuf[2], 2);
+-
+-			// write the logical address
+-			if(tmpaddr%2 != 0)
+-			{
+-				// Invalidate the high byte
+-				for (i=8; i<15; i++)
+-				{
+-					if( ( (InBuf[2] >> i) & 0x01) == 0)
+-					{
+-						InBuf[2] |= (0x1 <<i);
+-						break;
+-					}
+-				}
+-			}
+-			else
+-			{
+-				// invalidate the low byte
+-				for (i=0; i<8; i++)
+-				{
+-					if( ( (InBuf[2] >> i) & 0x01) == 0)
+-					{
+-						InBuf[2] |= (0x1 <<i);
+-						break;
+-					}
+-				}
+-			}
+-			eFuseWritePhysical(pAd, &InBuf[0], 6, NULL, 0);
+-		}
+-	}
+-	while (!bWriteSuccess&&Loop<2);
+-	if(!bWriteSuccess)
+-		DBGPRINT(RT_DEBUG_ERROR,("Efsue Write Failed!!\n"));
+-	return TRUE;
 -}
-Index: b/drivers/staging/rt2860/common/eeprom.c
-===================================================================
---- a/drivers/staging/rt2860/common/eeprom.c
-+++ b/drivers/staging/rt2860/common/eeprom.c
-@@ -66,7 +66,6 @@ INT RtmpChipOpsEepromHook(
- 			{
- 		pChipOps->eeinit = eFuse_init;
- 		pChipOps->eeread = rtmp_ee_efuse_read16;
--		pChipOps->eewrite = rtmp_ee_efuse_write16;
- 		return 0 ;
- 	     }
- 		else
-@@ -83,14 +82,12 @@ INT RtmpChipOpsEepromHook(
- 		case RTMP_DEV_INF_PCI:
- 			pChipOps->eeinit = NULL;
- 			pChipOps->eeread = rtmp_ee_prom_read16;
--			pChipOps->eewrite = rtmp_ee_prom_write16;
- 					break;
- #endif // RTMP_PCI_SUPPORT //
- #ifdef RTMP_USB_SUPPORT
- 		case RTMP_DEV_INF_USB:
- 			pChipOps->eeinit = NULL;
- 			pChipOps->eeread = RTUSBReadEEPROM16;
--			pChipOps->eewrite = RTUSBWriteEEPROM16;
- 					break;
- #endif // RTMP_USB_SUPPORT //
+-
+-
+-/*
+-========================================================================
+-
+-	Routine Description:
+-
+-	Arguments:
+-
+-	Return Value:
+-
+-	Note:
+-
+-========================================================================
+-*/
+ static VOID eFuseWritePhysical(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	PUSHORT lpInBuffer,
+@@ -723,49 +426,6 @@ static VOID eFuseWritePhysical(
+ 	}
+ }
  
-Index: b/drivers/staging/rt2860/eeprom.h
-===================================================================
---- a/drivers/staging/rt2860/eeprom.h
-+++ b/drivers/staging/rt2860/eeprom.h
-@@ -48,11 +48,6 @@ int rtmp_ee_prom_read16(
- 	IN PRTMP_ADAPTER	pAd,
- 	IN USHORT			Offset,
- 	OUT USHORT			*pValue);
 -
--int rtmp_ee_prom_write16(
--	IN PRTMP_ADAPTER	pAd,
--	IN USHORT			Offset,
--	IN USHORT			value);
- #endif // RTMP_PCI_SUPPORT //
- #ifdef RTMP_USB_SUPPORT
- /*************************************************************************
-@@ -62,11 +57,6 @@ NTSTATUS RTUSBReadEEPROM16(
- 	IN PRTMP_ADAPTER	pAd,
- 	IN	USHORT			offset,
- 	OUT	PUSHORT			pData);
+-/*
+-========================================================================
 -
--NTSTATUS RTUSBWriteEEPROM16(
--	IN RTMP_ADAPTER *pAd,
--	IN USHORT offset,
--	IN USHORT value);
- #endif // RTMP_USB_SUPPORT //
- 
- #ifdef RT30xx
-@@ -75,11 +65,6 @@ int rtmp_ee_efuse_read16(
- 	IN RTMP_ADAPTER *pAd,
- 	IN USHORT Offset,
- 	OUT USHORT *pValue);
+-	Routine Description:
 -
--int rtmp_ee_efuse_write16(
--	IN RTMP_ADAPTER *pAd,
--	IN USHORT Offset,
--	IN USHORT data);
- #endif // RTMP_EFUSE_SUPPORT //
- #endif // RT30xx //
+-	Arguments:
+-
+-	Return Value:
+-
+-	Note:
+-
+-========================================================================
+-*/
+-NTSTATUS eFuseWrite(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	USHORT			Offset,
+-	IN	PUCHAR			pData,
+-	IN	USHORT			length)
+-{
+-	int i;
+-	USHORT* pValueX = (PUSHORT) pData;				//value ...
+-
+-	// The input value=3070 will be stored as following
+-	// Little-endian		S	|	S	Big-endian
+-	// addr			1	0	|	0	1
+-	// Ori-V			30	70	|	30	70
+-	// After swapping
+-	//				30	70	|	70	30
+-	// Casting
+-	//				3070	|	7030 (x)
+-	// The swapping should be removed for big-endian
+-	for(i=0; i<length; i+=2)
+-	{
+-		eFuseWriteRegisters(pAd, Offset+i, 2, &pValueX[i/2]);
+-	}
+-
+-	return TRUE;
+-}
+-
+-
+-
+-
+ /*
+ ========================================================================
  
 Index: b/drivers/staging/rt2860/rtmp.h
 ===================================================================
 --- a/drivers/staging/rt2860/rtmp.h
 +++ b/drivers/staging/rt2860/rtmp.h
-@@ -1790,7 +1790,6 @@ struct _RTMP_CHIP_OP_
- 	/*  Calibration access related callback functions */
- 	int (*eeinit)(RTMP_ADAPTER *pAd);										/* int (*eeinit)(RTMP_ADAPTER *pAd); */
- 	int (*eeread)(RTMP_ADAPTER *pAd, USHORT offset, PUSHORT pValue);				/* int (*eeread)(RTMP_ADAPTER *pAd, int offset, PUSHORT pValue); */
--	int (*eewrite)(RTMP_ADAPTER *pAd, USHORT offset, USHORT value);;				/* int (*eewrite)(RTMP_ADAPTER *pAd, int offset, USHORT value); */
+@@ -4052,18 +4052,6 @@ VOID eFuseGetFreeBlockCount(IN PRTMP_ADA
  
- 	/* MCU related callback functions */
- 	int (*loadFirmware)(RTMP_ADAPTER *pAd);								/* int (*loadFirmware)(RTMP_ADAPTER *pAd); */
-Index: b/drivers/staging/rt2860/rtmp_chip.h
-===================================================================
---- a/drivers/staging/rt2860/rtmp_chip.h
-+++ b/drivers/staging/rt2860/rtmp_chip.h
-@@ -167,10 +167,6 @@
- #define RT28xx_EEPROM_READ16(_pAd, _offset, _value)			\
- 	(_pAd)->chipOps.eeread((RTMP_ADAPTER *)(_pAd), (USHORT)(_offset), (PUSHORT)&(_value))
- 
--#define RT28xx_EEPROM_WRITE16(_pAd, _offset, _value)		\
--	(_pAd)->chipOps.eewrite((RTMP_ADAPTER *)(_pAd), (USHORT)(_offset), (USHORT)(_value))
+ INT eFuse_init(
+ 	IN PRTMP_ADAPTER pAd);
 -
+-NTSTATUS eFuseRead(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	USHORT			Offset,
+-	OUT	PUCHAR			pData,
+-	IN	USHORT			Length);
 -
- 
- // -------------------------------------------------------------------
- //  E2PROM data layout
-Index: b/drivers/staging/rt2870/common/rtusb_io.c
-===================================================================
---- a/drivers/staging/rt2870/common/rtusb_io.c
-+++ b/drivers/staging/rt2870/common/rtusb_io.c
-@@ -619,17 +619,6 @@ NTSTATUS RTUSBReadEEPROM16(
- 
- }
- 
--NTSTATUS RTUSBWriteEEPROM16(
--	IN RTMP_ADAPTER *pAd,
--	IN USHORT offset,
--	IN USHORT value)
--{
--	USHORT tmpVal;
--
--	tmpVal = cpu2le16(value);
--	return RTUSBWriteEEPROM(pAd, offset, (PUCHAR)&(tmpVal), 2);
--}
--
- /*
- 	========================================================================
+-NTSTATUS eFuseWrite(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	USHORT			Offset,
+-	IN	PUCHAR			pData,
+-	IN	USHORT			length);
+ //2008/09/11:KH add to support efuse-->
+ #endif // RTMP_EFUSE_SUPPORT //
  
