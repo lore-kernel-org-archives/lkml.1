@@ -1,68 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZJURGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbZJURHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbZJURGx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 13:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbZJURGx
+	id S1754516AbZJURHS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 13:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbZJURHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 13:06:53 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:33496 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbZJURGw (ORCPT
+	Wed, 21 Oct 2009 13:07:16 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:47044 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753722AbZJURHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 13:06:52 -0400
-Date: Wed, 21 Oct 2009 19:06:41 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] powerpc/5200: Add mpc5200-spi (non-PSC) device
-	driver
-Message-ID: <20091021170641.GA3106@pengutronix.de>
-References: <20090618025030.12363.69402.stgit@localhost.localdomain> <20091021131747.GG12819@pengutronix.de> <fa686aa40910210745l7d19d6ecq303ee990bed82c62@mail.gmail.com>
+	Wed, 21 Oct 2009 13:07:15 -0400
+X-Sasl-enc: SnAq0D7qgHPM/A8x0Rn7J3lANMfvIzHJqA6lNgC4p2au 1256144839
+Message-ID: <4ADF3FBB.1060009@imap.cc>
+Date: Wed, 21 Oct 2009 19:07:07 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
+To: Andy Whitcroft <apw@canonical.com>
+CC: Randy Dunlap <rdunlap@xenotime.net>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: checkpatch.pl false positive? "ERROR: do not use assignment in
+ if condition"
+References: <4ADDDC55.8020809@imap.cc> <20091020085820.e312a38b.rdunlap@xenotime.net> <20091020162400.GF13064@penfold>
+In-Reply-To: <20091020162400.GF13064@penfold>
+X-Enigmail-Version: 0.95.7
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
-Content-Disposition: inline
-In-Reply-To: <fa686aa40910210745l7d19d6ecq303ee990bed82c62@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: wsa@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+ protocol="application/pgp-signature";
+ boundary="------------enig17E6A4A32FCDA92C73E205C1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---UugvWAfsgieZRqgk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig17E6A4A32FCDA92C73E205C1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
+Andy Whitcroft schrieb:
+> On Tue, Oct 20, 2009 at 08:58:20AM -0700, Randy Dunlap wrote:
+>> On Tue, 20 Oct 2009 17:50:45 +0200 Tilman Schmidt wrote:
+>>
+>>> The command
+>>> ./scripts/checkpatch.pl -f drivers/isdn/gigaset/bas-gigaset.c=20
+>>> produces a lot of "ERROR" messages like these:
+>>>
+>>> ERROR: do not use assignment in if condition
+>>> #608: FILE: isdn/gigaset/bas-gigaset.c:608:
+>>> +       if ((ret =3D usb_submit_urb(ucs->urb_cmd_in, GFP_ATOMIC)) !=3D=
+ 0) {
+>>>
+>>> ERROR: do not use assignment in if condition
+>>> #745: FILE: isdn/gigaset/bas-gigaset.c:745:
+>>> +               if ((ucs->rcvbuf =3D kmalloc(l, GFP_ATOMIC)) =3D=3D N=
+ULL) {
+>>>
+>>> ERROR: do not use assignment in if condition
+>>> #753: FILE: isdn/gigaset/bas-gigaset.c:753:
+>>> +               if ((rc =3D atread_submit(cs, BAS_TIMEOUT)) < 0) {
+>>>
+>>> As far as I can see there's nothing wrong with these lines. In partic=
+ular,
+>>> I cannot find anything in Documentation/CodingStyle that would prohib=
+it an
+>>> assignment inside an 'if' condition.
+>> Yes, we don't try to list Every Possible Problem in CodingStyle,
 
-> V4 was supposed to go in during the merge window.  But I haven't heard
-> anything from David (and I didn't pursue it either).  Unless David
-> objects, I'll put it into either my -merge or my -next tree; depending
-> on what Ben and Linus prefer.
+Well, that's not very nice towards small time developers like me.
+I try to follow CodingStyle as best I can, only to get smacked with
+a checkpatch ERROR for something that isn't even hinted at there.
+If a way of coding is such an abomination that it merits an ERROR
+from checkpatch (meaning " change this or see your submission
+rejected"), then it also merits being mentioned in CodingStyle.
 
-I wondered if there was going to be a V5 as you said you fixed a few things
-according to my review and couldn't find an updated patch for that.
+>> but emails on lkml over the past several years try to discourage such
+>> assignments inside if's because they can be confusing, difficult to re=
+ad,
+>> and generally are not helping to produce any better code output than
+>> using:
+>> 	ret =3D usb_submit_urb(args);
+>> 	if (ret) {
+>> 		foo;
+>> 		bar;
+>> 		blah();
+>> 	}
+
+I don't agree, but judging from your wording you don't want to hear any
+arguments, so I'll leave it at that. I just want to know *beforehand*
+what I have to do in order to get my code merged.
+
+> What he said :).  We try and codify the preferred style where there is
+> a preference.  That preference was made by reviewers as it is much
+> harder to accidentally do the following when you meant the assignment o=
+r
+> visa versa:
+
+But does a mere preference by some reviewers warrant an ERROR message,
+when even a line that exceeds the 80 character limit, which is
+elaborately justified in CodingStyle, produces only a warning?
+
+Again, I don't want to start a discussion about that preference. I know
+now that it exists, and I am in no position to question it. But how many
+of those preferences may yet turn up to bite me? If people are feeling
+so strongly about a preference that those who do not honor it must be
+slapped with a checkpatch ERROR then they should also find the energy
+to add an appropriate warning about that to CodingStyle so that coders
+have a chance to avoid it. That's only fair.
+
+Thanks,
+Tilman
 
 --=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
---UugvWAfsgieZRqgk
+
+--------------enig17E6A4A32FCDA92C73E205C1
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-iEYEARECAAYFAkrfP6EACgkQD27XaX1/VRsh3QCePLvQeu0ERCeJvx2l5LrEtDY4
-/Q8An1B29qosnUF62OBV3AstrTFxSnJM
-=5evQ
+iD8DBQFK3z/FQ3+did9BuFsRAkqUAJ9E9kZUyoGNPjkYezK0Ec2jiDpBhQCeP916
+czBliXXwA/ex/sQCo0Dzx28=
+=VdfI
 -----END PGP SIGNATURE-----
 
---UugvWAfsgieZRqgk--
+--------------enig17E6A4A32FCDA92C73E205C1--
