@@ -1,121 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZJUXLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbZJUXVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842AbZJUXLv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 19:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbZJUXLu
+	id S1751330AbZJUXVu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 19:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbZJUXVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 19:11:50 -0400
-Received: from mga05.intel.com ([192.55.52.89]:46771 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755078AbZJUXLt (ORCPT
+	Wed, 21 Oct 2009 19:21:49 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:49477 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbZJUXVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 19:11:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,600,1249282800"; 
-   d="scan'208";a="505980837"
-Date: Thu, 22 Oct 2009 01:13:11 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, tony@atomide.com,
-       broonie@opensource.wolfsonmicro.com
-Subject: Re: [PATCH 1/4] MFD: twl4030: add twl4030_codec MFD as a new child
- to the core
-Message-ID: <20091021231311.GF17796@sortiz.org>
-References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com>
- <1255956140-4829-2-git-send-email-peter.ujfalusi@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255956140-4829-2-git-send-email-peter.ujfalusi@nokia.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 21 Oct 2009 19:21:49 -0400
+Subject: [RFC][PATCH] Add prctl to set sibling thread names
+From: john stultz <johnstul@us.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Mike Fulton <fultonm@ca.ibm.com>,
+       Sean Foley <Sean_Foley@ca.ibm.com>, Darren Hart <dvhltc@us.ibm.com>
+Content-Type: text/plain
+Date: Wed, 21 Oct 2009 16:21:37 -0700
+Message-Id: <1256167297.4768.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
 
-On Mon, Oct 19, 2009 at 03:42:17PM +0300, Peter Ujfalusi wrote:
-> New MFD child to twl4030 MFD device.
-> This MFD device will be used by the drivers, which needs resources
-> from the twl4030 codec like audio and vibra.
-> 
-> The platform specific configuration data is passed along to the
-> child drivers (audio, vibra).
-Some comments on your code:
+Taking a very raw attempt at this, I scratched out the following simple
+implementation. I'd appreciate any review or suggestions for
+improvements. I'm not at all certain the passing of the thread pid_t
+through the unsigned long is valid, for instance, or if
+same_thread_group() is the right check to make sure we only change
+siblings and not tid from other processes. So any advice on better
+approaches would be great.
 
-> +config TWL4030_CODEC
-> +	bool "Support codec part of the TWL4030 family chips"
-> +	depends on TWL4030_CORE
-> +	help
-> +	  Say yes here if you want to use the codec resources on the
-> +	  TWL4030 family chips. The codec in TWL4030 provides the audio
-> +	  functionality and also has the vibrator controls.
-> +
-> +	  This driver provides MFD device to be used for drivers, which needs
-> +	  access to the codec part, the board-specific data is passed from this
-> +	  driver to the childs as platform data with the board specific
-> +	  configuration.
-> +
-As Mark noticed already, you dont really want users to explicitely select this
-obscure mfd driver to get their audio and vibre driver selectable. It should
-be the other way around, and I think you already agreed with that.
+thanks
+-john
+
+========================
+
+Setting a thread's comm to be something unique is a very useful ability
+and is helpful for debugging complicated threaded applications. However
+currently the only way to set a thread name is for the thread to name
+itself via the PR_SET_NAME prctl.
+
+However, there may be situations where it would be advantageous for a
+thread dispatcher to be naming the threads its managing, rather then
+having the threads self-describe themselves. This sort of behavior is
+available on other systems via the pthread_setname_np() interface.
+
+This patch allows a thread to name its sibling threads via a new
+PR_SET_THREAD_NAME prctrl.
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+diff --git a/include/linux/prctl.h b/include/linux/prctl.h
+index 9311505..2726527 100644
+--- a/include/linux/prctl.h
++++ b/include/linux/prctl.h
+@@ -52,6 +52,7 @@
+ 
+ #define PR_SET_NAME    15		/* Set process name */
+ #define PR_GET_NAME    16		/* Get process name */
++#define PR_SET_THREAD_NAME    17	/* Set sibling thread name */
+ 
+ /* Get/set process endian */
+ #define PR_GET_ENDIAN	19
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 255475d..d25851a 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1506,6 +1506,27 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
+ 					 sizeof(comm)))
+ 				return -EFAULT;
+ 			return 0;
++		case PR_SET_THREAD_NAME:
++		{
++			struct task_struct *tsk;
++			pid_t tid;
++
++			comm[sizeof(me->comm)-1] = 0;
++			tid = (pid_t)arg2;
++			if (strncpy_from_user(comm, (char __user *)arg3,
++					      sizeof(me->comm) - 1) < 0)
++				return -EFAULT;
++
++			tsk = get_pid_task(find_get_pid(tid), PIDTYPE_PID);
++			if (!tsk)
++				return -EINVAL;
++
++			if (!same_thread_group(me, tsk))
++				return -EINVAL;
++
++			set_task_comm(tsk, comm);
++			return 0;
++		}
+ 		case PR_GET_ENDIAN:
+ 			error = GET_ENDIAN(me, arg2);
+ 			break;
 
 
-> +static struct device *
-> +twl4030_codec_new_child(const char *name, void *pdata, unsigned pdata_len)
-> +{
-> +	struct platform_device	*pdev;
-> +	int			status = 0;
-> +
-> +	pdev = platform_device_alloc(name, -1);
-> +	if (!pdev) {
-> +		dev_dbg(&twl4030_codec_dev->dev, "can't alloc dev (%s)\n",
-> +									name);
-> +		return ERR_PTR(-ENOMEM);
-> +	}
-> +	pdev->dev.parent = &twl4030_codec_dev->dev;
-> +
-> +	if (pdata) {
-> +		status = platform_device_add_data(pdev, pdata, pdata_len);
-> +		if (status < 0) {
-> +			dev_dbg(&pdev->dev, "can't add platform_data\n");
-> +			goto err;
-> +		}
-> +	}
-> +	status = platform_device_add(pdev);
-> +	if (status < 0) {
-> +		dev_dbg(&pdev->dev, "Adding platform device failed\n");
-> +		goto err;
-> +	}
-> +
-> +	return &pdev->dev;
-> +err:
-> +	platform_device_put(pdev);
-> +	dev_err(&twl4030_codec_dev->dev, "can't add %s dev\n", name);
-> +	return ERR_PTR(status);
-> +}
-This could really use the mfd-core API, and avoid duplicating code.
-You just would have to define a couple cells, and call mfd_add_devices on
-them.
-
-
-> +static int __devexit twl4030_codec_remove(struct platform_device *pdev)
-> +{
-> +	struct twl4030_codec *codec = platform_get_drvdata(pdev);
-> +
-> +	platform_set_drvdata(pdev, NULL);
-> +	kfree(codec);
-> +	twl4030_codec_dev = NULL;
-> +
-> +	return 0;
-> +}
-I think you're missing a platform_device_unregister() here (or an
-mfd_remove_devices() if you're going to switch to the mfd-core API)
-
-Cheers,
-Samuel.
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
