@@ -1,158 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbZJUXi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbZJUXq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753166AbZJUXi3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 19:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZJUXi3
+	id S1753088AbZJUXq1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 19:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbZJUXq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 19:38:29 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:33846 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751842AbZJUXi2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 19:38:28 -0400
-Authentication-Results: sj-iport-2.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-AV: E=Sophos;i="4.44,600,1249257600"; 
-   d="scan'208";a="216735499"
-Message-ID: <4ADF9B78.4060807@cisco.com>
-Date: Wed, 21 Oct 2009 16:38:32 -0700
-From: Michael Sundius <msundius@cisco.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 21 Oct 2009 19:46:27 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:43010 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752013AbZJUXq0 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 19:46:26 -0400
+From: Bela Lubkin <blubkin@vmware.com>
+To: "'Corey Minyard'" <minyard@acm.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+CC: "discuss@LessWatts.org" <discuss@LessWatts.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "openipmi-developer@lists.sourceforge.net" 
+	<openipmi-developer@lists.sourceforge.net>,
+       lkml <linux-kernel@vger.kernel.org>
+Date: Wed, 21 Oct 2009 16:46:41 -0700
+Subject: RE: [Openipmi-developer] [Discuss] [PATCH] ipmi: use round_jiffies
+ on timers to reduce timer overhead/wakeups
+Thread-Topic: [Openipmi-developer] [Discuss] [PATCH] ipmi: use round_jiffies
+ on timers to reduce timer overhead/wakeups
+Thread-Index: AcpSjEuExcQJDzppT7Knairll6LBYwAGu4Jg
+Message-ID: <E0AA796A7E3F4C4E8F1065D15FE4786183AF6946@EXCH-MBX-4.vmware.com>
+References: <20091021102822.5b32b2dc.randy.dunlap@oracle.com>
+	<20091021114210.4d7e1ea9@linux.intel.com>	<4ADF57D7.7010808@intel.com>
+	<20091021130348.cd521b0c.randy.dunlap@oracle.com> <4ADF6D76.7070409@acm.org>
+In-Reply-To: <4ADF6D76.7070409@acm.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, msundius@sundius.com, msundius@cisco.com
-Subject: [patch] delay panic during startup of kernel
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We've been, from time to time,  running into various problems early on
-the initialization of the kernel, encountering situations where we really
-should panic, but we can't because its too early to do so.
-(see * if you care to know why this is a problem for us). Anyhow, I've
-created this patch to have a little better way of orderly finishing the
-bring-up to the point where we can panic safely. Any comments?
+Corey Minyard & Randy Dunlap wrote:
 
+Randy>> From what I recall (probably 2 years ago), [older] ipmi hardware
+Randy>> does not generate event interrupts, so it has to be polled.
+Randy>>
+Randy>> Corey, can you elaborate on this?
 
-*One reason this often happens to us is that we have added hooks
-for our drivers to allocate contiguous blocks of memory very early and
-our driver team doesn't always communicate when changes have been
-made.
+Corey> Certainly.  Yes, some (probably most) IPMI hardware does not use
+Corey> interrupts, and unfortunately, it's not just older machines.
+Corey> The driver used to poll more slowly, but in many cases the
+Corey> performance was unacceptable.
+Corey>
+Corey> kipmid is only started if the hardware doesn't support
+Corey> interrupts, so only users with sub-standard hardware have to
+Corey> suffer with this problem.
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index f4e3184..b2e7bac 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -163,6 +163,10 @@ extern struct atomic_notifier_head panic_notifier_list;
- extern long (*panic_blink)(long time);
- NORET_TYPE void panic(const char * fmt, ...)
-        __attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
-+extern void panic_later(const char * fmt, ...)
-+       __attribute__ ((format (printf, 1, 2)));
-+extern void panic_later_complete(void);
-+extern bool panic_later_pending(void);
- extern void oops_enter(void);
- extern void oops_exit(void);
- extern int oops_may_print(void);
-diff --git a/init/main.c b/init/main.c
-index 5988deb..2a9347a 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -185,7 +185,6 @@ __setup("reset_devices", set_reset_devices);
+Regrettably, of the "big three" in the "PC Server" world, only HP's iLO2
+BMC supports interrupts.  Dell's DRAC4 & 5 don't, IBM's ASM, RSA, etc.
+don't.  Also (at least out of a sample of one) SuperMicro also doesn't
+have an interrupt.
 
- static char * argv_init[MAX_INIT_ARGS+2] = { "init", NULL, };
- char * envp_init[MAX_INIT_ENVS+2] = { "HOME=/", "TERM=linux", NULL, };
--static const char *panic_later, *panic_param;
+They also have all settled on the KCS interface, which dribbles one
+character through per non-interrupt.  So sad.  Dell's DRAC3 had a BT BMC
+which transferred whole IPMI packets via DMA _and_ had an interrupt.
+HP's ancient SMIC equipment also had an interrupt (but that's also
+char-by-char, and their current KCS has an interrupt, so at least they
+haven't regressed).  I've guessed that some chip vendor must have
+come out with a Really Cheep KCS implementation and drove every other
+implementation out of the market.  :-(
 
- extern struct obs_kernel_param __setup_start[], __setup_end[];
+I've heard rumors that some current Sun hardware has BT.
 
-@@ -281,7 +280,7 @@ static int __init unknown_bootoption(char *param, 
-char *val)
-                return 0;
-        }
-
--       if (panic_later)
-+       if (panic_later_pending())
-                return 0;
-
-        if (val) {
-@@ -289,8 +288,7 @@ static int __init unknown_bootoption(char *param, 
-char *val)
-                unsigned int i;
-                for (i = 0; envp_init[i]; i++) {
-                        if (i == MAX_INIT_ENVS) {
--                               panic_later = "Too many boot env vars at 
-`%s'";
--                               panic_param = param;
-+                               panic_later("Too many boot env vars at 
-`%s'", param);
-                        }
-                        if (!strncmp(param, envp_init[i], val - param))
-                                break;
-@@ -301,8 +299,7 @@ static int __init unknown_bootoption(char *param, 
-char *val)
-                unsigned int i;
-                for (i = 0; argv_init[i]; i++) {
-                        if (i == MAX_INIT_ARGS) {
--                               panic_later = "Too many boot init vars 
-at `%s'";
--                               panic_param = param;
-+                               panic_later("Too many boot init vars at 
-`%s'", param);
-                        }
-                }
-                argv_init[i] = param;
-@@ -621,8 +618,7 @@ asmlinkage void __init start_kernel(void)
-         * this. But we do want output early, in case something goes wrong.
-         */
-        console_init();
--       if (panic_later)
--               panic(panic_later, panic_param);
-+       panic_later_complete();
-
-        lockdep_info();
-
-diff --git a/kernel/panic.c b/kernel/panic.c
-index 96b45d0..092bb46 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -23,6 +23,9 @@
- #include <linux/nmi.h>
- #include <linux/dmi.h>
-
-+#define MAX_PANIC_LATER_LEN    1024
-+static char panic_later_msg[MAX_PANIC_LATER_LEN];
-+
- int panic_on_oops;
- static unsigned long tainted_mask;
- static int pause_on_oops;
-@@ -40,6 +43,28 @@ static long no_blink(long time)
-        return 0;
- }
-
-+void panic_later(const char *fmt, ...)
-+{
-+       va_list args;
-+
-+       if (!panic_later_pending()) {
-+               va_start(args, fmt);
-+               vsnprintf(panic_later_msg, sizeof(panic_later_msg), fmt, 
-args);
-+               va_end(args);
-+       }
-+}
-+
-+bool panic_later_pending()
-+{
-+       return panic_later_msg[0] != 0;
-+}
-+
-+void panic_later_complete()
-+{
-+       if (panic_later_pending())
-+               panic("%s", panic_later_msg);
-+}
-+
- /* Returns how long it waited in ms */
- long (*panic_blink)(long time);
- EXPORT_SYMBOL(panic_blink);
+>Bela<
