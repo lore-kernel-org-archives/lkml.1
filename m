@@ -1,72 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZJUVbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZJUVd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbZJUVbm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 17:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbZJUVbl
+	id S1755533AbZJUVd5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 17:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbZJUVd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 17:31:41 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:35134 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753891AbZJUVbl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 17:31:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=w7GnQEh9wfuDg7CaHtjRC6cRBmESpW0PtMqWTzOulsKJ+Kxs44lohCse3G7QqpMGvZ
-         qf65Ftr4U4w/QhD9vSdvHttyUXq3MoL5Rg+qU3h6W7GaVFrz9vP5UevHaKDclEhS+9ko
-         j+Z+c+5EWKmkySYH+ctEejvvQhwyndPFP7YTg=
-Date: Wed, 21 Oct 2009 23:31:42 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Arnd Bergmann <arndbergmann@googlemail.com>
-Cc: John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
-Message-ID: <20091021213139.GC4880@nowhere>
-References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain> <alpine.LFD.2.00.0910192019420.3563@localhost.localdomain> <200910200000.24574.arnd@arndb.de> <200910200008.57468.arnd@arndb.de>
+	Wed, 21 Oct 2009 17:33:56 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754172AbZJUVd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 17:33:56 -0400
+Date: Wed, 21 Oct 2009 23:33:17 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jonathan Corbet <corbet@lwn.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arnd Bergmann <arndbergmann@googlemail.com>
+Subject: Re: [PATCH] macintosh: Explicitly set llseek to no_llseek in
+ ans-lcd
+In-Reply-To: <20091021212137.GB4880@nowhere>
+Message-ID: <alpine.LFD.2.00.0910212327160.3526@localhost.localdomain>
+References: <20091010153314.827301943@linutronix.de> <20091010153349.966159859@linutronix.de> <alpine.LFD.2.00.0910212305090.3526@localhost.localdomain> <20091021212137.GB4880@nowhere>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910200008.57468.arnd@arndb.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20, 2009 at 12:08:57AM +0200, Arnd Bergmann wrote:
-> On Tuesday 20 October 2009, Arnd Bergmann wrote:
-> > On Monday 19 October 2009, John Kacur wrote:
-> > > How does this look? (Version 2 of the patch follows)
+
+
+On Wed, 21 Oct 2009, Frederic Weisbecker wrote:
+
+> On Wed, Oct 21, 2009 at 11:07:18PM +0200, John Kacur wrote:
+> > From 0c2b412cdccf73bdeb19bb866bfe556942eaeca2 Mon Sep 17 00:00:00 2001
+> > From: John Kacur <jkacur@redhat.com>
+> > Date: Wed, 21 Oct 2009 23:01:12 +0200
+> > Subject: [PATCH] macintosh: Explicitly set llseek to no_llseek in ans-lcd
 > > 
-> > Looks good now.
+> > Now that we've removed the BKL here, let's explicitly set lleek to no_llseek
 > > 
+> > Signed-off-by: John Kacur <jkacur@redhat.com>
+> > ---
+> >  drivers/macintosh/ans-lcd.c |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
+> > index 4ae8ec9..a1a1bde 100644
+> > --- a/drivers/macintosh/ans-lcd.c
+> > +++ b/drivers/macintosh/ans-lcd.c
+> > @@ -137,6 +137,7 @@ const struct file_operations anslcd_fops = {
+> >  	.write		= anslcd_write,
+> >  	.unlocked_ioctl	= anslcd_ioctl,
+> >  	.open		= anslcd_open,
+> > +	.llseedk	= no_llseek,
 > 
-> A bit of background:
 > 
-> Doing only one of the two conversions is a correct patch as well
-> of course, I just want to make sure you don't have to go through all
-> the same files again once someone does a blind pushdown into the ioctl
-> and llseek functions, so once you prove that a specific driver doesn't
-> need the BKL, please always make sure to remove it from all three places.
+> llseedk? :)
 > 
-> I fear that the llseek part will get interesting as well, just because
-> we call default_llseek instead of no_ll by default currently.
-> It might be a good idea to add one of .llseek=no_llseek or 
-> .llseek=generic_file_llseek in any file_operations that you prove
-> to not require the BKL.
 > 
-> 	Arnd <><
+> Should we better pushdown default_llseek to every to every
+> file operations that don't implement llseek?
+> I don't know how many of them don't implement llseek() though.
+> 
+> That said we can't continue anymore with this default attribution
+> of default_llseek() on new fops.
+> 
 
+If you don't explicitly set it to no_llseek, you automatically get the
+default_llseek, which uses the BKL. So if your driver doesn't need it, it 
+is best to explicitly set it to no_llseek.
 
-What about a pusdown of default_lseek attribution for these
-fops that don't have any llseek() (and rename it to
-deprecated_default_lseek() )
-
-Because we can probably fix these fops one by one but what
-about the next drivers that will have no llseek() ?
-
-We can't attribute default_llseek() by default anymore for
-further fops that are to come.
-
+There is also a generic_file_llseek_unlocked, somewhat analogous to the 
+unlocked_ioctls that you can use if you don't need to provide a full 
+llseek yourself.
