@@ -1,106 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751360AbZJUEf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbZJUFSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751360AbZJUEf4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 00:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbZJUEfz
+	id S1751981AbZJUFSq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 01:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZJUFSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 00:35:55 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:33638 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750954AbZJUEfy (ORCPT
+	Wed, 21 Oct 2009 01:18:45 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:48187 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbZJUFSo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 00:35:54 -0400
+	Wed, 21 Oct 2009 01:18:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=goosnByfGUR7TV9yH3s5mYFU20K4rYWG+VOOaqgLZvTcQyDMFqKdTgBfUWIq+n3Fny
-         JSj2aZtzG6UCOXcpXpvhbZAvhaQkJ/hdIE2KfhGwcflUEZphBYYe4OUrD6p+4nhfivHP
-         ZkzXaKH+xTTA10aUUlGRx51dcvV1eCamst17Q=
-Date: Tue, 20 Oct 2009 21:35:53 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, Constantin Baranov <const@mimas.ru>
-Subject: Re: [PATCH] leds-alix2: add support for button connected to J15
-Message-ID: <20091021043553.GA378@core.coreip.homeip.net>
-References: <20091016130315.GT28832@buzzloop.caiaq.de> <20091018072738.GF3935@core.coreip.homeip.net> <20091019073728.GC28832@buzzloop.caiaq.de> <20091020013852.GC24370@core.coreip.homeip.net> <20091020101357.GR28832@buzzloop.caiaq.de>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QMRP6y9puAtuMdS+8V3mTuwp928okDlXuP0M8FWU5UljLtjSuh0ZWnEmdNxnvmibv7
+         ywoqd0DgIqjmvGwZz0TVVpNdRnwlDOVbZ1KYav1pq6gGa0A1XFIVbHddSF6pSTJ02yO+
+         UC1+L3SSvvpZyGwgaVYZy72kRtf8+HrBmt+J8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091020101357.GR28832@buzzloop.caiaq.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091018113908.GR4808@kryten>
+References: <20091018113908.GR4808@kryten>
+Date: Wed, 21 Oct 2009 12:47:47 +0800
+Message-ID: <2375c9f90910202147p5af0eb86oe2cad800a74ce40a@mail.gmail.com>
+Subject: Re: [PATCH] exec: setup_arg_pages fails to return errors
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Anton Blanchard <anton@samba.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel,
+On Sun, Oct 18, 2009 at 7:39 PM, Anton Blanchard <anton@samba.org> wrote:
+>
+> In setup_arg_pages we work hard to assign a value to ret, but on exit
+> we always return 0.
+>
+> Also remove a now duplicated exit path and branch to out_unlock instead.
+>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
 
-On Tue, Oct 20, 2009 at 12:13:57PM +0200, Daniel Mack wrote:
-> +
-> +	ret = input_register_polled_device(ipdev);
-> +	
-> +	if (ret) {
-> +		input_free_polled_device(ipdev);
-> +		ipdev = NULL;
-> +	}
-> +
-> +	return ret;
-> +}
 
-Ah, don't be lazy ;)
+Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-static void alix_button_unregister(void)
-{
-	if (ipdev) {
-		input_unregister_polled_device(ipdev);
-		/* Yes, polled devices need to be freed */
-		input_free_polled_device(ipdev);
-		ipdev = NULL;
-	}
-}
-
-> +#else
-> +#define alix_button_register() (0)
-
-static inline int alix_button_register(void) { return 0; }
-static inline void alix_button_unregister(void) { }
-
-So you get typechecking (if any).
-
-> +#endif
-> +
->  static int __init alix_led_probe(struct platform_device *pdev)
->  {
->  	int i;
-> @@ -89,6 +139,11 @@ static int __init alix_led_probe(struct platform_device *pdev)
->  		if (ret < 0)
->  			goto fail;
->  	}
-> +
-> +	ret = alix_button_register();
-> +	if (ret) 
-> +		goto fail;
-> +
->  	return 0;
->  
->  fail:
-> @@ -103,6 +158,12 @@ static int alix_led_remove(struct platform_device *pdev)
->  
->  	for (i = 0; i < ARRAY_SIZE(alix_leds); i++)
->  		led_classdev_unregister(&alix_leds[i].cdev);
-> +
-> +#ifdef CONFIG_LEDS_ALIX2_BUTTON
-> +	if (ipdev)
-> +		input_unregister_polled_device(ipdev);
-> +#endif
-
-	alix_button_unregister();
-
-> +
->  	return 0;
->  }
->  
-
--- 
-Dmitry
+>
+> Index: linux.trees.git/fs/exec.c
+> ===================================================================
+> --- linux.trees.git.orig/fs/exec.c      2009-09-28 12:17:10.000000000 +1000
+> +++ linux.trees.git/fs/exec.c   2009-09-28 12:17:58.000000000 +1000
+> @@ -624,10 +624,8 @@ int setup_arg_pages(struct linux_binprm
+>        /* Move stack pages down in memory. */
+>        if (stack_shift) {
+>                ret = shift_arg_pages(vma, stack_shift);
+> -               if (ret) {
+> -                       up_write(&mm->mmap_sem);
+> -                       return ret;
+> -               }
+> +               if (ret)
+> +                       goto out_unlock;
+>        }
+>
+>  #ifdef CONFIG_STACK_GROWSUP
+> @@ -641,7 +639,7 @@ int setup_arg_pages(struct linux_binprm
+>
+>  out_unlock:
+>        up_write(&mm->mmap_sem);
+> -       return 0;
+> +       return ret;
+>  }
+>  EXPORT_SYMBOL(setup_arg_pages);
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
