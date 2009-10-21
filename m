@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbZJUNOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZJUNQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753382AbZJUNOR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 09:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZJUNOQ
+	id S1753449AbZJUNQY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 09:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZJUNQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 09:14:16 -0400
-Received: from ru.mvista.com ([213.79.90.228]:4322 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753110AbZJUNOP (ORCPT
+	Wed, 21 Oct 2009 09:16:23 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:44981 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753148AbZJUNQX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 09:14:15 -0400
-Message-ID: <4ADF093D.10403@ru.mvista.com>
-Date: Wed, 21 Oct 2009 17:14:37 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Wed, 21 Oct 2009 09:16:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=VjkzGqDcYs9rJbsTfX6Eop3DPjw37zDaysvQ4b5YROEc66CMAWxayUkOomeTxIIDbs
+         M4j8PG9RXA1wVO1mUFepWJI4UuhIpdYiWfTby4WgiBTGgqugFfQWYpSq0J+alkNbq4Ji
+         9SSQqmIazqdy16S/9NdqvEdfrMP/nSE55FpF0=
+From: Arnd Bergmann <arndbergmann@googlemail.com>
+To: John Kacur <jkacur@redhat.com>
+Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
+Date: Wed, 21 Oct 2009 15:16:20 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
+Cc: Arnd Bergmann <arndbergmann@googlemail.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mattia Dongili <malattia@linux.it>
+References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain> <200910211029.21702.arnd@arndb.de> <alpine.LFD.2.00.0910211226180.3526@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0910211226180.3526@localhost.localdomain>
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-Cc: wuzhangjin@gmail.com, Thomas Gleixner <tglx@linutronix.de>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: ftrace for MIPS
-References: <1255995599.17795.15.camel@falcon>	 <1255997319.18347.576.camel@gandalf.stny.rr.com>	 <1256052667.8149.56.camel@falcon> <1256055714.18347.1608.camel@gandalf.stny.rr.com>
-In-Reply-To: <1256055714.18347.1608.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910211516.20614.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Wednesday 21 October 2009, John Kacur wrote:
+> From 96872f13a510db69fbb32f9e956615cd826f8986 Mon Sep 17 00:00:00 2001
+> From: John Kacur <jkacur@redhat.com>
+> Date: Sun, 18 Oct 2009 23:49:49 +0200
+> Subject: [PATCH] sony_pi: Remove the BKL from open and ioctl
+> 
+> The BKL is in this function because of the BKL pushdown
+> (see commit f8f2c79d594463427f7114cedb1555110d547d89)
+> 
+> It is not needed here because the mutex_lock sonypi_device.lock
+> provides the necessary locking.
+> 
+> sonpi_misc_ioctl can be converted to unlocked ioctls since it relies on
+> its own locking (the mutex sonypi_device.lock) and not the bkl
+> 
+> Document that llseek is not needed by explictly setting it to no_llseek
+> 
+> Signed-off-by: John Kacur <jkacur@redhat.com>
 
-Steven Rostedt wrote:
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
->>Need to check which registers is missing when saving/restoring for
->>_mcount:
-
->>NESTED(ftrace_graph_caller, PT_SIZE, ra) 
->>        MCOUNT_SAVE_REGS
->>        PTR_S   v0, PT_R2(sp)
->>
->>        MCOUNT_SET_ARGS
->>        jal     prepare_ftrace_return
->>        nop
->>
->>        /* overwrite the parent as &return_to_handler: v0 -> $1(at) */
->>        move    $1,     v0  
-
-> I'm confused here? I'm not exactly sure what the above is doing. Is $1 a
-> register (AT)?
-
-    Yes.
-
-> And how is this register used before calling mcount?
-
->>        PTR_L   v0, PT_R2(sp)
->>        MCOUNT_RESTORE_REGS
->>        RETURN_BACK
->>        END(ftrace_graph_caller)
-
->>        .align  2
->>        .globl  return_to_handler
->>return_to_handler:
->>        PTR_SUBU        sp, PT_SIZE
->>        PTR_S   v0, PT_R2(sp)
-
-> BTW, is v0 the only return register? I know x86 can return two different
-> registers depending on what it returns. What happens if a function
-> returns a 64 bit value on a 32bit box? Does it use two registers for
-> that?
-
-    Yes, there's also v1 register.
-
-WBR, Sergei
+This looks perfect to me now. Just a few hundred more of these,
+and we're done with the drivers ;-)
