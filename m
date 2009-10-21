@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZJUTXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932266AbZJUTVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755414AbZJUTXf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 15:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755260AbZJUTXe
+	id S932266AbZJUTVu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 15:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbZJUTVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 15:23:34 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:60437 "EHLO mx1.redhat.com"
+	Wed, 21 Oct 2009 15:21:49 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:11042 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755286AbZJUTVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 15:21:39 -0400
+	id S1755258AbZJUTVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 15:21:41 -0400
 From: Valerie Aurora <vaurora@redhat.com>
 To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
@@ -20,10 +20,10 @@ To: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Vladimir Dronnikov <dronnikov@gmail.com>,
        Felix Fietkau <nbd@openwrt.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 37/41] union-mount: Check read-only/read-write status of layers
-Date: Wed, 21 Oct 2009 12:19:35 -0700
-Message-Id: <1256152779-10054-38-git-send-email-vaurora@redhat.com>
-In-Reply-To: <1256152779-10054-37-git-send-email-vaurora@redhat.com>
+Subject: [PATCH 38/41] union-mount: Make pivot_root work with union mounts
+Date: Wed, 21 Oct 2009 12:19:36 -0700
+Message-Id: <1256152779-10054-39-git-send-email-vaurora@redhat.com>
+In-Reply-To: <1256152779-10054-38-git-send-email-vaurora@redhat.com>
 References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-2-git-send-email-vaurora@redhat.com>
  <1256152779-10054-3-git-send-email-vaurora@redhat.com>
@@ -61,121 +61,39 @@ References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
  <1256152779-10054-35-git-send-email-vaurora@redhat.com>
  <1256152779-10054-36-git-send-email-vaurora@redhat.com>
  <1256152779-10054-37-git-send-email-vaurora@redhat.com>
+ <1256152779-10054-38-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The top layer of a union mount must be writable (in order to support
-readdir-triggered copyups) and the bottom layer must be read-only (to
-avoid nasty races).
-
-Thanks to Felix Fietkau <nbd@openwrt.org> for a bug fix.
-
-XXX - Add requirement that top layer is mounted only once
+When moving a union mount, follow it down to the bottom layer and move
+that instead of just the top layer.
 
 Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 ---
- fs/namespace.c |   73 +++++++++++++++++++++++++++++++++++++++++++++----------
- 1 files changed, 59 insertions(+), 14 deletions(-)
+ fs/namespace.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
 diff --git a/fs/namespace.c b/fs/namespace.c
-index 505974a..9b71743 100644
+index 9b71743..6ac5fc1 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1462,6 +1462,61 @@ static int do_change_type(struct path *path, int flag)
- }
- 
- /*
-+ * Mount-time check of upper and lower layer file systems to see if we
-+ * can union mount one on the other.
-+ *
-+ * Union mounts must follow these rules:
-+ *
-+ * - The lower layer must be read-only.  This avoids lots of nasty
-+ *   unsolvable races where file system structures disappear suddenly.
-+ *   XXX - Checking the vfsmnt for read-only is a temporary hack; the
-+ *   file system could be mounted read-write elsewhere.  We need to
-+ *   enforce read-only at the superblock level (patches coming).
-+ *
-+ * - The upper layer must be writable.  This isn't an absolute
-+ *   requirement; right now we need it to make readdir() work since we
-+ *   copy up directory entries to the top level.  A possible
-+ *   workaround is to mount a tmpfs file system transparently over the
-+ *   top.
-+ *
-+ * - The upper layer must support whiteouts and fallthrus (if it is
-+ *   writeable).
-+ *
-+ * - The lower layer must not also be a union mount.  This is just to
-+ *   make life simpler for now, there is no inherent limitation on the
-+ *   number of layers.
-+ *
-+ * XXX - Check other mount flags for incompatibilities - I'm sure
-+ * there are some.
-+ */
-+
-+static int
-+check_union_mnt(struct path *mntpnt, struct vfsmount *top_mnt, int mnt_flags)
-+{
-+	struct vfsmount *lower_mnt = mntpnt->mnt;
-+
-+	/* Is this even a union mount? */
-+	if (!(mnt_flags & MNT_UNION))
-+		return 0;
-+
-+	/* Lower layer must be read-only and not a union mount */
-+	if (!(lower_mnt->mnt_sb->s_flags & MS_RDONLY) ||
-+	    (lower_mnt->mnt_flags & MNT_UNION))
-+		return -EBUSY;
-+
-+	/* Upper layer must be writable */
-+	if (mnt_flags & MNT_READONLY)
-+		return -EROFS;
-+
-+	/* Upper layer must support whiteouts and fallthrus */
-+	if (!(top_mnt->mnt_sb->s_flags & MS_WHITEOUT))
-+		return -EINVAL;
-+
-+	/* All good! */
-+	return 0;
-+}
-+
-+/*
-  * do loopback mount.
-  */
- static int do_loopback(struct path *path, char *old_name, int recurse,
-@@ -1495,13 +1550,8 @@ static int do_loopback(struct path *path, char *old_name, int recurse,
- 	if (!mnt)
- 		goto out;
- 
--	/*
--	 * Unions couldn't be writable if the filesystem doesn't know about
--	 * whiteouts
--	 */
--	err = -ENOTSUPP;
--	if ((mnt_flags & MNT_UNION) &&
--	    !(mnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
-+	err = check_union_mnt(path, mnt, mnt_flags);
-+	if (err)
- 		goto out;
- 
- 	if (mnt_flags & MNT_UNION)
-@@ -1726,13 +1776,8 @@ int do_add_mount(struct vfsmount *newmnt, struct path *path,
- 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
- 		goto unlock;
- 
--	/*
--	 * Unions couldn't be writable if the filesystem doesn't know about
--	 * whiteouts
--	 */
--	err = -ENOTSUPP;
--	if ((mnt_flags & MNT_UNION) &&
--	    !(newmnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
-+	err = check_union_mnt(path, newmnt, mnt_flags);
-+	if (err)
- 		goto unlock;
- 
- 	newmnt->mnt_flags = mnt_flags;
+@@ -2282,6 +2282,15 @@ SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
+ 	if (d_unlinked(old.dentry))
+ 		goto out2;
+ 	error = -EBUSY;
++	/*
++	 * follow_union_down() only goes one layer down.  We want the
++	 * bottom-most layer here - if we move that around, all the
++	 * layers on top move with it.  But if we ever allow more than
++	 * two layers, the below two will both need to be in while()
++	 * loops.
++	 */
++	follow_union_down(&new.mnt, &new.dentry);
++	follow_union_down(&root.mnt, &root.dentry);
+ 	if (new.mnt == root.mnt ||
+ 	    old.mnt == root.mnt)
+ 		goto out2; /* loop, on the same file system  */
 -- 
 1.6.3.3
 
