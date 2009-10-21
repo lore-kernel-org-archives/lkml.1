@@ -1,153 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbZJUWCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZJUWMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390AbZJUWCY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 18:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924AbZJUWCX
+	id S1755650AbZJUWMi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 18:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbZJUWMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 18:02:23 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:46355 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754726AbZJUWCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 18:02:23 -0400
-Date: Thu, 22 Oct 2009 00:02:04 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] tracing: fix trace_seq_printf return value
-Message-ID: <20091021220204.GA2462@jolsa.redhat.com>
-References: <1256135801-1849-1-git-send-email-jolsa@redhat.com> <1256135801-1849-3-git-send-email-jolsa@redhat.com> <1256142035.18347.3133.camel@gandalf.stny.rr.com>
+	Wed, 21 Oct 2009 18:12:38 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:52777 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755196AbZJUWMh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 18:12:37 -0400
+Message-ID: <4ADF8530.7070703@zytor.com>
+Date: Thu, 22 Oct 2009 07:03:28 +0900
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256142035.18347.3133.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+CC: mtk.manpages@gmail.com, Matt Helsley <matthltc@us.ibm.com>,
+       randy.dunlap@oracle.com, arnd@arndb.de,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       Louis.Rilling@kerlabs.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu,
+       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v8][PATCH 9/10]: Define clone3() syscall
+References: <20091013044925.GA28181@us.ibm.com> <20091013045439.GI28435@us.ibm.com> <20091016042041.GA7220@us.ibm.com> <cfd18e0f0910152325m4a9125c2q18f36f5bd7d4a0@mail.gmail.com> <20091016180631.GA31036@us.ibm.com> <20091019174405.GE27627@count0.beaverton.ibm.com> <4ADCDAA8.5080408@zytor.com> <20091019235012.GF27627@count0.beaverton.ibm.com> <cfd18e0f0910202126w1ebfa2e2u2ecbaa23b198d100@mail.gmail.com> <4ADF06B7.50508@zytor.com> <20091021194440.GA1283@us.ibm.com>
+In-Reply-To: <20091021194440.GA1283@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2009 at 12:20:35PM -0400, Steven Rostedt wrote:
-> On Wed, 2009-10-21 at 16:36 +0200, Jiri Olsa wrote:
-> > I believe we want to return the number of written characters,
-> > instead of the available buffer length.
-> > 
-> > wbr,
-> > jirka
-> > 
-> > Signed-off-by: Jiri Olsa <jolsa@redhat.com>
-> > ---
-> >  kernel/trace/trace_output.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-> > index ed17565..e871125 100644
-> > --- a/kernel/trace/trace_output.c
-> > +++ b/kernel/trace/trace_output.c
-> > @@ -95,7 +95,7 @@ trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
-> >  
-> >  	s->len += ret;
-> >  
-> > -	return len;
-> > +	return ret;
-> 
-> Actually the return value here is ambiguous. Returning len is actually
-> safer. It probably should only return 0 (buffer not big enough to write
-> to) or 1 (buffer is big enough).
-> 
-> Because this should actually return non zero:
-> 
->   trace_seq_printf(s, "");
-> 
-> -- Steve
-> 
-> >  }
-> >  EXPORT_SYMBOL_GPL(trace_seq_printf);
-> >  
+On 10/22/2009 04:44 AM, Sukadev Bhattiprolu wrote:
+>>
+>> "3" is number of arguments.
+>
+> To me, it is a version number.
+>
+> mmap() and mmap2() both have 6 parameters.
 >
 
-I made the suggested fix, plus spot not used function.
+You keep bringing this up.  mmap2() is (a) a non-user-visible call; (b) 
+an exception (a mistake, if you want.)
 
----
-Making trace_seq_printf return 0 if the trace oversizes the buffer's free
-space, 1 otherwise.  Removing not used trace_seq_vprintf function.
+> Besides if wait4() were born before wait3(), would it still be wait4() :-)
 
-wbr,
-jirka
+Yes.  wait3() came before wait4(), but there never was a wait2().
 
-Signed-off-by: Jiri Olsa <jolsa@redhat.com>
----
- include/linux/trace_seq.h   |    2 --
- kernel/trace/trace_output.c |   37 ++++---------------------------------
- 2 files changed, 4 insertions(+), 35 deletions(-)
+> But I see that it is hard to get one-convention-that-fits-all.
+>
+>> It's better than "extended" or something
+>> like that simply because "extended" just means "more than", and a number
+>> at least tells you *how much more than*.
+>
+> And extended assumes we wont extend again.
 
-diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
-index c134dd1..6fc4651 100644
---- a/include/linux/trace_seq.h
-+++ b/include/linux/trace_seq.h
-@@ -29,8 +29,6 @@ trace_seq_init(struct trace_seq *s)
- #ifdef CONFIG_TRACING
- extern int trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
- 	__attribute__ ((format (printf, 2, 3)));
--extern int trace_seq_vprintf(struct trace_seq *s, const char *fmt, va_list args)
--	__attribute__ ((format (printf, 2, 0)));
- extern int
- trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary);
- extern void trace_print_seq(struct seq_file *m, struct trace_seq *s);
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index ed17565..11bd0e5 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -69,6 +69,9 @@ enum print_line_t trace_print_printk_msg_only(struct trace_iterator *iter)
-  * @s: trace sequence descriptor
-  * @fmt: printf format string
-  *
-+ * It returns 0 if the trace oversizes the buffer's free
-+ * space, 1 otherwise.
-+ *
-  * The tracer may use either sequence operations or its own
-  * copy to user routines. To simplify formating of a trace
-  * trace_seq_printf is used to store strings into a special
-@@ -95,42 +98,10 @@ trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
- 
- 	s->len += ret;
- 
--	return len;
-+	return 1;
- }
- EXPORT_SYMBOL_GPL(trace_seq_printf);
- 
--/**
-- * trace_seq_vprintf - sequence printing of trace information
-- * @s: trace sequence descriptor
-- * @fmt: printf format string
-- *
-- * The tracer may use either sequence operations or its own
-- * copy to user routines. To simplify formating of a trace
-- * trace_seq_printf is used to store strings into a special
-- * buffer (@s). Then the output may be either used by
-- * the sequencer or pulled into another buffer.
-- */
--int
--trace_seq_vprintf(struct trace_seq *s, const char *fmt, va_list args)
--{
--	int len = (PAGE_SIZE - 1) - s->len;
--	int ret;
--
--	if (!len)
--		return 0;
--
--	ret = vsnprintf(s->buffer + s->len, len, fmt, args);
--
--	/* If we can't write it all, don't bother writing anything */
--	if (ret >= len)
--		return 0;
--
--	s->len += ret;
--
--	return len;
--}
--EXPORT_SYMBOL_GPL(trace_seq_vprintf);
--
- int trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary)
- {
- 	int len = (PAGE_SIZE - 1) - s->len;
- 
+Exactly.
+
+	-hpa
