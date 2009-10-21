@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbZJUVHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbZJUVKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754363AbZJUVHo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 17:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbZJUVHo
+	id S1754729AbZJUVKM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 17:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbZJUVKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 17:07:44 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:21050 "EHLO mx1.redhat.com"
+	Wed, 21 Oct 2009 17:10:11 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:28492 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753635AbZJUVHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 17:07:43 -0400
-Date: Wed, 21 Oct 2009 23:07:18 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arnd Bergmann <arndbergmann@googlemail.com>
-Subject: [PATCH] macintosh: Explicitly set llseek to no_llseek in ans-lcd
-In-Reply-To: <20091010153349.966159859@linutronix.de>
-Message-ID: <alpine.LFD.2.00.0910212305090.3526@localhost.localdomain>
-References: <20091010153314.827301943@linutronix.de> <20091010153349.966159859@linutronix.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753701AbZJUVKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 17:10:10 -0400
+Date: Wed, 21 Oct 2009 17:08:35 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Dave Jones <davej@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, esandeen@redhat.com,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Unnecessary overhead with stack protector.
+Message-ID: <20091021170835.6cd9bd52@katamari.usersys.redhat.com>
+In-Reply-To: <4ADF5FE2.7070604@redhat.com>
+References: <20091015183540.GA8098@redhat.com>
+	<20091015190720.GA19467@elte.hu>
+	<4ADF2DAA.9030604@redhat.com>
+	<20091021110053.26ab9982@infradead.org>
+	<4ADF59F8.7010205@redhat.com>
+	<4ADF5C6B.80605@redhat.com>
+	<4ADF5FE2.7070604@redhat.com>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 0c2b412cdccf73bdeb19bb866bfe556942eaeca2 Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Wed, 21 Oct 2009 23:01:12 +0200
-Subject: [PATCH] macintosh: Explicitly set llseek to no_llseek in ans-lcd
+On Wed, 21 Oct 2009 14:24:18 -0500
+Eric Sandeen <sandeen@redhat.com> wrote:
 
-Now that we've removed the BKL here, let's explicitly set lleek to no_llseek
+> 
+> Forgive me if I'm not using the right tools to look, but it seems to me
+> that in the aggregate, CC_STACKPROTECTOR_ALL has a pretty big impact.
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- drivers/macintosh/ans-lcd.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
-index 4ae8ec9..a1a1bde 100644
---- a/drivers/macintosh/ans-lcd.c
-+++ b/drivers/macintosh/ans-lcd.c
-@@ -137,6 +137,7 @@ const struct file_operations anslcd_fops = {
- 	.write		= anslcd_write,
- 	.unlocked_ioctl	= anslcd_ioctl,
- 	.open		= anslcd_open,
-+	.llseedk	= no_llseek,
- };
- 
- static struct miscdevice anslcd_dev = {
--- 
-1.6.0.6
-
-
+FWIW, I think we'll end up either disabling the stackprotector completely
+in Fedora, or at least reverting the patch that adds all that overhead.
