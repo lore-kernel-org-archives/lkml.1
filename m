@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZJUS0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZJUS1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbZJUS0X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 14:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbZJUS0W
+	id S1754695AbZJUS1J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 14:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZJUS1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 14:26:22 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:9747 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754689AbZJUS0V (ORCPT
+	Wed, 21 Oct 2009 14:27:08 -0400
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:24203 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751185AbZJUS1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 14:26:21 -0400
-Message-ID: <4ADF5225.40701@caviumnetworks.com>
-Date: Wed, 21 Oct 2009 11:25:41 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 21 Oct 2009 14:27:08 -0400
+Date: Wed, 21 Oct 2009 12:27:11 -0600
+From: Alex Chiang <achiang@hp.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>,
+       Gary Hade <garyhade@us.ibm.com>, Badari Pulavarty <pbadari@us.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] mm: add numa node symlink for memory section in
+	sysfs
+Message-ID: <20091021182711.GI23948@ldl.fc.hp.com>
+References: <20091019212740.32729.7171.stgit@bob.kio> <20091019213415.32729.86034.stgit@bob.kio> <c18f2c2738f6a584b431324b38f21970.squirrel@webmail-b.css.fujitsu.com>
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Wu Zhangjin <wuzhangjin@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-Subject: Re: [PATCH -v4 9/9] tracing: add function graph tracer support for
- MIPS
-References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>	 <96110ea5dd4d3d54eb97d0bb708a5bd81c7a50b5.1256135456.git.wuzhangjin@gmail.com>	 <5dda13e8e3a9c9dba4bb7179183941bda502604f.1256135456.git.wuzhangjin@gmail.com>	 <af3ec1b5cd06b6f6a461c9fa7d09a51fabccb08d.1256135456.git.wuzhangjin@gmail.com>	 <a6f2959a69b6a77dd32cc36a5c8202f97d524f1e.1256135456.git.wuzhangjin@gmail.com>	 <53bdfdd95ec4fa00d4cc505bb5972cf21243a14d.1256135456.git.wuzhangjin@gmail.com>	 <1256141540.18347.3118.camel@gandalf.stny.rr.com>	 <4ADF38D5.9060100@caviumnetworks.com>	 <1256143568.18347.3169.camel@gandalf.stny.rr.com>	 <4ADF3FE0.5090104@caviumnetworks.com>	 <1256145813.18347.3210.camel@gandalf.stny.rr.com>	 <4ADF4982.9010306@caviumnetworks.com> <1256148562.18347.3264.camel@gandalf.stny.rr.com>
-In-Reply-To: <1256148562.18347.3264.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Oct 2009 18:25:42.0038 (UTC) FILETIME=[E59FA360:01CA527B]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c18f2c2738f6a584b431324b38f21970.squirrel@webmail-b.css.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-[...]
-> We're not doing back traces. We need to modify the return of the
-> function being called. Note, the above functions that end with ";" are
-> leaf functions. Non leaf functions show "{" and end with "}".
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
+> Alex Chiang wrote:
+> > Commit c04fc586c (mm: show node to memory section relationship with
+> > symlinks in sysfs) created symlinks from nodes to memory sections, e.g.
+> >
+> > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+> >
+> > If you're examining the memory section though and are wondering what
+> > node it might belong to, you can find it by grovelling around in
+> > sysfs, but it's a little cumbersome.
+> >
+> > Add a reverse symlink for each memory section that points back to the
+> > node to which it belongs.
+> >
+> > Cc: Gary Hade <garyhade@us.ibm.com>
+> > Cc: Badari Pulavarty <pbadari@us.ibm.com>
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Signed-off-by: Alex Chiang <achiang@hp.com>
 > 
-> The trick here is to find a reliable way to modify the return address.
-> 
+> 2 yeas ago, I wanted to add this symlink. But don't...because
+> some vendor's host has no 1-to-1 relationship between a memsection
+> and a node. (I don't remember precisely, sorry....s390?)
 
-Well that's what I get for chiming in without fully understanding the 
-context.
+Hm, ok. I'll cc the s390 folks in the next version of this series.
 
-I think it is fine to search backwards from the ($ra - 8) of the call to 
-_mcount until you encounter the adjustment of $sp.  If you encounter a 
-store of $ra, you can assume that the function will use the stored value 
-when returning, otherwise modify the value restored to $ra (passed in 
-$at).  That is probably what you were doing to begin with.
+Thanks for the pointer.
 
-David Daney
+/ac
+
