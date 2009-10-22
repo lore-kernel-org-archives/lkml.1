@@ -1,303 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbZJVK1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbZJVK0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754989AbZJVK1W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 06:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbZJVK1V
+	id S1754246AbZJVK0q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 06:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbZJVK0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 06:27:21 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:22707 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754955AbZJVK1P (ORCPT
+	Thu, 22 Oct 2009 06:26:45 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:46972 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753250AbZJVK0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 06:27:15 -0400
-From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-To: alsa-devel@alsa-project.org, linux-omap@vger.kernel.org,
-       sameo@linux.intel.com
-Cc: linux-kernel@vger.kernel.org, tony@atomide.com,
-       broonie@opensource.wolfsonmicro.com
-Subject: [PATCH 3/4 v2] ASoC: TWL4030: use the twl4030-codec.h for register descriptions
-Date: Thu, 22 Oct 2009 13:26:47 +0300
-Message-Id: <1256207208-25010-4-git-send-email-peter.ujfalusi@nokia.com>
-X-Mailer: git-send-email 1.6.5.1
-In-Reply-To: <1256207208-25010-3-git-send-email-peter.ujfalusi@nokia.com>
-References: <1256207208-25010-1-git-send-email-peter.ujfalusi@nokia.com>
- <1256207208-25010-2-git-send-email-peter.ujfalusi@nokia.com>
- <1256207208-25010-3-git-send-email-peter.ujfalusi@nokia.com>
-X-OriginalArrivalTime: 22 Oct 2009 10:26:56.0390 (UTC) FILETIME=[2E375A60:01CA5302]
-X-Nokia-AV: Clean
+	Thu, 22 Oct 2009 06:26:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type;
+        b=BkPd1wenI6Pv06+TRuy8K23WTpNinE6FXbV+ISybtFjEBeaFI7MWqHiiQn4kR4w030
+         22FyEjeDQsxISLaw9AaOaMEYPYaBySgcAQDhRF531ErVg/cr9P3goAxzAoER/50fkR4p
+         jgI25sV2+LovrEKZX2a9mUhEtoAju5KMutImM=
+MIME-Version: 1.0
+Reply-To: mtk.manpages@gmail.com
+In-Reply-To: <4ADF06B7.50508@zytor.com>
+References: <20091013044925.GA28181@us.ibm.com>
+	 <20091013045439.GI28435@us.ibm.com> <20091016042041.GA7220@us.ibm.com>
+	 <cfd18e0f0910152325m4a9125c2q18f36f5bd7d4a0@mail.gmail.com>
+	 <20091016180631.GA31036@us.ibm.com>
+	 <20091019174405.GE27627@count0.beaverton.ibm.com>
+	 <4ADCDAA8.5080408@zytor.com>
+	 <20091019235012.GF27627@count0.beaverton.ibm.com>
+	 <cfd18e0f0910202126w1ebfa2e2u2ecbaa23b198d100@mail.gmail.com>
+	 <4ADF06B7.50508@zytor.com>
+Date: Thu, 22 Oct 2009 12:26:48 +0200
+Message-ID: <cfd18e0f0910220326w1a71b899s5ff0fce9e0a2b8ed@mail.gmail.com>
+Subject: Re: [RFC][v8][PATCH 9/10]: Define clone3() syscall
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Matt Helsley <matthltc@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       randy.dunlap@oracle.com, arnd@arndb.de,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       Louis.Rilling@kerlabs.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu,
+       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
+       Pavel Emelyanov <xemul@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the register descriptions from the twl4030.h file and use
-the linux/mfd/twl4030-codec.h instead, which has the codec
-related register descriptions also.
+Peter,
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@nokia.com>
----
- sound/soc/codecs/twl4030.h |  242 +------------------------------------------
- 1 files changed, 6 insertions(+), 236 deletions(-)
+On Wed, Oct 21, 2009 at 3:03 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> On 10/21/2009 01:26 PM, Michael Kerrisk wrote:
+>>
+>> My question here is: what does "3" actually mean? In general, system
+>> calls have not followed any convention of numbering to indicate
+>> successive versions -- clone2() being the one possible exception that
+>> I know of.
+>>
+>
+> "3" is number of arguments.
 
-diff --git a/sound/soc/codecs/twl4030.h b/sound/soc/codecs/twl4030.h
-index 2b4bfa2..dd6396e 100644
---- a/sound/soc/codecs/twl4030.h
-+++ b/sound/soc/codecs/twl4030.h
-@@ -22,245 +22,13 @@
- #ifndef __TWL4030_AUDIO_H__
- #define __TWL4030_AUDIO_H__
+sys_clone3(struct clone_struct __user *ucs, pid_t __user *pids)
 
--#define TWL4030_REG_CODEC_MODE		0x1
--#define TWL4030_REG_OPTION		0x2
--#define TWL4030_REG_UNKNOWN		0x3
--#define TWL4030_REG_MICBIAS_CTL		0x4
--#define TWL4030_REG_ANAMICL		0x5
--#define TWL4030_REG_ANAMICR		0x6
--#define TWL4030_REG_AVADC_CTL		0x7
--#define TWL4030_REG_ADCMICSEL		0x8
--#define TWL4030_REG_DIGMIXING		0x9
--#define TWL4030_REG_ATXL1PGA		0xA
--#define TWL4030_REG_ATXR1PGA		0xB
--#define TWL4030_REG_AVTXL2PGA		0xC
--#define TWL4030_REG_AVTXR2PGA		0xD
--#define TWL4030_REG_AUDIO_IF		0xE
--#define TWL4030_REG_VOICE_IF		0xF
--#define TWL4030_REG_ARXR1PGA		0x10
--#define TWL4030_REG_ARXL1PGA		0x11
--#define TWL4030_REG_ARXR2PGA		0x12
--#define TWL4030_REG_ARXL2PGA		0x13
--#define TWL4030_REG_VRXPGA		0x14
--#define TWL4030_REG_VSTPGA		0x15
--#define TWL4030_REG_VRX2ARXPGA		0x16
--#define TWL4030_REG_AVDAC_CTL		0x17
--#define TWL4030_REG_ARX2VTXPGA		0x18
--#define TWL4030_REG_ARXL1_APGA_CTL	0x19
--#define TWL4030_REG_ARXR1_APGA_CTL	0x1A
--#define TWL4030_REG_ARXL2_APGA_CTL	0x1B
--#define TWL4030_REG_ARXR2_APGA_CTL	0x1C
--#define TWL4030_REG_ATX2ARXPGA		0x1D
--#define TWL4030_REG_BT_IF		0x1E
--#define TWL4030_REG_BTPGA		0x1F
--#define TWL4030_REG_BTSTPGA		0x20
--#define TWL4030_REG_EAR_CTL		0x21
--#define TWL4030_REG_HS_SEL		0x22
--#define TWL4030_REG_HS_GAIN_SET		0x23
--#define TWL4030_REG_HS_POPN_SET		0x24
--#define TWL4030_REG_PREDL_CTL		0x25
--#define TWL4030_REG_PREDR_CTL		0x26
--#define TWL4030_REG_PRECKL_CTL		0x27
--#define TWL4030_REG_PRECKR_CTL		0x28
--#define TWL4030_REG_HFL_CTL		0x29
--#define TWL4030_REG_HFR_CTL		0x2A
--#define TWL4030_REG_ALC_CTL		0x2B
--#define TWL4030_REG_ALC_SET1		0x2C
--#define TWL4030_REG_ALC_SET2		0x2D
--#define TWL4030_REG_BOOST_CTL		0x2E
--#define TWL4030_REG_SOFTVOL_CTL		0x2F
--#define TWL4030_REG_DTMF_FREQSEL	0x30
--#define TWL4030_REG_DTMF_TONEXT1H	0x31
--#define TWL4030_REG_DTMF_TONEXT1L	0x32
--#define TWL4030_REG_DTMF_TONEXT2H	0x33
--#define TWL4030_REG_DTMF_TONEXT2L	0x34
--#define TWL4030_REG_DTMF_TONOFF		0x35
--#define TWL4030_REG_DTMF_WANONOFF	0x36
--#define TWL4030_REG_I2S_RX_SCRAMBLE_H	0x37
--#define TWL4030_REG_I2S_RX_SCRAMBLE_M	0x38
--#define TWL4030_REG_I2S_RX_SCRAMBLE_L	0x39
--#define TWL4030_REG_APLL_CTL		0x3A
--#define TWL4030_REG_DTMF_CTL		0x3B
--#define TWL4030_REG_DTMF_PGA_CTL2	0x3C
--#define TWL4030_REG_DTMF_PGA_CTL1	0x3D
--#define TWL4030_REG_MISC_SET_1		0x3E
--#define TWL4030_REG_PCMBTMUX		0x3F
--#define TWL4030_REG_RX_PATH_SEL		0x43
--#define TWL4030_REG_VDL_APGA_CTL	0x44
--#define TWL4030_REG_VIBRA_CTL		0x45
--#define TWL4030_REG_VIBRA_SET		0x46
--#define TWL4030_REG_VIBRA_PWM_SET	0x47
--#define TWL4030_REG_ANAMIC_GAIN		0x48
--#define TWL4030_REG_MISC_SET_2		0x49
--#define TWL4030_REG_SW_SHADOW		0x4A
-+/* Register descriptions are here */
-+#include <linux/mfd/twl4030-codec.h>
+It appears to me that the number of arguments is 2.
 
-+/* Sgadow register used by the audio driver */
-+#define TWL4030_REG_SW_SHADOW		0x4A
- #define TWL4030_CACHEREGNUM	(TWL4030_REG_SW_SHADOW + 1)
+> It's better than "extended" or something like
+> that simply because "extended" just means "more than", and a number at least
+> tells you *how much more than*.
 
--/* Bitfield Definitions */
--
--/* TWL4030_CODEC_MODE (0x01) Fields */
--
--#define TWL4030_APLL_RATE		0xF0
--#define TWL4030_APLL_RATE_8000		0x00
--#define TWL4030_APLL_RATE_11025		0x10
--#define TWL4030_APLL_RATE_12000		0x20
--#define TWL4030_APLL_RATE_16000		0x40
--#define TWL4030_APLL_RATE_22050		0x50
--#define TWL4030_APLL_RATE_24000		0x60
--#define TWL4030_APLL_RATE_32000		0x80
--#define TWL4030_APLL_RATE_44100		0x90
--#define TWL4030_APLL_RATE_48000		0xA0
--#define TWL4030_APLL_RATE_96000		0xE0
--#define TWL4030_SEL_16K			0x08
--#define TWL4030_CODECPDZ		0x02
--#define TWL4030_OPT_MODE		0x01
--#define TWL4030_OPTION_1		(1 << 0)
--#define TWL4030_OPTION_2		(0 << 0)
--
--/* TWL4030_OPTION (0x02) Fields */
--
--#define TWL4030_ATXL1_EN		(1 << 0)
--#define TWL4030_ATXR1_EN		(1 << 1)
--#define TWL4030_ATXL2_VTXL_EN		(1 << 2)
--#define TWL4030_ATXR2_VTXR_EN		(1 << 3)
--#define TWL4030_ARXL1_VRX_EN		(1 << 4)
--#define TWL4030_ARXR1_EN		(1 << 5)
--#define TWL4030_ARXL2_EN		(1 << 6)
--#define TWL4030_ARXR2_EN		(1 << 7)
--
--/* TWL4030_REG_MICBIAS_CTL (0x04) Fields */
--
--#define TWL4030_MICBIAS2_CTL		0x40
--#define TWL4030_MICBIAS1_CTL		0x20
--#define TWL4030_HSMICBIAS_EN		0x04
--#define TWL4030_MICBIAS2_EN		0x02
--#define TWL4030_MICBIAS1_EN		0x01
--
--/* ANAMICL (0x05) Fields */
--
--#define TWL4030_CNCL_OFFSET_START	0x80
--#define TWL4030_OFFSET_CNCL_SEL		0x60
--#define TWL4030_OFFSET_CNCL_SEL_ARX1	0x00
--#define TWL4030_OFFSET_CNCL_SEL_ARX2	0x20
--#define TWL4030_OFFSET_CNCL_SEL_VRX	0x40
--#define TWL4030_OFFSET_CNCL_SEL_ALL	0x60
--#define TWL4030_MICAMPL_EN		0x10
--#define TWL4030_CKMIC_EN		0x08
--#define TWL4030_AUXL_EN			0x04
--#define TWL4030_HSMIC_EN		0x02
--#define TWL4030_MAINMIC_EN		0x01
--
--/* ANAMICR (0x06) Fields */
--
--#define TWL4030_MICAMPR_EN		0x10
--#define TWL4030_AUXR_EN			0x04
--#define TWL4030_SUBMIC_EN		0x01
--
--/* AVADC_CTL (0x07) Fields */
--
--#define TWL4030_ADCL_EN			0x08
--#define TWL4030_AVADC_CLK_PRIORITY	0x04
--#define TWL4030_ADCR_EN			0x02
--
--/* TWL4030_REG_ADCMICSEL (0x08) Fields */
--
--#define TWL4030_DIGMIC1_EN		0x08
--#define TWL4030_TX2IN_SEL		0x04
--#define TWL4030_DIGMIC0_EN		0x02
--#define TWL4030_TX1IN_SEL		0x01
--
--/* AUDIO_IF (0x0E) Fields */
--
--#define TWL4030_AIF_SLAVE_EN		0x80
--#define TWL4030_DATA_WIDTH		0x60
--#define TWL4030_DATA_WIDTH_16S_16W	0x00
--#define TWL4030_DATA_WIDTH_32S_16W	0x40
--#define TWL4030_DATA_WIDTH_32S_24W	0x60
--#define TWL4030_AIF_FORMAT		0x18
--#define TWL4030_AIF_FORMAT_CODEC	0x00
--#define TWL4030_AIF_FORMAT_LEFT		0x08
--#define TWL4030_AIF_FORMAT_RIGHT	0x10
--#define TWL4030_AIF_FORMAT_TDM		0x18
--#define TWL4030_AIF_TRI_EN		0x04
--#define TWL4030_CLK256FS_EN		0x02
--#define TWL4030_AIF_EN			0x01
--
--/* VOICE_IF (0x0F) Fields */
--
--#define TWL4030_VIF_SLAVE_EN		0x80
--#define TWL4030_VIF_DIN_EN		0x40
--#define TWL4030_VIF_DOUT_EN		0x20
--#define TWL4030_VIF_SWAP		0x10
--#define TWL4030_VIF_FORMAT		0x08
--#define TWL4030_VIF_TRI_EN		0x04
--#define TWL4030_VIF_SUB_EN		0x02
--#define TWL4030_VIF_EN			0x01
--
--/* EAR_CTL (0x21) */
--#define TWL4030_EAR_GAIN		0x30
--
--/* HS_GAIN_SET (0x23) Fields */
--
--#define TWL4030_HSR_GAIN		0x0C
--#define TWL4030_HSR_GAIN_PWR_DOWN	0x00
--#define TWL4030_HSR_GAIN_PLUS_6DB	0x04
--#define TWL4030_HSR_GAIN_0DB		0x08
--#define TWL4030_HSR_GAIN_MINUS_6DB	0x0C
--#define TWL4030_HSL_GAIN		0x03
--#define TWL4030_HSL_GAIN_PWR_DOWN	0x00
--#define TWL4030_HSL_GAIN_PLUS_6DB	0x01
--#define TWL4030_HSL_GAIN_0DB		0x02
--#define TWL4030_HSL_GAIN_MINUS_6DB	0x03
--
--/* HS_POPN_SET (0x24) Fields */
--
--#define TWL4030_VMID_EN			0x40
--#define	TWL4030_EXTMUTE			0x20
--#define TWL4030_RAMP_DELAY		0x1C
--#define TWL4030_RAMP_DELAY_20MS		0x00
--#define TWL4030_RAMP_DELAY_40MS		0x04
--#define TWL4030_RAMP_DELAY_81MS		0x08
--#define TWL4030_RAMP_DELAY_161MS	0x0C
--#define TWL4030_RAMP_DELAY_323MS	0x10
--#define TWL4030_RAMP_DELAY_645MS	0x14
--#define TWL4030_RAMP_DELAY_1291MS	0x18
--#define TWL4030_RAMP_DELAY_2581MS	0x1C
--#define TWL4030_RAMP_EN			0x02
--
--/* PREDL_CTL (0x25) */
--#define TWL4030_PREDL_GAIN		0x30
--
--/* PREDR_CTL (0x26) */
--#define TWL4030_PREDR_GAIN		0x30
--
--/* PRECKL_CTL (0x27) */
--#define TWL4030_PRECKL_GAIN		0x30
--
--/* PRECKR_CTL (0x28) */
--#define TWL4030_PRECKR_GAIN		0x30
--
--/* HFL_CTL (0x29, 0x2A) Fields */
--#define TWL4030_HF_CTL_HB_EN		0x04
--#define TWL4030_HF_CTL_LOOP_EN		0x08
--#define TWL4030_HF_CTL_RAMP_EN		0x10
--#define TWL4030_HF_CTL_REF_EN		0x20
--
--/* APLL_CTL (0x3A) Fields */
--
--#define TWL4030_APLL_EN			0x10
--#define TWL4030_APLL_INFREQ		0x0F
--#define TWL4030_APLL_INFREQ_19200KHZ	0x05
--#define TWL4030_APLL_INFREQ_26000KHZ	0x06
--#define TWL4030_APLL_INFREQ_38400KHZ	0x0F
--
--/* REG_MISC_SET_1 (0x3E) Fields */
--
--#define TWL4030_CLK64_EN		0x80
--#define TWL4030_SCRAMBLE_EN		0x40
--#define TWL4030_FMLOOP_EN		0x20
--#define TWL4030_SMOOTH_ANAVOL_EN	0x02
--#define TWL4030_DIGMIC_LR_SWAP_EN	0x01
--
- /* TWL4030_REG_SW_SHADOW (0x4A) Fields */
- #define TWL4030_HFL_EN			0x01
- #define TWL4030_HFR_EN			0x02
-@@ -279,3 +47,5 @@ struct twl4030_setup_data {
- };
+I'm not sure why you think including a number in the name tells us
+"how much more than". Unless you are considering the numbering to be
+version numbers, which apparently is not what you mean.
 
- #endif	/* End of __TWL4030_AUDIO_H__ */
-+
-+
---
-1.6.5.1
+Thanks,
 
+Michael
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+Author of "The Linux Programming Interface" http://blog.man7.org/
