@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbZJVOrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756486AbZJVOrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbZJVOrL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 10:47:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbZJVOrK
+	id S1756486AbZJVOrt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 10:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbZJVOrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 10:47:10 -0400
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:55390 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756031AbZJVOrH convert rfc822-to-8bit (ORCPT
+	Thu, 22 Oct 2009 10:47:48 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47185 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755469AbZJVOrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 10:47:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=gOegoj+zJiC74p4TnRwiu3D4CwW/LeM5hJSt4fRdhze6W20C89wEy2fF9pybvvMLrB
-         ZBo1UUz/G9r6pIqAPPzuxvhAB3qA4YylrUl0g7j6Xa8L+S84WhpgtMaYMWVqIL7cWGbf
-         eE0OnsMxAW9wK7e+52TOgD+bV2vp5wZA/fY48=
-MIME-Version: 1.0
-In-Reply-To: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
-Date: Thu, 22 Oct 2009 17:47:10 +0300
-X-Google-Sender-Auth: 7611312378255941
-Message-ID: <84144f020910220747nba30d8bkc83c2569da79bd7c@mail.gmail.com>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC 
-	failures V2
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org\"" <linux-mm@kvack.org>, akpm@linux-foundation.org,
-       cl@linux-foundation.org, torvalds@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 22 Oct 2009 10:47:48 -0400
+Subject: Re: [PATCH] intel-iommu: Fix alloc_coherent for pass-through
+ devices
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alex Williamson <alex.williamson@hp.com>
+Cc: iommu@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Miller, Mike (OS Dev)" <mike.miller@hp.com>
+In-Reply-To: <1256214241.2842.50.camel@2710p.home>
+References: <1256182910.2842.36.camel@2710p.home>
+	 <1256192928.2990.10.camel@macbook.infradead.org>
+	 <1256214241.2842.50.camel@2710p.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 22 Oct 2009 23:47:47 +0900
+Message-Id: <1256222867.2990.47.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 5:22 PM, Mel Gorman <mel@csn.ul.ie> wrote:
-> Test 1: Verify your problem occurs on 2.6.32-rc5 if you can
->
-> Test 2: Apply the following two patches and test again
->
->  1/5 page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
->  2/5 page allocator: Do not allow interrupts to use ALLOC_HARDER
+On Thu, 2009-10-22 at 06:24 -0600, Alex Williamson wrote:
+> The coherent_dma_mask is independent of the dma_mask and can be set
+> separately by the device.  The default for any device that doesn't
+> specify one is 32bits.  iommu_should_identity_map() only checks the
+> dma_mask, not the coherent_dma_mask. 
 
-These are pretty obvious bug fixes and should go to linux-next ASAP IMHO.
+Are you telling me that this particular device supports only a 32-bit
+coherent DMA mask, but that it _does_ support a 64-bit DMA mask for
+non-coherent DMA? On x86?
 
-> Test 5: If things are still screwed, apply the following
->  5/5 Revert 373c0a7e, 8aa7e847: Fix congestion_wait() sync/async vs read/write confusion
->
->        Frans Pop reports that the bulk of his problems go away when this
->        patch is reverted on 2.6.31. There has been some confusion on why
->        exactly this patch was wrong but apparently the conversion was not
->        complete and further work was required. It's unknown if all the
->        necessary work exists in 2.6.31-rc5 or not. If there are still
->        allocation failures and applying this patch fixes the problem,
->        there are still snags that need to be ironed out.
+>  BTW, we skip RMRR setup when doing hardware pass-through, but I can't
+> find where they get reloaded if we then end up removing the device
+> from the si_domain.  Is this another issue?
 
-As explained by Jens Axboe, this changes timing but is not the source
-of the OOMs so the revert is bogus even if it "helps" on some
-workloads. IIRC the person who reported the revert to help things did
-report that the OOMs did not go away, they were simply harder to
-trigger with the revert.
+Maybe, theoretically. In practice, the whole RMRR thing is just broken
+by design anyway. We have to quiesce the offending devices before we
+turn on the IOMMU, because BIOSes tend to leave things out of the RMRR
+table... and then crash in SMM mode when their DMA goes AWOL. 
+
+-- 
+dwmw2
+
