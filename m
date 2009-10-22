@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbZJVBMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbZJVB3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753684AbZJVBMm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 21:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZJVBMm
+	id S1753672AbZJVB3p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 21:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZJVB3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 21:12:42 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:48261 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752392AbZJVBMl (ORCPT
+	Wed, 21 Oct 2009 21:29:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49351 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752382AbZJVB3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 21:12:41 -0400
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, arjan@infradead.org, randy.dunlap@oracle.com,
-       rusty@rustcorp.com.au, andi@firstfloor.org, dhowells@redhat.com,
-       akpm@linux-foundation.org
-Subject: Re: request_module vs. modprobe blacklist (and security subsystem implications)
-References: <1256137348.4443.39.camel@dhcp231-106.rdu.redhat.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 21 Oct 2009 18:12:38 -0700
-In-Reply-To: <1256137348.4443.39.camel@dhcp231-106.rdu.redhat.com> (Eric Paris's message of "Wed\, 21 Oct 2009 11\:02\:28 -0400")
-Message-ID: <m14opss03d.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
+	Wed, 21 Oct 2009 21:29:44 -0400
+Date: Wed, 21 Oct 2009 18:26:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, esandeen@redhat.com,
+       cebbert@redhat.com
+Subject: Re: Unnecessary overhead with stack protector.
+Message-Id: <20091021182636.63edbf72.akpm@linux-foundation.org>
+In-Reply-To: <20091015183540.GA8098@redhat.com>
+References: <20091015183540.GA8098@redhat.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris <eparis@redhat.com> writes:
+On Thu, 15 Oct 2009 14:35:41 -0400 Dave Jones <davej@redhat.com> wrote:
 
-> I recently added a new LSM hook into __request_module(),
-> security_kernel_module_request().  This new hook checks if a process
-> should have permission to trigger the loading of a kernel module.  The
-> attack vector imagined was that some module (IPX for example) has a
-> vulnerability.  An attack program (which doesn't have permission to load
-> the IPX module directly) might be able to get the networking stack to
-> try to autoload the module.  Once loaded the attack program could then
-> use the larger surface area to exploit the kernel.
->
-> We have found that many users disable the IPv6 module by setting their
-> modprobe config to look like:
->
-> blacklist ipv6
-> install ipv6 /bin/true
+> 113c5413cf9051cc50b88befdc42e3402bb92115 introduced a change that
+> made CC_STACKPROTECTOR_ALL not-selectable if someone enables CC_STACKPROTECTOR.
+> 
+> We've noticed in Fedora that this has introduced noticable overhead on
+> some functions, including those which don't even have any on-stack variables.
+> 
+> According to the gcc manpage, -fstack-protector will protect functions with
+> as little as 8 bytes of stack usage. So we're introducing a huge amount
+> of overhead, to close a small amount of vulnerability (the >0 && <8 case).
+> 
+> The overhead as it stands right now means this whole option is unusable for
+> a distro kernel without reverting the above commit.
+> 
 
-They need to be using /proc/sys/net/ipv6/conf/*/disable_ipv6 instead.
-As the above scenario keeps the bonding driver from loading.
+This looks like a fairly serious problem to me, but I'm confused by the
+commit ID.  February 2008 - is this correct?
 
-Eric
+If so, this seems like a rather long period of time in which to make such a
+discovery.
+
+Also, the Kconfig fiddle didn't cause the problem - it just revealed it. 
+The core problem of increased stack usage and text size should already have
+been known (to stackprotector developers, at least).  But it sounds like it
+wasn't.
+
+So perhaps this was all triggered by a particular gcc version?
