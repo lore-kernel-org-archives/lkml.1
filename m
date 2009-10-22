@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZJVBBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbZJVBMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753711AbZJVBBk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 21:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbZJVBBj
+	id S1753684AbZJVBMm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 21:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZJVBMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 21:01:39 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:59269 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbZJVBBi (ORCPT
+	Wed, 21 Oct 2009 21:12:42 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:48261 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752392AbZJVBMl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 21:01:38 -0400
-Date: Wed, 21 Oct 2009 18:01:37 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-acpi@vger.kernel.org, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] acpi_power_meter: Don't leak ACPI error codes to userspace
-Message-ID: <20091022010137.GB21723@tux1.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
+	Wed, 21 Oct 2009 21:12:41 -0400
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, arjan@infradead.org, randy.dunlap@oracle.com,
+       rusty@rustcorp.com.au, andi@firstfloor.org, dhowells@redhat.com,
+       akpm@linux-foundation.org
+Subject: Re: request_module vs. modprobe blacklist (and security subsystem implications)
+References: <1256137348.4443.39.camel@dhcp231-106.rdu.redhat.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 21 Oct 2009 18:12:38 -0700
+In-Reply-To: <1256137348.4443.39.camel@dhcp231-106.rdu.redhat.com> (Eric Paris's message of "Wed\, 21 Oct 2009 11\:02\:28 -0400")
+Message-ID: <m14opss03d.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-acpi-power-meter: Don't leak ACPI error codes to userspace
+Eric Paris <eparis@redhat.com> writes:
 
-If the ACPI methods return an error code, we must return -EINVAL to userspace
-to flag the error.  Right now we pass the (positive) number right through,
-which causes echo to keep writing bogus values.
+> I recently added a new LSM hook into __request_module(),
+> security_kernel_module_request().  This new hook checks if a process
+> should have permission to trigger the loading of a kernel module.  The
+> attack vector imagined was that some module (IPX for example) has a
+> vulnerability.  An attack program (which doesn't have permission to load
+> the IPX module directly) might be able to get the networking stack to
+> try to autoload the module.  Once loaded the attack program could then
+> use the larger surface area to exploit the kernel.
+>
+> We have found that many users disable the IPv6 module by setting their
+> modprobe config to look like:
+>
+> blacklist ipv6
+> install ipv6 /bin/true
 
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
----
+They need to be using /proc/sys/net/ipv6/conf/*/disable_ipv6 instead.
+As the above scenario keeps the bonding driver from loading.
 
- drivers/acpi/power_meter.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-
-diff --git a/drivers/acpi/power_meter.c b/drivers/acpi/power_meter.c
-index e6bfd77..2ef7030 100644
---- a/drivers/acpi/power_meter.c
-+++ b/drivers/acpi/power_meter.c
-@@ -294,7 +294,11 @@ static int set_acpi_trip(struct acpi_power_meter_resource *resource)
- 		return -EINVAL;
- 	}
- 
--	return data;
-+	/* _PTP returns 0 on success, nonzero otherwise */
-+	if (data)
-+		return -EINVAL;
-+
-+	return 0;
- }
- 
- static ssize_t set_trip(struct device *dev, struct device_attribute *devattr,
+Eric
