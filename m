@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbZJVB3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753758AbZJVBgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672AbZJVB3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 21:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZJVB3o
+	id S1753758AbZJVBgk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 21:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZJVBgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 21:29:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49351 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752382AbZJVB3o (ORCPT
+	Wed, 21 Oct 2009 21:36:40 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:43782 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752694AbZJVBgj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 21:29:44 -0400
-Date: Wed, 21 Oct 2009 18:26:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, esandeen@redhat.com,
-       cebbert@redhat.com
-Subject: Re: Unnecessary overhead with stack protector.
-Message-Id: <20091021182636.63edbf72.akpm@linux-foundation.org>
-In-Reply-To: <20091015183540.GA8098@redhat.com>
-References: <20091015183540.GA8098@redhat.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Oct 2009 21:36:39 -0400
+Date: Wed, 21 Oct 2009 21:36:43 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+cc: Ozan =?utf-8?q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
+       <linux-media@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: uvcvideo causes ehci_hcd to halt
+In-Reply-To: <200910220138.06878.laurent.pinchart@ideasonboard.com>
+Message-ID: <Pine.LNX.4.44L0.0910212131560.24481-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2009 14:35:41 -0400 Dave Jones <davej@redhat.com> wrote:
+On Thu, 22 Oct 2009, Laurent Pinchart wrote:
 
-> 113c5413cf9051cc50b88befdc42e3402bb92115 introduced a change that
-> made CC_STACKPROTECTOR_ALL not-selectable if someone enables CC_STACKPROTECTOR.
+> On Wednesday 21 October 2009 22:09:46 Ozan Çağlayan wrote:
+> > Laurent Pinchart wrote:
+> > > Probably because hal opens the device to query its capabilities and
+> > > closes it right after. The driver submits the interrupt URB when the
+> > > first user opens the device and cancels it when the last user closes the
+> > > device.
+> > 
+> > So who's guilty now?
+> > 
+> > :)
 > 
-> We've noticed in Fedora that this has introduced noticable overhead on
-> some functions, including those which don't even have any on-stack variables.
+> Not me :-)
 > 
-> According to the gcc manpage, -fstack-protector will protect functions with
-> as little as 8 bytes of stack usage. So we're introducing a huge amount
-> of overhead, to close a small amount of vulnerability (the >0 && <8 case).
-> 
-> The overhead as it stands right now means this whole option is unusable for
-> a distro kernel without reverting the above commit.
-> 
+> I don't think there's anything wrong with submitting an interrupt URB and 
+> canceling it soon after.
 
-This looks like a fairly serious problem to me, but I'm confused by the
-commit ID.  February 2008 - is this correct?
+Nothing wrong at all.  Even if hal didn't do this, the same thing might
+very well occur the second time somebody ran a program accessing the
+video device.
 
-If so, this seems like a rather long period of time in which to make such a
-discovery.
+The real problem will be to figure out why the hardware isn't turning
+off the periodic schedule.  It might be a timing issue (the schedule
+was running too briefly before the driver tried to disable it).  That
+could explain why it shows up only occasionally.  But if it isn't, I
+have no idea what the underlying cause is or how to fix it.
 
-Also, the Kconfig fiddle didn't cause the problem - it just revealed it. 
-The core problem of increased stack usage and text size should already have
-been known (to stackprotector developers, at least).  But it sounds like it
-wasn't.
+Alan Stern
 
-So perhaps this was all triggered by a particular gcc version?
