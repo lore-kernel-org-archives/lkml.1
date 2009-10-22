@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603AbZJVEPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZJVEPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752603AbZJVEPc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 00:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbZJVEPb
+	id S1752908AbZJVEPg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 00:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZJVEPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 00:15:31 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:18922 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784AbZJVEPP (ORCPT
+	Thu, 22 Oct 2009 00:15:35 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:31934 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751815AbZJVEPV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 00:15:15 -0400
-Subject: [PATCH v2 3/5] mm: refactor unregister_cpu_under_node()
+	Thu, 22 Oct 2009 00:15:21 -0400
+Subject: [PATCH v2 4/5] mm: add numa node symlink for cpu devices in sysfs
 To: akpm@linux-foundation.org
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Date: Wed, 21 Oct 2009 22:15:20 -0600
-Message-ID: <20091022041520.15705.206.stgit@bob.kio>
+Date: Wed, 21 Oct 2009 22:15:25 -0600
+Message-ID: <20091022041525.15705.6794.stgit@bob.kio>
 In-Reply-To: <20091022040814.15705.95572.stgit@bob.kio>
 References: <20091022040814.15705.95572.stgit@bob.kio>
 User-Agent: StGit/0.14.3.386.gb02d
@@ -26,44 +26,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By returning early if the node is not online, we can unindent the
-interesting code by two levels.
+You can discover which CPUs belong to a NUMA node by examining
+/sys/devices/system/node/node#/
 
-No functional change.
+However, it's not convenient to go in the other direction, when looking at
+/sys/devices/system/cpu/cpu#/
+
+Yes, you can muck about in sysfs, but adding these symlinks makes
+life a lot more convenient.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/base/node.c |   18 ++++++++++++------
- 1 files changed, 12 insertions(+), 6 deletions(-)
+ drivers/base/node.c |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/base/node.c b/drivers/base/node.c
-index ef7dd22..ffda067 100644
+index ffda067..24fa962 100644
 --- a/drivers/base/node.c
 +++ b/drivers/base/node.c
-@@ -243,12 +243,18 @@ int register_cpu_under_node(unsigned int cpu, unsigned int nid)
- 
- int unregister_cpu_under_node(unsigned int cpu, unsigned int nid)
+@@ -227,6 +227,7 @@ struct node node_devices[MAX_NUMNODES];
+  */
+ int register_cpu_under_node(unsigned int cpu, unsigned int nid)
  {
--	if (node_online(nid)) {
--		struct sys_device *obj = get_cpu_sysdev(cpu);
--		if (obj)
--			sysfs_remove_link(&node_devices[nid].sysdev.kobj,
--					 kobject_name(&obj->kobj));
--	}
-+	struct sys_device *obj;
++	int ret;
+ 	struct sys_device *obj;
+ 
+ 	if (!node_online(nid))
+@@ -236,9 +237,15 @@ int register_cpu_under_node(unsigned int cpu, unsigned int nid)
+ 	if (!obj)
+ 		return 0;
+ 
+-	return sysfs_create_link(&node_devices[nid].sysdev.kobj,
++	ret = sysfs_create_link(&node_devices[nid].sysdev.kobj,
+ 				&obj->kobj,
+ 				kobject_name(&obj->kobj));
++	if (ret)
++		return ret;
 +
-+	if (!node_online(nid))
-+		return 0;
-+
-+	obj = get_cpu_sysdev(cpu);
-+	if (!obj)
-+		return 0;
-+
-+	sysfs_remove_link(&node_devices[nid].sysdev.kobj,
-+			  kobject_name(&obj->kobj));
-+
- 	return 0;
++	return sysfs_create_link(&obj->kobj,
++				 &node_devices[nid].sysdev.kobj,
++				 kobject_name(&node_devices[nid].sysdev.kobj));
  }
  
+ int unregister_cpu_under_node(unsigned int cpu, unsigned int nid)
+@@ -254,6 +261,8 @@ int unregister_cpu_under_node(unsigned int cpu, unsigned int nid)
+ 
+ 	sysfs_remove_link(&node_devices[nid].sysdev.kobj,
+ 			  kobject_name(&obj->kobj));
++	sysfs_remove_link(&obj->kobj,
++			  kobject_name(&node_devices[nid].sysdev.kobj));
+ 
+ 	return 0;
+ }
 
