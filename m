@@ -1,129 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZJVNIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbZJVNJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbZJVNIo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 09:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755710AbZJVNIn
+	id S1756011AbZJVNJr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 09:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755710AbZJVNJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 09:08:43 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:60356 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755078AbZJVNIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 09:08:43 -0400
-Date: Thu, 22 Oct 2009 15:06:06 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       mtosatti@redhat.com, xma@us.ibm.com
-Subject: [PATCH] virtio-pci: fix per-vq MSI-X request logic
-Message-ID: <20091022130606.GA6923@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 22 Oct 2009 09:09:46 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:64608 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755078AbZJVNJp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 09:09:45 -0400
+Subject: Re: Leaks in trace reported by kmemleak
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <c4e36d110910200258q7c1d6b4uf74b6d365ffb3f40@mail.gmail.com>
+References: <c4e36d110910150159j6092d0d1lb20434bd9d43d8ce@mail.gmail.com>
+	 <1255690674.3008.24.camel@pc1117.cambridge.arm.com>
+	 <c4e36d110910160632y4448475dp1ae66dfc01ff8448@mail.gmail.com>
+	 <tnxbpk7a0ok.fsf@pc1117.cambridge.arm.com>
+	 <c4e36d110910160728n5ceefaa8u6b9989aec0564628@mail.gmail.com>
+	 <c4e36d110910160807i2298dacp7d37289ca3ad25f@mail.gmail.com>
+	 <1255711285.3008.59.camel@pc1117.cambridge.arm.com>
+	 <c4e36d110910190215j129e61ey5e20634a4bc19292@mail.gmail.com>
+	 <1255953605.31096.26.camel@pc1117.cambridge.arm.com>
+	 <1255958422.31096.33.camel@pc1117.cambridge.arm.com>
+	 <c4e36d110910200258q7c1d6b4uf74b6d365ffb3f40@mail.gmail.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 22 Oct 2009 14:09:28 +0100
+Message-Id: <1256216968.8608.21.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Oct 2009 13:09:29.0643 (UTC) FILETIME=[E39BA7B0:01CA5318]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit f68d24082e22ccee3077d11aeb6dc5354f0ca7f1
-in 2.6.32-rc1 broke requesting IRQs for per-VQ MSI-X vectors:
-- vector number was used instead of the vector itself
-- we try to request an IRQ for VQ which does not
-  have a callback handler
+Hi Zdenek,
 
-This is a regression that causes warnings in kernel log,
-potentially lower performance as we need to scan vq list,
-and might cause system failure if the interrupt
-requested is in fact needed by another system.
+On Tue, 2009-10-20 at 11:58 +0200, Zdenek Kabelac wrote:
+> I've tested your git with updates - and here is my experience:
+> 
+> I'm still able to get FP leaks printed even with the print of
+> more-then-once appearanc.
 
-This was not noticed earlier because in most cases
-we were falling back on shared interrupt for all vqs.
+I updated the kmemleak.git tree and in my tests it reduced the false
+positives significantly. I dropped the two-pass scanning patch and I
+added a new one which checks whether objects were modified since the
+previous leak suspicion and only report them if unmodified (using
+csum_partial for checksum calculation). This works well with linked
+lists since list deletion modifies the prev/next pointers of those left
+in the list (like in the debug_objects case).
 
-The warnings often look like this:
+> Also jiffies might be eventually more readable via data/time - but
+> this can be preprocessed via script.
 
-virtio-pci 0000:00:03.0: irq 26 for MSI/MSI-X
-virtio-pci 0000:00:03.0: irq 27 for MSI/MSI-X
-virtio-pci 0000:00:03.0: irq 28 for MSI/MSI-X
-IRQ handler type mismatch for IRQ 1
-current handler: i8042
-Pid: 2400, comm: modprobe Tainted: G        W
-2.6.32-rc3-11952-gf3ed8d8-dirty #1
-Call Trace:
- [<ffffffff81072aed>] ? __setup_irq+0x299/0x304
- [<ffffffff81072ff3>] ? request_threaded_irq+0x144/0x1c1
- [<ffffffff813455af>] ? vring_interrupt+0x0/0x30
- [<ffffffff81346598>] ? vp_try_to_find_vqs+0x583/0x5c7
- [<ffffffffa0015188>] ? skb_recv_done+0x0/0x34 [virtio_net]
- [<ffffffff81346609>] ? vp_find_vqs+0x2d/0x83
- [<ffffffff81345d00>] ? vp_get+0x3c/0x4e
- [<ffffffffa0016373>] ? virtnet_probe+0x2f1/0x428 [virtio_net]
- [<ffffffffa0015188>] ? skb_recv_done+0x0/0x34 [virtio_net]
- [<ffffffffa00150d8>] ? skb_xmit_done+0x0/0x39 [virtio_net]
- [<ffffffff8110ab92>] ? sysfs_do_create_link+0xcb/0x116
- [<ffffffff81345cc2>] ? vp_get_status+0x14/0x16
- [<ffffffff81345464>] ? virtio_dev_probe+0xa9/0xc8
- [<ffffffff8122b11c>] ? driver_probe_device+0x8d/0x128
- [<ffffffff8122b206>] ? __driver_attach+0x4f/0x6f
- [<ffffffff8122b1b7>] ? __driver_attach+0x0/0x6f
- [<ffffffff8122a9f9>] ? bus_for_each_dev+0x43/0x74
- [<ffffffff8122a374>] ? bus_add_driver+0xea/0x22d
- [<ffffffff8122b4a3>] ? driver_register+0xa7/0x111
- [<ffffffffa001a000>] ? init+0x0/0xc [virtio_net]
- [<ffffffff81009051>] ? do_one_initcall+0x50/0x148
- [<ffffffff8106e117>] ? sys_init_module+0xc5/0x21a
- [<ffffffff8100af02>] ? system_call_fastpath+0x16/0x1b
-virtio-pci 0000:00:03.0: irq 26 for MSI/MSI-X
-virtio-pci 0000:00:03.0: irq 27 for MSI/MSI-X
+Jiffies is still useful to ensure it's the same object or a new one
+allocated in the same function (and possibly false positive). I added
+another bit of information - the age of an object in seconds.msecs.
 
-Reported-by: Marcelo Tosatti <mtosatti@redhat.com>
-Reported-by: Shirley Ma <xma@us.ibm.com>
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
-
-Rusty, since this is a regression from 2.6.31,
-I think we want to push this for 2.6.32.
-Thanks!
-
- drivers/virtio/virtio_pci.c |   27 +++++++++++++++------------
- 1 files changed, 15 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
-index 4a1f1eb..28d9cf7 100644
---- a/drivers/virtio/virtio_pci.c
-+++ b/drivers/virtio/virtio_pci.c
-@@ -530,19 +530,22 @@ static int vp_try_to_find_vqs(struct virtio_device *vdev, unsigned nvqs,
- 			err = PTR_ERR(vqs[i]);
- 			goto error_find;
- 		}
-+
-+		if (!vp_dev->per_vq_vectors || msix_vec == VIRTIO_MSI_NO_VECTOR)
-+			continue;
-+
- 		/* allocate per-vq irq if available and necessary */
--		if (vp_dev->per_vq_vectors) {
--			snprintf(vp_dev->msix_names[msix_vec],
--				 sizeof *vp_dev->msix_names,
--				 "%s-%s",
--				 dev_name(&vp_dev->vdev.dev), names[i]);
--			err = request_irq(msix_vec, vring_interrupt, 0,
--					  vp_dev->msix_names[msix_vec],
--					  vqs[i]);
--			if (err) {
--				vp_del_vq(vqs[i]);
--				goto error_find;
--			}
-+		snprintf(vp_dev->msix_names[msix_vec],
-+			 sizeof *vp_dev->msix_names,
-+			 "%s-%s",
-+			 dev_name(&vp_dev->vdev.dev), names[i]);
-+		err = request_irq(vp_dev->msix_entries[msix_vec].vector,
-+				  vring_interrupt, 0,
-+				  vp_dev->msix_names[msix_vec],
-+				  vqs[i]);
-+		if (err) {
-+			vp_del_vq(vqs[i]);
-+			goto error_find;
- 		}
- 	}
- 	return 0;
 -- 
-1.6.5.rc2
+Catalin
+
