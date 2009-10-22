@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZJVQKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZJVQLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbZJVQKy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 12:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZJVQKx
+	id S1755881AbZJVQLy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 12:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZJVQLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 12:10:53 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:26609 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753179AbZJVQKw (ORCPT
+	Thu, 22 Oct 2009 12:11:53 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59170 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753287AbZJVQLx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 12:10:52 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -14.389
-Message-ID: <4AE0840C.8070801@tremplin-utc.net>
-Date: Thu, 22 Oct 2009 18:10:52 +0200
-From: =?ISO-8859-15?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091009 Mandriva/2.0.0.23-3mdv2010.0 (2010.0) Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not  work anymore
-References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <20091015215944.GA9845@core.coreip.homeip.net> <4ADF6237.9070004@tremplin-utc.net> <200910211320.16339.dmitry.torokhov@gmail.com>
-In-Reply-To: <200910211320.16339.dmitry.torokhov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15
+	Thu, 22 Oct 2009 12:11:53 -0400
+Subject: Re: [PATCH -v4 9/9] tracing: add function graph tracer support for
+ MIPS
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: wuzhangjin@gmail.com, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>
+In-Reply-To: <4AE08173.7070500@caviumnetworks.com>
+References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
+	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
+	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
+	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
+	 <96110ea5dd4d3d54eb97d0bb708a5bd81c7a50b5.1256135456.git.wuzhangjin@gmail.com>
+	 <5dda13e8e3a9c9dba4bb7179183941bda502604f.1256135456.git.wuzhangjin@gmail.com>
+	 <af3ec1b5cd06b6f6a461c9fa7d09a51fabccb08d.1256135456.git.wuzhangjin@gmail.com>
+	 <a6f2959a69b6a77dd32cc36a5c8202f97d524f1e.1256135456.git.wuzhangjin@gmail.com>
+	 <53bdfdd95ec4fa00d4cc505bb5972cf21243a14d.1256135456.git.wuzhangjin@gmail.com>
+	 <1256141540.18347.3118.camel@gandalf.stny.rr.com>
+	 <4ADF38D5.9060100@caviumnetworks.com>
+	 <1256143568.18347.3169.camel@gandalf.stny.rr.com>
+	 <4ADF3FE0.5090104@caviumnetworks.com>
+	 <1256145813.18347.3210.camel@gandalf.stny.rr.com>
+	 <1256211516.3852.47.camel@falcon>  <4AE08173.7070500@caviumnetworks.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 22 Oct 2009 12:11:56 -0400
+Message-Id: <1256227916.20866.784.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 21-10-09 22:20, Dmitry Torokhov schreef:
-> 
-> Nothing, as far as I can tell... I see you typing "qwerty"... Does the 
-> keyboard work in console (let's say if you boot in run level 3 to take X out 
-> of the picture)? Could you please try compiling evbug module - it will show if 
-> keyboard events are propagated through input core. Also, whta driver are you 
-> using in X? Legacy keyboard or evdev?
-In the console (in init 3), I haven't managed to reproduce it. In xorg,
-the keyboard input uses evdev. Now I've just tried "evtest
-/dev/input/event4", when the keyboard doesn't work... and I see the key
-presses!
+On Thu, 2009-10-22 at 08:59 -0700, David Daney wrote:
 
-So I guess it rules out a bug in the kernel, and I have to talk with the
-people from Xorg, right?
+> This is what I was talking about up-thread.  Leaf functions may have no 
+> function prolog.  If you do code scanning you will fail.  While scanning 
+> backwards, there is no way to know when you have entered a new function. 
+>   Looking for function return sequences 'jr ra' doesn't work as there 
+> may be functions with multiple return sites, functions that never 
+> return, or arbitrary data before the function.  I think you have to 
+> force a frame pointer to be established if you want this to work.
 
-Thanks,
-Eric
+Functions that run off into another function?? I guess the compiler
+could do that, but with -pg enable, I would think is broken.
+
+-- Steve
+
+
