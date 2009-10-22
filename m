@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbZJVK64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbZJVLC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbZJVK64 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 06:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbZJVK6z
+	id S1754849AbZJVLC1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 07:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbZJVLC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 06:58:55 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:34760 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754218AbZJVK6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 06:58:54 -0400
-Date: Thu, 22 Oct 2009 11:59:02 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: David Rientjes <rientjes@google.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Stephan von Krawczynski <skraw@ithnet.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Frans Pop <elendil@planet.nl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: page allocation failure message kernel 2.6.31.4 (tty-related)
-Message-ID: <20091022105902.GM11778@csn.ul.ie>
-References: <20091020153838.665bc39c.skraw@ithnet.com> <alpine.LRH.2.00.0910211848510.20992@twin.jikos.cz> <alpine.DEB.2.00.0910211409390.20010@chino.kir.corp.google.com>
+	Thu, 22 Oct 2009 07:02:27 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:59744 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753176AbZJVLC0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 07:02:26 -0400
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 1/4] MFD: twl4030: add twl4030_codec MFD as a new child to the core
+Date: Thu, 22 Oct 2009 14:02:08 +0300
+User-Agent: KMail/1.12.2 (Linux/2.6.31-gentoo; KDE/4.3.2; i686; ; )
+Cc: Samuel Ortiz <sameo@linux.intel.com>,
+       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "tony@atomide.com" <tony@atomide.com>
+References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com> <20091022075748.GA8105@sortiz.org> <20091022105517.GB18862@rakim.wolfsonmicro.main>
+In-Reply-To: <20091022105517.GB18862@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910211409390.20010@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200910221402.08837.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 22 Oct 2009 11:02:13.0905 (UTC) FILETIME=[1C5A8010:01CA5307]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2009 at 02:16:56PM -0700, David Rientjes wrote:
-> On Wed, 21 Oct 2009, Jiri Kosina wrote:
+On Thursday 22 October 2009 13:55:17 ext Mark Brown wrote:
+> On Thu, Oct 22, 2009 at 09:57:49AM +0200, Samuel Ortiz wrote:
+> > It seems to me that this patchset is mostly an asoc one, even though all
+> > of those patches depend on the MFD one. So I'd perfectly fine if they'd
+> > all go through Mark's tree, and then I'd have to make sure I'm sending my
+> > 2.6.33 merge window pull request _after_ Mark's code is in Linus tree.
+> > Once it's there, I can work on merging conflicts with the few
+> > twl4030-core pending patches from my tree. Mark, what do you think ?
 > 
-> > [ tty related CCs added ]
-> > 
-> 
-> I think this is probably a duplicate of the GFP_ATOMIC page allocator 
-> issue at http://bugzilla.kernel.org/show_bug.cgi?id=14141 more than a tty 
-> issue.
-> 
+> Seems reasonable.  I'll apply them on a separate branch and merge them
+> into my 2.6.33 branch so that you can merge them into your tree too and
+> avoid any cross-tree issues without needing to think about how things
+> get merged with Linus (though since Takashi generally merges early it'll
+> probably happen naturally anyway).  Note that if you do pull this branch
+> you won't be able to rebase your tree, you'd have to merge up Linus'
+> tree instead (but that'd be handy anyway :) ).
 
-Probably.
+I just sent the second series, I'll hope the I have not missed anything. 
+I was scratching my head on which tree it should be going, but it is really nice 
+to see that it can be done like this.
+Thank you Samuel, Mark and Tony!
 
-> Have we tried rolling back the refactored page allocator changes in 2.6.31 
-> to see if the logic has changed in other ways unrelated to kswapd?  
-
-No, but bisects around that area were inconclusive at best and there
-are dependants that made backing it out problematic.
-
-> There's subtleties like where rt tasks are given ALLOC_HARDER even when 
-> in_interrupt() that are different from previous kernels and could reduce 
-> the amount of ALLOC_HIGH and ALLOC_HARDER memory that can be allocated.
-> 
-
-/me checks again
-
-I think you're right. Correct it with something like?
-
-==== CUT HERE ====
->From bca71e94e10cd93771ec5b17eccb817dd0c85360 Mon Sep 17 00:00:00 2001
-From: Mel Gorman <mel@csn.ul.ie>
-Date: Thu, 22 Oct 2009 11:55:14 +0100
-Subject: [PATCH] page allocator: Do not allow interrupts to use ALLOC_HARDER
-
-Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
-slightly by allowing rt_tasks that are handling an interrupt to set
-ALLOC_HARDER. This patch brings the watermark logic more in line with
-2.6.30.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- mm/page_alloc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index a3e5fed..3ecf819 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1769,7 +1769,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
- 		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
- 		 */
- 		alloc_flags &= ~ALLOC_CPUSET;
--	} else if (unlikely(rt_task(p)))
-+	} else if (unlikely(rt_task(p)) && !in_interrupt())
- 		alloc_flags |= ALLOC_HARDER;
- 
- 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+-- 
+Péter
