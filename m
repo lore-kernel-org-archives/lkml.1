@@ -1,45 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbZJVSRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756268AbZJVSTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756230AbZJVSRu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 14:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZJVSRu
+	id S1756268AbZJVSTU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 14:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbZJVSTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 14:17:50 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:65525 "EHLO
+	Thu, 22 Oct 2009 14:19:19 -0400
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:43299 "EHLO
 	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755918AbZJVSRt (ORCPT
+	with ESMTP id S1753179AbZJVSTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 14:17:49 -0400
+	Thu, 22 Oct 2009 14:19:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=ozqcS4F5ZqzDaZov8K8w9d6yAs/MoZ5LetVCdZHHRiVygIetj0xfg6az1elZkyeYKd
-         huT4GnJYId+LQ2dc7z6XOzl0JNi82xkjLdDudG+wYoF1ZXmDIbfeoD9seTcd3qek3f2v
-         hF+kWG+xVWPZAWBlhYuLhzNX41Gjjj0oqACGA=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=SNBrj7ZRPULwwJ82HUOdSKccZ/5JFpU+Qgcubjl1xbH5svZTHX8yHxwvBQjrZTajau
+         rsYLqCxqVP9q/HkXae2KUPynOiBS5wWHjyNO3SzjA/ilts1c2wDQuUXwV8lsgLIfeSGx
+         +eftcC7Bzth9wSfK8wIqRPxE5w6G2hUjCUGRE=
+Date: Thu, 22 Oct 2009 11:19:15 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: =?iso-8859-1?Q?=C9ric?= Piel <Eric.Piel@tremplin-utc.net>
+Cc: Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not  work
+	anymore
+Message-ID: <20091022181915.GB18031@core.coreip.homeip.net>
+References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <20091015215944.GA9845@core.coreip.homeip.net> <4ADF6237.9070004@tremplin-utc.net> <200910211320.16339.dmitry.torokhov@gmail.com> <4AE0840C.8070801@tremplin-utc.net> <20091022162202.GA18031@core.coreip.homeip.net> <4AE09AFF.805@tremplin-utc.net>
 MIME-Version: 1.0
-In-Reply-To: <f22d86810910221046l366d3017r8b8823e4750ffea2@mail.gmail.com>
-References: <f22d86810910220410r33002b5ei403ddf6632254472@mail.gmail.com>
-	 <5048.1256224623@turing-police.cc.vt.edu>
-	 <f22d86810910221046l366d3017r8b8823e4750ffea2@mail.gmail.com>
-Date: Thu, 22 Oct 2009 23:42:08 +0530
-Message-ID: <f22d86810910221112x75a908eewe015eb5eae883aa9@mail.gmail.com>
-Subject: Re: Can current macro be accessed from interrupt context?
-From: "Leonidas ." <leonidas137@gmail.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4AE09AFF.805@tremplin-utc.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Assumption
-> here is a certain task can be in kernel mode only on one cpu at a time
-> hence that task specific
-> data structure can be accessed without locks.
+On Thu, Oct 22, 2009 at 07:48:47PM +0200, Éric Piel wrote:
+> Op 22-10-09 18:22, Dmitry Torokhov schreef:
+>> On Thu, Oct 22, 2009 at 06:10:52PM +0200, Éric Piel wrote:
+>>> Op 21-10-09 22:20, Dmitry Torokhov schreef:
+>>>>
+>>>> Nothing, as far as I can tell... I see you typing "qwerty"... Does the
+>>>> keyboard work in console (let's say if you boot in run level 3 to take X out
+>>>> of the picture)? Could you please try compiling evbug module - it will show if
+>>>> keyboard events are propagated through input core. Also, whta driver are you
+>>>> using in X? Legacy keyboard or evdev?
+>>> In the console (in init 3), I haven't managed to reproduce it. In xorg,
+>>> the keyboard input uses evdev. Now I've just tried "evtest
+>>> /dev/input/event4", when the keyboard doesn't work... and I see the key
+>>> presses!
+>>>
+>>> So I guess it rules out a bug in the kernel, and I have to talk with the
+>>> people from Xorg, right?
+>>>
+>>
+>> Yep... but it is still wierd since evdev driver works fine for me...
+>> Could it be you are using either too old or too new version of X?
+>>
+> I don't think so: xorg 1.6.5, with xinput-evdev 2.2.5. They are both  
+> latest or second latest stable versions.
+>
+> In the log I see this:
+> (--) SynPS/2 Synaptics TouchPad: touchpad found
+> (II) PS/2 Generic Mouse: Device reopened after 1 attempts.
+> (EE) AT Translated Set 2 keyboard: device key_bitmask has changed
+> (EE) AT Translated Set 2 keyboard: Device has changed - disabling.
+>
+> Quite a few people seem to have the same problem.
 
-This is pretty much like per cpu variables, right? Conceptually there
-is no difference
-in per-cpu mechanism and what I am thinking.
+The bitmask should not be changing on it's own... Any chance you could
+save contents or /proc/bus/input/devices before suspend and after resume
+(when X decides to ditch the keyboard) and diff them?
 
--Leo.
+-- 
+Dmitry
