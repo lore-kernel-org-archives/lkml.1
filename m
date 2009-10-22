@@ -1,28 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZJWNfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbZJVIm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751956AbZJWNfH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 09:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbZJWNfE
+	id S1754493AbZJVIm4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 04:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbZJVImy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 09:35:04 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:43325 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751858AbZJWNfB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 09:35:01 -0400
-Subject: Re: 2.6.32-rc5-git1 -- INFO: possible circular locking dependency
- detected
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Holger Schurig <hs4233@mail.mn-solutions.de>,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>
-In-Reply-To: <4ADDBD2A.7070807@gmail.com>
-References: <4ADDBD2A.7070807@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-NdW1pWgTUZ4H1OMPV1Od"
-Date: Thu, 22 Oct 2009 10:34:43 +0200
-Message-Id: <1256200483.12174.16.camel@johannes.local>
+	Thu, 22 Oct 2009 04:42:54 -0400
+Received: from mail.nomovok.com ([83.150.122.238]:51760 "EHLO mail.nomovok.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754361AbZJVImx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 04:42:53 -0400
+X-Greylist: delayed 389 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Oct 2009 04:42:53 EDT
+Subject: [PATCH] fix hso soft-lockup
+From: Antti =?ISO-8859-1?Q?Kaijanm=E4ki?= <antti.kaijanmaki@nomovok.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-1zPuuzAk3yPhDeW+W+po"
+Date: Thu, 22 Oct 2009 11:36:18 +0300
+Message-Id: <1256200578.3057.113.camel@nomovok.homedomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.0 
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,76 +23,88 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-NdW1pWgTUZ4H1OMPV1Od
+--=-1zPuuzAk3yPhDeW+W+po
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2009-10-20 at 09:37 -0400, Miles Lane wrote:
-> Resending with wrapping off and time info removed:
+Fix soft-lockup in hso.c which is triggered on SMP machine when
+modem is removed while file descriptor(s) under /dev are still open:
 
-Hey, thanks for that!
+  old version called kref_put() too early which resulted in destroying
+  hso_serial and hso_device objects which were still used later on.
 
-> [ INFO: possible circular locking dependency detected ]
->  2.6.32-rc5-git1 #1
->  -------------------------------------------------------
->  events/0/9 is trying to acquire lock:
->   (&rfkill->sync_work){+.+.+.}, at: [<c1039083>]=20
-> __cancel_work_timer+0x81/0x181
-> =20
->  but task is already holding lock:
->   (&ehotk->hotplug_lock){+.+.+.}, at: [<f8587708>]=20
-> eeepc_rfkill_hotplug+0x45/0xda [eeepc_laptop]
-> =20
->  which lock already depends on the new lock.
-> =20
->=20
->  the existing dependency chain (in reverse order) is:
-> =20
->  -> #2 (&ehotk->hotplug_lock){+.+.+.}:
+Also fix driver debug routines (not compiled in by default).
+---
+ drivers/net/usb/hso.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
->         [<c129e5ee>] mutex_lock_nested+0x2b/0x33
->         [<f8587708>] eeepc_rfkill_hotplug+0x45/0xda [eeepc_laptop]
->         [<f858787c>] eeepc_rfkill_set+0x1d/0x2d [eeepc_laptop]
->         [<f83f4a9f>] rfkill_set_block+0x6f/0xb1 [rfkill]
->         [<f83f4b78>] __rfkill_switch_all+0x2e/0x51 [rfkill]
->         [<f83f4c12>] rfkill_switch_all+0x33/0x41 [rfkill]
->         [<f83f51b0>] rfkill_op_handler+0xf0/0x11e [rfkill]
->         [<c1038965>] worker_thread+0x161/0x233
->         [<c103b883>] kthread+0x5f/0x64
->         [<c1003613>] kernel_thread_helper+0x7/0x10
-> =20
->  -> #1 (rfkill_global_mutex){+.+.+.}:
->         [<c104ac60>] __lock_acquire+0x9fb/0xb6d
->         [<c104ae2e>] lock_acquire+0x5c/0x73
->         [<c129e223>] __mutex_lock_common+0x39/0x375
->         [<c129e5ee>] mutex_lock_nested+0x2b/0x33
->         [<f83f4c36>] rfkill_sync_work+0x16/0x35 [rfkill]
+diff --git a/drivers/net/usb/hso.c b/drivers/net/usb/hso.c
+index fa4e581..539642a 100644
+--- a/drivers/net/usb/hso.c
++++ b/drivers/net/usb/hso.c
+@@ -2,6 +2,7 @@
+  *
+  * Driver for Option High Speed Mobile Devices.
+  *
++ *  Copyright (C) 2009 Antti Kaijanm=C3=A4ki <antti.kaijanmaki@nomovok.com=
+>
+  *  Copyright (C) 2008 Option International
+  *                     Filip Aben <f.aben@option.com>
+  *                     Denis Joseph Barrow <d.barow@option.com>
+@@ -378,7 +379,7 @@ static void dbg_dump(int line_count, const char *func_n=
+ame, unsigned char *buf,
+ }
+=20
+ #define DUMP(buf_, len_)	\
+-	dbg_dump(__LINE__, __func__, buf_, len_)
++	dbg_dump(__LINE__, __func__, (unsigned char*)buf_, len_)
+=20
+ #define DUMP1(buf_, len_)			\
+ 	do {					\
+@@ -1363,7 +1364,7 @@ static void hso_serial_close(struct tty_struct *tty, =
+struct file *filp)
+ 	/* reset the rts and dtr */
+ 	/* do the actual close */
+ 	serial->open_count--;
+-	kref_put(&serial->parent->ref, hso_serial_ref_free);
++
+ 	if (serial->open_count <=3D 0) {
+ 		serial->open_count =3D 0;
+ 		spin_lock_irq(&serial->serial_lock);
+@@ -1383,6 +1384,8 @@ static void hso_serial_close(struct tty_struct *tty, =
+struct file *filp)
+ 		usb_autopm_put_interface(serial->parent->interface);
+=20
+ 	mutex_unlock(&serial->parent->mutex);
++
++	kref_put(&serial->parent->ref, hso_serial_ref_free);
+ }
+=20
+ /* close the requested serial port */
+@@ -1527,7 +1530,7 @@ static void tiocmget_intr_callback(struct urb *urb)
+ 		dev_warn(&usb->dev,
+ 			 "hso received invalid serial state notification\n");
+ 		DUMP(serial_state_notification,
+-		     sizeof(hso_serial_state_notifation))
++		     sizeof(struct hso_serial_state_notification));
+ 	} else {
+=20
+ 		UART_state_bitmap =3D le16_to_cpu(serial_state_notification->
+--=20
+1.6.3.3
 
-Hmm. It seems eeepc takes the hotplug lock in the set path, but also
-elsewhere? Seems like a bug in eeepc, Alan?
 
-johannes
-
---=-NdW1pWgTUZ4H1OMPV1Od
+--=-1zPuuzAk3yPhDeW+W+po
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iQIcBAABAgAGBQJK4BkgAAoJEODzc/N7+QmaxfAP/RtscsXQS99FqXPywJe4K4H+
-6G0ottiBxCxjleJ98aOGnUN5SZaMNQJ9VjDNCEuguiIUac3bTTvmRFGyc5jFHTkr
-3YeITUAxGCnJGYv9hcrOPohBaNQBBiNbhB634sF128rZLAk7+a4xEZyRaNY3l7Of
-jrC0dXzFGa9sNEcXZSSwNYXQtyOtVCclGiSisVlZnCv5+wA5h7wgAUqkndOXgk0U
-sAZGFhVK208JuSyPHH7nq3IvXp8b9/QcuwYfE5ZlV5bW9P9vxSLEGdKQyLxouKH+
-QFJd1smh1l6yI2PKfEMpXZecxzzw3K/P4X+IE7qT8K2ADVRhhwyPGFvRdDa8rQmg
-2+JOb7v0XiCg42G+MW2/nmeNgHm5y87yfL/o3ESKNyJKhqLNFVgyIlrnFz2+3wR3
-AhZNyifxdAJKSiFXF/5TVtwbLDdod1rqFolGUz6oGN2FH6x2mzzGgqyTR/FzuaOP
-+daBWVnHp3XyMLSVzGWD8sHinGLSrVU8bjqEEaSNIHrooKuMuv4uYVE1IyKlHgwj
-U/mj2ieONVlHq1Gi+pM+7jQwBUM/XNHxxeLRco77tg7UyF7BnKGx9y4WeNVAVH2T
-KZ7/Sj5phHfTk+amVVFhHyTzFsa5blIVVP6gexJLm4rFmHLo+UTcQjbuwmoJt0UY
-6uUFIkZiWgBoIdUIWZQ5
-=sx87
+iEYEABECAAYFAkrgGYAACgkQJ/yWUtJ8RGo0sgCeOvQuiNK9svcw30JVkVE11PVM
+NQsAoLqrf8i7f1qYJ5vUy9S4fiPaJvGS
+=dAqG
 -----END PGP SIGNATURE-----
 
---=-NdW1pWgTUZ4H1OMPV1Od--
+--=-1zPuuzAk3yPhDeW+W+po--
 
