@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbZJVEPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbZJVEwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753188AbZJVEPk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 00:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbZJVEPg
+	id S1752812AbZJVEwJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 00:52:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbZJVEwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 00:15:36 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:31982 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbZJVEP0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 00:15:26 -0400
-Subject: [PATCH v2 5/5] Documentation: ABI: /sys/devices/system/cpu/cpu#/node
-To: akpm@linux-foundation.org
-From: Alex Chiang <achiang@hp.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Date: Wed, 21 Oct 2009 22:15:30 -0600
-Message-ID: <20091022041530.15705.29051.stgit@bob.kio>
-In-Reply-To: <20091022040814.15705.95572.stgit@bob.kio>
-References: <20091022040814.15705.95572.stgit@bob.kio>
-User-Agent: StGit/0.14.3.386.gb02d
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Thu, 22 Oct 2009 00:52:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38352 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751973AbZJVEwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 00:52:08 -0400
+Subject: [PATCH 2.4] net: Fix 64 bit DMA addressing for 8139cp and r8169
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Edward Hsu <edward_hsu@realtek.com.tw>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 22 Oct 2009 10:20:47 +0530
+Message-Id: <1256187047.3184.2.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Describe NUMA node symlink created for CPUs when CONFIG_NUMA is set.
 
-Cc: Greg KH <greg@kroah.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
+sizeof(dma_addr_t) will be either 4(32 bit) or 8(64 bit)
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
+ drivers/net/8139cp.c |    2 +-
+ drivers/net/r8169.c  |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
- Documentation/ABI/testing/sysfs-devices-system-cpu |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+diff --git a/drivers/net/8139cp.c b/drivers/net/8139cp.c
+index 9b427e4..dbc9ba2 100644
+--- a/drivers/net/8139cp.c
++++ b/drivers/net/8139cp.c
+@@ -1701,7 +1701,7 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	}
+ 
+ 	/* Configure DMA attributes. */
+-	if ((sizeof(dma_addr_t) > 32) &&
++	if ((sizeof(dma_addr_t) > 4) &&
+ 	    !pci_set_dma_mask(pdev, 0xffffffffffffffffULL)) {
+ 		pci_using_dac = 1;
+ 	} else {
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 8c7c202..8f37969 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -729,7 +729,7 @@ rtl8169_init_board(struct pci_dev *pdev, struct net_device **dev_out,
+ 
+ 	tp->cp_cmd = PCIMulRW | RxChkSum;
+ 
+-	if ((sizeof(dma_addr_t) > 32) &&
++	if ((sizeof(dma_addr_t) > 4) &&
+ 	    !pci_set_dma_mask(pdev, DMA_64BIT_MASK))
+ 		tp->cp_cmd |= PCIDAC;
+ 	else {
+-- 
+1.6.0.6
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index b400c34..67813ae 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -79,6 +79,21 @@ Description:	Discover and change the online state of a CPU.
- 
- 		For more information, please read Documentation/cpu-hotplug.txt
- 
-+
-+What:		/sys/devices/system/cpu/cpu#/node
-+Date:		October 2009
-+Contact:	Linux memory management mailing list <linux-mm@kvack.org>
-+Description:	Discover NUMA node a CPU belongs to
-+
-+		When CONFIG_NUMA is enabled, a symbolic link that points
-+		to the corresponding NUMA node directory.
-+
-+		For example, the following symlink is created for cpu42
-+		in NUMA node 2:
-+
-+		/sys/devices/system/cpu/cpu42/node2 -> ../../node/node2
-+
-+
- What:		/sys/devices/system/cpu/cpu#/topology/core_id
- 		/sys/devices/system/cpu/cpu#/topology/core_siblings
- 		/sys/devices/system/cpu/cpu#/topology/core_siblings_list
 
