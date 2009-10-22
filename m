@@ -1,51 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbZJVN7F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbZJVOFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbZJVN7F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 09:59:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbZJVN7E
+	id S1756166AbZJVOFW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 10:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbZJVOFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 09:59:04 -0400
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:33910 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755915AbZJVN7D (ORCPT
+	Thu, 22 Oct 2009 10:05:21 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:51683 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750882AbZJVOFU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 09:59:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=YP+9qf0SXJ2lYGnfBcA0qP9KW5hfehFI7ibKx1kEHEdEHjdAs/u9VyYKzXo4ZK4XDf
-         nU9dBD/Qqqz6kUS0AfemwDI1zVuxvkQfCj5/gA9HEDALc6ua5SdeK0W7ZH8CZ1JWJKrZ
-         t6+CadL6pPRoFC5mbXiWj0UxN2y7awyY3skxo=
+	Thu, 22 Oct 2009 10:05:20 -0400
+Date: Thu, 22 Oct 2009 10:05:23 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       <linux-media@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: uvcvideo causes ehci_hcd to halt
+In-Reply-To: <4AE03477.1010902@pardus.org.tr>
+Message-ID: <Pine.LNX.4.44L0.0910220944100.989-100000@netrider.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <20091022070527.GE2211@elf.ucw.cz>
-References: <20091019213751.GC1482@ucw.cz> <f17812d70910211320s29d3aaa5tad3206df1e99e03b@mail.gmail.com> 
-	<20091022070527.GE2211@elf.ucw.cz>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Thu, 22 Oct 2009 21:58:47 +0800
-Message-ID: <f17812d70910220658t5bbd5d02n5f4a37c1c7670cff@mail.gmail.com>
-Subject: Re: spitz backlight: fix brightness limiting
-To: Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>
-Cc: Andrew Morton <akpm@osdl.org>, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 3:05 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Thu 2009-10-22 04:20:34, Eric Miao wrote:
->> It's a little bit weird it's called 'limit_mask' when I first converted it
->> to a spi driver. There must be some reasons, Richard, you've got
->> any ideas?
->
-> Yes, the code was "interesting"...
->
-> I can certainly do the rename, but maybe we can fix the issue now and
-> do futher cleanups later?
+On Thu, 22 Oct 2009, [UTF-8] Ozan Çağlayan wrote:
 
-Fair enough, I'm fine with that - I'd like this to go through Richard's
-backlight tree if possible, though.
+> Here's the outputs from /sys/kernel/debug/usb/ehci:
+> 
+> periodic:
+> ----------------
+> size = 1024
+>    1:  qh1024-0001/f6ffe280 (h2 ep2 [1/0] q0 p8)
+
+There's something odd about this.  I'd like to see this file again, 
+after the patch below has been applied.
+
+> registers:
+> ----------------
+> bus pci, device 0000:00:1d.7
+> EHCI Host Controller
+> EHCI 1.00, hcd state 0
+> ownership 00000001
+> SMI sts/enable 0x80080000
+> structural params 0x00104208
+> capability params 0x00016871
+> status 6008 Periodic Recl FLR
+> command 010000 (park)=0 ithresh=1 period=1024 HALT
+> intrenable 00
+> uframe 2fa0
+> port 1 status 001000 POWER sig=se0
+> port 2 status 001000 POWER sig=se0
+> port 3 status 001000 POWER sig=se0
+> port 4 status 001000 POWER sig=se0
+> port 5 status 001005 POWER sig=se0 PE CONNECT
+> port 6 status 001005 POWER sig=se0 PE CONNECT
+> port 7 status 001000 POWER sig=se0
+> port 8 status 001000 POWER sig=se0
+> irq normal 60 err 0 reclaim 16 (lost 0)
+> complete 60 unlink 1
+
+This confirms that the periodic schedule was never disabled.
+
+So first get another copy of the "periodic" file with the patch below.  
+Then try changing the enable_periodic() routine in ehci-sched.c: Add
+
+	udelay(2000);
+
+just before the final "return 0;" line.  Let's see if that prevents the 
+problem from occurring.
+
+Alan Stern
+
+
+
+--- usb-2.6.orig/drivers/usb/host/ehci-dbg.c
++++ usb-2.6/drivers/usb/host/ehci-dbg.c
+@@ -591,18 +591,21 @@ static ssize_t fill_periodic_buffer(stru
+ 							qtd->hw_token) >> 8)) {
+ 						case 0: type = "out"; continue;
+ 						case 1: type = "in"; continue;
++						case 2: type = "?2"; continue;
++						case 3: type = "?3"; continue;
+ 						}
+ 					}
+ 
+ 					temp = scnprintf (next, size,
+ 						" (%c%d ep%d%s "
+-						"[%d/%d] q%d p%d)",
++						"[%d/%d] q%d p%d) %08x",
+ 						speed_char (scratch),
+ 						scratch & 0x007f,
+ 						(scratch >> 8) & 0x000f, type,
+ 						p.qh->usecs, p.qh->c_usecs,
+ 						temp,
+-						0x7ff & (scratch >> 16));
++						0x7ff & (scratch >> 16),
++						hc32_to_cpu(ehci, qtd->hw_token));
+ 
+ 					if (seen_count < DBG_SCHED_LIMIT)
+ 						seen [seen_count++].qh = p.qh;
+
