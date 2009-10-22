@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZJVQLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZJVQOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbZJVQLy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 12:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZJVQLx
+	id S1756128AbZJVQOe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 12:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbZJVQOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 12:11:53 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59170 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753287AbZJVQLx (ORCPT
+	Thu, 22 Oct 2009 12:14:33 -0400
+Received: from mailc.microsoft.com ([131.107.115.214]:51142 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752118AbZJVQOd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 12:11:53 -0400
-Subject: Re: [PATCH -v4 9/9] tracing: add function graph tracer support for
- MIPS
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: wuzhangjin@gmail.com, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-In-Reply-To: <4AE08173.7070500@caviumnetworks.com>
-References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
-	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
-	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
-	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
-	 <96110ea5dd4d3d54eb97d0bb708a5bd81c7a50b5.1256135456.git.wuzhangjin@gmail.com>
-	 <5dda13e8e3a9c9dba4bb7179183941bda502604f.1256135456.git.wuzhangjin@gmail.com>
-	 <af3ec1b5cd06b6f6a461c9fa7d09a51fabccb08d.1256135456.git.wuzhangjin@gmail.com>
-	 <a6f2959a69b6a77dd32cc36a5c8202f97d524f1e.1256135456.git.wuzhangjin@gmail.com>
-	 <53bdfdd95ec4fa00d4cc505bb5972cf21243a14d.1256135456.git.wuzhangjin@gmail.com>
-	 <1256141540.18347.3118.camel@gandalf.stny.rr.com>
-	 <4ADF38D5.9060100@caviumnetworks.com>
-	 <1256143568.18347.3169.camel@gandalf.stny.rr.com>
-	 <4ADF3FE0.5090104@caviumnetworks.com>
-	 <1256145813.18347.3210.camel@gandalf.stny.rr.com>
-	 <1256211516.3852.47.camel@falcon>  <4AE08173.7070500@caviumnetworks.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Thu, 22 Oct 2009 12:11:56 -0400
-Message-Id: <1256227916.20866.784.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Oct 2009 12:14:33 -0400
+From: Haiyang Zhang <haiyangz@microsoft.com>
+To: "gregkh@suse.de" <gregkh@suse.de>, Hank Janssen <hjanssen@microsoft.com>
+CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Staging: hv: Fix null pointer error after vmbus loading
+Thread-Topic: [PATCH] Staging: hv: Fix null pointer error after vmbus loading
+Thread-Index: AcpTMryvJOXgSvmwQ7G9Z23WlySKzg==
+Date: Thu, 22 Oct 2009 16:14:31 +0000
+Message-ID: <1FB5E1D5CA062146B38059374562DF72180B3E1E@TK5EX14MBXC126.redmond.corp.microsoft.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-22 at 08:59 -0700, David Daney wrote:
+From: Haiyang Zhang <haiyangz@microsoft.com>
 
-> This is what I was talking about up-thread.  Leaf functions may have no 
-> function prolog.  If you do code scanning you will fail.  While scanning 
-> backwards, there is no way to know when you have entered a new function. 
->   Looking for function return sequences 'jr ra' doesn't work as there 
-> may be functions with multiple return sites, functions that never 
-> return, or arbitrary data before the function.  I think you have to 
-> force a frame pointer to be established if you want this to work.
+Fix null pointer error after vmbus loading.
 
-Functions that run off into another function?? I guess the compiler
-could do that, but with -pg enable, I would think is broken.
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Hank Janssen <hjanssen@microsoft.com>
+Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
 
--- Steve
-
+---
+diff --git a/drivers/staging/hv/vmbus_drv.c b/drivers/staging/hv/vmbus_drv.c
+index 582318f..11431cc 100644
+--- a/drivers/staging/hv/vmbus_drv.c
++++ b/drivers/staging/hv/vmbus_drv.c
+@@ -538,9 +538,10 @@ static int vmbus_child_device_register(struct hv_device *root_device_obj,
+ 		   child_device_ctx);
+ 
+ 	/* Make sure we are not registered already */
+-	if (strlen(dev_name(&child_device_ctx->device)) != 0) {
++	if (dev_name(&child_device_ctx->device) != NULL &&
++	    strlen(dev_name(&child_device_ctx->device)) != 0) {
+ 		DPRINT_ERR(VMBUS_DRV,
+-			   "child device (%p) already registered - busid %s",
++			   "child device (%p) already registered - device name: %s",
+ 			   child_device_ctx,
+ 			   dev_name(&child_device_ctx->device));
 
