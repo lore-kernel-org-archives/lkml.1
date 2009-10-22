@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbZJVQiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbZJVQqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbZJVQiT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 12:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbZJVQiT
+	id S1756701AbZJVQqH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 12:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbZJVQqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 12:38:19 -0400
-Received: from nfitmail.nfit.au.dk ([130.225.31.129]:22018 "EHLO
-	smtp.nfit.au.dk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754968AbZJVQiS convert rfc822-to-8bit (ORCPT
+	Thu, 22 Oct 2009 12:46:06 -0400
+Received: from vms173007pub.verizon.net ([206.46.173.7]:49089 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753837AbZJVQqF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 12:38:18 -0400
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH] x86: Get bp from the IRQ regs instead of directly from the CPU
-From: Soeren Sandmann <sandmann@daimi.au.dk>
-Date: 22 Oct 2009 18:38:22 +0200
-In-Reply-To: <ye8vdi7mluz.fsf@camel16.daimi.au.dk>
-Message-ID: <ye8ljj3mlj5.fsf@camel16.daimi.au.dk>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-X-NFIT-RelayAddr: 130.225.16.135
-X-NFIT-Solido-Score: 0.
+	Thu, 22 Oct 2009 12:46:05 -0400
+Message-id: <4AE08C42.9020305@acm.org>
+Date: Thu, 22 Oct 2009 11:45:54 -0500
+From: Corey Minyard <minyard@acm.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+MIME-version: 1.0
+To: Matt Domsch <Matt_Domsch@dell.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "discuss@LessWatts.org" <discuss@LessWatts.org>,
+       "openipmi-developer@lists.sourceforge.net" 
+	<openipmi-developer@lists.sourceforge.net>
+Subject: Re: ipmi: use round_jiffies	on timers to reduce timer overhead/wakeups
+References: <20091021102822.5b32b2dc.randy.dunlap@oracle.com>
+ <20091021114210.4d7e1ea9@linux.intel.com>	<4ADF57D7.7010808@intel.com>
+ <20091021130348.cd521b0c.randy.dunlap@oracle.com>	<4ADF6D76.7070409@acm.org>
+ <4ADF75A2.50202@linux.intel.com>
+ <20091022025013.GB20467@auslistsprd01.us.dell.com>
+In-reply-to: <20091022025013.GB20467@auslistsprd01.us.dell.com>
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Passing 0 for bp causes dump_trace() to get bp directly from the
-hardware register. This leads to the IRQ stack being included in the
-generated call chains, which means the stack looks something like
-this:
+Matt Domsch wrote:
+> On Thu, Oct 22, 2009 at 05:57:06AM +0900, Arjan van de Ven wrote:
+>   
+>> Corey Minyard wrote:
+>>     
+>>> Certainly.  Yes, some (probably most) IPMI hardware does not use
+>>> interrupts, and unfortunately, it's not just older machines.  The driver
+>>> used to poll more slowly, but in many cases the performance was
+>>> unacceptable.
+>>>       
+>> ... but now it burns quite a bit of power (I'd not be surprised if it is 10 
+>> Watts extra on a 70W server)
+>>
+>> is there any way to poll slowly until there is active ipmi traffic, during 
+>> which we can then poll a bit faster.
+>> ... and then go back to slow polling when there is an ipmi idle period ?
+>>     
+>
+> I believe that's what the thread does already.  Depending on what
+> userspace apps are generating IPMI requests though, there may not be a
+> whole lot of time between requests.  Dell OpenManage software does a
+> poll of the IPMI sensors, SEL logs, etc. at regular intervals, on the
+> order of minutes between runs, but during each run there's almost
+> always an outstanding IPMI command.
+>   
+In addition to userland work, the upper layer of the driver polls for 
+events once a second.  This is another unfortunate IPMI design flaw.  
+There is a flag (that will thus cause an interrupt) that tells you if 
+the event queue is full, but it doesn't tell you if there is an event in 
+the queue, only if its full.  So you have to poll for events.
 
-	[ ip ] [ IRQ stack ] [ rest of stack trace ]
-
-which is incorrect and confusing to user space.
-
-Getting bp from the IRQ regs instead makes the tracing start after the
-IRQ stack:
-
-	[ ip ] [ rest of stack trace ]
-
-Signed-off-by: Søren Sandmann Pedersen <sandmann@redhat.com>
----
- arch/x86/kernel/cpu/perf_event.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index b5801c3..39b1d0c 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -2177,10 +2177,18 @@ static const struct stacktrace_ops backtrace_ops = {
- static void
- perf_callchain_kernel(struct pt_regs *regs, struct perf_callchain_entry *entry)
- {
-+	unsigned long bp;
-+    
- 	callchain_store(entry, PERF_CONTEXT_KERNEL);
- 	callchain_store(entry, regs->ip);
- 
--	dump_trace(NULL, regs, NULL, 0, &backtrace_ops, entry);
-+#ifdef CONFIG_FRAME_POINTER
-+	bp = regs->bp;
-+#else
-+	bp = 0;
-+#endif
-+	
-+	dump_trace(NULL, regs, NULL, bp, &backtrace_ops, entry);
- }
- 
- /*
--- 
-1.6.5.rc2
-
+-corey
