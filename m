@@ -1,70 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbZJVMX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZJVMgC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755317AbZJVMX7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 08:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZJVMX6
+	id S1755445AbZJVMgC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 08:36:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbZJVMgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 08:23:58 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:16245 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752082AbZJVMX6 (ORCPT
+	Thu, 22 Oct 2009 08:36:01 -0400
+Received: from gv-out-0910.google.com ([216.239.58.191]:21511 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754840AbZJVMgA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 08:23:58 -0400
-Subject: Re: [PATCH] intel-iommu: Fix alloc_coherent for pass-through
- devices
-From: Alex Williamson <alex.williamson@hp.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: iommu@lists.linux-foundation.org,
+	Thu, 22 Oct 2009 08:36:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=sZ1EGLQl34fW1pm0WGjhRpRUFBDfZk+ppW88PbMJgaEx3qjKv5ZeHglwrzCuDoWg/H
+         Mq+q45rXUpkK5e3XNw984lqHSTKDOnwK1/tlnPmaSPuMny+3Wg/5mZhsQRz4FKc8FqVy
+         RtPtW6Z6gU+tDhhThWry6LSXH/58WzShZtNQY=
+MIME-Version: 1.0
+In-Reply-To: <20091022105902.GM11778@csn.ul.ie>
+References: <20091020153838.665bc39c.skraw@ithnet.com>
+	 <alpine.LRH.2.00.0910211848510.20992@twin.jikos.cz>
+	 <alpine.DEB.2.00.0910211409390.20010@chino.kir.corp.google.com>
+	 <20091022105902.GM11778@csn.ul.ie>
+Date: Thu, 22 Oct 2009 15:36:04 +0300
+X-Google-Sender-Auth: 336d2711fe6f3f22
+Message-ID: <84144f020910220536k61d43e95x802c2391459e4305@mail.gmail.com>
+Subject: Re: page allocation failure message kernel 2.6.31.4 (tty-related)
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: David Rientjes <rientjes@google.com>, Jiri Kosina <jkosina@suse.cz>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
        linux-kernel <linux-kernel@vger.kernel.org>,
-       "Miller, Mike (OS Dev)" <mike.miller@hp.com>
-In-Reply-To: <1256192928.2990.10.camel@macbook.infradead.org>
-References: <1256182910.2842.36.camel@2710p.home>
-	 <1256192928.2990.10.camel@macbook.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 22 Oct 2009 06:24:01 -0600
-Message-ID: <1256214241.2842.50.camel@2710p.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Frans Pop <elendil@planet.nl>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-22 at 15:28 +0900, David Woodhouse wrote:
-> On Wed, 2009-10-21 at 21:41 -0600, Alex Williamson wrote:
-> > After 19943b0e (intel-iommu: Unify hardware and software passthrough
-> > support) hardware pass-through mode devices make use of intel_dma_ops
-> > rather than swiotlb_dma_ops.  The problem is that intel_alloc_coherent
-> > ignores the device coherent_dma_mask when allocating the page since it
-> > expects to remap the page and provide the device with an iova within the
-> > coherent mask.  This breaks when we use pass-through.
-> > 
-> > The patch below crudely works around the problem, but I hope we can come
-> > up with something better without reintroducing the dependency on
-> > swiotlb.  The device hitting this problem is an HP smart array
-> > controller on a Proliant G6 system.  It uses a default 32bit coherent
-> > DMA mask, and stalls, presumably waiting on control data to change in
-> > the wrong address space, when it gets a coherent buffer above 4G.  This
-> > device also doesn't exactly play nice when using VT-d in anything other
-> > than pass-through mode, so switching it into mapped mode is not really
-> > an option.
-> 
-> I don't understand. If your device can't cope with 64-bit addresses,
-> then surely iommu_no_mapping() should return _false_ for it. And we'll
-> actually use the IOMMU even though we're generally in passthrough mode.
+On Thu, Oct 22, 2009 at 1:59 PM, Mel Gorman <mel@csn.ul.ie> wrote:
+>> There's subtleties like where rt tasks are given ALLOC_HARDER even when
+>> in_interrupt() that are different from previous kernels and could reduce
+>> the amount of ALLOC_HIGH and ALLOC_HARDER memory that can be allocated.
+>>
+>
+> /me checks again
+>
+> I think you're right. Correct it with something like?
+>
+> ==== CUT HERE ====
+> From bca71e94e10cd93771ec5b17eccb817dd0c85360 Mon Sep 17 00:00:00 2001
+> From: Mel Gorman <mel@csn.ul.ie>
+> Date: Thu, 22 Oct 2009 11:55:14 +0100
+> Subject: [PATCH] page allocator: Do not allow interrupts to use ALLOC_HARDER
+>
+> Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
+> slightly by allowing rt_tasks that are handling an interrupt to set
+> ALLOC_HARDER. This patch brings the watermark logic more in line with
+> 2.6.30.
+>
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-The coherent_dma_mask is independent of the dma_mask and can be set
-separately by the device.  The default for any device that doesn't
-specify one is 32bits.  iommu_should_identity_map() only checks the
-dma_mask, not the coherent_dma_mask.  We never see "32bit %s uses
-non-identity mapping" for this device, and I suspect if we did it also
-wouldn't work because of the mentioned unfriendliness in mapped mode.
-Since coherent mappings are generally a slow path, I think we should be
-making more effort to get a usable buffer before dumping the device out
-of passthrough mode.  BTW, we skip RMRR setup when doing hardware
-pass-through, but I can't find where they get reloaded if we then end up
-removing the device from the si_domain.  Is this another issue?  Thanks,
+Good catch.
 
-Alex
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
+Can we have some of the people that are hitting the OOM problems test
+this patch in combination with this patch:
 
+http://patchwork.kernel.org/patch/54215/
+
+Mel, can you also resend these page allocator patches to Andrew? I
+haven't seen him pick the above patch in -mm and we probably want to
+get fixes into -stable soon because distributors seem to be basing
+their next releases on 2.6.31...
+
+> ---
+>  mm/page_alloc.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index a3e5fed..3ecf819 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1769,7 +1769,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
+>                 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+>                 */
+>                alloc_flags &= ~ALLOC_CPUSET;
+> -       } else if (unlikely(rt_task(p)))
+> +       } else if (unlikely(rt_task(p)) && !in_interrupt())
+>                alloc_flags |= ALLOC_HARDER;
+>
+>        if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
