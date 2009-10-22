@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZJVHTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbZJVHVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754261AbZJVHTj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 03:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZJVHTh
+	id S1753927AbZJVHVW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 03:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbZJVHVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 03:19:37 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38023 "EHLO
+	Thu, 22 Oct 2009 03:21:22 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51053 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754218AbZJVHT2 (ORCPT
+	with ESMTP id S1751066AbZJVHVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 03:19:28 -0400
-Date: Thu, 22 Oct 2009 09:19:26 +0200
+	Thu, 22 Oct 2009 03:21:21 -0400
+Date: Thu, 22 Oct 2009 09:21:19 +0200
 From: Pavel Machek <pavel@ucw.cz>
 To: linux-mmc@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: msm_sdcc.c: remove references to htc_pwrsink
-Message-ID: <20091022071926.GA3244@elf.ucw.cz>
+       Andrew Morton <akpm@osdl.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: msm_sdcc.c: add missing include
+Message-ID: <20091022072119.GA3285@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,36 +27,42 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-htc_pwrsing code never went to mainline, remove references to it.
+Add missing include for	msm_sdcc compilation.
 
 Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-diff --git a/drivers/mmc/host/msm_sdcc.c b/drivers/mmc/host/msm_sdcc.c
-index dba4600..64d4e48 100644
---- a/drivers/mmc/host/msm_sdcc.c
-+++ b/drivers/mmc/host/msm_sdcc.c
-@@ -41,7 +41,6 @@
- #include <asm/mach/mmc.h>
- #include <mach/msm_iomap.h>
- #include <mach/dma.h>
--#include <mach/htc_pwrsink.h>
- 
- #include "msm_sdcc.h"
- 
-@@ -775,13 +774,11 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 
- 	switch (ios->power_mode) {
- 	case MMC_POWER_OFF:
--		htc_pwrsink_set(PWRSINK_SDCARD, 0);
- 		break;
- 	case MMC_POWER_UP:
- 		pwr |= MCI_PWR_UP;
- 		break;
- 	case MMC_POWER_ON:
--		htc_pwrsink_set(PWRSINK_SDCARD, 100);
- 		pwr |= MCI_PWR_ON;
- 		break;
- 	}
+diff --git a/arch/arm/include/asm/mach/mmc.h b/arch/arm/include/asm/mach/mmc.h
+new file mode 100644
+index 0000000..8948dec
+--- /dev/null
++++ b/arch/arm/include/asm/mach/mmc.h
+@@ -0,0 +1,26 @@
++/*
++ *  arch/arm/include/asm/mach/mmc.h
++ */
++#ifndef ASMARM_MACH_MMC_H
++#define ASMARM_MACH_MMC_H
++
++#include <linux/mmc/host.h>
++#include <linux/mmc/card.h>
++#include <linux/mmc/sdio_func.h>
++
++struct embedded_sdio_data {
++        struct sdio_cis cis;
++        struct sdio_cccr cccr;
++        struct sdio_embedded_func *funcs;
++        int num_funcs;
++};
++
++struct mmc_platform_data {
++	unsigned int ocr_mask;			/* available voltages */
++	u32 (*translate_vdd)(struct device *, unsigned int);
++	unsigned int (*status)(struct device *);
++	struct embedded_sdio_data *embedded_sdio;
++	int (*register_status_notify)(void (*callback)(int card_present, void *dev_id), void *dev_id);
++};
++
++#endif
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
