@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbZJVLqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbZJVLne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755069AbZJVLqM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 07:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbZJVLqL
+	id S1754985AbZJVLne (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 07:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbZJVLne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 07:46:11 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51400 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752082AbZJVLqK (ORCPT
+	Thu, 22 Oct 2009 07:43:34 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:51849 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753341AbZJVLnd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 07:46:10 -0400
-Message-ID: <4AE0444B.5070603@zytor.com>
-Date: Thu, 22 Oct 2009 20:38:51 +0900
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 22 Oct 2009 07:43:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=qV2pi6seBSuVnzPpTaLgQQbzhT9XXSCshMfJZ/RVK8FHpsW5QWiIeACObjFeww5Wkc
+         Kuo5v6r5JNjKHPvwuEethtLSSWx3ver0Ny6DTKRfJqAHjCs5GW8vlK/4slCxrAy55i2t
+         OKe5bnrDPbbANzbLpRi3NOjI2DdhRm0PNtjsM=
 MIME-Version: 1.0
-To: mtk.manpages@gmail.com
-CC: Matt Helsley <matthltc@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       randy.dunlap@oracle.com, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       Louis.Rilling@kerlabs.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu,
-       linux-api@vger.kernel.org, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v8][PATCH 9/10]: Define clone3() syscall
-References: <20091013044925.GA28181@us.ibm.com>	 <20091013045439.GI28435@us.ibm.com> <20091016042041.GA7220@us.ibm.com>	 <cfd18e0f0910152325m4a9125c2q18f36f5bd7d4a0@mail.gmail.com>	 <20091016180631.GA31036@us.ibm.com>	 <20091019174405.GE27627@count0.beaverton.ibm.com>	 <4ADCDAA8.5080408@zytor.com>	 <20091019235012.GF27627@count0.beaverton.ibm.com>	 <cfd18e0f0910202126w1ebfa2e2u2ecbaa23b198d100@mail.gmail.com>	 <4ADF06B7.50508@zytor.com> <cfd18e0f0910220326w1a71b899s5ff0fce9e0a2b8ed@mail.gmail.com>
-In-Reply-To: <cfd18e0f0910220326w1a71b899s5ff0fce9e0a2b8ed@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091022112746.GA4928@nowhere>
+References: <f22d86810910220410r33002b5ei403ddf6632254472@mail.gmail.com>
+	 <20091022112746.GA4928@nowhere>
+Date: Thu, 22 Oct 2009 04:43:38 -0700
+Message-ID: <f22d86810910220443u49cdfabg83ef836406cfb36d@mail.gmail.com>
+Subject: Re: Can current macro be accessed from interrupt context?
+From: "Leonidas ." <leonidas137@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/22/2009 07:26 PM, Michael Kerrisk wrote:
+On Thu, Oct 22, 2009 at 4:27 AM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> On Thu, Oct 22, 2009 at 04:10:49AM -0700, Leonidas . wrote:
+>> Hello,
 >>
->> "3" is number of arguments.
+>> Going through UTLK, it says that current macro makes sense only in
+>> case of process context,
+>> in case of interrupt context it is invalid.
 >
-> sys_clone3(struct clone_struct __user *ucs, pid_t __user *pids)
 >
-> It appears to me that the number of arguments is 2.
+> Indeed, usually it makes only sense in process context.
+>
+>
+>> But current would still be pointing to interrupted process right? The
+>> pointer would still be valid?
+>
+>
+>
+> Yeah, unless you irq handler executes in a threaded interrupt, in
+> which case current will be pointing to the given irq thread.
+
+Threaded interrupt handlers? I am sorry, I am new to kernel development
+and not fully aware of the intricacies. Do you mean bottom half handlers here?
+
+> There are few tiny cases where it is unsafe to deref "current",
+> such as the very beginning of a cpu's awakening, when the per cpu
+> datas are not yet ready for this cpu.
 >
 
-It was 3 at one point... I'm not sure when that changed last :-/
+Okay, I guess, in my case this would not be a problem then since this is about
+early init.
 
->> It's better than "extended" or something like
->> that simply because "extended" just means "more than", and a number at least
->> tells you *how much more than*.
+>> Can I safely assume that whether or not interrupt handlers are
+>> executing on separate stacks or
+>> interrupted threads stack, current macro can be accessed from interrupt context?
 >
-> I'm not sure why you think including a number in the name tells us
-> "how much more than". Unless you are considering the numbering to be
-> version numbers, which apparently is not what you mean.
+>
+> Yep.
+> For example we do that in the function graph tracer. Because we store return
+> addresses of functions in the "current" task structure. Even if the task
+> is interrupted, it still makes sense to use current because we want
+> to know the flow of execution as a linear thing per cpu, the interrupt
+> is part of that flow
+>
+> I hope that helps.
+>
 
-It is a version number of sorts.
+Can you give pointers to the source code of this project?
 
-	-hpa
+> Frederic.
+>
+>
+
+
+-Leo.
