@@ -1,41 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbZJVDj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbZJVDls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753485AbZJVDj0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 23:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZJVDj0
+	id S1753750AbZJVDls (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 23:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZJVDlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 23:39:26 -0400
-Received: from ozlabs.org ([203.10.76.45]:36584 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750894AbZJVDjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 23:39:25 -0400
-From: Michael Neuling <mikey@neuling.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, michael@ellerman.id.au
-X-GPG-Fingerprint: 9B25 DC2A C58D 2C8D 47C2  457E 0887 E86F 32E6 BE16
-MIME-Version: 1.0
-Subject: [PATCH] trivial: Fix typo in comment for #endif
-X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 22.2.1
-Date: Thu, 22 Oct 2009 14:39:28 +1100
-Message-ID: <18191.1256182768@neuling.org>
+	Wed, 21 Oct 2009 23:41:47 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:17616 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751612AbZJVDlr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 23:41:47 -0400
+Subject: [PATCH] intel-iommu: Fix alloc_coherent for pass-through devices
+From: Alex Williamson <alex.williamson@hp.com>
+To: dwmw2@infradead.org
+Cc: iommu@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Miller, Mike (OS Dev)" <mike.miller@hp.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 21 Oct 2009 21:41:50 -0600
+Message-ID: <1256182910.2842.36.camel@2710p.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The comment suggests this #endif is CONFIG_X86 but it's really
-CONFIG_TRACE_IRQFLAGS_SUPPORT
+After 19943b0e (intel-iommu: Unify hardware and software passthrough
+support) hardware pass-through mode devices make use of intel_dma_ops
+rather than swiotlb_dma_ops.  The problem is that intel_alloc_coherent
+ignores the device coherent_dma_mask when allocating the page since it
+expects to remap the page and provide the device with an iova within the
+coherent mask.  This breaks when we use pass-through.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+The patch below crudely works around the problem, but I hope we can come
+up with something better without reintroducing the dependency on
+swiotlb.  The device hitting this problem is an HP smart array
+controller on a Proliant G6 system.  It uses a default 32bit coherent
+DMA mask, and stalls, presumably waiting on control data to change in
+the wrong address space, when it gets a coherent buffer above 4G.  This
+device also doesn't exactly play nice when using VT-d in anything other
+than pass-through mode, so switching it into mapped mode is not really
+an option.
 
-diff --git a/include/linux/irqflags.h b/include/linux/irqflags.h
-index b02a3f1..006bf45 100644
---- a/include/linux/irqflags.h
-+++ b/include/linux/irqflags.h
-@@ -124,6 +124,6 @@
- 	typecheck(unsigned long, flags);	\
- 	raw_irqs_disabled_flags(flags);		\
- })
--#endif		/* CONFIG_X86 */
-+#endif /* CONFIG_TRACE_IRQFLAGS_SUPPORT */
+Signed-off-by: Alex Williamson <alex.williamson@hp.com>
+---
+
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index b1e97e6..7a739ac 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -2767,7 +2767,11 @@ static void *intel_alloc_coherent(struct device *hwdev, size_t size,
  
- #endif
+ 	size = PAGE_ALIGN(size);
+ 	order = get_order(size);
+-	flags &= ~(GFP_DMA | GFP_DMA32);
++
++	if (iommu_no_mapping(hwdev))
++		flags |= (GFP_DMA | GFP_DMA32);
++	else
++		flags &= ~(GFP_DMA | GFP_DMA32);
+ 
+ 	vaddr = (void *)__get_free_pages(flags, order);
+ 	if (!vaddr)
+
+
