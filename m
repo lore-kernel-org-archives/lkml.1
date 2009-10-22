@@ -1,24 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbZJVDpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751463AbZJVEPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754417AbZJVDpq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 23:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbZJVDpo
+	id S1751463AbZJVEPD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 00:15:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbZJVEPC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 23:45:44 -0400
-Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:17098 "EHLO
-	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754309AbZJVDpm (ORCPT
+	Thu, 22 Oct 2009 00:15:02 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:5128 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750742AbZJVEPB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 23:45:42 -0400
-Subject: [PATCH 7/7] Documentation: ABI: /sys/devices/system/cpu/cpu#/cpufreq/
-To: randy.dunlap@oracle.com, greg@kroah.com
+	Thu, 22 Oct 2009 00:15:01 -0400
+Subject: [PATCH v2 0/5] mm: modest useability enhancements for node sysfs attrs
+To: akpm@linux-foundation.org
 From: Alex Chiang <achiang@hp.com>
-Cc: Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, rientjes@google.com
-Date: Wed, 21 Oct 2009 21:45:46 -0600
-Message-ID: <20091022034546.13399.21222.stgit@bob.kio>
-In-Reply-To: <20091022033506.13399.90799.stgit@bob.kio>
-References: <20091022033506.13399.90799.stgit@bob.kio>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Date: Wed, 21 Oct 2009 22:15:05 -0600
+Message-ID: <20091022040814.15705.95572.stgit@bob.kio>
 User-Agent: StGit/0.14.3.386.gb02d
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -27,46 +24,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a complex interface and is already described in
-Documentation/cpu-freq/, especially in the user-guide.txt file.
+This is v2 of the series.
 
-No need to copy/paste all that information. Let's just alert the reader
-to the presence of the user-guide.
+The last patch in this series is dependent upon the documentation patch
+series that I just sent out a few moments ago:
 
-Cc: Dave Jones <davej@redhat.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
+	http://thread.gmane.org/gmane.linux.kernel/905018
+
+Thanks,
+/ac
+
+
+v1 -> v2: http://thread.gmane.org/gmane.linux.kernel.mm/40084/
+	Address David Rientjes's comments
+	- check return value of sysfs_create_link in register_cpu_under_node
+	- do /not/ convert [un]register_cpu_under_node to return void, since
+	  sparse starts whinging if you ignore sysfs_create_link()'s return
+	  value and working around sparse makes the code ugly
+	- adjust documentation
+
+	Added S390 maintainers to cc: for patch [1/5] as per Kame-san's
+	suggestion. S390 may map a memory section to more than one node,
+	causing this series to break.
+
 ---
 
- Documentation/ABI/testing/sysfs-devices-system-cpu |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+Alex Chiang (5):
+      mm: add numa node symlink for memory section in sysfs
+      mm: refactor register_cpu_under_node()
+      mm: refactor unregister_cpu_under_node()
+      mm: add numa node symlink for cpu devices in sysfs
+      Documentation: ABI: /sys/devices/system/cpu/cpu#/node
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 968d8ba..81e61f5 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -121,6 +121,24 @@ Description:	Discover cpuidle policy and mechanism
- 		See files in Documentation/cpuidle/ for more information.
- 
- 
-+What:		/sys/devices/system/cpu/cpu#/cpufreq/*
-+Date:		pre-git history
-+Contact:	cpufreq@vger.kernel.org
-+Description:	Discover and change clock speed of CPUs
-+
-+		Clock scaling allows you to change the clock speed of the
-+		CPUs on the fly. This is a nice method to save battery
-+		power, because the lower the clock speed, the less power
-+		the CPU consumes.
-+
-+		There are many knobs to tweak in this directory.
-+
-+		See files in Documentation/cpu-freq/ for more information.
-+
-+		In particular, read Documentation/cpu-freq/user-guide.txt
-+		to learn how to control the knobs.
-+
-+
- What:      /sys/devices/system/cpu/cpu*/cache/index*/cache_disable_X
- Date:      August 2008
- KernelVersion:	2.6.27
+
+ Documentation/ABI/testing/sysfs-devices-memory     |   14 ++++-
+ Documentation/ABI/testing/sysfs-devices-system-cpu |   15 +++++
+ Documentation/memory-hotplug.txt                   |   11 ++--
+ drivers/base/node.c                                |   58 ++++++++++++++------
+ 4 files changed, 77 insertions(+), 21 deletions(-)
 
