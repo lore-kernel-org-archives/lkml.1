@@ -1,88 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbZJVQhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbZJVQiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756702AbZJVQhr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 12:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbZJVQhq
+	id S1756726AbZJVQiT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 12:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbZJVQiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 12:37:46 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:38571 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754968AbZJVQhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 12:37:45 -0400
-Date: Thu, 22 Oct 2009 17:37:52 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Stephan von Krawczynski <skraw@ithnet.com>
-Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 2/5] page allocator: Do not allow interrupts to use
-	ALLOC_HARDER
-Message-ID: <20091022163752.GU11778@csn.ul.ie>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-3-git-send-email-mel@csn.ul.ie> <20091022183303.2448942d.skraw@ithnet.com>
+	Thu, 22 Oct 2009 12:38:19 -0400
+Received: from nfitmail.nfit.au.dk ([130.225.31.129]:22018 "EHLO
+	smtp.nfit.au.dk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754968AbZJVQiS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 12:38:18 -0400
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH] x86: Get bp from the IRQ regs instead of directly from the CPU
+From: Soeren Sandmann <sandmann@daimi.au.dk>
+Date: 22 Oct 2009 18:38:22 +0200
+In-Reply-To: <ye8vdi7mluz.fsf@camel16.daimi.au.dk>
+Message-ID: <ye8ljj3mlj5.fsf@camel16.daimi.au.dk>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091022183303.2448942d.skraw@ithnet.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+X-NFIT-RelayAddr: 130.225.16.135
+X-NFIT-Solido-Score: 0.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 06:33:03PM +0200, Stephan von Krawczynski wrote:
-> On Thu, 22 Oct 2009 15:22:33 +0100
-> Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
-> > slightly by allowing rt_tasks that are handling an interrupt to set
-> > ALLOC_HARDER. This patch brings the watermark logic more in line with
-> > 2.6.30.
-> > 
-> > [rientjes@google.com: Spotted the problem]
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> > ---
-> >  mm/page_alloc.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index dfa4362..7f2aa3e 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1769,7 +1769,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
-> >  		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
-> >  		 */
-> >  		alloc_flags &= ~ALLOC_CPUSET;
-> > -	} else if (unlikely(rt_task(p)))
-> > +	} else if (unlikely(rt_task(p)) && !in_interrupt())
-> >  		alloc_flags |= ALLOC_HARDER;
-> >  
-> >  	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
-> > -- 
-> > 1.6.3.3
-> > 
-> 
-> Is it correct that this one applies offset -54 lines in 2.6.31.4 ? 
-> 
+Passing 0 for bp causes dump_trace() to get bp directly from the
+hardware register. This leads to the IRQ stack being included in the
+generated call chains, which means the stack looks something like
+this:
 
-In this case, it's ok. It's just a harmless heads-up that the kernel
-looks slightly different than expected. I posted a 2.6.31.4 version of
-the two patches that cause real problems.
+	[ ip ] [ IRQ stack ] [ rest of stack trace ]
 
+which is incorrect and confusing to user space.
+
+Getting bp from the IRQ regs instead makes the tracing start after the
+IRQ stack:
+
+	[ ip ] [ rest of stack trace ]
+
+Signed-off-by: Søren Sandmann Pedersen <sandmann@redhat.com>
+---
+ arch/x86/kernel/cpu/perf_event.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+index b5801c3..39b1d0c 100644
+--- a/arch/x86/kernel/cpu/perf_event.c
++++ b/arch/x86/kernel/cpu/perf_event.c
+@@ -2177,10 +2177,18 @@ static const struct stacktrace_ops backtrace_ops = {
+ static void
+ perf_callchain_kernel(struct pt_regs *regs, struct perf_callchain_entry *entry)
+ {
++	unsigned long bp;
++    
+ 	callchain_store(entry, PERF_CONTEXT_KERNEL);
+ 	callchain_store(entry, regs->ip);
+ 
+-	dump_trace(NULL, regs, NULL, 0, &backtrace_ops, entry);
++#ifdef CONFIG_FRAME_POINTER
++	bp = regs->bp;
++#else
++	bp = 0;
++#endif
++	
++	dump_trace(NULL, regs, NULL, bp, &backtrace_ops, entry);
+ }
+ 
+ /*
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.6.5.rc2
+
