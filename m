@@ -1,126 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbZJVE4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbZJVFFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752715AbZJVE4U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 00:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbZJVE4T
+	id S1752354AbZJVFFg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 01:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZJVFFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 00:56:19 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60078
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751263AbZJVE4S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 00:56:18 -0400
-Date: Wed, 21 Oct 2009 21:56:41 -0700 (PDT)
-Message-Id: <20091021.215641.125478092.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Oct 2009 01:05:36 -0400
+Received: from ozlabs.org ([203.10.76.45]:40421 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751440AbZJVFFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 01:05:35 -0400
+Date: Thu, 22 Oct 2009 16:00:44 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: paulus@samba.org, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, acme@redhat.com
+Subject: Re: [PATCH] perf record: Enable PERF_SAMPLE_ID when sampling
+	multiple events
+Message-ID: <20091022050044.GX4808@kryten>
+References: <20091021061925.GW4808@kryten> <20091021115935.GH16586@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091021115935.GH16586@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-1) Add some diagnostics so we can try to track down the tcp MSG_PEEK
-   WARN_ON that shows up in Arjan's kerneloops list a lot.  From
-   Herbert Xu.
+Hi Ingo,
 
-2) Bluetooth bug fixes from Dave Young.
+> > If we are sampling multiple events we need the id in each sample so we 
+> > can differentiate between them in a perf data file.
+> 
+> Wondering, what are you (or will you be) using this for?
 
-3) Fix the DEFER_ACCEP ack counting issue in a better way, from Julian
-   Anastasov.
+I put together a simple python library for parsing perf.data files:
 
-4) be2net bug fixes from Sathya Perla.
+http://ozlabs.org/~anton/junkcode/perf_event.py
 
-5) ethoc bug fixes from Thomas Chou
+An example of using it is here:
 
-6) AF_UNIX deadlock on half-close, fix fro Tomoki Sekiyama.
+http://ozlabs.org/~anton/junkcode/perf_event_example.py
 
-7) virtio_net fix for netconsole from Eric Dumazet.
+Only tested on powerpc so far, but it should work on x86. It's still
+missing bits but it has been useful for finding some corner cases in
+perf_event. It should also make it easy to post process complex profiles with
+multiple events in them.
 
-8) IP_MULTICAST_IF uses __dev_get_by_index() without proper locking.
-   From Eric Dumazet.
+One problem this has just found though, is with PERF_EVENT_SAMPLE:
 
-9) KS8851 bug fixes from Ben Dooks.
+	# FIXME: If sampling multiple events we have an issue
+	# here. Since the SAMPLE_ID is not the first optional field
+	# it might be impossible to differentiate between
+	# events since the SAMPLE_ID field would be at different
+	# offsets. For now we assume all events use the same
+	# set of optional fields.
+	eventnr = 0
+	self.event = sample_event(eventbuf,
+			self.header.attrs[eventnr].sample_type)
 
-Please pull, thanks a lot!
+It seems like the API allows us to specify different sample options for
+different events, but since the ID isnt the first option it could end up
+in different places in different events, making it difficult (if not
+impossible in some cases) to tag events correctly.
 
-The following changes since commit 2fdc246aaf9a7fa088451ad2a72e9119b5f7f029:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../bp/bp
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Ben Dooks (3):
-      KS8851: Add soft reset at probe time
-      KS8851: Fix MAC address write order
-      KS8851: Fix ks8851_set_rx_mode() for IFF_MULTICAST
-
-Dave Young (2):
-      bluetooth: scheduling while atomic bug fix
-      bluetooth: static lock key fix
-
-David S. Miller (1):
-      Revert "tcp: fix tcp_defer_accept to consider the timeout"
-
-Eric Dumazet (3):
-      virtio_net: use dev_kfree_skb_any() in free_old_xmit_skbs()
-      net: Fix IP_MULTICAST_IF
-      net: Fix struct inet_timewait_sock bitfield annotation
-
-Herbert Xu (1):
-      tcp: Try to catch MSG_PEEK bug
-
-Joyce Yu (1):
-      niu: VLAN_ETH_HLEN should be used to make sure that the whole MAC header was copied to the head buffer in the Vlan packets case
-
-Julian Anastasov (3):
-      tcp: accept socket after TCP_DEFER_ACCEPT period
-      tcp: reduce SYN-ACK retrans for TCP_DEFER_ACCEPT
-      tcp: fix TCP_DEFER_ACCEPT retrans calculation
-
-Randy Dunlap (1):
-      vmxnet3: use dev_dbg, fix build for CONFIG_BLOCK=n
-
-Sathya Perla (2):
-      be2net: fix promiscuous and multicast promiscuous modes being enabled always
-      be2net: fix support for PCI hot plug
-
-Steven King (1):
-      net: fix section mismatch in fec.c
-
-Thomas Chou (2):
-      ethoc: inline regs access
-      ethoc: clear only pending irqs
-
-Tomoki Sekiyama (1):
-      AF_UNIX: Fix deadlock on connecting to shutdown socket
-
- drivers/net/benet/be_cmds.c       |   33 ++++++++++++++-------
- drivers/net/benet/be_cmds.h       |    5 ++-
- drivers/net/benet/be_main.c       |   27 +++++++++-------
- drivers/net/ethoc.c               |   21 +++++++------
- drivers/net/fec.c                 |    2 +-
- drivers/net/ks8851.c              |   42 +++++++++++++++++++++++---
- drivers/net/ks8851.h              |    1 +
- drivers/net/niu.c                 |    2 +-
- drivers/net/virtio_net.c          |    2 +-
- drivers/net/vmxnet3/vmxnet3_drv.c |   27 +++++++++++-----
- drivers/net/vmxnet3/vmxnet3_int.h |    2 +-
- include/net/inet_timewait_sock.h  |    8 ++--
- net/bluetooth/hci_sysfs.c         |    4 +-
- net/bluetooth/l2cap.c             |    9 ++++--
- net/ipv4/inet_connection_sock.c   |   34 +++++++++++++++++++--
- net/ipv4/ip_sockglue.c            |    7 ++--
- net/ipv4/tcp.c                    |   59 ++++++++++++++++++++++++++++--------
- net/ipv4/tcp_minisocks.c          |    5 +--
- net/ipv6/ipv6_sockglue.c          |    6 +++-
- net/unix/af_unix.c                |    2 +
- 20 files changed, 212 insertions(+), 86 deletions(-)
+Anton
