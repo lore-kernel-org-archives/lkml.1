@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbZJVCDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbZJVCNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753773AbZJVCDb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 22:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbZJVCDb
+	id S1753756AbZJVCNe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 22:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbZJVCNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 22:03:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35664 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753485AbZJVCDa (ORCPT
+	Wed, 21 Oct 2009 22:13:33 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:62083 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752382AbZJVCNd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 22:03:30 -0400
-Date: Wed, 21 Oct 2009 19:00:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       lkml <linux-kernel@vger.kernel.org>, Mike Fulton <fultonm@ca.ibm.com>,
-       Sean Foley <Sean_Foley@ca.ibm.com>, Darren Hart <dvhltc@us.ibm.com>
-Subject: Re: [RFC][PATCH] Add prctl to set sibling thread names
-Message-Id: <20091021190028.623a7f6e.akpm@linux-foundation.org>
-In-Reply-To: <1256172744.4768.22.camel@localhost.localdomain>
-References: <1256167297.4768.14.camel@localhost.localdomain>
-	<20091021174804.3885db37@infradead.org>
-	<1256172744.4768.22.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Oct 2009 22:13:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZuSgkaBkVCLviXo8fNRHf5L7J+PeQ3Y5Q/i2pRENnzdkNERk9YRk+KGGkWOLKnPlUT
+         ZsOPwXaXseJXo1HlDITXh+I4YidCAzQYdfminI2kBoG3eu2I1ebAvsS4JCvlKmNFygLv
+         t32RbAsfy4aYQe3L1pEtLMmvcOV1SlpPL5uPg=
+MIME-Version: 1.0
+In-Reply-To: <200910212341.06025.rusty@rustcorp.com.au>
+References: <s5haazv1sw5.wl%tiwai@suse.de>
+	 <200910212341.06025.rusty@rustcorp.com.au>
+Date: Thu, 22 Oct 2009 04:13:36 +0200
+Message-ID: <6dc076840910211913l1cf12e82tbb9151da78e41422@mail.gmail.com>
+Subject: Re: Problems with string (charp) module parameters
+From: Takashi Iwai <takashi.iwai@gmail.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Oct 2009 17:52:24 -0700 john stultz <johnstul@us.ibm.com> wrote:
+Hi Rusty,
 
-> On Wed, 2009-10-21 at 17:48 -0700, Arjan van de Ven wrote:
-> > On Wed, 21 Oct 2009 16:21:37 -0700
-> > john stultz <johnstul@us.ibm.com> wrote:
-> > 
-> > > 
-> > > Taking a very raw attempt at this, I scratched out the following
-> > > simple implementation. I'd appreciate any review or suggestions for
-> > > improvements. I'm not at all certain the passing of the thread pid_t
-> > > through the unsigned long is valid, for instance, or if
-> > > same_thread_group() is the right check to make sure we only change
-> > > siblings and not tid from other processes. So any advice on better
-> > > approaches would be great.
-> > > 
-> > > +				return -EINVAL;
-> > > +
-> > > +			set_task_comm(tsk, comm);
-> > 
-> > 
-> > you're pretty much the first now who touches ->comm from
-> > not-the-thread-itself.... are you sure that is safe?
-> 
-> No, I'm not sure at all :)
-> 
-> Thanks for pointing this out. I'll see whats needed in set_task_comm().
-> 
+(sending from gmail address since VPN doesn't work here in hotel...)
 
-set_task_comm() is OK.  The problem will be the unwritten rule that
-processes can read *their own* ->comm without task_lock(), because nobody
-ever alters ->comm apart from tack which owns it.
+On Wed, Oct 21, 2009 at 3:11 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Tue, 13 Oct 2009 09:07:46 pm Takashi Iwai wrote:
+>> * The handling of parameter array is pretty buggy now.
+>>   kp->perm and kp->flags aren't properly initialized in
+>>   param_array().  Thus, you might call kfree() with invalid pointers,
+>>   or pass a wrong type for bool.
+>
+> Yes, an array of charp isn't going to work.  Erk, I switched one bug for
+> another :(
+>
+>> So, the situation looks messy right now, not only about the section
+>> issue.  If we allow kmalloc of each parameter array element, the flag
+>> must be associated to each element, not a global one to the array.
+>>
+>> Thoughts?
+>
+> Yes, that's hard.  There's only one place which currently has a writable
+> array parameter: drivers/usb/atm/ueagle-atm.c, and it's root only.
+>
+> OK, for 2.6.32, we remove the const.  In the longer term, I'm reworking how
+> this is done entirely.
 
-You've changed that, so all the open-coded accesses to current->comm are
-now racy.
+As far as I checked, removing only const doesn't suffice on x86.
+The problem is rather the __param section assignment.
+We'd need to get rid of that, too, if we keep the code in the current way.
 
-Also, you appear to be running set_task_comm() against a task_struct
-without holding a reference on that task.  Will a well-timed exit() cause a
-modify-after-free?
+Anyway, I've thought of this for a while, but couldn't find any smart solution.
+Judging from the current usage pattern, I think we should rather take
+a simpler solution:
+don't allow sysfs-write for charp type but use string type for
+writable parameters.
+
+It's not only for avoiding the mess to separate static and kmalloc
+strings but also for
+avoiding races between the referrer and the sysfs-write of char
+pointer.  (In general, we
+have no lock for parameters.)
+
+As you pointed out, there are no many users of writable charp parameters.
+So, replacing is easy task.  In that way, we can keep struct
+kernel_parameter as const
+gracefully without hustling any big code change.
 
 
+thanks,
+
+Takashi
