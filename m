@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbZJVCzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbZJVDGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753823AbZJVCzN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 22:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZJVCzM
+	id S1753850AbZJVDGS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 23:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZJVDGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 22:55:12 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52154 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752908AbZJVCzL (ORCPT
+	Wed, 21 Oct 2009 23:06:17 -0400
+Received: from blu0-omc1-s34.blu0.hotmail.com ([65.55.116.45]:19114 "EHLO
+	blu0-omc1-s34.blu0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753079AbZJVDGQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 22:55:11 -0400
-Date: Wed, 21 Oct 2009 22:55:14 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Arnd Bergmann <arndbergmann@googlemail.com>,
-       John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sony_pi: Remove the BKL from sonypi_misc_open
-Message-ID: <20091022025514.GB17438@infradead.org>
-References: <alpine.LFD.2.00.0910182353480.3405@localhost.localdomain> <alpine.LFD.2.00.0910192019420.3563@localhost.localdomain> <200910200000.24574.arnd@arndb.de> <200910200008.57468.arnd@arndb.de> <20091021213139.GC4880@nowhere>
+	Wed, 21 Oct 2009 23:06:16 -0400
+X-Originating-IP: [133.11.82.45]
+X-Originating-Email: [kat841@hotmail.com]
+Message-ID: <BLU0-SMTP3323A290887176D9229ECE8CBE0@phx.gbl>
+Date: Thu, 22 Oct 2009 12:06:16 +0900
+From: Katsuhiko Nishimra <kat841@hotmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091021213139.GC4880@nowhere>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: 2.6.31.4: WARNING: at drivers/usb/serial/usb-serial.c:446 serial_unthrottle
+References: <4AD71FA3.8080801@wpkg.org> <20091015160501.36a31973@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091015160501.36a31973@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Oct 2009 03:06:20.0801 (UTC) FILETIME=[A1609710:01CA52C4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2009 at 11:31:42PM +0200, Frederic Weisbecker wrote:
-> What about a pusdown of default_lseek attribution for these
-> fops that don't have any llseek() (and rename it to
-> deprecated_default_lseek() )
+Alan Cox wrote:
+> On Thu, 15 Oct 2009 15:12:03 +0200
+> Tomasz Chmielewski <mangoo@wpkg.org> wrote:
 > 
-> Because we can probably fix these fops one by one but what
-> about the next drivers that will have no llseek() ?
+>> I see my minicom segfaulted for some reason (probably as I closed konsole window without exiting minicom first).
+>>
+>> And I see this warning in dmesg - anything useful?
 > 
-> We can't attribute default_llseek() by default anymore for
-> further fops that are to come.
+> Looks like a very very old bug in the tty code. I have a patch for this I'm
+> testing for a while and will sort out properly after the kernel summit. In
+> the mean time have a play with the patch below which ought to do the trick.
+> 
 
-The right (although quite complicated) thing is to return -ESPIPE from
-vfs_llseek if no ->llseek method is present, or even better also
-disallowing pread/pwrite by default.  It'll need a quite substantial
-audit and is best done by different types of inodes - S_IFIFO is easy,
-SIFDIR at least has very few instances, S_IFREG usually wants a real
-llseek (generic_file_llseek in most cases) and directories also need
-a llseek method that takes i_mutex so it protects against namespace
-operations.
+Unfortunately, I reproduced this error after applying this patch into
+v2.6.32-rc5. Kerneloops url for the bug is below.
+http://www.kerneloops.org/submitresult.php?number=827635
 
+This bug occured when I close minicom normally with C-A X.
+
+Thx.
