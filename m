@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbZJVOHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbZJVOIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbZJVOHS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 10:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbZJVOHS
+	id S1756096AbZJVOIw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 10:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbZJVOIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 10:07:18 -0400
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:30718 "EHLO
+	Thu, 22 Oct 2009 10:08:51 -0400
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:31282 "EHLO
 	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753334AbZJVOHR (ORCPT
+	by vger.kernel.org with ESMTP id S1755017AbZJVOIv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 10:07:17 -0400
+	Thu, 22 Oct 2009 10:08:51 -0400
 X-IronPort-Anti-Spam-Filtered: true
 X-IronPort-Anti-Spam-Result: Ar0EAOMD4ErCTtAn/2dsb2JhbACBUtl0hD8E
-Date: Thu, 22 Oct 2009 16:07:17 +0200
+Date: Thu, 22 Oct 2009 16:08:51 +0200
 From: Philippe De Muyter <phdm@macqel.be>
 To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cleanup remove obsolete comment about map_chunk
-Message-ID: <20091022140717.GB27903@frolo.macqel>
-References: <20091022135454.GA27903@frolo.macqel>
+Subject: [PATCH] cleanup remove obsolete comment about map_chunk
+Message-ID: <20091022140851.GC27903@frolo.macqel>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091022135454.GA27903@frolo.macqel>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi all,
+
+[resent to remove the wrong Re: in the subject line]
 
 Remove the comments referring to a function map_chunk that no longer exists.
 
