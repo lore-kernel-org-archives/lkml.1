@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbZJVTw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbZJVTzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756854AbZJVTw3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 15:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbZJVTw2
+	id S1755880AbZJVTzj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 15:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZJVTzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 15:52:28 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:62101 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755597AbZJVTw2 (ORCPT
+	Thu, 22 Oct 2009 15:55:39 -0400
+Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:38678
+	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752494AbZJVTzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 15:52:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=t5tRgUQuqndOOKd/6Ykje0Urj+qkH8BdcF2T7Vz0XqYSmB1b7M1vFvZkm9ZyLxLt/
-	0amdJhU0lEiO9TRsHq1cA==
-Date: Thu, 22 Oct 2009 12:52:27 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Alex Chiang <achiang@hp.com>
-cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+	Thu, 22 Oct 2009 15:55:38 -0400
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Jan Blunck <jblunck@suse.de>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 4/5] mm: add numa node symlink for cpu devices in
- sysfs
-In-Reply-To: <20091022041525.15705.6794.stgit@bob.kio>
-Message-ID: <alpine.DEB.2.00.0910221252020.26631@chino.kir.corp.google.com>
-References: <20091022040814.15705.95572.stgit@bob.kio> <20091022041525.15705.6794.stgit@bob.kio>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Subject: [PATCH] misc: remove MAC pmu function declaration from misc device class
+Date: Thu, 22 Oct 2009 17:55:32 -0200
+Message-Id: <1256241334-17627-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Oct 2009, Alex Chiang wrote:
+Commit 8c8709334cec803368a432a33e0f2e116d48fe07 has removed the
+pmu_device_init call from misc_init, but unlike other similar commits,
+has not removed its declaration.
+---
+ drivers/char/misc.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-> You can discover which CPUs belong to a NUMA node by examining
-> /sys/devices/system/node/node#/
-> 
-> However, it's not convenient to go in the other direction, when looking at
-> /sys/devices/system/cpu/cpu#/
-> 
-> Yes, you can muck about in sysfs, but adding these symlinks makes
-> life a lot more convenient.
-> 
-> Signed-off-by: Alex Chiang <achiang@hp.com>
+diff --git a/drivers/char/misc.c b/drivers/char/misc.c
+index 07fa612..afc8e26 100644
+--- a/drivers/char/misc.c
++++ b/drivers/char/misc.c
+@@ -63,8 +63,6 @@ static DEFINE_MUTEX(misc_mtx);
+ #define DYNAMIC_MINORS 64 /* like dynamic majors */
+ static unsigned char misc_minors[DYNAMIC_MINORS / 8];
+ 
+-extern int pmu_device_init(void);
+-
+ #ifdef CONFIG_PROC_FS
+ static void *misc_seq_start(struct seq_file *seq, loff_t *pos)
+ {
+-- 
+1.6.3.3
 
-Acked-by: David Rientjes <rientjes@google.com>
