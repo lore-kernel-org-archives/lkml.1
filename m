@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbZJVLGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbZJVLKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbZJVLGc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 07:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbZJVLGc
+	id S1754901AbZJVLKq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 07:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbZJVLKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 07:06:32 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:61022 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752813AbZJVLGb (ORCPT
+	Thu, 22 Oct 2009 07:10:45 -0400
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:45028 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753214AbZJVLKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 07:06:31 -0400
-Date: Thu, 22 Oct 2009 14:05:32 +0300 (EEST)
-From: Ilkka Koskinen <ikoskine@nokia.com>
-X-X-Sender: ikoskine@tumpelo.ntc.nokia.com
-To: Samuel Ortiz <sameo@linux.intel.com>
-cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-Subject: Re: [Resend PATCH 2/2] twl4030: Enable low-power mode to 32kHz
- oscillator
-In-Reply-To: <20091021221718.GB17796@sortiz.org>
-Message-ID: <alpine.DEB.2.00.0910221346030.3792@tumpelo.ntc.nokia.com>
-References: <1256044973-14548-1-git-send-email-ilkka.koskinen@nokia.com> <1256044973-14548-2-git-send-email-ilkka.koskinen@nokia.com> <20091021221718.GB17796@sortiz.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 22 Oct 2009 07:10:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=VlDqClnD1Mf5UM45MBqVRpPuNo3ecbPcaQIs52YfvloOBR3e8rlFKBUCvb6rlgY62z
+         VXB9re1MqPfju1RseFeLtE8v1tbTPaJFnO8iBBK4/N9dbKQTZEQatjL+UW1XyDne5Rqg
+         EBrZS/zNlKLL8WCyqoYkzdXoD22gSbk7Fib0w=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-OriginalArrivalTime: 22 Oct 2009 11:06:21.0150 (UTC) FILETIME=[AFB917E0:01CA5307]
-X-Nokia-AV: Clean
+Date: Thu, 22 Oct 2009 04:10:49 -0700
+Message-ID: <f22d86810910220410r33002b5ei403ddf6632254472@mail.gmail.com>
+Subject: Can current macro be accessed from interrupt context?
+From: "Leonidas ." <leonidas137@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-Hi Samuel,
+Going through UTLK, it says that current macro makes sense only in
+case of process context,
+in case of interrupt context it is invalid.
 
-On Thu, 22 Oct 2009, ext Samuel Ortiz wrote:
-> On Tue, Oct 20, 2009 at 04:22:53PM +0300, Ilkka Koskinen wrote:
->> +struct twl4030_clock_init_data {
->> +     int ck32k_lowpwr_enable;
-> I guess you could use a bool here ?
+But current would still be pointing to interrupted process right? The
+pointer would still be valid?
+Can I safely assume that whether or not interrupt handlers are
+executing on separate stacks or
+interrupted threads stack, current macro can be accessed from interrupt context?
 
-Good point. I'll change it.
+My use case is to get process id from any context with CONFIG_4KSTACKS = 0 or 1.
 
-Cheers, Ilkka
-
->> +};
->> +
->>  struct twl4030_bci_platform_data {
->>       int *battery_tmp_tbl;
->>       unsigned int tblsize;
->> @@ -403,6 +407,7 @@ extern void twl4030_power_init(struct twl4030_power_data *triton2_scripts);
->>
->>  struct twl4030_platform_data {
->>       unsigned                                irq_base, irq_end;
->> +     struct twl4030_clock_init_data          *clock;
->>       struct twl4030_bci_platform_data        *bci;
->>       struct twl4030_gpio_platform_data       *gpio;
->>       struct twl4030_madc_platform_data       *madc;
->> --
->> 1.6.0.4
->>
->
-> --
-> Intel Open Source Technology Centre
-> http://oss.intel.com/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Any pointers will be helpful.
+-Leo.
