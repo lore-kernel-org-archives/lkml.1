@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZJVVdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZJVVlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237AbZJVVdz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 17:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbZJVVdy
+	id S1756786AbZJVVlF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 17:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756568AbZJVVlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 17:33:54 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:21173 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753620AbZJVVdx (ORCPT
+	Thu, 22 Oct 2009 17:41:04 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:8648 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755956AbZJVVlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 17:33:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hqt7iM8IGgJkAMRCWDEFbXLhI1GdUh/zZEaIyOwRHxv/91q6m0FY5QtbXULOlc4wND
-         0EQWqql5UgijtXZObb4zc+cMH3/vMePtK2FW2yK7H7yEXkMg8b+MGL0yVcWYsQdHfN81
-         Tycqq3CCdDzAH5Lj5tTXlQT5JB8AG1ywu99fo=
-Date: Thu, 22 Oct 2009 23:33:53 +0200
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       David Rientjes <rientjes@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
-       jens.axboe@oracle.com, Tobias Oetiker <tobi@oetiker.ch>
-Subject: Re: [PATCH] SLUB: Don't drop __GFP_NOFAIL completely from
-	allocate_slab() (was: Re: [Bug #14265] ifconfig: page allocation
-	failure. order:5,ode:0x8020 w/ e100)
-Message-ID: <20091022213353.GA7137@bizet.domek.prywatny>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.rP.2MTxKB@chimera> <20091021200442.GA2987@bizet.domek.prywatny> <alpine.DEB.2.00.0910211400140.20010@chino.kir.corp.google.com> <20091021212034.GB2987@bizet.domek.prywatny> <20091022102014.GL11778@csn.ul.ie>
+	Thu, 22 Oct 2009 17:41:03 -0400
+Message-ID: <4AE0D14B.1070307@caviumnetworks.com>
+Date: Thu, 22 Oct 2009 14:40:27 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091022102014.GL11778@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: linux-mips <linux-mips@linux-mips.org>
+Subject: Irq architecture for multi-core network driver. 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Oct 2009 21:40:27.0342 (UTC) FILETIME=[450546E0:01CA5360]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 11:20:14AM +0100, Mel Gorman wrote:
-> On Wed, Oct 21, 2009 at 11:20:34PM +0200, Karol Lewandowski wrote:
-> > > Note: slub isn't going to be a culprit in order 5 allocation failures 
-> > > since they have kmalloc passthrough to the page allocator.
-> > 
-> > However, it might change fragmentation somewhat I guess.  This might
-> > make problem more/less visible.
-> > 
-> 
-> Did you have CONFIG_KMEMCHECK set by any chance?
+My network controller is part of a multicore SOC family[1] with up to 32 
+cpu cores.
 
-No, kmemcheck (and kmemleak) was always disabled.
+The the packets-ready signal from the network controller can trigger
+an interrupt on any or all cpus and is configurable on a per cpu basis.
 
-It's likely that's possible to trigger allocation failures with slab,
-I just haven't been successful at it.  Lack of good testcase is really
-problem here -- even if I can't trigger failures I can never be sure
-that these wont appear in some strange moment.
+If more than one cpu has the interrupt enabled, they would all get the
+interrupt, so if a single packet were to be ready, all cpus could be
+interrupted and try to process it.  The kernel interrupt management
+functions don't seem to give me a good way to manage the interrupts.
+More on this later.
 
-BTW I'll test your patches (from another thread) shortly.
+My current approach is to add a NAPI instance for each cpu.  I start
+with the interrupt enabled on a single cpu, when the interrupt
+triggers, I mask the interrupt on that cpu and schedule the
+napi_poll.  When the napi_poll function is entered, I look at the
+packet backlog and if it is above a threshold , I enable the interrupt
+on an additional cpu.  The process then iterates until the number of cpu
+running the napi_poll function can maintain the backlog under the
+threshold.  This all seems to work fairly well.
 
-Thanks.
+The main problem I have encountered is how to fit the interrupt
+management into the kernel framework.  Currently the interrupt source
+is connected to a single irq number.  I request_irq, and then manage
+the masking and unmasking on a per cpu basis by directly manipulating
+the interrupt controller's affinity/routing registers.  This goes
+behind the back of all the kernel's standard interrupt management
+routines.  I am looking for a better approach.
+
+One thing that comes to mind is that I could assign a different
+interrupt number per cpu to the interrupt signal.  So instead of
+having one irq I would have 32 of them.  The driver would then do
+request_irq for all 32 irqs, and could call enable_irq and disable_irq
+to enable and disable them.  The problem with this is that there isn't
+really a single packets-ready signal, but instead 16 of them.  So If I
+go this route I would have 16(lines) x 32(cpus) = 512 interrupt
+numbers just for the networking hardware, which seems a bit excessive.
+
+A second possibility is to add something like:
+
+int irq_add_affinity(unsigned int irq, cpumask_t cpumask);
+
+int irq_remove_affinity(unsigned int irq, cpumask_t cpumask);
+
+These would atomically add and remove cpus from an irq's affinity.
+This is essentially what my current driver does, but it would be with
+a new officially blessed kernel interface.
+
+Any opinions about the best way forward are most welcome.
+
+Thanks,
+David Daney
+
+[1]: See: arch/mips/cavium-octeon and drivers/staging/octeon.  Yes the 
+staging driver is ugly, I am working to improve it.
