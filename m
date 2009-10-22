@@ -1,116 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753652AbZJVGCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbZJVGDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753652AbZJVGCd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 02:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZJVGCc
+	id S1753945AbZJVGDU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 02:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZJVGCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 02:02:32 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39447 "EHLO
+	Thu, 22 Oct 2009 02:02:33 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39450 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752026AbZJVGC3 (ORCPT
+	with ESMTP id S1752257AbZJVGC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 22 Oct 2009 02:02:29 -0400
 From: Andi Kleen <andi@firstfloor.org>
 To: linux-kernel@vger.kernel.org
 Cc: fengguang.wu@intel.com, Andi Kleen <ak@linux.intel.com>
-Subject: [PATCH] HWPOISON: Clean up PR_MCE_KILL interface
-Date: Thu, 22 Oct 2009 08:02:25 +0200
-Message-Id: <1256191352-6903-2-git-send-email-andi@firstfloor.org>
+Subject: [PATCH] HWPOISON: Add brief hwpoison description to Documentation
+Date: Thu, 22 Oct 2009 08:02:26 +0200
+Message-Id: <1256191352-6903-3-git-send-email-andi@firstfloor.org>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1256191352-6903-1-git-send-email-andi@firstfloor.org>
+In-Reply-To: <1256191352-6903-2-git-send-email-andi@firstfloor.org>
 References: <i>
  <1256191352-6903-1-git-send-email-andi@firstfloor.org>
+ <1256191352-6903-2-git-send-email-andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Andi Kleen <ak@linux.intel.com>
 
-While writing the manpage I noticed some shortcomings in the
-current interface.
-
-- Define symbolic names for all the different values
-- Boundary check the kill mode values
-- For symmetry add a get interface too. This allows library
-code to get/set the current state.
-- For consistency define a PR_MCE_KILL_DEFAULT value
-
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 ---
- include/linux/prctl.h |   12 ++++++++++++
- kernel/sys.c          |   23 ++++++++++++++++++-----
- 2 files changed, 30 insertions(+), 5 deletions(-)
+ Documentation/vm/hwpoison.txt |  136 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 136 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/vm/hwpoison.txt
 
-diff --git a/include/linux/prctl.h b/include/linux/prctl.h
-index 9311505..a3baeb2 100644
---- a/include/linux/prctl.h
-+++ b/include/linux/prctl.h
-@@ -88,6 +88,18 @@
- #define PR_TASK_PERF_EVENTS_DISABLE		31
- #define PR_TASK_PERF_EVENTS_ENABLE		32
- 
-+/*
-+ * Set early/late kill mode for hwpoison memory corruption.
-+ * This influences when the process gets killed on a memory corruption.
-+ */
- #define PR_MCE_KILL	33
-+# define PR_MCE_KILL_CLEAR   0
-+# define PR_MCE_KILL_SET     1
+diff --git a/Documentation/vm/hwpoison.txt b/Documentation/vm/hwpoison.txt
+new file mode 100644
+index 0000000..3ffadf8
+--- /dev/null
++++ b/Documentation/vm/hwpoison.txt
+@@ -0,0 +1,136 @@
++What is hwpoison?
 +
-+# define PR_MCE_KILL_LATE    0
-+# define PR_MCE_KILL_EARLY   1
-+# define PR_MCE_KILL_DEFAULT 2
++Upcoming Intel CPUs have support for recovering from some memory errors
++(``MCA recovery''). This requires the OS to declare a page "poisoned",
++kill the processes associated with it and avoid using it in the future.
 +
-+#define PR_MCE_KILL_GET 34
- 
- #endif /* _LINUX_PRCTL_H */
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 255475d..f6afe07 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1546,24 +1546,37 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
- 			if (arg4 | arg5)
- 				return -EINVAL;
- 			switch (arg2) {
--			case 0:
-+			case PR_MCE_KILL_CLEAR:
- 				if (arg3 != 0)
- 					return -EINVAL;
- 				current->flags &= ~PF_MCE_PROCESS;
- 				break;
--			case 1:
-+			case PR_MCE_KILL_SET:
- 				current->flags |= PF_MCE_PROCESS;
--				if (arg3 != 0)
-+				if (arg3 == PR_MCE_KILL_EARLY)
- 					current->flags |= PF_MCE_EARLY;
--				else
-+				else if (arg3 == PR_MCE_KILL_LATE)
- 					current->flags &= ~PF_MCE_EARLY;
-+				else if (arg3 == PR_MCE_KILL_DEFAULT)
-+					current->flags &=
-+						~(PF_MCE_EARLY|PF_MCE_PROCESS);
-+				else
-+					return -EINVAL;
- 				break;
- 			default:
- 				return -EINVAL;
- 			}
- 			error = 0;
- 			break;
--
-+		case PR_MCE_KILL_GET:
-+			if (arg2 | arg3 | arg4 | arg5)
-+				return -EINVAL;
-+			if (current->flags & PF_MCE_PROCESS)
-+				error = (current->flags & PF_MCE_EARLY) ?
-+					PR_MCE_KILL_EARLY : PR_MCE_KILL_LATE;
-+			else
-+				error = PR_MCE_KILL_DEFAULT;
-+			break;
- 		default:
- 			error = -EINVAL;
- 			break;
++This patchkit implements the necessary infrastructure in the VM.
++
++To quote the overview comment:
++
++ * High level machine check handler. Handles pages reported by the
++ * hardware as being corrupted usually due to a 2bit ECC memory or cache
++ * failure.
++ *
++ * This focusses on pages detected as corrupted in the background.
++ * When the current CPU tries to consume corruption the currently
++ * running process can just be killed directly instead. This implies
++ * that if the error cannot be handled for some reason it's safe to
++ * just ignore it because no corruption has been consumed yet. Instead
++ * when that happens another machine check will happen.
++ *
++ * Handles page cache pages in various states. The tricky part
++ * here is that we can access any page asynchronous to other VM
++ * users, because memory failures could happen anytime and anywhere,
++ * possibly violating some of their assumptions. This is why this code
++ * has to be extremely careful. Generally it tries to use normal locking
++ * rules, as in get the standard locks, even if that means the
++ * error handling takes potentially a long time.
++ *
++ * Some of the operations here are somewhat inefficient and have non
++ * linear algorithmic complexity, because the data structures have not
++ * been optimized for this case. This is in particular the case
++ * for the mapping from a vma to a process. Since this case is expected
++ * to be rare we hope we can get away with this.
++
++The code consists of a the high level handler in mm/memory-failure.c,
++a new page poison bit and various checks in the VM to handle poisoned
++pages.
++
++The main target right now is KVM guests, but it works for all kinds
++of applications. KVM support requires a recent qemu-kvm release.
++
++For the KVM use there was need for a new signal type so that
++KVM can inject the machine check into the guest with the proper
++address. This in theory allows other applications to handle
++memory failures too. The expection is that near all applications
++won't do that, but some very specialized ones might.
++
++---
++
++There are two (actually three) modi memory failure recovery can be in:
++
++vm.memory_failure_recovery sysctl set to zero:
++	All memory failures cause a panic. Do not attempt recovery.
++	(on x86 this can be also affected by the tolerant level of the
++	MCE subsystem)
++
++early kill
++	(can be controlled globally and per process)
++	Send SIGBUS to the application as soon as the error is detected
++	This allows applications who can process memory errors in a gentle
++	way (e.g. drop affected object)
++	This is the mode used by KVM qemu.
++
++late kill
++	Send SIGBUS when the application runs into the corrupted page.
++	This is best for memory error unaware applications and default
++	Note some pages are always handled as late kill.
++
++---
++
++User control:
++
++vm.memory_failure_recovery
++	See sysctl.txt
++
++vm.memory_failure_early_kill
++	Enable early kill mode globally
++
++PR_MCE_KILL
++	Set early/late kill mode/revert to system default
++	arg1: PR_MCE_KILL_CLEAR: Revert to system default
++	arg1: PR_MCE_KILL_SET: arg2 defines thread specific mode
++		PR_MCE_KILL_EARLY: Early kill
++		PR_MCE_KILL_LATE:  Late kill
++		PR_MCE_KILL_DEFAULT: Use system global default
++PR_MCE_KILL_GET
++	return current mode
++
++
++---
++
++Testing:
++
++madvise(MADV_POISON, ....)
++	(as root)
++	Poison a page in the process for testing
++
++
++hwpoison-inject module through debugfs
++	/sys/debug/hwpoison/corrupt-pfn
++
++Inject hwpoison fault at PFN echoed into this file
++
++
++Architecture specific MCE injector
++
++x86 has mce-inject, mce-test
++
++Some portable hwpoison test programs in mce-test, see blow.
++
++---
++
++References:
++
++http://halobates.de/mce-lc09-2.pdf
++	Overview presentation from LinuxCon 09
++
++git://git.kernel.org/pub/scm/utils/cpu/mce/mce-test.git
++	Test suite (hwpoison specific portable tests in tsrc)
++
++git://git.kernel.org/pub/scm/utils/cpu/mce/mce-inject.git
++	x86 specific injector
++
++
++---
++
++Limitations:
++
++- Not all page types are supported and never will. Most kernel internal
++objects cannot be recovered, only LRU pages for now.
++- Right now hugepage support is missing.
++
++---
++Andi Kleen, Oct 2009
++
 -- 
 1.6.0.2
 
