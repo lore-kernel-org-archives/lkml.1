@@ -1,100 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756650AbZJVPtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbZJVPtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756650AbZJVPtL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 11:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbZJVPtK
+	id S1756665AbZJVPtw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 11:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbZJVPtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 11:49:10 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:44653 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756512AbZJVPtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 11:49:08 -0400
-Date: Thu, 22 Oct 2009 16:49:13 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/5] page allocator: Always wake kswapd when restarting
-	an allocation attempt after direct reclaim failed
-Message-ID: <20091022154913.GQ11778@csn.ul.ie>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-2-git-send-email-mel@csn.ul.ie> <84144f020910220741o51c7e3dajcfd7b78d6dbbc4eb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <84144f020910220741o51c7e3dajcfd7b78d6dbbc4eb@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 22 Oct 2009 11:49:51 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55053 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756287AbZJVPtv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 11:49:51 -0400
+Subject: Re: [PATCH] intel-iommu: Fix alloc_coherent for pass-through
+ devices
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alex Williamson <alex.williamson@hp.com>
+Cc: iommu@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Miller, Mike (OS Dev)" <mike.miller@hp.com>
+In-Reply-To: <1256182910.2842.36.camel@2710p.home>
+References: <1256182910.2842.36.camel@2710p.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 23 Oct 2009 00:49:51 +0900
+Message-Id: <1256226591.2990.88.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 05:41:53PM +0300, Pekka Enberg wrote:
-> On Thu, Oct 22, 2009 at 5:22 PM, Mel Gorman <mel@csn.ul.ie> wrote:
-> > If a direct reclaim makes no forward progress, it considers whether it
-> > should go OOM or not. Whether OOM is triggered or not, it may retry the
-> > application afterwards. In times past, this would always wake kswapd as well
-> > but currently, kswapd is not woken up after direct reclaim fails. For order-0
-> > allocations, this makes little difference but if there is a heavy mix of
-> > higher-order allocations that direct reclaim is failing for, it might mean
-> > that kswapd is not rewoken for higher orders as much as it did previously.
-> >
-> > This patch wakes up kswapd when an allocation is being retried after a direct
-> > reclaim failure. It would be expected that kswapd is already awake, but
-> > this has the effect of telling kswapd to reclaim at the higher order as well.
-> >
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> 
-> You seem to have dropped the Reviewed-by tags from me and Christoph
-> for this patch.
-> 
+On Wed, 2009-10-21 at 21:41 -0600, Alex Williamson wrote:
+> This device also doesn't exactly play nice when using VT-d in anything other
+> than pass-through mode, so switching it into mapped mode is not really
+> an option.
 
-My apologies. I missed then when going through the old mails.
+Going back to this, now I'm slightly more awake and spotted it...
 
-> >  mm/page_alloc.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index bf72055..dfa4362 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1817,9 +1817,9 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
-> >        if (NUMA_BUILD && (gfp_mask & GFP_THISNODE) == GFP_THISNODE)
-> >                goto nopage;
-> >
-> > +restart:
-> >        wake_all_kswapd(order, zonelist, high_zoneidx);
-> >
-> > -restart:
-> >        /*
-> >         * OK, we're below the kswapd watermark and have kicked background
-> >         * reclaim. Now things get more complex, so set up alloc_flags according
-> > --
-> > 1.6.3.3
-> >
-> > --
-> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> > the body to majordomo@kvack.org.  For more info on Linux MM,
-> > see: http://www.linux-mm.org/ .
-> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> >
-> 
+Er, why? Can you define "doesn't exactly play nice"?
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
