@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZJVDp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZJVDpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbZJVDp0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 23:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbZJVDpX
+	id S1754207AbZJVDpd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 23:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbZJVDpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 23:45:23 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:33561 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbZJVDpV (ORCPT
+	Wed, 21 Oct 2009 23:45:31 -0400
+Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:17047 "EHLO
+	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753999AbZJVDp1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 23:45:21 -0400
-Subject: [PATCH 3/7] Documentation: ABI: /sys/devices/system/cpu/ topology
-	files
+	Wed, 21 Oct 2009 23:45:27 -0400
+Subject: [PATCH 4/7] Documentation: ABI: /sys/devices/system/cpu/cpu#/
+	topology files
 To: randy.dunlap@oracle.com, greg@kroah.com
 From: Alex Chiang <achiang@hp.com>
 Cc: akpm@linux-foundation.org, Mike Travis <travis@sgi.com>,
        linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
        rientjes@google.com
-Date: Wed, 21 Oct 2009 21:45:25 -0600
-Message-ID: <20091022034525.13399.4286.stgit@bob.kio>
+Date: Wed, 21 Oct 2009 21:45:31 -0600
+Message-ID: <20091022034530.13399.65380.stgit@bob.kio>
 In-Reply-To: <20091022033506.13399.90799.stgit@bob.kio>
 References: <20091022033506.13399.90799.stgit@bob.kio>
 User-Agent: StGit/0.14.3.386.gb02d
@@ -31,56 +31,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Add brief descriptions for the following sysfs files:
 
-	/sys/devices/system/cpu/kernel_max
-	/sys/devices/system/cpu/offline
-	/sys/devices/system/cpu/online
-	/sys/devices/system/cpu/possible
-	/sys/devices/system/cpu/present
+	/sys/devices/system/cpu/cpu#/topology/core_id
+	/sys/devices/system/cpu/cpu#/topology/core_siblings
+	/sys/devices/system/cpu/cpu#/topology/core_siblings_list
+	/sys/devices/system/cpu/cpu#/topology/physical_package_id
+	/sys/devices/system/cpu/cpu#/topology/thread_siblings
+	/sys/devices/system/cpu/cpu#/topology/thread_siblings_list
 
-Excerpted the relevant information from Documentation/cputopology.txt
-and pointed back to cputopology.txt as the authoritative source of
-information.
+The descriptions in Documentation/cputopology.txt weren't very
+informative, so I attempted a better description based on code
+reading and hopeful guessing.
+
+Updated Documentation/cputopology.txt with the better descriptions and
+fixed some style issues.
 
 Cc: Mike Travis <travis@sgi.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- Documentation/ABI/testing/sysfs-devices-system-cpu |   28 ++++++++++++++++++++
- 1 files changed, 28 insertions(+), 0 deletions(-)
+ Documentation/ABI/testing/sysfs-devices-system-cpu |   39 +++++++++++++++++
+ Documentation/cputopology.txt                      |   47 +++++++++++++-------
+ 2 files changed, 69 insertions(+), 17 deletions(-)
 
 diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 86126b1..871acdb 100644
+index 871acdb..2ade5c0 100644
 --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
 +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -10,6 +10,34 @@ Description:
- 		/sys/devices/system/cpu/cpu#/
+@@ -38,6 +38,45 @@ Description:	CPU topology files that describe kernel limits related to
+ 		See Documentation/cputopology.txt for more information.
  
  
-+What:		/sys/devices/system/cpu/kernel_max
-+		/sys/devices/system/cpu/offline
-+		/sys/devices/system/cpu/online
-+		/sys/devices/system/cpu/possible
-+		/sys/devices/system/cpu/present
++What:		/sys/devices/system/cpu/cpu#/topology/core_id
++		/sys/devices/system/cpu/cpu#/topology/core_siblings
++		/sys/devices/system/cpu/cpu#/topology/core_siblings_list
++		/sys/devices/system/cpu/cpu#/topology/physical_package_id
++		/sys/devices/system/cpu/cpu#/topology/thread_siblings
++		/sys/devices/system/cpu/cpu#/topology/thread_siblings_list
 +Date:		December 2008
 +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+Description:	CPU topology files that describe kernel limits related to
-+		hotplug. Briefly:
++Description:	CPU topology files that describe a logical CPU's relationship
++		to other cores and threads in the same physical package.
 +
-+		kernel_max: the maximum cpu index allowed by the kernel
-+		configuration.
++		One cpu# directory is created per logical CPU in the system,
++		e.g. /sys/devices/system/cpu/cpu42/.
 +
-+		offline: cpus that are not online because they have been
-+		HOTPLUGGED off or exceed the limit of cpus allowed by the
-+		kernel configuration (kernel_max above).
++		Briefly, the files above are:
 +
-+		online: cpus that are online and being scheduled.
++		core_id: the CPU core ID of cpu#. Typically it is the
++		hardware platform's identifier (rather than the kernel's).
++		The actual value is architecture and platform dependent.
 +
-+		possible: cpus that have been allocated resources and can be
-+		brought online if they are present.
++		core_siblings: internal kernel map of cpu#'s hardware threads
++		within the same physical_package_id.
 +
-+		present: cpus that have been identified as being present in
-+		the system.
++		core_siblings_list: human-readable list of the logical CPU
++		numbers within the same physical_package_id as cpu#.
++
++		physical_package_id: physical package id of cpu#. Typically
++		corresponds to a physical socket number, but the actual value
++		is architecture and platform dependent.
++
++		thread_siblings: internel kernel map of cpu#'s hardware
++		threads within the same core as cpu#
++
++		thread_siblings_list: human-readable list of cpu#'s hardware
++		threads within the same core as cpu#
 +
 +		See Documentation/cputopology.txt for more information.
 +
@@ -88,4 +104,101 @@ index 86126b1..871acdb 100644
  What:      /sys/devices/system/cpu/cpu*/cache/index*/cache_disable_X
  Date:      August 2008
  KernelVersion:	2.6.27
+diff --git a/Documentation/cputopology.txt b/Documentation/cputopology.txt
+index b41f3e5..f1c5c4b 100644
+--- a/Documentation/cputopology.txt
++++ b/Documentation/cputopology.txt
+@@ -1,15 +1,28 @@
+ 
+-Export cpu topology info via sysfs. Items (attributes) are similar
++Export CPU topology info via sysfs. Items (attributes) are similar
+ to /proc/cpuinfo.
+ 
+ 1) /sys/devices/system/cpu/cpuX/topology/physical_package_id:
+-represent the physical package id of  cpu X;
++
++	physical package id of cpuX. Typically corresponds to a physical
++	socket number, but the actual value is architecture and platform
++	dependent.
++
+ 2) /sys/devices/system/cpu/cpuX/topology/core_id:
+-represent the cpu core id to cpu X;
++
++	the CPU core ID of cpuX. Typically it is the hardware platform's
++	identifier (rather than the kernel's).  The actual value is
++	architecture and platform dependent.
++
+ 3) /sys/devices/system/cpu/cpuX/topology/thread_siblings:
+-represent the thread siblings to cpu X in the same core;
++
++	internel kernel map of cpuX's hardware threads within the same
++	core as cpuX
++
+ 4) /sys/devices/system/cpu/cpuX/topology/core_siblings:
+-represent the thread siblings to cpu X in the same physical package;
++
++	internal kernel map of cpuX's hardware threads within the same
++	physical_package_id.
+ 
+ To implement it in an architecture-neutral way, a new source file,
+ drivers/base/topology.c, is to export the 4 attributes.
+@@ -32,32 +45,32 @@ not defined by include/asm-XXX/topology.h:
+ 3) thread_siblings: just the given CPU
+ 4) core_siblings: just the given CPU
+ 
+-Additionally, cpu topology information is provided under
++Additionally, CPU topology information is provided under
+ /sys/devices/system/cpu and includes these files.  The internal
+ source for the output is in brackets ("[]").
+ 
+-    kernel_max: the maximum cpu index allowed by the kernel configuration.
++    kernel_max: the maximum CPU index allowed by the kernel configuration.
+ 		[NR_CPUS-1]
+ 
+-    offline:	cpus that are not online because they have been
++    offline:	CPUs that are not online because they have been
+ 		HOTPLUGGED off (see cpu-hotplug.txt) or exceed the limit
+-		of cpus allowed by the kernel configuration (kernel_max
++		of CPUs allowed by the kernel configuration (kernel_max
+ 		above). [~cpu_online_mask + cpus >= NR_CPUS]
+ 
+-    online:	cpus that are online and being scheduled [cpu_online_mask]
++    online:	CPUs that are online and being scheduled [cpu_online_mask]
+ 
+-    possible:	cpus that have been allocated resources and can be
++    possible:	CPUs that have been allocated resources and can be
+ 		brought online if they are present. [cpu_possible_mask]
+ 
+-    present:	cpus that have been identified as being present in the
++    present:	CPUs that have been identified as being present in the
+ 		system. [cpu_present_mask]
+ 
+ The format for the above output is compatible with cpulist_parse()
+ [see <linux/cpumask.h>].  Some examples follow.
+ 
+-In this example, there are 64 cpus in the system but cpus 32-63 exceed
++In this example, there are 64 CPUs in the system but cpus 32-63 exceed
+ the kernel max which is limited to 0..31 by the NR_CPUS config option
+-being 32.  Note also that cpus 2 and 4-31 are not online but could be
++being 32.  Note also that CPUs 2 and 4-31 are not online but could be
+ brought online as they are both present and possible.
+ 
+      kernel_max: 31
+@@ -67,8 +80,8 @@ brought online as they are both present and possible.
+         present: 0-31
+ 
+ In this example, the NR_CPUS config option is 128, but the kernel was
+-started with possible_cpus=144.  There are 4 cpus in the system and cpu2
+-was manually taken offline (and is the only cpu that can be brought
++started with possible_cpus=144.  There are 4 CPUs in the system and cpu2
++was manually taken offline (and is the only CPU that can be brought
+ online.)
+ 
+      kernel_max: 127
+@@ -78,4 +91,4 @@ online.)
+         present: 0-3
+ 
+ See cpu-hotplug.txt for the possible_cpus=NUM kernel start parameter
+-as well as more information on the various cpumask's.
++as well as more information on the various cpumasks.
 
