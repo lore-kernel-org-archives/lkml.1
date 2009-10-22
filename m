@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbZJVNhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbZJVNoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbZJVNhj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 09:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbZJVNhi
+	id S1755944AbZJVNoh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 09:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbZJVNoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 09:37:38 -0400
-Received: from mail-px0-f179.google.com ([209.85.216.179]:61227 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754908AbZJVNhh (ORCPT
+	Thu, 22 Oct 2009 09:44:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33531 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754812AbZJVNog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 09:37:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=vWNTx2y02ukgid44T39EDPO2Ni3ECSAdl6jCUts9cCzGtppYCVMfyBbSkFTiHlntod
-         ojizSI9WWZ7tS8sjZI6eiVmlk8XwMAaYe8L7meAS4dLoQzqdDuFxSBV/ZGqZx+6OQjCG
-         AEDr7H+i9byIQes3xcoricObQMGF78cdwLJBI=
-MIME-Version: 1.0
-In-Reply-To: <20091022120613.GB4928@nowhere>
-References: <f22d86810910220410r33002b5ei403ddf6632254472@mail.gmail.com>
-	 <20091022112746.GA4928@nowhere>
-	 <f22d86810910220443u49cdfabg83ef836406cfb36d@mail.gmail.com>
-	 <20091022120613.GB4928@nowhere>
-Date: Thu, 22 Oct 2009 06:37:42 -0700
-Message-ID: <f22d86810910220637g1793c712q85231e7482712d@mail.gmail.com>
-Subject: Re: Can current macro be accessed from interrupt context?
-From: "Leonidas ." <leonidas137@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
+	Thu, 22 Oct 2009 09:44:36 -0400
+Date: Thu, 22 Oct 2009 06:45:38 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Leonidas ." <leonidas137@gmail.com>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: Can current macro be accessed from interrupt context?
+Message-ID: <20091022064538.25837421@infradead.org>
+In-Reply-To: <f22d86810910220410r33002b5ei403ddf6632254472@mail.gmail.com>
+References: <f22d86810910220410r33002b5ei403ddf6632254472@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for your explanation, this solves my problem.
+On Thu, 22 Oct 2009 04:10:49 -0700
+"Leonidas ." <leonidas137@gmail.com> wrote:
 
--Leo.
+> Hello,
+> 
+> Going through UTLK, it says that current macro makes sense only in
+> case of process context,
+> in case of interrupt context it is invalid.
+> 
+> But current would still be pointing to interrupted process right? The
+> pointer would still be valid?
+> Can I safely assume that whether or not interrupt handlers are
+> executing on separate stacks or
+> interrupted threads stack, current macro can be accessed from
+> interrupt context?
+
+not for interrupt threads, and that's where things are moving to.
+
+for interrupt stacks you ought to be fine (current is just a pointer on
+the stack, and last I looked we copied that pointer for each interrupt
+to the irq stack)
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
