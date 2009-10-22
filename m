@@ -1,74 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZJVL1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755021AbZJVLWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961AbZJVL1W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 07:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbZJVL1V
+	id S1755021AbZJVLWx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 07:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbZJVLWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 07:27:21 -0400
-Received: from mga11.intel.com ([192.55.52.93]:35141 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752494AbZJVL1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 07:27:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,604,1249282800"; 
-   d="scan'208";a="506140196"
-From: Sheng Yang <sheng@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 1/1] generic-ipi: Fix misleading smp_call_function* description
-Date: Thu, 22 Oct 2009 19:19:34 +0800
-Message-Id: <1256210374-25354-1-git-send-email-sheng@linux.intel.com>
-X-Mailer: git-send-email 1.6.0.4
+	Thu, 22 Oct 2009 07:22:50 -0400
+Received: from mtagate6.de.ibm.com ([195.212.17.166]:35721 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754337AbZJVLWt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 07:22:49 -0400
+Message-ID: <4AE04089.9020907@free.fr>
+Date: Thu, 22 Oct 2009 13:22:49 +0200
+From: Daniel Lezcano <daniel.lezcano@free.fr>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Oren Laadan <orenl@librato.com>
+CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, randy.dunlap@oracle.com,
+       arnd@arndb.de, linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       Louis.Rilling@kerlabs.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       kosaki.motohiro@jp.fujitsu.com, hpa@zytor.com, mingo@elte.hu,
+       torvalds@linux-foundation.org, Alexey Dobriyan <adobriyan@gmail.com>,
+       roland@redhat.com, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
+References: <20091013044925.GA28181@us.ibm.com> <4AD8C7E4.9000903@free.fr>	<20091016194451.GA28706@us.ibm.com> <4ADCCD68.9030003@free.fr> <4ADCDE7F.4090501@librato.com> <4ADF2E75.1020801@free.fr> <4ADF56D4.8030405@librato.com>
+In-Reply-To: <4ADF56D4.8030405@librato.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After commit:8969a5ede0f9e17da4b943712429aef2c9bcd82b "generic-ipi: remove
-kmalloc()", wait = 0 can be guaranteed.
+Oren Laadan wrote:
+>
+> Daniel Lezcano wrote:
+>> Oren Laadan wrote:
+>>> Daniel Lezcano wrote:
+>> [ ... ]
+>>
+>>>> I forgot to mention a constraint with the specified pid : P2 has to
+>>>> be child of P1.
+>>>> In other word, you can not specify a pid to clonat which is not your
+>>>> descendant (including yourself).
+>>>> With this constraint I think there is no security issues.
+>>> Sounds dangerous. What if your descendant executed a setuid program ?
+>> That does not happen because you inherit the context of the caller.
+>>
+>>>> Concerning of forking on behalf of another process, we can consider
+>>>> it is up to the caller / programmer to know what it does. If a
+>>>> process in 
+>>> Before the user can program with this syscall, _you_ need to define
+>>> the semantics of this syscall. 
+>> Yes, you are right. Here it is the proposition of the semantics.
+>>
+>> Function prototype is:
+>>
+>> pid_t cloneat(pid_t pid, pid_t hint, struct clone_args *args);
+>>
+>> Structure types are:
+>>
+>> typedef int clone_flag_t;
+>>
+>> struct clone_args {
+>>     clone_flag_t *flags;
+>>     int flags_size;
+>>     u32 reserved1;
+>>     u32 reserved2;
+>>     u64 child_stack_base;
+>>     u64 child_stack_size;
+>>     u64 parent_tid_ptr;
+>>     u64 child_tid_ptr;
+>>     u64 reserved3;
+>> };
+>>
+>> With the helper macros:
+>>
+>> void CLONE_SET(int flag, clone_flag_t *flags);
+>> void CLONE_CLR(int flag, clone_flag_t *flags);
+>> bool CLONE_ISSET(int flag, clone_flag_t *flags);
+>> void CLONE_ZERO(flag_t *clone_flags);
+>>
+>> And:
+>>
+>> #define CLONEXT_VM      0x20  /* CLONE_VM>>3 */ #define CLONEXT_FS     
+>> 0x21
+>> #define CLONEXT_FILES   0x22
+>> ...
+>>
+>
+> The main motivation for your new syscall is to make it possible to
+> inject a process into a namespace. IOW, what you are proposing is
+> a new incarnation of sys_hijack().
+>
+> This is _orthogonal_ to the current discussion, which is about an
+> extension for clone to allow (a) choosing target pid(s), (b) more
+> flags, and (c) future extensions.
+>
+> (Your suggested syscall may, too, allow the request a specific set
+> of pids for the child process, and reuse the current code for that).
+>
+> I suggest that you start a new thread about your RFC. This will
+> reduce distractions on the current thread, and bring more focus to
+> your proposal. I surely will post some comments there :)
 
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
----
- kernel/smp.c |   11 +++--------
- 1 files changed, 3 insertions(+), 8 deletions(-)
+I can argue exactly the same thing, the main motivation for your new 
+syscall is to make it possible to restart a process tree for a 
+checkpoint / restart and this is orthogonal with adding extended clone 
+flags :)
 
-diff --git a/kernel/smp.c b/kernel/smp.c
-index c9d1c78..8bd618f 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -265,9 +265,7 @@ static DEFINE_PER_CPU(struct call_single_data, csd_data);
-  * @info: An arbitrary pointer to pass to the function.
-  * @wait: If true, wait until function has completed on other CPUs.
-  *
-- * Returns 0 on success, else a negative status code. Note that @wait
-- * will be implicitly turned on in case of allocation failures, since
-- * we fall back to on-stack allocation.
-+ * Returns 0 on success, else a negative status code.
-  */
- int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
- 			     int wait)
-@@ -355,9 +353,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data,
-  * @wait: If true, wait (atomically) until function has completed
-  *        on other CPUs.
-  *
-- * If @wait is true, then returns once @func has returned. Note that @wait
-- * will be implicitly turned on in case of allocation failures, since
-- * we fall back to on-stack allocation.
-+ * If @wait is true, then returns once @func has returned.
-  *
-  * You must not call this function with disabled interrupts or from a
-  * hardware interrupt handler or from a bottom half handler. Preemption
-@@ -443,8 +439,7 @@ EXPORT_SYMBOL(smp_call_function_many);
-  * Returns 0.
-  *
-  * If @wait is true, then returns once @func has returned; otherwise
-- * it returns just before the target cpu calls @func. In case of allocation
-- * failure, @wait will be implicitly turned on.
-+ * it returns just before the target cpu calls @func.
-  *
-  * You must not call this function with disabled interrupts or from a
-  * hardware interrupt handler or from a bottom half handler.
--- 
-1.5.4.5
+But my main motivation is to have the possibility to a) choose a target 
+__and__ b) clone the process relatively to another one. These 2 features 
+allows to do what *we* need, that is recreate a process tree and the 
+bonus with this approach is the ability to inject a process into a 
+namespace, something asked by several people, eg. debug with gdb an 
+application running into another pid namespace (is not supported today).
+
+I am sorry for coming late in the discussion and for distracting.
+
+> [...]
+>
+>> The cloneat syscall can be used for the following use cases:
+>>
+>> * checkpoint / restart:
+>>
+>> The restart can be done with a clone(.., CLONE_NEWPID|...);
+>> Then the new pid (aka pid 1) retrieves the proctree from the statefile
+>> and creates the different tasks with the process hierarchy with the
+>> cloneat syscall.
+>
+> s/cloneat/$CLONE3/
+> (hint: this is how it's done now)
+Of course, what is described is what you does with 'clone3' !
+Do you think I will come proposing a variant of 'clone3' not doing what 
+you need ? :)
+
+>> The proctree creation can be done from outside of the pid namespace or
+>> from inside.
+>
+> Ew .. why would you do that ?
+And why not. Is there a semantic specifying how a process tree should be 
+recreated ?
+
+>> Concerning nested pid namespaces, IMHO I would not try to checkpoint /
+>> restart them. The checkpoint of a nested pid namespace should be
+>> forbidden except for the leaf of a pid namespaces tree. That should
+>
+> Others (me included) *will* try and may get upset if forbidden...
+> Seriously, there is no technical reason to restrict this.
+
+Ok.
+
+>  >> Can you define more precisely what you mean by "enter" the container ?
+>>> If you simply want create a new process in the container, you can
+>>> achieve the same thing with a daemon, or a smart init process (in
+>>> there), or even ptrace tricks.
+>> Yes, you can launch a daemon inside the container, that works for a
+>> system container because the container is killed by killing the first
+>> process of the container or by a shutdown inside the container (not
+>> fully implemented in the kernel).
+>> But this is unreliable for application containers, I won't enter in the
+>> details but the container exits when the application exits, with a
+>> daemon inside the container, this is no longer the case because you can
+>> not detect the application death as the daemon is always there.
+>>
+>> With cloneat you restrict the life cycle of the command you launched,
+>> that is the container exits as soon as all the processes exited the
+>> container, including the spawned command itself.
+>
+> Then start a daemon _in addition_ to the application, or write a
+> daemon that will launch the application and monitor it... And also
+> there is ptrace -
+Already tried :)
+
+http://lxc.git.sourceforge.net/git/gitweb.cgi?p=lxc/lxc;a=blob;f=src/lxc/lxc_cinit.c;h=8f235483c1a9d9c9e0cc1ba69f1c33f1bc98b8aa;hb=57ff723f6a174a2a01c58c6ac367d118ef12b91c
+
+> But, please let's take this off to a new thread about adding how to
+> add a process into a namespace from the outside. FYI, I do think
+> such an interface may be useful and nicer than the two alternatives
+> I suggested above.
+>
+>>> Also, there is a reason why sys_hijack() was hijacked away ... And
+>>> I honestly think that a syscall to force another process to clone
+>>> would be shot down by the kernel guys.
+>> Maybe, maybe not. CLONE_PARENT exists and looks similar to cloneat.
+>
+> Actually, I misread previously; I mean not forcing another process
+> to clone, but instead forcing another process to become a parent (and
+> I shall ignore the ethical issues :)
+>
+> I still suspect it won't be welcome. Several people would have liked
+> to see CLONE_PARENT go away, too, if that was possible without breaking
+> userspace applications. Yet another reason to take it to a discussion
+> of its own.
+
+At this point, I am hesitating of creating a new thread for this 
+discussion. Because, there will be:
+ * clone
+ * clone2
+ * clone3
+
+and we will discuss again about a new clone syscall with a different API :(
+
+I will not continue arguing on this thread except if someone is in favor 
+of cloneat.
+Otherwise, I will spawn a new thread later.
+
+Thanks
+  -- Daniel
 
