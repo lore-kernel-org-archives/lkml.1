@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbZJVP4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbZJVP4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756653AbZJVP4d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 11:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756279AbZJVP4c
+	id S1751973AbZJVP4u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 11:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZJVP4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 11:56:32 -0400
-Received: from lider.uludag.org.tr ([193.140.100.216]:43087 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756054AbZJVP4b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 11:56:31 -0400
-Message-ID: <4AE080AC.4050108@pardus.org.tr>
-Date: Thu, 22 Oct 2009 18:56:28 +0300
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       linux-media@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: uvcvideo causes ehci_hcd to halt
-References: <Pine.LNX.4.44L0.0910220944100.989-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0910220944100.989-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 22 Oct 2009 11:56:49 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:44430 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751890AbZJVP4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 11:56:48 -0400
+Subject: Re: [PATCH 3/5 v4] Export memory_sysdev_class
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4AE07AB7.2070901@austin.ibm.com>
+References: <4ADF1C49.2030201@austin.ibm.com>
+	 <4ADF1E42.3020907@austin.ibm.com> <1256141009.23737.22.camel@nimitz>
+	 <4AE07AB7.2070901@austin.ibm.com>
+Content-Type: text/plain
+Date: Thu, 22 Oct 2009 08:56:46 -0700
+Message-Id: <1256227006.23737.784.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Thu, 22 Oct 2009, [UTF-8] Ozan Ã‡aÄŸlayan wrote:
->
->   
->> Here's the outputs from /sys/kernel/debug/usb/ehci:
->>
->> periodic:
->> ----------------
->> size = 1024
->>    1:  qh1024-0001/f6ffe280 (h2 ep2 [1/0] q0 p8)
->>     
->
-> There's something odd about this.  I'd like to see this file again, 
-> after the patch below has been applied.
->
->   
+On Thu, 2009-10-22 at 10:31 -0500, Nathan Fontenot wrote:
+> Dave Hansen wrote:
+> > On Wed, 2009-10-21 at 09:44 -0500, Nathan Fontenot wrote:
+> >> Export the memory_sysdev_class structure.  This is needed so we can create
+> >> a 'release' file in sysfs in addition to the existing 'probe' file in
+> >> order to support DLPAR removal of memory on the powerpc/pseries platform.
+> >> The new 'release' file will be powerpc/pseries only.
+> > 
+> > Please do it in generic code.  You may only need it on ppc today, but
+> > somebody else is going to want the same thing tomorrow on another arch.
+> 
+> I thought about this but wasn't sure if having the probe/release sysfs files
+> for memory and cpu be in generic code would be accepted.
 
-Do you want me to apply this patch altogether with the first one that
-you sent a while ago in this thread or directly onto the vanilla kernel?
+Although we don't want to pollute the generic code with lots of per-arch
+cruft, this still looks pretty generic to me.  It is also really nice to
+have all of the sysfs files for one directory be in a single place in
+the source.
+
+> Would it be acceptable to put the new release file for memory under the
+> ARCH_MEMORY_PROBE config option?
+
+That sounds fine to me.  It may need a slightly tuned name if you can
+think of anything better.  I can't off the top of my head.
+
+x86's is really only there for testing reasons.   I would use mem= to
+shrink a machine's memory at boot then use the probe file to re-add it
+later.  I did that before I had hardware that could do real hotplug.
+
+> This would reduce the number of arch'es
+> that would require stubs as it appears only powerpc and x86 define this.
+
+Yeah, that'd be a nice side-effect I guess.
+
+-- Dave
+
