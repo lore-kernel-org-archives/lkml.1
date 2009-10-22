@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZJVRnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZJVRqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbZJVRnk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 13:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZJVRnj
+	id S1755833AbZJVRqY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 13:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZJVRqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 13:43:39 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:36313 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754862AbZJVRni (ORCPT
+	Thu, 22 Oct 2009 13:46:24 -0400
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:64803 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752615AbZJVRqX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 13:43:38 -0400
-Date: Thu, 22 Oct 2009 10:43:04 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Crane Cai <crane.cai@amd.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       lenb@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH] i2c-scmi: Quirk to work on IBM machines with broken
-	BIOSes
-Message-ID: <20091022174304.GO26149@tux1.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-References: <20091020231149.GM26149@tux1.beaverton.ibm.com> <20091021023016.GC32413@crane-desktop> <200910210857.13978.bjorn.helgaas@hp.com> <20091021173733.GN26149@tux1.beaverton.ibm.com> <20091022071748.GA17917@crane-desktop>
+	Thu, 22 Oct 2009 13:46:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=YU0L6HfCtYL+Rd16MlRnoNUu259pOhvoBYXiGujyKrgFW8VJcmnFxOJif0R6Dza0Rq
+         6yCv/b1M5/nBOB4NnVKQtv9INw0VOpUgTLvrvULhIUTtTcZW0h5yPqBPfa3TsZfO5xmd
+         abHpNw0A7R4H9q5WPllFIg/1XRYQRReDS2SR0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091022071748.GA17917@crane-desktop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <5048.1256224623@turing-police.cc.vt.edu>
+References: <f22d86810910220410r33002b5ei403ddf6632254472@mail.gmail.com>
+	 <5048.1256224623@turing-police.cc.vt.edu>
+Date: Thu, 22 Oct 2009 23:16:27 +0530
+Message-ID: <f22d86810910221046l366d3017r8b8823e4750ffea2@mail.gmail.com>
+Subject: Re: Can current macro be accessed from interrupt context?
+From: "Leonidas ." <leonidas137@gmail.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 03:17:53PM +0800, Crane Cai wrote:
+>
+> So given that the process ID is quite often totally pointless, what were you
+> trying to accomplish by getting the process ID?
+>
 
-> This patch below represents my meanings:
-> *) add a new HID for IBM SMBus CMI devices
-> *) add methods for IBM SMBus CMI devices as you did
-> *) hook different HID with different control methods set
-> It may be more smooth for i2c-scmi, please consider.
+I am glad that you asked this question. Actually, what I am trying to
+do may not be
+even feasible in kernel space. Just spending some cycles on checking
+the feasibility.
 
-Looks fine to me.
+Here is what I am trying to do.
 
-I still need the changes to drivers/acpi/scan.c, but if you push this patch
-upstream then I'll reroll my patch as a follow-on to yours...
+I am trying to emulate thread local storage in kernel space. Only conceptually.
+In user space, multithreaded programs can avoid locking issues by keeping
+per thread data structures, as per my understanding in kernel space there is
+no such notion. Per cpu data structures is not quite the same thing
+since locking
+can be avoided only for accessing data local to that cpu, for
+accessing data belonging
+to other cpus, we would still need some locking mechanism.
 
->  static const struct acpi_device_id acpi_smbus_cmi_ids[] = {
-> -	{"SMBUS01", 0},
-> +	{"SMBUS01", (kernel_ulong_t)&smbus_methods},
-> +	{"SMBUSIBM", (kernel_ulong_t)&ibm_smbus_methods},
+Assume that, a multithreaded app talks to my kernel module using
+/dev/node, and I need
+to book keep certain data in kernel module. The data I am book keeping
+can be kept in a
+central data structure protected by spinlocks. A better way would be
+per cpu data structure.
 
-...with the custom HID string #define'd in a header file someplace.
+My idea is to keep data specific to each task which is talking to my
+kernel module. Assumption
+here is a certain task can be in kernel mode only on one cpu at a time
+hence that task specific
+data structure can be accessed without locks. All book keeping which
+needs to be done in ISRs
+would be just book keeping for the interrupted task, i.e. we would
+populate interrupted task's
+data structure. This is where current comes in picture.
 
-Actually, if you'll add a Signed-off-by line to your patch, I'll submit both of
-them as a patchset and save you a little work. :)
-
-> +	for (; id->id[0]; id++)
-
-Stylistic nit--would it be clearer to initialize id in the for loop instead of
-at the beginning of the function?
-
---D
-
+-Leo.
