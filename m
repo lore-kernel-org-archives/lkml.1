@@ -1,101 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbZJVLPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZJVL1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754864AbZJVLPL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 07:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbZJVLPK
+	id S1754961AbZJVL1W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 07:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbZJVL1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 07:15:10 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:55611 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753267AbZJVLPJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 07:15:09 -0400
-From: Ilkka Koskinen <ilkka.koskinen@nokia.com>
-To: sameo@linux.intel.com, linux-kernel@vger.kernel.org
-Cc: linux-omap@vger.kernel.org
-Subject: [PATCH v2] twl4030: Enable low-power mode to 32kHz oscillator
-Date: Thu, 22 Oct 2009 14:14:09 +0300
-Message-Id: <1256210049-4567-1-git-send-email-ilkka.koskinen@nokia.com>
+	Thu, 22 Oct 2009 07:27:21 -0400
+Received: from mga11.intel.com ([192.55.52.93]:35141 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752494AbZJVL1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 07:27:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,604,1249282800"; 
+   d="scan'208";a="506140196"
+From: Sheng Yang <sheng@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng@linux.intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 1/1] generic-ipi: Fix misleading smp_call_function* description
+Date: Thu, 22 Oct 2009 19:19:34 +0800
+Message-Id: <1256210374-25354-1-git-send-email-sheng@linux.intel.com>
 X-Mailer: git-send-email 1.6.0.4
-X-OriginalArrivalTime: 22 Oct 2009 11:14:57.0270 (UTC) FILETIME=[E35AC160:01CA5308]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allows TWL's 32kHz oscillator to go in low-power mode when
-main battery voltage is running low.
+After commit:8969a5ede0f9e17da4b943712429aef2c9bcd82b "generic-ipi: remove
+kmalloc()", wait = 0 can be guaranteed.
 
-Signed-off-by: Ilkka Koskinen <ilkka.koskinen@nokia.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 ---
- drivers/mfd/twl4030-core.c  |    9 +++++++--
- include/linux/i2c/twl4030.h |    5 +++++
- 2 files changed, 12 insertions(+), 2 deletions(-)
+ kernel/smp.c |   11 +++--------
+ 1 files changed, 3 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
-index eee5af8..004a8be 100644
---- a/drivers/mfd/twl4030-core.c
-+++ b/drivers/mfd/twl4030-core.c
-@@ -177,6 +177,7 @@
- #define HFCLK_FREQ_26_MHZ		(2 << 0)
- #define HFCLK_FREQ_38p4_MHZ		(3 << 0)
- #define HIGH_PERF_SQ			(1 << 3)
-+#define CK32K_LOWPWR_EN			(1 << 7)
- 
- 
- /* chip-specific feature flags, for i2c_device_id.driver_data */
-@@ -681,7 +682,8 @@ static inline int __init unprotect_pm_master(void)
- 	return e;
- }
- 
--static void clocks_init(struct device *dev)
-+static void clocks_init(struct device *dev,
-+			struct twl4030_clock_init_data *clock)
- {
- 	int e = 0;
- 	struct clk *osc;
-@@ -728,6 +730,9 @@ static void clocks_init(struct device *dev)
- 	}
- 
- 	ctrl |= HIGH_PERF_SQ;
-+	if (clock && clock->ck32k_lowpwr_enable)
-+		ctrl |= CK32K_LOWPWR_EN;
-+
- 	e |= unprotect_pm_master();
- 	/* effect->MADC+USB ck en */
- 	e |= twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER, ctrl, R_CFG_BOOT);
-@@ -806,7 +811,7 @@ twl4030_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 	inuse = true;
- 
- 	/* setup clock framework */
--	clocks_init(&client->dev);
-+	clocks_init(&client->dev, pdata->clock);
- 
- 	/* load power event scripts */
- 	if (twl_has_power() && pdata->power)
-diff --git a/include/linux/i2c/twl4030.h b/include/linux/i2c/twl4030.h
-index 4a2fb27..10e68cb 100644
---- a/include/linux/i2c/twl4030.h
-+++ b/include/linux/i2c/twl4030.h
-@@ -313,6 +313,10 @@ int twl4030_i2c_read(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes);
- 
- /*----------------------------------------------------------------------*/
- 
-+struct twl4030_clock_init_data {
-+	bool ck32k_lowpwr_enable;
-+};
-+
- struct twl4030_bci_platform_data {
- 	int *battery_tmp_tbl;
- 	unsigned int tblsize;
-@@ -407,6 +411,7 @@ extern void twl4030_power_init(struct twl4030_power_data *triton2_scripts);
- 
- struct twl4030_platform_data {
- 	unsigned				irq_base, irq_end;
-+	struct twl4030_clock_init_data		*clock;
- 	struct twl4030_bci_platform_data	*bci;
- 	struct twl4030_gpio_platform_data	*gpio;
- 	struct twl4030_madc_platform_data	*madc;
+diff --git a/kernel/smp.c b/kernel/smp.c
+index c9d1c78..8bd618f 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -265,9 +265,7 @@ static DEFINE_PER_CPU(struct call_single_data, csd_data);
+  * @info: An arbitrary pointer to pass to the function.
+  * @wait: If true, wait until function has completed on other CPUs.
+  *
+- * Returns 0 on success, else a negative status code. Note that @wait
+- * will be implicitly turned on in case of allocation failures, since
+- * we fall back to on-stack allocation.
++ * Returns 0 on success, else a negative status code.
+  */
+ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ 			     int wait)
+@@ -355,9 +353,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data,
+  * @wait: If true, wait (atomically) until function has completed
+  *        on other CPUs.
+  *
+- * If @wait is true, then returns once @func has returned. Note that @wait
+- * will be implicitly turned on in case of allocation failures, since
+- * we fall back to on-stack allocation.
++ * If @wait is true, then returns once @func has returned.
+  *
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler. Preemption
+@@ -443,8 +439,7 @@ EXPORT_SYMBOL(smp_call_function_many);
+  * Returns 0.
+  *
+  * If @wait is true, then returns once @func has returned; otherwise
+- * it returns just before the target cpu calls @func. In case of allocation
+- * failure, @wait will be implicitly turned on.
++ * it returns just before the target cpu calls @func.
+  *
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler.
 -- 
-1.6.0.4
+1.5.4.5
 
