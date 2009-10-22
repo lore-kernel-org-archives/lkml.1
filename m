@@ -1,73 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbZJVOIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbZJVOUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756096AbZJVOIw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 10:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbZJVOIv
+	id S1756115AbZJVOUl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 10:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbZJVOUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 10:08:51 -0400
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:31282 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755017AbZJVOIv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 10:08:51 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ar0EAOMD4ErCTtAn/2dsb2JhbACBUtl0hD8E
-Date: Thu, 22 Oct 2009 16:08:51 +0200
-From: Philippe De Muyter <phdm@macqel.be>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] cleanup remove obsolete comment about map_chunk
-Message-ID: <20091022140851.GC27903@frolo.macqel>
+	Thu, 22 Oct 2009 10:20:41 -0400
+Received: from ozlabs.org ([203.10.76.45]:49659 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755956AbZJVOUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 10:20:40 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Takashi Iwai <takashi.iwai@gmail.com>
+Subject: Re: Problems with string (charp) module parameters
+Date: Fri, 23 Oct 2009 00:50:41 +1030
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
+References: <s5haazv1sw5.wl%tiwai@suse.de> <200910212341.06025.rusty@rustcorp.com.au> <6dc076840910211913l1cf12e82tbb9151da78e41422@mail.gmail.com>
+In-Reply-To: <6dc076840910211913l1cf12e82tbb9151da78e41422@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200910230050.41790.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Thu, 22 Oct 2009 12:43:36 pm Takashi Iwai wrote:
+> Hi Rusty,
+> 
+> (sending from gmail address since VPN doesn't work here in hotel...)
+> 
+> On Wed, Oct 21, 2009 at 3:11 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > On Tue, 13 Oct 2009 09:07:46 pm Takashi Iwai wrote:
+> >> * The handling of parameter array is pretty buggy now.
+> >>   kp->perm and kp->flags aren't properly initialized in
+> >>   param_array().  Thus, you might call kfree() with invalid pointers,
+> >>   or pass a wrong type for bool.
+> >
+> > Yes, an array of charp isn't going to work.  Erk, I switched one bug for
+> > another :(
+> >
+> >> So, the situation looks messy right now, not only about the section
+> >> issue.  If we allow kmalloc of each parameter array element, the flag
+> >> must be associated to each element, not a global one to the array.
+> >>
+> >> Thoughts?
+> >
+> > Yes, that's hard.  There's only one place which currently has a writable
+> > array parameter: drivers/usb/atm/ueagle-atm.c, and it's root only.
+> >
+> > OK, for 2.6.32, we remove the const.  In the longer term, I'm reworking how
+> > this is done entirely.
+> 
+> As far as I checked, removing only const doesn't suffice on x86.
+> The problem is rather the __param section assignment.
+> We'd need to get rid of that, too, if we keep the code in the current way.
 
-[resent to remove the wrong Re: in the subject line]
+Something like this?
 
-Remove the comments referring to a function map_chunk that no longer exists.
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -147,6 +147,10 @@
+ 	MEM_KEEP(init.data)						\
+ 	MEM_KEEP(exit.data)						\
+ 	. = ALIGN(8);							\
++	VMLINUX_SYMBOL(__start___param) = .;				\
++	*(__param)							\
++	VMLINUX_SYMBOL(__stop___param) = .;				\
++	. = ALIGN(8);							\
+ 	VMLINUX_SYMBOL(__start___markers) = .;				\
+ 	*(__markers)							\
+ 	VMLINUX_SYMBOL(__stop___markers) = .;				\
+@@ -336,15 +340,7 @@
+ 		MEM_KEEP(init.rodata)					\
+ 		MEM_KEEP(exit.rodata)					\
+ 	}								\
+-									\
+-	/* Built-in module parameters. */				\
+-	__param : AT(ADDR(__param) - LOAD_OFFSET) {			\
+-		VMLINUX_SYMBOL(__start___param) = .;			\
+-		*(__param)						\
+-		VMLINUX_SYMBOL(__stop___param) = .;			\
+-		. = ALIGN((align));					\
+-		VMLINUX_SYMBOL(__end_rodata) = .;			\
+-	}								\
++	VMLINUX_SYMBOL(__end_rodata) = .;				\
+ 	. = ALIGN((align));
+ 
+ /* RODATA & RO_DATA provided for backward compatibility.
 
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
 
-diff --git a/arch/h8300/mm/memory.c b/arch/h8300/mm/memory.c
---- a/arch/h8300/mm/memory.c
-+++ b/arch/h8300/mm/memory.c
-@@ -44,8 +44,8 @@ void cache_push_v (unsigned long vaddr, 
- {
- }
- 
--/* Map some physical address range into the kernel address space. The
-- * code is copied and adapted from map_chunk().
-+/*
-+ * Map some physical address range into the kernel address space.
-  */
- 
- unsigned long kernel_map(unsigned long paddr, unsigned long size,
-diff --git a/arch/m68k/mm/kmap.c b/arch/m68k/mm/kmap.c
---- a/arch/m68k/mm/kmap.c
-+++ b/arch/m68k/mm/kmap.c
-@@ -99,8 +99,7 @@ static inline void free_io_area(void *ad
- #endif
- 
- /*
-- * Map some physical address range into the kernel address space. The
-- * code is copied and adapted from map_chunk().
-+ * Map some physical address range into the kernel address space.
-  */
- /* Rewritten by Andreas Schwab to remove all races. */
- 
-diff --git a/arch/m68knommu/mm/memory.c b/arch/m68knommu/mm/memory.c
---- a/arch/m68knommu/mm/memory.c
-+++ b/arch/m68knommu/mm/memory.c
-@@ -24,7 +24,6 @@
- 
- /*
-  * Map some physical address range into the kernel address space.
-- * The code is copied and adapted from map_chunk().
-  */
- 
- unsigned long kernel_map(unsigned long paddr, unsigned long size,
+This would work for 2.6.32, for 2.6.33 I have a different solution.
+
+> It's not only for avoiding the mess to separate static and kmalloc
+> strings but also for
+> avoiding races between the referrer and the sysfs-write of char
+> pointer.  (In general, we
+> have no lock for parameters.)
+
+Good point.  We should use rcu here.  But there's still a race with copying
+in strings of any kind.
+
+> As you pointed out, there are no many users of writable charp parameters.
+> So, replacing is easy task.  In that way, we can keep struct
+> kernel_parameter as const
+> gracefully without hustling any big code change.
+
+But we'd need to make sure noone adds one in future.  After all, you tried
+to add one and found this problem!
+
+I'll post my current patch series: it needs testing, but I'd appreciate
+your thoughts.
+
+Thanks!
+Rusty.
