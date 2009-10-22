@@ -1,180 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbZJVGDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbZJVGCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945AbZJVGDU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 02:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZJVGCd
+	id S1754005AbZJVGCm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 02:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZJVGCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 02:02:33 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39450 "EHLO
+	Thu, 22 Oct 2009 02:02:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39456 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257AbZJVGC3 (ORCPT
+	with ESMTP id S1752336AbZJVGC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 22 Oct 2009 02:02:29 -0400
 From: Andi Kleen <andi@firstfloor.org>
 To: linux-kernel@vger.kernel.org
 Cc: fengguang.wu@intel.com, Andi Kleen <ak@linux.intel.com>
-Subject: [PATCH] HWPOISON: Add brief hwpoison description to Documentation
-Date: Thu, 22 Oct 2009 08:02:26 +0200
-Message-Id: <1256191352-6903-3-git-send-email-andi@firstfloor.org>
+Subject: [PATCH] HWPOISON: return early on non-LRU pages
+Date: Thu, 22 Oct 2009 08:02:27 +0200
+Message-Id: <1256191352-6903-4-git-send-email-andi@firstfloor.org>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1256191352-6903-2-git-send-email-andi@firstfloor.org>
+In-Reply-To: <1256191352-6903-3-git-send-email-andi@firstfloor.org>
 References: <i>
  <1256191352-6903-1-git-send-email-andi@firstfloor.org>
  <1256191352-6903-2-git-send-email-andi@firstfloor.org>
+ <1256191352-6903-3-git-send-email-andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <ak@linux.intel.com>
+From: Wu Fengguang <fengguang.wu@intel.com>
 
+Right now we have some trouble with non atomic access
+to page flags when locking the page. To plug this hole
+for now, limit error recovery to LRU pages for now.
+
+This could be better fixed by defining a suitable protocol,
+but let's go this simple way for now
+
+This avoids unnecessary races with __set_page_locked() and
+__SetPageSlab*() and maybe more non-atomic page flag operations.
+
+This loses isolated pages which are currently in page reclaim, but these
+are relatively limited compared to the total memory.
+
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
+[AK: new description, bug fixes, cleanups]
 ---
- Documentation/vm/hwpoison.txt |  136 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 136 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/vm/hwpoison.txt
+ mm/memory-failure.c |   49 ++++++++++++++++++++++++-------------------------
+ 1 files changed, 24 insertions(+), 25 deletions(-)
 
-diff --git a/Documentation/vm/hwpoison.txt b/Documentation/vm/hwpoison.txt
-new file mode 100644
-index 0000000..3ffadf8
---- /dev/null
-+++ b/Documentation/vm/hwpoison.txt
-@@ -0,0 +1,136 @@
-+What is hwpoison?
+diff --git a/mm/memory-failure.c b/mm/memory-failure.c
+index 729d4b1..e17ec3f 100644
+--- a/mm/memory-failure.c
++++ b/mm/memory-failure.c
+@@ -370,9 +370,6 @@ static int me_pagecache_clean(struct page *p, unsigned long pfn)
+ 	int ret = FAILED;
+ 	struct address_space *mapping;
+ 
+-	if (!isolate_lru_page(p))
+-		page_cache_release(p);
+-
+ 	/*
+ 	 * For anonymous pages we're done the only reference left
+ 	 * should be the one m_f() holds.
+@@ -498,30 +495,18 @@ static int me_pagecache_dirty(struct page *p, unsigned long pfn)
+  */
+ static int me_swapcache_dirty(struct page *p, unsigned long pfn)
+ {
+-	int ret = FAILED;
+-
+ 	ClearPageDirty(p);
+ 	/* Trigger EIO in shmem: */
+ 	ClearPageUptodate(p);
+ 
+-	if (!isolate_lru_page(p)) {
+-		page_cache_release(p);
+-		ret = DELAYED;
+-	}
+-
+-	return ret;
++	return DELAYED;
+ }
+ 
+ static int me_swapcache_clean(struct page *p, unsigned long pfn)
+ {
+-	int ret = FAILED;
+-
+-	if (!isolate_lru_page(p)) {
+-		page_cache_release(p);
+-		ret = RECOVERED;
+-	}
+ 	delete_from_swap_cache(p);
+-	return ret;
 +
-+Upcoming Intel CPUs have support for recovering from some memory errors
-+(``MCA recovery''). This requires the OS to declare a page "poisoned",
-+kill the processes associated with it and avoid using it in the future.
++	return RECOVERED;
+ }
+ 
+ /*
+@@ -611,8 +596,6 @@ static struct page_state {
+ 	{ 0,		0,		"unknown page state",	me_unknown },
+ };
+ 
+-#undef lru
+-
+ static void action_result(unsigned long pfn, char *msg, int result)
+ {
+ 	struct page *page = NULL;
+@@ -664,9 +647,6 @@ static void hwpoison_user_mappings(struct page *p, unsigned long pfn,
+ 	if (PageReserved(p) || PageCompound(p) || PageSlab(p))
+ 		return;
+ 
+-	if (!PageLRU(p))
+-		lru_add_drain_all();
+-
+ 	/*
+ 	 * This check implies we don't kill processes if their pages
+ 	 * are in the swap cache early. Those are always late kills.
+@@ -738,6 +718,7 @@ static void hwpoison_user_mappings(struct page *p, unsigned long pfn,
+ 
+ int __memory_failure(unsigned long pfn, int trapno, int ref)
+ {
++	unsigned long lru_flag;
+ 	struct page_state *ps;
+ 	struct page *p;
+ 	int res;
+@@ -775,6 +756,24 @@ int __memory_failure(unsigned long pfn, int trapno, int ref)
+ 	}
+ 
+ 	/*
++	 * We ignore non-LRU pages for good reasons.
++	 * - PG_locked is only well defined for LRU pages and a few others
++	 * - to avoid races with __set_page_locked()
++	 * - to avoid races with __SetPageSlab*() (and more non-atomic ops)
++	 * The check (unnecessarily) ignores LRU pages being isolated and
++	 * walked by the page reclaim code, however that's not a big loss.
++	 */
++	if (!PageLRU(p))
++		lru_add_drain_all();
++	lru_flag = p->flags & lru;
++	if (isolate_lru_page(p)) {
++		action_result(pfn, "non LRU", IGNORED);
++		put_page(p);
++		return -EBUSY;
++	}
++	page_cache_release(p);
 +
-+This patchkit implements the necessary infrastructure in the VM.
-+
-+To quote the overview comment:
-+
-+ * High level machine check handler. Handles pages reported by the
-+ * hardware as being corrupted usually due to a 2bit ECC memory or cache
-+ * failure.
-+ *
-+ * This focusses on pages detected as corrupted in the background.
-+ * When the current CPU tries to consume corruption the currently
-+ * running process can just be killed directly instead. This implies
-+ * that if the error cannot be handled for some reason it's safe to
-+ * just ignore it because no corruption has been consumed yet. Instead
-+ * when that happens another machine check will happen.
-+ *
-+ * Handles page cache pages in various states. The tricky part
-+ * here is that we can access any page asynchronous to other VM
-+ * users, because memory failures could happen anytime and anywhere,
-+ * possibly violating some of their assumptions. This is why this code
-+ * has to be extremely careful. Generally it tries to use normal locking
-+ * rules, as in get the standard locks, even if that means the
-+ * error handling takes potentially a long time.
-+ *
-+ * Some of the operations here are somewhat inefficient and have non
-+ * linear algorithmic complexity, because the data structures have not
-+ * been optimized for this case. This is in particular the case
-+ * for the mapping from a vma to a process. Since this case is expected
-+ * to be rare we hope we can get away with this.
-+
-+The code consists of a the high level handler in mm/memory-failure.c,
-+a new page poison bit and various checks in the VM to handle poisoned
-+pages.
-+
-+The main target right now is KVM guests, but it works for all kinds
-+of applications. KVM support requires a recent qemu-kvm release.
-+
-+For the KVM use there was need for a new signal type so that
-+KVM can inject the machine check into the guest with the proper
-+address. This in theory allows other applications to handle
-+memory failures too. The expection is that near all applications
-+won't do that, but some very specialized ones might.
-+
-+---
-+
-+There are two (actually three) modi memory failure recovery can be in:
-+
-+vm.memory_failure_recovery sysctl set to zero:
-+	All memory failures cause a panic. Do not attempt recovery.
-+	(on x86 this can be also affected by the tolerant level of the
-+	MCE subsystem)
-+
-+early kill
-+	(can be controlled globally and per process)
-+	Send SIGBUS to the application as soon as the error is detected
-+	This allows applications who can process memory errors in a gentle
-+	way (e.g. drop affected object)
-+	This is the mode used by KVM qemu.
-+
-+late kill
-+	Send SIGBUS when the application runs into the corrupted page.
-+	This is best for memory error unaware applications and default
-+	Note some pages are always handled as late kill.
-+
-+---
-+
-+User control:
-+
-+vm.memory_failure_recovery
-+	See sysctl.txt
-+
-+vm.memory_failure_early_kill
-+	Enable early kill mode globally
-+
-+PR_MCE_KILL
-+	Set early/late kill mode/revert to system default
-+	arg1: PR_MCE_KILL_CLEAR: Revert to system default
-+	arg1: PR_MCE_KILL_SET: arg2 defines thread specific mode
-+		PR_MCE_KILL_EARLY: Early kill
-+		PR_MCE_KILL_LATE:  Late kill
-+		PR_MCE_KILL_DEFAULT: Use system global default
-+PR_MCE_KILL_GET
-+	return current mode
-+
-+
-+---
-+
-+Testing:
-+
-+madvise(MADV_POISON, ....)
-+	(as root)
-+	Poison a page in the process for testing
-+
-+
-+hwpoison-inject module through debugfs
-+	/sys/debug/hwpoison/corrupt-pfn
-+
-+Inject hwpoison fault at PFN echoed into this file
-+
-+
-+Architecture specific MCE injector
-+
-+x86 has mce-inject, mce-test
-+
-+Some portable hwpoison test programs in mce-test, see blow.
-+
-+---
-+
-+References:
-+
-+http://halobates.de/mce-lc09-2.pdf
-+	Overview presentation from LinuxCon 09
-+
-+git://git.kernel.org/pub/scm/utils/cpu/mce/mce-test.git
-+	Test suite (hwpoison specific portable tests in tsrc)
-+
-+git://git.kernel.org/pub/scm/utils/cpu/mce/mce-inject.git
-+	x86 specific injector
-+
-+
-+---
-+
-+Limitations:
-+
-+- Not all page types are supported and never will. Most kernel internal
-+objects cannot be recovered, only LRU pages for now.
-+- Right now hugepage support is missing.
-+
-+---
-+Andi Kleen, Oct 2009
-+
++	/*
+ 	 * Lock the page and wait for writeback to finish.
+ 	 * It's very difficult to mess with pages currently under IO
+ 	 * and in many cases impossible, so we just avoid it here.
+@@ -790,7 +789,7 @@ int __memory_failure(unsigned long pfn, int trapno, int ref)
+ 	/*
+ 	 * Torn down by someone else?
+ 	 */
+-	if (PageLRU(p) && !PageSwapCache(p) && p->mapping == NULL) {
++	if ((lru_flag & lru) && !PageSwapCache(p) && p->mapping == NULL) {
+ 		action_result(pfn, "already truncated LRU", IGNORED);
+ 		res = 0;
+ 		goto out;
+@@ -798,7 +797,7 @@ int __memory_failure(unsigned long pfn, int trapno, int ref)
+ 
+ 	res = -EBUSY;
+ 	for (ps = error_states;; ps++) {
+-		if ((p->flags & ps->mask) == ps->res) {
++		if (((p->flags | lru_flag)& ps->mask) == ps->res) {
+ 			res = page_action(ps, p, pfn, ref);
+ 			break;
+ 		}
 -- 
 1.6.0.2
 
