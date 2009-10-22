@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbZJVAdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbZJVAm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753469AbZJVAdz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 20:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZJVAdz
+	id S1753500AbZJVAm0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 20:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZJVAm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 20:33:55 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:46757 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752382AbZJVAdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 20:33:54 -0400
-Subject: Re: Question about invalidate_inode_pages2_range()
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Peng Tao <lkml.bergwolf@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <6149e97b0910202108i3f66bdfesa4425ed1eab8bcb8@mail.gmail.com>
-References: <f2201a0b0910190116w29cd5e3w1ae2c76bd677f9ed@mail.gmail.com>
-	 <1255940788.14447.7.camel@heimdal.trondhjem.org>
-	 <6149e97b0910190138k5791351dmc95d9cc636aaef2f@mail.gmail.com>
-	 <1256016346.12592.15.camel@heimdal.trondhjem.org>
-	 <6149e97b0910202108i3f66bdfesa4425ed1eab8bcb8@mail.gmail.com>
+	Wed, 21 Oct 2009 20:42:26 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:54263 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753400AbZJVAmZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 20:42:25 -0400
+Subject: Re: [RFC][PATCH] Add prctl to set sibling thread names
+From: john stultz <johnstul@us.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Mike Fulton <fultonm@ca.ibm.com>,
+       Sean Foley <Sean_Foley@ca.ibm.com>, Darren Hart <dvhltc@us.ibm.com>
+In-Reply-To: <20091022002853.GP32470@one.firstfloor.org>
+References: <1256167297.4768.14.camel@localhost.localdomain>
+	 <20091022002853.GP32470@one.firstfloor.org>
 Content-Type: text/plain
-Date: Wed, 21 Oct 2009 20:33:55 -0400
-Message-Id: <1256171635.6809.6.camel@heimdal.trondhjem.org>
+Date: Wed, 21 Oct 2009 17:42:15 -0700
+Message-Id: <1256172135.4768.19.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 2 msgs/h 1 sum rcpts/h 7 sum msgs/h 2 total rcpts 1726 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 6A94EA80813D53F6CE23CF6E4B7976EFC99EB8A0
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 317 max/h 6 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-21 at 12:08 +0800, Peng Tao wrote:
-> On Tue, Oct 20, 2009 at 1:25 PM, Trond Myklebust
-> <trond.myklebust@fys.uio.no> wrote:
-> > On Mon, 2009-10-19 at 16:38 +0800, Peng Tao wrote:
-> >> 2. Is there any interface in the mm subsystem forces discarding a page cache?
-> >
-> > You mean that also discards dirty pages? Yes. That is what
-> > truncate_inode_pages() does...
-> But truncate_inode_pages() truncates all pages beyond lstart.
-> Is there any way to discard a single page?
-> truncate_inode_page() seems to be able to do the magic. But it is not exported.
+On Thu, 2009-10-22 at 02:28 +0200, Andi Kleen wrote:
+> On Wed, Oct 21, 2009 at 04:21:37PM -0700, john stultz wrote:
+> > 
+> > Taking a very raw attempt at this, I scratched out the following simple
+> > implementation. I'd appreciate any review or suggestions for
+> > improvements. I'm not at all certain the passing of the thread pid_t
+> > through the unsigned long is valid, for instance, or if
+> > same_thread_group() is the right check to make sure we only change
+> > siblings and not tid from other processes. So any advice on better
+> > approaches would be great.
+> 
+> First though that comes to mind is that this should not be in prctl()
 
-truncate_inode_pages_range() is your friend...
+So it deserves a new syscall? Any other thoughts?
 
-Cheers
-  Trond
+thanks
+-john
 
