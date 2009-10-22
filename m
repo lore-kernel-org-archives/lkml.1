@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbZJVDGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbZJVDj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850AbZJVDGS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 23:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZJVDGR
+	id S1753485AbZJVDj0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 23:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZJVDj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 23:06:17 -0400
-Received: from blu0-omc1-s34.blu0.hotmail.com ([65.55.116.45]:19114 "EHLO
-	blu0-omc1-s34.blu0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753079AbZJVDGQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 23:06:16 -0400
-X-Originating-IP: [133.11.82.45]
-X-Originating-Email: [kat841@hotmail.com]
-Message-ID: <BLU0-SMTP3323A290887176D9229ECE8CBE0@phx.gbl>
-Date: Thu, 22 Oct 2009 12:06:16 +0900
-From: Katsuhiko Nishimra <kat841@hotmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Wed, 21 Oct 2009 23:39:26 -0400
+Received: from ozlabs.org ([203.10.76.45]:36584 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750894AbZJVDjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Oct 2009 23:39:25 -0400
+From: Michael Neuling <mikey@neuling.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, michael@ellerman.id.au
+X-GPG-Fingerprint: 9B25 DC2A C58D 2C8D 47C2  457E 0887 E86F 32E6 BE16
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: 2.6.31.4: WARNING: at drivers/usb/serial/usb-serial.c:446 serial_unthrottle
-References: <4AD71FA3.8080801@wpkg.org> <20091015160501.36a31973@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091015160501.36a31973@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Oct 2009 03:06:20.0801 (UTC) FILETIME=[A1609710:01CA52C4]
+Subject: [PATCH] trivial: Fix typo in comment for #endif
+X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 22.2.1
+Date: Thu, 22 Oct 2009 14:39:28 +1100
+Message-ID: <18191.1256182768@neuling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Thu, 15 Oct 2009 15:12:03 +0200
-> Tomasz Chmielewski <mangoo@wpkg.org> wrote:
-> 
->> I see my minicom segfaulted for some reason (probably as I closed konsole window without exiting minicom first).
->>
->> And I see this warning in dmesg - anything useful?
-> 
-> Looks like a very very old bug in the tty code. I have a patch for this I'm
-> testing for a while and will sort out properly after the kernel summit. In
-> the mean time have a play with the patch below which ought to do the trick.
-> 
+The comment suggests this #endif is CONFIG_X86 but it's really
+CONFIG_TRACE_IRQFLAGS_SUPPORT
 
-Unfortunately, I reproduced this error after applying this patch into
-v2.6.32-rc5. Kerneloops url for the bug is below.
-http://www.kerneloops.org/submitresult.php?number=827635
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-This bug occured when I close minicom normally with C-A X.
-
-Thx.
+diff --git a/include/linux/irqflags.h b/include/linux/irqflags.h
+index b02a3f1..006bf45 100644
+--- a/include/linux/irqflags.h
++++ b/include/linux/irqflags.h
+@@ -124,6 +124,6 @@
+ 	typecheck(unsigned long, flags);	\
+ 	raw_irqs_disabled_flags(flags);		\
+ })
+-#endif		/* CONFIG_X86 */
++#endif /* CONFIG_TRACE_IRQFLAGS_SUPPORT */
+ 
+ #endif
