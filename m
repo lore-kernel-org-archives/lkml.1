@@ -1,61 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbZJVVoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbZJVVrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756851AbZJVVoh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 17:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755956AbZJVVog
+	id S1756861AbZJVVrU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 17:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756278AbZJVVrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 17:44:36 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:54681 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755906AbZJVVog (ORCPT
+	Thu, 22 Oct 2009 17:47:20 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:41291 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752995AbZJVVrT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 17:44:36 -0400
-Date: Thu, 22 Oct 2009 23:44:39 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Vlad Yasevich <vladislav.yasevich@hp.com>
-Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [Patch] sctp: remove deprecated SCTP_GET_*_OLD stuffs
-Message-ID: <20091022214439.GA2635@merkur.ravnborg.org>
-References: <20091015082849.4605.48311.sendpatchset@localhost.localdomain> <4AE0C64A.9080400@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE0C64A.9080400@hp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 22 Oct 2009 17:47:19 -0400
+Date: Thu, 22 Oct 2009 14:45:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: greg@kroah.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       rientjes@google.com
+Subject: Re: [PATCH 0/7] Documentation: document /sys/devices/system/cpu/
+Message-Id: <20091022144530.d105c87f.randy.dunlap@oracle.com>
+In-Reply-To: <20091022033506.13399.90799.stgit@bob.kio>
+References: <20091022033506.13399.90799.stgit@bob.kio>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4AE0D2BE.0034:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 04:53:30PM -0400, Vlad Yasevich wrote:
-> > diff --git a/include/net/sctp/user.h b/include/net/sctp/user.h
-> > index be2334a..0991f1b 100644
-> > --- a/include/net/sctp/user.h
-> > +++ b/include/net/sctp/user.h
-> > @@ -131,14 +131,6 @@ enum sctp_optname {
-> >  #define SCTP_SOCKOPT_BINDX_REM	SCTP_SOCKOPT_BINDX_REM
-> >  	SCTP_SOCKOPT_PEELOFF, 	/* peel off association. */
-> >  #define SCTP_SOCKOPT_PEELOFF	SCTP_SOCKOPT_PEELOFF
-> > -	SCTP_GET_PEER_ADDRS_NUM_OLD, 	/* Get number of peer addresss. */
-> > -#define SCTP_GET_PEER_ADDRS_NUM_OLD	SCTP_GET_PEER_ADDRS_NUM_OLD
-> > -	SCTP_GET_PEER_ADDRS_OLD, 	/* Get all peer addresss. */
-> > -#define SCTP_GET_PEER_ADDRS_OLD	SCTP_GET_PEER_ADDRS_OLD
-> > -	SCTP_GET_LOCAL_ADDRS_NUM_OLD, 	/* Get number of local addresss. */
-> > -#define SCTP_GET_LOCAL_ADDRS_NUM_OLD	SCTP_GET_LOCAL_ADDRS_NUM_OLD
-> > -	SCTP_GET_LOCAL_ADDRS_OLD, 	/* Get all local addresss. */
-> > -#define SCTP_GET_LOCAL_ADDRS_OLD	SCTP_GET_LOCAL_ADDRS_OLD
-> >  	SCTP_SOCKOPT_CONNECTX_OLD, /* CONNECTX old requests. */
-> 
-> After running the regression suite against this patch I find that we can't
-> remove the enum values.  Removing the enums changes the value for the remainder
-> of the definitions and breaks binary compatibility for applications that use
-> those trailing options.
-> 
-> You should be ok with removing the #defines and actual code that uses them,
-> but not the enums.  You can even rename the enums, but we must preserve
-> numeric ordering.
+On Wed, 21 Oct 2009 21:45:10 -0600 Alex Chiang wrote:
 
-If we really depend on the actual value of an enum as in this case,
-then e should assign them direct to better document this.
+> Hi Greg, Randy,
+> 
+> Not sure who actually maintains Documentation/ABI/; if it's not either of
+> y'all then please point me at the correct maintainer.
+> 
+> Anyhow, I was proposing some patches to enhance the NUMA sysfs interface:
+> 
+> 	http://thread.gmane.org/gmane.linux.kernel.mm/40084/
 
-	Sam
+Greg does, but he's in Japan or traveling this week...
+
+
+> I documented my changes, but David Rientjes suggested that I take this
+> as an opportunity to do a more thorough job, so here is an attempt at
+> doing so by documenting at least the files that I saw on my system. Maybe
+> there are more that I didn't configure in, but I think this series covers
+> a good amount.
+
+Thanks for doing this.
+
+> One thing David suggested was following the sysfs hierarchy a bit more
+> strictly wrt to the file name in Documentation/ABI. I renamed one existing
+> file, and then stuck all the new stuff into the result.
+> 
+> I made the decision to keep the granularity at the top level sysfs
+> CPU interface rather than break out each subdirectory into a separate
+> file. If that's not ok or preferred, let me know and I can split it out
+> (but I hope to avoid having to do that).
+> 
+> I split out each group of files into a separate patch, with my best
+> guess at interested parties cc'ed. That way, they can each bike-shed
+> me individually. ;)
+> 
+> Thanks,
+> /ac
+> 
+> ---
+> 
+> Alex Chiang (7):
+>       Documentation: ABI: rename sysfs-devices-cache_disable properly
+>       Documentation: ABI: document /sys/devices/system/cpu/
+>       Documentation: ABI: /sys/devices/system/cpu/ topology files
+>       Documentation: ABI: /sys/devices/system/cpu/cpu#/ topology files
+>       Documentation: ABI: /sys/devices/system/cpu/sched_[mc|smt]_power_savings
+>       Documentation: ABI: /sys/devices/system/cpu/cpuidle/
+>       Documentation: ABI: /sys/devices/system/cpu/cpu#/cpufreq/
+> 
+> 
+>  .../ABI/testing/sysfs-devices-cache_disable        |   18 --
+>  Documentation/ABI/testing/sysfs-devices-system-cpu |  159 ++++++++++++++++++++
+>  Documentation/cputopology.txt                      |   47 ++++--
+>  3 files changed, 189 insertions(+), 35 deletions(-)
+>  delete mode 100644 Documentation/ABI/testing/sysfs-devices-cache_disable
+>  create mode 100644 Documentation/ABI/testing/sysfs-devices-system-cpu
+
+
+---
+~Randy
