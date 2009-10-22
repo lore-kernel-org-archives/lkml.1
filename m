@@ -1,39 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbZJVW40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbZJVXAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755391AbZJVW40 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 18:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbZJVW4Y
+	id S1755602AbZJVXAU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 19:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZJVXAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 18:56:24 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56311 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755310AbZJVW4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 18:56:23 -0400
-Date: Thu, 22 Oct 2009 15:56:07 -0700
-From: Greg KH <gregkh@suse.de>
-To: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: Hank Janssen <hjanssen@microsoft.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Staging: hv: Fix null pointer error after vmbus loading
-Message-ID: <20091022225607.GB11244@suse.de>
-References: <1FB5E1D5CA062146B38059374562DF72180B3E1E@TK5EX14MBXC126.redmond.corp.microsoft.com>
+	Thu, 22 Oct 2009 19:00:19 -0400
+Received: from bld-mail12.adl6.internode.on.net ([150.101.137.97]:52998 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755423AbZJVXAT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 19:00:19 -0400
+Date: Fri, 23 Oct 2009 10:00:10 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: 2.6.31+2.6.31.4: XFS - All I/O locks up to D-state after 24-48
+	hours (sysrq-t+w available)
+Message-ID: <20091022230010.GE9464@discord.disaster>
+References: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan> <alpine.DEB.2.00.0910181607040.27363@p34.internal.lan> <20091019030456.GS9464@discord.disaster> <alpine.DEB.2.00.0910190431180.23395@p34.internal.lan> <20091020003358.GW9464@discord.disaster> <alpine.DEB.2.00.0910200431290.21878@p34.internal.lan> <alpine.DEB.2.00.0910210618210.10288@p34.internal.lan> <alpine.DEB.2.00.0910221849001.24576@p34.internal.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1FB5E1D5CA062146B38059374562DF72180B3E1E@TK5EX14MBXC126.redmond.corp.microsoft.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <alpine.DEB.2.00.0910221849001.24576@p34.internal.lan>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 04:14:31PM +0000, Haiyang Zhang wrote:
-> From: Haiyang Zhang <haiyangz@microsoft.com>
-> 
-> Fix null pointer error after vmbus loading.
+On Thu, Oct 22, 2009 at 06:49:46PM -0400, Justin Piszcz wrote:
+> On Wed, 21 Oct 2009, Justin Piszcz wrote:
+>> On Tue, 20 Oct 2009, Justin Piszcz wrote:
+>>>> It appears that both the xfslogd and the xfsdatad on CPU 0 are in
+>>>> the running state but don't appear to be consuming any significant
+>>>> CPU time. If they remain like this then I think that means they are
+>>>> stuck waiting on the run queue.  Do these XFS threads always appear
+>>>> like this when the hang occurs? If so, is there something else that
+>>>> is hogging CPU 0 preventing these threads from getting the CPU?
+>>> Yes, the XFS threads show up like this on each time the kernel 
+>>> crashed.  So far
+>>> with 2.6.30.9 after ~48hrs+ it has not crashed.  So it appears to be 
+>>> some issue
+>>> between 2.6.30.9 and 2.6.31.x when this began happening.  Any  
+>>> recommendations
+>>> on how to catch this bug w/certain options enabled/etc?
+>>
+>> Uptime with 2.6.30.9:
+>>
+>> 06:18:41 up 2 days, 14:10, 14 users,  load average: 0.41, 0.21, 0.07
+>>
+>> No issues yet, so it first started happening in 2.6.(31).(x).
 
-I'm not going to accept this patch, please see my previous email as to
-why you should not be checking the name at all.
+Ok.
 
-thanks,
+>> Any further recommendations on how to debug this issue?  BTW: Do
+>> you view this as an XFS bug or MD/VFS layer issue based on the
+>> logs/output thus far?
 
-greg k-h
+Could be either. Nothing so far points at a cause.
+
+> Any other ideas?
+
+If it is relatively quick to reproduce, you could run a git bisect
+to try to find the offending commit. Or when it has locked up, run
+oprofile with callgraph sampling and so we can get an idea of what
+is actually running when XFS appears to hang.
+
+> Currently stuck on 2.6.30.9.. (no issues, no lockups)-- Box normally has  
+> no load at all either.. Has anyone else reported similar problems?
+
+Not that I know of.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
