@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbZJVKcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbZJVKLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754486AbZJVKcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 06:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbZJVKcT
+	id S1753183AbZJVKLL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 06:11:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbZJVKLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 06:32:19 -0400
-Received: from mga09.intel.com ([134.134.136.24]:20563 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752494AbZJVKcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 06:32:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,604,1249282800"; 
-   d="scan'208";a="460169356"
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
- available
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Thomas Schlichter <thomas.schlichter@web.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Jan Beulich <JBeulich@novell.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Robert Hancock <hancockrwd@gmail.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Tejun Heo <tj@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       Ingo Molnar <mingo@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <200910212201.36578.thomas.schlichter@web.de>
-References: <1394846127@web.de>
-	 <4ADF32A0020000780001B20A@vpn.id2.novell.com>
-	 <20091021173514.GA32227@elte.hu>
-	 <200910212201.36578.thomas.schlichter@web.de>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 22 Oct 2009 02:53:29 -0700
-Message-Id: <1256205210.2530.28.camel@sbs-t61>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Oct 2009 06:11:10 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:35953 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbZJVKLI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 06:11:08 -0400
+Date: Thu, 22 Oct 2009 12:11:03 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Constantin Baranov <const@mimas.ru>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH] leds-alix2: add support for button connected to J15
+Message-ID: <20091022101103.GR14091@buzzloop.caiaq.de>
+References: <20091018072738.GF3935@core.coreip.homeip.net>
+ <20091019073728.GC28832@buzzloop.caiaq.de>
+ <20091020013852.GC24370@core.coreip.homeip.net>
+ <20091020101357.GR28832@buzzloop.caiaq.de>
+ <20091021043553.GA378@core.coreip.homeip.net>
+ <20091021193347.GL14091@buzzloop.caiaq.de>
+ <20091022012121.5b35ff22.const@mimas.ru>
+ <20091021204158.GN14091@buzzloop.caiaq.de>
+ <20091022023928.2a8afea8.const@mimas.ru>
+ <20091022030909.742b3ba1.const@mimas.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091022030909.742b3ba1.const@mimas.ru>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-21 at 13:01 -0700, Thomas Schlichter wrote:
-> OK, so I think the attached patches should do it. Hopefully I have addressed 
-> all your comments.
+On Thu, Oct 22, 2009 at 03:09:09AM +0500, Constantin Baranov wrote:
+> On Thu, 22 Oct 2009 02:39:28 +0500 Constantin Baranov <const@mimas.ru> wrote:
+> > On Wed, 21 Oct 2009 22:41:58 +0200 Daniel Mack <daniel@caiaq.de> wrote:
+> > > On Thu, Oct 22, 2009 at 01:21:21AM +0500, Constantin Baranov wrote:
+> > > > I wonder why do you integrate the input driver into the leds driver. They
+> > > > should be separated. Or at least the complex driver should be moved to the
+> > > > "X86 Platform Specific Device Drivers" and renamed to some like "PC Engines
+> > > > ALIX Extras". I personally would prefer the separation way.
+> > > 
+> > > I would as well, yes. And I was of course considerating this when I
+> > > hacked these lines. However, the major part of the LED driver and what
+> > > it currently shares with the button implementation is the BIOS detection
+> > > code which is so ugly that I didn't want to duplicate it ;) That would,
+> > > however, be the only option if you wanted to split the drivers up. Or
+> > > do you have any better idea?
+> > 
+> > We may introduce new ALIX2 extended platform (module in arch/x86/kernel).
+> > In the init function it shall perform detection. The module shall export
+> > the is_alix2() function which shall be called from init functions of drivers.
+> > Also the cs5535_gpio driver could be reused for gpio access (the previous
+> > patch for leds-alix2 is copy&paste from cs5535_gpio).
+> 
+> Moreover, the cs5535_gpio driver itself could be reworked and ported to
+> the gpiolib. This goes far from initial task (button support) indeed :)
 
-Thomas,
+Indeed, agreed to all points, that would be the sane way to do it.
+However, I won't have time to care for that soon. So the best thing to
+do for now is drop the patch and leave it in the mail archives. And wait
+untils eventually cares to do ir right :)
 
-I have couple of issues with this patchset still. pci_mmap_page_range()
-doesn't get called for each fork(). So, we won't be ref counting the
-mtrr usage properly.
-
-I need to think a bit more carefully on this. Can I get back to you
-early next week on this, as I am traveling and need to think through
-this?
-
-We already keep track of some of the PAT ref counting using
-track_pfn_vma_copy(). And we need to extend/use something similar here.
-
-Even if we need to extend sysfs or pci vma ops, we need to increment and
-decrement the ref count of the mtrr register that gets used. There is no
-need to go through num_var_ranges etc.
-
-thanks,
-suresh
-
+Daniel
