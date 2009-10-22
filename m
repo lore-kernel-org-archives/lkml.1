@@ -1,86 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZJVVDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbZJVUDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbZJVVDZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 17:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZJVVDY
+	id S1756129AbZJVUDi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 16:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbZJVUDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 17:03:24 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:46991 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753325AbZJVVDY (ORCPT
+	Thu, 22 Oct 2009 16:03:37 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:33868 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753266AbZJVUDg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 17:03:24 -0400
-X-Greylist: delayed 3611 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Oct 2009 17:03:24 EDT
-Message-id: <4AE0BA6B.50805@acm.org>
-Date: Thu, 22 Oct 2009 15:02:51 -0500
-From: Corey Minyard <minyard@acm.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
-MIME-version: 1.0
-To: Bela Lubkin <blubkin@vmware.com>
-Cc: "'Matt Domsch'" <Matt_Domsch@dell.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "discuss@LessWatts.org" <discuss@LessWatts.org>,
-       "openipmi-developer@lists.sourceforge.net" 
-	<openipmi-developer@lists.sourceforge.net>
-Subject: Re: [Openipmi-developer] [Discuss] [PATCH] ipmi: use	round_jiffies on
- timers to reduce timer overhead/wakeups
-References: <20091021102822.5b32b2dc.randy.dunlap@oracle.com>
- <20091021114210.4d7e1ea9@linux.intel.com>	<4ADF57D7.7010808@intel.com>
- <20091021130348.cd521b0c.randy.dunlap@oracle.com>	<4ADF6D76.7070409@acm.org>
- <4ADF75A2.50202@linux.intel.com>
- <20091022025013.GB20467@auslistsprd01.us.dell.com>
- <E0AA796A7E3F4C4E8F1065D15FE4786183AF6948@EXCH-MBX-4.vmware.com>
-In-reply-to: <E0AA796A7E3F4C4E8F1065D15FE4786183AF6948@EXCH-MBX-4.vmware.com>
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
+	Thu, 22 Oct 2009 16:03:36 -0400
+Date: Thu, 22 Oct 2009 16:03:41 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       <linux-media@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: uvcvideo causes ehci_hcd to halt
+In-Reply-To: <4AE080AC.4050108@pardus.org.tr>
+Message-ID: <Pine.LNX.4.44L0.0910221558510.9192-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bela Lubkin wrote:
-> Matt Domsch wrote:
->
->   
->> Though I'm really curious that HP has a KCS+interrupt controller
->> available.  That gives me hope that the industry-wide problems which
->> prevented Dell from doing likewise a couple years ago are now
->> resolved.  I'll have my team look into it again.
->>     
->
-> Can you expand on "industry-wide problems"?  (Forced to share
-> interrupts with a high rate device?  Design your gizmo to
-> support MSI/MSI-x.  Add MSI support to ipmi_si if necessary...)
->
-> As far as I can tell, HP has never shipped an interrupt-less
-> BMC.  Their current iLO2 BMC is KCS + interrupt.  Their older
-> design was SMIC + interrupt.
->
-> Why does everyone use KCS when BT is obviously better?  Can
-> you have your team look into that as well?  (Among the various
-> goals here, I assume that BT -- with a single interrupt and a
-> DMA transfer instead of shuffling bytes over I/O ports -- would
-> cost less power.  Not that the members of that list will
-> receive this message: it bounces nonmembers.)
->   
-This is an industry where pennies matter, apparently.
+On Thu, 22 Oct 2009, [UTF-8] Ozan Çağlayan wrote:
 
-My personal preference would be to use the I2C based standard 
-interface.  That actually doesn't perform too badly, it's probably 
-cheaper than KCS since you already have I2C, anyway, and the I2C 
-interfaces are generally tied to an interrupt.  The trouble is that the 
-only hardware implementation of this I know of seems to be poorly done, 
-but that mostly affects trying to use the ethernet interface and the 
-local interface at the same time.
+> Alan Stern wrote:
+> > On Thu, 22 Oct 2009, [UTF-8] Ozan Ã‡aÄŸlayan wrote:
+> >
+> >   
+> >> Here's the outputs from /sys/kernel/debug/usb/ehci:
+> >>
+> >> periodic:
+> >> ----------------
+> >> size = 1024
+> >>    1:  qh1024-0001/f6ffe280 (h2 ep2 [1/0] q0 p8)
+> >>     
+> >
+> > There's something odd about this.  I'd like to see this file again, 
+> > after the patch below has been applied.
+> >
+> >   
+> 
+> Do you want me to apply this patch altogether with the first one that
+> you sent a while ago in this thread or directly onto the vanilla kernel?
 
-Of course, the driver for I2C is not yet in the standard kernel as it 
-requires a fairly massive I2C driver rewrite to allow the IPMI driver to 
-do it's panic-time operations.
+It doesn't matter.  The "size = 1024" line in your debugging output 
+means that the first patch won't have any effect; my hunch was wrong.
 
-BT would be better for performance, I guess, but it's yet another 
-interface to tie in, and hanging this off an existing bus seems like a 
-sensible thing to do.  And performance is really not an issue for IPMI.
+However it turns out that the most recent patch wasn't quite what I
+wanted.  Here's an updated version to be used instead.
 
--corey
+Alan Stern
+
+
+
+Index: usb-2.6/drivers/usb/host/ehci-dbg.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/host/ehci-dbg.c
++++ usb-2.6/drivers/usb/host/ehci-dbg.c
+@@ -596,18 +596,22 @@ static ssize_t fill_periodic_buffer(stru
+ 							qtd->hw_token) >> 8)) {
+ 						case 0: type = "out"; continue;
+ 						case 1: type = "in"; continue;
++						case 2: type = "?2"; continue;
++						case 3: type = "?3"; continue;
+ 						}
+ 					}
+ 
+ 					temp = scnprintf (next, size,
+ 						" (%c%d ep%d%s "
+-						"[%d/%d] q%d p%d)",
++						"[%d/%d] q%d p%d) t%08x",
+ 						speed_char (scratch),
+ 						scratch & 0x007f,
+ 						(scratch >> 8) & 0x000f, type,
+ 						p.qh->usecs, p.qh->c_usecs,
+ 						temp,
+-						0x7ff & (scratch >> 16));
++						0x7ff & (scratch >> 16),
++						hc32_to_cpu(ehci,
++							p.qh->hw->hw_token));
+ 
+ 					if (seen_count < DBG_SCHED_LIMIT)
+ 						seen [seen_count++].qh = p.qh;
+
