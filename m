@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbZJVVtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbZJVVzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756884AbZJVVtc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 17:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZJVVtc
+	id S1756769AbZJVVzQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 17:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755956AbZJVVzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 17:49:32 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:45288 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753325AbZJVVtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 17:49:31 -0400
-Date: Thu, 22 Oct 2009 23:49:34 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 5/5] ONLY-APPLY-IF-STILL-FAILING Revert 373c0a7e,
-	8aa7e847: Fix congestion_wait() sync/async vs read/write confusion
-Message-ID: <20091022214934.GQ10727@kernel.dk>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-6-git-send-email-mel@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256221356-26049-6-git-send-email-mel@csn.ul.ie>
+	Thu, 22 Oct 2009 17:55:16 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53696 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755639AbZJVVzP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 17:55:15 -0400
+Subject: Re: [PATCH -v4 4/9] tracing: add static function tracer support
+ for MIPS
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Adam Nemet <anemet@caviumnetworks.com>
+Cc: David Daney <ddaney@caviumnetworks.com>, wuzhangjin@gmail.com,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>
+In-Reply-To: <19168.52948.22223.757259@ropi.home>
+References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
+	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
+	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
+	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
+	 <1256138686.18347.3039.camel@gandalf.stny.rr.com>
+	 <1256233679.23653.7.camel@falcon> <4AE0A5BE.8000601@caviumnetworks.com>
+	 <19168.49354.525249.654494@ropi.home>
+	 <1256244726.20866.802.camel@gandalf.stny.rr.com>
+	 <19168.52948.22223.757259@ropi.home>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 22 Oct 2009 17:55:17 -0400
+Message-Id: <1256248517.20866.806.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22 2009, Mel Gorman wrote:
-> Testing by Frans Pop indicates that in the 2.6.30..2.6.31 window at
-> least that the commits 373c0a7e 8aa7e847 dramatically increased the
-> number of GFP_ATOMIC failures that were occuring within a wireless
-> driver. It was never isolated which of the changes was the exact problem
-> and it's possible it has been fixed since. If problems are still
-> occuring with GFP_ATOMIC in 2.6.31-rc5, then this patch should be
-> applied to determine if the congestion_wait() callers are still broken.
+On Thu, 2009-10-22 at 14:29 -0700, Adam Nemet wrote:
+> Steven Rostedt writes:
+> > On Thu, 2009-10-22 at 13:30 -0700, Adam Nemet wrote:
+> > > Also note that for functions invoked via tail call you won't get an exit
+> > > event.  E.g. if bar is tail-called from foo:
+> > > 
+> > >   foo entered
+> > >   bar entered
+> > >   foo/bar exited
+> > > 
+> > > However, this is not MIPS-specific and you can always disable tail calls
+> > > with -fno-optimize-sibling-calls.
+> > 
+> > The question is, would bar have a _mcount call? So far, we have not had
+> > any issues with this on either x86 nor PPC.
+> 
+> Yes, bar will have an _mcount call.  The difference is that bar will return to
+> foo's caller directly rather than to foo first.
 
-I still think this is a complete red herring.
+I guess the best bet is to have CONFIG_FUNCTION_GRAPH enable
+-fno-optimize-sibling-calls and be done with it.
 
--- 
-Jens Axboe
+-- Steve
+
 
