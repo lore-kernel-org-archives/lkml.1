@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbZJVTRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbZJVTUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbZJVTRQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 15:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbZJVTRQ
+	id S1756679AbZJVTUB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 15:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbZJVTUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 15:17:16 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:59093 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756656AbZJVTRP (ORCPT
+	Thu, 22 Oct 2009 15:20:01 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50556 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756352AbZJVTUA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 15:17:15 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=h2lHWPnzdL3EkZ14aigXI9rXhn3+xrWMkdfIQQLR/HbfWgmWPLYt02HaSYHtstksA
-	neXfTwUqq9fqiw8NHBGDw==
-Date: Thu, 22 Oct 2009 12:17:13 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Jiri Kosina <jkosina@suse.cz>, Stephan von Krawczynski <skraw@ithnet.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Frans Pop <elendil@planet.nl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: page allocation failure message kernel 2.6.31.4 (tty-related)
-In-Reply-To: <20091022105902.GM11778@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0910221216550.21601@chino.kir.corp.google.com>
-References: <20091020153838.665bc39c.skraw@ithnet.com> <alpine.LRH.2.00.0910211848510.20992@twin.jikos.cz> <alpine.DEB.2.00.0910211409390.20010@chino.kir.corp.google.com> <20091022105902.GM11778@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 22 Oct 2009 15:20:00 -0400
+Date: Thu, 22 Oct 2009 21:19:55 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz
+Subject: Re: zaurus: cleanup sharpsl_pm.c
+Message-ID: <20091022191954.GB6611@elf.ucw.cz>
+References: <20091006200339.GA1538@ucw.cz>
+ <20091017163627.GB1423@ucw.cz>
+ <f17812d70910200859v6d18e81bs2760d8af1d8da5bf@mail.gmail.com>
+ <f17812d70910220705o9f4a0ddwa22157b59a519350@mail.gmail.com>
+ <20091022174816.GC5325@elf.ucw.cz>
+ <f17812d70910221126k50c4ea7em9d58f6e85db884ae@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f17812d70910221126k50c4ea7em9d58f6e85db884ae@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Oct 2009, Mel Gorman wrote:
-
-> From bca71e94e10cd93771ec5b17eccb817dd0c85360 Mon Sep 17 00:00:00 2001
-> From: Mel Gorman <mel@csn.ul.ie>
-> Date: Thu, 22 Oct 2009 11:55:14 +0100
-> Subject: [PATCH] page allocator: Do not allow interrupts to use ALLOC_HARDER
+On Fri 2009-10-23 02:26:55, Eric Miao wrote:
+> > Introduce separate set of battery limits for corgi. This fixes
+> > compilation, and the values probably should be subtly different, too.
 > 
-> Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
-> slightly by allowing rt_tasks that are handling an interrupt to set
-> ALLOC_HARDER. This patch brings the watermark logic more in line with
-> 2.6.30.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> [Why I'm receiving this for twice ....?]
 
-Acked-by: David Rientjes <rientjes@google.com>
+No idea. Perhaps once from maillist?
+
+> Pavel,
+> 
+> Anyway, I was thinkin maybe we need a shared table before there
+> are real requirements for different machines to have their own?
+
+Well, I'd say that the sharing leads to some very ugly code. ... so
+I'd preer it unshared.
+
+But if you would prefer, I can prepare patch without the table
+moving...?
+
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
