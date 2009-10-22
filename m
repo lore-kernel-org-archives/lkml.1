@@ -1,102 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbZJVWRH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752258AbZJVWYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932071AbZJVWRH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 18:17:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZJVWRG
+	id S1752258AbZJVWYs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 18:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZJVWYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 18:17:06 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:45448 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752805AbZJVWRF (ORCPT
+	Thu, 22 Oct 2009 18:24:47 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:9950 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751293AbZJVWYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 18:17:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=to:mail-followup-to:cc:subject:references:from:date:in-reply-to
-         :message-id:user-agent:mime-version:content-type;
-        b=h61SyMrOGBC4rTshUSUUg73Z5CaKDUI9pmZdhCsxUhGhcZlVK91mGAoAypivYKvTWQ
-         E5O0bYUhY6GzTari4FtcMA6k9woANPHo/hdAbX66jHTdkPORIZwpu+SQB39Qo8KlR03w
-         uK5jTzXJquP12ZFlZum4K8Ppf+fw+oJjUpjRo=
-To: David Daney <ddaney@caviumnetworks.com>
-Mail-Followup-To: David Daney <ddaney@caviumnetworks.com>,wuzhangjin@gmail.com,  Adam Nemet <anemet@caviumnetworks.com>, rostedt@goodmis.org,  linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,  Thomas Gleixner <tglx@linutronix.de>, Ralf Baechle <ralf@linux-mips.org>, Nicholas Mc Guire <der.herr@hofr.at>, rdsandiford@googlemail.com
-Cc: wuzhangjin@gmail.com, Adam Nemet <anemet@caviumnetworks.com>,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-Subject: Re: [PATCH -v4 4/9] tracing: add static function tracer support for MIPS
-References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
-	<2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
-	<3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
-	<ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
-	<1256138686.18347.3039.camel@gandalf.stny.rr.com>
-	<1256233679.23653.7.camel@falcon>
-	<4AE0A5BE.8000601@caviumnetworks.com>
-From: Richard Sandiford <rdsandiford@googlemail.com>
-Date: Thu, 22 Oct 2009 23:17:06 +0100
-In-Reply-To: <4AE0A5BE.8000601@caviumnetworks.com> (David Daney's message of "Thu\, 22 Oct 2009 11\:34\:38 -0700")
-Message-ID: <87y6n36plp.fsf@firetop.home>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 22 Oct 2009 18:24:44 -0400
+Message-ID: <4AE0DB98.1000101@caviumnetworks.com>
+Date: Thu, 22 Oct 2009 15:24:24 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Chris Friesen <cfriesen@nortel.com>
+CC: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>
+Subject: Re: Irq architecture for multi-core network driver.
+References: <4AE0D14B.1070307@caviumnetworks.com> <4AE0D72A.4090607@nortel.com>
+In-Reply-To: <4AE0D72A.4090607@nortel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Oct 2009 22:24:24.0781 (UTC) FILETIME=[690E87D0:01CA5366]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Daney <ddaney@caviumnetworks.com> writes:
-> Wu Zhangjin wrote:
->> On Wed, 2009-10-21 at 11:24 -0400, Steven Rostedt wrote:
-> [...]
->>>> +
->>>> +NESTED(_mcount, PT_SIZE, ra)
->>>> +	RESTORE_SP_FOR_32BIT
->>>> +	PTR_LA	t0, ftrace_stub
->>>> +	PTR_L	t1, ftrace_trace_function /* please don't use t1 later, safe? */
->>> Is t0 and t1 safe for mcount to use? Remember, mcount does not follow
->>> the dynamics of C function ABI.
->> 
->> So, perhaps we can use the saved registers(a0,a1...) instead.
->> 
->
-> a0..a7 may not always be saved.
->
-> You can use at, v0, v1 and all the temporary registers.  Note that for 
-> the 64-bit ABIs sometimes the names t0-t4 shadow a4-a7.  So for a 64-bit 
-> kernel, you can use: $1, $2, $3, $12, $13, $14, $15, $24, $25, noting 
-> that at == $1 and contains the callers ra.  For a 32-bit kernel you can 
-> add $8, $9, $10, and $11
->
-> This whole thing seems a little fragile.
->
-> I think it might be a good idea to get input from Richard Sandiford, 
-> and/or Adam Nemet about this approach (so I add them to the CC).
->
-> This e-mail thread starts here:
->
-> http://www.linux-mips.org/archives/linux-mips/2009-10/msg00286.html
->
-> and here:
->
-> http://www.linux-mips.org/archives/linux-mips/2009-10/msg00290.html
+Chris Friesen wrote:
+> On 10/22/2009 03:40 PM, David Daney wrote:
+> 
+>> The main problem I have encountered is how to fit the interrupt
+>> management into the kernel framework.  Currently the interrupt source
+>> is connected to a single irq number.  I request_irq, and then manage
+>> the masking and unmasking on a per cpu basis by directly manipulating
+>> the interrupt controller's affinity/routing registers.  This goes
+>> behind the back of all the kernel's standard interrupt management
+>> routines.  I am looking for a better approach.
+>>
+>> One thing that comes to mind is that I could assign a different
+>> interrupt number per cpu to the interrupt signal.  So instead of
+>> having one irq I would have 32 of them.  The driver would then do
+>> request_irq for all 32 irqs, and could call enable_irq and disable_irq
+>> to enable and disable them.  The problem with this is that there isn't
+>> really a single packets-ready signal, but instead 16 of them.  So If I
+>> go this route I would have 16(lines) x 32(cpus) = 512 interrupt
+>> numbers just for the networking hardware, which seems a bit excessive.
+> 
+> Does your hardware do flow-based queues?  In this model you have
+> multiple rx queues and the hardware hashes incoming packets to a single
+> queue based on the addresses, ports, etc. This ensures that all the
+> packets of a single connection always get processed in the order they
+> arrived at the net device.
+> 
 
-I'm not sure that the "search for a save of RA" thing is really a good idea.
-The last version of that seemed to be "assume that any register stores
-will be in a block that immediately precedes the move into RA", but even
-if that's true now, it might not be in future.  And as Wu Zhangjin says,
-it doesn't cope with long calls, where the target address is loaded
-into a temporary register before the call.
+Indeed, this is exactly what we have.
 
-FWIW, I'd certainly be happy to make GCC pass an additional parameter
-to _mcount.  The parameter could give the address of the return slot,
-or null for leaf functions.  In almost all cases[*], there would be
-no overhead, since the move would go in the delay slot of the call.
 
-[*] Meaning when the frame is <=32k. ;)  I'm guessing you never
-    get anywhere near that, and if you did, the scan thing wouldn't
-    work anyway.
+> Typically in this model you have as many interrupts as queues
+> (presumably 16 in your case).  Each queue is assigned an interrupt and
+> that interrupt is affined to a single core.
 
-The new behaviour could be controlled by a command-line option,
-which would also give linux a cheap way of checking whether the
-feature is available.
+Certainly this is one mode of operation that should be supported, but I 
+would also like to be able to go for raw throughput and have as many 
+cores as possible reading from a single queue (like I currently have).
 
-Richard
+> 
+> The intel igb driver is an example of one that uses this sort of design.
+> 
+
+Thanks, I will look at that driver.
+
+David Daney
