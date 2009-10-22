@@ -1,92 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbZJVJWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbZJVJeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754609AbZJVJWz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 05:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbZJVJWy
+	id S1754777AbZJVJeK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 05:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbZJVJeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 05:22:54 -0400
-Received: from icculus.org ([67.106.77.212]:33102 "EHLO icculus.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754050AbZJVJWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 05:22:53 -0400
-Date: Thu, 22 Oct 2009 05:22:41 -0400 (EDT)
-From: "Ryan C. Gordon" <icculus@icculus.org>
-X-X-Sender: icculus@andre.icculuslan
-To: Nicholas Miell <nmiell@comcast.net>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 1/2] binfmt_elf: FatELF support in the binary
- loader.
-In-Reply-To: <1256196672.15558.1.camel@entropy>
-Message-ID: <alpine.DEB.2.00.0910220442460.10075@andre.icculuslan>
-References: <alpine.DEB.2.00.0910190418500.13303@andre.icculuslan> <1256196672.15558.1.camel@entropy>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 22 Oct 2009 05:34:10 -0400
+Received: from aa002msb.fastweb.it ([85.18.95.81]:51275 "EHLO
+	aa002msb.fastweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752318AbZJVJeJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 05:34:09 -0400
+Message-ID: <4AE026EE.9040909@evidence.eu.com>
+Date: Thu, 22 Oct 2009 11:33:34 +0200
+From: Claudio Scordino <claudio@evidence.eu.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Soumya K S <ssks.mt@gmail.com>
+CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] DRTL kernel 2.6.32-rc3 : SCHED_EDF, DI RT-Mutex, Deadline
+    Based Interrupt Handlers
+References: <e932a33e0910210833j1fab6129m23b55101c5978c4a@mail.gmail.com> <e932a33e0910210838j3be9286bo3953c4cae3f0e12e@mail.gmail.com>
+In-Reply-To: <e932a33e0910210838j3be9286bo3953c4cae3f0e12e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Soumya K S ha scritto:
+> Hello All,
+> 
+> We would like to present a patch on Deployment specific Real-Time
+> Linux, topic discussed in LinuxCon 2009
+> <http://events.linuxfoundation.org/lc09d17>
+> 
+> The developed framework allows user to specify the real-time
+> strategies for a specific real-time scenario. User specifies
+> configurations like scheduling policy, Deadline-miss Fault-tolerance
+> limit, interrupt priorities, etc. Real-time applications use onetime
+> gateway to notify kernel that they require real-time response. All
+> applications use existing POSIX APIs. DRTL scheduler is time-aware and
+> uses EDF as the scheduling policy.
+> 
+> The patch consists of Time aware scheduler having SCHED_EDF as the
+> scheduling policy, Deadline based scheduling for Interrupt handlers,
+> Deadline Inheritance support for RT-Mutexes.
+> 
+> The patch is for the kernel version 2.6.32-rc3. It has been tested on
+> OMAP3530, ATMEL AT91SAM9261 and X86 platforms.
+> 
+> We look forward for support and feedback about
+> DRTL <http://docs.google.com/fileview?id=0BzLQtQ1qAO7uYjYyN2QwNGUtYWE2YS00MDc1LWExYWUtZTliNjNjNmZiZTZj&hl=en>
+> and the patch for its feasibility, scalability and performance.
+> 
+> Many Thanks,
+> Soumya KS
+> Shubhro Sinha
 
-> Apple's fat binaries have the virtue of allowing redundant identical
-> sections to be merged among the different included binaries, but your
-> format can't do that.
+Hi,
 
-Neither can Apple's. They employ a method similar to FatELF: a list of 
-offsets and sizes of self-contained Mach-O binaries within a container 
-file. Apple's previous attempt, for 68k+PowerPC binaries on the classic 
-Mac OS, stored one architecture in the data fork and one in the resource 
-fork, so they definitely couldn't overlap.
+    FYI, a patch to add EDF scheduling to Linux has been already 
+proposed in September (see http://lkml.org/lkml/2009/9/22/186), 
+discussed on mailing list and presented with a talk at the last 
+Real-Time Linux Workshop (RTLWS - 
+http://www.osadl.org/Dresden-2009.rtlws11-dresden-2009.0.html).
 
-At the high level, ease of use and flexibility are primary values in 
-keeping the ELF objects separate. You can easily glue arbitrary ELF 
-binaries together from a simple command line tool without having to 
-rewrite the actual ELF content in any of them. Also, it makes the changes 
-needed to support FatELF extremely minimal: parse a simple array of 
-records, adjust the file offset, and then use the heavily-tested and 
-well-maintained ELF code that's been in the kernel for over a decade. This 
-email is probably longer than the FatELF kernel patch.  :)
+The patch was initially called "SCHED_EDF". Then, on suggestion of 
+Peter, the name has been changed to "SCHED_DEADLINE" and the code moved 
+to a public git repository 
+(http://gitorious.org/sched_deadline/sched-deadline).
 
-At the more technical level: there probably isn't much you could actually 
-share between ELF binaries for any non-trivial program, and even if you 
-could, I'm not sure the sharp increase complexity is worth it for the 
-small space gains.
+Recently, the patch has been re-submitted to LKML (see 
+http://lkml.org/lkml/2009/10/16/161) with many issues fixed. Among them: 
+a new behavior of fork(), a new syscall for periodic tasks, flags to 
+signal deadline misses and budget overruns. All these changes come from 
+the comments and the feedback got on mailing list and at the workshop.
 
-> Could you explain how your FatELF format is an improvement over multiple
-> ELF binaries and a simple shell script that selects between them?
+At a first glance, your patch extends sched_param (which may lead to 
+compatibility problems with old code), it does not support SMP 
+platforms, and it changes the sched_rt code instead of adding a new 
+scheduling class.
 
-I'll preface my answer with a note: I am an _idiot_ at shell scripting. 
-Here're two examples that prove it.
+For the reasons above, I think that we should stick with SCHED_DEADLINE, 
+eventually integrating some parts of your code into that project.
 
-- I once shipped a game that used pushd in its shell script to choose the 
-correct binary's folder. Anyone that's running Ubuntu can tell you that 
-this fails when /bin/sh ceases to point to bash. That game now fails to 
-start up. Human error, but still avoidable had there been a better 
-solution.
+Best regards,
 
-- Many years ago, I shipped a game that ran on i686 and PowerPC Linux. I 
-could not have predicted that one day people would be running x86_64 
-systems that would be able to run the i686 version, so doing something 
-like: exec $(uname -m)/mygame would fail, and there's really no good way 
-to future-proof that sort of thing. As that game now fails to start on 
-x86_64 systems, it would have been better to just ship for i686 and not 
-try to select a CPU arch.
+              Claudio
 
-There are places where this sort of mentality is suboptimal anyhow: I 
-consider the symlinks to /lib64 and /lib32 that you see on various distros 
-to be a version of the shell script tactic. It works, but it's not 
-really the cleanest approach.
-
-I can also envision places where shell scripts aren't useful: web browser 
-plugins, scripting language bindings, and other places where we want to 
-load a shared library into a process that runs the risk of being 64-bit 
-when the other thing is 32-bit. Were the shared library a FatELF that had 
-both architectures, it would work without concern.
-
-All of these things could have a million incompatible, one-off solutions: 
-shell scripts and symlinks and a million human errors. Doing it simply and 
-cleanly in one central place makes sense. I prefer that over loading an 
-entire scripting language interpreter just to load the correct ELF file, 
-and praying nothing ever changes to jeopardize the delicate balance.
-
---ryan.
 
