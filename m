@@ -1,147 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbZJVVXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbZJVVbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbZJVVXm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 17:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756888AbZJVVXk
+	id S1755820AbZJVVbR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 17:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbZJVVbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 17:23:40 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:38015 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756865AbZJVVXc (ORCPT
+	Thu, 22 Oct 2009 17:31:17 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:8461 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752731AbZJVVbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 17:23:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=MMK1mr17yMlZxGe4mPL3JnN9M6HIxiQ+raYJTxvJcvIFxSZRhgnpxCiLGRnhaibUXJ
-         dPEAqqpyLV2FYZyjlcfkHpnyp4L+iM7yPjwjBhyTYjgc8nbamiCLkP3UVj5EqkkkaGdm
-         nR0Xx659tKjadb8hOvV8xVB2e390UrjCBm6g8=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Anton Blanchard <anton@samba.org>
-Subject: [PATCH 3/3] perf tools: Drop asm/tytes.h wrapper
-Date: Thu, 22 Oct 2009 23:23:24 +0200
-Message-Id: <1256246604-17156-3-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1256246604-17156-1-git-send-email-fweisbec@gmail.com>
-References: <1256246604-17156-1-git-send-email-fweisbec@gmail.com>
+	Thu, 22 Oct 2009 17:31:16 -0400
+From: Adam Nemet <anemet@caviumnetworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19168.52948.22223.757259@ropi.home>
+Date: Thu, 22 Oct 2009 14:29:56 -0700
+To: rostedt@goodmis.org
+Cc: David Daney <ddaney@caviumnetworks.com>, wuzhangjin@gmail.com,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>
+Subject: Re: [PATCH -v4 4/9] tracing: add static function tracer support
+ for MIPS
+In-Reply-To: <1256244726.20866.802.camel@gandalf.stny.rr.com>
+References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
+	<2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
+	<3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
+	<ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
+	<1256138686.18347.3039.camel@gandalf.stny.rr.com>
+	<1256233679.23653.7.camel@falcon>
+	<4AE0A5BE.8000601@caviumnetworks.com>
+	<19168.49354.525249.654494@ropi.home>
+	<1256244726.20866.802.camel@gandalf.stny.rr.com>
+X-Mailer: VM 8.0.9 under Emacs 23.0.93.1 (x86_64-pc-linux-gnu)
+X-OriginalArrivalTime: 22 Oct 2009 21:29:56.0713 (UTC) FILETIME=[CD22ED90:01CA535E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wrapping the kernel headers is dangerous when it comes to arch headers.
-Once we wrap asm/tytes.h, it will also replace the glibc asm/tytes.h,
-not only the kernel one.
+Steven Rostedt writes:
+> On Thu, 2009-10-22 at 13:30 -0700, Adam Nemet wrote:
+> > Also note that for functions invoked via tail call you won't get an exit
+> > event.  E.g. if bar is tail-called from foo:
+> > 
+> >   foo entered
+> >   bar entered
+> >   foo/bar exited
+> > 
+> > However, this is not MIPS-specific and you can always disable tail calls
+> > with -fno-optimize-sibling-calls.
+> 
+> The question is, would bar have a _mcount call? So far, we have not had
+> any issues with this on either x86 nor PPC.
 
-This results in build errors on some machines.
+Yes, bar will have an _mcount call.  The difference is that bar will return to
+foo's caller directly rather than to foo first.
 
-Drop this wrapper and do its work from linux/types.h wrapper, also
-the glibc asm/types.h can already handle most of the type definition
-it was doing (typedef __u64, __u32, etc...).
-
-Todo: Check the others asm/*.h wrappers to prevent from other
-conflicts.
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anton Blanchard <anton@samba.org>
----
- tools/perf/Makefile                     |    1 -
- tools/perf/util/include/asm/bitops.h    |   12 ++++++++++++
- tools/perf/util/include/asm/byteorder.h |    2 +-
- tools/perf/util/include/asm/types.h     |   17 -----------------
- tools/perf/util/include/linux/types.h   |    2 ++
- 5 files changed, 15 insertions(+), 19 deletions(-)
- delete mode 100644 tools/perf/util/include/asm/types.h
-
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 1370a62..147e3cf 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -353,7 +353,6 @@ LIB_H += util/include/asm/bitops.h
- LIB_H += util/include/asm/byteorder.h
- LIB_H += util/include/asm/swab.h
- LIB_H += util/include/asm/system.h
--LIB_H += util/include/asm/types.h
- LIB_H += util/include/asm/uaccess.h
- LIB_H += perf.h
- LIB_H += util/event.h
-diff --git a/tools/perf/util/include/asm/bitops.h b/tools/perf/util/include/asm/bitops.h
-index fbe4d92..58e9817 100644
---- a/tools/perf/util/include/asm/bitops.h
-+++ b/tools/perf/util/include/asm/bitops.h
-@@ -1,6 +1,18 @@
-+#ifndef _PERF_ASM_BITOPS_H_
-+#define _PERF_ASM_BITOPS_H_
-+
-+#include <sys/types.h>
-+#include "../../types.h"
-+#include <linux/compiler.h>
-+
-+/* CHECKME: Not sure both always match */
-+#define BITS_PER_LONG	__WORDSIZE
-+
- #include "../../../../include/asm-generic/bitops/__fls.h"
- #include "../../../../include/asm-generic/bitops/fls.h"
- #include "../../../../include/asm-generic/bitops/fls64.h"
- #include "../../../../include/asm-generic/bitops/__ffs.h"
- #include "../../../../include/asm-generic/bitops/ffz.h"
- #include "../../../../include/asm-generic/bitops/hweight.h"
-+
-+#endif
-diff --git a/tools/perf/util/include/asm/byteorder.h b/tools/perf/util/include/asm/byteorder.h
-index 39f367c..b722abe 100644
---- a/tools/perf/util/include/asm/byteorder.h
-+++ b/tools/perf/util/include/asm/byteorder.h
-@@ -1,2 +1,2 @@
--#include "../asm/types.h"
-+#include <asm/types.h>
- #include "../../../../include/linux/swab.h"
-diff --git a/tools/perf/util/include/asm/types.h b/tools/perf/util/include/asm/types.h
-deleted file mode 100644
-index 06703c6..0000000
---- a/tools/perf/util/include/asm/types.h
-+++ /dev/null
-@@ -1,17 +0,0 @@
--#ifndef PERF_ASM_TYPES_H_
--#define PERF_ASM_TYPES_H_
--
--#include <linux/compiler.h>
--#include "../../types.h"
--#include <sys/types.h>
--
--/* CHECKME: Not sure both always match */
--#define BITS_PER_LONG	__WORDSIZE
--
--typedef u64	__u64;
--typedef u32	__u32;
--typedef u16	__u16;
--typedef u8	__u8;
--typedef s64	__s64;
--
--#endif /* PERF_ASM_TYPES_H_ */
-diff --git a/tools/perf/util/include/linux/types.h b/tools/perf/util/include/linux/types.h
-index 858a38d..196862a 100644
---- a/tools/perf/util/include/linux/types.h
-+++ b/tools/perf/util/include/linux/types.h
-@@ -1,6 +1,8 @@
- #ifndef _PERF_LINUX_TYPES_H_
- #define _PERF_LINUX_TYPES_H_
- 
-+#include <asm/types.h>
-+
- #define DECLARE_BITMAP(name,bits) \
- 	unsigned long name[BITS_TO_LONGS(bits)]
- 
--- 
-1.6.2.3
-
+Adam
