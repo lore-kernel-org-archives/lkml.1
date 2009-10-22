@@ -1,78 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbZJVMnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755700AbZJVMvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755781AbZJVMnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 08:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396AbZJVMnP
+	id S1755700AbZJVMvO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 08:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbZJVMvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 08:43:15 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:46287 "EHLO e4.ny.us.ibm.com"
+	Thu, 22 Oct 2009 08:51:13 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:53981 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755448AbZJVMlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 08:41:11 -0400
-Message-Id: <20091022124113.193125254@spinlock.in.ibm.com>
-References: <20091022123743.506956796@spinlock.in.ibm.com>
-User-Agent: quilt/0.44-1
-Date: Thu, 22 Oct 2009 18:08:00 +0530
-From: dino@in.ibm.com
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       John Stultz <johnstul@us.ibm.com>, Darren Hart <dvhltc@us.ibm.com>,
-       John Kacur <jkacur@redhat.com>
-Subject: [patch -rt 17/17] sched: Fix dynamic power-balancing crash
-Content-Disposition: inline; filename=fix_power_bal_crash.patch
+	id S1754840AbZJVMvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 08:51:12 -0400
+Date: Thu, 22 Oct 2009 13:51:20 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: David Rientjes <rientjes@google.com>, Jiri Kosina <jkosina@suse.cz>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Frans Pop <elendil@planet.nl>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: page allocation failure message kernel 2.6.31.4 (tty-related)
+Message-ID: <20091022125120.GN11778@csn.ul.ie>
+References: <20091020153838.665bc39c.skraw@ithnet.com> <alpine.LRH.2.00.0910211848510.20992@twin.jikos.cz> <alpine.DEB.2.00.0910211409390.20010@chino.kir.corp.google.com> <20091022105902.GM11778@csn.ul.ie> <84144f020910220536k61d43e95x802c2391459e4305@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <84144f020910220536k61d43e95x802c2391459e4305@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    
-    This crash:
-    
-    [ 1774.088275] divide error: 0000 [#1] SMP
-    [ 1774.100355] CPU 13
-    [ 1774.102498] Modules linked in:
-    [ 1774.105631] Pid: 30881, comm: hackbench Not tainted 2.6.31-rc8-tip-01308-g484d664-dirty #1629 X8DTN
-    [ 1774.114807] RIP: 0010:[<ffffffff81041c38>]  [<ffffffff81041c38>]
-    sched_balance_self+0x19b/0x2d4
-    
-    Triggers because update_group_power() modifies the sd tree and does
-    temporary calculations there - not considering that other CPUs
-    could observe intermediate values, such as the zero initial value.
-    
-    Calculate it in a temporary variable instead. (we need no memory
-    barrier as these are all statistical values anyway)
-    
-Got the same oops with the backport to -rt
-Signed-off-by: Dinakar Guniguntala <dino@in.ibm.com>
+On Thu, Oct 22, 2009 at 03:36:04PM +0300, Pekka Enberg wrote:
+> On Thu, Oct 22, 2009 at 1:59 PM, Mel Gorman <mel@csn.ul.ie> wrote:
+> >> There's subtleties like where rt tasks are given ALLOC_HARDER even when
+> >> in_interrupt() that are different from previous kernels and could reduce
+> >> the amount of ALLOC_HIGH and ALLOC_HARDER memory that can be allocated.
+> >>
+> >
+> > /me checks again
+> >
+> > I think you're right. Correct it with something like?
+> >
+> > ==== CUT HERE ====
+> > From bca71e94e10cd93771ec5b17eccb817dd0c85360 Mon Sep 17 00:00:00 2001
+> > From: Mel Gorman <mel@csn.ul.ie>
+> > Date: Thu, 22 Oct 2009 11:55:14 +0100
+> > Subject: [PATCH] page allocator: Do not allow interrupts to use ALLOC_HARDER
+> >
+> > Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
+> > slightly by allowing rt_tasks that are handling an interrupt to set
+> > ALLOC_HARDER. This patch brings the watermark logic more in line with
+> > 2.6.30.
+> >
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> 
+> Good catch.
+> 
+> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> Can we have some of the people that are hitting the OOM problems test
+> this patch in combination with this patch:
+> 
+> http://patchwork.kernel.org/patch/54215/
+> 
+> Mel, can you also resend these page allocator patches to Andrew? I
+> haven't seen him pick the above patch in -mm and we probably want to
+> get fixes into -stable soon because distributors seem to be basing
+> their next releases on 2.6.31...
+> 
 
-Index: linux-2.6.31.4-rt14-lb1/kernel/sched.c
-===================================================================
---- linux-2.6.31.4-rt14-lb1.orig/kernel/sched.c	2009-10-21 10:49:03.000000000 -0400
-+++ linux-2.6.31.4-rt14-lb1/kernel/sched.c	2009-10-22 01:48:41.000000000 -0400
-@@ -3864,19 +3864,22 @@
- {
- 	struct sched_domain *child = sd->child;
- 	struct sched_group *group, *sdg = sd->groups;
-+	unsigned long power;
- 
- 	if (!child) {
- 		update_cpu_power(sd, cpu);
- 		return;
- 	}
- 
--	sdg->cpu_power = 0;
-+	power = 0;
- 
- 	group = child->groups;
- 	do {
--		sdg->cpu_power += group->cpu_power;
-+		power += group->cpu_power;
- 		group = group->next;
- 	} while (group != child->groups);
-+
-+	sdg->cpu_power = power;
- }
- 
- /**
+What I'm going to do is prepare a set that assembles all the possible patches
+that fix the variety of errors and get people to retest to make sure we catch
+what is relevant, what isn't and what bugs (if any) are left. I should have
+the set ready by the end of the day.
 
---
+> > ---
+> >  mm/page_alloc.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index a3e5fed..3ecf819 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1769,7 +1769,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
+> >                 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+> >                 */
+> >                alloc_flags &= ~ALLOC_CPUSET;
+> > -       } else if (unlikely(rt_task(p)))
+> > +       } else if (unlikely(rt_task(p)) && !in_interrupt())
+> >                alloc_flags |= ALLOC_HARDER;
+> >
+> >        if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
