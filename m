@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZJVWJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbZJVWLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbZJVWJA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 18:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbZJVWI7
+	id S1756945AbZJVWLH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 18:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756909AbZJVWLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 18:08:59 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:64454 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755146AbZJVWI6 (ORCPT
+	Thu, 22 Oct 2009 18:11:07 -0400
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:54623 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756897AbZJVWLF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 18:08:58 -0400
-Message-ID: <4AE0D72A.4090607@nortel.com>
-Date: Thu, 22 Oct 2009 16:05:30 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Thu, 22 Oct 2009 18:11:05 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 67.160.239.110
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+ue1qR+L3xkP5XQyZHidth
+Subject: [PATCH 00/10] omap fixes for v2.6.32-rc5
+To: linux-arm-kernel@lists.infradead.org
+From: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 22 Oct 2009 15:11:06 -0700
+Message-ID: <20091022221013.27408.443.stgit@localhost>
+User-Agent: StGit/0.14.3.347.g594a
 MIME-Version: 1.0
-To: David Daney <ddaney@caviumnetworks.com>
-CC: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mips <linux-mips@linux-mips.org>
-Subject: Re: Irq architecture for multi-core network driver.
-References: <4AE0D14B.1070307@caviumnetworks.com>
-In-Reply-To: <4AE0D14B.1070307@caviumnetworks.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Oct 2009 22:08:32.0133 (UTC) FILETIME=[313BFB50:01CA5364]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/22/2009 03:40 PM, David Daney wrote:
+Hi all,
 
-> The main problem I have encountered is how to fit the interrupt
-> management into the kernel framework.  Currently the interrupt source
-> is connected to a single irq number.  I request_irq, and then manage
-> the masking and unmasking on a per cpu basis by directly manipulating
-> the interrupt controller's affinity/routing registers.  This goes
-> behind the back of all the kernel's standard interrupt management
-> routines.  I am looking for a better approach.
-> 
-> One thing that comes to mind is that I could assign a different
-> interrupt number per cpu to the interrupt signal.  So instead of
-> having one irq I would have 32 of them.  The driver would then do
-> request_irq for all 32 irqs, and could call enable_irq and disable_irq
-> to enable and disable them.  The problem with this is that there isn't
-> really a single packets-ready signal, but instead 16 of them.  So If I
-> go this route I would have 16(lines) x 32(cpus) = 512 interrupt
-> numbers just for the networking hardware, which seems a bit excessive.
+Here are some omap fixes for review.
 
-Does your hardware do flow-based queues?  In this model you have
-multiple rx queues and the hardware hashes incoming packets to a single
-queue based on the addresses, ports, etc. This ensures that all the
-packets of a single connection always get processed in the order they
-arrived at the net device.
+Regards,
 
-Typically in this model you have as many interrupts as queues
-(presumably 16 in your case).  Each queue is assigned an interrupt and
-that interrupt is affined to a single core.
+Tony
 
-The intel igb driver is an example of one that uses this sort of design.
+---
 
-Chris
+Hiroshi DOYU (1):
+      omap: iommu: fix wrong condition check for SUPERSECTION
 
+Janusz Krzysztofik (3):
+      omap1: Fix DSP public peripherals support for ams-delta
+      omap1: Fix redundant UARTs pin muxing that can break other hardware support
+      omap: Fix omap-keypad by restoring old keypad.h without breaking omap2 boards that use matrix_keypad
+
+Kevin Hilman (1):
+      omap3: PM: enable UART3 module wakeups
+
+Santosh Shilimkar (3):
+      omap4: Fix UART4 platform data on omap4
+      omap4: Allow omap_serial_early_init() for OMAP4430 board
+      omap: SDMA: Fix omap_stop_dma() API for channel linking
+
+Tony Lindgren (2):
+      omap2: Fix console serial port number for n8x0
+      omap: Fix detection of n8x0
+
+
+ arch/arm/configs/n8x0_defconfig              |    2 +-
+ arch/arm/mach-omap1/board-ams-delta.c        |    6 ++++++
+ arch/arm/mach-omap1/board-generic.c          |    8 ++++++++
+ arch/arm/mach-omap1/board-innovator.c        |   20 ++++++++++++++++++++
+ arch/arm/mach-omap1/board-palmte.c           |    8 ++++++++
+ arch/arm/mach-omap1/board-palmtt.c           |    8 ++++++++
+ arch/arm/mach-omap1/board-palmz71.c          |    8 ++++++++
+ arch/arm/mach-omap1/board-sx1.c              |    8 ++++++++
+ arch/arm/mach-omap1/board-voiceblue.c        |    8 ++++++++
+ arch/arm/mach-omap1/serial.c                 |   26 --------------------------
+ arch/arm/mach-omap2/Kconfig                  |   12 ++++++++++++
+ arch/arm/mach-omap2/board-3430sdp.c          |    2 +-
+ arch/arm/mach-omap2/board-4430sdp.c          |    4 ++--
+ arch/arm/mach-omap2/board-ldp.c              |    2 +-
+ arch/arm/mach-omap2/board-omap3evm.c         |    2 +-
+ arch/arm/mach-omap2/board-omap3pandora.c     |    2 +-
+ arch/arm/mach-omap2/board-rx51-peripherals.c |    2 +-
+ arch/arm/mach-omap2/board-rx51.c             |    1 -
+ arch/arm/mach-omap2/board-zoom2.c            |    2 +-
+ arch/arm/mach-omap2/io.c                     |    2 ++
+ arch/arm/mach-omap2/pm34xx.c                 |    7 ++++---
+ arch/arm/mach-omap2/serial.c                 |   10 ----------
+ arch/arm/plat-omap/dma.c                     |   18 ++++++++----------
+ arch/arm/plat-omap/include/mach/keypad.h     |    5 ++++-
+ arch/arm/plat-omap/iommu.c                   |    2 +-
+ 25 files changed, 114 insertions(+), 61 deletions(-)
+
+-- 
+Signature
