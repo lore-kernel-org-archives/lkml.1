@@ -1,86 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbZJVSdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756410AbZJVScy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbZJVSdA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 14:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbZJVSc6
+	id S1756410AbZJVScy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 14:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZJVScx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 14:32:58 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:63336 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756485AbZJVSc5 (ORCPT
+	Thu, 22 Oct 2009 14:32:53 -0400
+Received: from mail-px0-f171.google.com ([209.85.216.171]:33330 "EHLO
+	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752615AbZJVScw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 14:32:57 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlQGAHZC4EpGGN1W/2dsb2JhbACBUpo2wDiEPwSBXXs
-Date: Thu, 22 Oct 2009 14:32:42 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: sparc64 cmpxchg is not a full memory barrier anymore ?
-Message-ID: <20091022183242.GA19307@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Oct 2009 14:32:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=NTAk3grgeyRhp1U1xItPCfkVbQXGH5gI5s39ZB8sV8Mb23GwD+pnUYvHZTzreQKnRX
+         QytdAhZISBJkzjf1Iahe4cMcFgSap/sOLK+5XNPMpavp8n9Tp6c7EdPP/v67ieNzHi/G
+         7fMlsHNzvQnWibMs5s7AuaX+3uDd6h6ITLY7w=
+Date: Thu, 22 Oct 2009 11:32:50 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: =?iso-8859-1?Q?=C9ric?= Piel <Eric.Piel@tremplin-utc.net>
+Cc: Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not  work
+	anymore
+Message-ID: <20091022183249.GC18031@core.coreip.homeip.net>
+References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <20091015215944.GA9845@core.coreip.homeip.net> <4ADF6237.9070004@tremplin-utc.net> <200910211320.16339.dmitry.torokhov@gmail.com> <4AE0840C.8070801@tremplin-utc.net> <20091022162202.GA18031@core.coreip.homeip.net> <4AE09AFF.805@tremplin-utc.net> <20091022181915.GB18031@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 14:24:41 up 65 days,  5:14,  3 users,  load average: 0.88, 0.33,
-	0.28
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091022181915.GB18031@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Thu, Oct 22, 2009 at 11:19:15AM -0700, Dmitry Torokhov wrote:
+> On Thu, Oct 22, 2009 at 07:48:47PM +0200, Éric Piel wrote:
+> > Op 22-10-09 18:22, Dmitry Torokhov schreef:
+> >> On Thu, Oct 22, 2009 at 06:10:52PM +0200, Éric Piel wrote:
+> >>> Op 21-10-09 22:20, Dmitry Torokhov schreef:
+> >>>>
+> >>>> Nothing, as far as I can tell... I see you typing "qwerty"... Does the
+> >>>> keyboard work in console (let's say if you boot in run level 3 to take X out
+> >>>> of the picture)? Could you please try compiling evbug module - it will show if
+> >>>> keyboard events are propagated through input core. Also, whta driver are you
+> >>>> using in X? Legacy keyboard or evdev?
+> >>> In the console (in init 3), I haven't managed to reproduce it. In xorg,
+> >>> the keyboard input uses evdev. Now I've just tried "evtest
+> >>> /dev/input/event4", when the keyboard doesn't work... and I see the key
+> >>> presses!
+> >>>
+> >>> So I guess it rules out a bug in the kernel, and I have to talk with the
+> >>> people from Xorg, right?
+> >>>
+> >>
+> >> Yep... but it is still wierd since evdev driver works fine for me...
+> >> Could it be you are using either too old or too new version of X?
+> >>
+> > I don't think so: xorg 1.6.5, with xinput-evdev 2.2.5. They are both  
+> > latest or second latest stable versions.
+> >
 
-I took a look at the current sparc64 cmpxchg implementation in the Linux
-kernel and stumbled on this commit:
+Same here...
 
-commit 293666b7a17cb7a389fc274980439212386a19c4
-Author: David S. Miller <davem@davemloft.net>
-Date:   Sat Nov 15 13:33:25 2008 -0800
+> > In the log I see this:
+> > (--) SynPS/2 Synaptics TouchPad: touchpad found
+> > (II) PS/2 Generic Mouse: Device reopened after 1 attempts.
+> > (EE) AT Translated Set 2 keyboard: device key_bitmask has changed
+> > (EE) AT Translated Set 2 keyboard: Device has changed - disabling.
+> >
+> > Quite a few people seem to have the same problem.
+> 
+> The bitmask should not be changing on it's own... Any chance you could
+> save contents or /proc/bus/input/devices before suspend and after resume
+> (when X decides to ditch the keyboard) and diff them?
+> 
 
-    sparc64: Stop using memory barriers for atomics and locks.
-    
-    The kernel always executes in the TSO memory model now,
-    so none of this stuff is necessary any more.
-    
-    With helpful feedback from Nick Piggin.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-Reading p. 152 A.9 Compare and Swap, I see that the cas instruction does
-not imply a memory barrier.
-
-Reading http://docs.sun.com/app/docs/doc/801-6678/6i11oelck?a=view
-
-I see that:
-
-"TSO guarantees that the store, FLUSH, and atomic load-store
-instructions of all processors appear to be executed by memory serially
-in a single order called the memory order. Furthermore, the sequence of
-store, FLUSH, and atomic load-store instructions in the memory order for
-a given processor is identical to the sequence in which they were issued
-by the processor."
-
-So it provides no guarantee whatsoever wrt loads. However, reading
-Documentation/memory-barriers.txt:
-
-"Whilst they are technically interprocessor interaction considerations,
-atomic operations are noted specially as some of them imply full memory
-barriers and some don't, but they're very heavily relied on as a group
-throughout the kernel." -> cmpxchg is part of them.
-
-The same applies to the other atomic instructions we find in this list.
-How is the correct ordering of loads wrt to cmxchg (and other atomic
-ops) still ensured by this modification?
-
-Thanks,
-
-Mathieu
+Also, are you using 64 bit userspace?
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Dmitry
