@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754287AbZJVDpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbZJVDp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754287AbZJVDpl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 23:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbZJVDpi
+	id S1754635AbZJVDp5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 23:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbZJVDpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 23:45:38 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:37729 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753958AbZJVDpd (ORCPT
+	Wed, 21 Oct 2009 23:45:40 -0400
+Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:17075 "EHLO
+	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753878AbZJVDph (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 23:45:33 -0400
-Subject: [PATCH 5/7] Documentation: ABI:
-	/sys/devices/system/cpu/sched_[mc|smt]_power_savings
+	Wed, 21 Oct 2009 23:45:37 -0400
+Subject: [PATCH 6/7] Documentation: ABI: /sys/devices/system/cpu/cpuidle/
 To: randy.dunlap@oracle.com, greg@kroah.com
 From: Alex Chiang <achiang@hp.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+Cc: akpm@linux-foundation.org, Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
        rientjes@google.com
-Date: Wed, 21 Oct 2009 21:45:36 -0600
-Message-ID: <20091022034536.13399.98197.stgit@bob.kio>
+Date: Wed, 21 Oct 2009 21:45:41 -0600
+Message-ID: <20091022034541.13399.59424.stgit@bob.kio>
 In-Reply-To: <20091022033506.13399.90799.stgit@bob.kio>
 References: <20091022033506.13399.90799.stgit@bob.kio>
 User-Agent: StGit/0.14.3.386.gb02d
@@ -29,50 +28,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document sched_[mc|smt]_power_savings by reading existing code and
-git logs.
+Document cpuidle sysfs attributes by reading code, Documentation/cpuidle/,
+and git logs.
 
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Len Brown <lenb@kernel.org>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- Documentation/ABI/testing/sysfs-devices-system-cpu |   24 ++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
+ Documentation/ABI/testing/sysfs-devices-system-cpu |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
 diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 2ade5c0..8cdda1c 100644
+index 8cdda1c..968d8ba 100644
 --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
 +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -9,6 +9,30 @@ Description:
+@@ -101,6 +101,26 @@ Description:	CPU topology files that describe a logical CPU's relationship
+ 		See Documentation/cputopology.txt for more information.
  
- 		/sys/devices/system/cpu/cpu#/
  
-+What:		/sys/devices/system/cpu/sched_mc_power_savings
-+		/sys/devices/system/cpu/sched_smt_power_savings
-+Date:		June 2006
++What:		/sys/devices/system/cpu/cpuidle/current_driver
++		/sys/devices/system/cpu/cpuidle/current_governer_ro
++Date:		September 2007
 +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+Description:	Discover and adjust the kernel's multi-core scheduler support.
++Description:	Discover cpuidle policy and mechanism
 +
-+		Possible values are:
++		Various CPUs today support multiple idle levels that are
++		differentiated by varying exit latencies and power
++		consumption during idle.
 +
-+		0 - No power saving load balance (default value)
-+		1 - Fill one thread/core/package first for long running threads
-+		2 - Also bias task wakeups to semi-idle cpu package for power
-+		    savings
++		Idle policy (governor) is differentiated from idle mechanism
++		(driver)
 +
-+		sched_mc_power_savings is dependent upon SCHED_MC, which is
-+		itself architecture dependent.
++		current_driver: displays current idle mechanism
 +
-+		sched_smt_power_savings is dependent upon SCHED_SMT, which
-+		is itself architecture dependent.
++		current_governor_ro: displays current idle policy
 +
-+		The two files are independent of each other. It is possible
-+		that one file may be present without the other.
++		See files in Documentation/cpuidle/ for more information.
 +
-+		Introduced by git commit 5c45bf27.
 +
- 
- What:		/sys/devices/system/cpu/kernel_max
- 		/sys/devices/system/cpu/offline
+ What:      /sys/devices/system/cpu/cpu*/cache/index*/cache_disable_X
+ Date:      August 2008
+ KernelVersion:	2.6.27
 
