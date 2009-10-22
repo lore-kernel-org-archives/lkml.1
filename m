@@ -1,171 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbZJVNRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbZJVOCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbZJVNRW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 09:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZJVNRW
+	id S1756152AbZJVOCL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 10:02:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbZJVOCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 09:17:22 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51900 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755904AbZJVNRV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 09:17:21 -0400
-Subject: Re: [PATCH -v4 9/9] tracing: add function graph tracer support for
- MIPS
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: wuzhangjin@gmail.com
-Cc: David Daney <ddaney@caviumnetworks.com>, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-In-Reply-To: <1256211516.3852.47.camel@falcon>
-References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
-	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
-	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
-	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
-	 <96110ea5dd4d3d54eb97d0bb708a5bd81c7a50b5.1256135456.git.wuzhangjin@gmail.com>
-	 <5dda13e8e3a9c9dba4bb7179183941bda502604f.1256135456.git.wuzhangjin@gmail.com>
-	 <af3ec1b5cd06b6f6a461c9fa7d09a51fabccb08d.1256135456.git.wuzhangjin@gmail.com>
-	 <a6f2959a69b6a77dd32cc36a5c8202f97d524f1e.1256135456.git.wuzhangjin@gmail.com>
-	 <53bdfdd95ec4fa00d4cc505bb5972cf21243a14d.1256135456.git.wuzhangjin@gmail.com>
-	 <1256141540.18347.3118.camel@gandalf.stny.rr.com>
-	 <4ADF38D5.9060100@caviumnetworks.com>
-	 <1256143568.18347.3169.camel@gandalf.stny.rr.com>
-	 <4ADF3FE0.5090104@caviumnetworks.com>
-	 <1256145813.18347.3210.camel@gandalf.stny.rr.com>
-	 <1256211516.3852.47.camel@falcon>
+	Thu, 22 Oct 2009 10:02:11 -0400
+Received: from mga02.intel.com ([134.134.136.20]:29046 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756078AbZJVOCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 10:02:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,605,1249282800"; 
+   d="scan'208";a="460216193"
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
+ available
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Thomas Schlichter <thomas.schlichter@web.de>,
+       Jan Beulich <JBeulich@novell.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Thomas Hellstrom <thellstrom@vmware.com>, Tejun Heo <tj@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "x86@kernel.org" <x86@kernel.org>, Yinghai Lu <yinghai@kernel.org>
+In-Reply-To: <4AE04C95.6070402@zytor.com>
+References: <1395763521@web.de>  <4AE04C95.6070402@zytor.com>
 Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Thu, 22 Oct 2009 09:17:24 -0400
-Message-Id: <1256217444.20866.599.camel@gandalf.stny.rr.com>
+Organization: Intel Corp
+Date: Thu, 22 Oct 2009 06:26:53 -0700
+Message-Id: <1256218013.2546.9.camel@sbs-t61>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-22 at 19:38 +0800, Wu Zhangjin wrote:
-> Hi,
+On Thu, 2009-10-22 at 05:14 -0700, H. Peter Anvin wrote:
+> On 10/22/2009 09:08 PM, Thomas Schlichter wrote:
+> >>
+> >> I have couple of issues with this patchset still. pci_mmap_page_range()
+> >> doesn't get called for each fork(). So, we won't be ref counting the
+> >> mtrr usage properly.
+> >
+> > When forking, what happens with the "struct file"? If it is being copied, then the
+> > processes share the same private data which would be freed during the first
+> > release(). I think this would be a problem whereever file-private data are used.
+> >
+> > So I think it must be shared between the forked processes and some reference
+> > counting must exist. This reference counting must ensure that release() is only
+> > called when all processes did close() their file.
+> >
+> > And in that case (shared "struct file", one single release() call in the end) this
+> > implementation should be completely safe...
+> >
 > 
-> On Wed, 2009-10-21 at 13:23 -0400, Steven Rostedt wrote:
+> struct file is shared between forked processes.
 
-> Ralf have told me -pg really works with -fomit-frame-pointer, although
-> the gcc tool tell us they are not incompatible when we use both of them
-> together, but when I remove -fno-omit-frame-pointer in
-> KBUILD_FLAGS(enabled by CONFIG_FRAME_POINTER), it definitely remove the
-> s8(fp) relative source code(Seems -fomit-frame-pionter is used by
-> default by gcc), the leaf function becomes this:
-> 
-> function:
-> 
-> 80101144 <au1k_wait>:
-> 80101144:       03e00821        move    at,ra
-> 80101148:       0c04271c        jal     80109c70 <_mcount>
->
-> No more instruction,
-> 
-> and the non-leaf function becomes,
-> 
-> 80126590 <copy_process>:
-> 80126590:       27bdffa0        addiu   sp,sp,-96
-> 80126594:       afbf005c        sw      ra,92(sp)
-> 80126598:       afbe0058        sw      s8,88(sp)
-> 8012659c:       afb70054        sw      s7,84(sp)
-> 801265a0:       afb60050        sw      s6,80(sp)
-> 801265a4:       afb5004c        sw      s5,76(sp)
-> 801265a8:       afb40048        sw      s4,72(sp)
-> 801265ac:       afb30044        sw      s3,68(sp)
-> 801265b0:       afb20040        sw      s2,64(sp)
-> 801265b4:       afb1003c        sw      s1,60(sp)
-> 801265b8:       afb00038        sw      s0,56(sp)
-> 801265bc:       03e00821        move    at,ra
-> 801265c0:       0c04271c        jal     80109c70 <_mcount>
-> 
-> It may save about two instructions for us.
-> 	
-> 	sw	s8, offset(sp)
-> 	move	s8, fp
-> 
-> and also, I have tried to just search "Save" instruction, if I find one,
+That is correct. But I am referring to the ref-count getting incremented
+in Thomas's patch only in the pci_mmap_page_range() which will be called
+only during first mmap.
 
-So you look for "sw ..."?
+We need to keep track of the counts of later forks too. For PAT, we keep
+track of this ref counting in track_pfn_vma_copy(). We shouldn't use
+different tracking mechanisms for PAT and non-PAT. We should cleanly tap
+into track_pfn_vma_copy() or extend that to cover this case aswell.
 
-> that should be a non-leaf function, otherwise, it's leaf function, but I
-> can not prove no "Save" instruction before the leaf function's "move at,
-> ra", for example:
-
-Yes but it should never be saving the ra. You can search all
-instructions before the move at,ra until you find the save of the ra, or
-you find something that is not a save. If you find the saving of ra, it
-is not a leaf, but if you don't find the saving of ra, then it is a
-leaf.
-
-> 
-> 8010113c:       03e00008        jr      ra
-> 80101140:       00020021        nop
-> 
-> 80101144 <au1k_wait>:
-> 80101144:       03e00821        move    at,ra
-> 80101148:       0c04271c        jal     80109c70 <_mcount>
-> 
-> if there is "save" instruction at address 80101140, it will fail.
-> Although, I met not failure with several tries, but no prove on it! any
-> ABI protection for this? if YES, this should be a better solution, for
-> it may works without -fno-omit-frame-pointer and save several
-> instructions for us.
-
-If we don't stop at just one save, but look for the saving of ra, it
-should not fail.
-
-> 
-> and BTW, -fomit-frame-pointer does help "a lot" for us to get the stack
-> address without any big load:
-> 
->         sp = fp + (code & STACK_OFFSET_MASK);
->         ra = *(unsigned long *)sp;
-> 
-> although we can calculate it via the parent_addr, I have got this in:
-> 
-> NESTED(ftrace_graph_caller, PT_SIZE, ra) 
->         MCOUNT_SAVE_REGS
-> 
->         PTR_LA  a0, PT_R1(sp)   /* arg1: &AT -> a0 */
->         move    a1, ra          /* arg2: next ip, selfaddr */
->         PTR_SUBU a1, MCOUNT_INSN_SIZE
->         move    a2, fp          /* arg3: frame pointer */
->         jal     prepare_ftrace_return
->         nop
-> 
->         MCOUNT_RESTORE_REGS
->         RETURN_BACK
->         END(ftrace_graph_caller)
-> 
-> so, parent_addr is the current sp + PT_R1:
-> 	
-> 	sp = sp - PT_SIZE (did in MCOUNT_SAVE_REGS)
-> 	parent_addr = sp + PT_R1
-> 
-> so the fp can be calculated like this:
-> 
-> 	fp = parent_addr - PT_R1 + PT_SIZE;
-> 
-> this will take use a little time to calculate it.
-> 
-> ooh, so,  both -fomit-frame-pointer and -fno-omit-frame-pointer work for
-> us, the left job is that: we need to prove them are really SAFE here.
-> 
-
-Great!
-
--- Steve
-
-> > > 
-> > >     move    s8,sp
-> > > 
-> > > To identify function prologs, but it would still be ad hoc, as modern 
-> > > versions of GCC will reorder instructions in the prolog for better 
-> > > scheduling.
-> > 
+thanks,
+suresh
 
