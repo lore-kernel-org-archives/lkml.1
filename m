@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756410AbZJVScy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbZJVSef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756410AbZJVScy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 14:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZJVScx
+	id S1756377AbZJVSef (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 14:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZJVSef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 14:32:53 -0400
-Received: from mail-px0-f171.google.com ([209.85.216.171]:33330 "EHLO
-	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752615AbZJVScw (ORCPT
+	Thu, 22 Oct 2009 14:34:35 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:53151 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752615AbZJVSee (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 14:32:52 -0400
+	Thu, 22 Oct 2009 14:34:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=NTAk3grgeyRhp1U1xItPCfkVbQXGH5gI5s39ZB8sV8Mb23GwD+pnUYvHZTzreQKnRX
-         QytdAhZISBJkzjf1Iahe4cMcFgSap/sOLK+5XNPMpavp8n9Tp6c7EdPP/v67ieNzHi/G
-         7fMlsHNzvQnWibMs5s7AuaX+3uDd6h6ITLY7w=
-Date: Thu, 22 Oct 2009 11:32:50 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: =?iso-8859-1?Q?=C9ric?= Piel <Eric.Piel@tremplin-utc.net>
-Cc: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not  work
-	anymore
-Message-ID: <20091022183249.GC18031@core.coreip.homeip.net>
-References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <20091015215944.GA9845@core.coreip.homeip.net> <4ADF6237.9070004@tremplin-utc.net> <200910211320.16339.dmitry.torokhov@gmail.com> <4AE0840C.8070801@tremplin-utc.net> <20091022162202.GA18031@core.coreip.homeip.net> <4AE09AFF.805@tremplin-utc.net> <20091022181915.GB18031@core.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091022181915.GB18031@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=cqtKytet/LF5v3JaLbDCFq/aDE5YLaDVeIIg7uigKZSG72jLirmRlUiP8PqCTmg+Lp
+         EVecVi/A8DVJhBiWhvHJQ8qtKWJkJ5JWo7jT0/8pOGFUNviLNp2eAVy7aoJAa0scG7+j
+         v86yibQKeZrsPP2qST1AwOsmGPFsWwxTusSmI=
+Subject: Re: [PATCH -v4 4/9] tracing: add static function tracer support
+ for MIPS
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>
+In-Reply-To: <1256234361.20866.796.camel@gandalf.stny.rr.com>
+References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
+	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
+	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
+	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
+	 <1256138686.18347.3039.camel@gandalf.stny.rr.com>
+	 <1256233679.23653.7.camel@falcon>
+	 <1256234361.20866.796.camel@gandalf.stny.rr.com>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Fri, 23 Oct 2009 02:34:29 +0800
+Message-Id: <1256236469.23653.12.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 11:19:15AM -0700, Dmitry Torokhov wrote:
-> On Thu, Oct 22, 2009 at 07:48:47PM +0200, Éric Piel wrote:
-> > Op 22-10-09 18:22, Dmitry Torokhov schreef:
-> >> On Thu, Oct 22, 2009 at 06:10:52PM +0200, Éric Piel wrote:
-> >>> Op 21-10-09 22:20, Dmitry Torokhov schreef:
-> >>>>
-> >>>> Nothing, as far as I can tell... I see you typing "qwerty"... Does the
-> >>>> keyboard work in console (let's say if you boot in run level 3 to take X out
-> >>>> of the picture)? Could you please try compiling evbug module - it will show if
-> >>>> keyboard events are propagated through input core. Also, whta driver are you
-> >>>> using in X? Legacy keyboard or evdev?
-> >>> In the console (in init 3), I haven't managed to reproduce it. In xorg,
-> >>> the keyboard input uses evdev. Now I've just tried "evtest
-> >>> /dev/input/event4", when the keyboard doesn't work... and I see the key
-> >>> presses!
-> >>>
-> >>> So I guess it rules out a bug in the kernel, and I have to talk with the
-> >>> people from Xorg, right?
-> >>>
-> >>
-> >> Yep... but it is still wierd since evdev driver works fine for me...
-> >> Could it be you are using either too old or too new version of X?
-> >>
-> > I don't think so: xorg 1.6.5, with xinput-evdev 2.2.5. They are both  
-> > latest or second latest stable versions.
-> >
-
-Same here...
-
-> > In the log I see this:
-> > (--) SynPS/2 Synaptics TouchPad: touchpad found
-> > (II) PS/2 Generic Mouse: Device reopened after 1 attempts.
-> > (EE) AT Translated Set 2 keyboard: device key_bitmask has changed
-> > (EE) AT Translated Set 2 keyboard: Device has changed - disabling.
-> >
-> > Quite a few people seem to have the same problem.
+On Thu, 2009-10-22 at 13:59 -0400, Steven Rostedt wrote:
+> On Fri, 2009-10-23 at 01:47 +0800, Wu Zhangjin wrote:
+> > On Wed, 2009-10-21 at 11:24 -0400, Steven Rostedt wrote:
 > 
-> The bitmask should not be changing on it's own... Any chance you could
-> save contents or /proc/bus/input/devices before suspend and after resume
-> (when X decides to ditch the keyboard) and diff them?
+> > > Is t0 and t1 safe for mcount to use? Remember, mcount does not follow
+> > > the dynamics of C function ABI.
+> > 
+> > So, perhaps we can use the saved registers(a0,a1...) instead.
 > 
+> I don't know. I was just asking.
 
-Also, are you using 64 bit userspace?
+I just used a0,a1,a2 instead of t0,t1,t2, we are safe to use them for
+they have been saved/restored.
 
--- 
-Dmitry
+Thanks!
+
