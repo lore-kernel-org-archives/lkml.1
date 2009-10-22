@@ -1,92 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbZJVUDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbZJVURX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756129AbZJVUDi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 16:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbZJVUDh
+	id S1755072AbZJVURX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 16:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbZJVURW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 16:03:37 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:33868 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753266AbZJVUDg (ORCPT
+	Thu, 22 Oct 2009 16:17:22 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59593 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751767AbZJVURV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 16:03:36 -0400
-Date: Thu, 22 Oct 2009 16:03:41 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       <linux-media@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: uvcvideo causes ehci_hcd to halt
-In-Reply-To: <4AE080AC.4050108@pardus.org.tr>
-Message-ID: <Pine.LNX.4.44L0.0910221558510.9192-100000@netrider.rowland.org>
+	Thu, 22 Oct 2009 16:17:21 -0400
+Date: Thu, 22 Oct 2009 22:17:18 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz
+Subject: Re: zaurus: cleanup sharpsl_pm.c (fwd)
+Message-ID: <20091022201718.GF6611@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Oct 2009, [UTF-8] Ozan Çağlayan wrote:
+(I sent this to Eric, here it is for public record, too.)
 
-> Alan Stern wrote:
-> > On Thu, 22 Oct 2009, [UTF-8] Ozan Ã‡aÄŸlayan wrote:
-> >
-> >   
-> >> Here's the outputs from /sys/kernel/debug/usb/ehci:
+Hi!
+
+
+> >> > Well, I'd say that the sharing leads to some very ugly code. ... so
+> >> > I'd preer it unshared.
+> >> >
 > >>
-> >> periodic:
-> >> ----------------
-> >> size = 1024
-> >>    1:  qh1024-0001/f6ffe280 (h2 ep2 [1/0] q0 p8)
-> >>     
+> >> I suggest to re-name it to "sharpsl_" something instead of "spitz_",
+> >> to be less confusing at this moment.
 > >
-> > There's something odd about this.  I'd like to see this file again, 
-> > after the patch below has been applied.
-> >
-> >   
-> 
-> Do you want me to apply this patch altogether with the first one that
-> you sent a while ago in this thread or directly onto the vanilla kernel?
+> > Yep, but lets do that as next patch, ok?
 
-It doesn't matter.  The "size = 1024" line in your debugging output 
-means that the first patch won't have any effect; my hunch was wrong.
+---
 
-However it turns out that the most recent patch wasn't quite what I
-wanted.  Here's an updated version to be used instead.
+Battery power levels are shared between spitz and corgi, rename
+variable to reflect it.
 
-Alan Stern
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-
-
-Index: usb-2.6/drivers/usb/host/ehci-dbg.c
-===================================================================
---- usb-2.6.orig/drivers/usb/host/ehci-dbg.c
-+++ usb-2.6/drivers/usb/host/ehci-dbg.c
-@@ -596,18 +596,22 @@ static ssize_t fill_periodic_buffer(stru
- 							qtd->hw_token) >> 8)) {
- 						case 0: type = "out"; continue;
- 						case 1: type = "in"; continue;
-+						case 2: type = "?2"; continue;
-+						case 3: type = "?3"; continue;
- 						}
- 					}
+diff --git a/arch/arm/mach-pxa/corgi_pm.c b/arch/arm/mach-pxa/corgi_pm.c
+index a093282..d4a0733 100644
+--- a/arch/arm/mach-pxa/corgi_pm.c
++++ b/arch/arm/mach-pxa/corgi_pm.c
+@@ -214,8 +214,8 @@ static struct sharpsl_charger_machinfo corgi_pm_machinfo = {
+ 	.fatal_acin_volt  = SHARPSL_FATAL_ACIN_VOLT,
+ 	.fatal_noacin_volt= SHARPSL_FATAL_NOACIN_VOLT,
+ 	.bat_levels       = 40,
+-	.bat_levels_noac  = spitz_battery_levels_noac,
+-	.bat_levels_acin  = spitz_battery_levels_acin,
++	.bat_levels_noac  = sharpsl_battery_levels_noac,
++	.bat_levels_acin  = sharpsl_battery_levels_acin,
+ 	.status_high_acin = 188,
+ 	.status_low_acin  = 178,
+ 	.status_high_noac = 185,
+diff --git a/arch/arm/mach-pxa/sharpsl.h b/arch/arm/mach-pxa/sharpsl.h
+index 55259f4..1439785 100644
+--- a/arch/arm/mach-pxa/sharpsl.h
++++ b/arch/arm/mach-pxa/sharpsl.h
+@@ -42,8 +42,8 @@ void corgi_lcdtg_hw_init(int mode);
+ #define MAX1111_BATT_TEMP   2u
+ #define MAX1111_ACIN_VOLT   6u
  
- 					temp = scnprintf (next, size,
- 						" (%c%d ep%d%s "
--						"[%d/%d] q%d p%d)",
-+						"[%d/%d] q%d p%d) t%08x",
- 						speed_char (scratch),
- 						scratch & 0x007f,
- 						(scratch >> 8) & 0x000f, type,
- 						p.qh->usecs, p.qh->c_usecs,
- 						temp,
--						0x7ff & (scratch >> 16));
-+						0x7ff & (scratch >> 16),
-+						hc32_to_cpu(ehci,
-+							p.qh->hw->hw_token));
+-extern struct battery_thresh spitz_battery_levels_acin[];
+-extern struct battery_thresh spitz_battery_levels_noac[];
++extern struct battery_thresh sharpsl_battery_levels_acin[];
++extern struct battery_thresh sharpsl_battery_levels_noac[];
+ int sharpsl_pm_pxa_read_max1111(int channel);
  
- 					if (seen_count < DBG_SCHED_LIMIT)
- 						seen [seen_count++].qh = p.qh;
+ 
+diff --git a/arch/arm/mach-pxa/sharpsl_pm.c b/arch/arm/mach-pxa/sharpsl_pm.c
+index dc3907f..67229a1 100644
+--- a/arch/arm/mach-pxa/sharpsl_pm.c
++++ b/arch/arm/mach-pxa/sharpsl_pm.c
+@@ -78,7 +78,7 @@ DEFINE_LED_TRIGGER(sharpsl_charge_led_trigger);
+ 
+ 
+ 
+-struct battery_thresh spitz_battery_levels_acin[] = {
++struct battery_thresh sharpsl_battery_levels_acin[] = {
+ 	{ 213, 100},
+ 	{ 212,  98},
+ 	{ 211,  95},
+@@ -121,7 +121,7 @@ struct battery_thresh spitz_battery_levels_acin[] = {
+ 	{   0,   0},
+ };
+ 
+-struct battery_thresh  spitz_battery_levels_noac[] = {
++struct battery_thresh sharpsl_battery_levels_noac[] = {
+ 	{ 213, 100},
+ 	{ 212,  98},
+ 	{ 211,  95},
+diff --git a/arch/arm/mach-pxa/spitz_pm.c b/arch/arm/mach-pxa/spitz_pm.c
+index 60bfaff..fc5a70c 100644
+--- a/arch/arm/mach-pxa/spitz_pm.c
++++ b/arch/arm/mach-pxa/spitz_pm.c
+@@ -208,8 +208,8 @@ struct sharpsl_charger_machinfo spitz_pm_machinfo = {
+ 	.fatal_acin_volt  = SHARPSL_FATAL_ACIN_VOLT,
+ 	.fatal_noacin_volt= SHARPSL_FATAL_NOACIN_VOLT,
+ 	.bat_levels       = 40,
+-	.bat_levels_noac  = spitz_battery_levels_noac,
+-	.bat_levels_acin  = spitz_battery_levels_acin,
++	.bat_levels_noac  = sharpsl_battery_levels_noac,
++	.bat_levels_acin  = sharpsl_battery_levels_acin,
+ 	.status_high_acin = 188,
+ 	.status_low_acin  = 178,
+ 	.status_high_noac = 185,
 
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+----- End forwarded message -----
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
