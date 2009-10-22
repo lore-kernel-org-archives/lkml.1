@@ -1,109 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbZJVQAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbZJVQDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753468AbZJVQAz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 12:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZJVQAy
+	id S1753999AbZJVQDG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 12:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZJVQDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 12:00:54 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:16444 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752430AbZJVQAx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 12:00:53 -0400
-Message-ID: <4AE08173.7070500@caviumnetworks.com>
-Date: Thu, 22 Oct 2009 08:59:47 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 22 Oct 2009 12:03:05 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:54152 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751074AbZJVQDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 12:03:03 -0400
+Date: Thu, 22 Oct 2009 17:03:10 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, akpm@linux-foundation.org,
+       cl@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
+	failures V2
+Message-ID: <20091022160310.GS11778@csn.ul.ie>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <84144f020910220747nba30d8bkc83c2569da79bd7c@mail.gmail.com>
 MIME-Version: 1.0
-To: wuzhangjin@gmail.com
-CC: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-Subject: Re: [PATCH -v4 9/9] tracing: add function graph tracer support for
- MIPS
-References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>	 <96110ea5dd4d3d54eb97d0bb708a5bd81c7a50b5.1256135456.git.wuzhangjin@gmail.com>	 <5dda13e8e3a9c9dba4bb7179183941bda502604f.1256135456.git.wuzhangjin@gmail.com>	 <af3ec1b5cd06b6f6a461c9fa7d09a51fabccb08d.1256135456.git.wuzhangjin@gmail.com>	 <a6f2959a69b6a77dd32cc36a5c8202f97d524f1e.1256135456.git.wuzhangjin@gmail.com>	 <53bdfdd95ec4fa00d4cc505bb5972cf21243a14d.1256135456.git.wuzhangjin@gmail.com>	 <1256141540.18347.3118.camel@gandalf.stny.rr.com>	 <4ADF38D5.9060100@caviumnetworks.com>	 <1256143568.18347.3169.camel@gandalf.stny.rr.com>	 <4ADF3FE0.5090104@caviumnetworks.com>	 <1256145813.18347.3210.camel@gandalf.stny.rr.com> <1256211516.3852.47.camel@falcon>
-In-Reply-To: <1256211516.3852.47.camel@falcon>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Oct 2009 15:59:49.0705 (UTC) FILETIME=[AF3D5B90:01CA5330]
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <84144f020910220747nba30d8bkc83c2569da79bd7c@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Zhangjin wrote:
-> Hi,
+On Thu, Oct 22, 2009 at 05:47:10PM +0300, Pekka Enberg wrote:
+> On Thu, Oct 22, 2009 at 5:22 PM, Mel Gorman <mel@csn.ul.ie> wrote:
+> > Test 1: Verify your problem occurs on 2.6.32-rc5 if you can
+> >
+> > Test 2: Apply the following two patches and test again
+> >
+> >  1/5 page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
+> >  2/5 page allocator: Do not allow interrupts to use ALLOC_HARDER
 > 
-> On Wed, 2009-10-21 at 13:23 -0400, Steven Rostedt wrote:
->> On Wed, 2009-10-21 at 10:07 -0700, David Daney wrote:
->>
->>> I have not used -pg, so I don't know for sure, I think all it does is 
->>> add the calls to _mcount.  Someone could investigate 
->>> -fno-omit-frame-pointer, with that you may be able to use:
->> Note, -pg assumes -fno-omit-frame-pointer, since -fomit-frame-pointer
->> and -pg are incompatible.
+> These are pretty obvious bug fixes and should go to linux-next ASAP IMHO.
 > 
-> Ralf have told me -pg really works with -fomit-frame-pointer, although
-> the gcc tool tell us they are not incompatible when we use both of them
-> together, but when I remove -fno-omit-frame-pointer in
-> KBUILD_FLAGS(enabled by CONFIG_FRAME_POINTER), it definitely remove the
-> s8(fp) relative source code(Seems -fomit-frame-pionter is used by
-> default by gcc), the leaf function becomes this:
-> 
-> function:
-> 
-> 80101144 <au1k_wait>:
-> 80101144:       03e00821        move    at,ra
-> 80101148:       0c04271c        jal     80109c70 <_mcount>
-> 
-> No more instruction,
-> 
-> and the non-leaf function becomes,
-> 
-> 80126590 <copy_process>:
-> 80126590:       27bdffa0        addiu   sp,sp,-96
-> 80126594:       afbf005c        sw      ra,92(sp)
-> 80126598:       afbe0058        sw      s8,88(sp)
-> 8012659c:       afb70054        sw      s7,84(sp)
-> 801265a0:       afb60050        sw      s6,80(sp)
-> 801265a4:       afb5004c        sw      s5,76(sp)
-> 801265a8:       afb40048        sw      s4,72(sp)
-> 801265ac:       afb30044        sw      s3,68(sp)
-> 801265b0:       afb20040        sw      s2,64(sp)
-> 801265b4:       afb1003c        sw      s1,60(sp)
-> 801265b8:       afb00038        sw      s0,56(sp)
-> 801265bc:       03e00821        move    at,ra
-> 801265c0:       0c04271c        jal     80109c70 <_mcount>
-> 
-> It may save about two instructions for us.
-> 	
-> 	sw	s8, offset(sp)
-> 	move	s8, fp
-> 
-> and also, I have tried to just search "Save" instruction, if I find one,
-> that should be a non-leaf function, otherwise, it's leaf function, but I
-> can not prove no "Save" instruction before the leaf function's "move at,
-> ra", for example:
-> 
-> 8010113c:       03e00008        jr      ra
-> 80101140:       00020021        nop
-> 
-> 80101144 <au1k_wait>:
-> 80101144:       03e00821        move    at,ra
-> 80101148:       0c04271c        jal     80109c70 <_mcount>
-> 
-> if there is "save" instruction at address 80101140, it will fail.
-> Although, I met not failure with several tries, but no prove on it! any
-> ABI protection for this? if YES, this should be a better solution, for
-> it may works without -fno-omit-frame-pointer and save several
-> instructions for us.
 
-This is what I was talking about up-thread.  Leaf functions may have no 
-function prolog.  If you do code scanning you will fail.  While scanning 
-backwards, there is no way to know when you have entered a new function. 
-  Looking for function return sequences 'jr ra' doesn't work as there 
-may be functions with multiple return sites, functions that never 
-return, or arbitrary data before the function.  I think you have to 
-force a frame pointer to be established if you want this to work.
+Agreed, but I wanted to pin down where exactly we stand with this
+problem before sending patches any direction for merging.
 
-David Daney
+> > Test 5: If things are still screwed, apply the following
+> >  5/5 Revert 373c0a7e, 8aa7e847: Fix congestion_wait() sync/async vs read/write confusion
+> >
+> >        Frans Pop reports that the bulk of his problems go away when this
+> >        patch is reverted on 2.6.31. There has been some confusion on why
+> >        exactly this patch was wrong but apparently the conversion was not
+> >        complete and further work was required. It's unknown if all the
+> >        necessary work exists in 2.6.31-rc5 or not. If there are still
+> >        allocation failures and applying this patch fixes the problem,
+> >        there are still snags that need to be ironed out.
+> 
+> As explained by Jens Axboe, this changes timing but is not the source
+> of the OOMs so the revert is bogus even if it "helps" on some
+> workloads. IIRC the person who reported the revert to help things did
+> report that the OOMs did not go away, they were simply harder to
+> trigger with the revert.
+> 
+
+IIRC, there were mixed reports as to how much the revert helped.  I'm hoping
+that patches 1+2 cover the bases hence why I asked them to be tested on
+their own. Patch 2 in particular might be responsible for watermarks being
+impacted enough to cause timing problems. I left reverting with patch 5 as
+a standalone test to see how much of a factor the timing changes introduced
+are if there are still allocation problems.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
