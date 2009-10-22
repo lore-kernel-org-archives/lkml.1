@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbZJVVsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbZJVVtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756877AbZJVVsD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 17:48:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756528AbZJVVsC
+	id S1756884AbZJVVtc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 17:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZJVVtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 17:48:02 -0400
-Received: from mga02.intel.com ([134.134.136.20]:65215 "EHLO mga02.intel.com"
+	Thu, 22 Oct 2009 17:49:32 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:45288 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756365AbZJVVsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 17:48:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,608,1249282800"; 
-   d="scan'208";a="460363713"
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
- available
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Eric Anholt <eric@anholt.net>
-Cc: Thomas Schlichter <thomas.schlichter@web.de>, Ingo Molnar <mingo@elte.hu>,
-       Jan Beulich <JBeulich@novell.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Robert Hancock <hancockrwd@gmail.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Tejun Heo <tj@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       Ingo Molnar <mingo@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <1256225689.32075.6.camel@gaiman.anholt.net>
-References: <1394846127@web.de>
-	 <4ADF32A0020000780001B20A@vpn.id2.novell.com>
-	 <20091021173514.GA32227@elte.hu>
-	 <200910212201.36578.thomas.schlichter@web.de>
-	 <1256205210.2530.28.camel@sbs-t61>
-	 <1256225689.32075.6.camel@gaiman.anholt.net>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 22 Oct 2009 14:47:30 -0700
-Message-Id: <1256248050.2546.9.camel@sbs-t61>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S1753325AbZJVVtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 17:49:31 -0400
+Date: Thu, 22 Oct 2009 23:49:34 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 5/5] ONLY-APPLY-IF-STILL-FAILING Revert 373c0a7e,
+	8aa7e847: Fix congestion_wait() sync/async vs read/write confusion
+Message-ID: <20091022214934.GQ10727@kernel.dk>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-6-git-send-email-mel@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256221356-26049-6-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-22 at 08:34 -0700, Eric Anholt wrote:
-> Can we just not create the _wc sysfs entry if we don't have PAT?  I
-> don't think there's userland relying on its presence as opposed to the
-> non-_wc entry.
+On Thu, Oct 22 2009, Mel Gorman wrote:
+> Testing by Frans Pop indicates that in the 2.6.30..2.6.31 window at
+> least that the commits 373c0a7e 8aa7e847 dramatically increased the
+> number of GFP_ATOMIC failures that were occuring within a wireless
+> driver. It was never isolated which of the changes was the exact problem
+> and it's possible it has been fixed since. If problems are still
+> occuring with GFP_ATOMIC in 2.6.31-rc5, then this patch should be
+> applied to determine if the congestion_wait() callers are still broken.
 
-Yes indeed. Jesse do you see an issue with this? This is simple and
-clean. Thanks Eric.
+I still think this is a complete red herring.
+
+-- 
+Jens Axboe
 
