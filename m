@@ -1,135 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbZJVWQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbZJVWRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756970AbZJVWQG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 18:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZJVWQF
+	id S932071AbZJVWRH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 18:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZJVWRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 18:16:05 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:38261 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755146AbZJVWQD convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 18:16:03 -0400
-From: Bela Lubkin <blubkin@vmware.com>
-To: "'Corey Minyard'" <minyard@acm.org>
-CC: "'Matt Domsch'" <Matt_Domsch@dell.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "discuss@LessWatts.org" <discuss@LessWatts.org>,
-       "openipmi-developer@lists.sourceforge.net" 
-	<openipmi-developer@lists.sourceforge.net>
-Date: Thu, 22 Oct 2009 15:16:20 -0700
-Subject: RE: [Openipmi-developer] [Discuss] [PATCH] ipmi: use	round_jiffies
- on timers to reduce timer overhead/wakeups
-Thread-Topic: [Openipmi-developer] [Discuss] [PATCH] ipmi: use	round_jiffies
- on timers to reduce timer overhead/wakeups
-Thread-Index: AcpTUrYoJVF+/Yy7ShyaxGiLAmtSSAADNEsg
-Message-ID: <E0AA796A7E3F4C4E8F1065D15FE4786183AF694A@EXCH-MBX-4.vmware.com>
-References: <20091021102822.5b32b2dc.randy.dunlap@oracle.com>
- <20091021114210.4d7e1ea9@linux.intel.com>	<4ADF57D7.7010808@intel.com>
- <20091021130348.cd521b0c.randy.dunlap@oracle.com>	<4ADF6D76.7070409@acm.org>
- <4ADF75A2.50202@linux.intel.com>
- <20091022025013.GB20467@auslistsprd01.us.dell.com>
- <E0AA796A7E3F4C4E8F1065D15FE4786183AF6948@EXCH-MBX-4.vmware.com>
- <4AE0BA6B.50805@acm.org>
-In-Reply-To: <4AE0BA6B.50805@acm.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 22 Oct 2009 18:17:06 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:45448 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbZJVWRF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 18:17:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=to:mail-followup-to:cc:subject:references:from:date:in-reply-to
+         :message-id:user-agent:mime-version:content-type;
+        b=h61SyMrOGBC4rTshUSUUg73Z5CaKDUI9pmZdhCsxUhGhcZlVK91mGAoAypivYKvTWQ
+         E5O0bYUhY6GzTari4FtcMA6k9woANPHo/hdAbX66jHTdkPORIZwpu+SQB39Qo8KlR03w
+         uK5jTzXJquP12ZFlZum4K8Ppf+fw+oJjUpjRo=
+To: David Daney <ddaney@caviumnetworks.com>
+Mail-Followup-To: David Daney <ddaney@caviumnetworks.com>,wuzhangjin@gmail.com,  Adam Nemet <anemet@caviumnetworks.com>, rostedt@goodmis.org,  linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,  Thomas Gleixner <tglx@linutronix.de>, Ralf Baechle <ralf@linux-mips.org>, Nicholas Mc Guire <der.herr@hofr.at>, rdsandiford@googlemail.com
+Cc: wuzhangjin@gmail.com, Adam Nemet <anemet@caviumnetworks.com>,
+       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>
+Subject: Re: [PATCH -v4 4/9] tracing: add static function tracer support for MIPS
+References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
+	<2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
+	<3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
+	<ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
+	<1256138686.18347.3039.camel@gandalf.stny.rr.com>
+	<1256233679.23653.7.camel@falcon>
+	<4AE0A5BE.8000601@caviumnetworks.com>
+From: Richard Sandiford <rdsandiford@googlemail.com>
+Date: Thu, 22 Oct 2009 23:17:06 +0100
+In-Reply-To: <4AE0A5BE.8000601@caviumnetworks.com> (David Daney's message of "Thu\, 22 Oct 2009 11\:34\:38 -0700")
+Message-ID: <87y6n36plp.fsf@firetop.home>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corey Minyard wrote:
-
-> Bela Lubkin wrote:
+David Daney <ddaney@caviumnetworks.com> writes:
+> Wu Zhangjin wrote:
+>> On Wed, 2009-10-21 at 11:24 -0400, Steven Rostedt wrote:
+> [...]
+>>>> +
+>>>> +NESTED(_mcount, PT_SIZE, ra)
+>>>> +	RESTORE_SP_FOR_32BIT
+>>>> +	PTR_LA	t0, ftrace_stub
+>>>> +	PTR_L	t1, ftrace_trace_function /* please don't use t1 later, safe? */
+>>> Is t0 and t1 safe for mcount to use? Remember, mcount does not follow
+>>> the dynamics of C function ABI.
+>> 
+>> So, perhaps we can use the saved registers(a0,a1...) instead.
+>> 
 >
-> > Why does everyone use KCS when BT is obviously better?  Can
-> > you have your team look into that as well?  (Among the various
-> > goals here, I assume that BT -- with a single interrupt and a
-> > DMA transfer instead of shuffling bytes over I/O ports -- would
-> > cost less power.  Not that the members of that list will
-> > receive this message: it bounces nonmembers.)
-
-> This is an industry where pennies matter, apparently.
-
-Well yeah.  Also an industry where a small leg up on some competitor can
-turn into a big deal.  So that goes both ways.
-
-> My personal preference would be to use the I2C based standard 
-> interface.  That actually doesn't perform too badly, it's probably 
-> cheaper than KCS since you already have I2C, anyway, and the I2C 
-> interfaces are generally tied to an interrupt.  The trouble 
-> is that the only hardware implementation of this I know of seems
-> to be poorly done, but that mostly affects trying to use the
-> ethernet interface and the local interface at the same time.
+> a0..a7 may not always be saved.
 >
-> Of course, the driver for I2C is not yet in the standard kernel as it 
-> requires a fairly massive I2C driver rewrite to allow the 
-> IPMI driver to do it's panic-time operations.
+> You can use at, v0, v1 and all the temporary registers.  Note that for 
+> the 64-bit ABIs sometimes the names t0-t4 shadow a4-a7.  So for a 64-bit 
+> kernel, you can use: $1, $2, $3, $12, $13, $14, $15, $24, $25, noting 
+> that at == $1 and contains the callers ra.  For a 32-bit kernel you can 
+> add $8, $9, $10, and $11
+>
+> This whole thing seems a little fragile.
+>
+> I think it might be a good idea to get input from Richard Sandiford, 
+> and/or Adam Nemet about this approach (so I add them to the CC).
+>
+> This e-mail thread starts here:
+>
+> http://www.linux-mips.org/archives/linux-mips/2009-10/msg00286.html
+>
+> and here:
+>
+> http://www.linux-mips.org/archives/linux-mips/2009-10/msg00290.html
 
-That seems like a fairly compelling argument against.  It's not in the
-"standard kernel" (i.e. of Linux); it's probably not in other OSes.  So
-now you're asking the software side of the industry to spend another
-several years playing catchup.
+I'm not sure that the "search for a save of RA" thing is really a good idea.
+The last version of that seemed to be "assume that any register stores
+will be in a block that immediately precedes the move into RA", but even
+if that's true now, it might not be in future.  And as Wu Zhangjin says,
+it doesn't cope with long calls, where the target address is loaded
+into a temporary register before the call.
 
-> BT would be better for performance, I guess, but it's yet another 
-> interface to tie in, and hanging this off an existing bus 
-> seems like a sensible thing to do.  And performance is really not
-> an issue for IPMI.
+FWIW, I'd certainly be happy to make GCC pass an additional parameter
+to _mcount.  The parameter could give the address of the return slot,
+or null for leaf functions.  In almost all cases[*], there would be
+no overhead, since the move would go in the delay slot of the call.
 
-BT is already supported by existing code (e.g. OpenIPMI driver).  It can
-almost certainly be presented on a PCI card (at PCI-mediated addresses
-not some legacy ISA port range).  So what do you mean "yet another
-interface to tie in"?  It's just a blob of behavior to be situated on a
-PCI card (or mboard implementation in PCI space).
+[*] Meaning when the frame is <=32k. ;)  I'm guessing you never
+    get anywhere near that, and if you did, the scan thing wouldn't
+    work anyway.
 
-I2C?  Volunteering to put it on I2C is like volunteering to put the new
-branch office on a 1200 baud modem because you're suspicious of all that
-newfangled fiber stuff.  Huh?
+The new behaviour could be controlled by a command-line option,
+which would also give linux a cheap way of checking whether the
+feature is available.
 
-Regarding performance, we've had real struggles with IPMI performance
-aspects.  There were situations where kipmid failed to start or didn't
-do its job correctly, resulting in very slow IPMI operations.  Seemingly
-harmless -- except that some OEM management agent daemon was making
-decisions based on feedback from IPMI.  The delays caused it to get into
-some watchdog code that decided the system was hung and issued a reboot.   
-
-On other systems, the OEM management agents poll IPMI so persistently
-that kipmid ends up taking a significant fraction of a CPU (nearly
-100% of a CPU in bursts, long term average of 40%+).  Since the Linux 
-"Console OS" in COS-bearing versions of ESX is by design limited to a
-single CPU, and since it does have other tasks to do, this causes some
-bad bottlenecks.             
-
-These things I mention are our bugs, should be fixed, are not
-necessarily the "fault" of IPMI.  Yet they would have no noticable
-impact if the BMC hardware was speaking BT.  The slow operations which
-(when magnified by 1000s of calls) took up most of a CPU would instead
-take up a barely measurable portion of a CPU.
-
-I don't suppose my viewpoint on this is going to be popular on lkml,
-but it is rather parochial to base hardware design decisions on "that's
-OK because it will be dealt with in some nebulous near-future version
-of the Linux kernel".  That's great for people who will be running a
-bleeding edge Linux kernel.  Not so good for people running stodgier
-Linux distros, other *ix OSes, Windows, QNX, who knows what else.
-It's great that Linux is [or intends to be] on top of this.  It's not
-the whole world.  The Dells of this world necessarily have to design
-systems that will work adequately with e.g. RHEL5.4 (2.6.18 + a zillion
-patches), not to mention Win2K3 SP${current}, etc.
-
-If you're designing a phone handset, router, set-top box, etc. --
-something where you own the entire project from hardware up to the top
-of the software stack -- _then_ you can make decisions on such criteria.
-General purpose hardware designs have to support general purpose OSes,
-including lots of weird little backwaters.
-
->Bela<
+Richard
