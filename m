@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbZJVL1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZJVL3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755108AbZJVL1v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 07:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbZJVL1u
+	id S1755174AbZJVL3S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 07:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbZJVL3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 07:27:50 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:35960 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754225AbZJVL1u (ORCPT
+	Thu, 22 Oct 2009 07:29:17 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38916
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754362AbZJVL3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 07:27:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kGpMKmmniok+vYYCtpx6z5cnOD3mZ4S+6Ht/Ai4ZN9/8plVin3cMWjsMWh7n9aoPD/
-         mAY/dNDTphDgP/AfwYFYcbINhXmVITQdyMwjzUe7RxxQ+63DxDNdYhLEx1t4hpYy+alS
-         6LDbWIPFzCGI6HM1UJyVAvEIp2BRKF6Wmiklg=
-Date: Thu, 22 Oct 2009 13:27:51 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "Leonidas ." <leonidas137@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Can current macro be accessed from interrupt context?
-Message-ID: <20091022112746.GA4928@nowhere>
-References: <f22d86810910220410r33002b5ei403ddf6632254472@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f22d86810910220410r33002b5ei403ddf6632254472@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 22 Oct 2009 07:29:16 -0400
+Date: Thu, 22 Oct 2009 04:29:39 -0700 (PDT)
+Message-Id: <20091022.042939.95166154.davem@davemloft.net>
+To: jarkao2@gmail.com
+Cc: johannes@sipsolutions.net, tilman@imap.cc, hidave.darkstar@gmail.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       linux-wireless@vger.kernel.org, linux-ppp@vger.kernel.org,
+       netdev@vger.kernel.org, paulus@samba.org, mb@bu3sch.de,
+       oliver@hartkopp.net
+Subject: Re: [PATCH] net: Adjust softirq raising in __napi_schedule
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091021213947.GA12202@ami.dom.local>
+References: <20091021211906.GA11401@ami.dom.local>
+	<1256160330.12174.2.camel@johannes.local>
+	<20091021213947.GA12202@ami.dom.local>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 04:10:49AM -0700, Leonidas . wrote:
-> Hello,
-> 
-> Going through UTLK, it says that current macro makes sense only in
-> case of process context,
-> in case of interrupt context it is invalid.
+From: Jarek Poplawski <jarkao2@gmail.com>
+Date: Wed, 21 Oct 2009 23:39:47 +0200
 
+> I'm not sure I can understand your question. This patch is mainly to
+> avoid using netif_rx()/netif_rx_ni() pair as a test of proper process
+> context handling; IMHO there're better tools for this (lockdep,
+> WARN_ON's).
 
-Indeed, usually it makes only sense in process context.
+Semantically I think your patch is correct, but I wonder about cost.
 
- 
-> But current would still be pointing to interrupted process right? The
-> pointer would still be valid?
+Something that is a simply per-cpu inline "or" operation is now a
+function call and potentially mispredicted branch inside of
+raise_softirq_irqoff().
 
+And netif_rx() is indeed a fast path for tunnels and other users so
+this does matter.
 
+I like having people call things in the correct context the function
+was built for, and thus we can avoiryd completely useless operations and
+tests as we can now in netif_rx().
 
-Yeah, unless you irq handler executes in a threaded interrupt, in
-which case current will be pointing to the given irq thread.
+Makaing things general purpose costs something, and it costs too much
+here for this critical routine, sorry.
 
-There are few tiny cases where it is unsafe to deref "current",
-such as the very beginning of a cpu's awakening, when the per cpu
-datas are not yet ready for this cpu.
-
-
-> Can I safely assume that whether or not interrupt handlers are
-> executing on separate stacks or
-> interrupted threads stack, current macro can be accessed from interrupt context?
-
-
-Yep.
-For example we do that in the function graph tracer. Because we store return
-addresses of functions in the "current" task structure. Even if the task
-is interrupted, it still makes sense to use current because we want
-to know the flow of execution as a linear thing per cpu, the interrupt
-is part of that flow
-
-I hope that helps.
-
-Frederic.
-
+I was just having a talk with Nick Piggin about these kinds of issues
+today, too few people care about these ever encrouching tiny pieces
+of bloat that slow the kernel down gradually over time, and I simply
+won't stand for it when I notice it :-)
