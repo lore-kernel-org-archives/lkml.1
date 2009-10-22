@@ -1,114 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbZJVT5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZJVVDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756549AbZJVT5w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 15:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbZJVT5v
+	id S1756730AbZJVVDZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 17:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZJVVDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 15:57:51 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:52999 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754917AbZJVT5u (ORCPT
+	Thu, 22 Oct 2009 17:03:24 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:46991 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753325AbZJVVDY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 15:57:50 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArEEAChW4EpGGN1W/2dsb2JhbACBUtp2hD8EgV17
-Date: Thu, 22 Oct 2009 15:57:53 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       ltt-dev@lists.casi.polymtl.ca, rp@svcs.cs.pdx.edu
-Subject: Sparc64 support added to Userspace RCU
-Message-ID: <20091022195753.GA27253@Krystal>
-References: <20091022183242.GA19307@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20091022183242.GA19307@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 15:51:26 up 65 days,  6:40,  4 users,  load average: 0.29, 0.27,
-	0.24
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 22 Oct 2009 17:03:24 -0400
+X-Greylist: delayed 3611 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Oct 2009 17:03:24 EDT
+Message-id: <4AE0BA6B.50805@acm.org>
+Date: Thu, 22 Oct 2009 15:02:51 -0500
+From: Corey Minyard <minyard@acm.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+MIME-version: 1.0
+To: Bela Lubkin <blubkin@vmware.com>
+Cc: "'Matt Domsch'" <Matt_Domsch@dell.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "discuss@LessWatts.org" <discuss@LessWatts.org>,
+       "openipmi-developer@lists.sourceforge.net" 
+	<openipmi-developer@lists.sourceforge.net>
+Subject: Re: [Openipmi-developer] [Discuss] [PATCH] ipmi: use	round_jiffies on
+ timers to reduce timer overhead/wakeups
+References: <20091021102822.5b32b2dc.randy.dunlap@oracle.com>
+ <20091021114210.4d7e1ea9@linux.intel.com>	<4ADF57D7.7010808@intel.com>
+ <20091021130348.cd521b0c.randy.dunlap@oracle.com>	<4ADF6D76.7070409@acm.org>
+ <4ADF75A2.50202@linux.intel.com>
+ <20091022025013.GB20467@auslistsprd01.us.dell.com>
+ <E0AA796A7E3F4C4E8F1065D15FE4786183AF6948@EXCH-MBX-4.vmware.com>
+In-reply-to: <E0AA796A7E3F4C4E8F1065D15FE4786183AF6948@EXCH-MBX-4.vmware.com>
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By the way, I just added sparc64 support to the Userspace RCU library,
-available at: git://lttng.org/userspace-rcu.git
+Bela Lubkin wrote:
+> Matt Domsch wrote:
+>
+>   
+>> Though I'm really curious that HP has a KCS+interrupt controller
+>> available.  That gives me hope that the industry-wide problems which
+>> prevented Dell from doing likewise a couple years ago are now
+>> resolved.  I'll have my team look into it again.
+>>     
+>
+> Can you expand on "industry-wide problems"?  (Forced to share
+> interrupts with a high rate device?  Design your gizmo to
+> support MSI/MSI-x.  Add MSI support to ipmi_si if necessary...)
+>
+> As far as I can tell, HP has never shipped an interrupt-less
+> BMC.  Their current iLO2 BMC is KCS + interrupt.  Their older
+> design was SMIC + interrupt.
+>
+> Why does everyone use KCS when BT is obviously better?  Can
+> you have your team look into that as well?  (Among the various
+> goals here, I assume that BT -- with a single interrupt and a
+> DMA transfer instead of shuffling bytes over I/O ports -- would
+> cost less power.  Not that the members of that list will
+> receive this message: it bounces nonmembers.)
+>   
+This is an industry where pennies matter, apparently.
 
-Interesting files concerning sparc64 are:
+My personal preference would be to use the I2C based standard 
+interface.  That actually doesn't perform too badly, it's probably 
+cheaper than KCS since you already have I2C, anyway, and the I2C 
+interfaces are generally tied to an interrupt.  The trouble is that the 
+only hardware implementation of this I know of seems to be poorly done, 
+but that mostly affects trying to use the ethernet interface and the 
+local interface at the same time.
 
-urcu/arch_sparc64.h
-urcu/uatomic_arch_sparc64.h
+Of course, the driver for I2C is not yet in the standard kernel as it 
+requires a fairly massive I2C driver rewrite to allow the IPMI driver to 
+do it's panic-time operations.
 
-Direct links:
-http://www.lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git;a=blob;f=urcu/arch_sparc64.h;hb=HEAD
-http://www.lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git;a=blob;f=urcu/uatomic_arch_sparc64.h;hb=HEAD
+BT would be better for performance, I guess, but it's yet another 
+interface to tie in, and hanging this off an existing bus seems like a 
+sensible thing to do.  And performance is really not an issue for IPMI.
 
-Please note that this code targets user-space, not kernel-space.
-
-Feedback is welcome,
-
-Thanks,
-
-Mathieu
-
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> Hi David,
-> 
-> I took a look at the current sparc64 cmpxchg implementation in the Linux
-> kernel and stumbled on this commit:
-> 
-> commit 293666b7a17cb7a389fc274980439212386a19c4
-> Author: David S. Miller <davem@davemloft.net>
-> Date:   Sat Nov 15 13:33:25 2008 -0800
-> 
->     sparc64: Stop using memory barriers for atomics and locks.
->     
->     The kernel always executes in the TSO memory model now,
->     so none of this stuff is necessary any more.
->     
->     With helpful feedback from Nick Piggin.
->     
->     Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> Reading p. 152 A.9 Compare and Swap, I see that the cas instruction does
-> not imply a memory barrier.
-> 
-> Reading http://docs.sun.com/app/docs/doc/801-6678/6i11oelck?a=view
-> 
-> I see that:
-> 
-> "TSO guarantees that the store, FLUSH, and atomic load-store
-> instructions of all processors appear to be executed by memory serially
-> in a single order called the memory order. Furthermore, the sequence of
-> store, FLUSH, and atomic load-store instructions in the memory order for
-> a given processor is identical to the sequence in which they were issued
-> by the processor."
-> 
-> So it provides no guarantee whatsoever wrt loads. However, reading
-> Documentation/memory-barriers.txt:
-> 
-> "Whilst they are technically interprocessor interaction considerations,
-> atomic operations are noted specially as some of them imply full memory
-> barriers and some don't, but they're very heavily relied on as a group
-> throughout the kernel." -> cmpxchg is part of them.
-> 
-> The same applies to the other atomic instructions we find in this list.
-> How is the correct ordering of loads wrt to cmxchg (and other atomic
-> ops) still ensured by this modification?
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+-corey
