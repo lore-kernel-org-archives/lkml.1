@@ -1,129 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbZJVURX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbZJVUhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755072AbZJVURX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 16:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbZJVURW
+	id S1755919AbZJVUhF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 16:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZJVUhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 16:17:22 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59593 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751767AbZJVURV (ORCPT
+	Thu, 22 Oct 2009 16:37:04 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:6815 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752392AbZJVUhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 16:17:21 -0400
-Date: Thu, 22 Oct 2009 22:17:18 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz
-Subject: Re: zaurus: cleanup sharpsl_pm.c (fwd)
-Message-ID: <20091022201718.GF6611@elf.ucw.cz>
+	Thu, 22 Oct 2009 16:37:03 -0400
+From: Adam Nemet <anemet@caviumnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19168.49354.525249.654494@ropi.home>
+Date: Thu, 22 Oct 2009 13:30:02 -0700
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: wuzhangjin@gmail.com, Richard Sandiford <rdsandiford@googlemail.com>,
+       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>
+Subject: Re: [PATCH -v4 4/9] tracing: add static function tracer support for
+ MIPS
+In-Reply-To: <4AE0A5BE.8000601@caviumnetworks.com>
+References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
+	<2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
+	<3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
+	<ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
+	<1256138686.18347.3039.camel@gandalf.stny.rr.com>
+	<1256233679.23653.7.camel@falcon>
+	<4AE0A5BE.8000601@caviumnetworks.com>
+X-Mailer: VM 8.0.9 under Emacs 23.0.93.1 (x86_64-pc-linux-gnu)
+X-OriginalArrivalTime: 22 Oct 2009 20:30:03.0293 (UTC) FILETIME=[6F4A8CD0:01CA5356]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(I sent this to Eric, here it is for public record, too.)
+David Daney writes:
+> Wu Zhangjin wrote:
+> > On Wed, 2009-10-21 at 11:24 -0400, Steven Rostedt wrote:
+> [...]
+> >>> +
+> >>> +NESTED(_mcount, PT_SIZE, ra)
+> >>> +	RESTORE_SP_FOR_32BIT
+> >>> +	PTR_LA	t0, ftrace_stub
+> >>> +	PTR_L	t1, ftrace_trace_function /* please don't use t1 later, safe? */
+> >> Is t0 and t1 safe for mcount to use? Remember, mcount does not follow
+> >> the dynamics of C function ABI.
+> > 
+> > So, perhaps we can use the saved registers(a0,a1...) instead.
+> > 
+> 
+> a0..a7 may not always be saved.
+> 
+> You can use at, v0, v1 and all the temporary registers.  Note that for 
+> the 64-bit ABIs sometimes the names t0-t4 shadow a4-a7.  So for a 64-bit 
+> kernel, you can use: $1, $2, $3, $12, $13, $14, $15, $24, $25, noting 
+> that at == $1 and contains the callers ra.  For a 32-bit kernel you can 
+> add $8, $9, $10, and $11
+> 
+> This whole thing seems a little fragile.
 
-Hi!
+Maybe scanning the instructions should stop at the beginning of the function
+based on the kernel's symbol table.  I am not sure if we can establish any
+other stopping condition without affecting performance too much.
 
+Speaking of performance, -pg also affects the instruction scheduling freedom
+of the compiler in the prologue.  With profiling, we limit optimizations not
+to move instructions in and out of the prologue.
 
-> >> > Well, I'd say that the sharing leads to some very ugly code. ... so
-> >> > I'd preer it unshared.
-> >> >
-> >>
-> >> I suggest to re-name it to "sharpsl_" something instead of "spitz_",
-> >> to be less confusing at this moment.
-> >
-> > Yep, but lets do that as next patch, ok?
+Also note that for functions invoked via tail call you won't get an exit
+event.  E.g. if bar is tail-called from foo:
 
----
+  foo entered
+  bar entered
+  foo/bar exited
 
-Battery power levels are shared between spitz and corgi, rename
-variable to reflect it.
+However, this is not MIPS-specific and you can always disable tail calls
+with -fno-optimize-sibling-calls.
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
-diff --git a/arch/arm/mach-pxa/corgi_pm.c b/arch/arm/mach-pxa/corgi_pm.c
-index a093282..d4a0733 100644
---- a/arch/arm/mach-pxa/corgi_pm.c
-+++ b/arch/arm/mach-pxa/corgi_pm.c
-@@ -214,8 +214,8 @@ static struct sharpsl_charger_machinfo corgi_pm_machinfo = {
- 	.fatal_acin_volt  = SHARPSL_FATAL_ACIN_VOLT,
- 	.fatal_noacin_volt= SHARPSL_FATAL_NOACIN_VOLT,
- 	.bat_levels       = 40,
--	.bat_levels_noac  = spitz_battery_levels_noac,
--	.bat_levels_acin  = spitz_battery_levels_acin,
-+	.bat_levels_noac  = sharpsl_battery_levels_noac,
-+	.bat_levels_acin  = sharpsl_battery_levels_acin,
- 	.status_high_acin = 188,
- 	.status_low_acin  = 178,
- 	.status_high_noac = 185,
-diff --git a/arch/arm/mach-pxa/sharpsl.h b/arch/arm/mach-pxa/sharpsl.h
-index 55259f4..1439785 100644
---- a/arch/arm/mach-pxa/sharpsl.h
-+++ b/arch/arm/mach-pxa/sharpsl.h
-@@ -42,8 +42,8 @@ void corgi_lcdtg_hw_init(int mode);
- #define MAX1111_BATT_TEMP   2u
- #define MAX1111_ACIN_VOLT   6u
- 
--extern struct battery_thresh spitz_battery_levels_acin[];
--extern struct battery_thresh spitz_battery_levels_noac[];
-+extern struct battery_thresh sharpsl_battery_levels_acin[];
-+extern struct battery_thresh sharpsl_battery_levels_noac[];
- int sharpsl_pm_pxa_read_max1111(int channel);
- 
- 
-diff --git a/arch/arm/mach-pxa/sharpsl_pm.c b/arch/arm/mach-pxa/sharpsl_pm.c
-index dc3907f..67229a1 100644
---- a/arch/arm/mach-pxa/sharpsl_pm.c
-+++ b/arch/arm/mach-pxa/sharpsl_pm.c
-@@ -78,7 +78,7 @@ DEFINE_LED_TRIGGER(sharpsl_charge_led_trigger);
- 
- 
- 
--struct battery_thresh spitz_battery_levels_acin[] = {
-+struct battery_thresh sharpsl_battery_levels_acin[] = {
- 	{ 213, 100},
- 	{ 212,  98},
- 	{ 211,  95},
-@@ -121,7 +121,7 @@ struct battery_thresh spitz_battery_levels_acin[] = {
- 	{   0,   0},
- };
- 
--struct battery_thresh  spitz_battery_levels_noac[] = {
-+struct battery_thresh sharpsl_battery_levels_noac[] = {
- 	{ 213, 100},
- 	{ 212,  98},
- 	{ 211,  95},
-diff --git a/arch/arm/mach-pxa/spitz_pm.c b/arch/arm/mach-pxa/spitz_pm.c
-index 60bfaff..fc5a70c 100644
---- a/arch/arm/mach-pxa/spitz_pm.c
-+++ b/arch/arm/mach-pxa/spitz_pm.c
-@@ -208,8 +208,8 @@ struct sharpsl_charger_machinfo spitz_pm_machinfo = {
- 	.fatal_acin_volt  = SHARPSL_FATAL_ACIN_VOLT,
- 	.fatal_noacin_volt= SHARPSL_FATAL_NOACIN_VOLT,
- 	.bat_levels       = 40,
--	.bat_levels_noac  = spitz_battery_levels_noac,
--	.bat_levels_acin  = spitz_battery_levels_acin,
-+	.bat_levels_noac  = sharpsl_battery_levels_noac,
-+	.bat_levels_acin  = sharpsl_battery_levels_acin,
- 	.status_high_acin = 188,
- 	.status_low_acin  = 178,
- 	.status_high_noac = 185,
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
------ End forwarded message -----
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Adam
