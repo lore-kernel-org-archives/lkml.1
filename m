@@ -1,70 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbZJVXKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751335AbZJVXXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430AbZJVXKx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 19:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755216AbZJVXKx
+	id S1751335AbZJVXXm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 19:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbZJVXXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 19:10:53 -0400
-Received: from outbound-mail-308.bluehost.com ([67.222.53.254]:36705 "HELO
-	outbound-mail-308.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755199AbZJVXKw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 19:10:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=hUd0ut9iqCarrmpcrRija3sCFIxtxoU7GGB8A5Gyn3bdHSuoD/zjODsrUNPRScWdYTYSO09PnFpvIlRltENmKqfVASZGD7ZvifCdKtllINkGLrddrgn97nVf1WPw7Phs;
-Date: Fri, 23 Oct 2009 08:10:47 +0900
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Eric Anholt <eric@anholt.net>,
-       Thomas Schlichter <thomas.schlichter@web.de>,
-       Ingo Molnar <mingo@elte.hu>, Jan Beulich <JBeulich@novell.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Robert Hancock <hancockrwd@gmail.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Tejun Heo <tj@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       Ingo Molnar <mingo@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
- available
-Message-ID: <20091023081047.4d8abc29@jbarnes-x200>
-In-Reply-To: <1256248050.2546.9.camel@sbs-t61>
-References: <1394846127@web.de>
-	<4ADF32A0020000780001B20A@vpn.id2.novell.com>
-	<20091021173514.GA32227@elte.hu>
-	<200910212201.36578.thomas.schlichter@web.de>
-	<1256205210.2530.28.camel@sbs-t61>
-	<1256225689.32075.6.camel@gaiman.anholt.net>
-	<1256248050.2546.9.camel@sbs-t61>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.2; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 Oct 2009 19:23:42 -0400
+Received: from smtp.cs.ubc.ca ([142.103.6.52]:51656 "EHLO smtp.cs.ubc.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750976AbZJVXXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 19:23:41 -0400
+X-Greylist: delayed 437 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Oct 2009 19:23:41 EDT
+Message-ID: <4AE0E7C9.5070705@cs.ubc.ca>
+Date: Thu, 22 Oct 2009 16:16:25 -0700
+From: "Charles 'Buck' Krasic" <krasic@cs.ubc.ca>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: asinha@zeugmasystems.com
+Subject: [RFC] Cooperative Polling - an alternative for real time scheduling
+ and deadlines
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 125.200.72.71 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Oct 2009 14:47:30 -0700
-Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+The good folks at lwn.net have recently published a nice article about
+deadline scheduling and Linux.
 
-> On Thu, 2009-10-22 at 08:34 -0700, Eric Anholt wrote:
-> > Can we just not create the _wc sysfs entry if we don't have PAT?  I
-> > don't think there's userland relying on its presence as opposed to
-> > the non-_wc entry.
-> 
-> Yes indeed. Jesse do you see an issue with this? This is simple and
-> clean. Thanks Eric.
+My colleagues and I have developed a new scheduler for Linux that may
+be of interest.   Our approach is called cooperative polling.   It
+consists new scheduler for Linux and a new system call "coop_poll".
+Applications use coop_poll to explicitly communicate timing
+information (release times, virtual execution time) to and from the
+kernel.  Our scheduler is not a deadline scheduler in the classic
+sense, but it does share some characteristics.   Notably, it allows
+applications to communicate times (not deadlines in our case, but
+release-times) directly to the kernel scheduler, as opposed to using
+priority based scheduling.    Unlike deadline scheduling, we are not
+shooting for hard guarantees,  we don't require nor do we support
+schedulability analysis.    Our approach looks to fit real-time and
+best-effort processes together in a sensible way.     Our cooperative
+tasks can get good timing, but not with the risk of starving everyone
+else.
 
-Yeah, I think that will be fine.  In fact, older versions of
-libpciaccess will behave better if we do it that way (iirc it only
-allocates an MTRR if the resource_wc file doesn't exist or fails to get
-mapped).
+We presented our ideas earlier this year at the Eurosys 2009
+conference.   The talk slides and paper are available here:
 
-Jesse
+           http://qstream.org/coop/
+
+The basic premise of our approach is that if time-sensitive
+applications pro-actively supply timing information to the kernel, it
+is possible to employ cooperative scheduling that is more responsive
+(processes run when they want to), and more efficient (fewer un-
+necessary context switches) than existing techniques that use
+heuristics and purely pre-emptive scheduling.   We still use pre-
+emption to ensure fairness, and prevent misbehaviour, but we believe
+it is quite natural for time-sensitive applications to cooperate
+properly.   In the paper, we describe how this works for a video streaming
+application, and also we modified the X server to use coop poll.    We
+do require applications be modified, which may be easy for some or
+hard for others.    I do believe our model could suit a broad range of
+time-sensitive applications.
+
+We're very interested in any feedback.
+
+-- Buck
+
+Charles 'Buck' Krasic
+Assistant Professor
+Department of Computer Science
+University of British Columbia
+
+ps The patch (for 2.6.26.5) is available at the above link too.   I'm mainly
+interested to get feedback on the ideas though.   The code is very
+rough, it's typical research code produced by graduate students.   It
+needs a lot of cleanup and polish.  Also, if anyone is brave enough to
+read the code closely, I'll warn that much of the terminology in the
+paper differs from the code.
+
