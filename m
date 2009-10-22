@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZJVEPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbZJVEPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752908AbZJVEPg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 00:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZJVEPf
+	id S1753188AbZJVEPk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 00:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbZJVEPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 00:15:35 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:31934 "EHLO
+	Thu, 22 Oct 2009 00:15:36 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:31982 "EHLO
 	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751815AbZJVEPV (ORCPT
+	with ESMTP id S1751919AbZJVEP0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 00:15:21 -0400
-Subject: [PATCH v2 4/5] mm: add numa node symlink for cpu devices in sysfs
+	Thu, 22 Oct 2009 00:15:26 -0400
+Subject: [PATCH v2 5/5] Documentation: ABI: /sys/devices/system/cpu/cpu#/node
 To: akpm@linux-foundation.org
 From: Alex Chiang <achiang@hp.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Date: Wed, 21 Oct 2009 22:15:25 -0600
-Message-ID: <20091022041525.15705.6794.stgit@bob.kio>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Date: Wed, 21 Oct 2009 22:15:30 -0600
+Message-ID: <20091022041530.15705.29051.stgit@bob.kio>
 In-Reply-To: <20091022040814.15705.95572.stgit@bob.kio>
 References: <20091022040814.15705.95572.stgit@bob.kio>
 User-Agent: StGit/0.14.3.386.gb02d
@@ -26,57 +27,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You can discover which CPUs belong to a NUMA node by examining
-/sys/devices/system/node/node#/
+Describe NUMA node symlink created for CPUs when CONFIG_NUMA is set.
 
-However, it's not convenient to go in the other direction, when looking at
-/sys/devices/system/cpu/cpu#/
-
-Yes, you can muck about in sysfs, but adding these symlinks makes
-life a lot more convenient.
-
+Cc: Greg KH <greg@kroah.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/base/node.c |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
+ Documentation/ABI/testing/sysfs-devices-system-cpu |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/base/node.c b/drivers/base/node.c
-index ffda067..24fa962 100644
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -227,6 +227,7 @@ struct node node_devices[MAX_NUMNODES];
-  */
- int register_cpu_under_node(unsigned int cpu, unsigned int nid)
- {
-+	int ret;
- 	struct sys_device *obj;
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index b400c34..67813ae 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -79,6 +79,21 @@ Description:	Discover and change the online state of a CPU.
  
- 	if (!node_online(nid))
-@@ -236,9 +237,15 @@ int register_cpu_under_node(unsigned int cpu, unsigned int nid)
- 	if (!obj)
- 		return 0;
+ 		For more information, please read Documentation/cpu-hotplug.txt
  
--	return sysfs_create_link(&node_devices[nid].sysdev.kobj,
-+	ret = sysfs_create_link(&node_devices[nid].sysdev.kobj,
- 				&obj->kobj,
- 				kobject_name(&obj->kobj));
-+	if (ret)
-+		return ret;
 +
-+	return sysfs_create_link(&obj->kobj,
-+				 &node_devices[nid].sysdev.kobj,
-+				 kobject_name(&node_devices[nid].sysdev.kobj));
- }
- 
- int unregister_cpu_under_node(unsigned int cpu, unsigned int nid)
-@@ -254,6 +261,8 @@ int unregister_cpu_under_node(unsigned int cpu, unsigned int nid)
- 
- 	sysfs_remove_link(&node_devices[nid].sysdev.kobj,
- 			  kobject_name(&obj->kobj));
-+	sysfs_remove_link(&obj->kobj,
-+			  kobject_name(&node_devices[nid].sysdev.kobj));
- 
- 	return 0;
- }
++What:		/sys/devices/system/cpu/cpu#/node
++Date:		October 2009
++Contact:	Linux memory management mailing list <linux-mm@kvack.org>
++Description:	Discover NUMA node a CPU belongs to
++
++		When CONFIG_NUMA is enabled, a symbolic link that points
++		to the corresponding NUMA node directory.
++
++		For example, the following symlink is created for cpu42
++		in NUMA node 2:
++
++		/sys/devices/system/cpu/cpu42/node2 -> ../../node/node2
++
++
+ What:		/sys/devices/system/cpu/cpu#/topology/core_id
+ 		/sys/devices/system/cpu/cpu#/topology/core_siblings
+ 		/sys/devices/system/cpu/cpu#/topology/core_siblings_list
 
