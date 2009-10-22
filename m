@@ -1,114 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757166AbZJVWMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbZJVWMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757166AbZJVWMU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 18:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757129AbZJVWMP
+	id S1757152AbZJVWMT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 18:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756977AbZJVWMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 18:12:15 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:12842 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757018AbZJVWMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 18:12:17 -0400
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:55712 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757122AbZJVWMN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 22 Oct 2009 18:12:13 -0400
-Date: Fri, 23 Oct 2009 00:12:04 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Jon Masters <jcm@redhat.com>
-cc: linux-rt-users@vger.kernel.org, Clark Williams <williams@redhat.com>
-Subject: [PATCH -rt] Updates-from-Jon-Masters-for-hwlat_detector.c.patch
-Message-ID: <alpine.LFD.2.00.0910230007030.3737@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 67.160.239.110
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+EfxFafzpnfZkr8LYq102F
+Subject: [PATCH 05/10] omap1: Fix DSP public peripherals support for ams-delta
+To: linux-arm-kernel@lists.infradead.org
+From: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Date: Thu, 22 Oct 2009 15:12:16 -0700
+Message-ID: <20091022221216.27408.39863.stgit@localhost>
+In-Reply-To: <20091022221013.27408.443.stgit@localhost>
+References: <20091022221013.27408.443.stgit@localhost>
+User-Agent: StGit/0.14.3.347.g594a
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Thomas
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
 
-I took Jon Masters' latest hwlat_detector patch for upstream, and grabbed 
-the bits that aren't currently in -rt. The patch is fairly small.
+DSP public peripherals used to work on OMAP1510 based (or all OMAP1 class?)
+machines as long as old dspgateway code were present in the l-o tree. For
+several months it is no longer included, breaking support for McBSP1 based
+audio on Amstrad Delta, for example.
 
-Please consider it for the next -rt release.
+This patch, derived from the old dspgateway code, corrects the problem for the
+board by simply taking the DSP out of reset state, I guess. That way, things
+should not break when a new dsp code is added to the tree, and the change can
+be reverted then.
 
-John
+If there are any reports on McBSP1 or other DSP public peripherals not working
+for other OMAP1 machines (I've not heard of any for now), I can prepare a more
+general patch providing an extra include file with a helper function defined.
 
->From 97e12a96f58eea70c6a223ac849ec894165884b5 Mon Sep 17 00:00:00 2001
-From: Jon Masters <jcm@jonmasters.org>
-Date: Thu, 22 Oct 2009 19:33:56 +0200
-Subject: [PATCH] Updates from Jon Masters for hwlat_detector.c
+Created and tested against linux-2.6.32-rc5
 
-Signed-off-by: Jon Masters <jcm@jonmasters.org>
-Signed-off-by: John Kacur <jkacur@redhat.com>
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- drivers/misc/Kconfig          |    2 +-
- drivers/misc/hwlat_detector.c |   16 ++++++++++++----
- 2 files changed, 13 insertions(+), 5 deletions(-)
+ arch/arm/mach-omap1/board-ams-delta.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 15cd6bc..35f441c 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -95,7 +95,7 @@ config IBM_ASM
- config HWLAT_DETECTOR
- 	tristate "Testing module to detect hardware-induced latencies"
- 	depends on DEBUG_FS
--	select RING_BUFFER
-+	depends on RING_BUFFER
- 	default m
- 	---help---
- 	  A simple hardware latency detector. Use this module to detect
-diff --git a/drivers/misc/hwlat_detector.c b/drivers/misc/hwlat_detector.c
-index be6553f..7191e17 100644
---- a/drivers/misc/hwlat_detector.c
-+++ b/drivers/misc/hwlat_detector.c
-@@ -262,6 +262,8 @@ static int get_sample(void *unused)
- 		/* Keep a running maximum ever recorded hardware latency */
- 		if (sample > data.max_sample)
- 			data.max_sample = sample;
+diff --git a/arch/arm/mach-omap1/board-ams-delta.c b/arch/arm/mach-omap1/board-ams-delta.c
+index 972499e..8ad5cc3 100644
+--- a/arch/arm/mach-omap1/board-ams-delta.c
++++ b/arch/arm/mach-omap1/board-ams-delta.c
+@@ -235,6 +235,8 @@ static void __init ams_delta_init(void)
+ 
+ 	omap_usb_init(&ams_delta_usb_config);
+ 	platform_add_devices(ams_delta_devices, ARRAY_SIZE(ams_delta_devices));
 +
-+		wake_up(&data.wq); /* wake up reader(s) */
- 	}
++	omap_writew(omap_readw(ARM_RSTCT1) | 0x0004, ARM_RSTCT1);
+ }
  
- 	ret = 0;
-@@ -299,8 +301,6 @@ static int kthread_fn(void *unused)
- 			goto err_out;
- 		}
- 
--		wake_up(&data.wq); /* wake up reader(s) */
--
- 		interval = data.sample_window - data.sample_width;
- 		do_div(interval, USEC_PER_MSEC); /* modifies interval value */
- 
-@@ -607,7 +607,11 @@ static ssize_t  debug_enable_fwrite(struct file *filp,
- 		if (!enabled)
- 			goto unlock;
- 		enabled = 0;
--		stop_kthread();
-+		err = stop_kthread();
-+		if (0 != err) {
-+			printk(KERN_ERR BANNER "cannot stop kthread\n");
-+			return -EFAULT;
-+		}
- 		wake_up(&data.wq);		/* reader(s) should return */
- 	}
- unlock:
-@@ -1194,9 +1198,13 @@ out:
-  */
- static void detector_exit(void)
- {
-+	int err;
-+
- 	if (enabled) {
- 		enabled = 0;
--		stop_kthread();
-+		err = stop_kthread();
-+		if (0 != err)
-+			printk(KERN_ERR BANNER "cannot stop kthread\n");
- 	}
- 
- 	free_debugfs();
--- 
-1.6.0.6
+ static struct plat_serial8250_port ams_delta_modem_ports[] = {
 
- 
