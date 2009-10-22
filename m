@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbZJVVbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZJVVdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755820AbZJVVbR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 17:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbZJVVbR
+	id S1756237AbZJVVdz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 17:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbZJVVdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 17:31:17 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:8461 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752731AbZJVVbQ (ORCPT
+	Thu, 22 Oct 2009 17:33:54 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:21173 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753620AbZJVVdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 17:31:16 -0400
-From: Adam Nemet <anemet@caviumnetworks.com>
+	Thu, 22 Oct 2009 17:33:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hqt7iM8IGgJkAMRCWDEFbXLhI1GdUh/zZEaIyOwRHxv/91q6m0FY5QtbXULOlc4wND
+         0EQWqql5UgijtXZObb4zc+cMH3/vMePtK2FW2yK7H7yEXkMg8b+MGL0yVcWYsQdHfN81
+         Tycqq3CCdDzAH5Lj5tTXlQT5JB8AG1ywu99fo=
+Date: Thu, 22 Oct 2009 23:33:53 +0200
+From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       David Rientjes <rientjes@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org,
+       jens.axboe@oracle.com, Tobias Oetiker <tobi@oetiker.ch>
+Subject: Re: [PATCH] SLUB: Don't drop __GFP_NOFAIL completely from
+	allocate_slab() (was: Re: [Bug #14265] ifconfig: page allocation
+	failure. order:5,ode:0x8020 w/ e100)
+Message-ID: <20091022213353.GA7137@bizet.domek.prywatny>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.rP.2MTxKB@chimera> <20091021200442.GA2987@bizet.domek.prywatny> <alpine.DEB.2.00.0910211400140.20010@chino.kir.corp.google.com> <20091021212034.GB2987@bizet.domek.prywatny> <20091022102014.GL11778@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19168.52948.22223.757259@ropi.home>
-Date: Thu, 22 Oct 2009 14:29:56 -0700
-To: rostedt@goodmis.org
-Cc: David Daney <ddaney@caviumnetworks.com>, wuzhangjin@gmail.com,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-Subject: Re: [PATCH -v4 4/9] tracing: add static function tracer support
- for MIPS
-In-Reply-To: <1256244726.20866.802.camel@gandalf.stny.rr.com>
-References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
-	<2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
-	<3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
-	<ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
-	<1256138686.18347.3039.camel@gandalf.stny.rr.com>
-	<1256233679.23653.7.camel@falcon>
-	<4AE0A5BE.8000601@caviumnetworks.com>
-	<19168.49354.525249.654494@ropi.home>
-	<1256244726.20866.802.camel@gandalf.stny.rr.com>
-X-Mailer: VM 8.0.9 under Emacs 23.0.93.1 (x86_64-pc-linux-gnu)
-X-OriginalArrivalTime: 22 Oct 2009 21:29:56.0713 (UTC) FILETIME=[CD22ED90:01CA535E]
+Content-Disposition: inline
+In-Reply-To: <20091022102014.GL11778@csn.ul.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt writes:
-> On Thu, 2009-10-22 at 13:30 -0700, Adam Nemet wrote:
-> > Also note that for functions invoked via tail call you won't get an exit
-> > event.  E.g. if bar is tail-called from foo:
+On Thu, Oct 22, 2009 at 11:20:14AM +0100, Mel Gorman wrote:
+> On Wed, Oct 21, 2009 at 11:20:34PM +0200, Karol Lewandowski wrote:
+> > > Note: slub isn't going to be a culprit in order 5 allocation failures 
+> > > since they have kmalloc passthrough to the page allocator.
 > > 
-> >   foo entered
-> >   bar entered
-> >   foo/bar exited
+> > However, it might change fragmentation somewhat I guess.  This might
+> > make problem more/less visible.
 > > 
-> > However, this is not MIPS-specific and you can always disable tail calls
-> > with -fno-optimize-sibling-calls.
 > 
-> The question is, would bar have a _mcount call? So far, we have not had
-> any issues with this on either x86 nor PPC.
+> Did you have CONFIG_KMEMCHECK set by any chance?
 
-Yes, bar will have an _mcount call.  The difference is that bar will return to
-foo's caller directly rather than to foo first.
+No, kmemcheck (and kmemleak) was always disabled.
 
-Adam
+It's likely that's possible to trigger allocation failures with slab,
+I just haven't been successful at it.  Lack of good testcase is really
+problem here -- even if I can't trigger failures I can never be sure
+that these wont appear in some strange moment.
+
+BTW I'll test your patches (from another thread) shortly.
+
+Thanks.
