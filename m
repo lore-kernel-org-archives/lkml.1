@@ -1,94 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbZJVPdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756529AbZJVPez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932152AbZJVPdP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 11:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756265AbZJVPdO
+	id S1756529AbZJVPez (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 11:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbZJVPey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 11:33:14 -0400
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:42950 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756257AbZJVPdM (ORCPT
+	Thu, 22 Oct 2009 11:34:54 -0400
+Received: from 71-20-254-182.war.clearwire-wmx.net ([71.20.254.182]:42735 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756025AbZJVPey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 11:33:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=H0PX9f9k/izS+mAYwCqWNv3Mhpw+PowOC758kE5CWRz2aMYz7QSDFgJ2fQmCHBdqkh
-         yQddC0lHrkCMmQAT4dnvmzzvzJxXVII/1QKtSVWge4wFiDs/MDz2LrY4T2OsghlW9cGW
-         IPQ5XXJ/N+kuh6gAtiwtPeVPa1ZcnFKw75ZpY=
-Message-ID: <4AE07B2F.2040508@gmail.com>
-Date: Thu, 22 Oct 2009 11:33:03 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Gleb Natapov <gleb@redhat.com>, Gregory Haskins <ghaskins@novell.com>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [KVM PATCH 1/2] KVM: Directly inject interrupts via irqfd
-References: <20091021143042.14955.22470.stgit@dev.haskins.net> <20091021143453.14955.80578.stgit@dev.haskins.net> <20091021152621.GR29477@redhat.com> <4ADF2A1B.3010205@gmail.com> <20091021153640.GS29477@redhat.com> <4ADF2BDD.40706@gmail.com> <4AE07541.8060903@redhat.com> <4AE076E0.7030100@gmail.com> <4AE07814.6020906@redhat.com>
-In-Reply-To: <4AE07814.6020906@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBE0F6C12684A324E5F4616DB"
+	Thu, 22 Oct 2009 11:34:54 -0400
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
+ available
+From: Eric Anholt <eric@anholt.net>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Thomas Schlichter <thomas.schlichter@web.de>, Ingo Molnar <mingo@elte.hu>,
+       Jan Beulich <JBeulich@novell.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Tejun Heo <tj@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
+       Ingo Molnar <mingo@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       Thomas Hellstrom <thellstrom@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <1256205210.2530.28.camel@sbs-t61>
+References: <1394846127@web.de>
+	 <4ADF32A0020000780001B20A@vpn.id2.novell.com>
+	 <20091021173514.GA32227@elte.hu>
+	 <200910212201.36578.thomas.schlichter@web.de>
+	 <1256205210.2530.28.camel@sbs-t61>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-X26ivNY//v0fMy8AGKzp"
+Date: Thu, 22 Oct 2009 08:34:49 -0700
+Message-Id: <1256225689.32075.6.camel@gaiman.anholt.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBE0F6C12684A324E5F4616DB
-Content-Type: text/plain; charset=ISO-8859-1
+
+--=-X26ivNY//v0fMy8AGKzp
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Avi Kivity wrote:
-> On 10/22/2009 05:14 PM, Gregory Haskins wrote:
->> Yeah, I was thinking about that after I initially responded to Gleb.
->>
->> I am thinking something along these lines:
->>
->> Provide a function that lets you query a GSI for whether it supports
->> LOCKLESS or not.  Then we can either do one of two things:
->>
->> 1) Check for the LOCKLESS attribute at irqfd registration, fail if not=
-
->> present
->>   =20
+On Thu, 2009-10-22 at 02:53 -0700, Suresh Siddha wrote:
+> On Wed, 2009-10-21 at 13:01 -0700, Thomas Schlichter wrote:
+> > OK, so I think the attached patches should do it. Hopefully I have addr=
+essed=20
+> > all your comments.
 >=20
-> This is the most practical path and leads to the smallest code.  Howeve=
-r
-> it has the deficiency of exposing internal implementation details to
-> userspace.  In theory userspace could use msi and edge-triggered
-> pic/ioapic interrupts equally well, it shouldn't have to know that we
-> didn't bother to lockfree ioapic/pic.
+> Thomas,
 >=20
->> 2) Cache the LOCKLESS attribute in the irqfd structure, and either go
->> direct or defer to a workqueue depending on the flag.
->>   =20
+> I have couple of issues with this patchset still. pci_mmap_page_range()
+> doesn't get called for each fork(). So, we won't be ref counting the
+> mtrr usage properly.
 >=20
-> While this leads to larger code, it is more consistent.
+> I need to think a bit more carefully on this. Can I get back to you
+> early next week on this, as I am traveling and need to think through
+> this?
 >=20
+> We already keep track of some of the PAT ref counting using
+> track_pfn_vma_copy(). And we need to extend/use something similar here.
+>=20
+> Even if we need to extend sysfs or pci vma ops, we need to increment and
+> decrement the ref count of the mtrr register that gets used. There is no
+> need to go through num_var_ranges etc.
 
-Yeah, I think you are right.  Consider these two patches retracted, and
-I will rewrite it with this concept in place.
+Can we just not create the _wc sysfs entry if we don't have PAT?  I
+don't think there's userland relying on its presence as opposed to the
+non-_wc entry.
 
-Kind Regards,
--Greg
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
 
 
---------------enigBE0F6C12684A324E5F4616DB
+
+--=-X26ivNY//v0fMy8AGKzp
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkrgey8ACgkQP5K2CMvXmqFVlACfWe0ZVNURu+I8jtJkRBS2w91T
-bxYAnA4cV+jB8541HR0vzs0RQLQ9hgIn
-=QfaY
+iEYEABECAAYFAkrge5kACgkQHUdvYGzw6vc/hACeOrqru1n8dzPJotQbH/+SrRhw
+H3IAnArtWqj9O8zCg1NXr0goyk70eJuJ
+=QFgQ
 -----END PGP SIGNATURE-----
 
---------------enigBE0F6C12684A324E5F4616DB--
+--=-X26ivNY//v0fMy8AGKzp--
+
