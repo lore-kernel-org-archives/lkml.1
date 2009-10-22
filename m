@@ -1,96 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbZJVGEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbZJVGNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753563AbZJVGEw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 02:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZJVGEw
+	id S1753257AbZJVGNm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 02:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbZJVGNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 02:04:52 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:27585 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbZJVGEv convert rfc822-to-8bit (ORCPT
+	Thu, 22 Oct 2009 02:13:42 -0400
+Received: from ozlabs.org ([203.10.76.45]:58183 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751263AbZJVGNl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 02:04:51 -0400
-From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-To: ext Samuel Ortiz <sameo@linux.intel.com>
-Subject: Re: [PATCH 1/4] MFD: twl4030: add twl4030_codec MFD as a new child to the core
-Date: Thu, 22 Oct 2009 09:04:32 +0300
-User-Agent: KMail/1.12.2 (Linux/2.6.31-gentoo; KDE/4.3.2; i686; ; )
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "tony@atomide.com" <tony@atomide.com>,
-       "broonie@opensource.wolfsonmicro.com" 
-	<broonie@opensource.wolfsonmicro.com>
-References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com> <1255956140-4829-2-git-send-email-peter.ujfalusi@nokia.com> <20091021231311.GF17796@sortiz.org>
-In-Reply-To: <20091021231311.GF17796@sortiz.org>
+	Thu, 22 Oct 2009 02:13:41 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PULL] virtio fixes
+Date: Thu, 22 Oct 2009 16:43:44 +1030
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
+References: <200910191301.24726.rusty@rustcorp.com.au> <alpine.LFD.2.00.0910220831090.9771@eeepc.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0910220831090.9771@eeepc.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
-Message-Id: <200910220904.32676.peter.ujfalusi@nokia.com>
-X-OriginalArrivalTime: 22 Oct 2009 06:04:39.0123 (UTC) FILETIME=[8A12FA30:01CA52DD]
-X-Nokia-AV: Clean
+Content-Disposition: inline
+Message-Id: <200910221643.44411.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 October 2009 02:13:11 ext Samuel Ortiz wrote:
-> As Mark noticed already, you dont really want users to explicitely select
->  this obscure mfd driver to get their audio and vibre driver selectable. It
->  should be the other way around, and I think you already agreed with that.
-
-Yes, I have already made the modification.
-
+On Thu, 22 Oct 2009 10:01:43 am Linus Torvalds wrote:
 > 
-> > +static struct device *
-> > +twl4030_codec_new_child(const char *name, void *pdata, unsigned
-> > pdata_len) +{
-
-...
- 
-> This could really use the mfd-core API, and avoid duplicating code.
-> You just would have to define a couple cells, and call mfd_add_devices on
-> them.
-
-Good point. When I wrote this driver I have been looking at the twl4030-core 
-driver, which is not using the mfd-core API. I'll make the change.
-
+> On Mon, 19 Oct 2009, Rusty Russell wrote:
+> > 
+> >   ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
 > 
-> > +static int __devexit twl4030_codec_remove(struct platform_device *pdev)
-> > +{
-> > +	struct twl4030_codec *codec = platform_get_drvdata(pdev);
-> > +
-> > +	platform_set_drvdata(pdev, NULL);
-> > +	kfree(codec);
-> > +	twl4030_codec_dev = NULL;
-> > +
-> > +	return 0;
-> > +}
+> "Already up-to-date.".
 > 
-> I think you're missing a platform_device_unregister() here (or an
-> mfd_remove_devices() if you're going to switch to the mfd-core API)
+> Forgot to push?
 
-You are right, although I have used the bool in the Kconfig for the twl4030-
-codec in a same way as the twl4030-core (and the core did not unregister the 
-devices either), but yes, this is not correct so I'll fix it.
+Oops, overzealous master.kernel.org space reclamation from me :
 
-I have now question about the practicalities on how this series would be taken, 
-and via which tree.
-The final patch for the soc codec driver depends on the change in MFD and in the 
-OMAP board files.
-The change in the OMAP board files depends on the MFD changes, obviously.
+This time for sure!
+Rusty/
 
-So in order to have the soc codec changes the MFD and OMAP part has to be 
-applied before, otherwise the audio will be broken.
+The following changes since commit 2fdc246aaf9a7fa088451ad2a72e9119b5f7f029:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../bp/bp
 
-the mfd-2.6:for-next branch has some patches against the twl4030-core in 
-addition to the ones in l-o and in sound-2.6:topic/asoc.
+are available in the git repository at:
 
-I'll check, if the MFD patch applies to mfd-2.6:for-next also, but to have the 
-soc codec changes the MFD patch should go to the sound-2.6 tree as well to make 
-sure it is not braking things.
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
 
-All-in-all, how these things can be handled?
+Christian Borntraeger (1):
+      virtio: let header files include virtio_ids.h
 
-Thanks, 
-Péter
+Christoph Hellwig (1):
+      virtio_blk: revert QUEUE_FLAG_VIRT addition
+
+Rusty Russell (1):
+      virtio_blk: Revert serial number support
+
+Uwe Kleine-König (2):
+      move virtballoon_remove to .devexit.text
+      move virtrng_remove to .devexit.text
+
+ Documentation/lguest/lguest.c       |    1 -
+ drivers/block/virtio_blk.c          |   39 ++--------------------------------
+ drivers/char/hw_random/virtio-rng.c |    3 +-
+ drivers/char/virtio_console.c       |    1 -
+ drivers/net/virtio_net.c            |    1 -
+ drivers/virtio/virtio_balloon.c     |    3 +-
+ include/linux/Kbuild                |    1 +
+ include/linux/virtio_9p.h           |    1 +
+ include/linux/virtio_balloon.h      |    1 +
+ include/linux/virtio_blk.h          |    5 +---
+ include/linux/virtio_console.h      |    1 +
+ include/linux/virtio_net.h          |    1 +
+ include/linux/virtio_rng.h          |    1 +
+ net/9p/trans_virtio.c               |    1 -
+ 14 files changed, 12 insertions(+), 48 deletions(-)
