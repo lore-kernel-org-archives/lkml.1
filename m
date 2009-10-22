@@ -1,131 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbZJVIL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985AbZJVILO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753959AbZJVIL4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 04:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZJVILz
+	id S1752985AbZJVILO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 04:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZJVILN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 04:11:55 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:48908 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751687AbZJVILx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 04:11:53 -0400
-Subject: Re: [PATCH] DRTL kernel 2.6.32-rc3 : SCHED_EDF, DI RT-Mutex,
- Deadline  Based Interrupt Handlers
-From: Raistlin <raistlin@linux.it>
-To: Soumya K S <ssks.mt@gmail.com>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Claudio Scordino <claudio@evidence.eu.com>,
-       michael trimarchi <trimarchi@gandalf.sssup.it>
-In-Reply-To: <e932a33e0910210838j3be9286bo3953c4cae3f0e12e@mail.gmail.com>
-References: <e932a33e0910210833j1fab6129m23b55101c5978c4a@mail.gmail.com>
-	 <e932a33e0910210838j3be9286bo3953c4cae3f0e12e@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-7710OQz06+8yY5lmcHp1"
-Date: Thu, 22 Oct 2009 09:54:48 +0200
-Message-Id: <1256198088.6700.76.camel@Palantir>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 22 Oct 2009 04:11:13 -0400
+Received: from mga06.intel.com ([134.134.136.21]:18284 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751007AbZJVILM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 04:11:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,604,1249282800"; 
+   d="scan'208";a="562111155"
+Date: Thu, 22 Oct 2009 09:57:49 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "broonie@opensource.wolfsonmicro.com" 
+	<broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 1/4] MFD: twl4030: add twl4030_codec MFD as a new child
+ to the core
+Message-ID: <20091022075748.GA8105@sortiz.org>
+References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com>
+ <1255956140-4829-2-git-send-email-peter.ujfalusi@nokia.com>
+ <20091021231311.GF17796@sortiz.org>
+ <200910220904.32676.peter.ujfalusi@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200910220904.32676.peter.ujfalusi@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 22, 2009 at 09:04:32AM +0300, Peter Ujfalusi wrote:
+> I'll check, if the MFD patch applies to mfd-2.6:for-next also, but to have the 
+> soc codec changes the MFD patch should go to the sound-2.6 tree as well to make 
+> sure it is not braking things.
+> 
+> All-in-all, how these things can be handled?
+The OMAP patch has been acked by Tony. Then we I'm fine with the mfd one and
+Mark is also ok with the remaining asoc one, all 3 patches have to go through
+one single tree.
 
---=-7710OQz06+8yY5lmcHp1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+It seems to me that this patchset is mostly an asoc one, even though all of
+those patches depend on the MFD one. So I'd perfectly fine if they'd all go
+through Mark's tree, and then I'd have to make sure I'm sending my 2.6.33
+merge window pull request _after_ Mark's code is in Linus tree. Once it's
+there, I can work on merging conflicts with the few twl4030-core pending
+patches from my tree. Mark, what do you think ?
 
-On Wed, 2009-10-21 at 21:08 +0530, Soumya K S wrote:
-> Hello All,
->=20
-Hi,
+Cheers,
+Samuel.
 
-I'm Dario, from Pisa (Italy), and I'm working on EDF scheduling for the
-Linux kernel as you do (don't know if you've seen the threads and the
-patches, all info here http://gitorious.org/sched_deadline/pages/Home).
+ 
+> Thanks, 
+> Péter
 
-> The developed framework allows user to specify the real-time
-> strategies for a specific real-time scenario. User specifies
-> configurations like scheduling policy, Deadline-miss Fault-tolerance
-> limit, interrupt priorities, etc. Real-time applications use onetime
-> gateway to notify kernel that they require real-time response. All
-> applications use existing POSIX APIs. DRTL scheduler is time-aware and
-> uses EDF as the scheduling policy.
->=20
-Nice, from here, it seemed we were working on very similar things, and I
-was wondering if we could somehow collaborate... :-)
-
-Then I looked at the code and I saw our two designs are quite different,
-e.g., you don't constraint execution times, don't run any admission test
-to avoid oversubscription and you stop deadline missing tasks... Am I
-right?
-Even from the implementation point of view, I see you didn't used a new
-scheduling class.
-
-However, I think there still would be room for collaboration, if you are
-interested in...
-
-> The patch consists of Time aware scheduler having SCHED_EDF as the
-> scheduling policy, Deadline based scheduling for Interrupt handlers,
-> Deadline Inheritance support for RT-Mutexes.
->=20
-I was very curious on how you dealt with deadline inheritance in SMPs,
-than I saw this in your patch:
-
-diff -Naur linux-2.6.32-rc3/init/Kconfig linux-2.6.32-rc3-drtl/init/Kconfig
-+config SCHED_EDF
-+	bool "EDF Scheduler Support"
-+	default n
-+	depends on !GROUP_SCHED
-+	depends on !SMP
-
-:-P
-
-I'm right in the opposite situation, I've got SMP (partitioned for now,
-but we're working on migrations) and also CGROUPS support, but we are
-still wondering how deadline (or something more sophisticated, like
-bandwidth) inheritance could work in such a case...
-
-Again, I think I see collaboration possibilities, again, if you're
-interested in...
-
-> The patch is for the kernel version 2.6.32-rc3. It has been tested on
-> OMAP3530, ATMEL AT91SAM9261 and X86 platforms.
->=20
-Ok... Are you also targeting (or plan to) preempt-rt kernels?
-
-> We look forward for support and feedback about
-> DRTL <http://docs.google.com/fileview?id=3D0BzLQtQ1qAO7uYjYyN2QwNGUtYWE2Y=
-S00MDc1LWExYWUtZTliNjNjNmZiZTZj&hl=3Den>
-> and the patch for its feasibility, scalability and performance.
->=20
-Do you already have any numbers or testcase? I have some (well, a few!)
-of them... I'll try to find the time to give it a try to your patch with
-them...
-
-Regards,
-Dario
-
---=20
-<<This happens because I choose it to happen!>> (Raistlin Majere)
-----------------------------------------------------------------------
-Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
-
-http://blog.linux.it/raistlin / raistlin@ekiga.net /
-dario.faggioli@jabber.org
-
---=-7710OQz06+8yY5lmcHp1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkrgD8EACgkQk4XaBE3IOsSgwwCfa3y1D//B4hlWOYojMIsNBdkW
-MkcAnj3FqpOFNSUa3HFD/OZGRFiHwxM7
-=0eJp
------END PGP SIGNATURE-----
-
---=-7710OQz06+8yY5lmcHp1--
-
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
