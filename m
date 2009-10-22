@@ -1,32 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752074AbZJWNfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZJWNfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752074AbZJWNfy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 09:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZJWNfA
+	id S1751956AbZJWNfH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 09:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbZJWNfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 09:35:00 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:43320 "EHLO
+	Fri, 23 Oct 2009 09:35:04 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:43325 "EHLO
 	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751607AbZJWNe6 (ORCPT
+	with ESMTP id S1751858AbZJWNfB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 09:34:58 -0400
-Subject: Re: [PATCH] net: Adjust softirq raising in __napi_schedule
+	Fri, 23 Oct 2009 09:35:01 -0400
+Subject: Re: 2.6.32-rc5-git1 -- INFO: possible circular locking dependency
+ detected
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Tilman Schmidt <tilman@imap.cc>, David Miller <davem@davemloft.net>,
-       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-wireless@vger.kernel.org,
-       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
-       Michael Buesch <mb@bu3sch.de>, Oliver Hartkopp <oliver@hartkopp.net>
-In-Reply-To: <20091021213947.GA12202@ami.dom.local>
-References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local>
-	 <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc>
-	 <20091021211906.GA11401@ami.dom.local>
-	 <1256160330.12174.2.camel@johannes.local>
-	 <20091021213947.GA12202@ami.dom.local>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-CucNFXYmnSnNQhEM6i4T"
-Date: Thu, 22 Oct 2009 10:27:01 +0200
-Message-Id: <1256200021.12174.11.camel@johannes.local>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Holger Schurig <hs4233@mail.mn-solutions.de>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>
+In-Reply-To: <4ADDBD2A.7070807@gmail.com>
+References: <4ADDBD2A.7070807@gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-NdW1pWgTUZ4H1OMPV1Od"
+Date: Thu, 22 Oct 2009 10:34:43 +0200
+Message-Id: <1256200483.12174.16.camel@johannes.local>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.0 
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,61 +30,76 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-CucNFXYmnSnNQhEM6i4T
+--=-NdW1pWgTUZ4H1OMPV1Od
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2009-10-21 at 23:39 +0200, Jarek Poplawski wrote:
+On Tue, 2009-10-20 at 09:37 -0400, Miles Lane wrote:
+> Resending with wrapping off and time info removed:
 
-> > > -	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
-> > > +	raise_softirq_irqoff(NET_RX_SOFTIRQ);
-> >=20
-> > This still doesn't make any sense.
-> >=20
-> > There may or may not be a lot of code that assumes that everything else
-> > is run with other tasklets disabled, and that it cannot be interrupted
-> > by a tasklet and thus create a race.
-> >=20
-> > Can you prove that is not the case, across the entire networking layer?
+Hey, thanks for that!
+
+> [ INFO: possible circular locking dependency detected ]
+>  2.6.32-rc5-git1 #1
+>  -------------------------------------------------------
+>  events/0/9 is trying to acquire lock:
+>   (&rfkill->sync_work){+.+.+.}, at: [<c1039083>]=20
+> __cancel_work_timer+0x81/0x181
+> =20
+>  but task is already holding lock:
+>   (&ehotk->hotplug_lock){+.+.+.}, at: [<f8587708>]=20
+> eeepc_rfkill_hotplug+0x45/0xda [eeepc_laptop]
+> =20
+>  which lock already depends on the new lock.
+> =20
 >=20
-> I'm not sure I can understand your question. This patch is mainly to
-> avoid using netif_rx()/netif_rx_ni() pair as a test of proper process
-> context handling; IMHO there're better tools for this (lockdep,
-> WARN_ON's).
+>  the existing dependency chain (in reverse order) is:
+> =20
+>  -> #2 (&ehotk->hotplug_lock){+.+.+.}:
 
-And how exactly does that matter to the patch at hand?!
+>         [<c129e5ee>] mutex_lock_nested+0x2b/0x33
+>         [<f8587708>] eeepc_rfkill_hotplug+0x45/0xda [eeepc_laptop]
+>         [<f858787c>] eeepc_rfkill_set+0x1d/0x2d [eeepc_laptop]
+>         [<f83f4a9f>] rfkill_set_block+0x6f/0xb1 [rfkill]
+>         [<f83f4b78>] __rfkill_switch_all+0x2e/0x51 [rfkill]
+>         [<f83f4c12>] rfkill_switch_all+0x33/0x41 [rfkill]
+>         [<f83f51b0>] rfkill_op_handler+0xf0/0x11e [rfkill]
+>         [<c1038965>] worker_thread+0x161/0x233
+>         [<c103b883>] kthread+0x5f/0x64
+>         [<c1003613>] kernel_thread_helper+0x7/0x10
+> =20
+>  -> #1 (rfkill_global_mutex){+.+.+.}:
+>         [<c104ac60>] __lock_acquire+0x9fb/0xb6d
+>         [<c104ae2e>] lock_acquire+0x5c/0x73
+>         [<c129e223>] __mutex_lock_common+0x39/0x375
+>         [<c129e5ee>] mutex_lock_nested+0x2b/0x33
+>         [<f83f4c36>] rfkill_sync_work+0x16/0x35 [rfkill]
 
-I'm saying that it seems to me, as indicated by the API (and without
-proof otherwise that's how it is) the networking layer needs to have
-packets handed to it with softirqs disabled. Therefore, this patch is
-not needed. While it may not be _wrong_, it'll definitely introduce a
-performance regression.
-
-This really should be obvious. You're fixing the warning at the source
-of the warning, rather than the source of the problem.
+Hmm. It seems eeepc takes the hotplug lock in the set path, but also
+elsewhere? Seems like a bug in eeepc, Alan?
 
 johannes
 
---=-CucNFXYmnSnNQhEM6i4T
+--=-NdW1pWgTUZ4H1OMPV1Od
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABAgAGBQJK4BdSAAoJEODzc/N7+QmazNcP/1JmQK9nI+Lg9fAQRj+Anj4h
-dzuASnI6MGz+uSIueUNPQN7uv57tvD17jsftZzgR2MawI6WDJSNR6qZM2eICXKa6
-HUfxBlByQ7mQN+IuigMlop1ZGTHza7UjUVQq/YLsVU99y4LwAPZJIYddAbtiXzWq
-xrOPSSc1QUIjfgZct+FlJBrdS/G0JIxCNwyD7HyJcxaSyOuNW/lmqg7YEF6hnoCV
-NBVCszM0KUHaxQVumy97YnaIOvxC8w+fVycI4kvWDhKLhHfwowc+Vi3/Pkb5ofML
-WaWTvaoEGeml99YD2uprZb5vKWmKGm4NxHJr2s/3AC0xbDVLsXDg9hPVZdTwVE0d
-Hx4L4uYQC4hr9+TRrFBDYqymbYgbJ0ZufdrIwicygQBpOZfLDmx7M47LDGlbJ7D3
-LfE5PWu3C0+qegi9k5MI8w6DlyVlVAnG6jgWGgyNle5fOCg7cmN+IBGl57XrTVPF
-G1vRBDSFzBLDUQPRkBrwDO7rDNRoB3xiOAQiDNsKf1h0zdsDY4PlgOKlT6A6sVMC
-8UqB5D1nLM57IShUH+0bypp9GNEN7q2XGge8nyXYKDsMlPZjLOJMMUR5IdJZxnbS
-CeIWTQqoqu/inV381OWn4S20tofOQI38F4h4WOWswLUlRbWh+HDPTnfJpeim2Z7q
-u6tvV3UkEoicmPfJcqbD
-=aeCA
+iQIcBAABAgAGBQJK4BkgAAoJEODzc/N7+QmaxfAP/RtscsXQS99FqXPywJe4K4H+
+6G0ottiBxCxjleJ98aOGnUN5SZaMNQJ9VjDNCEuguiIUac3bTTvmRFGyc5jFHTkr
+3YeITUAxGCnJGYv9hcrOPohBaNQBBiNbhB634sF128rZLAk7+a4xEZyRaNY3l7Of
+jrC0dXzFGa9sNEcXZSSwNYXQtyOtVCclGiSisVlZnCv5+wA5h7wgAUqkndOXgk0U
+sAZGFhVK208JuSyPHH7nq3IvXp8b9/QcuwYfE5ZlV5bW9P9vxSLEGdKQyLxouKH+
+QFJd1smh1l6yI2PKfEMpXZecxzzw3K/P4X+IE7qT8K2ADVRhhwyPGFvRdDa8rQmg
+2+JOb7v0XiCg42G+MW2/nmeNgHm5y87yfL/o3ESKNyJKhqLNFVgyIlrnFz2+3wR3
+AhZNyifxdAJKSiFXF/5TVtwbLDdod1rqFolGUz6oGN2FH6x2mzzGgqyTR/FzuaOP
++daBWVnHp3XyMLSVzGWD8sHinGLSrVU8bjqEEaSNIHrooKuMuv4uYVE1IyKlHgwj
+U/mj2ieONVlHq1Gi+pM+7jQwBUM/XNHxxeLRco77tg7UyF7BnKGx9y4WeNVAVH2T
+KZ7/Sj5phHfTk+amVVFhHyTzFsa5blIVVP6gexJLm4rFmHLo+UTcQjbuwmoJt0UY
+6uUFIkZiWgBoIdUIWZQ5
+=sx87
 -----END PGP SIGNATURE-----
 
---=-CucNFXYmnSnNQhEM6i4T--
+--=-NdW1pWgTUZ4H1OMPV1Od--
 
