@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZJVMOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbZJVK0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbZJVMOn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 08:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755260AbZJVMOm
+	id S1753345AbZJVK0S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 06:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbZJVK0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 08:14:42 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43768 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755301AbZJVMOm (ORCPT
+	Thu, 22 Oct 2009 06:26:17 -0400
+Received: from lider.pardus.org.tr ([193.140.100.216]:59424 "EHLO
+	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752494AbZJVK0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 08:14:42 -0400
-Date: Thu, 22 Oct 2009 12:29:38 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org, Constantin Baranov <const@mimas.ru>
-Subject: Re: [PATCH] leds-alix2: add support for button connected to J15
-Message-ID: <20091022102937.GA3981@ucw.cz>
-References: <20091016130315.GT28832@buzzloop.caiaq.de> <1255863412.27878.136.camel@ted> <20091019071621.GZ28832@buzzloop.caiaq.de>
+	Thu, 22 Oct 2009 06:26:16 -0400
+Message-ID: <4AE03477.1010902@pardus.org.tr>
+Date: Thu, 22 Oct 2009 13:31:19 +0300
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.23 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091019071621.GZ28832@buzzloop.caiaq.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       linux-media@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: uvcvideo causes ehci_hcd to halt
+References: <Pine.LNX.4.44L0.0910212131560.24481-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0910212131560.24481-100000@netrider.rowland.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Alan Stern wrote On 22-10-2009 04:36:
+> On Thu, 22 Oct 2009, Laurent Pinchart wrote:
+>   
 
-> > > for a project I was working on, we used the J15 connector of the ALIX.2D
-> > > board (which is connected to a GPIO of the CS5536 Geode companion chip)
-> > > for an external button switch.
-...
-> Hmm, hard to say. One can either use that IO as output to control a
-> buzzer (which isn't placed on the board, but there are solder pads for
-> it), as output for other purpose or as input.
-> 
-> Don't know what other people use it for, though, but we needed an
-> external button in our case and use this IO pin for that purpose.
-> 
-> Anyway - I don't insist in that patch to be taken. The idea was more to
-> share it so others won't have to hack the same thing.
+Here's the outputs from /sys/kernel/debug/usb/ehci:
 
-So its gpio pin... if you teach gpio framework about it, you should be
-able to just use gpio_button driver to handle it, no?
+periodic:
+----------------
+size = 1024
+   1:  qh1024-0001/f6ffe280 (h2 ep2 [1/0] q0 p8)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+registers:
+----------------
+bus pci, device 0000:00:1d.7
+EHCI Host Controller
+EHCI 1.00, hcd state 0
+ownership 00000001
+SMI sts/enable 0x80080000
+structural params 0x00104208
+capability params 0x00016871
+status 6008 Periodic Recl FLR
+command 010000 (park)=0 ithresh=1 period=1024 HALT
+intrenable 00
+uframe 2fa0
+port 1 status 001000 POWER sig=se0
+port 2 status 001000 POWER sig=se0
+port 3 status 001000 POWER sig=se0
+port 4 status 001000 POWER sig=se0
+port 5 status 001005 POWER sig=se0 PE CONNECT
+port 6 status 001005 POWER sig=se0 PE CONNECT
+port 7 status 001000 POWER sig=se0
+port 8 status 001000 POWER sig=se0
+irq normal 60 err 0 reclaim 16 (lost 0)
+complete 60 unlink 1
