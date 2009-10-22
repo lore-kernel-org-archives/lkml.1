@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbZJVL6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbZJVMCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754988AbZJVL6f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 07:58:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbZJVL6e
+	id S1755208AbZJVMCw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 08:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbZJVMCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 07:58:34 -0400
-Received: from [195.39.106.218] ([195.39.106.218]:57385 "EHLO
-	trurl.localdomain" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754530AbZJVL6e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 07:58:34 -0400
-From: Lubomir Rintel <lkundrak@v3.sk>
-To: linux-sh@vger.kernel.org
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH] sh: Build fix: define more __movmem* symbols
-Date: Thu, 22 Oct 2009 13:58:37 +0200
-Message-Id: <1256212717-14858-1-git-send-email-lkundrak@v3.sk>
-X-Mailer: git-send-email 1.6.2.5
+	Thu, 22 Oct 2009 08:02:51 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:52336 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754337AbZJVMCv convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;4:1>);
+	Thu, 22 Oct 2009 08:02:51 -0400
+Message-Id: <4AE06644020000780001B4AD@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Thu, 22 Oct 2009 13:03:48 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: "Takashi Iwai" <tiwai@suse.de>, <linux-kernel@vger.kernel.org>,
+       <jbarnes@virtuousgeek.org>
+Subject: [PATCH] x86: adjust GFP mask handling for coherent allocations
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ERROR: "__movmemSI12" [net/unix/unix.ko] undefined!
-ERROR: "__movmemSI52" [net/ipv6/sit.ko] undefined!
-ERROR: "__movmemSI24" [net/ipv6/ipv6.ko] undefined!
-ERROR: "__movmemSI60" [net/ipv6/ipv6.ko] undefined!
-ERROR: "__movmemSI16" [net/ipv6/ipv6.ko] undefined!
-ERROR: "__movmemSI20" [net/ipv6/ipv6.ko] undefined!
-ERROR: "__movmemSI32" [net/ipv6/ipv6.ko] undefined!
----
- arch/sh/kernel/sh_ksyms_32.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+Rather than forcing GFP flags and DMA mask to be inconsistent, GFP
+flags should be determined even for the fallback device through
+dma_alloc_coherent_mask()/dma_alloc_coherent_gfp_flags(). This
+restores 64-bit behavior as it was prior to commits
+8965eb19386fdf5ccd0ef8b02593eb8560aa3416 and
+4a367f3a9dbf2e7ffcee4702203479809236ee6e (not sure why there are two of
+them), where GFP_DMA was forced on for 32-bit, but not for 64-bit, with
+the slight adjustment that afaict even 32-bit doesn't need this without
+CONFIG_ISA.
 
-diff --git a/arch/sh/kernel/sh_ksyms_32.c b/arch/sh/kernel/sh_ksyms_32.c
-index 86c2704..444cce3 100644
---- a/arch/sh/kernel/sh_ksyms_32.c
-+++ b/arch/sh/kernel/sh_ksyms_32.c
-@@ -85,6 +85,20 @@ DECLARE_EXPORT(__movstr_i4_even);
- DECLARE_EXPORT(__movstr_i4_odd);
- DECLARE_EXPORT(__movstrSI12_i4);
- DECLARE_EXPORT(__movmem);
-+DECLARE_EXPORT(__movmemSI8);
-+DECLARE_EXPORT(__movmemSI12);
-+DECLARE_EXPORT(__movmemSI16);
-+DECLARE_EXPORT(__movmemSI20);
-+DECLARE_EXPORT(__movmemSI24);
-+DECLARE_EXPORT(__movmemSI28);
-+DECLARE_EXPORT(__movmemSI32);
-+DECLARE_EXPORT(__movmemSI36);
-+DECLARE_EXPORT(__movmemSI40);
-+DECLARE_EXPORT(__movmemSI44);
-+DECLARE_EXPORT(__movmemSI48);
-+DECLARE_EXPORT(__movmemSI52);
-+DECLARE_EXPORT(__movmemSI56);
-+DECLARE_EXPORT(__movmemSI60);
- DECLARE_EXPORT(__movmem_i4_even);
- DECLARE_EXPORT(__movmem_i4_odd);
- DECLARE_EXPORT(__movmemSI12_i4);
--- 
-1.6.2.5
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: Takashi Iwai <tiwai@suse.de>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+
+---
+ arch/x86/include/asm/dma-mapping.h |    4 +---
+ arch/x86/kernel/pci-dma.c          |    8 +++++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+--- linux-2.6.32-rc5/arch/x86/include/asm/dma-mapping.h	2009-10-19 13:09:44.000000000 +0200
++++ 2.6.32-rc5-x86-dma-mask-gfp/arch/x86/include/asm/dma-mapping.h	2009-10-22 10:54:08.000000000 +0200
+@@ -124,10 +124,8 @@ dma_alloc_coherent(struct device *dev, s
+ 	if (dma_alloc_from_coherent(dev, size, dma_handle, &memory))
+ 		return memory;
+ 
+-	if (!dev) {
++	if (!dev)
+ 		dev = &x86_dma_fallback_dev;
+-		gfp |= GFP_DMA;
+-	}
+ 
+ 	if (!is_device_dma_capable(dev))
+ 		return NULL;
+--- linux-2.6.32-rc5/arch/x86/kernel/pci-dma.c	2009-10-19 13:09:45.000000000 +0200
++++ 2.6.32-rc5-x86-dma-mask-gfp/arch/x86/kernel/pci-dma.c	2009-10-22 10:56:46.000000000 +0200
+@@ -45,12 +45,14 @@ int iommu_pass_through __read_mostly;
+ dma_addr_t bad_dma_address __read_mostly = 0;
+ EXPORT_SYMBOL(bad_dma_address);
+ 
+-/* Dummy device used for NULL arguments (normally ISA). Better would
+-   be probably a smaller DMA mask, but this is bug-to-bug compatible
+-   to older i386. */
++/* Dummy device used for NULL arguments (normally ISA). */
+ struct device x86_dma_fallback_dev = {
+ 	.init_name = "fallback device",
++#ifdef CONFIG_ISA
++	.coherent_dma_mask = DMA_BIT_MASK(24),
++#else
+ 	.coherent_dma_mask = DMA_BIT_MASK(32),
++#endif
+ 	.dma_mask = &x86_dma_fallback_dev.coherent_dma_mask,
+ };
+ EXPORT_SYMBOL(x86_dma_fallback_dev);
+
+
 
