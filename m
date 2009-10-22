@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbZJVPbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbZJVPcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756396AbZJVPbW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 11:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbZJVPbV
+	id S1756618AbZJVPcT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 11:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756528AbZJVPbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 11:31:21 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:44193 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756051AbZJVPbU (ORCPT
+	Thu, 22 Oct 2009 11:31:35 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:41211 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756517AbZJVPbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 11:31:20 -0400
-Message-ID: <4AE07AB7.2070901@austin.ibm.com>
-Date: Thu, 22 Oct 2009 10:31:03 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5 v4] Export memory_sysdev_class
-References: <4ADF1C49.2030201@austin.ibm.com>	 <4ADF1E42.3020907@austin.ibm.com> <1256141009.23737.22.camel@nimitz>
-In-Reply-To: <1256141009.23737.22.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Oct 2009 11:31:34 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 1/6] regulator: Also lift apply_uV into machine_constraints_voltage()
+Date: Thu, 22 Oct 2009 16:31:30 +0100
+Message-Id: <1256225495-15379-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It makes sense to do all the voltage configuration in the one split
+out function.
 
-Dave Hansen wrote:
-> On Wed, 2009-10-21 at 09:44 -0500, Nathan Fontenot wrote:
->> Export the memory_sysdev_class structure.  This is needed so we can create
->> a 'release' file in sysfs in addition to the existing 'probe' file in
->> order to support DLPAR removal of memory on the powerpc/pseries platform.
->> The new 'release' file will be powerpc/pseries only.
-> 
-> Please do it in generic code.  You may only need it on ppc today, but
-> somebody else is going to want the same thing tomorrow on another arch.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/core.c |   35 ++++++++++++++++++-----------------
+ 1 files changed, 18 insertions(+), 17 deletions(-)
 
-I thought about this but wasn't sure if having the probe/release sysfs files
-for memory and cpu be in generic code would be accepted.
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index c1a4991..1848a3f 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -676,6 +676,22 @@ static int machine_constraints_voltage(struct regulator_dev *rdev,
+ 	const char *name, struct regulation_constraints *constraints)
+ {
+ 	struct regulator_ops *ops = rdev->desc->ops;
++	int ret;
++
++	/* do we need to apply the constraint voltage */
++	if (rdev->constraints->apply_uV &&
++		rdev->constraints->min_uV == rdev->constraints->max_uV &&
++		ops->set_voltage) {
++		ret = ops->set_voltage(rdev,
++			rdev->constraints->min_uV, rdev->constraints->max_uV);
++			if (ret < 0) {
++				printk(KERN_ERR "%s: failed to apply %duV constraint to %s\n",
++				       __func__,
++				       rdev->constraints->min_uV, name);
++				rdev->constraints = NULL;
++				return ret;
++			}
++	}
+ 
+ 	/* constrain machine-level voltage specs to fit
+ 	 * the actual range supported by this regulator.
+@@ -773,27 +789,12 @@ static int set_machine_constraints(struct regulator_dev *rdev,
+ 	else
+ 		name = "regulator";
+ 
++	rdev->constraints = constraints;
++
+ 	ret = machine_constraints_voltage(rdev, name, constraints);
+ 	if (ret != 0)
+ 		goto out;
+ 
+-	rdev->constraints = constraints;
+-
+-	/* do we need to apply the constraint voltage */
+-	if (rdev->constraints->apply_uV &&
+-		rdev->constraints->min_uV == rdev->constraints->max_uV &&
+-		ops->set_voltage) {
+-		ret = ops->set_voltage(rdev,
+-			rdev->constraints->min_uV, rdev->constraints->max_uV);
+-			if (ret < 0) {
+-				printk(KERN_ERR "%s: failed to apply %duV constraint to %s\n",
+-				       __func__,
+-				       rdev->constraints->min_uV, name);
+-				rdev->constraints = NULL;
+-				goto out;
+-			}
+-	}
+-
+ 	/* do we need to setup our suspend state */
+ 	if (constraints->initial_state) {
+ 		ret = suspend_prepare(rdev, constraints->initial_state);
+-- 
+1.6.5
 
-Would it be acceptable to put the new release file for memory under the
-ARCH_MEMORY_PROBE config option?  This would reduce the number of arch'es
-that would require stubs as it appears only powerpc and x86 define this.
-
-I could do the same thing for the cpu probe/release files and a new
-ARCH_CPU_PROBE config option which would eliminate the required stubs
-in arch'es other than powerpc right now.
-
--Nathan Fontenot
-  
-> 
-> It's also nice to keep all of the stuff doing the actual sysfs munging
-> in one place.  I know it'll cost a few stubs for calling in and out of
-> arch code, but it should save some work down the road for somebody else.
-> 
-> -- Dave
-> 
