@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbZJVOCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbZJVNhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756152AbZJVOCL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 10:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbZJVOCL
+	id S1756134AbZJVNhZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 09:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZJVNhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 10:02:11 -0400
-Received: from mga02.intel.com ([134.134.136.20]:29046 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756078AbZJVOCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 10:02:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,605,1249282800"; 
-   d="scan'208";a="460216193"
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
- available
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Thomas Schlichter <thomas.schlichter@web.de>,
-       Jan Beulich <JBeulich@novell.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       Robert Hancock <hancockrwd@gmail.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Thomas Hellstrom <thellstrom@vmware.com>, Tejun Heo <tj@kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "x86@kernel.org" <x86@kernel.org>, Yinghai Lu <yinghai@kernel.org>
-In-Reply-To: <4AE04C95.6070402@zytor.com>
-References: <1395763521@web.de>  <4AE04C95.6070402@zytor.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 22 Oct 2009 06:26:53 -0700
-Message-Id: <1256218013.2546.9.camel@sbs-t61>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Oct 2009 09:37:24 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:61227 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756083AbZJVNhY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 09:37:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=NPlPFLZ135tSLbdJ9bX+APCs+B6Owrt8FrFuGIxVotzRdIMbqAz2HGd6eEauYibNS6
+         upJp1MgXAbpMEOJ8iB+iLgqT4H9CqsMe9mZtMckDr7ViU24S4cL1GO8NIftTCdh3lIDq
+         PTLD009+3RvZz3MaIw4CoT/Iz+mRJsTmwmmlg=
+MIME-Version: 1.0
+Date: Thu, 22 Oct 2009 06:29:39 -0700
+Message-ID: <f22d86810910220629o433ee5d0u9857d1fb1f01cd6@mail.gmail.com>
+Subject: Process id recycling and status of tasks
+From: "Leonidas ." <leonidas137@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-22 at 05:14 -0700, H. Peter Anvin wrote:
-> On 10/22/2009 09:08 PM, Thomas Schlichter wrote:
-> >>
-> >> I have couple of issues with this patchset still. pci_mmap_page_range()
-> >> doesn't get called for each fork(). So, we won't be ref counting the
-> >> mtrr usage properly.
-> >
-> > When forking, what happens with the "struct file"? If it is being copied, then the
-> > processes share the same private data which would be freed during the first
-> > release(). I think this would be a problem whereever file-private data are used.
-> >
-> > So I think it must be shared between the forked processes and some reference
-> > counting must exist. This reference counting must ensure that release() is only
-> > called when all processes did close() their file.
-> >
-> > And in that case (shared "struct file", one single release() call in the end) this
-> > implementation should be completely safe...
-> >
-> 
-> struct file is shared between forked processes.
+Hello,
 
-That is correct. But I am referring to the ref-count getting incremented
-in Thomas's patch only in the pci_mmap_page_range() which will be called
-only during first mmap.
+1. What would be an ideal way to check if a task is alive or dead from
+kernel space?
+I dont want to check current execution state of the task, rather I
+want to check whether task
+with this pid is existing currently or not?  I might want to do it
+periodically, hence even though
+a certain pid might exist, it might have got recycled by the time I
+check again, right?
 
-We need to keep track of the counts of later forks too. For PAT, we keep
-track of this ref counting in track_pfn_vma_copy(). We shouldn't use
-different tracking mechanisms for PAT and non-PAT. We should cleanly tap
-into track_pfn_vma_copy() or extend that to cover this case aswell.
+Following is an elementary attempt to achieve the same, but I am not
+convinced much, and
+I am not even sure I can do this kind of thing without knowing the
+context I am executing in.
 
-thanks,
-suresh
+task_t *p;
+read_lock(&tasklist_lock);
+for_each_process(p) {
+ if ( strcmp (p->comm, $your-daemon-name) == 0)
+   break;
+}
+read_unlock(&tasklist_lock);
 
+
+2. Basically, what would be parameters of a task which will uniquely
+identify a task which ever
+existed on my machine. Would it be <name, pid> tuple? Or something
+else which uniquely
+does this job? Basically differentiate N user space threads in a process.
+
+3. What is the algorithm followed for recycling pids? It does not look
+very straight fwd like
+pick up the latest freed pid for new task etc. I guess the pid
+recycling must be starting after
+certain threshold.
+
+Any pointers will be helpful.
+
+-Leo.
