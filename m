@@ -1,68 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985AbZJVILO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752074AbZJWNfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752985AbZJVILO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 04:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZJVILN
+	id S1752074AbZJWNfy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 09:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZJWNfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 04:11:13 -0400
-Received: from mga06.intel.com ([134.134.136.21]:18284 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751007AbZJVILM (ORCPT
+	Fri, 23 Oct 2009 09:35:00 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:43320 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbZJWNe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 04:11:12 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,604,1249282800"; 
-   d="scan'208";a="562111155"
-Date: Thu, 22 Oct 2009 09:57:49 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "tony@atomide.com" <tony@atomide.com>,
-       "broonie@opensource.wolfsonmicro.com" 
-	<broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 1/4] MFD: twl4030: add twl4030_codec MFD as a new child
- to the core
-Message-ID: <20091022075748.GA8105@sortiz.org>
-References: <1255956140-4829-1-git-send-email-peter.ujfalusi@nokia.com>
- <1255956140-4829-2-git-send-email-peter.ujfalusi@nokia.com>
- <20091021231311.GF17796@sortiz.org>
- <200910220904.32676.peter.ujfalusi@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200910220904.32676.peter.ujfalusi@nokia.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 23 Oct 2009 09:34:58 -0400
+Subject: Re: [PATCH] net: Adjust softirq raising in __napi_schedule
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Tilman Schmidt <tilman@imap.cc>, David Miller <davem@davemloft.net>,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless@vger.kernel.org,
+       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
+       Michael Buesch <mb@bu3sch.de>, Oliver Hartkopp <oliver@hartkopp.net>
+In-Reply-To: <20091021213947.GA12202@ami.dom.local>
+References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local>
+	 <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc>
+	 <20091021211906.GA11401@ami.dom.local>
+	 <1256160330.12174.2.camel@johannes.local>
+	 <20091021213947.GA12202@ami.dom.local>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-CucNFXYmnSnNQhEM6i4T"
+Date: Thu, 22 Oct 2009 10:27:01 +0200
+Message-Id: <1256200021.12174.11.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 09:04:32AM +0300, Peter Ujfalusi wrote:
-> I'll check, if the MFD patch applies to mfd-2.6:for-next also, but to have the 
-> soc codec changes the MFD patch should go to the sound-2.6 tree as well to make 
-> sure it is not braking things.
-> 
-> All-in-all, how these things can be handled?
-The OMAP patch has been acked by Tony. Then we I'm fine with the mfd one and
-Mark is also ok with the remaining asoc one, all 3 patches have to go through
-one single tree.
 
-It seems to me that this patchset is mostly an asoc one, even though all of
-those patches depend on the MFD one. So I'd perfectly fine if they'd all go
-through Mark's tree, and then I'd have to make sure I'm sending my 2.6.33
-merge window pull request _after_ Mark's code is in Linus tree. Once it's
-there, I can work on merging conflicts with the few twl4030-core pending
-patches from my tree. Mark, what do you think ?
+--=-CucNFXYmnSnNQhEM6i4T
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Samuel.
+On Wed, 2009-10-21 at 23:39 +0200, Jarek Poplawski wrote:
 
- 
-> Thanks, 
-> Péter
+> > > -	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
+> > > +	raise_softirq_irqoff(NET_RX_SOFTIRQ);
+> >=20
+> > This still doesn't make any sense.
+> >=20
+> > There may or may not be a lot of code that assumes that everything else
+> > is run with other tasklets disabled, and that it cannot be interrupted
+> > by a tasklet and thus create a race.
+> >=20
+> > Can you prove that is not the case, across the entire networking layer?
+>=20
+> I'm not sure I can understand your question. This patch is mainly to
+> avoid using netif_rx()/netif_rx_ni() pair as a test of proper process
+> context handling; IMHO there're better tools for this (lockdep,
+> WARN_ON's).
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+And how exactly does that matter to the patch at hand?!
+
+I'm saying that it seems to me, as indicated by the API (and without
+proof otherwise that's how it is) the networking layer needs to have
+packets handed to it with softirqs disabled. Therefore, this patch is
+not needed. While it may not be _wrong_, it'll definitely introduce a
+performance regression.
+
+This really should be obvious. You're fixing the warning at the source
+of the warning, rather than the source of the problem.
+
+johannes
+
+--=-CucNFXYmnSnNQhEM6i4T
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJK4BdSAAoJEODzc/N7+QmazNcP/1JmQK9nI+Lg9fAQRj+Anj4h
+dzuASnI6MGz+uSIueUNPQN7uv57tvD17jsftZzgR2MawI6WDJSNR6qZM2eICXKa6
+HUfxBlByQ7mQN+IuigMlop1ZGTHza7UjUVQq/YLsVU99y4LwAPZJIYddAbtiXzWq
+xrOPSSc1QUIjfgZct+FlJBrdS/G0JIxCNwyD7HyJcxaSyOuNW/lmqg7YEF6hnoCV
+NBVCszM0KUHaxQVumy97YnaIOvxC8w+fVycI4kvWDhKLhHfwowc+Vi3/Pkb5ofML
+WaWTvaoEGeml99YD2uprZb5vKWmKGm4NxHJr2s/3AC0xbDVLsXDg9hPVZdTwVE0d
+Hx4L4uYQC4hr9+TRrFBDYqymbYgbJ0ZufdrIwicygQBpOZfLDmx7M47LDGlbJ7D3
+LfE5PWu3C0+qegi9k5MI8w6DlyVlVAnG6jgWGgyNle5fOCg7cmN+IBGl57XrTVPF
+G1vRBDSFzBLDUQPRkBrwDO7rDNRoB3xiOAQiDNsKf1h0zdsDY4PlgOKlT6A6sVMC
+8UqB5D1nLM57IShUH+0bypp9GNEN7q2XGge8nyXYKDsMlPZjLOJMMUR5IdJZxnbS
+CeIWTQqoqu/inV381OWn4S20tofOQI38F4h4WOWswLUlRbWh+HDPTnfJpeim2Z7q
+u6tvV3UkEoicmPfJcqbD
+=aeCA
+-----END PGP SIGNATURE-----
+
+--=-CucNFXYmnSnNQhEM6i4T--
+
