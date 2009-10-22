@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbZJVI4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZJVJED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbZJVI4p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 04:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbZJVI4o
+	id S1753079AbZJVJED (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 05:04:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbZJVJEC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 04:56:44 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45087 "EHLO
+	Thu, 22 Oct 2009 05:04:02 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34711 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752664AbZJVI4n (ORCPT
+	with ESMTP id S1751055AbZJVJEA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 04:56:43 -0400
-Date: Thu, 22 Oct 2009 10:56:39 +0200
+	Thu, 22 Oct 2009 05:04:00 -0400
+Date: Thu, 22 Oct 2009 11:03:54 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: linux-fbdev-devel@lists.sourceforge.net,
+To: Arve Hj?nnev?g <arve@android.com>,
        kernel list <linux-kernel@vger.kernel.org>,
        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Andrew Morton <akpm@osdl.org>, Arve Hj?nnev?g <arve@android.com>,
-       Brian Swetland <swetland@google.com>
-Subject: drivers/video/msm: update to new kernel
-Message-ID: <20091022085639.GA30548@elf.ucw.cz>
+       Brian Swetland <swetland@google.com>, Greg KH <greg@kroah.com>
+Subject: dream in staging: remove wakelock support
+Message-ID: <20091022090354.GA30695@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -28,146 +27,445 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TASK_INTERRUPTIBLE and friends are now only available after including
-<linux/sched.h>, so include it when needed.
 
-bus_id is no longer available/neccessary, so remove that.
+Includes changed so that <linux/sched.h> is now needed for
+TASK_INTERRUPTIBLE and friends, so include it.
 
-Android pmem driver is not available in mainline, so remove its hooks
-from drivers/video.
+Remove hooks for features not in mainline, such as earlysuspend and
+wakelocks.
 
 Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-index 5c5a1ad..474421f 100644
---- a/drivers/video/msm/mddi.c
-+++ b/drivers/video/msm/mddi.c
-@@ -24,6 +24,7 @@
- #include <linux/spinlock.h>
- #include <linux/clk.h>
- #include <linux/io.h>
-+#include <linux/sched.h>
- #include <mach/msm_iomap.h>
- #include <mach/irqs.h>
- #include <mach/board.h>
-diff --git a/drivers/video/msm/mddi_client_nt35399.c b/drivers/video/msm/mddi_client_nt35399.c
-index 9c78050..c9e9349 100644
---- a/drivers/video/msm/mddi_client_nt35399.c
-+++ b/drivers/video/msm/mddi_client_nt35399.c
-@@ -19,6 +19,7 @@
+diff --git a/drivers/staging/dream/camera/msm_camera.c b/drivers/staging/dream/camera/msm_camera.c
+index 8816599..7d93877 100644
+--- a/drivers/staging/dream/camera/msm_camera.c
++++ b/drivers/staging/dream/camera/msm_camera.c
+@@ -13,6 +13,7 @@
  #include <linux/kernel.h>
- #include <linux/platform_device.h>
- #include <linux/interrupt.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
 +#include <linux/sched.h>
- #include <linux/gpio.h>
- #include <mach/msm_fb.h>
+ #include <mach/board.h>
  
-diff --git a/drivers/video/msm/mddi_client_toshiba.c b/drivers/video/msm/mddi_client_toshiba.c
-index 80d0f5f..71048e7 100644
---- a/drivers/video/msm/mddi_client_toshiba.c
-+++ b/drivers/video/msm/mddi_client_toshiba.c
-@@ -20,6 +20,7 @@
- #include <linux/platform_device.h>
- #include <linux/interrupt.h>
- #include <linux/gpio.h>
-+#include <linux/sched.h>
- #include <mach/msm_fb.h>
+ #include <linux/fs.h>
+@@ -1597,7 +1598,6 @@ static int __msm_release(struct msm_sync *sync)
+ 		MSM_DRAIN_QUEUE(sync, pict_frame_q);
  
+ 		sync->sctrl.s_release();
+-		wake_unlock(&sync->wake_lock);
  
-diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
-index 99636a2..6c519e2 100644
---- a/drivers/video/msm/mdp.c
-+++ b/drivers/video/msm/mdp.c
-@@ -22,9 +22,6 @@
- #include <linux/wait.h>
- #include <linux/clk.h>
- #include <linux/file.h>
--#ifdef CONFIG_ANDROID_PMEM
--#include <linux/android_pmem.h>
--#endif
- #include <linux/major.h>
+ 		sync->apps_id = NULL;
+ 		CDBG("msm_release completed!\n");
+@@ -1806,7 +1806,6 @@ static int __msm_open(struct msm_sync *sync, const char *const apps_id)
+ 	sync->apps_id = apps_id;
  
- #include <mach/msm_iomap.h>
-@@ -262,11 +259,6 @@ int get_img(struct mdp_img *img, struct fb_info *info,
- 	struct file *file;
- 	unsigned long vstart;
+ 	if (!sync->opencnt) {
+-		wake_lock(&sync->wake_lock);
  
--#ifdef CONFIG_ANDROID_PMEM
--	if (!get_pmem_file(img->memory_id, start, &vstart, len, filep))
--		return 0;
--#endif
+ 		msm_camvfe_fn_init(&sync->vfefn, sync);
+ 		if (sync->vfefn.vfe_init) {
+@@ -2044,8 +2043,6 @@ static int msm_sync_init(struct msm_sync *sync,
+ 	INIT_LIST_HEAD(&sync->pict_frame_q);
+ 	init_waitqueue_head(&sync->pict_frame_wait);
+ 
+-	wake_lock_init(&sync->wake_lock, WAKE_LOCK_IDLE, "msm_camera");
 -
- 	file = fget_light(img->memory_id, &put_needed);
- 	if (file == NULL)
- 		return -1;
-@@ -283,12 +275,6 @@ int get_img(struct mdp_img *img, struct fb_info *info,
- 
- void put_img(struct file *src_file, struct file *dst_file)
- {
--#ifdef CONFIG_ANDROID_PMEM
--	if (src_file)
--		put_pmem_file(src_file);
--	if (dst_file)
--		put_pmem_file(dst_file);
--#endif
- }
- 
- int mdp_blit(struct mdp_device *mdp_dev, struct fb_info *fb,
-@@ -320,9 +306,6 @@ int mdp_blit(struct mdp_device *mdp_dev, struct fb_info *fb,
- 	if (unlikely(get_img(&req->dst, fb, &dst_start, &dst_len, &dst_file))) {
- 		printk(KERN_ERR "mpd_ppp: could not retrieve dst image from "
- 				"memory\n");
--#ifdef CONFIG_ANDROID_PMEM
--		put_pmem_file(src_file);
--#endif
- 		return -EINVAL;
+ 	rc = msm_camio_probe_on(pdev);
+ 	if (rc < 0)
+ 		return rc;
+@@ -2058,7 +2055,6 @@ static int msm_sync_init(struct msm_sync *sync,
+ 	if (rc < 0) {
+ 		pr_err("msm_camera: failed to initialize %s\n",
+ 			sync->sdata->sensor_name);
+-		wake_lock_destroy(&sync->wake_lock);
+ 		return rc;
  	}
- 	mutex_lock(&mdp_mutex);
-@@ -499,7 +482,6 @@ int mdp_probe(struct platform_device *pdev)
- 	/* register mdp device */
- 	mdp->mdp_dev.dev.parent = &pdev->dev;
- 	mdp->mdp_dev.dev.class = mdp_class;
--	snprintf(mdp->mdp_dev.dev.bus_id, BUS_ID_SIZE, "mdp%d", pdev->id);
  
- 	/* if you can remove the platform device you'd have to implement
- 	 * this:
-diff --git a/drivers/video/msm/mdp_ppp.c b/drivers/video/msm/mdp_ppp.c
-index ba2c467..4ff001f 100644
---- a/drivers/video/msm/mdp_ppp.c
-+++ b/drivers/video/msm/mdp_ppp.c
-@@ -16,7 +16,6 @@
- #include <linux/file.h>
- #include <linux/delay.h>
- #include <linux/msm_mdp.h>
--#include <linux/android_pmem.h>
- #include <mach/msm_fb.h>
+@@ -2070,7 +2066,6 @@ static int msm_sync_init(struct msm_sync *sync,
  
- #include "mdp_hw.h"
-@@ -579,25 +578,6 @@ static int valid_src_dst(unsigned long src_start, unsigned long src_len,
- static void flush_imgs(struct mdp_blit_req *req, struct mdp_regs *regs,
- 		       struct file *src_file, struct file *dst_file)
+ static int msm_sync_destroy(struct msm_sync *sync)
  {
--#ifdef CONFIG_ANDROID_PMEM
--	uint32_t src0_len, src1_len, dst0_len, dst1_len;
--
--	/* flush src images to memory before dma to mdp */
--	get_len(&req->src, &req->src_rect, regs->src_bpp, &src0_len,
--		&src1_len);
--	flush_pmem_file(src_file, req->src.offset, src0_len);
--	if (IS_PSEUDOPLNR(req->src.format))
--		flush_pmem_file(src_file, req->src.offset + src0_len,
--				src1_len);
--
--	/* flush dst images */
--	get_len(&req->dst, &req->dst_rect, regs->dst_bpp, &dst0_len,
--		&dst1_len);
--	flush_pmem_file(dst_file, req->dst.offset, dst0_len);
--	if (IS_PSEUDOPLNR(req->dst.format))
--		flush_pmem_file(dst_file, req->dst.offset + dst0_len,
--				dst1_len);
--#endif
+-	wake_lock_destroy(&sync->wake_lock);
+ 	return 0;
  }
  
- static void get_chroma_addr(struct mdp_img *img, struct mdp_rect *rect,
+diff --git a/drivers/staging/dream/camera/msm_vfe7x.c b/drivers/staging/dream/camera/msm_vfe7x.c
+index 5de96c5..33ab3ac 100644
+--- a/drivers/staging/dream/camera/msm_vfe7x.c
++++ b/drivers/staging/dream/camera/msm_vfe7x.c
+@@ -5,6 +5,7 @@
+ #include <linux/msm_adsp.h>
+ #include <linux/uaccess.h>
+ #include <linux/fs.h>
++#include <linux/sched.h>
+ #include <linux/android_pmem.h>
+ #include <mach/msm_adsp.h>
+ #include <linux/delay.h>
+diff --git a/drivers/staging/dream/gpio_event.c b/drivers/staging/dream/gpio_event.c
+index 8b64c1e..e60e2c0 100644
+--- a/drivers/staging/dream/gpio_event.c
++++ b/drivers/staging/dream/gpio_event.c
+@@ -13,7 +13,7 @@
+  *
+  */
+ 
+-#include <linux/earlysuspend.h>
++
+ #include <linux/module.h>
+ #include <linux/input.h>
+ #include <linux/gpio_event.h>
+@@ -23,7 +23,6 @@
+ struct gpio_event {
+ 	struct input_dev *input_dev;
+ 	const struct gpio_event_platform_data *info;
+-	struct early_suspend early_suspend;
+ 	void *state[0];
+ };
+ 
+diff --git a/drivers/staging/dream/gpio_input.c b/drivers/staging/dream/gpio_input.c
+index 7e307f2..0638ec4 100644
+--- a/drivers/staging/dream/gpio_input.c
++++ b/drivers/staging/dream/gpio_input.c
+@@ -19,7 +19,6 @@
+ #include <linux/hrtimer.h>
+ #include <linux/input.h>
+ #include <linux/interrupt.h>
+-#include <linux/wakelock.h>
+ 
+ enum {
+ 	DEBOUNCE_UNSTABLE     = BIT(0),	/* Got irq, while debouncing */
+@@ -44,7 +43,6 @@ struct gpio_input_state {
+ 	int use_irq;
+ 	int debounce_count;
+ 	spinlock_t irq_lock;
+-	struct wake_lock wake_lock;
+ 	struct gpio_key_state key_state[0];
+ };
+ 
+@@ -143,8 +141,6 @@ static enum hrtimer_restart gpio_event_input_timer_func(struct hrtimer *timer)
+ 		hrtimer_start(timer, ds->info->debounce_time, HRTIMER_MODE_REL);
+ 	else if (!ds->use_irq)
+ 		hrtimer_start(timer, ds->info->poll_time, HRTIMER_MODE_REL);
+-	else
+-		wake_unlock(&ds->wake_lock);
+ 
+ 	spin_unlock_irqrestore(&ds->irq_lock, irqflags);
+ 
+@@ -170,7 +166,6 @@ static irqreturn_t gpio_event_input_irq_handler(int irq, void *dev_id)
+ 		if (ks->debounce & DEBOUNCE_WAIT_IRQ) {
+ 			ks->debounce = DEBOUNCE_UNKNOWN;
+ 			if (ds->debounce_count++ == 0) {
+-				wake_lock(&ds->wake_lock);
+ 				hrtimer_start(
+ 					&ds->timer, ds->info->debounce_time,
+ 					HRTIMER_MODE_REL);
+@@ -277,7 +272,6 @@ int gpio_event_input_func(struct input_dev *input_dev,
+ 		ds->debounce_count = di->keymap_size;
+ 		ds->input_dev = input_dev;
+ 		ds->info = di;
+-		wake_lock_init(&ds->wake_lock, WAKE_LOCK_SUSPEND, "gpio_input");
+ 		spin_lock_init(&ds->irq_lock);
+ 
+ 		for (i = 0; i < di->keymap_size; i++) {
+@@ -336,7 +330,6 @@ err_gpio_configure_failed:
+ err_gpio_request_failed:
+ 		;
+ 	}
+-	wake_lock_destroy(&ds->wake_lock);
+ 	kfree(ds);
+ err_ds_alloc_failed:
+ 	return ret;
+diff --git a/drivers/staging/dream/gpio_matrix.c b/drivers/staging/dream/gpio_matrix.c
+index c1f4765..796de4f 100644
+--- a/drivers/staging/dream/gpio_matrix.c
++++ b/drivers/staging/dream/gpio_matrix.c
+@@ -18,13 +18,11 @@
+ #include <linux/gpio_event.h>
+ #include <linux/hrtimer.h>
+ #include <linux/interrupt.h>
+-#include <linux/wakelock.h>
+ 
+ struct gpio_kp {
+ 	struct input_dev *input_dev;
+ 	struct gpio_event_matrix_info *keypad_info;
+ 	struct hrtimer timer;
+-	struct wake_lock wake_lock;
+ 	int current_output;
+ 	unsigned int use_irq:1;
+ 	unsigned int key_state_changed:1;
+@@ -199,7 +197,6 @@ static enum hrtimer_restart gpio_keypad_timer_func(struct hrtimer *timer)
+ 	}
+ 	for (in = 0; in < mi->ninputs; in++)
+ 		enable_irq(gpio_to_irq(mi->input_gpios[in]));
+-	wake_unlock(&kp->wake_lock);
+ 	return HRTIMER_NORESTART;
+ }
+ 
+@@ -222,7 +219,6 @@ static irqreturn_t gpio_keypad_irq_handler(int irq_in, void *dev_id)
+ 		else
+ 			gpio_direction_input(mi->output_gpios[i]);
+ 	}
+-	wake_lock(&kp->wake_lock);
+ 	hrtimer_start(&kp->timer, ktime_set(0, 0), HRTIMER_MODE_REL);
+ 	return IRQ_HANDLED;
+ }
+@@ -363,7 +359,6 @@ int gpio_event_matrix_func(struct input_dev *input_dev,
+ 
+ 		hrtimer_init(&kp->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+ 		kp->timer.function = gpio_keypad_timer_func;
+-		wake_lock_init(&kp->wake_lock, WAKE_LOCK_SUSPEND, "gpio_kp");
+ 		err = gpio_keypad_request_irqs(kp);
+ 		kp->use_irq = err == 0;
+ 
+@@ -371,8 +366,6 @@ int gpio_event_matrix_func(struct input_dev *input_dev,
+ 			"in %s mode\n", input_dev->name,
+ 			kp->use_irq ? "interrupt" : "polling");
+ 
+-		if (kp->use_irq)
+-			wake_lock(&kp->wake_lock);
+ 		hrtimer_start(&kp->timer, ktime_set(0, 0), HRTIMER_MODE_REL);
+ 
+ 		return 0;
+@@ -386,7 +379,6 @@ int gpio_event_matrix_func(struct input_dev *input_dev,
+ 			free_irq(gpio_to_irq(mi->input_gpios[i]), kp);
+ 
+ 	hrtimer_cancel(&kp->timer);
+-	wake_lock_destroy(&kp->wake_lock);
+ 	for (i = mi->noutputs - 1; i >= 0; i--) {
+ err_gpio_direction_input_failed:
+ 		gpio_free(mi->input_gpios[i]);
+diff --git a/drivers/staging/dream/qdsp5/adsp.c b/drivers/staging/dream/qdsp5/adsp.c
+index d096456..9069535 100644
+--- a/drivers/staging/dream/qdsp5/adsp.c
++++ b/drivers/staging/dream/qdsp5/adsp.c
+@@ -32,16 +32,12 @@
+ #include <linux/module.h>
+ #include <linux/uaccess.h>
+ #include <linux/wait.h>
+-#include <linux/wakelock.h>
+ 
+-static struct wake_lock adsp_wake_lock;
+ static inline void prevent_suspend(void)
+ {
+-	wake_lock(&adsp_wake_lock);
+ }
+ static inline void allow_suspend(void)
+ {
+-	wake_unlock(&adsp_wake_lock);
+ }
+ 
+ #include <linux/io.h>
+@@ -1046,7 +1042,6 @@ static int msm_adsp_probe(struct platform_device *pdev)
+ 
+ 	pr_info("adsp: probe\n");
+ 
+-	wake_lock_init(&adsp_wake_lock, WAKE_LOCK_SUSPEND, "adsp");
+ #if CONFIG_MSM_AMSS_VERSION >= 6350
+ 	adsp_info.init_info_ptr = kzalloc(
+ 		(sizeof(struct adsp_rtos_mp_mtoa_init_info_type)), GFP_KERNEL);
+diff --git a/drivers/staging/dream/qdsp5/audio_out.c b/drivers/staging/dream/qdsp5/audio_out.c
+index d1adcf6..df87ca3 100644
+--- a/drivers/staging/dream/qdsp5/audio_out.c
++++ b/drivers/staging/dream/qdsp5/audio_out.c
+@@ -38,8 +38,6 @@
+ #include <mach/qdsp5/qdsp5audppcmdi.h>
+ #include <mach/qdsp5/qdsp5audppmsg.h>
+ 
+-#include <mach/htc_pwrsink.h>
+-
+ #include "evlog.h"
+ 
+ #define LOG_AUDIO_EVENTS 1
+@@ -260,7 +258,6 @@ static int audio_enable(struct audio *audio)
+ 	}
+ 
+ 	audio->enabled = 1;
+-	htc_pwrsink_set(PWRSINK_AUDIO, 100);
+ 	return 0;
+ }
+ 
+@@ -695,7 +692,6 @@ static int audio_release(struct inode *inode, struct file *file)
+ 	audio_flush(audio);
+ 	audio->opened = 0;
+ 	mutex_unlock(&audio->lock);
+-	htc_pwrsink_set(PWRSINK_AUDIO, 0);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/staging/dream/smd/smd_qmi.c b/drivers/staging/dream/smd/smd_qmi.c
+index d4e7d88..687db14 100644
+--- a/drivers/staging/dream/smd/smd_qmi.c
++++ b/drivers/staging/dream/smd/smd_qmi.c
+@@ -24,7 +24,6 @@
+ #include <linux/wait.h>
+ #include <linux/miscdevice.h>
+ #include <linux/workqueue.h>
+-#include <linux/wakelock.h>
+ 
+ #include <asm/uaccess.h>
+ #include <mach/msm_smd.h>
+@@ -74,7 +73,6 @@ struct qmi_ctxt {
+ 
+ 	smd_channel_t *ch;
+ 	const char *ch_name;
+-	struct wake_lock wake_lock;
+ 
+ 	struct work_struct open_work;
+ 	struct work_struct read_work;
+@@ -90,7 +88,6 @@ void qmi_ctxt_init(struct qmi_ctxt *ctxt, unsigned n)
+ 	mutex_init(&ctxt->lock);
+ 	INIT_WORK(&ctxt->read_work, qmi_read_work);
+ 	INIT_WORK(&ctxt->open_work, qmi_open_work);
+-	wake_lock_init(&ctxt->wake_lock, WAKE_LOCK_SUSPEND, ctxt->misc.name);
+ 	ctxt->ctl_txn_id = 1;
+ 	ctxt->wds_txn_id = 1;
+ 	ctxt->wds_busy = 1;
+@@ -454,7 +451,6 @@ static void qmi_process_qmux(struct qmi_ctxt *ctxt,
+ 		break;
+ 	}
+ 	mutex_unlock(&ctxt->lock);
+-
+ 	wake_up(&qmi_wait_queue);
+ }
+ 
+@@ -509,7 +505,6 @@ static void qmi_notify(void *priv, unsigned event)
+ 		int sz;
+ 		sz = smd_cur_packet_size(ctxt->ch);
+ 		if ((sz > 0) && (sz <= smd_read_avail(ctxt->ch))) {
+-			wake_lock_timeout(&ctxt->wake_lock, HZ / 2);
+ 			queue_work(qmi_wq, &ctxt->read_work);
+ 		}
+ 		break;
+diff --git a/drivers/staging/dream/smd/smd_rpcrouter.c b/drivers/staging/dream/smd/smd_rpcrouter.c
+index d4a4a88..5ac2cd4 100644
+--- a/drivers/staging/dream/smd/smd_rpcrouter.c
++++ b/drivers/staging/dream/smd/smd_rpcrouter.c
+@@ -33,7 +33,6 @@
+ #include <linux/err.h>
+ #include <linux/sched.h>
+ #include <linux/poll.h>
+-#include <linux/wakelock.h>
+ #include <asm/uaccess.h>
+ #include <asm/byteorder.h>
+ #include <linux/platform_device.h>
+@@ -96,7 +95,6 @@ static DEFINE_SPINLOCK(server_list_lock);
+ static DEFINE_SPINLOCK(smd_lock);
+ 
+ static struct workqueue_struct *rpcrouter_workqueue;
+-static struct wake_lock rpcrouter_wake_lock;
+ static int rpcrouter_need_len;
+ 
+ static atomic_t next_xid = ATOMIC_INIT(1);
+@@ -290,7 +288,6 @@ struct msm_rpc_endpoint *msm_rpcrouter_create_local_endpoint(dev_t dev)
+ 	init_waitqueue_head(&ept->wait_q);
+ 	INIT_LIST_HEAD(&ept->read_q);
+ 	spin_lock_init(&ept->read_q_lock);
+-	wake_lock_init(&ept->read_q_wake_lock, WAKE_LOCK_SUSPEND, "rpc_read");
+ 	INIT_LIST_HEAD(&ept->incomplete);
+ 
+ 	spin_lock_irqsave(&local_endpoints_lock, flags);
+@@ -313,7 +310,6 @@ int msm_rpcrouter_destroy_local_endpoint(struct msm_rpc_endpoint *ept)
+ 	if (rc < 0)
+ 		return rc;
+ 
+-	wake_lock_destroy(&ept->read_q_wake_lock);
+ 	list_del(&ept->list);
+ 	kfree(ept);
+ 	return 0;
+@@ -540,8 +536,6 @@ static void rpcrouter_smdnotify(void *_dev, unsigned event)
+ 	if (event != SMD_EVENT_DATA)
+ 		return;
+ 
+-	if (smd_read_avail(smd_channel) >= rpcrouter_need_len)
+-		wake_lock(&rpcrouter_wake_lock);
+ 	wake_up(&smd_wait);
+ }
+ 
+@@ -576,7 +570,6 @@ static int rr_read(void *data, int len)
+ 				return -EIO;
+ 		}
+ 		rpcrouter_need_len = len;
+-		wake_unlock(&rpcrouter_wake_lock);
+ 		spin_unlock_irqrestore(&smd_lock, flags);
+ 
+ //		printk("rr_read: waiting (%d)\n", len);
+@@ -676,7 +669,6 @@ static void do_read_data(struct work_struct *work)
+ 
+ packet_complete:
+ 	spin_lock_irqsave(&ept->read_q_lock, flags);
+-	wake_lock(&ept->read_q_wake_lock);
+ 	list_add_tail(&pkt->list, &ept->read_q);
+ 	wake_up(&ept->wait_q);
+ 	spin_unlock_irqrestore(&ept->read_q_lock, flags);
+@@ -699,7 +691,6 @@ done:
+ fail_io:
+ fail_data:
+ 	printk(KERN_ERR "rpc_router has died\n");
+-	wake_unlock(&rpcrouter_wake_lock);
+ }
+ 
+ void msm_rpc_setup_req(struct rpc_request_hdr *hdr, uint32_t prog,
+@@ -1061,8 +1052,6 @@ int __msm_rpc_read(struct msm_rpc_endpoint *ept,
+ 		return -ETOOSMALL;
+ 	}
+ 	list_del(&pkt->list);
+-	if (list_empty(&ept->read_q))
+-		wake_unlock(&ept->read_q_wake_lock);
+ 	spin_unlock_irqrestore(&ept->read_q_lock, flags);
+ 
+ 	rc = pkt->length;
+@@ -1229,7 +1218,6 @@ static int msm_rpcrouter_probe(struct platform_device *pdev)
+ 
+ 	init_waitqueue_head(&newserver_wait);
+ 	init_waitqueue_head(&smd_wait);
+-	wake_lock_init(&rpcrouter_wake_lock, WAKE_LOCK_SUSPEND, "SMD_RPCCALL");
+ 
+ 	rpcrouter_workqueue = create_singlethread_workqueue("rpcrouter");
+ 	if (!rpcrouter_workqueue)
+diff --git a/drivers/staging/dream/smd/smd_tty.c b/drivers/staging/dream/smd/smd_tty.c
+index 2edd9d1..f409449 100644
+--- a/drivers/staging/dream/smd/smd_tty.c
++++ b/drivers/staging/dream/smd/smd_tty.c
+@@ -19,7 +19,6 @@
+ #include <linux/cdev.h>
+ #include <linux/device.h>
+ #include <linux/wait.h>
+-#include <linux/wakelock.h>
+ 
+ #include <linux/tty.h>
+ #include <linux/tty_driver.h>
+@@ -34,7 +33,6 @@ static DEFINE_MUTEX(smd_tty_lock);
+ struct smd_tty_info {
+ 	smd_channel_t *ch;
+ 	struct tty_struct *tty;
+-	struct wake_lock wake_lock;
+ 	int open_count;
+ };
+ 
+@@ -69,7 +67,6 @@ static void smd_tty_notify(void *priv, unsigned event)
+ 			printk(KERN_ERR "OOPS - smd_tty_buffer mismatch?!");
+ 		}
+ 
+-		wake_lock_timeout(&info->wake_lock, HZ / 2);
+ 		tty_flip_buffer_push(tty);
+ 	}
+ 
+@@ -95,7 +92,6 @@ static int smd_tty_open(struct tty_struct *tty, struct file *f)
+ 	info = smd_tty + n;
+ 
+ 	mutex_lock(&smd_tty_lock);
+-	wake_lock_init(&info->wake_lock, WAKE_LOCK_SUSPEND, name);
+ 	tty->driver_data = info;
+ 
+ 	if (info->open_count++ == 0) {
+@@ -122,7 +118,6 @@ static void smd_tty_close(struct tty_struct *tty, struct file *f)
+ 	if (--info->open_count == 0) {
+ 		info->tty = 0;
+ 		tty->driver_data = 0;
+-		wake_lock_destroy(&info->wake_lock);
+ 		if (info->ch) {
+ 			smd_close(info->ch);
+ 			info->ch = 0;
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
