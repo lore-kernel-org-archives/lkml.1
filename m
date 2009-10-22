@@ -1,79 +1,429 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756268AbZJVSTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbZJVSXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756268AbZJVSTU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 14:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbZJVSTT
+	id S1756366AbZJVSXn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 14:23:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756078AbZJVSXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 14:19:19 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:43299 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753179AbZJVSTS (ORCPT
+	Thu, 22 Oct 2009 14:23:43 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:40901 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756031AbZJVSXl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 14:19:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=SNBrj7ZRPULwwJ82HUOdSKccZ/5JFpU+Qgcubjl1xbH5svZTHX8yHxwvBQjrZTajau
-         rsYLqCxqVP9q/HkXae2KUPynOiBS5wWHjyNO3SzjA/ilts1c2wDQuUXwV8lsgLIfeSGx
-         +eftcC7Bzth9wSfK8wIqRPxE5w6G2hUjCUGRE=
-Date: Thu, 22 Oct 2009 11:19:15 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: =?iso-8859-1?Q?=C9ric?= Piel <Eric.Piel@tremplin-utc.net>
-Cc: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not  work
-	anymore
-Message-ID: <20091022181915.GB18031@core.coreip.homeip.net>
-References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <20091015215944.GA9845@core.coreip.homeip.net> <4ADF6237.9070004@tremplin-utc.net> <200910211320.16339.dmitry.torokhov@gmail.com> <4AE0840C.8070801@tremplin-utc.net> <20091022162202.GA18031@core.coreip.homeip.net> <4AE09AFF.805@tremplin-utc.net>
+	Thu, 22 Oct 2009 14:23:41 -0400
+Date: Thu, 22 Oct 2009 13:23:22 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Robert Jennings <rcj@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Gerald Schaefer <geralds@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linuxppc-dev@ozlabs.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH 2/2][v5] powerpc: Make the CMM memory hotplug aware
+Message-ID: <20091022182321.GA7073@austin.ibm.com>
+Mail-Followup-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Gerald Schaefer <geralds@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linuxppc-dev@ozlabs.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091009203803.GC19114@austin.ibm.com> <20091009204126.GD19114@austin.ibm.com> <1255324007.2192.106.camel@pasglop> <20091012194907.GC30941@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4AE09AFF.805@tremplin-utc.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091012194907.GC30941@austin.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 07:48:47PM +0200, Éric Piel wrote:
-> Op 22-10-09 18:22, Dmitry Torokhov schreef:
->> On Thu, Oct 22, 2009 at 06:10:52PM +0200, Éric Piel wrote:
->>> Op 21-10-09 22:20, Dmitry Torokhov schreef:
->>>>
->>>> Nothing, as far as I can tell... I see you typing "qwerty"... Does the
->>>> keyboard work in console (let's say if you boot in run level 3 to take X out
->>>> of the picture)? Could you please try compiling evbug module - it will show if
->>>> keyboard events are propagated through input core. Also, whta driver are you
->>>> using in X? Legacy keyboard or evdev?
->>> In the console (in init 3), I haven't managed to reproduce it. In xorg,
->>> the keyboard input uses evdev. Now I've just tried "evtest
->>> /dev/input/event4", when the keyboard doesn't work... and I see the key
->>> presses!
->>>
->>> So I guess it rules out a bug in the kernel, and I have to talk with the
->>> people from Xorg, right?
->>>
->>
->> Yep... but it is still wierd since evdev driver works fine for me...
->> Could it be you are using either too old or too new version of X?
->>
-> I don't think so: xorg 1.6.5, with xinput-evdev 2.2.5. They are both  
-> latest or second latest stable versions.
->
-> In the log I see this:
-> (--) SynPS/2 Synaptics TouchPad: touchpad found
-> (II) PS/2 Generic Mouse: Device reopened after 1 attempts.
-> (EE) AT Translated Set 2 keyboard: device key_bitmask has changed
-> (EE) AT Translated Set 2 keyboard: Device has changed - disabling.
->
-> Quite a few people seem to have the same problem.
+The Collaborative Memory Manager (CMM) module allocates individual pages
+over time that are not migratable.  On a long running system this can
+severely impact the ability to find enough pages to support a hotplug
+memory remove operation.
 
-The bitmask should not be changing on it's own... Any chance you could
-save contents or /proc/bus/input/devices before suspend and after resume
-(when X decides to ditch the keyboard) and diff them?
+This patch adds a memory isolation notifier and a memory hotplug notifier.
+The memory isolation notifier will return the number of pages found
+in the range specified.  This is used to determine if all of the used
+pages in a pageblock are owned by the balloon (or other entities in
+the notifier chain).  The hotplug notifier will free pages in the range
+which is to be removed.  The priority of this hotplug notifier is low
+so that it will be called near last, this helps avoids removing loaned
+pages in operations that fail due to other handlers.
 
--- 
-Dmitry
+CMM activity will be halted when hotplug remove operations are active
+and resume activity after a delay period to allow the hypervisor time
+to adjust.
+
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+
+---
+Changes since v4:
+ * The structures for recording loaned pages are not allocated as MOVABLE
+ * The structures for recording loaned pages are removed from sections
+   being taken offline by moving their contents to a newly allocated page.
+
+Changes since v3:
+ * Changed from atomic to mutex for hotplug state tracking.
+ * Clarified documentation for the new module parameter description.
+
+Changes since v2:
+ * None, resent with parent patch to keep them together.
+ 
+ arch/powerpc/platforms/pseries/cmm.c |  254 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 248 insertions(+), 6 deletions(-)
+
+Index: b/arch/powerpc/platforms/pseries/cmm.c
+===================================================================
+--- a/arch/powerpc/platforms/pseries/cmm.c
++++ b/arch/powerpc/platforms/pseries/cmm.c
+@@ -38,19 +38,28 @@
+ #include <asm/mmu.h>
+ #include <asm/pgalloc.h>
+ #include <asm/uaccess.h>
++#include <linux/memory.h>
+ 
+ #include "plpar_wrappers.h"
+ 
+ #define CMM_DRIVER_VERSION	"1.0.0"
+ #define CMM_DEFAULT_DELAY	1
++#define CMM_HOTPLUG_DELAY	5
+ #define CMM_DEBUG			0
+ #define CMM_DISABLE		0
+ #define CMM_OOM_KB		1024
+ #define CMM_MIN_MEM_MB		256
+ #define KB2PAGES(_p)		((_p)>>(PAGE_SHIFT-10))
+ #define PAGES2KB(_p)		((_p)<<(PAGE_SHIFT-10))
++/*
++ * The priority level tries to ensure that this notifier is called as
++ * late as possible to reduce thrashing in the shared memory pool.
++ */
++#define CMM_MEM_HOTPLUG_PRI	1
++#define CMM_MEM_ISOLATE_PRI	15
+ 
+ static unsigned int delay = CMM_DEFAULT_DELAY;
++static unsigned int hotplug_delay = CMM_HOTPLUG_DELAY;
+ static unsigned int oom_kb = CMM_OOM_KB;
+ static unsigned int cmm_debug = CMM_DEBUG;
+ static unsigned int cmm_disabled = CMM_DISABLE;
+@@ -65,6 +74,10 @@ MODULE_VERSION(CMM_DRIVER_VERSION);
+ module_param_named(delay, delay, uint, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(delay, "Delay (in seconds) between polls to query hypervisor paging requests. "
+ 		 "[Default=" __stringify(CMM_DEFAULT_DELAY) "]");
++module_param_named(hotplug_delay, hotplug_delay, uint, S_IRUGO | S_IWUSR);
++MODULE_PARM_DESC(delay, "Delay (in seconds) after memory hotplug remove "
++		 "before loaning resumes. "
++		 "[Default=" __stringify(CMM_HOTPLUG_DELAY) "]");
+ module_param_named(oom_kb, oom_kb, uint, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(oom_kb, "Amount of memory in kb to free on OOM. "
+ 		 "[Default=" __stringify(CMM_OOM_KB) "]");
+@@ -92,6 +105,9 @@ static unsigned long oom_freed_pages;
+ static struct cmm_page_array *cmm_page_list;
+ static DEFINE_SPINLOCK(cmm_lock);
+ 
++static DEFINE_MUTEX(hotplug_mutex);
++static int hotplug_occurred; /* protected by the hotplug mutex */
++
+ static struct task_struct *cmm_thread_ptr;
+ 
+ /**
+@@ -110,6 +126,17 @@ static long cmm_alloc_pages(long nr)
+ 	cmm_dbg("Begin request for %ld pages\n", nr);
+ 
+ 	while (nr) {
++		/* Exit if a hotplug operation is in progress or occurred */
++		if (mutex_trylock(&hotplug_mutex)) {
++			if (hotplug_occurred) {
++				mutex_unlock(&hotplug_mutex);
++				break;
++			}
++			mutex_unlock(&hotplug_mutex);
++		} else {
++			break;
++		}
++
+ 		addr = __get_free_page(GFP_NOIO | __GFP_NOWARN |
+ 				       __GFP_NORETRY | __GFP_NOMEMALLOC);
+ 		if (!addr)
+@@ -119,8 +146,9 @@ static long cmm_alloc_pages(long nr)
+ 		if (!pa || pa->index >= CMM_NR_PAGES) {
+ 			/* Need a new page for the page list. */
+ 			spin_unlock(&cmm_lock);
+-			npa = (struct cmm_page_array *)__get_free_page(GFP_NOIO | __GFP_NOWARN |
+-								       __GFP_NORETRY | __GFP_NOMEMALLOC);
++			npa = (struct cmm_page_array *)__get_free_page(
++					GFP_NOIO | __GFP_NOWARN |
++					__GFP_NORETRY | __GFP_NOMEMALLOC);
+ 			if (!npa) {
+ 				pr_info("%s: Can not allocate new page list\n", __func__);
+ 				free_page(addr);
+@@ -273,9 +301,28 @@ static int cmm_thread(void *dummy)
+ 	while (1) {
+ 		timeleft = msleep_interruptible(delay * 1000);
+ 
+-		if (kthread_should_stop() || timeleft) {
+-			loaned_pages_target = loaned_pages;
++		if (kthread_should_stop() || timeleft)
+ 			break;
++
++		if (mutex_trylock(&hotplug_mutex)) {
++			if (hotplug_occurred) {
++				hotplug_occurred = 0;
++				mutex_unlock(&hotplug_mutex);
++				cmm_dbg("Hotplug operation has occurred, "
++						"loaning activity suspended "
++						"for %d seconds.\n",
++						hotplug_delay);
++				timeleft = msleep_interruptible(hotplug_delay *
++						1000);
++				if (kthread_should_stop() || timeleft)
++					break;
++				continue;
++			}
++			mutex_unlock(&hotplug_mutex);
++		} else {
++			cmm_dbg("Hotplug operation in progress, activity "
++					"suspended\n");
++			continue;
+ 		}
+ 
+ 		cmm_get_mpp();
+@@ -405,6 +452,193 @@ static struct notifier_block cmm_reboot_
+ };
+ 
+ /**
++ * cmm_count_pages - Count the number of pages loaned in a particular range.
++ *
++ * @arg: memory_isolate_notify structure with address range and count
++ *
++ * Return value:
++ *      0 on success
++ **/
++static unsigned long cmm_count_pages(void *arg)
++{
++	struct memory_isolate_notify *marg = arg;
++	struct cmm_page_array *pa;
++	unsigned long start = (unsigned long)pfn_to_kaddr(marg->start_pfn);
++	unsigned long end = start + (marg->nr_pages << PAGE_SHIFT);
++	unsigned long idx;
++
++	spin_lock(&cmm_lock);
++	pa = cmm_page_list;
++	while (pa) {
++		if ((unsigned long)pa >= start && (unsigned long)pa < end)
++			marg->pages_found++;
++		for (idx = 0; idx < pa->index; idx++)
++			if (pa->page[idx] >= start && pa->page[idx] < end)
++				marg->pages_found++;
++		pa = pa->next;
++	}
++	spin_unlock(&cmm_lock);
++	return 0;
++}
++
++/**
++ * cmm_memory_isolate_cb - Handle memory isolation notifier calls
++ * @self:	notifier block struct
++ * @action:	action to take
++ * @arg:	struct memory_isolate_notify data for handler
++ *
++ * Return value:
++ *	NOTIFY_OK or notifier error based on subfunction return value
++ **/
++static int cmm_memory_isolate_cb(struct notifier_block *self,
++				 unsigned long action, void *arg)
++{
++	int ret = 0;
++
++	if (action == MEM_ISOLATE_COUNT)
++		ret = cmm_count_pages(arg);
++
++	if (ret)
++		ret = notifier_from_errno(ret);
++	else
++		ret = NOTIFY_OK;
++
++	return ret;
++}
++
++static struct notifier_block cmm_mem_isolate_nb = {
++	.notifier_call = cmm_memory_isolate_cb,
++	.priority = CMM_MEM_ISOLATE_PRI
++};
++
++/**
++ * cmm_mem_going_offline - Unloan pages where memory is to be removed
++ * @arg: memory_notify structure with page range to be offlined
++ *
++ * Return value:
++ *	0 on success
++ **/
++static int cmm_mem_going_offline(void *arg)
++{
++	struct memory_notify *marg = arg;
++	unsigned long start_page = (unsigned long)pfn_to_kaddr(marg->start_pfn);
++	unsigned long end_page = start_page + (marg->nr_pages << PAGE_SHIFT);
++	struct cmm_page_array *pa_curr, *pa_last, *npa;
++	unsigned long idx;
++	unsigned long freed = 0;
++
++	cmm_dbg("Memory going offline, searching 0x%lx (%ld pages).\n",
++			start_page, marg->nr_pages);
++	spin_lock(&cmm_lock);
++
++	/* Search the page list for pages in the range to be offlined */
++	pa_last = pa_curr = cmm_page_list;
++	while (pa_curr) {
++		for (idx = (pa_curr->index - 1); (idx + 1) > 0; idx--) {
++			if ((pa_curr->page[idx] < start_page) ||
++			    (pa_curr->page[idx] >= end_page))
++				continue;
++
++			plpar_page_set_active(__pa(pa_curr->page[idx]));
++			free_page(pa_curr->page[idx]);
++			freed++;
++			loaned_pages--;
++			totalram_pages++;
++			pa_curr->page[idx] = pa_last->page[--pa_last->index];
++			if (pa_last->index == 0) {
++				if (pa_curr == pa_last)
++					pa_curr = pa_last->next;
++				pa_last = pa_last->next;
++				free_page((unsigned long)cmm_page_list);
++				cmm_page_list = pa_last;
++				continue;
++			}
++		}
++		pa_curr = pa_curr->next;
++	}
++
++	/* Search for page list structures in the range to be offlined */
++	pa_last = NULL;
++	pa_curr = cmm_page_list;
++	while (pa_curr) {
++		if (((unsigned long)pa_curr >= start_page) &&
++				((unsigned long)pa_curr < end_page)) {
++			npa = (struct cmm_page_array *)__get_free_page(
++					GFP_NOIO | __GFP_NOWARN |
++					__GFP_NORETRY | __GFP_NOMEMALLOC);
++			if (!npa) {
++				spin_unlock(&cmm_lock);
++				cmm_dbg("Failed to allocate memory for list "
++						"management. Memory hotplug "
++						"failed.\n");
++				return ENOMEM;
++			}
++			memcpy(npa, pa_curr, PAGE_SIZE);
++			if (pa_curr == cmm_page_list)
++				cmm_page_list = npa;
++			if (pa_last)
++				pa_last->next = npa;
++			free_page((unsigned long) pa_curr);
++			freed++;
++			pa_curr = npa;
++		}
++
++		pa_last = pa_curr;
++		pa_curr = pa_curr->next;
++	}
++
++	spin_unlock(&cmm_lock);
++	cmm_dbg("Released %ld pages in the search range.\n", freed);
++
++	return 0;
++}
++
++/**
++ * cmm_memory_cb - Handle memory hotplug notifier calls
++ * @self:	notifier block struct
++ * @action:	action to take
++ * @arg:	struct memory_notify data for handler
++ *
++ * Return value:
++ *	NOTIFY_OK or notifier error based on subfunction return value
++ *
++ **/
++static int cmm_memory_cb(struct notifier_block *self,
++			unsigned long action, void *arg)
++{
++	int ret = 0;
++
++	switch (action) {
++	case MEM_GOING_OFFLINE:
++		mutex_lock(&hotplug_mutex);
++		hotplug_occurred = 1;
++		ret = cmm_mem_going_offline(arg);
++		break;
++	case MEM_OFFLINE:
++	case MEM_CANCEL_OFFLINE:
++		mutex_unlock(&hotplug_mutex);
++		cmm_dbg("Memory offline operation complete.\n");
++		break;
++	case MEM_GOING_ONLINE:
++	case MEM_ONLINE:
++	case MEM_CANCEL_ONLINE:
++		break;
++	}
++
++	if (ret)
++		ret = notifier_from_errno(ret);
++	else
++		ret = NOTIFY_OK;
++
++	return ret;
++}
++
++static struct notifier_block cmm_mem_nb = {
++	.notifier_call = cmm_memory_cb,
++	.priority = CMM_MEM_HOTPLUG_PRI
++};
++
++/**
+  * cmm_init - Module initialization
+  *
+  * Return value:
+@@ -426,18 +660,24 @@ static int cmm_init(void)
+ 	if ((rc = cmm_sysfs_register(&cmm_sysdev)))
+ 		goto out_reboot_notifier;
+ 
++	if (register_memory_notifier(&cmm_mem_nb) ||
++	    register_memory_isolate_notifier(&cmm_mem_isolate_nb))
++		goto out_unregister_notifier;
++
+ 	if (cmm_disabled)
+ 		return rc;
+ 
+ 	cmm_thread_ptr = kthread_run(cmm_thread, NULL, "cmmthread");
+ 	if (IS_ERR(cmm_thread_ptr)) {
+ 		rc = PTR_ERR(cmm_thread_ptr);
+-		goto out_unregister_sysfs;
++		goto out_unregister_notifier;
+ 	}
+ 
+ 	return rc;
+ 
+-out_unregister_sysfs:
++out_unregister_notifier:
++	unregister_memory_notifier(&cmm_mem_nb);
++	unregister_memory_isolate_notifier(&cmm_mem_isolate_nb);
+ 	cmm_unregister_sysfs(&cmm_sysdev);
+ out_reboot_notifier:
+ 	unregister_reboot_notifier(&cmm_reboot_nb);
+@@ -458,6 +698,8 @@ static void cmm_exit(void)
+ 		kthread_stop(cmm_thread_ptr);
+ 	unregister_oom_notifier(&cmm_oom_nb);
+ 	unregister_reboot_notifier(&cmm_reboot_nb);
++	unregister_memory_notifier(&cmm_mem_nb);
++	unregister_memory_isolate_notifier(&cmm_mem_isolate_nb);
+ 	cmm_free_pages(loaned_pages);
+ 	cmm_unregister_sysfs(&cmm_sysdev);
+ }
