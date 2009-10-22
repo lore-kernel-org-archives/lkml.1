@@ -1,146 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbZJVCpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbZJVCr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753705AbZJVCpb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Oct 2009 22:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbZJVCpa
+	id S1753836AbZJVCr3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Oct 2009 22:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbZJVCr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Oct 2009 22:45:30 -0400
-Received: from mtoichi12.ns.itscom.net ([219.110.2.182]:60951 "EHLO
-	mtoichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753354AbZJVCp3 (ORCPT
+	Wed, 21 Oct 2009 22:47:28 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43883 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753356AbZJVCr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Oct 2009 22:45:29 -0400
-From: hooanon05@yahoo.co.jp
-Subject: Re: [RFC PATCH 00/40] Writable overlays (union mounts) 
-To: Valerie Aurora <vaurora@redhat.com>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       Arnd Bergmann <arnd@arndb.de>, Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
-References: <1256152779-10054-1-git-send-email-vaurora@redhat.com>
-Date: Thu, 22 Oct 2009 11:44:40 +0900
-Message-ID: <8004.1256179480@jrobl>
+	Wed, 21 Oct 2009 22:47:28 -0400
+Date: Wed, 21 Oct 2009 19:48:22 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: john stultz <johnstul@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+       lkml <linux-kernel@vger.kernel.org>, Mike Fulton <fultonm@ca.ibm.com>,
+       Sean Foley <Sean_Foley@ca.ibm.com>, Darren Hart <dvhltc@us.ibm.com>
+Subject: Re: [RFC][PATCH] Add prctl to set sibling thread names
+Message-ID: <20091021194822.72895c46@infradead.org>
+In-Reply-To: <20091022004919.GT32470@one.firstfloor.org>
+References: <1256167297.4768.14.camel@localhost.localdomain>
+	<20091021174804.3885db37@infradead.org>
+	<20091022004919.GT32470@one.firstfloor.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 22 Oct 2009 02:49:19 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-Hi,
-
-Valerie Aurora:
-> Here is the current patch set for writable overlays (union mounts).
-> It needs lots of review!  Especially the bits where we do nasty things
-> with readdir().
+> > you're pretty much the first now who touches ->comm from
+> > not-the-thread-itself.... are you sure that is safe?
 > 
-> Writable overlays let you mount one read-write file system
-> transparently over another read-only file system.  This is useful for
-> things like LiveCDs.  Detailed documentation and HOWTO here:
+> It's not, there is no locking. On the other hand nothing should crash,
+> just users might see half rewritten data.
 
-Are these issues what I have pointed out addressed?
-
-========================================
-> ----------------------------------------------------------------------
-> I believe 'fallthru' in UnionMount is a good idea. But I am afraid it
-> may consume memory too much, particulary when the upper layer is tmpfs.
-> While one fallthru entry is small, recent LiveCD contains very many
-> files by squashfs and its size grows as DVD. If users try 'find /', then
-> many fallthru entires will be created and I am afraid it becomes memory
-> pressure.
-> How do you think about that?
-> ----------------------------------------------------------------------
-> I am afraid this issue may not be solved soon. It should be listed in a
-> longer term todo list, or no action to be taken (this is a feature).
-
-Hm.  The fallthru entries are only essential when it comes to
-directories with mixed top/bottom entries during a readdir().  I can
-think of some ways to make fallthrus less common, or to be able to
-throw them out.  I will keep this in mind, thanks!
-
--VAL
-
-========================================
-> - link(2) doesn't work
->   When the source file exists on the lower, it returns "Invalid
->   cross-device link" error.
-> - Is it an expected behaviour?
->   If UnionMount behaves as an ordinary filesystem, link(2) should work.
->   But UnionMount is not a filesystem actually. So to return the error
->   may be correct. I am not sure which is true.
-> 
-> Do I make my clear? 
-
-Yes, I understand now.  This comes back to the same userland problem
-as rename(); technically userland should support fallback for this,
-but many apps assume it can't happen in the same directory.  I think
-we could make this work without copying up the file if we make a
-fallthru for the target.
-
-In general, it might be good to have a config or mount option to
-enable/disable the EXDEV returns, and printk something when the
-workaround is triggered.  This would give us a migration path to a
-future in which userland utilities can deal with EXDEV in the same
-directory.
-
-Both are on my todo list.
-
--VAL
-
-========================================
-> I might find a minor issue about copyup and read(2).
-> When two processes open the same file, with O_RDONLY and O_WRONLY
-> individually. One of them issues read(2), and the other issues write(2)
-> at the same time.
-> 
-> ProcessA
-> - open(O_RDONLY)
-> - read
-> 
-> ProcessB
-> - open(O_WRONLY)
-> - write
-> 
-> If read(2) executes before write(2), ProcessA gets the correct latest
-> (at that point) filedata. But if write(2) by ProcessB executes first,
-> the filedata ProcessA got may be obsoleted since it still refers to the
-> file on the lower readonly fs.
-> Users may not be aware since it is hard to know whether write(2) was
-> executed first, and this issue may be minor.
-> 
-> This scenario can happen in a single process.
-> 
-> ProcessC
-> - open(O_RDONLY)
-> - open(O_WRONLY)
-> - write
-> - read
-> 
-> This is not a race condition actually, but ProcessC will get the
-> obsoleted filedata. It will not get the filedata which it just wrote.
-> While I don't think there exists such application :-), users may think
-> it a problem.
-
-I see what you mean!
-
-I guess you can view it as effectively a rename() over the old file -
-it's the same as if you instead created a new file, copied all the
-data into it, and then renamed it over the old file.  Which is a very
-common method of updating files.
-
-It will indeed be interesting to see if any applications break as a
-result of this.  Hopefully not, all the solutions I can think of are
-quite terrible.
-
--VAL
-
-========================================
-
-I just want to confirm (and never mean to push you).
+.. with strings this is tricky though.. if the new string is longer
+than the old one the terminating zero might just be missed etc.
 
 
-J. R. Okajima
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
