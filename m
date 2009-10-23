@@ -1,103 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751660AbZJWJhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751729AbZJWJij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751660AbZJWJhB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 05:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZJWJhA
+	id S1751729AbZJWJij (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 05:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZJWJij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 05:37:00 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:41396 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751371AbZJWJg7 (ORCPT
+	Fri, 23 Oct 2009 05:38:39 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:49171 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751629AbZJWJii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 05:36:59 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=knV9Utvdj2xtpSr+5fqTUPIL29olzItI1Bcb7WbShHibqgFOGccHGnOtSg1TC55Mc
-	WbsLx52ty10QYl1HVvdeA==
-Date: Fri, 23 Oct 2009 02:36:53 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/5] page allocator: Pre-emptively wake kswapd when
- high-order watermarks are hit
-In-Reply-To: <20091023091334.GV11778@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0910230229010.28109@chino.kir.corp.google.com>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0910221227010.21601@chino.kir.corp.google.com> <20091023091334.GV11778@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 23 Oct 2009 05:38:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vS/kgJ9kuG+A4YTfd0TUDXfCnFugiobD61Sjiv8Lr+a3NPh+dVOKYbINnBFCKToLbi
+         e0yaxF3buhfz2PTw0uRENurCYouofcEIkBUUXV1z9p/inb6cuZ24sKrdjQ0qAYBhRvG+
+         +RhCZpz6zm4Bp4uAZk/TPVoAyZr5qMp3TUuMA=
+Date: Fri, 23 Oct 2009 11:38:40 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg KH <greg@kroah.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC] tracefs
+Message-ID: <20091023093838.GA4939@nowhere>
+References: <20091023004937.GA24035@kroah.com> <20091023053237.GA24359@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091023053237.GA24359@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Oct 2009, Mel Gorman wrote:
-
-> > Hmm, is this really supposed to be added to __alloc_pages_high_priority()?  
-> > By the patch description I was expecting kswapd to be woken up 
-> > preemptively whenever the preferred zone is below ALLOC_WMARK_LOW and 
-> > we're known to have just allocated at a higher order, not just when 
-> > current was oom killed (when we should already be freeing a _lot_ of 
-> > memory soon) or is doing a higher order allocation during direct reclaim.
+On Fri, Oct 23, 2009 at 07:32:37AM +0200, Ingo Molnar wrote:
+> 
+> * Greg KH <greg@kroah.com> wrote:
+> 
+> > Hi all,
 > > 
+> > At LinuxCon this year, Steven and I talked about moving the debugfs 
+> > usage in the tracing core to a stand-alone filesystem to give the 
+> > ability to start to lock down the api so that people an count on what 
+> > is going on in the tracing userspace interface.
 > 
-> It was a somewhat arbitrary choice to have it trigger in the event high
-> priority allocations were happening frequently.
+> What we want to move out initially (and i talked to Steve and Frederic 
+> about that a few weeks ago) is the event description bits - the format 
+> stuff in /debug/tracing/events/ - but definitely not all the other, 
+> rather messy and ad-hoc APIs.
 > 
+> _No way_ do we want to tie down the pretty-printing ftrace details as an 
+> ABI. We promised that when ftrace went upstream and all the details are 
+> way too messy to be exposed in an ABI alike matter (and yes, consider 
+> this a NAK Steve ;-).
+> 
+> We want a _very_ careful exporting of certain pieces of information that 
+> helps syscall-exposed perf events bits, and to improve the quality of 
+> interfaces while we do that.
+> 
+> 	Ingo
 
-I don't quite understand, users of PF_MEMALLOC shouldn't be doing these 
-higher order allocations and if ALLOC_NO_WATERMARKS is by way of the oom 
-killer, we should be freeing a substantial amount of memory imminently 
-when it exits that waking up kswapd would be irrelevant.
 
-> > If this is moved to the fastpath, why is this wake_all_kswapd() and not
-> > wakeup_kswapd(preferred_zone, order)?  Do we need to kick kswapd in all 
-> > zones even though they may be free just because preferred_zone is now 
-> > below the watermark?
-> > 
-> 
-> It probably makes no difference as zones are checked for their watermarks
-> before any real work happens. However, even if this patch makes a difference,
-> I don't want to see it merged.  At best, it is an extremely heavy-handed
-> hack which is why I asked for it to be tested in isolation. It shouldn't
-> be necessary at all because sort of pre-emptive waking of kswapd was never
-> necessary before.
-> 
+I guess the first bits that need to be exported are the TRACE_EVENT_ABI.
+But even before that, we need to ensure we have a final version of
+the trace events description.
 
-Ahh, that makes a ton more sense: this particular patch is a debugging 
-effort while the first two are candidates for 2.6.32 and -stable.  Gotcha.
-
-> > Wouldn't it be better to do this on page_zone(page) instead of 
-> > preferred_zone anyway?
-> > 
-> 
-> No. The preferred_zone is the zone we should be allocating from. If we
-> failed to allocate from it, it implies the watermarks are not being met
-> so we want to wake it.
-> 
-
-Oops, I'm even more confused now :)  I thought the existing 
-wake_all_kswapd() in the slowpath was doing that and that this patch was 
-waking them prematurely because it speculates that a subsequent high 
-order allocation will fail unless memory is reclaimed.  I thought we'd  
-want to reclaim from the zone we just did a high order allocation from so 
-that the fastpath could find the memory next time with ALLOC_WMARK_LOW.
