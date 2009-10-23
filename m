@@ -1,104 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbZJWXgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752408AbZJWXj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752528AbZJWXgt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 19:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbZJWXgr
+	id S1752408AbZJWXj3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 19:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbZJWXj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 19:36:47 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:49210 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752280AbZJWXgn (ORCPT
+	Fri, 23 Oct 2009 19:39:28 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:33866 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752352AbZJWXj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 19:36:43 -0400
-Message-Id: <20091023233647.118547500@goodmis.org>
-User-Agent: quilt/0.48-1
-Date: Fri, 23 Oct 2009 19:36:19 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Jiri Olsa <jolsa@redhat.com>
-Subject: [PATCH 4/4] [PATCH 4/4] tracing: removing cpu arg from rb_time_stamp function
-References: <20091023233615.661789185@goodmis.org>
-Content-Disposition: inline; filename=0004-tracing-removing-cpu-arg-from-rb_time_stamp-function.patch
+	Fri, 23 Oct 2009 19:39:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=lPWjlP0c3txPZg3tByuAm1BsiktK/BhubrkLuF99Q5UdFFslhx5EZG7hp1v0LOQ0DD
+         FECUcu+bMbssT8dX2Si8if0toNwz60tKZnaEt0h9fE/AwTQxUoo+z5o+GvQuSC/sGFAp
+         LK1vLi4VAmwQtLh9cxVx2ni3yb/1+WDE/6+B4=
+From: Alexander Potashev <aspotashev@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Potashev <aspotashev@gmail.com>
+Subject: [PATCH] x86, boot: simplify setting of the PAE bit
+Date: Sat, 24 Oct 2009 03:37:23 +0400
+Message-Id: <1256341043-4928-1-git-send-email-aspotashev@gmail.com>
+X-Mailer: git-send-email 1.6.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Olsa <jolsa@redhat.com>
+A single 'movl' is shorter than the 'xorl'-'orl' pair.
+No behaviour change.
 
-The cpu argument is not used inside rb_time_stamp function. Plus typo fix.
-
-Signed-off-by: Jiri Olsa <jolsa@redhat.com>
-LKML-Reference: <1256135801-1849-5-git-send-email-jolsa@redhat.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Alexander Potashev <aspotashev@gmail.com>
 ---
- include/linux/trace_seq.h  |    2 +-
- kernel/trace/ring_buffer.c |   10 +++++-----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/boot/compressed/head_64.S |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
-index c134dd1..09077f6 100644
---- a/include/linux/trace_seq.h
-+++ b/include/linux/trace_seq.h
-@@ -7,7 +7,7 @@
+diff --git a/arch/x86/boot/compressed/head_64.S b/arch/x86/boot/compressed/head_64.S
+index 077e1b6..faff0dc 100644
+--- a/arch/x86/boot/compressed/head_64.S
++++ b/arch/x86/boot/compressed/head_64.S
+@@ -107,8 +107,7 @@ ENTRY(startup_32)
+ 	lgdt	gdt(%ebp)
  
- /*
-  * Trace sequences are used to allow a function to call several other functions
-- * to create a string of data to use (up to a max of PAGE_SIZE.
-+ * to create a string of data to use (up to a max of PAGE_SIZE).
-  */
+ 	/* Enable PAE mode */
+-	xorl	%eax, %eax
+-	orl	$(X86_CR4_PAE), %eax
++	movl	$(X86_CR4_PAE), %eax
+ 	movl	%eax, %cr4
  
- struct trace_seq {
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 217f699..3ffa502 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -483,7 +483,7 @@ struct ring_buffer_iter {
- /* Up this if you want to test the TIME_EXTENTS and normalization */
- #define DEBUG_SHIFT 0
- 
--static inline u64 rb_time_stamp(struct ring_buffer *buffer, int cpu)
-+static inline u64 rb_time_stamp(struct ring_buffer *buffer)
- {
- 	/* shift to debug/test normalization and TIME_EXTENTS */
- 	return buffer->clock() << DEBUG_SHIFT;
-@@ -494,7 +494,7 @@ u64 ring_buffer_time_stamp(struct ring_buffer *buffer, int cpu)
- 	u64 time;
- 
- 	preempt_disable_notrace();
--	time = rb_time_stamp(buffer, cpu);
-+	time = rb_time_stamp(buffer);
- 	preempt_enable_no_resched_notrace();
- 
- 	return time;
-@@ -599,7 +599,7 @@ static struct list_head *rb_list_head(struct list_head *list)
- }
- 
- /*
-- * rb_is_head_page - test if the give page is the head page
-+ * rb_is_head_page - test if the given page is the head page
-  *
-  * Because the reader may move the head_page pointer, we can
-  * not trust what the head page is (it may be pointing to
-@@ -1868,7 +1868,7 @@ rb_move_tail(struct ring_buffer_per_cpu *cpu_buffer,
- 		 * Nested commits always have zero deltas, so
- 		 * just reread the time stamp
- 		 */
--		*ts = rb_time_stamp(buffer, cpu_buffer->cpu);
-+		*ts = rb_time_stamp(buffer);
- 		next_page->page->time_stamp = *ts;
- 	}
- 
-@@ -2111,7 +2111,7 @@ rb_reserve_next_event(struct ring_buffer *buffer,
- 	if (RB_WARN_ON(cpu_buffer, ++nr_loops > 1000))
- 		goto out_fail;
- 
--	ts = rb_time_stamp(cpu_buffer->buffer, cpu_buffer->cpu);
-+	ts = rb_time_stamp(cpu_buffer->buffer);
- 
- 	/*
- 	 * Only the first commit can update the timestamp.
+  /*
 -- 
-1.6.3.3
-
+1.6.5.1
 
