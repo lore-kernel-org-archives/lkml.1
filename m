@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbZJWWQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbZJWWQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752135AbZJWWQb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 18:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZJWWQb
+	id S1751984AbZJWWQT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 18:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZJWWQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 18:16:31 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:40320 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752049AbZJWWQa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 18:16:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=qkKj6kSsb7mA+rhVaof1YKu1hAC88PTEJynDU8i1NjCZAqELSzg2YXiP3QAx2N9vRp
-         4ZVuLbtGhTYKbt3pRz49XFfZEuKxxrnWe6HVh3yIe3WGs1L349rYGXaJz3x6/UQ6v7Bz
-         gqRJqlmYlmq3Z99ysLDjZTJ8VgToqQwrkdk4Y=
+	Fri, 23 Oct 2009 18:16:18 -0400
+Received: from claw.goop.org ([74.207.240.146]:42716 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751340AbZJWWQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 18:16:17 -0400
+Message-ID: <4AE22B34.7090103@goop.org>
+Date: Fri, 23 Oct 2009 15:16:20 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <54b33ccd0910231459j5cb355c4n13859c527e1645ba@mail.gmail.com>
-References: <1256330234-14079-1-git-send-email-marti@juffo.org> 
-	<20091023210231.GC8356@elte.hu> <193b0f820910231456o24bf95b6mf3e72f1b27870af5@mail.gmail.com> 
-	<54b33ccd0910231459j5cb355c4n13859c527e1645ba@mail.gmail.com>
-From: Lucas De Marchi <lucas.de.marchi@gmail.com>
-Date: Fri, 23 Oct 2009 20:16:14 -0200
-Message-ID: <193b0f820910231516m56361e82v336c9df4ccb13816@mail.gmail.com>
-Subject: Re: [PATCH] perf tools: add compatibility with libelf 0.8 and 
-	autodetect
-To: Marti Raudsepp <marti@juffo.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+To: "Ryan C. Gordon" <icculus@icculus.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/2] binfmt_elf: FatELF support in the binary loader.
+References: <alpine.DEB.2.00.0910190418500.13303@andre.icculuslan> <4ADD005A.4000401@goop.org> <alpine.DEB.2.00.0910200034500.18342@andre.icculuslan>
+In-Reply-To: <alpine.DEB.2.00.0910200034500.18342@andre.icculuslan>
+X-Enigmail-Version: 0.97a
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 19:59, Marti Raudsepp <marti@juffo.org> wrote:
-> On Sat, Oct 24, 2009 at 12:56 AM, Lucas De Marchi
-> <lucas.de.marchi@gmail.com> wrote:
->> I think it's Arch's fault to continue using an unmaintained library
->> when there's an easy replacement, but if the "fix" is easy, why not?
+On 10/19/09 21:43, Ryan C. Gordon wrote:
+> I'm not sure the added flexibility is worth the extra complications. 
+> FatELF solves a specific problem: merging multiple ELF targets into one 
+> file, the most compelling use-case being to glue x86_64 and i686 binaries 
+> together.
 >
-> As far as I can tell, libelf is still maintained; the latest release
-> is from July 2009.
->
+> What you're describing would definitely be the route I'd have chosen if, 
+> say, a.out files were still in widespread use and actively competed with 
+> ELF for mindshare.
+>   
 
-humn... I was looking at FSF site
-(http://directory.fsf.org/project/libelf/) where version was not
-updated anymore.
+It would be nice to have something that would conceptually work for
+other architectures with other executable file formats.  Granted ELF is
+most common, but its far from the only one.
 
+A generic approach would allow the last-option fallback executable to be
+a shell/python/perl script which could do something useful (like display
+a useful message).
 
-Lucas De Marchi
+>> That is, what you have here, but without hacking up binfmt_elf more.
+>>     
+> I like to think of it as art, like a chef carving a fine piece of meat. :)
+>   
+
+Well, its really a bit diseased, with lots of gristly bits and a few
+unexpected tubes sticking out the side.
+
+    J
