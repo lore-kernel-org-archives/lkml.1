@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbZJWXfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752437AbZJWXgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752187AbZJWXfL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 19:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbZJWXfL
+	id S1752437AbZJWXgp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 19:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZJWXgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 19:35:11 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:60220 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751217AbZJWXfK (ORCPT
+	Fri, 23 Oct 2009 19:36:44 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:64735 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbZJWXgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 19:35:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=SK4WoDBFZzGQJ8hpjM1dqkizwgz7hNVWVJ8LnzamgZwLgJZ2aPbb/oZlvpd7Z1bE1b
-         sYc2LNmX8oCX2JpDAr9jOK/jhZmdnR+30UeAhCUucftJXV3HxyGPE0H6wJPtc0ut582G
-         jMWhFk/JS5HwW9MpZO4vedSgRZWk+efOsw45w=
-MIME-Version: 1.0
-Date: Fri, 23 Oct 2009 16:35:14 -0700
-Message-ID: <9a0aa30d0910231635p7a692089vb92d2b35051c23ae@mail.gmail.com>
-Subject: scheduling tasklets on remote cpu
-From: T D <td.lkml@gmail.com>
+	Fri, 23 Oct 2009 19:36:42 -0400
+Message-Id: <20091023233615.661789185@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 23 Oct 2009 19:36:15 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 0/4] [GIT PULL] tracing: various fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
 
-[This is my first post to LKML. If this isn't the right list for my
-questions, can someone pl. point me to an appropriate list? Thanks.]
+Ingo,
 
-I've couple of questions wrt tasklets on an SMP system and the 2.6.30
-kernel and would appreciate some clarifications.
+Please pull the latest tip/tracing/core tree, which can be found at:
 
-1. When a top half schedules a tasklet to take care of deferred
-processing, is it possible to schedule the tasklet to run on a
-different cpu (than the one that handled the top half)? I looked up
-softirq.c and don't see any such api for tasklets, although there is
-one for softirq's.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/core
 
-2. Also, would there be any issues with a simple api that took the
-specified tasklet from one CPU's tasklet queue/vector and moved it to
-another CPU's queue?
 
-Thanks!
+Jiri Olsa (4):
+      tracing: updating *ppos instead of filp->f_pos
+      tracing: fix trace_seq_printf return value
+      tracing: comment typo and documentation example fix
+      tracing: removing cpu arg from rb_time_stamp function
+
+----
+ Documentation/trace/ftrace.txt |    2 ++
+ include/linux/trace_seq.h      |    2 +-
+ kernel/trace/ftrace.c          |    2 +-
+ kernel/trace/ring_buffer.c     |   12 ++++++------
+ kernel/trace/trace.c           |    8 ++++----
+ kernel/trace/trace_output.c    |    5 ++++-
+ 6 files changed, 18 insertions(+), 13 deletions(-)
