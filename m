@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751708AbZJWNcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbZJWNfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751708AbZJWNcL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 09:32:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZJWNcK
+	id S1752043AbZJWNfa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 09:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZJWNf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 09:32:10 -0400
-Received: from relay2.mail.masterhost.ru ([83.222.23.62]:30408 "EHLO
-	relay2.mail.masterhost.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbZJWNcJ (ORCPT
+	Fri, 23 Oct 2009 09:35:27 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:43338 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751984AbZJWNfY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 09:32:09 -0400
-Message-ID: <4AE1B059.7030000@mayc.ru>
-Date: Fri, 23 Oct 2009 17:32:09 +0400
-From: "Anton D. Kachalov" <mouse@mayc.ru>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] binfmt_elf: FatELF support in the binary loader.
-References: <4AE17C1A.4060009@mayc.ru>
-In-Reply-To: <4AE17C1A.4060009@mayc.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-SpamTest-Envelope-From: mouse@mayc.ru
-X-SpamTest-Group-ID: 00000000
-X-SpamTest-Info: Profiles 10363 [Oct 23 2009]
-X-SpamTest-Method: none
-X-SpamTest-Rate: 0
-X-SpamTest-Status: Not detected
-X-SpamTest-Status-Extended: not_detected
-X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+	Fri, 23 Oct 2009 09:35:24 -0400
+Subject: Re: NOHZ: local_softirq_pending 08
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless@vger.kernel.org,
+       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
+       isdn4linux <isdn4linux@listserv.isdn4linux.de>,
+       i4ldeveloper <i4ldeveloper@listserv.isdn4linux.de>,
+       Karsten Keil <isdn@linux-pingi.de>
+In-Reply-To: <4AE0ECCE.2020407@imap.cc>
+References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local>
+	 <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc>
+	 <4AE0ECCE.2020407@imap.cc>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-7NtKIoavohHzeLGIUrpI"
+Date: Fri, 23 Oct 2009 15:34:29 +0200
+Message-Id: <1256304869.12174.20.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton D. Kachalov wrote:
-> I have made very similar patch but it's quite small and do not require
-> deep hacks.
-> It should works with "setarch" too to force selection of binary.
-> There is a tool to merge binaries. Glibc / binutils patch work in 
-> progress.
-$ uname -m
-x86_64
-$ ./truearch hello32 hello64 hellos
-$ ./hellos
-hello x86_64
-$ setarch i386 ./hellos
-Hello x86
-$ setarch x86_64 ./hellos
-hello x86_64
-$ file hello32
-hello: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), 
-statically linked, for GNU/Linux 2.6.15, not stripped
-$ file hello64
-hello64: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically 
-linked, for GNU/Linux 2.6.15, not stripped
 
-While I didn't finish glibc hacks, I could use only statically linked 
-binaries.
+--=-7NtKIoavohHzeLGIUrpI
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Rgds,
-Anton
+On Fri, 2009-10-23 at 01:37 +0200, Tilman Schmidt wrote:
+
+> --- a/drivers/isdn/i4l/isdn_ppp.c
+> +++ b/drivers/isdn/i4l/isdn_ppp.c
+> @@ -1174,7 +1174,10 @@ isdn_ppp_push_higher(isdn_net_dev * net_dev, isdn_=
+net_local * lp, struct sk_buff
+>  #endif /* CONFIG_IPPP_FILTER */
+>  	skb->dev =3D dev;
+>  	skb_reset_mac_header(skb);
+> -	netif_rx(skb);
+> +	if (in_interrupt())
+> +		netif_rx(skb);
+> +	else
+> +		netif_rx_ni(skb);
+
+So you've verified that the entire i4l stack can cope with being called
+twice on the same CPU, from different contexts?
+
+johannes
+
+--=-7NtKIoavohHzeLGIUrpI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJK4bDiAAoJEODzc/N7+Qmar1IQAKGLYK9REsXEg22lyNTnuO/O
+LHksLqfsQCGlCrc8mV/TBFudWTtOI8WadqlTRNtRyST2c5X+9hB7CAfaXL59liDn
+b8h5D0B9dvFoOSkPtyFC9pW9Nw8QEGNym+wv+q/FJvoA1jyAhsAhCTkR63jUhFCk
+Zf9d1xE6DtIVHyir7jYgxysVNcZdEQ25hf+s+OM31aMaafWdz83wJB0LWk7DiSjQ
+i2U/bJXsFy67cUjFapr6Pl8ZoGQt8Kjama6+ttN91PqcHxREYyC0Yov+jhYiZ3cF
+T0qDKUy7W9Jxnpnfmp5ZQ9TDsml//e0klWPKuWCl9gm3y8resgqJcxhAsjkdPcP1
+W/FZ3rUiUqdNYsvLZBT3mJcPWApncvvMsfAqd4ziFcFGkbnxkhqD+PC59jlOvJkB
+FhVp0V/m5eUawHWtVGHYyjBXEmtAA/c6AUuXvFRLMWfGdou5KOjtHgjG1bp4Umuo
+SwZiNhgzTagTGLw1C7oXhny6zm4kU6dOlcT/DFEjpIsMqG9AiWL8EOkw5TI7FQr+
+/exgN7g7myiOLL6coLO91+kX1ajPNDEay32S3SdLXdWkls6qR3qysQC6XALfGtAy
+q+yR9nLme1Q6I5Rz56USB42iG44Gyb+gqH2BqKZbiNJ3LqrN6XYIwkKmVvkx/3uh
+/jYxJWtRCmAc2HcP7gne
+=N3Jb
+-----END PGP SIGNATURE-----
+
+--=-7NtKIoavohHzeLGIUrpI--
+
