@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751592AbZJWHvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751645AbZJWHwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751592AbZJWHvX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 03:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZJWHvW
+	id S1751645AbZJWHwI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 03:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZJWHwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 03:51:22 -0400
-Received: from zmc.proxad.net ([212.27.53.206]:45351 "EHLO zmc.proxad.net"
+	Fri, 23 Oct 2009 03:52:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45511 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751347AbZJWHvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 03:51:21 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -4.249
-From: Florian Fainelli <ffainelli@freebox.fr>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [PATCH] fix spidev compilation when VERBOSE is defined
-Date: Fri, 23 Oct 2009 09:51:22 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28-16-server; KDE/4.2.2; x86_64; ; )
-Cc: dbrownell@users.sourceforge.net, Maxime Bizon <mbizon@freebox.fr>,
-       linux-kernel@vger.kernel.org
-References: <200910061759.17327.ffainelli@freebox.fr>
-In-Reply-To: <200910061759.17327.ffainelli@freebox.fr>
-Organization: Freebox
+	id S1751214AbZJWHwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 03:52:05 -0400
+Date: Fri, 23 Oct 2009 09:51:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Tejun Heo <tj@kernel.org>,
+       Jeff Mahoney <jeffm@suse.com>, Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
+Message-ID: <20091023075151.GB10067@elte.hu>
+References: <4ADD54D4.70808@kernel.org> <4ADD5530.3050107@kernel.org> <alpine.LSU.2.00.0910200826220.8582@wotan.suse.de> <4ADDC69A.5000701@suse.com> <4ADDCDED.6060706@suse.com> <20091021061109.GA27195@elte.hu> <4ADF2691.7070304@kernel.org> <57C9024A16AD2D4C97DC78E552063EA3E337CF79@orsmsx505.amr.corp.intel.com> <alpine.LSU.2.00.0910221640430.8582@wotan.suse.de> <57C9024A16AD2D4C97DC78E552063EA3E337D94C@orsmsx505.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910230951.22725.ffainelli@freebox.fr>
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E337D94C@orsmsx505.amr.corp.intel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
 
-Ping ?
+* Luck, Tony <tony.luck@intel.com> wrote:
 
-On Tuesday 06 October 2009 17:59:16 Florian Fainelli wrote:
-> (please CC me as I am not subscribed to spi-devel-general).
->
-> When VERBOSE is defined in the spidev module, the compilation
-> will throw an error on 'spi' not being defined:
->
-> CC [M]  drivers/spi/spidev.o
-> drivers/spi/spidev.c: In function 'spidev_message':
-> drivers/spi/spidev.c:266: error: 'spi' undeclared (first use in this
-> function) drivers/spi/spidev.c:266: error: (Each undeclared identifier is
-> reported only once drivers/spi/spidev.c:266: error: for each function it
-> appears in.)
->
-> instead of using spi-> we should actually use spidev->spi.
-> This patch fixes the build failure.
->
-> CC: David Brownell <dbrownell@users.sourceforge.net>
-> CC: Maxime Bizon <mbizon@freebox.fr>
-> Signed-off-by: Florian Fainelli <ffainelli@freebox.fr>
-> --
-> diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
-> index 5d869c4..c80c31b 100644
-> --- a/drivers/spi/spidev.c
-> +++ b/drivers/spi/spidev.c
-> @@ -262,15 +262,15 @@ static int spidev_message(struct spidev_data *spidev,
->  		k_tmp->delay_usecs = u_tmp->delay_usecs;
->  		k_tmp->speed_hz = u_tmp->speed_hz;
->  #ifdef VERBOSE
-> -		dev_dbg(&spi->dev,
-> +		dev_dbg(&spidev->spi->dev,
->  			"  xfer len %zd %s%s%s%dbits %u usec %uHz\n",
->  			u_tmp->len,
->  			u_tmp->rx_buf ? "rx " : "",
->  			u_tmp->tx_buf ? "tx " : "",
->  			u_tmp->cs_change ? "cs " : "",
-> -			u_tmp->bits_per_word ? : spi->bits_per_word,
-> +			u_tmp->bits_per_word ? : spidev->spi->bits_per_word,
->  			u_tmp->delay_usecs,
-> -			u_tmp->speed_hz ? : spi->max_speed_hz);
-> +			u_tmp->speed_hz ? : spidev->spi->max_speed_hz);
->  #endif
->  		spi_message_add_tail(k_tmp, &msg);
->  	}
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> > Tony, is the change that will eventually have to be made to ia64 
+> > pagefault handler too intrusive for -rc6, and should we rather go 
+> > with my workaround instead, and try to find something proper for 
+> > 2.6.33?
+> 
+> Using __alloc_percpu() rather than static declaration looks to be the 
+> right fix here.  Not a "workaround".
 
--- 
-Florian
+It is a workaround for the IA64 build failure.
+
+It's also an improvement of the scheduler code (we generally try to 
+eliminate NR_CPUs scaling of allocations) - but code improvements need 
+to happen much sooner than -rc6/-rc7.
+
+	Ingo
