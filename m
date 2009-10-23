@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751891AbZJWMaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751910AbZJWMdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751891AbZJWMaG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 08:30:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZJWMaF
+	id S1751910AbZJWMdZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 08:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZJWMdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 08:30:05 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50394 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751543AbZJWMaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 08:30:04 -0400
-Date: Fri, 23 Oct 2009 21:30:04 +0900 (JST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Luck, Tony" <tony.luck@intel.com>, Tejun Heo <tj@kernel.org>,
-       Jeff Mahoney <jeffm@suse.com>, Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
-In-Reply-To: <20091023075151.GB10067@elte.hu>
-Message-ID: <alpine.LSU.2.00.0910232127410.9469@wotan.suse.de>
-References: <4ADD54D4.70808@kernel.org> <4ADD5530.3050107@kernel.org> <alpine.LSU.2.00.0910200826220.8582@wotan.suse.de> <4ADDC69A.5000701@suse.com> <4ADDCDED.6060706@suse.com> <20091021061109.GA27195@elte.hu> <4ADF2691.7070304@kernel.org>
- <57C9024A16AD2D4C97DC78E552063EA3E337CF79@orsmsx505.amr.corp.intel.com> <alpine.LSU.2.00.0910221640430.8582@wotan.suse.de> <57C9024A16AD2D4C97DC78E552063EA3E337D94C@orsmsx505.amr.corp.intel.com> <20091023075151.GB10067@elte.hu>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 23 Oct 2009 08:33:24 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:35603 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751581AbZJWMdX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 08:33:23 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnUHAC8+4UpGGN1W/2dsb2JhbACBUJo2vGiEPwSBXQ
+Date: Fri, 23 Oct 2009 08:33:27 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: David Miller <davem@davemloft.net>
+Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: sparc64 cmpxchg is not a full memory barrier anymore ?
+Message-ID: <20091023123327.GA14058@Krystal>
+References: <20091022183242.GA19307@Krystal> <20091022.145645.249762938.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091022.145645.249762938.davem@davemloft.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 08:32:24 up 65 days, 23:21,  2 users,  load average: 0.69, 0.28,
+	0.15
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Oct 2009, Ingo Molnar wrote:
-
-> > > Tony, is the change that will eventually have to be made to ia64 
-> > > pagefault handler too intrusive for -rc6, and should we rather go 
-> > > with my workaround instead, and try to find something proper for 
-> > > 2.6.33?
-> > 
-> > Using __alloc_percpu() rather than static declaration looks to be the 
-> > right fix here.  Not a "workaround".
+* David Miller (davem@davemloft.net) wrote:
+> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Date: Thu, 22 Oct 2009 14:32:42 -0400
 > 
-> It is a workaround for the IA64 build failure.
+> > The same applies to the other atomic instructions we find in this list.
+> > How is the correct ordering of loads wrt to cmxchg (and other atomic
+> > ops) still ensured by this modification?
 > 
-> It's also an improvement of the scheduler code (we generally try to 
-> eliminate NR_CPUs scaling of allocations) - but code improvements need 
-> to happen much sooner than -rc6/-rc7.
+> All actual sparc64 chips implement more strict ordering than
+> the V9 specification permits.  The memory barriers were just
+> nops and actually not doing anything more than the chip
+> already does for us.
 
-Unfortunately refactoring the ia4 pagefault handler would require some 
-refactoring in order to eliminate the 64k limitation, as far as I know, 
-which doesn't seem to be feasible for this timeframe either.
-
-So if I personally have to chose from these two options, I'd prefer my 
-patch for 2.6.32 and it'd be helpful if ia64 people could look into doing 
-something with the 64k limit for 2.6.33.
-
-Acceptable for everyone? Ingo/Peter, will you merge this asap please, so 
-that we don't miss 2.6.32 with it?
+OK. Perhaps adding a comment to that effect near sparc mb()
+implementation would be appropriate ?
 
 Thanks,
 
+Mathieu
+
+
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
