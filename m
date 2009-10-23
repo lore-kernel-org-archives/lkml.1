@@ -1,88 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbZJWNjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbZJWNrC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751984AbZJWNjE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 09:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbZJWNjE
+	id S1751981AbZJWNrC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 09:47:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZJWNrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 09:39:04 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:34560 "EHLO gir.skynet.ie"
+	Fri, 23 Oct 2009 09:47:01 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:58751 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751647AbZJWNjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 09:39:02 -0400
-Date: Fri, 23 Oct 2009 14:39:08 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Tobias Oetiker <tobi@oetiker.ch>
-Cc: David Rientjes <rientjes@google.com>, Frans Pop <elendil@planet.nl>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/5] page allocator: Pre-emptively wake kswapd when
-	high-order watermarks are hit
-Message-ID: <20091023133908.GX11778@csn.ul.ie>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0910221227010.21601@chino.kir.corp.google.com> <20091023091334.GV11778@csn.ul.ie> <alpine.DEB.2.00.0910230229010.28109@chino.kir.corp.google.com> <20091023112512.GW11778@csn.ul.ie> <alpine.DEB.2.00.0910231329550.26462@sebohet.brgvxre.pu>
+	id S1751676AbZJWNrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 09:47:00 -0400
+Date: Fri, 23 Oct 2009 19:17:00 +0530
+From: Dinakar Guniguntala <dino@in.ibm.com>
+To: tglx@linutronix.de
+Cc: Darren Hart <dvhltc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: [patch -rt] Fix infinite loop with 2.6.31.4-rt14
+Message-ID: <20091023134700.GA5578@in.ibm.com>
+Reply-To: dino@in.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910231329550.26462@sebohet.brgvxre.pu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 01:31:10PM +0200, Tobias Oetiker wrote:
-> Mel,
-> 
-> Today Mel Gorman wrote:
-> 
-> > On Fri, Oct 23, 2009 at 02:36:53AM -0700, David Rientjes wrote:
-> > > On Fri, 23 Oct 2009, Mel Gorman wrote:
-> > >
-> > > > > Hmm, is this really supposed to be added to __alloc_pages_high_priority()?
-> > > > > By the patch description I was expecting kswapd to be woken up
-> > > > > preemptively whenever the preferred zone is below ALLOC_WMARK_LOW and
-> > > > > we're known to have just allocated at a higher order, not just when
-> > > > > current was oom killed (when we should already be freeing a _lot_ of
-> > > > > memory soon) or is doing a higher order allocation during direct reclaim.
-> > > > >
-> > > >
-> > > > It was a somewhat arbitrary choice to have it trigger in the event high
-> > > > priority allocations were happening frequently.
-> > > >
-> > >
-> > > I don't quite understand, users of PF_MEMALLOC shouldn't be doing these
-> > > higher order allocations and if ALLOC_NO_WATERMARKS is by way of the oom
-> > > killer, we should be freeing a substantial amount of memory imminently
-> > > when it exits that waking up kswapd would be irrelevant.
-> > >
-> >
-> > I agree. I think it's highly unlikely this patch will make any
-> > difference but I wanted to eliminate it as a possibility. Patch 3 and 4
-> > were previously one patch that were tested together.
-> 
-> hi hi ... I have tested '3 only' this morning, and the allocation
-> problems started again ... so for me 3 alone does not work while
-> 3+4 does.
-> 
+Hi Thomas,
 
-Hi,
+I see an application hang in 2.6.31.4-rt14 when running some java tests.
 
-What was the outcome of 1+2?
+The kernel seems to be continuously looping in 
+       futex_wait_requeue_pi -> futex_wait_setup ->
+       ret -EAGAIN -> goto retry -> futex_wait_setup -> on and on
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+===============================================================================
+
+    java-5544  [001] 79682.800631: __might_sleep <-rt_spin_lock_fastlock
+    java-5544  [001] 79682.800631: get_futex_value_locked <-futex_wait_setup
+    java-5544  [001] 79682.800632: pagefault_disable <-get_futex_value_locked
+    java-5544  [001] 79682.800632: pagefault_enable <-get_futex_value_locked
+    java-5544  [001] 79682.800632: queue_unlock <-futex_wait_setup
+    java-5544  [001] 79682.800632: rt_spin_unlock <-queue_unlock
+    java-5544  [001] 79682.800633: rt_spin_lock_fastunlock <-rt_spin_unlock
+    java-5544  [001] 79682.800633: drop_futex_key_refs <-queue_unlock
+    java-5544  [001] 79682.800633: put_futex_key <-futex_wait_setup
+    java-5544  [001] 79682.800633: drop_futex_key_refs <-put_futex_key
+    java-5544  [001] 79682.800633: put_futex_key <-do_futex
+    java-5544  [001] 79682.800634: drop_futex_key_refs <-put_futex_key
+    java-5544  [001] 79682.800634: get_futex_key <-do_futex
+    java-5544  [001] 79682.800634: get_futex_key_refs <-get_futex_key
+    java-5544  [001] 79682.800634: futex_wait_setup <-do_futex
+    java-5544  [001] 79682.800635: get_futex_key <-futex_wait_setup
+    java-5544  [001] 79682.800635: get_futex_key_refs <-get_futex_key
+    java-5544  [001] 79682.800635: queue_lock <-futex_wait_setup
+    java-5544  [001] 79682.800635: get_futex_key_refs <-queue_lock
+    java-5544  [001] 79682.800635: hash_futex <-queue_lock
+    java-5544  [001] 79682.800636: rt_spin_lock <-queue_lock
+    java-5544  [001] 79682.800636: rt_spin_lock_fastlock <-rt_spin_lock
+    java-5544  [001] 79682.800636: __might_sleep <-rt_spin_lock_fastlock
+    java-5544  [001] 79682.800636: get_futex_value_locked <-futex_wait_setup
+    java-5544  [001] 79682.800637: pagefault_disable <-get_futex_value_locked
+    java-5544  [001] 79682.800637: pagefault_enable <-get_futex_value_locked
+    java-5544  [001] 79682.800637: queue_unlock <-futex_wait_setup
+    java-5544  [001] 79682.800637: rt_spin_unlock <-queue_unlock
+    java-5544  [001] 79682.800637: rt_spin_lock_fastunlock <-rt_spin_unlock
+    java-5544  [001] 79682.800638: drop_futex_key_refs <-queue_unlock
+    java-5544  [001] 79682.800638: put_futex_key <-futex_wait_setup
+    java-5544  [001] 79682.800638: drop_futex_key_refs <-put_futex_key
+    java-5544  [001] 79682.800638: put_futex_key <-do_futex
+    java-5544  [001] 79682.800639: drop_futex_key_refs <-put_futex_key
+    java-5544  [001] 79682.800639: get_futex_key <-do_futex
+    java-5544  [001] 79682.800639: get_futex_key_refs <-get_futex_key
+    java-5544  [001] 79682.800639: futex_wait_setup <-do_futex
+    java-5544  [001] 79682.800639: get_futex_key <-futex_wait_setup
+    java-5544  [001] 79682.800640: get_futex_key_refs <-get_futex_key
+    java-5544  [001] 79682.800640: queue_lock <-futex_wait_setup
+    java-5544  [001] 79682.800640: get_futex_key_refs <-queue_lock
+    java-5544  [001] 79682.800640: hash_futex <-queue_lock
+    java-5544  [001] 79682.800640: rt_spin_lock <-queue_lock
+    java-5544  [001] 79682.800641: rt_spin_lock_fastlock <-rt_spin_lock
+    java-5544  [001] 79682.800641: __might_sleep <-rt_spin_lock_fastlock
+    java-5544  [001] 79682.800641: get_futex_value_locked <-futex_wait_setup
+    java-5544  [001] 79682.800641: pagefault_disable <-get_futex_value_locked
+    java-5544  [001] 79682.800642: pagefault_enable <-get_futex_value_locked
+    java-5544  [001] 79682.800642: queue_unlock <-futex_wait_setup
+    java-5544  [001] 79682.800642: rt_spin_unlock <-queue_unlock
+    java-5544  [001] 79682.800642: rt_spin_lock_fastunlock <-rt_spin_unlock
+
+
+===============================================================================
+
+This looks to be caused by the patch below
+      -> http://patchwork.kernel.org/patch/53483/
+
+Not sure if this the best way to go here, but the patch below seems to resolve
+the problem for me
+
+If this is fine, I'll send a separate patch for mainline. Currently mainline
+seems to be missing the earlier patch referenced above as well
+
+Signed-off-by: Dinakar Guniguntala <dino@in.ibm.com>
+
+	-Dinakar
+
+---
+ kernel/futex.c |   84 +++++++++++++++++++++------------------------------------
+ 1 file changed, 32 insertions(+), 52 deletions(-)
+
+Index: linux-2.6.31.4-rt14-lbf-f1/kernel/futex.c
+===================================================================
+--- linux-2.6.31.4-rt14-lbf-f1.orig/kernel/futex.c
++++ linux-2.6.31.4-rt14-lbf-f1/kernel/futex.c
+@@ -2048,54 +2048,6 @@ pi_faulted:
+ }
+ 
+ /**
+- * handle_early_requeue_pi_wakeup() - Detect early wakeup on the initial futex
+- * @hb:		the hash_bucket futex_q was original enqueued on
+- * @q:		the futex_q woken while waiting to be requeued
+- * @key2:	the futex_key of the requeue target futex
+- * @timeout:	the timeout associated with the wait (NULL if none)
+- *
+- * Detect if the task was woken on the initial futex as opposed to the requeue
+- * target futex.  If so, determine if it was a timeout or a signal that caused
+- * the wakeup and return the appropriate error code to the caller.  Must be
+- * called with the hb lock held.
+- *
+- * Returns
+- *  0 - no early wakeup detected
+- * <0 - -ETIMEDOUT or -ERESTARTNOINTR
+- */
+-static inline
+-int handle_early_requeue_pi_wakeup(struct futex_hash_bucket *hb,
+-				   struct futex_q *q, union futex_key *key2,
+-				   struct hrtimer_sleeper *timeout)
+-{
+-	int ret = 0;
+-
+-	/*
+-	 * With the hb lock held, we avoid races while we process the wakeup.
+-	 * We only need to hold hb (and not hb2) to ensure atomicity as the
+-	 * wakeup code can't change q.key from uaddr to uaddr2 if we hold hb.
+-	 * It can't be requeued from uaddr2 to something else since we don't
+-	 * support a PI aware source futex for requeue.
+-	 */
+-	if (!match_futex(&q->key, key2)) {
+-		WARN_ON(q->lock_ptr && (&hb->lock != q->lock_ptr));
+-		/*
+-		 * We were woken prior to requeue by a timeout or a signal.
+-		 * Unqueue the futex_q and determine which it was.
+-		 */
+-		plist_del(&q->list, &q->list.plist);
+-
+-		/* Handle spurious wakeups gracefully */
+-		ret = -EAGAIN;
+-		if (timeout && !timeout->task)
+-			ret = -ETIMEDOUT;
+-		else if (signal_pending(current))
+-			ret = -ERESTARTNOINTR;
+-	}
+-	return ret;
+-}
+-
+-/**
+  * futex_wait_requeue_pi() - Wait on uaddr and take uaddr2
+  * @uaddr:	the futex we initialyl wait on (non-pi)
+  * @fshared:	whether the futexes are shared (1) or not (0).  They must be
+@@ -2186,8 +2138,39 @@ retry:
+ 	futex_wait_queue_me(hb, &q, to);
+ 
+ 	spin_lock(&hb->lock);
+-	ret = handle_early_requeue_pi_wakeup(hb, &q, &key2, to);
++	/*
++	 * Detect if the task was woken on the initial futex as opposed to the requeue
++	 * target futex.  If so, determine if it was a timeout or a signal that caused
++	 * the wakeup and return the appropriate error code to the caller.  Must be
++	 * called with the hb lock held.
++	 * With the hb lock held, we avoid races while we process the wakeup.
++	 * We only need to hold hb (and not hb2) to ensure atomicity as the
++	 * wakeup code can't change q.key from uaddr to uaddr2 if we hold hb.
++	 * It can't be requeued from uaddr2 to something else since we don't
++	 * support a PI aware source futex for requeue.
++	 */
++	if (!match_futex(&q.key, &key2)) {
++		WARN_ON(q.lock_ptr && (&hb->lock != q.lock_ptr));
++		/*
++		 * We were woken prior to requeue by a timeout or a signal.
++		 * Unqueue the futex_q and determine which it was.
++		 */
++		plist_del(&q.list, &q.list.plist);
++
++		/* Handle spurious wakeups gracefully */
++		ret = -EAGAIN;
++		if (to && !to->task)
++			ret = -ETIMEDOUT;
++		else if (signal_pending(current))
++			ret = -ERESTARTNOINTR;
++	}
+ 	spin_unlock(&hb->lock);
++	if (ret == -EAGAIN) {
++		/* Retry on spurious wakeup */
++		put_futex_key(fshared, &q.key);
++		put_futex_key(fshared, &key2);
++		goto retry;
++	}
+ 	if (ret)
+ 		goto out_put_keys;
+ 
+@@ -2264,9 +2247,6 @@ out_put_keys:
+ out_key2:
+ 	put_futex_key(fshared, &key2);
+ 
+-	/* Spurious wakeup ? */
+-	if (ret == -EAGAIN)
+-		goto retry;
+ out:
+ 	if (to) {
+ 		hrtimer_cancel(&to->timer);
