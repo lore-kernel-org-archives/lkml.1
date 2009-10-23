@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbZJWOYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752077AbZJWOZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752056AbZJWOYP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 10:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZJWOYP
+	id S1752077AbZJWOZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 10:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZJWOZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 10:24:15 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:10626 "EHLO mx1.redhat.com"
+	Fri, 23 Oct 2009 10:25:27 -0400
+Received: from mga11.intel.com ([192.55.52.93]:42143 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751973AbZJWOYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 10:24:14 -0400
-Subject: Re: request_module vs. modprobe blacklist (and security subsystem
- implications)
-From: Eric Paris <eparis@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       linux-kernel@vger.kernel.org, arjan@infradead.org,
-       randy.dunlap@oracle.com, andi@firstfloor.org, dhowells@redhat.com,
-       akpm@linux-foundation.org
-In-Reply-To: <200910231946.39174.rusty@rustcorp.com.au>
-References: <1256137348.4443.39.camel@dhcp231-106.rdu.redhat.com>
-	 <200910221626.51170.rusty@rustcorp.com.au>
-	 <1256221822.4443.95.camel@dhcp231-106.rdu.redhat.com>
-	 <200910231946.39174.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 23 Oct 2009 10:23:50 -0400
-Message-Id: <1256307830.4443.158.camel@dhcp231-106.rdu.redhat.com>
+	id S1751982AbZJWOZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 10:25:26 -0400
+X-ExtLoop1: 1
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
+ available
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Thomas Schlichter <thomas.schlichter@web.de>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       Thomas Hellstrom <thellstrom@vmware.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jan Beulich <JBeulich@novell.com>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Tejun Heo <tj@kernel.org>,
+       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
+       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Robert Hancock <hancockrwd@gmail.com>
+In-Reply-To: <200910230924.54655.thomas.schlichter@web.de>
+References: <1394846127@web.de> <20091023133152.1a15ba69@jbarnes-x200>
+	 <1256273896.2569.10.camel@sbs-t61>
+	 <200910230924.54655.thomas.schlichter@web.de>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Fri, 23 Oct 2009 07:24:36 -0700
+Message-Id: <1256307876.2561.8.camel@sbs-t61>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-23 at 19:46 +1030, Rusty Russell wrote:
-> On Fri, 23 Oct 2009 01:00:22 am Eric Paris wrote:
-> > > If a userspace program tries some security exploit that has been closed, do
-> > > you want to warn about it?  Because that seems to be the question here.
-> > 
-> > I say yes.  Knowing that malicious activity is taking place, even if it
-> > didn't hurt anything is useful.
+On Fri, 2009-10-23 at 00:24 -0700, Thomas Schlichter wrote:
+> Hmm, at this point I already was more than a week ago:
+>   http://marc.info/?l=linux-kernel&m=125537770514713&w=2
 > 
-> Hi Eric,
-> 
-> Your proposal is troubling for three reasons:
-> 
-> 1) You would disable logging for things you actually want logged.
+> OK, I also modified ioremap() and set_memory_wc() but your patch is just part 
+> of what I did there...
 
-I would?
+oops! Sorry I read the later emails in this thread carefully but not the
+conversation with Thomas Hellstrom. Anyhow, glad that you were on top of
+this. Thanks.
 
-> 2) What *actually* happens when ssh tries to load ipv6 is that
->    "modprobe net-pf-10" gets called.
-> 3) Containing modprobe behavior in one set of config files is really nice.
+Ingo, can you please queue this patch with a sign-off from Thomas
+Schlichter too?
 
-It is it also means that we, somewhat regularly call userspace
-needlessly and there is nothing an admin can do to stop it.
-
-But it appears you disagree that fixing that problem is worth it, and I
-don't feel strongly enough to keep arguing  :)
-
--Eric
-
+thanks,
+suresh
 
