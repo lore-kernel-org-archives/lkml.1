@@ -1,107 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751910AbZJWGSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751923AbZJWGUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751910AbZJWGSg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 02:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbZJWGSf
+	id S1751923AbZJWGUR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 02:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZJWGUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 02:18:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43552 "EHLO mx2.mail.elte.hu"
+	Fri, 23 Oct 2009 02:20:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43676 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751083AbZJWGSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 02:18:34 -0400
-Date: Fri, 23 Oct 2009 08:18:27 +0200
+	id S1751867AbZJWGUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 02:20:16 -0400
+Date: Fri, 23 Oct 2009 08:20:00 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Anton Blanchard <anton@samba.org>, Tom Zanussi <tzanussi@gmail.com>
-Cc: paulus@samba.org, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, acme@redhat.com
-Subject: Re: [PATCH] perf record: Enable PERF_SAMPLE_ID when sampling
-	multiple events
-Message-ID: <20091023061827.GA1389@elte.hu>
-References: <20091021061925.GW4808@kryten> <20091021115935.GH16586@elte.hu> <20091022050044.GX4808@kryten>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH 1/1] perf tools: Unify debug messages mechanisms
+Message-ID: <20091023062000.GB1389@elte.hu>
+References: <1256153646-10097-1-git-send-email-acme@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091022050044.GX4808@kryten>
+In-Reply-To: <1256153646-10097-1-git-send-email-acme@redhat.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
+X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Anton Blanchard <anton@samba.org> wrote:
+* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
 
+> We were using eprintf in some places, that looks at a global 'verbose' 
+> level, and at other places passing a 'v' parameter to specify the 
+> verbosity level, unify it by introducing pr_{err,warning,debug,etc}, 
+> just like in the kernel.
 > 
-> Hi Ingo,
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Mike Galbraith <efault@gmx.de>
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> ---
+>  tools/perf/builtin-annotate.c          |    3 +-
+>  tools/perf/builtin-probe.c             |   20 +++---
+>  tools/perf/builtin-record.c            |    2 +-
+>  tools/perf/builtin-report.c            |    9 +-
+>  tools/perf/builtin-sched.c             |    4 +-
+>  tools/perf/builtin-timechart.c         |   13 ++--
+>  tools/perf/builtin-top.c               |    2 +-
+>  tools/perf/builtin-trace.c             |    4 +-
+>  tools/perf/util/callchain.c            |    2 +-
+>  tools/perf/util/debug.c                |    4 +-
+>  tools/perf/util/debug.h                |    3 +-
+>  tools/perf/util/event.h                |    3 +-
+>  tools/perf/util/header.c               |    2 +-
+>  tools/perf/util/include/linux/kernel.h |   17 ++++
+>  tools/perf/util/map.c                  |   17 ++--
+>  tools/perf/util/probe-finder.c         |   12 ++--
+>  tools/perf/util/symbol.c               |  134 ++++++++++++++------------------
+>  tools/perf/util/symbol.h               |    5 +-
+>  tools/perf/util/thread.c               |    6 +-
+>  19 files changed, 130 insertions(+), 132 deletions(-)
 > 
-> > > If we are sampling multiple events we need the id in each sample so we 
-> > > can differentiate between them in a perf data file.
-> > 
-> > Wondering, what are you (or will you be) using this for?
-> 
-> I put together a simple python library for parsing perf.data files:
-> 
-> http://ozlabs.org/~anton/junkcode/perf_event.py
-> 
-> An example of using it is here:
-> 
-> http://ozlabs.org/~anton/junkcode/perf_event_example.py
-> 
-> Only tested on powerpc so far, but it should work on x86. It's still 
-> missing bits but it has been useful for finding some corner cases in 
-> perf_event. It should also make it easy to post process complex 
-> profiles with multiple events in them.
+> diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+> index 99bac6a..6d63c2e 100644
+> --- a/tools/perf/builtin-annotate.c
+> +++ b/tools/perf/builtin-annotate.c
+> @@ -203,8 +203,7 @@ static int
+>  process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
+>  {
+>  	struct map *map = map__new(&event->mmap, NULL, 0,
+> -				   sizeof(struct sym_priv), symbol_filter,
+> -				   verbose);
+> +				   sizeof(struct sym_priv), symbol_filter);
+>  	struct thread *thread = threads__findnew(event->mmap.pid);
+>  
+>  	dump_printf("%p [%p]: PERF_RECORD_MMAP %d: [%p(%p) @ %p]: %s\n",
+> diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
+> index b5ad86a..dcb406c 100644
+> --- a/tools/perf/builtin-probe.c
+> +++ b/tools/perf/builtin-probe.c
+> @@ -78,7 +78,7 @@ static int parse_probepoint(const struct option *opt __used,
+>  	if (!str)	/* The end of probe points */
+>  		return 0;
+>  
+> -	eprintf("probe-definition(%d): %s\n", session.nr_probe, str);
+> +	pr_debug("probe-definition(%d): %s\n", session.nr_probe, str);
 
-Ah, cool!
-
-Note, there's a related development: we are working on script extensions 
-to perf, in a built-in way. It can be found in this patch series from 
-Tom on lkml:
-
-  [RFC][PATCH 0/9] perf trace: support for general-purpose scripting
-
-Tom started with Perl support - Python could be another script engine to 
-add.
-
-Now, your perf_event_example.py library goes deeper and exposes the 
-perf.data itself as an independent codepath. I _think_ Tom's approach 
-gives us a bit of an extra value by allowing us to tweak the environment 
-of scripts with each perf version - i.e. we can iterate the perf.data 
-format in the future without breaking scripts.
-
-We are not ready yet to declare perf.data an ABI, and there's a few 
-changes in tip:perf/* that might break the python library.
-
-Also, as your fix demonstrates it, there's extra value in going 
-ab-initio as well. Just wanted to mention the scripting engine work to 
-couple perf with scriptlets, in case you find it interesting. We could 
-easily do both.
-
-> One problem this has just found though, is with PERF_EVENT_SAMPLE:
-> 
-> 	# FIXME: If sampling multiple events we have an issue
-> 	# here. Since the SAMPLE_ID is not the first optional field
-> 	# it might be impossible to differentiate between
-> 	# events since the SAMPLE_ID field would be at different
-> 	# offsets. For now we assume all events use the same
-> 	# set of optional fields.
-> 	eventnr = 0
-> 	self.event = sample_event(eventbuf,
-> 			self.header.attrs[eventnr].sample_type)
-> 
-> It seems like the API allows us to specify different sample options 
-> for different events, but since the ID isnt the first option it could 
-> end up in different places in different events, making it difficult 
-> (if not impossible in some cases) to tag events correctly.
-
-Could we fix this bug at the kernel level somehow, to imply SAMPLE_ID 
-automatically? Producing a stream of data that cannot be decoded in some 
-cases does not look smart.
+Very nice! That verbose global/local overlap has always bothered me, 
+thanks for fixing it!
 
 	Ingo
