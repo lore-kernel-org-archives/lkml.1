@@ -1,116 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbZJWRCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbZJWRDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbZJWRCF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 13:02:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbZJWRCE
+	id S1752810AbZJWRDT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 13:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbZJWRDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 13:02:04 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:50670 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752751AbZJWRCD (ORCPT
+	Fri, 23 Oct 2009 13:03:18 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:57512 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752790AbZJWRDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 13:02:03 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArwEABN44UpGGN1W/2dsb2JhbACBUNgthD8EgV0
-Date: Fri, 23 Oct 2009 13:02:06 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Adrian Bunk <bunk@stusta.de>, Harvey Harrison <harvey.harrison@gmail.com>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       GeunSik Lim <leemgs1@gmail.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhao Lei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org,
-       Dominique Toupin <dominique.toupin@ericsson.com>,
-       Michel Dagenais <michel.dagenais@polymtl.ca>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
-Subject: Re: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL v2,
-	headers to Dual BSD/GPL
-Message-ID: <20091023170206.GA7797@Krystal>
-References: <20091023160257.GA30447@Krystal> <20091023163147.GA22928@elte.hu>
-Mime-Version: 1.0
+	Fri, 23 Oct 2009 13:03:16 -0400
+Date: Fri, 23 Oct 2009 10:03:07 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Crane Cai <crane.cai@amd.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       lenb@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Jean Delvare <khali@linux-fr.org>
+Subject: [PATCH 1/2] i2c-scmi: support IBM SMBus CMI devices
+Message-ID: <20091023170306.GP26149@tux1.beaverton.ibm.com>
+Reply-To: djwong@us.ibm.com
+References: <20091020231149.GM26149@tux1.beaverton.ibm.com> <20091021023016.GC32413@crane-desktop> <200910210857.13978.bjorn.helgaas@hp.com> <20091021173733.GN26149@tux1.beaverton.ibm.com> <20091022071748.GA17917@crane-desktop> <20091022174304.GO26149@tux1.beaverton.ibm.com> <20091023044451.GB1367@crane-desktop>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091023163147.GA22928@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 12:56:59 up 66 days,  3:46,  2 users,  load average: 0.72, 0.36,
-	0.24
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091023044451.GB1367@crane-desktop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > Hi,
-> > 
-> > I would like to re-license the tracepoint.c/marker.c files from GPL 
-> > to:
-> > 
-> > * Dual LGPL v2.1/GPL v2 license.
-> > 
-> > And re-license tracepoint.h/marker.h to:
-> > 
-> > * Dual BSD/GPL v2 license.
-> > 
-> > The goal is to allow sharing code between the kernel tracer and UST 
-> > (User-Space Tracer) project, which is a LGPL v2.1 library. Tracepoint 
-> > and marker headers might need to be included by proprietary or BSD 
-> > applications, hence the dual BSD/GPL v2 license for these two.
-> 
-> We need a clean interface instead of some messy bindings - why do you 
-> need a different license to kernel/tracepoint.c?
-> 
+*) add a new HID for IBM SMBus CMI devices
+*) add methods for IBM SMBus CMI devices
+*) hook different HID with different control methods set
 
-The short answer is: I want to provide static userspace instrumentation
-for fast and manageable userspace tracing. The infrastructure developed
-for kernel tracepoints applies directly to userspace, but it needs to be
-re-licensed to LGPL so we can trace non-GPL applications.
+Signed-off-by: Crane Cai <crane.cai@amd.com>
+---
+
+ drivers/i2c/busses/i2c-scmi.c |   31 +++++++++++++++++++++++--------
+ 1 files changed, 23 insertions(+), 8 deletions(-)
 
 
-I'll re-spin the small text I sent to Steven, please tell me if it does
-not answer your question:
-
-The intent is to allow the tracer code developed both on the kernel-side
-as part of Ftrace and LTTng and on the userspace side within UST to be
-shared when appropriate. As a result, we can consider userland-only
-solutions to user-space tracing without rewriting all the kernel
-tracing infrastructure from scratch.
-
-Tracing library has a small specificity though: if we want to be able to
-allow tracing of non-GPL applications, we have to license the library
-under a licence different from GPL. LGPLv2.1 seems like a very good fit
-for that. It would allow proprietary, BSD and other applications to be
-traced by linking dynamically to the LGPL tracing library. The intent is
-to be able to provide an updated library version that can be dynamically
-linked with these proprietary applications.
-
-So, what I propose is to dual-license at the very least the TRACE_EVENT
-generation code under GPLv2/LGPLv2.1 so the callbacks generated can be
-used in a LGPL library. I plan to do the same for most of the LTTng
-project.
-
-I also plan to license the tracepoint.h header under a GPLv2/BSD-style
-dual-license, so proprietary apps can include it. It would be the only
-part that would not be relinkable. Note that it only involves the
-tracing call sites declarations. I really want the probes generated by
-TRACE_EVENT (with #CREATE_TRACE_POINTS) to be LGPL, so we can relink and
-upgrade them when necessary.
-
-Thanks,
-
-Mathieu
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff --git a/drivers/i2c/busses/i2c-scmi.c b/drivers/i2c/busses/i2c-scmi.c
+index b4a55d4..a15aaf4 100644
+--- a/drivers/i2c/busses/i2c-scmi.c
++++ b/drivers/i2c/busses/i2c-scmi.c
+@@ -33,6 +33,7 @@ struct acpi_smbus_cmi {
+ 	u8 cap_info:1;
+ 	u8 cap_read:1;
+ 	u8 cap_write:1;
++	struct smbus_methods_t *methods;
+ };
+ 
+ static const struct smbus_methods_t smbus_methods = {
+@@ -41,8 +42,16 @@ static const struct smbus_methods_t smbus_methods = {
+ 	.mt_sbw  = "_SBW",
+ };
+ 
++/* Some IBM BIOSes omit the leading underscore */
++static const struct smbus_methods_t ibm_smbus_methods = {
++	.mt_info = "SBI_",
++	.mt_sbr  = "SBR_",
++	.mt_sbw  = "SBW_",
++};
++
+ static const struct acpi_device_id acpi_smbus_cmi_ids[] = {
+-	{"SMBUS01", 0},
++	{"SMBUS01", (kernel_ulong_t)&smbus_methods},
++	{"SMBUSIBM", (kernel_ulong_t)&ibm_smbus_methods},
+ 	{"", 0}
+ };
+ 
+@@ -150,11 +159,11 @@ acpi_smbus_cmi_access(struct i2c_adapter *adap, u16 addr, unsigned short flags,
+ 
+ 	if (read_write == I2C_SMBUS_READ) {
+ 		protocol |= ACPI_SMBUS_PRTCL_READ;
+-		method = smbus_methods.mt_sbr;
++		method = smbus_cmi->methods->mt_sbr;
+ 		input.count = 3;
+ 	} else {
+ 		protocol |= ACPI_SMBUS_PRTCL_WRITE;
+-		method = smbus_methods.mt_sbw;
++		method = smbus_cmi->methods->mt_sbw;
+ 		input.count = 5;
+ 	}
+ 
+@@ -290,13 +299,13 @@ static int acpi_smbus_cmi_add_cap(struct acpi_smbus_cmi *smbus_cmi,
+ 	union acpi_object *obj;
+ 	acpi_status status;
+ 
+-	if (!strcmp(name, smbus_methods.mt_info)) {
++	if (!strcmp(name, smbus_cmi->methods->mt_info)) {
+ 		status = acpi_evaluate_object(smbus_cmi->handle,
+-					smbus_methods.mt_info,
++					smbus_cmi->methods->mt_info,
+ 					NULL, &buffer);
+ 		if (ACPI_FAILURE(status)) {
+ 			ACPI_ERROR((AE_INFO, "Evaluating %s: %i",
+-				   smbus_methods.mt_info, status));
++				   smbus_cmi->methods->mt_info, status));
+ 			return -EIO;
+ 		}
+ 
+@@ -319,9 +328,9 @@ static int acpi_smbus_cmi_add_cap(struct acpi_smbus_cmi *smbus_cmi,
+ 
+ 		kfree(buffer.pointer);
+ 		smbus_cmi->cap_info = 1;
+-	} else if (!strcmp(name, smbus_methods.mt_sbr))
++	} else if (!strcmp(name, smbus_cmi->methods->mt_sbr))
+ 		smbus_cmi->cap_read = 1;
+-	else if (!strcmp(name, smbus_methods.mt_sbw))
++	else if (!strcmp(name, smbus_cmi->methods->mt_sbw))
+ 		smbus_cmi->cap_write = 1;
+ 	else
+ 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Unsupported CMI method: %s\n",
+@@ -349,6 +358,7 @@ static acpi_status acpi_smbus_cmi_query_methods(acpi_handle handle, u32 level,
+ static int acpi_smbus_cmi_add(struct acpi_device *device)
+ {
+ 	struct acpi_smbus_cmi *smbus_cmi;
++	struct acpi_device_id *id;
+ 
+ 	smbus_cmi = kzalloc(sizeof(struct acpi_smbus_cmi), GFP_KERNEL);
+ 	if (!smbus_cmi)
+@@ -362,6 +372,11 @@ static int acpi_smbus_cmi_add(struct acpi_device *device)
+ 	smbus_cmi->cap_read = 0;
+ 	smbus_cmi->cap_write = 0;
+ 
++	for (id = (struct acpi_device_id *)acpi_smbus_cmi_ids; id->id[0]; id++)
++		if (!strcmp((char *) id->id, acpi_device_hid(device)))
++			smbus_cmi->methods =
++				(struct smbus_methods_t *) id->driver_data;
++
+ 	acpi_walk_namespace(ACPI_TYPE_METHOD, smbus_cmi->handle, 1,
+ 			    acpi_smbus_cmi_query_methods, smbus_cmi, NULL);
+ 
