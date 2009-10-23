@@ -1,68 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZJWGuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751439AbZJWHCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751956AbZJWGuM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 02:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZJWGuL
+	id S1751439AbZJWHCL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 03:02:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbZJWHCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 02:50:11 -0400
-Received: from kroah.org ([198.145.64.141]:52650 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751222AbZJWGuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 02:50:10 -0400
-Date: Thu, 22 Oct 2009 23:49:42 -0700
-From: Greg KH <greg@kroah.com>
-To: Bryan Wu <cooloney@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Matthias Urlichs <matthias@urlichs.de>,
-       smurf@smurf.noris.de, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] UBUNTU: USB: option: TLAYTECH TUE800 support
-Message-ID: <20091023064942.GB28430@kroah.com>
-References: <1256194836-15733-1-git-send-email-bryan.wu@canonical.com> <1256202285.7526.109.camel@kiste> <4AE117B3.3040807@canonical.com> <20091023045236.GA3390@merkur.ravnborg.org> <4AE14030.5010304@canonical.com>
+	Fri, 23 Oct 2009 03:02:10 -0400
+Received: from mailout11.t-online.de ([194.25.134.85]:33061 "EHLO
+	mailout11.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbZJWHCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 03:02:09 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE14030.5010304@canonical.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Date: Fri, 23 Oct 2009 09:02:07 +0200
+Reply-To: "harald.dunkel@t-online.de" <harald.dunkel@t-online.de>
+To: linux-kernel@vger.kernel.org
+X-UMS: email
+X-Mailer: TOI Kommunikationscenter V9-3-0-6
+Subject: 2.6.31.4, ps2-to-usb adapter: fourth mouse button not working
+From: "harald.dunkel@t-online.de" <harald.dunkel@t-online.de>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-ID: <1N1EA3-10pOoy0@fwd05.aul.t-online.de>
+X-ID: TF2ijGZ6rhuG6TrUrB+2NlWx3nkPjxkJbiqC9TrUD2LArv69uXiAHX9UBRw9ndKw0R@t-dialin.net
+X-TOI-MSGID: bdccd6fc-28c2-40d9-b409-5b3cad3a76d9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 01:33:36PM +0800, Bryan Wu wrote:
-> Sam Ravnborg wrote:
->> On Fri, Oct 23, 2009 at 10:40:51AM +0800, Bryan Wu wrote:
->>   
->>> Matthias Urlichs wrote:
->>>     
->>>> On Thu, 2009-10-22 at 15:00 +0800, Bryan Wu wrote:
->>>>       
->>>>> Add ID for Tlaytech TUE800 CDMA modem to the option driver.
->>>>>
->>>>> Signed-off-by: Bryan Wu <bryan.wu@canonical.com>
->>>>>         
->>>> Acked-By: Matthias Urlichs <matthias@urlichs.de>
->>>>
->>>>
->>>>       
->>> Thanks a lot, Matthias. Do you think we need to include this patch into 31.y stable release?
->>> Since our 9.10 Ubuntu kernel is based on .31 kernel, we need to include 
->>> this patch through stable release.
->>>     
->>
->> What is it with the subject of this patch?
->> It says: UBUNTU: USB: ...
->>
->> And I do not recall a subsystem named "UBUNTU" in the kernel.
->>
->>   
->
-> Sorry for that mess. I posted this patch to our Ubuntu kernel team review 
-> as well as upstream. But forget to remove that tag.
-> Please ignore that, need I resend a patch?
+Hi folks,
 
-No, I can edit that out, don't worry.
+I've got a Logitech Trackman FX connected to my PC via a Chesen 
+ps/2 usb adapter for mouse and keyboard. Problem: The fourth 
+mouse button doesn't trigger any events. 
 
-I'll apply this next week when I return from Japan.
+This means that I cannot enable scroll wheel emulation in the Xorg 
+mouse driver. It is a severe restriction for a mouse without dedicated 
+wheel.
 
-thanks,
+I had opened a bug report for the Xorg mouse driver, but a low level 
+test program ("cat </dev/input/event2") running outside of X shows 
+that this is indeed a restriction of the kernel (2.6.31.4).
 
-greg k-h
+The same Trackman FX works fine connected to a PC with a "real" 
+ps/2 port, of course.
+
+
+It would be very nice if this could be fixed. Of course I would be glad 
+to help.
+
+
+Many thanx
+
+Harri
+=====================================================================
+% cat /proc/bus/input/devices
+I: Bus=0011 Vendor=0001 Product=0001 Version=ab41
+N: Name="AT Translated Set 2 keyboard"
+P: Phys=isa0060/serio0/input0
+S: Sysfs=/devices/platform/i8042/serio0/input/input0
+U: Uniq=
+H: Handlers=kbd event0
+B: EV=120013
+B: KEY=402000000 3803078f800d001 feffffdfffefffff fffffffffffffffe
+B: MSC=10
+B: LED=7
+
+I: Bus=0003 Vendor=0a81 Product=0205 Version=0110
+N: Name="CHESEN PS2 to USB Converter"
+P: Phys=usb-0000:00:1a.2-2/input0
+S: Sysfs=/devices/pci0000:00/0000:00:1a.2/usb5/5-2/5-2:1.0/input/input1
+U: Uniq=
+H: Handlers=kbd event1
+B: EV=120013
+B: KEY=1000000000007 ff980000000007ff febeffdfffefffff fffffffffffffffe
+B: MSC=10
+B: LED=7
+
+I: Bus=0003 Vendor=0a81 Product=0205 Version=0110
+N: Name="CHESEN PS2 to USB Converter"
+P: Phys=usb-0000:00:1a.2-2/input1
+S: Sysfs=/devices/pci0000:00/0000:00:1a.2/usb5/5-2/5-2:1.1/input/input2
+U: Uniq=
+H: Handlers=kbd mouse0 event2
+B: EV=17
+B: KEY=1f001f 2020000 3878d801d001 1e000000000000 0
+B: REL=103
+B: MSC=10
+
+I: Bus=0019 Vendor=0000 Product=0001 Version=0000
+N: Name="Power Button"
+P: Phys=LNXPWRBN/button/input0
+S: Sysfs=/devices/LNXSYSTM:00/LNXPWRBN:00/input/input3
+U: Uniq=
+H: Handlers=kbd event3
+B: EV=3
+B: KEY=10000000000000 0
+
+I: Bus=0019 Vendor=0000 Product=0001 Version=0000
+N: Name="Power Button"
+P: Phys=PNP0C0C/button/input0
+S: Sysfs=/devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input4
+U: Uniq=
+H: Handlers=kbd event4
+B: EV=3
+B: KEY=10000000000000 0
+
+I: Bus=0010 Vendor=001f Product=0001 Version=0100
+N: Name="PC Speaker"
+P: Phys=isa0061/input0
+S: Sysfs=/devices/platform/pcspkr/input/input5
+U: Uniq=
+H: Handlers=kbd event5
+B: EV=40001
+B: SND=6
+
+
+
