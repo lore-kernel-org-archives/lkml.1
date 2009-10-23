@@ -1,97 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbZJWQdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752291AbZJWP3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752682AbZJWQdV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 12:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbZJWQdR
+	id S1752291AbZJWP3T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 11:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbZJWP3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 12:33:17 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:38125 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752535AbZJWQdP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 12:33:15 -0400
-X-Sasl-enc: aDCjLhLZLcQO6RCOZ/TMRJ1L2lciHvIvaTY4Mn6YeT+E 1256315597
-Message-ID: <4AE1DAC9.5040603@imap.cc>
-Date: Fri, 23 Oct 2009 18:33:13 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
-MIME-Version: 1.0
-To: Johannes Berg <johannes@sipsolutions.net>
-CC: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-wireless@vger.kernel.org,
-       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
-       isdn4linux <isdn4linux@listserv.isdn4linux.de>,
-       i4ldeveloper <i4ldeveloper@listserv.isdn4linux.de>,
-       Karsten Keil <isdn@linux-pingi.de>
-Subject: Re: NOHZ: local_softirq_pending 08
-References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local>	 <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc>	 <4AE0ECCE.2020407@imap.cc> <1256304869.12174.20.camel@johannes.local>	 <4AE1BD3D.3020007@imap.cc> <1256308311.12174.38.camel@johannes.local>
-In-Reply-To: <1256308311.12174.38.camel@johannes.local>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Fri, 23 Oct 2009 11:29:18 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:38665 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752184AbZJWP3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 11:29:17 -0400
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+To: linux-mmc@vger.kernel.org, haavard.skinnemoen@atmel.com
+Cc: linux-kernel@vger.kernel.org, kernel@avr32linux.org,
+       akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 0/2 v2]mmc: atmel-mci: introduce MCI2 support on at91
+Date: Fri, 23 Oct 2009 18:34:11 +0200
+Message-Id: <1256315654-21589-1-git-send-email-nicolas.ferre@atmel.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <20090930155557.7dae503b@hskinnemoen-d830>
+References: <20090930155557.7dae503b@hskinnemoen-d830>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+This patchset introduces the support of a new revision of the MCI IP on AT91
+SOCs. The use of an alternate DMA engine on those platforms introduces the need
+of a generic way of handling dma slave interface.
 
-Johannes Berg schrieb:
-> On Fri, 2009-10-23 at 16:27 +0200, Tilman Schmidt wrote:
->> Johannes Berg schrieb:
->>> So you've verified that the entire i4l stack can cope with being called
->>> twice on the same CPU, from different contexts?
->> What makes you think so?
-> 
-> I thought I'd explained this in my other email. *sigh*
-[snip]
+Note: those patches goes on top of the following patch that is already in
+mainline:
+	atmel-mci: unified Atmel MCI drivers (AVR32 & AT91)
 
-Ah, I see. You misunderstood my posting. I did not propose that
-patch as a definitive and verified solution, but rather as a
-request for comments from the people who know and maintain the
-code in question. I thought that was clear from the facts that
-- - I didn't include "[PATCH]" in the subject line
-- - I didn't add a "Signed-off-by" line
-- - I wrote "fixed the messages", not "solved the problem"
-- - I explicitly wrote "Comments?" and "Adding i4l people to CC"
+Nicolas Ferre (3):
+      atmel-mci: change use of dma slave interface
+      mmc: atmel-mci: New MCI2 module support in atmel-mci driver
+      at91/atmel-mci: inclusion of sd/mmc driver in at91sam9g45 chip and board
 
-Apparently all that was still not clear enough. Sorry about that.
-So let me try to make my concern as explicit as possible:
+ arch/arm/mach-at91/at91sam9g45_devices.c        |  164 +++++++++++++++++++++++
+ arch/arm/mach-at91/board-sam9m10g45ek.c         |   24 ++++
+ arch/arm/mach-at91/include/mach/atmel-mci.h     |   24 ++++
+ arch/avr32/mach-at32ap/at32ap700x.c             |   18 ++-
+ arch/avr32/mach-at32ap/include/mach/atmel-mci.h |   24 ++++
+ drivers/mmc/host/Kconfig                        |    2 +-
+ drivers/mmc/host/atmel-mci.c                    |  141 +++++++++++++++----
+ include/linux/atmel-mci.h                       |    4 +-
+ 8 files changed, 362 insertions(+), 39 deletions(-)
+ create mode 100644 arch/arm/mach-at91/include/mach/atmel-mci.h
+ create mode 100644 arch/avr32/mach-at32ap/include/mach/atmel-mci.h
 
-- - The patch I posted had the effect that the test which reliably
-  triggered the local_softirq_pending message before did not do
-  so anymore.
 
-- - To me, this seems to indicate that the netif_rx(skb) call in
-  line 1177 of source file drivers/isdn/i4l/isdn_ppp.c is indeed
-  involved in the problem.
-
-- - Now I'm asking people who know more than myself about the
-  ramifications of that message (ie., you) and/or the code I
-  narrowed it down to (ie., the ISDN4Linux maintainers - which
-  is why I added them to the CC list) to have a look and determine
-  how to fix the problem properly.
-
-- - This would of course include, in finis, the verification you
-  mistakenly assumed I might have done already.
-
-I hope that's clear enough. If you have any questions, feel free
-to ask.
-
-Thanks,
-Tilman
-
-- --
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFK4drJQ3+did9BuFsRAmstAJ94UF/LupINlYpjbxzz9xoiN5w34wCfflRz
-YfR/fXt3HasrxUSP29REOnE=
-=VQ/C
------END PGP SIGNATURE-----
