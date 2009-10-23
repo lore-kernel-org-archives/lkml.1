@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbZJWKh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751685AbZJWKm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751893AbZJWKh6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 06:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbZJWKh5
+	id S1751685AbZJWKm3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 06:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbZJWKm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 06:37:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45582 "EHLO mx2.mail.elte.hu"
+	Fri, 23 Oct 2009 06:42:28 -0400
+Received: from fifo99.com ([67.223.236.141]:58491 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751402AbZJWKh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 06:37:57 -0400
-Date: Fri, 23 Oct 2009 12:37:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: John Kacur <jkacur@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [performance problem] CONFIG_DYNAMIC_FTRACE: Increased kernel
-	build times
-Message-ID: <20091023103746.GF19169@elte.hu>
-References: <20091023074533.GA10067@elte.hu> <520f0cf10910230307k91d0c80sa3d69bcd74d6e1f1@mail.gmail.com> <alpine.LFD.2.00.0910231211540.3549@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+	id S1751268AbZJWKm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 06:42:28 -0400
+Subject: Re: [PATCH] dmi_check_system can generate Warnings when no DMI
+ table is present
+From: Daniel Walker <dwalker@fifo99.com>
+To: Erwan Velu <erwanaliasr1@gmail.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+In-Reply-To: <4AE186BF.4060101@gmail.com>
+References: <4AE178AF.3010804@gmail.com> <1256292537.10493.48.camel@desktop>
+	 <4AE186BF.4060101@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 23 Oct 2009 03:42:25 -0700
+Message-Id: <1256294545.10493.51.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.00.0910231211540.3549@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* John Kacur <jkacur@redhat.com> wrote:
-
-> 2009/10/23 Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > Steve,
-> > 
-> > i did an 64-bit allyesconfig build test (with debug_info disabled), with
-> > and without CONFIG_DYNAMIC_FTRACE set.
-> > 
-> > The build time results are:
-> > 
-> >  -CONFIG_DYNAMIC_FTRACE:   266.30
-> >  +CONFIG_DYNAMIC_FTRACE:   296.07 (+11.2%)
-> > 
-> > So we get more than 10% build time overhead.
-> > 
-> > That's quite high - higher than what i remember having measured
-> > originally when the first iteration of the mcount code went in.
-> > 
-> > This extra overhead comes from the mcount post-processing script
-> > (scripts/recordmcount.pl) that runs objcopy as well and is written in
-> > Perl. I think this whole angle needs to be improved - 10% is way too
-> > high of a price to pay.
+On Fri, 2009-10-23 at 12:34 +0200, Erwan Velu wrote:
+> Daniel Walker a Ã©crit :
+> > It looks like all the tabs have been removed from the code. Did you copy
+> > and paste the patch content into this email? Often times that will
+> > remove the tabs
+> The original patch is here : http://konilope.linuxeries.org/dmi_scan.patch
 > 
-> Hi Ingo, do you still have the profiling data to share with us? [...]
+> Hope it's better.
 
-no finegrained info - i did a perf stat run.
+Yeah that one looks better.. Usually email clients have a command line
+"Insert File" which you can use to include the patch without removing
+the tabs. Just a note for the next patch you send, although you might
+want to resubmit this one ..
 
-> [...] Was the problem more in objcopy / objdump, rather than in the 
-> perl script itself?
+Daniel
 
-in top i saw perl pop up most of the time, that's where i'd suspect a 
-good portion of the overhead.
-
-	Ingo
