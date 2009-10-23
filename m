@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751910AbZJWMdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751597AbZJWMrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751910AbZJWMdZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 08:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZJWMdY
+	id S1751597AbZJWMrv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 08:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZJWMrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 08:33:24 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:35603 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751581AbZJWMdX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 08:33:23 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnUHAC8+4UpGGN1W/2dsb2JhbACBUJo2vGiEPwSBXQ
-Date: Fri, 23 Oct 2009 08:33:27 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: David Miller <davem@davemloft.net>
-Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: sparc64 cmpxchg is not a full memory barrier anymore ?
-Message-ID: <20091023123327.GA14058@Krystal>
-References: <20091022183242.GA19307@Krystal> <20091022.145645.249762938.davem@davemloft.net>
+	Fri, 23 Oct 2009 08:47:51 -0400
+Received: from fifo99.com ([67.223.236.141]:37385 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751400AbZJWMru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 08:47:50 -0400
+Subject: Re: [PATCH] dmi_check_system can generate Warnings when no DMI
+ table is present
+From: Daniel Walker <dwalker@fifo99.com>
+To: Erwan Velu <erwanaliasr1@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       linux-kernel@vger.kernel.org, x86@kernel.org
+In-Reply-To: <4AE19867.5070705@gmail.com>
+References: <4AE178AF.3010804@gmail.com> <20091023110323.GC10071@elte.hu>
+	 <4AE19867.5070705@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 23 Oct 2009 05:47:46 -0700
+Message-Id: <1256302066.10493.74.camel@desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20091022.145645.249762938.davem@davemloft.net>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 08:32:24 up 65 days, 23:21,  2 users,  load average: 0.69, 0.28,
-	0.15
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Miller (davem@davemloft.net) wrote:
-> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Date: Thu, 22 Oct 2009 14:32:42 -0400
-> 
-> > The same applies to the other atomic instructions we find in this list.
-> > How is the correct ordering of loads wrt to cmxchg (and other atomic
-> > ops) still ensured by this modification?
-> 
-> All actual sparc64 chips implement more strict ordering than
-> the V9 specification permits.  The memory barriers were just
-> nops and actually not doing anything more than the chip
-> already does for us.
+On Fri, 2009-10-23 at 13:49 +0200, Erwan Velu wrote:
+> Ingo Molnar a écrit :
+> > Looks like a Xen bug. DMI matching functions should be called after that 
+> > code has initialized. The warning was added to catch such early calls.
+> >
+> > Your patch works around that bug and the warning.
+> >   
+> So I think you'll drop it and we have to make xen people fix it ?
 
-OK. Perhaps adding a comment to that effect near sparc mb()
-implementation would be appropriate ?
+It's your defect, so you can still try to fix it (unless the "xen
+people" or someone else beats you to it.) 
 
-Thanks,
+It looks like on a normal system dmi_scan_machine() gets called very
+early in setup_arch() arch/x86/kernel/setup.c . A possible good fix
+might be to add a dmi_disable() into the dmi driver that just shuts off
+dmi, and run that in xen_arch_setup() in arch/x86/xen/setup.c .
 
-Mathieu
+Daniel
 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
