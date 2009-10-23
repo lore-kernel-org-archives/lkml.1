@@ -1,234 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751246AbZJWMWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751734AbZJWM3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751246AbZJWMWQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 08:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbZJWMWP
+	id S1751734AbZJWM3h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 08:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbZJWM3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 08:22:15 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:49433 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbZJWMWO convert rfc822-to-8bit (ORCPT
+	Fri, 23 Oct 2009 08:29:36 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:55176 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbZJWM3f convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 08:22:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Ki2JjeOzVCpn/AjJ10w5EwkgBnFCtOyX9JDjhgqX+nbEbu6XxXLQ6tat6T1bz3KjP3
-         QzhxcQE3/hKiGim2o6OAgaFr88n+ejWn8HK6vDasfYk7VjbIcvSEPD3Odqel54q27QkD
-         ZbAUrn6a5yr+OMY2Hp0fNJ7eEFnGwdtA/gHKs=
+	Fri, 23 Oct 2009 08:29:35 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArwEAI844UpGGN1W/2dsb2JhbACBUNcRhD8E
+Date: Fri, 23 Oct 2009 08:29:38 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Kernel RCU: shrink the size of the struct rcu_head
+Message-ID: <20091023122937.GA11139@Krystal>
+References: <20091018232918.GA7385@Krystal> <20091020220728.GA6174@linux.vnet.ibm.com> <20091021145315.GA25791@Krystal> <20091023004034.GF6277@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20091013205657.GD12700@atomide.com>
-References: <65168.192.168.10.89.1253788033.squirrel@dbdmail.itg.ti.com>
-	 <20091007215116.GB29320@atomide.com>
-	 <d6a0f7aa0910072314h77383e31r2330725b614ba472@mail.gmail.com>
-	 <E0D41E29EB0DAC4E9F3FF173962E9E940253C6C560@dbde02.ent.ti.com>
-	 <20091009174635.GH25892@atomide.com>
-	 <7f9d1ffb0910122354o64b5aa01l3fe33ab78dfb5f23@mail.gmail.com>
-	 <20091013205657.GD12700@atomide.com>
-Date: Fri, 23 Oct 2009 17:52:18 +0530
-Message-ID: <d6a0f7aa0910230522y7cf8ec13w498378bf1fa9e5d6@mail.gmail.com>
-Subject: Re: [PATCHv1 1/3] OMAP UART: Adds omap-serial driver support.
-From: Govindraj <govindraj.ti@gmail.com>
-To: Tony Lindgren <tony@atomide.com>
-Cc: kishore kadiyala <kishorek.kadiyala@gmail.com>,
-       "G, Manjunath Kondaiah" <manjugk@ti.com>,
-       "Raja, Govindraj" <govindraj.raja@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20091023004034.GF6277@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 08:00:14 up 65 days, 22:49,  3 users,  load average: 0.20, 0.13,
+	0.24
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 14, 2009 at 2:26 AM, Tony Lindgren <tony@atomide.com> wrote:
-> * kishore kadiyala <kishorek.kadiyala@gmail.com> [091012 23:54]:
->> Tony,
->>
->> On Fri, Oct 9, 2009 at 11:16 PM, Tony Lindgren <tony@atomide.com> wrote:
->> > * G, Manjunath Kondaiah <manjugk@ti.com> [091008 00:41]:
->> >>
->> >> Govind,
->> >> > -----Original Message-----
->> >> > From: linux-omap-owner@vger.kernel.org
->> >> > [mailto:linux-omap-owner@vger.kernel.org] On Behalf Of Govindraj
->> >> > Sent: Thursday, October 08, 2009 11:44 AM
->> >> > To: Tony Lindgren
->> >> > Cc: Raja, Govindraj; linux-omap@vger.kernel.org;
->> >> > linux-kernel@vger.kernel.org; linux-serial@vger.kernel.org
->> >> > Subject: Re: [PATCHv1 1/3] OMAP UART: Adds omap-serial driver support.
->> >> >
->> >> > On Thu, Oct 8, 2009 at 3:21 AM, Tony Lindgren
->> >> > <tony@atomide.com> wrote:
->> >> > > * Govindraj.R <govindraj.raja@ti.com> [090924 03:29]:
->> >> > >> From: Govindraj R <govindraj.raja@ti.com>
->> >> > >>
->> >> > >> This patch adds support for OMAP3430-HIGH SPEED UART Controller.
->> >> > >>
->> >> > >> Signed-off-by:        Govindraj R <govindraj.raja@ti.com>
->> >> > >> Reviewed-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
->> >> > >> Reviewed-by: Tony Lindgren <tony@atomide.com>
->> >> > >
->> >> > > You should only add Reviewed-by if Alan or me have replied with it.
->> >> > >
->> >> > > So far I've only replied with some comments that have not yet
->> >> > > been fixed, so we're few more steps from being Reviewd-by.
->> >> > >
->> >> > > <snip>
->> >> > >
->> >> > >> diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
->> >> > >> index 6553833..67a7129 100644
->> >> > >> --- a/drivers/serial/Kconfig
->> >> > >> +++ b/drivers/serial/Kconfig
->> >> > >> @@ -1359,6 +1359,53 @@ config SERIAL_OF_PLATFORM
->> >> > >>         Currently, only 8250 compatible ports are supported, but
->> >> > >>         others can easily be added.
->> >> > >>
->> >> > >> +config SERIAL_OMAP
->> >> > >> +     bool "OMAP serial port support"
->> >> > >> +     depends on ARM && ARCH_OMAP
->> >> > >> +     select SERIAL_CORE
->> >> > >> +     help
->> >> > >> +     If you have a machine based on an Texas Instruments
->> >> > OMAP CPU you
->> >> > >> +     can enable its onboard serial ports by enabling this option.
->> >> > >> +
->> >> > >> +config SERIAL_OMAP_CONSOLE
->> >> > >> +     bool "Console on OMAP serial port"
->> >> > >> +     depends on SERIAL_OMAP
->> >> > >> +     select SERIAL_CORE_CONSOLE
->> >> > >> +     help
->> >> > >> +     If you have enabled the serial port on the Texas
->> >> > Instruments OMAP
->> >> > >> +     CPU you can make it the console by answering Y to
->> >> > this option.
->> >> > >> +
->> >> > >> +     Even if you say Y here, the currently visible virtual console
->> >> > >> +     (/dev/tty0) will still be used as the system console
->> >> > by default, but
->> >> > >> +     you can alter that using a kernel command line option such as
->> >> > >> +     "console=ttyS0". (Try "man bootparam" or see the
->> >> > documentation of
->> >> > >> +     your boot loader (lilo or loadlin) about how to pass
->> >> > options to the
->> >> > >> +     kernel at boot time.)
->> >> > >> +
->> >> > >> +config SERIAL_OMAP_DMA_UART1
->> >> > >> +     bool "UART1 DMA support"
->> >> > >> +     depends on SERIAL_OMAP
->> >> > >> +     help
->> >> > >> +     If you have enabled the serial port on the Texas
->> >> > Instruments OMAP
->> >> > >> +     CPU you can enable the DMA transfer on UART 1 by answering
->> >> > >> +     to this option.
->> >> > >> +
->> >> > >> +config SERIAL_OMAP_DMA_UART2
->> >> > >> +     bool "UART2 DMA support"
->> >> > >> +     depends on SERIAL_OMAP
->> >> > >> +     help
->> >> > >> +     If you have enabled the serial port on the Texas
->> >> > Instruments OMAP
->> >> > >> +     CPU you can enable the DMA transfer on UART 2 by answering
->> >> > >> +     to this option.
->> >> > >> +
->> >> > >> +config SERIAL_OMAP_DMA_UART3
->> >> > >> +     bool "UART3 DMA support"
->> >> > >> +     depends on SERIAL_OMAP
->> >> > >> +     help
->> >> > >> +     If you have enabled the serial port on the Texas
->> >> > Instruments OMAP
->> >> > >> +     CPU you can enable the DMA transfer on UART 3 by answering
->> >> > >> +     to this option.
->> >> > >> +
->> >> > >>  config SERIAL_OF_PLATFORM_NWPSERIAL
->> >> > >>       tristate "NWP serial port driver"
->> >> > >>       depends on PPC_OF && PPC_DCR
->> >> > >
->> >> > > There's absolutely no need for having Kconfig options for the DMA
->> >> > > support. Please pass that in platform_data from the board-*.c files.
->> >> > >
->> >> > > This is the third time I'm commenting on the same issue!
->> >> > >
->> >> > > What's the point of posting these patches for review if the issues
->> >> > > don't get solved?
->> >> >
->> >> >
->> >> > The omap-serial uart driver is designed to work either in interrupt
->> >> > mode or in DMA mode,
->> >> > We have provided this option so that one can select interrupt mode or
->> >> > DMA mode based on the uart usage, if somebody is using uart as console
->> >> > then interrupt mode will do, else if used with bluetooth which does
->> >> > huge data transfer then DMA mode can be selected.
->> >> >
->> >> > Don't you think this should be a configurable option using kconfig
->> >> > rather than passing as platform data?
->> >
->> > Nope. I think it should be platform_data and should be possible to override
->> > vith a kernel cmdline option. That's because we support compiling in and
->> > booting many boards the same kernel binary.
->> >
->> >> > if used as platform data then one has to modify platform data to
->> >> > switch between the interrupt and DMA mode.
->> >
->> > How about set some kernel cmdline options if you want to override the
->> > default settings?
->>
->>    Using cmdline options, will make specific UART switch  dynamically
->>    between Non-DMA and DMA mode which is not handled in the driver.
->
-> Switching between dma transfers and pio should be easy to do, we're
-> already doing that in various omap drivers like mmc, musb/tusb
-> and onenand.
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Wed, Oct 21, 2009 at 10:53:15AM -0400, Mathieu Desnoyers wrote:
+> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > On Sun, Oct 18, 2009 at 07:29:18PM -0400, Mathieu Desnoyers wrote:
+> > > > Hi Paul,
+> > > > 
+> > > > I noticed that you already discussed the possibility of shrinking the
+> > > > struct rcu_head by removing the function pointer.
+> > > > (http://kernel.org/pub/linux/kernel/people/paulmck/rcutodo.html)
+> > > > 
+> > > > The ideas brought in so far require having per-callback lists, which
+> > > > involves a bit of management overhead and don't permit keeping the
+> > > > call_rcu() in cpu order.
+> > > 
+> > > But please note that this is on the "Possibly Dubious Changes" list.  ;-)
+> > > 
+> > > > You might want to look into the Userspace RCU urcu-defer.c
+> > > > implementation, where I perform pointer encoding to compact the usual
+> > > > case, expected to be the same callback passed as parameter multiple
+> > > > times in a row to call_rcu(). This is very typical with multiple free()
+> > > > calls for different data structures next to each other.
+> > > > 
+> > > > This typically keeps the size of the information to encode per callback
+> > > > down to a minimum: the size of a single pointer. It would be good to
+> > > > trace the kernel usage of call_rcu() to see if my assumption holds.
+> > > > 
+> > > > I just thought I should tell you before you start looking at this
+> > > > issue further.
+> > > 
+> > > So the idea is to maintain a per-CPU queue of function pointers, but
+> > > with the pointers on this queue encoded to save space, correct?
+> > 
+> > Yes, exactly.
+> 
+> OK, I will add something to this effect on my rcutodo page.
+> 
+> > >  If I
+> > > understand correctly, the user-level rcu-defer implementation relies on
+> > > the following:
+> > > 
+> > > 1.	It is illegal to call _rcu_defer_queue() within an RCU read-side
+> > > 	critical section (due to the call to rcu_defer_barrier_thread()
+> > > 	which in turn calls synchronize_rcu().  This is necessary to
+> > > 	handle queue overflow.  (Which appears to be why you introduce
+> > > 	a new API, as it is legal to invoke call_rcu() from within an
+> > > 	RCU read-side critical section.)
+> > 
+> > When dealing with queue overflow, I figured we have 4 alternatives.
+> > Either:
+> > 
+> > 1, 2, 3) We proceed to execution of {the single, all, thread local}
+> >          callback(s) on the spot after a synchronize_rcu().
+> > 
+> > 4) We expand the queue by allocating more memory.
+> > 
+> > The idea of pointer encoding to save space could be used with any of 1,
+> > 2, 3, or 4. As you say, call_rcu() requires (4), because it tolerates
+> > being called from an rcu read-side C.S.. 1, 2, 3 are incompatible with
+> > read-side C.S. context because they require to use synchronize_rcu()
+> > within the C.S., which would deadlock on its calling context.
+> > 
+> > Now, there is a rationale for the choice of (3) in my urcu-defer
+> > implementation:
+> > 
+> > * It's how I can deal with memory full (-ENOMEM) without letting the
+> >   system die with exit(). How does the kernel call_rcu() deal with this
+> >   currently ? BUG_ON, WARN_ON ?
+> 
+> It doesn't have to do anything -- the caller of call_rcu() is responsible
+> for allocating any required memory.  So call_rcu() never allocates memory
+> and thus never needs to worry about a memory-allocation failure.
+> 
 
-I am planning to remove kconfig options, and add static mode values in platform
-data for uart port dma mode usage for an given uart port.
+I see. So it puts the burden of memory allocation onto the creation of
+the original object we are dealing with. I understand why it's done like
+that now: it does not add another memory allocation failure point.
 
-Any given uart port can be configured to work in DMA or non dma
-mode based on the board configuration, and decision has to be made by
-developer itself (based on performance etc..) and should not rely on user.
+> > * It acts as a rate limiter for urcu_defer_queue(). Basically, if a
+> >   thread starts enqueuing callbacks too fast, it will eventually fill its
+> >   queue and have to empty it itself. AFAIK, It's not possible to do that
+> >   if you allow call_rcu() to be called from read-side C.S..
+> 
+> Yep!  ;-)
 
-What do you say?
+>From userland point of view, it would be good to provide an API that
+allows rate-limiting, especially to deal with DoS types of attacks. I
+I just renamed rcu_defer_queue() to defer_rcu() and removed the define
+for call_rcu(), because this last mapping introduced an API with the
+same name as the kernel API, but with different parameters.
 
+So the idea is to have:
 
-> So I would recommend making that change, it is quite trivial
-> to do and will make the code much cleaner. And also gets rid
-> of the issue with Kconfig settings breaking booting for other
-> boards.
->
->>    how abt using bootargs to share this Mode info ?
->
-> The bootargs should override what is passed from platform_data.
+* defer_rcu(fct, p): fixed-sized queue rcu work deferral. Cannot be
+  called from rcu read-side C.S..
+* defer_rcu_ratelimit(fct, p, rl): same as above, but with added rate
+  limiter callback.
 
-Providing bootarg option is easy, I'll add support if insisted.
+and, eventually, to add back a standard call_rcu(), which can be called
+from within RCU read-side C.S., but which provides no rate limiting
+whatsoever.
 
-IMHO static setting in platform data will do.
+> 
+> > I could even extend rcu_defer_queue() to take a second rate-limiter
+> > callback, which would check if the thread went over some threshold and
+> > give a more precise limit (e.g. amount of memory to be freed) on the
+> > rate than the "4096 callbacks in flight max", which have been chosen by
+> > benchmarks, but is a bit arbitrary in terms of overall callback effect.
+> > 
+> > How important is it to permit enqueuing callbacks from within rcu
+> > read-side C.S. in terms of real-life usage ? If it is really that
+> > important to fill this use-case, then I could have a mode for call_rcu()
+> > that expands the RCU callback queue upon overflow. But as I argue above,
+> > I really prefer the control we have with a fixed-sized queue.
+> 
+> There are occurrences of this in the Linux kernel.  In theory, you could
+> always hang onto the object until leaving the outermost RCU read-side
+> critical section, but in practice this is not always consistent with
+> good software-engineering practice.
+> 
+> One use case is when you have an RCU-protected list, each element of
+> which has an RCU-protected list hanging off it.  In this case, you might
+> scan the upper-level list under RCU protection, but during the scan you
+> might need to remove elements from the lower-level list and pass them
+> to call_rcu().
+> 
+> So it really needs to be legal for call_rcu() to be invoked from within
+> an RCU read-side critical section.
 
----
-Regards,
-Govindraj.R
+I agree that not being able to use call_rcu() from a read-side C.S.
+could really be a problem here.
 
+This is why I think aving two interfaces, one permitting calling
+call_rcu() from within C.S., but requiring the added struct rcu_head,
+and the other using per-thread queues with maximum size, rate limiting,
+but which cannot be used in read-side C.S. seems like a good tradeoff.
 
+> 
+> > > 2.	It is OK to wait for a grace period when a thread calls
+> > > 	rcu_defer_unregister_thread() while exiting.  In the kernel,
+> > > 	this is roughly equivalent to the CPU_DYING notifier, which
+> > > 	cannot block, thus cannot wait for a grace period.
+> > > 
+> > > 	I could imagine copying the per-CPU buffer somewhere, though
+> > > 	my experience with the RCU/CPU-hotplug interface does not
+> > > 	encourage me in this direction.  ;-)
+> > 
+> > As you say, we don't _have_ to empty the queue before putting a
+> > thread/cpu offline. We could simply copy the unplugged cpu queue to an
+> > orphan queue, as you currently do in your implementation. I agree that
+> > it would be more suitable to the cpu hotplug CPU_DYING execution
+> > context, due to its inherent trickiness.
+> 
+> Especially if you want something like rcu_barrier() to continue working.
+> 
+> Hmmm...  Can user applications unload dynamically linked libraries?  ;-)
 
-> Regards,
->
-> Tony
->
->>
->> >
->> >> Usage of UART is board dependent. It's usage will not change dynamically for
->> >> a given board. This can be removed from Kconfig and move it to respective
->> >> board file-> board-*.c
->> >
->> > Or can be changed from kernel cmdline if necessary.
->> >
->> > Regards,
->> >
->> > Tony
->> > --
->> > To unsubscribe from this list: send the line "unsubscribe linux-omap" in
->> > the body of a message to majordomo@vger.kernel.org
->> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> >
->
+Yes. With dlclose(). But I expect library developers to call
+rcu_defer_barrier() in their destructor if they have queued any work.
+(/me sneaks a README update in the git tree to that effect) ;)
+
+Thanks,
+
+Mathieu
+
+> 
+> 							Thanx, Paul
+> 
+> > Thanks,
+> > 
+> > Mathieu
+> > 
+> > > 
+> > > 							Thanx, Paul
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
