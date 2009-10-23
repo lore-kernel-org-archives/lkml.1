@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751347AbZJWB2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751305AbZJWBs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751347AbZJWB2X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 21:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZJWB2W
+	id S1751305AbZJWBs2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 21:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbZJWBs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 21:28:22 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57958
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751053AbZJWB2V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 21:28:21 -0400
-Date: Thu, 22 Oct 2009 18:28:44 -0700 (PDT)
-Message-Id: <20091022.182844.11139590.davem@davemloft.net>
-To: xtfeng@gmail.com
-Cc: isdn@linux-pingi.de, isdn4linux@listserv.isdn4linux.de, tilman@imap.cc,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] isdn: fix possible circular locking dependency
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1256202424-28314-1-git-send-email-xtfeng@gmail.com>
-References: <1256202424-28314-1-git-send-email-xtfeng@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Oct 2009 21:48:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37514 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751011AbZJWBs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Oct 2009 21:48:27 -0400
+Date: Fri, 23 Oct 2009 03:48:31 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] trivial: fix double "of of" in comment in spidev
+ code
+In-Reply-To: <1256240069-25223-1-git-send-email-cascardo@holoscopio.com>
+Message-ID: <alpine.LSU.2.00.0910230348210.8582@wotan.suse.de>
+References: <1256240069-25223-1-git-send-email-cascardo@holoscopio.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Xiaotian Feng <xtfeng@gmail.com>
-Date: Thu, 22 Oct 2009 17:07:04 +0800
+On Thu, 22 Oct 2009, Thadeu Lima de Souza Cascardo wrote:
 
-> There's a circular locking dependency:
- ...
->  We don't need to lock nd->queue->xmit_lock to protect single
-> isdn_net_lp_busy(). This can fix above lockdep warnings.
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> ---
+>  drivers/spi/spidev.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Reported-and-tested-by: Tilman Schmidt <tilman@imap.cc>
-> Signed-off-by: Xiaotian Feng <xtfeng@gmail.com>
+> diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
+> index 5d23983..d9b4100 100644
+> --- a/drivers/spi/spidev.c
+> +++ b/drivers/spi/spidev.c
+> @@ -42,7 +42,7 @@
+>   * This supports acccess to SPI devices using normal userspace I/O calls.
+>   * Note that while traditional UNIX/POSIX I/O semantics are half duplex,
+>   * and often mask message boundaries, full SPI support requires full duplex
+> - * transfers.  There are several kinds of of internal message boundaries to
+> + * transfers.  There are several kinds of internal message boundaries to
+>   * handle chipselect management and other protocol options.
 
 Applied, thanks.
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
