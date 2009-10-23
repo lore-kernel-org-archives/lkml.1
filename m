@@ -1,37 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751657AbZJWHhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751552AbZJWHph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751657AbZJWHhg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 03:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZJWHhg
+	id S1751552AbZJWHph (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 03:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZJWHph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 03:37:36 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:52212 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751442AbZJWHhg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 03:37:36 -0400
-Date: Fri, 23 Oct 2009 08:37:30 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "harald.dunkel@t-online.de" <harald.dunkel@t-online.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31.4, ps2-to-usb adapter: fourth mouse button not working
-Message-ID: <20091023073730.GB10914@srcf.ucam.org>
-References: <1N1EA3-10pOoy0@fwd05.aul.t-online.de>
+	Fri, 23 Oct 2009 03:45:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44319 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751083AbZJWHpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 03:45:36 -0400
+Date: Fri, 23 Oct 2009 09:45:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: [performance problem] CONFIG_DYNAMIC_FTRACE: Increased kernel
+	build times
+Message-ID: <20091023074533.GA10067@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1N1EA3-10pOoy0@fwd05.aul.t-online.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, just noticed that you said it was an active one. Does it generate 
-wheel events for any other PS/2 mice? It may simply be a limitation of 
-the hardware.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Steve,
+
+i did an 64-bit allyesconfig build test (with debug_info disabled), with 
+and without CONFIG_DYNAMIC_FTRACE set.
+
+The build time results are:
+
+  -CONFIG_DYNAMIC_FTRACE:   266.30
+  +CONFIG_DYNAMIC_FTRACE:   296.07 (+11.2%)
+
+So we get more than 10% build time overhead.
+
+That's quite high - higher than what i remember having measured 
+originally when the first iteration of the mcount code went in.
+
+This extra overhead comes from the mcount post-processing script 
+(scripts/recordmcount.pl) that runs objcopy as well and is written in 
+Perl. I think this whole angle needs to be improved - 10% is way too 
+high of a price to pay.
+
+	Ingo
