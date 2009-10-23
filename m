@@ -1,62 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752959AbZJWTQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753020AbZJWTQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752959AbZJWTQV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 15:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZJWTQV
+	id S1753020AbZJWTQv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 15:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZJWTQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 15:16:21 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:46980 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751970AbZJWTQU (ORCPT
+	Fri, 23 Oct 2009 15:16:51 -0400
+Received: from smtp171.iad.emailsrvr.com ([207.97.245.171]:54458 "EHLO
+	smtp171.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752809AbZJWTQu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 15:16:20 -0400
-Message-ID: <4AE20102.8010002@linux.vnet.ibm.com>
-Date: Fri, 23 Oct 2009 12:16:18 -0700
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 23 Oct 2009 15:16:50 -0400
+Message-ID: <4AE20124.4010108@librato.com>
+Date: Fri, 23 Oct 2009 15:16:52 -0400
+From: Oren Laadan <orenl@librato.com>
+Organization: Librato
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@au1.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: perf_events: zero time running and enabled, but non-zero count
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Matt Helsley <matthltc@us.ibm.com>,
+       Daniel Lezcano <daniel.lezcano@free.fr>, randy.dunlap@oracle.com,
+       arnd@arndb.de, linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       Louis.Rilling@kerlabs.com, kosaki.motohiro@jp.fujitsu.com,
+       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, roland@redhat.com,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v8][PATCH 0/10] Implement clone3() system call
+References: <20091020005125.GG27627@count0.beaverton.ibm.com> <m1vdiad9jd.fsf@fess.ebiederm.org> <20091020040315.GA26632@us.ibm.com> <m1iqeauyvl.fsf@fess.ebiederm.org> <20091020183329.GB22646@us.ibm.com> <m1r5sxsw7w.fsf@fess.ebiederm.org> <20091021062021.GA2667@us.ibm.com> <m1eioxrtsb.fsf@fess.ebiederm.org> <20091023004253.GA7915@us.ibm.com> <m1bpjyrkep.fsf@fess.ebiederm.org> <20091023053001.GA24972@us.ibm.com>
+In-Reply-To: <20091023053001.GA24972@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
 
-First let me state that I'm working with a Linux kernel which is a couple of
-weeks old and came from Linus' post-2.6.31 release tree.  It does contain the
-name change from perf_counter to perf_event, for example.
 
-I'm working on some optimizations of PAPI's use of perf_events.  In particular I
-want to speed up the reading of events.  To do this, I am doing two things:
-1) Not disabling and enabling the counters around reading the counters.  In
-other words, read them on the fly.
-2) Use the PERF_FORMAT_GROUP option so that I can read up an entire group of
-counters in one syscall.
+Sukadev Bhattiprolu wrote:
+> Eric W. Biederman [ebiederm@xmission.com] wrote:
+> | > | +	if (target < RESERVED_PIDS)
+> | >
+> | > Should we replace RESERVED_PIDS with 0 ? We currently allow new
+> | > containers to have pids 1..32K in the first pass and in subsequent
+> | > passes assign starting at RESERVED_PIDS.
+> | 
+> | If it is a preexisting namespace pid namespace removing the RESERVED_PIDS
+> | check removes most if not all of the point of RESERVED_PIDS.
+> | 
+> | In a new fresh pid namespace I have no problem with not performing
+> | the RESERVED_PIDS check.
+> 
+> In that case can we do this
+> 
+> 	if (target_pid < RESERVED_PIDS && !pid_ns->level)
+> 		return -EINVAL;
+> 
+> instead ?
+> | 
+> | So I guess that makes the check.
+> | 
+> | if ((target < RESERVED_PIDS) && pid_ns->last_pid >= RESERVED_PIDS)
+> |    return -EINVAL;
+> 
+> I am just wondering if there is a small corner case where C/R would randomly
+> fail because of this sequence:
+> 
+> 	- C/R code calls clone() or clone3() say about RESERVED_PIDS-1
+> 	  times and ->last_pid == RESERVED_PIDS-1.
+> 
+> 	- C/R code calls normal fork()/alloc_pidmap() for a short-lived
+> 	  child - its pid == ->last_pid == RESERVED_PIDS
+> 
+> 	- C/R code then calls clone3()/set_pidmap() to set the pid of
+> 	  a new child to RESERVED_PID but fails (i.e it fails to restore
+> 	  a pid even when the pid is not in use).
 
-This seems to be working fairly well, except it seems that sometimes the "time
-running" and "time enabled" values that I read up are zero, even though the
-count is non-zero.  The case I'm looking at has three groups, and it's the third
-group, containing a single event, which is getting the zero enabled/running values.
+Not only for short-lived children. The problem is restart will succeed
+or fail depending on the order in which tasks were checkpointed. If
+task with pid 290 is restarted after pid 305, restart will fail.
 
-One experiment that I just now tried was to put the code back in that
-disables/re-enables the counters around the code that reads the counters.  This
-seems to have fixed the problem, but causes a performance degradation, of course.
+And because chekcpoint scans the task tree in a DFS manner, this is
+more likely to happen than not.
 
-Is this expected behavior?  Should I be able to read the counts, and times on
-the fly like I want to be able to do?
+I wonder why you'd like to restrict a pid-specific clone like that ?
+It is already a privileged syscall, so it could be exempt. I suggest
+that only regular clones will be constrained.
 
-Thanks for your consideration of this issue.
-
-- Corey
-
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-cjashfor@us.ibm.com
+Oren.
 
 
