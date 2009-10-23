@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZJWSZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbZJWSbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbZJWSZp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 14:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbZJWSZp
+	id S1752882AbZJWSbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 14:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbZJWSbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 14:25:45 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55116 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752279AbZJWSZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 14:25:44 -0400
-Message-ID: <4AE1F525.5090207@pobox.com>
-Date: Fri, 23 Oct 2009 14:25:41 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Fri, 23 Oct 2009 14:31:17 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33624 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752574AbZJWSbQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 14:31:16 -0400
+Date: Fri, 23 Oct 2009 16:31:07 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH] perf timechart: Use pr_debug to report unknown header
+	types
+Message-ID: <20091023183107.GA4132@ghostprotocols.net>
+References: <1256320245-8439-1-git-send-email-acme@redhat.com> <4AE1EE1B.2000500@linux.intel.com>
 MIME-Version: 1.0
-To: Jan Ceuleers <jan.ceuleers@computer.org>
-CC: linux-kernel@vger.kernel.org, Alan Cox <alan@linux.intel.com>,
-       Greg KH <greg@kroah.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, stable@kernel.org
-Subject: Re: pata sc1200 fix crash boot, bug #14227
-References: <4AE1F29B.1090009@computer.org>
-In-Reply-To: <4AE1F29B.1090009@computer.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AE1EE1B.2000500@linux.intel.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/23/2009 02:14 PM, Jan Ceuleers wrote:
-> A little while ago [1], a fix was posted here for a boot-time crash in the sc1200 module.
+Em Fri, Oct 23, 2009 at 10:55:39AM -0700, Arjan van de Ven escreveu:
+> Arnaldo Carvalho de Melo wrote:
+>> It was using eprintf that checked if verbose was !zero, when I converted
+>> to pr_*() I made the mistake of changing it to pr_warning which caused
+>> 'perf timechart' output to be way too verbose.
+>>
+> nack...
 >
-> [1]: http://marc.info/?l=linux-kernel&m=125484259025909&w=2
->
-> Submission to stable was also briefly discussed, but has apparently not happened, despite the fact that this bug appears to have existed since 2.6.29.
->
-> I would therefore like to request that this fix now be submitted to stable.
+> if you EVER hit one of these you have a very very serious problem.
+> hiding that is never the right thing to do. I should make this a fatal
+> event instead.
 
-Looks like commit 6d4f950e9ea15816c6a4f266ce6b9e438346771e is missing 
-the "CC:stable@kernel.org".  Added implicitly via this message...
+OK, so I actually fixed a bug as those messages weren't being noticed if
+-v wasn't used! :-)
 
+Please take a look at latest tip to see all those messages.
 
+- Arnaldo
