@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbZJWH5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751676AbZJWH7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751448AbZJWH5P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 03:57:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbZJWH5P
+	id S1751676AbZJWH7I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 03:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZJWH7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 03:57:15 -0400
-Received: from mail-px0-f171.google.com ([209.85.216.171]:47349 "EHLO
-	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbZJWH5O (ORCPT
+	Fri, 23 Oct 2009 03:59:05 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:34810 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbZJWH7D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 03:57:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=D1k+dZpZp6y/avSmmcaGNpku9S+1sWKHWqNFZFYcmIRxvj2hwlT9utzgOTD8erk8Ll
-         KjQHuLKXnnhW4RANNY/8rN4NhuL58BhwmtPTbftg/2Jj1zktfiX+SqiiJFWlpHUfEVuA
-         +EWD7Zp1qXpgJ02Ub/csjtNjUg6yCfaepM6dI=
+	Fri, 23 Oct 2009 03:59:03 -0400
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: Chris Friesen <cfriesen@nortel.com>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>
+Subject: Re: Irq architecture for multi-core network driver.
+References: <4AE0D14B.1070307@caviumnetworks.com>
+	<4AE0D72A.4090607@nortel.com> <4AE0DB98.1000101@caviumnetworks.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 23 Oct 2009 00:59:03 -0700
+In-Reply-To: <4AE0DB98.1000101@caviumnetworks.com> (David Daney's message of "Thu\, 22 Oct 2009 15\:24\:24 -0700")
+Message-ID: <m13a5apmm0.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20091023052052.GA15499@elf.ucw.cz>
-References: <20091019213751.GC1482@ucw.cz> <f17812d70910211320s29d3aaa5tad3206df1e99e03b@mail.gmail.com> 
-	<1256251399.23211.164.camel@dax.rpnet.com> <20091023052052.GA15499@elf.ucw.cz>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Fri, 23 Oct 2009 15:56:59 +0800
-Message-ID: <f17812d70910230056y3d1fca0enc821f9ef46f07145@mail.gmail.com>
-Subject: Re: spitz backlight: fix brightness limiting
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@osdl.org>,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 1:20 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Thu 2009-10-22 23:43:19, Richard Purdie wrote:
->> On Thu, 2009-10-22 at 04:20 +0800, Eric Miao wrote:
->> > It's a little bit weird it's called 'limit_mask' when I first converted it
->> > to a spi driver. There must be some reasons, Richard, you've got
->> > any ideas?
->>
->> Its a historical artifact that once worked through some bitfield magic
->> but probably stopped working when we increased the range of values the
->> backlight could accept and we didn't notice the limiting problem.
->>
->> I'll happily take a patch to fix that.
->
-> Patch is available in the parent post. For now, I just fix it so that
-> it does not turn backlight off when it should not. I'll submit
-> limit_mask -> limit as separate patch, ok?
+David Daney <ddaney@caviumnetworks.com> writes:
 
-I'm fine with that. Feel free to.
+> Chris Friesen wrote:
+>> On 10/22/2009 03:40 PM, David Daney wrote:
+>>
+>>> The main problem I have encountered is how to fit the interrupt
+>>> management into the kernel framework.  Currently the interrupt source
+>>> is connected to a single irq number.  I request_irq, and then manage
+>>> the masking and unmasking on a per cpu basis by directly manipulating
+>>> the interrupt controller's affinity/routing registers.  This goes
+>>> behind the back of all the kernel's standard interrupt management
+>>> routines.  I am looking for a better approach.
+>>>
+>>> One thing that comes to mind is that I could assign a different
+>>> interrupt number per cpu to the interrupt signal.  So instead of
+>>> having one irq I would have 32 of them.  The driver would then do
+>>> request_irq for all 32 irqs, and could call enable_irq and disable_irq
+>>> to enable and disable them.  The problem with this is that there isn't
+>>> really a single packets-ready signal, but instead 16 of them.  So If I
+>>> go this route I would have 16(lines) x 32(cpus) = 512 interrupt
+>>> numbers just for the networking hardware, which seems a bit excessive.
+>>
+>> Does your hardware do flow-based queues?  In this model you have
+>> multiple rx queues and the hardware hashes incoming packets to a single
+>> queue based on the addresses, ports, etc. This ensures that all the
+>> packets of a single connection always get processed in the order they
+>> arrived at the net device.
+>>
+>
+> Indeed, this is exactly what we have.
+>
+>
+>> Typically in this model you have as many interrupts as queues
+>> (presumably 16 in your case).  Each queue is assigned an interrupt and
+>> that interrupt is affined to a single core.
+>
+> Certainly this is one mode of operation that should be supported, but I would
+> also like to be able to go for raw throughput and have as many cores as possible
+> reading from a single queue (like I currently have).
+
+I believe will detect false packet drops and ask for unnecessary
+retransmits if you have multiple cores processing a single queue,
+because you are processing the packets out of order.
+
+Eric
