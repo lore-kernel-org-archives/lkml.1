@@ -1,82 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbZJWEd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbZJWEpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751330AbZJWEd5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 00:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbZJWEd4
+	id S1751528AbZJWEpb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 00:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbZJWEpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 00:33:56 -0400
-Received: from mga01.intel.com ([192.55.52.88]:28312 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750830AbZJWEdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 00:33:55 -0400
-X-ExtLoop1: 1
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
- available
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Eric Anholt <eric@anholt.net>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Schlichter <thomas.schlichter@web.de>,
-       Ingo Molnar <mingo@elte.hu>, Jan Beulich <JBeulich@novell.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Robert Hancock <hancockrwd@gmail.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Tejun Heo <tj@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       Ingo Molnar <mingo@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <1256262799.15120.8.camel@gaiman.anholt.net>
-References: <1394846127@web.de>
-	 <4ADF32A0020000780001B20A@vpn.id2.novell.com>
-	 <20091021173514.GA32227@elte.hu>
-	 <200910212201.36578.thomas.schlichter@web.de>
-	 <1256205210.2530.28.camel@sbs-t61>
-	 <1256225689.32075.6.camel@gaiman.anholt.net>
-	 <1256248050.2546.9.camel@sbs-t61>  <20091023081047.4d8abc29@jbarnes-x200>
-	 <1256256717.2534.6.camel@sbs-t61>
-	 <1256262799.15120.8.camel@gaiman.anholt.net>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 22 Oct 2009 21:33:21 -0700
-Message-Id: <1256272401.2569.6.camel@sbs-t61>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Oct 2009 00:45:31 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:31642
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750866AbZJWEp3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 00:45:29 -0400
+X-SpamScore: 1
+X-BigFish: VPS1(zzzz1202hzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KRYAJL-02-70F-02
+X-M-MSG: 
+Date: Fri, 23 Oct 2009 12:44:51 +0800
+From: Crane Cai <crane.cai@amd.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+CC: Bjorn Helgaas <bjorn.helgaas@hp.com>, lenb@kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] i2c-scmi: Quirk to work on IBM machines with broken
+	BIOSes
+Message-ID: <20091023044451.GB1367@crane-desktop>
+Mail-Followup-To: Crane Cai <crane.cai@amd.com>,
+	"Darrick J. Wong" <djwong@us.ibm.com>,
+	Bjorn Helgaas <bjorn.helgaas@hp.com>, lenb@kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <20091020231149.GM26149@tux1.beaverton.ibm.com> <20091021023016.GC32413@crane-desktop> <200910210857.13978.bjorn.helgaas@hp.com> <20091021173733.GN26149@tux1.beaverton.ibm.com> <20091022071748.GA17917@crane-desktop> <20091022174304.GO26149@tux1.beaverton.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+In-Reply-To: <20091022174304.GO26149@tux1.beaverton.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 23 Oct 2009 04:44:52.0294 (UTC) FILETIME=[8F509660:01CA539B]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-22 at 18:53 -0700, Eric Anholt wrote:
-> On Thu, 2009-10-22 at 17:11 -0700, Suresh Siddha wrote:
-> > On Thu, 2009-10-22 at 16:10 -0700, Jesse Barnes wrote:
-> > > On Thu, 22 Oct 2009 14:47:30 -0700
-> > > Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-> > > 
-> > > > On Thu, 2009-10-22 at 08:34 -0700, Eric Anholt wrote:
-> > > > > Can we just not create the _wc sysfs entry if we don't have PAT?  I
-> > > > > don't think there's userland relying on its presence as opposed to
-> > > > > the non-_wc entry.
-> > > > 
-> > > > Yes indeed. Jesse do you see an issue with this? This is simple and
-> > > > clean. Thanks Eric.
-> > > 
-> > > Yeah, I think that will be fine.  In fact, older versions of
-> > > libpciaccess will behave better if we do it that way (iirc it only
-> > > allocates an MTRR if the resource_wc file doesn't exist or fails to get
-> > > mapped).
-> > 
-> > Eric, care to send the patch?
-> 
-> I don't have a patch, I was just suggesting a way to handle the
-> submitter's problem that won't involve complicated changes that nobody
-> else will be testing since everyone *should* have a graphics driver for
-> their graphics hardware.
+Hi Darrick,
 
-I can send the patch early next week unless Thomas or someone else beats
-me.
+Here is the formal one. Please apply.
+IBM SMBus CMI device HID definition depends on you.
+
+-- 
+Best Regards,
+- Crane
+
+---
+>From 7d6d23c944bb1ce29ad75347c867d323288dc2e2 Mon Sep 17 00:00:00 2001
+From: Crane Cai <crane.cai@amd.com>
+Date: Fri, 23 Oct 2009 10:13:58 +0800
+Subject: [PATCH] i2c-scmi: support IBM SMBus CMI devices
+
+*) add a new HID for IBM SMBus CMI devices
+*) add methods for IBM SMBus CMI devices
+*) hook different HID with different control methods set
+
+Signed-off-by: Crane Cai <crane.cai@amd.com>
+---
+ drivers/i2c/busses/i2c-scmi.c |   31 +++++++++++++++++++++++--------
+ 1 files changed, 23 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-scmi.c b/drivers/i2c/busses/i2c-scmi.c
+index b4a55d4..a15aaf4 100644
+--- a/drivers/i2c/busses/i2c-scmi.c
++++ b/drivers/i2c/busses/i2c-scmi.c
+@@ -33,6 +33,7 @@ struct acpi_smbus_cmi {
+ 	u8 cap_info:1;
+ 	u8 cap_read:1;
+ 	u8 cap_write:1;
++	struct smbus_methods_t *methods;
+ };
+ 
+ static const struct smbus_methods_t smbus_methods = {
+@@ -41,8 +42,16 @@ static const struct smbus_methods_t smbus_methods = {
+ 	.mt_sbw  = "_SBW",
+ };
+ 
++/* Some IBM BIOSes omit the leading underscore */
++static const struct smbus_methods_t ibm_smbus_methods = {
++	.mt_info = "SBI_",
++	.mt_sbr  = "SBR_",
++	.mt_sbw  = "SBW_",
++};
++
+ static const struct acpi_device_id acpi_smbus_cmi_ids[] = {
+-	{"SMBUS01", 0},
++	{"SMBUS01", (kernel_ulong_t)&smbus_methods},
++	{"SMBUSIBM", (kernel_ulong_t)&ibm_smbus_methods},
+ 	{"", 0}
+ };
+ 
+@@ -150,11 +159,11 @@ acpi_smbus_cmi_access(struct i2c_adapter *adap, u16 addr, unsigned short flags,
+ 
+ 	if (read_write == I2C_SMBUS_READ) {
+ 		protocol |= ACPI_SMBUS_PRTCL_READ;
+-		method = smbus_methods.mt_sbr;
++		method = smbus_cmi->methods->mt_sbr;
+ 		input.count = 3;
+ 	} else {
+ 		protocol |= ACPI_SMBUS_PRTCL_WRITE;
+-		method = smbus_methods.mt_sbw;
++		method = smbus_cmi->methods->mt_sbw;
+ 		input.count = 5;
+ 	}
+ 
+@@ -290,13 +299,13 @@ static int acpi_smbus_cmi_add_cap(struct acpi_smbus_cmi *smbus_cmi,
+ 	union acpi_object *obj;
+ 	acpi_status status;
+ 
+-	if (!strcmp(name, smbus_methods.mt_info)) {
++	if (!strcmp(name, smbus_cmi->methods->mt_info)) {
+ 		status = acpi_evaluate_object(smbus_cmi->handle,
+-					smbus_methods.mt_info,
++					smbus_cmi->methods->mt_info,
+ 					NULL, &buffer);
+ 		if (ACPI_FAILURE(status)) {
+ 			ACPI_ERROR((AE_INFO, "Evaluating %s: %i",
+-				   smbus_methods.mt_info, status));
++				   smbus_cmi->methods->mt_info, status));
+ 			return -EIO;
+ 		}
+ 
+@@ -319,9 +328,9 @@ static int acpi_smbus_cmi_add_cap(struct acpi_smbus_cmi *smbus_cmi,
+ 
+ 		kfree(buffer.pointer);
+ 		smbus_cmi->cap_info = 1;
+-	} else if (!strcmp(name, smbus_methods.mt_sbr))
++	} else if (!strcmp(name, smbus_cmi->methods->mt_sbr))
+ 		smbus_cmi->cap_read = 1;
+-	else if (!strcmp(name, smbus_methods.mt_sbw))
++	else if (!strcmp(name, smbus_cmi->methods->mt_sbw))
+ 		smbus_cmi->cap_write = 1;
+ 	else
+ 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Unsupported CMI method: %s\n",
+@@ -349,6 +358,7 @@ static acpi_status acpi_smbus_cmi_query_methods(acpi_handle handle, u32 level,
+ static int acpi_smbus_cmi_add(struct acpi_device *device)
+ {
+ 	struct acpi_smbus_cmi *smbus_cmi;
++	struct acpi_device_id *id;
+ 
+ 	smbus_cmi = kzalloc(sizeof(struct acpi_smbus_cmi), GFP_KERNEL);
+ 	if (!smbus_cmi)
+@@ -362,6 +372,11 @@ static int acpi_smbus_cmi_add(struct acpi_device *device)
+ 	smbus_cmi->cap_read = 0;
+ 	smbus_cmi->cap_write = 0;
+ 
++	for (id = (struct acpi_device_id *)acpi_smbus_cmi_ids; id->id[0]; id++)
++		if (!strcmp((char *) id->id, acpi_device_hid(device)))
++			smbus_cmi->methods =
++				(struct smbus_methods_t *) id->driver_data;
++
+ 	acpi_walk_namespace(ACPI_TYPE_METHOD, smbus_cmi->handle, 1,
+ 			    acpi_smbus_cmi_query_methods, smbus_cmi, NULL);
+ 
+-- 
+1.6.0.4
 
