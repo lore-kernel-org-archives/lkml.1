@@ -1,78 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751371AbZJWI62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751442AbZJWJNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751371AbZJWI62 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 04:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZJWI61
+	id S1751442AbZJWJNa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 05:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZJWJN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 04:58:27 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:50886 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbZJWI60 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 04:58:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=ht9sNF9twfjJSNPiUKCK0/qj0NYdxtSIlrfUPMcgtC7J2UYf+yCm6EvbLVrgW3y1xB
-         ZvFqio2Di0ZXVe9aNHPYyC7nEoPr8dTdgdyIhEnGhBDAOuB+ZSKl+MdtBXhrjYm3gV/w
-         OIESEM0LRjki1065KWWUjhIH2AB1PfylG7+IU=
-Date: Fri, 23 Oct 2009 01:58:24 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>
-Cc: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not  work
-	anymore
-Message-ID: <20091023085824.GA7199@core.coreip.homeip.net>
-References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <20091015215944.GA9845@core.coreip.homeip.net> <4ADF6237.9070004@tremplin-utc.net> <200910211320.16339.dmitry.torokhov@gmail.com> <4AE0840C.8070801@tremplin-utc.net> <20091022162202.GA18031@core.coreip.homeip.net> <4AE09AFF.805@tremplin-utc.net> <20091022181915.GB18031@core.coreip.homeip.net> <4AE16489.4030008@tremplin-utc.net>
+	Fri, 23 Oct 2009 05:13:29 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:39460 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751338AbZJWJN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 05:13:28 -0400
+Date: Fri, 23 Oct 2009 10:13:34 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Rientjes <rientjes@google.com>
+Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 4/5] page allocator: Pre-emptively wake kswapd when
+	high-order watermarks are hit
+Message-ID: <20091023091334.GV11778@csn.ul.ie>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0910221227010.21601@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4AE16489.4030008@tremplin-utc.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <alpine.DEB.2.00.0910221227010.21601@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 10:08:41AM +0200, Éric Piel wrote:
-> Op 22-10-09 20:19, Dmitry Torokhov schreef:
-> > On Thu, Oct 22, 2009 at 07:48:47PM +0200, Éric Piel wrote:
-> >> I don't think so: xorg 1.6.5, with xinput-evdev 2.2.5. They are both  
-> >> latest or second latest stable versions.
-> >>
-> >> In the log I see this:
-> >> (--) SynPS/2 Synaptics TouchPad: touchpad found
-> >> (II) PS/2 Generic Mouse: Device reopened after 1 attempts.
-> >> (EE) AT Translated Set 2 keyboard: device key_bitmask has changed
-> >> (EE) AT Translated Set 2 keyboard: Device has changed - disabling.
-> >>
-> >> Quite a few people seem to have the same problem.
-> > 
-> > The bitmask should not be changing on it's own... Any chance you could
-> > save contents or /proc/bus/input/devices before suspend and after resume
-> > (when X decides to ditch the keyboard) and diff them?
-> > 
-> Hello,
-> I've just tried this: before and after is exactly the same (attached is
-> a copy of it).
+On Thu, Oct 22, 2009 at 12:41:42PM -0700, David Rientjes wrote:
+> On Thu, 22 Oct 2009, Mel Gorman wrote:
+> 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 7f2aa3e..851df40 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1596,6 +1596,17 @@ try_next_zone:
+> >  	return page;
+> >  }
+> >  
+> > +static inline
+> > +void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
+> > +						enum zone_type high_zoneidx)
+> > +{
+> > +	struct zoneref *z;
+> > +	struct zone *zone;
+> > +
+> > +	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
+> > +		wakeup_kswapd(zone, order);
+> > +}
+> > +
+> >  static inline int
+> >  should_alloc_retry(gfp_t gfp_mask, unsigned int order,
+> >  				unsigned long pages_reclaimed)
+> > @@ -1730,18 +1741,18 @@ __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
+> >  			congestion_wait(BLK_RW_ASYNC, HZ/50);
+> >  	} while (!page && (gfp_mask & __GFP_NOFAIL));
+> >  
+> > -	return page;
+> > -}
+> > -
+> > -static inline
+> > -void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
+> > -						enum zone_type high_zoneidx)
+> > -{
+> > -	struct zoneref *z;
+> > -	struct zone *zone;
+> > +	/*
+> > +	 * If after a high-order allocation we are now below watermarks,
+> > +	 * pre-emptively kick kswapd rather than having the next allocation
+> > +	 * fail and have to wake up kswapd, potentially failing GFP_ATOMIC
+> > +	 * allocations or entering direct reclaim
+> > +	 */
+> > +	if (unlikely(order) && page && !zone_watermark_ok(preferred_zone, order,
+> > +				preferred_zone->watermark[ALLOC_WMARK_LOW],
+> > +				zone_idx(preferred_zone), ALLOC_WMARK_LOW))
+> > +		wake_all_kswapd(order, zonelist, high_zoneidx);
+> >  
+> > -	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
+> > -		wakeup_kswapd(zone, order);
+> > +	return page;
+> >  }
+> >  
+> >  static inline int
+> 
+> Hmm, is this really supposed to be added to __alloc_pages_high_priority()?  
+> By the patch description I was expecting kswapd to be woken up 
+> preemptively whenever the preferred zone is below ALLOC_WMARK_LOW and 
+> we're known to have just allocated at a higher order, not just when 
+> current was oom killed (when we should already be freeing a _lot_ of 
+> memory soon) or is doing a higher order allocation during direct reclaim.
 > 
 
-What about before X starts? Can you please boot into console, kill
-hal and udev to make sure they don't mess up with the keymap and, after
-doing
+It was a somewhat arbitrary choice to have it trigger in the event high
+priority allocations were happening frequently.
 
-	echo -n rescan > /sys/bus/serio/devices/serio0/drvctl
+> For the best coverage, it would have to be add the branch to the fastpath.  
 
-which should completely reinitialize keyboard and compare
-/proc/bus/input/devices again? If it is still the same then there must
-be a silly bug in X's evdev... But regardless, X policy of comparing
-keybit is stupid - they don't kill the device if I change keymap while
-in X, why do they do that on resume? Or when I change the limits on
-absolute axis... Oh well.
+Agreed - specifically at the end of __alloc_pages_nodemask()
+
+> That seems fine for a debugging aid and to see if progress is being made 
+> on the GFP_ATOMIC allocation issues, but doesn't seem like it should make 
+> its way to mainline, the subsequent GFP_ATOMIC allocation could already be 
+> happening and in the page allocator's slowpath at this point that this 
+> wakeup becomes unnecessary.
+> 
+> If this is moved to the fastpath, why is this wake_all_kswapd() and not
+> wakeup_kswapd(preferred_zone, order)?  Do we need to kick kswapd in all 
+> zones even though they may be free just because preferred_zone is now 
+> below the watermark?
+> 
+
+It probably makes no difference as zones are checked for their watermarks
+before any real work happens. However, even if this patch makes a difference,
+I don't want to see it merged.  At best, it is an extremely heavy-handed
+hack which is why I asked for it to be tested in isolation. It shouldn't
+be necessary at all because sort of pre-emptive waking of kswapd was never
+necessary before.
+
+> Wouldn't it be better to do this on page_zone(page) instead of 
+> preferred_zone anyway?
+> 
+
+No. The preferred_zone is the zone we should be allocating from. If we
+failed to allocate from it, it implies the watermarks are not being met
+so we want to wake it.
 
 -- 
-Dmitry
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
