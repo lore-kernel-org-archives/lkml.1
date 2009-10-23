@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751393AbZJWCBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751233AbZJWCMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751393AbZJWCBx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 22:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750918AbZJWCBx
+	id S1751233AbZJWCMo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 22:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750918AbZJWCMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 22:01:53 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:52539 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750840AbZJWCBw (ORCPT
+	Thu, 22 Oct 2009 22:12:43 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:61352 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbZJWCMm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 22:01:52 -0400
+	Thu, 22 Oct 2009 22:12:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JTxF9a0KreAYcqmiG3Coq1DQx1Yp9aq+17DYmdmadKDXzaLTvoqT13BgeprCckJPiQ
-         ClFgPi1DvM28XiHvE1GdFAz8Uo5WnsBMRSf1qcNj+zRM6Stez0taLvjTBIiYbmnXazco
-         4wRQ2BAts3ceuQtUMIUUCou3ZbB7EZ5XoVcyQ=
-Date: Thu, 22 Oct 2009 19:01:50 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: ?ric Piel <eric.piel@tremplin-utc.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
-	anymore
-Message-ID: <20091023020150.GA26723@core.coreip.homeip.net>
-References: <20091011030029.GA6526@suse.de> <200910112135.29384.dmitry.torokhov@gmail.com> <4AD31709.4000103@tremplin-utc.net> <20091012154846.GB7996@core.coreip.homeip.net> <20091012173551.GC10557@suse.de> <20091012183313.GC8345@core.coreip.homeip.net> <20091012185417.GA30342@suse.de> <20091013031741.GB2887@core.coreip.homeip.net> <20091018075127.GH3935@core.coreip.homeip.net> <20091018080238.GA13810@suse.de>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=VPpb8WbtYoCzmSjaSr4ub7KOMk9mrm55XjbqpjSlq5582uTx4jyHd43oGjKOlUYQZs
+         ddlSOQk8OcHteF+e0yfwTEzMi9745HgUIR8Mp9NqV91P7spCQY/G2C78GQroD7a9dTqP
+         /K+vavn+L8MmKpH56HSDLcfCF0tbUUBzwaTwE=
+Message-ID: <4AE11106.1060303@gmail.com>
+Date: Thu, 22 Oct 2009 19:12:22 -0700
+From: "Eugene T. Bordenkircher" <eugebo@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091018080238.GA13810@suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org
+CC: jeffrey.t.kersher@intel.com, jesse.brandeburg@intel.com,
+       bruce.w.allan@intel.com, peter.p.waskiewicz.jr@intel.com,
+       john.ronciak@intel.com
+Subject: Re: Problem with MDI/MDI-X auto-switching in E100 driver
+References: <20091022190908.GA9002@rhlx01.hs-esslingen.de>
+In-Reply-To: <20091022190908.GA9002@rhlx01.hs-esslingen.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 18, 2009 at 01:02:38AM -0700, Greg KH wrote:
-> On Sun, Oct 18, 2009 at 12:51:27AM -0700, Dmitry Torokhov wrote:
-> > On Mon, Oct 12, 2009 at 08:17:41PM -0700, Dmitry Torokhov wrote:
-> > > On Mon, Oct 12, 2009 at 11:54:17AM -0700, Greg KH wrote:
-> > > > On Mon, Oct 12, 2009 at 11:33:13AM -0700, Dmitry Torokhov wrote:
-> > > > > On Mon, Oct 12, 2009 at 10:35:51AM -0700, Greg KH wrote:
-> > > > > > On Mon, Oct 12, 2009 at 08:48:46AM -0700, Dmitry Torokhov wrote:
-> > > > > > > > So at least, unbind should fail as well as bind.
-> > > > > > > >
-> > > > > > > 
-> > > > > > > That would be Greg's domain s it is driver core decision whether to
-> > > > > > > allow unbinding platform devices registered with
-> > > > > > > platform_driver_probe().
-> > > > > > 
-> > > > > > No, I do not see why that should not be allowed.
-> > > > > > 
-> > > > > 
-> > > > > Because once you did unbind the device you are stuck (unless the driver
-> > > > > is compiled as a module, but then you could just unload the module
-> > > > > instead of unbinding). Disallowing unbind would allow discarding not
-> > > > > only __devinit but __devexit sections when driver is built in which
-> > > > > would make ebedded people happy[^Hier].
-> > > > 
-> > > > Yeah, good point.
-> > > > 
-> > > > Does anyone do bind/unbind with platform devices today?
-> > > > 
-> > > > If not, a patch changing this would be welcome.
-> > > > 
-> > > 
-> > > How about this one?
-> > > 
-> > 
-> > *ping* We need to resolve this, otherwise everyone who likes to rebind
-> > i8042 in couse of STR/STD will be in trouble.
+> bad devel, bad! Ought to have CC'd some other guys and me ;)
+> (just happened to stumble on it by accident)
+
+I'm not sure what you mean by 'other guys' but let's try a few people out of 
+the MAINTAINERS, file as well as yourself, rather than the contact information 
+in the header of the file :)
+
+>> It seems a better solution to this is to trust the eeprom's configuration
+>> rather than override it.  Am I missing something or does this sound
+>> reasonable?
 > 
-> Sorry, am in Tokyo right now.
-> 
-> I like this patch, and will queue it up, but it's too late for .32, it
-> will have to wait for .33.
-> 
+> I don't have much actual experience with various e100 versions,
+> so I cannot confirm it, but if something like this gets implemented,
+> then it's perhaps best to restrict the possibly more dangerous
+> "trust eeprom" reverted logic to your chip version only.
 
-Greg,
+> Or is the "without magnetics" feature independent of particular chip
+> versions? Then of course that wouldn't help ;)
 
-I hope you will reconsider. The patch is extremely small but without it
-I am afraid many people whose distributions blindly rebind i8042 on
-suspend/resume will lose their keyboards and mice now that i8042 uses
-platform_driver_probe()...
+I'm a software guy, but I've had our hardware guys try to explain it to me. 
+Forgive me if this doesn't make any sense to someone who knows hardware.  As I 
+understand it, the 'magnetics' is how it gets hooked up post Phy, so 
+theoretically the magnetic-less implementation can occur for almost any chip 
+and is not isolated to just ours (82551IT, which I didn't mention before). So I 
+believe it's a wider problem.  According to the afore mentioned App Note.  Auto 
+-switching is not possible when the phy is connected 'without the magnetics' so 
+  this feature should be turned off.  We turned it off in the configuration 
+eeprom, but the e100 driver is turning it back on.
 
-Thanks.
+We've also discovered that with the feature on in a device that does have the 
+magnetics, it's causing problems with certain switches that also implement 
+auto-switching, most notably Netgear's FS108.  They both attempt to auto switch 
+and for some reason they end up getting into a state where one is in MDI mode 
+and the other is in MDI-X. In that case, it would be nice to be able to force 
+it off.
 
--- 
-Dmitry
+The 'force on' that the driver does seems unnecessary since the feature is 
+configurable via the eeprom, but I'm not versed on all chip variants the e100 
+driver supports which is why I'm here looking for a bit of knowledge and help.
