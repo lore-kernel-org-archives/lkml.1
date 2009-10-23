@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751953AbZJWWYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbZJWW03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751953AbZJWWYJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 18:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbZJWWYI
+	id S1752097AbZJWW03 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 18:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbZJWW03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 18:24:08 -0400
-Received: from claw.goop.org ([74.207.240.146]:39192 "EHLO claw.goop.org"
+	Fri, 23 Oct 2009 18:26:29 -0400
+Received: from mga14.intel.com ([143.182.124.37]:44354 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751351AbZJWWYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 18:24:07 -0400
-Message-ID: <4AE22D04.50708@goop.org>
-Date: Fri, 23 Oct 2009 15:24:04 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: "Ryan C. Gordon" <icculus@icculus.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 2/2] binfmt_elf: FatELF support for kernel modules.
-References: <alpine.DEB.2.00.0910190422090.13303@andre.icculuslan> <4ADD0086.9060304@goop.org> <alpine.DEB.2.00.0910200043200.18342@andre.icculuslan>
-In-Reply-To: <alpine.DEB.2.00.0910200043200.18342@andre.icculuslan>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751558AbZJWW02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 18:26:28 -0400
+X-ExtLoop1: 1
+Subject: [patch] x86, pat: return EINVAL for pci mmap WC request for
+ !pat_enabled
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Schlichter <thomas.schlichter@web.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Eric Anholt <eric@anholt.net>, "Barnes, Jesse" <jesse.barnes@intel.com>,
+       Thomas Hellstrom <thellstrom@vmware.com>,
+       Jan Beulich <JBeulich@novell.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Fri, 23 Oct 2009 15:26:00 -0700
+Message-Id: <1256336760.2576.8.camel@sbs-t61>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/19/09 21:54, Ryan C. Gordon wrote:
-> I can understand that concern, but I worry about refusing to take steps 
-> that would aid free software developers in case it might help the 
-> closed-source people, too.
->   
+Thomas Schlichter reported:
+> X.org uses libpciaccess which tries to mmap with write combining enabled via
+> /sys/bus/pci/devices/*/resource0_wc. Currently, when PAT is not enabled, the
+> kernel does fall back to uncached mmap. Then libpciaccess thinks it succeeded
+> mapping with write combining enabled and does not set up suited MTRR entries.
+> ;-(
 
-Any open source driver should be encouraged to be merged with mainline
-Linux so there's no need to distribute them separately.  With the
-staging/ tree, that's easier than ever.
+Instead of silently mapping pci mmap region as UC minus in the case
+of !pat_enabled and wc request, we can return error. Eric Anholt mentioned
+that caller (like X) typically follows up with UC minus pci mmap request and
+if there is a free mtrr slot, caller will manage adding WC mtrr.
 
-I don't see much upside in making it "easier" to distribute binary-only
-open source drivers separately.  (It wouldn't help that much, in the
-end; the modules would still be compiled for some finite set of kernels,
-and if the user wants to use something else they're still stuck.)
+Jesse Barnes says:
+> Older versions of libpciaccess will behave better if we do it that way
+> (iirc it only allocates an MTRR if the resource_wc file doesn't exist or
+> fails to get mapped).
 
-> Those that will behave badly will do so regardless of file formats, but 
-> distros shipping nothing but GPL'd software and in-tree drivers would 
-> benefit from this more than another misguided company that probably 
-> doesn't care about multiple CPU architectures anyhow.
->   
+Reported-by: Thomas Schlichter <thomas.schlichter@web.de>
+Signed-off-by: Thomas Schlichter <thomas.schlichter@web.de>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Acked-by: Eric Anholt <eric@anholt.net>
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+---
 
-Well, ideally a fat module would allow modules for multiple kernels to
-be bundled together (same and/or different architectures), which is
-primarily useful for 3rd-party binary distributions.
+diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+index b22d13b..a672f12 100644
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -282,6 +282,15 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+ 		return -EINVAL;
+ 
+ 	prot = pgprot_val(vma->vm_page_prot);
++
++	/*
++ 	 * Return error if pat is not enabled and write_combine is requested.
++ 	 * Caller can followup with UC MINUS request and add a WC mtrr if there
++ 	 * is a free mtrr slot.
++ 	 */
++	if (!pat_enabled && write_combine)
++		return -EINVAL;
++
+ 	if (pat_enabled && write_combine)
+ 		prot |= _PAGE_CACHE_WC;
+ 	else if (pat_enabled || boot_cpu_data.x86 > 3)
 
 
-    J
