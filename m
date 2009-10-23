@@ -1,78 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbZJWW03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752074AbZJWWwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752097AbZJWW03 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 18:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbZJWW03
+	id S1752074AbZJWWwR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 18:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbZJWWwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 18:26:29 -0400
-Received: from mga14.intel.com ([143.182.124.37]:44354 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751558AbZJWW02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 18:26:28 -0400
-X-ExtLoop1: 1
-Subject: [patch] x86, pat: return EINVAL for pci mmap WC request for
- !pat_enabled
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Schlichter <thomas.schlichter@web.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: Eric Anholt <eric@anholt.net>, "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       Jan Beulich <JBeulich@novell.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 23 Oct 2009 15:26:00 -0700
-Message-Id: <1256336760.2576.8.camel@sbs-t61>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Fri, 23 Oct 2009 18:52:16 -0400
+Received: from smtp-out13.alice.it ([85.33.2.18]:1903 "EHLO
+	smtp-out13.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751556AbZJWWwQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 18:52:16 -0400
+X-Greylist: delayed 613 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Oct 2009 18:52:15 EDT
+Message-ID: <4AE2313B.3020901@ntd.homelinux.org>
+Date: Sat, 24 Oct 2009 00:42:03 +0200
+From: NiTRo <nitroml@ntd.homelinux.org>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org,
+       cve@mitre.org, Jamie Lokier <jamie@shareable.org>
+Subject: Re: SECURITY PROBLEM: filesystem permiossion bypass on FD already
+ opened
+References: <4AE20B6F.4060606@ntd.homelinux.org> <20091023204442.GA7332@joi.lan> <20091023205418.GF27185@elf.ucw.cz>
+In-Reply-To: <20091023205418.GF27185@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Oct 2009 22:42:05.0495 (UTC) FILETIME=[0BB46470:01CA5432]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Schlichter reported:
-> X.org uses libpciaccess which tries to mmap with write combining enabled via
-> /sys/bus/pci/devices/*/resource0_wc. Currently, when PAT is not enabled, the
-> kernel does fall back to uncached mmap. Then libpciaccess thinks it succeeded
-> mapping with write combining enabled and does not set up suited MTRR entries.
-> ;-(
+Pavel Machek ha scritto:
+> On Fri 2009-10-23 22:44:44, Marcin Slusarz wrote:
+>   
+>> On Fri, Oct 23, 2009 at 10:00:47PM +0200, NiTRo wrote:
+>>     
+>>> Hi to all,
+>>>     Sorry for my bad english.
+>>>     Just discovered this security problem on my Suse 11 (Linux xxxx
+>>>       
+>> You did not.
+>> http://lkml.org/lkml/2009/10/23/159
+>>     
+>
+> Actually, no, this is something different... and old/known AFAICT.
+>   
+Marcin, I just saw this, it's quite similar, right... But I don't fall back to /proc/self/fd for reading... I still use the same FD...
 
-Instead of silently mapping pci mmap region as UC minus in the case
-of !pat_enabled and wc request, we can return error. Eric Anholt mentioned
-that caller (like X) typically follows up with UC minus pci mmap request and
-if there is a free mtrr slot, caller will manage adding WC mtrr.
+>   
+>>> 2.6.25.18-0.2-pae #1 SMP 2008-10-21 16:30:26 +0200 i686 i686 i386
+>>> GNU/Linux) and my Slackware 10.1.0 (Linux xxxx 2.4.29-ow1 #1 Wed Feb 2
+>>> 00:05:42 CET 2005 i586 unknown unknown GNU/Linux) with OpenWall patch.
+>>> If a FD is opened on a allowed file and then the permission is changed
+>>> the file is still redeable starting from the already read position to
+>>> the EOF.
+>>>
+>>> This is the scenario:
+>>>
+>>> <root> creates a file /tmp/aaaa with 666 permission an with the "test"
+>>> string inside it
+>>>         xxx:/tmp # echo test > /tmp/aaaa
+>>>         xxx:/tmp # chmod 666 /tmp/aaaa
+>>> <sb> opens this file hooking it in a shell as FD number 3
+>>>         sb@xxx:~> bash 3< /tmp/aaaa
+>>> <sb> read and prints it
+>>>         sb@xxx:~> read a <&3
+>>>         sb@xxx:~> echo $a
+>>>         test
+>>>         sb@xxx:~>
+>>> ...anythig as expected...
+>>> <root> changes the permissions on file to 600 and changes its content
+>>> into "test o.o I cannot believe it..."
+>>>         xxx:/tmp # chmod 600 /tmp/aaaa
+>>>         xxx:/tmp # echo "test o.o I cannot believe it..." > /tmp/aaaa
+>>> <sb> continue to try reading the file
+>>>         sb@xxx:~> read a <&3
+>>>         sb@xxx:~> echo $a
+>>>         o.o I cannot believe it...
+>>>         sb@test:~>
+>>> ... and this is not expected...
+>>>       
+>
+>
+> Really? I'd expect it. I have file open for reading, you wrote
+> something new to it, so I can read it back. What is the problem?
+> 									Pavel
+>   
 
-Jesse Barnes says:
-> Older versions of libpciaccess will behave better if we do it that way
-> (iirc it only allocates an MTRR if the resource_wc file doesn't exist or
-> fails to get mapped).
+I sow the second mail to... Shurely you have right... I'm sorry for this
+"no-bug"...
+I'd expect a read error due to permissions change... Sorry
 
-Reported-by: Thomas Schlichter <thomas.schlichter@web.de>
-Signed-off-by: Thomas Schlichter <thomas.schlichter@web.de>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Acked-by: Eric Anholt <eric@anholt.net>
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
----
-
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index b22d13b..a672f12 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -282,6 +282,15 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
- 		return -EINVAL;
- 
- 	prot = pgprot_val(vma->vm_page_prot);
-+
-+	/*
-+ 	 * Return error if pat is not enabled and write_combine is requested.
-+ 	 * Caller can followup with UC MINUS request and add a WC mtrr if there
-+ 	 * is a free mtrr slot.
-+ 	 */
-+	if (!pat_enabled && write_combine)
-+		return -EINVAL;
-+
- 	if (pat_enabled && write_combine)
- 		prot |= _PAGE_CACHE_WC;
- 	else if (pat_enabled || boot_cpu_data.x86 > 3)
-
-
+Thanks a lot
+Alessandro
