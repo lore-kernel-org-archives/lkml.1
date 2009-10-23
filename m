@@ -1,147 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751442AbZJWJNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbZJWJQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751442AbZJWJNa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 05:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZJWJN3
+	id S1751448AbZJWJQh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 05:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZJWJQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 05:13:29 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:39460 "EHLO gir.skynet.ie"
+	Fri, 23 Oct 2009 05:16:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:50473 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751338AbZJWJN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 05:13:28 -0400
-Date: Fri, 23 Oct 2009 10:13:34 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: David Rientjes <rientjes@google.com>
-Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/5] page allocator: Pre-emptively wake kswapd when
-	high-order watermarks are hit
-Message-ID: <20091023091334.GV11778@csn.ul.ie>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0910221227010.21601@chino.kir.corp.google.com>
+	id S1751083AbZJWJQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 05:16:36 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: request_module vs. modprobe blacklist (and security subsystem implications)
+Date: Fri, 23 Oct 2009 19:46:38 +1030
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       linux-kernel@vger.kernel.org, arjan@infradead.org,
+       randy.dunlap@oracle.com, andi@firstfloor.org, dhowells@redhat.com,
+       akpm@linux-foundation.org
+References: <1256137348.4443.39.camel@dhcp231-106.rdu.redhat.com> <200910221626.51170.rusty@rustcorp.com.au> <1256221822.4443.95.camel@dhcp231-106.rdu.redhat.com>
+In-Reply-To: <1256221822.4443.95.camel@dhcp231-106.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910221227010.21601@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200910231946.39174.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 12:41:42PM -0700, David Rientjes wrote:
-> On Thu, 22 Oct 2009, Mel Gorman wrote:
+On Fri, 23 Oct 2009 01:00:22 am Eric Paris wrote:
+> > If a userspace program tries some security exploit that has been closed, do
+> > you want to warn about it?  Because that seems to be the question here.
 > 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 7f2aa3e..851df40 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1596,6 +1596,17 @@ try_next_zone:
-> >  	return page;
-> >  }
-> >  
-> > +static inline
-> > +void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
-> > +						enum zone_type high_zoneidx)
-> > +{
-> > +	struct zoneref *z;
-> > +	struct zone *zone;
-> > +
-> > +	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
-> > +		wakeup_kswapd(zone, order);
-> > +}
-> > +
-> >  static inline int
-> >  should_alloc_retry(gfp_t gfp_mask, unsigned int order,
-> >  				unsigned long pages_reclaimed)
-> > @@ -1730,18 +1741,18 @@ __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
-> >  			congestion_wait(BLK_RW_ASYNC, HZ/50);
-> >  	} while (!page && (gfp_mask & __GFP_NOFAIL));
-> >  
-> > -	return page;
-> > -}
-> > -
-> > -static inline
-> > -void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
-> > -						enum zone_type high_zoneidx)
-> > -{
-> > -	struct zoneref *z;
-> > -	struct zone *zone;
-> > +	/*
-> > +	 * If after a high-order allocation we are now below watermarks,
-> > +	 * pre-emptively kick kswapd rather than having the next allocation
-> > +	 * fail and have to wake up kswapd, potentially failing GFP_ATOMIC
-> > +	 * allocations or entering direct reclaim
-> > +	 */
-> > +	if (unlikely(order) && page && !zone_watermark_ok(preferred_zone, order,
-> > +				preferred_zone->watermark[ALLOC_WMARK_LOW],
-> > +				zone_idx(preferred_zone), ALLOC_WMARK_LOW))
-> > +		wake_all_kswapd(order, zonelist, high_zoneidx);
-> >  
-> > -	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
-> > -		wakeup_kswapd(zone, order);
-> > +	return page;
-> >  }
-> >  
-> >  static inline int
+> I say yes.  Knowing that malicious activity is taking place, even if it
+> didn't hurt anything is useful.
+
+Hi Eric,
+
+Your proposal is troubling for three reasons:
+
+1) You would disable logging for things you actually want logged.
+2) What *actually* happens when ssh tries to load ipv6 is that
+   "modprobe net-pf-10" gets called.
+3) Containing modprobe behavior in one set of config files is really nice.
+
+> > Why should ssh not load IPv6?  Because noone should?  Fine, but there's a
+> > difference between "I expect it to do this but I won't let it" and "I don't
+> > expect it to do this".
 > 
-> Hmm, is this really supposed to be added to __alloc_pages_high_priority()?  
-> By the patch description I was expecting kswapd to be woken up 
-> preemptively whenever the preferred zone is below ALLOC_WMARK_LOW and 
-> we're known to have just allocated at a higher order, not just when 
-> current was oom killed (when we should already be freeing a _lot_ of 
-> memory soon) or is doing a higher order allocation during direct reclaim.
-> 
+> In this case it's because the admin decided not to allow it.  In this
+> case it is 'I expect it to do this, and I know that later it would fail,
+> so I don't want to complain that it is failing now.'  I want a way to
+> move the failure up, and to allow and admin to stop with the useless
+> userspace callouts to modprobe.
 
-It was a somewhat arbitrary choice to have it trigger in the event high
-priority allocations were happening frequently.
+No.  I anticipate that in the future you will want to do some fairly
+sophisticated filtering.  That does not belong in the kernel unless there
+are performance concerns, and I don't think there are here.
 
-> For the best coverage, it would have to be add the branch to the fastpath.  
+There are all kinds of things that can be administratively prohibited, and
+it would be nice if my security tools would Just Work with that: I don't think
+pushing all the different restrictions into the kernel for SELinux's sake
+is the way forward.
 
-Agreed - specifically at the end of __alloc_pages_nodemask()
+> I want a way to make the kernel not upcall at all, if I have that I can
+> make SELinux do whatever I want.  If I don't have that, all I can do is
+> some post failure fragile userspace filtering.
 
-> That seems fine for a debugging aid and to see if progress is being made 
-> on the GFP_ATOMIC allocation issues, but doesn't seem like it should make 
-> its way to mainline, the subsequent GFP_ATOMIC allocation could already be 
-> happening and in the page allocator's slowpath at this point that this 
-> wakeup becomes unnecessary.
-> 
-> If this is moved to the fastpath, why is this wake_all_kswapd() and not
-> wakeup_kswapd(preferred_zone, order)?  Do we need to kick kswapd in all 
-> zones even though they may be free just because preferred_zone is now 
-> below the watermark?
-> 
+If the kernel is better at filtering than userspace, that is an SELinux
+problem that you should address.
 
-It probably makes no difference as zones are checked for their watermarks
-before any real work happens. However, even if this patch makes a difference,
-I don't want to see it merged.  At best, it is an extremely heavy-handed
-hack which is why I asked for it to be tested in isolation. It shouldn't
-be necessary at all because sort of pre-emptive waking of kswapd was never
-necessary before.
-
-> Wouldn't it be better to do this on page_zone(page) instead of 
-> preferred_zone anyway?
-> 
-
-No. The preferred_zone is the zone we should be allocating from. If we
-failed to allocate from it, it implies the watermarks are not being met
-so we want to wake it.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Cheers,
+Rusty.
