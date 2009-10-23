@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbZJWWOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbZJWWQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752056AbZJWWOd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 18:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZJWWOc
+	id S1752135AbZJWWQb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 18:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZJWWQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 18:14:32 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:48462 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751400AbZJWWOc (ORCPT
+	Fri, 23 Oct 2009 18:16:31 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:40320 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752049AbZJWWQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 18:14:32 -0400
-Date: Fri, 23 Oct 2009 18:14:35 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       <linux-media@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: uvcvideo causes ehci_hcd to halt
-In-Reply-To: <4AE158D7.6000900@pardus.org.tr>
-Message-ID: <Pine.LNX.4.44L0.0910231809290.31680-100000@netrider.rowland.org>
+	Fri, 23 Oct 2009 18:16:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=qkKj6kSsb7mA+rhVaof1YKu1hAC88PTEJynDU8i1NjCZAqELSzg2YXiP3QAx2N9vRp
+         4ZVuLbtGhTYKbt3pRz49XFfZEuKxxrnWe6HVh3yIe3WGs1L349rYGXaJz3x6/UQ6v7Bz
+         gqRJqlmYlmq3Z99ysLDjZTJ8VgToqQwrkdk4Y=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <54b33ccd0910231459j5cb355c4n13859c527e1645ba@mail.gmail.com>
+References: <1256330234-14079-1-git-send-email-marti@juffo.org> 
+	<20091023210231.GC8356@elte.hu> <193b0f820910231456o24bf95b6mf3e72f1b27870af5@mail.gmail.com> 
+	<54b33ccd0910231459j5cb355c4n13859c527e1645ba@mail.gmail.com>
+From: Lucas De Marchi <lucas.de.marchi@gmail.com>
+Date: Fri, 23 Oct 2009 20:16:14 -0200
+Message-ID: <193b0f820910231516m56361e82v336c9df4ccb13816@mail.gmail.com>
+Subject: Re: [PATCH] perf tools: add compatibility with libelf 0.8 and 
+	autodetect
+To: Marti Raudsepp <marti@juffo.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Oct 2009, [UTF-8] Ozan Çağlayan wrote:
+On Fri, Oct 23, 2009 at 19:59, Marti Raudsepp <marti@juffo.org> wrote:
+> On Sat, Oct 24, 2009 at 12:56 AM, Lucas De Marchi
+> <lucas.de.marchi@gmail.com> wrote:
+>> I think it's Arch's fault to continue using an unmaintained library
+>> when there's an easy replacement, but if the "fix" is easy, why not?
+>
+> As far as I can tell, libelf is still maintained; the latest release
+> is from July 2009.
+>
 
-> > There's something odd about this.  I'd like to see this file again, 
-> > after the patch below has been applied.
-> >   
-> 
-> periodic
-> size = 1024
->    1:  qh1024-0001/f6ffe280 (h2 ep2 [1/0] q0 p8) t00000000
+humn... I was looking at FSF site
+(http://directory.fsf.org/project/libelf/) where version was not
+updated anymore.
 
-On closer study and more careful thought, there's nothing odd here at
-all.  This is what would be expected given the bug that you saw.
 
-> After putting a udelay() the problem seems to be resolved. I did a
-> rmmod-modprobe-sleep in 50 iterations,  and the host controller was
-> still functional along with the web-cam:
-
-Okay, that proves this really is a timing bug in the hardware.  But we
-can't go around putting 2-millisecond delays in the kernel!  Maybe you
-can test to see if smaller delays will fix the problem.  If 50
-microseconds or less doesn't work then it will be necessary to add a
-new timer to ehci-hcd.
-
-Alan Stern
-
+Lucas De Marchi
