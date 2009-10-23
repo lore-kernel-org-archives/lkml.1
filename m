@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752870AbZJWVRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751708AbZJWVnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752870AbZJWVRI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 17:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZJWVRH
+	id S1751708AbZJWVnS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 17:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZJWVnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 17:17:07 -0400
-Received: from mail.perches.com ([173.55.12.10]:1035 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752541AbZJWVRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 17:17:07 -0400
-Subject: Re: [RFC/PATCH] ratelimit: make output more useful
-From: Joe Perches <joe@perches.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <200910231712.00722.borntraeger@de.ibm.com>
-References: <200910191706.42223.borntraeger@de.ibm.com>
-	 <200910231458.11832.borntraeger@de.ibm.com>
-	 <20091023145509.GA13793@elte.hu>
-	 <200910231712.00722.borntraeger@de.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 23 Oct 2009 14:17:10 -0700
-Message-ID: <1256332631.27122.16.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Fri, 23 Oct 2009 17:43:17 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:11462 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751543AbZJWVnJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 17:43:09 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Ike Panhc <ike.pan@canonical.com>
+Subject: Re: [Resend] [PATCH] ACPI: New driver for Lenovo SL laptops
+Date: Fri, 23 Oct 2009 15:43:10 -0600
+User-Agent: KMail/1.9.10
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alexandre Rostovtsev <tetromino@gmail.com>
+References: <1253805163-12493-1-git-send-email-ike.pan@canonical.com> <1256325108-22626-1-git-send-email-ike.pan@canonical.com>
+In-Reply-To: <1256325108-22626-1-git-send-email-ike.pan@canonical.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910231543.12254.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-23 at 17:12 +0200, Christian Borntraeger wrote:
-> Am Freitag 23 Oktober 2009 16:55:09 schrieb Ingo Molnar:
-> > Any reason why it couldnt be pushed inside printk.c? We just need the
-> > func string - not the pointer pass-in. That would also address some of
-> > the call-site bloat.
+On Friday 23 October 2009 01:11:48 pm Ike Panhc wrote:
 
-[]
+> +static int __init lenovo_sl_laptop_init(void)
+> +{
+> +	int ret;
+> +	acpi_status status;
+> +
+> +	if (acpi_disabled)
+> +		return -ENODEV;
 
-> +extern int __printk_ratelimit(const char *func);
-> +#define printk_ratelimit() __printk_ratelimit(__func__)
+Don't need this.
 
-Perhaps check if CONFIG_KALLSYMS is defined and use
+> +	lenovo_sl_laptop_hkey_handle = lenovo_sl_laptop_ec0_handle = NULL;
+> +	status = acpi_get_handle(NULL, ACPI_HKEY_PATH,
+> +				 &lenovo_sl_laptop_hkey_handle);
+> +	if (ACPI_FAILURE(status)) {
+> +		pr_err("Failed to get ACPI handle for %s\n", ACPI_HKEY_PATH);
+> +		return -ENODEV;
+> +	}
 
-%pS ... __builtin_return_address(0) ?
+Don't need this; acpi_bus_register_driver() is enough.
 
-
+Bjorn
