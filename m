@@ -1,106 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752571AbZJWQVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbZJWQW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752571AbZJWQVi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 12:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbZJWQVi
+	id S1752599AbZJWQW1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 12:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZJWQWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 12:21:38 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:35996 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752541AbZJWQVh (ORCPT
+	Fri, 23 Oct 2009 12:22:25 -0400
+Received: from mailb.microsoft.com ([131.107.115.215]:15724 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752446AbZJWQWZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 12:21:37 -0400
-Message-ID: <4AE1D802.6050906@us.ibm.com>
-Date: Fri, 23 Oct 2009 09:21:22 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 23 Oct 2009 12:22:25 -0400
+From: Haiyang Zhang <haiyangz@microsoft.com>
+To: Greg KH <gregkh@suse.de>
+CC: Hank Janssen <hjanssen@microsoft.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH] Fix null pointer error after vmbus loading
+Thread-Topic: [PATCH] Fix null pointer error after vmbus loading
+Thread-Index: AcpShBhhaH+7AN1gRFKVV/A3W6FqAwAVoFqAABKi7GAAIBHtAAAVkcVw
+Date: Fri, 23 Oct 2009 16:22:26 +0000
+Message-ID: <1FB5E1D5CA062146B38059374562DF72180B430B@TK5EX14MBXC126.redmond.corp.microsoft.com>
+References: <1FB5E1D5CA062146B38059374562DF72180B39CA@TK5EX14MBXC126.redmond.corp.microsoft.com>
+ <20091021224337.GA8550@suse.de>
+ <1FB5E1D5CA062146B38059374562DF72180B3D51@TK5EX14MBXC126.redmond.corp.microsoft.com>
+ <20091022225530.GA11244@suse.de>
+In-Reply-To: <20091022225530.GA11244@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: dino@in.ibm.com
-CC: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: [patch -rt] Fix infinite loop with 2.6.31.4-rt14
-References: <20091023134700.GA5578@in.ibm.com>
-In-Reply-To: <20091023134700.GA5578@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Dino,
-
-Dinakar Guniguntala wrote:
+> -----Original Message-----
+> From: Greg KH [mailto:gregkh@suse.de]
+> But this is not how you check to see if your device is registered at
+> all, you can not rely on the driver core to have the name set or not to
+> reflect the status of the device.  Devices have many stages in their
+> lifecycle, and the name reliably shows none of them.
 > 
-> Not sure if this the best way to go here, but the patch below seems to resolve
-> the problem for me
-> 
-> If this is fine, I'll send a separate patch for mainline. Currently mainline
-> seems to be missing the earlier patch referenced above as well
+> Actually, why do you need to know this?  Shouldn't you always know the
+> state of your device, how can you get passed an unregistered device?
 
-So... something else sets ret to -EAGAIN which should be returned to 
-userspace, rather than used to retry.
-
-
->  /**
-> - * handle_early_requeue_pi_wakeup() - Detect early wakeup on the initial futex
-> - * @hb:		the hash_bucket futex_q was original enqueued on
-> - * @q:		the futex_q woken while waiting to be requeued
-> - * @key2:	the futex_key of the requeue target futex
-> - * @timeout:	the timeout associated with the wait (NULL if none)
-> - *
-> - * Detect if the task was woken on the initial futex as opposed to the requeue
-> - * target futex.  If so, determine if it was a timeout or a signal that caused
-> - * the wakeup and return the appropriate error code to the caller.  Must be
-> - * called with the hb lock held.
-> - *
-> - * Returns
-> - *  0 - no early wakeup detected
-> - * <0 - -ETIMEDOUT or -ERESTARTNOINTR
-> - */
-> -static inline
-> -int handle_early_requeue_pi_wakeup(struct futex_hash_bucket *hb,
-> -				   struct futex_q *q, union futex_key *key2,
-> -				   struct hrtimer_sleeper *timeout)
-> -{
-
-Cramming this entire function into futex_wait_requeue_pi() doesn't 
-appear relevant to the problem. Please don't make 
-futex_wait_requeue_pi() any longer than it already is. My fault that, 
-but let's not make it worse!
-
->  	spin_unlock(&hb->lock);
-> +	if (ret == -EAGAIN) {
-> +		/* Retry on spurious wakeup */
-> +		put_futex_key(fshared, &q.key);
-> +		put_futex_key(fshared, &key2);
-> +		goto retry;
-> +	}
-
-The above is the core of the change yes?
-
->  	if (ret)
->  		goto out_put_keys;
-> 
-> @@ -2264,9 +2247,6 @@ out_put_keys:
->  out_key2:
->  	put_futex_key(fshared, &key2);
-> 
-> -	/* Spurious wakeup ? */
-> -	if (ret == -EAGAIN)
-> -		goto retry;
-
-I did a little digging trying to see what else might be returning EAGAIN 
-after the handle_early..() call.  I only see fixup_pi_state_owner() and 
-rt_mutex_finish_proxy_lock().  Neither of those has an obvious return of 
-EAGAIN.  I'll keep looking.
-
-If this turns out to be the proper fix, please reduce it down to simply 
-check for EAGAIN after handle_early..() and return from there, with a 
-comment, and avoid moving the logic into this overly large function.
+I have traced down the callers to the function, vmbus_child_device_register(),
+and verified that the struct device was kzalloc-ed by the current thread,
+and not visible to other threads before we register the device. So the 
+dev name is always NULL here, we can skip the NULL & strlen checking. I 
+will send you the new patch soon.
 
 Thanks,
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+- Haiyang
+
