@@ -1,118 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbZJWRMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751535AbZJWR2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752858AbZJWRMX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 13:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbZJWRMW
+	id S1751535AbZJWR2L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 13:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZJWR2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 13:12:22 -0400
-Received: from sous-sol.org ([216.99.217.87]:44279 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752842AbZJWRMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 13:12:20 -0400
-Message-Id: <20091023171132.783398962@sequoia.sous-sol.org>
-User-Agent: quilt/0.47-1
-Date: Fri, 23 Oct 2009 10:10:53 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-mm@kvack.org
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 2/2] bootmem: add free_bootmem_late
-References: <20091023171051.993073846@sequoia.sous-sol.org>
-Content-Disposition: inline; filename=bootmem-make-free_pages_bootmem-generic.patch
+	Fri, 23 Oct 2009 13:28:09 -0400
+Received: from mail-gx0-f216.google.com ([209.85.217.216]:47160 "EHLO
+	mail-gx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751186AbZJWR2H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 13:28:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ALRLfLZOkaEBlZiXuM2Vz3vuQWHvN+I4qSgzAZ849jWBki8+cyV4Zvw+1jQbYGMmzQ
+         Xl7UV9DiYUvWmanxxsbUNQ+L7zYeWDMmcpJ8X6kRHPS90PzAHPemUs5kO0YWAE6ZhyZM
+         1PRCPgPZrj1S0p8tdJI0PmzgFY0RO+Zw+DDQs=
+MIME-Version: 1.0
+In-Reply-To: <m13a5apmm0.fsf@fess.ebiederm.org>
+References: <4AE0D14B.1070307@caviumnetworks.com> <4AE0D72A.4090607@nortel.com>
+	 <4AE0DB98.1000101@caviumnetworks.com>
+	 <m13a5apmm0.fsf@fess.ebiederm.org>
+Date: Fri, 23 Oct 2009 10:28:10 -0700
+Message-ID: <4807377b0910231028g60b479cfycdbf3f4e25384c58@mail.gmail.com>
+Subject: Re: Irq architecture for multi-core network driver.
+From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: David Daney <ddaney@caviumnetworks.com>,
+       Chris Friesen <cfriesen@nortel.com>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a new function for freeing bootmem after the bootmem allocator has
-been released and the unreserved pages given to the page allocator.
-This allows us to reserve bootmem and then release it if we later
-discover it was not needed.
+On Fri, Oct 23, 2009 at 12:59 AM, Eric W. Biederman
+<ebiederm@xmission.com> wrote:
+> David Daney <ddaney@caviumnetworks.com> writes:
+>> Certainly this is one mode of operation that should be supported, but I would
+>> also like to be able to go for raw throughput and have as many cores as possible
+>> reading from a single queue (like I currently have).
+>
+> I believe will detect false packet drops and ask for unnecessary
+> retransmits if you have multiple cores processing a single queue,
+> because you are processing the packets out of order.
 
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- include/linux/bootmem.h |    1 +
- mm/bootmem.c            |   43 ++++++++++++++++++++++++++++++++++++++-----
- 2 files changed, 39 insertions(+), 5 deletions(-)
+So, the way the default linux kernel configures today's many core
+server systems is to leave the affinity mask by default at 0xffffffff,
+and most current Intel hardware based on 5000 (older core cpus), or
+5500 chipset (used with Core i7 processors) that I have seen will
+allow for round robin interrupts by default.  This kind of sucks for
+the above unless you run irqbalance or set smp_affinity by hand.
 
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -53,6 +53,7 @@ extern void free_bootmem_node(pg_data_t 
- 			      unsigned long addr,
- 			      unsigned long size);
- extern void free_bootmem(unsigned long addr, unsigned long size);
-+extern void free_bootmem_late(unsigned long addr, unsigned long size);
- 
- /*
-  * Flags for reserve_bootmem (also if CONFIG_HAVE_ARCH_BOOTMEM_NODE,
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -151,7 +151,9 @@ unsigned long __init init_bootmem(unsign
-  *
-  * This will free the pages in the range @start to @end, making them
-  * available to the page allocator.  The @map will be used to skip
-- * reserved pages.  Returns the count of pages freed.
-+ * reserved pages.  In the case that @map is NULL, the bootmem allocator
-+ * is already free and the range is contiguous.  Returns the count of
-+ * pages freed.
-  */
- static unsigned long __init free_bootmem_pages(unsigned long start,
- 					       unsigned long end,
-@@ -164,13 +166,23 @@ static unsigned long __init free_bootmem
- 	 * If the start is aligned to the machines wordsize, we might
- 	 * be able to free pages in bulks of that order.
- 	 */
--	aligned = !(start & (BITS_PER_LONG - 1));
-+	if (map)
-+		aligned = !(start & (BITS_PER_LONG - 1));
-+	else
-+		aligned = 1;
- 
- 	for (cursor = start; cursor < end; cursor += BITS_PER_LONG) {
--		unsigned long idx, vec;
-+		unsigned long vec;
- 
--		idx = cursor - start;
--		vec = ~map[idx / BITS_PER_LONG];
-+		if (map) {
-+			unsigned long idx = cursor - start;
-+			vec = ~map[idx / BITS_PER_LONG];
-+		} else {
-+			if (end - cursor >= BITS_PER_LONG)
-+				vec = ~0UL;
-+			else
-+				vec = (1UL << (end - cursor)) - 1;
-+		}
- 
- 		if (aligned && vec == ~0UL && cursor + BITS_PER_LONG < end) {
- 			int order = ilog2(BITS_PER_LONG);
-@@ -387,6 +399,27 @@ void __init free_bootmem(unsigned long a
- }
- 
- /**
-+ * free_bootmem_late - free bootmem pages directly to page allocator
-+ * @addr: starting address of the range
-+ * @size: size of the range in bytes
-+ *
-+ * This is only useful when the bootmem allocator has already been torn
-+ * down, but we are still initializing the system.  Pages are given directly
-+ * to the page allocator, no bootmem metadata is updated because it is gone.
-+ */
-+void __init free_bootmem_late(unsigned long addr, unsigned long size)
-+{
-+	unsigned long start, end;
-+
-+	kmemleak_free_part(__va(addr), size);
-+
-+	start = PFN_UP(addr);
-+	end = PFN_DOWN(addr + size);
-+
-+	totalram_pages += free_bootmem_pages(start, end, NULL);
-+}
-+
-+/**
-  * reserve_bootmem_node - mark a page range as reserved
-  * @pgdat: node the range resides on
-  * @physaddr: starting address of the range
+Yes, I know Arjan and others will say you should always run
+irqbalance, but some people don't and some distros don't ship it
+enabled by default (or their version doesn't work for one reason or
+another)  The question is should the kernel work better by default
+*without* irqbalance loaded, or does it not matter?
 
+I don't believe we should re-enable the kernel irq balancer, but
+should we consider only setting a single bit in each new interrupt's
+irq affinity?  Doing it with a random spread for the initial affinity
+would be better than setting them all to one.
