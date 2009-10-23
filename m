@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751736AbZJWM7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751728AbZJWNLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751736AbZJWM7c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 08:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZJWM7b
+	id S1751728AbZJWNLW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 09:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZJWNLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 08:59:31 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:34010 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751487AbZJWM7a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 08:59:30 -0400
-Date: Fri, 23 Oct 2009 13:59:31 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-Cc: "tony@atomide.com" <tony@atomide.com>,
-       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "sameo@linux.intel.com" <sameo@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [alsa-devel] [PATCH 4/4 v2] ASoC: TWL4030: Driver registration
-	via twl4030_codec MFD
-Message-ID: <20091023125930.GA8198@sirena.org.uk>
-References: <1256207208-25010-1-git-send-email-peter.ujfalusi@nokia.com> <1256207208-25010-5-git-send-email-peter.ujfalusi@nokia.com> <20091022165643.GA28051@rakim.wolfsonmicro.main> <200910230827.55141.peter.ujfalusi@nokia.com>
+	Fri, 23 Oct 2009 09:11:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46942 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751553AbZJWNLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 09:11:21 -0400
+Date: Fri, 23 Oct 2009 15:11:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC/PATCH] ratelimit: make output more useful
+Message-ID: <20091023131114.GB27097@elte.hu>
+References: <200910191706.42223.borntraeger@de.ibm.com> <20091023113348.GD5886@elte.hu> <200910231458.11832.borntraeger@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200910230827.55141.peter.ujfalusi@nokia.com>
-X-Cookie: She's genuinely bogus.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <200910231458.11832.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 08:27:55AM +0300, Peter Ujfalusi wrote:
 
-> Hmm, what do you mean by that?
-> I have checked it, and selecting the machine driver will enables the MFD_CORE 
-> and TWL4030_CODEC in .config, also disabling the machine driver will also 
-> disable the MFD_CORE and the TWL4030_CODEC.
+* Christian Borntraeger <borntraeger@de.ibm.com> wrote:
 
-> Can you go into details?
+> Am Freitag 23 Oktober 2009 13:33:48 schrieb Ingo Molnar:
+> > Mind sending it against latest tip:master (or tip:core/printk):
+> [...]
+> > Which has a couple of ratelimit changes queued up already that collide
+> > with your patch:
+> 
+> Sure, something like the following?
+> 
+> [PATCH] ratelimit: make output more useful
+> 
+> Today I got 
+> 
+> [39648.224782] Registered led device: iwl-phy0::TX
+> [40676.545099] __ratelimit: 246 callbacks suppressed
+> [40676.545103] abcdef[23675]: segfault at 0 ...
 
-Kconfig has never guaranteed to pay any attention to dependencies of
-things that were enabled as a result of a select statement - they would
-be silently ignored.  I've done some tests and it does seem that this is
-doing what would be expected at the minute but looking at the Kconfig
-changelogs I can't see anything that makes this an intentional change.
+btw., an effect of this will be a small amount of extra bloat at every 
+callsite of printk_ratelimit(). There's 200 of them kernel-wide, so i 
+guess it's OK as all these codepaths are atypical slowpaths already.
+
+	Ingo
