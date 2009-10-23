@@ -1,49 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbZJWRAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbZJWRCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752759AbZJWRAL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 13:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbZJWRAK
+	id S1752778AbZJWRCF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 13:02:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbZJWRCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 13:00:10 -0400
-Received: from claw.goop.org ([74.207.240.146]:59497 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752368AbZJWRAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 13:00:09 -0400
-Message-ID: <4AE1E117.2000005@goop.org>
-Date: Fri, 23 Oct 2009 10:00:07 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
+	Fri, 23 Oct 2009 13:02:04 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:50670 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752751AbZJWRCD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 13:02:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArwEABN44UpGGN1W/2dsb2JhbACBUNgthD8EgV0
+Date: Fri, 23 Oct 2009 13:02:06 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Daniel Walker <dwalker@fifo99.com>, Erwan Velu <erwanaliasr1@gmail.com>,
-       linux-kernel@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH] dmi_check_system can generate Warnings when no DMI	table
- is present
-References: <4AE178AF.3010804@gmail.com> <20091023110323.GC10071@elte.hu> <4AE19867.5070705@gmail.com> <1256302066.10493.74.camel@desktop> <4AE1C5C6.7000103@gmail.com> <1256310576.10493.78.camel@desktop> <20091023153027.GA18068@elte.hu>
-In-Reply-To: <20091023153027.GA18068@elte.hu>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Adrian Bunk <bunk@stusta.de>, Harvey Harrison <harvey.harrison@gmail.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       GeunSik Lim <leemgs1@gmail.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhao Lei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org,
+       Dominique Toupin <dominique.toupin@ericsson.com>,
+       Michel Dagenais <michel.dagenais@polymtl.ca>,
+       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
+Subject: Re: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL v2,
+	headers to Dual BSD/GPL
+Message-ID: <20091023170206.GA7797@Krystal>
+References: <20091023160257.GA30447@Krystal> <20091023163147.GA22928@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091023163147.GA22928@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 12:56:59 up 66 days,  3:46,  2 users,  load average: 0.72, 0.36,
+	0.24
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/23/09 08:30, Ingo Molnar wrote:
->> Ingo mentioned that the returning mechanism your adding was left out 
->> intentionally to catch this error, so I don't think your original 
->> patch could be included ..
->>     
-> Yes. That mechanism found a real bug here.
->
-> Calling the DMI code too early (when the strings are still empty) can 
-> cause silent failures: we wont crash but we might miss to act on DMI 
-> quirks.
->   
+* Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > Hi,
+> > 
+> > I would like to re-license the tracepoint.c/marker.c files from GPL 
+> > to:
+> > 
+> > * Dual LGPL v2.1/GPL v2 license.
+> > 
+> > And re-license tracepoint.h/marker.h to:
+> > 
+> > * Dual BSD/GPL v2 license.
+> > 
+> > The goal is to allow sharing code between the kernel tracer and UST 
+> > (User-Space Tracer) project, which is a LGPL v2.1 library. Tracepoint 
+> > and marker headers might need to be included by proprietary or BSD 
+> > applications, hence the dual BSD/GPL v2 license for these two.
+> 
+> We need a clean interface instead of some messy bindings - why do you 
+> need a different license to kernel/tracepoint.c?
+> 
 
-Yes.  There's nothing preventing the DMI subsystem from being
-initialized under Xen; in fact we rely on it in a dom0 kernel (which
-does have access to the DMI tables).  I don't know what the underlying
-bug in the original report is, but there's more to it than failing to
-init DMI.
+The short answer is: I want to provide static userspace instrumentation
+for fast and manageable userspace tracing. The infrastructure developed
+for kernel tracepoints applies directly to userspace, but it needs to be
+re-licensed to LGPL so we can trace non-GPL applications.
 
-    J
+
+I'll re-spin the small text I sent to Steven, please tell me if it does
+not answer your question:
+
+The intent is to allow the tracer code developed both on the kernel-side
+as part of Ftrace and LTTng and on the userspace side within UST to be
+shared when appropriate. As a result, we can consider userland-only
+solutions to user-space tracing without rewriting all the kernel
+tracing infrastructure from scratch.
+
+Tracing library has a small specificity though: if we want to be able to
+allow tracing of non-GPL applications, we have to license the library
+under a licence different from GPL. LGPLv2.1 seems like a very good fit
+for that. It would allow proprietary, BSD and other applications to be
+traced by linking dynamically to the LGPL tracing library. The intent is
+to be able to provide an updated library version that can be dynamically
+linked with these proprietary applications.
+
+So, what I propose is to dual-license at the very least the TRACE_EVENT
+generation code under GPLv2/LGPLv2.1 so the callbacks generated can be
+used in a LGPL library. I plan to do the same for most of the LTTng
+project.
+
+I also plan to license the tracepoint.h header under a GPLv2/BSD-style
+dual-license, so proprietary apps can include it. It would be the only
+part that would not be relinkable. Note that it only involves the
+tracing call sites declarations. I really want the probes generated by
+TRACE_EVENT (with #CREATE_TRACE_POINTS) to be LGPL, so we can relink and
+upgrade them when necessary.
+
+Thanks,
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
