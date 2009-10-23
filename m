@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbZJWQjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752509AbZJWQwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752680AbZJWQjg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 12:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZJWQjf
+	id S1752509AbZJWQwd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 12:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbZJWQwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 12:39:35 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:47401 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbZJWQjf (ORCPT
+	Fri, 23 Oct 2009 12:52:32 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:50296 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752310AbZJWQwc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 12:39:35 -0400
-Date: Fri, 23 Oct 2009 18:39:38 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Vlad Yasevich <vladislav.yasevich@hp.com>
-Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [Patch] sctp: remove deprecated SCTP_GET_*_OLD stuffs
-Message-ID: <20091023163938.GA3858@merkur.ravnborg.org>
-References: <20091015082849.4605.48311.sendpatchset@localhost.localdomain> <4AE0C64A.9080400@hp.com> <20091022214439.GA2635@merkur.ravnborg.org> <4AE1D2AA.8060200@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE1D2AA.8060200@hp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 23 Oct 2009 12:52:32 -0400
+From: Bryan Wu <bryan.wu@canonical.com>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, kernel-team@lists.ubuntu.com
+Subject: [PATCH] Staging: Android logger: fix compiling error
+Date: Sat, 24 Oct 2009 00:52:21 +0800
+Message-Id: <1256316741-14053-1-git-send-email-bryan.wu@canonical.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 11:58:34AM -0400, Vlad Yasevich wrote:
-> 
-> 
-> Sam Ravnborg wrote:
-> > On Thu, Oct 22, 2009 at 04:53:30PM -0400, Vlad Yasevich wrote:
-> >>> diff --git a/include/net/sctp/user.h b/include/net/sctp/user.h
-> >>> index be2334a..0991f1b 100644
-> >>> --- a/include/net/sctp/user.h
-> >>> +++ b/include/net/sctp/user.h
-> >>> @@ -131,14 +131,6 @@ enum sctp_optname {
-> >>>  #define SCTP_SOCKOPT_BINDX_REM	SCTP_SOCKOPT_BINDX_REM
-> >>>  	SCTP_SOCKOPT_PEELOFF, 	/* peel off association. */
-> >>>  #define SCTP_SOCKOPT_PEELOFF	SCTP_SOCKOPT_PEELOFF
-> >>> -	SCTP_GET_PEER_ADDRS_NUM_OLD, 	/* Get number of peer addresss. */
-> >>> -#define SCTP_GET_PEER_ADDRS_NUM_OLD	SCTP_GET_PEER_ADDRS_NUM_OLD
-> >>> -	SCTP_GET_PEER_ADDRS_OLD, 	/* Get all peer addresss. */
-> >>> -#define SCTP_GET_PEER_ADDRS_OLD	SCTP_GET_PEER_ADDRS_OLD
-> >>> -	SCTP_GET_LOCAL_ADDRS_NUM_OLD, 	/* Get number of local addresss. */
-> >>> -#define SCTP_GET_LOCAL_ADDRS_NUM_OLD	SCTP_GET_LOCAL_ADDRS_NUM_OLD
-> >>> -	SCTP_GET_LOCAL_ADDRS_OLD, 	/* Get all local addresss. */
-> >>> -#define SCTP_GET_LOCAL_ADDRS_OLD	SCTP_GET_LOCAL_ADDRS_OLD
-> >>>  	SCTP_SOCKOPT_CONNECTX_OLD, /* CONNECTX old requests. */
-> >> After running the regression suite against this patch I find that we can't
-> >> remove the enum values.  Removing the enums changes the value for the remainder
-> >> of the definitions and breaks binary compatibility for applications that use
-> >> those trailing options.
-> >>
-> >> You should be ok with removing the #defines and actual code that uses them,
-> >> but not the enums.  You can even rename the enums, but we must preserve
-> >> numeric ordering.
-> > 
-> > If we really depend on the actual value of an enum as in this case,
-> > then e should assign them direct to better document this.
-> > 
-> > 	Sam
-> > 
-> 
-> I agree.  I have a patch that converts the enum to just a #define section that
-> I'll apply on top of this removal patch and document the deletion.
+When compiling Android staging driver for PXA3XX machine, met following error:
 
-If you keep the enum then you will have a have extras:
-- a debugger will understand the symbols and display the correct value
-- sparse may trigger a warning if you try to assign a non-valid value
-  (a value which is not included in the enum)
+  CC      drivers/staging/android/logger.o
+drivers/staging/android/logger.c: In function 'logger_read':
+drivers/staging/android/logger.c:165: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
+drivers/staging/android/logger.c:165: error: (Each undeclared identifier is reported only once
+drivers/staging/android/logger.c:165: error: for each function it appears in.)
+drivers/staging/android/logger.c:178: error: implicit declaration of function 'signal_pending'
+drivers/staging/android/logger.c:183: error: implicit declaration of function 'schedule'
+drivers/staging/android/logger.c: In function 'logger_aio_write':
+drivers/staging/android/logger.c:325: error: dereferencing pointer to incomplete type
+drivers/staging/android/logger.c:333: error: dereferencing pointer to incomplete type
+drivers/staging/android/logger.c:334: error: dereferencing pointer to incomplete type
+drivers/staging/android/logger.c:337: error: dereferencing pointer to incomplete type
+drivers/staging/android/logger.c:360: error: dereferencing pointer to incomplete type
+drivers/staging/android/logger.c:363: error: dereferencing pointer to incomplete type
+drivers/staging/android/logger.c:370: error: increment of pointer to unknown structure
+drivers/staging/android/logger.c:370: error: arithmetic on pointer to an incomplete type
+drivers/staging/android/logger.c:377: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
+make[3]: *** [drivers/staging/android/logger.o] Error 1
 
-But that may not matter much in this case - just wanted to highligt it.
+Compiling broke since commit a99bbaf5ee6bad1aca0c88ea65ec6e5373e86184
+    headers: remove sched.h from poll.h
 
-	Sam
+Adding <linux/sched.h> to fix this compiling bug.
+
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Bryan Wu <bryan.wu@canonical.com>
+---
+ drivers/staging/android/logger.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/staging/android/logger.c b/drivers/staging/android/logger.c
+index 6c10b45..a8eb7d1 100644
+--- a/drivers/staging/android/logger.c
++++ b/drivers/staging/android/logger.c
+@@ -21,6 +21,7 @@
+ #include <linux/fs.h>
+ #include <linux/miscdevice.h>
+ #include <linux/uaccess.h>
++#include <linux/sched.h>
+ #include <linux/poll.h>
+ #include <linux/time.h>
+ #include "logger.h"
+-- 
+1.6.3.3
+
