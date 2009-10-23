@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751728AbZJWNLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751879AbZJWNMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751728AbZJWNLW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 09:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZJWNLW
+	id S1751879AbZJWNMH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 09:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZJWNMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 09:11:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46942 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751553AbZJWNLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 09:11:21 -0400
-Date: Fri, 23 Oct 2009 15:11:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC/PATCH] ratelimit: make output more useful
-Message-ID: <20091023131114.GB27097@elte.hu>
-References: <200910191706.42223.borntraeger@de.ibm.com> <20091023113348.GD5886@elte.hu> <200910231458.11832.borntraeger@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910231458.11832.borntraeger@de.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Fri, 23 Oct 2009 09:12:07 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:43552 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751627AbZJWNMG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 09:12:06 -0400
+Subject: Re: [RFC] tracefs
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg KH <greg@kroah.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20091023053237.GA24359@elte.hu>
+References: <20091023004937.GA24035@kroah.com>
+	 <20091023053237.GA24359@elte.hu>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Fri, 23 Oct 2009 09:12:08 -0400
+Message-Id: <1256303528.20866.822.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-10-23 at 07:32 +0200, Ingo Molnar wrote:
 
-* Christian Borntraeger <borntraeger@de.ibm.com> wrote:
+> _No way_ do we want to tie down the pretty-printing ftrace details as an 
+> ABI. We promised that when ftrace went upstream and all the details are 
+> way too messy to be exposed in an ABI alike matter (and yes, consider 
+> this a NAK Steve ;-).
 
-> Am Freitag 23 Oktober 2009 13:33:48 schrieb Ingo Molnar:
-> > Mind sending it against latest tip:master (or tip:core/printk):
-> [...]
-> > Which has a couple of ratelimit changes queued up already that collide
-> > with your patch:
-> 
-> Sure, something like the following?
-> 
-> [PATCH] ratelimit: make output more useful
-> 
-> Today I got 
-> 
-> [39648.224782] Registered led device: iwl-phy0::TX
-> [40676.545099] __ratelimit: 246 callbacks suppressed
-> [40676.545103] abcdef[23675]: segfault at 0 ...
+Note, I wasn't talking about tie down the pretty-print formats. But we
+need to have a standard way to change them.
 
-btw., an effect of this will be a small amount of extra bloat at every 
-callsite of printk_ratelimit(). There's 200 of them kernel-wide, so i 
-guess it's OK as all these codepaths are atypical slowpaths already.
+For example:
 
-	Ingo
+[root@mxf ~]# cat /debug/tracing/events/power/power_start/format 
+name: power_start
+ID: 258
+format:
+	field:unsigned short common_type;	offset:0;	size:2;
+	field:unsigned char common_flags;	offset:2;	size:1;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;
+	field:int common_pid;	offset:4;	size:4;
+	field:int common_lock_depth;	offset:8;	size:4;
+
+	field:u64 type;	offset:16;	size:8;
+	field:u64 state;	offset:24;	size:8;
+
+print fmt: "type=%lu state=%lu", (unsigned long)REC->type, (unsigned long)REC->state
+
+
+Now we are going to add a "signed" field to each line. Fine, but we need
+a spec of some sort to say how that will happen. Or what can be expected
+to not change. We can say the type (field in this case) will always be
+the first item, and that the type will stay on a single line. If the
+parser does not know how to handle one of the items (offset, size, etc)
+it can simply ignore it. When it hits the "\n", it is done with that
+type.
+
+We need to document this, so tools will not break when we update this
+format.
+
+-- Steve
+
+
