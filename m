@@ -1,70 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbZJWP6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752482AbZJWQH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752455AbZJWP6f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 11:58:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZJWP6f
+	id S1752482AbZJWQH6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 12:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZJWQH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 11:58:35 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:12595 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752299AbZJWP6e (ORCPT
+	Fri, 23 Oct 2009 12:07:57 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:61858 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752370AbZJWQH4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 11:58:34 -0400
-Message-ID: <4AE1D2AA.8060200@hp.com>
-Date: Fri, 23 Oct 2009 11:58:34 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [Patch] sctp: remove deprecated SCTP_GET_*_OLD stuffs
-References: <20091015082849.4605.48311.sendpatchset@localhost.localdomain> <4AE0C64A.9080400@hp.com> <20091022214439.GA2635@merkur.ravnborg.org>
-In-Reply-To: <20091022214439.GA2635@merkur.ravnborg.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 23 Oct 2009 12:07:56 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArwEAM9w4UpGGN1W/2dsb2JhbACBUNgchD8EgV0
+Date: Fri, 23 Oct 2009 12:02:57 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Adrian Bunk <bunk@stusta.de>, Harvey Harrison <harvey.harrison@gmail.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       GeunSik Lim <leemgs1@gmail.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Zhao Lei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org,
+       Dominique Toupin <dominique.toupin@ericsson.com>,
+       Michel Dagenais <michel.dagenais@polymtl.ca>,
+       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
+Subject: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL v2,
+	headers to Dual BSD/GPL
+Message-ID: <20091023160257.GA30447@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 11:26:24 up 66 days,  2:15,  2 users,  load average: 0.32, 0.20,
+	0.20
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+I would like to re-license the tracepoint.c/marker.c files from GPL to:
 
-Sam Ravnborg wrote:
-> On Thu, Oct 22, 2009 at 04:53:30PM -0400, Vlad Yasevich wrote:
->>> diff --git a/include/net/sctp/user.h b/include/net/sctp/user.h
->>> index be2334a..0991f1b 100644
->>> --- a/include/net/sctp/user.h
->>> +++ b/include/net/sctp/user.h
->>> @@ -131,14 +131,6 @@ enum sctp_optname {
->>>  #define SCTP_SOCKOPT_BINDX_REM	SCTP_SOCKOPT_BINDX_REM
->>>  	SCTP_SOCKOPT_PEELOFF, 	/* peel off association. */
->>>  #define SCTP_SOCKOPT_PEELOFF	SCTP_SOCKOPT_PEELOFF
->>> -	SCTP_GET_PEER_ADDRS_NUM_OLD, 	/* Get number of peer addresss. */
->>> -#define SCTP_GET_PEER_ADDRS_NUM_OLD	SCTP_GET_PEER_ADDRS_NUM_OLD
->>> -	SCTP_GET_PEER_ADDRS_OLD, 	/* Get all peer addresss. */
->>> -#define SCTP_GET_PEER_ADDRS_OLD	SCTP_GET_PEER_ADDRS_OLD
->>> -	SCTP_GET_LOCAL_ADDRS_NUM_OLD, 	/* Get number of local addresss. */
->>> -#define SCTP_GET_LOCAL_ADDRS_NUM_OLD	SCTP_GET_LOCAL_ADDRS_NUM_OLD
->>> -	SCTP_GET_LOCAL_ADDRS_OLD, 	/* Get all local addresss. */
->>> -#define SCTP_GET_LOCAL_ADDRS_OLD	SCTP_GET_LOCAL_ADDRS_OLD
->>>  	SCTP_SOCKOPT_CONNECTX_OLD, /* CONNECTX old requests. */
->> After running the regression suite against this patch I find that we can't
->> remove the enum values.  Removing the enums changes the value for the remainder
->> of the definitions and breaks binary compatibility for applications that use
->> those trailing options.
->>
->> You should be ok with removing the #defines and actual code that uses them,
->> but not the enums.  You can even rename the enums, but we must preserve
->> numeric ordering.
-> 
-> If we really depend on the actual value of an enum as in this case,
-> then e should assign them direct to better document this.
-> 
-> 	Sam
-> 
+* Dual LGPL v2.1/GPL v2 license.
 
-I agree.  I have a patch that converts the enum to just a #define section that
-I'll apply on top of this removal patch and document the deletion.
+And re-license tracepoint.h/marker.h to:
 
--vlad
+* Dual BSD/GPL v2 license.
+
+The goal is to allow sharing code between the kernel tracer and UST
+(User-Space Tracer) project, which is a LGPL v2.1 library. Tracepoint
+and marker headers might need to be included by proprietary or BSD
+applications, hence the dual BSD/GPL v2 license for these two.
+
+I currently have the OK from Kosaki Motohiro for Fujitsu contributions,
+which includes Zhao Lei and Lai Jiangshan.
+
+The missing approvals for Dual LGPL v2.1/GPL v2 relicensing are:
+
+For tracepoint.c:
+
+Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+
+For marker.c:
+
+"Robert P. J. Day" <rpjday@mindspring.com>
+Adrian Bunk <bunk@stusta.de>
+Harvey Harrison <harvey.harrison@gmail.com>
+Jesper Juhl <jesper.juhl@gmail.com>
+
+The missing approvals for Dual BSD/GPL relicensing are:
+
+For tracepoint.h:
+
+GeunSik Lim <leemgs1@gmail.com>
+Steven Rostedt <rostedt@goodmis.org>
+
+For marker.h:
+
+Arnaldo Carvalho de Melo <acme@redhat.com>
+Wu Fengguang <fengguang.wu@intel.com>
+
+Note that the markers are now removed from the Linux kernel, but I still
+use them temporarily in the LTTng tree (until we do the switch to
+TRACE_EVENT). It's therefore also used by UST currently.
+
+Note, you may also need to get permission from your corporation to allow
+this.
+
+Thanks,
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
