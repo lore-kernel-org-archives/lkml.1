@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753038AbZJWUJC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbZJWU0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753038AbZJWUJC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 16:09:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbZJWUJC
+	id S1752127AbZJWU0W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 16:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbZJWU0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 16:09:02 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:56982 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751829AbZJWUJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 16:09:00 -0400
-Date: Sat, 24 Oct 2009 01:38:58 +0530
-From: Dinakar Guniguntala <dino@in.ibm.com>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: [patch -rt] Fix infinite loop with 2.6.31.4-rt14 V2
-Message-ID: <20091023200858.GA7011@in.ibm.com>
-Reply-To: dino@in.ibm.com
-References: <20091023134700.GA5578@in.ibm.com> <4AE1D802.6050906@us.ibm.com>
+	Fri, 23 Oct 2009 16:26:21 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:58359 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbZJWU0V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 16:26:21 -0400
+Date: Fri, 23 Oct 2009 22:26:22 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: platform_device_add_data(pdev, NULL, 0)
+Message-ID: <20091023202622.GA11843@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4AE1D802.6050906@us.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-Application threads calling futex_wait_requeue_pi run in an infinite loop
-in the kernel if the futex value changes during the call. The following
-patch fixes the problem.
+mfd_add_device() (defined in drivers/mfd/mfd-core.c) is a wrapper do
+allocate platform_devices.
 
-Signed-off-by: Dinakar Guniguntala <dino@in.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Darren Hart <dvhltc@us.ibm.com>
+It contains:
 
----
- kernel/futex.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+	ret = platform_device_add_data(pdev,
+			cell->platform_data, cell->data_size);
 
-Index: linux-2.6.31.4-rt14-lbf-f1/kernel/futex.c
-===================================================================
---- linux-2.6.31.4-rt14-lbf-f1.orig/kernel/futex.c
-+++ linux-2.6.31.4-rt14-lbf-f1/kernel/futex.c
-@@ -2188,6 +2188,12 @@ retry:
- 	spin_lock(&hb->lock);
- 	ret = handle_early_requeue_pi_wakeup(hb, &q, &key2, to);
- 	spin_unlock(&hb->lock);
-+	if (ret == -EAGAIN) {
-+		/* Retry on spurious wakeup */
-+		put_futex_key(fshared, &q.key);
-+		put_futex_key(fshared, &key2);
-+		goto retry;
-+	}
- 	if (ret)
- 		goto out_put_keys;
- 
-@@ -2264,9 +2270,6 @@ out_put_keys:
- out_key2:
- 	put_futex_key(fshared, &key2);
- 
--	/* Spurious wakeup ? */
--	if (ret == -EAGAIN)
--		goto retry;
- out:
- 	if (to) {
- 		hrtimer_cancel(&to->timer);
+If cell->data_size is 0 (and so likely cell->platform_data == NULL),
+still pdev->dev.platform_data get assigned ZERO_SIZE_PTR.
+
+IMHO the result should better be that pdev->dev.platform_data ends being
+NULL, too.  Agreed?
+
+If yes, where is the right place to fix that, mfd_add_device() or
+platform_device_add_data()?
+
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
