@@ -1,114 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbZJWQLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbZJWQHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752500AbZJWQLk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 12:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbZJWQLj
+	id S1752457AbZJWQHO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 12:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZJWQHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 12:11:39 -0400
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:62236 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752129AbZJWQLi (ORCPT
+	Fri, 23 Oct 2009 12:07:12 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50663 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752210AbZJWQHL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 12:11:38 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArwEAM9w4UpGGN1W/2dsb2JhbACBUNgchD8EgV0
-Date: Fri, 23 Oct 2009 12:06:32 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Adrian Bunk <bunk@stusta.de>, Harvey Harrison <harvey.harrison@gmail.com>,
-       Jesper Juhl <jj@chaosbits.net>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       GeunSik Lim <leemgs1@gmail.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Zhao Lei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org,
-       Dominique Toupin <dominique.toupin@ericsson.com>,
-       Michel Dagenais <michel.dagenais@polymtl.ca>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
-Subject: Re: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL v2,
-	headers to Dual BSD/GPL
-Message-ID: <20091023160632.GA2198@Krystal>
-References: <20091023160257.GA30447@Krystal>
-Mime-Version: 1.0
+	Fri, 23 Oct 2009 12:07:11 -0400
+Date: Fri, 23 Oct 2009 18:07:11 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [v9 PATCH 4/9]: x86: refactor x86 idle power management code
+	and remove all instances of pm_idle.
+Message-ID: <20091023160711.GB1431@ucw.cz>
+References: <20091016093850.GB27350@linux.vnet.ibm.com> <20091016094308.GF27350@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091023160257.GA30447@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 12:05:15 up 66 days,  2:54,  2 users,  load average: 0.43, 0.39,
-	0.27
+In-Reply-To: <20091016094308.GF27350@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(updated email for Jesper Juhl)
+On Fri 2009-10-16 15:13:08, Arun R Bharadwaj wrote:
+> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-16 15:08:50]:
+> 
+> This patch cleans up x86 of all instances of pm_idle.
+> 
+> pm_idle which was earlier called from cpu_idle() idle loop
+> is replaced by cpuidle_idle_call.
+> 
+> x86 also registers to cpuidle when the idle routine is selected,
+> by populating the cpuidle_device data structure for each cpu.
+> 
+> This is replicated for apm module and for xen, which also used pm_idle.
+> 
+> 
+> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+> ---
+>  arch/x86/kernel/apm_32.c      |   55 ++++++++++++++++++++++++-
+>  arch/x86/kernel/process.c     |   90 ++++++++++++++++++++++++++++++++----------
+>  arch/x86/kernel/process_32.c  |    3 -
+>  arch/x86/kernel/process_64.c  |    3 -
+>  arch/x86/xen/setup.c          |   40 ++++++++++++++++++
+>  drivers/acpi/processor_core.c |    9 ++--
+>  drivers/cpuidle/cpuidle.c     |   16 +++++--
+>  7 files changed, 182 insertions(+), 34 deletions(-)
+...
+> +static int local_idle_loop(struct cpuidle_device *dev, struct cpuidle_state *st)
+> +{
+> +	ktime_t t1, t2;
+> +	s64 diff;
+> +	int ret;
+> +
+> +	t1 = ktime_get();
+> +	local_idle();
+> +	t2 = ktime_get();
+> +
+> +	diff = ktime_to_us(ktime_sub(t2, t1));
+> +	if (diff > INT_MAX)
+> +		diff = INT_MAX;
+> +	ret = (int) diff;
+> +
+> +	return ret;
+> +}
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> Hi,
-> 
-> I would like to re-license the tracepoint.c/marker.c files from GPL to:
-> 
-> * Dual LGPL v2.1/GPL v2 license.
-> 
-> And re-license tracepoint.h/marker.h to:
-> 
-> * Dual BSD/GPL v2 license.
-> 
-> The goal is to allow sharing code between the kernel tracer and UST
-> (User-Space Tracer) project, which is a LGPL v2.1 library. Tracepoint
-> and marker headers might need to be included by proprietary or BSD
-> applications, hence the dual BSD/GPL v2 license for these two.
-> 
-> I currently have the OK from Kosaki Motohiro for Fujitsu contributions,
-> which includes Zhao Lei and Lai Jiangshan.
-> 
-> The missing approvals for Dual LGPL v2.1/GPL v2 relicensing are:
-> 
-> For tracepoint.c:
-> 
-> Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> 
-> For marker.c:
-> 
-> "Robert P. J. Day" <rpjday@mindspring.com>
-> Adrian Bunk <bunk@stusta.de>
-> Harvey Harrison <harvey.harrison@gmail.com>
-
-Jesper Juhl <jj@chaosbits.net>
-
-> 
-> The missing approvals for Dual BSD/GPL relicensing are:
-> 
-> For tracepoint.h:
-> 
-> GeunSik Lim <leemgs1@gmail.com>
-> Steven Rostedt <rostedt@goodmis.org>
-> 
-> For marker.h:
-> 
-> Arnaldo Carvalho de Melo <acme@redhat.com>
-> Wu Fengguang <fengguang.wu@intel.com>
-> 
-> Note that the markers are now removed from the Linux kernel, but I still
-> use them temporarily in the LTTng tree (until we do the switch to
-> TRACE_EVENT). It's therefore also used by UST currently.
-> 
-> Note, you may also need to get permission from your corporation to allow
-> this.
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+So we get this routine essentially 3 times. Is there no way to share
+the code?
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
