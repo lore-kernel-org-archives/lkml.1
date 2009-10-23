@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751186AbZJWEbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751503AbZJWEbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751186AbZJWEbd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 00:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbZJWEbc
+	id S1751503AbZJWEbo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 00:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbZJWEbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 00:31:32 -0400
-Received: from kroah.org ([198.145.64.141]:45478 "EHLO coco.kroah.org"
+	Fri, 23 Oct 2009 00:31:37 -0400
+Received: from kroah.org ([198.145.64.141]:45482 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbZJWEbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 00:31:31 -0400
-Date: Thu, 22 Oct 2009 21:27:54 -0700
+	id S1750799AbZJWEbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 00:31:34 -0400
+Date: Thu, 22 Oct 2009 21:29:06 -0700
 From: Greg KH <greg@kroah.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] tracefs
-Message-ID: <20091023042754.GB26358@kroah.com>
-References: <20091023004937.GA24035@kroah.com> <1256260230.20866.816.camel@gandalf.stny.rr.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Alex Chiang <achiang@hp.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] Documentation: document /sys/devices/system/cpu/
+Message-ID: <20091023042906.GC26358@kroah.com>
+References: <20091022033506.13399.90799.stgit@bob.kio> <alpine.DEB.2.00.0910220138380.9591@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1256260230.20866.816.camel@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0910220138380.9591@chino.kir.corp.google.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 09:10:30PM -0400, Steven Rostedt wrote:
-> On Thu, 2009-10-22 at 17:49 -0700, Greg KH wrote:
-> > Hi all,
+On Thu, Oct 22, 2009 at 01:42:34AM -0700, David Rientjes wrote:
+> On Wed, 21 Oct 2009, Alex Chiang wrote:
+> 
+> > Hi Greg, Randy,
 > > 
-> > At LinuxCon this year, Steven and I talked about moving the debugfs
-> > usage in the tracing core to a stand-alone filesystem to give the
-> > ability to start to lock down the api so that people an count on what is
-> > going on in the tracing userspace interface.
+> > Not sure who actually maintains Documentation/ABI/; if it's not either of
+> > y'all then please point me at the correct maintainer.
 > > 
-> > So, on the flight to Tokyo for the kernel summit, I wrote up tracefs.
-> > Here's the first very rough cut at it below.  I've run it here on my
-> > laptop, and all seems well, but I do have a few questions:
-> >   - I've made the mount point be /sys/kernel/trace/  Is that ok?  Should
-> >     it be /sys/kernel/tracing/?  Or something else?  You get to pick the
-> >     mount point now, so I don't want to hear any more grumblings about
-> >     the location in the future :)
+> > Anyhow, I was proposing some patches to enhance the NUMA sysfs interface:
+> > 
+> > 	http://thread.gmane.org/gmane.linux.kernel.mm/40084/
+> > 
+> > I documented my changes, but David Rientjes suggested that I take this
+> > as an opportunity to do a more thorough job, so here is an attempt at
+> > doing so by documenting at least the files that I saw on my system. Maybe
+> > there are more that I didn't configure in, but I think this series covers
+> > a good amount.
+> > 
 > 
-> /trace
+> Fantastic, thanks Alex!
 > 
->  (rostedt hides)
-
-Yeah, I knew you were going to do that :)
-
-> >   - the block tracing code was not changed, as it uses
-> >     /sys/kernel/debug/block/ at the moment, not the
-> >     /sys/kernel/debug/tracing/ directory.  To change the block tracing
-> >     code, it would require us to change the userspace tools as well,
-> >     which I don't know if we want to do.  Thanks to Jens for
-> >     straightening this all out for me, originally I thought it was a bug
-> >     in the block tracing code.
+> One thing I noticed in patches 3-6 of this series is you've attached 
+> multiple files to a single "What:" line.  That hasn't been done before 
+> (ignore the style violations of sysfs-firmware-*) and I think it would be 
+> better to seperate each file out into its own section.
 > 
-> I thought we were suppose to port the block tracing over to tracepoints
-> anyway, and remove the "block" tracer?
+> I know it's long, but I think some automated scripts are eventually going 
+> to use this documentation and it's best to follow the guidelines in 
+> Documentation/ABI/README.
 
-That's between you and Jens, but at the kernel summit, he said it was
-not going to go away any year soon.
-
-> >   - is this type of conversion to a custom virtual filesystem acceptable
-> >     to the other tracing developers?  Any objection to not using debugfs
-> >     calls anymore?  The operation is identical, but it keeps the rest of
-> >     the kernel from intruding on your space now.
-> 
-> What I would like is to still use debugfs for new features until we
-> understand them better. That location, files can disappear or have their
-> formats completely changed. When things move to tracefs, then the API is
-> a bit more rigid. Files can still change, but they must change in a way
-> to be backward compatible. We need a nice way to document how a file can
-> change, and stick to it.
-
-That sounds like a very good idea.  I'll respin the patch to only merge
-one tracer over at a time.
-
-You are going to have a bit of a difficult time if you mix debugfs and
-tracefs as people will not know where to look for the files.  But hey,
-that's your problem to deal with :)
-
-> [ Snip the s/debugfs/tracefs/ changes ]
-> 
-> Note, as mentioned above. I envision having a way to start out in
-> debugfs and then slowly move things over to tracefs when they become
-> standardize. Think of debugfs as linux-next ;-)
-> 
-> Although most of the files are pretty much stable, I don't want to do a
-> cross the board change at the moment.
-
-That sounds reasonable.  Thanks for the review, I'll respin this when I
-get back home next week.
+They are?  I don't know of any such scripts anywhere, do you?
 
 thanks,
 
