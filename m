@@ -1,85 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbZJWLbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZJWLd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751930AbZJWLbK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 07:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZJWLbJ
+	id S1751956AbZJWLd4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 07:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZJWLd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 07:31:09 -0400
-Received: from james.oetiker.ch ([213.144.138.195]:47567 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751017AbZJWLbI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 07:31:08 -0400
-Date: Fri, 23 Oct 2009 13:31:10 +0200 (CEST)
-From: Tobias Oetiker <tobi@oetiker.ch>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: David Rientjes <rientjes@google.com>, Frans Pop <elendil@planet.nl>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/5] page allocator: Pre-emptively wake kswapd when
- high-order watermarks are hit
-In-Reply-To: <20091023112512.GW11778@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0910231329550.26462@sebohet.brgvxre.pu>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0910221227010.21601@chino.kir.corp.google.com> <20091023091334.GV11778@csn.ul.ie> <alpine.DEB.2.00.0910230229010.28109@chino.kir.corp.google.com>
- <20091023112512.GW11778@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 23 Oct 2009 07:33:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45066 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751313AbZJWLdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 07:33:55 -0400
+Date: Fri, 23 Oct 2009 13:33:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC/PATCH] ratelimit: make output more useful
+Message-ID: <20091023113348.GD5886@elte.hu>
+References: <200910191706.42223.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910191706.42223.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel,
 
-Today Mel Gorman wrote:
+* Christian Borntraeger <borntraeger@de.ibm.com> wrote:
 
-> On Fri, Oct 23, 2009 at 02:36:53AM -0700, David Rientjes wrote:
-> > On Fri, 23 Oct 2009, Mel Gorman wrote:
-> >
-> > > > Hmm, is this really supposed to be added to __alloc_pages_high_priority()?
-> > > > By the patch description I was expecting kswapd to be woken up
-> > > > preemptively whenever the preferred zone is below ALLOC_WMARK_LOW and
-> > > > we're known to have just allocated at a higher order, not just when
-> > > > current was oom killed (when we should already be freeing a _lot_ of
-> > > > memory soon) or is doing a higher order allocation during direct reclaim.
-> > > >
-> > >
-> > > It was a somewhat arbitrary choice to have it trigger in the event high
-> > > priority allocations were happening frequently.
-> > >
-> >
-> > I don't quite understand, users of PF_MEMALLOC shouldn't be doing these
-> > higher order allocations and if ALLOC_NO_WATERMARKS is by way of the oom
-> > killer, we should be freeing a substantial amount of memory imminently
-> > when it exits that waking up kswapd would be irrelevant.
-> >
->
-> I agree. I think it's highly unlikely this patch will make any
-> difference but I wanted to eliminate it as a possibility. Patch 3 and 4
-> were previously one patch that were tested together.
+> Today I got 
+> 
+> 
+> [39648.224782] Registered led device: iwl-phy0::TX
+> [40676.545099] __ratelimit: 246 callbacks suppressed
+> [40676.545103] abcdef[23675]: segfault at 0 ...
+> 
+> as you can see the ratelimit message contains a function prefix. Since this is 
+> always __ratelimit, this wont help much. This patch changes __ratelimit and 
+> printk_ratelimit to print the function name  that calls ratelimit.
+> 
+> Opinions?
+> 
+> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+> 
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: Ingo Molnar <mingo@elte.hu>
+> CC: Dave Young <hidave.darkstar@gmail.com>
+> 
+>  include/linux/kernel.h    |    6 +++++-
+>  include/linux/ratelimit.h |    3 ++-
+>  kernel/printk.c           |    9 +--------
+>  lib/ratelimit.c           |    6 +++---
+>  4 files changed, 11 insertions(+), 13 deletions(-)
+> 
+> Index: linux-2.6/include/linux/kernel.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/kernel.h
+> +++ linux-2.6/include/linux/kernel.h
+> @@ -241,8 +241,12 @@ asmlinkage int vprintk(const char *fmt, 
+>  asmlinkage int printk(const char * fmt, ...)
+>  	__attribute__ ((format (printf, 1, 2))) __cold;
+>  
+> +/*
+> + * printk rate limiting, lifted from the networking subsystem.
+> + */
+>  extern struct ratelimit_state printk_ratelimit_state;
+> -extern int printk_ratelimit(void);
+> +#define printk_ratelimit() ___ratelimit(&printk_ratelimit_state, __func__)
+> +
+>  extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+>  				   unsigned int interval_msec);
+>  
+> Index: linux-2.6/include/linux/ratelimit.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/ratelimit.h
+> +++ linux-2.6/include/linux/ratelimit.h
+> @@ -16,5 +16,6 @@ struct ratelimit_state {
+>  #define DEFINE_RATELIMIT_STATE(name, interval, burst)		\
+>  		struct ratelimit_state name = {interval, burst,}
+>  
+> -extern int __ratelimit(struct ratelimit_state *rs);
+> +extern int ___ratelimit(struct ratelimit_state *rs, const char *func);
+> +#define __ratelimit(state) ___ratelimit(state, __func__)
+>  #endif
+> Index: linux-2.6/kernel/printk.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/printk.c
+> +++ linux-2.6/kernel/printk.c
+> @@ -1369,18 +1369,11 @@ late_initcall(disable_boot_consoles);
+>  #if defined CONFIG_PRINTK
+>  
+>  /*
+> - * printk rate limiting, lifted from the networking subsystem.
+> - *
+>   * This enforces a rate limit: not more than 10 kernel messages
+>   * every 5s to make a denial-of-service attack impossible.
+>   */
+>  DEFINE_RATELIMIT_STATE(printk_ratelimit_state, 5 * HZ, 10);
+> -
+> -int printk_ratelimit(void)
+> -{
+> -	return __ratelimit(&printk_ratelimit_state);
+> -}
+> -EXPORT_SYMBOL(printk_ratelimit);
+> +EXPORT_SYMBOL(printk_ratelimit_state);
+>  
+>  /**
+>   * printk_timed_ratelimit - caller-controlled printk ratelimiting
+> Index: linux-2.6/lib/ratelimit.c
+> ===================================================================
+> --- linux-2.6.orig/lib/ratelimit.c
+> +++ linux-2.6/lib/ratelimit.c
+> @@ -23,7 +23,7 @@ static DEFINE_SPINLOCK(ratelimit_lock);
+>   * This enforces a rate limit: not more than @rs->ratelimit_burst callbacks
+>   * in every @rs->ratelimit_jiffies
+>   */
+> -int __ratelimit(struct ratelimit_state *rs)
+> +int ___ratelimit(struct ratelimit_state *rs, const char *func)
+>  {
+>  	unsigned long flags;
+>  
+> @@ -37,7 +37,7 @@ int __ratelimit(struct ratelimit_state *
+>  	if (time_is_before_jiffies(rs->begin + rs->interval)) {
+>  		if (rs->missed)
+>  			printk(KERN_WARNING "%s: %d callbacks suppressed\n",
+> -				__func__, rs->missed);
+> +				func, rs->missed);
+>  		rs->begin = 0;
+>  		rs->printed = 0;
+>  		rs->missed = 0;
+> @@ -54,4 +54,4 @@ print:
+>  	spin_unlock_irqrestore(&ratelimit_lock, flags);
+>  	return 1;
+>  }
+> -EXPORT_SYMBOL(__ratelimit);
+> +EXPORT_SYMBOL(___ratelimit);
 
-hi hi ... I have tested '3 only' this morning, and the allocation
-problems started again ... so for me 3 alone does not work while
-3+4 does.
+Makes quite a bit of sense.
 
-cheers
-tobi
+Mind sending it against latest tip:master (or tip:core/printk):
 
--- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+  http://people.redhat.com/mingo/tip.git/README
+
+Which has a couple of ratelimit changes queued up already that collide 
+with your patch:
+
+Hunk #1 FAILED at 241.
+1 out of 1 hunk FAILED -- rejects in file include/linux/kernel.h
+patching file include/linux/ratelimit.h
+Hunk #1 FAILED at 16.
+1 out of 1 hunk FAILED -- rejects in file include/linux/ratelimit.h
+patching file kernel/printk.c
+Hunk #1 succeeded at 1357 (offset -12 lines).
+patching file lib/ratelimit.c
+Hunk #1 succeeded at 20 with fuzz 1 (offset -3 lines).
+Hunk #2 FAILED at 34.
+Hunk #3 succeeded at 62 with fuzz 2 (offset 8 lines).
+1 out of 3 hunks FAILED -- rejects in file lib/ratelimit.c
+
+Thanks,
+
+	Ingo
