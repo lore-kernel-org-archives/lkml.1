@@ -1,76 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752266AbZJWU7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752372AbZJWVCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752266AbZJWU7f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 16:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZJWU7e
+	id S1752372AbZJWVCn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 17:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZJWVCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 16:59:34 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54587 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbZJWU7e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 16:59:34 -0400
-Date: Fri, 23 Oct 2009 22:59:32 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: NiTRo <nitroml@ntd.homelinux.org>
-Cc: linux-kernel@vger.kernel.org, cve@mitre.org
-Subject: Re: SECURITY PROBLEM: filesystem permiossion bypass on FD already
- opened
-Message-ID: <20091023205932.GA28593@elf.ucw.cz>
-References: <4AE20B6F.4060606@ntd.homelinux.org>
+	Fri, 23 Oct 2009 17:02:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37844 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751970AbZJWVCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 17:02:41 -0400
+Date: Fri, 23 Oct 2009 23:02:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Marti Raudsepp <marti@juffo.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf tools: add compatibility with libelf 0.8 and
+	autodetect
+Message-ID: <20091023210231.GC8356@elte.hu>
+References: <1256330234-14079-1-git-send-email-marti@juffo.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AE20B6F.4060606@ntd.homelinux.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1256330234-14079-1-git-send-email-marti@juffo.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-10-23 22:00:47, NiTRo wrote:
-> Hi to all,
->     Sorry for my bad english.
->     Just discovered this security problem on my Suse 11 (Linux xxxx
-> 2.6.25.18-0.2-pae #1 SMP 2008-10-21 16:30:26 +0200 i686 i686 i386
-> GNU/Linux) and my Slackware 10.1.0 (Linux xxxx 2.4.29-ow1 #1 Wed Feb 2
-> 00:05:42 CET 2005 i586 unknown unknown GNU/Linux) with OpenWall patch.
-> If a FD is opened on a allowed file and then the permission is changed
-> the file is still redeable starting from the already read position to
-> the EOF.
 
-There's no reason you could not even seek. And no, it is not a
-problem, it is just how unix works.
-								Pavel
+* Marti Raudsepp <marti@juffo.org> wrote:
 
-
-> This is the scenario:
+> The Makefile now automatically defines LIBELF_NO_MMAP when libelf 0.8 is
+> detected. libelf 0.8 is still maintained and some distributions such as
+> Arch Linux use it instead of elfutils.
 > 
-> <root> creates a file /tmp/aaaa with 666 permission an with the "test"
-> string inside it
->         xxx:/tmp # echo test > /tmp/aaaa
->         xxx:/tmp # chmod 666 /tmp/aaaa
-> <sb> opens this file hooking it in a shell as FD number 3
->         sb@xxx:~> bash 3< /tmp/aaaa
-> <sb> read and prints it
->         sb@xxx:~> read a <&3
->         sb@xxx:~> echo $a
->         test
->         sb@xxx:~>
-> ...anythig as expected...
-> <root> changes the permissions on file to 600 and changes its content
-> into "test o.o I cannot believe it..."
->         xxx:/tmp # chmod 600 /tmp/aaaa
->         xxx:/tmp # echo "test o.o I cannot believe it..." > /tmp/aaaa
-> <sb> continue to try reading the file
->         sb@xxx:~> read a <&3
->         sb@xxx:~> echo $a
->         o.o I cannot believe it...
->         sb@test:~>
-> ... and this is not expected...
+> Signed-off-by: Marti Raudsepp <marti@juffo.org>
+> ---
+>  tools/perf/Makefile      |    6 +++++-
+>  tools/perf/util/symbol.c |   12 ++++++++++++
+>  2 files changed, 17 insertions(+), 1 deletions(-)
 
-But it should be :-).
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Nice fix!
+
+Mind doing a small change:
+
+> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+> index 742a32e..46e877b 100644
+> --- a/tools/perf/Makefile
+> +++ b/tools/perf/Makefile
+> @@ -422,7 +422,11 @@ ifeq ($(uname_S),Darwin)
+>  	PTHREAD_LIBS =
+>  endif
+>  
+> -ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
+> +ifeq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
+> +	ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
+> +		BASIC_CFLAGS += -DLIBELF_NO_MMAP
+> +	endif
+> +else
+>  	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el]);
+>  endif
+>  
+> diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+> index 47ea060..8d1df1e 100644
+> --- a/tools/perf/util/symbol.c
+> +++ b/tools/perf/util/symbol.c
+> @@ -413,7 +413,11 @@ static int dso__synthesize_plt_symbols(struct  dso *self, int v)
+>  	if (fd < 0)
+>  		goto out;
+>  
+> +#ifdef LIBELF_NO_MMAP
+> +	elf = elf_begin(fd, ELF_C_READ, NULL);
+> +#else
+>  	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
+> +#endif
+>  	if (elf == NULL)
+>  		goto out_close;
+>  
+> @@ -533,7 +537,11 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
+>  	Elf *elf;
+>  	int nr = 0, kernel = !strcmp("[kernel]", self->name);
+>  
+> +#ifdef LIBELF_NO_MMAP
+> +	elf = elf_begin(fd, ELF_C_READ, NULL);
+> +#else
+>  	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
+> +#endif
+>  	if (elf == NULL) {
+>  		if (v)
+>  			fprintf(stderr, "%s: cannot read %s ELF file.\n",
+> @@ -675,7 +683,11 @@ static char *dso__read_build_id(struct dso *self, int v)
+>  	if (fd < 0)
+>  		goto out;
+>  
+> +#ifdef LIBELF_NO_MMAP
+> +	elf = elf_begin(fd, ELF_C_READ, NULL);
+> +#else
+>  	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
+> +#endif
+>  	if (elf == NULL) {
+>  		if (v)
+>  			fprintf(stderr, "%s: cannot read %s ELF file.\n",
+
+I think we want a small cleanup here: a perf_elf_begin() wrapper in a 
+header file to hide this #ifdef. (That's how Git wraps environmental 
+libraries as well.)
+
+Also, this would be an urgent fix for v2.6.32 too, to make perf build on 
+Arch Linux, agreed?
+
+	Ingo
