@@ -1,118 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751752AbZJWJhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751542AbZJWJct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751752AbZJWJhc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 05:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbZJWJhb
+	id S1751542AbZJWJct (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 05:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZJWJct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 05:37:31 -0400
-Received: from chipmunk.wormnet.eu ([195.195.131.226]:47558 "EHLO
-	chipmunk.wormnet.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751670AbZJWJha (ORCPT
+	Fri, 23 Oct 2009 05:32:49 -0400
+Received: from mail-px0-f171.google.com ([209.85.216.171]:49011 "EHLO
+	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbZJWJcs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 05:37:30 -0400
-X-Greylist: delayed 396 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Oct 2009 05:37:29 EDT
-Date: Fri, 23 Oct 2009 10:30:56 +0100
-From: Alexander Clouter <alex@digriz.org.uk>
-To: linux-kernel@vger.kernel.org
-Subject: kernel BUG at fs/dcache.c:670 +lvm +md +ext3 (snapshots)
-Message-ID: <20091023093056.GW6085@chipmunk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: diGriz
-X-URL: http://www.digriz.org.uk/
-X-JabberID: alex@digriz.org.uk
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 23 Oct 2009 05:32:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=U+gr4qXRs3L3h4WhNVmkMMCiAtlmfl7Gy+JNfFcP2jVbX1Z7q963YTiQ6fxzQKXceH
+         hRrzzzZVbKwjsr5Tuc/byWS5kH30mizUYZ7kjaiX3ItD5vpyYY+/a4Afe0qX8/tJ523B
+         k3s4MQihUbelhI8+az9F6qXLvmZOPekIG37Z0=
+Subject: Re: [PATCH -v4 4/9] tracing: add static function tracer support
+ for MIPS
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Richard Sandiford <rdsandiford@googlemail.com>
+Cc: David Daney <ddaney@caviumnetworks.com>,
+       Adam Nemet <anemet@caviumnetworks.com>, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>
+In-Reply-To: <87y6n36plp.fsf@firetop.home>
+References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
+	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
+	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
+	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
+	 <1256138686.18347.3039.camel@gandalf.stny.rr.com>
+	 <1256233679.23653.7.camel@falcon> <4AE0A5BE.8000601@caviumnetworks.com>
+	 <87y6n36plp.fsf@firetop.home>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Fri, 23 Oct 2009 17:32:40 +0800
+Message-Id: <1256290360.6381.51.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-Whilst running a 'fun and wild' USB key based RAID1 with LVM I got hit 
-with an BUG when making a snapshot of an ext3 based LV with:
+On Thu, 2009-10-22 at 23:17 +0100, Richard Sandiford wrote:
+> David Daney <ddaney@caviumnetworks.com> writes:
+[...]
+> > and here:
+> >
+> > http://www.linux-mips.org/archives/linux-mips/2009-10/msg00290.html
+> 
+> I'm not sure that the "search for a save of RA" thing is really a good idea.
+> The last version of that seemed to be "assume that any register stores
+> will be in a block that immediately precedes the move into RA", but even
+> if that's true now, it might not be in future.  And as Wu Zhangjin says,
+> it doesn't cope with long calls, where the target address is loaded
+> into a temporary register before the call.
+> 
 
-/sbin/lvcreate -n SNAP-06_student-db -s -l 256 -p r /dev/lvm-northdown/student-db
+-mlong-calls works with the current implementation of static function
+tracer and function graph tracer for MIPS, just tried them, and module
+support is supported by default with -mlong-calls, let's have a look at
+the dumped code with -mlong-calls, only a few difference.
 
-The spiel below is what I got hit by, if any more information is needed 
-then let me know.
+ffffffff80241520 <copy_process>:
+ffffffff80241520:       67bdff40        daddiu  sp,sp,-192
+ffffffff80241524:       ffbe00b0        sd      s8,176(sp)
+ffffffff80241528:       03a0f02d        move    s8,sp
+ffffffff8024152c:       ffbf00b8        sd      ra,184(sp)
+ffffffff80241530:       ffb700a8        sd      s7,168(sp)
+ffffffff80241534:       ffb600a0        sd      s6,160(sp)
+ffffffff80241538:       ffb50098        sd      s5,152(sp)
+ffffffff8024153c:       ffb40090        sd      s4,144(sp)
+ffffffff80241540:       ffb30088        sd      s3,136(sp)
+ffffffff80241544:       ffb20080        sd      s2,128(sp)
+ffffffff80241548:       ffb10078        sd      s1,120(sp)
+ffffffff8024154c:       ffb00070        sd      s0,112(sp)
+ffffffff80241550:       3c038021        lui     v1,0x8021
+ffffffff80241554:       64631750        daddiu  v1,v1,5968
+ffffffff80241558:       03e0082d        move    at,ra
+ffffffff8024155c:       0060f809        jalr    v1
 
-As you can seen it's 2.6.32-rc5 I'm running with a merge of the Marvell 
-Orion git tree[1] on top of that....nothing too fancy.  The OS is Debian 
-'lenny' stable for armel and the board is an OpenRD Client.
+so, the only left job is making dynamic function tracer work with
+-mlong-calls, I think it's not that complex, after using -mlong-calls,
+we need to search "move at,ra; jalr v1" instead of "jal _mcount", and
+also, some relative job need to do. will try to make it work next week.
 
-Cheers
+> FWIW, I'd certainly be happy to make GCC pass an additional parameter
+> to _mcount.  The parameter could give the address of the return slot,
+> or null for leaf functions.  In almost all cases[*], there would be
+> no overhead, since the move would go in the delay slot of the call.
+> 
+> [*] Meaning when the frame is <=32k. ;)  I'm guessing you never
+>     get anywhere near that, and if you did, the scan thing wouldn't
+>     work anyway.
+> 
+> The new behaviour could be controlled by a command-line option,
+> which would also give linux a cheap way of checking whether the
+> feature is available.
 
-[1] http://git.marvell.com/?p=orion.git;a=summary
+I like your suggestion, and I have tried to make gcc do something like
+this before your reply.
 
-BUG: Dentry cdb2f100{i=2,n=/} still in use (1) [unmount of ext3 dm-1]
-kernel BUG at fs/dcache.c:670!
-Unable to handle kernel NULL pointer dereference at virtual address 00000000
-pgd = df378000
-[00000000] *pgd=1f27c031, *pte=00000000, *ppte=00000000
-Internal error: Oops: 817 [#1]
-last sysfs file: /sys/devices/virtual/block/dm-5/removable
-CPU: 0    Not tainted  (2.6.32-rc5-00014-gdd0f698 #13)
-PC is at __bug+0x20/0x2c
-LR is at release_console_sem+0x1a4/0x208
-pc : [<c002d3c0>]    lr : [<c003cad8>]    psr: 60000013
-sp : c2ed7d78  ip : c2ed7cb8  fp : c2ed7d84
-r10: 00200200  r9 : 00100100  r8 : c04590fc
-r7 : df51eeb8  r6 : 00000006  r5 : cdb2f100  r4 : cdb2f100
-r3 : 00000000  r2 : c04540d4  r1 : 00005669  r0 : 00000025
-Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
-Control: 0005317f  Table: 1f378000  DAC: 00000015
-Process lvcreate (pid: 6994, stack limit = 0xc2ed6270)
-Stack: (0xc2ed7d78 to 0xc2ed8000)
-7d60:                                                       c2ed7dc4 c2ed7d88
-7d80: c0098d18 c002d3b0 00000001 c0406936 dfa94f54 c2d36348 00000003 dfa94e00
-7da0: c03867c8 df421860 df4218bc d40bda0c c2ed6000 c0271f10 c2ed7ddc c2ed7dc8
-7dc0: c0098e7c c0098b74 c2ed7e04 dfa94e00 c2ed7df4 c2ed7de0 c008a7dc c0098e2c
-7de0: df421860 00000001 c2ed7e0c c2ed7df8 c008a8e8 c008a7c8 dfa94e00 c04597f0
-7e00: c2ed7e24 c2ed7e10 c008a9b8 c008a8d8 dfa94e00 df421860 c2ed7e44 c2ed7e28
-7e20: c00afa60 c008a988 d40bda00 d40bda00 df030480 00000000 c2ed7e5c c2ed7e48
-7e40: c026c220 c00af998 c004c19c 00000000 c2ed7e84 c2ed7e60 c026d1a0 c026c204
-7e60: d40bda00 00000000 d40bda00 e2fc5000 df030480 c138fd06 c2ed7ea4 c2ed7e88
-7e80: c0272074 c026d0f4 00000000 00000006 c2ed6000 000bfd78 c2ed7eec c2ed7ea8
-7ea0: c0272ab4 c0271f20 0000000d 00000000 00000000 000004cc 00000004 0000000f
-7ec0: 00000000 e2fc5000 dfb4b980 c138fd06 000bfd78 dfb4b980 000bfd78 00000046
-7ee0: c2ed7f0c c2ed7ef0 c00948e4 c02728a0 4adeecb6 00000003 dfb4b980 00000003
-7f00: c2ed7f7c c2ed7f10 c009500c c00948bc c0036180 c01a36e0 df890bd0 c0453b58
-7f20: c992e8d0 007d1a9f 00000000 c992e8a0 c2ed7f54 c2ed7f40 c003629c c00360b0
-7f40: 00048ecb 00000000 c2ed7fac c2ed7f58 c037fd4c 00000003 000bfd78 c138fd06
-7f60: dfb4b980 c002a0a4 c2ed6000 00000046 c2ed7fa4 c2ed7f80 c00950b4 c0094b20
-7f80: 00001000 00000000 0004fa9c 40038220 0000004e 00000036 00000000 c2ed7fa8
-7fa0: c0029f20 c0095084 0004fa9c 40038220 00000003 c138fd06 000bfd78 00001258
-7fc0: 0004fa9c 40038220 0000004e 00000036 000c8888 000bfd78 00000046 000000fd
-7fe0: 40042580 bef5e338 40036470 40156fbc 20000010 00000003 00000000 00000000
-Backtrace: 
-[<c002d3a0>] (__bug+0x0/0x2c) from [<c0098d18>] (shrink_dcache_for_umount_subtree+0x1b4/0x2b8)
-[<c0098b64>] (shrink_dcache_for_umount_subtree+0x0/0x2b8) from [<c0098e7c>] (shrink_dcache_for_umount+0x60/0x78)
-[<c0098e1c>] (shrink_dcache_for_umount+0x0/0x78) from [<c008a7dc>] (generic_shutdown_super+0x24/0x110)
- r4:dfa94e00
-[<c008a7b8>] (generic_shutdown_super+0x0/0x110) from [<c008a8e8>] (kill_block_super+0x20/0x38)
- r5:00000001 r4:df421860
-[<c008a8c8>] (kill_block_super+0x0/0x38) from [<c008a9b8>] (deactivate_locked_super+0x40/0x64)
- r5:c04597f0 r4:dfa94e00
-[<c008a978>] (deactivate_locked_super+0x0/0x64) from [<c00afa60>] (thaw_bdev+0xd8/0xf8)
- r5:df421860 r4:dfa94e00
-[<c00af988>] (thaw_bdev+0x0/0xf8) from [<c026c220>] (unlock_fs+0x2c/0x54)
- r7:00000000 r6:df030480 r5:d40bda00 r4:d40bda00
-[<c026c1f4>] (unlock_fs+0x0/0x54) from [<c026d1a0>] (dm_resume+0xbc/0x100)
- r4:00000000
-[<c026d0e4>] (dm_resume+0x0/0x100) from [<c0272074>] (dev_suspend+0x164/0x1a4)
- r8:c138fd06 r7:df030480 r6:e2fc5000 r5:d40bda00 r4:00000000
-[<c0271f10>] (dev_suspend+0x0/0x1a4) from [<c0272ab4>] (dm_ctl_ioctl+0x224/0x2a4)
- r7:000bfd78 r6:c2ed6000 r5:00000006 r4:00000000
-[<c0272890>] (dm_ctl_ioctl+0x0/0x2a4) from [<c00948e4>] (vfs_ioctl+0x38/0x7c)
-[<c00948ac>] (vfs_ioctl+0x0/0x7c) from [<c009500c>] (do_vfs_ioctl+0x4fc/0x564)
- r6:00000003 r5:dfb4b980 r4:00000003
-[<c0094b10>] (do_vfs_ioctl+0x0/0x564) from [<c00950b4>] (sys_ioctl+0x40/0x64)
-[<c0095074>] (sys_ioctl+0x0/0x64) from [<c0029f20>] (ret_fast_syscall+0x0/0x28)
- r7:00000036 r6:0000004e r5:40038220 r4:0004fa9c
-Code: e1a01000 e59f000c eb0d48e2 e3a03000 (e5833000) 
----[ end trace aea992f03fbb0ee3 ]---
+orig:
 
--- 
-Alexander Clouter
-.sigmonster says: Give your child mental blocks for Christmas.
+move    at,ra
+jal	_mcount
+
+new:
+
+sd      ra,184(sp)
+...
+move	at, ra
+jal	_mcount
+lui	ra, 184			--> This is new
+
+so, in a non-leaf function, the at register stored the stack offset of
+the return address(range from 0 to PT_SIZE). in a leaf function, it is
+the return address itself(at least bigger than PT_SIZE). we are easier
+to distinguish them. and only a few lines of source code need to be
+added for gcc.
+
+Regards,
+	Wu Zhangjin
+
