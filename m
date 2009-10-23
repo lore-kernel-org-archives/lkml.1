@@ -1,121 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752372AbZJWVCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752574AbZJWVDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752372AbZJWVCn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 17:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZJWVCm
+	id S1752574AbZJWVDN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 17:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZJWVDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 17:02:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37844 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751970AbZJWVCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 17:02:41 -0400
-Date: Fri, 23 Oct 2009 23:02:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Marti Raudsepp <marti@juffo.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf tools: add compatibility with libelf 0.8 and
-	autodetect
-Message-ID: <20091023210231.GC8356@elte.hu>
-References: <1256330234-14079-1-git-send-email-marti@juffo.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256330234-14079-1-git-send-email-marti@juffo.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Fri, 23 Oct 2009 17:03:12 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:47909 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752129AbZJWVDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 17:03:12 -0400
+Subject: Re: [kernel.org users] Please remember to run 'git gc' on your
+ repositories
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Nicolas Pitre <nico@fluxnic.net>, Ingo Molnar <mingo@elte.hu>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Luck, Tony" <tony.luck@intel.com>, Jeff Garzik <jeff@garzik.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <4AE21839.3000000@s5r6.in-berlin.de>
+References: <4ADD0793.3000707@kernel.org>
+	 <20091020020449.GF24370@core.coreip.homeip.net>
+	 <20091020034829.GA12833@elte.hu> <20091020140750.GH11972@erda.amd.com>
+	 <alpine.LFD.2.00.0910210654480.5125@eeepc.linux-foundation.org>
+	 <20091022122042.e535d43c.sfr@canb.auug.org.au>
+	 <20091023112732.GB5886@elte.hu>	<4AE19A74.1090709@garzik.org>
+	 <20091023123555.GA25366@elte.hu>
+	 <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com>
+	 <20091023134115.GD27097@elte.hu>
+	 <alpine.LFD.2.00.0910231424440.21460@xanadu.home>
+	 <4AE21839.3000000@s5r6.in-berlin.de>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Fri, 23 Oct 2009 17:03:14 -0400
+Message-Id: <1256331794.26028.36.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[ took off users.kernel.org and added LKML ]
 
-* Marti Raudsepp <marti@juffo.org> wrote:
+There's a thread started on LKML, search for the subject:
 
-> The Makefile now automatically defines LIBELF_NO_MMAP when libelf 0.8 is
-> detected. libelf 0.8 is still maintained and some distributions such as
-> Arch Linux use it instead of elfutils.
+
+"[RFC] to rebase or not to rebase on linux-next" (thanks Ingo for the
+typo fix).
+
+And continue this conversation there.
+
+Thanks!
+
+-- Steve
+
+
+
+On Fri, 2009-10-23 at 22:55 +0200, Stefan Richter wrote:
+> Nicolas Pitre wrote:
+> > On Fri, 23 Oct 2009, Ingo Molnar wrote:
+> > 
+> >> linux-next should not be used as a 'test and rebase' feedback loop for 
+> >> build-broken, unbisectable crap. Why do you think it should be used for 
+> >> that?
+> > 
+> > I've been under the impression that linux-next has been created exactly 
+> > for that: a tree that pulls everything together for testing and early 
+> > merge conflict resolutions, and to be thrown away the next day when the 
+> > process is repeated again.  It is indeed exactly that: a "test and 
+> > rebase" feedback tree where the big picture can be assessed before stuff 
+> > is headed for Linus's tree where commits are then stable.
+> > 
+> > To my knowledge, unlike Linus's tree, linux-next was never meant to be a 
+> > stable tree itself, nor its components.
+> [...]
 > 
-> Signed-off-by: Marti Raudsepp <marti@juffo.org>
-> ---
->  tools/perf/Makefile      |    6 +++++-
->  tools/perf/util/symbol.c |   12 ++++++++++++
->  2 files changed, 17 insertions(+), 1 deletions(-)
+> The trees which are pulled into linux-next are supposed to be
+> unit-tested.  It is material which you would ask Linus to pull if he had
+> a merge window open today.  The only thing that this material may still
+> lack is integration testing (and exposure to mainline's huge userbase of
+> course).
+> 
+> I have doubts that the majority of build errors which linux-next
+> frequently encounters are purely integration related.
 
-Nice fix!
-
-Mind doing a small change:
-
-> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-> index 742a32e..46e877b 100644
-> --- a/tools/perf/Makefile
-> +++ b/tools/perf/Makefile
-> @@ -422,7 +422,11 @@ ifeq ($(uname_S),Darwin)
->  	PTHREAD_LIBS =
->  endif
->  
-> -ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
-> +ifeq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
-> +	ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
-> +		BASIC_CFLAGS += -DLIBELF_NO_MMAP
-> +	endif
-> +else
->  	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el]);
->  endif
->  
-> diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-> index 47ea060..8d1df1e 100644
-> --- a/tools/perf/util/symbol.c
-> +++ b/tools/perf/util/symbol.c
-> @@ -413,7 +413,11 @@ static int dso__synthesize_plt_symbols(struct  dso *self, int v)
->  	if (fd < 0)
->  		goto out;
->  
-> +#ifdef LIBELF_NO_MMAP
-> +	elf = elf_begin(fd, ELF_C_READ, NULL);
-> +#else
->  	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-> +#endif
->  	if (elf == NULL)
->  		goto out_close;
->  
-> @@ -533,7 +537,11 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
->  	Elf *elf;
->  	int nr = 0, kernel = !strcmp("[kernel]", self->name);
->  
-> +#ifdef LIBELF_NO_MMAP
-> +	elf = elf_begin(fd, ELF_C_READ, NULL);
-> +#else
->  	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-> +#endif
->  	if (elf == NULL) {
->  		if (v)
->  			fprintf(stderr, "%s: cannot read %s ELF file.\n",
-> @@ -675,7 +683,11 @@ static char *dso__read_build_id(struct dso *self, int v)
->  	if (fd < 0)
->  		goto out;
->  
-> +#ifdef LIBELF_NO_MMAP
-> +	elf = elf_begin(fd, ELF_C_READ, NULL);
-> +#else
->  	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-> +#endif
->  	if (elf == NULL) {
->  		if (v)
->  			fprintf(stderr, "%s: cannot read %s ELF file.\n",
-
-I think we want a small cleanup here: a perf_elf_begin() wrapper in a 
-header file to hide this #ifdef. (That's how Git wraps environmental 
-libraries as well.)
-
-Also, this would be an urgent fix for v2.6.32 too, to make perf build on 
-Arch Linux, agreed?
-
-	Ingo
