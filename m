@@ -1,34 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762AbZJWEcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbZJWEd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751762AbZJWEcL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 00:32:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZJWEcI
+	id S1751330AbZJWEd5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 00:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbZJWEd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 00:32:08 -0400
-Received: from n61.bullet.mail.sp1.yahoo.com ([98.136.44.37]:23410 "HELO
-	n61.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750920AbZJWEcH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 00:32:07 -0400
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 781644.56316.bm@omp210.mail.sp1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=bellsouth.net;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
-  b=U14/wPmiMnmh6Yg8DvD7yVhvObeJ4LXjsy92dckTJaoDSK5GnFnrjov0HMcL0W62DG2O9El2dPYua6AVdJrK4d2GISy48xHvx0TI9iMdMrTdMpRv/fPWRvx0tYDZOz7YVbCG5ByV1NzHOm02yErh5FjwqNw9UlErRo1WYqLXlN4=;
-Message-ID: <507159.287.qm@web180707.mail.sp1.yahoo.com>
-X-YMail-OSG: uCnZxGsVM1mO7p4YRzqf3gnMC253bkyPNeRQFDNhjNIgRd0Sk2.KYYpksd1mm_XqSBZoDrdw.Mh9Zz7TwJWluY5lgEBSti9zZN56G.LiyyOX9A.gRv8wjLS3lyZMG4KFDRQGMv1QENElpmUrvHoe07lH_bGLxdKAWRNcjhaGeZsCQRxkbj0YtG35tXSJM6..fSMR4JYeyqYeMpJFsXmrEv9NpeOBzdaYjLmmK73rSAdXPSQuOREEtNgfz70UTaWwJu9Iu.mfvmPU9Xi99mmxwDF16UNGPr4.LuxMmMktsGayop8cjhy8TBupmmLW_23yKeInWeQqwsLAbGddPWthmMTQdwqxJyh59eUCd5uBmdu8V9es5Iq5QWf4XyvQNlH.fmlfiOpz.GWv6YKbPhjakiDo6hEL5T6FgWbXPA6vxbrxceIBQMaTmZECJ2PWzJ7JADUHeLXALkVeeQggXu3IA.sOJ2T1lOfzjyFL5DgTv6rUHIbLKpCPTeqwVeFC_sOtfoo0a1ppjCfJlYDqNTfY7Vf_oqhMjsTV2blceGFfzRkjBw29OypgFbmp_qJ6jlUUlORgbJf5PohOCVdkUByUSVdy.7c5TyQyipTvU7lNN0NEHPvP0ZKkBZub6XH1NxOInAqEQFH2j60VrbgfQyKNut8hD8yebGQtVyuDfZPBf72SVMj6cyzV8AT0gZg7C6NmURHawTC8d8nS.wgQZdI.ItVFUJ1i12eHFF65rFH9R5amxZj6xjo-
-X-Mailer: YahooMailClassic/7.0.14 YahooMailWebService/0.7.361.3
-Date: Thu, 22 Oct 2009 21:32:11 -0700 (PDT)
-From: Irish News Centre <irs.owen@bellsouth.net>
-Reply-To: ir.sdptowen@live.com
-Subject: Atten
-To: undisclosed recipients:;
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 Oct 2009 00:33:56 -0400
+Received: from mga01.intel.com ([192.55.52.88]:28312 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750830AbZJWEdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 00:33:55 -0400
+X-ExtLoop1: 1
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
+ available
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Eric Anholt <eric@anholt.net>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Schlichter <thomas.schlichter@web.de>,
+       Ingo Molnar <mingo@elte.hu>, Jan Beulich <JBeulich@novell.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Tejun Heo <tj@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
+       Ingo Molnar <mingo@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Hellstrom <thellstrom@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <1256262799.15120.8.camel@gaiman.anholt.net>
+References: <1394846127@web.de>
+	 <4ADF32A0020000780001B20A@vpn.id2.novell.com>
+	 <20091021173514.GA32227@elte.hu>
+	 <200910212201.36578.thomas.schlichter@web.de>
+	 <1256205210.2530.28.camel@sbs-t61>
+	 <1256225689.32075.6.camel@gaiman.anholt.net>
+	 <1256248050.2546.9.camel@sbs-t61>  <20091023081047.4d8abc29@jbarnes-x200>
+	 <1256256717.2534.6.camel@sbs-t61>
+	 <1256262799.15120.8.camel@gaiman.anholt.net>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Thu, 22 Oct 2009 21:33:21 -0700
+Message-Id: <1256272401.2569.6.camel@sbs-t61>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You won 750,000gbp.Send:Name,Age,Country
+On Thu, 2009-10-22 at 18:53 -0700, Eric Anholt wrote:
+> On Thu, 2009-10-22 at 17:11 -0700, Suresh Siddha wrote:
+> > On Thu, 2009-10-22 at 16:10 -0700, Jesse Barnes wrote:
+> > > On Thu, 22 Oct 2009 14:47:30 -0700
+> > > Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> > > 
+> > > > On Thu, 2009-10-22 at 08:34 -0700, Eric Anholt wrote:
+> > > > > Can we just not create the _wc sysfs entry if we don't have PAT?  I
+> > > > > don't think there's userland relying on its presence as opposed to
+> > > > > the non-_wc entry.
+> > > > 
+> > > > Yes indeed. Jesse do you see an issue with this? This is simple and
+> > > > clean. Thanks Eric.
+> > > 
+> > > Yeah, I think that will be fine.  In fact, older versions of
+> > > libpciaccess will behave better if we do it that way (iirc it only
+> > > allocates an MTRR if the resource_wc file doesn't exist or fails to get
+> > > mapped).
+> > 
+> > Eric, care to send the patch?
+> 
+> I don't have a patch, I was just suggesting a way to handle the
+> submitter's problem that won't involve complicated changes that nobody
+> else will be testing since everyone *should* have a graphics driver for
+> their graphics hardware.
+
+I can send the patch early next week unless Thomas or someone else beats
+me.
 
