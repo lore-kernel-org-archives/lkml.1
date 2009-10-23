@@ -1,110 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751510AbZJWJVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751400AbZJWJXC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751510AbZJWJVP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 05:21:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZJWJVO
+	id S1751400AbZJWJXC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 05:23:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZJWJXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 05:21:14 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:29569 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751222AbZJWJVN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 05:21:13 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -14.189
-Message-ID: <4AE17586.9020009@tremplin-utc.net>
-Date: Fri, 23 Oct 2009 11:21:10 +0200
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091009 Mandriva/2.0.0.23-3mdv2010.0 (2010.0) Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not  work	anymore
-References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <20091015215944.GA9845@core.coreip.homeip.net> <4ADF6237.9070004@tremplin-utc.net> <200910211320.16339.dmitry.torokhov@gmail.com> <4AE0840C.8070801@tremplin-utc.net> <20091022162202.GA18031@core.coreip.homeip.net> <4AE09AFF.805@tremplin-utc.net> <20091022181915.GB18031@core.coreip.homeip.net> <4AE16489.4030008@tremplin-utc.net> <20091023085824.GA7199@core.coreip.homeip.net>
-In-Reply-To: <20091023085824.GA7199@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Fri, 23 Oct 2009 05:23:01 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60397 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751204AbZJWJXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 05:23:00 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+oaK5/gvOoRFuzAAxOwrlsBUPHyK/CWLbn70CkXk
+	kEKeb5P+HS6ezD
+Subject: Re: Intermittent early panic in try_to_wake_up
+From: Mike Galbraith <efault@gmx.de>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AE0EBBD.6090005@gmail.com>
+References: <4AE0EBBD.6090005@gmail.com>
+Content-Type: text/plain
+Date: Fri, 23 Oct 2009 11:23:01 +0200
+Message-Id: <1256289781.22979.11.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 23-10-09 10:58, Dmitry Torokhov schreef:
-> On Fri, Oct 23, 2009 at 10:08:41AM +0200, Éric Piel wrote:
->> Op 22-10-09 20:19, Dmitry Torokhov schreef:
->>> On Thu, Oct 22, 2009 at 07:48:47PM +0200, Éric Piel wrote:
->>>> I don't think so: xorg 1.6.5, with xinput-evdev 2.2.5. They are both  
->>>> latest or second latest stable versions.
->>>>
->>>> In the log I see this:
->>>> (--) SynPS/2 Synaptics TouchPad: touchpad found
->>>> (II) PS/2 Generic Mouse: Device reopened after 1 attempts.
->>>> (EE) AT Translated Set 2 keyboard: device key_bitmask has changed
->>>> (EE) AT Translated Set 2 keyboard: Device has changed - disabling.
->>>>
->>>> Quite a few people seem to have the same problem.
->>> The bitmask should not be changing on it's own... Any chance you could
->>> save contents or /proc/bus/input/devices before suspend and after resume
->>> (when X decides to ditch the keyboard) and diff them?
->>>
->> Hello,
->> I've just tried this: before and after is exactly the same (attached is
->> a copy of it).
->>
+On Thu, 2009-10-22 at 20:33 -0300, Kevin Winchester wrote:
+> Hi,
 > 
-> What about before X starts? Can you please boot into console, kill
-> hal and udev to make sure they don't mess up with the keymap and, after
-> doing
+> A week or two ago I saw a panic on boot in try_to_wake_up, but it was not
+> reproducible and I had not written down any trace information.  This
+> evening I saw it twice more, but then on the third boot things worked fine.
+> This time I copied down the stack trace:
 > 
-> 	echo -n rescan > /sys/bus/serio/devices/serio0/drvctl
+> try_to_wake_up+0x2e/0x102
+> wake_up_process+0x10/0x12
+> kthread_create+0x88/0x12c
+> ?ksoftirqd+0x00/0xb7
+> cpu_callback+0x42/0x8f
+> ?spawn_ksoftirqd+0x0/0x39
+> spawn_ksoftirqd+0x17/0x39
+> do_one_initcall+0x58/0x147
 > 
-> which should completely reinitialize keyboard and compare
-> /proc/bus/input/devices again? If it is still the same then there must
-> be a silly bug in X's evdev...
-Ok, I'll reboot later and try. In the mean time, I've just tried this on
-my non-working keyboard, and it resurrected it :-) Even more
-interestingly, the key bitmap has changed.
+> The first time it happened, I remember checking the git logs and it was
+> shortly after:
+> 
+> commit f5dc37530ba8a35aae0f7f4f13781d1904f71e94
+> Author: Mike Galbraith <efault@gmx.de>
+> Date:   Fri Oct 9 08:35:03 2009 +0200
+> 
+>     sched: Update the clock of runqueue select_task_rq() selected
+>     
+>     In try_to_wake_up(), we update the runqueue clock, but
+>     select_task_rq() may select a different runqueue than the one we
+>     updated, leaving the new runqueue's clock stale for a bit.
+>     
+>     This patch cures occasional huge latencies reported by latencytop
+>     when coming out of idle on a mostly idle NO_HZ box.
+>     
+>     Signed-off-by: Mike Galbraith <efault@gmx.de>
+>     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>     LKML-Reference: <1255070103.7639.30.camel@marge.simson.net>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ...so perhaps that has something to do with it.
 
-Before:
-I: Bus=0011 Vendor=0001 Product=0001 Version=ab41
-N: Name="AT Translated Set 2 keyboard"
-P: Phys=isa0060/serio0/input0
-S: Sysfs=/devices/platform/i8042/serio0/input/input4
-U: Uniq=
-H: Handlers=kbd event4 evbug rfkill
-B: EV=120013
-B: KEY=20 0 0 30400f02100000 17803878f800d401 feffffdfffefffff
-ffffffffffffffff
-B: MSC=10
-B: LED=7
+I don't think that's very likely.  Box did explode near my grubby
+fingerprints though.
 
-After:
-I: Bus=0011 Vendor=0001 Product=0001 Version=ab41
-N: Name="AT Translated Set 2 keyboard"
-P: Phys=isa0060/serio0/input0
-S: Sysfs=/devices/platform/i8042/serio0/input/input15
-U: Uniq=
-H: Handlers=kbd event4 evbug
-B: EV=120013
-B: KEY=20000 20000000020 0 0 500f02100003 3803078f900d401
-feffffdfffefffff ffffffffffffffff
-B: MSC=10
-B: LED=7
+> Config below.  Any help would be appreciated.
 
-Was this expected?
+Building with your config, try_to_wake_up+0x2e is around..
 
-> But regardless, X policy of comparing
-> keybit is stupid - they don't kill the device if I change keymap while
-> in X, why do they do that on resume? Or when I change the limits on
-> absolute axis... Oh well.
-With respect to this bug, I have opened a bug report for xorg:
-https://bugs.freedesktop.org/show_bug.cgi?id=24687
-Indeed, evdev tend to disable for plenty of different reason the
-keyboard (cf src/evdev.c: EvdevCacheCompare()). The source code is not
-very clear why they do this, but somehow I was under the impression that
-it was to avoid using twice the same device (with slightly different
-properties).
+(gdb) list *try_to_wake_up+0x2e
+0xffffffff81029107 is in try_to_wake_up (kernel/sched.c:2324).
+2319            this_cpu = get_cpu();
+2320
+2321            smp_wmb();
+2322            rq = orig_rq = task_rq_lock(p, &flags);
+2323            update_rq_clock(rq);
+2324            if (!(p->state & state))
+2325                    goto out;
+2326
+2327            if (p->se.on_rq)
+2328                    goto out_running;
 
-See you,
-Eric
+I don't see how any of that can explode without something very bad
+having happened to ksoftirqd before we tried to wake it.
+
+	-Mike
+
