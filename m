@@ -1,72 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752041AbZJWV75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751797AbZJWWKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752041AbZJWV75 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 17:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZJWV74
+	id S1751797AbZJWWKx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 18:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZJWWKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 17:59:56 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:34916 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751973AbZJWV74 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 17:59:56 -0400
-Date: Fri, 23 Oct 2009 23:59:58 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
+	Fri, 23 Oct 2009 18:10:52 -0400
+Received: from smtp-out.neti.ee ([194.126.126.34]:37690 "EHLO smtp-out.neti.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751111AbZJWWKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 18:10:51 -0400
+X-SMTP-Auth-NETI-Businesmail: no
+From: Marti Raudsepp <marti@juffo.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Nicolas Pitre <nico@fluxnic.net>, "Luck, Tony" <tony.luck@intel.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC] to rebase or not to rebase on linux-next
-Message-ID: <20091023215958.GA4139@merkur.ravnborg.org>
-References: <20091022122042.e535d43c.sfr@canb.auug.org.au> <20091023112732.GB5886@elte.hu> <4AE19A74.1090709@garzik.org> <20091023123555.GA25366@elte.hu> <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com> <20091023134115.GD27097@elte.hu> <alpine.LFD.2.00.0910231424440.21460@xanadu.home> <20091023191631.GA1879@elte.hu> <1256326512.26028.34.camel@gandalf.stny.rr.com> <20091023205400.GA8356@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091023205400.GA8356@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Cc: Marti Raudsepp <marti@juffo.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf tools: add compatibility with libelf 0.8 and autodetect
+Date: Sat, 24 Oct 2009 01:10:48 +0300
+Message-Id: <1256335848-16270-1-git-send-email-marti@juffo.org>
+X-Mailer: git-send-email 1.6.5.1
+References: <1256330234-14079-1-git-send-email-marti@juffo.org> <20091023210231.GC8356@elte.hu> <1256334501-15755-1-git-send-email-marti@juffo.org> <20091023215239.GB29403@elte.hu>
+In-Reply-To: <20091023215239.GB29403@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 10:54:00PM +0200, Ingo Molnar wrote:
-> 
-> Maintainer trees pushed towards linux-next should strive to be Git 
-> based, append-mostly, 'nice', 'intended for upstream' and defendable 
-> as-is IMO, and rebasing a _maintainer tree_ should really be a rare act 
-> of last resort.
+On Sat, Oct 24, 2009 at 12:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> Mind adding a comment as well to document the version dependency?
 
-As maintainer I try to put some effort in crediting people
-where credit belongs.
-In other words collecting "Acked-by:", "Tested-by", "Reviewed-by".
+Sure
 
-Adding this require a rebase as soon as said patch hits git.
+> Also, there's a few probably unintended whitespaces
 
-One could use topic brances and I do not know what.
-But frankly - working with this on and off and
-in limited spare time makes it sometimes hard enough
-to do the basic steps correct.
-Trying to fool around with several topics branches and
-such does simply not fit.
+Fixed
 
-I try to say with the above that rebasing is sometimes 
-a way to get the job done without making things too complicated.
+--
+perf tools: add compatibility with libelf 0.8 and autodetect
 
-And -next has btw caught a lot of integration issues
-for kbuild in the past.
-Both for varoious architectures but sometimes also
-other ways to do the same thing.
-And sometimes I'm in the situation that I have to decide:
+The Makefile now automatically defines LIBELF_NO_MMAP when libelf 0.8 is
+detected. libelf 0.8 is still maintained and some distributions such as
+Arch Linux use it instead of elfutils.
 
-1) wait another 10 days before I have ~1 hour that I can
-dedicate to test stuff
-2) do some rudimentary testing and drop in in -next.
+Signed-off-by: Marti Raudsepp <marti@juffo.org>
+---
+ tools/perf/Makefile      |    6 +++++-
+ tools/perf/util/symbol.c |    9 +++++----
+ tools/perf/util/symbol.h |   16 ++++++++++++++++
+ 3 files changed, 26 insertions(+), 5 deletions(-)
 
-It depends but sometimes I go for option 2) knowing
-that it is risky.
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 742a32e..46e877b 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -422,7 +422,11 @@ ifeq ($(uname_S),Darwin)
+ 	PTHREAD_LIBS =
+ endif
+ 
+-ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
++ifeq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
++	ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
++		BASIC_CFLAGS += -DLIBELF_NO_MMAP
++	endif
++else
+ 	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el]);
+ endif
+ 
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 47ea060..ec69c42 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -5,7 +5,6 @@
+ 
+ #include "debug.h"
+ 
+-#include <libelf.h>
+ #include <gelf.h>
+ #include <elf.h>
+ 
+@@ -413,7 +412,8 @@ static int dso__synthesize_plt_symbols(struct  dso *self, int v)
+ 	if (fd < 0)
+ 		goto out;
+ 
+-	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
++	elf = perf_elf_begin(fd, ELF_C_READ, NULL);
++
+ 	if (elf == NULL)
+ 		goto out_close;
+ 
+@@ -533,7 +533,8 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
+ 	Elf *elf;
+ 	int nr = 0, kernel = !strcmp("[kernel]", self->name);
+ 
+-	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
++	elf = perf_elf_begin(fd, ELF_C_READ, NULL);
++
+ 	if (elf == NULL) {
+ 		if (v)
+ 			fprintf(stderr, "%s: cannot read %s ELF file.\n",
+@@ -675,7 +676,7 @@ static char *dso__read_build_id(struct dso *self, int v)
+ 	if (fd < 0)
+ 		goto out;
+ 
+-	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
++	elf = perf_elf_begin(fd, ELF_C_READ, NULL);
+ 	if (elf == NULL) {
+ 		if (v)
+ 			fprintf(stderr, "%s: cannot read %s ELF file.\n",
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index 6e84907..38bc832 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -8,6 +8,8 @@
+ #include "module.h"
+ #include "event.h"
+ 
++#include <libelf.h>
++
+ #ifdef HAVE_CPLUS_DEMANGLE
+ extern char *cplus_demangle(const char *, int);
+ 
+@@ -27,6 +29,20 @@ static inline char *bfd_demangle(void __used *v, const char __used *c,
+ #endif
+ #endif
+ 
++static inline Elf *perf_elf_begin(int fd, Elf_Cmd cmd, Elf *ref)
++{
++#ifndef LIBELF_NO_MMAP
++	/*
++	 * libelf 0.8 and earlier do not support ELF_C_READ_MMAP; for newer
++	 * versions we can use mmap to reduce memory usage
++	 */
++
++	if (cmd == ELF_C_READ)
++		cmd = ELF_C_READ_MMAP;
++#endif
++	return elf_begin(fd, cmd, ref);
++}
++
+ #ifndef DMGL_PARAMS
+ #define DMGL_PARAMS      (1 << 0)       /* Include function args */
+ #define DMGL_ANSI        (1 << 1)       /* Include const, volatile, etc */
+-- 
+1.6.5.1
 
-	Sam
