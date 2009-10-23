@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbZJWRzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752423AbZJWSAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752254AbZJWRzz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 13:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbZJWRzy
+	id S1752423AbZJWSAc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 14:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZJWSAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 13:55:54 -0400
-Received: from mga06.intel.com ([134.134.136.21]:48825 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751695AbZJWRzx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 13:55:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,613,1249282800"; 
-   d="scan'208";a="562641267"
-Message-ID: <4AE1EE1B.2000500@linux.intel.com>
-Date: Fri, 23 Oct 2009 10:55:39 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH] perf timechart: Use pr_debug to report unknown header
- types
-References: <1256320245-8439-1-git-send-email-acme@redhat.com>
-In-Reply-To: <1256320245-8439-1-git-send-email-acme@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Oct 2009 14:00:31 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40386 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751915AbZJWSAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 14:00:31 -0400
+Date: Fri, 23 Oct 2009 11:00:34 -0700
+From: Mark Fasheh <mfasheh@suse.com>
+To: Sunil Mushran <sunil.mushran@oracle.com>
+Cc: ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Ocfs2-devel] [PATCH 1/2] fiemap: Add new extent flag FIEMAP_EXTENT_SHARED
+Message-ID: <20091023180034.GA11402@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+References: <1256173509-2831-1-git-send-email-sunil.mushran@oracle.com> <1256173509-2831-2-git-send-email-sunil.mushran@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256173509-2831-2-git-send-email-sunil.mushran@oracle.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnaldo Carvalho de Melo wrote:
-> It was using eprintf that checked if verbose was !zero, when I converted
-> to pr_*() I made the mistake of changing it to pr_warning which caused
-> 'perf timechart' output to be way too verbose.
-> 
+On Wed, Oct 21, 2009 at 06:05:08PM -0700, Sunil Mushran wrote:
+> Patch adds flag FIEMAP_EXTENT_SHARED to denote extents that are
+> shared with other inodes.
+
+This looks pretty sane to me. Thanks Sunil.
 
 
-nack...
+> Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
 
-if you EVER hit one of these you have a very very serious problem.
-hiding that is never the right thing to do. I should make this a fatal
-event instead.
+Acked-by: Mark Fasheh <mfasheh@suse.com>
+	--Mark
 
+--
+Mark Fasheh
