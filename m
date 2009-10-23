@@ -1,79 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752303AbZJWPK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbZJWPME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752303AbZJWPK4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 11:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZJWPKz
+	id S1752347AbZJWPME (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 11:12:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZJWPMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 11:10:55 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:57926 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752202AbZJWPKz convert rfc822-to-8bit (ORCPT
+	Fri, 23 Oct 2009 11:12:03 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:54823 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752294AbZJWPMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 11:10:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=BO4KsPx58erwQPSpP4Kewf82P8LVKj9cN1p0nbbzfvHhpWmK4YAOJUOTn21cikT//k
-         XNEht7XmF2wYgWiAJONh4XyVu+/KJetg/gCxh7dhg2QNSClwI5p7Am1sF0wbG0VxPkA0
-         EkUWiKV8+/VmtBG5DwmB6YZvakP3iVurfeGNY=
+	Fri, 23 Oct 2009 11:12:01 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Organization: IBM
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC/PATCH] ratelimit: make output more useful
+Date: Fri, 23 Oct 2009 17:12:00 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-tip-tip-01652-g1846719-dirty; KDE/4.3.1; i686; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200910191706.42223.borntraeger@de.ibm.com> <200910231458.11832.borntraeger@de.ibm.com> <20091023145509.GA13793@elte.hu>
+In-Reply-To: <20091023145509.GA13793@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <4AD27044.7030907@bigpond.net.au>
-References: <27a8ee1b0910100017h75579306i42463e309bd26712@mail.gmail.com>
-	 <27a8ee1b0910100018g1207c5b1uf742677b55f2f99b@mail.gmail.com>
-	 <4AD27044.7030907@bigpond.net.au>
-Date: Fri, 23 Oct 2009 20:40:59 +0530
-Message-ID: <27a8ee1b0910230810x255702eepa17734514cbf525f@mail.gmail.com>
-Subject: Re: How to add scheduler
-From: Pankaj Parakh <me.pankajparakh@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Peter Williams <pwil3058@bigpond.net.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910231712.00722.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+Am Freitag 23 Oktober 2009 16:55:09 schrieb Ingo Molnar:
+> Any reason why it couldnt be pushed inside printk.c? We just need the
+> func string - not the pointer pass-in. That would also address some of
+> the call-site bloat.
 
-Thanks for showing your interest, I am student and I am working on a
-project similar to yours i.e. to have a facility where in one can swap
-scheduler in run-time, but I am in very initial state of learning so I
-wanted to try a simple RR scheduler, objective of doing it is to learn
-about different interfaces in modular design(introduced from 2.6.23
-with CFS). I do not have any constraint with version of linux. I am
-ready to take part with you provided you do not have any issue.
+Right, I changed that and made the patch a bit simpler. So what about:
 
+[PATCH] ratelimit: make output more useful
 
-On Mon, Oct 12, 2009 at 5:24 AM, Peter Williams <pwil3058@bigpon.net.au> wrote:
-> On 10/10/09 17:18, Pankaj Parakh wrote:
->>
->>  Hi all,
->>
->>  I want to add my scheduler in linux 2.6.25.3, which have modular
->> design, is there any document which can explain that modular design of
->> generic scheduler in detail. I wanted to try my scheduler.
->>
->> Any guidance..
->
-> Not really an answer to you question but related:  I'm resurrecting the CPU
-> plug in scheduler project (to be renamed CPU_PISCH) which aims to provide an
-> interface for people such as your self to implement CPU schedulers against
-> and I was wondering if you were interested in adding your scheduler to this
-> project?  Or taking part in other ways?
->
-> Thanks,
-> Peter
-> PS I'm currently working with respect to the latest kernel rather than
-> 2.6.25.3 (in case that's an issue).
-> --
-> Peter Williams                                   pwil3058@bigpond.net.au
->
-> "Learning, n. The kind of ignorance distinguishing the studious."
->  -- Ambrose Bierce
->
+Today I got 
 
+[39648.224782] Registered led device: iwl-phy0::TX
+[40676.545099] __ratelimit: 246 callbacks suppressed
+[40676.545103] abcdef[23675]: segfault at 0 ...
 
+as you can see the ratelimit message contains a function prefix. Since this
+is  always __ratelimit, this wont help much. This patch changes __ratelimit
+and printk_ratelimit to print the function name  that calls ratelimit.
+This will pinpoint the responsible function, as long as not several different 
+places call ratelimit with the same ratelimit state at the same time. In that
+case we catch only one random function that calls ratelimit after the wait
+period.
 
--- 
-Pankaj Parakh
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Dave Young <hidave.darkstar@gmail.com>
+---
+ include/linux/kernel.h    |    3 ++-
+ include/linux/ratelimit.h |    3 ++-
+ kernel/printk.c           |    6 +++---
+ lib/ratelimit.c           |    6 +++---
+ 4 files changed, 10 insertions(+), 8 deletions(-)
+
+Index: tip/include/linux/kernel.h
+===================================================================
+--- tip.orig/include/linux/kernel.h
++++ tip/include/linux/kernel.h
+@@ -332,7 +332,8 @@ asmlinkage int vprintk(const char *fmt, 
+ asmlinkage int printk(const char * fmt, ...)
+ 	__attribute__ ((format (printf, 1, 2))) __cold;
+ 
+-extern int printk_ratelimit(void);
++extern int __printk_ratelimit(const char *func);
++#define printk_ratelimit() __printk_ratelimit(__func__)
+ extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+ 				   unsigned int interval_msec);
+ 
+Index: tip/include/linux/ratelimit.h
+===================================================================
+--- tip.orig/include/linux/ratelimit.h
++++ tip/include/linux/ratelimit.h
+@@ -25,6 +25,7 @@ struct ratelimit_state {
+ 		.burst		= burst_init,				\
+ 	}
+ 
+-extern int __ratelimit(struct ratelimit_state *rs);
++extern int ___ratelimit(struct ratelimit_state *rs, const char *func);
++#define __ratelimit(state) ___ratelimit(state, __func__)
+ 
+ #endif /* _LINUX_RATELIMIT_H */
+Index: tip/kernel/printk.c
+===================================================================
+--- tip.orig/kernel/printk.c
++++ tip/kernel/printk.c
+@@ -1377,11 +1377,11 @@ late_initcall(disable_boot_consoles);
+  */
+ DEFINE_RATELIMIT_STATE(printk_ratelimit_state, 5 * HZ, 10);
+ 
+-int printk_ratelimit(void)
++int __printk_ratelimit(const char *func)
+ {
+-	return __ratelimit(&printk_ratelimit_state);
++	return ___ratelimit(&printk_ratelimit_state, func);
+ }
+-EXPORT_SYMBOL(printk_ratelimit);
++EXPORT_SYMBOL(__printk_ratelimit);
+ 
+ /**
+  * printk_timed_ratelimit - caller-controlled printk ratelimiting
+Index: tip/lib/ratelimit.c
+===================================================================
+--- tip.orig/lib/ratelimit.c
++++ tip/lib/ratelimit.c
+@@ -20,7 +20,7 @@
+  * This enforces a rate limit: not more than @rs->ratelimit_burst callbacks
+  * in every @rs->ratelimit_jiffies
+  */
+-int __ratelimit(struct ratelimit_state *rs)
++int ___ratelimit(struct ratelimit_state *rs, const char *func)
+ {
+ 	unsigned long flags;
+ 	int ret;
+@@ -43,7 +43,7 @@ int __ratelimit(struct ratelimit_state *
+ 	if (time_is_before_jiffies(rs->begin + rs->interval)) {
+ 		if (rs->missed)
+ 			printk(KERN_WARNING "%s: %d callbacks suppressed\n",
+-				__func__, rs->missed);
++				func, rs->missed);
+ 		rs->begin   = 0;
+ 		rs->printed = 0;
+ 		rs->missed  = 0;
+@@ -59,4 +59,4 @@ int __ratelimit(struct ratelimit_state *
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL(__ratelimit);
++EXPORT_SYMBOL(___ratelimit);
