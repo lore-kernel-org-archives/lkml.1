@@ -1,68 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752099AbZJWUyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752322AbZJWUzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752099AbZJWUyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 16:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZJWUyS
+	id S1752322AbZJWUzW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 16:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZJWUzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 16:54:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47040 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751604AbZJWUyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 16:54:17 -0400
-Date: Fri, 23 Oct 2009 22:54:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Nicolas Pitre <nico@fluxnic.net>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC] to rebase or not to rebase on linux-next
-Message-ID: <20091023205400.GA8356@elte.hu>
-References: <alpine.LFD.2.00.0910210654480.5125@eeepc.linux-foundation.org> <20091022122042.e535d43c.sfr@canb.auug.org.au> <20091023112732.GB5886@elte.hu> <4AE19A74.1090709@garzik.org> <20091023123555.GA25366@elte.hu> <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com> <20091023134115.GD27097@elte.hu> <alpine.LFD.2.00.0910231424440.21460@xanadu.home> <20091023191631.GA1879@elte.hu> <1256326512.26028.34.camel@gandalf.stny.rr.com>
+	Fri, 23 Oct 2009 16:55:21 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47266 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbZJWUzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 16:55:20 -0400
+Date: Fri, 23 Oct 2009 22:54:18 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: NiTRo <nitroml@ntd.homelinux.org>, linux-kernel@vger.kernel.org,
+       cve@mitre.org, Jamie Lokier <jamie@shareable.org>
+Subject: Re: SECURITY PROBLEM: filesystem permiossion bypass on FD already
+ opened
+Message-ID: <20091023205418.GF27185@elf.ucw.cz>
+References: <4AE20B6F.4060606@ntd.homelinux.org>
+ <20091023204442.GA7332@joi.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1256326512.26028.34.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <20091023204442.GA7332@joi.lan>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri 2009-10-23 22:44:44, Marcin Slusarz wrote:
+> On Fri, Oct 23, 2009 at 10:00:47PM +0200, NiTRo wrote:
+> > Hi to all,
+> >     Sorry for my bad english.
+> >     Just discovered this security problem on my Suse 11 (Linux xxxx
+> 
+> You did not.
+> http://lkml.org/lkml/2009/10/23/159
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Actually, no, this is something different... and old/known AFAICT.
 
-> Here's the basic gist, some people believe that linux-next is used as 
-> a dumping ground for their repos that get rebased all the time. They 
-> use linux-next for early testing, and mostly to make sure their repo 
-> will not collide with other developers repos.
+> > 2.6.25.18-0.2-pae #1 SMP 2008-10-21 16:30:26 +0200 i686 i686 i386
+> > GNU/Linux) and my Slackware 10.1.0 (Linux xxxx 2.4.29-ow1 #1 Wed Feb 2
+> > 00:05:42 CET 2005 i586 unknown unknown GNU/Linux) with OpenWall patch.
+> > If a FD is opened on a allowed file and then the permission is changed
+> > the file is still redeable starting from the already read position to
+> > the EOF.
+> > 
+> > This is the scenario:
+> > 
+> > <root> creates a file /tmp/aaaa with 666 permission an with the "test"
+> > string inside it
+> >         xxx:/tmp # echo test > /tmp/aaaa
+> >         xxx:/tmp # chmod 666 /tmp/aaaa
+> > <sb> opens this file hooking it in a shell as FD number 3
+> >         sb@xxx:~> bash 3< /tmp/aaaa
+> > <sb> read and prints it
+> >         sb@xxx:~> read a <&3
+> >         sb@xxx:~> echo $a
+> >         test
+> >         sb@xxx:~>
+> > ...anythig as expected...
+> > <root> changes the permissions on file to 600 and changes its content
+> > into "test o.o I cannot believe it..."
+> >         xxx:/tmp # chmod 600 /tmp/aaaa
+> >         xxx:/tmp # echo "test o.o I cannot believe it..." > /tmp/aaaa
+> > <sb> continue to try reading the file
+> >         sb@xxx:~> read a <&3
+> >         sb@xxx:~> echo $a
+> >         o.o I cannot believe it...
+> >         sb@test:~>
+> > ... and this is not expected...
 
-I see signs of such an attitude, and i think it's somewhat harmful.
 
-As far as using linux-next for a test-and-rebase workflow - IMO 
-maintainer trees should lead with a good example and should not push 
-'avoidable crap that might need rebasing' into linux-next (knowingly at 
-least - there's enough unintentional damage) that they wouldnt push 
-upstream to Linus to begin with.
-
-The pure act of integration testing (the stated primary purpose of 
-linux-next) is a large enough of a job in itself IMHO.
-
-Maintainer trees pushed towards linux-next should strive to be Git 
-based, append-mostly, 'nice', 'intended for upstream' and defendable 
-as-is IMO, and rebasing a _maintainer tree_ should really be a rare act 
-of last resort. [ Developers OTOH can (and will and perhaps should) 
-rebase frequently until a feature becomes pushable. ]
-
-Anyway - just my two cents - YMMV.
-
-	Ingo
+Really? I'd expect it. I have file open for reading, you wrote
+something new to it, so I can read it back. What is the problem?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
