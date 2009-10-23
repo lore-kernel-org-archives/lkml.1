@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbZJWQjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbZJWQjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752718AbZJWQjz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 12:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbZJWQjy
+	id S1752680AbZJWQjg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 12:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZJWQjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 12:39:54 -0400
-Received: from sous-sol.org ([216.99.217.87]:39302 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752419AbZJWQjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 12:39:54 -0400
-Date: Fri, 23 Oct 2009 09:39:23 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: chrisw@sous-sol.org, dwmw2@infradead.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] allow fallback to swiotlb on hw iommu init
-	failures
-Message-ID: <20091023163923.GA12883@sequoia.sous-sol.org>
-References: <20091023012158.177308035@sequoia.sous-sol.org> <20091023145054P.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 23 Oct 2009 12:39:35 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:47401 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752419AbZJWQjf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 12:39:35 -0400
+Date: Fri, 23 Oct 2009 18:39:38 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Vlad Yasevich <vladislav.yasevich@hp.com>
+Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [Patch] sctp: remove deprecated SCTP_GET_*_OLD stuffs
+Message-ID: <20091023163938.GA3858@merkur.ravnborg.org>
+References: <20091015082849.4605.48311.sendpatchset@localhost.localdomain> <4AE0C64A.9080400@hp.com> <20091022214439.GA2635@merkur.ravnborg.org> <4AE1D2AA.8060200@hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091023145054P.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4AE1D2AA.8060200@hp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* FUJITA Tomonori (fujita.tomonori@lab.ntt.co.jp) wrote:
-> On Thu, 22 Oct 2009 18:21:58 -0700
-> Chris Wright <chrisw@sous-sol.org> wrote:
+On Fri, Oct 23, 2009 at 11:58:34AM -0400, Vlad Yasevich wrote:
 > 
-> > This short series gives us the ability to allocate the swiotlb and then
-> > conditionally free it if we discover it isn't needed.  This allows us to
-> > put swiotlb to use when the hw iommu fails to initialize properly.
+> 
+> Sam Ravnborg wrote:
+> > On Thu, Oct 22, 2009 at 04:53:30PM -0400, Vlad Yasevich wrote:
+> >>> diff --git a/include/net/sctp/user.h b/include/net/sctp/user.h
+> >>> index be2334a..0991f1b 100644
+> >>> --- a/include/net/sctp/user.h
+> >>> +++ b/include/net/sctp/user.h
+> >>> @@ -131,14 +131,6 @@ enum sctp_optname {
+> >>>  #define SCTP_SOCKOPT_BINDX_REM	SCTP_SOCKOPT_BINDX_REM
+> >>>  	SCTP_SOCKOPT_PEELOFF, 	/* peel off association. */
+> >>>  #define SCTP_SOCKOPT_PEELOFF	SCTP_SOCKOPT_PEELOFF
+> >>> -	SCTP_GET_PEER_ADDRS_NUM_OLD, 	/* Get number of peer addresss. */
+> >>> -#define SCTP_GET_PEER_ADDRS_NUM_OLD	SCTP_GET_PEER_ADDRS_NUM_OLD
+> >>> -	SCTP_GET_PEER_ADDRS_OLD, 	/* Get all peer addresss. */
+> >>> -#define SCTP_GET_PEER_ADDRS_OLD	SCTP_GET_PEER_ADDRS_OLD
+> >>> -	SCTP_GET_LOCAL_ADDRS_NUM_OLD, 	/* Get number of local addresss. */
+> >>> -#define SCTP_GET_LOCAL_ADDRS_NUM_OLD	SCTP_GET_LOCAL_ADDRS_NUM_OLD
+> >>> -	SCTP_GET_LOCAL_ADDRS_OLD, 	/* Get all local addresss. */
+> >>> -#define SCTP_GET_LOCAL_ADDRS_OLD	SCTP_GET_LOCAL_ADDRS_OLD
+> >>>  	SCTP_SOCKOPT_CONNECTX_OLD, /* CONNECTX old requests. */
+> >> After running the regression suite against this patch I find that we can't
+> >> remove the enum values.  Removing the enums changes the value for the remainder
+> >> of the definitions and breaks binary compatibility for applications that use
+> >> those trailing options.
+> >>
+> >> You should be ok with removing the #defines and actual code that uses them,
+> >> but not the enums.  You can even rename the enums, but we must preserve
+> >> numeric ordering.
 > > 
-> > This needs some changes to the bootmem allocator to give the ability to
-> > free reserved bootmem directly to the page allocator after bootmem is
-> > torn down.
+> > If we really depend on the actual value of an enum as in this case,
+> > then e should assign them direct to better document this.
+> > 
+> > 	Sam
+> > 
 > 
-> The concept sounds fine but the third patch doesn't look correct.
-> 
-> Seems that the third patch doesn't take into account enabling both hw
-> iommu and swiotlb (Calgary does and I guess VT-d and AMD need that
-> too).
+> I agree.  I have a patch that converts the enum to just a #define section that
+> I'll apply on top of this removal patch and document the deletion.
 
-VT-d isn't using swiotlb.  Nor is AMD, although I think it will pick up
-no_iommu on passthrough (seems like it would benefit from swiotlb in
-that case).
+If you keep the enum then you will have a have extras:
+- a debugger will understand the symbols and display the correct value
+- sparse may trigger a warning if you try to assign a non-valid value
+  (a value which is not included in the enum)
 
->  Also (iommu_detected && !dma_ops) trick doesn't work for
-> Calgary, IIRC.
+But that may not matter much in this case - just wanted to highligt it.
 
-Yes, I think you are right.  I had stared at the calgary code and thought
-it would DTRT due to calgary's use of no_iommu as fallback, but instead
-it will never pick up swiotlb_dma_ops.  The calgary shouldn't even need
-to be manually setting up nommu_dma_ops.
-
->  The third patch also makes the dma startup code more
-> complicated.
-
-I completely agree.  The whole dma/iommu startup is already complex
-and fragile.  Issues like above made getting the right combination
-like whack-a-mole.
-
-> I have half-baked patches to clean up the dma startup code supporting
-> the concept. I can work on the top of the first and second
-> patches. They need to be CC'ed to the memory people and ACKs, don't
-> they?
-
-Great.
+	Sam
