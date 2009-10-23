@@ -1,157 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751533AbZJWCn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751186AbZJWEbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751533AbZJWCn3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 22:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbZJWCn2
+	id S1751186AbZJWEbd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 00:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbZJWEbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 22:43:28 -0400
-Received: from mail-qy0-f174.google.com ([209.85.221.174]:37081 "EHLO
-	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbZJWCn1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 22:43:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=ZTIJzqzTg1nS2xC/3oCT7G79LYJT2SHQZjIivJqT1xX2UYNRsAN3MmwaDa265nCJIQ
-         rgSHVL1FqxvBcT+yziLxIg9C50mwOBgpWrIFoU5clKeEZkI2ONY3m8MX0euZEqgEFmJP
-         AW3BkPwCW84N/z2ku0TvDp4a1EH/SDm1ROKOw=
-Message-ID: <4AE11849.9070807@gmail.com>
-Date: Thu, 22 Oct 2009 22:43:21 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Fri, 23 Oct 2009 00:31:32 -0400
+Received: from kroah.org ([198.145.64.141]:45478 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750759AbZJWEbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 00:31:31 -0400
+Date: Thu, 22 Oct 2009 21:27:54 -0700
+From: Greg KH <greg@kroah.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] tracefs
+Message-ID: <20091023042754.GB26358@kroah.com>
+References: <20091023004937.GA24035@kroah.com> <1256260230.20866.816.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [KVM PATCH v2 1/2] KVM: export lockless GSI attribute
-References: <20091023023512.3891.65889.stgit@dev.haskins.net> <20091023023845.3891.36857.stgit@dev.haskins.net>
-In-Reply-To: <20091023023845.3891.36857.stgit@dev.haskins.net>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig3F8B79625B54608D5F588267"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256260230.20866.816.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig3F8B79625B54608D5F588267
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Thu, Oct 22, 2009 at 09:10:30PM -0400, Steven Rostedt wrote:
+> On Thu, 2009-10-22 at 17:49 -0700, Greg KH wrote:
+> > Hi all,
+> > 
+> > At LinuxCon this year, Steven and I talked about moving the debugfs
+> > usage in the tracing core to a stand-alone filesystem to give the
+> > ability to start to lock down the api so that people an count on what is
+> > going on in the tracing userspace interface.
+> > 
+> > So, on the flight to Tokyo for the kernel summit, I wrote up tracefs.
+> > Here's the first very rough cut at it below.  I've run it here on my
+> > laptop, and all seems well, but I do have a few questions:
+> >   - I've made the mount point be /sys/kernel/trace/  Is that ok?  Should
+> >     it be /sys/kernel/tracing/?  Or something else?  You get to pick the
+> >     mount point now, so I don't want to hear any more grumblings about
+> >     the location in the future :)
+> 
+> /trace
+> 
+>  (rostedt hides)
 
-Gregory Haskins wrote:
-> Certain GSI's support lockless injecton, but we have no way to detect
-> which ones at the GSI level.  Knowledge of this attribute will be
-> useful later in the series so that we can optimize irqfd injection
-> paths for cases where we know the code will not sleep.  Therefore,
-> we provide an API to query a specific GSI.
->=20
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> ---
->=20
->  include/linux/kvm_host.h |    2 ++
->  virt/kvm/irq_comm.c      |   19 +++++++++++++++++++
->  2 files changed, 21 insertions(+), 0 deletions(-)
->=20
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index bd5a616..93393a4 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -119,6 +119,7 @@ struct kvm_memory_slot {
->  struct kvm_kernel_irq_routing_entry {
->  	u32 gsi;
->  	u32 type;
-> +	bool lockless;
->  	int (*set)(struct kvm_kernel_irq_routing_entry *e,
->  		   struct kvm *kvm, int irq_source_id, int level);
->  	union {
-> @@ -417,6 +418,7 @@ void kvm_get_intr_delivery_bitmask(struct kvm_ioapi=
-c *ioapic,
->  				   unsigned long *deliver_bitmask);
->  #endif
->  int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level=
-);
-> +int kvm_irq_check_lockless(struct kvm *kvm, u32 irq);
->  void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned =
-pin);
->  void kvm_register_irq_ack_notifier(struct kvm *kvm,
->  				   struct kvm_irq_ack_notifier *kian);
-> diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
-> index 00c68d2..04f0134 100644
-> --- a/virt/kvm/irq_comm.c
-> +++ b/virt/kvm/irq_comm.c
-> @@ -174,6 +174,23 @@ int kvm_set_irq(struct kvm *kvm, int irq_source_id=
-, u32 irq, int level)
->  	return ret;
->  }
-> =20
-> +int kvm_irq_check_lockless(struct kvm *kvm, u32 irq)
-> +{
-> +	struct kvm_kernel_irq_routing_entry *e;
-> +	struct kvm_irq_routing_table *irq_rt;
-> +	struct hlist_node *n;
-> +	int ret =3D -ENOENT;
-> +
-> +	rcu_read_lock();
-> +	irq_rt =3D rcu_dereference(kvm->irq_routing);
-> +	if (irq < irq_rt->nr_rt_entries)
-> +		hlist_for_each_entry(e, n, &irq_rt->map[irq], link)
-> +			ret =3D e->lockless ? 1 : 0;
+Yeah, I knew you were going to do that :)
 
-Sigh...  just noticed this as it hits the list.  I should probably break
-out of the loop here.
+> >   - the block tracing code was not changed, as it uses
+> >     /sys/kernel/debug/block/ at the moment, not the
+> >     /sys/kernel/debug/tracing/ directory.  To change the block tracing
+> >     code, it would require us to change the userspace tools as well,
+> >     which I don't know if we want to do.  Thanks to Jens for
+> >     straightening this all out for me, originally I thought it was a bug
+> >     in the block tracing code.
+> 
+> I thought we were suppose to port the block tracing over to tracepoints
+> anyway, and remove the "block" tracer?
 
-> +	rcu_read_unlock();
-> +
-> +	return ret;
-> +}
-> +
->  void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned =
-pin)
->  {
->  	struct kvm_irq_ack_notifier *kian;
-> @@ -314,6 +331,7 @@ static int setup_routing_entry(struct kvm_irq_routi=
-ng_table *rt,
-> =20
->  	e->gsi =3D ue->gsi;
->  	e->type =3D ue->type;
-> +	e->lockless =3D false;
->  	switch (ue->type) {
->  	case KVM_IRQ_ROUTING_IRQCHIP:
->  		delta =3D 0;
-> @@ -342,6 +360,7 @@ static int setup_routing_entry(struct kvm_irq_routi=
-ng_table *rt,
->  		e->msi.address_lo =3D ue->u.msi.address_lo;
->  		e->msi.address_hi =3D ue->u.msi.address_hi;
->  		e->msi.data =3D ue->u.msi.data;
-> +		e->lockless =3D true;
->  		break;
->  	default:
->  		goto out;
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+That's between you and Jens, but at the kernel summit, he said it was
+not going to go away any year soon.
 
+> >   - is this type of conversion to a custom virtual filesystem acceptable
+> >     to the other tracing developers?  Any objection to not using debugfs
+> >     calls anymore?  The operation is identical, but it keeps the rest of
+> >     the kernel from intruding on your space now.
+> 
+> What I would like is to still use debugfs for new features until we
+> understand them better. That location, files can disappear or have their
+> formats completely changed. When things move to tracefs, then the API is
+> a bit more rigid. Files can still change, but they must change in a way
+> to be backward compatible. We need a nice way to document how a file can
+> change, and stick to it.
 
+That sounds like a very good idea.  I'll respin the patch to only merge
+one tracer over at a time.
 
---------------enig3F8B79625B54608D5F588267
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+You are going to have a bit of a difficult time if you mix debugfs and
+tracefs as people will not know where to look for the files.  But hey,
+that's your problem to deal with :)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+> [ Snip the s/debugfs/tracefs/ changes ]
+> 
+> Note, as mentioned above. I envision having a way to start out in
+> debugfs and then slowly move things over to tracefs when they become
+> standardize. Think of debugfs as linux-next ;-)
+> 
+> Although most of the files are pretty much stable, I don't want to do a
+> cross the board change at the moment.
 
-iEYEARECAAYFAkrhGEkACgkQP5K2CMvXmqFJSgCgiRJt6yeVhYedBtDrwfSaoYws
-tWgAoINRj+BcXOc3jTLOhOWuaxML8L2A
-=fJmY
------END PGP SIGNATURE-----
+That sounds reasonable.  Thanks for the review, I'll respin this when I
+get back home next week.
 
---------------enig3F8B79625B54608D5F588267--
+thanks,
+
+greg k-h
