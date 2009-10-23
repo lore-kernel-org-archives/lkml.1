@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752077AbZJWOZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbZJWO1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752077AbZJWOZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 10:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZJWOZ1
+	id S1752103AbZJWO1M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 10:27:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZJWO1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 10:25:27 -0400
-Received: from mga11.intel.com ([192.55.52.93]:42143 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751982AbZJWOZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 10:25:26 -0400
-X-ExtLoop1: 1
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
- available
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Thomas Schlichter <thomas.schlichter@web.de>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jan Beulich <JBeulich@novell.com>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Tejun Heo <tj@kernel.org>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Robert Hancock <hancockrwd@gmail.com>
-In-Reply-To: <200910230924.54655.thomas.schlichter@web.de>
-References: <1394846127@web.de> <20091023133152.1a15ba69@jbarnes-x200>
-	 <1256273896.2569.10.camel@sbs-t61>
-	 <200910230924.54655.thomas.schlichter@web.de>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 23 Oct 2009 07:24:36 -0700
-Message-Id: <1256307876.2561.8.camel@sbs-t61>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Oct 2009 10:27:11 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:37556 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751997AbZJWO1K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 10:27:10 -0400
+X-Sasl-enc: fya2TWyoRH7TIIy+kF/cOiv+8VQly/I0w2GFVglxXpXi 1256308034
+Message-ID: <4AE1BD3D.3020007@imap.cc>
+Date: Fri, 23 Oct 2009 16:27:09 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
+MIME-Version: 1.0
+To: Johannes Berg <johannes@sipsolutions.net>
+CC: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless@vger.kernel.org,
+       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
+       isdn4linux <isdn4linux@listserv.isdn4linux.de>,
+       i4ldeveloper <i4ldeveloper@listserv.isdn4linux.de>,
+       Karsten Keil <isdn@linux-pingi.de>
+Subject: Re: NOHZ: local_softirq_pending 08
+References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local>	 <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc>	 <4AE0ECCE.2020407@imap.cc> <1256304869.12174.20.camel@johannes.local>
+In-Reply-To: <1256304869.12174.20.camel@johannes.local>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-23 at 00:24 -0700, Thomas Schlichter wrote:
-> Hmm, at this point I already was more than a week ago:
->   http://marc.info/?l=linux-kernel&m=125537770514713&w=2
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Johannes Berg schrieb:
+> On Fri, 2009-10-23 at 01:37 +0200, Tilman Schmidt wrote:
 > 
-> OK, I also modified ioremap() and set_memory_wc() but your patch is just part 
-> of what I did there...
+>> --- a/drivers/isdn/i4l/isdn_ppp.c
+>> +++ b/drivers/isdn/i4l/isdn_ppp.c
+>> @@ -1174,7 +1174,10 @@ isdn_ppp_push_higher(isdn_net_dev * net_dev, isdn_net_local * lp, struct sk_buff
+>>  #endif /* CONFIG_IPPP_FILTER */
+>>  	skb->dev = dev;
+>>  	skb_reset_mac_header(skb);
+>> -	netif_rx(skb);
+>> +	if (in_interrupt())
+>> +		netif_rx(skb);
+>> +	else
+>> +		netif_rx_ni(skb);
+> 
+> So you've verified that the entire i4l stack can cope with being called
+> twice on the same CPU, from different contexts?
 
-oops! Sorry I read the later emails in this thread carefully but not the
-conversation with Thomas Hellstrom. Anyhow, glad that you were on top of
-this. Thanks.
+What makes you think so?
+Better yet, what do you propose?
 
-Ingo, can you please queue this patch with a sign-off from Thomas
-Schlichter too?
+Thanks,
+Tilman
 
-thanks,
-suresh
+- --
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
+iD8DBQFK4b09Q3+did9BuFsRAqBvAKCbRI0iXQEyK3ztxkGHcqpbcceqbACgkagX
+JF7nYd152ihp2uemIs/cB54=
+=YOin
+-----END PGP SIGNATURE-----
