@@ -1,88 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752120AbZJWO37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbZJWObz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752120AbZJWO37 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 10:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZJWO37
+	id S1752135AbZJWObz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 10:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZJWOby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 10:29:59 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57116 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752068AbZJWO36 convert rfc822-to-8bit (ORCPT
+	Fri, 23 Oct 2009 10:31:54 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:35434 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086AbZJWObx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 10:29:58 -0400
-Date: Fri, 23 Oct 2009 07:31:01 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, esandeen@redhat.com,
-       cebbert@redhat.com, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Eric Sandeen <sandeen@redhat.com>,
-       Chuck Ebbert <cebbert@redhat.com>, mingo@elte.hu
-Subject: Chuck Ebbert <cebbert@redhat.com>
-Message-ID: <20091023073101.3dce4ebb@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+	Fri, 23 Oct 2009 10:31:53 -0400
+Subject: Re: NOHZ: local_softirq_pending 08
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless@vger.kernel.org,
+       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
+       isdn4linux <isdn4linux@listserv.isdn4linux.de>,
+       i4ldeveloper <i4ldeveloper@listserv.isdn4linux.de>,
+       Karsten Keil <isdn@linux-pingi.de>
+In-Reply-To: <4AE1BD3D.3020007@imap.cc>
+References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local>
+	 <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc>
+	 <4AE0ECCE.2020407@imap.cc> <1256304869.12174.20.camel@johannes.local>
+	 <4AE1BD3D.3020007@imap.cc>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-KyBo9tGkm0yCRfckrJid"
+Date: Fri, 23 Oct 2009 16:31:51 +0200
+Message-Id: <1256308311.12174.38.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.28.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From 87296b9275e3561822e1322f9d9aa6c73424e672 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Fri, 23 Oct 2009 07:27:31 -0700
-Subject: [PATCH] x86: remove STACKPROTECTOR_ALL
+--=-KyBo9tGkm0yCRfckrJid
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-STACKPROTECTOR_ALL has a really high overhead (runtime and stack footprint)
-and is not really worth it protection wise (the normal STACKPROTECTOR is
-in effect for all functions with buffers already), so lets just remove
-the option entirely.
+On Fri, 2009-10-23 at 16:27 +0200, Tilman Schmidt wrote:
 
-Reported-by: Dave Jones <davej@redhat.com>
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- arch/x86/Kconfig  |    4 ----
- arch/x86/Makefile |    1 -
- 2 files changed, 0 insertions(+), 5 deletions(-)
+> >> --- a/drivers/isdn/i4l/isdn_ppp.c
+> >> +++ b/drivers/isdn/i4l/isdn_ppp.c
+> >> @@ -1174,7 +1174,10 @@ isdn_ppp_push_higher(isdn_net_dev * net_dev, is=
+dn_net_local * lp, struct sk_buff
+> >>  #endif /* CONFIG_IPPP_FILTER */
+> >>  	skb->dev =3D dev;
+> >>  	skb_reset_mac_header(skb);
+> >> -	netif_rx(skb);
+> >> +	if (in_interrupt())
+> >> +		netif_rx(skb);
+> >> +	else
+> >> +		netif_rx_ni(skb);
+> >=20
+> > So you've verified that the entire i4l stack can cope with being called
+> > twice on the same CPU, from different contexts?
+>=20
+> What makes you think so?
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 07e0114..72ace95 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1443,12 +1443,8 @@ config SECCOMP
- 
- 	  If unsure, say Y. Only embedded should say N here.
- 
--config CC_STACKPROTECTOR_ALL
--	bool
--
- config CC_STACKPROTECTOR
- 	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
--	select CC_STACKPROTECTOR_ALL
- 	---help---
- 	  This option turns on the -fstack-protector GCC feature. This
- 	  feature puts, at the beginning of functions, a canary value on
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index a012ee8..d2d24c9 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -76,7 +76,6 @@ ifdef CONFIG_CC_STACKPROTECTOR
- 	cc_has_sp := $(srctree)/scripts/gcc-x86_$(BITS)-has-stack-protector.sh
-         ifeq ($(shell $(CONFIG_SHELL) $(cc_has_sp) $(CC) $(biarch)),y)
-                 stackp-y := -fstack-protector
--                stackp-$(CONFIG_CC_STACKPROTECTOR_ALL) += -fstack-protector-all
-                 KBUILD_CFLAGS += $(stackp-y)
-         else
-                 $(warning stack protector enabled but no compiler support)
--- 
-1.6.2.5
+I thought I'd explained this in my other email. *sigh*
+
+You're squelching a warning, which comes from the fact that you're
+calling something that calls into netif_rx() with softirqs enabled. That
+would seem to imply that potentially a softirq could at the same time
+call into that code too.
+
+Basically, what happens now is this:
+
+disable softirqs
+call into i4l/ppp
+i4l/ppp code
+call netif_rx()
+more code
+enable softirqs
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+You're changing it to
+
+call into i4l/ppp
+i4l/ppp code
+call netif_rx_ni()
+more code
+
+so the entire chunks "i4l/ppp code" and "more code" are now no longer
+protected against being interrupted by a softirq that runs the same
+code, maybe for a different device, on the same CPU.
+
+johannes
+
+--=-KyBo9tGkm0yCRfckrJid
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJK4b5TAAoJEODzc/N7+Qma39YP/1FwLDWKmjBavzhZ/qSQAetd
+tjrZ7Eij63pD2R7VLQdUuAs26E1LvM243DeRaVQAJtqIWUE+Sd2DP744N9OG0b58
+HX9EVfI2rb8A1vJuhMV4eIAV7P05sYPsrabKwLE76NczBDwx6E3fdB8rffvC57Eb
+80DB3x7fPJoSXqMBmQH10OmGFupI/BVgbP+COhyV4Jad7QKWZ6ps+UkkJZ11hpze
+cndQQVAiVtLi4kmiyx9X1mJJI3QojTnXy3Z7baRLQYZYeSvksJxd5Vev+oaTK06p
+ySdnU9JKPjedKfgcJndI8Jc3uf4V32kffNR0XTWFuRhZEjRf08Yoqnlezlkj/3ht
+ZMX8Gm8vSkA3vmGzrUc1/dxrE303DyEtgRhU0r2EhKd9NdPPerKVyhKeNOpbRiVE
+DPoWaLV/p4y0nL8qfGLuZSinUmiAnYQyRiriVBVQIRNQZ0t8zyN3ZLkU/j65uWwS
+wciGnaSMh/2F2fE+IMxPZJsuMR5pWWDLyUN0LLnZsaFqH+WekhmhHOIfOA5xMsU1
+uDWMvmbhZEgTGGNGauMD4+d4GtGsn+p3a9GNByjdTYYqyd0wXWuIVIJU6sAqMv3T
+5ca9o6uH3BQ8+mRBmJuLBiuJBOMEoAZzGJR7ycWnE7xLonb0fnUk3yOLW74UlmjA
+qocNik5vjf5h6LM5Fgpp
+=O6iC
+-----END PGP SIGNATURE-----
+
+--=-KyBo9tGkm0yCRfckrJid--
+
