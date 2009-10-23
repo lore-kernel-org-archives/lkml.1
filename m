@@ -1,84 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751395AbZJWHVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751431AbZJWHW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751395AbZJWHVg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 03:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZJWHVg
+	id S1751431AbZJWHW4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 03:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbZJWHW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 03:21:36 -0400
-Received: from mail-px0-f171.google.com ([209.85.216.171]:56139 "EHLO
-	mail-px0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751222AbZJWHVf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 03:21:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=T6ZpwPv1jjFip87JSP3vFNZnspdFVpGjEFY9809mAiopbkWz7iJKRWQlQW+ldS9Fni
-         eKgY31X9Vr+PHSgXu83rDhu3RTAl+DgNX13f15WxafSCmDQGdabLROUIH5TxoGw8YJ8/
-         UnVsyIqPI5YhYxqwHznFULjDahbkri11mKIMk=
-Subject: Re: [PATCH -v4 4/9] tracing: add static function tracer support
- for MIPS
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: Richard Sandiford <rdsandiford@googlemail.com>,
-       Adam Nemet <anemet@caviumnetworks.com>, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-In-Reply-To: <4AE0A5BE.8000601@caviumnetworks.com>
-References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
-	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
-	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
-	 <ea8aa927fbd184b54941e4c2ae0be8ea0b4f6b8a.1256135456.git.wuzhangjin@gmail.com>
-	 <1256138686.18347.3039.camel@gandalf.stny.rr.com>
-	 <1256233679.23653.7.camel@falcon>  <4AE0A5BE.8000601@caviumnetworks.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Fri, 23 Oct 2009 15:21:27 +0800
-Message-Id: <1256282487.6381.20.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Oct 2009 03:22:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48349 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751161AbZJWHWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 03:22:55 -0400
+Date: Fri, 23 Oct 2009 09:22:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH v11 4/5] core: Add kernel message dumper to call on
+	oopses and panics
+Message-ID: <20091023072236.GA19169@elte.hu>
+References: <20091016080935.GA3895@elte.hu> <1255681467.32489.360.camel@localhost> <20091016112556.6902b2dc@marrow.netinsight.se> <20091016101045.GA3263@elte.hu> <20091016140918.3981cfa2@marrow.netinsight.se> <1255952922.32489.505.camel@localhost> <20091019125017.GA9030@elte.hu> <alpine.LFD.2.00.0910220832580.9771@eeepc.linux-foundation.org> <20091022082500.602f9a7d@marrow.netinsight.se> <1256193368.29856.466.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256193368.29856.466.camel@localhost>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-22 at 11:34 -0700, David Daney wrote:
-> Wu Zhangjin wrote:
-> > On Wed, 2009-10-21 at 11:24 -0400, Steven Rostedt wrote:
-> [...]
-> >>> +
-> >>> +NESTED(_mcount, PT_SIZE, ra)
-> >>> +	RESTORE_SP_FOR_32BIT
-> >>> +	PTR_LA	t0, ftrace_stub
-> >>> +	PTR_L	t1, ftrace_trace_function /* please don't use t1 later, safe? */
-> >> Is t0 and t1 safe for mcount to use? Remember, mcount does not follow
-> >> the dynamics of C function ABI.
+
+* Artem Bityutskiy <dedekind1@gmail.com> wrote:
+
+> On Thu, 2009-10-22 at 08:25 +0200, Simon Kagstrom wrote:
+> > On Thu, 22 Oct 2009 08:33:11 +0900 (JST)
+> > Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > > 
-> > So, perhaps we can use the saved registers(a0,a1...) instead.
+> > > > > I wonder, via which tree this should go in. We are going to have mtdoops
+> > > > > depend on this. Should we go one of these ways:
+> > > > > 
+> > > > >    * this patch goes to one of Ingo's tip trees, so we can pull it and
+> > > > >      work on top.
+> > > > >    * we have Ingo's / Linus' acks, and this goes via the MTD tree.
+> > > > > ?
+> > > > 
+> > > > Either way is good to me. Linus, do you have any preferences?
+> > > 
+> > > Either works for me.
+> > 
+> > I would put it all through Artems MTD tree then so that we keep the new
+> > API and the user of it close together then.
+> > 
+> > Thanks to everyone for the reviewing and suggestions!
 > > 
 > 
-> a0..a7 may not always be saved.
+> It's dwmw2's tree actually. I just act as his secretary :-)
 > 
-> You can use at, v0, v1 and all the temporary registers.  Note that for 
-> the 64-bit ABIs sometimes the names t0-t4 shadow a4-a7.  So for a 64-bit 
-> kernel, you can use: $1, $2, $3, $12, $13, $14, $15, $24, $25, noting 
-> that at == $1 and contains the callers ra.  For a 32-bit kernel you can 
-> add $8, $9, $10, and $11
+> David, could you push this patch to your tree? Ingo's and Linus' acks 
+> are there, AFAIU.
 
-before the profiling source code(jal _mcount), there are only necessary
-stack operations, nobody have touched the GPRs, so, I think we are safe
-to use any of them, that's why the t0,t1 I have used not fail. and
-'Cause the a0,a1 is used as the arguments to the real profiling
-function, so, I will keep back to use t0, t1, as David Daney said $12,
-$13 in 64bit and $8, $9 in 32bit.
+Yeah, the latest bits also have my:
 
-Thanks!
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Regards,
-	Wu Zhangjin
-
+	Ingo
