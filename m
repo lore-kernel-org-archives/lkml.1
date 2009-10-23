@@ -1,44 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752423AbZJWSAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752304AbZJWSOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752423AbZJWSAc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 14:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZJWSAb
+	id S1752304AbZJWSOX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 14:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZJWSOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 14:00:31 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40386 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751915AbZJWSAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 14:00:31 -0400
-Date: Fri, 23 Oct 2009 11:00:34 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Sunil Mushran <sunil.mushran@oracle.com>
-Cc: ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Ocfs2-devel] [PATCH 1/2] fiemap: Add new extent flag FIEMAP_EXTENT_SHARED
-Message-ID: <20091023180034.GA11402@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-References: <1256173509-2831-1-git-send-email-sunil.mushran@oracle.com> <1256173509-2831-2-git-send-email-sunil.mushran@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256173509-2831-2-git-send-email-sunil.mushran@oracle.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+	Fri, 23 Oct 2009 14:14:23 -0400
+Received: from mail3.microsoft.com ([131.107.115.214]:10356 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751905AbZJWSOW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 14:14:22 -0400
+From: Haiyang Zhang <haiyangz@microsoft.com>
+To: "'gregkh@suse.de'" <gregkh@suse.de>, Hank Janssen <hjanssen@microsoft.com>
+CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Staging: hv: Fix null pointer error after vmbus loading
+Thread-Topic: [PATCH] Staging: hv: Fix null pointer error after vmbus loading
+Thread-Index: AQHKVAynh954eJTm40CVee2ubXphEQ==
+Date: Fri, 23 Oct 2009 18:14:24 +0000
+Message-ID: <1FB5E1D5CA062146B38059374562DF72180B4422@TK5EX14MBXC126.redmond.corp.microsoft.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2009 at 06:05:08PM -0700, Sunil Mushran wrote:
-> Patch adds flag FIEMAP_EXTENT_SHARED to denote extents that are
-> shared with other inodes.
+From: Haiyang Zhang <haiyangz@microsoft.com>
 
-This looks pretty sane to me. Thanks Sunil.
+Fix null pointer error after vmbus loading. Remove code that checks for dev_name, the affected structure is kzalloc-ed prior to this routine, so it is always null at this stage.
 
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Hank Janssen <hjanssen@microsoft.com>
+Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
 
-> Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
-
-Acked-by: Mark Fasheh <mfasheh@suse.com>
-	--Mark
-
---
-Mark Fasheh
+---
+diff --git a/drivers/staging/hv/vmbus_drv.c b/drivers/staging/hv/vmbus_drv.c
+index 582318f..1c7f887 100644
+--- a/drivers/staging/hv/vmbus_drv.c
++++ b/drivers/staging/hv/vmbus_drv.c
+@@ -537,18 +537,7 @@ static int vmbus_child_device_register(struct hv_device *root_device_obj,
+ 	DPRINT_DBG(VMBUS_DRV, "child device (%p) registering",
+ 		   child_device_ctx);
+ 
+-	/* Make sure we are not registered already */
+-	if (strlen(dev_name(&child_device_ctx->device)) != 0) {
+-		DPRINT_ERR(VMBUS_DRV,
+-			   "child device (%p) already registered - busid %s",
+-			   child_device_ctx,
+-			   dev_name(&child_device_ctx->device));
+-
+-		ret = -1;
+-		goto Cleanup;
+-	}
+-
+-	/* Set the device bus id. Otherwise, device_register()will fail. */
++	/* Set the device name. Otherwise, device_register()will fail. */
+ 	dev_set_name(&child_device_ctx->device, "vmbus_0_%d",
+ 		     atomic_inc_return(&device_num));
+ 
+@@ -573,7 +562,6 @@ static int vmbus_child_device_register(struct hv_device *root_device_obj,
+ 		DPRINT_INFO(VMBUS_DRV, "child device (%p) registered",
+ 			    &child_device_ctx->device);
+ 
+-Cleanup:
+ 	DPRINT_EXIT(VMBUS_DRV);
+ 
+ 	return ret;
