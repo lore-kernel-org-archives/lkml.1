@@ -1,76 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbZJWJQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751510AbZJWJVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751448AbZJWJQh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 05:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZJWJQh
+	id S1751510AbZJWJVP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 05:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZJWJVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 05:16:37 -0400
-Received: from ozlabs.org ([203.10.76.45]:50473 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751083AbZJWJQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 05:16:36 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: request_module vs. modprobe blacklist (and security subsystem implications)
-Date: Fri, 23 Oct 2009 19:46:38 +1030
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       linux-kernel@vger.kernel.org, arjan@infradead.org,
-       randy.dunlap@oracle.com, andi@firstfloor.org, dhowells@redhat.com,
-       akpm@linux-foundation.org
-References: <1256137348.4443.39.camel@dhcp231-106.rdu.redhat.com> <200910221626.51170.rusty@rustcorp.com.au> <1256221822.4443.95.camel@dhcp231-106.rdu.redhat.com>
-In-Reply-To: <1256221822.4443.95.camel@dhcp231-106.rdu.redhat.com>
+	Fri, 23 Oct 2009 05:21:14 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:29569 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751222AbZJWJVN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 05:21:13 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -14.189
+Message-ID: <4AE17586.9020009@tremplin-utc.net>
+Date: Fri, 23 Oct 2009 11:21:10 +0200
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091009 Mandriva/2.0.0.23-3mdv2010.0 (2010.0) Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910231946.39174.rusty@rustcorp.com.au>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not  work	anymore
+References: <928C125D-D36B-47C9-A549-3EE502C9EC73@gmail.com> <20091015215944.GA9845@core.coreip.homeip.net> <4ADF6237.9070004@tremplin-utc.net> <200910211320.16339.dmitry.torokhov@gmail.com> <4AE0840C.8070801@tremplin-utc.net> <20091022162202.GA18031@core.coreip.homeip.net> <4AE09AFF.805@tremplin-utc.net> <20091022181915.GB18031@core.coreip.homeip.net> <4AE16489.4030008@tremplin-utc.net> <20091023085824.GA7199@core.coreip.homeip.net>
+In-Reply-To: <20091023085824.GA7199@core.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Oct 2009 01:00:22 am Eric Paris wrote:
-> > If a userspace program tries some security exploit that has been closed, do
-> > you want to warn about it?  Because that seems to be the question here.
+Op 23-10-09 10:58, Dmitry Torokhov schreef:
+> On Fri, Oct 23, 2009 at 10:08:41AM +0200, Éric Piel wrote:
+>> Op 22-10-09 20:19, Dmitry Torokhov schreef:
+>>> On Thu, Oct 22, 2009 at 07:48:47PM +0200, Éric Piel wrote:
+>>>> I don't think so: xorg 1.6.5, with xinput-evdev 2.2.5. They are both  
+>>>> latest or second latest stable versions.
+>>>>
+>>>> In the log I see this:
+>>>> (--) SynPS/2 Synaptics TouchPad: touchpad found
+>>>> (II) PS/2 Generic Mouse: Device reopened after 1 attempts.
+>>>> (EE) AT Translated Set 2 keyboard: device key_bitmask has changed
+>>>> (EE) AT Translated Set 2 keyboard: Device has changed - disabling.
+>>>>
+>>>> Quite a few people seem to have the same problem.
+>>> The bitmask should not be changing on it's own... Any chance you could
+>>> save contents or /proc/bus/input/devices before suspend and after resume
+>>> (when X decides to ditch the keyboard) and diff them?
+>>>
+>> Hello,
+>> I've just tried this: before and after is exactly the same (attached is
+>> a copy of it).
+>>
 > 
-> I say yes.  Knowing that malicious activity is taking place, even if it
-> didn't hurt anything is useful.
-
-Hi Eric,
-
-Your proposal is troubling for three reasons:
-
-1) You would disable logging for things you actually want logged.
-2) What *actually* happens when ssh tries to load ipv6 is that
-   "modprobe net-pf-10" gets called.
-3) Containing modprobe behavior in one set of config files is really nice.
-
-> > Why should ssh not load IPv6?  Because noone should?  Fine, but there's a
-> > difference between "I expect it to do this but I won't let it" and "I don't
-> > expect it to do this".
+> What about before X starts? Can you please boot into console, kill
+> hal and udev to make sure they don't mess up with the keymap and, after
+> doing
 > 
-> In this case it's because the admin decided not to allow it.  In this
-> case it is 'I expect it to do this, and I know that later it would fail,
-> so I don't want to complain that it is failing now.'  I want a way to
-> move the failure up, and to allow and admin to stop with the useless
-> userspace callouts to modprobe.
+> 	echo -n rescan > /sys/bus/serio/devices/serio0/drvctl
+> 
+> which should completely reinitialize keyboard and compare
+> /proc/bus/input/devices again? If it is still the same then there must
+> be a silly bug in X's evdev...
+Ok, I'll reboot later and try. In the mean time, I've just tried this on
+my non-working keyboard, and it resurrected it :-) Even more
+interestingly, the key bitmap has changed.
 
-No.  I anticipate that in the future you will want to do some fairly
-sophisticated filtering.  That does not belong in the kernel unless there
-are performance concerns, and I don't think there are here.
+Before:
+I: Bus=0011 Vendor=0001 Product=0001 Version=ab41
+N: Name="AT Translated Set 2 keyboard"
+P: Phys=isa0060/serio0/input0
+S: Sysfs=/devices/platform/i8042/serio0/input/input4
+U: Uniq=
+H: Handlers=kbd event4 evbug rfkill
+B: EV=120013
+B: KEY=20 0 0 30400f02100000 17803878f800d401 feffffdfffefffff
+ffffffffffffffff
+B: MSC=10
+B: LED=7
 
-There are all kinds of things that can be administratively prohibited, and
-it would be nice if my security tools would Just Work with that: I don't think
-pushing all the different restrictions into the kernel for SELinux's sake
-is the way forward.
+After:
+I: Bus=0011 Vendor=0001 Product=0001 Version=ab41
+N: Name="AT Translated Set 2 keyboard"
+P: Phys=isa0060/serio0/input0
+S: Sysfs=/devices/platform/i8042/serio0/input/input15
+U: Uniq=
+H: Handlers=kbd event4 evbug
+B: EV=120013
+B: KEY=20000 20000000020 0 0 500f02100003 3803078f900d401
+feffffdfffefffff ffffffffffffffff
+B: MSC=10
+B: LED=7
 
-> I want a way to make the kernel not upcall at all, if I have that I can
-> make SELinux do whatever I want.  If I don't have that, all I can do is
-> some post failure fragile userspace filtering.
+Was this expected?
 
-If the kernel is better at filtering than userspace, that is an SELinux
-problem that you should address.
+> But regardless, X policy of comparing
+> keybit is stupid - they don't kill the device if I change keymap while
+> in X, why do they do that on resume? Or when I change the limits on
+> absolute axis... Oh well.
+With respect to this bug, I have opened a bug report for xorg:
+https://bugs.freedesktop.org/show_bug.cgi?id=24687
+Indeed, evdev tend to disable for plenty of different reason the
+keyboard (cf src/evdev.c: EvdevCacheCompare()). The source code is not
+very clear why they do this, but somehow I was under the impression that
+it was to avoid using twice the same device (with slightly different
+properties).
 
-Cheers,
-Rusty.
+See you,
+Eric
