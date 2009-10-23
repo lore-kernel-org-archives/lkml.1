@@ -1,148 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751797AbZJWWKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbZJWWOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751797AbZJWWKx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 18:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZJWWKw
+	id S1752056AbZJWWOd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 18:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZJWWOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 18:10:52 -0400
-Received: from smtp-out.neti.ee ([194.126.126.34]:37690 "EHLO smtp-out.neti.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751111AbZJWWKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 18:10:51 -0400
-X-SMTP-Auth-NETI-Businesmail: no
-From: Marti Raudsepp <marti@juffo.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Marti Raudsepp <marti@juffo.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf tools: add compatibility with libelf 0.8 and autodetect
-Date: Sat, 24 Oct 2009 01:10:48 +0300
-Message-Id: <1256335848-16270-1-git-send-email-marti@juffo.org>
-X-Mailer: git-send-email 1.6.5.1
-References: <1256330234-14079-1-git-send-email-marti@juffo.org> <20091023210231.GC8356@elte.hu> <1256334501-15755-1-git-send-email-marti@juffo.org> <20091023215239.GB29403@elte.hu>
-In-Reply-To: <20091023215239.GB29403@elte.hu>
+	Fri, 23 Oct 2009 18:14:32 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:48462 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751400AbZJWWOc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 18:14:32 -0400
+Date: Fri, 23 Oct 2009 18:14:35 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       <linux-media@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: uvcvideo causes ehci_hcd to halt
+In-Reply-To: <4AE158D7.6000900@pardus.org.tr>
+Message-ID: <Pine.LNX.4.44L0.0910231809290.31680-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 24, 2009 at 12:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> Mind adding a comment as well to document the version dependency?
+On Fri, 23 Oct 2009, [UTF-8] Ozan Çağlayan wrote:
 
-Sure
+> > There's something odd about this.  I'd like to see this file again, 
+> > after the patch below has been applied.
+> >   
+> 
+> periodic
+> size = 1024
+>    1:  qh1024-0001/f6ffe280 (h2 ep2 [1/0] q0 p8) t00000000
 
-> Also, there's a few probably unintended whitespaces
+On closer study and more careful thought, there's nothing odd here at
+all.  This is what would be expected given the bug that you saw.
 
-Fixed
+> After putting a udelay() the problem seems to be resolved. I did a
+> rmmod-modprobe-sleep in 50 iterations,  and the host controller was
+> still functional along with the web-cam:
 
---
-perf tools: add compatibility with libelf 0.8 and autodetect
+Okay, that proves this really is a timing bug in the hardware.  But we
+can't go around putting 2-millisecond delays in the kernel!  Maybe you
+can test to see if smaller delays will fix the problem.  If 50
+microseconds or less doesn't work then it will be necessary to add a
+new timer to ehci-hcd.
 
-The Makefile now automatically defines LIBELF_NO_MMAP when libelf 0.8 is
-detected. libelf 0.8 is still maintained and some distributions such as
-Arch Linux use it instead of elfutils.
-
-Signed-off-by: Marti Raudsepp <marti@juffo.org>
----
- tools/perf/Makefile      |    6 +++++-
- tools/perf/util/symbol.c |    9 +++++----
- tools/perf/util/symbol.h |   16 ++++++++++++++++
- 3 files changed, 26 insertions(+), 5 deletions(-)
-
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 742a32e..46e877b 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -422,7 +422,11 @@ ifeq ($(uname_S),Darwin)
- 	PTHREAD_LIBS =
- endif
- 
--ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
-+ifeq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
-+	ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
-+		BASIC_CFLAGS += -DLIBELF_NO_MMAP
-+	endif
-+else
- 	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el]);
- endif
- 
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 47ea060..ec69c42 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -5,7 +5,6 @@
- 
- #include "debug.h"
- 
--#include <libelf.h>
- #include <gelf.h>
- #include <elf.h>
- 
-@@ -413,7 +412,8 @@ static int dso__synthesize_plt_symbols(struct  dso *self, int v)
- 	if (fd < 0)
- 		goto out;
- 
--	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-+	elf = perf_elf_begin(fd, ELF_C_READ, NULL);
-+
- 	if (elf == NULL)
- 		goto out_close;
- 
-@@ -533,7 +533,8 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
- 	Elf *elf;
- 	int nr = 0, kernel = !strcmp("[kernel]", self->name);
- 
--	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-+	elf = perf_elf_begin(fd, ELF_C_READ, NULL);
-+
- 	if (elf == NULL) {
- 		if (v)
- 			fprintf(stderr, "%s: cannot read %s ELF file.\n",
-@@ -675,7 +676,7 @@ static char *dso__read_build_id(struct dso *self, int v)
- 	if (fd < 0)
- 		goto out;
- 
--	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-+	elf = perf_elf_begin(fd, ELF_C_READ, NULL);
- 	if (elf == NULL) {
- 		if (v)
- 			fprintf(stderr, "%s: cannot read %s ELF file.\n",
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index 6e84907..38bc832 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -8,6 +8,8 @@
- #include "module.h"
- #include "event.h"
- 
-+#include <libelf.h>
-+
- #ifdef HAVE_CPLUS_DEMANGLE
- extern char *cplus_demangle(const char *, int);
- 
-@@ -27,6 +29,20 @@ static inline char *bfd_demangle(void __used *v, const char __used *c,
- #endif
- #endif
- 
-+static inline Elf *perf_elf_begin(int fd, Elf_Cmd cmd, Elf *ref)
-+{
-+#ifndef LIBELF_NO_MMAP
-+	/*
-+	 * libelf 0.8 and earlier do not support ELF_C_READ_MMAP; for newer
-+	 * versions we can use mmap to reduce memory usage
-+	 */
-+
-+	if (cmd == ELF_C_READ)
-+		cmd = ELF_C_READ_MMAP;
-+#endif
-+	return elf_begin(fd, cmd, ref);
-+}
-+
- #ifndef DMGL_PARAMS
- #define DMGL_PARAMS      (1 << 0)       /* Include function args */
- #define DMGL_ANSI        (1 << 1)       /* Include const, volatile, etc */
--- 
-1.6.5.1
+Alan Stern
 
