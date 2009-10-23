@@ -1,99 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751923AbZJWGUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZJWGuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751923AbZJWGUR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 02:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZJWGUR
+	id S1751956AbZJWGuM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 02:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZJWGuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 02:20:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43676 "EHLO mx2.mail.elte.hu"
+	Fri, 23 Oct 2009 02:50:11 -0400
+Received: from kroah.org ([198.145.64.141]:52650 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751867AbZJWGUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 02:20:16 -0400
-Date: Fri, 23 Oct 2009 08:20:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH 1/1] perf tools: Unify debug messages mechanisms
-Message-ID: <20091023062000.GB1389@elte.hu>
-References: <1256153646-10097-1-git-send-email-acme@redhat.com>
+	id S1751222AbZJWGuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 02:50:10 -0400
+Date: Thu, 22 Oct 2009 23:49:42 -0700
+From: Greg KH <greg@kroah.com>
+To: Bryan Wu <cooloney@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Matthias Urlichs <matthias@urlichs.de>,
+       smurf@smurf.noris.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] UBUNTU: USB: option: TLAYTECH TUE800 support
+Message-ID: <20091023064942.GB28430@kroah.com>
+References: <1256194836-15733-1-git-send-email-bryan.wu@canonical.com> <1256202285.7526.109.camel@kiste> <4AE117B3.3040807@canonical.com> <20091023045236.GA3390@merkur.ravnborg.org> <4AE14030.5010304@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1256153646-10097-1-git-send-email-acme@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <4AE14030.5010304@canonical.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 23, 2009 at 01:33:36PM +0800, Bryan Wu wrote:
+> Sam Ravnborg wrote:
+>> On Fri, Oct 23, 2009 at 10:40:51AM +0800, Bryan Wu wrote:
+>>   
+>>> Matthias Urlichs wrote:
+>>>     
+>>>> On Thu, 2009-10-22 at 15:00 +0800, Bryan Wu wrote:
+>>>>       
+>>>>> Add ID for Tlaytech TUE800 CDMA modem to the option driver.
+>>>>>
+>>>>> Signed-off-by: Bryan Wu <bryan.wu@canonical.com>
+>>>>>         
+>>>> Acked-By: Matthias Urlichs <matthias@urlichs.de>
+>>>>
+>>>>
+>>>>       
+>>> Thanks a lot, Matthias. Do you think we need to include this patch into 31.y stable release?
+>>> Since our 9.10 Ubuntu kernel is based on .31 kernel, we need to include 
+>>> this patch through stable release.
+>>>     
+>>
+>> What is it with the subject of this patch?
+>> It says: UBUNTU: USB: ...
+>>
+>> And I do not recall a subsystem named "UBUNTU" in the kernel.
+>>
+>>   
+>
+> Sorry for that mess. I posted this patch to our Ubuntu kernel team review 
+> as well as upstream. But forget to remove that tag.
+> Please ignore that, need I resend a patch?
 
-* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+No, I can edit that out, don't worry.
 
-> We were using eprintf in some places, that looks at a global 'verbose' 
-> level, and at other places passing a 'v' parameter to specify the 
-> verbosity level, unify it by introducing pr_{err,warning,debug,etc}, 
-> just like in the kernel.
-> 
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
->  tools/perf/builtin-annotate.c          |    3 +-
->  tools/perf/builtin-probe.c             |   20 +++---
->  tools/perf/builtin-record.c            |    2 +-
->  tools/perf/builtin-report.c            |    9 +-
->  tools/perf/builtin-sched.c             |    4 +-
->  tools/perf/builtin-timechart.c         |   13 ++--
->  tools/perf/builtin-top.c               |    2 +-
->  tools/perf/builtin-trace.c             |    4 +-
->  tools/perf/util/callchain.c            |    2 +-
->  tools/perf/util/debug.c                |    4 +-
->  tools/perf/util/debug.h                |    3 +-
->  tools/perf/util/event.h                |    3 +-
->  tools/perf/util/header.c               |    2 +-
->  tools/perf/util/include/linux/kernel.h |   17 ++++
->  tools/perf/util/map.c                  |   17 ++--
->  tools/perf/util/probe-finder.c         |   12 ++--
->  tools/perf/util/symbol.c               |  134 ++++++++++++++------------------
->  tools/perf/util/symbol.h               |    5 +-
->  tools/perf/util/thread.c               |    6 +-
->  19 files changed, 130 insertions(+), 132 deletions(-)
-> 
-> diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-> index 99bac6a..6d63c2e 100644
-> --- a/tools/perf/builtin-annotate.c
-> +++ b/tools/perf/builtin-annotate.c
-> @@ -203,8 +203,7 @@ static int
->  process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
->  {
->  	struct map *map = map__new(&event->mmap, NULL, 0,
-> -				   sizeof(struct sym_priv), symbol_filter,
-> -				   verbose);
-> +				   sizeof(struct sym_priv), symbol_filter);
->  	struct thread *thread = threads__findnew(event->mmap.pid);
->  
->  	dump_printf("%p [%p]: PERF_RECORD_MMAP %d: [%p(%p) @ %p]: %s\n",
-> diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-> index b5ad86a..dcb406c 100644
-> --- a/tools/perf/builtin-probe.c
-> +++ b/tools/perf/builtin-probe.c
-> @@ -78,7 +78,7 @@ static int parse_probepoint(const struct option *opt __used,
->  	if (!str)	/* The end of probe points */
->  		return 0;
->  
-> -	eprintf("probe-definition(%d): %s\n", session.nr_probe, str);
-> +	pr_debug("probe-definition(%d): %s\n", session.nr_probe, str);
+I'll apply this next week when I return from Japan.
 
-Very nice! That verbose global/local overlap has always bothered me, 
-thanks for fixing it!
+thanks,
 
-	Ingo
+greg k-h
