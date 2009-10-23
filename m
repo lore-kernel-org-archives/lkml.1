@@ -1,152 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751797AbZJWJlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751660AbZJWJhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751797AbZJWJlq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 05:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbZJWJlq
+	id S1751660AbZJWJhB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 05:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZJWJhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 05:41:46 -0400
-Received: from host-181-75-169-83.static.internet-fr.net ([83.169.75.181]:44716
-	"EHLO seanodes.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751609AbZJWJlp (ORCPT
+	Fri, 23 Oct 2009 05:37:00 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:41396 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbZJWJg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 05:41:45 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Oct 2009 05:41:44 EDT
-Message-ID: <4AE178AF.3010804@gmail.com>
-Date: Fri, 23 Oct 2009 11:34:39 +0200
-From: Erwan Velu <erwanaliasr1@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090822)
+	Fri, 23 Oct 2009 05:36:59 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=knV9Utvdj2xtpSr+5fqTUPIL29olzItI1Bcb7WbShHibqgFOGccHGnOtSg1TC55Mc
+	WbsLx52ty10QYl1HVvdeA==
+Date: Fri, 23 Oct 2009 02:36:53 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 4/5] page allocator: Pre-emptively wake kswapd when
+ high-order watermarks are hit
+In-Reply-To: <20091023091334.GV11778@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0910230229010.28109@chino.kir.corp.google.com>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0910221227010.21601@chino.kir.corp.google.com> <20091023091334.GV11778@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: x86@kernel.org
-Subject: [PATCH] dmi_check_system can generate Warnings when no DMI table
- is present
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When running the Linux Kernel, on some systems that doesn't have any DMI 
-table (like a Xen domU), some dmi_* calls can generates Warnings like :
+On Fri, 23 Oct 2009, Mel Gorman wrote:
 
->/ WARNING: at /usr/src/linux-2.6.29.1/drivers/firmware/dmi_scan.c:425/
->/ dmi_matches+0x7e/0x80()/
->/ dmi check: not initialized yet/
+> > Hmm, is this really supposed to be added to __alloc_pages_high_priority()?  
+> > By the patch description I was expecting kswapd to be woken up 
+> > preemptively whenever the preferred zone is below ALLOC_WMARK_LOW and 
+> > we're known to have just allocated at a higher order, not just when 
+> > current was oom killed (when we should already be freeing a _lot_ of 
+> > memory soon) or is doing a higher order allocation during direct reclaim.
+> > 
+> 
+> It was a somewhat arbitrary choice to have it trigger in the event high
+> priority allocations were happening frequently.
+> 
 
-Some users reported this error :
-http://lists.xensource.com/archives/html/xen-users/2009-04/msg00128.html
-https://qa.mandriva.com/show_bug.cgi?id=54775
+I don't quite understand, users of PF_MEMALLOC shouldn't be doing these 
+higher order allocations and if ALLOC_NO_WATERMARKS is by way of the oom 
+killer, we should be freeing a substantial amount of memory imminently 
+when it exits that waking up kswapd would be irrelevant.
 
-When the kernel is compiled with CONFIG_DMI, dmi_check_system(), 
-dmi_first_match(), dmi_name_in_vendors(), dmi_find_device(), 
-dmi_get_date(), dmi_match() calls doesn't check the status of the 
-dmi_available variable.
+> > If this is moved to the fastpath, why is this wake_all_kswapd() and not
+> > wakeup_kswapd(preferred_zone, order)?  Do we need to kick kswapd in all 
+> > zones even though they may be free just because preferred_zone is now 
+> > below the watermark?
+> > 
+> 
+> It probably makes no difference as zones are checked for their watermarks
+> before any real work happens. However, even if this patch makes a difference,
+> I don't want to see it merged.  At best, it is an extremely heavy-handed
+> hack which is why I asked for it to be tested in isolation. It shouldn't
+> be necessary at all because sort of pre-emptive waking of kswapd was never
+> necessary before.
+> 
 
-When this functions are called and if no valid dmi table has been found, 
-this pretty simple patch just return the default values returned when 
-CONFIG_DMI isn't set.
+Ahh, that makes a ton more sense: this particular patch is a debugging 
+effort while the first two are candidates for 2.6.32 and -stable.  Gotcha.
 
-This patch applies to the lastest git tree.
-I'm CCing the x86 maintainers as I can't find any maintainer of 
-drivers/firmware/dmi.
+> > Wouldn't it be better to do this on page_zone(page) instead of 
+> > preferred_zone anyway?
+> > 
+> 
+> No. The preferred_zone is the zone we should be allocating from. If we
+> failed to allocate from it, it implies the watermarks are not being met
+> so we want to wake it.
+> 
 
-Signed-off-by: Erwan Velu <erwanaliasr1@gmail.com>
-
-
-diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
-index 938100f..ea8b433 100644
---- a/drivers/firmware/dmi_scan.c
-+++ b/drivers/firmware/dmi_scan.c
-@@ -457,6 +457,9 @@ int dmi_check_system(const struct dmi_system_id *list)
-     int count = 0;
-     const struct dmi_system_id *d;
- 
-+    if (!dmi_available)
-+        return 0;
-+
-     for (d = list; d->ident; d++)
-         if (dmi_matches(d)) {
-             count++;
-@@ -484,6 +487,9 @@ const struct dmi_system_id *dmi_first_match(const 
-struct dmi_system_id *list)
- {
-     const struct dmi_system_id *d;
- 
-+    if (!dmi_available)
-+        return NULL;
-+
-     for (d = list; d->ident; d++)
-         if (dmi_matches(d))
-             return d;
-@@ -501,6 +507,9 @@ EXPORT_SYMBOL(dmi_first_match);
-  */
- const char *dmi_get_system_info(int field)
- {
-+    if (!dmi_available)
-+        return NULL;
-+
-     return dmi_ident[field];
- }
- EXPORT_SYMBOL(dmi_get_system_info);
-@@ -512,6 +521,10 @@ EXPORT_SYMBOL(dmi_get_system_info);
- int dmi_name_in_serial(const char *str)
- {
-     int f = DMI_PRODUCT_SERIAL;
-+
-+    if (!dmi_available)
-+        return 0;
-+
-     if (dmi_ident[f] && strstr(dmi_ident[f], str))
-         return 1;
-     return 0;
-@@ -527,6 +540,10 @@ int dmi_name_in_vendors(const char *str)
-                 DMI_PRODUCT_NAME, DMI_PRODUCT_VERSION, DMI_BOARD_VENDOR,
-                 DMI_BOARD_NAME, DMI_BOARD_VERSION, DMI_NONE };
-     int i;
-+
-+    if (!dmi_available)
-+        return 0;
-+
-     for (i = 0; fields[i] != DMI_NONE; i++) {
-         int f = fields[i];
-         if (dmi_ident[f] && strstr(dmi_ident[f], str))
-@@ -554,6 +571,9 @@ const struct dmi_device * dmi_find_device(int type, 
-const char *name,
-     const struct list_head *head = from ? &from->list : &dmi_devices;
-     struct list_head *d;
- 
-+    if (!dmi_available)
-+        return NULL;
-+
-     for(d = head->next; d != &dmi_devices; d = d->next) {
-         const struct dmi_device *dev =
-             list_entry(d, struct dmi_device, list);
-@@ -592,6 +612,16 @@ bool dmi_get_date(int field, int *yearp, int 
-*monthp, int *dayp)
-     const char *s, *y;
-     char *e;
- 
-+    if (!dmi_available) {
-+            if (yearp)
-+                    *yearp = 0;
-+            if (monthp)
-+                    *monthp = 0;
-+            if (dayp)
-+                    *dayp = 0;
-+            return false;
-+    }
-+
-     s = dmi_get_system_info(field);
-     exists = s;
-     if (!exists)
-@@ -676,6 +706,9 @@ bool dmi_match(enum dmi_field f, const char *str)
- {
-     const char *info = dmi_get_system_info(f);
- 
-+    if (!dmi_available)
-+        return false;
-+
-     if (info == NULL || str == NULL)
-         return info == str;
- 
-
+Oops, I'm even more confused now :)  I thought the existing 
+wake_all_kswapd() in the slowpath was doing that and that this patch was 
+waking them prematurely because it speculates that a subsequent high 
+order allocation will fail unless memory is reclaimed.  I thought we'd  
+want to reclaim from the zone we just did a high order allocation from so 
+that the fastpath could find the memory next time with ALLOC_WMARK_LOW.
