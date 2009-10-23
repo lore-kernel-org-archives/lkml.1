@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752213AbZJWO7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbZJWPEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752213AbZJWO7w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 10:59:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbZJWO7v
+	id S1752280AbZJWPEE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 11:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZJWPEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 10:59:51 -0400
-Received: from ozlabs.org ([203.10.76.45]:43711 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752034AbZJWO7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 10:59:50 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: request_module vs. modprobe blacklist (and security subsystem implications)
-Date: Sat, 24 Oct 2009 01:29:52 +1030
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       linux-kernel@vger.kernel.org, arjan@infradead.org,
-       randy.dunlap@oracle.com, andi@firstfloor.org, dhowells@redhat.com,
-       akpm@linux-foundation.org
-References: <1256137348.4443.39.camel@dhcp231-106.rdu.redhat.com> <200910231946.39174.rusty@rustcorp.com.au> <1256307830.4443.158.camel@dhcp231-106.rdu.redhat.com>
-In-Reply-To: <1256307830.4443.158.camel@dhcp231-106.rdu.redhat.com>
+	Fri, 23 Oct 2009 11:04:04 -0400
+Received: from host-181-75-169-83.static.internet-fr.net ([83.169.75.181]:35604
+	"EHLO seanodes.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752245AbZJWPED (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 11:04:03 -0400
+Message-ID: <4AE1C5C6.7000103@gmail.com>
+Date: Fri, 23 Oct 2009 17:03:34 +0200
+From: Erwan Velu <erwanaliasr1@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090822)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910240129.53622.rusty@rustcorp.com.au>
+To: Daniel Walker <dwalker@fifo99.com>
+CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH] dmi_check_system can generate Warnings when no DMI table
+ is present
+References: <4AE178AF.3010804@gmail.com> <20091023110323.GC10071@elte.hu>	 <4AE19867.5070705@gmail.com> <1256302066.10493.74.camel@desktop>
+In-Reply-To: <1256302066.10493.74.camel@desktop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Oct 2009 12:53:50 am Eric Paris wrote:
-> On Fri, 2009-10-23 at 19:46 +1030, Rusty Russell wrote:
-> > On Fri, 23 Oct 2009 01:00:22 am Eric Paris wrote:
-> > > > If a userspace program tries some security exploit that has been closed, do
-> > > > you want to warn about it?  Because that seems to be the question here.
-> > > 
-> > > I say yes.  Knowing that malicious activity is taking place, even if it
-> > > didn't hurt anything is useful.
-> > 
-> > Hi Eric,
-> > 
-> > Your proposal is troubling for three reasons:
-> > 
-> > 1) You would disable logging for things you actually want logged.
-> 
-> I would?
-
-Yep, admin disables loading of ipx to prevent hole.  Now, you no longer get
-logging notification.
-
-> > 2) What *actually* happens when ssh tries to load ipv6 is that
-> >    "modprobe net-pf-10" gets called.
-> > 3) Containing modprobe behavior in one set of config files is really nice.
-> 
-> It is it also means that we, somewhat regularly call userspace
-> needlessly and there is nothing an admin can do to stop it.
-
-Yes, but that's nothing to do with SELinux; we exec modprobe for no effect.
-Yet I've yet to see a report that this is a performance issue.  These brains
-are in userspace for a reason.
-
-> But it appears you disagree that fixing that problem is worth it, and I
-> don't feel strongly enough to keep arguing  :)
-
-But we have learnt something, at least!
-
-Cheers,
-Rusty.
+Daniel Walker a écrit :
+> [...]
+> It's your defect, so you can still try to fix it (unless the "xen
+> people" or someone else beats you to it.) 
+>
+> It looks like on a normal system dmi_scan_machine() gets called very
+> early in setup_arch() arch/x86/kernel/setup.c . A possible good fix
+> might be to add a dmi_disable() into the dmi driver that just shuts off
+> dmi, and run that in xen_arch_setup() in arch/x86/xen/setup.c 
+Could it make sense having this patch (I can work on it) while keeping 
+my previous patch ?
+Does it make sense keeping the default return value I've been adding 
+when no dmi table is found ?
