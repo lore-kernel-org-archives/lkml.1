@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751751AbZJWFU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbZJWF2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751751AbZJWFU4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 01:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbZJWFUz
+	id S1751805AbZJWF2E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 01:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZJWF2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 01:20:55 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53717 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbZJWFUz (ORCPT
+	Fri, 23 Oct 2009 01:28:03 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:30788 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751158AbZJWF2C convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 01:20:55 -0400
-Date: Fri, 23 Oct 2009 07:20:52 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz
-Subject: Re: spitz backlight: fix brightness limiting
-Message-ID: <20091023052052.GA15499@elf.ucw.cz>
-References: <20091019213751.GC1482@ucw.cz>
- <f17812d70910211320s29d3aaa5tad3206df1e99e03b@mail.gmail.com>
- <1256251399.23211.164.camel@dax.rpnet.com>
+	Fri, 23 Oct 2009 01:28:02 -0400
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 4/4 v2] ASoC: TWL4030: Driver registration via twl4030_codec MFD
+Date: Fri, 23 Oct 2009 08:27:55 +0300
+User-Agent: KMail/1.12.2 (Linux/2.6.31-gentoo; KDE/4.3.2; i686; ; )
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "sameo@linux.intel.com" <sameo@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tony@atomide.com" <tony@atomide.com>
+References: <1256207208-25010-1-git-send-email-peter.ujfalusi@nokia.com> <1256207208-25010-5-git-send-email-peter.ujfalusi@nokia.com> <20091022165643.GA28051@rakim.wolfsonmicro.main>
+In-Reply-To: <20091022165643.GA28051@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256251399.23211.164.camel@dax.rpnet.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200910230827.55141.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 23 Oct 2009 05:27:59.0240 (UTC) FILETIME=[95413880:01CA53A1]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-10-22 23:43:19, Richard Purdie wrote:
-> On Thu, 2009-10-22 at 04:20 +0800, Eric Miao wrote:
-> > It's a little bit weird it's called 'limit_mask' when I first converted it
-> > to a spi driver. There must be some reasons, Richard, you've got
-> > any ideas?
+On Thursday 22 October 2009 19:56:44 ext Mark Brown wrote:
+> On Thu, Oct 22, 2009 at 01:26:48PM +0300, Peter Ujfalusi wrote:
+> > Change the way how the twl4030 soc codec driver is
+> > loaded/probed.
+> > Use the device probing via tlw4030_codec MFD device.
 > 
-> Its a historical artifact that once worked through some bitfield magic
-> but probably stopped working when we increased the range of values the
-> backlight could accept and we didn't notice the limiting problem.
+> I'm OK with the series but:
+> > @@ -147,6 +147,7 @@ config SND_SOC_TLV320DAC33
+> >  	tristate
+> >
+> >  config SND_SOC_TWL4030
+> > +	select TWL4030_CODEC
+> >  	tristate
 > 
-> I'll happily take a patch to fix that.
+> due to Kconfig ignoring dependencies all the individual machine drivers
+> are going to need to select this, and SND_SOC_ALL_CODECS will need to
+> select it if the MFD core is enabled.  I should be able to fix this up
+> myself so no need to repost for that alone.
 
-Patch is available in the parent post. For now, I just fix it so that
-it does not turn backlight off when it should not. I'll submit
-limit_mask -> limit as separate patch, ok?
-								Pavel
+Hmm, what do you mean by that?
+I have checked it, and selecting the machine driver will enables the MFD_CORE 
+and TWL4030_CODEC in .config, also disabling the machine driver will also 
+disable the MFD_CORE and the TWL4030_CODEC.
+
+Can you go into details?
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Péter
