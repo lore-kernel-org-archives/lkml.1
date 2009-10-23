@@ -1,99 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751439AbZJWBx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751393AbZJWCBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751439AbZJWBx2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Oct 2009 21:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZJWBx1
+	id S1751393AbZJWCBx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Oct 2009 22:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750918AbZJWCBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Oct 2009 21:53:27 -0400
-Received: from 71-20-254-182.war.clearwire-wmx.net ([71.20.254.182]:35196 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751265AbZJWBx0 (ORCPT
+	Thu, 22 Oct 2009 22:01:53 -0400
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:52539 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbZJWCBw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Oct 2009 21:53:26 -0400
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
- available
-From: Eric Anholt <eric@anholt.net>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Schlichter <thomas.schlichter@web.de>,
-       Ingo Molnar <mingo@elte.hu>, Jan Beulich <JBeulich@novell.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Robert Hancock <hancockrwd@gmail.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Tejun Heo <tj@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       Ingo Molnar <mingo@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <1256256717.2534.6.camel@sbs-t61>
-References: <1394846127@web.de>
-	 <4ADF32A0020000780001B20A@vpn.id2.novell.com>
-	 <20091021173514.GA32227@elte.hu>
-	 <200910212201.36578.thomas.schlichter@web.de>
-	 <1256205210.2530.28.camel@sbs-t61>
-	 <1256225689.32075.6.camel@gaiman.anholt.net>
-	 <1256248050.2546.9.camel@sbs-t61>  <20091023081047.4d8abc29@jbarnes-x200>
-	 <1256256717.2534.6.camel@sbs-t61>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-uTzHHxb5+7CDQs6cf6Dn"
-Date: Thu, 22 Oct 2009 18:53:19 -0700
-Message-Id: <1256262799.15120.8.camel@gaiman.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Thu, 22 Oct 2009 22:01:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JTxF9a0KreAYcqmiG3Coq1DQx1Yp9aq+17DYmdmadKDXzaLTvoqT13BgeprCckJPiQ
+         ClFgPi1DvM28XiHvE1GdFAz8Uo5WnsBMRSf1qcNj+zRM6Stez0taLvjTBIiYbmnXazco
+         4wRQ2BAts3ceuQtUMIUUCou3ZbB7EZ5XoVcyQ=
+Date: Thu, 22 Oct 2009 19:01:50 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: ?ric Piel <eric.piel@tremplin-utc.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
+	anymore
+Message-ID: <20091023020150.GA26723@core.coreip.homeip.net>
+References: <20091011030029.GA6526@suse.de> <200910112135.29384.dmitry.torokhov@gmail.com> <4AD31709.4000103@tremplin-utc.net> <20091012154846.GB7996@core.coreip.homeip.net> <20091012173551.GC10557@suse.de> <20091012183313.GC8345@core.coreip.homeip.net> <20091012185417.GA30342@suse.de> <20091013031741.GB2887@core.coreip.homeip.net> <20091018075127.GH3935@core.coreip.homeip.net> <20091018080238.GA13810@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091018080238.GA13810@suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Oct 18, 2009 at 01:02:38AM -0700, Greg KH wrote:
+> On Sun, Oct 18, 2009 at 12:51:27AM -0700, Dmitry Torokhov wrote:
+> > On Mon, Oct 12, 2009 at 08:17:41PM -0700, Dmitry Torokhov wrote:
+> > > On Mon, Oct 12, 2009 at 11:54:17AM -0700, Greg KH wrote:
+> > > > On Mon, Oct 12, 2009 at 11:33:13AM -0700, Dmitry Torokhov wrote:
+> > > > > On Mon, Oct 12, 2009 at 10:35:51AM -0700, Greg KH wrote:
+> > > > > > On Mon, Oct 12, 2009 at 08:48:46AM -0700, Dmitry Torokhov wrote:
+> > > > > > > > So at least, unbind should fail as well as bind.
+> > > > > > > >
+> > > > > > > 
+> > > > > > > That would be Greg's domain s it is driver core decision whether to
+> > > > > > > allow unbinding platform devices registered with
+> > > > > > > platform_driver_probe().
+> > > > > > 
+> > > > > > No, I do not see why that should not be allowed.
+> > > > > > 
+> > > > > 
+> > > > > Because once you did unbind the device you are stuck (unless the driver
+> > > > > is compiled as a module, but then you could just unload the module
+> > > > > instead of unbinding). Disallowing unbind would allow discarding not
+> > > > > only __devinit but __devexit sections when driver is built in which
+> > > > > would make ebedded people happy[^Hier].
+> > > > 
+> > > > Yeah, good point.
+> > > > 
+> > > > Does anyone do bind/unbind with platform devices today?
+> > > > 
+> > > > If not, a patch changing this would be welcome.
+> > > > 
+> > > 
+> > > How about this one?
+> > > 
+> > 
+> > *ping* We need to resolve this, otherwise everyone who likes to rebind
+> > i8042 in couse of STR/STD will be in trouble.
+> 
+> Sorry, am in Tokyo right now.
+> 
+> I like this patch, and will queue it up, but it's too late for .32, it
+> will have to wait for .33.
+> 
 
---=-uTzHHxb5+7CDQs6cf6Dn
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Greg,
 
-On Thu, 2009-10-22 at 17:11 -0700, Suresh Siddha wrote:
-> On Thu, 2009-10-22 at 16:10 -0700, Jesse Barnes wrote:
-> > On Thu, 22 Oct 2009 14:47:30 -0700
-> > Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-> >=20
-> > > On Thu, 2009-10-22 at 08:34 -0700, Eric Anholt wrote:
-> > > > Can we just not create the _wc sysfs entry if we don't have PAT?  I
-> > > > don't think there's userland relying on its presence as opposed to
-> > > > the non-_wc entry.
-> > >=20
-> > > Yes indeed. Jesse do you see an issue with this? This is simple and
-> > > clean. Thanks Eric.
-> >=20
-> > Yeah, I think that will be fine.  In fact, older versions of
-> > libpciaccess will behave better if we do it that way (iirc it only
-> > allocates an MTRR if the resource_wc file doesn't exist or fails to get
-> > mapped).
->=20
-> Eric, care to send the patch?
+I hope you will reconsider. The patch is extremely small but without it
+I am afraid many people whose distributions blindly rebind i8042 on
+suspend/resume will lose their keyboards and mice now that i8042 uses
+platform_driver_probe()...
 
-I don't have a patch, I was just suggesting a way to handle the
-submitter's problem that won't involve complicated changes that nobody
-else will be testing since everyone *should* have a graphics driver for
-their graphics hardware.
+Thanks.
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-uTzHHxb5+7CDQs6cf6Dn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkrhDI8ACgkQHUdvYGzw6vfDewCfaqYR5TjG0zpwoH4xd+zJ2FlO
-6SEAn2ES4srqXKhLObGI8ROujoiHxAba
-=1JuF
------END PGP SIGNATURE-----
-
---=-uTzHHxb5+7CDQs6cf6Dn--
-
+-- 
+Dmitry
