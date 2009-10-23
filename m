@@ -1,84 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbZJWPp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752413AbZJWP4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752342AbZJWPp2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 11:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbZJWPp2
+	id S1752413AbZJWP4g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 11:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZJWP4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 11:45:28 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:35258 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752224AbZJWPp1 (ORCPT
+	Fri, 23 Oct 2009 11:56:36 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:18262 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752373AbZJWP4f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 11:45:27 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: mingo@redhat.com
-Cc: tglx@linutronix.de, hpa@zytor.com, x86@kernel.org,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Simon Horman <horms@verge.net.au>, Paul Mundt <lethal@linux-sh.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 1/1] crash_dump: fix non-pae kdump kernel memory accesses
-Date: Fri, 23 Oct 2009 17:45:29 +0200
-Message-Id: <1256312729-22935-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.4.2
+	Fri, 23 Oct 2009 11:56:35 -0400
+Subject: Re: [PATCH v11 4/5] core: Add kernel message dumper to call on
+	oopses and panics
+From: "Shargorodsky Atal (EXT-Teleca/Helsinki)" 
+	<ext-atal.shargorodsky@nokia.com>
+To: ext Simon Kagstrom <simon.kagstrom@netinsight.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Artem Bityutskiy <dedekind1@gmail.com>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091022082500.602f9a7d@marrow.netinsight.se>
+References: <20091015093133.GF10546@elte.hu>
+	 <20091015161052.0752208e@marrow.netinsight.se>
+	 <20091015154640.GA11408@elte.hu>
+	 <20091016094601.4e2c2d3e@marrow.netinsight.se>
+	 <20091016080935.GA3895@elte.hu>	<1255681467.32489.360.camel@localhost>
+	 <20091016112556.6902b2dc@marrow.netinsight.se>
+	 <20091016101045.GA3263@elte.hu>
+	 <20091016140918.3981cfa2@marrow.netinsight.se>
+	 <1255952922.32489.505.camel@localhost>	<20091019125017.GA9030@elte.hu>
+	 <alpine.LFD.2.00.0910220832580.9771@eeepc.linux-foundation.org>
+	 <20091022082500.602f9a7d@marrow.netinsight.se>
+Content-Type: text/plain
+Date: Fri, 23 Oct 2009 18:53:22 +0300
+Message-Id: <1256313202.5824.60.camel@atal-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Oct 2009 15:55:03.0382 (UTC) FILETIME=[2EFDAF60:01CA53F9]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Non-PAE 32-bit dump kernels may wrap an address around 4G and
-poke unwanted space. ptes there are 32-bit long, and since
-pfn << PAGE_SIZE may exceed this limit, high pfn bits are cropped
-and wrong address mapped by kmap_atomic_pfn in copy_oldmem_page.
+Hi all,
 
-Don't allow this behavior in non-PAE kdump kernels by checking
-pfns passed into copy_oldmem_page. In the case of failure,
-userspace process gets EFAULT.
+On Thu, 2009-10-22 at 08:25 +0200, ext Simon Kagstrom wrote:
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Simon Horman <horms@verge.net.au>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/crash_dump_32.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+> Thanks to everyone for the reviewing and suggestions!
+> 
 
-diff --git a/arch/x86/kernel/crash_dump_32.c b/arch/x86/kernel/crash_dump_32.c
-index f7cdb3b..b78dab8 100644
---- a/arch/x86/kernel/crash_dump_32.c
-+++ b/arch/x86/kernel/crash_dump_32.c
-@@ -16,6 +16,19 @@ static void *kdump_buf_page;
- /* Stores the physical address of elf header of crash image. */
- unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
- 
-+#ifndef CONFIG_X86_PAE
-+/* non-PAE kdump kernel executed from a PAE one will crop high pte bits and
-+   poke unwanted space counting again from address 0, we don't want that */
-+static inline bool is_crashed_pfn_valid(unsigned long pfn)
-+{
-+	/* on non-PAE pte must fit into unsigned long
-+	   in fact the test is (pfn & 0x000fffff) */
-+	return pte_pfn(pfn_pte(pfn, __pgprot(0))) == pfn;
-+}
-+#else
-+static inline bool is_crashed_pfn_valid(unsigned long pfn) { return true; }
-+#endif
-+
- /**
-  * copy_oldmem_page - copy one page from "oldmem"
-  * @pfn: page frame number to be copied
-@@ -41,6 +54,9 @@ ssize_t copy_oldmem_page(unsigned long pfn, char *buf,
- 	if (!csize)
- 		return 0;
- 
-+	if (!is_crashed_pfn_valid(pfn))
-+		return -EFAULT;
-+
- 	vaddr = kmap_atomic_pfn(pfn, KM_PTE0);
- 
- 	if (!userbuf) {
--- 
-1.6.4.2
+I have a couple of questions:
+
+1. If somebody writes a module that uses dumper for uploading the
+oopses/panics logs via some pay-per-byte medium,  since he has no way
+to know in a module if the panic_on_oops flag is set, he'll have
+to upload both oops and the following panic, because he does not
+know for sure that the panic was caused by the oops. Hence he
+pays twice for the same information, right?
+
+I can think of a couple of way to figure it out in the module
+itself, but I could not think of any clean way to do it.
+
+
+2. We tried to use panic notifiers mechanism to print additional
+information that we want to see in mtdoops logs and it worked well,
+but having the kmsg_dump(KMSG_DUMP_PANIC) before the
+atomic_notifier_call_chain() breaks this functionality.
+Can we the call kmsg_dump() after the notifiers had been invoked?
+
+
+Thanks,
+Atal.
+
+> // Simon
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
