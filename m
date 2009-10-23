@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751729AbZJWJij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751626AbZJWJfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751729AbZJWJij (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 05:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZJWJij
+	id S1751626AbZJWJfy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 05:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbZJWJfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 05:38:39 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:49171 "EHLO
+	Fri, 23 Oct 2009 05:35:54 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:51122 "EHLO
 	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751629AbZJWJii (ORCPT
+	with ESMTP id S1751334AbZJWJfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 05:38:38 -0400
+	Fri, 23 Oct 2009 05:35:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vS/kgJ9kuG+A4YTfd0TUDXfCnFugiobD61Sjiv8Lr+a3NPh+dVOKYbINnBFCKToLbi
-         e0yaxF3buhfz2PTw0uRENurCYouofcEIkBUUXV1z9p/inb6cuZ24sKrdjQ0qAYBhRvG+
-         +RhCZpz6zm4Bp4uAZk/TPVoAyZr5qMp3TUuMA=
-Date: Fri, 23 Oct 2009 11:38:40 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Greg KH <greg@kroah.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC] tracefs
-Message-ID: <20091023093838.GA4939@nowhere>
-References: <20091023004937.GA24035@kroah.com> <20091023053237.GA24359@elte.hu>
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=MyficWWDXp6vX2XGGq3qYo7a9lE4Ful+ns1uM7B+YdXgFzx7/o/Ys5BepC0qAeg6F6
+         OzP9otrfDm27dvCCzmpDmSeUSv4YvsbD+525OJy9GuZbrRetDCjfg4/NvHvbHcvVQQ8y
+         jrS6Jf4/Z/Q6rsIZK7MAPwOBgvvjeLg7XQpz8=
+Message-ID: <4AE17B62.1030701@gmail.com>
+Date: Fri, 23 Oct 2009 11:46:10 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091023053237.GA24359@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] get_maintainer: fix usage comment
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 07:32:37AM +0200, Ingo Molnar wrote:
-> 
-> * Greg KH <greg@kroah.com> wrote:
-> 
-> > Hi all,
-> > 
-> > At LinuxCon this year, Steven and I talked about moving the debugfs 
-> > usage in the tracing core to a stand-alone filesystem to give the 
-> > ability to start to lock down the api so that people an count on what 
-> > is going on in the tracing userspace interface.
-> 
-> What we want to move out initially (and i talked to Steve and Frederic 
-> about that a few weeks ago) is the event description bits - the format 
-> stuff in /debug/tracing/events/ - but definitely not all the other, 
-> rather messy and ad-hoc APIs.
-> 
-> _No way_ do we want to tie down the pretty-printing ftrace details as an 
-> ABI. We promised that when ftrace went upstream and all the details are 
-> way too messy to be exposed in an ABI alike matter (and yes, consider 
-> this a NAK Steve ;-).
-> 
-> We want a _very_ careful exporting of certain pieces of information that 
-> helps syscall-exposed perf events bits, and to improve the quality of 
-> interfaces while we do that.
-> 
-> 	Ingo
+With the `s' it just won't work.
 
-
-I guess the first bits that need to be exported are the TRACE_EVENT_ABI.
-But even before that, we need to ensure we have a final version of
-the trace events description.
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+index cdb44b6..4673873 100755
+--- a/scripts/get_maintainer.pl
++++ b/scripts/get_maintainer.pl
+@@ -5,8 +5,8 @@
+ # Print selected MAINTAINERS information for
+ # the files modified in a patch or for a file
+ #
+-# usage: perl scripts/get_maintainers.pl [OPTIONS] <patch>
+-#        perl scripts/get_maintainers.pl [OPTIONS] -f <file>
++# usage: perl scripts/get_maintainer.pl [OPTIONS] <patch>
++#        perl scripts/get_maintainer.pl [OPTIONS] -f <file>
+ #
+ # Licensed under the terms of the GNU GPL License version 2
+ 
