@@ -1,118 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751439AbZJWHCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbZJWHOE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751439AbZJWHCL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 03:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbZJWHCK
+	id S1751330AbZJWHOE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 03:14:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZJWHOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 03:02:10 -0400
-Received: from mailout11.t-online.de ([194.25.134.85]:33061 "EHLO
-	mailout11.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbZJWHCJ (ORCPT
+	Fri, 23 Oct 2009 03:14:03 -0400
+Received: from lider.uludag.org.tr ([193.140.100.216]:44043 "EHLO
+	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750841AbZJWHOC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 03:02:09 -0400
+	Fri, 23 Oct 2009 03:14:02 -0400
+Message-ID: <4AE158D7.6000900@pardus.org.tr>
+Date: Fri, 23 Oct 2009 10:18:47 +0300
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.23 (X11/20071115)
 MIME-Version: 1.0
-Date: Fri, 23 Oct 2009 09:02:07 +0200
-Reply-To: "harald.dunkel@t-online.de" <harald.dunkel@t-online.de>
-To: linux-kernel@vger.kernel.org
-X-UMS: email
-X-Mailer: TOI Kommunikationscenter V9-3-0-6
-Subject: 2.6.31.4, ps2-to-usb adapter: fourth mouse button not working
-From: "harald.dunkel@t-online.de" <harald.dunkel@t-online.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-ID: <1N1EA3-10pOoy0@fwd05.aul.t-online.de>
-X-ID: TF2ijGZ6rhuG6TrUrB+2NlWx3nkPjxkJbiqC9TrUD2LArv69uXiAHX9UBRw9ndKw0R@t-dialin.net
-X-TOI-MSGID: bdccd6fc-28c2-40d9-b409-5b3cad3a76d9
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       linux-media@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: uvcvideo causes ehci_hcd to halt
+References: <Pine.LNX.4.44L0.0910220944100.989-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0910220944100.989-100000@netrider.rowland.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+Alan Stern wrote On 22-10-2009 17:05:
+> On Thu, 22 Oct 2009, [UTF-8] Ozan Ã‡aÄŸlayan wrote:
+>
+>   
+>> Here's the outputs from /sys/kernel/debug/usb/ehci:
+>>
+>> periodic:
+>> ----------------
+>> size = 1024
+>>    1:  qh1024-0001/f6ffe280 (h2 ep2 [1/0] q0 p8)
+>>     
+>
+> There's something odd about this.  I'd like to see this file again, 
+> after the patch below has been applied.
+>   
 
-I've got a Logitech Trackman FX connected to my PC via a Chesen 
-ps/2 usb adapter for mouse and keyboard. Problem: The fourth 
-mouse button doesn't trigger any events. 
+periodic
+size = 1024
+   1:  qh1024-0001/f6ffe280 (h2 ep2 [1/0] q0 p8) t00000000
 
-This means that I cannot enable scroll wheel emulation in the Xorg 
-mouse driver. It is a severe restriction for a mouse without dedicated 
-wheel.
+registers
+bus pci, device 0000:00:1d.7
+EHCI Host Controller
+EHCI 1.00, hcd state 0
+ownership 00000001
+SMI sts/enable 0x80080000
+structural params 0x00104208
+capability params 0x00016871
+status 6008 Periodic Recl FLR
+command 010000 (park)=0 ithresh=1 period=1024 HALT
+intrenable 00
+uframe 0677
+port 1 status 001000 POWER sig=se0
+port 2 status 001000 POWER sig=se0
+port 3 status 001000 POWER sig=se0
+port 4 status 001000 POWER sig=se0
+port 5 status 001005 POWER sig=se0 PE CONNECT
+port 6 status 001005 POWER sig=se0 PE CONNECT
+port 7 status 001000 POWER sig=se0
+port 8 status 001000 POWER sig=se0
+irq normal 60 err 0 reclaim 14 (lost 0)
+complete 60 unlink 1
 
-I had opened a bug report for the Xorg mouse driver, but a low level 
-test program ("cat </dev/input/event2") running outside of X shows 
-that this is indeed a restriction of the kernel (2.6.31.4).
+After putting a udelay() the problem seems to be resolved. I did a
+rmmod-modprobe-sleep in 50 iterations,  and the host controller was
+still functional along with the web-cam:
 
-The same Trackman FX works fine connected to a PC with a "real" 
-ps/2 port, of course.
+periodic
+size = 1024
 
+registers
+bus pci, device 0000:00:1d.7
+EHCI Host Controller
+EHCI 1.00, hcd state 1
+ownership 00000001
+SMI sts/enable 0x80080000
+structural params 0x00104208
+capability params 0x00016871
+status 2008 Recl FLR
+command 010001 (park)=0 ithresh=1 period=1024 RUN
+intrenable 37 IAA FATAL PCD ERR INT
+uframe 0908
+port 1 status 001000 POWER sig=se0
+port 2 status 001000 POWER sig=se0
+port 3 status 001000 POWER sig=se0
+port 4 status 001000 POWER sig=se0
+port 5 status 001005 POWER sig=se0 PE CONNECT
+port 6 status 001005 POWER sig=se0 PE CONNECT
+port 7 status 001000 POWER sig=se0
+port 8 status 001000 POWER sig=se0
+irq normal 2115 err 0 reclaim 300 (lost 0)
+complete 2110 unlink 8
 
-It would be very nice if this could be fixed. Of course I would be glad 
-to help.
-
-
-Many thanx
-
-Harri
-=====================================================================
-% cat /proc/bus/input/devices
-I: Bus=0011 Vendor=0001 Product=0001 Version=ab41
-N: Name="AT Translated Set 2 keyboard"
-P: Phys=isa0060/serio0/input0
-S: Sysfs=/devices/platform/i8042/serio0/input/input0
-U: Uniq=
-H: Handlers=kbd event0
-B: EV=120013
-B: KEY=402000000 3803078f800d001 feffffdfffefffff fffffffffffffffe
-B: MSC=10
-B: LED=7
-
-I: Bus=0003 Vendor=0a81 Product=0205 Version=0110
-N: Name="CHESEN PS2 to USB Converter"
-P: Phys=usb-0000:00:1a.2-2/input0
-S: Sysfs=/devices/pci0000:00/0000:00:1a.2/usb5/5-2/5-2:1.0/input/input1
-U: Uniq=
-H: Handlers=kbd event1
-B: EV=120013
-B: KEY=1000000000007 ff980000000007ff febeffdfffefffff fffffffffffffffe
-B: MSC=10
-B: LED=7
-
-I: Bus=0003 Vendor=0a81 Product=0205 Version=0110
-N: Name="CHESEN PS2 to USB Converter"
-P: Phys=usb-0000:00:1a.2-2/input1
-S: Sysfs=/devices/pci0000:00/0000:00:1a.2/usb5/5-2/5-2:1.1/input/input2
-U: Uniq=
-H: Handlers=kbd mouse0 event2
-B: EV=17
-B: KEY=1f001f 2020000 3878d801d001 1e000000000000 0
-B: REL=103
-B: MSC=10
-
-I: Bus=0019 Vendor=0000 Product=0001 Version=0000
-N: Name="Power Button"
-P: Phys=LNXPWRBN/button/input0
-S: Sysfs=/devices/LNXSYSTM:00/LNXPWRBN:00/input/input3
-U: Uniq=
-H: Handlers=kbd event3
-B: EV=3
-B: KEY=10000000000000 0
-
-I: Bus=0019 Vendor=0000 Product=0001 Version=0000
-N: Name="Power Button"
-P: Phys=PNP0C0C/button/input0
-S: Sysfs=/devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input4
-U: Uniq=
-H: Handlers=kbd event4
-B: EV=3
-B: KEY=10000000000000 0
-
-I: Bus=0010 Vendor=001f Product=0001 Version=0100
-N: Name="PC Speaker"
-P: Phys=isa0061/input0
-S: Sysfs=/devices/platform/pcspkr/input/input5
-U: Uniq=
-H: Handlers=kbd event5
-B: EV=40001
-B: SND=6
-
-
-
+--
+Thanks a lot for all your efforts!
