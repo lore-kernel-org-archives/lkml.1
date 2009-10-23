@@ -1,95 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751797AbZJWKu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751904AbZJWKtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751797AbZJWKu7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 06:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZJWKu6
+	id S1751904AbZJWKtY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 06:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZJWKtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 06:50:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47208 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751017AbZJWKu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 06:50:58 -0400
-Date: Fri, 23 Oct 2009 12:50:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Soeren Sandmann <sandmann@daimi.au.dk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] x86: Get bp from the IRQ regs instead of directly from
-	the CPU
-Message-ID: <20091023105047.GA10071@elte.hu>
-References: <ye8vdi7mluz.fsf@camel16.daimi.au.dk> <ye8ljj3mlj5.fsf@camel16.daimi.au.dk>
+	Fri, 23 Oct 2009 06:49:24 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:51435 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751424AbZJWKtX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 06:49:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=EVJ9tPxDI2XF7BZBv3dE7isNPxeDlpr5kijA7uCOjGFp42hz+wmjA8R0eEMrOkSJCp
+         xZQ9o2vieidZX8O656Nt2xqLcHemC/Kn3ugDdXxEf1gX+wzgbKVFG4uoUaq4JUEXMR2g
+         Tscv3NvzgyQDYLlpnXIU/ZWo8xJ3RfVfzzY8s=
+Message-ID: <4AE18C9E.9090409@gmail.com>
+Date: Fri, 23 Oct 2009 12:59:42 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ye8ljj3mlj5.fsf@camel16.daimi.au.dk>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] v4l: Cleanup redundant tests on unsigned
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The variables are unsigned so the test `>= 0' is always true,
+the `< 0' test always fails. In these cases the other part of
+the test catches wrapped values.
 
-* Soeren Sandmann <sandmann@daimi.au.dk> wrote:
-
-> Passing 0 for bp causes dump_trace() to get bp directly from the
-> hardware register. This leads to the IRQ stack being included in the
-> generated call chains, which means the stack looks something like
-> this:
-> 
-> 	[ ip ] [ IRQ stack ] [ rest of stack trace ]
-> 
-> which is incorrect and confusing to user space.
-> 
-> Getting bp from the IRQ regs instead makes the tracing start after the
-> IRQ stack:
-> 
-> 	[ ip ] [ rest of stack trace ]
-> 
-> Signed-off-by: Søren Sandmann Pedersen <sandmann@redhat.com>
-
-Indeed, nice catch!
-
-> ---
->  arch/x86/kernel/cpu/perf_event.c |   10 +++++++++-
->  1 files changed, 9 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-> index b5801c3..39b1d0c 100644
-> --- a/arch/x86/kernel/cpu/perf_event.c
-> +++ b/arch/x86/kernel/cpu/perf_event.c
-> @@ -2177,10 +2177,18 @@ static const struct stacktrace_ops backtrace_ops = {
->  static void
->  perf_callchain_kernel(struct pt_regs *regs, struct perf_callchain_entry *entry)
->  {
-> +	unsigned long bp;
-> +    
->  	callchain_store(entry, PERF_CONTEXT_KERNEL);
->  	callchain_store(entry, regs->ip);
->  
-> -	dump_trace(NULL, regs, NULL, 0, &backtrace_ops, entry);
-> +#ifdef CONFIG_FRAME_POINTER
-> +	bp = regs->bp;
-> +#else
-> +	bp = 0;
-> +#endif
-> +	
-> +	dump_trace(NULL, regs, NULL, bp, &backtrace_ops, entry);
->  }
-
-Wouldnt it be better to push this logic into dump_trace() itself? That 
-way other ways of backtrace generation would be improved as well, not 
-just perf events call-chains.
-
-	Ingo
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/media/common/tuners/tda9887.c b/drivers/media/common/tuners/tda9887.c
+index 544cdbe..a71c100 100644
+--- a/drivers/media/common/tuners/tda9887.c
++++ b/drivers/media/common/tuners/tda9887.c
+@@ -463,7 +463,7 @@ static int tda9887_set_insmod(struct dvb_frontend *fe)
+ 			buf[1] &= ~cQSS;
+ 	}
+ 
+-	if (adjust >= 0x00 && adjust < 0x20) {
++	if (adjust < 0x20) {
+ 		buf[2] &= ~cTopMask;
+ 		buf[2] |= adjust;
+ 	}
+diff --git a/drivers/media/dvb/siano/smscoreapi.c b/drivers/media/dvb/siano/smscoreapi.c
+index fa6a623..ca758bc 100644
+--- a/drivers/media/dvb/siano/smscoreapi.c
++++ b/drivers/media/dvb/siano/smscoreapi.c
+@@ -1373,7 +1373,7 @@ static int GetGpioPinParams(u32 PinNum, u32 *pTranslatedPinNum,
+ 
+ 	*pGroupCfg = 1;
+ 
+-	if (PinNum >= 0 && PinNum <= 1)	{
++	if (PinNum <= 1)	{
+ 		*pTranslatedPinNum = 0;
+ 		*pGroupNum = 9;
+ 		*pGroupCfg = 2;
+diff --git a/drivers/media/video/bt819.c b/drivers/media/video/bt819.c
+index f9330e3..5bb0f9e 100644
+--- a/drivers/media/video/bt819.c
++++ b/drivers/media/video/bt819.c
+@@ -299,7 +299,7 @@ static int bt819_s_routing(struct v4l2_subdev *sd,
+ 
+ 	v4l2_dbg(1, debug, sd, "set input %x\n", input);
+ 
+-	if (input < 0 || input > 7)
++	if (input > 7)
+ 		return -EINVAL;
+ 
+ 	if (sd->v4l2_dev == NULL || sd->v4l2_dev->notify == NULL)
+diff --git a/drivers/media/video/hexium_gemini.c b/drivers/media/video/hexium_gemini.c
+index 71c2114..60d992e 100644
+--- a/drivers/media/video/hexium_gemini.c
++++ b/drivers/media/video/hexium_gemini.c
+@@ -251,7 +251,7 @@ static int vidioc_s_input(struct file *file, void *fh, unsigned int input)
+ 
+ 	DEB_EE(("VIDIOC_S_INPUT %d.\n", input));
+ 
+-	if (input < 0 || input >= HEXIUM_INPUTS)
++	if (input >= HEXIUM_INPUTS)
+ 		return -EINVAL;
+ 
+ 	hexium->cur_input = input;
+diff --git a/drivers/media/video/hexium_orion.c b/drivers/media/video/hexium_orion.c
+index 39d65ca..938a1f8 100644
+--- a/drivers/media/video/hexium_orion.c
++++ b/drivers/media/video/hexium_orion.c
+@@ -350,7 +350,7 @@ static int vidioc_s_input(struct file *file, void *fh, unsigned int input)
+ 	struct saa7146_dev *dev = ((struct saa7146_fh *)fh)->dev;
+ 	struct hexium *hexium = (struct hexium *) dev->ext_priv;
+ 
+-	if (input < 0 || input >= HEXIUM_INPUTS)
++	if (input >= HEXIUM_INPUTS)
+ 		return -EINVAL;
+ 
+ 	hexium->cur_input = input;
+diff --git a/drivers/media/video/mxb.c b/drivers/media/video/mxb.c
+index 3454070..c1fc6dc 100644
+--- a/drivers/media/video/mxb.c
++++ b/drivers/media/video/mxb.c
+@@ -478,7 +478,7 @@ static int vidioc_s_input(struct file *file, void *fh, unsigned int input)
+ 
+ 	DEB_EE(("VIDIOC_S_INPUT %d.\n", input));
+ 
+-	if (input < 0 || input >= MXB_INPUTS)
++	if (input >= MXB_INPUTS)
+ 		return -EINVAL;
+ 
+ 	mxb->cur_input = input;
+diff --git a/drivers/media/video/s2255drv.c b/drivers/media/video/s2255drv.c
+index 9e3262c..5f5d710 100644
+--- a/drivers/media/video/s2255drv.c
++++ b/drivers/media/video/s2255drv.c
+@@ -1963,7 +1963,7 @@ static int save_frame(struct s2255_dev *dev, struct s2255_pipeinfo *pipe_info)
+ 				if (pdword[1] >= MAX_CHANNELS)
+ 					break;
+ 				cc = G_chnmap[pdword[1]];
+-				if (!(cc >= 0 && cc < MAX_CHANNELS))
++				if (cc >= MAX_CHANNELS)
+ 					break;
+ 				switch (pdword[2]) {
+ 				case S2255_RESPONSE_SETMODE:
+diff --git a/drivers/media/video/saa7110.c b/drivers/media/video/saa7110.c
+index 5c24c99..3bca744 100644
+--- a/drivers/media/video/saa7110.c
++++ b/drivers/media/video/saa7110.c
+@@ -304,7 +304,7 @@ static int saa7110_s_routing(struct v4l2_subdev *sd,
+ {
+ 	struct saa7110 *decoder = to_saa7110(sd);
+ 
+-	if (input < 0 || input >= SAA7110_MAX_INPUT) {
++	if (input >= SAA7110_MAX_INPUT) {
+ 		v4l2_dbg(1, debug, sd, "input=%d not available\n", input);
+ 		return -EINVAL;
+ 	}
+diff --git a/drivers/media/video/saa717x.c b/drivers/media/video/saa717x.c
+index b15c409..ad6cd37 100644
+--- a/drivers/media/video/saa717x.c
++++ b/drivers/media/video/saa717x.c
+@@ -1115,7 +1115,7 @@ static int saa717x_s_video_routing(struct v4l2_subdev *sd,
+ 	v4l2_dbg(1, debug, sd, "decoder set input (%d)\n", input);
+ 	/* inputs from 0-9 are available*/
+ 	/* saa717x have mode0-mode9 but mode5 is reserved. */
+-	if (input < 0 || input > 9 || input == 5)
++	if (input > 9 || input == 5)
+ 		return -EINVAL;
+ 
+ 	if (decoder->input != input) {
+diff --git a/drivers/media/video/tuner-core.c b/drivers/media/video/tuner-core.c
+index aba92e2..00830ee 100644
+--- a/drivers/media/video/tuner-core.c
++++ b/drivers/media/video/tuner-core.c
+@@ -328,7 +328,7 @@ static void set_type(struct i2c_client *c, unsigned int type,
+ 
+ 	t->type = type;
+ 	/* prevent invalid config values */
+-	t->config = ((new_config >= 0) && (new_config < 256)) ? new_config : 0;
++	t->config = new_config < 256 ? new_config : 0;
+ 	if (tuner_callback != NULL) {
+ 		tuner_dbg("defining GPIO callback\n");
+ 		t->fe.callback = tuner_callback;
+diff --git a/drivers/media/video/usbvision/usbvision-video.c b/drivers/media/video/usbvision/usbvision-video.c
+index a2a50d6..c07b0ac 100644
+--- a/drivers/media/video/usbvision/usbvision-video.c
++++ b/drivers/media/video/usbvision/usbvision-video.c
+@@ -601,7 +601,7 @@ static int vidioc_s_input (struct file *file, void *priv, unsigned int input)
+ {
+ 	struct usb_usbvision *usbvision = video_drvdata(file);
+ 
+-	if ((input >= usbvision->video_inputs) || (input < 0) )
++	if (input >= usbvision->video_inputs)
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&usbvision->lock);
+diff --git a/drivers/media/video/vpx3220.c b/drivers/media/video/vpx3220.c
+index 97e0ce2..33205d7 100644
+--- a/drivers/media/video/vpx3220.c
++++ b/drivers/media/video/vpx3220.c
+@@ -391,7 +391,7 @@ static int vpx3220_s_routing(struct v4l2_subdev *sd,
+ 		{0x0e, 1}
+ 	};
+ 
+-	if (input < 0 || input > 2)
++	if (input > 2)
+ 		return -EINVAL;
+ 
+ 	v4l2_dbg(1, debug, sd, "input switched to %s\n", inputs[input]);
+diff --git a/drivers/media/video/zoran/zoran_driver.c b/drivers/media/video/zoran/zoran_driver.c
+index 47137de..e9f72ca 100644
+--- a/drivers/media/video/zoran/zoran_driver.c
++++ b/drivers/media/video/zoran/zoran_driver.c
+@@ -2764,7 +2764,7 @@ static int zoran_enum_input(struct file *file, void *__fh,
+ 	struct zoran_fh *fh = __fh;
+ 	struct zoran *zr = fh->zr;
+ 
+-	if (inp->index < 0 || inp->index >= zr->card.inputs)
++	if (inp->index >= zr->card.inputs)
+ 		return -EINVAL;
+ 	else {
+ 		int id = inp->index;
