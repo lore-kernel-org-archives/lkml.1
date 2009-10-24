@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751867AbZJXCgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752122AbZJXCjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751867AbZJXCgq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 22:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZJXCgp
+	id S1752122AbZJXCjW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 22:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZJXCjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 22:36:45 -0400
-Received: from mail-gx0-f216.google.com ([209.85.217.216]:40852 "EHLO
-	mail-gx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751607AbZJXCgo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 22:36:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=v1Octb+qkgmBPTvhQNYKNiE4KfjSmDgUZnAUSSb8PheT1pqXTh8z0M4DMxgQc5xFih
-         xagzuIpnO3U3QSsyAzpIUM2KYp/qlJPL6pB57DnP49GzYfIolVP6hW1o3+dJZLeCq/6j
-         6lapAqmbjFADfOIfhNlmRW+IEsGgkM8Dr7YS8=
-Message-ID: <4AE2683D.4020000@gmail.com>
-Date: Fri, 23 Oct 2009 22:36:45 -0400
-From: Miles Lane <miles.lane@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 23 Oct 2009 22:39:21 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:64198 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751685AbZJXCjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 22:39:20 -0400
+Message-ID: <4AE26976.6070809@redhat.com>
+Date: Sat, 24 Oct 2009 10:41:58 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-To: Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Subject: 2.6.32-rc5-git3 -- EIP is at cfg80211_conn_work+0x73/0xd6 [cfg80211]
+To: Vlad Yasevich <vladislav.yasevich@hp.com>
+CC: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [Patch] sctp: remove deprecated SCTP_GET_*_OLD stuffs
+References: <20091015082849.4605.48311.sendpatchset@localhost.localdomain> <4AE0C64A.9080400@hp.com> <20091022214439.GA2635@merkur.ravnborg.org> <4AE1D2AA.8060200@hp.com>
+In-Reply-To: <4AE1D2AA.8060200@hp.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let me know if you need my .config
+Vlad Yasevich wrote:
+> 
+> Sam Ravnborg wrote:
+>> On Thu, Oct 22, 2009 at 04:53:30PM -0400, Vlad Yasevich wrote:
+>>>> diff --git a/include/net/sctp/user.h b/include/net/sctp/user.h
+>>>> index be2334a..0991f1b 100644
+>>>> --- a/include/net/sctp/user.h
+>>>> +++ b/include/net/sctp/user.h
+>>>> @@ -131,14 +131,6 @@ enum sctp_optname {
+>>>>  #define SCTP_SOCKOPT_BINDX_REM	SCTP_SOCKOPT_BINDX_REM
+>>>>  	SCTP_SOCKOPT_PEELOFF, 	/* peel off association. */
+>>>>  #define SCTP_SOCKOPT_PEELOFF	SCTP_SOCKOPT_PEELOFF
+>>>> -	SCTP_GET_PEER_ADDRS_NUM_OLD, 	/* Get number of peer addresss. */
+>>>> -#define SCTP_GET_PEER_ADDRS_NUM_OLD	SCTP_GET_PEER_ADDRS_NUM_OLD
+>>>> -	SCTP_GET_PEER_ADDRS_OLD, 	/* Get all peer addresss. */
+>>>> -#define SCTP_GET_PEER_ADDRS_OLD	SCTP_GET_PEER_ADDRS_OLD
+>>>> -	SCTP_GET_LOCAL_ADDRS_NUM_OLD, 	/* Get number of local addresss. */
+>>>> -#define SCTP_GET_LOCAL_ADDRS_NUM_OLD	SCTP_GET_LOCAL_ADDRS_NUM_OLD
+>>>> -	SCTP_GET_LOCAL_ADDRS_OLD, 	/* Get all local addresss. */
+>>>> -#define SCTP_GET_LOCAL_ADDRS_OLD	SCTP_GET_LOCAL_ADDRS_OLD
+>>>>  	SCTP_SOCKOPT_CONNECTX_OLD, /* CONNECTX old requests. */
+>>> After running the regression suite against this patch I find that we can't
+>>> remove the enum values.  Removing the enums changes the value for the remainder
+>>> of the definitions and breaks binary compatibility for applications that use
+>>> those trailing options.
+>>>
+>>> You should be ok with removing the #defines and actual code that uses them,
+>>> but not the enums.  You can even rename the enums, but we must preserve
+>>> numeric ordering.
+>> If we really depend on the actual value of an enum as in this case,
+>> then e should assign them direct to better document this.
+>>
+>> 	Sam
+>>
+> 
+> I agree.  I have a patch that converts the enum to just a #define section that
+> I'll apply on top of this removal patch and document the deletion.
 
-*pde = 00000000
-Modules linked in: ipv6 af_packet iptable_filter snd_hda_codec_realtek ip_tables snd_hda_intel snd_hda_codec snd_hwdep snd_pcm_oss snd_mixer_oss snd_pcm ath9k rtc_cmos uvcvideo eeepc_laptop mac80211 snd_timer rtc_core hwmon videodev ath cfg80211 v4l1_compat rtc_lib rfkill snd_page_alloc rng_core battery ac led_class pci_hotplug processor fan sg sd_mod ehci_hcd atl1e uhci_hcd thermal
+Hi, Vlad.
 
-Pid: 10, comm: events/1 Not tainted (2.6.32-rc5-git3 #4) 1000HE
-EIP: 0060:[<f858ac49>] EFLAGS: 00010246 CPU: 1
-EIP is at cfg80211_conn_work+0x73/0xd6 [cfg80211]
-EAX: 00000000 EBX: f71ae5e8 ECX: 00000000 EDX: c16754e4
-ESI: ead9c0c4 EDI: ead9c000 EBP: f7136f34 ESP: f7136f20
-  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-  ead9c084 ead9c00c c2e09700 ead9c164 f7136f94 f7136fa0 c103d5f5 00000000
-<0> 00000002 00000000 c103d5b3 f7136f88 f7146c50 f7146900 f7146900 c2e09724
-<0> c2e0971c f858abd6 ead9c148 f7146900 c2e09700 00000000 f7146900 c1040721
-  [<c103d5f5>] ? worker_thread+0x161/0x233
-  [<c103d5b3>] ? worker_thread+0x11f/0x233
-  [<f858abd6>] ? cfg80211_conn_work+0x0/0xd6 [cfg80211]
-  [<c1040721>] ? autoremove_wake_function+0x0/0x2f
-  [<c103d494>] ? worker_thread+0x0/0x233
-  [<c1040527>] ? kthread+0x5f/0x64
-  [<c10404c8>] ? kthread+0x0/0x64
-  [<c1003e9f>] ? kernel_thread_helper+0x7/0x1a
----[ end trace b24f325f9540f193 ]---
+I was busy, sorry for joining late. Thanks for doing this!
+
