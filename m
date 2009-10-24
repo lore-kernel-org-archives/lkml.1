@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbZJXBGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbZJXBHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753378AbZJXBGN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 21:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZJXBE4
+	id S1753257AbZJXBHF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 21:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZJXBHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 21:04:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51741 "EHLO hera.kernel.org"
+	Fri, 23 Oct 2009 21:07:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51736 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753220AbZJXBEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 21:04:51 -0400
-Date: Sat, 24 Oct 2009 01:04:01 GMT
+	id S1753257AbZJXBEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 21:04:50 -0400
+Date: Sat, 24 Oct 2009 01:04:02 GMT
 From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, anton@samba.org, paulus@samba.org,
        acme@redhat.com, hpa@zytor.com, mingo@redhat.com, efault@gmx.de,
@@ -18,12 +18,12 @@ Cc: linux-kernel@vger.kernel.org, anton@samba.org, paulus@samba.org,
 Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
        anton@samba.org, linux-kernel@vger.kernel.org, peterz@infradead.org,
        efault@gmx.de, fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1256246604-17156-2-git-send-email-fweisbec@gmail.com>
-References: <1256246604-17156-2-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1256246604-17156-3-git-send-email-fweisbec@gmail.com>
+References: <1256246604-17156-3-git-send-email-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:branch?] perf tools: Bind callchains to the first sort dimension column
-Message-ID: <tip-a4fb581b15949cfd10b64c8af37bc106e95307f3@git.kernel.org>
-Git-Commit-ID: a4fb581b15949cfd10b64c8af37bc106e95307f3
+Subject: [tip:branch?] perf tools: Drop asm/types.h wrapper
+Message-ID: <tip-802da5f2289bbe363acef084805195c11f453c48@git.kernel.org>
+Git-Commit-ID: 802da5f2289bbe363acef084805195c11f453c48
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -32,389 +32,121 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a4fb581b15949cfd10b64c8af37bc106e95307f3
-Gitweb:     http://git.kernel.org/tip/a4fb581b15949cfd10b64c8af37bc106e95307f3
+Commit-ID:  802da5f2289bbe363acef084805195c11f453c48
+Gitweb:     http://git.kernel.org/tip/802da5f2289bbe363acef084805195c11f453c48
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Thu, 22 Oct 2009 23:23:23 +0200
+AuthorDate: Thu, 22 Oct 2009 23:23:24 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 23 Oct 2009 07:55:18 +0200
+CommitDate: Fri, 23 Oct 2009 07:55:19 +0200
 
-perf tools: Bind callchains to the first sort dimension column
+perf tools: Drop asm/types.h wrapper
 
-Currently, the callchains are displayed using a constant left
-margin. So depending on the current sort dimension
-configuration, callchains may appear to be well attached to the
-first sort dimension column field which is mostly the case,
-except when the first dimension of sorting is done by comm,
-because these are right aligned.
+Wrapping the kernel headers is dangerous when it comes to arch
+headers. Once we wrap asm/types.h, it will also replace the
+glibc asm/types.h, not only the kernel one.
 
-This patch binds the callchain to the first letter in the first
-column, whatever type of column it is (dso, comm, symbol).
-Before:
+This results in build errors on some machines.
 
-     0.80%             perf  [k] __lock_acquire
-             __lock_acquire
-             lock_acquire
-             |
-             |--58.33%-- _spin_lock
-             |          |
-             |          |--28.57%-- inotify_should_send_event
-             |          |          fsnotify
-             |          |          __fsnotify_parent
+Drop this wrapper and do its work from linux/types.h wrapper,
+also the glibc asm/types.h can already handle most of the type
+definition it was doing (typedef __u64, __u32, etc...).
 
-After:
+Todo: Check the others asm/*.h wrappers to prevent from other
+conflicts.
 
-     0.80%             perf  [k] __lock_acquire
-                       __lock_acquire
-                       lock_acquire
-                       |
-                       |--58.33%-- _spin_lock
-                       |          |
-                       |          |--28.57%-- inotify_should_send_event
-                       |          |          fsnotify
-                       |          |          __fsnotify_parent
-
-Also, for clarity, we don't put anymore the callchain as is but:
-
-- If we have a top level ancestor in the callchain, start it
-  with a first ascii hook.
-
-  Before:
-
-     0.80%             perf  [kernel]                        [k] __lock_acquire
-                       __lock_acquire
-                         lock_acquire
-                       |
-                       |--58.33%-- _spin_lock
-                       |          |
-                       |          |--28.57%-- inotify_should_send_event
-                       |          |          fsnotify
-                      [..]       [..]
-
-   After:
-
-     0.80%             perf  [kernel]                         [k] __lock_acquire
-                       |
-                       --- __lock_acquire
-                           lock_acquire
-                          |
-                          |--58.33%-- _spin_lock
-                          |          |
-                          |          |--28.57%-- inotify_should_send_event
-                          |          |          fsnotify
-                         [..]       [..]
-
-- Otherwise, if we have several top level ancestors, then
-  display these like we did before:
-
-       1.69%           Xorg
-                       |
-                       |--21.21%-- vread_hpet
-                       |          0x7fffd85b46fc
-                       |          0x7fffd85b494d
-                       |          0x7f4fafb4e54d
-                       |
-                       |--15.15%-- exaOffscreenAlloc
-                       |
-                       |--9.09%-- I830WaitLpRing
-
+Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Anton Blanchard <anton@samba.org>
-LKML-Reference: <1256246604-17156-2-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1256246604-17156-3-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/builtin-report.c |   82 +++++++++++++++++++++++++++++++++----------
- tools/perf/util/sort.c      |   18 +++++++--
- tools/perf/util/sort.h      |   10 +++++-
- tools/perf/util/thread.c    |   11 ++++++
- tools/perf/util/thread.h    |    2 +
- 5 files changed, 99 insertions(+), 24 deletions(-)
+ tools/perf/Makefile                     |    1 -
+ tools/perf/util/include/asm/bitops.h    |   12 ++++++++++++
+ tools/perf/util/include/asm/byteorder.h |    2 +-
+ tools/perf/util/include/asm/types.h     |   17 -----------------
+ tools/perf/util/include/linux/types.h   |    2 ++
+ 5 files changed, 15 insertions(+), 19 deletions(-)
 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 3d8c522..72d5842 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -59,12 +59,28 @@ static struct perf_header *header;
- 
- static u64		sample_type;
- 
--static size_t ipchain__fprintf_graph_line(FILE *fp, int depth, int depth_mask)
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 65e6e52..0a40c29 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -352,7 +352,6 @@ LIB_H += util/include/asm/bitops.h
+ LIB_H += util/include/asm/byteorder.h
+ LIB_H += util/include/asm/swab.h
+ LIB_H += util/include/asm/system.h
+-LIB_H += util/include/asm/types.h
+ LIB_H += util/include/asm/uaccess.h
+ LIB_H += perf.h
+ LIB_H += util/event.h
+diff --git a/tools/perf/util/include/asm/bitops.h b/tools/perf/util/include/asm/bitops.h
+index fbe4d92..58e9817 100644
+--- a/tools/perf/util/include/asm/bitops.h
++++ b/tools/perf/util/include/asm/bitops.h
+@@ -1,6 +1,18 @@
++#ifndef _PERF_ASM_BITOPS_H_
++#define _PERF_ASM_BITOPS_H_
 +
-+static size_t
-+callchain__fprintf_left_margin(FILE *fp, int left_margin)
-+{
-+	int i;
-+	int ret;
++#include <sys/types.h>
++#include "../../types.h"
++#include <linux/compiler.h>
 +
-+	ret = fprintf(fp, "            ");
++/* CHECKME: Not sure both always match */
++#define BITS_PER_LONG	__WORDSIZE
 +
-+	for (i = 0; i < left_margin; i++)
-+		ret += fprintf(fp, " ");
+ #include "../../../../include/asm-generic/bitops/__fls.h"
+ #include "../../../../include/asm-generic/bitops/fls.h"
+ #include "../../../../include/asm-generic/bitops/fls64.h"
+ #include "../../../../include/asm-generic/bitops/__ffs.h"
+ #include "../../../../include/asm-generic/bitops/ffz.h"
+ #include "../../../../include/asm-generic/bitops/hweight.h"
 +
-+	return ret;
-+}
++#endif
+diff --git a/tools/perf/util/include/asm/byteorder.h b/tools/perf/util/include/asm/byteorder.h
+index 39f367c..b722abe 100644
+--- a/tools/perf/util/include/asm/byteorder.h
++++ b/tools/perf/util/include/asm/byteorder.h
+@@ -1,2 +1,2 @@
+-#include "../asm/types.h"
++#include <asm/types.h>
+ #include "../../../../include/linux/swab.h"
+diff --git a/tools/perf/util/include/asm/types.h b/tools/perf/util/include/asm/types.h
+deleted file mode 100644
+index 06703c6..0000000
+--- a/tools/perf/util/include/asm/types.h
++++ /dev/null
+@@ -1,17 +0,0 @@
+-#ifndef PERF_ASM_TYPES_H_
+-#define PERF_ASM_TYPES_H_
+-
+-#include <linux/compiler.h>
+-#include "../../types.h"
+-#include <sys/types.h>
+-
+-/* CHECKME: Not sure both always match */
+-#define BITS_PER_LONG	__WORDSIZE
+-
+-typedef u64	__u64;
+-typedef u32	__u32;
+-typedef u16	__u16;
+-typedef u8	__u8;
+-typedef s64	__s64;
+-
+-#endif /* PERF_ASM_TYPES_H_ */
+diff --git a/tools/perf/util/include/linux/types.h b/tools/perf/util/include/linux/types.h
+index 858a38d..196862a 100644
+--- a/tools/perf/util/include/linux/types.h
++++ b/tools/perf/util/include/linux/types.h
+@@ -1,6 +1,8 @@
+ #ifndef _PERF_LINUX_TYPES_H_
+ #define _PERF_LINUX_TYPES_H_
+ 
++#include <asm/types.h>
 +
-+static size_t ipchain__fprintf_graph_line(FILE *fp, int depth, int depth_mask,
-+					  int left_margin)
- {
- 	int i;
- 	size_t ret = 0;
+ #define DECLARE_BITMAP(name,bits) \
+ 	unsigned long name[BITS_TO_LONGS(bits)]
  
--	ret += fprintf(fp, "%s", "                ");
-+	ret += callchain__fprintf_left_margin(fp, left_margin);
- 
- 	for (i = 0; i < depth; i++)
- 		if (depth_mask & (1 << i))
-@@ -79,12 +95,12 @@ static size_t ipchain__fprintf_graph_line(FILE *fp, int depth, int depth_mask)
- static size_t
- ipchain__fprintf_graph(FILE *fp, struct callchain_list *chain, int depth,
- 		       int depth_mask, int count, u64 total_samples,
--		       int hits)
-+		       int hits, int left_margin)
- {
- 	int i;
- 	size_t ret = 0;
- 
--	ret += fprintf(fp, "%s", "                ");
-+	ret += callchain__fprintf_left_margin(fp, left_margin);
- 	for (i = 0; i < depth; i++) {
- 		if (depth_mask & (1 << i))
- 			ret += fprintf(fp, "|");
-@@ -123,7 +139,8 @@ static void init_rem_hits(void)
- 
- static size_t
- __callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
--			   u64 total_samples, int depth, int depth_mask)
-+			   u64 total_samples, int depth, int depth_mask,
-+			   int left_margin)
- {
- 	struct rb_node *node, *next;
- 	struct callchain_node *child;
-@@ -164,7 +181,8 @@ __callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
- 		 * But we keep the older depth mask for the line seperator
- 		 * to keep the level link until we reach the last child
- 		 */
--		ret += ipchain__fprintf_graph_line(fp, depth, depth_mask);
-+		ret += ipchain__fprintf_graph_line(fp, depth, depth_mask,
-+						   left_margin);
- 		i = 0;
- 		list_for_each_entry(chain, &child->val, list) {
- 			if (chain->ip >= PERF_CONTEXT_MAX)
-@@ -172,11 +190,13 @@ __callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
- 			ret += ipchain__fprintf_graph(fp, chain, depth,
- 						      new_depth_mask, i++,
- 						      new_total,
--						      cumul);
-+						      cumul,
-+						      left_margin);
- 		}
- 		ret += __callchain__fprintf_graph(fp, child, new_total,
- 						  depth + 1,
--						  new_depth_mask | (1 << depth));
-+						  new_depth_mask | (1 << depth),
-+						  left_margin);
- 		node = next;
- 	}
- 
-@@ -190,17 +210,19 @@ __callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
- 
- 		ret += ipchain__fprintf_graph(fp, &rem_hits, depth,
- 					      new_depth_mask, 0, new_total,
--					      remaining);
-+					      remaining, left_margin);
- 	}
- 
- 	return ret;
- }
- 
-+
- static size_t
- callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
--			 u64 total_samples)
-+			 u64 total_samples, int left_margin)
- {
- 	struct callchain_list *chain;
-+	bool printed = false;
- 	int i = 0;
- 	int ret = 0;
- 
-@@ -208,17 +230,27 @@ callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
- 		if (chain->ip >= PERF_CONTEXT_MAX)
- 			continue;
- 
--		if (!i++ && sort_by_sym_first)
-+		if (!i++ && sort__first_dimension == SORT_SYM)
- 			continue;
- 
-+		if (!printed) {
-+			ret += callchain__fprintf_left_margin(fp, left_margin);
-+			ret += fprintf(fp, "|\n");
-+			ret += callchain__fprintf_left_margin(fp, left_margin);
-+			ret += fprintf(fp, "---");
-+
-+			left_margin += 3;
-+			printed = true;
-+		} else
-+			ret += callchain__fprintf_left_margin(fp, left_margin);
-+
- 		if (chain->sym)
--			ret += fprintf(fp, "                %s\n", chain->sym->name);
-+			ret += fprintf(fp, " %s\n", chain->sym->name);
- 		else
--			ret += fprintf(fp, "                %p\n",
--					(void *)(long)chain->ip);
-+			ret += fprintf(fp, " %p\n", (void *)(long)chain->ip);
- 	}
- 
--	ret += __callchain__fprintf_graph(fp, self, total_samples, 1, 1);
-+	ret += __callchain__fprintf_graph(fp, self, total_samples, 1, 1, left_margin);
- 
- 	return ret;
- }
-@@ -251,7 +283,7 @@ callchain__fprintf_flat(FILE *fp, struct callchain_node *self,
- 
- static size_t
- hist_entry_callchain__fprintf(FILE *fp, struct hist_entry *self,
--			      u64 total_samples)
-+			      u64 total_samples, int left_margin)
- {
- 	struct rb_node *rb_node;
- 	struct callchain_node *chain;
-@@ -271,7 +303,8 @@ hist_entry_callchain__fprintf(FILE *fp, struct hist_entry *self,
- 			break;
- 		case CHAIN_GRAPH_ABS: /* Falldown */
- 		case CHAIN_GRAPH_REL:
--			ret += callchain__fprintf_graph(fp, chain, total_samples);
-+			ret += callchain__fprintf_graph(fp, chain, total_samples,
-+							left_margin);
- 		case CHAIN_NONE:
- 		default:
- 			break;
-@@ -316,8 +349,19 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, u64 total_samples)
- 
- 	ret += fprintf(fp, "\n");
- 
--	if (callchain)
--		hist_entry_callchain__fprintf(fp, self, total_samples);
-+	if (callchain) {
-+		int left_margin = 0;
-+
-+		if (sort__first_dimension == SORT_COMM) {
-+			se = list_first_entry(&hist_entry__sort_list, typeof(*se),
-+						list);
-+			left_margin = se->width ? *se->width : 0;
-+			left_margin -= thread__comm_len(self->thread);
-+		}
-+
-+		hist_entry_callchain__fprintf(fp, self, total_samples,
-+					      left_margin);
-+	}
- 
- 	return ret;
- }
-diff --git a/tools/perf/util/sort.c b/tools/perf/util/sort.c
-index 60ced70..b490354 100644
---- a/tools/perf/util/sort.c
-+++ b/tools/perf/util/sort.c
-@@ -7,7 +7,8 @@ char		default_sort_order[] = "comm,dso,symbol";
- char		*sort_order = default_sort_order;
- int		sort__need_collapse = 0;
- int		sort__has_parent = 0;
--int		sort_by_sym_first;
-+
-+enum sort_type	sort__first_dimension;
- 
- unsigned int dsos__col_width;
- unsigned int comms__col_width;
-@@ -266,9 +267,18 @@ int sort_dimension__add(const char *tok)
- 			sort__has_parent = 1;
- 		}
- 
--		if (list_empty(&hist_entry__sort_list) &&
--		    !strcmp(sd->name, "symbol"))
--			sort_by_sym_first = true;
-+		if (list_empty(&hist_entry__sort_list)) {
-+			if (!strcmp(sd->name, "pid"))
-+				sort__first_dimension = SORT_PID;
-+			else if (!strcmp(sd->name, "comm"))
-+				sort__first_dimension = SORT_COMM;
-+			else if (!strcmp(sd->name, "dso"))
-+				sort__first_dimension = SORT_DSO;
-+			else if (!strcmp(sd->name, "symbol"))
-+				sort__first_dimension = SORT_SYM;
-+			else if (!strcmp(sd->name, "parent"))
-+				sort__first_dimension = SORT_PARENT;
-+		}
- 
- 		list_add_tail(&sd->entry->list, &hist_entry__sort_list);
- 		sd->taken = 1;
-diff --git a/tools/perf/util/sort.h b/tools/perf/util/sort.h
-index 24c2b70..333e664 100644
---- a/tools/perf/util/sort.h
-+++ b/tools/perf/util/sort.h
-@@ -39,7 +39,7 @@ extern struct sort_entry sort_parent;
- extern unsigned int dsos__col_width;
- extern unsigned int comms__col_width;
- extern unsigned int threads__col_width;
--extern int sort_by_sym_first;
-+extern enum sort_type sort__first_dimension;
- 
- struct hist_entry {
- 	struct rb_node		rb_node;
-@@ -54,6 +54,14 @@ struct hist_entry {
- 	struct rb_root		sorted_chain;
- };
- 
-+enum sort_type {
-+	SORT_PID,
-+	SORT_COMM,
-+	SORT_DSO,
-+	SORT_SYM,
-+	SORT_PARENT
-+};
-+
- /*
-  * configurable sorting bits
-  */
-diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
-index f53fad7..8cb47f1 100644
---- a/tools/perf/util/thread.c
-+++ b/tools/perf/util/thread.c
-@@ -33,6 +33,17 @@ int thread__set_comm(struct thread *self, const char *comm)
- 	return self->comm ? 0 : -ENOMEM;
- }
- 
-+int thread__comm_len(struct thread *self)
-+{
-+	if (!self->comm_len) {
-+		if (!self->comm)
-+			return 0;
-+		self->comm_len = strlen(self->comm);
-+	}
-+
-+	return self->comm_len;
-+}
-+
- static size_t thread__fprintf(struct thread *self, FILE *fp)
- {
- 	struct rb_node *nd;
-diff --git a/tools/perf/util/thread.h b/tools/perf/util/thread.h
-index 1abef3b..53addd7 100644
---- a/tools/perf/util/thread.h
-+++ b/tools/perf/util/thread.h
-@@ -12,9 +12,11 @@ struct thread {
- 	pid_t			pid;
- 	char			shortname[3];
- 	char			*comm;
-+	int			comm_len;
- };
- 
- int thread__set_comm(struct thread *self, const char *comm);
-+int thread__comm_len(struct thread *self);
- struct thread *threads__findnew(pid_t pid);
- struct thread *register_idle_thread(void);
- void thread__insert_map(struct thread *self, struct map *map);
