@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbZJXVFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752523AbZJXWYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752360AbZJXVFm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 17:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZJXVFm
+	id S1752523AbZJXWYP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 18:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbZJXWYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 17:05:42 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:45439 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752305AbZJXVFl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 17:05:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=e6zrNjo0VnqboFWLFpfr9ZiR/PTzspiKVH3Pldkv5ENAWBAYqpTLvizlG/9wtVKcnE
-         UYraSJpuOrZbLuyFqVRA5jAlVDg2OiZ74+cM2e24Crx+XdCzmeJ+jJB32eyf9L4edsFO
-         nTKiZctmfz4+X7bkQXSiSU60cHNXKjARzk6yA=
-Date: Sat, 24 Oct 2009 14:05:40 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Harald Dunkel <harald.dunkel@t-online.de>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31.5: /dev/input/event? are gone sometimes
-Message-ID: <20091024210540.GA15297@core.coreip.homeip.net>
-References: <4AE308A8.2070309@t-online.de>
+	Sat, 24 Oct 2009 18:24:14 -0400
+Received: from relay1.vsu.ru ([62.76.169.14]:62108 "EHLO relay1.vsu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752481AbZJXWYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Oct 2009 18:24:14 -0400
+X-Greylist: delayed 3602 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 Oct 2009 18:24:13 EDT
+X-drweb-hash: 
+Date: Sat, 24 Oct 2009 22:09:06 +0100 (BST)
+From: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+X-X-Sender: tigran@ginsburg.homenet
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Andreas Mohr <andi@lisas.de>,
+       Hugh Dickins <hugh@veritas.com>, Hannes Eder <hannes@hanneseder.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/8] SGI x86_64 UV: Limit the number of microcode messages
+In-Reply-To: <b647ffbd0910241309u7b2f8c94t1f886ef31882539e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0910242207180.2439@ginsburg.homenet>
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> 
+ <20091023233756.941535000@alcatraz.americas.sgi.com>
+ <b647ffbd0910241309u7b2f8c94t1f886ef31882539e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE308A8.2070309@t-online.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463810303-1689420186-1256418546=:2439"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Harald,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Sat, Oct 24, 2009 at 04:01:12PM +0200, Harald Dunkel wrote:
-> Hi folks,
->
-> Sometimes (by chance, as it seems) the /dev/input/event? devices
-> are not working after power-on or reboot. They are not listed in
-> /proc/bus/input/devices. The mouse in X is not moving, keyboard
-> is dead, etc. All I can do is reboot and hope.
->
-> Below you can find the diff of /proc/bus/input/devices between
-> a bad and a good start.
->
->
-> udev is 146-5 (included with Debian Sid).
->
->
-> Any helpful hints would be highly appreciated. Of course I can
-> send you the .config, if there is some interest.
->
->
-> Regards
->
-> Harri
-> ===================================================================
-> % diff -u devices.bad devices.good
-> --- devices.bad 2009-10-24 15:08:24.000000000 +0200
-> +++ devices.good        2009-10-24 15:17:17.000000000 +0200
-> @@ -3,7 +3,7 @@
->  P: Phys=isa0060/serio0/input0
->  S: Sysfs=/devices/platform/i8042/serio0/input/input0
->  U: Uniq=
-> -H: Handlers=kbd
-> +H: Handlers=kbd event0
+---1463810303-1689420186-1256418546=:2439
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Since evdev binds to -every_ input device registered its absence in the
-handlers list suggests that the module is not loaded. I am not sure how
-and when your distribution loads evdev; try making it built-in to avoid
-cases when it is not loaded for one reason or another.
+On Sat, 24 Oct 2009, Dmitry Adamushko wrote:
+>> - =A0 =A0 =A0 printk(KERN_INFO "microcode: CPU%d sig=3D0x%x, pf=3D0x%x, =
+revision=3D0x%x\n",
+>> + =A0 =A0 =A0 if (cpu_num < 4 || !limit_console_output(false))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_INFO
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "microcode: CPU%d sig=3D0x=
+%x, pf=3D0x%x, revision=3D0x%x\n",
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0cpu_num, csig->sig, csig-=
+>pf, csig->rev);
+>>
+>
+> Hmm, I guess we wouldn't lose a lot by simply removing those messages
+> completely. Per-cpu pf/revision is available via /sys anyway.
 
--- 
-Dmitry
+The reason for printing them is that the pf (possibly others?) can change=
+=20
+by the update and so the log has this info handy.
+
+Kind regards
+Tigran
+---1463810303-1689420186-1256418546=:2439--
