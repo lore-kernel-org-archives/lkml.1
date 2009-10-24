@@ -1,305 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbZJXNo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753712AbZJXNvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753546AbZJXNo2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 09:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbZJXNo1
+	id S1753712AbZJXNvZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 09:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbZJXNvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 09:44:27 -0400
-Received: from www84.your-server.de ([213.133.104.84]:47694 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753449AbZJXNo0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 09:44:26 -0400
-Subject: Re: [PATCH 6/7] kfifo: new API v0.6
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
-In-Reply-To: <1256391194.7362.7.camel@wall-e>
-References: <1256391194.7362.7.camel@wall-e>
-Content-Type: text/plain
-Date: Sat, 24 Oct 2009 15:44:25 +0200
-Message-Id: <1256391865.7362.18.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Sat, 24 Oct 2009 09:51:24 -0400
+Received: from web53903.mail.re2.yahoo.com ([206.190.36.126]:23170 "HELO
+	web53903.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753700AbZJXNvX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Oct 2009 09:51:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=Xsvyn6VS5WDeNwOt+eIMFkD2e6GUX2hGyvVrEG4je0J644GT1B28fKdwfOtoB6HLpFVhillgn15SiirzIUrCTyXdg5pF++y7o97TU1wNetDAliwjaaGf0PYkTJJDLHdN0mdJDcpMnxG2Z+Gh8q334cuJeF/uwakQaOmv9udrKHI=;
+Message-ID: <177253.23325.qm@web53903.mail.re2.yahoo.com>
+X-YMail-OSG: G3tQiSUVM1mcpdNqtiapI5qrX8BP7NpvcxlZkF6OQLeirNtdDzfF1yd6y6eT5iOBWUzW1TweKAGv26lRpeEGvsZk3F2WPPAfFOpGXr5ujf0V_yb_GzoWMi8g5p_FxdXeIbDwqOzr2vOXwzL2bPw7ACMq2sw3NSnaQwxQES4nTtNmYn2IixRfrl54FovSDVPgndW.Ak0wBDZQLy1hM5SztVGuhcer3e6mnI0gUQ0yvDp7OPphfx6uoLrAYW_1wpcsDxEMsCdtbchkwGHbwWq1qekLXZQIypyfi.lhSBgwmQU5rbU7YUyIVzpyA1Y5XSl.fBJSw31mTgvGLZ.5mCGFvesBzgvtWm9VSKdn.JqzlkXAF3EzWRTGV1am8ffeEaMgHr0U4HBay54EoLifxqQlViOgw7EsCHIYvKummHy9aDw-
+X-Mailer: YahooMailClassic/7.0.14 YahooMailWebService/0.7.347.3
+Date: Sat, 24 Oct 2009 06:44:31 -0700 (PDT)
+From: Frederik Nosi <fredin77@yahoo.com>
+Subject: iwl3945, after a while stops working with "No space for Tx"
+To: Zhu Yi <yi.zhu@intel.com>, Reinette Chatre <reinette.chatre@intel.com>,
+       Intel Linux Wireless <ilw@linux.intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Tomas Winkler <tomas.winkler@intel.com>,
+       Abhijeet Kolekar <abhijeet.kolekar@intel.com>,
+       linux-wireless@vger.kernel.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Add kfifo_reset_out() to lockless save discard the fifo output
- Add kfifo_skip() to skip a number of output bytes
- Add kfifo_from_user() to copy user space data into the fifo
- Add kfifo_to_user() to copy fifo data to user space
+Hi,
+first sorry if somebody is not the right contact, got the adressess from ./scripts/get_maintainer.pl -f drivers/net/wireless/iwlwifi.
+>From some kernel versions now, after some time that im using this card it stops working and on messages i get this errors:
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
----
- include/linux/kfifo.h |   47 ++++++++++++++++
- kernel/kfifo.c        |  139 ++++++++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 170 insertions(+), 16 deletions(-)
-
-diff -u -N -r kfifo5/include/linux/kfifo.h kfifo6/include/linux/kfifo.h
---- kfifo5/include/linux/kfifo.h	2009-10-19 21:25:25.000000000 +0200
-+++ kfifo6/include/linux/kfifo.h	2009-10-19 21:29:14.000000000 +0200
-@@ -122,6 +122,16 @@
- }
- 
- /**
-+ * kfifo_reset_out - skip FIFO contents
-+ * @fifo: the fifo to be emptied.
-+ */
-+static inline void kfifo_reset_out(struct kfifo *fifo)
-+{
-+	smp_mb();
-+	fifo->out = fifo->in;
-+}
-+
-+/**
-  * kfifo_size - returns the size of the fifo in bytes
-  * @fifo: the fifo to be used.
-  */
-@@ -228,4 +238,41 @@
- 	return ret;
- }
- 
-+extern void kfifo_skip(struct kfifo *fifo, unsigned int len);
-+
-+extern __must_check unsigned int kfifo_from_user(struct kfifo *fifo,
-+	const void __user *from, unsigned int n);
-+
-+extern __must_check unsigned int kfifo_to_user(struct kfifo *fifo,
-+	void __user *to, unsigned int n);
-+
-+/**
-+ * __kfifo_add_out internal helper function for updating the out offset
-+ */
-+static inline void __kfifo_add_out(struct kfifo *fifo,
-+				unsigned int off)
-+{
-+	smp_mb();
-+	fifo->out += off;
-+}
-+
-+/**
-+ * __kfifo_add_in internal helper function for updating the in offset
-+ */
-+static inline void __kfifo_add_in(struct kfifo *fifo,
-+				unsigned int off)
-+{
-+	smp_wmb();
-+	fifo->in += off;
-+}
-+
-+/**
-+ * __kfifo_off internal helper function for calculating the index of a
-+ * given offeset
-+ */
-+static inline unsigned int __kfifo_off(struct kfifo *fifo, unsigned int off)
-+{
-+	return off & (fifo->size - 1);
-+}
-+
- #endif
-diff -u -N -r kfifo5/kernel/kfifo.c kfifo6/kernel/kfifo.c
---- kfifo5/kernel/kfifo.c	2009-10-19 21:25:25.000000000 +0200
-+++ kfifo6/kernel/kfifo.c	2009-10-19 21:29:14.000000000 +0200
-@@ -26,6 +26,7 @@
- #include <linux/err.h>
- #include <linux/kfifo.h>
- #include <linux/log2.h>
-+#include <linux/uaccess.h>
- 
- static void _kfifo_init(struct kfifo *fifo, unsigned char *buffer,
- 		unsigned int size)
-@@ -100,6 +101,21 @@
- EXPORT_SYMBOL(kfifo_free);
- 
- /**
-+ * kfifo_skip - skip output data
-+ * @fifo: the fifo to be used.
-+ * @len: number of bytes to skip
-+ */
-+void kfifo_skip(struct kfifo *fifo, unsigned int len)
-+{
-+	if (len < kfifo_len(fifo)) {
-+		__kfifo_add_out(fifo, len);
-+		return;
-+	}
-+	kfifo_reset_out(fifo);
-+}
-+EXPORT_SYMBOL(kfifo_skip);
-+
-+/**
-  * kfifo_in - puts some data into the FIFO
-  * @fifo: the fifo to be used.
-  * @from: the data to be added.
-@@ -115,6 +131,7 @@
- unsigned int kfifo_in(struct kfifo *fifo,
- 			const unsigned char *from, unsigned int len)
- {
-+	unsigned int off;
- 	unsigned int l;
- 
- 	len = min(len, fifo->size - fifo->in + fifo->out);
-@@ -126,21 +143,16 @@
- 
- 	smp_mb();
- 
-+	off = __kfifo_off(fifo, fifo->in);
-+
- 	/* first put the data starting from fifo->in to buffer end */
--	l = min(len, fifo->size - (fifo->in & (fifo->size - 1)));
--	memcpy(fifo->buffer + (fifo->in & (fifo->size - 1)), from, l);
-+	l = min(len, fifo->size - off);
-+	memcpy(fifo->buffer + off, from, l);
- 
- 	/* then put the rest (if any) at the beginning of the buffer */
- 	memcpy(fifo->buffer, from + l, len - l);
- 
--	/*
--	 * Ensure that we add the bytes to the kfifo -before-
--	 * we update the fifo->in index.
--	 */
--
--	smp_wmb();
--
--	fifo->in += len;
-+	__kfifo_add_in(fifo, len);
- 
- 	return len;
- }
-@@ -161,6 +173,7 @@
- unsigned int kfifo_out(struct kfifo *fifo,
- 			 unsigned char *to, unsigned int len)
- {
-+	unsigned int off;
- 	unsigned int l;
- 
- 	len = min(len, fifo->in - fifo->out);
-@@ -172,22 +185,116 @@
- 
- 	smp_rmb();
- 
-+	off = __kfifo_off(fifo, fifo->out);
-+
- 	/* first get the data from fifo->out until the end of the buffer */
--	l = min(len, fifo->size - (fifo->out & (fifo->size - 1)));
--	memcpy(to, fifo->buffer + (fifo->out & (fifo->size - 1)), l);
-+	l = min(len, fifo->size - off);
-+	memcpy(to, fifo->buffer + off, l);
- 
- 	/* then get the rest (if any) from the beginning of the buffer */
- 	memcpy(to + l, fifo->buffer, len - l);
- 
-+	__kfifo_add_out(fifo, len);
-+
-+	return len;
-+}
-+EXPORT_SYMBOL(kfifo_out);
-+
-+/**
-+ * kfifo_from_user - puts some data from user space into the FIFO
-+ * @fifo: the fifo to be used.
-+ * @from: pointer to the data to be added.
-+ * @len: the length of the data to be added.
-+ *
-+ * This function copies at most @len bytes from the @from into the
-+ * FIFO depending and returns the number of copied bytes.
-+ *
-+ * Note that with only one concurrent reader and one concurrent
-+ * writer, you don't need extra locking to use these functions.
-+ */
-+unsigned int kfifo_from_user(struct kfifo *fifo,
-+	const void __user *from, unsigned int len)
-+{
-+	unsigned int off;
-+	unsigned int l;
-+	int ret;
-+
-+	len = min(len, fifo->size - fifo->in + fifo->out);
-+
- 	/*
--	 * Ensure that we remove the bytes from the kfifo -before-
--	 * we update the fifo->out index.
-+	 * Ensure that we sample the fifo->out index -before- we
-+	 * start putting bytes into the kfifo.
- 	 */
- 
- 	smp_mb();
- 
--	fifo->out += len;
-+	off = __kfifo_off(fifo, fifo->in);
-+
-+	/* first put the data starting from fifo->in to buffer end */
-+	l = min(len, fifo->size - off);
-+	ret = copy_from_user(fifo->buffer + off, from, l);
-+
-+	if (unlikely(ret))
-+		return l - ret;
-+
-+	/* then put the rest (if any) at the beginning of the buffer */
-+	ret = copy_from_user(fifo->buffer, from + l, len - l);
-+
-+	if (unlikely(ret))
-+		return len - ret;
-+
-+	__kfifo_add_in(fifo, len);
- 
- 	return len;
- }
--EXPORT_SYMBOL(kfifo_out);
-+EXPORT_SYMBOL(kfifo_from_user);
-+
-+/**
-+ * kfifo_to_user - gets data from the FIFO and write it to user space
-+ * @fifo: the fifo to be used.
-+ * @to: where the data must be copied.
-+ * @len: the size of the destination buffer.
-+ *
-+ * This function copies at most @len bytes from the FIFO into the
-+ * @to buffer and returns the number of copied bytes.
-+ *
-+ * Note that with only one concurrent reader and one concurrent
-+ * writer, you don't need extra locking to use these functions.
-+ */
-+unsigned int kfifo_to_user(struct kfifo *fifo,
-+	void __user *to, unsigned int len)
-+{
-+	unsigned int off;
-+	unsigned int l;
-+	int ret;
-+
-+	len = min(len, fifo->in - fifo->out);
-+
-+	/*
-+	 * Ensure that we sample the fifo->in index -before- we
-+	 * start removing bytes from the kfifo.
-+	 */
-+
-+	smp_rmb();
-+
-+	off = __kfifo_off(fifo, fifo->out);
-+
-+	/* first get the data from fifo->out until the end of the buffer */
-+	l = min(len, fifo->size - off);
-+	ret = copy_to_user(to, fifo->buffer + off, l);
-+
-+	if (unlikely(ret))
-+		return l - ret;
-+
-+	/* then get the rest (if any) from the beginning of the buffer */
-+	ret = copy_to_user(to + l, fifo->buffer, len - l);
-+
-+	if (unlikely(ret))
-+		return len - ret;
-+
-+	__kfifo_add_out(fifo, len);
-+
-+	return len;
-+}
-+EXPORT_SYMBOL(kfifo_to_user);
-+
+Oct 24 14:38:24 kotys NetworkManager: <info>  Activation (wlan0) Stage 5 of 5 (IP Configure Commit) complete.
+[snip pulseaudio's stuppid log spam warning]
+Oct 24 14:40:07 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out after 500ms.
+Oct 24 14:40:09 kotys pulseaudio[16469]: sap.c: sendmsg() failed: Invalid argument
+Oct 24 14:40:10 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_SCAN_CMD: time out after 500ms.
+Oct 24 14:40:11 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out after 500ms.
+Oct 24 14:40:11 kotys kernel: iwl3945 0000:04:00.0: Error sending POWER_TABLE_CMD: time out after 500ms.
+Oct 24 14:40:14 kotys kernel: iwl3945 0000:04:00.0: set power fail, ret = -110
+Oct 24 14:40:14 kotys kernel: No probe response from AP 00:1c:df:82:63:c9 after 500ms, disconnecting.
+Oct 24 14:40:14 kotys NetworkManager: <info>  (wlan0): supplicant connection state:  completed -> disconnected
+Oct 24 14:40:14 kotys NetworkManager: <info>  (wlan0): supplicant connection state:  disconnected -> scanning
+Oct 24 14:40:14 kotys pulseaudio[16469]: sap.c: sendmsg() failed: Invalid argument
+Oct 24 14:40:14 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_RXON: time out after 500ms.
+Oct 24 14:40:14 kotys kernel: iwl3945 0000:04:00.0: Error setting new configuration (-110).
+Oct 24 14:40:15 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_SCAN_CMD: time out after 500ms.
+Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 (try 1)
+Oct 24 14:40:15 kotys NetworkManager: <info>  (wlan0): supplicant connection state:  scanning -> associating
+Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 (try 2)
+Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 (try 3)
+Oct 24 14:40:15 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_RXON: time out after 500ms.
+Oct 24 14:40:15 kotys kernel: iwl3945 0000:04:00.0: Error setting new configuration (-110).
+Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 timed out
+Oct 24 14:40:16 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out after 500ms.
+Oct 24 14:40:16 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_RXON: time out after 500ms.
+Oct 24 14:40:16 kotys kernel: iwl3945 0000:04:00.0: Error setting new configuration (-110).
 
 
+When this happens i am able to use the card only after reloading the related modules, iwl3945 ecc. But the problem happens again after some minutes that im connected.
+
+Kernel is 2.6.32-rc5 but his started happening around 2.6.31, not sure exactly what version as i update kernel often. Firmware is iwl3945-ucode-15.32.2.9.
+
+Every other info that you need just ask. I hope i dont have to bisect as this is the laptop i use for work too, but if it's needed i'll do.
+
+I'm not subscribed on any ML, so in case please cc me.
+
+Thanks for all the work!
+
+F.
+
+
+
+      
