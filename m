@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751696AbZJXRT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751765AbZJXRjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751696AbZJXRT1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 13:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbZJXRT1
+	id S1751765AbZJXRjK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 13:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbZJXRjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 13:19:27 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:37107 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbZJXRT0 (ORCPT
+	Sat, 24 Oct 2009 13:39:09 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:56903 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbZJXRjI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 13:19:26 -0400
-Date: Sat, 24 Oct 2009 18:19:25 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Harald Dunkel <harald.dunkel@t-online.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31.4, ps2-to-usb adapter: fourth mouse button not working
-Message-ID: <20091024171925.GA3541@srcf.ucam.org>
-References: <1N1EA3-10pOoy0@fwd05.aul.t-online.de> <20091023073730.GB10914@srcf.ucam.org> <4AE2C572.1030209@t-online.de> <20091024091858.GA30614@srcf.ucam.org> <4AE3043A.4060706@t-online.de> <20091024135357.GA1170@srcf.ucam.org> <4AE3336B.8030905@t-online.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE3336B.8030905@t-online.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Sat, 24 Oct 2009 13:39:08 -0400
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-kernel@vger.kernel.org
+Date: Sat, 24 Oct 2009 20:37:11 +0300
+Message-Id: <20091024173711.22285.41111.sendpatchset@localhost.localdomain>
+Subject: [GIT PULL] UBI fixes for 2.6.32-rc6
+X-OriginalArrivalTime: 24 Oct 2009 17:39:08.0017 (UTC) FILETIME=[E37F1E10:01CA54D0]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 24, 2009 at 07:03:39PM +0200, Harald Dunkel wrote:
-> On 10/24/09 15:53, Matthew Garrett wrote:
->>
->> No. As far as Linux knows, it's a USB mouse. The converter doesn't
->> provide any access to the original PS2 stream.
->>
->
-> Can I access the USB stream, regardless what is plugged in into
-> the adapter?
+Hi Linus,
 
-usbmon will let you dump USB traffic.
+please, pull two UBI fixes for 2.6.32-rc6.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+The following changes since commit 012abeea669ea49636cf952d13298bb68654146a:
+  Linus Torvalds (1):
+        Linux 2.6.32-rc5
+
+are available in the git repository at:
+
+  git://git.infradead.org/ubi-2.6.git for-linus
+
+Artem Bityutskiy (1):
+      UBI: fix backward compatibility
+
+Roel Kluin (1):
+      UBI: fix check on unsigned long
+
+ drivers/mtd/ubi/build.c |    3 ++-
+ drivers/mtd/ubi/scan.c  |    7 +++----
+ drivers/mtd/ubi/scan.h  |    2 --
+ 3 files changed, 5 insertions(+), 7 deletions(-)
+
+Thanks,
+Artem.
