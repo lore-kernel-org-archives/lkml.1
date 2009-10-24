@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751737AbZJXTjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752121AbZJXTng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751737AbZJXTjg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 15:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZJXTjf
+	id S1752121AbZJXTng (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 15:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZJXTnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 15:39:35 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:57982 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbZJXTje (ORCPT
+	Sat, 24 Oct 2009 15:43:35 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:36940 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751882AbZJXTn3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 15:39:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Kokn7jBq5fhebUG1K3juzdJYBxT7qTBigqy+cb8qPtJWhh9MtZ9yszAZIJZHxfqqAX
-         VAKbjkkaIbAMC/toUCFyX1EtTjuMdjYqyL+KBJ/JdlOCvjNqoOpPgg1bUEAJfxvRMTSw
-         9iGff6BhCbubOKSCpRAYpiK2uxAociykVR/NI=
-Message-ID: <4AE357F6.7030600@googlemail.com>
-Date: Sat, 24 Oct 2009 21:39:34 +0200
-From: Gonsolo <gonsolo@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.9.1.4pre) Gecko/20090915 Thunderbird/3.0b4
+	Sat, 24 Oct 2009 15:43:29 -0400
+Date: Sat, 24 Oct 2009 21:43:31 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nicolas Pitre <nico@fluxnic.net>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC] to rebase or not to rebase on linux-next
+Message-ID: <20091024194331.GA6234@merkur.ravnborg.org>
+References: <4AE19A74.1090709@garzik.org> <20091023123555.GA25366@elte.hu> <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com> <20091023134115.GD27097@elte.hu> <alpine.LFD.2.00.0910231424440.21460@xanadu.home> <20091023191631.GA1879@elte.hu> <1256326512.26028.34.camel@gandalf.stny.rr.com> <20091023205400.GA8356@elte.hu> <20091024080326.GA7461@mit.edu> <4AE2F0F6.30909@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: Gonsolo <gonsolo@gmail.com>, mchehab@infradead.org, pboettcher@dibcom.fr,
-       linux-media@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: DVB-T dib0700 one minute hang when resuming
-References: <4AE32EF2.2040508@googlemail.com> <200910242014.18785.oliver@neukum.org>
-In-Reply-To: <200910242014.18785.oliver@neukum.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AE2F0F6.30909@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 24.10.2009 20:14, schrieb Oliver Neukum:
-> Am Samstag, 24. Oktober 2009 18:44:34 schrieb Gonsolo:
->> Hi!
->>
->> The following script fixes an annoying 62 second hang when resuming
->> while my Nova-T stick is connected to my notebook.
->>
-> Do you have any idea why it doesn't find its firmware?
+> 
+> We should rely less on linux-next as a cross-compile farm; that's not
+> its purpose.  We can cross-compile ourselves.
 
-Don't know. Maybe it's because it is not included in initrd or user 
-space is still not available when resuming. In the first case it is a 
-Ubuntu Kernel bug, in the second case the driver has to be fixed by 
-using request_firmware_nowait. But please notice that I am absolutely 
-not qualified to answer this question. I was hoping to get an answer on 
-that issue since this is the last annoying bug that keeps my 
-Ubuntu/Debian/Gnome/GNU/Linux distribution from being perfect. :)
+Hmm, last time I tried to build binutils/gcc I only got:
+   
+   alpha arm sparc64 i386 x86_64 um m68k
 
-g
+working.
 
+I recall that I managed to build sh and avr32 alas no luck.
+So please do not expect people that touches code impacting
+lots of architectures to provide the same level of coverage
+that -next does.
+
+Hay - and sometimes I even fail to buil for all the architectures
+I have build tool for.
+
+	Sam
