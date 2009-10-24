@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbZJXNvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbZJXNx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753667AbZJXNvI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 09:51:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbZJXNvH
+	id S1753573AbZJXNx7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 09:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbZJXNx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 09:51:07 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:59599 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753647AbZJXNvG (ORCPT
+	Sat, 24 Oct 2009 09:53:58 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:42719 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753500AbZJXNx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 09:51:06 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC failures V2
-Date: Sat, 24 Oct 2009 15:51:02 +0200
-User-Agent: KMail/1.9.9
-Cc: Jiri Kosina <jkosina@suse.cz>, Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org\"" <linux-mm@kvack.org>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
-In-Reply-To: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
+	Sat, 24 Oct 2009 09:53:58 -0400
+Date: Sat, 24 Oct 2009 14:53:57 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Harald Dunkel <harald.dunkel@t-online.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.31.4, ps2-to-usb adapter: fourth mouse button not working
+Message-ID: <20091024135357.GA1170@srcf.ucam.org>
+References: <1N1EA3-10pOoy0@fwd05.aul.t-online.de> <20091023073730.GB10914@srcf.ucam.org> <4AE2C572.1030209@t-online.de> <20091024091858.GA30614@srcf.ucam.org> <4AE3043A.4060706@t-online.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910241551.08291.elendil@planet.nl>
-X-OriginalArrivalTime: 24 Oct 2009 13:51:08.0461 (UTC) FILETIME=[09D885D0:01CA54B1]
+In-Reply-To: <4AE3043A.4060706@t-online.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 October 2009, Mel Gorman wrote:
-> Since 2.6.31-rc1, there have been an increasing number of GFP_ATOMIC
-> failures. A significant number of these have been high-order GFP_ATOMIC
-> failures and while they are generally brushed away, there has been a
-> large increase in them recently and there are a number of possible areas
-> the problem could be in - core vm, page writeback and a specific driver.
+On Sat, Oct 24, 2009 at 03:42:18PM +0200, Harald Dunkel wrote:
+> On 10/24/09 11:18, Matthew Garrett wrote:
+>>
+>> No, but your convertor may not understand wheel events.
+>
+> Is there some way to get the properties of a mouse connected to
+> a ps2-to-usb adapter, as there is for a "real" ps2 mouse?
 
-I needed a break and have thus been off-line for a few days. Good to see 
-there's been progress. I'll try to do some testing tomorrow.
+No. As far as Linux knows, it's a USB mouse. The converter doesn't 
+provide any access to the original PS2 stream.
 
-Cheers,
-FJP
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
