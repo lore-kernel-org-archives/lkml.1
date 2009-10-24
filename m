@@ -1,88 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbZJXVLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbZJXVFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752414AbZJXVLW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 17:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbZJXVLW
+	id S1752360AbZJXVFm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 17:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZJXVFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 17:11:22 -0400
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:21267 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752345AbZJXVLV (ORCPT
+	Sat, 24 Oct 2009 17:05:42 -0400
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:45439 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752305AbZJXVFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 17:11:21 -0400
-X-Greylist: delayed 453 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 Oct 2009 17:11:21 EDT
-Date: Sat, 24 Oct 2009 23:03:52 +0200 (CEST)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Adrian Bunk <bunk@stusta.de>, Harvey Harrison <harvey.harrison@gmail.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       GeunSik Lim <leemgs1@gmail.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhao Lei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org,
-       Dominique Toupin <dominique.toupin@ericsson.com>,
-       Michel Dagenais <michel.dagenais@polymtl.ca>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
-Subject: Re: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL v2,
- headers to Dual BSD/GPL
-In-Reply-To: <20091023160632.GA2198@Krystal>
-Message-ID: <alpine.LNX.2.00.0910242300510.16628@swampdragon.chaosbits.net>
-References: <20091023160257.GA30447@Krystal> <20091023160632.GA2198@Krystal>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Sat, 24 Oct 2009 17:05:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=e6zrNjo0VnqboFWLFpfr9ZiR/PTzspiKVH3Pldkv5ENAWBAYqpTLvizlG/9wtVKcnE
+         UYraSJpuOrZbLuyFqVRA5jAlVDg2OiZ74+cM2e24Crx+XdCzmeJ+jJB32eyf9L4edsFO
+         nTKiZctmfz4+X7bkQXSiSU60cHNXKjARzk6yA=
+Date: Sat, 24 Oct 2009 14:05:40 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Harald Dunkel <harald.dunkel@t-online.de>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31.5: /dev/input/event? are gone sometimes
+Message-ID: <20091024210540.GA15297@core.coreip.homeip.net>
+References: <4AE308A8.2070309@t-online.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AE308A8.2070309@t-online.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Oct 2009, Mathieu Desnoyers wrote:
+Hi Harald,
 
-> (updated email for Jesper Juhl)
-> 
-> * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> > Hi,
-> > 
-> > I would like to re-license the tracepoint.c/marker.c files from GPL to:
-> > 
-> > * Dual LGPL v2.1/GPL v2 license.
-> > 
-> > And re-license tracepoint.h/marker.h to:
-> > 
-> > * Dual BSD/GPL v2 license.
-> > 
-> > The goal is to allow sharing code between the kernel tracer and UST
-> > (User-Space Tracer) project, which is a LGPL v2.1 library. Tracepoint
-> > and marker headers might need to be included by proprietary or BSD
-> > applications, hence the dual BSD/GPL v2 license for these two.
-> > 
-> > I currently have the OK from Kosaki Motohiro for Fujitsu contributions,
-> > which includes Zhao Lei and Lai Jiangshan.
-> > 
-> > The missing approvals for Dual LGPL v2.1/GPL v2 relicensing are:
-> > 
-> > For tracepoint.c:
-> > 
-> > Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > 
-> > For marker.c:
-> > 
-> > "Robert P. J. Day" <rpjday@mindspring.com>
-> > Adrian Bunk <bunk@stusta.de>
-> > Harvey Harrison <harvey.harrison@gmail.com>
-> 
-> Jesper Juhl <jj@chaosbits.net>
-> 
+On Sat, Oct 24, 2009 at 04:01:12PM +0200, Harald Dunkel wrote:
+> Hi folks,
+>
+> Sometimes (by chance, as it seems) the /dev/input/event? devices
+> are not working after power-on or reboot. They are not listed in
+> /proc/bus/input/devices. The mouse in X is not moving, keyboard
+> is dead, etc. All I can do is reboot and hope.
+>
+> Below you can find the diff of /proc/bus/input/devices between
+> a bad and a good start.
+>
+>
+> udev is 146-5 (included with Debian Sid).
+>
+>
+> Any helpful hints would be highly appreciated. Of course I can
+> send you the .config, if there is some interest.
+>
+>
+> Regards
+>
+> Harri
+> ===================================================================
+> % diff -u devices.bad devices.good
+> --- devices.bad 2009-10-24 15:08:24.000000000 +0200
+> +++ devices.good        2009-10-24 15:17:17.000000000 +0200
+> @@ -3,7 +3,7 @@
+>  P: Phys=isa0060/serio0/input0
+>  S: Sysfs=/devices/platform/i8042/serio0/input/input0
+>  U: Uniq=
+> -H: Handlers=kbd
+> +H: Handlers=kbd event0
 
-I don't think I have enough significant changes in there to actually 
-require my approval for relicensing, but since you ask; I personally 
-do not have a problem with that file being Dual LGPL v2.1/GPL v2 
-licensed.
+Since evdev binds to -every_ input device registered its absence in the
+handlers list suggests that the module is not loaded. I am not sure how
+and when your distribution loads evdev; try making it built-in to avoid
+cases when it is not loaded for one reason or another.
 
 -- 
-Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-Plain text mails only, please      http://www.expita.com/nomime.html
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-
+Dmitry
