@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZJXBFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbZJXBIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbZJXBFc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 21:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbZJXBFK
+	id S1753520AbZJXBIc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 21:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZJXBIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 21:05:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49439 "EHLO hera.kernel.org"
+	Fri, 23 Oct 2009 21:08:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51715 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753387AbZJXBFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 21:05:08 -0400
-Date: Sat, 24 Oct 2009 01:04:06 GMT
-From: tip-bot for Michael Neuling <mikey@neuling.org>
+	id S1753196AbZJXBEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 21:04:42 -0400
+Date: Sat, 24 Oct 2009 01:04:12 GMT
+From: tip-bot for Minchan Kim <minchan.kim@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, mingo@elte.hu, mikey@neuling.org
+       yhlu.kernel@gmail.com, minchan.kim@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mikey@neuling.org, mingo@elte.hu
-In-Reply-To: <18191.1256182768@neuling.org>
-References: <18191.1256182768@neuling.org>
+       minchan.kim@gmail.com, yhlu.kernel@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20091022112722.adc8e55c.minchan.kim@barrios-desktop>
+References: <20091022112722.adc8e55c.minchan.kim@barrios-desktop>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:branch?] irq: trivial: Fix typo in comment for #endif
-Message-ID: <tip-40b1f4e5113eafc5e84f2ba86822df66087fcb25@git.kernel.org>
-Git-Commit-ID: 40b1f4e5113eafc5e84f2ba86822df66087fcb25
+Subject: [tip:branch?] x86: Remove pfn in add_one_highpage_init()
+Message-ID: <tip-b1258ac2963d42ee7e807d2993d15e3dd39ff4b0@git.kernel.org>
+Git-Commit-ID: b1258ac2963d42ee7e807d2993d15e3dd39ff4b0
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,35 +31,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  40b1f4e5113eafc5e84f2ba86822df66087fcb25
-Gitweb:     http://git.kernel.org/tip/40b1f4e5113eafc5e84f2ba86822df66087fcb25
-Author:     Michael Neuling <mikey@neuling.org>
-AuthorDate: Thu, 22 Oct 2009 14:39:28 +1100
+Commit-ID:  b1258ac2963d42ee7e807d2993d15e3dd39ff4b0
+Gitweb:     http://git.kernel.org/tip/b1258ac2963d42ee7e807d2993d15e3dd39ff4b0
+Author:     Minchan Kim <minchan.kim@gmail.com>
+AuthorDate: Thu, 22 Oct 2009 11:27:22 +0900
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 23 Oct 2009 08:28:10 +0200
+CommitDate: Fri, 23 Oct 2009 13:39:26 +0200
 
-irq: trivial: Fix typo in comment for #endif
+x86: Remove pfn in add_one_highpage_init()
 
-The comment suggests this #endif is CONFIG_X86 but it's really
-CONFIG_TRACE_IRQFLAGS_SUPPORT
+commit cc9f7a0ccf000d4db5fbdc7b0ae48eefea102f69 changed
+add_one_highpage_init. We don't use pfn any more.
+Let's remove unnecessary argument.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Cc: michael@ellerman.id.au
-LKML-Reference: <18191.1256182768@neuling.org>
+This patch doesn't chage function behavior.
+This patch is based on v2.6.32-rc5.
+
+Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+LKML-Reference: <20091022112722.adc8e55c.minchan.kim@barrios-desktop>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/irqflags.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/mm/init_32.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/irqflags.h b/include/linux/irqflags.h
-index b02a3f1..006bf45 100644
---- a/include/linux/irqflags.h
-+++ b/include/linux/irqflags.h
-@@ -124,6 +124,6 @@
- 	typecheck(unsigned long, flags);	\
- 	raw_irqs_disabled_flags(flags);		\
- })
--#endif		/* CONFIG_X86 */
-+#endif /* CONFIG_TRACE_IRQFLAGS_SUPPORT */
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 5e32b07..f64d0d5 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -412,7 +412,7 @@ static void __init permanent_kmaps_init(pgd_t *pgd_base)
+ 	pkmap_page_table = pte;
+ }
  
- #endif
+-static void __init add_one_highpage_init(struct page *page, int pfn)
++static void __init add_one_highpage_init(struct page *page)
+ {
+ 	ClearPageReserved(page);
+ 	init_page_count(page);
+@@ -445,7 +445,7 @@ static int __init add_highpages_work_fn(unsigned long start_pfn,
+ 		if (!pfn_valid(node_pfn))
+ 			continue;
+ 		page = pfn_to_page(node_pfn);
+-		add_one_highpage_init(page, node_pfn);
++		add_one_highpage_init(page);
+ 	}
+ 
+ 	return 0;
