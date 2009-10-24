@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752379AbZJXDyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751748AbZJXEHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752379AbZJXDyi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 23:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbZJXDyh
+	id S1751748AbZJXEHB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 00:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbZJXEHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 23:54:37 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49305 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbZJXDyh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 23:54:37 -0400
-Date: Sat, 24 Oct 2009 05:54:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, john stultz <johnstul@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, Mike Fulton <fultonm@ca.ibm.com>,
-       Sean Foley <Sean_Foley@ca.ibm.com>, Darren Hart <dvhltc@us.ibm.com>
-Subject: Re: [RFC][PATCH] Add prctl to set sibling thread names
-Message-ID: <20091024035438.GY32470@one.firstfloor.org>
-References: <1256167297.4768.14.camel@localhost.localdomain> <20091021174804.3885db37@infradead.org> <20091022004919.GT32470@one.firstfloor.org> <20091021194822.72895c46@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091021194822.72895c46@infradead.org>
-User-Agent: Mutt/1.4.2.2i
+	Sat, 24 Oct 2009 00:07:01 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:29646 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751090AbZJXEHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Oct 2009 00:07:00 -0400
+Message-ID: <4AE27B95.8080605@redhat.com>
+Date: Fri, 23 Oct 2009 23:59:17 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Mel Gorman <mel@csn.ul.ie>
+CC: David Rientjes <rientjes@google.com>, Jiri Kosina <jkosina@suse.cz>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Frans Pop <elendil@planet.nl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: page allocation failure message kernel 2.6.31.4 (tty-related)
+References: <20091020153838.665bc39c.skraw@ithnet.com> <alpine.LRH.2.00.0910211848510.20992@twin.jikos.cz> <alpine.DEB.2.00.0910211409390.20010@chino.kir.corp.google.com> <20091022105902.GM11778@csn.ul.ie>
+In-Reply-To: <20091022105902.GM11778@csn.ul.ie>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2009 at 07:48:22PM -0700, Arjan van de Ven wrote:
-> On Thu, 22 Oct 2009 02:49:19 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > you're pretty much the first now who touches ->comm from
-> > > not-the-thread-itself.... are you sure that is safe?
-> > 
-> > It's not, there is no locking. On the other hand nothing should crash,
-> > just users might see half rewritten data.
-> 
-> .. with strings this is tricky though.. if the new string is longer
-> than the old one the terminating zero might just be missed etc.
+On 10/22/2009 06:59 AM, Mel Gorman wrote:
 
-Good point.
-He needs to first set the last byte to zero to avoid that.
-But better probably to do a proper lock on all readers. Or not add
-this feature at all (does it have a strong use case?)
--Andi
+> Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
+> slightly by allowing rt_tasks that are handling an interrupt to set
+> ALLOC_HARDER. This patch brings the watermark logic more in line with
+> 2.6.30.
+>
+> Signed-off-by: Mel Gorman<mel@csn.ul.ie>
+
+Reviewed-by: Rik van Riel <riel@redhat.com>
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+All rights reversed.
