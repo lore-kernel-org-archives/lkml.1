@@ -1,74 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZJXORg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbZJXOTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753863AbZJXORg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 10:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbZJXORf
+	id S1753809AbZJXOTE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 10:19:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753769AbZJXOTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 10:17:35 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:64716 "EHLO
+	Sat, 24 Oct 2009 10:19:03 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:35583 "EHLO
 	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753807AbZJXOR2 (ORCPT
+	with ESMTP id S1753761AbZJXOTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 10:17:28 -0400
+	Sat, 24 Oct 2009 10:19:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=tk0NB3OyYqa95xmVxKbjAgjRnqMHTiqSCAWeBOhANs3lMeLuhrLBn9d/IFCbhCejVN
-         72wZ3NBCF2gtbA4rrUWB1cDLPak1TAo2piGULYh5xTKEt/ELuI1Q1g6BBywIT2bkTbSg
-         SugxM5gCvhPdleXdB3+Ca4gDwnIenHinNjIUs=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=O9+56XiOqhqxfscWh6a/YXnFxJtZdhmnRYCrYn0TQ30vtAtq0D5FkGEIFj25fd+eMA
+         R91LiJ3JUN4jV1LFMRAEpcB6jvG8k19wprDl4gYQRbGbQVE9P7JcmXXzQNykrFbP8TkB
+         eOFDWKYWTTAV8GRvU/tXnOvHopXtZj+ioBkUg=
+Date: Sat, 24 Oct 2009 16:19:03 +0200
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Prasad <prasad@linux.vnet.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 6/6] ksym_tracer: Remove KSYM_SELFTEST_ENTRY
-Date: Sat, 24 Oct 2009 16:16:58 +0200
-Message-Id: <1256393818-8921-7-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1256393818-8921-1-git-send-email-fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
+       Jiri Slaby <jirislaby@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Avi Kivity <avi@redhat.com>, Paul Mackerras <paulus@samba.org>,
+       Mike Galbraith <efault@gmx.de>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [GIT PULL v2] hw-breakpoints: Rewrite on top of perf events
+Message-ID: <20091024141900.GA5055@nowhere>
 References: <1256393818-8921-1-git-send-email-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256393818-8921-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Li Zefan <lizf@cn.fujitsu.com>
+On Sat, Oct 24, 2009 at 04:16:52PM +0200, Frederic Weisbecker wrote:
+> Hi all,
+> 
+> This is the v2 of the hw-breakpoints API rewrite on top of perf events.
+> You can find the previous version here:
+> http://lwn.net/Articles/351922/
+> 
+> Changes in v2:
+>     
+>     - Follow the perf "event " rename
+>     - The ptrace regression have been fixed (ptrace breakpoint perf events
+>       weren't released when a task ended)
+>     - Drop the struct hw_breakpoint and store generic fields in
+>       perf_event_attr.
+>     - Separate core and arch specific headers, drop
+>       asm-generic/hw_breakpoint.h and create linux/hw_breakpoint.h
+>     - Use new generic len/type for breakpoint
+>     - Handle off case: when breakpoints api is not supported by an arch
+>     - Use proper in-kernel perf api provided by Arjan.
+> 
+> There are still a lot of things that need to be cleaned, simplified,
+> improved (ptrace side, the bp api, etc....) I guess these things can
+> be done incrementally if you agree.
+> 
+> I've also tried to get an arch-independent api. Generic fields for
+> breakpoints are stored in perf_event_attr structure (type, len, addr).
+> This needs to be discussed and improved before it becomes a perf
+> userspace ABI. We need to find a generic enough structure to host
+> the breakpoints parameters, something that can better fit to most arch
+> (handling breakpoint ranges in powerpc, etc...).
+> 
+> Thanks.
+> 
+> ---
+> 
+> The following patchset are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> 	perfevents/hw-breakpoint
 
-The macro used to be used in both trace_selftest.c and
-trace_ksym.c, but no longer, so remove it from header file.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace.h          |    1 -
- kernel/trace/trace_selftest.c |    2 +-
- 2 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 91c3d0e..85ba332 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -370,7 +370,6 @@ int register_tracer(struct tracer *type);
- void unregister_tracer(struct tracer *type);
- int is_tracing_stopped(void);
- 
--#define KSYM_SELFTEST_ENTRY "ksym_selftest_dummy"
- extern int process_new_ksym_entry(char *ksymname, int op, unsigned long addr);
- 
- extern unsigned long nsecs_to_usecs(unsigned long nsecs);
-diff --git a/kernel/trace/trace_selftest.c b/kernel/trace/trace_selftest.c
-index 7179c12..a006f00 100644
---- a/kernel/trace/trace_selftest.c
-+++ b/kernel/trace/trace_selftest.c
-@@ -828,7 +828,7 @@ trace_selftest_startup_ksym(struct tracer *trace, struct trace_array *tr)
- 
- 	ksym_selftest_dummy = 0;
- 	/* Register the read-write tracing request */
--	ret = process_new_ksym_entry(KSYM_SELFTEST_ENTRY, HW_BREAKPOINT_RW,
-+	ret = process_new_ksym_entry("ksym_selftest_dummy", HW_BREAKPOINT_RW,
- 					(unsigned long)(&ksym_selftest_dummy));
- 
- 	if (ret < 0) {
--- 
-1.6.2.3
+BTW, this is a branch based on tip:tracing/hw_breakpoint with tip:perf/core
+merged inside.
 
