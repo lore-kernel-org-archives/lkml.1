@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbZJXUGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752217AbZJXUIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752146AbZJXUGX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 16:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbZJXUGX
+	id S1752217AbZJXUIo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 16:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZJXUIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 16:06:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35618 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751905AbZJXUGW (ORCPT
+	Sat, 24 Oct 2009 16:08:44 -0400
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:60722 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751819AbZJXUIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 16:06:22 -0400
-Date: Sat, 24 Oct 2009 13:07:28 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] sched: Disable affine wakeups by default
-Message-ID: <20091024130728.051c4d7c@infradead.org>
-In-Reply-To: <20091024130432.0c46ef27@infradead.org>
-References: <20091024125853.35143117@infradead.org>
-	<20091024130432.0c46ef27@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 24 Oct 2009 16:08:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=VS9ZEO6OrofAIkBSS3r8ROUZ10DE83UtJy3tJ0wgNhCj5I6UoYnSC67E7I4+qPGxg4
+         uZUn//9XzTRuK09LBZ2NfbBYLGn32XU7bfCmGaJHUTnCExWVzJMIquo0YrThtMD9jwwj
+         m3NWOQIaHXTScojHVe8IEnuGjzLOXLgzt09m0=
+MIME-Version: 1.0
+In-Reply-To: <1256332492-24566-1-git-send-email-jmoyer@redhat.com>
+References: <1256332492-24566-1-git-send-email-jmoyer@redhat.com>
+Date: Sat, 24 Oct 2009 22:08:48 +0200
+Message-ID: <4e5e476b0910241308s4a14fb69jbc6f8d35eb0ab78@mail.gmail.com>
+Subject: Re: [PATCH/RFC 0/4] cfq: implement merging and breaking up of 
+	cfq_queues
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: sched: Disable affine wakeups by default
-From: Arjan van de Ven <arjan@linux.intel.com>
+Hi Jeff,
+this series looks good.
+I like in particular the fact that you move seekiness detection in the cfqq.
+This can help with processes that issue sequential reads and seeky
+writes, or vice versa.
+Probably, also the think time could be made per-cfqq, so that the
+decision whether we should idle for a given cfqq is more precise.
 
-The global affine wakeup scheduler feature sounds nice, but there is a problem
-with this: This is ALSO a per scheduler domain feature already.
-By having the global scheduler feature enabled by default, the scheduler domains
-no longer have the option to opt out.
+On Fri, Oct 23, 2009 at 11:14 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
+> Hi,
+>
+> This is a follow-up patch to the original close cooperator support for
+> CFQ.  The problem is that some programs (NFSd, dump(8), iscsi target
+> mode driver, qemu) interleave sequential I/Os between multiple threads
+> or processes.  The result is that there are large delays due to CFQ's
+> idling logic that leads to very low throughput.
 
-There are domains (for example the HT/SMT domain) that have good reason to want
-to opt out of this feature.
+You identified the problem in the idling logic, that reduces the
+throughput in this particular scenario, in which various threads or
+processes issue (in random order) the I/O requests with different I/O
+contexts on behalf of a single entity.
+In this case, any idling between those threads is detrimental.
+Ideally, such cases should be already spotted, since think time should
+be high for such processes, so I wonder if this indicates a problem in
+the current think time logic.
+Can you send me your read-test, so I can investigate it?
 
-With this patch they can opt out, while all other domains currently default to
-the affine setting anyway.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-
-diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index 0d94083..58c2ea7 100644
---- a/kernel/sched_features.h
-+++ b/kernel/sched_features.h
-@@ -72,7 +72,7 @@ SCHED_FEAT(SYNC_WAKEUPS, 1)
-  * improve cache locality. Typically used with SYNC wakeups as
-  * generated by pipes and the like, see also SYNC_WAKEUPS.
-  */
--SCHED_FEAT(AFFINE_WAKEUPS, 1)
-+SCHED_FEAT(AFFINE_WAKEUPS, 0)
- 
- /*
-  * Weaken SYNC hint based on overlap
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Thanks,
+Corrado
