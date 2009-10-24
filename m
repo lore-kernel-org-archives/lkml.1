@@ -1,128 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751307AbZJXQKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751293AbZJXQVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751307AbZJXQKj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 12:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbZJXQKj
+	id S1751293AbZJXQVL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 12:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbZJXQVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 12:10:39 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:53270 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbZJXQKi (ORCPT
+	Sat, 24 Oct 2009 12:21:11 -0400
+Received: from fmmailgate02.web.de ([217.72.192.227]:54142 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbZJXQVK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 12:10:38 -0400
-Subject: Re: [PATCH] perf tools: add compatibility with libelf 0.8 and
- autodetect
-From: Marti Raudsepp <marti@juffo.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Lucas De Marchi <lucas.de.marchi@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+	Sat, 24 Oct 2009 12:21:10 -0400
+Message-ID: <4AE32926.2020005@web.de>
+Date: Sat, 24 Oct 2009 18:19:50 +0200
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20091024154151.GA24876@elte.hu>
-References: <1256330234-14079-1-git-send-email-marti@juffo.org>
-	 <20091023210231.GC8356@elte.hu>
-	 <1256334501-15755-1-git-send-email-marti@juffo.org>
-	 <193b0f820910231807t35f8b462r1f92e28492b780e2@mail.gmail.com>
-	 <20091024083031.GB20575@elte.hu>
-	 <193b0f820910240626m1567190cqc40930542453319d@mail.gmail.com>
-	 <1256397192.24594.13.camel@newn> <1256397564.24594.16.camel@newn>
-	 <20091024154151.GA24876@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 24 Oct 2009 19:10:36 +0300
-Message-ID: <1256400636.3007.16.camel@newn>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 4/6] hw-breakpoints: Rewrite the hw-breakpoints layer
+ on top of perf events
+References: <1256393818-8921-1-git-send-email-fweisbec@gmail.com> <1256393818-8921-5-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1256393818-8921-5-git-send-email-fweisbec@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigE06997BCBE9513A326906F2D"
+X-Provags-ID: V01U2FsdGVkX1+AwqnizbZs9Ez/Jy+ooiOSITy7K21C3riyCvQY
+	3v12AIxC6WcjcViWTUYT4XxvZsvwm6lfBTP0s+spW+CuzyE6M5
+	HSwXp1TL4=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-24 at 17:41 +0200, Ingo Molnar wrote:
-> The patch got whitespace damaged (tabs are spaces, etc.) - please see 
-> Documentation/email-clients.txt.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE06997BCBE9513A326906F2D
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-Jeez, I spent most of my morning testing how to use different email
-clients and I still can't get it right. :/
+Frederic Weisbecker wrote:
+> This patch rebase the implementation of the breakpoints API on top of
+> perf events instances.
+>=20
+> Each breakpoints are now perf events that handle the
+> register scheduling, thread/cpu attachment, etc..
+>=20
+> The new layering is now made as follows:
+>=20
+>        ptrace       kgdb      ftrace   perf syscall
+>           \          |          /         /
+>            \         |         /         /
+>                                         /
+>             Core breakpoint API        /
+>                                       /
+>                      |               /
+>                      |              /
+>=20
+>               Breakpoints perf events
+>=20
+>                      |
+>                      |
+>=20
+>                Breakpoints PMU ---- Debug Register constraints handling=
 
-Marti
+>                                     (Part of core breakpoint API)
+>                      |
+>                      |
+>=20
+>              Hardware debug registers
+>=20
+> Reasons of this rewrite:
+>=20
+> - Use the centralized/optimized pmu registers scheduling,
+>   implying an easier arch integration
+> - More powerful register handling: perf attributes (pinned/flexible
+>   events, exclusive/non-exclusive, tunable period, etc...)
+>=20
+> Impact:
+>=20
+> - New perf ABI: the hardware breakpoints counters
+> - Ptrace breakpoints setting remains tricky and still needs some per
+>   thread breakpoints references.
 
----
-perf tools: add compatibility with libelf 0.8.x and autodetect
+- Broken CONFIG_KVM
 
-The Makefile now automatically defines LIBELF_NO_MMAP when libelf 0.8.x is
-detected. libelf 0.8 is still maintained and some distributions such as
-Arch Linux use it instead of elfutils.
+>=20
+> Todo (in the order):
+>=20
 
-Signed-off-by: Marti Raudsepp <marti@juffo.org>
+- Unbreak CONFIG_KVM :)
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -422,7 +422,11 @@
- 	PTHREAD_LIBS =
- endif
- 
--ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
-+ifeq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
-+	ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
-+		BASIC_CFLAGS += -DLIBELF_NO_MMAP
-+	endif
-+else
- 	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el]);
- endif
- 
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -413,7 +413,7 @@
- 	if (fd < 0)
- 		goto out;
- 
--	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-+	elf = elf_begin(fd, PERF_ELF_C_READ_MMAP, NULL);
- 	if (elf == NULL)
- 		goto out_close;
- 
-@@ -533,7 +533,7 @@
- 	Elf *elf;
- 	int nr = 0, kernel = !strcmp("[kernel]", self->name);
- 
--	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-+	elf = elf_begin(fd, PERF_ELF_C_READ_MMAP, NULL);
- 	if (elf == NULL) {
- 		if (v)
- 			fprintf(stderr, "%s: cannot read %s ELF file.\n",
-@@ -675,7 +675,7 @@
- 	if (fd < 0)
- 		goto out;
- 
--	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-+	elf = elf_begin(fd, PERF_ELF_C_READ_MMAP, NULL);
- 	if (elf == NULL) {
- 		if (v)
- 			fprintf(stderr, "%s: cannot read %s ELF file.\n",
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -27,6 +27,16 @@
- #endif
- #endif
- 
-+/*
-+ * libelf 0.8.x and earlier do not support ELF_C_READ_MMAP; for newer versions
-+ * we can use mmap to reduce memory usage
-+ */
-+#ifdef LIBELF_NO_MMAP
-+# define PERF_ELF_C_READ_MMAP ELF_C_READ
-+#else
-+# define PERF_ELF_C_READ_MMAP ELF_C_READ_MMAP
-+#endif
-+
- #ifndef DMGL_PARAMS
- #define DMGL_PARAMS      (1 << 0)       /* Include function args */
- #define DMGL_ANSI        (1 << 1)       /* Include const, volatile, etc */
+> - Support breakpoints perf counter events for perf tools (ie: implement=
+
+>   perf_bpcounter_event())
+> - Support from perf tools
+
+Since commit 3d53c27d05, KVM uses current->thread.debugregs for
+restoring the host state in case the guest played with breakpoints. We
+need an equivalent interface to restore ptrace breakpoints and all
+others currently in use.
+
+Jan
 
 
+--------------enigE06997BCBE9513A326906F2D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkrjKTcACgkQitSsb3rl5xTuPwCgrT6hs7a2X106B9fxzBJogy6D
+YGgAoMkKYgN7zfDrp8oNoo3QjApj+rJR
+=7h2T
+-----END PGP SIGNATURE-----
+
+--------------enigE06997BCBE9513A326906F2D--
