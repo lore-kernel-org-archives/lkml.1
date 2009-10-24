@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbZJXBH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZJXBJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbZJXBH6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 21:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbZJXBH4
+	id S1753368AbZJXBJP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 21:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbZJXBJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 21:07:56 -0400
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:35873 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752575AbZJXBHy (ORCPT
+	Fri, 23 Oct 2009 21:09:12 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:33078 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753080AbZJXBJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 21:07:54 -0400
+	Fri, 23 Oct 2009 21:09:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=jcbZncCfdS2hWk/CTL7U/NZ47RtNCbLdvmjl26j5wAlj+evWmMPqAOjrGLh9n84Tvr
-         ebWsBvwGoKyBUiGhm3TIw1CrQifd2Wpe7dR/oO6iy++S1Ca7+J7T5PMZCpFinRkyDWTz
-         KwXOz31fc9KfR+wGkI+STwraedDdF4jENLEGc=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ooEHFAtngwf3P51OYOQIo4qQB6Y+m6/Yq5iLfVf9ugZtckw+sOscCk3hTpeOioV/3W
+         v3KZEb697bFhDIN80uwo/XEeFlYyxTlB5W+KyKxynhlEgiJl4ppUd+tVT1d5tBqOLBhm
+         5+nRqOz5WAmJ6gAci/Agtzbwwq033kMjyVWBM=
+Date: Sat, 24 Oct 2009 03:09:09 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mike Travis <travis@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Robin Getz <rgetz@analog.com>, Dave Young <hidave.darkstar@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH 1/8] SGI x86_64 UV: Add limit console output function
+Message-ID: <20091024010906.GA4938@nowhere>
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233746.128967000@alcatraz.americas.sgi.com>
 MIME-Version: 1.0
-In-Reply-To: <1256334501-15755-1-git-send-email-marti@juffo.org>
-References: <1256330234-14079-1-git-send-email-marti@juffo.org> 
-	<20091023210231.GC8356@elte.hu> <1256334501-15755-1-git-send-email-marti@juffo.org>
-From: Lucas De Marchi <lucas.de.marchi@gmail.com>
-Date: Fri, 23 Oct 2009 23:07:38 -0200
-Message-ID: <193b0f820910231807t35f8b462r1f92e28492b780e2@mail.gmail.com>
-Subject: Re: [PATCH] perf tools: add compatibility with libelf 0.8 and 
-	autodetect
-To: Marti Raudsepp <marti@juffo.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091023233746.128967000@alcatraz.americas.sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 19:48, Marti Raudsepp <marti@juffo.org> wrote:
-> On Sat, Oct 24, 2009 at 12:02 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> Mind doing a small change:
->>
->> I think we want a small cleanup here: a perf_elf_begin() wrapper in a
->> header file to hide this #ifdef. (That's how Git wraps environmental
->> libraries as well.)
->
-Why don't you do something like?:
+On Fri, Oct 23, 2009 at 06:37:44PM -0500, Mike Travis wrote:
+> With a large number of processors in a system there is an excessive amount
+> of messages sent to the system console.  It's estimated that with 4096
+> processors in a system, and the console baudrate set to 56K, the startup
+> messages will take about 84 minutes to clear the serial port.
+> 
+> This patch adds (for SGI UV only) a kernel start option "limit_console_
+> output" (or 'lco' for short), which when set provides the ability to
+> temporarily reduce the console loglevel during system startup.  This allows
+> informative messages to still be seen on the console without producing
+> excessive amounts of repetious messages.
+> 
+> Note that all the messages are still available in the kernel log buffer.
 
-#ifdef LIBELF_NO_MMAP
-#define ELF_C_READ_MMAP ELF_C_READ
-#endif
-+ changes to Makefile
 
-or:
 
-#ifndef ELF_C_READ_MMAP
-#define ELF_C_READ_MMAP ELF_C_READ
-#endif
+Well, this problem does not only concerns SGI UV but all boxes with a large
+number of cpus.
+
+Also, instead of adding the same conditionals in multiple places to solve
+the same problem (and that may even expand if we go further the SGI UV case,
+for example with other archs cpu up/down events), may be can you centralize,
+institutionalize this issue by using the existing printk mechanisms.
+
+I mean, may be that could be addressed by adding a new printk
+level flag, and then associate the desired filters against it.
+
+KERN_CPU could be a name, since this is targetting cpu events.
+
+
