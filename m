@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752121AbZJXTng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbZJXUGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752121AbZJXTng (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 15:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZJXTnf
+	id S1752201AbZJXUGg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 16:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbZJXUGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 15:43:35 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:36940 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751882AbZJXTn3 (ORCPT
+	Sat, 24 Oct 2009 16:06:35 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35622 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751939AbZJXUGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 15:43:29 -0400
-Date: Sat, 24 Oct 2009 21:43:31 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nicolas Pitre <nico@fluxnic.net>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC] to rebase or not to rebase on linux-next
-Message-ID: <20091024194331.GA6234@merkur.ravnborg.org>
-References: <4AE19A74.1090709@garzik.org> <20091023123555.GA25366@elte.hu> <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com> <20091023134115.GD27097@elte.hu> <alpine.LFD.2.00.0910231424440.21460@xanadu.home> <20091023191631.GA1879@elte.hu> <1256326512.26028.34.camel@gandalf.stny.rr.com> <20091023205400.GA8356@elte.hu> <20091024080326.GA7461@mit.edu> <4AE2F0F6.30909@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE2F0F6.30909@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 24 Oct 2009 16:06:34 -0400
+Date: Sat, 24 Oct 2009 12:58:53 -0700
+From: Arjan van de Ven <arjan@infradead.org> (by way of Arjan van de
+	Ven <arjan@infradead.org>)
+To: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu
+Message-ID: <20091024125853.35143117@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Subject: [PATCH 1/3] sched: Enable wake balancing for the SMT/HT domain
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> We should rely less on linux-next as a cross-compile farm; that's not
-> its purpose.  We can cross-compile ourselves.
+Subject: sched: Enable wake balancing for the SMT/HT domain
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-Hmm, last time I tried to build binutils/gcc I only got:
-   
-   alpha arm sparc64 i386 x86_64 um m68k
+Logical CPUs that are part of a hyperthreading/SMT set are equivalent
+in terms of where to execute a task; after all they share pretty much
+all resources including the L1 cache.
 
-working.
+This means that if task A wakes up task B, we should really consider
+all logical CPUs in the SMT/HT set to run task B, not just the CPU that
+task A is running on; in case task A keeps running, task B now gets to 
+execute with no latency. In the case where task A then immediately goes
+to wait for a response from task B, nothing is lost due to the aforementioned
+equivalency.
 
-I recall that I managed to build sh and avr32 alas no luck.
-So please do not expect people that touches code impacting
-lots of architectures to provide the same level of coverage
-that -next does.
+This patch turns on the "balance on wakup" and turns of "affine wakeups"
+for the SMT/HT scheduler domain to get this lower latency behavior.
 
-Hay - and sometimes I even fail to buil for all the architectures
-I have build tool for.
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-	Sam
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index fc0bf3e..3665dc2 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -95,8 +95,8 @@ int arch_update_cpu_topology(void);
+ 				| 1*SD_BALANCE_NEWIDLE			\
+ 				| 1*SD_BALANCE_EXEC			\
+ 				| 1*SD_BALANCE_FORK			\
+-				| 0*SD_BALANCE_WAKE			\
+-				| 1*SD_WAKE_AFFINE			\
++				| 1*SD_BALANCE_WAKE			\
++				| 0*SD_WAKE_AFFINE			\
+ 				| 1*SD_SHARE_CPUPOWER			\
+ 				| 0*SD_POWERSAVINGS_BALANCE		\
+ 				| 0*SD_SHARE_PKG_RESOURCES		\
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
