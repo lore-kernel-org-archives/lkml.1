@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751891AbZJXWp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZJXWvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751891AbZJXWp0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 18:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbZJXWp0
+	id S1751956AbZJXWvg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 18:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbZJXWvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 18:45:26 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:48936 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbZJXWpZ convert rfc822-to-8bit (ORCPT
+	Sat, 24 Oct 2009 18:51:36 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:51439 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751806AbZJXWvf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 18:45:25 -0400
+	Sat, 24 Oct 2009 18:51:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=FJaCQFV55BpxRfqFGEQMFaDAN75LZRY9Lf2ffTRUBA2W0l3fhSXaQ+00YNpW2uyDym
-         54UiAd+pErVuOPQVrpwNmUE4MjHkiV0uTEY0q4WQQgL1UmMlj/jW06kTTAPi74k8hhjp
-         Cl3j1vXp1H285N+J+7/35ZvFvXDYw/lVmkWn0=
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=rt/xFljfXf7yOCRIN2+WG6yhQavQRUO028K0cRacv9B7wR/olxYOkVA5VZ9ckS3lp6
+         AEPDuc5hwUyuT4+e83T37VGk6LXInKBo+A5FcCF2bhXePev1H8OoV2R8qFH19h5BSPYr
+         vorTxxBhTGbFnq4Sh1bRy2S0U1fvHyS4+QqxA=
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.61.0910242207180.2439@ginsburg.homenet>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com>
-	 <20091023233756.941535000@alcatraz.americas.sgi.com>
-	 <b647ffbd0910241309u7b2f8c94t1f886ef31882539e@mail.gmail.com>
-	 <Pine.LNX.4.61.0910242207180.2439@ginsburg.homenet>
-Date: Sun, 25 Oct 2009 00:45:29 +0200
-Message-ID: <b647ffbd0910241545g4697a170peb00e541298d5a30@mail.gmail.com>
-Subject: Re: [PATCH 6/8] SGI x86_64 UV: Limit the number of microcode messages
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
-Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Andreas Mohr <andi@lisas.de>,
-       Hugh Dickins <hugh@veritas.com>, Hannes Eder <hannes@hanneseder.net>,
+In-Reply-To: <20091024115933.GA6999@console-pimps.org>
+References: <1253888440-14111-1-git-send-email-matt@console-pimps.org> 
+	<8bd0f97a0909251000y3316891dh4d09744ed98139e8@mail.gmail.com> 
+	<20090928080729.GB6793@console-pimps.org> <8bd0f97a0909281339p1abe6ff0h1ef4e05887a2413d@mail.gmail.com> 
+	<20091024115933.GA6999@console-pimps.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sat, 24 Oct 2009 18:51:20 -0400
+Message-ID: <8bd0f97a0910241551x7216c2b4sb8518e1a12ff346e@mail.gmail.com>
+Subject: Re: [PATCH] lib/checksum.c: Fix another endianess bug
+To: Matt Fleming <matt@console-pimps.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/10/24 Tigran Aivazian <tigran@aivazian.fsnet.co.uk>:
-> On Sat, 24 Oct 2009, Dmitry Adamushko wrote:
->>>
->>> -       printk(KERN_INFO "microcode: CPU%d sig=0x%x, pf=0x%x,
->>> revision=0x%x\n",
->>> +       if (cpu_num < 4 || !limit_console_output(false))
->>> +               printk(KERN_INFO
->>> +                       "microcode: CPU%d sig=0x%x, pf=0x%x,
->>> revision=0x%x\n",
->>>                        cpu_num, csig->sig, csig->pf, csig->rev);
->>>
+On Sat, Oct 24, 2009 at 07:59, Matt Fleming wrote:
+> On Mon, Sep 28, 2009 at 04:39:38PM -0400, Mike Frysinger wrote:
+>> On Mon, Sep 28, 2009 at 04:07, Matt Fleming wrote:
+>> > On Fri, Sep 25, 2009 at 01:00:25PM -0400, Mike Frysinger wrote:
+>> >> On Fri, Sep 25, 2009 at 10:20, Matt Fleming wrote:
+>> >> > From: Matt Fleming <matthew.fleming@imgtec.com>
+>> >> >
+>> >> > This fix allows the generic checksum code to work on my little endian
+>> >> > system. The previous fix was not enough, as "buff" is a big-endian
+>> >> > value. Without this patch I see malformed TCP packets.
+>> >>
+>> >> can you try this one ?
+>> >> http://lkml.org/lkml/2009/6/23/597
+>> >
+>> > Yep, that one works fine also. Thanks, Mike. Who's going to pick this
+>> > up? I'm guessing this commit is also applicable for stable? Though, I
+>> > don't know if there are any little-endian users of this code in stable.
 >>
->> Hmm, I guess we wouldn't lose a lot by simply removing those messages
->> completely. Per-cpu pf/revision is available via /sys anyway.
+>> i'm converting Blackfin to it now that the LE issues should be fixed,
+>> but i'm going to hold off on pushing the change until it can be tested
+>>
+>> as for picking up the fix, let's ask Andrew ...
 >
-> The reason for printing them is that the pf (possibly others?) can change by the update and so the log has this info handy.
-
-We might store the old sig/pf/revision set as well, export them via
-/sys or/and print them at update-to-new-microcode time.
-
-If it's really so useful to have this info in the log and, at the same
-time, to avoid the flood of messages (which, I guess for the majority
-of systems, are the same) at startup time, we might delay the printout
-until the end of microcode_init(). Then do something like this:
-
-microcode cpu0: up to date version sig, pf, rev          // let's say,
-it was updated by BIOS
-microcode cpus [1 ... 16] : update from sig, pf, rev to sig, pf2, rev2.
-
-Anyway, my humble opinion, is that (at the very least) the current
-patch should be accompanied by a similar version for amd.
-
-
+> Ping?
 >
-> Kind regards
-> Tigran
+> Andrew, Arnd, could one of you pick this up?
 
-
--- Dmitry
+we've been using the generic checksum code with this fix on Blackfin
+boards for the last month and havent noticed any regressions so far
+...
+-mike
