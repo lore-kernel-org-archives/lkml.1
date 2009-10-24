@@ -1,59 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753697AbZJXOC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZJXOD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753697AbZJXOC0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 10:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbZJXOC0
+	id S1753759AbZJXOD3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 10:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbZJXOD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 10:02:26 -0400
-Received: from nerdhammel.gnuher.de ([88.198.0.170]:40184 "EHLO
-	nerdhammel.gnuher.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753607AbZJXOCY (ORCPT
+	Sat, 24 Oct 2009 10:03:28 -0400
+Received: from www84.your-server.de ([213.133.104.84]:47381 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753468AbZJXOD1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 10:02:24 -0400
-Date: Sat, 24 Oct 2009 16:02:09 +0200
-From: Sven Geggus <lists@fuchsschwanzdomain.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
- failures V2
-Message-ID: <20091024140207.GA5102@geggus.net>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
-X-MimeOLE: Produced By Exchange Microsoft V6.6.6
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sat, 24 Oct 2009 10:03:27 -0400
+Subject: PCI Express-to-PCI Bridge: yenta_cardbus  no bus associated!
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <200909300115.54263.rjw@sisk.pl>
+References: <1254248605.8881.1.camel@wall-e>
+	 <200909300115.54263.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Sat, 24 Oct 2009 16:03:23 +0200
+Message-Id: <1256393003.9013.4.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel Gorman schrieb am Donnerstag, den 22. Oktober um 16:22 Uhr:
+Hi PCI Hackers,
 
-> Test 1: Verify your problem occurs on 2.6.32-rc5 if you can
+since i get no answer, it try to post my problem again.
 
-Problem persists. RAID resync in progress :(
+I have trouble with an ExpressCard PCI Express-to-PCI Bridge
+manufactured by DUEL System under X86/32 Linux kernel 2.6.31.
 
-Sven
+The kernel will recognized the Texas Instruments XIO2000(A)/XIO2200(A)
+PCI Express-to-PCI Bridge and the attached Texas Instruments PCIxx12
+Cardbus Controller, but the yenta socket driver will fail with the
+message:
 
--- 
-"linux is evolution, not intelligent design"
-(Linus Torvalds)
+yenta_cardbus 0000:0f:00.0: no bus associated! (try 'pci=assign-busses')
 
-/me is giggls@ircnet, http://sven.gegg.us/ on the Web
+The output of dmesg looks like:
+
+pci 0000:0e:00.0: supports D1 D2
+pci 0000:0f:00.0: reg 10 32bit mmio: [0x000000-0x000fff]
+pci 0000:0f:00.0: supports D1 D2
+pci 0000:0f:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:0f:00.0: PME# disabled
+pci 0000:0e:00.0: bridge io port: [0x00-0xfff]
+pci 0000:0e:00.0: bridge 32bit mmio: [0x000000-0x0fffff]
+pci 0000:0e:00.0: bridge 64bit mmio pref: [0x000000-0x0fffff]
+pci 0000:0e:00.0: PCI bridge, secondary bus 0000:0f
+pci 0000:0e:00.0:   IO window: disabled
+pci 0000:0e:00.0:   MEM window: 0xf1c00000-0xf1cfffff
+pci 0000:0e:00.0:   PREFETCH window: disabled
+decode_hpp: Could not get hotplug parameters. Use defaults
+pci 0000:0e:00.0: enabling device (0000 -> 0002)
+pci 0000:0e:00.0: setting latency timer to 64
+yenta_cardbus 0000:0f:00.0: no bus associated! (try 'pci=assign-busses')
+
+lspci -v shows:
+
+0e:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03) (prog-if 00 [Normal decode])
+        Physical Slot: 1
+        Flags: bus master, fast devsel, latency 0
+        Bus: primary=0e, secondary=0f, subordinate=0f, sec-latency=64
+        Memory behind bridge: f1c00000-f1cfffff
+        Capabilities: [50] Power Management version 2
+        Capabilities: [60] MSI: Enable- Count=1/16 Maskable- 64bit+
+        Capabilities: [80] Subsystem: Device 5678:1234
+        Capabilities: [90] Express PCI/PCI-X Bridge, MSI 00
+        Capabilities: [100] Advanced Error Reporting
+
+0f:00.0 CardBus bridge: Texas Instruments PCIxx12 Cardbus Controller
+        Subsystem: Texas Instruments Device ac48
+        Flags: medium devsel, IRQ 255
+        Memory at f1c00000 (32-bit, non-prefetchable) [disabled] [size=4K]
+        Bus: primary=00, secondary=00, subordinate=00, sec-latency=0
+        I/O window 0: 00000000-00000003 [disabled]
+        I/O window 1: 00000000-00000003 [disabled]
+        16-bit legacy interface ports at 0001
+
+
+Any idea where the problem is located or how can i fix it?
+
+If you need further information or dumps please contact me.
+
+The kernel parameter 'pci=assign-busses' did not fix the problem.
+
+Stefani
+
+
