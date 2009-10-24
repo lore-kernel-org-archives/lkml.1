@@ -1,80 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752480AbZJWXoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752304AbZJXAUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752480AbZJWXoy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 19:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbZJWXoy
+	id S1752304AbZJXAUK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 20:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZJXAUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 19:44:54 -0400
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:56324 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751973AbZJWXox (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 19:44:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=Xo6ZyMHprVuWsUDH0P/BFGwkQWDZAgRtWTcdc3Zeyweerxs3eq7Yr6KU8fsLNICFDj
-         OX4OiNfVQV2JSJ/vINeAVcOsJKwl43BySWEJegevu4o+6YwBsrWXrlKNkH4+o9aytGL6
-         poKFxpCUt8486AwBRpNul0IdHgf22vu8gRy7w=
-Message-ID: <4AE24009.4090408@gmail.com>
-Date: Fri, 23 Oct 2009 16:45:13 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+	Fri, 23 Oct 2009 20:20:09 -0400
+Received: from icculus.org ([67.106.77.212]:36273 "EHLO icculus.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752154AbZJXAUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 20:20:08 -0400
+Date: Fri, 23 Oct 2009 20:20:03 -0400 (EDT)
+From: "Ryan C. Gordon" <icculus@icculus.org>
+X-X-Sender: icculus@caridad.icculuslan
+To: "Anton D. Kachalov" <mouse@mayc.ru>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] binfmt_elf: FatELF support in the binary loader.
+In-Reply-To: <4AE17C1A.4060009@mayc.ru>
+Message-ID: <alpine.OSX.1.10.0910231933550.2186@caridad.icculuslan>
+References: <4AE17C1A.4060009@mayc.ru>
+User-Agent: Alpine 1.10 (OSX 962 2008-03-14)
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was looking into seeing if kdump might be able to log this in, but 
-after reading up
-I realized that kdump is something that needs to be on then if a crash 
-occurs,
-  then kexec to the rescue.
 
-Anyways I posted a picture on my facebook page of this, and also will 
-send a post
-manually writing this down.
-Basically when I use ohci1394_dma=early on the boot param
-this happens. if I don't use that boot option then the system runs fine.
+> I have made very similar patch but it's quite small and do not require
+> deep hacks.
 
-[    0.000000] [<ffffffff81639995>] start_kernel+0x82/0x34d
-[    0.000000] [<ffffffff816392a5>] x86_64_start_reservations+0xac/0xb0
-[    0.000000] [<ffffffff816393a1>] x86_64_start_kernel+0xf8/0x107
-PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
-[    0.000000] Pid: 0, comm: swapper Not tainted 
-2.6.32-rc4-00001-g1896a85 #35
-[    0.000000] Call Trace:
-[    0.000000] [<ffffffff8163919e>] early_idt_handler+0x5e/0x71
-[    0.000000] [<ffffffff813b9958>] ? panic+0x10c/0x12e
-[    0.000000] [<ffffffff8164f777>] ___alloc_bootmem_node+0x0/0x60
-[    0.000000] [<ffffffff8164f8eb>] __alloc_bootmem+0xb/0xd
-[    0.000000] [<ffffffff813aba66>] spp_getpage+0x3a/0x6f
-[    0.000000] [<ffffffff8102770d>] fill_pte+0x22/0xde
-[    0.000000] [<ffffffff810278e7>] set_pte_vaddr_pud+0x2c/0x48
-[    0.000000] [<ffffffff81027963>] set_pte_vaddr+0x60/0x65
-[    0.000000] [<ffffffff8102b82e>] __native_set_fixmap+0x24/0x2c
-[    0.000000] [<ffffffff81660252>] 
-init_ohci1394_dma_on_all_controllers+0x9b/0x345
-[    0.000000] [<ffffffff8163be6b>] setup_arch+0x543/0x950
-[    0.000000] [<ffffffff813b99b6>] ? printk+0x3c/0x3e
-[    0.000000] [<ffffffff810646b6>] ? 
-clockevents_register_notifier+0x3e/0x48
-[    0.000000] [<ffffffff81639995>] start_kernel+0x82/0x34d
-[    0.000000] [<ffffffff816392a5>] x86_64_start_reservations+0xac/0xb0
-[    0.000000] [<ffffffff816393a1>] x86_64_start_kernel+0xf8/0x107
-[    0.000000] RIP 0x10
+Wow, competing ideas!   :)
 
-The system is a LFS pure64 build on an imac,macbook(both systems the
-same, and both crash like this).
+Here are my notes on your idea. Ego compels me to prefer my approach, but 
+I strove to be objective here, as there is a tradeoff of benefits in each 
+of our approaches.
 
-Any ideas on this, and also any ideas on how I could try and grab a
-syslog this early in the boot?
+> It should works with "setarch" too to force selection of binary.
 
-Justin P. Mattock
+How does setarch work? Does it reorder the file before launching or copy 
+out one of the ELF records? 
 
+If reordering:
+What does this do to binaries you can't write to? Regular users couldn't 
+rewrite /bin/ls before launching, for example.
+
+If copying:
+What does this do to programs that rely on the value of argv[0]? If 
+setarch mangles up argv[0] in its exec*() call to match the original 
+binary's patch, what does this do to programs that rely on /proc/self/exe?
+
+
+The most compelling feature of this approach is that a "truearch" binary 
+(is that the correct name?) could work with any existing Linux system, on 
+the condition that the architecture you want is the first one in the file. 
+If you put, say, x86 first in the file and you want to run it on an x86_64 
+system, you're either out of luck or going to be running the 32-bit 
+version. In this same scenario, if you put x86_64 first, it just won't run 
+at all on an unpatched x86 box. So, it's a cool trick, but it's not all 
+that beneficial. We have to assume that either approach requires kernel 
+patches to be truly useful. For unpatched boxes, FatELF provides a simple 
+command line app, fatelf-extract, which can be used to get the original 
+ELF binary you want out of the FatELF file, both for stripping unwanted 
+bits and as a measure of last resort if the kernel and dynamic loader 
+can't handle FatELF. I assume setarch works somewhat the same.
+
+I'm concerned about using the padding bits in e_ident, too. A lot of 
+manpower went into the ELF specification and I felt it was presumptuous 
+for me to personally change the format. A container around them, like 
+FatELF, was a safer, more future-proof choice. I'd rather those that 
+control the ELF spec decide what those padding bits should be used for in 
+the future.
+
+The truearch method requires the kernel to seek throughout the whole file 
+to decide if it can use it at all. FatELF uses the 128 bytes at the front 
+of the file, which binfmt_elf reads anyhow, and then seeks to the right 
+record from there, so disk bandwidth overhead is extremely small (one 
+extra read of 128 bytes if we can use the file, zero extra reads if not).  
+On the other hand, this approach allows for an unlimited amount of ELF 
+binaries to reside in a single file below the four gigabyte mark (which is 
+really, for all intents and purposes, a LOT of binaries). On the other 
+hand, the FatELF limit of 255 records is probably way more than you could 
+ever hope to reasonably cram into a file, and if it's not, we can raise it 
+to 64k (we have reserved bits in the header still). FatELF can store ELF 
+binaries above 4 gigabytes, unlike truearch, but I'm not sure that's 
+really ever going to be valuable.
+
+Both approaches have zero disk overhead if a normal ELF file is loaded, 
+which is good.
+
+
+In terms of this patch itself, I'd be concerned about using gotos for the 
+retry_* blocks when a loop would be easy enough to incorporate. I saw you 
+have a test for personality() that I didn't do; I might have to check into 
+that, but the binfmt_elf_compat code is definitely catching x86 binaries 
+on x86_64 here, so I'm not sure it's necessary.
+
+Anyhow, I hope this was useful commentary, and not seen as a battle of 
+egos. I'm glad to see other approaches, though, as it suggests there 
+really is a genuine desire for this sort of functionality!
+
+--ryan.
 
