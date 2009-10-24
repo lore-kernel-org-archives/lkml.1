@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbZJXBEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbZJXBEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752888AbZJXBEV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 21:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZJXBES
+	id S1753218AbZJXBEq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 21:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZJXBEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 21:04:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51532 "EHLO hera.kernel.org"
+	Fri, 23 Oct 2009 21:04:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51705 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752423AbZJXBD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 21:03:59 -0400
-Date: Sat, 24 Oct 2009 01:03:41 GMT
-From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com, tglx@linutronix.de
-In-Reply-To: <20091014220254.190119924@sbs-t61.sc.intel.com>
-References: <20091014220254.190119924@sbs-t61.sc.intel.com>
+	id S1752746AbZJXBEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Oct 2009 21:04:40 -0400
+Date: Sat, 24 Oct 2009 01:03:44 GMT
+From: tip-bot for Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
+       arjan@linux.intel.com, efault@gmx.de, arjan@infradead.org,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, arjan@infradead.org,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20091020070939.7d0fb8a7@infradead.org>
+References: <20091020070939.7d0fb8a7@infradead.org>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:branch?] x86-64: align RODATA kernel section to 2MB with CONFIG_DEBUG_RODATA
-Message-ID: <tip-74e081797bd9d2a7d8005fe519e719df343a2ba8@git.kernel.org>
-Git-Commit-ID: 74e081797bd9d2a7d8005fe519e719df343a2ba8
+Subject: [tip:branch?] perf timechart: Add a process filter
+Message-ID: <tip-bbe2987bea26a684ff11d887dfc4cf39b22c27a2@git.kernel.org>
+Git-Commit-ID: bbe2987bea26a684ff11d887dfc4cf39b22c27a2
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,152 +33,207 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  74e081797bd9d2a7d8005fe519e719df343a2ba8
-Gitweb:     http://git.kernel.org/tip/74e081797bd9d2a7d8005fe519e719df343a2ba8
-Author:     Suresh Siddha <suresh.b.siddha@intel.com>
-AuthorDate: Wed, 14 Oct 2009 14:46:56 -0700
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 20 Oct 2009 14:46:00 +0900
+Commit-ID:  bbe2987bea26a684ff11d887dfc4cf39b22c27a2
+Gitweb:     http://git.kernel.org/tip/bbe2987bea26a684ff11d887dfc4cf39b22c27a2
+Author:     Arjan van de Ven <arjan@infradead.org>
+AuthorDate: Tue, 20 Oct 2009 07:09:39 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 20 Oct 2009 07:55:50 +0200
 
-x86-64: align RODATA kernel section to 2MB with CONFIG_DEBUG_RODATA
+perf timechart: Add a process filter
 
-CONFIG_DEBUG_RODATA chops the large pages spanning boundaries of kernel
-text/rodata/data to small 4KB pages as they are mapped with different
-attributes (text as RO, RODATA as RO and NX etc).
+During the Kernel Summit demo of perf/ftrace/timechart, there
+was a feature request to have a process filter for timechart so
+that you can zoom into one or a few processes that you are
+really interested in.
 
-On x86_64, preserve the large page mappings for kernel text/rodata/data
-boundaries when CONFIG_DEBUG_RODATA is enabled. This is done by allowing the
-RODATA section to be hugepage aligned and having same RWX attributes
-for the 2MB page boundaries
+This patch adds basic support for this feature, the -p
+(--process) option now can select a PID or a process name to be
+shown. Multiple -p options are allowed, and the combined set
+will be included in the output.
 
-Extra Memory pages padding the sections will be freed during the end of the boot
-and the kernel identity mappings will have different RWX permissions compared to
-the kernel text mappings.
-
-Kernel identity mappings to these physical pages will be mapped with smaller
-pages but large page mappings are still retained for kernel text,rodata,data
-mappings.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-LKML-Reference: <20091014220254.190119924@sbs-t61.sc.intel.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <20091020070939.7d0fb8a7@infradead.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/include/asm/sections.h |    6 ++++++
- arch/x86/kernel/vmlinux.lds.S   |   17 +++++++++++++++++
- arch/x86/mm/init_64.c           |   14 +++++++++++++-
- arch/x86/mm/pageattr.c          |   14 ++++++++++++++
- 4 files changed, 50 insertions(+), 1 deletions(-)
+ tools/perf/Documentation/perf-timechart.txt |    5 +-
+ tools/perf/builtin-timechart.c              |  105 ++++++++++++++++++++++++++-
+ 2 files changed, 106 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/include/asm/sections.h b/arch/x86/include/asm/sections.h
-index 1b7ee5d..0a52424 100644
---- a/arch/x86/include/asm/sections.h
-+++ b/arch/x86/include/asm/sections.h
-@@ -2,7 +2,13 @@
- #define _ASM_X86_SECTIONS_H
+diff --git a/tools/perf/Documentation/perf-timechart.txt b/tools/perf/Documentation/perf-timechart.txt
+index a791009..4b17883 100644
+--- a/tools/perf/Documentation/perf-timechart.txt
++++ b/tools/perf/Documentation/perf-timechart.txt
+@@ -31,9 +31,12 @@ OPTIONS
+ -w::
+ --width=::
+         Select the width of the SVG file (default: 1000)
+--p::
++-P::
+ --power-only::
+         Only output the CPU power section of the diagram
++-p::
++--process::
++        Select the processes to display, by name or PID
  
- #include <asm-generic/sections.h>
-+#include <asm/uaccess.h>
  
- extern char __brk_base[], __brk_limit[];
-+extern struct exception_table_entry __stop___ex_table[];
+ SEE ALSO
+diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
+index e8a510d..34fad57 100644
+--- a/tools/perf/builtin-timechart.c
++++ b/tools/perf/builtin-timechart.c
+@@ -153,6 +153,17 @@ static struct wake_event     *wake_events;
+ 
+ struct sample_wrapper *all_samples;
+ 
 +
-+#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA)
-+extern char __end_rodata_hpage_align[];
-+#endif
- 
- #endif	/* _ASM_X86_SECTIONS_H */
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 92929fb..1476379 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -41,6 +41,21 @@ ENTRY(phys_startup_64)
- jiffies_64 = jiffies;
- #endif
- 
-+#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA)
++struct process_filter;
++struct process_filter {
++	char 			*name;
++	int  			pid;
++	struct process_filter 	*next;
++};
 +
-+#define X64_ALIGN_DEBUG_RODATA_BEGIN	. = ALIGN(HPAGE_SIZE);
++static struct process_filter *process_filter;
 +
-+#define X64_ALIGN_DEBUG_RODATA_END				\
-+		. = ALIGN(HPAGE_SIZE);				\
-+		__end_rodata_hpage_align = .;
 +
-+#else
-+
-+#define X64_ALIGN_DEBUG_RODATA_BEGIN
-+#define X64_ALIGN_DEBUG_RODATA_END
-+
-+#endif
-+
- PHDRS {
- 	text PT_LOAD FLAGS(5);          /* R_E */
- 	data PT_LOAD FLAGS(7);          /* RWE */
-@@ -90,7 +105,9 @@ SECTIONS
- 
- 	EXCEPTION_TABLE(16) :text = 0x9090
- 
-+	X64_ALIGN_DEBUG_RODATA_BEGIN
- 	RO_DATA(PAGE_SIZE)
-+	X64_ALIGN_DEBUG_RODATA_END
- 
- 	/* Data */
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 7dafd41..0ed09fa 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -727,9 +727,13 @@ void set_kernel_text_ro(void)
- 
- void mark_rodata_ro(void)
+ static struct per_pid *find_create_pid(int pid)
  {
--	unsigned long start = PFN_ALIGN(_text), end = PFN_ALIGN(__end_rodata);
-+	unsigned long start = PFN_ALIGN(_text);
- 	unsigned long rodata_start =
- 		((unsigned long)__start_rodata + PAGE_SIZE - 1) & PAGE_MASK;
-+	unsigned long end = (unsigned long) &__end_rodata_hpage_align;
-+	unsigned long text_end = PAGE_ALIGN((unsigned long) &__stop___ex_table);
-+	unsigned long rodata_end = PAGE_ALIGN((unsigned long) &__end_rodata);
-+	unsigned long data_start = (unsigned long) &_sdata;
- 
- 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
- 	       (end - start) >> 10);
-@@ -752,6 +756,14 @@ void mark_rodata_ro(void)
- 	printk(KERN_INFO "Testing CPA: again\n");
- 	set_memory_ro(start, (end-start) >> PAGE_SHIFT);
- #endif
-+
-+	free_init_pages("unused kernel memory",
-+			(unsigned long) page_address(virt_to_page(text_end)),
-+			(unsigned long)
-+				 page_address(virt_to_page(rodata_start)));
-+	free_init_pages("unused kernel memory",
-+			(unsigned long) page_address(virt_to_page(rodata_end)),
-+			(unsigned long) page_address(virt_to_page(data_start)));
+ 	struct per_pid *cursor = all_data;
+@@ -763,11 +774,11 @@ static void draw_wakeups(void)
+ 				c = p->all;
+ 				while (c) {
+ 					if (c->Y && c->start_time <= we->time && c->end_time >= we->time) {
+-						if (p->pid == we->waker) {
++						if (p->pid == we->waker && !from) {
+ 							from = c->Y;
+ 							task_from = strdup(c->comm);
+ 						}
+-						if (p->pid == we->wakee) {
++						if (p->pid == we->wakee && !to) {
+ 							to = c->Y;
+ 							task_to = strdup(c->comm);
+ 						}
+@@ -882,12 +893,89 @@ static void draw_process_bars(void)
+ 	}
  }
  
- #endif
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index dd38bfb..b494fc4 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -279,6 +279,20 @@ static inline pgprot_t static_protections(pgprot_t prot, unsigned long address,
- 		   __pa((unsigned long)__end_rodata) >> PAGE_SHIFT))
- 		pgprot_val(forbidden) |= _PAGE_RW;
- 
-+#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA)
-+	/*
-+	 * Kernel text mappings for the large page aligned .rodata section
-+	 * will be read-only. For the kernel identity mappings covering
-+	 * the holes caused by this alignment can be anything.
-+	 *
-+	 * This will preserve the large page mappings for kernel text/data
-+	 * at no extra cost.
-+	 */
-+	if (within(address, (unsigned long)_text,
-+		   (unsigned long)__end_rodata_hpage_align))
-+		pgprot_val(forbidden) |= _PAGE_RW;
-+#endif
++static void add_process_filter(const char *string)
++{
++	struct process_filter *filt;
++	int pid;
 +
- 	prot = __pgprot(pgprot_val(prot) & ~pgprot_val(forbidden));
++	pid = strtoull(string, NULL, 10);
++	filt = malloc(sizeof(struct process_filter));
++	if (!filt)
++		return;
++
++	filt->name = strdup(string);
++	filt->pid  = pid;
++	filt->next = process_filter;
++
++	process_filter = filt;
++}
++
++static int passes_filter(struct per_pid *p, struct per_pidcomm *c)
++{
++	struct process_filter *filt;
++	if (!process_filter)
++		return 1;
++
++	filt = process_filter;
++	while (filt) {
++		if (filt->pid && p->pid == filt->pid)
++			return 1;
++		if (strcmp(filt->name, c->comm) == 0)
++			return 1;
++		filt = filt->next;
++	}
++	return 0;
++}
++
++static int determine_display_tasks_filtered(void)
++{
++	struct per_pid *p;
++	struct per_pidcomm *c;
++	int count = 0;
++
++	p = all_data;
++	while (p) {
++		p->display = 0;
++		if (p->start_time == 1)
++			p->start_time = first_time;
++
++		/* no exit marker, task kept running to the end */
++		if (p->end_time == 0)
++			p->end_time = last_time;
++
++		c = p->all;
++
++		while (c) {
++			c->display = 0;
++
++			if (c->start_time == 1)
++				c->start_time = first_time;
++
++			if (passes_filter(p, c)) {
++				c->display = 1;
++				p->display = 1;
++				count++;
++			}
++
++			if (c->end_time == 0)
++				c->end_time = last_time;
++
++			c = c->next;
++		}
++		p = p->next;
++	}
++	return count;
++}
++
+ static int determine_display_tasks(u64 threshold)
+ {
+ 	struct per_pid *p;
+ 	struct per_pidcomm *c;
+ 	int count = 0;
  
- 	return prot;
++	if (process_filter)
++		return determine_display_tasks_filtered();
++
+ 	p = all_data;
+ 	while (p) {
+ 		p->display = 0;
+@@ -1153,6 +1241,14 @@ static int __cmd_record(int argc, const char **argv)
+ 	return cmd_record(i, rec_argv, NULL);
+ }
+ 
++static int
++parse_process(const struct option *opt __used, const char *arg, int __used unset)
++{
++	if (arg)
++		add_process_filter(arg);
++	return 0;
++}
++
+ static const struct option options[] = {
+ 	OPT_STRING('i', "input", &input_name, "file",
+ 		    "input file name"),
+@@ -1160,8 +1256,11 @@ static const struct option options[] = {
+ 		    "output file name"),
+ 	OPT_INTEGER('w', "width", &svg_page_width,
+ 		    "page width"),
+-	OPT_BOOLEAN('p', "power-only", &power_only,
++	OPT_BOOLEAN('P', "power-only", &power_only,
+ 		    "output power data only"),
++	OPT_CALLBACK('p', "process", NULL, "process",
++		      "process selector. Pass a pid or process name.",
++		       parse_process),
+ 	OPT_END()
+ };
+ 
