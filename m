@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbZJXCTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751867AbZJXCgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751823AbZJXCTf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Oct 2009 22:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZJXCTf
+	id S1751867AbZJXCgq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Oct 2009 22:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZJXCgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Oct 2009 22:19:35 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:45163 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751613AbZJXCTe (ORCPT
+	Fri, 23 Oct 2009 22:36:45 -0400
+Received: from mail-gx0-f216.google.com ([209.85.217.216]:40852 "EHLO
+	mail-gx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbZJXCgo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Oct 2009 22:19:34 -0400
-Date: Fri, 23 Oct 2009 21:19:30 -0500
-From: David Fries <david@fries.net>
-To: linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, jbohac@jikos.cz
-Subject: [Bug 14310] [bisected] 2.6.31 regression sis5513 PIO Mode 0 hang
-Message-ID: <20091024021930.GZ21612@spacedout.fries.net>
+	Fri, 23 Oct 2009 22:36:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=v1Octb+qkgmBPTvhQNYKNiE4KfjSmDgUZnAUSSb8PheT1pqXTh8z0M4DMxgQc5xFih
+         xagzuIpnO3U3QSsyAzpIUM2KYp/qlJPL6pB57DnP49GzYfIolVP6hW1o3+dJZLeCq/6j
+         6lapAqmbjFADfOIfhNlmRW+IEsGgkM8Dr7YS8=
+Message-ID: <4AE2683D.4020000@gmail.com>
+Date: Fri, 23 Oct 2009 22:36:45 -0400
+From: Miles Lane <miles.lane@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Fri, 23 Oct 2009 21:19:32 -0500 (CDT)
+To: Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Subject: 2.6.32-rc5-git3 -- EIP is at cfg80211_conn_work+0x73/0xd6 [cfg80211]
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Forwarded message from bugzilla-daemon@bugzilla.kernel.org -----
-http://bugzilla.kernel.org/show_bug.cgi?id=14310
+Let me know if you need my .config
 
---- Comment #3 from Jiri Bohac <jbohac@jikos.cz>  2009-10-23 18:32:03 ---
-I can still reproduce this on 2.6.31.5, where the
-e13ee546bb06453939014c7b854e77fb643fd6f1 fix is included. Reverting
-6029336426a2b43e4bc6f4a84be8789a047d139e helps.
+*pde = 00000000
+Modules linked in: ipv6 af_packet iptable_filter snd_hda_codec_realtek ip_tables snd_hda_intel snd_hda_codec snd_hwdep snd_pcm_oss snd_mixer_oss snd_pcm ath9k rtc_cmos uvcvideo eeepc_laptop mac80211 snd_timer rtc_core hwmon videodev ath cfg80211 v4l1_compat rtc_lib rfkill snd_page_alloc rng_core battery ac led_class pci_hotplug processor fan sg sd_mod ehci_hcd atl1e uhci_hcd thermal
 
-Without reverting 6029336426a2b43e4bc6f4a84be8789a047d139e the system hangs on
-"ide-cd driver 5.00", but sometimes I also get {DriveReady SeekComplete Error}
-errors on hda before the hang -- never seen them without 
-6029336426a2b43e4bc6f4a84be8789a047d139e.
-
-A few interesting lines of output before the hang: (hand-copied, no serial
-console here)
-
-hda: ST38421A <strange_nonASCII_triangle_character_here> , ATA DISK drive
-hdc: LTN5269, ATAPI CD/DVD-ROM drive
-hdc: tPIO > 2, assuming tPIO=2
-hdc: tPIO > 2, assuming tPIO=2
-..
-..
-<hda seek errors>
-..
-possibly failed opcode: 0xc6
-hda: lost interrupt
-hda: 
-<hda seek error>
-possibly failed opcode: 0x20
- unknown patrition table
-ide-cd driver 5.00
-<hang>
-
-I don't have regular access to this machine, but if help is needed, I can
-arrange access to the machine.
-
-Can we re-open this bug?
-
--- 
------ End forwarded message -----
+Pid: 10, comm: events/1 Not tainted (2.6.32-rc5-git3 #4) 1000HE
+EIP: 0060:[<f858ac49>] EFLAGS: 00010246 CPU: 1
+EIP is at cfg80211_conn_work+0x73/0xd6 [cfg80211]
+EAX: 00000000 EBX: f71ae5e8 ECX: 00000000 EDX: c16754e4
+ESI: ead9c0c4 EDI: ead9c000 EBP: f7136f34 ESP: f7136f20
+  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+  ead9c084 ead9c00c c2e09700 ead9c164 f7136f94 f7136fa0 c103d5f5 00000000
+<0> 00000002 00000000 c103d5b3 f7136f88 f7146c50 f7146900 f7146900 c2e09724
+<0> c2e0971c f858abd6 ead9c148 f7146900 c2e09700 00000000 f7146900 c1040721
+  [<c103d5f5>] ? worker_thread+0x161/0x233
+  [<c103d5b3>] ? worker_thread+0x11f/0x233
+  [<f858abd6>] ? cfg80211_conn_work+0x0/0xd6 [cfg80211]
+  [<c1040721>] ? autoremove_wake_function+0x0/0x2f
+  [<c103d494>] ? worker_thread+0x0/0x233
+  [<c1040527>] ? kthread+0x5f/0x64
+  [<c10404c8>] ? kthread+0x0/0x64
+  [<c1003e9f>] ? kernel_thread_helper+0x7/0x1a
+---[ end trace b24f325f9540f193 ]---
