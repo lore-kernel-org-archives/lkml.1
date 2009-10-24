@@ -1,38 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbZJXORi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZJXORg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879AbZJXORi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 10:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbZJXORh
+	id S1753863AbZJXORg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Oct 2009 10:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbZJXORf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 10:17:37 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:62185 "EHLO
+	Sat, 24 Oct 2009 10:17:35 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:64716 "EHLO
 	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753838AbZJXOR0 (ORCPT
+	with ESMTP id S1753807AbZJXOR2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 10:17:26 -0400
+	Sat, 24 Oct 2009 10:17:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=SrhjegSiWYItKTPbkfWIuo1dpj1KRhft7fq/t1Dng0TL3fTW5dJlh4PfRv34oa5m4s
-         RVgWsiIcDRxEtdtTUnsXEbxDipaZTRMtW8c0eVtKvjMuB38cy+fwAU2u2ky7zyU1UR+w
-         HxW9mq/3hULtVUBWb1L79JezOLoPXwQLFMVKo=
+        b=tk0NB3OyYqa95xmVxKbjAgjRnqMHTiqSCAWeBOhANs3lMeLuhrLBn9d/IFCbhCejVN
+         72wZ3NBCF2gtbA4rrUWB1cDLPak1TAo2piGULYh5xTKEt/ELuI1Q1g6BBywIT2bkTbSg
+         SugxM5gCvhPdleXdB3+Ca4gDwnIenHinNjIUs=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+Cc: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
        Prasad <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Jan Kiszka <jan.kiszka@web.de>, Jiri Slaby <jirislaby@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: [PATCH 5/6] hw-breakpoints: Arbitrate access to pmu following registers constraints
-Date: Sat, 24 Oct 2009 16:16:57 +0200
-Message-Id: <1256393818-8921-6-git-send-email-fweisbec@gmail.com>
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 6/6] ksym_tracer: Remove KSYM_SELFTEST_ENTRY
+Date: Sat, 24 Oct 2009 16:16:58 +0200
+Message-Id: <1256393818-8921-7-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1256393818-8921-1-git-send-email-fweisbec@gmail.com>
 References: <1256393818-8921-1-git-send-email-fweisbec@gmail.com>
@@ -40,362 +31,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow or refuse to build a counter using the breakpoints pmu following
-given constraints.
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-We keep track of the pmu users by using three per cpu variables:
+The macro used to be used in both trace_selftest.c and
+trace_ksym.c, but no longer, so remove it from header file.
 
-- nr_cpu_bp_pinned stores the number of pinned cpu breakpoints counters
-  in the given cpu
-
-- nr_bp_flexible stores the number of non-pinned breakpoints counters
-  in the given cpu.
-
-- task_bp_pinned stores the number of pinned task breakpoints in a cpu
-
-The latter is not a simple counter but gathers the number of tasks that
-have n pinned breakpoints.
-Considering HBP_NUM the number of available breakpoint address
-registers:
-   task_bp_pinned[0] is the number of tasks having 1 breakpoint
-   task_bp_pinned[1] is the number of tasks having 2 breakpoints
-   [...]
-   task_bp_pinned[HBP_NUM - 1] is the number of tasks having the
-   maximum number of registers (HBP_NUM).
-
-When a breakpoint counter is created and wants an access to the pmu,
-we evaluate the following constraints:
-
-== Non-pinned counter ==
-
-- If attached to a single cpu, check:
-
-    (per_cpu(nr_bp_flexible, cpu) || (per_cpu(nr_cpu_bp_pinned, cpu)
-         + max(per_cpu(task_bp_pinned, cpu)))) < HBP_NUM
-
-       -> If there are already non-pinned counters in this cpu, it
-          means there is already a free slot for them.
-          Otherwise, we check that the maximum number of per task
-          breakpoints (for this cpu) plus the number of per cpu
-          breakpoint (for this cpu) doesn't cover every registers.
-
-- If attached to every cpus, check:
-
-    (per_cpu(nr_bp_flexible, *) || (max(per_cpu(nr_cpu_bp_pinned, *))
-           + max(per_cpu(task_bp_pinned, *)))) < HBP_NUM
-
-       -> This is roughly the same, except we check the number of per
-          cpu bp for every cpu and we keep the max one. Same for the
-          per tasks breakpoints.
-
-== Pinned counter ==
-
-- If attached to a single cpu, check:
-
-       ((per_cpu(nr_bp_flexible, cpu) > 1)
-            + per_cpu(nr_cpu_bp_pinned, cpu)
-            + max(per_cpu(task_bp_pinned, cpu))) < HBP_NUM
-
-       -> Same checks as before. But now the nr_bp_flexible, if any,
-          must keep one register at least (or flexible breakpoints will
-          never be be fed).
-
-- If attached to every cpus, check:
-
-      ((per_cpu(nr_bp_flexible, *) > 1)
-           + max(per_cpu(nr_cpu_bp_pinned, *))
-           + max(per_cpu(task_bp_pinned, *))) < HBP_NUM
-
-Changes in v2:
-
-- Counter -> event rename
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Prasad <prasad@linux.vnet.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jan Kiszka <jan.kiszka@web.de>
-Cc: Jiri Slaby <jirislaby@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Avi Kivity <avi@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/hw_breakpoint.c |  237 ++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 231 insertions(+), 6 deletions(-)
+ kernel/trace/trace.h          |    1 -
+ kernel/trace/trace_selftest.c |    2 +-
+ 2 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
-index 08f6d01..60ff182 100644
---- a/kernel/hw_breakpoint.c
-+++ b/kernel/hw_breakpoint.c
-@@ -16,6 +16,8 @@
-  * Copyright (C) 2007 Alan Stern
-  * Copyright (C) IBM Corporation, 2009
-  * Copyright (C) 2009, Frederic Weisbecker <fweisbec@gmail.com>
-+ *
-+ * Thanks to Ingo Molnar for his many suggestions.
-  */
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 91c3d0e..85ba332 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -370,7 +370,6 @@ int register_tracer(struct tracer *type);
+ void unregister_tracer(struct tracer *type);
+ int is_tracing_stopped(void);
  
- /*
-@@ -44,24 +46,247 @@
- #include <asm/debugreg.h>
- #endif
+-#define KSYM_SELFTEST_ENTRY "ksym_selftest_dummy"
+ extern int process_new_ksym_entry(char *ksymname, int op, unsigned long addr);
  
--static atomic_t bp_slot;
-+/*
-+ * Constraints data
-+ */
-+
-+/* Number of pinned cpu breakpoints in a cpu */
-+static DEFINE_PER_CPU(unsigned int, nr_cpu_bp_pinned);
+ extern unsigned long nsecs_to_usecs(unsigned long nsecs);
+diff --git a/kernel/trace/trace_selftest.c b/kernel/trace/trace_selftest.c
+index 7179c12..a006f00 100644
+--- a/kernel/trace/trace_selftest.c
++++ b/kernel/trace/trace_selftest.c
+@@ -828,7 +828,7 @@ trace_selftest_startup_ksym(struct tracer *trace, struct trace_array *tr)
  
--int reserve_bp_slot(struct perf_event *bp)
-+/* Number of pinned task breakpoints in a cpu */
-+static DEFINE_PER_CPU(unsigned int, task_bp_pinned[HBP_NUM]);
-+
-+/* Number of non-pinned cpu/task breakpoints in a cpu */
-+static DEFINE_PER_CPU(unsigned int, nr_bp_flexible);
-+
-+/* Gather the number of total pinned and un-pinned bp in a cpuset */
-+struct bp_busy_slots {
-+	unsigned int pinned;
-+	unsigned int flexible;
-+};
-+
-+/* Serialize accesses to the above constraints */
-+static DEFINE_MUTEX(nr_bp_mutex);
-+
-+/*
-+ * Report the maximum number of pinned breakpoints a task
-+ * have in this cpu
-+ */
-+static unsigned int max_task_bp_pinned(int cpu)
- {
--	if (atomic_inc_return(&bp_slot) == HBP_NUM) {
--		atomic_dec(&bp_slot);
-+	int i;
-+	unsigned int *tsk_pinned = per_cpu(task_bp_pinned, cpu);
+ 	ksym_selftest_dummy = 0;
+ 	/* Register the read-write tracing request */
+-	ret = process_new_ksym_entry(KSYM_SELFTEST_ENTRY, HW_BREAKPOINT_RW,
++	ret = process_new_ksym_entry("ksym_selftest_dummy", HW_BREAKPOINT_RW,
+ 					(unsigned long)(&ksym_selftest_dummy));
  
--		return -ENOSPC;
-+	for (i = HBP_NUM -1; i >= 0; i--) {
-+		if (tsk_pinned[i] > 0)
-+			return i + 1;
- 	}
- 
- 	return 0;
- }
- 
-+/*
-+ * Report the number of pinned/un-pinned breakpoints we have in
-+ * a given cpu (cpu > -1) or in all of them (cpu = -1).
-+ */
-+static void fetch_bp_busy_slots(struct bp_busy_slots *slots, int cpu)
-+{
-+	if (cpu >= 0) {
-+		slots->pinned = per_cpu(nr_cpu_bp_pinned, cpu);
-+		slots->pinned += max_task_bp_pinned(cpu);
-+		slots->flexible = per_cpu(nr_bp_flexible, cpu);
-+
-+		return;
-+	}
-+
-+	for_each_online_cpu(cpu) {
-+		unsigned int nr;
-+
-+		nr = per_cpu(nr_cpu_bp_pinned, cpu);
-+		nr += max_task_bp_pinned(cpu);
-+
-+		if (nr > slots->pinned)
-+			slots->pinned = nr;
-+
-+		nr = per_cpu(nr_bp_flexible, cpu);
-+
-+		if (nr > slots->flexible)
-+			slots->flexible = nr;
-+	}
-+}
-+
-+/*
-+ * Add a pinned breakpoint for the given task in our constraint table
-+ */
-+static void toggle_bp_task_slot(struct task_struct *tsk, int cpu, bool enable)
-+{
-+	int count = 0;
-+	struct perf_event *bp;
-+	struct perf_event_context *ctx = tsk->perf_event_ctxp;
-+	unsigned int *task_bp_pinned;
-+	struct list_head *list;
-+	unsigned long flags;
-+
-+	if (WARN_ONCE(!ctx, "No perf context for this task"))
-+		return;
-+
-+	list = &ctx->event_list;
-+
-+	spin_lock_irqsave(&ctx->lock, flags);
-+
-+	/*
-+	 * The current breakpoint counter is not included in the list
-+	 * at the open() callback time
-+	 */
-+	list_for_each_entry(bp, list, event_entry) {
-+		if (bp->attr.type == PERF_TYPE_BREAKPOINT)
-+			count++;
-+	}
-+
-+	spin_unlock_irqrestore(&ctx->lock, flags);
-+
-+	if (WARN_ONCE(count < 0, "No breakpoint counter found in the counter list"))
-+		return;
-+
-+	task_bp_pinned = per_cpu(task_bp_pinned, cpu);
-+	if (enable) {
-+		task_bp_pinned[count]++;
-+		if (count > 0)
-+			task_bp_pinned[count-1]--;
-+	} else {
-+		task_bp_pinned[count]--;
-+		if (count > 0)
-+			task_bp_pinned[count-1]++;
-+	}
-+}
-+
-+/*
-+ * Add/remove the given breakpoint in our constraint table
-+ */
-+static void toggle_bp_slot(struct perf_event *bp, bool enable)
-+{
-+	int cpu = bp->cpu;
-+	unsigned int *nr;
-+	struct task_struct *tsk = bp->ctx->task;
-+
-+	/* Flexible */
-+	if (!bp->attr.pinned) {
-+		if (cpu >= 0) {
-+			nr = &per_cpu(nr_bp_flexible, cpu);
-+			goto toggle;
-+		}
-+
-+		for_each_online_cpu(cpu) {
-+			nr = &per_cpu(nr_bp_flexible, cpu);
-+			goto toggle;
-+		}
-+	}
-+	/* Pinned counter task profiling */
-+	if (tsk) {
-+		if (cpu >= 0) {
-+			toggle_bp_task_slot(tsk, cpu, enable);
-+			return;
-+		}
-+
-+		for_each_online_cpu(cpu)
-+			toggle_bp_task_slot(tsk, cpu, enable);
-+		return;
-+	}
-+
-+	/* Pinned counter cpu profiling */
-+	nr = &per_cpu(nr_cpu_bp_pinned, bp->cpu);
-+
-+toggle:
-+	*nr = enable ? *nr + 1 : *nr - 1;
-+}
-+
-+/*
-+ * Contraints to check before allowing this new breakpoint counter:
-+ *
-+ *  == Non-pinned counter ==
-+ *
-+ *   - If attached to a single cpu, check:
-+ *
-+ *       (per_cpu(nr_bp_flexible, cpu) || (per_cpu(nr_cpu_bp_pinned, cpu)
-+ *           + max(per_cpu(task_bp_pinned, cpu)))) < HBP_NUM
-+ *
-+ *       -> If there are already non-pinned counters in this cpu, it means
-+ *          there is already a free slot for them.
-+ *          Otherwise, we check that the maximum number of per task
-+ *          breakpoints (for this cpu) plus the number of per cpu breakpoint
-+ *          (for this cpu) doesn't cover every registers.
-+ *
-+ *   - If attached to every cpus, check:
-+ *
-+ *       (per_cpu(nr_bp_flexible, *) || (max(per_cpu(nr_cpu_bp_pinned, *))
-+ *           + max(per_cpu(task_bp_pinned, *)))) < HBP_NUM
-+ *
-+ *       -> This is roughly the same, except we check the number of per cpu
-+ *          bp for every cpu and we keep the max one. Same for the per tasks
-+ *          breakpoints.
-+ *
-+ *
-+ * == Pinned counter ==
-+ *
-+ *   - If attached to a single cpu, check:
-+ *
-+ *       ((per_cpu(nr_bp_flexible, cpu) > 1) + per_cpu(nr_cpu_bp_pinned, cpu)
-+ *            + max(per_cpu(task_bp_pinned, cpu))) < HBP_NUM
-+ *
-+ *       -> Same checks as before. But now the nr_bp_flexible, if any, must keep
-+ *          one register at least (or they will never be fed).
-+ *
-+ *   - If attached to every cpus, check:
-+ *
-+ *       ((per_cpu(nr_bp_flexible, *) > 1) + max(per_cpu(nr_cpu_bp_pinned, *))
-+ *            + max(per_cpu(task_bp_pinned, *))) < HBP_NUM
-+ */
-+int reserve_bp_slot(struct perf_event *bp)
-+{
-+	struct bp_busy_slots slots = {0};
-+	int ret = 0;
-+
-+	mutex_lock(&nr_bp_mutex);
-+
-+	fetch_bp_busy_slots(&slots, bp->cpu);
-+
-+	if (!bp->attr.pinned) {
-+		/*
-+		 * If there are already flexible counters here,
-+		 * there is at least one slot reserved for all
-+		 * of them. Just join the party.
-+		 *
-+		 * Otherwise, check there is at least one free slot
-+		 */
-+		if (!slots.flexible && slots.pinned == HBP_NUM) {
-+			ret = -ENOSPC;
-+			goto end;
-+		}
-+
-+	/* Flexible counters need to keep at least one slot */
-+	} else if (slots.pinned + (!!slots.flexible) == HBP_NUM) {
-+		ret = -ENOSPC;
-+		goto end;
-+	}
-+
-+	toggle_bp_slot(bp, true);
-+
-+end:
-+	mutex_unlock(&nr_bp_mutex);
-+
-+	return ret;
-+}
-+
- void release_bp_slot(struct perf_event *bp)
- {
--	atomic_dec(&bp_slot);
-+	mutex_lock(&nr_bp_mutex);
-+
-+	toggle_bp_slot(bp, false);
-+
-+	mutex_unlock(&nr_bp_mutex);
- }
- 
-+
- int __register_perf_hw_breakpoint(struct perf_event *bp)
- {
- 	int ret;
+ 	if (ret < 0) {
 -- 
 1.6.2.3
 
