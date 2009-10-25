@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbZJYRSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbZJYR2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753801AbZJYRSm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 13:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZJYRSm
+	id S1753830AbZJYR2N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 13:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbZJYR2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 13:18:42 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:53590 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751635AbZJYRSl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 13:18:41 -0400
-Date: Sun, 25 Oct 2009 17:18:39 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Peter Ujfalusi <peter.ujfalusi@nokia.com>, tony@atomide.com,
-       alsa-devel@alsa-project.org, linux-omap@vger.kernel.org,
+	Sun, 25 Oct 2009 13:28:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52805 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753816AbZJYR2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 13:28:12 -0400
+Date: Sun, 25 Oct 2009 18:27:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Andreas Mohr <andi@lisas.de>,
+       Hugh Dickins <hugh@veritas.com>, Hannes Eder <hannes@hanneseder.net>,
        linux-kernel@vger.kernel.org
-Message-ID: <20091025171838.GA5141@sirena.org.uk>
-References: <1256207208-25010-1-git-send-email-peter.ujfalusi@nokia.com>
- <1256207208-25010-2-git-send-email-peter.ujfalusi@nokia.com>
- <20091023140703.GA3718@sortiz.org>
+Subject: Re: [PATCH 6/8] SGI x86_64 UV: Limit the number of microcode
+	messages
+Message-ID: <20091025172718.GA20060@elte.hu>
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233756.941535000@alcatraz.americas.sgi.com> <b647ffbd0910241309u7b2f8c94t1f886ef31882539e@mail.gmail.com> <Pine.LNX.4.61.0910242207180.2439@ginsburg.homenet> <b647ffbd0910241545g4697a170peb00e541298d5a30@mail.gmail.com> <20091025163704.GE20391@elte.hu> <20091025101118.522a7aa4@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091023140703.GA3718@sortiz.org>
-X-Cookie: Flame on!
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.240.126
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [alsa-devel] [PATCH 1/4 v2] MFD: twl4030: add twl4030_codec
- MFD as a new child to the core
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+In-Reply-To: <20091025101118.522a7aa4@infradead.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 04:07:05PM +0200, Samuel Ortiz wrote:
 
-> As agreed, Mark is taking this one. So:
-> Acked-by: Samuel Ortiz <sameo@linux.intel.com>
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-Applied all, if there's a merge problem with the MFD code then there's a
-twl4030-mfd branch at
+> On Sun, 25 Oct 2009 17:37:04 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > Having the precise microcode version printed (or exposed somewhere in 
+> > /sys) is useful - sometimes when there's a weird crash in some
+> > prototype CPU one of the first questions from hw vendors is 'which
+> > precise microcode version was that?'.
+> 
+> something like /sys/devices/system/cpu/cpu0/microcode/version ?
+> 
+> (yes that is there today ;-)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound-2.6.git
+yeah, i used that for a bug recently.
 
-which I'm happy for you to merge if it makes life easier.  Due to other
-changes the patches end up depending on (just textually I think) there's
-a big raft of other stuff in there too, sadly.
+Nevertheless it makes sense to print the boot CPU message too - for bugs 
+that crash before we can read out 
+/sys/devices/system/cpu/cpu0/microcode/version.
+
+	Ingo
