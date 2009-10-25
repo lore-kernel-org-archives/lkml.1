@@ -1,51 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZJYRxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZJYRx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753867AbZJYRxO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 13:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbZJYRxN
+	id S1753887AbZJYRx1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 13:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbZJYRxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 13:53:13 -0400
+	Sun, 25 Oct 2009 13:53:19 -0400
 Received: from ey-out-2122.google.com ([74.125.78.24]:64063 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753788AbZJYRxM (ORCPT
+	with ESMTP id S1753857AbZJYRxO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 13:53:12 -0400
+	Sun, 25 Oct 2009 13:53:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:user-agent:date:from:to:cc:subject;
-        b=S8rlej4ypx9Wf+Z1xKowzPm04D1SCfpimFRVCQAvzZ2xf6a+tEG7ymTXnCTtK9aZqM
-         dIWF3UqFTAY2C6EWVlRuawCy58kn7XmJc9iwsFeeP3SjR38BZA/AppHDTOkrnGtCZ4jK
-         ZDTDA231+3q0yK1zdNGJxHd3x1FxG/AsrgdY8=
-Message-Id: <20091025175057.270011110@gmail.com>
+        h=message-id:references:user-agent:date:from:to:cc:subject
+         :content-disposition;
+        b=IH95lTWNKENOuV5Gk1wkBFhXo0832n2T5pYr5FOF6OaGorbBQA0KokUum/KVdQbVQC
+         mEKaMS4MDQoGhpcS14aPQxF1GnLv5qgpgCNhC7dCDhUyoosgoM4jX8YXgjW99uMm9iea
+         pEiypc4SsuODuEtHfShy7g5V13V36SfJ9dqg8=
+Message-Id: <20091025175316.391430732@gmail.com>
+References: <20091025175057.270011110@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Sun, 25 Oct 2009 18:50:57 +0100
+Date: Sun, 25 Oct 2009 18:50:58 +0100
 From: bart.hartgers@gmail.com
 To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/7] ark3116: (3rd try) driver rework
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bart Hartgers <bart.hartgers@gmail.com>
+Subject: [PATCH 1/7] ark3116: (3rd try) Setup some basic infrastructure for new ark3116 driver.
+Content-Disposition: inline; filename=0000_ark3116_infrastructure.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+Signed-off-by: Bart Hartgers <bart.hartgers@gmail.com>
+---
+Index: linux-2.6.32-rc4/drivers/usb/serial/ark3116.c
+===================================================================
+--- linux-2.6.32-rc4.orig/drivers/usb/serial/ark3116.c	2009-10-18 14:25:02.000000000 +0200
++++ linux-2.6.32-rc4/drivers/usb/serial/ark3116.c	2009-10-18 14:25:14.000000000 +0200
+@@ -1,4 +1,6 @@
+ /*
++ * Copyright (C) 2009 by Bart Hartgers (bart.hartgers+ark3116@gmail.com)
++ * Original version:
+  * Copyright (C) 2006
+  *   Simon Schulz (ark3116_driver <at> auctionant.de)
+  *
+@@ -6,10 +8,13 @@
+  * - implements a driver for the arkmicro ark3116 chipset (vendor=0x6547,
+  *   productid=0x0232) (used in a datacable called KQ-U8A)
+  *
+- * - based on code by krisfx -> thanks !!
+- *   (see http://www.linuxquestions.org/questions/showthread.php?p=2184457#post2184457)
++ * Supports full modem status lines, break, hardware flow control. Does not
++ * support software flow control, since I do not know how to enable it in hw.
+  *
+- *  - based on logs created by usbsnoopy
++ * This driver is a essentially new implementation. I initially dug
++ * into the old ark3116.c driver and suddenly realized the ark3116 is
++ * a 16450 with a USB interface glued to it. See comments at the
++ * bottom of this file.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms of the GNU General Public License as published by the
+@@ -19,15 +24,31 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/init.h>
++#include <asm/atomic.h>
++#include <linux/ioctl.h>
+ #include <linux/tty.h>
++#include <linux/tty_flip.h>
+ #include <linux/module.h>
+ #include <linux/usb.h>
+ #include <linux/usb/serial.h>
+ #include <linux/serial.h>
++#include <linux/serial_reg.h>
+ #include <linux/uaccess.h>
+-
++#include <linux/mutex.h>
+ 
+ static int debug;
++/*
++ * Version information
++ */
++
++#define DRIVER_VERSION "v0.3"
++#define DRIVER_AUTHOR "Bart Hartgers <bart.hartgers+ark3116@gmail.com>"
++#define DRIVER_DESC "USB ARK3116 serial/IrDA driver"
++#define DRIVER_DEV_DESC "ARK3116 RS232/IrDA"
++#define DRIVER_NAME "ark3116"
++
++/* usb timeout of 1 second */
++#define ARK_TIMEOUT (1*HZ)
+ 
+ static struct usb_device_id id_table [] = {
+ 	{ USB_DEVICE(0x6547, 0x0232) },
+@@ -45,6 +66,52 @@ static int is_irda(struct usb_serial *se
+ 	return 0;
+ }
+ 
++struct ark3116_private {
++	wait_queue_head_t       delta_msr_wait;
++	struct async_icount	icount;
++	int			irda;	/* 1 for irda device */
++
++	/* protects hw register updates */
++	struct mutex		lock;
++
++	int			quot;	/* baudrate divisor */
++	__u8			lcr;	/* line control register value */
++	__u8			hcr;	/* handshake control register (0x8)
++					 * value
++					 */
++	/* register values - updated asynchronously */
++	atomic_t		mcr;
++	atomic_t		msr;
++	atomic_t		lsr;
++};
++
++static int ark3116_write_reg(struct usb_serial *serial,
++			     unsigned reg, __u8 val)
++{
++	int result;
++	 /* 0xfe 0x40 are magic values taken from original driver */
++	result = usb_control_msg(serial->dev,
++				 usb_sndctrlpipe(serial->dev, 0),
++				 0xfe, 0x40, val, reg,
++				 NULL, 0, ARK_TIMEOUT);
++	return result;
++}
++
++static int ark3116_read_reg(struct usb_serial *serial,
++			    unsigned reg, unsigned char *buf)
++{
++	int result;
++	/* 0xfe 0xc0 are magic values taken from original driver */
++	result = usb_control_msg(serial->dev,
++				 usb_rcvctrlpipe(serial->dev, 0),
++				 0xfe, 0xc0, 0, reg,
++				 buf, 1, ARK_TIMEOUT);
++	if (result < 0)
++		return result;
++	else
++		return buf[0];
++}
++
+ static inline void ARK3116_SND(struct usb_serial *serial, int seq,
+ 			       __u8 request, __u8 requesttype,
+ 			       __u16 value, __u16 index)
+@@ -465,7 +532,12 @@ static int __init ark3116_init(void)
+ 	if (retval)
+ 		return retval;
+ 	retval = usb_register(&ark3116_driver);
+-	if (retval)
++	if (retval == 0) {
++		printk(KERN_INFO "%s:"
++		       DRIVER_VERSION ":"
++		       DRIVER_DESC "\n",
++		       KBUILD_MODNAME);
++	} else
+ 		usb_serial_deregister(&ark3116_device);
+ 	return retval;
+ }
+@@ -480,6 +552,109 @@ module_init(ark3116_init);
+ module_exit(ark3116_exit);
+ MODULE_LICENSE("GPL");
+ 
++MODULE_AUTHOR(DRIVER_AUTHOR);
++MODULE_DESCRIPTION(DRIVER_DESC);
++
+ module_param(debug, bool, S_IRUGO | S_IWUSR);
+-MODULE_PARM_DESC(debug, "Debug enabled or not");
++MODULE_PARM_DESC(debug, "Enable debug");
+ 
++/*
++ * The following describes what I learned from studying the old
++ * ark3116.c driver, disassembling the windows driver, and some lucky
++ * guesses. Since I do not have any datasheet or other
++ * documentation, inaccuracies are almost guaranteed.
++ *
++ * Some specs for the ARK3116 can be found here:
++ * http://web.archive.org/web/20060318000438/
++ *   www.arkmicro.com/en/products/view.php?id=10
++ * On that page, 2 GPIO pins are mentioned: I assume these are the
++ * OUT1 and OUT2 pins of the UART, so I added support for those
++ * through the MCR. Since the pins are not available on my hardware,
++ * I could not verify this.
++ * Also, it states there is "on-chip hardware flow control". I have
++ * discovered how to enable that. Unfortunately, I do not know how to
++ * enable XON/XOFF (software) flow control, which would need support
++ * from the chip as well to work. Because of the wording on the web
++ * page there is a real possibility the chip simply does not support
++ * software flow control.
++ *
++ * I got my ark3116 as part of a mobile phone adapter cable. On the
++ * PCB, the following numbered contacts are present:
++ *
++ *  1:- +5V
++ *  2:o DTR
++ *  3:i RX
++ *  4:i DCD
++ *  5:o RTS
++ *  6:o TX
++ *  7:i RI
++ *  8:i DSR
++ * 10:- 0V
++ * 11:i CTS
++ *
++ * On my chip, all signals seem to be 3.3V, but 5V tolerant. But that
++ * may be different for the one you have ;-).
++ *
++ * The windows driver limits the registers to 0-F, so I assume there
++ * are actually 16 present on the device.
++ *
++ * On an UART interrupt, 4 bytes of data come in on the interrupt
++ * endpoint. The bytes are 0xe8 IIR LSR MSR.
++ *
++ * The baudrate seems to be generated from the 12MHz crystal, using
++ * 4-times subsampling. So quot=12e6/(4*baud). Also see description
++ * of register E.
++ *
++ * Registers 0-7:
++ * These seem to be the same as for a regular 16450. The FCR is set
++ * to UART_FCR_DMA_SELECT (0x8), I guess to enable transfers between
++ * the UART and the USB bridge/DMA engine.
++ *
++ * Register 8:
++ * By trial and error, I found out that bit 0 enables hardware CTS,
++ * stopping TX when CTS is +5V. Bit 1 does the same for RTS, making
++ * RTS +5V when the 3116 cannot transfer the data to the USB bus
++ * (verified by disabling the reading URB). Note that as far as I can
++ * tell, the windows driver does NOT use this, so there might be some
++ * hardware bug or something.
++ *
++ * According to a patch provided here
++ * (http://lkml.org/lkml/2009/7/26/56), the ARK3116 can also be used
++ * as an IrDA dongle. Since I do not have such a thing, I could not
++ * investigate that aspect. However, I can speculate ;-).
++ *
++ * - IrDA encodes data differently than RS232. Most likely, one of
++ *   the bits in registers 9..E enables the IR ENDEC (encoder/decoder).
++ * - Depending on the IR transceiver, the input and output need to be
++ *   inverted, so there are probably bits for that as well.
++ * - IrDA is half-duplex, so there should be a bit for selecting that.
++ *
++ * This still leaves at least two registers unaccounted for. Perhaps
++ * The chip can do XON/XOFF or CRC in HW?
++ *
++ * Register 9:
++ * Set to 0x00 for IrDA, when the baudrate is initialised.
++ *
++ * Register A:
++ * Set to 0x01 for IrDA, at init.
++ *
++ * Register B:
++ * Set to 0x01 for IrDA, 0x00 for RS232, at init.
++ *
++ * Register C:
++ * Set to 00 for IrDA, at init.
++ *
++ * Register D:
++ * Set to 0x41 for IrDA, at init.
++ *
++ * Register E:
++ * Somekind of baudrate override. The windows driver seems to set
++ * this to 0x00 for normal baudrates, 0x01 for 460800, 0x02 for 921600.
++ * Since 460800 and 921600 cannot be obtained by dividing 3MHz by an integer,
++ * it could be somekind of subdivisor thingy.
++ * However,it does not seem to do anything: selecting 921600 (divisor 3,
++ * reg E=2), still gets 1 MHz. I also checked if registers 9, C or F would
++ * work, but they don't.
++ *
++ * Register F: unknown
++ */
 
-Third try in getting my patches to the list. Somehow send to myself
-worked, but vger seems to choke on something.
-
-
-Anyhow:
-
-Here is the patch set I metioned earlier. It brings the ark3116 driver
-up to date by:
-- replacing the magic numbers by proper uart register accesses
-- introducing locking
-- line error handling
-- interrupt based modem status handling
-- cts/rts handshaking
-- break signaling
-
-The patches are against 2.6.32-rc4.
-
-Groeten,
-Bart
 -- 
