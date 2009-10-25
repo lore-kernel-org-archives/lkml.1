@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZJYD2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbZJYEFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbZJYD2P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Oct 2009 23:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbZJYD2O
+	id S1751218AbZJYEFL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 00:05:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbZJYEFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 23:28:14 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:37299 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752610AbZJYD2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 23:28:14 -0400
-Date: Sat, 24 Oct 2009 23:28:14 -0400
-From: Dave Jones <davej@redhat.com>
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: cpufreq@vger.kernel.org, LKLM <linux-kernel@vger.kernel.org>,
-       Rafal Bilski <rafalbilski@interia.pl>
-Subject: Re: [PATCH] longhaul: select Longhaul version 2 for capable CPUs
-Message-ID: <20091025032813.GB2475@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Krzysztof Helt <krzysztof.h1@poczta.fm>, cpufreq@vger.kernel.org,
-	LKLM <linux-kernel@vger.kernel.org>,
-	Rafal Bilski <rafalbilski@interia.pl>
-References: <20091024172538.e2c8776b.krzysztof.h1@poczta.fm>
+	Sun, 25 Oct 2009 00:05:10 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54880 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750734AbZJYEFK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 00:05:10 -0400
+Date: Sun, 25 Oct 2009 00:05:03 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC] tracefs
+Message-ID: <20091025040503.GA15781@infradead.org>
+References: <20091023004937.GA24035@kroah.com> <20091023053237.GA24359@elte.hu> <1256303528.20866.822.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091024172538.e2c8776b.krzysztof.h1@poczta.fm>
+In-Reply-To: <1256303528.20866.822.camel@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 24, 2009 at 05:25:38PM +0200, Krzysztof Helt wrote:
- > From: Krzysztof Helt <krzysztof.h1@wp.pl>
- > 
- > There is a typo in the longhaul detection code so only Longhaul v1 or Longhaul v3
- > is selected. The Longhaul v2 is not selected even for CPUs which are capable of.
- > 
- > Tested on PCChips Giga Pro board. Frequency changes work and the Longhaul v2
- > detects that the board is not capable of changing CPU voltage.
- > 
- > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
- 
-It seems we deliberately changed this two years ago, though the changelog
-is a bit sparse on details..
+On Fri, Oct 23, 2009 at 09:12:08AM -0400, Steven Rostedt wrote:
+> Note, I wasn't talking about tie down the pretty-print formats. But we
+> need to have a standard way to change them.
 
-commit 07844252ffd81ec192a62014bada1016c9703765
-Author: Rafal Bilski <rafalbilski@interia.pl>
-Date:   Sun Apr 22 12:26:04 2007 +0200
+Which means to tie down it I think.  Once we do have a good enough
+format those bits need to be locked down, with a way for adding new
+attributes (either entirely new or better replacmeents for existing
+ones with leaving the old ones in place for existing userspace).
 
-    [CPUFREQ] Longhaul - Revert Longhaul ver. 2
-    
-    There is something wrong with this code. It needs more
-    testing. It is better to disable it for now because support
-    for some machines will be broken.
-    
-    Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-
-In hindsight, changing it to report V1 instead of V2 was the wrong thing
-to do, and we should have done something like -ENODEV with
-a printk explaining why.
-
-I've not got any old VIA CPUs/boards to test with any more, but I'm inclined
-to apply your change, but we'll have to keep an eye out for any strange
-bugs on affected systems.  Currently this driver should do nothing, as the
-longhaul v1 registers that don't exist on longhaul V2 CPUs. With this change,
-we're going to be actually doing scaling again, which may introduce instability
-on some machines, as iirc, we never did get this driver 100% stable due
-to a lot of really crappy motherboards.
-
-Perhaps we should printk a warning related to this.
-(We should definitly mention it in the Kconfig too, which I thought we already had)
-
-	Dave
+In addition to the format description people have also asked for ABI
+tracepoints which would lock down the actual trace format in the
+the same way (only addition of new fields without removing or changing
+existing ones).  For this to be actually useful some trace buffer
+also needs to be exposed in an ABI-stable (that is non-debugfs way).
 
