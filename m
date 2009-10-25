@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZJYQhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbZJYQhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbZJYQhW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 12:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbZJYQhW
+	id S1753716AbZJYQhy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 12:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZJYQhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 12:37:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38123 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752354AbZJYQhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 12:37:21 -0400
-Date: Sun, 25 Oct 2009 17:37:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Andreas Mohr <andi@lisas.de>,
-       Hugh Dickins <hugh@veritas.com>, Hannes Eder <hannes@hanneseder.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/8] SGI x86_64 UV: Limit the number of microcode
-	messages
-Message-ID: <20091025163704.GE20391@elte.hu>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233756.941535000@alcatraz.americas.sgi.com> <b647ffbd0910241309u7b2f8c94t1f886ef31882539e@mail.gmail.com> <Pine.LNX.4.61.0910242207180.2439@ginsburg.homenet> <b647ffbd0910241545g4697a170peb00e541298d5a30@mail.gmail.com>
+	Sun, 25 Oct 2009 12:37:53 -0400
+Received: from mail-vw0-f184.google.com ([209.85.212.184]:42980 "EHLO
+	mail-vw0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752595AbZJYQhx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 12:37:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TQp3kAI/TB2EsSlTO/qw9pg+MjCvcTXXwJtIM4b2JpTkA/uNbR0Ot2O5Nz3MGu6a6c
+         iRFD3nud/9ZRkboOzkrvuASbtadyo+rsT9Z93zz+gddmBr76Zov4DaHH7HjreUOZRjXt
+         GOvdu4VBqUmXJ8FM0QXJcvdwH8x1nYLCDnZZY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b647ffbd0910241545g4697a170peb00e541298d5a30@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091025162019.GA10898@khazad-dum.debian.net>
+References: <b8bf37780910250618h3edce547y41a8dd03e4fb4e71@mail.gmail.com>
+	 <20091025162019.GA10898@khazad-dum.debian.net>
+Date: Sun, 25 Oct 2009 14:37:57 -0200
+Message-ID: <b8bf37780910250937x14b8f008xd8443fe004749403@mail.gmail.com>
+Subject: Re: [PATCH 2/2] serial: cascade needless conditionals
+From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: gregkh@suse.de, alan@linux.intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, adobriyan@gmail.com,
+       linux list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Henrique!
 
-* Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
+On 10/25/09, Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+> On Sun, 25 Oct 2009, André Goddard Rosa wrote:
+>>  	if (flags == UPF_SPD_HI)
+>>  		altbaud = 57600;
+>> -	if (flags == UPF_SPD_VHI)
+>> +	else if (flags == UPF_SPD_VHI)
+>>  		altbaud = 115200;
+>> -	if (flags == UPF_SPD_SHI)
+>> +	else if (flags == UPF_SPD_SHI)
+>>  		altbaud = 230400;
+>> -	if (flags == UPF_SPD_WARP)
+>> +	else if (flags == UPF_SPD_WARP)
+>>  		altbaud = 460800;
+>
+> This changes code behaviour if more than one bit is set (which might never
+> happen for all I know...).  You should invert the order of the tests if you
+> want to make sure it is side-effect-free.
+>
 
-> 2009/10/24 Tigran Aivazian <tigran@aivazian.fsnet.co.uk>:
-> > On Sat, 24 Oct 2009, Dmitry Adamushko wrote:
-> >>>
-> >>> -       printk(KERN_INFO "microcode: CPU%d sig=0x%x, pf=0x%x,
-> >>> revision=0x%x\n",
-> >>> +       if (cpu_num < 4 || !limit_console_output(false))
-> >>> +               printk(KERN_INFO
-> >>> +                       "microcode: CPU%d sig=0x%x, pf=0x%x,
-> >>> revision=0x%x\n",
-> >>>                        cpu_num, csig->sig, csig->pf, csig->rev);
-> >>>
-> >>
-> >> Hmm, I guess we wouldn't lose a lot by simply removing those messages
-> >> completely. Per-cpu pf/revision is available via /sys anyway.
-> >
-> > The reason for printing them is that the pf (possibly others?) can change by the update and so the log has this info handy.
-> 
-> We might store the old sig/pf/revision set as well, export them via
-> /sys or/and print them at update-to-new-microcode time.
-> 
-> If it's really so useful to have this info in the log and, at the same
-> time, to avoid the flood of messages (which, I guess for the majority
-> of systems, are the same) at startup time, we might delay the printout
-> until the end of microcode_init(). Then do something like this:
-> 
-> microcode cpu0: up to date version sig, pf, rev          // let's say,
-> it was updated by BIOS
-> microcode cpus [1 ... 16] : update from sig, pf, rev to sig, pf2, rev2.
-> 
-> Anyway, my humble opinion, is that (at the very least) the current
-> patch should be accompanied by a similar version for amd.
+Do you mind explaining why? Notice that it's not (var & flag), it's =='.
+Can flags be equal more than one flag at the same time?
 
-yeah. Since we load new microcode on all cpus it's enough to print it 
-for the boot CPU or so.
-
-Having the precise microcode version printed (or exposed somewhere in 
-/sys) is useful - sometimes when there's a weird crash in some prototype 
-CPU one of the first questions from hw vendors is 'which precise 
-microcode version was that?'.
-
-	Ingo
+Thanks,
+André
