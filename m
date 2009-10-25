@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZJYXhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZJYXn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbZJYXhX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 19:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbZJYXhV
+	id S1754338AbZJYXn0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 19:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753982AbZJYXnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 19:37:21 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:43869 "EHLO
+	Sun, 25 Oct 2009 19:43:25 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:50547 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754348AbZJYXhR (ORCPT
+	with ESMTP id S1753711AbZJYXnZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 19:37:17 -0400
+	Sun, 25 Oct 2009 19:43:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=TMpYoBm1O+F+iN41K5auSRtViqYDaC71tgaug/dkCBYthxjnIyqsp7Rf0aKNUyDRnF
-         lo/UDirfNOPvvVFLS5ETU2jml3DmQbIcEp459F6nUuummOUiiPyU6APGiSfcRjlApGyq
-         dWh1S2FZNt+pyCuPohCmD3ma8gPR7nYH+zTaw=
-Message-ID: <4AE4E12D.5070304@gmail.com>
-Date: Mon, 26 Oct 2009 00:37:17 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.9 Thunderbird/3.0b4
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Dk6lABhH0LbQGps4YBAsMO1O9XmCRw5Nus06TxH7fmQHJgA7V6T76Z/Tc/PkzcziF3
+         /EJRXPgxsu993n+nJ+VcBLfUlZ3SQTLJcmfJz+NCQWYX4ktCmIZpP0BK1gk54i6hmsve
+         IaY1OPPK4L5hBOD5Dd/QXD0LbOK2utlEx6wv8=
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Eric Paris <eparis@parisplace.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: writable limits to -next [was: Adding to linux-next?]
-References: <4AC6339B.7000905@gmail.com>	<20091006225751.7d5f3eec.sfr@canb.auug.org.au>	<4AE16B0A.7020400@gmail.com>	<20091026094741.5a1d492c.sfr@canb.auug.org.au> <20091026095543.1bb1a25f.sfr@canb.auug.org.au>
-In-Reply-To: <20091026095543.1bb1a25f.sfr@canb.auug.org.au>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091025071708.GA16936@lst.de>
+References: <20091011025441.GA18152@lst.de> <20091016083242.GA11174@elte.hu>
+	 <20091025071708.GA16936@lst.de>
+Date: Mon, 26 Oct 2009 00:43:27 +0100
+Message-ID: <c62985530910251643k6b3e59c0l6069b08741469b47@mail.gmail.com>
+Subject: Re: perf trace errors
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/25/2009 11:55 PM, Stephen Rothwell wrote:
-> On Mon, 26 Oct 2009 09:47:41 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->>
->> On Fri, 23 Oct 2009 10:36:26 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
->>>
->>> Hi, could you please add git://decibel.fi.muni.cz/~xslaby/linux#limits
->>> into the -next tree?
->>
->> I have added it from today.
-> 
-> It is actually git://decibel.fi.muni.cz/~xslaby/linux#writable_limits, right?
+2009/10/25 Christoph Hellwig <hch@lst.de>:
+> On Fri, Oct 16, 2009 at 10:32:42AM +0200, Ingo Molnar wrote:
+>> FYI, these bugs are fixed in latest -tip, your testcase works for me:
+>
+>> Mind checking whether it works for you?
+>
+> Yes, it works on -tip, but not yet on mainline.  What still doesn't
+> work yet on -tip either is printing of dynamic strings in some events,
+> e.g.:
+>
+>       kjournald-1105  [000]   643.002702: block_rq_complete: 253,0 W () 2283224
 
-Hi. Oops, of course it is.
 
-/me wondering: am I that dumb?
+Ah, interesting, it means we support __string() but not well other
+dynamic arrays.
+I'll have a look at it.
+
+Thanks.
