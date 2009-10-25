@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbZJYSjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752094AbZJYS2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbZJYSjj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 14:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbZJYSjj
+	id S1752094AbZJYS2T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 14:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZJYS2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 14:39:39 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:55576 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751094AbZJYSji (ORCPT
+	Sun, 25 Oct 2009 14:28:18 -0400
+Received: from smtp240.poczta.interia.pl ([217.74.64.240]:25569 "EHLO
+	smtp240.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751094AbZJYS2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 14:39:38 -0400
-X-Sasl-enc: mlrTDtcbhJTFIPEK9HIu168aE0608YKkmmvzBjDo+zv6 1256495982
-Date: Sun, 25 Oct 2009 16:39:39 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>
-Cc: gregkh@suse.de, alan@linux.intel.com,
-       Andrew Morton <akpm@linux-foundation.org>, adobriyan@gmail.com,
-       linux list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] serial: cascade needless conditionals
-Message-ID: <20091025183939.GB10898@khazad-dum.debian.net>
-References: <b8bf37780910250618h3edce547y41a8dd03e4fb4e71@mail.gmail.com>
- <20091025162019.GA10898@khazad-dum.debian.net>
- <b8bf37780910250937x14b8f008xd8443fe004749403@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b8bf37780910250937x14b8f008xd8443fe004749403@mail.gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sun, 25 Oct 2009 14:28:18 -0400
+Date: Sun, 25 Oct 2009 19:45:57 +0100
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org, LKLM <linux-kernel@vger.kernel.org>
+Subject: [PATCH] powernow-k6: set transition latency value so ondemand
+ governor can be used
+Message-Id: <20091025194557.1d5ed484.krzysztof.h1@poczta.fm>
+In-Reply-To: <20091025032813.GB2475@redhat.com>
+References: <20091024172538.e2c8776b.krzysztof.h1@poczta.fm>
+	<20091025032813.GB2475@redhat.com>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-EMID: 9ce2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Oct 2009, André Goddard Rosa wrote:
-> On 10/25/09, Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
-> > On Sun, 25 Oct 2009, André Goddard Rosa wrote:
-> >>  	if (flags == UPF_SPD_HI)
-> >>  		altbaud = 57600;
-> >> -	if (flags == UPF_SPD_VHI)
-> >> +	else if (flags == UPF_SPD_VHI)
-> >>  		altbaud = 115200;
-> >> -	if (flags == UPF_SPD_SHI)
-> >> +	else if (flags == UPF_SPD_SHI)
-> >>  		altbaud = 230400;
-> >> -	if (flags == UPF_SPD_WARP)
-> >> +	else if (flags == UPF_SPD_WARP)
-> >>  		altbaud = 460800;
-> >
-> > This changes code behaviour if more than one bit is set (which might never
-> > happen for all I know...).  You should invert the order of the tests if you
-> > want to make sure it is side-effect-free.
-> 
-> Do you mind explaining why? Notice that it's not (var & flag), it's =='.
-> Can flags be equal more than one flag at the same time?
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-No, I obviously am going through coffee withdrawal :(  Sorry about this.
+Set the transition latency to value smaller than CPUFREQ_ETERNAL so
+governors other than "performance" work (like the "ondemand" one).
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+The value is found in "AMD PowerNow! Technology Platform Design Guide for 
+Embedded Processors" dated December 2000 (AMD doc #24267A). There is the 
+answer to one of FAQs on page 40 which states that suggested complete transition 
+period is 200 us.
+
+Tested on K6-2+ CPU with K6-3 core (model 13, stepping 4).
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+
+
+diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k6.c b/arch/x86/kernel/cpu/cpufreq/powernow-k6.c
+index f10dea4..afc6a27 100644
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k6.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k6.c
+@@ -164,7 +164,7 @@ static int powernow_k6_cpu_init(struct cpufreq_policy *policy)
+ 	}
+ 
+ 	/* cpuinfo and default policy values */
+-	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
++	policy->cpuinfo.transition_latency = 200000;
+ 	policy->cur = busfreq * max_multiplier;
+ 
+ 	result = cpufreq_frequency_table_cpuinfo(policy, clock_ratio);
+
+----------------------------------------------------------------------
+Szukasz pracy? Chcesz lepiej zarabiaæ?
+Sprawd¼ oferty na http://link.interia.pl/f23ba
+
