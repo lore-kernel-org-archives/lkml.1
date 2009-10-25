@@ -1,88 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753614AbZJYNSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbZJYNhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753614AbZJYNSm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 09:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbZJYNSm
+	id S1753431AbZJYNhH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 09:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZJYNhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 09:18:42 -0400
-Received: from mail-vw0-f184.google.com ([209.85.212.184]:46218 "EHLO
-	mail-vw0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753564AbZJYNSl convert rfc822-to-8bit (ORCPT
+	Sun, 25 Oct 2009 09:37:06 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:60463 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752807AbZJYNhF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 09:18:41 -0400
+	Sun, 25 Oct 2009 09:37:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=r2xQ4FuWCsGp32f2r4bSdgqKh3cx8wHWnWxytfpgJCMxriYL1mHR6UPZuCUeaYgVsr
-         zgkeWDm4eXvPTJxGHy1jqwCWi3DbPy+rSrgnFhSPhz0E7AKrHYzl+Y2Jh0sb9u1ozq7i
-         YBvkk2ce+gA/u6K3+VIrOlLSdm3rbfaD2FIwA=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Yz067+QliCEouoiKnqzUI1IVoAeEPZDPr+6rei/Ul3mgGm34L1tWxMp4hAWTFp6G3r
+         QqyOO9h8hFfWqfBhzZxVZREiq+4HSB19jojfJkGsQJ6MLGw1Wzm9CPoG1bcWq9OzHOeM
+         waeQE/Giwij67YJvsh44xQRtxpFObwKs+5oOQ=
 MIME-Version: 1.0
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sun, 25 Oct 2009 11:18:26 -0200
-Message-ID: <b8bf37780910250618h3edce547y41a8dd03e4fb4e71@mail.gmail.com>
-Subject: [PATCH 2/2] serial: cascade needless conditionals
-To: gregkh@suse.de, alan@linux.intel.com,
-       Andrew Morton <akpm@linux-foundation.org>, adobriyan@gmail.com,
-       linux list <linux-kernel@vger.kernel.org>
-Cc: me <andre.goddard@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1256467717.6143.13.camel@falcon>
+References: <028867b99ec532b84963a35e7d552becc783cafc.1256135456.git.wuzhangjin@gmail.com>
+	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256135456.git.wuzhangjin@gmail.com>
+	 <3f0d3515f74a58f4cfd11e61b62a129fdc21e3a7.1256135456.git.wuzhangjin@gmail.com>
+	 <96110ea5dd4d3d54eb97d0bb708a5bd81c7a50b5.1256135456.git.wuzhangjin@gmail.com>
+	 <af3ec1b5cd06b6f6a461c9fa7d09a51fabccb08d.1256135456.git.wuzhangjin@gmail.com>
+	 <a6f2959a69b6a77dd32cc36a5c8202f97d524f1e.1256135456.git.wuzhangjin@gmail.com>
+	 <53bdfdd95ec4fa00d4cc505bb5972cf21243a14d.1256135456.git.wuzhangjin@gmail.com>
+	 <26008418.post@talk.nabble.com> <1256467717.6143.13.camel@falcon>
+Date: Sun, 25 Oct 2009 14:37:07 +0100
+Message-ID: <7a39cd850910250637h200e2dd2i4f725d55bb88c212@mail.gmail.com>
+Subject: Re: [PATCH -v4 9/9] tracing: add function graph tracer support for 
+	MIPS
+From: Patrik Kluba <kpajko79@gmail.com>
+To: wuzhangjin@gmail.com
+Cc: linux-kernel@vger.kernel.org, GCC Patches <gcc-patches@gcc.gnu.org>,
+       Adam Nemet <anemet@caviumnetworks.com>, rostedt@goodmis.org,
+       linux-mips@linux-mips.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       David Daney <ddaney@caviumnetworks.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 0f6b1bcb358532007f6098da9bf70794e6a99828 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Date: Sat, 24 Oct 2009 11:07:22 -0200
-Subject: [PATCH 2/2] serial: cascade needless conditionals
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+On Sun, Oct 25, 2009 at 11:48 AM, Wu Zhangjin <wuzhangjin@gmail.com> wrote:
+>
+> do you mean if enabling PROFILE_BEFORE_PROLOGUE, there will be some
+> problems with module support using -mlong-calls?
+>
 
-Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
+No, there are no problems. I've tested it on friday, and function
+graph tracing was working correctly.
+I meant to say that 4.2.1 we use does not generate correct profile
+calls from kernel modules. Maybe this issue was fixed in newer
+releases, I did not check. I've applied a patch (don't remember where
+have I found that, maybe it was created by you) to our toolchain
+several months ago.
 
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 885eabe..047530b 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -342,11 +342,11 @@ uart_get_baud_rate(struct uart_port *port,
-struct ktermios *termios,
+I was thinking about dynamic tracing, and I think a toolchain patch
+can be avoided completely. We only need to make difference between
+"jal _mcount" and "jalr v1"-style mcount calls when replacing them
+with "nop" instructions in the code-patching function called by
+ftrace_convert_nops(). This can be done in 2 ways:
+1) keeping old instructions - takes extra memory, not an option
+2) using 2 separate instructions to replace with. One of them could be
+the normal NOP instruction, which expands to "sll r0, r0, 0". For the
+other we could use "sll r0, r0, 1" but as it has already special
+meaning (SSNOP) a better candidate could be something like "sll r1,
+r1, 0". This way we can decide which instruction to patch in when
+tracing is enabled for a function, eg. when the code patcher
+encounters a "sll r0, r0, 0" it emits a function call using JAL and
+when it encounters "sll r1, r1, 0" it emits a function call using
+"JALR v1".
 
- 	if (flags == UPF_SPD_HI)
- 		altbaud = 57600;
--	if (flags == UPF_SPD_VHI)
-+	else if (flags == UPF_SPD_VHI)
- 		altbaud = 115200;
--	if (flags == UPF_SPD_SHI)
-+	else if (flags == UPF_SPD_SHI)
- 		altbaud = 230400;
--	if (flags == UPF_SPD_WARP)
-+	else if (flags == UPF_SPD_WARP)
- 		altbaud = 460800;
-
- 	for (try = 0; try < 2; try++) {
-@@ -1217,9 +1217,8 @@ static void uart_set_termios(struct tty_struct *tty,
- 	/* Handle transition to B0 status */
- 	if ((old_termios->c_cflag & CBAUD) && !(cflag & CBAUD))
- 		uart_clear_mctrl(state->uart_port, TIOCM_RTS | TIOCM_DTR);
--
- 	/* Handle transition away from B0 status */
--	if (!(old_termios->c_cflag & CBAUD) && (cflag & CBAUD)) {
-+	else if (!(old_termios->c_cflag & CBAUD) && (cflag & CBAUD)) {
- 		unsigned int mask = TIOCM_DTR;
- 		if (!(cflag & CRTSCTS) ||
- 		    !test_bit(TTY_THROTTLED, &tty->flags))
-@@ -1234,9 +1233,8 @@ static void uart_set_termios(struct tty_struct *tty,
- 		__uart_start(tty);
- 		spin_unlock_irqrestore(&state->uart_port->lock, flags);
- 	}
--
- 	/* Handle turning on CRTSCTS */
--	if (!(old_termios->c_cflag & CRTSCTS) && (cflag & CRTSCTS)) {
-+	else if (!(old_termios->c_cflag & CRTSCTS) && (cflag & CRTSCTS)) {
- 		spin_lock_irqsave(&state->uart_port->lock, flags);
- 		if (!(state->uart_port->ops->get_mctrl(state->uart_port) & TIOCM_CTS)) {
- 			tty->hw_stopped = 1;
--- 
-1.6.5.1.75.g02d56
+Regards,
+Patrik
