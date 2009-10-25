@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbZJYWFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbZJYWSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259AbZJYWFz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 18:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbZJYWFz
+	id S1754270AbZJYWSK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 18:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZJYWSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 18:05:55 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:60094 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753980AbZJYWFy (ORCPT
+	Sun, 25 Oct 2009 18:18:09 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:41523 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754207AbZJYWSI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 18:05:54 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Bart Hartgers <bart.hartgers@gmail.com>
-Subject: Re: [PATCH 3/7] ark3116: (3rd try) Replace cmget
-Date: Sun, 25 Oct 2009 23:08:02 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.31-rc9-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20091025175057.270011110@gmail.com> <200910252052.09845.oliver@neukum.org> <7eb6a4d80910251256w4ad8a77dg5a24618657b77a58@mail.gmail.com>
-In-Reply-To: <7eb6a4d80910251256w4ad8a77dg5a24618657b77a58@mail.gmail.com>
+	Sun, 25 Oct 2009 18:18:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WQdoq6E0PZx7Ar8pF1KRtuPElCHziLYhRFr1V12++d7XMiNIzbAy9FBFd083zXy/nL
+         TwYF77HzRfw3MGkGRv/wynM1ZONXiMk0XfYHPAqXFRHQIFe6MbN9FzZZ9loWIxISFcJI
+         b6JS4cTu+UQtooS8vW0RkLssahHvAFmX5gqXQ=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910252308.02695.oliver@neukum.org>
+In-Reply-To: <1256078002-27919-1-git-send-email-linus.walleij@stericsson.com>
+References: <1256078002-27919-1-git-send-email-linus.walleij@stericsson.com>
+Date: Sun, 25 Oct 2009 23:18:12 +0100
+Message-ID: <63386a3d0910251518i42149642g183f2d3f6c43384f@mail.gmail.com>
+Subject: Re: [PATCH] Make MIPS dynamic clocksource/clockevent clock code 
+	generic v2
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Walleij <linus.walleij@stericsson.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org, linux-mips@linux-mips.org,
+       Mikael Pettersson <mikpe@it.uu.se>, Ralf Baechle <ralf@linux-mips.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, 25. Oktober 2009 20:56:36 schrieb Bart Hartgers:
-> I don't think so. The two values are not really related.
->
-> These are two separate things: mcr (modem control reg) is ultimately
-> changed by whatever has the serial port open, msr (modem status
-> register) represents the status of the handshaking lines, and is
-> changed (via the interrupt urb callback) by hardware.
+2009/10/21 Linus Walleij <linus.walleij@stericsson.com>:
 
-If so, why is mcr of the type atomic_t ?
+> Changes v1->v2:
+> - Fixed Mikaels comments: spelling, terminology.
+> - Kept the functions inline: all uses and foreseen uses
+>  are once per kernel and all are in __init or __cpuinit sections.
+> - Unable to break out common code - the code is not common and
+>  implementing two execution paths will be more awkward.
+> - Hoping the tglx likes it anyway.
 
-	Regards
-		Oliver
+Ping on tglx on this, I will uninline the functions if you think
+it's better in the long run, just tell me, else can you pick this
+patch?
 
+Linus Walleij
