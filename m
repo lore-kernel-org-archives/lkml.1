@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752310AbZJYPRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbZJYPR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752310AbZJYPRN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 11:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbZJYPRM
+	id S1752478AbZJYPR1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 11:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbZJYPR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 11:17:12 -0400
-Received: from mail-px0-f179.google.com ([209.85.216.179]:43500 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbZJYPRL (ORCPT
+	Sun, 25 Oct 2009 11:17:26 -0400
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:53494 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752339AbZJYPRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 11:17:11 -0400
+	Sun, 25 Oct 2009 11:17:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=tf+TF42eQ+eFnEr8Cg3ujmFPYXApvxZ9E9BPCQRS5bhGVTbKhcDIxFUkVTKBzXpD4L
-         Fmg4v7xnZGXUNrkqYnnAII5s1vMwHkhXOnZLzb0K082Won5zrZAB+4dnvrTSreQ+IBSS
-         L8aovln4B+ZKYFmxN+XIRTYi8b0JJgzcpaYoQ=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=RoMx5hs420AmM5JbeDua7rF5iO/h/sWp6F+KZ925x2R0EyCw13VdEq6QtRP/IyOaIn
+         2rQZvU9Bt39CJpEjOwhPO1qwq1CkZAhWFyMrIVoAvEbzwiGMxdlUNCBjev/tS9pettfa
+         MsDYgqkiJPNupMPxnZGrwfkU8sH31uS2tosPM=
 From: Wu Zhangjin <wuzhangjin@gmail.com>
 To: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
 Cc: Wu Zhangjin <wuzhangjin@gmail.com>, rostedt@goodmis.org,
@@ -26,66 +26,56 @@ Cc: Wu Zhangjin <wuzhangjin@gmail.com>, rostedt@goodmis.org,
        David Daney <ddaney@caviumnetworks.com>,
        Adam Nemet <anemet@caviumnetworks.com>,
        Patrik Kluba <kpajko79@gmail.com>
-Subject: [PATCH -v5 00/11] ftrace for MIPS
-Date: Sun, 25 Oct 2009 23:16:51 +0800
-Message-Id: <cover.1256482555.git.wuzhangjin@gmail.com>
+Subject: [PATCH -v5 01/11] tracing: convert trace_clock_local() as weak function
+Date: Sun, 25 Oct 2009 23:16:52 +0800
+Message-Id: <028867b99ec532b84963a35e7d552becc783cafc.1256483735.git.wuzhangjin@gmail.com>
 X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <cover.1256482555.git.wuzhangjin@gmail.com>
+References: <cover.1256482555.git.wuzhangjin@gmail.com>
+In-Reply-To: <cover.1256483735.git.wuzhangjin@gmail.com>
+References: <cover.1256483735.git.wuzhangjin@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Under the help of the -mlong-calls option of gcc, This revision comes with the
-module tracing support. and there are also lots of cleanups and fixes.
-therefore, it is ready to upstream.
+trace_clock_local() is based on the arch-specific sched_clock(), in X86,
+it is tsc(64bit) based, which can give very high precision(about 1ns
+with 1GHz). but in MIPS, the sched_clock() is jiffies based, which can
+give only 10ms precison with 1000 HZ. which is not enough for tracing,
+especially for Real Time system.
 
-Currently, function graph tracer support have some overhead for searching the
-stack address of the return address(ra). we hope the PROFILE_BEFORE_PROLOGUE
-macro will be enabled by default in the next version of gcc, and then the
-overhead can be removed via hijacking the ra register directly for both
-non-leaf and leaf function.
+so, we need to implement a MIPS specific sched_clock() to get higher
+precision. There is a tsc like clock counter register in MIPS, whose
+frequency is half of the processor, so, if the cpu frequency is 800MHz,
+the time precision reaches 2.5ns, which is very good for tracing, even
+for Real Time system.
 
-Thanks very much to the people in the CC list for their feedbacks, all the
-lastest changes goes to this git repo:
+but 'Cause it is only 32bit long, which will rollover quickly, so, such
+a sched_clock() will bring with extra load, which is not good for the
+whole system. so, we only need to implement a arch-specific
+trace_clock_local() for tracing. as a preparation, we convert it as a
+weak function.
 
-git://dev.lemote.com/rt4ls.git	linux-mips/dev/ftrace-upstream
+The MIPS specific trace_clock_local() is coming in the next two patches.
 
-Welcome to play with it and give more feedbacks. 
+Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+---
+ kernel/trace/trace_clock.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks & Regards,
-       Wu Zhangjin
-
-Wu Zhangjin (11):
-  tracing: convert trace_clock_local() as weak function
-  MIPS: add mips_timecounter_read() to get high precision timestamp
-  tracing: add MIPS specific trace_clock_local()
-  tracing: add static function tracer support for MIPS
-  tracing: enable HAVE_FUNCTION_TRACE_MCOUNT_TEST for MIPS
-  tracing: add an endian argument to scripts/recordmcount.pl
-  tracing: add dynamic function tracer support for MIPS
-  tracing: not trace mips_timecounter_init() in MIPS
-  tracing: add IRQENTRY_EXIT for MIPS
-  tracing: add function graph tracer support for MIPS
-  tracing: add dynamic function graph tracer for MIPS
-
- arch/mips/Kconfig              |    5 +
- arch/mips/Makefile             |    4 +
- arch/mips/include/asm/ftrace.h |   37 ++++++++-
- arch/mips/include/asm/time.h   |   19 ++++
- arch/mips/kernel/Makefile      |    9 ++
- arch/mips/kernel/csrc-r4k.c    |   41 +++++++++
- arch/mips/kernel/ftrace.c      |  190 ++++++++++++++++++++++++++++++++++++++++
- arch/mips/kernel/mcount.S      |  177 +++++++++++++++++++++++++++++++++++++
- arch/mips/kernel/mips_ksyms.c  |    5 +
- arch/mips/kernel/time.c        |    2 +
- arch/mips/kernel/trace_clock.c |   33 +++++++
- arch/mips/kernel/vmlinux.lds.S |    1 +
- include/linux/clocksource.h    |    2 +-
- kernel/time/clocksource.c      |    4 +-
- kernel/trace/trace_clock.c     |    2 +-
- scripts/Makefile.build         |    1 +
- scripts/recordmcount.pl        |   44 +++++++++-
- 17 files changed, 568 insertions(+), 8 deletions(-)
- create mode 100644 arch/mips/kernel/ftrace.c
- create mode 100644 arch/mips/kernel/mcount.S
- create mode 100644 arch/mips/kernel/trace_clock.c
+diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
+index 20c5f92..06b8cd2 100644
+--- a/kernel/trace/trace_clock.c
++++ b/kernel/trace/trace_clock.c
+@@ -26,7 +26,7 @@
+  * Useful for tracing that does not cross to other CPUs nor
+  * does it go through idle events.
+  */
+-u64 notrace trace_clock_local(void)
++u64 __weak notrace trace_clock_local(void)
+ {
+ 	unsigned long flags;
+ 	u64 clock;
+-- 
+1.6.2.1
 
