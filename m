@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbZJYIMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbZJYIjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752835AbZJYIMc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 04:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZJYIMb
+	id S1752790AbZJYIjY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 04:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZJYIjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 04:12:31 -0400
-Received: from www84.your-server.de ([213.133.104.84]:38587 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752788AbZJYIM2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 04:12:28 -0400
-Subject: Re: [PATCH 0/7] kfifo: new API v0.6
-From: Stefani Seibold <stefani@seibold.net>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Joe Perches <joe@perches.com>
-In-Reply-To: <20091025014831.GC32470@one.firstfloor.org>
-References: <1256391194.7362.7.camel@wall-e>
-	 <20091025014831.GC32470@one.firstfloor.org>
-Content-Type: text/plain
-Date: Sun, 25 Oct 2009 09:12:24 +0100
-Message-Id: <1256458344.4026.3.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Sun, 25 Oct 2009 04:39:23 -0400
+Received: from isilmar.linta.de ([213.133.102.198]:49166 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752360AbZJYIjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 04:39:22 -0400
+Date: Sun, 25 Oct 2009 09:38:41 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: PCI Express-to-PCI Bridge: yenta_cardbus  no bus associated!
+Message-ID: <20091025083841.GA12526@isilmar.linta.de>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Stefani Seibold <stefani@seibold.net>,
+	Matthew Wilcox <matthew@wil.cx>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Linux PCI <linux-pci@vger.kernel.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>
+References: <1254248605.8881.1.camel@wall-e> <200909300115.54263.rjw@sisk.pl> <1256393003.9013.4.camel@wall-e> <20091024203452.GA10555@parisc-linux.org> <1256458229.4026.1.camel@wall-e>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256458229.4026.1.camel@wall-e>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, den 25.10.2009, 02:48 +0100 schrieb Andi Kleen:
-> On Sat, Oct 24, 2009 at 03:33:14PM +0200, Stefani Seibold wrote:
-> > This is a new generic kernel FIFO implementation.
+Hey,
+
+On Sun, Oct 25, 2009 at 09:10:29AM +0100, Stefani Seibold wrote:
+> Am Samstag, den 24.10.2009, 14:34 -0600 schrieb Matthew Wilcox:
+> > On Sat, Oct 24, 2009 at 04:03:23PM +0200, Stefani Seibold wrote:
+> > > If you need further information or dumps please contact me.
+> > > 
+> > > The kernel parameter 'pci=assign-busses' did not fix the problem.
 > > 
-> > The current kernel fifo API is not very widely used, because it has to many
-> > constrains. Only 17 files in the current 2.6.31-rc5 used it. FIFO's are
-> > like list's a very basic thing and a kfifo API which handles the most use
-> > case would save a lot of development time and memory resources.
+> > What does dmesg say when you specify pci=assign-busses?
 > > 
-> > I think this are the reasons why kfifo is not in use:
-> > 
-> > - The API is to simple, important functions are missing
-> > - A fifo can be only allocated dynamically
-> > - There is a need of a spinlock despite you need it or not
-> > - There is no support for data records inside a fifo
 > 
-> I have some plans to use this kfifo code in upcoming code (mostly
-> as a very simple lower overhead NMI safe per CPU fifo). I would appreciate 
-> if it could be merged ASAP
+> Okay, i tried it again with 'pci=assign-bussed'. All i get is a
 > 
-> I didn't review this iteration, but earlier ones.
+> decode_hpp: Could not get hotplug parameters. Use defaults
 > 
+> thats all. The express-card will not be detected.
 
-There was no modification in the code since the last version. I added
-only the function kfifo_avail_rec which has no site effect to the rest
-of the code.
+I assume the "d" at the end was just a typo -- and "lspci -vvv" looks the
+same?
 
-> Acked-by: Andi Kleen <ak@linux.intel.com>
-> 
-> -Andi
-
-Stefani
-
-
+Best,
+	Dominik
