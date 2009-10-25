@@ -1,169 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbZJYJje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZJYKD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753193AbZJYJje (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 05:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbZJYJjd
+	id S1753230AbZJYKD1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 06:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbZJYKD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 05:39:33 -0400
-Received: from poutre.nerim.net ([62.4.16.124]:51889 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753157AbZJYJjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 05:39:31 -0400
-Date: Sun, 25 Oct 2009 10:39:32 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: djwong@us.ibm.com
-Cc: Crane Cai <crane.cai@amd.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       lenb@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 1/2] i2c-scmi: support IBM SMBus CMI devices
-Message-ID: <20091025103932.31ce9a6d@hyperion.delvare>
-In-Reply-To: <20091023170306.GP26149@tux1.beaverton.ibm.com>
-References: <20091020231149.GM26149@tux1.beaverton.ibm.com>
-	<20091021023016.GC32413@crane-desktop>
-	<200910210857.13978.bjorn.helgaas@hp.com>
-	<20091021173733.GN26149@tux1.beaverton.ibm.com>
-	<20091022071748.GA17917@crane-desktop>
-	<20091022174304.GO26149@tux1.beaverton.ibm.com>
-	<20091023044451.GB1367@crane-desktop>
-	<20091023170306.GP26149@tux1.beaverton.ibm.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 25 Oct 2009 06:03:26 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:47790 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753183AbZJYKDZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 06:03:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=Adshh6tdvuslbM8D+Y6X5Uoc82QruyTnfySTMkeZTBjCl9eRZzo+5h9IuxCKDOk2op
+         5BgFy0AFB3MP9pa3auGc9y/Id89l+jp7qAZn1mZq490ozXMkomwGO7k1ZrWEfyo+iOM4
+         c9IXownsn6oUCAtP9Gm6EZPkuD3T5tHoSvJ+A=
+From: Arnd Bergmann <arndbergmann@googlemail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Subject: [PATCH] lib/checksum.c: lib/checksum: fix one more thinko
+Date: Sun, 25 Oct 2009 11:03:22 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
+Cc: Matt Fleming <matt@console-pimps.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <1253888440-14111-1-git-send-email-matt@console-pimps.org> <20091024115933.GA6999@console-pimps.org> <8bd0f97a0910241551x7216c2b4sb8518e1a12ff346e@mail.gmail.com>
+In-Reply-To: <8bd0f97a0910241551x7216c2b4sb8518e1a12ff346e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910251103.22996.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Darrick,
+When do_csum gets unaligned data, we really need to treat
+the first byte as an even byte, not an odd byte, because
+we swap the two halves later.
 
-On Fri, 23 Oct 2009 10:03:07 -0700, Darrick J. Wong wrote:
-> *) add a new HID for IBM SMBus CMI devices
-> *) add methods for IBM SMBus CMI devices
-> *) hook different HID with different control methods set
+Found by Mike's checksum-selftest module.
+
+Reported-by: Mike Frysinger <vapier.adi@gmail.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+---
+
+On Sunday 25 October 2009, Mike Frysinger wrote:
+
+> > Andrew, Arnd, could one of you pick this up?
 > 
-> Signed-off-by: Crane Cai <crane.cai@amd.com>
+> we've been using the generic checksum code with this fix on Blackfin
+> boards for the last month and havent noticed any regressions so far
 
-When sending patches not written by you, please add as the first line
-of the comment a "From:" line with the author. Please also add your own
-Signed-off-by line.
+Mike,
 
-> ---
-> 
->  drivers/i2c/busses/i2c-scmi.c |   31 +++++++++++++++++++++++--------
->  1 files changed, 23 insertions(+), 8 deletions(-)
-> 
-> 
-> diff --git a/drivers/i2c/busses/i2c-scmi.c b/drivers/i2c/busses/i2c-scmi.c
-> index b4a55d4..a15aaf4 100644
-> --- a/drivers/i2c/busses/i2c-scmi.c
-> +++ b/drivers/i2c/busses/i2c-scmi.c
-> @@ -33,6 +33,7 @@ struct acpi_smbus_cmi {
->  	u8 cap_info:1;
->  	u8 cap_read:1;
->  	u8 cap_write:1;
-> +	struct smbus_methods_t *methods;
->  };
->  
->  static const struct smbus_methods_t smbus_methods = {
-> @@ -41,8 +42,16 @@ static const struct smbus_methods_t smbus_methods = {
->  	.mt_sbw  = "_SBW",
->  };
->  
-> +/* Some IBM BIOSes omit the leading underscore */
-> +static const struct smbus_methods_t ibm_smbus_methods = {
-> +	.mt_info = "SBI_",
-> +	.mt_sbr  = "SBR_",
-> +	.mt_sbw  = "SBW_",
-> +};
-> +
->  static const struct acpi_device_id acpi_smbus_cmi_ids[] = {
-> -	{"SMBUS01", 0},
-> +	{"SMBUS01", (kernel_ulong_t)&smbus_methods},
-> +	{"SMBUSIBM", (kernel_ulong_t)&ibm_smbus_methods},
->  	{"", 0}
->  };
+sorry for my unresponsiveness on this one. I kept procrastinating
+because I knew I need some to look at the whole logic again to make sure
+I really get it right this time.
 
-I don't like this method, but as I am neither the author of the driver
-not its maintainer... so be it.
+Andrew,
 
->  
-> @@ -150,11 +159,11 @@ acpi_smbus_cmi_access(struct i2c_adapter *adap, u16 addr, unsigned short flags,
->  
->  	if (read_write == I2C_SMBUS_READ) {
->  		protocol |= ACPI_SMBUS_PRTCL_READ;
-> -		method = smbus_methods.mt_sbr;
-> +		method = smbus_cmi->methods->mt_sbr;
->  		input.count = 3;
->  	} else {
->  		protocol |= ACPI_SMBUS_PRTCL_WRITE;
-> -		method = smbus_methods.mt_sbw;
-> +		method = smbus_cmi->methods->mt_sbw;
->  		input.count = 5;
->  	}
->  
-> @@ -290,13 +299,13 @@ static int acpi_smbus_cmi_add_cap(struct acpi_smbus_cmi *smbus_cmi,
->  	union acpi_object *obj;
->  	acpi_status status;
->  
-> -	if (!strcmp(name, smbus_methods.mt_info)) {
-> +	if (!strcmp(name, smbus_cmi->methods->mt_info)) {
->  		status = acpi_evaluate_object(smbus_cmi->handle,
-> -					smbus_methods.mt_info,
-> +					smbus_cmi->methods->mt_info,
->  					NULL, &buffer);
->  		if (ACPI_FAILURE(status)) {
->  			ACPI_ERROR((AE_INFO, "Evaluating %s: %i",
-> -				   smbus_methods.mt_info, status));
-> +				   smbus_cmi->methods->mt_info, status));
->  			return -EIO;
->  		}
->  
-> @@ -319,9 +328,9 @@ static int acpi_smbus_cmi_add_cap(struct acpi_smbus_cmi *smbus_cmi,
->  
->  		kfree(buffer.pointer);
->  		smbus_cmi->cap_info = 1;
-> -	} else if (!strcmp(name, smbus_methods.mt_sbr))
-> +	} else if (!strcmp(name, smbus_cmi->methods->mt_sbr))
->  		smbus_cmi->cap_read = 1;
-> -	else if (!strcmp(name, smbus_methods.mt_sbw))
-> +	else if (!strcmp(name, smbus_cmi->methods->mt_sbw))
->  		smbus_cmi->cap_write = 1;
->  	else
->  		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Unsupported CMI method: %s\n",
-> @@ -349,6 +358,7 @@ static acpi_status acpi_smbus_cmi_query_methods(acpi_handle handle, u32 level,
->  static int acpi_smbus_cmi_add(struct acpi_device *device)
->  {
->  	struct acpi_smbus_cmi *smbus_cmi;
-> +	struct acpi_device_id *id;
->  
->  	smbus_cmi = kzalloc(sizeof(struct acpi_smbus_cmi), GFP_KERNEL);
->  	if (!smbus_cmi)
-> @@ -362,6 +372,11 @@ static int acpi_smbus_cmi_add(struct acpi_device *device)
->  	smbus_cmi->cap_read = 0;
->  	smbus_cmi->cap_write = 0;
->  
-> +	for (id = (struct acpi_device_id *)acpi_smbus_cmi_ids; id->id[0]; id++)
+can you pick this one up to make sure we don't lose it again?
+I could also put it into the asm-generic tree, but it feels out
+of place there.
 
-This cast shouldn't be needed. The problem is that you should have
-declared "id" const in the first place.
-
-> +		if (!strcmp((char *) id->id, acpi_device_hid(device)))
-
-This cast doesn't seem needed either. At least I don't get any warning
-without it, do you?
-
-> +			smbus_cmi->methods =
-> +				(struct smbus_methods_t *) id->driver_data;
-> +
-
-As a side note it's really too bad that the acpi subsystem doesn't
-provide the id as a parameter as all other subsystems do. This would
-save individual drivers from having to look it up again.
-
->  	acpi_walk_namespace(ACPI_TYPE_METHOD, smbus_cmi->handle, 1,
->  			    acpi_smbus_cmi_query_methods, smbus_cmi, NULL);
->  
+	Arnd <><
 
 
--- 
-Jean Delvare
+diff --git a/lib/checksum.c b/lib/checksum.c
+index b2e2fd4..45c9c93 100644
+--- a/lib/checksum.c
++++ b/lib/checksum.c
+@@ -56,9 +56,9 @@ static unsigned int do_csum(const unsigned char *buff, int len)
+ 	odd = 1 & (unsigned long) buff;
+ 	if (odd) {
+ #ifdef __LITTLE_ENDIAN
+-		result = *buff;
+-#else
+ 		result += (*buff << 8);
++#else
++		result = *buff;
+ #endif
+ 		len--;
+ 		buff++;
