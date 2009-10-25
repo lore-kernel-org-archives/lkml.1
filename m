@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZJYID5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbZJYIKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbZJYID5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 04:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZJYID4
+	id S1752831AbZJYIKf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 04:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZJYIKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 04:03:56 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54067 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751103AbZJYIDx (ORCPT
+	Sun, 25 Oct 2009 04:10:34 -0400
+Received: from www84.your-server.de ([213.133.104.84]:38546 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752374AbZJYIKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 04:03:53 -0400
-Subject: Re: [PATCH 1/3] sched: Enable wake balancing for the SMT/HT domain
-From: Peter Zijlstra <peterz@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: mingo@elte.hu, lkml <linux-kernel@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>,
-       "suresh.b.siddha" <suresh.b.siddha@intel.com>
-In-Reply-To: <20091024125853.35143117@infradead.org>
-References: <20091024125853.35143117@infradead.org>
+	Sun, 25 Oct 2009 04:10:32 -0400
+Subject: Re: PCI Express-to-PCI Bridge: yenta_cardbus  no bus associated!
+From: Stefani Seibold <stefani@seibold.net>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20091024203452.GA10555@parisc-linux.org>
+References: <1254248605.8881.1.camel@wall-e>
+	 <200909300115.54263.rjw@sisk.pl> <1256393003.9013.4.camel@wall-e>
+	 <20091024203452.GA10555@parisc-linux.org>
 Content-Type: text/plain
-Date: Sun, 25 Oct 2009 09:03:41 +0100
-Message-Id: <1256457821.7356.6.camel@laptop>
+Date: Sun, 25 Oct 2009 09:10:29 +0100
+Message-Id: <1256458229.4026.1.camel@wall-e>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-24 at 12:58 -0700, Arjan van de Ven wrote:
-> Subject: sched: Enable wake balancing for the SMT/HT domain
-> From: Arjan van de Ven <arjan@linux.intel.com>
+Am Samstag, den 24.10.2009, 14:34 -0600 schrieb Matthew Wilcox:
+> On Sat, Oct 24, 2009 at 04:03:23PM +0200, Stefani Seibold wrote:
+> > If you need further information or dumps please contact me.
+> > 
+> > The kernel parameter 'pci=assign-busses' did not fix the problem.
 > 
-> Logical CPUs that are part of a hyperthreading/SMT set are equivalent
-> in terms of where to execute a task; after all they share pretty much
-> all resources including the L1 cache.
-> 
-> This means that if task A wakes up task B, we should really consider
-> all logical CPUs in the SMT/HT set to run task B, not just the CPU that
-> task A is running on; in case task A keeps running, task B now gets to 
-> execute with no latency. In the case where task A then immediately goes
-> to wait for a response from task B, nothing is lost due to the aforementioned
-> equivalency.
-> 
-> This patch turns on the "balance on wakup" and turns of "affine wakeups"
-> for the SMT/HT scheduler domain to get this lower latency behavior.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> 
-> diff --git a/include/linux/topology.h b/include/linux/topology.h
-> index fc0bf3e..3665dc2 100644
-> --- a/include/linux/topology.h
-> +++ b/include/linux/topology.h
-> @@ -95,8 +95,8 @@ int arch_update_cpu_topology(void);
->  				| 1*SD_BALANCE_NEWIDLE			\
->  				| 1*SD_BALANCE_EXEC			\
->  				| 1*SD_BALANCE_FORK			\
-> -				| 0*SD_BALANCE_WAKE			\
-> -				| 1*SD_WAKE_AFFINE			\
-> +				| 1*SD_BALANCE_WAKE			\
-> +				| 0*SD_WAKE_AFFINE			\
->  				| 1*SD_SHARE_CPUPOWER			\
->  				| 0*SD_POWERSAVINGS_BALANCE		\
->  				| 0*SD_SHARE_PKG_RESOURCES		\
+> What does dmesg say when you specify pci=assign-busses?
 > 
 
-So you're poking at SD_SIBLING_INIT, right?
+Okay, i tried it again with 'pci=assign-bussed'. All i get is a
 
-That seems to make sense. Now doing the same for a cache level domain
-(MC is almost that) might also make sense.
+decode_hpp: Could not get hotplug parameters. Use defaults
+
+thats all. The express-card will not be detected.
+
+
 
