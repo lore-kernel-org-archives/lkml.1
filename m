@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbZJYHuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbZJYHv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777AbZJYHuh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 03:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbZJYHug
+	id S1752794AbZJYHv7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 03:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbZJYHv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 03:50:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47915 "EHLO
+	Sun, 25 Oct 2009 03:51:59 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47980 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbZJYHug (ORCPT
+	with ESMTP id S1750928AbZJYHv6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 03:50:36 -0400
-Date: Sun, 25 Oct 2009 03:50:37 -0400
+	Sun, 25 Oct 2009 03:51:58 -0400
+Date: Sun, 25 Oct 2009 03:51:57 -0400
 From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Whitehouse <swhiteho@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>, Jason Baron <jbaron@redhat.com>,
-       cluster-devel@redhat.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org
-Subject: Re: move gfs2 tracepoints to inclue/trace/events dir
-Message-ID: <20091025075037.GD9482@infradead.org>
-References: <20091009160115.GA2647@redhat.com> <20091009234555.GA28257@infradead.org> <1255340583.2675.23.camel@localhost.localdomain> <20091012100037.GA11653@elte.hu>
+To: Soeren Sandmann <sandmann@daimi.au.dk>
+Cc: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Announce: Sysprof 1.1.2 CPU profiler for Linux
+Message-ID: <20091025075157.GA3909@infradead.org>
+References: <ye8bpkxemk0.fsf@camel21.daimi.au.dk> <20091006150751.GA28868@infradead.org> <20091012205812.GF17163@elte.hu> <ye8pr8r59x9.fsf@camel23.daimi.au.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091012100037.GA11653@elte.hu>
+In-Reply-To: <ye8pr8r59x9.fsf@camel23.daimi.au.dk>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -31,25 +29,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 12:00:37PM +0200, Ingo Molnar wrote:
-> yeah. I have no objection to adding it to include/trace/. Tracepoints 
-> are a fundamentally global business.
+On Tue, Oct 13, 2009 at 10:13:54PM +0200, Soeren Sandmann wrote:
+> > > Is it time to deprectate the sysprof ftrace plugin?
+> > 
+> > Yes - but it's minimal maintenance overhead so we want to keep it for 
+> > kernel release or two, to sunset it properly.
 > 
-> Subsystems can opt to hide their tracepoints locally, but it's better to 
-> have a global view about what's out there, so that it can be extended 
-> coherently, etc.
+> Makes sense to me.
 
-We're lacking quite a bit coherence even with it.  The originally reason
-why there were global was that the infrastructure couldn't cope with
-having the either in modules or elsewhere in the source tree at all.
-
-We have managed to avoid global directories for drivers/filesystems for
-as much as we can lately.  Having everything in a directory makes sure
-it's self-contained and people don't use it accidentally from other
-modules, which also applies to trace events - we don't want people
-accidentally use gfs2 tracepoints from a driver (and if you think
-that's far fetched look at the recent example of a driver using
-debugging macros from the networking code that got pulled in
-accidentally somewhere).
-
+Will either of you prepare an officially deprecation statement?
 
