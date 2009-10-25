@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbZJYEFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbZJYTDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751218AbZJYEFL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 00:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbZJYEFK
+	id S1753880AbZJYTDi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 15:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbZJYTDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 00:05:10 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54880 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750734AbZJYEFK (ORCPT
+	Sun, 25 Oct 2009 15:03:38 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40156 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753823AbZJYTDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 00:05:10 -0400
-Date: Sun, 25 Oct 2009 00:05:03 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC] tracefs
-Message-ID: <20091025040503.GA15781@infradead.org>
-References: <20091023004937.GA24035@kroah.com> <20091023053237.GA24359@elte.hu> <1256303528.20866.822.camel@gandalf.stny.rr.com>
+	Sun, 25 Oct 2009 15:03:37 -0400
+Date: Sun, 25 Oct 2009 07:21:28 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext2: Avoid WARN() messages when failing to write to
+	the superblock
+Message-ID: <20091025062128.GA1391@ucw.cz>
+References: <1256016146-2677-1-git-send-email-tytso@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1256303528.20866.822.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <1256016146-2677-1-git-send-email-tytso@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 23, 2009 at 09:12:08AM -0400, Steven Rostedt wrote:
-> Note, I wasn't talking about tie down the pretty-print formats. But we
-> need to have a standard way to change them.
+On Tue 2009-10-20 01:22:26, Theodore Ts'o wrote:
+> This fixes a common warning reported by kerneloops.org
+> 
 
-Which means to tie down it I think.  Once we do have a good enough
-format those bits need to be locked down, with a way for adding new
-attributes (either entirely new or better replacmeents for existing
-ones with leaving the old ones in place for existing userspace).
+> +static void ext2_clear_super_error(struct super_block * sb)
+> +{
+> +	struct buffer_head *sbh = EXT2_SB(sb)->s_sbh;
+> +
+> +	if (buffer_write_io_error(sbh)) {
+> +		/*
+> +		 * Oh, dear.  A previous attempt to write the
+> +		 * superblock failed.  This could happen because the
+> +		 * USB device was yanked out.  Or it could happen to
+> +		 * be a transient write error and maybe the block will
+> +		 * be remapped.  Nothing we can do but to retry the
+> +		 * write and hope for the best.
+> +		 */
+> +		printk(KERN_ERR "EXT2-fs: %s previous I/O error to "
+> +		       "superblock detected", sb->s_id);
 
-In addition to the format description people have also asked for ABI
-tracepoints which would lock down the actual trace format in the
-the same way (only addition of new fields without removing or changing
-existing ones).  For this to be actually useful some trace buffer
-also needs to be exposed in an ABI-stable (that is non-debugfs way).
-
+KERN_ALERT/KERN_CRITICAL?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
