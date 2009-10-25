@@ -1,130 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbZJYQxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753969AbZJYSSD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753772AbZJYQxb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 12:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbZJYQxb
+	id S1753969AbZJYSSD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 14:18:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbZJYSSC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 12:53:31 -0400
-Received: from smtp240.poczta.interia.pl ([217.74.64.240]:45049 "EHLO
-	smtp240.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753744AbZJYQxa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 12:53:30 -0400
-Message-ID: <4AE49112.8090508@interia.pl>
-Date: Sun, 25 Oct 2009 17:55:30 +0000
-From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	Sun, 25 Oct 2009 14:18:02 -0400
+Received: from smtp6-g21.free.fr ([212.27.42.6]:45949 "EHLO smtp6-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753953AbZJYSSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 14:18:00 -0400
+From: "Jean-Christophe Dubois" <jcd@tribudubois.net>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ima: remove ACPI dependency
+Date: Sun, 25 Oct 2009 20:17:51 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.28-15-generic; KDE/4.2.4; i686; ; )
+Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+References: <1256069558-4222-1-git-send-email-zohar@linux.vnet.ibm.com>
+In-Reply-To: <1256069558-4222-1-git-send-email-zohar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       cpufreq@vger.kernel.org, LKLM <linux-kernel@vger.kernel.org>,
-       Rafal Bilski <rafalbilski@interia.pl>
-Subject: Re: [PATCH] longhaul: select Longhaul version 2 for capable CPUs
-References: <20091024172538.e2c8776b.krzysztof.h1@poczta.fm> <20091025032813.GB2475@redhat.com>
-In-Reply-To: <20091025032813.GB2475@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-EMID: e284acc
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_QZJ5KuSKy0sxqRy"
+Message-Id: <200910251917.52284.jcd@tribudubois.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Boundary-00=_QZJ5KuSKy0sxqRy
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On Sat, Oct 24, 2009 at 05:25:38PM +0200, Krzysztof Helt wrote:
->  > From: Krzysztof Helt <krzysztof.h1@wp.pl>
->  > 
->  > There is a typo in the longhaul detection code so only Longhaul v1 or Longhaul v3
->  > is selected. The Longhaul v2 is not selected even for CPUs which are capable of.
->  > 
->  > Tested on PCChips Giga Pro board. Frequency changes work and the Longhaul v2
->  > detects that the board is not capable of changing CPU voltage.
->   
-Most likely processor isn't capable of changing voltage. It is hardcoded 
-in most processors.
->  > 
->  > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
->  
-> It seems we deliberately changed this two years ago, though the changelog
-> is a bit sparse on details..
+le mardi 20 octobre 2009 Mimi Zohar a =E9crit
+> Remove ACPI dependency on systems without a TPM enabled.
 >
-> commit 07844252ffd81ec192a62014bada1016c9703765
-> Author: Rafal Bilski <rafalbilski@interia.pl>
-> Date:   Sun Apr 22 12:26:04 2007 +0200
+> Reported-by: Jean-Christophe Dubois <jcd@tribudubois.net>
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+
+This patch requires that another patch is first applied (as reported by Mim=
+i in=20
+the attached email).
+
+Tested on top of 2.6.30 and 2.6.31 on armv5 platform (versatilePB) with bot=
+h=20
+patches applied.
+
+Acked-by: Jean-Christophe Dubois <jcd@tribudubois.net>
+
+> ---
+>  security/integrity/ima/Kconfig |   16 +++++++---------
+>  1 files changed, 7 insertions(+), 9 deletions(-)
 >
->     [CPUFREQ] Longhaul - Revert Longhaul ver. 2
->     
->     There is something wrong with this code. It needs more
->     testing. It is better to disable it for now because support
->     for some machines will be broken.
->     
->     Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
->     Signed-off-by: Dave Jones <davej@redhat.com>
+> diff --git a/security/integrity/ima/Kconfig
+> b/security/integrity/ima/Kconfig index 53d9764..3ca39e7 100644
+> --- a/security/integrity/ima/Kconfig
+> +++ b/security/integrity/ima/Kconfig
+> @@ -2,14 +2,12 @@
+>  #
+>  config IMA
+>  	bool "Integrity Measurement Architecture(IMA)"
+> -	depends on ACPI
+>  	select SECURITYFS
+>  	select CRYPTO
+>  	select CRYPTO_HMAC
+>  	select CRYPTO_MD5
+>  	select CRYPTO_SHA1
+> -	select TCG_TPM
+> -	select TCG_TIS
+> +	select ACPI if TCG_TPM
+>  	help
+>  	  The Trusted Computing Group(TCG) runtime Integrity
+>  	  Measurement Architecture(IMA) maintains a list of hash
+> @@ -18,12 +16,12 @@ config IMA
+>  	  to change the contents of an important system file
+>  	  being measured, we can tell.
 >
+> -	  If your system has a TPM chip, then IMA also maintains
+> -	  an aggregate integrity value over this list inside the
+> -	  TPM hardware, so that the TPM can prove to a third party
+> -	  whether or not critical system files have been modified.
+> -	  Read <http://www.usenix.org/events/sec04/tech/sailer.html>
+> -	  to learn more about IMA.
+> +	  If your system has a TPM chip, and it is enabled, then
+> +	  IMA also maintains an aggregate integrity value over
+> +	  this list inside the TPM hardware, so that the TPM can
+> +	  prove to a third party whether or not critical system
+> +	  files have been modified. To learn more about IMA, read
+> +	  <http://www.usenix.org/events/sec04/tech/sailer.html>
+>  	  If unsure, say N.
 >
-> In hindsight, changing it to report V1 instead of V2 was the wrong thing
-> to do, and we should have done something like -ENODEV with
-> a printk explaining why.
->
-> I've not got any old VIA CPUs/boards to test with any more, but I'm inclined
-> to apply your change, but we'll have to keep an eye out for any strange
-> bugs on affected systems.  Currently this driver should do nothing, as the
-> longhaul v1 registers that don't exist on longhaul V2 CPUs.
-Yes this register do exists on ver. 2 CPU's. It was removed later from 
-"powersaver" line of
-processors.
->  With this change,
-> we're going to be actually doing scaling again, which may introduce instability
-> on some machines, as iirc, we never did get this driver 100% stable due
-> to a lot of really crappy motherboards.
->
-> Perhaps we should printk a warning related to this.
-> (We should definitly mention it in the Kconfig too, which I thought we already had)
->
-> 	Dave
-It's my fault. Commit 52a2638bff063acb28ba3355891c49cc240cc98b:
-> Longhaul: add auto enabled "revid_errata" option
->
-> VIA C3 Ezra-T has RevisionID equal to 1, but it needs RevisionKey to be 0
-> or CPU will ignore new frequency and will continue to work at old
-> frequency.  New "revid_errata" option will force RevisionKey to be set to
-> 0, whatever RevisionID is.
->
-> Additionaly "Longhaul" will not silently ignore unsuccessful transition.
-> It will try to check if "revid_errata" or "disable_acpi_c3" options need to
-> be enabled for this processor/system.
->
-> Same for Longhaul ver.  2 support.  It will be disabled if none of above
-> options will work.
-It was permanent fix for badly programmed ver. 2 registers. What this 
-commit
-failed to do is to restore ver. 2 support. Probably I used wrong branch 
-to create it.
-One with voltage scaling enabled.
-> Best case scenario (with patch apllied and v2 enabled):
->  longhaul: VIA C3 'Ezra' [C5C] CPU detected.  Longhaul v2 supported.
->  longhaul: Using northbridge support.
->  longhaul: VRM 8.5
->  longhaul: Max VID=1.350  Min VID=1.050, 13 possible voltage scales
->  longhaul: f: 300000 kHz, index: 0, vid: 1050 mV
->  [...]
->  longhaul: Voltage scaling enabled.
->  Worst case scenario:
->  longhaul: VIA C3 'Ezra-T' [C5M] CPU detected.  Powersaver supported.
->  longhaul: Using northbridge support.
->  longhaul: Using ACPI support.
->  longhaul: VRM 8.5
->  longhaul: Claims to support voltage scaling but min & max are both 1.250. Voltage scaling disabled
->  longhaul: Failed to set requested frequency!
->  longhaul: Enabling "Ignore Revision ID" option.
->  longhaul: Failed to set requested frequency!
->  longhaul: Disabling ACPI C3 support.
->  longhaul: Disabling "Ignore Revision ID" option.
->  longhaul: Failed to set requested frequency!
->  longhaul: Enabling "Ignore Revision ID" option.
-Sorry.
-RafaÅ‚ Bilski
+>  config IMA_MEASURE_PCR_IDX
 
 
-----------------------------------------------------------------------
-Bezp³atne konto i limit do 100 tys. Otwierasz?
->> http://link.interia.pl/f23bb
 
+--Boundary-00=_QZJ5KuSKy0sxqRy
+Content-Type: message/rfc822;
+  name="forwarded message"
+Content-Transfer-Encoding: 7bit
+Content-Description: Mimi Zohar <zohar@linux.vnet.ibm.com>: Re: [Fwd: [PATCH] ima: remove ACPI dependency]
+Content-Disposition: inline
+
+Return-Path: zohar@linux.vnet.ibm.com
+X-Spam-Checker-Version: SpamAssassin 3.2.5 (2008-06-10) on jcd-desktop
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=UNPARSEABLE_RELAY
+	autolearn=ham version=3.2.5
+Received: from mx1.w4a.fr (LHLO mx1.w4a.fr) (91.121.53.100) by mx1.w4a.fr
+ with LMTP; Fri, 23 Oct 2009 18:55:01 +0200 (CEST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mx1.w4a.fr (Postfix) with ESMTP id 394FB13E4B
+	for <jcd@tribudubois.net>; Fri, 23 Oct 2009 18:54:59 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at srv-05.w4a.fr
+Received: from mx1.w4a.fr ([127.0.0.1])
+	by localhost (mx1.w4a.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 5QlDyb71qEtZ for <jcd@tribudubois.net>;
+	Fri, 23 Oct 2009 18:54:54 +0200 (CEST)
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	by mx1.w4a.fr (Postfix) with ESMTP id 57F2C13E28
+	for <jcd@tribudubois.net>; Fri, 23 Oct 2009 18:54:54 +0200 (CEST)
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by e5.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9NGj2ci026599
+	for <jcd@tribudubois.net>; Fri, 23 Oct 2009 12:45:02 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id n9NGsu1O1200322
+	for <jcd@tribudubois.net>; Fri, 23 Oct 2009 12:54:57 -0400
+Received: from d01av01.pok.ibm.com (d03av01 [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id n9NGsu0b015395
+	for <jcd@tribudubois.net>; Fri, 23 Oct 2009 12:54:56 -0400
+Received: from [9.65.108.78] (sig-9-65-108-78.mts.ibm.com [9.65.108.78])
+	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVin) with ESMTP id n9NGsuRD015374
+	for <jcd@tribudubois.net>; Fri, 23 Oct 2009 12:54:56 -0400
+Subject: Re: [Fwd: [PATCH] ima: remove ACPI dependency]
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Jean-Christophe Dubois <jcd@tribudubois.net>
+In-Reply-To: <1256243034.12894.5.camel@dyn9002018117.watson.ibm.com>
+References: <1256243034.12894.5.camel@dyn9002018117.watson.ibm.com>
+Content-Type: multipart/mixed;
+  boundary="=-vkxNFLbosZ64Ia/E6s/R"
+Date: Fri, 23 Oct 2009 12:54:56 -0400
+Message-Id: <1256316896.4059.5.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+X-UID: 
+
+
+--=-vkxNFLbosZ64Ia/E6s/R
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+JC,
+
+Sorry, this patch requires changes in the include/linux/tpm.h.  Attached
+is a TPM patch.
+
+Mimi
+
+On Thu, 2009-10-22 at 16:23 -0400, Mimi Zohar wrote:
+> JC,
+> 
+> It seems that James is waiting for an ACK or some type of
+> acknowledgement from you.  Would you mind giving it a try?
+> 
+> Thanks!
+> 
+> Mimi
+> 
+> -------- Forwarded Message --------
+> From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+> To: linux-kernel@vger.kernel.org
+> Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, Jean-Christophe Dubois
+> <jcd@tribudubois.net>, James Morris <jmorris@namei.org>, David Safford
+> <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+> Subject: [PATCH] ima: remove ACPI dependency
+> Date: Tue, 20 Oct 2009 16:12:38 -0400
+> 
+> Remove ACPI dependency on systems without a TPM enabled.
+> 
+> Reported-by: Jean-Christophe Dubois <jcd@tribudubois.net>
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+> ---
+>  security/integrity/ima/Kconfig |   16 +++++++---------
+>  1 files changed, 7 insertions(+), 9 deletions(-)
+> 
+> diff --git a/security/integrity/ima/Kconfig b/security/integrity/ima/Kconfig
+> index 53d9764..3ca39e7 100644
+> --- a/security/integrity/ima/Kconfig
+> +++ b/security/integrity/ima/Kconfig
+> @@ -2,14 +2,12 @@
+>  #
+>  config IMA
+>  	bool "Integrity Measurement Architecture(IMA)"
+> -	depends on ACPI
+>  	select SECURITYFS
+>  	select CRYPTO
+>  	select CRYPTO_HMAC
+>  	select CRYPTO_MD5
+>  	select CRYPTO_SHA1
+> -	select TCG_TPM
+> -	select TCG_TIS
+> +	select ACPI if TCG_TPM
+>  	help
+>  	  The Trusted Computing Group(TCG) runtime Integrity
+>  	  Measurement Architecture(IMA) maintains a list of hash
+> @@ -18,12 +16,12 @@ config IMA
+>  	  to change the contents of an important system file
+>  	  being measured, we can tell.
+> 
+> -	  If your system has a TPM chip, then IMA also maintains
+> -	  an aggregate integrity value over this list inside the
+> -	  TPM hardware, so that the TPM can prove to a third party
+> -	  whether or not critical system files have been modified.
+> -	  Read <http://www.usenix.org/events/sec04/tech/sailer.html>
+> -	  to learn more about IMA.
+> +	  If your system has a TPM chip, and it is enabled, then
+> +	  IMA also maintains an aggregate integrity value over
+> +	  this list inside the TPM hardware, so that the TPM can
+> +	  prove to a third party whether or not critical system
+> +	  files have been modified. To learn more about IMA, read
+> +	  <http://www.usenix.org/events/sec04/tech/sailer.html>
+>  	  If unsure, say N.
+> 
+>  config IMA_MEASURE_PCR_IDX
+
+--=-vkxNFLbosZ64Ia/E6s/R
+Content-Disposition: attachment; filename="tpm-add-default-definitions.patch"
+Content-Type: text/x-patch; name="tpm-add-default-definitions.patch"; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+tpm add default function definitions
+
+Add default tpm_pcr_read/extend function definitions required
+by IMA/Kconfig changes.
+
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+
+Index: security-testing-2.6/include/linux/tpm.h
+===================================================================
+--- security-testing-2.6.orig/include/linux/tpm.h
++++ security-testing-2.6/include/linux/tpm.h
+@@ -31,5 +31,12 @@
+ 
+ extern int tpm_pcr_read(u32 chip_num, int pcr_idx, u8 *res_buf);
+ extern int tpm_pcr_extend(u32 chip_num, int pcr_idx, const u8 *hash);
++#else
++static inline int tpm_pcr_read(u32 chip_num, int pcr_idx, u8 *res_buf) {
++	return -ENODEV;
++}
++static inline int tpm_pcr_extend(u32 chip_num, int pcr_idx, const u8 *hash) {
++	return -ENODEV;
++}
+ #endif
+ #endif
+
+--=-vkxNFLbosZ64Ia/E6s/R--
+
+
+--Boundary-00=_QZJ5KuSKy0sxqRy--
