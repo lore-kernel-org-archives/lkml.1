@@ -1,562 +1,660 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbZJYTay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbZJYTbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbZJYTay (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 15:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbZJYTat
+	id S1754150AbZJYTbD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 15:31:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbZJYTa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 15:30:49 -0400
-Received: from mail.pxnet.com ([195.227.45.7]:43590 "EHLO mail.pxnet.com"
+	Sun, 25 Oct 2009 15:30:57 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:43596 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753892AbZJYTao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 15:30:44 -0400
+	id S1754123AbZJYTay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 15:30:54 -0400
 From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH 7/9] bas_gigaset: checkpatch cleanup
+Subject: [PATCH 8/9] gigaset: checkpatch cleanup of ev-layer.c
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 CC: Hansjoerg Lipp <hjlipp@web.de>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
        i4ldeveloper@listserv.isdn4linux.de
-Message-ID: <20091023-patch-gigaset-07.tilman@imap.cc>
+Message-ID: <20091023-patch-gigaset-08.tilman@imap.cc>
 In-Reply-To: <20091023-patch-gigaset-00.tilman@imap.cc>
 References: <20091023-patch-gigaset-00.tilman@imap.cc>
-Date: Sun, 25 Oct 2009 20:30:37 +0100 (CET)
-X-Spam-Score: -2.173 () AWL,BAYES_00,RDNS_NONE
+Date: Sun, 25 Oct 2009 20:30:47 +0100 (CET)
+X-Spam-Score: -2.174 () AWL,BAYES_00,RDNS_NONE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On the quest for the holy grail of checkpatch.pl silence.
+On more step towards the holy grail of checkpatch.pl silence.
 
 Impact: cosmetic
 Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 ---
- drivers/isdn/gigaset/bas-gigaset.c |   68 ++++++++++++++---------
- drivers/isdn/gigaset/isocdata.c    |  107 +++++++++++++++++------------------
- 2 files changed, 93 insertions(+), 82 deletions(-)
+ drivers/isdn/gigaset/ev-layer.c |  478 +++++++++++++++++++--------------------
+ 1 files changed, 231 insertions(+), 247 deletions(-)
 
-diff --git a/drivers/isdn/gigaset/bas-gigaset.c b/drivers/isdn/gigaset/bas-gigaset.c
-index 388e63a..9fd19db 100644
---- a/drivers/isdn/gigaset/bas-gigaset.c
-+++ b/drivers/isdn/gigaset/bas-gigaset.c
-@@ -57,7 +57,7 @@ MODULE_PARM_DESC(cidmode, "Call-ID mode");
- #define USB_SX353_PRODUCT_ID    0x0022
+diff --git a/drivers/isdn/gigaset/ev-layer.c b/drivers/isdn/gigaset/ev-layer.c
+index 369927f..a9a3975 100644
+--- a/drivers/isdn/gigaset/ev-layer.c
++++ b/drivers/isdn/gigaset/ev-layer.c
+@@ -40,8 +40,8 @@
  
- /* table of devices that work with this driver */
--static const struct usb_device_id gigaset_table [] = {
-+static const struct usb_device_id gigaset_table[] = {
- 	{ USB_DEVICE(USB_GIGA_VENDOR_ID, USB_3070_PRODUCT_ID) },
- 	{ USB_DEVICE(USB_GIGA_VENDOR_ID, USB_3075_PRODUCT_ID) },
- 	{ USB_DEVICE(USB_GIGA_VENDOR_ID, USB_SX303_PRODUCT_ID) },
-@@ -137,7 +137,7 @@ struct bas_cardstate {
- #define BS_RESETTING	0x200	/* waiting for HD_RESET_INTERRUPT_PIPE_ACK */
+ /* Possible ASCII responses */
+ #define RSP_OK		0
+-//#define RSP_BUSY	1
+-//#define RSP_CONNECT	2
++#define RSP_BUSY	1
++#define RSP_CONNECT	2
+ #define RSP_ZGCI	3
+ #define RSP_RING	4
+ #define RSP_ZAOC	5
+@@ -68,7 +68,6 @@
+ #define RSP_ZHLC	(RSP_STR + STR_ZHLC)
+ #define RSP_ERROR	-1	/* ERROR              */
+ #define RSP_WRONG_CID	-2	/* unknown cid in cmd */
+-//#define RSP_EMPTY	-3
+ #define RSP_UNKNOWN	-4	/* unknown response   */
+ #define RSP_FAIL	-5	/* internal error     */
+ #define RSP_INVAL	-6	/* invalid response   */
+@@ -76,9 +75,9 @@
+ #define RSP_NONE	-19
+ #define RSP_STRING	-20
+ #define RSP_NULL	-21
+-//#define RSP_RETRYFAIL	-22
+-//#define RSP_RETRY	-23
+-//#define RSP_SKIP	-24
++#define RSP_RETRYFAIL	-22
++#define RSP_RETRY	-23
++#define RSP_SKIP	-24
+ #define RSP_INIT	-27
+ #define RSP_ANY		-26
+ #define RSP_LAST	-28
+@@ -158,229 +157,225 @@
+ #define SEQ_UMMODE	11
  
  
--static struct gigaset_driver *driver = NULL;
-+static struct gigaset_driver *driver;
- 
- /* usb specific object needed to register this driver with the usb subsystem */
- static struct usb_driver gigaset_usb_driver = {
-@@ -601,11 +601,12 @@ static int atread_submit(struct cardstate *cs, int timeout)
- 	ucs->dr_cmd_in.wLength = cpu_to_le16(ucs->rcvbuf_size);
- 	usb_fill_control_urb(ucs->urb_cmd_in, ucs->udev,
- 			     usb_rcvctrlpipe(ucs->udev, 0),
--			     (unsigned char*) & ucs->dr_cmd_in,
-+			     (unsigned char *) &ucs->dr_cmd_in,
- 			     ucs->rcvbuf, ucs->rcvbuf_size,
- 			     read_ctrl_callback, cs->inbuf);
- 
--	if ((ret = usb_submit_urb(ucs->urb_cmd_in, GFP_ATOMIC)) != 0) {
-+	ret = usb_submit_urb(ucs->urb_cmd_in, GFP_ATOMIC);
-+	if (ret != 0) {
- 		update_basstate(ucs, 0, BS_ATRDPEND);
- 		dev_err(cs->dev, "could not submit HD_READ_ATMESSAGE: %s\n",
- 			get_usb_rcmsg(ret));
-@@ -652,13 +653,11 @@ static void read_int_callback(struct urb *urb)
- 		return;
- 	case -ENODEV:			/* device removed */
- 	case -ESHUTDOWN:		/* device shut down */
--		//FIXME use this as disconnect indicator?
- 		gig_dbg(DEBUG_USBREQ, "%s: device disconnected", __func__);
- 		return;
- 	default:		/* severe trouble */
- 		dev_warn(cs->dev, "interrupt read: %s\n",
- 			 get_usb_statmsg(status));
--		//FIXME corrective action? resubmission always ok?
- 		goto resubmit;
- 	}
- 
-@@ -742,7 +741,8 @@ static void read_int_callback(struct urb *urb)
- 			kfree(ucs->rcvbuf);
- 			ucs->rcvbuf_size = 0;
- 		}
--		if ((ucs->rcvbuf = kmalloc(l, GFP_ATOMIC)) == NULL) {
-+		ucs->rcvbuf = kmalloc(l, GFP_ATOMIC);
-+		if (ucs->rcvbuf == NULL) {
- 			spin_unlock_irqrestore(&cs->lock, flags);
- 			dev_err(cs->dev, "out of memory receiving AT data\n");
- 			error_reset(cs);
-@@ -750,12 +750,12 @@ static void read_int_callback(struct urb *urb)
- 		}
- 		ucs->rcvbuf_size = l;
- 		ucs->retry_cmd_in = 0;
--		if ((rc = atread_submit(cs, BAS_TIMEOUT)) < 0) {
-+		rc = atread_submit(cs, BAS_TIMEOUT);
-+		if (rc < 0) {
- 			kfree(ucs->rcvbuf);
- 			ucs->rcvbuf = NULL;
- 			ucs->rcvbuf_size = 0;
- 			if (rc != -ENODEV) {
--				//FIXME corrective action?
- 				spin_unlock_irqrestore(&cs->lock, flags);
- 				error_reset(cs);
- 				break;
-@@ -940,7 +940,8 @@ static int starturbs(struct bc_state *bcs)
- 		}
- 
- 		dump_urb(DEBUG_ISO, "Initial isoc read", urb);
--		if ((rc = usb_submit_urb(urb, GFP_ATOMIC)) != 0)
-+		rc = usb_submit_urb(urb, GFP_ATOMIC);
-+		if (rc != 0)
- 			goto error;
- 	}
- 
-@@ -1045,7 +1046,8 @@ static int submit_iso_write_urb(struct isow_urbctx_t *ucx)
- 
- 		/* compute frame length according to flow control */
- 		ifd->length = BAS_NORMFRAME;
--		if ((corrbytes = atomic_read(&ubc->corrbytes)) != 0) {
-+		corrbytes = atomic_read(&ubc->corrbytes);
-+		if (corrbytes != 0) {
- 			gig_dbg(DEBUG_ISO, "%s: corrbytes=%d",
- 				__func__, corrbytes);
- 			if (corrbytes > BAS_HIGHFRAME - BAS_NORMFRAME)
-@@ -1284,7 +1286,8 @@ static void read_iso_tasklet(unsigned long data)
- 	for (;;) {
- 		/* retrieve URB */
- 		spin_lock_irqsave(&ubc->isoinlock, flags);
--		if (!(urb = ubc->isoindone)) {
-+		urb = ubc->isoindone;
-+		if (!urb) {
- 			spin_unlock_irqrestore(&ubc->isoinlock, flags);
- 			return;
- 		}
-@@ -1371,7 +1374,7 @@ static void read_iso_tasklet(unsigned long data)
- 				 "isochronous read: %d data bytes missing\n",
- 				 totleft);
- 
--	error:
-+error:
- 		/* URB processed, resubmit */
- 		for (frame = 0; frame < BAS_NUMFRAMES; frame++) {
- 			urb->iso_frame_desc[frame].status = 0;
-@@ -1568,7 +1571,7 @@ static int req_submit(struct bc_state *bcs, int req, int val, int timeout)
- 	ucs->dr_ctrl.wLength = 0;
- 	usb_fill_control_urb(ucs->urb_ctrl, ucs->udev,
- 			     usb_sndctrlpipe(ucs->udev, 0),
--			     (unsigned char*) &ucs->dr_ctrl, NULL, 0,
-+			     (unsigned char *) &ucs->dr_ctrl, NULL, 0,
- 			     write_ctrl_callback, ucs);
- 	ucs->retry_ctrl = 0;
- 	ret = usb_submit_urb(ucs->urb_ctrl, GFP_ATOMIC);
-@@ -1621,7 +1624,8 @@ static int gigaset_init_bchannel(struct bc_state *bcs)
- 		return -EHOSTUNREACH;
- 	}
- 
--	if ((ret = starturbs(bcs)) < 0) {
-+	ret = starturbs(bcs);
-+	if (ret < 0) {
- 		dev_err(cs->dev,
- 			"could not start isochronous I/O for channel B%d: %s\n",
- 			bcs->channel + 1,
-@@ -1633,7 +1637,8 @@ static int gigaset_init_bchannel(struct bc_state *bcs)
- 	}
- 
- 	req = bcs->channel ? HD_OPEN_B2CHANNEL : HD_OPEN_B1CHANNEL;
--	if ((ret = req_submit(bcs, req, 0, BAS_TIMEOUT)) < 0) {
-+	ret = req_submit(bcs, req, 0, BAS_TIMEOUT);
-+	if (ret < 0) {
- 		dev_err(cs->dev, "could not open channel B%d\n",
- 			bcs->channel + 1);
- 		stopurbs(bcs->hw.bas);
-@@ -1677,7 +1682,8 @@ static int gigaset_close_bchannel(struct bc_state *bcs)
- 
- 	/* channel running: tell device to close it */
- 	req = bcs->channel ? HD_CLOSE_B2CHANNEL : HD_CLOSE_B1CHANNEL;
--	if ((ret = req_submit(bcs, req, 0, BAS_TIMEOUT)) < 0)
-+	ret = req_submit(bcs, req, 0, BAS_TIMEOUT);
-+	if (ret < 0)
- 		dev_err(cs->dev, "closing channel B%d failed\n",
- 			bcs->channel + 1);
- 
-@@ -1703,10 +1709,12 @@ static void complete_cb(struct cardstate *cs)
- 	gig_dbg(DEBUG_TRANSCMD|DEBUG_LOCKCMD,
- 		"write_command: sent %u bytes, %u left",
- 		cs->curlen, cs->cmdbytes);
--	if ((cs->cmdbuf = cb->next) != NULL) {
-+	if (cb->next != NULL) {
-+		cs->cmdbuf = cb->next;
- 		cs->cmdbuf->prev = NULL;
- 		cs->curlen = cs->cmdbuf->len;
- 	} else {
-+		cs->cmdbuf = NULL;
- 		cs->lastcmdbuf = NULL;
- 		cs->curlen = 0;
- 	}
-@@ -1833,7 +1841,7 @@ static int atwrite_submit(struct cardstate *cs, unsigned char *buf, int len)
- 	ucs->dr_cmd_out.wLength = cpu_to_le16(len);
- 	usb_fill_control_urb(ucs->urb_cmd_out, ucs->udev,
- 			     usb_sndctrlpipe(ucs->udev, 0),
--			     (unsigned char*) &ucs->dr_cmd_out, buf, len,
-+			     (unsigned char *) &ucs->dr_cmd_out, buf, len,
- 			     write_command_callback, cs);
- 	rc = usb_submit_urb(ucs->urb_cmd_out, GFP_ATOMIC);
- 	if (unlikely(rc)) {
-@@ -1953,7 +1961,8 @@ static int gigaset_write_cmd(struct cardstate *cs,
- 
- 	if (len > IF_WRITEBUF)
- 		len = IF_WRITEBUF;
--	if (!(cb = kmalloc(sizeof(struct cmdbuf_t) + len, GFP_ATOMIC))) {
-+	cb = kmalloc(sizeof(struct cmdbuf_t) + len, GFP_ATOMIC);
-+	if (!cb) {
- 		dev_err(cs->dev, "%s: out of memory\n", __func__);
- 		rc = -ENOMEM;
- 		goto notqueued;
-@@ -2100,7 +2109,8 @@ static int gigaset_initbcshw(struct bc_state *bcs)
- 	}
- 	ubc->isooutdone = ubc->isooutfree = ubc->isooutovfl = NULL;
- 	ubc->numsub = 0;
--	if (!(ubc->isooutbuf = kmalloc(sizeof(struct isowbuf_t), GFP_KERNEL))) {
-+	ubc->isooutbuf = kmalloc(sizeof(struct isowbuf_t), GFP_KERNEL);
-+	if (!ubc->isooutbuf) {
- 		pr_err("out of memory\n");
- 		kfree(ubc);
- 		bcs->hw.bas = NULL;
-@@ -2252,7 +2262,8 @@ static int gigaset_probe(struct usb_interface *interface,
- 		gig_dbg(DEBUG_ANY,
- 			"%s: wrong alternate setting %d - trying to switch",
- 			__func__, hostif->desc.bAlternateSetting);
--		if (usb_set_interface(udev, hostif->desc.bInterfaceNumber, 3) < 0) {
-+		if (usb_set_interface(udev, hostif->desc.bInterfaceNumber, 3)
-+		    < 0) {
- 			dev_warn(&udev->dev, "usb_set_interface failed, "
- 				 "device %d interface %d altsetting %d\n",
- 				 udev->devnum, hostif->desc.bInterfaceNumber,
-@@ -2321,14 +2332,16 @@ static int gigaset_probe(struct usb_interface *interface,
- 					(endpoint->bEndpointAddress) & 0x0f),
- 			 ucs->int_in_buf, IP_MSGSIZE, read_int_callback, cs,
- 			 endpoint->bInterval);
--	if ((rc = usb_submit_urb(ucs->urb_int_in, GFP_KERNEL)) != 0) {
-+	rc = usb_submit_urb(ucs->urb_int_in, GFP_KERNEL);
-+	if (rc != 0) {
- 		dev_err(cs->dev, "could not submit interrupt URB: %s\n",
- 			get_usb_rcmsg(rc));
- 		goto error;
- 	}
- 
- 	/* tell the device that the driver is ready */
--	if ((rc = req_submit(cs->bcs, HD_DEVICE_INIT_ACK, 0, 0)) != 0)
-+	rc = req_submit(cs->bcs, HD_DEVICE_INIT_ACK, 0, 0);
-+	if (rc != 0)
- 		goto error;
- 
- 	/* tell common part that the device is ready */
-@@ -2524,9 +2537,10 @@ static int __init bas_gigaset_init(void)
- 	int result;
- 
- 	/* allocate memory for our driver state and intialize it */
--	if ((driver = gigaset_initdriver(GIGASET_MINOR, GIGASET_MINORS,
--				       GIGASET_MODULENAME, GIGASET_DEVNAME,
--				       &gigops, THIS_MODULE)) == NULL)
-+	driver = gigaset_initdriver(GIGASET_MINOR, GIGASET_MINORS,
-+				    GIGASET_MODULENAME, GIGASET_DEVNAME,
-+				    &gigops, THIS_MODULE);
-+	if (driver == NULL)
- 		goto error;
- 
- 	/* register this driver with the USB subsystem */
-diff --git a/drivers/isdn/gigaset/isocdata.c b/drivers/isdn/gigaset/isocdata.c
-index bc41611..d15cfcb 100644
---- a/drivers/isdn/gigaset/isocdata.c
-+++ b/drivers/isdn/gigaset/isocdata.c
-@@ -41,7 +41,8 @@ static inline int isowbuf_freebytes(struct isowbuf_t *iwb)
- 
- 	read = iwb->read;
- 	write = iwb->write;
--	if ((freebytes = read - write) > 0) {
-+	freebytes = read - write;
-+	if (freebytes > 0) {
- 		/* no wraparound: need padding space within regular area */
- 		return freebytes - BAS_OUTBUFPAD;
- 	} else if (read < BAS_OUTBUFPAD) {
-@@ -53,29 +54,6 @@ static inline int isowbuf_freebytes(struct isowbuf_t *iwb)
- 	}
- }
- 
--/* compare two offsets within the buffer
-- * The buffer is seen as circular, with the read position as start
-- * returns -1/0/1 if position a </=/> position b without crossing 'read'
-- */
--static inline int isowbuf_poscmp(struct isowbuf_t *iwb, int a, int b)
--{
--	int read;
--	if (a == b)
--		return 0;
--	read = iwb->read;
--	if (a < b) {
--		if (a < read && read <= b)
--			return +1;
--		else
--			return -1;
--	} else {
--		if (b < read && read <= a)
--			return -1;
--		else
--			return +1;
--	}
--}
+-// 100: init, 200: dle0, 250:dle1, 300: get cid (dial), 350: "hup" (no cid), 400: hup, 500: reset, 600: dial, 700: ring
++/* 100: init, 200: dle0, 250:dle1, 300: get cid (dial), 350: "hup" (no cid),
++ * 400: hup, 500: reset, 600: dial, 700: ring */
+ struct reply_t gigaset_tab_nocid[] =
+ {
+-	/* resp_code, min_ConState, max_ConState, parameter, new_ConState, timeout, action, command */
 -
- /* start writing
-  * acquire the write semaphore
-  * return true if acquired, false if busy
-@@ -271,7 +249,7 @@ static inline void dump_bytes(enum debuglevel level, const char *tag,
-  *        bit 14..13 = number of bits added by stuffing
-  */
- static const u16 stufftab[5 * 256] = {
--// previous 1s = 0:
-+/* previous 1s = 0: */
-  0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, 0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f,
-  0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017, 0x0018, 0x0019, 0x001a, 0x001b, 0x001c, 0x001d, 0x001e, 0x201f,
-  0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027, 0x0028, 0x0029, 0x002a, 0x002b, 0x002c, 0x002d, 0x002e, 0x002f,
-@@ -289,7 +267,7 @@ static const u16 stufftab[5 * 256] = {
-  0x0ce0, 0x0ce1, 0x0ce2, 0x0ce3, 0x0ce4, 0x0ce5, 0x0ce6, 0x0ce7, 0x0ce8, 0x0ce9, 0x0cea, 0x0ceb, 0x0cec, 0x0ced, 0x0cee, 0x0cef,
-  0x10f0, 0x10f1, 0x10f2, 0x10f3, 0x10f4, 0x10f5, 0x10f6, 0x10f7, 0x20f8, 0x20f9, 0x20fa, 0x20fb, 0x257c, 0x257d, 0x29be, 0x2ddf,
- 
--// previous 1s = 1:
-+/* previous 1s = 1: */
-  0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, 0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x200f,
-  0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017, 0x0018, 0x0019, 0x001a, 0x001b, 0x001c, 0x001d, 0x001e, 0x202f,
-  0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027, 0x0028, 0x0029, 0x002a, 0x002b, 0x002c, 0x002d, 0x002e, 0x204f,
-@@ -307,7 +285,7 @@ static const u16 stufftab[5 * 256] = {
-  0x0ce0, 0x0ce1, 0x0ce2, 0x0ce3, 0x0ce4, 0x0ce5, 0x0ce6, 0x0ce7, 0x0ce8, 0x0ce9, 0x0cea, 0x0ceb, 0x0cec, 0x0ced, 0x0cee, 0x2dcf,
-  0x10f0, 0x10f1, 0x10f2, 0x10f3, 0x10f4, 0x10f5, 0x10f6, 0x10f7, 0x20f8, 0x20f9, 0x20fa, 0x20fb, 0x257c, 0x257d, 0x29be, 0x31ef,
- 
--// previous 1s = 2:
-+/* previous 1s = 2: */
-  0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x2007, 0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x2017,
-  0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x2027, 0x0018, 0x0019, 0x001a, 0x001b, 0x001c, 0x001d, 0x001e, 0x2037,
-  0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x2047, 0x0028, 0x0029, 0x002a, 0x002b, 0x002c, 0x002d, 0x002e, 0x2057,
-@@ -325,7 +303,7 @@ static const u16 stufftab[5 * 256] = {
-  0x0ce0, 0x0ce1, 0x0ce2, 0x0ce3, 0x0ce4, 0x0ce5, 0x0ce6, 0x2dc7, 0x0ce8, 0x0ce9, 0x0cea, 0x0ceb, 0x0cec, 0x0ced, 0x0cee, 0x2dd7,
-  0x10f0, 0x10f1, 0x10f2, 0x10f3, 0x10f4, 0x10f5, 0x10f6, 0x31e7, 0x20f8, 0x20f9, 0x20fa, 0x20fb, 0x257c, 0x257d, 0x29be, 0x41f7,
- 
--// previous 1s = 3:
-+/* previous 1s = 3: */
-  0x0000, 0x0001, 0x0002, 0x2003, 0x0004, 0x0005, 0x0006, 0x200b, 0x0008, 0x0009, 0x000a, 0x2013, 0x000c, 0x000d, 0x000e, 0x201b,
-  0x0010, 0x0011, 0x0012, 0x2023, 0x0014, 0x0015, 0x0016, 0x202b, 0x0018, 0x0019, 0x001a, 0x2033, 0x001c, 0x001d, 0x001e, 0x203b,
-  0x0020, 0x0021, 0x0022, 0x2043, 0x0024, 0x0025, 0x0026, 0x204b, 0x0028, 0x0029, 0x002a, 0x2053, 0x002c, 0x002d, 0x002e, 0x205b,
-@@ -343,7 +321,7 @@ static const u16 stufftab[5 * 256] = {
-  0x0ce0, 0x0ce1, 0x0ce2, 0x2dc3, 0x0ce4, 0x0ce5, 0x0ce6, 0x2dcb, 0x0ce8, 0x0ce9, 0x0cea, 0x2dd3, 0x0cec, 0x0ced, 0x0cee, 0x2ddb,
-  0x10f0, 0x10f1, 0x10f2, 0x31e3, 0x10f4, 0x10f5, 0x10f6, 0x31eb, 0x20f8, 0x20f9, 0x20fa, 0x41f3, 0x257c, 0x257d, 0x29be, 0x46fb,
- 
--// previous 1s = 4:
-+/* previous 1s = 4: */
-  0x0000, 0x2001, 0x0002, 0x2005, 0x0004, 0x2009, 0x0006, 0x200d, 0x0008, 0x2011, 0x000a, 0x2015, 0x000c, 0x2019, 0x000e, 0x201d,
-  0x0010, 0x2021, 0x0012, 0x2025, 0x0014, 0x2029, 0x0016, 0x202d, 0x0018, 0x2031, 0x001a, 0x2035, 0x001c, 0x2039, 0x001e, 0x203d,
-  0x0020, 0x2041, 0x0022, 0x2045, 0x0024, 0x2049, 0x0026, 0x204d, 0x0028, 0x2051, 0x002a, 0x2055, 0x002c, 0x2059, 0x002e, 0x205d,
-@@ -367,7 +345,8 @@ static const u16 stufftab[5 * 256] = {
-  * parameters:
-  *	cin	input byte
-  *	ones	number of trailing '1' bits in result before this step
-- *	iwb	pointer to output buffer structure (write semaphore must be held)
-+ *	iwb	pointer to output buffer structure
-+ *		(write semaphore must be held)
-  * return value:
-  *	number of trailing '1' bits in result after this step
-  */
-@@ -408,7 +387,8 @@ static inline int hdlc_bitstuff_byte(struct isowbuf_t *iwb, unsigned char cin,
-  * parameters:
-  *	in	input buffer
-  *	count	number of bytes in input buffer
-- *	iwb	pointer to output buffer structure (write semaphore must be held)
-+ *	iwb	pointer to output buffer structure
-+ *		(write semaphore must be held)
-  * return value:
-  *	position of end of packet in output buffer on success,
-  *	-EAGAIN if write semaphore busy or buffer full
-@@ -440,7 +420,8 @@ static inline int hdlc_buildframe(struct isowbuf_t *iwb,
- 		fcs = crc_ccitt_byte(fcs, c);
- 	}
- 
--	/* bitstuff and append FCS (complemented, least significant byte first) */
-+	/* bitstuff and append FCS
-+	 * (complemented, least significant byte first) */
- 	fcs ^= 0xffff;
- 	ones = hdlc_bitstuff_byte(iwb, fcs & 0x00ff, ones);
- 	ones = hdlc_bitstuff_byte(iwb, (fcs >> 8) & 0x00ff, ones);
-@@ -459,7 +440,8 @@ static inline int hdlc_buildframe(struct isowbuf_t *iwb,
-  * parameters:
-  *	in	input buffer
-  *	count	number of bytes in input buffer
-- *	iwb	pointer to output buffer structure (write semaphore must be held)
-+ *	iwb	pointer to output buffer structure
-+ *		(write semaphore must be held)
-  * return value:
-  *	position of end of packet in output buffer on success,
-  *	-EAGAIN if write semaphore busy or buffer full
-@@ -567,8 +549,8 @@ static inline void hdlc_done(struct bc_state *bcs)
- 		hdlc_flush(bcs);
- 		return;
- 	}
+-	/* initialize device, set cid mode if possible */
+-	//{RSP_INIT,     -1, -1,100,                900, 0, {ACT_TEST}},
+-	//{RSP_ERROR,   900,900, -1,                  0, 0, {ACT_FAILINIT}},
+-	//{RSP_OK,      900,900, -1,                100, INIT_TIMEOUT,
+-	//                                                  {ACT_TIMEOUT}},
 -
--	if ((procskb = bcs->skb) == NULL) {
-+	procskb = bcs->skb;
-+	if (procskb == NULL) {
- 		/* previous error */
- 		gig_dbg(DEBUG_ISO, "%s: skb=NULL", __func__);
- 		gigaset_isdn_rcv_err(bcs);
-@@ -646,8 +628,8 @@ static const unsigned char bitcounts[256] = {
+-	{RSP_INIT,     -1, -1,SEQ_INIT,           100, INIT_TIMEOUT,
+-							  {ACT_TIMEOUT}},                /* wait until device is ready */
+-
+-	{EV_TIMEOUT,  100,100, -1,                101, 3, {0},             "Z\r"},       /* device in transparent mode? try to initialize it. */
+-	{RSP_OK,      101,103, -1,                120, 5, {ACT_GETSTRING}, "+GMR\r"},    /* get version */
+-
+-	{EV_TIMEOUT,  101,101, -1,                102, 5, {0},             "Z\r"},       /* timeout => try once again. */
+-	{RSP_ERROR,   101,101, -1,                102, 5, {0},             "Z\r"},       /* error => try once again. */
+-
+-	{EV_TIMEOUT,  102,102, -1,                108, 5, {ACT_SETDLE1},   "^SDLE=0\r"}, /* timeout => try again in DLE mode. */
+-	{RSP_OK,      108,108, -1,                104,-1},
+-	{RSP_ZDLE,    104,104,  0,                103, 5, {0},             "Z\r"},
+-	{EV_TIMEOUT,  104,104, -1,                  0, 0, {ACT_FAILINIT}},
+-	{RSP_ERROR,   108,108, -1,                  0, 0, {ACT_FAILINIT}},
+-
+-	{EV_TIMEOUT,  108,108, -1,                105, 2, {ACT_SETDLE0,
+-							   ACT_HUPMODEM,
+-							   ACT_TIMEOUT}},                /* still timeout => connection in unimodem mode? */
+-	{EV_TIMEOUT,  105,105, -1,                103, 5, {0},             "Z\r"},
+-
+-	{RSP_ERROR,   102,102, -1,                107, 5, {0},             "^GETPRE\r"}, /* ERROR on ATZ => maybe in config mode? */
+-	{RSP_OK,      107,107, -1,                  0, 0, {ACT_CONFIGMODE}},
+-	{RSP_ERROR,   107,107, -1,                  0, 0, {ACT_FAILINIT}},
+-	{EV_TIMEOUT,  107,107, -1,                  0, 0, {ACT_FAILINIT}},
+-
+-	{RSP_ERROR,   103,103, -1,                  0, 0, {ACT_FAILINIT}},
+-	{EV_TIMEOUT,  103,103, -1,                  0, 0, {ACT_FAILINIT}},
+-
+-	{RSP_STRING,  120,120, -1,                121,-1, {ACT_SETVER}},
+-
+-	{EV_TIMEOUT,  120,121, -1,                  0, 0, {ACT_FAILVER, ACT_INIT}},
+-	{RSP_ERROR,   120,121, -1,                  0, 0, {ACT_FAILVER, ACT_INIT}},
+-	{RSP_OK,      121,121, -1,                  0, 0, {ACT_GOTVER,  ACT_INIT}},
+-
+-	/* leave dle mode */
+-	{RSP_INIT,      0,  0,SEQ_DLE0,           201, 5, {0},             "^SDLE=0\r"},
+-	{RSP_OK,      201,201, -1,                202,-1},
+-	{RSP_ZDLE,    202,202,  0,                  0, 0, {ACT_DLE0}},
+-	{RSP_NODEV,   200,249, -1,                  0, 0, {ACT_FAKEDLE0}},
+-	{RSP_ERROR,   200,249, -1,                  0, 0, {ACT_FAILDLE0}},
+-	{EV_TIMEOUT,  200,249, -1,                  0, 0, {ACT_FAILDLE0}},
+-
+-	/* enter dle mode */
+-	{RSP_INIT,      0,  0,SEQ_DLE1,           251, 5, {0},             "^SDLE=1\r"},
+-	{RSP_OK,      251,251, -1,                252,-1},
+-	{RSP_ZDLE,    252,252,  1,                  0, 0, {ACT_DLE1}},
+-	{RSP_ERROR,   250,299, -1,                  0, 0, {ACT_FAILDLE1}},
+-	{EV_TIMEOUT,  250,299, -1,                  0, 0, {ACT_FAILDLE1}},
+-
+-	/* incoming call */
+-	{RSP_RING,     -1, -1, -1,                 -1,-1, {ACT_RING}},
+-
+-	/* get cid */
+-	//{RSP_INIT,      0,  0,300,                901, 0, {ACT_TEST}},
+-	//{RSP_ERROR,   901,901, -1,                  0, 0, {ACT_FAILCID}},
+-	//{RSP_OK,      901,901, -1,                301, 5, {0},             "^SGCI?\r"},
+-
+-	{RSP_INIT,      0,  0,SEQ_CID,            301, 5, {0},             "^SGCI?\r"},
+-	{RSP_OK,      301,301, -1,                302,-1},
+-	{RSP_ZGCI,    302,302, -1,                  0, 0, {ACT_CID}},
+-	{RSP_ERROR,   301,349, -1,                  0, 0, {ACT_FAILCID}},
+-	{EV_TIMEOUT,  301,349, -1,                  0, 0, {ACT_FAILCID}},
+-
+-	/* enter cid mode */
+-	{RSP_INIT,      0,  0,SEQ_CIDMODE,        150, 5, {0},             "^SGCI=1\r"},
+-	{RSP_OK,      150,150, -1,                  0, 0, {ACT_CMODESET}},
+-	{RSP_ERROR,   150,150, -1,                  0, 0, {ACT_FAILCMODE}},
+-	{EV_TIMEOUT,  150,150, -1,                  0, 0, {ACT_FAILCMODE}},
+-
+-	/* leave cid mode */
+-	//{RSP_INIT,      0,  0,SEQ_UMMODE,         160, 5, {0},             "^SGCI=0\r"},
+-	{RSP_INIT,      0,  0,SEQ_UMMODE,         160, 5, {0},             "Z\r"},
+-	{RSP_OK,      160,160, -1,                  0, 0, {ACT_UMODESET}},
+-	{RSP_ERROR,   160,160, -1,                  0, 0, {ACT_FAILUMODE}},
+-	{EV_TIMEOUT,  160,160, -1,                  0, 0, {ACT_FAILUMODE}},
+-
+-	/* abort getting cid */
+-	{RSP_INIT,      0,  0,SEQ_NOCID,            0, 0, {ACT_ABORTCID}},
+-
+-	/* reset */
+-	{RSP_INIT,      0,  0,SEQ_SHUTDOWN,       504, 5, {0},             "Z\r"},
+-	{RSP_OK,      504,504, -1,                  0, 0, {ACT_SDOWN}},
+-	{RSP_ERROR,   501,599, -1,                  0, 0, {ACT_FAILSDOWN}},
+-	{EV_TIMEOUT,  501,599, -1,                  0, 0, {ACT_FAILSDOWN}},
+-	{RSP_NODEV,   501,599, -1,                  0, 0, {ACT_FAKESDOWN}},
+-
+-	{EV_PROC_CIDMODE,-1, -1, -1,               -1,-1, {ACT_PROC_CIDMODE}}, //FIXME
+-	{EV_IF_LOCK,   -1, -1, -1,                 -1,-1, {ACT_IF_LOCK}}, //FIXME
+-	{EV_IF_VER,    -1, -1, -1,                 -1,-1, {ACT_IF_VER}}, //FIXME
+-	{EV_START,     -1, -1, -1,                 -1,-1, {ACT_START}}, //FIXME
+-	{EV_STOP,      -1, -1, -1,                 -1,-1, {ACT_STOP}}, //FIXME
+-	{EV_SHUTDOWN,  -1, -1, -1,                 -1,-1, {ACT_SHUTDOWN}}, //FIXME
+-
+-	/* misc. */
+-	{RSP_ERROR,    -1, -1, -1,                 -1, -1, {ACT_ERROR} },
+-	{RSP_EMPTY,    -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
+-	{RSP_ZCFGT,    -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
+-	{RSP_ZCFG,     -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
+-	{RSP_ZLOG,     -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
+-	{RSP_ZMWI,     -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
+-	{RSP_ZABINFO,  -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
+-	{RSP_ZSMLSTCHG,-1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
+-
+-	{RSP_ZCAU,     -1, -1, -1,                 -1,-1, {ACT_ZCAU}},
+-	{RSP_NONE,     -1, -1, -1,                 -1,-1, {ACT_DEBUG}},
+-	{RSP_ANY,      -1, -1, -1,                 -1,-1, {ACT_WARN}},
+-	{RSP_LAST}
++/* resp_code, min_ConState, max_ConState, parameter, new_ConState, timeout,
++ * action, command */
++
++/* initialize device, set cid mode if possible */
++{RSP_INIT,	 -1,  -1, SEQ_INIT,		100,  1, {ACT_TIMEOUT} },
++
++{EV_TIMEOUT,	100, 100, -1,			101,  3, {0},	"Z\r"},
++{RSP_OK,	101, 103, -1,			120,  5, {ACT_GETSTRING},
++								"+GMR\r"},
++
++{EV_TIMEOUT,	101, 101, -1,			102,  5, {0},	"Z\r"},
++{RSP_ERROR,	101, 101, -1,			102,  5, {0},	"Z\r"},
++
++{EV_TIMEOUT,	102, 102, -1,			108,  5, {ACT_SETDLE1},
++								"^SDLE=0\r"},
++{RSP_OK,	108, 108, -1,			104, -1},
++{RSP_ZDLE,	104, 104,  0,			103,  5, {0},	"Z\r"},
++{EV_TIMEOUT,	104, 104, -1,			  0,  0, {ACT_FAILINIT} },
++{RSP_ERROR,	108, 108, -1,			  0,  0, {ACT_FAILINIT} },
++
++{EV_TIMEOUT,	108, 108, -1,			105,  2, {ACT_SETDLE0,
++							  ACT_HUPMODEM,
++							  ACT_TIMEOUT} },
++{EV_TIMEOUT,	105, 105, -1,			103,  5, {0},	"Z\r"},
++
++{RSP_ERROR,	102, 102, -1,			107,  5, {0},	"^GETPRE\r"},
++{RSP_OK,	107, 107, -1,			  0,  0, {ACT_CONFIGMODE} },
++{RSP_ERROR,	107, 107, -1,			  0,  0, {ACT_FAILINIT} },
++{EV_TIMEOUT,	107, 107, -1,			  0,  0, {ACT_FAILINIT} },
++
++{RSP_ERROR,	103, 103, -1,			  0,  0, {ACT_FAILINIT} },
++{EV_TIMEOUT,	103, 103, -1,			  0,  0, {ACT_FAILINIT} },
++
++{RSP_STRING,	120, 120, -1,			121, -1, {ACT_SETVER} },
++
++{EV_TIMEOUT,	120, 121, -1,			  0,  0, {ACT_FAILVER,
++							  ACT_INIT} },
++{RSP_ERROR,	120, 121, -1,			  0,  0, {ACT_FAILVER,
++							  ACT_INIT} },
++{RSP_OK,	121, 121, -1,			  0,  0, {ACT_GOTVER,
++							  ACT_INIT} },
++
++/* leave dle mode */
++{RSP_INIT,	  0,   0, SEQ_DLE0,		201,  5, {0},	"^SDLE=0\r"},
++{RSP_OK,	201, 201, -1,			202, -1},
++{RSP_ZDLE,	202, 202,  0,			  0,  0, {ACT_DLE0} },
++{RSP_NODEV,	200, 249, -1,			  0,  0, {ACT_FAKEDLE0} },
++{RSP_ERROR,	200, 249, -1,			  0,  0, {ACT_FAILDLE0} },
++{EV_TIMEOUT,	200, 249, -1,			  0,  0, {ACT_FAILDLE0} },
++
++/* enter dle mode */
++{RSP_INIT,	  0,   0, SEQ_DLE1,		251,  5, {0},	"^SDLE=1\r"},
++{RSP_OK,	251, 251, -1,			252, -1},
++{RSP_ZDLE,	252, 252,  1,			  0,  0, {ACT_DLE1} },
++{RSP_ERROR,	250, 299, -1,			  0,  0, {ACT_FAILDLE1} },
++{EV_TIMEOUT,	250, 299, -1,			  0,  0, {ACT_FAILDLE1} },
++
++/* incoming call */
++{RSP_RING,	 -1,  -1, -1,			 -1, -1, {ACT_RING} },
++
++/* get cid */
++{RSP_INIT,	  0,   0, SEQ_CID,		301,  5, {0},	"^SGCI?\r"},
++{RSP_OK,	301, 301, -1,			302, -1},
++{RSP_ZGCI,	302, 302, -1,			  0,  0, {ACT_CID} },
++{RSP_ERROR,	301, 349, -1,			  0,  0, {ACT_FAILCID} },
++{EV_TIMEOUT,	301, 349, -1,			  0,  0, {ACT_FAILCID} },
++
++/* enter cid mode */
++{RSP_INIT,	  0,   0, SEQ_CIDMODE,		150,  5, {0},	"^SGCI=1\r"},
++{RSP_OK,	150, 150, -1,			  0,  0, {ACT_CMODESET} },
++{RSP_ERROR,	150, 150, -1,			  0,  0, {ACT_FAILCMODE} },
++{EV_TIMEOUT,	150, 150, -1,			  0,  0, {ACT_FAILCMODE} },
++
++/* leave cid mode */
++{RSP_INIT,	  0,   0, SEQ_UMMODE,		160,  5, {0},	"Z\r"},
++{RSP_OK,	160, 160, -1,			  0,  0, {ACT_UMODESET} },
++{RSP_ERROR,	160, 160, -1,			  0,  0, {ACT_FAILUMODE} },
++{EV_TIMEOUT,	160, 160, -1,			  0,  0, {ACT_FAILUMODE} },
++
++/* abort getting cid */
++{RSP_INIT,	  0,   0, SEQ_NOCID,		  0,  0, {ACT_ABORTCID} },
++
++/* reset */
++{RSP_INIT,	  0,   0, SEQ_SHUTDOWN,		504,  5, {0},	"Z\r"},
++{RSP_OK,	504, 504, -1,			  0,  0, {ACT_SDOWN} },
++{RSP_ERROR,	501, 599, -1,			  0,  0, {ACT_FAILSDOWN} },
++{EV_TIMEOUT,	501, 599, -1,			  0,  0, {ACT_FAILSDOWN} },
++{RSP_NODEV,	501, 599, -1,			  0,  0, {ACT_FAKESDOWN} },
++
++{EV_PROC_CIDMODE, -1, -1, -1,			 -1, -1, {ACT_PROC_CIDMODE} },
++{EV_IF_LOCK,	 -1,  -1, -1,			 -1, -1, {ACT_IF_LOCK} },
++{EV_IF_VER,	 -1,  -1, -1,			 -1, -1, {ACT_IF_VER} },
++{EV_START,	 -1,  -1, -1,			 -1, -1, {ACT_START} },
++{EV_STOP,	 -1,  -1, -1,			 -1, -1, {ACT_STOP} },
++{EV_SHUTDOWN,	 -1,  -1, -1,			 -1, -1, {ACT_SHUTDOWN} },
++
++/* misc. */
++{RSP_ERROR,	 -1,  -1, -1,			 -1, -1, {ACT_ERROR} },
++{RSP_ZCFGT,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ZCFG,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ZLOG,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ZMWI,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ZABINFO,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ZSMLSTCHG,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++
++{RSP_ZCAU,	 -1,  -1, -1,			 -1, -1, {ACT_ZCAU} },
++{RSP_NONE,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ANY,	 -1,  -1, -1,			 -1, -1, {ACT_WARN} },
++{RSP_LAST}
  };
  
- /* hdlc_unpack
-- * perform HDLC frame processing (bit unstuffing, flag detection, FCS calculation)
-- * on a sequence of received data bytes (8 bits each, LSB first)
-+ * perform HDLC frame processing (bit unstuffing, flag detection, FCS
-+ * calculation) on a sequence of received data bytes (8 bits each, LSB first)
-  * pass on successfully received, complete frames as SKBs via gigaset_skb_rcvd
-  * notify of errors via gigaset_isdn_rcv_err
-  * tally frames, errors etc. in BC structure counters
-@@ -665,9 +647,12 @@ static inline void hdlc_unpack(unsigned char *src, unsigned count,
+-// 600: start dialing, 650: dial in progress, 800: connection is up, 700: ring, 400: hup, 750: accepted icall
++/* 600: start dialing, 650: dial in progress, 800: connection is up, 700: ring,
++ * 400: hup, 750: accepted icall */
+ struct reply_t gigaset_tab_cid[] =
+ {
+-	/* resp_code, min_ConState, max_ConState, parameter, new_ConState, timeout, action, command */
+-
+-	/* dial */
+-	{EV_DIAL,      -1, -1, -1,                 -1,-1, {ACT_DIAL}}, //FIXME
+-	{RSP_INIT,      0,  0,SEQ_DIAL,           601, 5, {ACT_CMD+AT_BC}},
+-	{RSP_OK,      601,601, -1,                602, 5, {ACT_CMD+AT_HLC}},
+-	{RSP_NULL,    602,602, -1,                603, 5, {ACT_CMD+AT_PROTO}},
+-	{RSP_OK,      602,602, -1,                603, 5, {ACT_CMD+AT_PROTO}},
+-	{RSP_OK,      603,603, -1,                604, 5, {ACT_CMD+AT_TYPE}},
+-	{RSP_OK,      604,604, -1,                605, 5, {ACT_CMD+AT_MSN}},
+-	{RSP_NULL,    605, 605, -1,               606, 5, {ACT_CMD+AT_CLIP} },
+-	{RSP_OK,      605, 605, -1,               606, 5, {ACT_CMD+AT_CLIP} },
+-	{RSP_NULL,    606, 606, -1,               607, 5, {ACT_CMD+AT_ISO} },
+-	{RSP_OK,      606, 606, -1,               607, 5, {ACT_CMD+AT_ISO} },
+-	{RSP_OK,      607, 607, -1,               608, 5, {0}, "+VLS=17\r"},
+-	{RSP_OK,      608, 608, -1,               609, -1},
+-	{RSP_ZSAU,    609, 609, ZSAU_PROCEEDING,  610, 5, {ACT_CMD+AT_DIAL} },
+-	{RSP_OK,      610, 610, -1,               650, 0, {ACT_DIALING} },
+-
+-	{RSP_ERROR,   601, 610, -1,                 0, 0, {ACT_ABORTDIAL} },
+-	{EV_TIMEOUT,  601, 610, -1,                 0, 0, {ACT_ABORTDIAL} },
+-
+-	/* optional dialing responses */
+-	{EV_BC_OPEN,  650,650, -1,                651,-1},
+-	{RSP_ZVLS,    609, 651, 17,                -1, -1, {ACT_DEBUG} },
+-	{RSP_ZCTP,    610, 651, -1,                -1, -1, {ACT_DEBUG} },
+-	{RSP_ZCPN,    610, 651, -1,                -1, -1, {ACT_DEBUG} },
+-	{RSP_ZSAU,    650,651,ZSAU_CALL_DELIVERED, -1,-1, {ACT_DEBUG}},
+-
+-	/* connect */
+-	{RSP_ZSAU,    650,650,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}},
+-	{RSP_ZSAU,    651,651,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT,
+-							   ACT_NOTIFY_BC_UP}},
+-	{RSP_ZSAU,    750,750,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}},
+-	{RSP_ZSAU,    751,751,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT,
+-							   ACT_NOTIFY_BC_UP}},
+-	{EV_BC_OPEN,  800,800, -1,                800,-1, {ACT_NOTIFY_BC_UP}},
+-
+-	/* remote hangup */
+-	{RSP_ZSAU,    650,651,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEREJECT}},
+-	{RSP_ZSAU,    750,751,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
+-	{RSP_ZSAU,    800,800,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
+-
+-	/* hangup */
+-	{EV_HUP,       -1, -1, -1,                 -1,-1, {ACT_HUP}}, //FIXME
+-	{RSP_INIT,     -1, -1,SEQ_HUP,            401, 5, {0},             "+VLS=0\r"}, /* hang up */ //-1,-1?
+-	{RSP_OK,      401,401, -1,                402, 5},
+-	{RSP_ZVLS,    402,402,  0,                403, 5},
+-	{RSP_ZSAU,    403, 403, ZSAU_DISCONNECT_REQ, -1, -1, {ACT_DEBUG} },
+-	{RSP_ZSAU,    403, 403, ZSAU_NULL,            0,  0, {ACT_DISCONNECT} },
+-	{RSP_NODEV,   401, 403, -1,                   0,  0, {ACT_FAKEHUP} },
+-	{RSP_ERROR,   401,401, -1,                  0, 0, {ACT_ABORTHUP}},
+-	{EV_TIMEOUT,  401,403, -1,                  0, 0, {ACT_ABORTHUP}},
+-
+-	{EV_BC_CLOSED,  0,  0, -1,                  0,-1, {ACT_NOTIFY_BC_DOWN}}, //FIXME new constate + timeout
+-
+-	/* ring */
+-	{RSP_ZBC,     700,700, -1,                 -1,-1, {0}},
+-	{RSP_ZHLC,    700,700, -1,                 -1,-1, {0}},
+-	{RSP_NMBR,    700,700, -1,                 -1,-1, {0}},
+-	{RSP_ZCPN,    700,700, -1,                 -1,-1, {0}},
+-	{RSP_ZCTP,    700,700, -1,                 -1,-1, {0}},
+-	{EV_TIMEOUT,  700,700, -1,               720,720, {ACT_ICALL}},
+-	{EV_BC_CLOSED,720,720, -1,                  0,-1, {ACT_NOTIFY_BC_DOWN}},
+-
+-	/*accept icall*/
+-	{EV_ACCEPT,    -1, -1, -1,                 -1,-1, {ACT_ACCEPT}}, //FIXME
+-	{RSP_INIT,    720,720,SEQ_ACCEPT,         721, 5, {ACT_CMD+AT_PROTO}},
+-	{RSP_OK,      721,721, -1,                722, 5, {ACT_CMD+AT_ISO}},
+-	{RSP_OK,      722,722, -1,                723, 5, {0},             "+VLS=17\r"}, /* set "Endgeraetemodus" */
+-	{RSP_OK,      723,723, -1,                724, 5, {0}},
+-	{RSP_ZVLS,    724,724, 17,                750,50, {ACT_ACCEPTED}},
+-	{RSP_ERROR,   721,729, -1,                  0, 0, {ACT_ABORTACCEPT}},
+-	{EV_TIMEOUT,  721,729, -1,                  0, 0, {ACT_ABORTACCEPT}},
+-	{RSP_ZSAU,    700,729,ZSAU_NULL,            0, 0, {ACT_ABORTACCEPT}},
+-	{RSP_ZSAU,    700,729,ZSAU_ACTIVE,          0, 0, {ACT_ABORTACCEPT}},
+-	{RSP_ZSAU,    700,729,ZSAU_DISCONNECT_IND,  0, 0, {ACT_ABORTACCEPT}},
+-
+-	{EV_BC_OPEN,  750,750, -1,                751,-1},
+-	{EV_TIMEOUT,  750,751, -1,                  0, 0, {ACT_CONNTIMEOUT}},
+-
+-	/* B channel closed (general case) */
+-	{EV_BC_CLOSED, -1, -1, -1,                 -1,-1, {ACT_NOTIFY_BC_DOWN}}, //FIXME
+-
+-	/* misc. */
+-	{RSP_ZCON,     -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
+-	{RSP_ZCCR,     -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
+-	{RSP_ZAOC,     -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
+-	{RSP_ZCSTR,    -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
+-
+-	{RSP_ZCAU,     -1, -1, -1,                 -1,-1, {ACT_ZCAU}},
+-	{RSP_NONE,     -1, -1, -1,                 -1,-1, {ACT_DEBUG}},
+-	{RSP_ANY,      -1, -1, -1,                 -1,-1, {ACT_WARN}},
+-	{RSP_LAST}
++/* resp_code, min_ConState, max_ConState, parameter, new_ConState, timeout,
++ * action, command */
++
++/* dial */
++{EV_DIAL,	 -1,  -1, -1,			 -1, -1, {ACT_DIAL} },
++{RSP_INIT,	  0,   0, SEQ_DIAL,		601,  5, {ACT_CMD+AT_BC} },
++{RSP_OK,	601, 601, -1,			602,  5, {ACT_CMD+AT_HLC} },
++{RSP_NULL,	602, 602, -1,			603,  5, {ACT_CMD+AT_PROTO} },
++{RSP_OK,	602, 602, -1,			603,  5, {ACT_CMD+AT_PROTO} },
++{RSP_OK,	603, 603, -1,			604,  5, {ACT_CMD+AT_TYPE} },
++{RSP_OK,	604, 604, -1,			605,  5, {ACT_CMD+AT_MSN} },
++{RSP_NULL,	605, 605, -1,			606,  5, {ACT_CMD+AT_CLIP} },
++{RSP_OK,	605, 605, -1,			606,  5, {ACT_CMD+AT_CLIP} },
++{RSP_NULL,	606, 606, -1,			607,  5, {ACT_CMD+AT_ISO} },
++{RSP_OK,	606, 606, -1,			607,  5, {ACT_CMD+AT_ISO} },
++{RSP_OK,	607, 607, -1,			608,  5, {0},	"+VLS=17\r"},
++{RSP_OK,	608, 608, -1,			609, -1},
++{RSP_ZSAU,	609, 609, ZSAU_PROCEEDING,	610,  5, {ACT_CMD+AT_DIAL} },
++{RSP_OK,	610, 610, -1,			650,  0, {ACT_DIALING} },
++
++{RSP_ERROR,	601, 610, -1,			  0,  0, {ACT_ABORTDIAL} },
++{EV_TIMEOUT,	601, 610, -1,			  0,  0, {ACT_ABORTDIAL} },
++
++/* optional dialing responses */
++{EV_BC_OPEN,	650, 650, -1,			651, -1},
++{RSP_ZVLS,	609, 651, 17,			 -1, -1, {ACT_DEBUG} },
++{RSP_ZCTP,	610, 651, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ZCPN,	610, 651, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ZSAU,	650, 651, ZSAU_CALL_DELIVERED,	 -1, -1, {ACT_DEBUG} },
++
++/* connect */
++{RSP_ZSAU,	650, 650, ZSAU_ACTIVE,		800, -1, {ACT_CONNECT} },
++{RSP_ZSAU,	651, 651, ZSAU_ACTIVE,		800, -1, {ACT_CONNECT,
++							  ACT_NOTIFY_BC_UP} },
++{RSP_ZSAU,	750, 750, ZSAU_ACTIVE,		800, -1, {ACT_CONNECT} },
++{RSP_ZSAU,	751, 751, ZSAU_ACTIVE,		800, -1, {ACT_CONNECT,
++							  ACT_NOTIFY_BC_UP} },
++{EV_BC_OPEN,	800, 800, -1,			800, -1, {ACT_NOTIFY_BC_UP} },
++
++/* remote hangup */
++{RSP_ZSAU,	650, 651, ZSAU_DISCONNECT_IND,	  0,  0, {ACT_REMOTEREJECT} },
++{RSP_ZSAU,	750, 751, ZSAU_DISCONNECT_IND,	  0,  0, {ACT_REMOTEHUP} },
++{RSP_ZSAU,	800, 800, ZSAU_DISCONNECT_IND,	  0,  0, {ACT_REMOTEHUP} },
++
++/* hangup */
++{EV_HUP,	 -1,  -1, -1,			 -1, -1, {ACT_HUP} },
++{RSP_INIT,	 -1,  -1, SEQ_HUP,		401,  5, {0},	"+VLS=0\r"},
++{RSP_OK,	401, 401, -1,			402,  5},
++{RSP_ZVLS,	402, 402,  0,			403,  5},
++{RSP_ZSAU,	403, 403, ZSAU_DISCONNECT_REQ,	 -1, -1, {ACT_DEBUG} },
++{RSP_ZSAU,	403, 403, ZSAU_NULL,		  0,  0, {ACT_DISCONNECT} },
++{RSP_NODEV,	401, 403, -1,			  0,  0, {ACT_FAKEHUP} },
++{RSP_ERROR,	401, 401, -1,			  0,  0, {ACT_ABORTHUP} },
++{EV_TIMEOUT,	401, 403, -1,			  0,  0, {ACT_ABORTHUP} },
++
++{EV_BC_CLOSED,	  0,   0, -1,			  0, -1, {ACT_NOTIFY_BC_DOWN} },
++
++/* ring */
++{RSP_ZBC,	700, 700, -1,			 -1, -1, {0} },
++{RSP_ZHLC,	700, 700, -1,			 -1, -1, {0} },
++{RSP_NMBR,	700, 700, -1,			 -1, -1, {0} },
++{RSP_ZCPN,	700, 700, -1,			 -1, -1, {0} },
++{RSP_ZCTP,	700, 700, -1,			 -1, -1, {0} },
++{EV_TIMEOUT,	700, 700, -1,			720, 720, {ACT_ICALL} },
++{EV_BC_CLOSED,	720, 720, -1,			  0, -1, {ACT_NOTIFY_BC_DOWN} },
++
++/*accept icall*/
++{EV_ACCEPT,	 -1,  -1, -1,			 -1, -1, {ACT_ACCEPT} },
++{RSP_INIT,	720, 720, SEQ_ACCEPT,		721,  5, {ACT_CMD+AT_PROTO} },
++{RSP_OK,	721, 721, -1,			722,  5, {ACT_CMD+AT_ISO} },
++{RSP_OK,	722, 722, -1,			723,  5, {0},	"+VLS=17\r"},
++{RSP_OK,	723, 723, -1,			724,  5, {0} },
++{RSP_ZVLS,	724, 724, 17,			750, 50, {ACT_ACCEPTED} },
++{RSP_ERROR,	721, 729, -1,			  0,  0, {ACT_ABORTACCEPT} },
++{EV_TIMEOUT,	721, 729, -1,			  0,  0, {ACT_ABORTACCEPT} },
++{RSP_ZSAU,	700, 729, ZSAU_NULL,		  0,  0, {ACT_ABORTACCEPT} },
++{RSP_ZSAU,	700, 729, ZSAU_ACTIVE,		  0,  0, {ACT_ABORTACCEPT} },
++{RSP_ZSAU,	700, 729, ZSAU_DISCONNECT_IND,	  0,  0, {ACT_ABORTACCEPT} },
++
++{EV_BC_OPEN,	750, 750, -1,			751, -1},
++{EV_TIMEOUT,	750, 751, -1,			  0,  0, {ACT_CONNTIMEOUT} },
++
++/* B channel closed (general case) */
++{EV_BC_CLOSED,	 -1,  -1, -1,			 -1, -1, {ACT_NOTIFY_BC_DOWN} },
++
++/* misc. */
++{RSP_ZCON,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ZCCR,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ZAOC,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ZCSTR,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++
++{RSP_ZCAU,	 -1,  -1, -1,			 -1, -1, {ACT_ZCAU} },
++{RSP_NONE,	 -1,  -1, -1,			 -1, -1, {ACT_DEBUG} },
++{RSP_ANY,	 -1,  -1, -1,			 -1, -1, {ACT_WARN} },
++{RSP_LAST}
+ };
  
- 	/* load previous state:
- 	 * inputstate = set of flag bits:
--	 * - INS_flag_hunt: no complete opening flag received since connection setup or last abort
--	 * - INS_have_data: at least one complete data byte received since last flag
--	 * seqlen = number of consecutive '1' bits in last 7 input stream bits (0..7)
-+	 * - INS_flag_hunt: no complete opening flag received since connection
-+	 *                  setup or last abort
-+	 * - INS_have_data: at least one complete data byte received since last
-+	 *                  flag
-+	 * seqlen = number of consecutive '1' bits in last 7 input stream bits
-+	 *          (0..7)
- 	 * inbyte = accumulated partial data byte (if !INS_flag_hunt)
- 	 * inbits = number of valid bits in inbyte, starting at LSB (0..6)
- 	 */
-@@ -701,9 +686,11 @@ static inline void hdlc_unpack(unsigned char *src, unsigned count,
- 				inbyte = c >> (lead1 + 1);
- 				inbits = 7 - lead1;
- 				if (trail1 >= 8) {
--					/* interior stuffing: omitting the MSB handles most cases */
-+					/* interior stuffing:
-+					 * omitting the MSB handles most cases,
-+					 * correct the incorrectly handled
-+					 * cases individually */
- 					inbits--;
--					/* correct the incorrectly handled cases individually */
- 					switch (c) {
- 					case 0xbe:
- 						inbyte = 0x3f;
-@@ -729,13 +716,14 @@ static inline void hdlc_unpack(unsigned char *src, unsigned count,
- 			hdlc_flush(bcs);
- 			inputstate |= INS_flag_hunt;
- 		} else if (seqlen == 6) {
--			/* closing flag, including (6 - lead1) '1's and one '0' from inbits */
-+			/* closing flag, including (6 - lead1) '1's
-+			 * and one '0' from inbits */
- 			if (inbits > 7 - lead1) {
- 				hdlc_frag(bcs, inbits + lead1 - 7);
- 				inputstate &= ~INS_have_data;
- 			} else {
- 				if (inbits < 7 - lead1)
--					ubc->stolen0s ++;
-+					ubc->stolen0s++;
- 				if (inputstate & INS_have_data) {
- 					hdlc_done(bcs);
- 					inputstate &= ~INS_have_data;
-@@ -744,7 +732,7 @@ static inline void hdlc_unpack(unsigned char *src, unsigned count,
  
- 			if (c == PPP_FLAG) {
- 				/* complete flag, LSB overlaps preceding flag */
--				ubc->shared0s ++;
-+				ubc->shared0s++;
- 				inbits = 0;
- 				inbyte = 0;
- 			} else if (trail1 != 7) {
-@@ -752,9 +740,11 @@ static inline void hdlc_unpack(unsigned char *src, unsigned count,
- 				inbyte = c >> (lead1 + 1);
- 				inbits = 7 - lead1;
- 				if (trail1 >= 8) {
--					/* interior stuffing: omitting the MSB handles most cases */
-+					/* interior stuffing:
-+					 * omitting the MSB handles most cases,
-+					 * correct the incorrectly handled
-+					 * cases individually */
- 					inbits--;
--					/* correct the incorrectly handled cases individually */
- 					switch (c) {
- 					case 0xbe:
- 						inbyte = 0x3f;
-@@ -762,7 +752,8 @@ static inline void hdlc_unpack(unsigned char *src, unsigned count,
- 					}
- 				}
- 			} else {
--				/* abort sequence follows, skb already empty anyway */
-+				/* abort sequence follows,
-+				 * skb already empty anyway */
- 				ubc->aborts++;
- 				inputstate |= INS_flag_hunt;
- 			}
-@@ -787,14 +778,17 @@ static inline void hdlc_unpack(unsigned char *src, unsigned count,
- 			} else {
- 				/* stuffed data */
- 				if (trail1 < 7) { /* => seqlen == 5 */
--					/* stuff bit at position lead1, no interior stuffing */
-+					/* stuff bit at position lead1,
-+					 * no interior stuffing */
- 					unsigned char mask = (1 << lead1) - 1;
- 					c = (c & mask) | ((c & ~mask) >> 1);
- 					inbyte |= c << inbits;
- 					inbits += 7;
- 				} else if (seqlen < 5) { /* trail1 >= 8 */
--					/* interior stuffing: omitting the MSB handles most cases */
--					/* correct the incorrectly handled cases individually */
-+					/* interior stuffing:
-+					 * omitting the MSB handles most cases,
-+					 * correct the incorrectly handled
-+					 * cases individually */
- 					switch (c) {
- 					case 0xbe:
- 						c = 0x7e;
-@@ -804,8 +798,9 @@ static inline void hdlc_unpack(unsigned char *src, unsigned count,
- 					inbits += 7;
- 				} else { /* seqlen == 5 && trail1 >= 8 */
+ static const struct resp_type_t resp_type[] =
+ {
+-	/*{"",		RSP_EMPTY,	RT_NOTHING},*/
+ 	{"OK",		RSP_OK,		RT_NOTHING},
+ 	{"ERROR",	RSP_ERROR,	RT_NOTHING},
+ 	{"ZSAU",	RSP_ZSAU,	RT_ZSAU},
+@@ -404,7 +399,7 @@ static const struct resp_type_t resp_type[] =
+ 	{"ZLOG",	RSP_ZLOG,	RT_NOTHING},
+ 	{"ZABINFO",	RSP_ZABINFO,	RT_NOTHING},
+ 	{"ZSMLSTCHG",	RSP_ZSMLSTCHG,	RT_NOTHING},
+-	{NULL,0,0}
++	{NULL,		0,		0}
+ };
  
--					/* stuff bit at lead1 *and* interior stuffing */
--					switch (c) {	/* unstuff individually */
-+					/* stuff bit at lead1 *and* interior
-+					 * stuffing -- unstuff individually */
-+					switch (c) {
- 					case 0x7d:
- 						c = 0x3f;
- 						break;
-@@ -862,7 +857,8 @@ static inline void trans_receive(unsigned char *src, unsigned count,
- 		hdlc_flush(bcs);
- 		return;
- 	}
--	if (unlikely((skb = bcs->skb) == NULL)) {
-+	skb = bcs->skb;
-+	if (unlikely(skb == NULL)) {
- 		bcs->skb = skb = dev_alloc_skb(SBUFSIZE + cs->hw_hdr_len);
- 		if (!skb) {
- 			dev_err(cs->dev, "could not allocate skb\n");
-@@ -895,7 +891,8 @@ static inline void trans_receive(unsigned char *src, unsigned count,
- 	}
+ /*
+@@ -469,7 +464,6 @@ static int cid_of_response(char *s)
+ 	if (cid < 1 || cid > 65535)
+ 		return -1;	/* CID out of range */
+ 	return cid;
+-	//FIXME is ;<digit>+ at end of non-CID response really impossible?
  }
  
--void gigaset_isoc_receive(unsigned char *src, unsigned count, struct bc_state *bcs)
-+void gigaset_isoc_receive(unsigned char *src, unsigned count,
-+			  struct bc_state *bcs)
+ /**
+@@ -613,7 +607,8 @@ void gigaset_handle_modem_response(struct cardstate *cs)
+ 				break;
+ 			}
+ 			if (!strcmp(argv[curarg], "OUTGOING_CALL_PROCEEDING"))
+-				event->parameter = ZSAU_OUTGOING_CALL_PROCEEDING;
++				event->parameter =
++					ZSAU_OUTGOING_CALL_PROCEEDING;
+ 			else if (!strcmp(argv[curarg], "CALL_DELIVERED"))
+ 				event->parameter = ZSAU_CALL_DELIVERED;
+ 			else if (!strcmp(argv[curarg], "ACTIVE"))
+@@ -896,7 +891,8 @@ static void bchannel_up(struct bc_state *bcs)
+ 	gigaset_isdn_connB(bcs);
+ }
+ 
+-static void start_dial(struct at_state_t *at_state, void *data, unsigned seq_index)
++static void start_dial(struct at_state_t *at_state, void *data,
++			unsigned seq_index)
  {
- 	switch (bcs->proto2) {
- 	case L2_HDLC:
+ 	struct bc_state *bcs = at_state->bcs;
+ 	struct cardstate *cs = at_state->cs;
+@@ -973,8 +969,6 @@ static void do_start(struct cardstate *cs)
+ 
+ 	cs->isdn_up = 1;
+ 	gigaset_isdn_start(cs);
+-					// FIXME: not in locked mode
+-					// FIXME 2: only after init sequence
+ 
+ 	cs->waiting = 0;
+ 	wake_up(&cs->waitqueue);
+@@ -1128,7 +1122,6 @@ static int do_lock(struct cardstate *cs)
+ 
+ 		break;
+ 	case MS_LOCKED:
+-		//retval = -EACCES;
+ 		break;
+ 	default:
+ 		return -EBUSY;
+@@ -1384,7 +1377,7 @@ static void do_action(int action, struct cardstate *cs,
+ 		cs->cur_at_seq = SEQ_NONE;
+ 		break;
+ 
+-	case ACT_ABORTACCEPT:	/* hangup/error/timeout during ICALL processing */
++	case ACT_ABORTACCEPT:	/* hangup/error/timeout during ICALL procssng */
+ 		disconnect(p_at_state);
+ 		break;
+ 
+@@ -1458,17 +1451,6 @@ static void do_action(int action, struct cardstate *cs,
+ 			__func__, at_state->ConState);
+ 		cs->cur_at_seq = SEQ_NONE;
+ 		break;
+-#ifdef CONFIG_GIGASET_DEBUG
+-	case ACT_TEST:
+-		{
+-			static int count = 3; //2; //1;
+-			*p_genresp = 1;
+-			*p_resp_code = count ? RSP_ERROR : RSP_OK;
+-			if (count > 0)
+-				--count;
+-		}
+-		break;
+-#endif
+ 	case ACT_DEBUG:
+ 		gig_dbg(DEBUG_ANY, "%s: resp_code %d in ConState %d",
+ 			__func__, ev->type, at_state->ConState);
+@@ -1503,7 +1485,7 @@ static void do_action(int action, struct cardstate *cs,
+ 		do_start(cs);
+ 		break;
+ 
+-	/* events from the interface */ // FIXME without ACT_xxxx?
++	/* events from the interface */
+ 	case ACT_IF_LOCK:
+ 		cs->cmd_result = ev->parameter ? do_lock(cs) : do_unlock(cs);
+ 		cs->waiting = 0;
+@@ -1522,7 +1504,7 @@ static void do_action(int action, struct cardstate *cs,
+ 		wake_up(&cs->waitqueue);
+ 		break;
+ 
+-	/* events from the proc file system */ // FIXME without ACT_xxxx?
++	/* events from the proc file system */
+ 	case ACT_PROC_CIDMODE:
+ 		spin_lock_irqsave(&cs->lock, flags);
+ 		if (ev->parameter != cs->cidmode) {
+@@ -1659,7 +1641,8 @@ static void process_event(struct cardstate *cs, struct event_t *ev)
+ 	for (curact = 0; curact < MAXACT; ++curact) {
+ 		/* The row tells us what we should do  ..
+ 		 */
+-		do_action(rep->action[curact], cs, bcs, &at_state, &p_command, &genresp, &resp_code, ev);
++		do_action(rep->action[curact], cs, bcs, &at_state, &p_command,
++			  &genresp, &resp_code, ev);
+ 		if (!at_state)
+ 			break; /* may be freed after disconnect */
+ 	}
+@@ -1671,13 +1654,14 @@ static void process_event(struct cardstate *cs, struct event_t *ev)
+ 
+ 		if (genresp) {
+ 			spin_lock_irqsave(&cs->lock, flags);
+-			at_state->timer_expires = 0; //FIXME
+-			at_state->timer_active = 0; //FIXME
++			at_state->timer_expires = 0;
++			at_state->timer_active = 0;
+ 			spin_unlock_irqrestore(&cs->lock, flags);
+-			gigaset_add_event(cs, at_state, resp_code, NULL, 0, NULL);
++			gigaset_add_event(cs, at_state, resp_code,
++					  NULL, 0, NULL);
+ 		} else {
+ 			/* Send command to modem if not NULL... */
+-			if (p_command/*rep->command*/) {
++			if (p_command) {
+ 				if (cs->connected)
+ 					send_command(cs, p_command,
+ 						     sendcid, cs->dle,
+@@ -1764,7 +1748,8 @@ static void process_command_flags(struct cardstate *cs)
+ 		}
+ 	}
+ 
+-	/* only switch back to unimodem mode, if no commands are pending and no channels are up */
++	/* only switch back to unimodem mode if no commands are pending and
++	 * no channels are up */
+ 	spin_lock_irqsave(&cs->lock, flags);
+ 	if (cs->at_state.pending_commands == PC_UMMODE
+ 	    && !cs->cidmode
+@@ -1823,9 +1808,8 @@ static void process_command_flags(struct cardstate *cs)
+ 
+ 	if (cs->at_state.pending_commands & PC_INIT) {
+ 		cs->at_state.pending_commands &= ~PC_INIT;
+-		cs->dle = 0; //FIXME
++		cs->dle = 0;
+ 		cs->inbuf->inputstate = INS_command;
+-		//FIXME reset card state (or -> LOCK0)?
+ 		schedule_sequence(cs, &cs->at_state, SEQ_INIT);
+ 		return;
+ 	}
 -- 
 1.6.2.1.214.ge986c
 
