@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754376AbZJYWzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbZJYW7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754376AbZJYWzk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 18:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbZJYWzj
+	id S1754391AbZJYW7k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 18:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZJYW7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 18:55:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:57560 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754354AbZJYWzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 18:55:39 -0400
-Date: Mon, 26 Oct 2009 09:55:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-next@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Eric Paris <eparis@parisplace.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: writable limits to -next [was: Adding to linux-next?]
-Message-Id: <20091026095543.1bb1a25f.sfr@canb.auug.org.au>
-In-Reply-To: <20091026094741.5a1d492c.sfr@canb.auug.org.au>
-References: <4AC6339B.7000905@gmail.com>
-	<20091006225751.7d5f3eec.sfr@canb.auug.org.au>
-	<4AE16B0A.7020400@gmail.com>
-	<20091026094741.5a1d492c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__26_Oct_2009_09_55_43_+1100_U_1Jo0WKKk45QBmB"
+	Sun, 25 Oct 2009 18:59:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:14065 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754361AbZJYW7j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 18:59:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=F+2ork+/6IINQ1zRCWzwI4LRtKncTYMXJmlJjL9J4n6Opv5NHal7Xuj/pPtRxDYIjg
+         bvByAb0rL+bNrOYUgN3SqBxl+xOAHYMCWPNoX09g4wW4wVwHJecfO9X2uELL7j55LgW8
+         SeWtmSBOcgEv+z9sTFMycWRJ7p9KkrEkYJpUI=
+MIME-Version: 1.0
+Date: Sun, 25 Oct 2009 18:59:42 -0400
+Message-ID: <deaa866a0910251559r6c001e6ek553256ac8f81b1f7@mail.gmail.com>
+Subject: RFC: Updating the LKML bug reporting/updating framework
+From: Robert Bradbury <robert.bradbury@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__26_Oct_2009_09_55_43_+1100_U_1Jo0WKKk45QBmB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I do not know much in these areas having learned my craft by digging
+UNIX source code listings out of wastebaskets at Harvard (freshman
+weren't really supposed to have access to the UNIX source code in
+1974).  And I hardly ever used the Oracle bug reporting system in the
+mid-1980s.  But I have used the Mozilla, Gnome and Gentoo public bug
+reporting and tracking systems to a fair extent in recent years and
+they seem to work fairly effectively.
 
-Hi Jiri,
+They have good search engines.  They attach patches to bug reports
+which fix the stated problems.  They allow for discussion, assessment,
+voting and presumably for the powers in charge the keeping of
+statistics regarding the state of the software.
 
-On Mon, 26 Oct 2009 09:47:41 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> On Fri, 23 Oct 2009 10:36:26 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
-> >
-> > Hi, could you please add git://decibel.fi.muni.cz/~xslaby/linux#limits
-> > into the -next tree?
->=20
-> I have added it from today.
+Now, the LKML seems to to be a throwback almost to 1971 when the first
+email messages were sent between a couple of PDP-10s.  It has patches
+that I have no interest in, discussions I have no interest in and were
+it not for Gmail's search function it would be generally useless (very
+high Noise-to-Signal ratio).  Now maybe I do not understand the Linux
+development process.  Maybe this is a "Wizard of Oz" case and there is
+a hidden bug reporting system hidden behind the curtain -- but in
+spite of my best efforts I cannot locate it.
 
-It is actually git://decibel.fi.muni.cz/~xslaby/linux#writable_limits, righ=
-t?
+Why in this day and age (ignoring historical inertia) has Linux failed
+to adopt a robust (modern) bug reporting system?
+Can this be fixed?  Or is Linux really a case of a "proprietary
+software" system pretending to be open [1]?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Robert Bradbury
 
---Signature=_Mon__26_Oct_2009_09_55_43_+1100_U_1Jo0WKKk45QBmB
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrk128ACgkQjjKRsyhoI8zn1QCfTbNnkj5lhWukqG8X519iQCYV
-0QgAoKhZYnvJbwOSw4AYY03wfFG0bAqX
-=EVcM
------END PGP SIGNATURE-----
-
---Signature=_Mon__26_Oct_2009_09_55_43_+1100_U_1Jo0WKKk45QBmB--
+1. If a software system is so complex that its quirks and pitfalls
+cannot easily be located and avoided (witness the ondemand scheduler
+problem on Pentium IV's message I recently filed) then is it not
+*effectively* open source.  I am qualified to read hardware manuals, I
+am qualified to rewrite C code (having written code generators for
+several C compilers) but the LKML is like the windmill and I feel like
+Don Quixote tilting back and forth in front of it.  One could even
+argue that the lack of an open bug reporting system (and "current
+state" online reports) effectively makes Linux a non-open-source
+system.  Should not Linux be the one of the first systems to make all
+knowledge completely available?  Or is it doomed to be replaced by
+systems which might provide such capabilities (Android perhaps???)
