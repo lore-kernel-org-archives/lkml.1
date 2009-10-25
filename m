@@ -1,27 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbZJYQuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbZJYRMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753750AbZJYQuF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 12:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZJYQuE
+	id S1753804AbZJYRMU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 13:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbZJYRMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 12:50:04 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51889 "EHLO
+	Sun, 25 Oct 2009 13:12:20 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60607 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753726AbZJYQuD (ORCPT
+	with ESMTP id S1752230AbZJYRMT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 12:50:03 -0400
-Date: Sun, 25 Oct 2009 09:51:09 -0700
+	Sun, 25 Oct 2009 13:12:19 -0400
+Date: Sun, 25 Oct 2009 10:11:18 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Andreas Mohr <andi@lisas.de>,
+       Hugh Dickins <hugh@veritas.com>, Hannes Eder <hannes@hanneseder.net>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] sched: Disable affine wakeups by default
-Message-ID: <20091025095109.449bac9e@infradead.org>
-In-Reply-To: <1256453725.12138.40.camel@marge.simson.net>
-References: <20091024125853.35143117@infradead.org>
-	<20091024130432.0c46ef27@infradead.org>
-	<20091024130728.051c4d7c@infradead.org>
-	<1256453725.12138.40.camel@marge.simson.net>
+Subject: Re: [PATCH 6/8] SGI x86_64 UV: Limit the number of microcode
+ messages
+Message-ID: <20091025101118.522a7aa4@infradead.org>
+In-Reply-To: <20091025163704.GE20391@elte.hu>
+References: <20091023233743.439628000@alcatraz.americas.sgi.com>
+	<20091023233756.941535000@alcatraz.americas.sgi.com>
+	<b647ffbd0910241309u7b2f8c94t1f886ef31882539e@mail.gmail.com>
+	<Pine.LNX.4.61.0910242207180.2439@ginsburg.homenet>
+	<b647ffbd0910241545g4697a170peb00e541298d5a30@mail.gmail.com>
+	<20091025163704.GE20391@elte.hu>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -33,57 +42,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Oct 2009 07:55:25 +0100
-Mike Galbraith <efault@gmx.de> wrote:
-> Even if you're sharing a cache, there are reasons to wake affine.  If
-> the wakee can preempt the waker while it's still eligible to run,
-> wakee not only eats toasty warm data, it can hand the cpu back to the
-> waker so it can make more and repeat this procedure for a while
-> without someone else getting in between, and trashing cache. 
+On Sun, 25 Oct 2009 17:37:04 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-and on the flipside, and this is the workload I'm looking at,
-this is halving your performance roughly due to one core being totally
-busy while the other one is idle.
+> 
+> Having the precise microcode version printed (or exposed somewhere in 
+> /sys) is useful - sometimes when there's a weird crash in some
+> prototype CPU one of the first questions from hw vendors is 'which
+> precise microcode version was that?'.
 
-My workload is a relatively simple situation: firefox is starting up
-and talking to X. I suspect this is representative for many X using
-applications in the field. The application sends commands to X, but is
-not (yet) going to wait for a response, it has more work to do. 
-In this case the affine behavior does not only cause latency, but it
-also eats the throughput performance.
+something like
+/sys/devices/system/cpu/cpu0/microcode/version ?
 
-This is due to a few things that compound, but a key one is this code:
+(yes that is there today ;-)
 
-        if (sd_flag & SD_BALANCE_WAKE) {
-                if (sched_feat(AFFINE_WAKEUPS) &&
-                    cpumask_test_cpu(cpu, &p->cpus_allowed))
-                        want_affine = 1;
-                new_cpu = prev_cpu;
-        }
-
-the problem is that 
-
-        if (affine_sd && wake_affine(affine_sd, p, sync)) {
-                new_cpu = cpu;
-                goto out;
-        }
-
-this then will trigger later, as long as there is any domain that has
-SD_WAKE_AFFINE set ;(
-
-(part of that problem is that the code that sets affine_sd is done
-before the
-               if (!(tmp->flags & sd_flag))
-                        continue;
-test)
-
-
-The numbers you posted are for a database, and only measure throughput.
-There's more to the world than just databases / throughput-only
-computing, and I'm trying to find low impact ways to reduce the latency
-aspect of things. One obvious candidate is hyperthreading/SMT where it
-IS basically free to switch to a sibbling, so wake-affine does not
-really make sense there.
 
 -- 
 Arjan van de Ven 	Intel Open Source Technology Centre
