@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbZJYRMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbZJYRSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753804AbZJYRMU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 13:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbZJYRMU
+	id S1753801AbZJYRSm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 13:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZJYRSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 13:12:20 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60607 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752230AbZJYRMT (ORCPT
+	Sun, 25 Oct 2009 13:18:42 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:53590 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751635AbZJYRSl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 13:12:19 -0400
-Date: Sun, 25 Oct 2009 10:11:18 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Andreas Mohr <andi@lisas.de>,
-       Hugh Dickins <hugh@veritas.com>, Hannes Eder <hannes@hanneseder.net>,
+	Sun, 25 Oct 2009 13:18:41 -0400
+Date: Sun, 25 Oct 2009 17:18:39 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Peter Ujfalusi <peter.ujfalusi@nokia.com>, tony@atomide.com,
+       alsa-devel@alsa-project.org, linux-omap@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/8] SGI x86_64 UV: Limit the number of microcode
- messages
-Message-ID: <20091025101118.522a7aa4@infradead.org>
-In-Reply-To: <20091025163704.GE20391@elte.hu>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com>
-	<20091023233756.941535000@alcatraz.americas.sgi.com>
-	<b647ffbd0910241309u7b2f8c94t1f886ef31882539e@mail.gmail.com>
-	<Pine.LNX.4.61.0910242207180.2439@ginsburg.homenet>
-	<b647ffbd0910241545g4697a170peb00e541298d5a30@mail.gmail.com>
-	<20091025163704.GE20391@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-ID: <20091025171838.GA5141@sirena.org.uk>
+References: <1256207208-25010-1-git-send-email-peter.ujfalusi@nokia.com>
+ <1256207208-25010-2-git-send-email-peter.ujfalusi@nokia.com>
+ <20091023140703.GA3718@sortiz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091023140703.GA3718@sortiz.org>
+X-Cookie: Flame on!
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 82.41.240.126
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [alsa-devel] [PATCH 1/4 v2] MFD: twl4030: add twl4030_codec
+ MFD as a new child to the core
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Oct 2009 17:37:04 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, Oct 23, 2009 at 04:07:05PM +0200, Samuel Ortiz wrote:
 
-> 
-> Having the precise microcode version printed (or exposed somewhere in 
-> /sys) is useful - sometimes when there's a weird crash in some
-> prototype CPU one of the first questions from hw vendors is 'which
-> precise microcode version was that?'.
+> As agreed, Mark is taking this one. So:
+> Acked-by: Samuel Ortiz <sameo@linux.intel.com>
 
-something like
-/sys/devices/system/cpu/cpu0/microcode/version ?
+Applied all, if there's a merge problem with the MFD code then there's a
+twl4030-mfd branch at
 
-(yes that is there today ;-)
+  git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound-2.6.git
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+which I'm happy for you to merge if it makes life easier.  Due to other
+changes the patches end up depending on (just textually I think) there's
+a big raft of other stuff in there too, sadly.
