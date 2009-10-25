@@ -1,94 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbZJYQVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbZJYQUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752845AbZJYQVK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 12:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZJYQVJ
+	id S1752401AbZJYQUV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 12:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZJYQUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 12:21:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48459 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752182AbZJYQVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 12:21:08 -0400
-Date: Sun, 25 Oct 2009 17:20:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org,
-       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Simon Horman <horms@verge.net.au>, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 1/1] crash_dump: fix non-pae kdump kernel memory
-	accesses
-Message-ID: <20091025162018.GB20391@elte.hu>
-References: <1256312729-22935-1-git-send-email-jirislaby@gmail.com>
+	Sun, 25 Oct 2009 12:20:20 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:48548 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751444AbZJYQUT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 12:20:19 -0400
+X-Sasl-enc: FSiGX4t21t2cBNnUXgJE89+s4msxDwBwjfLULWNMAPS0 1256487622
+Date: Sun, 25 Oct 2009 14:20:19 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>
+Cc: gregkh@suse.de, alan@linux.intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, adobriyan@gmail.com,
+       linux list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] serial: cascade needless conditionals
+Message-ID: <20091025162019.GA10898@khazad-dum.debian.net>
+References: <b8bf37780910250618h3edce547y41a8dd03e4fb4e71@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1256312729-22935-1-git-send-email-jirislaby@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <b8bf37780910250618h3edce547y41a8dd03e4fb4e71@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 25 Oct 2009, André Goddard Rosa wrote:
+>  	if (flags == UPF_SPD_HI)
+>  		altbaud = 57600;
+> -	if (flags == UPF_SPD_VHI)
+> +	else if (flags == UPF_SPD_VHI)
+>  		altbaud = 115200;
+> -	if (flags == UPF_SPD_SHI)
+> +	else if (flags == UPF_SPD_SHI)
+>  		altbaud = 230400;
+> -	if (flags == UPF_SPD_WARP)
+> +	else if (flags == UPF_SPD_WARP)
+>  		altbaud = 460800;
 
-* Jiri Slaby <jirislaby@gmail.com> wrote:
+This changes code behaviour if more than one bit is set (which might never
+happen for all I know...).  You should invert the order of the tests if you
+want to make sure it is side-effect-free. 
 
-> Non-PAE 32-bit dump kernels may wrap an address around 4G and
-> poke unwanted space. ptes there are 32-bit long, and since
-> pfn << PAGE_SIZE may exceed this limit, high pfn bits are cropped
-> and wrong address mapped by kmap_atomic_pfn in copy_oldmem_page.
-> 
-> Don't allow this behavior in non-PAE kdump kernels by checking
-> pfns passed into copy_oldmem_page. In the case of failure,
-> userspace process gets EFAULT.
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Vivek Goyal <vgoyal@redhat.com>
-> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-> Cc: Simon Horman <horms@verge.net.au>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/crash_dump_32.c |   16 ++++++++++++++++
->  1 files changed, 16 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/crash_dump_32.c b/arch/x86/kernel/crash_dump_32.c
-> index f7cdb3b..b78dab8 100644
-> --- a/arch/x86/kernel/crash_dump_32.c
-> +++ b/arch/x86/kernel/crash_dump_32.c
-> @@ -16,6 +16,19 @@ static void *kdump_buf_page;
->  /* Stores the physical address of elf header of crash image. */
->  unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
->  
-> +#ifndef CONFIG_X86_PAE
-> +/* non-PAE kdump kernel executed from a PAE one will crop high pte bits and
-> +   poke unwanted space counting again from address 0, we don't want that */
-> +static inline bool is_crashed_pfn_valid(unsigned long pfn)
-> +{
-> +	/* on non-PAE pte must fit into unsigned long
-> +	   in fact the test is (pfn & 0x000fffff) */
-> +	return pte_pfn(pfn_pte(pfn, __pgprot(0))) == pfn;
-> +}
-> +#else
-> +static inline bool is_crashed_pfn_valid(unsigned long pfn) { return true; }
-> +#endif
-
-i'd suggest to push the #ifdef inside the function.
-
-Also, please use the customary (multi-line) comment style:
-
-  /*
-   * Comment .....
-   * ...... goes here.
-   */
-
-specified in Documentation/CodingStyle.
-
-Thanks,
-
-        Ingo
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
