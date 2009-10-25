@@ -1,36 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZJYTx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbZJYT4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbZJYTx4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 15:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZJYTxz
+	id S1754016AbZJYT4f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 15:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbZJYT4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 15:53:55 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:57092 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751748AbZJYTxy (ORCPT
+	Sun, 25 Oct 2009 15:56:34 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:46058 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752455AbZJYT4d convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 15:53:54 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: bart.hartgers@gmail.com
-Subject: Re: [PATCH 2/7] ark3116: (3rd try) Make existing functions 16450-aware and add close and release functions.
-Date: Sun, 25 Oct 2009 20:56:03 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.31-rc9-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20091025175057.270011110@gmail.com> <20091025175318.709056986@gmail.com>
-In-Reply-To: <20091025175318.709056986@gmail.com>
+	Sun, 25 Oct 2009 15:56:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=IHjKoiyMiLik1lYkJkgZYAvVwFOzxXcxAbrSQ3EUBnKajWO3lLN8VFP865GWroavdG
+         Bd1jKvaeFfiuTHwb3lu0xxhsSstTFB5pTbc8aCKIVQ+ZJkxl3GIqAmp4syUV9X/WqXfB
+         3+wrlceoH/OZ0K51BFxB9I8ziM66uwVgMQIYI=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Disposition: inline
-Message-Id: <200910252056.03993.oliver@neukum.org>
+In-Reply-To: <200910252052.09845.oliver@neukum.org>
+References: <20091025175057.270011110@gmail.com>
+	 <20091025175321.276761473@gmail.com>
+	 <200910252052.09845.oliver@neukum.org>
+Date: Sun, 25 Oct 2009 20:56:36 +0100
+Message-ID: <7eb6a4d80910251256w4ad8a77dg5a24618657b77a58@mail.gmail.com>
+Subject: Re: [PATCH 3/7] ark3116: (3rd try) Replace cmget
+From: Bart Hartgers <bart.hartgers@gmail.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n9PJsB16029120
 
-Am Sonntag, 25. Oktober 2009 18:50:59 schrieb bart.hartgers@gmail.com:> +static void ark3116_close(struct usb_serial_port *port)> +{> +       struct usb_serial *serial = port->serial;>  > -       /* TEST ARK3116_SND(154, 0xFE, 0x40, 0xFFFF, 0x0006); */> +       /* disable DMA */> +       ark3116_write_reg(serial, UART_FCR, 0);>  > -       kfree(buf);> +       /* deactivate interrupts */> +       ark3116_write_reg(serial, UART_IER, 0);>  > -       return;> +       if (serial->dev) {> +               /* shutdown any bulk reads that might be going on */> +               if (serial->num_bulk_out)> +                       usb_kill_urb(port->write_urb);> +               if (serial->num_bulk_in)> +                       usb_kill_urb(port->read_urb);> +               if (serial->num_interrupt_in)> +                       usb_kill_urb(port->interrupt_in_urb);> +       }>  }
-Why are the killings done on condition of serial-> != NULL but the registersare set unconditionally?
-	Regards		Oliver
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+2009/10/25 Oliver Neukum <oliver@neukum.org>:
+> Am Sonntag, 25. Oktober 2009 18:51:00 schrieb bart.hartgers@gmail.com:
+>> +Â Â Â Â Â Â Â /* read modem status */
+>> +Â Â Â Â Â Â Â unsigned status = atomic_read(&priv->msr);
+>> +Â Â Â Â Â Â Â /* modem control is output */
+>> +Â Â Â Â Â Â Â unsigned ctrl = atomic_read(&priv->mcr);
+>
+> What is the sense of having two atomic variables?
+> You can get races where one is changed but the other is not.
+>
+> Â  Â  Â  Â Regards
+> Â  Â  Â  Â  Â  Â  Â  Â Oliver
+>
+>
+
+Hi Oliver,
+
+I don't think so. The two values are not really related.
+
+These are two separate things: mcr (modem control reg) is ultimately
+changed by whatever has the serial port open, msr (modem status
+register) represents the status of the handshaking lines, and is
+changed (via the interrupt urb callback) by hardware.
+
+Groeten,
+Bart
+
+-- 
+Bart Hartgers - New e-mail: bart.hartgers@gmail.com
