@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbZJZNSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZJZNUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754532AbZJZNSO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 09:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbZJZNSN
+	id S1754613AbZJZNUE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 09:20:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbZJZNUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 09:18:13 -0400
-Received: from khc.piap.pl ([195.187.100.11]:47523 "EHLO khc.piap.pl"
+	Mon, 26 Oct 2009 09:20:03 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:34529 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754419AbZJZNSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 09:18:12 -0400
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Stefan Assmann <sassmann@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Don Dutile <ddutile@redhat.com>
-Subject: Re: [PATCH] PCI hotplug: use correct term for PCI Express
-References: <4AE59AE9.6030803@redhat.com>
-Date: Mon, 26 Oct 2009 14:18:15 +0100
-In-Reply-To: <4AE59AE9.6030803@redhat.com> (Stefan Assmann's message of "Mon,
-	26 Oct 2009 13:49:45 +0100")
-Message-ID: <m3my3emgyw.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754577AbZJZNUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 09:20:01 -0400
+X-IronPort-AV: E=Sophos;i="4.44,626,1249282800"; 
+   d="scan'208";a="264167632"
+Subject: Re: regression, bisected: getcwd() ENOENT on NFS4...
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+In-Reply-To: <6278d2220910251631j40caec00lf2dee6159947d983@mail.gmail.com>
+References: <6278d2220910251631j40caec00lf2dee6159947d983@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Mon, 26 Oct 2009 09:19:50 -0400
+Message-Id: <1256563190.3742.4.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-OriginalArrivalTime: 26 Oct 2009 13:19:51.0012 (UTC) FILETIME=[FFA00A40:01CA563E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Assmann <sassmann@redhat.com> writes:
+On Sun, 2009-10-25 at 23:31 +0000, Daniel J Blueman wrote:
+> Since 2.6.30-rc, I've been experiencing various issues relating to
+> getcwd() returning ENOENT on NFS4 clients. I used an over-complicated
+> but reliable reproducer [1] (on Karmic RC against a 2.6.32-rc5 NFS4
+> server) to bisect [2].
+> 
+> The impact of this regression is moderate (side-effects range from
+> benign to failure), so we should get a fix into 2.6.32 if at all
+> possible and strongly consider a 2.6.31 stable update.
+> 
+> Thanks,
+>   Daniel
+> 
+> --- [1]
+> 
+> $ apt-get source apt
+> $ cd apt-*
+> $ ./configure && make
+> [snip]
+> sh: getcwd() failed: No such file or directory
+> 
+> --- [2]
+> 
+> a65318bf3afc93ce49227e849d213799b072c5fd is first bad commit
+> commit a65318bf3afc93ce49227e849d213799b072c5fd
+> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+> Date:   Wed Mar 11 14:10:28 2009 -0400
+> 
+>     NFSv4: Simplify some cache consistency post-op GETATTRs
 
-> Change PCI-E to PCIe which is the correct term according to
-> http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf.
+I'm having a lot of trouble seeing how this patch could result in
+ENOENT. All it should be doing is reducing the frequency with which we
+update some of the inode metadata.
 
-Right.
+Have you ever been able to capture one of these errors using strace?
 
-> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
-> @@ -86,8 +86,8 @@ static char *pci_bus_speed_strings[] = {
->  	"66 MHz PCIX 533",	/* 0x11 */
->  	"100 MHz PCIX 533",	/* 0x12 */
->  	"133 MHz PCIX 533",	/* 0x13 */
-> -	"2.5 GT/s PCI-E",	/* 0x14 */
-> -	"5.0 GT/s PCI-E",	/* 0x15 */
-> +	"2.5 GT/s PCIe",	/* 0x14 */
-> +	"5.0 GT/s PCIe",	/* 0x15 */
-
-In addition to this, it seems "PCIX" should also be changed to "PCI-X",
-shouldn't it?
+Cheers
+  Trond
 -- 
-Krzysztof Halasa
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
