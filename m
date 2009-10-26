@@ -1,169 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756440AbZJZUqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbZJZWzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756440AbZJZUqN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 16:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbZJZUqM
+	id S1754352AbZJZWzV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 18:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbZJZWzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 16:46:12 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47800 "EHLO mx1.suse.de"
+	Mon, 26 Oct 2009 18:55:21 -0400
+Received: from claw.goop.org ([74.207.240.146]:43354 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754042AbZJZUqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 16:46:10 -0400
-From: Thomas Renninger <trenn@suse.de>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH 4/8] SGI x86_64 UV: Limit the number of ACPI messages
-Date: Mon, 26 Oct 2009 23:47:43 +0100
-User-Agent: KMail/1.9.10
-Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Zhang Rui <rui.zhang@intel.com>,
-       Len Brown <lenb@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Myron Stowe <myron.stowe@hp.com>, Feng Tang <feng.tang@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233754.668088000@alcatraz.americas.sgi.com> <1256354987.17875.6.camel@dc7800.home>
-In-Reply-To: <1256354987.17875.6.camel@dc7800.home>
+	id S1753731AbZJZWzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 18:55:20 -0400
+Message-ID: <4AE628DB.5010305@goop.org>
+Date: Mon, 26 Oct 2009 15:55:23 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Christian Kujau <lists@nerdbynature.de>
+CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       torvalds@linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.32-rc not booting with Xen-3.2 (bisected)
+References: <alpine.DEB.2.01.0910261445170.9408@bogon.housecafe.de> <alpine.DEB.2.01.0910261513520.9408@bogon.housecafe.de>
+In-Reply-To: <alpine.DEB.2.01.0910261513520.9408@bogon.housecafe.de>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910262347.46292.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 24 October 2009 05:29:47 am Bjorn Helgaas wrote:
-> On Fri, 2009-10-23 at 18:37 -0500, Mike Travis wrote:
-> > plain text document attachment (limit_acpi)
-> > Limit number of ACPI messages of the form:
-> >
-> > [    0.000000] ACPI: LSAPIC (acpi_id[0x00] lsapic_id[0x00]
-> > lsapic_eid[0x00] enabled)
-> >
-> > [   99.638655] processor ACPI0007:00: registered as cooling_device0
-> >
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Len Brown <lenb@kernel.org>
-> > Cc: Thomas Renninger <trenn@suse.de>
-> > Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> > Cc: Alexey Dobriyan <adobriyan@gmail.com>
-> > Cc: Myron Stowe <myron.stowe@hp.com>
-> > Cc: Feng Tang <feng.tang@intel.com>
-> > Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-> > Cc: Yinghai Lu <yhlu.kernel@gmail.com>
-> > Cc: linux-acpi@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Signed-off-by: Mike Travis <travis@sgi.com>
-> > ---
-> >  drivers/acpi/fan.c            |    7 ++++++-
-> >  drivers/acpi/processor_core.c |    8 ++++++--
-> >  drivers/acpi/tables.c         |   15 ++++++++++-----
-> >  3 files changed, 22 insertions(+), 8 deletions(-)
-> >
-> > --- linux.orig/drivers/acpi/fan.c
-> > +++ linux/drivers/acpi/fan.c
-> > @@ -243,6 +243,7 @@
-> >  	int result = 0;
-> >  	int state = 0;
-> >  	struct thermal_cooling_device *cdev;
-> > +	static int msgcnt;
-> >
-> >  	if (!device)
-> >  		return -EINVAL;
-> > @@ -267,7 +268,11 @@
-> >  		goto end;
-> >  	}
-> >
-> > -	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
-> > +	if (msgcnt < 4 || !limit_console_output(false)) {
-> > +		dev_info(&device->dev,
-> > +			"registered as cooling_device%d\n", cdev->id);
-> > +		msgcnt++;
-> > +	}
->
-> I'm personally not in favor of printing some, but not all, of these
-> messages.  That leads to questions when analyzing a dmesg log, such as
-> "Hmm, I see I have 64 CPUs, but only 0-3 are registered as cooling
-> devices.  Does that mean something is wrong?"
->
-> But I would be glad to see this particular message removed completely.
->
-> >  	device->driver_data = cdev;
-> >  	result = sysfs_create_link(&device->dev.kobj,
-> > --- linux.orig/drivers/acpi/processor_core.c
-> > +++ linux/drivers/acpi/processor_core.c
-> > @@ -775,6 +775,7 @@
-> >  	struct acpi_processor *pr = NULL;
-> >  	int result = 0;
-> >  	struct sys_device *sysdev;
-> > +	static int msgcnt;
-> >
-> >  	pr = kzalloc(sizeof(struct acpi_processor), GFP_KERNEL);
-> >  	if (!pr)
-> > @@ -845,8 +846,11 @@
-> >  		goto err_power_exit;
-> >  	}
-> >
-> > -	dev_info(&device->dev, "registered as cooling_device%d\n",
-> > -		 pr->cdev->id);
-> > +	if (msgcnt < 4 || !limit_console_output(false)) {
-> > +		dev_info(&device->dev, "registered as cooling_device%d\n",
-> > +			 pr->cdev->id);
-> > +		msgcnt++;
-> > +	}
-If Zhang Rui does not complain you can change these:
-..registered as cooling_device..
-into dev_dbg() without any condition.
-This isn't critical.
+On 10/26/09 15:17, Christian Kujau wrote:
+> On Mon, 26 Oct 2009 at 15:02, Christian Kujau wrote:
+>   
+>> really know where the DomU stops (or panics). However, I was able to 
+>> bisect it, I hope the bisection makes any sense:
+>>     
+> My bisection was one iteration short, here's the full one, which confirms 
+> my suspicion of 78f28b7c555359c67c2a0d23f7436e915329421e being the 
+> culprit:
+>   
 
-Or why not use the more fine grained
-ACPI debug facility and change it into:
-ACPI_DEBUG_PRINT((ACPI_DB_INFO "..."));
-(compare with Documentation/acpi/debug.txt and other
-occurences in the same file)
-You have to pass:
-acpi_dbg_layer=0x20000000
-to see it then.
-> >
-> >  	result = sysfs_create_link(&device->dev.kobj,
-> >  				   &pr->cdev->device.kobj,
-> > --- linux.orig/drivers/acpi/tables.c
-> > +++ linux/drivers/acpi/tables.c
-> > @@ -170,11 +170,16 @@
-> >  	case ACPI_MADT_TYPE_LOCAL_SAPIC:
-> >  		{
-> >  			struct acpi_madt_local_sapic *p =
-> > -			    (struct acpi_madt_local_sapic *)header;
-> > -			printk(KERN_INFO PREFIX
-> > -			       "LSAPIC (acpi_id[0x%02x] lsapic_id[0x%02x] lsapic_eid[0x%02x]
-> > %s)\n", -			       p->processor_id, p->id, p->eid,
-> > -			       (p->lapic_flags & ACPI_MADT_ENABLED) ? "enabled" :
-> > "disabled"); +				(struct acpi_madt_local_sapic *)header;
-> > +
-> > +			if (p->eid < 8 || !limit_console_output(false))
-I can't find limit_console_output(), I expect it got introduced by another one 
-of your patch series, not send to the acpi list?
-Still shouldn't this be:
-limit_console_output(true)
-instead of:
-!limit_console_output(false)
+Yes, that is indeed a likely suspect.  Is Xen compiled with DEBUG=y? 
+Does anything appear on the Xen console (xm dmesg)?
 
-       Thomas
+    J
 
-> > +				printk(KERN_INFO PREFIX
-> > +					"LSAPIC (acpi_id[0x%02x] "
-> > +						"lsapic_id[0x%02x] "
-> > +						"lsapic_eid[0x%02x] %s)\n",
-> > +					p->processor_id, p->id, p->eid,
-> > +					(p->lapic_flags & ACPI_MADT_ENABLED) ?
-> > +						"enabled" : "disabled");
+> domU$ git bisect start
+> # good: [74fca6a42863ffacaf7ba6f1936a9f228950f657] Linux 2.6.31
+> git bisect good 74fca6a42863ffacaf7ba6f1936a9f228950f657
+> # bad: [17d857be649a21ca90008c6dc425d849fa83db5c] Linux 2.6.32-rc1
+> git bisect bad 17d857be649a21ca90008c6dc425d849fa83db5c
+> # good: [5d1fe0c98f2aef99fb57aaf6dd25e793c186cea3] Staging: vt6656: Integrate vt6656 into build system.
+> git bisect good 5d1fe0c98f2aef99fb57aaf6dd25e793c186cea3
+> # bad: [c720f5655df159a630fa0290a0bd67c93e92b0bf] Merge branch 'for_linus' of git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6
+> git bisect bad c720f5655df159a630fa0290a0bd67c93e92b0bf
+> # good: [a03fdb7612874834d6847107198712d18b5242c7] Merge branch 'timers-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+> git bisect good a03fdb7612874834d6847107198712d18b5242c7
+> # good: [3530c1886291df061e3972c55590777ef1cb67f8] Merge branch 'for_linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4
+> git bisect good 3530c1886291df061e3972c55590777ef1cb67f8
+> # bad: [84d6ae431f315e8973aac3c3fe1d550fc9240ef3] V4L/DVB (13033): pt1: Don't use a deprecated DMA_BIT_MASK macro
+> git bisect bad 84d6ae431f315e8973aac3c3fe1d550fc9240ef3
+> # bad: [068ed40b8fc14cd3d16b5cf2db59ecd735a68ca8] V4L/DVB (12939): SAA7164: Removed a duplicate call to address any PCI quirks.
+> git bisect bad 068ed40b8fc14cd3d16b5cf2db59ecd735a68ca8
+> # bad: [f4e96deb4513d044653027d4921fd7592195503a] V4L/DVB (12756): af9015: fix typo in register compare
+> git bisect bad f4e96deb4513d044653027d4921fd7592195503a
+> # good: [dd0a70c8f921708eba29ef9f30dde1f14a74af05] x86: Move tsc_init to late_time_init
+> git bisect good dd0a70c8f921708eba29ef9f30dde1f14a74af05
+> # bad: [53e712d0844e99b8d8720327470b86ef401fb727] V4L/DVB (12734): cx25821: Fix some compilation troubles
+> git bisect bad 53e712d0844e99b8d8720327470b86ef401fb727
+> # good: [7bd867dfb4e0357e06a3211ab2bd0e714110def3] x86: Move get/set_wallclock to x86_platform_ops
+> git bisect good 7bd867dfb4e0357e06a3211ab2bd0e714110def3
+> # bad: [78f28b7c555359c67c2a0d23f7436e915329421e] Merge branch 'x86-platform-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+> git bisect bad 78f28b7c555359c67c2a0d23f7436e915329421e
+> # good: [9c88b25bcfde51eccf2cca13d933a2948d0ca4eb] frv: clean up linker script using new linker script macros.
+> git bisect good 9c88b25bcfde51eccf2cca13d933a2948d0ca4eb
+> # good: [3240a77b515f4a15e24d8a3a2135bc87b02cf1d6] sparc: Clean up linker script using new linker script macros.
+> git bisect good 3240a77b515f4a15e24d8a3a2135bc87b02cf1d6
 >
-> I know we print way too much stuff for every processor, but again, I'd
-> rather see all CPUs or none.  I think there's a little more value in
-> this one than the cooling device one (probably because I do a lot of
-> platform bringup), but it could certainly be made KERN_DEBUG and/or
-> combined with another processor discovery line.
+>
+>   
+>> Version numbers and more for both the domU and dom0 are on:
+>> http://nerdbynature.de/bits/2.6.32/dom0/dpkg-l.txt
+>>     
+> That should read: http://nerdbynature.de/bits/2.6.32/
+>
+> Thanks,
+> Christian.
+>   
 
