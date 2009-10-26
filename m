@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbZJZQhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbZJZQiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752670AbZJZQhd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 12:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZJZQhc
+	id S1753221AbZJZQiI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 12:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZJZQiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 12:37:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54062 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751499AbZJZQhc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 12:37:32 -0400
-Date: Mon, 26 Oct 2009 09:37:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       esandeen@redhat.com
-Subject: Re: Unnecessary overhead with stack protector.
-Message-Id: <20091026093706.c6416715.akpm@linux-foundation.org>
-In-Reply-To: <20091026123004.297a0a25@katamari.usersys.redhat.com>
-References: <20091015183540.GA8098@redhat.com>
-	<20091021182636.63edbf72.akpm@linux-foundation.org>
-	<20091026123004.297a0a25@katamari.usersys.redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Oct 2009 12:38:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58148 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751499AbZJZQiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 12:38:06 -0400
+Date: Mon, 26 Oct 2009 17:38:07 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Luck, Tony" <tony.luck@intel.com>, Tejun Heo <tj@kernel.org>,
+       Jeff Mahoney <jeffm@suse.com>, Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
+In-Reply-To: <alpine.LSU.2.00.0910232127410.9469@wotan.suse.de>
+Message-ID: <alpine.LRH.2.00.0910261738020.25075@twin.jikos.cz>
+References: <4ADD54D4.70808@kernel.org> <4ADD5530.3050107@kernel.org> <alpine.LSU.2.00.0910200826220.8582@wotan.suse.de> <4ADDC69A.5000701@suse.com> <4ADDCDED.6060706@suse.com> <20091021061109.GA27195@elte.hu> <4ADF2691.7070304@kernel.org>
+ <57C9024A16AD2D4C97DC78E552063EA3E337CF79@orsmsx505.amr.corp.intel.com> <alpine.LSU.2.00.0910221640430.8582@wotan.suse.de> <57C9024A16AD2D4C97DC78E552063EA3E337D94C@orsmsx505.amr.corp.intel.com> <20091023075151.GB10067@elte.hu>
+ <alpine.LSU.2.00.0910232127410.9469@wotan.suse.de>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 12:30:04 -0400 Chuck Ebbert <cebbert@redhat.com> wrote:
+On Fri, 23 Oct 2009, Jiri Kosina wrote:
 
-> On Wed, 21 Oct 2009 18:26:36 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > Tony, is the change that will eventually have to be made to ia64 
+> > > > pagefault handler too intrusive for -rc6, and should we rather go 
+> > > > with my workaround instead, and try to find something proper for 
+> > > > 2.6.33?
+> > > 
+> > > Using __alloc_percpu() rather than static declaration looks to be the 
+> > > right fix here.  Not a "workaround".
+> > 
+> > It is a workaround for the IA64 build failure.
+> > 
+> > It's also an improvement of the scheduler code (we generally try to 
+> > eliminate NR_CPUs scaling of allocations) - but code improvements need 
+> > to happen much sooner than -rc6/-rc7.
 > 
-> > On Thu, 15 Oct 2009 14:35:41 -0400 Dave Jones <davej@redhat.com> wrote:
-> > 
-> > > 113c5413cf9051cc50b88befdc42e3402bb92115 introduced a change that
-> > > made CC_STACKPROTECTOR_ALL not-selectable if someone enables CC_STACKPROTECTOR.
-> > > 
-> > > We've noticed in Fedora that this has introduced noticable overhead on
-> > > some functions, including those which don't even have any on-stack variables.
-> > > 
-> > > According to the gcc manpage, -fstack-protector will protect functions with
-> > > as little as 8 bytes of stack usage. So we're introducing a huge amount
-> > > of overhead, to close a small amount of vulnerability (the >0 && <8 case).
-> > > 
-> > > The overhead as it stands right now means this whole option is unusable for
-> > > a distro kernel without reverting the above commit.
-> > > 
-> > 
-> > This looks like a fairly serious problem to me, but I'm confused by the
-> > commit ID.  February 2008 - is this correct?
-> > 
+> Unfortunately refactoring the ia4 pagefault handler would require some 
+> refactoring in order to eliminate the 64k limitation, as far as I know, 
+> which doesn't seem to be feasible for this timeframe either.
 > 
-> That date is pure fiction AFAICT. And the Mercurial kernel repo says May 2008...
-> Is there some way to get the date a change was merged into the official tree as
-> opposed to the date it was created in some other tree?
+> So if I personally have to chose from these two options, I'd prefer my 
+> patch for 2.6.32 and it'd be helpful if ia64 people could look into doing 
+> something with the 64k limit for 2.6.33.
+> 
+> Acceptable for everyone? Ingo/Peter, will you merge this asap please, so 
+> that we don't miss 2.6.32 with it?
 
-oh, so someone _did_ read my email!
+This stil seems unfixed in the relevant trees I have checked ... anyone 
+has strong objections to this, which cause the patch to be delayed?
 
+Thanks,
 
-git show --pretty=fuller 113c5413cf9051cc50b88befdc42e3402bb92115
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
-commit 113c5413cf9051cc50b88befdc42e3402bb92115
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu Feb 14 10:36:03 2008 +0100
-Commit:     Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Mon May 26 16:15:32 2008 +0200
-
-I think the CommitDate is when it hit mainline.
