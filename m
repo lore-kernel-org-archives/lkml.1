@@ -1,77 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbZJZOSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752497AbZJZOZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752471AbZJZOSA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 10:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZJZOR7
+	id S1752497AbZJZOZU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 10:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbZJZOZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 10:17:59 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60646 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751444AbZJZOR6 (ORCPT
+	Mon, 26 Oct 2009 10:25:20 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:49315 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752094AbZJZOZT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 10:17:58 -0400
-Date: Mon, 26 Oct 2009 07:18:32 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, GeunSik Lim <leemgs1@gmail.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       Jesper Juhl <jj@chaosbits.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Adrian Bunk <bunk@stusta.de>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org,
-       Dominique Toupin <dominique.toupin@ericsson.com>,
-       Michel Dagenais <michel.dagenais@polymtl.ca>
-Subject: Re: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL
- v2,headers to Dual BSD/GPL
-Message-ID: <20091026071832.36405c9a@infradead.org>
-In-Reply-To: <4AE5A17D.5020202@polymtl.ca>
-References: <20091023160257.GA30447@Krystal>
-	<20091023160632.GA2198@Krystal>
-	<alpine.LNX.2.00.0910242300510.16628@swampdragon.chaosbits.net>
-	<20091026015357.GA6033@localhost>
-	<023001ca55e1$436e38e0$808410ac@zhaoleiwin>
-	<49b7c2350910252203o69811000w4551c01e6e2a10c7@mail.gmail.com>
-	<20091026073048.GC8162@elte.hu>
-	<4AE5A17D.5020202@polymtl.ca>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+	Mon, 26 Oct 2009 10:25:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=KrWKvOSQmFaHcCt43nTBIItf69z9IiPjUJm5WjfaJklUPozsYgk7v1pbvtXBmG1nwX
+         WxkohomDfpfUWbA1VmRtEIaACeASb7X4pRCLiEaBtS441ugf8Q4OEVKpgRYmLtg5x+Zh
+         xJR8tMQEbyTbOG2UOEIgmp8qtncIvPmcgJA+w=
+Subject: Re: [PATCH -v5 02/11] MIPS: add mips_timecounter_read() to get
+ high precision timestamp
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: rostedt@goodmis.org
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Adam Nemet <anemet@caviumnetworks.com>,
+       Patrik Kluba <kpajko79@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <1256565667.26028.257.camel@gandalf.stny.rr.com>
+References: <cover.1256482555.git.wuzhangjin@gmail.com>
+	 <028867b99ec532b84963a35e7d552becc783cafc.1256483735.git.wuzhangjin@gmail.com>
+	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256483735.git.wuzhangjin@gmail.com>
+	 <1256565667.26028.257.camel@gandalf.stny.rr.com>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Mon, 26 Oct 2009 22:25:08 +0800
+Message-Id: <1256567108.5642.165.camel@falcon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 09:17:49 -0400
-Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca> wrote:
+Hi,
 
-> Ingo Molnar wrote:
-> > 
-> > But i also disagree with it on a technical level: code duplication
-> > is _bad_. Why does the code have to be duplicated in user-space
-> > like that? I'd like Linux tracing code to be in the kernel repo.
-> > Why isnt this done properly, as part of the kernel project - to
-> > make sure it all stays in sync?
-> > 
+On Mon, 2009-10-26 at 10:01 -0400, Steven Rostedt wrote:
+[...]
+> Some patches touch core tracing code, and some are arch specific. Now
+> the question is how do we go. I prefer that we go the path of the
+> tracing tree (easier for me to test).
+
+Just coped with the feedbacks from Frederic Weisbecker.
+
+I will rebase the whole patches to your git repo(the following one?) and
+send them out as the -v6 revision:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git tip/tracing/core
+
+>  But every patch that touches MIPS
+> arch, needs an Acked-by from the MIPS maintainer. Which I see is Ralf
+> (on the Cc of this patch set.)
 > 
-> If you mean that this code should solely be used inside the kernel,
-> then what you propose technically does not work. There is a very high
-> cost to accessing kernel code from userspace. 
 
-yeah 100 cycles is insanely high, that's at least the equivalent of...
-say one cache miss.
+Looking forward to the feedback from Ralf, Seems he is a little busy.
+and also looking forward to the testing result from the other MIPS
+developers, so, we can ensure ftrace for MIPS really function!
 
+Welcome to clone this branch and test it:
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+git://dev.lemote.com/rt4ls.git  linux-mips/dev/ftrace-upstream
+
+And this document will tell you how to play with it:
+Documentation/trace/ftrace.txt
+
+Thanks & Regards,
+	Wu Zhangjin
+
