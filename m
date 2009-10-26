@@ -1,95 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZJZF1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZJZFfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbZJZF1O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 01:27:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZJZF1O
+	id S1754728AbZJZFfu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 01:35:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbZJZFft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 01:27:14 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49796 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754671AbZJZF1N (ORCPT
+	Mon, 26 Oct 2009 01:35:49 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39526 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753895AbZJZFft (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 01:27:13 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AE53304.1060803@jp.fujitsu.com>
-Date: Mon, 26 Oct 2009 14:26:28 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andy Whitcroft <apw@canonical.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] checkpatch: trivial fix for trailing statements check
-Content-Type: text/plain; charset=ISO-2022-JP
+	Mon, 26 Oct 2009 01:35:49 -0400
+Date: Sun, 25 Oct 2009 22:36:57 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] sched: Disable affine wakeups by default
+Message-ID: <20091025223657.5ebc2857@infradead.org>
+In-Reply-To: <1256533734.7117.45.camel@marge.simson.net>
+References: <20091024125853.35143117@infradead.org>
+	<20091024130432.0c46ef27@infradead.org>
+	<20091024130728.051c4d7c@infradead.org>
+	<1256453725.12138.40.camel@marge.simson.net>
+	<20091025095109.449bac9e@infradead.org>
+	<1256492289.14241.40.camel@marge.simson.net>
+	<20091025123319.2b76bf69@infradead.org>
+	<1256508287.17306.14.camel@marge.simson.net>
+	<1256522035.7356.19.camel@laptop>
+	<1256531907.7117.31.camel@marge.simson.net>
+	<20091025215225.05ac9ac9@infradead.org>
+	<1256533734.7117.45.camel@marge.simson.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In case if the statement and the conditional are in one line, the line
-appears in the report doubly.
+On Mon, 26 Oct 2009 06:08:54 +0100
+Mike Galbraith <efault@gmx.de> wrote:
 
-And items of this check have no blank line before the next item.
+> On Sun, 2009-10-25 at 21:52 -0700, Arjan van de Ven wrote:
+> > On Mon, 26 Oct 2009 05:38:27 +0100
+> > Mike Galbraith <efault@gmx.de> wrote:
+> > 
+> > > On Mon, 2009-10-26 at 02:53 +0100, Peter Zijlstra wrote:
+> > > > On Sun, 2009-10-25 at 23:04 +0100, Mike Galbraith wrote:
+> > > > >                 if (want_affine && (tmp->flags &
+> > > > > SD_WAKE_AFFINE) &&
+> > > > > -                   cpumask_test_cpu(prev_cpu,
+> > > > > sched_domain_span(tmp))) {
+> > > > > +                               (level == SD_LV_SIBLING ||
+> > > > > level == SD_LV_MC)) {
+> > > > 
+> > > > quick comment without actually having looked at the patch, we
+> > > > should really get rid of sd->level and encode properties of the
+> > > > sched domains in sd->flags.
+> > > 
+> > > Yeah, sounds right, while writing that, it looked kinda ugly.  I
+> > > suppose arch land needs to encode cache property somehow if I
+> > > really want to be able to target cache on multicore.  Booting
+> > > becomes.. exciting when I tinker down there.
+> > 
+> > or we just use SD_WAKE_AFFINE / SD_BALANCE_WAKE for this...
+> 
+> I don't see how.  Oh, you mean another domain level, top level being
+> cache property, and turn off when degenerating?  That looks like it'd
+> be a problem, but adding SD_CACHE_SIBLING or whatnot should work.
+> Problem is how to gain knowledge of whether multicores share a cache
+> or not.
 
-This patch fixes these trivial problems, to improve readability of the
-report.
+Actually I meant setting the SD_BALANCE_WAKE flag for the SMT and MC
+domains (and then making sure that "MC" really means "shares LLC" in
+the arch code), and then using this as indication in the sched code..
 
-[sample.c]
-  > if (cond1
-  >        && cond2
-  >        && cond3) func_foo();
-  >
-  > if (cond4) func_bar();
+if you're a multicore domain you better have a shared cache.. that's
+what it should mean. If it does not we should fix that.
 
-Before:
-  > ERROR: trailing statements should be on next line
-  > #1: FILE: sample.c:1:
-  > +if (cond1
-  > [...]
-  > +       && cond3) func_foo();
-  > ERROR: trailing statements should be on next line
-  > #5: FILE: sample.c:5:
-  > +if (cond4) func_bar();
-  > +if (cond4) func_bar();
-  > total: 2 errors, 0 warnings, 5 lines checked
-
-After:
-  > ERROR: trailing statements should be on next line
-  > #1: FILE: sample.c:1:
-  > +if (cond1
-  > [...]
-  > +       && cond3) func_foo();
-  >
-  > ERROR: trailing statements should be on next line
-  > #5: FILE: sample.c:5:
-  > +if (cond4) func_bar();
-  >
-  > total: 2 errors, 0 warnings, 5 lines checked
-
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Andy Whitcroft <apw@canonical.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- scripts/checkpatch.pl |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 87bbb8b..60a8f99 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -2144,8 +2144,10 @@ sub process {
- 				# Find out how long the conditional actually is.
- 				my @newlines = ($c =~ /\n/gs);
- 				my $cond_lines = 1 + $#newlines;
-+				my $stat_real = '';
- 
--				my $stat_real = raw_line($linenr, $cond_lines);
-+				$stat_real = raw_line($linenr, $cond_lines)
-+							. "\n" if ($cond_lines);
- 				if (defined($stat_real) && $cond_lines > 1) {
- 					$stat_real = "[...]\n$stat_real";
- 				}
 -- 
-1.6.4.4
-
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
