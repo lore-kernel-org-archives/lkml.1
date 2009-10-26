@@ -1,145 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbZJZTB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbZJZTIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbZJZTB0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZJZTBZ
+	id S1755595AbZJZTIK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZJZTIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:01:25 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:51628 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754302AbZJZTBY (ORCPT
+	Mon, 26 Oct 2009 15:08:09 -0400
+Received: from mail-px0-f194.google.com ([209.85.216.194]:35154 "EHLO
+	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755395AbZJZTFN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:01:24 -0400
-Message-ID: <4AE5F202.8070700@us.ibm.com>
-Date: Mon, 26 Oct 2009 12:01:22 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 26 Oct 2009 15:05:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=H0CcjN1rU9AvP+lNJJb5TeI22UlAYU1LzEpoNNVPWKCIPjXRySTlCCLneDpDhGB+re
+         MRDzC1vbzpEg/h7yXMFXGxn6vC2jIRCBncz77thcxFDpM5HmkT9m3PlJ+xrYI8au9CQc
+         j7CFiSsWBCPn72bqCikIEQCf8k0rKi/cenEoc=
 MIME-Version: 1.0
-To: dino@in.ibm.com
-CC: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Eric Dumazet <eric.dumazet@gmail.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: Re: [patch -rt] Fix infinite loop with 2.6.31.4-rt14 V2
-References: <20091023134700.GA5578@in.ibm.com> <4AE1D802.6050906@us.ibm.com> <20091023200858.GA7011@in.ibm.com> <4AE214E8.9020406@us.ibm.com> <4AE23C74.1090502@us.ibm.com>
-In-Reply-To: <4AE23C74.1090502@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4AE5F1D2.9030908@s5r6.in-berlin.de>
+References: <f22d86810910261019yc77dbf0sa7688a98e7b98267@mail.gmail.com>
+	 <7ADB5FD7-9C97-4987-BC20-997258B25FD2@noahdesu.com>
+	 <f22d86810910261122j6c9e57e8pd4a257090f65c727@mail.gmail.com>
+	 <4AE5F1D2.9030908@s5r6.in-berlin.de>
+Date: Tue, 27 Oct 2009 00:35:18 +0530
+Message-ID: <f22d86810910261205r232db5d4re97a54827c7adab3@mail.gmail.com>
+Subject: Re: Difference between atomic operations and memory barriers
+From: "Leonidas ." <leonidas137@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Noah Watkins <noah@noahdesu.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darren Hart wrote:
-> Darren Hart wrote:
->> Dinakar Guniguntala wrote:
->>  > Application threads calling futex_wait_requeue_pi run in an 
->> infinite loop
->>  > in the kernel if the futex value changes during the call. The 
->> following
->>  > patch fixes the problem.
+On Tue, Oct 27, 2009 at 12:30 AM, Stefan Richter
+<stefanr@s5r6.in-berlin.de> wrote:
+> Leonidas . wrote:
+>> On Mon, Oct 26, 2009 at 11:49 PM, Noah Watkins <noah@noahdesu.com> wrote:
+>>>> Trying to understand difference between atomic ops and memory barriers.
+>
+> Atomic accesses and barriers are different concepts.
+>
+> The former means that there won't be intermediary values visible (to
+> another CPU or to a DMA capable device) at any time; there will only be
+> either the old value or the new value, but nothing half-done.
+>
+> The latter means that an order between two (or more) separate accesses
+> is enforced.
+>
+> You cannot use barriers to make intrinsically non-atomic accesses look
+> atomically; you need a lock for such a purpose.  (Or RCU.)
+>
+>>>> I was thinking all atomic operations must be using barrier internally, but I read
+>>>> somewhere that only some of them use barriers. Sorry for being vague here.
+>>>>
+>>>> Operations before call to smp_mb() will not be re-ordered and all cpus will see
+>>>> consistent value after the variable is updated.
+>>>>
+>>>> E.g.
+>>>> void * ptr = (void *) str;
+>>>> smb_mb();
+>>>>
+>>>> Will this not atomically update ptr? Ptr will be seen by all cpu's in same state
+>>>> after it has been assigned str, right?
+>>>
+>>> There is a bit of info in:
+>>>    Documentation/atomic_ops.txt
+>>>
+>>> -noah
+>>>
+>>>
 >>
->> The key bit here being that EAGAIN == EWOULDBLOCK - who thought that 
->> was a good idea?
-> 
-> And now that I think about it, when I reviewed this original patch I
-> remember mentioning that this isn't even needed for
-> futex_wait_requeue_pi() because we don't have the same wake-up race as
-> futex_wait() suffers from - since we don't use the same lock_ptr == NULL
-> test (nor do we use the wake_list in the requeue code). I suspect the
-> only case where -EAGAIN is being used here is when the uval doesn't
-> match val - no spurious wakeups.
-> 
-> Dino, can you try with the following patch which just reverts the
-> spurious wakeup handling for the requeue_pi path.
+>>
+>> Thanks for the pointer, there are no atomic operations for pointers, right?
+>> I guess barrier is what we need in that case.
+>
+> There are more atomic accesses than those which deal with atomic_t.  For
+> example,
+>        any_t *ptr = something;
+> is definitely atomic, and we rely on this atomicity in the kernel at
+> many places.
+>
+> I guess these things can be found somewhere in the C language specification.
+> --
+> Stefan Richter
+> -=====-==--= =-=- ==-=-
+> http://arcgraph.de/sr/
+>
 
+If your answer matches my inference that,
 
-Dino mentioned in IRC that this is basically what he tried originally 
-and that it worked fine. Thomas, any objections to this patch?
+any_t *ptr = something;
 
---
-Darren
+is always atomic even on SMPs without using locks, barriers then my
+doubt is cleared. Thanks.
 
->  From c21e762bf384e0a559fdf964e0ba7576550d90ec Mon Sep 17 00:00:00 2001
-> From: Darren Hart <dvhltc@us.ibm.com>
-> Date: Fri, 23 Oct 2009 16:18:48 -0700
-> Subject: [PATCH] futex: revert spurious wakeup fix for requeue_pi
-> 
-> The requeue_pi path doesn't use unqueue_me() (and the racy lock_ptr ==
-> NULL test) nor does it use the wake_list of futex_wake() which led to
-> the following fix.
-> 
-> 41890f2... futex: Handle spurious wake up
-> 
-> See debugging discussing on LKML Message-ID: <4AD4080C.20703@us.ibm.com>
-> 
-> The changes in this fix to the requeue_pi path were considered to be a
-> likely unecessary, but harmless safety net. Since they are in fact
-> causing a problem, just remove them and insert a warning in their place.
-> We can remove the warning later, or even in this commit if folks would
-> rather.
-> 
-> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> CC: Eric Dumazet <eric.dumazet@gmail.com>
-> CC: Dinakar Guniguntala <dino@in.ibm.com>
-> CC: John Stultz <johnstul@us.ibm.com>
-> 
-> Witholding CC to stable for further discussion.
-> ---
-> kernel/futex.c |   15 +++++++++------
-> 1 files changed, 9 insertions(+), 6 deletions(-)
-> 
-> diff --git a/kernel/futex.c b/kernel/futex.c
-> index 7c4a6ac..7e4e8b2 100644
-> --- a/kernel/futex.c
-> +++ b/kernel/futex.c
-> @@ -2085,12 +2085,19 @@ int handle_early_requeue_pi_wakeup(struct 
-> futex_hash_bucket *hb,
->          */
->         plist_del(&q->list, &q->list.plist);
-> 
-> -        /* Handle spurious wakeups gracefully */
-> -        ret = -EAGAIN;
->         if (timeout && !timeout->task)
->             ret = -ETIMEDOUT;
->         else if (signal_pending(current))
->             ret = -ERESTARTNOINTR;
-> +        else {
-> +            /*
-> +             * We don't use the racy unqueue_me() path with the
-> +             * q.lock_ptr NULL test, nor does requeue use a
-> +             * wake_list. All wakeups here should be accounted for.
-> +             */
-> +            printk(KERN_ERR "Spurious wakeup in %s\n",
-> +                   __FUNCTION__);
-> +        }
->     }
->     return ret;
-> }
-> @@ -2171,7 +2178,6 @@ static int futex_wait_requeue_pi(u32 __user 
-> *uaddr, int fshared,
->     q.bitset = bitset;
->     q.rt_waiter = &rt_waiter;
-> 
-> -retry:
->     key2 = FUTEX_KEY_INIT;
->     ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
->     if (unlikely(ret != 0))
-> @@ -2264,9 +2270,6 @@ out_put_keys:
-> out_key2:
->     put_futex_key(fshared, &key2);
-> 
-> -    /* Spurious wakeup ? */
-> -    if (ret == -EAGAIN)
-> -        goto retry;
-> out:
->     if (to) {
->         hrtimer_cancel(&to->timer);
-
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+-Leo.
