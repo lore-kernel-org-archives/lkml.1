@@ -1,114 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbZJZRSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbZJZRSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbZJZRSl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 13:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZJZRSk
+	id S1752996AbZJZRSf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 13:18:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZJZRSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 13:18:40 -0400
-Received: from kroah.org ([198.145.64.141]:49040 "EHLO coco.kroah.org"
+	Mon, 26 Oct 2009 13:18:34 -0400
+Received: from mail.lang.hm ([64.81.33.126]:56589 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753504AbZJZRSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 13:18:38 -0400
-Date: Mon, 26 Oct 2009 10:15:50 -0700
-From: Greg KH <greg@kroah.com>
-To: Antti =?iso-8859-1?Q?Kaijanm=E4ki?= <antti.kaijanmaki@nomovok.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix hso soft-lockup
-Message-ID: <20091026171550.GA24910@kroah.com>
-References: <1256200578.3057.113.camel@nomovok.homedomain>
+	id S1752316AbZJZRS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 13:18:26 -0400
+Date: Mon, 26 Oct 2009 10:18:20 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "John W. Linville" <linville@tuxdriver.com>
+cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: [PATCH 1/4] strip: move driver to staging
+In-Reply-To: <20091026165518.GE2792@tuxdriver.com>
+Message-ID: <alpine.DEB.2.00.0910261013430.11504@asgard.lang.hm>
+References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com> <20091023161006.GA1580@ucw.cz> <20091026165518.GE2792@tuxdriver.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1256200578.3057.113.camel@nomovok.homedomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 11:36:18AM +0300, Antti Kaijanmäki wrote:
-> Fix soft-lockup in hso.c which is triggered on SMP machine when
-> modem is removed while file descriptor(s) under /dev are still open:
-> 
->   old version called kref_put() too early which resulted in destroying
->   hso_serial and hso_device objects which were still used later on.
-> 
-> Also fix driver debug routines (not compiled in by default).
+On Mon, 26 Oct 2009, John W. Linville wrote:
 
-Patches need to have a "signed-off-by:" line in order to be applied.
+> On Fri, Oct 23, 2009 at 06:10:06PM +0200, Pavel Machek wrote:
+>> On Tue 2009-10-20 14:17:07, John W. Linville wrote:
+>>> Move the strip ("Starmode Radio IP") driver to drivers/staging.  For
+>>> several years this driver has only seen API "bombing-run" changes, and
+>>> few people ever had the hardware.  This driver represents unnecessary
+>>> ongoing maintenance for no clear benefit.
+>>
+>> This seems like abuse of the staging process.
+>
+> My mailbox has been filling-up with discussions of using staging like
+> this for the past few weeks.  I'm reasonably certain those threads
+> were on the public lists.
+>
+>> There's no TODO to say what needs to be fixed. You just don't want to
+>> maintain it. Because there's nothing to fix, noone has reason to patch
+>> it, and the (working, good enough) driver will just be removed.
+>
+> "ongoing maintenance for no clear benefit" -- that is what is wrong
+> with it.
 
-Also, please do not gpg sign your patches, that only causes problems
-with our tools.
+supporting existing hardware is no longer a 'clear benifit'?
 
-> ---
->  drivers/net/usb/hso.c |    9 ++++++---
->  1 files changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/net/usb/hso.c b/drivers/net/usb/hso.c
-> index fa4e581..539642a 100644
-> --- a/drivers/net/usb/hso.c
-> +++ b/drivers/net/usb/hso.c
-> @@ -2,6 +2,7 @@
->   *
->   * Driver for Option High Speed Mobile Devices.
->   *
-> + *  Copyright (C) 2009 Antti Kaijanmäki <antti.kaijanmaki@nomovok.com>
+is this driver broken (as in not working)?
 
-Adding a copyright for a few lines changed is not really correct.
+other than the fact that you don't think many people have this hardware, 
+is there anything wrong with this driver?
 
->   *  Copyright (C) 2008 Option International
->   *                     Filip Aben <f.aben@option.com>
->   *                     Denis Joseph Barrow <d.barow@option.com>
-> @@ -378,7 +379,7 @@ static void dbg_dump(int line_count, const char *func_name, unsigned char *buf,
->  }
->  
->  #define DUMP(buf_, len_)	\
-> -	dbg_dump(__LINE__, __func__, buf_, len_)
-> +	dbg_dump(__LINE__, __func__, (unsigned char*)buf_, len_)
+>> It also marks driver as broken when it is not...
+>
+> I didn't mark it broken, I proposed moving it to staging.  As for
+> whether or not it actually is broken, how do you know?
+>
+> The drivers in this thread are for pre-802.11 devices -- old ones
+> (e.g. ISA) at that.  If we actually have users that are willing
+> to maintain them then maybe that is fine.  But I don't see the
+> benefit of maintaining these simply as extra targets for API change
+> "bombing runs"...
+>
+>> What about removing it in the regular way, that's
+>> Documentation/feature-removal.txt ?
+>
+> This has been discussed recently as an alternative for unmaintained
+> drivers.  I suspect this is better than adding a note to a file that
+> no one reads...
 
-Why did you mane this change?
+this is exactly the type of thing I was afraid would start happening when 
+I noticed the discussion. when I tried to bring it up I was told that this 
+would only be used for things that were really broken or otherwise causing 
+significant problems.
 
->  
->  #define DUMP1(buf_, len_)			\
->  	do {					\
-> @@ -1363,7 +1364,7 @@ static void hso_serial_close(struct tty_struct *tty, struct file *filp)
->  	/* reset the rts and dtr */
->  	/* do the actual close */
->  	serial->open_count--;
-> -	kref_put(&serial->parent->ref, hso_serial_ref_free);
-> +
->  	if (serial->open_count <= 0) {
->  		serial->open_count = 0;
->  		spin_lock_irq(&serial->serial_lock);
-> @@ -1383,6 +1384,8 @@ static void hso_serial_close(struct tty_struct *tty, struct file *filp)
->  		usb_autopm_put_interface(serial->parent->interface);
->  
->  	mutex_unlock(&serial->parent->mutex);
-> +
-> +	kref_put(&serial->parent->ref, hso_serial_ref_free);
->  }
->  
->  /* close the requested serial port */
-> @@ -1527,7 +1530,7 @@ static void tiocmget_intr_callback(struct urb *urb)
->  		dev_warn(&usb->dev,
->  			 "hso received invalid serial state notification\n");
->  		DUMP(serial_state_notification,
-> -		     sizeof(hso_serial_state_notifation))
-> +		     sizeof(struct hso_serial_state_notification));
+if this driver hasn't been changed other than for blanket API changes, how 
+is it causing significant problems?
 
-Is this a build fix not related to the bug above?
+if someone were to claim 'maintainership' and then do nothing other than 
+complain if someone else were to change an API but not fix this in the 
+process, how would this be different than the current situation?
 
-Also, network patches need to be sent to the network maintainers, they
-usually miss them if you only copy the linux-kernel list.
-
-Try using the scripts/get_maintainer.pl script on your patch to figure
-out who to send the patch to, and also the scripts/checkpatch.pl script
-to verify that you got everything correct before you send it off.
-
-Also, for a bugfix like this, it would be good to send it to the
-stable@kernel.org developers when it goes into Linus's tree as others
-are reporting problems with this driver in the 2.6.31 kernel.
-
-thanks,
-
-greg k-h
+David Lang
