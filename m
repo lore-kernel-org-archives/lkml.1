@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbZJZTlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756373AbZJZTlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756430AbZJZTlt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbZJZTlO
+	id S1756373AbZJZTlW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbZJZTlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:41:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59915 "EHLO ogre.sisk.pl"
+	Mon, 26 Oct 2009 15:41:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59919 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756336AbZJZTlM convert rfc822-to-8bit (ORCPT
+	id S1756354AbZJZTlP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:41:12 -0400
+	Mon, 26 Oct 2009 15:41:15 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "=?utf-8?q?Eddy=20Petri=C8=99or?=" <eddy.petrisor+linbug@gmail.com>
+       "Stephan von Krawczynski" <skraw@ithnet.com>,
+       "Trond Myklebust" <Trond.Myklebust@netapp.com>
 References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera>
 In-Reply-To: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <vX3ILojF2dJ.A.69F.gef5KB@chimera>
-Subject: [Bug #14446] battery status info broken/useless in 2.6.32-rc3 - MSI PR200 (possibly others, too)
+Message-ID: <vX3ILojF2dJ.A.Z3F.Wef5KB@chimera>
+Subject: [Bug #14476] Unable to handle kernel paging request in nfs_write_mapping
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 26 Oct 2009 20:32:01 +0100 (CET)
+Date: Mon, 26 Oct 2009 20:32:02 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,9 +36,11 @@ introduced between 2.6.30 and 2.6.31.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14446
-Subject		: battery status info broken/useless in 2.6.32-rc3 - MSI PR200 (possibly others, too)
-Submitter	: Eddy Petrișor <eddy.petrisor+linbug@gmail.com>
-Date		: 2009-10-20 08:25 (7 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14476
+Subject		: Unable to handle kernel paging request in nfs_write_mapping
+Submitter	: Stephan von Krawczynski <skraw@ithnet.com>
+Date		: 2009-10-14 9:53 (13 days old)
+References	: http://marc.info/?l=linux-kernel&m=125551421405656&w=4
+Handled-By	: Trond Myklebust <Trond.Myklebust@netapp.com>
 
 
