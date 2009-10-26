@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbZJZT6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbZJZT7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756509AbZJZT6e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbZJZT6d
+	id S1756524AbZJZT7g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755968AbZJZT7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:58:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60143 "EHLO ogre.sisk.pl"
+	Mon, 26 Oct 2009 15:59:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60157 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753999AbZJZT6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:58:33 -0400
+	id S1755413AbZJZT7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 15:59:34 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Peter Stuge <peter@stuge.se>
-Subject: Re: no video output after suspend after "drm/i915: force mode set at lid open time"
-Date: Mon, 26 Oct 2009 21:00:21 +0100
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Subject: Re: [Bug #14267] Disassociating atheros wlan
+Date: Mon, 26 Oct 2009 21:01:28 +0100
 User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>,
-       linux-kernel@vger.kernel.org, mjg@redhat.com, eric@anholt.net
-References: <4AE4BBBC.2070809@gmail.com> <200910262039.58626.rjw@sisk.pl> <20091026194202.29175.qmail@stuge.se>
-In-Reply-To: <20091026194202.29175.qmail@stuge.se>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "Justin P. Mattock" <justinmattock@gmail.com>
+References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera> <vX3ILojF2dJ.A.c2G.9ef5KB@chimera> <20091026205714.da57ff86.kristoffer.ericson@gmail.com>
+In-Reply-To: <20091026205714.da57ff86.kristoffer.ericson@gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910262100.21870.rjw@sisk.pl>
+Message-Id: <200910262101.28115.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 October 2009, Peter Stuge wrote:
-> Rafael J. Wysocki wrote:
-> > > > can you give it a try and see if it works for you?
-> > > 
-> > > It works beautifully. Fantastic. Thank you very much! It was marked
-> > > Accepted in patchwork but if you need one then here's a:
-> > > 
-> > > Tested-by: Peter Stuge <peter@stuge.se>
+On Monday 26 October 2009, Kristoffer Ericson wrote:
+> On Mon, 26 Oct 2009 20:31:55 +0100 (CET)
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.30 and 2.6.31.
 > > 
-> > A link to the patch, please?
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+> > be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14267
+> > Subject		: Disassociating atheros wlan
+> > Submitter	: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+> > Date		: 2009-09-24 10:16 (33 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=125378723723384&w=4
+> > 
+> > 
 > 
-> Sorry about that!
-> 
-> http://patchwork.kernel.org/patch/53783/
-> 
-> Had to apply it manually onto drm-intel.git, but no big deal for me.
+> Still valid and should remain.
 
-OK, thanks.
+Thanks for the update.
 
 Rafael
