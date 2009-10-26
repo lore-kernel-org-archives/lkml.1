@@ -1,83 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbZJZHoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754998AbZJZHtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755080AbZJZHoT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 03:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbZJZHoS
+	id S1754998AbZJZHtB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 03:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbZJZHtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 03:44:18 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:55234 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754897AbZJZHoR (ORCPT
+	Mon, 26 Oct 2009 03:49:00 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49735 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754806AbZJZHs7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 03:44:17 -0400
-Subject: Re: [PATCH] net: Adjust softirq raising in __napi_schedule
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Tilman Schmidt <tilman@imap.cc>, David Miller <davem@davemloft.net>,
-       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-wireless@vger.kernel.org,
-       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
-       Michael Buesch <mb@bu3sch.de>, Oliver Hartkopp <oliver@hartkopp.net>
-In-Reply-To: <20091026074126.GA6187@ff.dom.local>
-References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local>
-	 <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc>
-	 <20091021211906.GA11401@ami.dom.local>
-	 <1256160330.12174.2.camel@johannes.local>
-	 <20091021213947.GA12202@ami.dom.local>
-	 <1256200021.12174.11.camel@johannes.local> <4AE1C00B.5010008@imap.cc>
-	 <1256309191.12174.51.camel@johannes.local>
-	 <20091026074126.GA6187@ff.dom.local>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-E+8aKjCJrS4WO5H9zABR"
-Date: Mon, 26 Oct 2009 08:44:14 +0100
-Message-ID: <1256543054.28230.6.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 26 Oct 2009 03:48:59 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AE5545E.1020900@jp.fujitsu.com>
+Date: Mon, 26 Oct 2009 16:48:46 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
+ for pcie devices
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com> <4AE53883.3070709@kernel.org>
+In-Reply-To: <4AE53883.3070709@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yinghai Lu wrote:
+> Kenji Kaneshige wrote:
+>> Yinghai Lu wrote:
+>>> move out bus_size_bridges and assign resources out of pciehp_add_bridge()
+>>> and at last do them all together one time including slot bridge, to
+>>> avoid to call
+>>> assign resources several times, when there are several bridges under
+>>> the slot bridge.
+>>>
+>>> need to introduce pci_bridge_assign_resources there.
+>>>
+>>> handle the case the first bridge that doesn't get pre-allocated big
+>>> enough res from FW.
+>>> for example pcie devices need 256M, but the bridge only get
+>>> preallocated 2M...
+>>>
+>> Though I have not looked at the patch deeply yet (sorry), I have
+>> some questions and concerns about this change. Please correct me
+>> if my understanding is not correct.
+>>
+>> - Your patch doesn't seems to have the code to free resources.
+>>  If we need to expand the resource range, don't we need to free
+>>  preallocated resource before allocating the new one?
+> 
+> that is done with pci_bus_size_bridges ==> pbus_size_io/pbus_size_mem ==> find_free_bus_resource ==> release_resource.
+> 
 
---=-E+8aKjCJrS4WO5H9zABR
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I didn't noticed that find_free_bus_resource() was changed to call
+release_resource() recently...
 
-On Mon, 2009-10-26 at 07:41 +0000, Jarek Poplawski wrote:
+By the way, does this (release_resource() by find_bus_resource())
+change the resource assignment by BIOS also for bridges other than
+the ports with hotplug slot (switch upstreamport, for example)?
 
-> > netif_rx_ni() disables preemption.
->=20
-> You wrote earlier:
->=20
-> > [...] the networking layer needs to have
-> > packets handed to it with softirqs disabled.
->=20
-> How disabling preemption can fix something which needs softirqs
-> disabled? Could you be more precise?
+>> - Your patch seems to update BARs for bridge itself. I think it
+>>  would break the bridge's driver (port service driver) that if
+>>  it controls the device's capability by using IO/Mem, though I
+>>  don't know if such driver or capabilities exists now.
+> 
+> port service driver will be AER and pciehotplug.
+> it seems those driver are not use those BAR...
+> those BAR are supposed for the devices under the pcie bridge.
+> 
 
-No, I wrote that I didn't know. I suppose now that I looked at it I do
-know, and only disabling preemption is required.
+I understand that there are only two port service drivers (AER and
+PCIe hotplug) and both doesn't use BAR. But I still have a concern
+that changing bridge's BARs might cause problems in the future. In
+my understanding, what you need is expanding IO/Mem base and limit
+of root or switch downstream ports. If so, I think we should only
+touch IO/Mem base/limit, and should not touch bridge's BARs.
 
-johannes
-
---=-E+8aKjCJrS4WO5H9zABR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJK5VNLAAoJEODzc/N7+QmaAZoP/j9hMJgijXD++p4xhyWTy+GX
-rFtthdxV0HfkilIABL2+ckwdscqaLsb7llJ7KRQrmGcIr//3pW3CUcSfsEVorvzR
-sOQE4mnQFR/MjpH+xKywUIZ99yS8ys8Ks/QeFOU5gQ3LrWF+xIVZf9jSXPR72GZg
-1fDCMbjmYn6NTuAdn9HC5go/WKRxhSn8OZe7NX8HsxCVqPlzIzgo0lrjVsH51FyR
-QNHdDT5qHZ6nADVolTC04v7VELo3cGPcrMr7GJnkwk8abfpNDR4rindKceF/yft0
-SSfgKVuAIicUS6/SwT4ktUdTe0kuZDE2keDJaK2zDJZUZNMOiI/NoShhNMv6lSBi
-CBx/o2lM7VoClPmMhjcf8feR3SHnqpgsZimDhmPBMxL7BSx+uIfLPfdp1WtHkzCl
-Vlxk1Nfr77G5RMspB6t68fRMzX80Xyh0Ok58opD/ToVtL9AvG3U8n998jwIM4sa7
-y8MpeiIIKOm0cm7r6s7iEaSTb92P3ZW+C28a6BWnm5Yxqy/SO4rhCmoYqNav16W4
-XuoZqa2WAEEV4pLM1oqPBRzRVN+dYzEOF9POS7eP3OQonxHKStjKldJRFMCAcX51
-58zZ+/FRlPOQP69xZYlpsYo9c66dZCgnbd9d23atBDxzEDLJjXimttWYRn0x+aZi
-tUbG6z5uXopGiNEU188C
-=FWoo
------END PGP SIGNATURE-----
-
---=-E+8aKjCJrS4WO5H9zABR--
+Thanks,
+Kenji Kaneshige
 
