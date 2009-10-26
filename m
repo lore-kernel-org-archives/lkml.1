@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbZJZHxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbZJZHyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755128AbZJZHxp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 03:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbZJZHxo
+	id S1755151AbZJZHyl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 03:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbZJZHyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 03:53:44 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:36156 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754763AbZJZHxo convert rfc822-to-8bit (ORCPT
+	Mon, 26 Oct 2009 03:54:40 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:48814 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754842AbZJZHyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 03:53:44 -0400
+	Mon, 26 Oct 2009 03:54:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UdUZHF4pIKgG5jV8AyOzWZoOeNy/juH3DA6JL9zSNhNqzEHvFDkMIs1j0v1R8buLhv
-         5SVuPQMIRQg5sNsiNqT1wHCown2X7HuVNG8snvpVgTFoiGB6dkljEclrXDTAphGX7M9g
-         K53/+zsAFMtA6+CfFLxe7vpjPw7vuYyw7Ue7Q=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=A7cYRaWCkJhUGQF7FkHui5GrA50Zvx7hufje1ot55iDDES9CmvY7w2d+4uTl5Itm67
+         Z9j+4w/wcptJVw72hHTtDYc3+oVrl0iDqwmvi4TjUjEjCD+J3dZdFh3lzJU8x1i9s0mM
+         OZ/PFP/so8IGCq2AoT4AWY8ANPbxhEvmr6LSI=
+Date: Mon, 26 Oct 2009 07:54:38 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Tilman Schmidt <tilman@imap.cc>, David Miller <davem@davemloft.net>,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless@vger.kernel.org,
+       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
+       Michael Buesch <mb@bu3sch.de>, Oliver Hartkopp <oliver@hartkopp.net>
+Subject: Re: [PATCH] net: Adjust softirq raising in __napi_schedule
+Message-ID: <20091026075438.GB6187@ff.dom.local>
+References: <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc> <20091021211906.GA11401@ami.dom.local> <1256160330.12174.2.camel@johannes.local> <20091021213947.GA12202@ami.dom.local> <1256200021.12174.11.camel@johannes.local> <4AE1C00B.5010008@imap.cc> <1256309191.12174.51.camel@johannes.local> <20091026074126.GA6187@ff.dom.local> <1256543054.28230.6.camel@johannes.local>
 MIME-Version: 1.0
-In-Reply-To: <a8e1da0910260050y527bdbcbt4171ad6d868fcb29@mail.gmail.com>
-References: <20091026172104.205f15af.sfr@canb.auug.org.au>
-	 <a8e1da0910260050y527bdbcbt4171ad6d868fcb29@mail.gmail.com>
-Date: Mon, 26 Oct 2009 15:53:47 +0800
-Message-ID: <a8e1da0910260053r245ee675yca4dc984303187df@mail.gmail.com>
-Subject: Re: linux-next: Tree for October 26
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Huang Ying <ying.huang@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256543054.28230.6.camel@johannes.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 3:50 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> Hi,
->
-> build fails with ghash ghash-clmulni-intel_asm.S:
+On Mon, Oct 26, 2009 at 08:44:14AM +0100, Johannes Berg wrote:
+> On Mon, 2009-10-26 at 07:41 +0000, Jarek Poplawski wrote:
+> 
+> > > netif_rx_ni() disables preemption.
+> > 
+> > You wrote earlier:
+> > 
+> > > [...] the networking layer needs to have
+> > > packets handed to it with softirqs disabled.
+> > 
+> > How disabling preemption can fix something which needs softirqs
+> > disabled? Could you be more precise?
+> 
+> No, I wrote that I didn't know. I suppose now that I looked at it I do
+> know, and only disabling preemption is required.
 
-It is a x86_32 laptop
+But netif_rx has preemption disabled most of the time (by hardirqs
+disabling). So maybe disabling preemption isn't the main reason here
+either?
 
-
->
->  AS      arch/x86/crypto/ghash-clmulni-intel_asm.o
-> arch/x86/crypto/ghash-clmulni-intel_asm.S: Assembler messages:
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:100: Error: bad register name `%rdi)'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:101: Error: bad register name `%rsi)'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:106: Error: bad register name `%rdi)'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:114: Error: bad register name `%rdx'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:117: Error: bad register name `%rdi)'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:118: Error: bad register name `%rcx)'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:122: Error: bad register name `%rsi)'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:126: Error: bad register name `%rdx'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:127: Error: bad register name `%rsi'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:128: Error: bad register name `%rdx'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:131: Error: bad register name `%rdi)'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:142: Error: bad register name `%rsi)'
-> arch/x86/crypto/ghash-clmulni-intel_asm.S:156: Error: bad register name `%rdi)'
-> make[2]: *** [arch/x86/crypto/ghash-clmulni-intel_asm.o] Error 1
-> make[1]: *** [arch/x86/crypto] Error 2
-> make: *** [arch/x86] Error 2
-> make: *** Waiting for unfinished jobs....
->
-> cc herbert & huang ying
->
-> --
-> Regards
-> dave
->
-
-
-
--- 
-Regards
-dave
+Jarek P.
