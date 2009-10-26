@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbZJZVjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbZJZVW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbZJZVjj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 17:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbZJZVji
+	id S1753524AbZJZVW2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 17:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZJZVW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 17:39:38 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:57318 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753051AbZJZVjh convert rfc822-to-8bit (ORCPT
+	Mon, 26 Oct 2009 17:22:27 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:49476 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbZJZVW0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 17:39:37 -0400
-X-Greylist: delayed 412 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Oct 2009 17:39:37 EDT
+	Mon, 26 Oct 2009 17:22:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:reply-to:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=H42PYulCdqtIuVZKnyImK4IZWVuhAgsc/IDqfObzQXY/7mMCepRHA4glHEBKG/GWN9
-         52pn5LBtNCLHTfyVEVtRZuKroeXjPzJU+OrDDwkl4m4esioXBgkJlr9anPAbygFukWrW
-         ks2ZURw0T1a8sD9UugYPjVSDNf2eyRR4bYhXg=
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=iUFW1u7grUYvY5/08bvtodUaWMKjCbwTdFkwkmdfv+xwlHVlR2FZVt5hyGuUZpB8hz
+         ARH3pMGNKii7k/eSTM+zTEDyypB/+QKRP8xOXsY13vzlN57Khq6rrVW4KRsOwYjrhMqC
+         hb+6/CHWjM2xHYK0CQdHNtGQBqw37FlcmNO/E=
+Message-ID: <4AE61590.2030603@gmail.com>
+Date: Mon, 26 Oct 2009 22:33:04 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Reply-To: q-funk@iki.fi
-In-Reply-To: <vX3ILojF2dJ.A.Zs.mgf5KB@chimera>
-References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera>
-	 <vX3ILojF2dJ.A.Zs.mgf5KB@chimera>
-Date: Mon, 26 Oct 2009 23:32:49 +0200
-X-Google-Sender-Auth: ddebbeb67c4a41c8
-Message-ID: <11fae7c70910261432w27b39e92ld319487e679fccaa@mail.gmail.com>
-Subject: Re: [Bug #13941] x86 Geode issue
-From: =?UTF-8?Q?Martin=2D=C3=89ric_Racine?= <q-funk@iki.fi>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Russell King <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.infradead.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] icst307: Add missing increment
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I do not recall anyone on LKML actually ever doing any work towards
-fixing this issue so, yes, it is still open.
+Without this increment the loop can only break if it does in the
+first iteration.
 
-On Mon, Oct 26, 2009 at 9:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.30 and 2.6.31.
->
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> be listed and let me know (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13941
-> Subject         : x86 Geode issue
-> Submitter       : Martin-Éric Racine <q-funk@iki.fi>
-> Date            : 2009-08-03 12:58 (85 days old)
-> References      : http://marc.info/?l=linux-kernel&m=124930434732481&w=4
->
->
->
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/arch/arm/common/icst307.c b/arch/arm/common/icst307.c
+index 6d094c1..b255fbf 100644
+--- a/arch/arm/common/icst307.c
++++ b/arch/arm/common/icst307.c
+@@ -55,7 +55,7 @@ icst307_khz_to_vco(const struct icst307_params *p, unsigned long freq)
+ 		 */
+ 		if (f > 6000 && f <= p->vco_max)
+ 			break;
+-	} while (i < ARRAY_SIZE(idx2s));
++	} while (++i < ARRAY_SIZE(idx2s));
+ 
+ 	if (i >= ARRAY_SIZE(idx2s))
+ 		return vco;
+@@ -117,7 +117,7 @@ icst307_ps_to_vco(const struct icst307_params *p, unsigned long period)
+ 		 */
+ 		if (f >= ps && f < 1000000000UL / 6000 + 1)
+ 			break;
+-	} while (i < ARRAY_SIZE(idx2s));
++	} while (++i < ARRAY_SIZE(idx2s));
+ 
+ 	if (i >= ARRAY_SIZE(idx2s))
+ 		return vco;
