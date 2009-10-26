@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbZJZChv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbZJZCoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbZJZChv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 22:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbZJZChu
+	id S1754594AbZJZCoi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 22:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbZJZCoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 22:37:50 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37678 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754520AbZJZCht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 22:37:49 -0400
-Date: Mon, 26 Oct 2009 13:37:57 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mika Kuoppala <mika.kuoppala@nokia.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Ben Hutchings <bhutchings@solarflare.com>
-Subject: linux-next: manual merge of the net tree with the i2c tree
-Message-Id: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 25 Oct 2009 22:44:37 -0400
+Received: from szxga03-in.huawei.com ([119.145.14.66]:58857 "EHLO
+	szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754451AbZJZCoh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 22:44:37 -0400
+Date: Mon, 26 Oct 2009 10:44:39 +0800
+From: Franko Fang <huananhu@huawei.com>
+Subject: Re: PATCH 23/10]Optimize the upload speed for PPP connection.
+To: David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, zihan@huawei.com,
+       greg@kroah.com, haegar@sdinet.de
+Message-id: <001401ca55e6$435c1e30$76900b0a@china.huawei.com>
+MIME-version: 1.0
+X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
+X-Mailer: Microsoft Outlook Express 6.00.2900.3598
+Content-type: text/plain; charset=ISO-8859-1
+Content-transfer-encoding: 7BIT
+X-Priority: 3
+X-MSMail-priority: Normal
+References: <fae097f21b27.1b27fae097f2@huawei.com> <4AE19780.3020507@gmail.com>
+ <20091024.064603.249036129.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Thanks your advice.
 
-Today's linux-next merge of the net tree got a conflict in
-drivers/net/sfc/sfe4001.c between commit
-3f7c0648f727a6d5baf6117653e4001dc877b90b ("i2c: Prevent priority
-inversion on top of bus lock") from the i2c tree and commit
-c9597d4f89565b6562bd3026adbe6eac6c317f47 ("sfc: Merge sfe4001.c into
-falcon_boards.c") from the net tree.
+But generally, PAGE_SIZE is 4096, whether it is too large or not?
 
-I have applied the following merge fixup patch (after removing
-drivers/net/sfc/sfe4001.c) and can carry it as necessary.
+If PAGE_SIZE is really appropriate, then I can resubmit the patch.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Thanks very much.
+----- Original Message ----- 
+From: "David Miller" <davem@davemloft.net>
+To: <william.allen.simpson@gmail.com>
+Cc: <huananhu@huawei.com>; <netdev@vger.kernel.org>; <linux-kernel@vger.kernel.org>; <zihan@huawei.com>; <greg@kroah.com>; <haegar@sdinet.de>
+Sent: Saturday, October 24, 2009 9:46 PM
+Subject: Re: PATCH 23/10]Optimize the upload speed for PPP connection.
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 26 Oct 2009 12:24:55 +1100
-Subject: [PATCH] net: merge fixup for drivers/net/sfc/falcon_boards.c
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/net/sfc/falcon_boards.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/sfc/falcon_boards.c b/drivers/net/sfc/falcon_boards.c
-index 99f7372..788b336 100644
---- a/drivers/net/sfc/falcon_boards.c
-+++ b/drivers/net/sfc/falcon_boards.c
-@@ -327,7 +327,7 @@ static int sfn4111t_reset(struct efx_nic *efx)
- 	efx_oword_t reg;
- 
- 	/* GPIO 3 and the GPIO register are shared with I2C, so block that */
--	mutex_lock(&efx->i2c_adap.bus_lock);
-+	rt_mutex_lock(&efx->i2c_adap.bus_lock);
- 
- 	/* Pull RST_N (GPIO 2) low then let it up again, setting the
- 	 * FLASH_CFG_1 strap (GPIO 3) appropriately.  Only change the
-@@ -343,7 +343,7 @@ static int sfn4111t_reset(struct efx_nic *efx)
- 	efx_writeo(efx, &reg, FR_AB_GPIO_CTL);
- 	msleep(1);
- 
--	mutex_unlock(&efx->i2c_adap.bus_lock);
-+	rt_mutex_unlock(&efx->i2c_adap.bus_lock);
- 
- 	ssleep(1);
- 	return 0;
--- 
-1.6.5
-
+> From: William Allen Simpson <william.allen.simpson@gmail.com>
+> Date: Fri, 23 Oct 2009 07:46:08 -0400
+> 
+>> Concur.  I'd go further than that, my code usually made room for at
+>> least
+>> a full MTU (MRU) with HDLC escaping.  To minimize context switches,
+>> that
+>> should be 3014 ((1500 MRU + 2 FCS + 4 header) * 2 escapes + 2 flags).
+>> 
+>> Even in the old days, when memory was tight, context switches and
+>> interrupt
+>> time were more expensive, too.  PPP is supposed to scale to OC-192.
+> 
+> Actually I'd like to see ->obuf allocated externally and then
+> make it simply PAGE_SIZE.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
