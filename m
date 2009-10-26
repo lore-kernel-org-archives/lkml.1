@@ -1,124 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZJZI2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbZJZI2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbZJZI2f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 04:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbZJZI2f
+	id S1755288AbZJZI2T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 04:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbZJZI2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 04:28:35 -0400
-Received: from aa001msb.fastweb.it ([85.18.95.80]:55420 "EHLO
-	aa001msb.fastweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755282AbZJZI2e (ORCPT
+	Mon, 26 Oct 2009 04:28:18 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54173 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755009AbZJZI2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 04:28:34 -0400
-Message-ID: <4AE55D83.7080608@evidence.eu.com>
-Date: Mon, 26 Oct 2009 09:27:47 +0100
-From: Claudio Scordino <claudio@evidence.eu.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 26 Oct 2009 04:28:17 -0400
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, Jan Beulich <JBeulich@novell.com>,
+       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86-64: adjust ia32entry branches for better static	 prediction
+From: Andi Kleen <andi@firstfloor.org>
+References: <4ADD7E6C020000780001AD73@vpn.id2.novell.com>
+	<4ADD64FC.3070006@gmail.com> <4ADD65C5.5000206@zytor.com>
+Date: Mon, 26 Oct 2009 09:28:21 +0100
+In-Reply-To: <4ADD65C5.5000206@zytor.com> (H. Peter Anvin's message of "Tue, 20 Oct 2009 16:24:53 +0900")
+Message-ID: <878weyy2xm.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Catalin Marinas <catalin.marinas@arm.com>, rmk+kernel@arm.linux.org.uk,
-       linux-arm-kernel@lists.arm.linux.org.uk, akpm@linux-foundation.org
-Subject: [PATCH][RE-SUBMIT] Default setting of the ARM_UNWIND option
-References: <4AD73DA4.4050006@evidence.eu.com> <1255620333.10164.77.camel@pc1117.cambridge.arm.com>
-In-Reply-To: <1255620333.10164.77.camel@pc1117.cambridge.arm.com>
-Content-Type: multipart/mixed;
- boundary="------------090103040504000907090608"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090103040504000907090608
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-Hi all,
+> On 10/20/2009 04:21 PM, Eric Dumazet wrote:
+>>>
+>>> --- linux-2.6.32-rc5/arch/x86/ia32/ia32entry.S	2009-10-19 13:12:43.000000000 +0200
+>>> +++ 2.6.32-rc5-x86_64-ia32-syscall-trace-branch-dir/arch/x86/ia32/ia32entry.S	2009-10-19 09:36:39.000000000 +0200
+>>> @@ -249,9 +249,9 @@ sysenter_tracesys:
+>>>   	call	syscall_trace_enter
+>>>   	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
+>>>   	RESTORE_REST
+>>> -	cmpl	$(IA32_NR_syscalls-1),%eax
+>>> -	ja	int_ret_from_sys_call /* sysenter_tracesys has set RAX(%rsp) */
+>>> -	jmp	sysenter_do_call
+>>> +	cmpl	$IA32_NR_syscalls,%eax
+>>> +	jb	sysenter_do_call
+>>> +	jmp	int_ret_from_sys_call /* sysenter_tracesys has set RAX(%rsp) */
+>>>   	CFI_ENDPROC
+>>
+>> on cmov enabled build, we could use cmov instruction to load eax with number
+>> that calls enosys_syscall(), to avoid loading -ENOSYS,RAX
+>> and these branches...
+>>
+>
+> It's x86-64, cmov is guaranteed.
 
-          I didn't get any comment on this patch, so I try to re-submit.
+But it's also not necessarily faster.
 
-My ARM board hanged at the initial "Calibrating delay loop" message.
-
-After some inspection, I found out the problem to be with commit
-adf8b37bafc1495393201a2ae4235846371870d0. This commit introduces stack
-unwinding for ARM, and set it enabled by default. However, it seems to
-not work with buggy or not-EABI compilers.
-
-My suggestion is to keep the feature (which is fine) but change the
-default setting of the option (see the attached patch).
-
-Having this option enabled by default, in fact, means that the kernel
-does not boot if the user has a wrong compiler. If so, inspecting the
-reason of the hang may require too much time (especially for people not
-familiar with this option).
-
-Consider that people may not know that their problem is related to the
-ARM_UNWIND option. Therefore, they may waste time bisecting just to
-understand where their problem really is.
-
-If we disable this option by default, users who know the real meaning of
-the option will still be able of setting it to the proper value.
-
-Any comment ?
-
-Many thanks,
-
-                   Claudio
-
-
-
-
-
-
-
---------------090103040504000907090608
-Content-Type: text/x-patch;
- name="0001-Disable-stack-unwinding-support-by-default-since-it.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-Disable-stack-unwinding-support-by-default-since-it.pat";
- filename*1="ch"
-
-From: Claudio Scordino <claudio@evidence.eu.com>
-Date: Mon, 19 Oct 2009 11:59:16 +0200
-Subject: [PATCH 1/1] Disable stack unwinding support by default, since it does not work on some buggy or not-EABI compilers.
-
-Disable stack unwinding support by default, since it does not work on some
-buggy or not-EABI compilers.
-
-Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
----
- arch/arm/Kconfig.debug |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
-index 1a6f70e..925e3fd 100644
---- a/arch/arm/Kconfig.debug
-+++ b/arch/arm/Kconfig.debug
-@@ -19,13 +19,13 @@ config FRAME_POINTER
- config ARM_UNWIND
- 	bool "Enable stack unwinding support"
- 	depends on AEABI && EXPERIMENTAL
--	default y
-+	default n
- 	help
- 	  This option enables stack unwinding support in the kernel
- 	  using the information automatically generated by the
- 	  compiler. The resulting kernel image is slightly bigger but
- 	  the performance is not affected. Currently, this feature
--	  only works with EABI compilers. If unsure say Y.
-+	  only works with EABI compilers. If unsure say N.
- 
- config DEBUG_USER
- 	bool "Verbose user fault messages"
+-Andi
 -- 
-1.6.0.4
-
-
-
-
-
-
-
-
-
---------------090103040504000907090608--
+ak@linux.intel.com -- Speaking for myself only.
