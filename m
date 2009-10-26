@@ -1,51 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbZJZVyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZJZVzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753222AbZJZVyH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 17:54:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZJZVyG
+	id S1753435AbZJZVzn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 17:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbZJZVzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 17:54:06 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48803
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752794AbZJZVyF (ORCPT
+	Mon, 26 Oct 2009 17:55:42 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33896 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752828AbZJZVzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 17:54:05 -0400
-Date: Mon, 26 Oct 2009 14:54:28 -0700 (PDT)
-Message-Id: <20091026.145428.127892659.davem@davemloft.net>
-To: raysonlogin@gmail.com
-Cc: mouse@mayc.ru, linux-kernel@vger.kernel.org
-Subject: Re: FatELF & patents
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <73a01bf20910261059j74bb37a9td472efc21c5440ca@mail.gmail.com>
-References: <73a01bf20910260850v215385e6q2cbbf9133acd5e1e@mail.gmail.com>
-	<4AE5C7C0.3060305@mayc.ru>
-	<73a01bf20910261059j74bb37a9td472efc21c5440ca@mail.gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Oct 2009 17:55:41 -0400
+Date: Mon, 26 Oct 2009 22:55:44 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Mike Travis <travis@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Robin Getz <rgetz@analog.com>, Dave Young <hidave.darkstar@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH 1/8] SGI x86_64 UV: Add limit console output function
+Message-ID: <20091026215544.GA3355@basil.fritz.box>
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233746.128967000@alcatraz.americas.sgi.com> <87tyxmy6x6.fsf@basil.nowhere.org> <4AE5E48F.6020408@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AE5E48F.6020408@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rayson Ho <raysonlogin@gmail.com>
-Date: Mon, 26 Oct 2009 12:59:22 -0500
+On Mon, Oct 26, 2009 at 11:03:59AM -0700, Mike Travis wrote:
+>
+>
+> Andi Kleen wrote:
+>> Mike Travis <travis@sgi.com> writes:
+>>
+>>> With a large number of processors in a system there is an excessive amount
+>>> of messages sent to the system console.  It's estimated that with 4096
+>>> processors in a system, and the console baudrate set to 56K, the startup
+>>> messages will take about 84 minutes to clear the serial port.
+>>>
+>>> This patch adds (for SGI UV only) a kernel start option "limit_console_
+>>> output" (or 'lco' for short), which when set provides the ability to
+>>> temporarily reduce the console loglevel during system startup.  This allows
+>>> informative messages to still be seen on the console without producing
+>>> excessive amounts of repetious messages.
+>>>
+>>> Note that all the messages are still available in the kernel log buffer.
+>>
+>> I've run into the same problem (kernel log being flooded on large number of CPU thread
+>> systems). It's definitely not a UV only problem. Making such a option UV only
+>> is definitely not the right approach, if anything it needs to be for everyone.
+>
+> I could use something like the MAXSMP config option to enable it...?
 
-> The patent mentions only one prior art:
-> 
-> "One prior art attempt to provide a method for providing a single
-> application for a variety of architectures and formats is the ANDF
-> system, developed by OSF. This is an architecture neutral binary
-> format. A disadvantage of this scheme is that it requires conversion
-> to the native architecture at installation time."
-> 
-> I don't think there is anything similar to Apple's fat binary or
-> universal binary -- a single executable that can be executed on
-> different processor families.
+No, it's a problem long before MAXSMP sizes.
 
-A variant of the Sparc SILO boot loader, called TILO, was
-doing this with Sparc Linux kernel images 15 or so years ago.
+>>
+>> Frankly a lot of these messages made sense for debugging at some point,
+>> but really don't anymore and should just be removed.
+>
+> That they still go to the kernel log buffer means the messages are still
+> available for debugging system problems.  KDB has a kernel print option if
+> you end up there before being able to use 'dmesg'.
 
-It packs a 32-bit and a 64-bit Linux kernel into one blob and figures
-out which one to actually boot once it figures out what kind of
-machine it is executing on.
+Again they should be just reevaluated and pr_debug()ed or completely
+removed.
+
+>
+>>
+>> Also I don't like the defaults of on. It would be better to evaluate if
+>> these various messages are really useful and if they are not just remove them.
+>
+> I believe most distros already do that by setting the loglevel argument
+> (but I could be wrong since I haven't looked at too many of them.)
+
+Even spamming dmesg is a problem. loglevel doesn't fix that.
+
+>
+>>
+>> For example do we really need the scheduler debug messages by default?
+>
+> This was the most painful message at Nasa (which has a 2k cpu system).  It took
+> well over an hour for these scheduler messages to print, just because we wanted
+> to get some other DEBUG prints.
+
+They should be just removed.
+
+>>
+>> Or do we really need to print the caches for each CPU at boot? The information
+>> is in sysfs anyways and rarely changes (I added this originally on 64bit,
+>> but in hindsight it was a bad idea)
+>
+> I was attempting not to decide whether each message was pertinent, only if it
+> was redundant.
+
+You should decide or at least ask whoever added it
+
+("How many bugs did you fix with that message last year?" If the answer
+is < 10 or so, remove it)
+>
+>>
+>> I don't think it makes much sense to print more than 2-3 lines for each CPU boot
+>> for example.
+>
+> That would still be 4 to 12 thousand lines of information which, as you say is
+> available by other means.
+
+A simple checkpoint for debugging is not available by other means.
+
+The cache, mce etc. information is.
+
+For the checkpoint problem on CPU boot it might be reasonable
+to write them into a special buffer and only print it when the other
+CPU does not come up (BP detects a time out)
+
+With that a single line of per CPU output should be feasible without
+losing any debuggability.
+
+In fact debuggability could be improved by putting the output 
+at better strategic points instead of the ad-hoc way it is currently.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
