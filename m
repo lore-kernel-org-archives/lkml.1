@@ -1,407 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZJZGEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbZJZGVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754799AbZJZGEM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 02:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbZJZGEL
+	id S1754391AbZJZGVL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 02:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZJZGVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 02:04:11 -0400
-Received: from icculus.org ([67.106.77.212]:33703 "EHLO icculus.org"
+	Mon, 26 Oct 2009 02:21:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:56814 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754787AbZJZGEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 02:04:09 -0400
-Date: Mon, 26 Oct 2009 02:03:42 -0400 (EDT)
-From: "Ryan C. Gordon" <icculus@icculus.org>
-X-X-Sender: icculus@andre.icculuslan
-To: "Anton D. Kachalov" <mouse@mayc.ru>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] binfmt_elf: FatELF support in the binary loader.
-In-Reply-To: <alpine.OSX.1.10.0910241242570.2441@caridad.icculuslan>
-Message-ID: <alpine.DEB.2.00.0910260157580.21285@andre.icculuslan>
-References: <4AE17C1A.4060009@mayc.ru> <alpine.OSX.1.10.0910231933550.2186@caridad.icculuslan> <4AE2C218.2040306@mayc.ru> <alpine.OSX.1.10.0910241242570.2441@caridad.icculuslan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1750987AbZJZGVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 02:21:09 -0400
+Date: Mon, 26 Oct 2009 17:21:04 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for October 26
+Message-Id: <20091026172104.205f15af.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__26_Oct_2009_17_21_04_+1100_j5gDNW=68+aalri2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Mon__26_Oct_2009_17_21_04_+1100_j5gDNW=68+aalri2
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > It's necessary if you would like to use setarch to choose binaries on biarch
-> > systems.
-> 
-> I didn't understand that when I first looked at the patch; sorry for any 
-> confusion I caused. I should probably add a similar test to FatELF.
+Hi all,
 
-...and now I have.
+Changes since 20091016:
 
-This is the same as the previous revision of my patch, plus a few lines to 
-check the personality, so setarch(8) can be used to force a 32-bit record 
-to be selected. Thanks to Anton for the idea!
+New trees: ceph, limits
 
+My fixes tree contains a build fix for powerpc/kvm.
 
+The ecryptfs tree lost its conflict.
 
->From 083ebfa908c1bfbdabf81e921f3ce6b5d430bcb9 Mon Sep 17 00:00:00 2001
-From: Ryan C. Gordon <icculus@icculus.org>
-Date: Mon, 26 Oct 2009 01:50:41 -0400
-Subject: [PATCH] binfmt_elf: FatELF support in the binary loader.
+The kbuild tree lost its build failure.
 
-This allows the kernel to load a single file that contains multiple ELF
-binaries (a "FatELF" file), selecting the correct one for the system.
+The device-mapper quilt series failed to import, but it was just a BASE
+problem.
 
-Details, rationale, tools, and patches for handling FatELF binaries can be
-found at http://icculus.org/fatelf/
+The net tree gained a conflict against the i2c tree.
 
-Signed-off-by: Ryan C. Gordon <icculus@icculus.org>
----
- arch/ia64/ia32/binfmt_elf32.c |    4 +-
- fs/binfmt_elf.c               |  159 ++++++++++++++++++++++++++++++++++------
- include/linux/elf.h           |   23 ++++++
- 3 files changed, 160 insertions(+), 26 deletions(-)
+----------------------------------------------------------------------------
 
-diff --git a/arch/ia64/ia32/binfmt_elf32.c b/arch/ia64/ia32/binfmt_elf32.c
-index c69552b..02d5dd1 100644
---- a/arch/ia64/ia32/binfmt_elf32.c
-+++ b/arch/ia64/ia32/binfmt_elf32.c
-@@ -223,12 +223,12 @@ elf32_set_personality (void)
- 
- static unsigned long
- elf32_map(struct file *filep, unsigned long addr, struct elf_phdr *eppnt,
--		int prot, int type, unsigned long unused)
-+		int prot, int type, unsigned long unused, unsigned long base)
- {
- 	unsigned long pgoff = (eppnt->p_vaddr) & ~IA32_PAGE_MASK;
- 
- 	return ia32_do_mmap(filep, (addr & IA32_PAGE_MASK), eppnt->p_filesz + pgoff, prot, type,
--			    eppnt->p_offset - pgoff);
-+			    (eppnt->p_offset + base) - pgoff);
- }
- 
- #define cpu_uses_ia32el()	(local_cpu_data->family > 0x1f)
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index b9b3bb5..a195024 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -37,8 +37,9 @@
- 
- static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs);
- static int load_elf_library(struct file *);
--static unsigned long elf_map(struct file *, unsigned long, struct elf_phdr *,
--				int, int, unsigned long);
-+static unsigned long 
-+elf_map(struct file *, unsigned long, struct elf_phdr *,
-+				int, int, unsigned long, unsigned long);
- 
- /*
-  * If we don't support core dumping, then supply a NULL so we
-@@ -319,7 +320,7 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 
- static unsigned long elf_map(struct file *filep, unsigned long addr,
- 		struct elf_phdr *eppnt, int prot, int type,
--		unsigned long total_size)
-+		unsigned long total_size, unsigned long base_offset)
- {
- 	unsigned long map_addr;
- 	unsigned long size = eppnt->p_filesz + ELF_PAGEOFFSET(eppnt->p_vaddr);
-@@ -343,11 +344,14 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
- 	*/
- 	if (total_size) {
- 		total_size = ELF_PAGEALIGN(total_size);
--		map_addr = do_mmap(filep, addr, total_size, prot, type, off);
-+		map_addr = do_mmap(filep, addr, total_size, prot, type,
-+		                   off + base_offset);
- 		if (!BAD_ADDR(map_addr))
- 			do_munmap(current->mm, map_addr+size, total_size-size);
--	} else
--		map_addr = do_mmap(filep, addr, size, prot, type, off);
-+	} else {
-+		map_addr = do_mmap(filep, addr, size, prot, type,
-+		                   off + base_offset);
-+	}
- 
- 	up_write(&current->mm->mmap_sem);
- 	return(map_addr);
-@@ -381,7 +385,7 @@ static unsigned long total_mapping_size(struct elf_phdr *cmds, int nr)
- 
- static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
- 		struct file *interpreter, unsigned long *interp_map_addr,
--		unsigned long no_base)
-+		unsigned long no_base, unsigned long base_offset)
- {
- 	struct elf_phdr *elf_phdata;
- 	struct elf_phdr *eppnt;
-@@ -419,7 +423,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
- 	if (!elf_phdata)
- 		goto out;
- 
--	retval = kernel_read(interpreter, interp_elf_ex->e_phoff,
-+	retval = kernel_read(interpreter, interp_elf_ex->e_phoff + base_offset,
- 			     (char *)elf_phdata,size);
- 	error = -EIO;
- 	if (retval != size) {
-@@ -455,7 +459,8 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
- 				load_addr = -vaddr;
- 
- 			map_addr = elf_map(interpreter, load_addr + vaddr,
--					eppnt, elf_prot, elf_type, total_size);
-+					eppnt, elf_prot, elf_type, total_size,
-+					base_offset);
- 			total_size = 0;
- 			if (!*interp_map_addr)
- 				*interp_map_addr = map_addr;
-@@ -560,10 +565,97 @@ static unsigned long randomize_stack_top(unsigned long stack_top)
- #endif
- }
- 
-+
-+/*
-+ * See if we're a valid FatELF binary, find the right record, and
-+ *  load (*elf) with the actual ELF header. Sets (*offset) to the
-+ *  base offset of the chosen ELF binary. Returns 0 on success or a negative
-+ *  error code.
-+ * If we're not a FatELF binary, (*elf) is loaded with the existing contents
-+ *  of (buf) and 0 is returned.
-+ */
-+static int examine_fatelf(struct file *file, const char *filename, char *buf,
-+		int buflen, unsigned long *offset, struct elfhdr *elf)
-+{
-+	int records, i, rc;
-+	const Fatelf_hdr *fatelf = (Fatelf_hdr *) buf;
-+
-+#if ((BITS_PER_LONG == 64) && (ELF_CLASS == ELFCLASS64) && CONFIG_COMPAT)
-+	if (unlikely(personality(current->personality) == PER_LINUX32))
-+		return -ENOEXEC;  /* want to force 32-bit record! */
-+#endif
-+
-+	if (likely(le32_to_cpu(fatelf->magic) != FATELF_MAGIC)) {
-+		*elf = *((struct elfhdr *)buf);  /* treat like normal ELF. */
-+		return 0;  /* not a FatELF binary; not an error. */
-+	}
-+
-+	if (unlikely(le16_to_cpu(fatelf->version) != 1))
-+		return -ENOEXEC; /* Unrecognized format version. */
-+
-+	/*
-+	 * In theory, there could be 255 separate records packed into this
-+	 *  binary, but for now, bprm->buf (128 bytes) holds exactly 5
-+	 *  records with the fatelf header, and that seems reasonable for
-+	 *  most uses. We could add the complexity to read more records later
-+	 *  if there's a serious need.
-+	 */
-+	records = (int) fatelf->num_records;  /* uint8, no byteswap needed */
-+	if (unlikely(records > 5))
-+		records = 5;  /* clamp, in case we find one we can use. */
-+
-+	for (i = 0; i < records; i++) {
-+		const Fatelf_record *record = &fatelf->records[i];
-+		const __u8 osabi = record->osabi;
-+		const int abiok = likely( likely(osabi == ELFOSABI_NONE) ||
-+		                          unlikely(osabi == ELFOSABI_LINUX) );
-+
-+		/* Fill in the data elf_check_arch() might care about. */
-+		elf->e_ident[EI_OSABI] = record->osabi;
-+		elf->e_ident[EI_CLASS] = record->word_size;
-+		elf->e_ident[EI_DATA] = record->byte_order;
-+		elf->e_machine = le16_to_cpu(record->machine);
-+
-+		if (unlikely(elf_check_arch(elf))
-+		    && likely(abiok)
-+		    && likely(record->osabi_version == 0)) {
-+			/* We can support this ELF arch/abi. */
-+			const __u64 rec_offset = le64_to_cpu(record->offset);
-+			const __u64 rec_size = le64_to_cpu(record->size);
-+			const __u64 end_offset = rec_offset + rec_size;
-+			const unsigned long uloff = (unsigned long) rec_offset;
-+
-+#if BITS_PER_LONG == 32
-+			if (unlikely(end_offset > 0xFFFFFFFF))
-+				continue;
-+#endif
-+
-+			if (unlikely(end_offset < rec_offset))
-+				continue;  /* overflow (corrupt file?) */
-+			if (unlikely(ELF_PAGEOFFSET(uloff) != 0))
-+				continue;  /* bad alignment. */
-+
-+			/* replace the FatELF data with the real ELF header. */
-+			rc = kernel_read(file, uloff, (char*) elf, sizeof(*elf));
-+			if (unlikely((rc != sizeof(*elf)) && (rc >= 0)))
-+				rc = -EIO;
-+			else if (likely(rc == sizeof(*elf))) {
-+				*offset = uloff;
-+				rc = 0;
-+			}
-+
-+			return rc;
-+		}
-+	}
-+
-+	return -ENOEXEC;  /* no binaries we could use. */
-+}
-+
-+
- static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- {
- 	struct file *interpreter = NULL; /* to shut gcc up */
-- 	unsigned long load_addr = 0, load_bias = 0;
-+	unsigned long load_addr = 0, load_bias = 0;
- 	int load_addr_set = 0;
- 	char * elf_interpreter = NULL;
- 	unsigned long error;
-@@ -571,6 +663,8 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 	unsigned long elf_bss, elf_brk;
- 	int retval, i;
- 	unsigned int size;
-+	unsigned long base_offset = 0;
-+	unsigned long interp_base_offset = 0;
- 	unsigned long elf_entry;
- 	unsigned long interp_load_addr = 0;
- 	unsigned long start_code, end_code, start_data, end_data;
-@@ -587,9 +681,11 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 		retval = -ENOMEM;
- 		goto out_ret;
- 	}
--	
--	/* Get the exec-header */
--	loc->elf_ex = *((struct elfhdr *)bprm->buf);
-+
-+	retval = examine_fatelf(bprm->file, bprm->filename, bprm->buf,
-+	                        BINPRM_BUF_SIZE, &base_offset, &loc->elf_ex);
-+	if (unlikely(retval < 0))
-+		goto out_ret;
- 
- 	retval = -ENOEXEC;
- 	/* First of all, some simple consistency checks */
-@@ -615,7 +711,7 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 	if (!elf_phdata)
- 		goto out;
- 
--	retval = kernel_read(bprm->file, loc->elf_ex.e_phoff,
-+	retval = kernel_read(bprm->file, loc->elf_ex.e_phoff + base_offset,
- 			     (char *)elf_phdata, size);
- 	if (retval != size) {
- 		if (retval >= 0)
-@@ -649,7 +745,8 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 			if (!elf_interpreter)
- 				goto out_free_ph;
- 
--			retval = kernel_read(bprm->file, elf_ppnt->p_offset,
-+			retval = kernel_read(bprm->file,
-+					     elf_ppnt->p_offset + base_offset,
- 					     elf_interpreter,
- 					     elf_ppnt->p_filesz);
- 			if (retval != elf_ppnt->p_filesz) {
-@@ -704,8 +801,13 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 				goto out_free_dentry;
- 			}
- 
--			/* Get the exec headers */
--			loc->interp_elf_ex = *((struct elfhdr *)bprm->buf);
-+			retval = examine_fatelf(interpreter, elf_interpreter,
-+			                        bprm->buf, BINPRM_BUF_SIZE,
-+			                        &interp_base_offset,
-+			                        &loc->interp_elf_ex);
-+			if (unlikely(retval < 0)) {
-+				goto out_free_dentry;
-+			}
- 			break;
- 		}
- 		elf_ppnt++;
-@@ -830,7 +932,7 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 		}
- 
- 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
--				elf_prot, elf_flags, 0);
-+				elf_prot, elf_flags, 0, base_offset);
- 		if (BAD_ADDR(error)) {
- 			send_sig(SIGKILL, current, 0);
- 			retval = IS_ERR((void *)error) ?
-@@ -911,7 +1013,7 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 		elf_entry = load_elf_interp(&loc->interp_elf_ex,
- 					    interpreter,
- 					    &interp_map_addr,
--					    load_bias);
-+					    load_bias, interp_base_offset);
- 		if (!IS_ERR((void *)elf_entry)) {
- 			/*
- 			 * load_elf_interp() returns relocation
-@@ -1026,11 +1128,19 @@ static int load_elf_library(struct file *file)
- 	unsigned long elf_bss, bss, len;
- 	int retval, error, i, j;
- 	struct elfhdr elf_ex;
-+	unsigned long base_offset = 0;
-+	char buf[BINPRM_BUF_SIZE];
- 
--	error = -ENOEXEC;
--	retval = kernel_read(file, 0, (char *)&elf_ex, sizeof(elf_ex));
--	if (retval != sizeof(elf_ex))
-+	retval = kernel_read(file, 0, buf, sizeof(buf));
-+	if (unlikely(retval != sizeof(buf))) {
-+		error = (retval >= 0) ? -EIO : retval;
- 		goto out;
-+	}
-+	error = examine_fatelf(file, 0, buf, sizeof(buf), &base_offset, &elf_ex);
-+	if (unlikely(retval < 0)) {
-+		goto out;
-+	}
-+	error = -ENOEXEC;
- 
- 	if (memcmp(elf_ex.e_ident, ELFMAG, SELFMAG) != 0)
- 		goto out;
-@@ -1052,7 +1162,8 @@ static int load_elf_library(struct file *file)
- 
- 	eppnt = elf_phdata;
- 	error = -ENOEXEC;
--	retval = kernel_read(file, elf_ex.e_phoff, (char *)eppnt, j);
-+	retval = kernel_read(file, elf_ex.e_phoff + base_offset,
-+	                     (char *)eppnt, j);
- 	if (retval != j)
- 		goto out_free_ph;
- 
-@@ -1074,7 +1185,7 @@ static int load_elf_library(struct file *file)
- 			PROT_READ | PROT_WRITE | PROT_EXEC,
- 			MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE,
- 			(eppnt->p_offset -
--			 ELF_PAGEOFFSET(eppnt->p_vaddr)));
-+			 ELF_PAGEOFFSET(eppnt->p_vaddr)) + base_offset);
- 	up_write(&current->mm->mmap_sem);
- 	if (error != ELF_PAGESTART(eppnt->p_vaddr))
- 		goto out_free_ph;
-diff --git a/include/linux/elf.h b/include/linux/elf.h
-index 90a4ed0..ded1fb6 100644
---- a/include/linux/elf.h
-+++ b/include/linux/elf.h
-@@ -33,6 +33,29 @@ typedef __u32	Elf64_Word;
- typedef __u64	Elf64_Xword;
- typedef __s64	Elf64_Sxword;
- 
-+/* FatELF (multiple ELF binaries in one file) support */
-+#define FATELF_MAGIC (0x1F0E70FA)
-+
-+typedef struct Fatelf_record {
-+  __le16 machine;      /* maps to e_machine */
-+  __u8 osabi;          /* maps to e_ident[EI_OSABI] */
-+  __u8 osabi_version;  /* maps to e_ident[EI_ABIVERSION] */
-+  __u8 word_size;      /* maps to e_ident[EI_CLASS] */
-+  __u8 byte_order;     /* maps to e_ident[EI_DATA] */
-+  __u8 reserved0;
-+  __u8 reserved1;
-+  __le64 offset;
-+  __le64 size;
-+} Fatelf_record;
-+
-+typedef struct Fatelf_hdr {
-+  __le32 magic;
-+  __le16 version;
-+  __u8 num_records;
-+  __u8 reserved0;
-+  Fatelf_record records[];
-+} Fatelf_hdr;
-+
- /* These constants are for the segment types stored in the image headers */
- #define PT_NULL    0
- #define PT_LOAD    1
--- 
-1.6.0.4
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
 
+Below is a summary of the state of the merge.
 
+We are up to 144 trees (counting Linus' and 22 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/davinci-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in drivers/pci/pci.c
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+CONFLICT (content): Merge conflict in arch/x86/kvm/mmu.c
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+CONFLICT (delete/modify): drivers/net/sfc/sfe4001.c deleted in net/master a=
+nd modified in HEAD. Version HEAD of drivers/net/sfc/sfe4001.c left in tree.
+$ git rm -f drivers/net/sfc/sfe4001.c
+Applying: net: merge fixup for drivers/net/sfc/falcon_boards.c
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
+CONFLICT (content): Merge conflict in drivers/mfd/Makefile
+Merging security-testing/next
+CONFLICT (content): Merge conflict in Documentation/dontdiff
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+CONFLICT (content): Merge conflict in drivers/acpi/video_detect.c
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/Kconfig
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/Makefile
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_actlog.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_int.h
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_main.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_nl.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_receiver.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_req.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_worker.c
+CONFLICT (add/add): Merge conflict in include/linux/drbd.h
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in drivers/net/Kconfig
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Merging devicetree/next-devicetree
+Merging limits/writable_limits
+Merging tip/auto-latest
+Merging oprofile/for-next
+Merging percpu/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Mon__26_Oct_2009_17_21_04_+1100_j5gDNW=68+aalri2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrlP9AACgkQjjKRsyhoI8x5MwCgp/waYtZzQeYTC3R5ed23MGTL
+kcYAoIvobK5Yx+/skMXciCpYcJN4ejhG
+=i3Dl
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__26_Oct_2009_17_21_04_+1100_j5gDNW=68+aalri2--
