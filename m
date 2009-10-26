@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbZJZGus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbZJZGyG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbZJZGus (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 02:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbZJZGur
+	id S1754723AbZJZGyG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 02:54:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbZJZGyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 02:50:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50771 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754359AbZJZGur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 02:50:47 -0400
-Date: Mon, 26 Oct 2009 07:50:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
-       mtosatti@redhat.com
-Subject: Re: [PATCH tip/core/rcu 6/6] rcu: Simplify creating of lockdep
-	class for root rcu_node
-Message-ID: <20091026065007.GA24908@elte.hu>
-References: <20091026020253.GA11350@linux.vnet.ibm.com> <12565226351797-git-send-email->
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12565226351797-git-send-email->
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Mon, 26 Oct 2009 02:54:05 -0400
+Received: from casper.infradead.org ([85.118.1.10]:52840 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754549AbZJZGyE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 02:54:04 -0400
+Date: Sun, 25 Oct 2009 23:55:08 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, mingo@elte.hu,
+       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
+Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
+Message-ID: <20091025235508.7f5438e6@infradead.org>
+In-Reply-To: <20091025230321.aa4f26a1.akpm@linux-foundation.org>
+References: <20091025225342.007138f5@infradead.org>
+	<20091025230321.aa4f26a1.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 25 Oct 2009 23:03:21 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-
-> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ...
+> >
+> > @@ -1071,6 +1072,8 @@ void __mark_inode_dirty(struct inode *inode,
+> > int flags) if ((inode->i_state & flags) == flags)
+> >  		return;
+> >  
+> > +	trace_dirty_inode(inode, current);
+> > +
+> >  	if (unlikely(block_dump))
+> >  		block_dump___mark_inode_dirty(inode);
+> >  
 > 
-> Use lockdep_set_class() to simplify the code and to avoid any additional
-> overhead in the !LOCKDEP case.
+> Doesn't powertop also want to know who is spinning up the disk via
+> buffered reads, direct-io reads and direct-io writes?
 > 
-> Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> That's why the block_dump hook in submit_bio() is there.
 
-This signoff order is wrong - first signoff line must be the author of 
-the patch. (which is a pretty general rule with only rare exceptions) 
+there is already an existing trace event for this in the block layer...
+I was planning to use block_bio_queue for this.
 
-This patch was from Peter originally, right? In such cases please add:
-
-  From: Peter Zijlstra <peterz@infradead.org>
-
-To the head of the patch. Or, if Peter acked it, add:
-
-  Acked-by: Peter Zijlstra <peterz@infradead.org>
-
-SOB lines are strictly only added by people who send patches to you - 
-i.e. it records the patch handling pathway.
-
-Thanks,
-
-	Ingo
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
