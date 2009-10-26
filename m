@@ -1,131 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZJZVzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbZJZV4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753435AbZJZVzn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 17:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbZJZVzm
+	id S1753612AbZJZV4w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 17:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbZJZV4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 17:55:42 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:33896 "EHLO
+	Mon, 26 Oct 2009 17:56:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33912 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752828AbZJZVzl (ORCPT
+	with ESMTP id S1752757AbZJZV4v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 17:55:41 -0400
-Date: Mon, 26 Oct 2009 22:55:44 +0100
+	Mon, 26 Oct 2009 17:56:51 -0400
+Date: Mon, 26 Oct 2009 22:56:54 +0100
 From: Andi Kleen <andi@firstfloor.org>
-To: Mike Travis <travis@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Robin Getz <rgetz@analog.com>, Dave Young <hidave.darkstar@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: Re: [PATCH 1/8] SGI x86_64 UV: Add limit console output function
-Message-ID: <20091026215544.GA3355@basil.fritz.box>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233746.128967000@alcatraz.americas.sgi.com> <87tyxmy6x6.fsf@basil.nowhere.org> <4AE5E48F.6020408@sgi.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Andi Kleen <andi@firstfloor.org>, David Woodhouse <dwmw2@infradead.org>,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] allow fallback to swiotlb on hw iommu init
+	failures
+Message-ID: <20091026215654.GB3355@basil.fritz.box>
+References: <20091023012158.177308035@sequoia.sous-sol.org> <87hbtmy6jc.fsf@basil.nowhere.org> <20091026162637.GA27699@sequoia.sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AE5E48F.6020408@sgi.com>
+In-Reply-To: <20091026162637.GA27699@sequoia.sous-sol.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 11:03:59AM -0700, Mike Travis wrote:
->
->
-> Andi Kleen wrote:
->> Mike Travis <travis@sgi.com> writes:
->>
->>> With a large number of processors in a system there is an excessive amount
->>> of messages sent to the system console.  It's estimated that with 4096
->>> processors in a system, and the console baudrate set to 56K, the startup
->>> messages will take about 84 minutes to clear the serial port.
->>>
->>> This patch adds (for SGI UV only) a kernel start option "limit_console_
->>> output" (or 'lco' for short), which when set provides the ability to
->>> temporarily reduce the console loglevel during system startup.  This allows
->>> informative messages to still be seen on the console without producing
->>> excessive amounts of repetious messages.
->>>
->>> Note that all the messages are still available in the kernel log buffer.
->>
->> I've run into the same problem (kernel log being flooded on large number of CPU thread
->> systems). It's definitely not a UV only problem. Making such a option UV only
->> is definitely not the right approach, if anything it needs to be for everyone.
->
-> I could use something like the MAXSMP config option to enable it...?
+[... 4 options described ...]
+> 
+> This series implements the fourth option.
 
-No, it's a problem long before MAXSMP sizes.
+Ok makes sense.
 
->>
->> Frankly a lot of these messages made sense for debugging at some point,
->> but really don't anymore and should just be removed.
->
-> That they still go to the kernel log buffer means the messages are still
-> available for debugging system problems.  KDB has a kernel print option if
-> you end up there before being able to use 'dmesg'.
-
-Again they should be just reevaluated and pr_debug()ed or completely
-removed.
-
->
->>
->> Also I don't like the defaults of on. It would be better to evaluate if
->> these various messages are really useful and if they are not just remove them.
->
-> I believe most distros already do that by setting the loglevel argument
-> (but I could be wrong since I haven't looked at too many of them.)
-
-Even spamming dmesg is a problem. loglevel doesn't fix that.
-
->
->>
->> For example do we really need the scheduler debug messages by default?
->
-> This was the most painful message at Nasa (which has a 2k cpu system).  It took
-> well over an hour for these scheduler messages to print, just because we wanted
-> to get some other DEBUG prints.
-
-They should be just removed.
-
->>
->> Or do we really need to print the caches for each CPU at boot? The information
->> is in sysfs anyways and rarely changes (I added this originally on 64bit,
->> but in hindsight it was a bad idea)
->
-> I was attempting not to decide whether each message was pertinent, only if it
-> was redundant.
-
-You should decide or at least ask whoever added it
-
-("How many bugs did you fix with that message last year?" If the answer
-is < 10 or so, remove it)
->
->>
->> I don't think it makes much sense to print more than 2-3 lines for each CPU boot
->> for example.
->
-> That would still be 4 to 12 thousand lines of information which, as you say is
-> available by other means.
-
-A simple checkpoint for debugging is not available by other means.
-
-The cache, mce etc. information is.
-
-For the checkpoint problem on CPU boot it might be reasonable
-to write them into a special buffer and only print it when the other
-CPU does not come up (BP detects a time out)
-
-With that a single line of per CPU output should be feasible without
-losing any debuggability.
-
-In fact debuggability could be improved by putting the output 
-at better strategic points instead of the ad-hoc way it is currently.
+This should be in the git log somewhere.
 
 -Andi
 
