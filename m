@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbZJZT7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbZJZUC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756524AbZJZT7g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755968AbZJZT7f
+	id S1756518AbZJZUC3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 16:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbZJZUC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:59:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60157 "EHLO ogre.sisk.pl"
+	Mon, 26 Oct 2009 16:02:28 -0400
+Received: from mail.perches.com ([173.55.12.10]:1067 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755413AbZJZT7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:59:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Subject: Re: [Bug #14267] Disassociating atheros wlan
-Date: Mon, 26 Oct 2009 21:01:28 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "Justin P. Mattock" <justinmattock@gmail.com>
-References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera> <vX3ILojF2dJ.A.c2G.9ef5KB@chimera> <20091026205714.da57ff86.kristoffer.ericson@gmail.com>
-In-Reply-To: <20091026205714.da57ff86.kristoffer.ericson@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1755934AbZJZUC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 16:02:28 -0400
+Subject: [PATCH] MAINTAINERS: Add s390 drivers block
+From: Joe Perches <joe@perches.com>
+To: linux-s390@vger.kernel.org
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 26 Oct 2009 13:02:31 -0700
+Message-ID: <1256587351.1865.132.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910262101.28115.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 October 2009, Kristoffer Ericson wrote:
-> On Mon, 26 Oct 2009 20:31:55 +0100 (CET)
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.30 and 2.6.31.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14267
-> > Subject		: Disassociating atheros wlan
-> > Submitter	: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-> > Date		: 2009-09-24 10:16 (33 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125378723723384&w=4
-> > 
-> > 
-> 
-> Still valid and should remain.
+There are currently 4 directories in drivers/s390
+(block, char, cio, kvm) without maintainers
+that could point to the s390 mailing list.
 
-Thanks for the update.
+Add a block for all drivers/s390
+List status as "Odd Fixes"
 
-Rafael
+Add a W: link for drivers/s390/crypto/
+
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index f40dcce..fe37ef3 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4466,6 +4466,12 @@ W:	http://www.ibm.com/developerworks/linux/linux390/
+ S:	Supported
+ F:	arch/s390/
+ 
++S390 DRIVERS
++L:	linux-s390@vger.kernel.org
++W:	http://www.ibm.com/developerworks/linux/linux390/
++S:	Odd Fixes
++F:	drivers/s390/
++
+ S390 NETWORK DRIVERS
+ M:	Ursula Braun <ursula.braun@de.ibm.com>
+ M:	Frank Blaschka <blaschka@linux.vnet.ibm.com>
+@@ -4480,6 +4486,7 @@ M:	Felix Beck <felix.beck@de.ibm.com>
+ M:	Ralph Wuerthner <ralph.wuerthner@de.ibm.com>
+ M:	linux390@de.ibm.com
+ L:	linux-s390@vger.kernel.org
++W:	http://www.ibm.com/developerworks/linux/linux390/
+ S:	Supported
+ F:	drivers/s390/crypto/
+ 
+
+
