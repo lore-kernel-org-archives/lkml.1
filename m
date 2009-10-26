@@ -1,68 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbZJZQ7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbZJZP7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865AbZJZQ7i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 12:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbZJZQ7h
+	id S1753205AbZJZP7Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 11:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZJZP7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 12:59:37 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:56018 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753321AbZJZQ7h (ORCPT
+	Mon, 26 Oct 2009 11:59:25 -0400
+Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:45214
+	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752752AbZJZP7Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 12:59:37 -0400
-X-Greylist: delayed 3611 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Oct 2009 12:59:37 EDT
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: linux-kernel@vger.kernel.org
-Subject: SHMEM question
-Date: Mon, 26 Oct 2009 11:59:04 -0400
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5; KDE/4.3.1; i686; ; )
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Message-id: <200910261159.04995.gene.heskett@verizon.net>
+	Mon, 26 Oct 2009 11:59:24 -0400
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: marcel@holtmann.org
+Cc: linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH] bluetooth: remove useless variable in virtual hci driver
+Date: Mon, 26 Oct 2009 13:59:19 -0200
+Message-Id: <1256572759-3042-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings;
+Commit ac28494c has removed the option to give a minor number as
+parameter for VHCI driver. Remove the variable used for that parameter.
+Printing the requested minor number, which would always be
+MISC_DYNAMIC_MINOR, is not needed. And return the error code returned by
+misc_register, instead of -EIO in init function.
 
-fedora F10 system, quad core phenom, 4GB ram, ASUS M2N-SLI Deluxe mobo
-kernel-2.6.32-rc5, uptime 2d 11:27 at the moment, and the system feels good.
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ drivers/bluetooth/hci_vhci.c |   15 +++------------
+ 1 files changed, 3 insertions(+), 12 deletions(-)
 
-rkhunter sent me an email this morning complaining about a data file in 
-/dev/shm.
-
-On looking at it:
-[root@coyote Download]# ls -l /dev/shm
-total 28
--rw-r----- 1 root root     4096 2009-10-25 12:09 mono.10594
--r-------- 1 root root 67108904 2009-10-24 00:28 pulse-shm-3880918577
--rw-rw-rw- 1 root root       16 2009-10-24 01:17 sem.ADBE_ReadPrefs_root
--rw-rw-rw- 1 root root       16 2009-10-24 01:17 sem.ADBE_REL_root
--rw-rw-rw- 1 root root       16 2009-10-24 01:17 sem.ADBE_WritePrefs_root
-
-On grepping for SHM in the .config, I find SHMEM set to y, but about an hours 
-worth of wandering around in a 'make xconfig' has failed to actually find it.
-
-That pulse-shm-3880918577 file at over 67 megabytes is all $00 till $04000000 
-into it, then there is 6 non-zero bytes and the rest is back to all balls.
-
-Is this some indicator of a new rootkit or WTF?
-
-It was the mono.10594 file that rkhunter-1.3.4 was concerned about.  I, since 
-I can't make a mental connection between SHMEM and /dev/shm, am concerned 
-about that whole tree of data which seems totally out of place in the /dev 
-tree.
-
-I hate to be a pest but Many Thanks for any enlightenment on this.
-
+diff --git a/drivers/bluetooth/hci_vhci.c b/drivers/bluetooth/hci_vhci.c
+index d5cde6d..8fed210 100644
+--- a/drivers/bluetooth/hci_vhci.c
++++ b/drivers/bluetooth/hci_vhci.c
+@@ -41,8 +41,6 @@
+ 
+ #define VERSION "1.3"
+ 
+-static int minor = MISC_DYNAMIC_MINOR;
+-
+ struct vhci_data {
+ 	struct hci_dev *hdev;
+ 
+@@ -292,7 +290,7 @@ static const struct file_operations vhci_fops = {
+ 	.release	= vhci_release,
+ };
+ 
+-static struct miscdevice vhci_miscdev= {
++static struct miscdevice vhci_miscdev = {
+ 	.name	= "vhci",
+ 	.fops	= &vhci_fops,
+ 	.minor	= MISC_DYNAMIC_MINOR,
+@@ -301,19 +299,12 @@ static struct miscdevice vhci_miscdev= {
+ static int __init vhci_init(void)
+ {
+ 	BT_INFO("Virtual HCI driver ver %s", VERSION);
+-
+-	if (misc_register(&vhci_miscdev) < 0) {
+-		BT_ERR("Can't register misc device with minor %d", minor);
+-		return -EIO;
+-	}
+-
+-	return 0;
++	return misc_register(&vhci_miscdev);
+ }
+ 
+ static void __exit vhci_exit(void)
+ {
+-	if (misc_deregister(&vhci_miscdev) < 0)
+-		BT_ERR("Can't unregister misc device with minor %d", minor);
++	misc_deregister(&vhci_miscdev);
+ }
+ 
+ module_init(vhci_init);
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The NRA is offering FREE Associate memberships to anyone who wants them.
-<https://www.nrahq.org/nrabonus/accept-membership.asp>
+1.6.3.3
 
-Microsoft is to Software as McDonalds is to Cuisine.
