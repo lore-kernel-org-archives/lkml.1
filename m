@@ -1,99 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbZJZHmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbZJZHoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754994AbZJZHmG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 03:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbZJZHmF
+	id S1755080AbZJZHoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 03:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbZJZHoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 03:42:05 -0400
-Received: from ernst.netinsight.se ([194.16.221.21]:11041 "HELO
-	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754858AbZJZHmE (ORCPT
+	Mon, 26 Oct 2009 03:44:18 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:55234 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754897AbZJZHoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 03:42:04 -0400
-Date: Mon, 26 Oct 2009 08:41:58 +0100
-From: Simon Kagstrom <simon.kagstrom@netinsight.net>
-To: "Shargorodsky Atal (EXT-Teleca/Helsinki)" 
-	<ext-atal.shargorodsky@nokia.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Artem Bityutskiy <dedekind1@gmail.com>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v11 4/5] core: Add kernel message dumper to call on
- oopses and panics
-Message-ID: <20091026084158.0644ea85@marrow.netinsight.se>
-In-Reply-To: <1256313202.5824.60.camel@atal-desktop>
-References: <20091015093133.GF10546@elte.hu>
-	<20091015161052.0752208e@marrow.netinsight.se>
-	<20091015154640.GA11408@elte.hu>
-	<20091016094601.4e2c2d3e@marrow.netinsight.se>
-	<20091016080935.GA3895@elte.hu>
-	<1255681467.32489.360.camel@localhost>
-	<20091016112556.6902b2dc@marrow.netinsight.se>
-	<20091016101045.GA3263@elte.hu>
-	<20091016140918.3981cfa2@marrow.netinsight.se>
-	<1255952922.32489.505.camel@localhost>
-	<20091019125017.GA9030@elte.hu>
-	<alpine.LFD.2.00.0910220832580.9771@eeepc.linux-foundation.org>
-	<20091022082500.602f9a7d@marrow.netinsight.se>
-	<1256313202.5824.60.camel@atal-desktop>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Mon, 26 Oct 2009 03:44:17 -0400
+Subject: Re: [PATCH] net: Adjust softirq raising in __napi_schedule
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Tilman Schmidt <tilman@imap.cc>, David Miller <davem@davemloft.net>,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless@vger.kernel.org,
+       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
+       Michael Buesch <mb@bu3sch.de>, Oliver Hartkopp <oliver@hartkopp.net>
+In-Reply-To: <20091026074126.GA6187@ff.dom.local>
+References: <4AD31213.6020006@imap.cc> <20091015114052.GA9870@ff.dom.local>
+	 <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc>
+	 <20091021211906.GA11401@ami.dom.local>
+	 <1256160330.12174.2.camel@johannes.local>
+	 <20091021213947.GA12202@ami.dom.local>
+	 <1256200021.12174.11.camel@johannes.local> <4AE1C00B.5010008@imap.cc>
+	 <1256309191.12174.51.camel@johannes.local>
+	 <20091026074126.GA6187@ff.dom.local>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-E+8aKjCJrS4WO5H9zABR"
+Date: Mon, 26 Oct 2009 08:44:14 +0100
+Message-ID: <1256543054.28230.6.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Oct 2009 18:53:22 +0300
-"Shargorodsky Atal (EXT-Teleca/Helsinki)" <ext-atal.shargorodsky@nokia.com> wrote:
 
-> 1. If somebody writes a module that uses dumper for uploading the
-> oopses/panics logs via some pay-per-byte medium,  since he has no way
-> to know in a module if the panic_on_oops flag is set, he'll have
-> to upload both oops and the following panic, because he does not
-> know for sure that the panic was caused by the oops. Hence he
-> pays twice for the same information, right?
-> 
-> I can think of a couple of way to figure it out in the module
-> itself, but I could not think of any clean way to do it.
+--=-E+8aKjCJrS4WO5H9zABR
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-This is correct, and the mtdoops driver has some provisions to handle
-this. First, there is a parameter to the module to specify whether
-oopses should be dumped at all - I added this for the particular case
-that someone has panic_on_oops set.
+On Mon, 2009-10-26 at 07:41 +0000, Jarek Poplawski wrote:
 
-Second, it does not dump oopses directly anyway, but puts it in a work
-queue. That way, if panic_on_oops is set, it will store the panic but
-the oops (called from the workqueue) will not get written anyway.
+> > netif_rx_ni() disables preemption.
+>=20
+> You wrote earlier:
+>=20
+> > [...] the networking layer needs to have
+> > packets handed to it with softirqs disabled.
+>=20
+> How disabling preemption can fix something which needs softirqs
+> disabled? Could you be more precise?
 
-> 2. We tried to use panic notifiers mechanism to print additional
-> information that we want to see in mtdoops logs and it worked well,
-> but having the kmsg_dump(KMSG_DUMP_PANIC) before the
-> atomic_notifier_call_chain() breaks this functionality.
-> Can we the call kmsg_dump() after the notifiers had been invoked?
+No, I wrote that I didn't know. I suppose now that I looked at it I do
+know, and only disabling preemption is required.
 
-Well, it depends I think. The code currently looks like this:
+johannes
 
-	kmsg_dump(KMSG_DUMP_PANIC);
-	/*
-	 * If we have crashed and we have a crash kernel loaded let it handle
-	 * everything else.
-	 * Do we want to call this before we try to display a message?
-	 */
-	crash_kexec(NULL);
-	[... Comments removed]
-	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+--=-E+8aKjCJrS4WO5H9zABR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-And moving kdump_msg() after crash_kexec() will make us miss the
-message if we have a kexec crash kernel as well. I realise that these
-two approaches might be complementary and are not likely to be used at
-the same time, but it's still something to think about.
+-----BEGIN PGP SIGNATURE-----
 
-Then again, maybe it's possible to move the panic notifiers above
-crash_kexec() as well, which would solve things nicely.
+iQIcBAABAgAGBQJK5VNLAAoJEODzc/N7+QmaAZoP/j9hMJgijXD++p4xhyWTy+GX
+rFtthdxV0HfkilIABL2+ckwdscqaLsb7llJ7KRQrmGcIr//3pW3CUcSfsEVorvzR
+sOQE4mnQFR/MjpH+xKywUIZ99yS8ys8Ks/QeFOU5gQ3LrWF+xIVZf9jSXPR72GZg
+1fDCMbjmYn6NTuAdn9HC5go/WKRxhSn8OZe7NX8HsxCVqPlzIzgo0lrjVsH51FyR
+QNHdDT5qHZ6nADVolTC04v7VELo3cGPcrMr7GJnkwk8abfpNDR4rindKceF/yft0
+SSfgKVuAIicUS6/SwT4ktUdTe0kuZDE2keDJaK2zDJZUZNMOiI/NoShhNMv6lSBi
+CBx/o2lM7VoClPmMhjcf8feR3SHnqpgsZimDhmPBMxL7BSx+uIfLPfdp1WtHkzCl
+Vlxk1Nfr77G5RMspB6t68fRMzX80Xyh0Ok58opD/ToVtL9AvG3U8n998jwIM4sa7
+y8MpeiIIKOm0cm7r6s7iEaSTb92P3ZW+C28a6BWnm5Yxqy/SO4rhCmoYqNav16W4
+XuoZqa2WAEEV4pLM1oqPBRzRVN+dYzEOF9POS7eP3OQonxHKStjKldJRFMCAcX51
+58zZ+/FRlPOQP69xZYlpsYo9c66dZCgnbd9d23atBDxzEDLJjXimttWYRn0x+aZi
+tUbG6z5uXopGiNEU188C
+=FWoo
+-----END PGP SIGNATURE-----
 
-// Simon
+--=-E+8aKjCJrS4WO5H9zABR--
+
