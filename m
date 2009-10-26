@@ -1,57 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbZJZOls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752243AbZJZOmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752125AbZJZOls (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 10:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbZJZOlr
+	id S1752243AbZJZOmM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 10:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZJZOmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 10:41:47 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60938 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751676AbZJZOlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 10:41:47 -0400
-Message-ID: <4AE5B52A.4050408@kernel.org>
-Date: Mon, 26 Oct 2009 15:41:46 +0100
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: the arch/x86 maintainers <x86@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, athena@fftw.org
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: fix iommu=nodac parameter handling
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Mon, 26 Oct 2009 10:42:11 -0400
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:63429 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751708AbZJZOmK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 10:42:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=g6Yt40/CCEtdpCoIiDYVUcdialibHNXLxABSS330q+6iInHMOGNc0XEm9latFvOplL
+         fxNrY8BXDOR3xSovzAA8Yy4Xp59vA3Mkw+WLfjGuyfUi3Gr2i34PpIVE7PQo6NYgNHri
+         Clp7seiV7KFlAy/IGCmALBriGZK0sOLkkGmEQ=
+Subject: Re: [PATCH -v5 02/11] MIPS: add mips_timecounter_read() to get
+ high precision timestamp
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: rostedt@goodmis.org
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Adam Nemet <anemet@caviumnetworks.com>,
+       Patrik Kluba <kpajko79@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <1256567646.26028.260.camel@gandalf.stny.rr.com>
+References: <cover.1256482555.git.wuzhangjin@gmail.com>
+	 <028867b99ec532b84963a35e7d552becc783cafc.1256483735.git.wuzhangjin@gmail.com>
+	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256483735.git.wuzhangjin@gmail.com>
+	 <1256565667.26028.257.camel@gandalf.stny.rr.com>
+	 <1256567108.5642.165.camel@falcon>
+	 <1256567646.26028.260.camel@gandalf.stny.rr.com>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Mon, 26 Oct 2009 22:42:03 +0800
+Message-Id: <1256568123.5642.169.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nodac should forbid dac instead of enabling it.  Fix it.
+Hi,
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Matteo Frigo <athena@fftw.org>
-Cc: stable@kernel.org
----
-This was posted several months ago in a two patch series.  The second
-one was rejected by Alan and with that the first one got lost too
-although it's an apparent bug fix.  Matteo hit this bug recently and
-reminded me about this patch.  So, regenerated and reposting.
+On Mon, 2009-10-26 at 10:34 -0400, Steven Rostedt wrote:
+> On Mon, 2009-10-26 at 22:25 +0800, Wu Zhangjin wrote:
+> > Hi,
+> > 
+> > On Mon, 2009-10-26 at 10:01 -0400, Steven Rostedt wrote:
+> > [...]
+> > > Some patches touch core tracing code, and some are arch specific. Now
+> > > the question is how do we go. I prefer that we go the path of the
+> > > tracing tree (easier for me to test).
+> > 
+> > Just coped with the feedbacks from Frederic Weisbecker.
+> > 
+> > I will rebase the whole patches to your git repo(the following one?) and
+> > send them out as the -v6 revision:
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git tip/tracing/core
+> 
+> Actually, I always base off of tip itself. Don't use mine. Use this one:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git  tracing/core
+> 
+> Then we will stay in sync.
+> 
 
-Thanks.
+Okay, pulling it...
 
- arch/x86/kernel/pci-dma.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > >  But every patch that touches MIPS
+> > > arch, needs an Acked-by from the MIPS maintainer. Which I see is Ralf
+> > > (on the Cc of this patch set.)
+> > > 
+> > 
+> > Looking forward to the feedback from Ralf, Seems he is a little busy.
+> > and also looking forward to the testing result from the other MIPS
+> > developers, so, we can ensure ftrace for MIPS really function!
+> > 
+> > Welcome to clone this branch and test it:
+> > 
+> > git://dev.lemote.com/rt4ls.git  linux-mips/dev/ftrace-upstream
+> 
+> I already have your repo as a remote ;-)
+> 
 
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index d20009b..8cf3996 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -216,7 +216,7 @@ static __init int iommu_setup(char *p)
- 		if (!strncmp(p, "allowdac", 8))
- 			forbid_dac = 0;
- 		if (!strncmp(p, "nodac", 5))
--			forbid_dac = -1;
-+			forbid_dac = 1;
- 		if (!strncmp(p, "usedac", 6)) {
- 			forbid_dac = -1;
- 			return 1;
+Thanks :-)
+
+> > 
+> > And this document will tell you how to play with it:
+> > Documentation/trace/ftrace.txt
+> 
+> Did you add to it?
+
+I have never touched the file, just hope some newbies(like me) can
+follow it and help to test it :-)
+
+Thanks & Regards,
+	Wu Zhangjin
+
