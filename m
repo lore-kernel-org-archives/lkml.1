@@ -1,153 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbZJZQEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZJZQFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753386AbZJZQEL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 12:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZJZQEK
+	id S1753394AbZJZQFL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 12:05:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZJZQFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 12:04:10 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:45381 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753255AbZJZQEJ (ORCPT
+	Mon, 26 Oct 2009 12:05:10 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:62704 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751992AbZJZQFJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 12:04:09 -0400
-Subject: [RFC] scripts/get_maintainer.pl: also find maintainers from
- Mercurial (hg log)
-From: Marti Raudsepp <marti@juffo.org>
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 26 Oct 2009 18:04:04 +0200
-Message-ID: <1256573044.7754.20.camel@localhost>
+	Mon, 26 Oct 2009 12:05:09 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtoEAE5l5UpGGN1W/2dsb2JhbACBUNZlhD8E
+Date: Mon, 26 Oct 2009 12:05:09 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, GeunSik Lim <leemgs1@gmail.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       Jesper Juhl <jj@chaosbits.net>, Adrian Bunk <bunk@stusta.de>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org,
+       Dominique Toupin <dominique.toupin@ericsson.com>,
+       Michel Dagenais <michel.dagenais@polymtl.ca>
+Subject: Re: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL
+	v2,headers to Dual BSD/GPL
+Message-ID: <20091026160509.GA8755@Krystal>
+References: <20091023160257.GA30447@Krystal> <20091023160632.GA2198@Krystal> <alpine.LNX.2.00.0910242300510.16628@swampdragon.chaosbits.net> <20091026015357.GA6033@localhost> <023001ca55e1$436e38e0$808410ac@zhaoleiwin> <49b7c2350910252203o69811000w4551c01e6e2a10c7@mail.gmail.com> <20091026073048.GC8162@elte.hu> <4AE5A17D.5020202@polymtl.ca> <20091026071832.36405c9a@infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091026071832.36405c9a@infradead.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 11:59:07 up 69 days,  2:48,  2 users,  load average: 0.09, 0.14,
+	0.10
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+* Arjan van de Ven (arjan@infradead.org) wrote:
+> On Mon, 26 Oct 2009 09:17:49 -0400
+> Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca> wrote:
+> 
+> > Ingo Molnar wrote:
+> > > 
+> > > But i also disagree with it on a technical level: code duplication
+> > > is _bad_. Why does the code have to be duplicated in user-space
+> > > like that? I'd like Linux tracing code to be in the kernel repo.
+> > > Why isnt this done properly, as part of the kernel project - to
+> > > make sure it all stays in sync?
+> > > 
+> > 
+> > If you mean that this code should solely be used inside the kernel,
+> > then what you propose technically does not work. There is a very high
+> > cost to accessing kernel code from userspace. 
+> 
+> yeah 100 cycles is insanely high, that's at least the equivalent of...
+> say one cache miss.
+> 
 
-I've patched the get_maintainer.pl script to also try finding
-maintainers from Mercurial history -- as alternative to git.
+Hi Arjan,
 
-Given that there are official hg repositories available from kernel.org,
-Mercurial seems to be an acceptable alternative to git. Does this patch
-have any chance?
+Maybe it's just me, but if you are talking of system calls performed
+with sysenter, my own machine (with an Intel Xeon E5405 CPU) seems to
+disagree with your estimations:
 
-(I really did try git, but hg just works better for me. I don't want to
-start a flame war here)
+For a system call doing basically _nothing_:
 
-Marti
+Cache-cold system call:
+Time for a system call (returns after a simple test) :
+TSC diff : 6426 cycles
+time diff : 3212.53 ns
 
----
-scripts/get_maintainer.pl: also find maintainers from Mercurial (hg log)
+Cache-hot system call:
+Time for system call (10000 calls) (returns after a simple test) :
+TSC diff : 599.893 cycles per call
+time diff : 299.903 ns per call
 
-When a .git directory doesn't exist, get_maintainer now tries to use Mercurial
-instead.
+Otherwise, if you are instead referring to a vDSO, then the contexts is
+slightly different, and it becomes cheaper, but it does not allow to
+share code as much between the in-kernel and vDSO implementations,
+mainly due to different locking required. Moreover, I wonder about the
+maximum vDSO size that can be ported across multiple architectures. It
+has only been used for really tiny pieces of code so far.
 
-Changed behavior:
-* Warns when .git is found but git is not installed
-* Warns when .hg is found but Mercurial is not installed
-* Previously --nogit made it quiet when outside a repository. Now --nogit yells
-about non-existant .hg repository
+Thanks,
 
-New behavior can be disabled with --nohg
+Mathieu
 
-Signed-off-by: Marti Raudsepp <marti@juffo.org>
+> 
+> -- 
+> Arjan van de Ven 	Intel Open Source Technology Centre
+> For development, discussion and tips for power savings, 
+> visit http://www.lesswatts.org
 
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -30,6 +30,8 @@
- my $email_git_min_percent = 5;
- my $email_git_since = "1-year-ago";
- my $email_git_blame = 0;
-+my $email_hg = 1;
-+my $email_hg_date = "-365";
- my $email_remove_duplicates = 1;
- my $output_multiline = 1;
- my $output_separator = ", ";
-@@ -72,6 +74,8 @@
- 		'git-min-percent=i' => \$email_git_min_percent,
- 		'git-since=s' => \$email_git_since,
- 		'git-blame!' => \$email_git_blame,
-+		'hg!' => \$email_hg,
-+		'hg-date=s' => \$email_hg_date,
- 		'remove-duplicates!' => \$email_remove_duplicates,
- 		'm!' => \$email_maintainer,
- 		'n!' => \$email_usename,
-@@ -277,8 +281,8 @@
- 	}
-     }
- 
--    if ($email && $email_git) {
--	recent_git_signoffs($file);
-+    if ($email && ($email_git || $email_hg)) {
-+	recent_vcs_signoffs($file);
-     }
- 
-     if ($email && $email_git_blame) {
-@@ -367,6 +371,8 @@
-     --git-min-percent => minimum percentage of commits required (default: 5)
-     --git-since => git history to use (default: 1-year-ago)
-     --git-blame => use git blame to find modified commits for patch or file
-+    --hg => include recent signers from hg (if git is unavailable)
-+    --hg-date => hg history to use (default: -365)
-     --m => include maintainer(s) if any
-     --n => include name 'Full Name <addr\@domain.tld>'
-     --l => include list(s) if any
-@@ -388,7 +394,7 @@
-   --help => show this help information
- 
- Default options:
--  [--email --git --m --n --l --multiline --pattern-depth=0 --remove-duplicates]
-+  [--email --git --hg --m --n --l --multiline --pattern-depth=0 --remove-duplicates]
- 
- Notes:
-   Using "-f directory" may give unexpected results:
-@@ -661,7 +667,7 @@
-     return @lines;
- }
- 
--sub recent_git_signoffs {
-+sub recent_vcs_signoffs {
-     my ($file) = @_;
- 
-     my $sign_offs = "";
-@@ -672,18 +678,26 @@
-     my %hash;
-     my $total_sign_offs;
- 
--    if (which("git") eq "") {
--	warn("$P: git not found.  Add --nogit to options?\n");
--	return;
--    }
--    if (!(-d ".git")) {
--	warn("$P: .git directory not found.  Use a git repository for better results.\n");
-+    if ($email_git && -d ".git") {
-+	if (which("git") eq "") {
-+	    warn("$P: found .git directory but git is not installed.  Use --nogit?\n");
-+	    return;
-+	}
-+
-+	$cmd = "git log --since=${email_git_since} -- ${file}";
-+    } elsif ($email_hg && -d ".hg") {
-+	if (which("hg") eq "") {
-+	    warn("$P: found .hg directory but Mercurial is not installed.  Use --nohg?\n");
-+	    return;
-+	}
-+
-+	$cmd = "hg log --date=${email_hg_date} --template='{desc}\\n' -- ${file}";
-+    } else {
-+	warn("$P: .git or .hg directory not found.  Use a git repository for better results.\n");
- 	warn("$P: perhaps 'git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git'\n");
- 	return;
-     }
- 
--    $cmd = "git log --since=${email_git_since} -- ${file}";
--
-     $output = `${cmd}`;
-     $output =~ s/^\s*//gm;
- 
-
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
