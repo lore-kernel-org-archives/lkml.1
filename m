@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbZJZNeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZJZNi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753992AbZJZNeT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 09:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZJZNeT
+	id S1754449AbZJZNi0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 09:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbZJZNiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 09:34:19 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:54890 "EHLO kernel.dk"
+	Mon, 26 Oct 2009 09:38:25 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbZJZNeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 09:34:18 -0400
-Date: Mon, 26 Oct 2009 14:34:22 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC 0/4] cfq: implement merging and breaking up of
-	cfq_queues
-Message-ID: <20091026133422.GF10727@kernel.dk>
-References: <1256332492-24566-1-git-send-email-jmoyer@redhat.com> <4e5e476b0910241308s4a14fb69jbc6f8d35eb0ab78@mail.gmail.com> <x49ws2iz3gg.fsf@segfault.boston.devel.redhat.com>
+	id S1750947AbZJZNiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 09:38:25 -0400
+Message-ID: <4AE5A650.30609@redhat.com>
+Date: Mon, 26 Oct 2009 14:38:24 +0100
+From: Stefan Assmann <sassmann@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <x49ws2iz3gg.fsf@segfault.boston.devel.redhat.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Don Dutile <ddutile@redhat.com>
+Subject: Re: [PATCH] PCI hotplug: use correct term for PCI Express
+References: <4AE59AE9.6030803@redhat.com> <m3my3emgyw.fsf@intrepid.localdomain>
+In-Reply-To: <m3my3emgyw.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26 2009, Jeff Moyer wrote:
-> Corrado Zoccolo <czoccolo@gmail.com> writes:
+On 26.10.2009 14:18, Krzysztof Halasa wrote:
+> Stefan Assmann <sassmann@redhat.com> writes:
 > 
-> > Hi Jeff,
-> > this series looks good.
+>> Change PCI-E to PCIe which is the correct term according to
+>> http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf.
 > 
-> Hi, Corrado.  Thanks again for the review!
+> Right.
 > 
-> > I like in particular the fact that you move seekiness detection in the cfqq.
-> > This can help with processes that issue sequential reads and seeky
-> > writes, or vice versa.
-> > Probably, also the think time could be made per-cfqq, so that the
-> > decision whether we should idle for a given cfqq is more precise.
+>> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
+>> @@ -86,8 +86,8 @@ static char *pci_bus_speed_strings[] = {
+>>  	"66 MHz PCIX 533",	/* 0x11 */
+>>  	"100 MHz PCIX 533",	/* 0x12 */
+>>  	"133 MHz PCIX 533",	/* 0x13 */
+>> -	"2.5 GT/s PCI-E",	/* 0x14 */
+>> -	"5.0 GT/s PCI-E",	/* 0x15 */
+>> +	"2.5 GT/s PCIe",	/* 0x14 */
+>> +	"5.0 GT/s PCIe",	/* 0x15 */
 > 
-> I'll have to think about that one.  It would be good to know Jens'
-> opinion on the matter, too.
+> In addition to this, it seems "PCIX" should also be changed to "PCI-X",
+> shouldn't it?
 
-Your implementation looks fine, as usual I'm mostly worried about
-performance impact and suitability (I hate having to work around
-issues). But the win is so large in some cases that we should just go
-ahead and merge it for .33, so I'll queue it up.
+Thanks for reminding me Krzysztof. I'll repost a patch with the changes
+included.
 
-It would be nice to fix the in-kernel problem with NFS, since that is
-doable.
-
--- 
-Jens Axboe
+  Stefan
+--
+Stefan Assmann         | Red Hat GmbH
+Software Engineer      | Otto-Hahn-Strasse 20, 85609 Dornach
+                       | HR: Amtsgericht Muenchen HRB 153243
+                       | GF: Brendan Lane, Charlie Peters,
+sassmann at redhat.com |     Michael Cunningham, Charles Cachera
 
