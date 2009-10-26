@@ -1,91 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754399AbZJZBFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbZJZBLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754399AbZJZBFB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 21:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbZJZBFA
+	id S1754456AbZJZBLa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 21:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbZJZBL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 21:05:00 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59520 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752455AbZJZBE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 21:04:59 -0400
-Date: Mon, 26 Oct 2009 12:04:57 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-next@vger.kernel.org,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Eric Paris <eparis@parisplace.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: writable limits to -next
-Message-Id: <20091026120457.39f7ab83.sfr@canb.auug.org.au>
-In-Reply-To: <m3eiorc7r4.fsf@intrepid.localdomain>
-References: <4AC6339B.7000905@gmail.com>
-	<20091006225751.7d5f3eec.sfr@canb.auug.org.au>
-	<4AE16B0A.7020400@gmail.com>
-	<20091026094741.5a1d492c.sfr@canb.auug.org.au>
-	<m3eiorc7r4.fsf@intrepid.localdomain>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__26_Oct_2009_12_04_57_+1100_mT4K+YDe6yHGZEsR"
+	Sun, 25 Oct 2009 21:11:29 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55037 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754338AbZJZBL2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 21:11:28 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 1/5] page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
+Cc: kosaki.motohiro@jp.fujitsu.com, Frans Pop <elendil@planet.nl>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org\"" <linux-mm@kvack.org>
+In-Reply-To: <1256221356-26049-2-git-send-email-mel@csn.ul.ie>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-2-git-send-email-mel@csn.ul.ie>
+Message-Id: <20091026100019.2F4A.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 26 Oct 2009 10:11:29 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__26_Oct_2009_12_04_57_+1100_mT4K+YDe6yHGZEsR
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> If a direct reclaim makes no forward progress, it considers whether it
+> should go OOM or not. Whether OOM is triggered or not, it may retry the
+> application afterwards. In times past, this would always wake kswapd as well
+> but currently, kswapd is not woken up after direct reclaim fails. For order-0
+> allocations, this makes little difference but if there is a heavy mix of
+> higher-order allocations that direct reclaim is failing for, it might mean
+> that kswapd is not rewoken for higher orders as much as it did previously.
+> 
+> This patch wakes up kswapd when an allocation is being retried after a direct
+> reclaim failure. It would be expected that kswapd is already awake, but
+> this has the effect of telling kswapd to reclaim at the higher order as well.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  mm/page_alloc.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index bf72055..dfa4362 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1817,9 +1817,9 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+>  	if (NUMA_BUILD && (gfp_mask & GFP_THISNODE) == GFP_THISNODE)
+>  		goto nopage;
+>  
+> +restart:
+>  	wake_all_kswapd(order, zonelist, high_zoneidx);
+>  
+> -restart:
+>  	/*
+>  	 * OK, we're below the kswapd watermark and have kicked background
+>  	 * reclaim. Now things get more complex, so set up alloc_flags according
 
-Hi Krzysztof,
+I think this patch is correct. personally, I like to add some commnent
+at restart label. but it isn't big matter.
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-On Mon, 26 Oct 2009 01:35:11 +0100 Krzysztof Halasa <khc@pm.waw.pl> wrote:
->
-> BTW you may want to check if the current wording is correct:
->=20
-> Stephen Rothwell <sfr@canb.auug.org.au> writes:
->=20
-> > You will need to ensure that the patches/commits in your tree/series ha=
-ve
-> > been:
-> >      * submitted under GPL v2 (or later) and include the Contributor's
->          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->=20
-> It's not ok to submit under e.g. GPL v3 only, I'd suggest "under GPL v2
-> and optionally other licence(s)" or something like that.
+However, I have a question. __alloc_pages_slowpath() retry logic is,
 
-Or maybe "under a license compatible with the Linux kernel source".
+1. try_to_free_pages() reclaimed some pages:
+	-> wait awhile and goto rebalance
+2. try_to_free_pages() didn't reclaimed any page:
+	-> call out_of_memory() and goto restart
 
-This was pointed out to me once before but I was hoping not to have to
-disturb the IBM lawyers again.  I guess I will run it past them and see
-what happens.
+Then, case-1 should be fixed too? 
+I mean,
 
-> For example code under BSD-style licence (in addition to GPLv2) is
-> present in Linux, though I think any additional licence (the "later" as
-> in "GPL v2 or later", GPL v3, MS EULA etc.) is acceptable as long as it
-> is really additional, i.e., if one can ignore it and "use" GPLv2
-> exclusively.
->=20
-> IANAL of course.
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index bf72055..5a27896 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1899,6 +1899,12 @@ rebalance:
+ 	if (should_alloc_retry(gfp_mask, order, pages_reclaimed)) {
+ 		/* Wait for some write requests to complete then retry */
+ 		congestion_wait(BLK_RW_ASYNC, HZ/50);
++
++		/*
++		 * While we wait congestion wait, Amount of free memory can
++		 * be changed dramatically. Thus, we kick kswapd again.
++		 */
++		wake_all_kswapd(order, zonelist, high_zoneidx);
+ 		goto rebalance;
+ 	}
+ 
+-------------------------------------------
 
-Me neither :-)
+?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__26_Oct_2009_12_04_57_+1100_mT4K+YDe6yHGZEsR
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrk9bkACgkQjjKRsyhoI8w0cQCeNRTlGwQgk1UdvgDmqvsu7zln
-LTkAn2B4pdDvV0YD+FB6DVKnh2bUKgBx
-=M5l4
------END PGP SIGNATURE-----
-
---Signature=_Mon__26_Oct_2009_12_04_57_+1100_mT4K+YDe6yHGZEsR--
