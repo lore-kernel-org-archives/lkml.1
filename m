@@ -1,67 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbZJZRfP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbZJZRhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbZJZRfP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 13:35:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbZJZRfO
+	id S1754274AbZJZRhg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 13:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZJZRhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 13:35:14 -0400
-Received: from fieldses.org ([174.143.236.118]:47409 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752395AbZJZRfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 13:35:13 -0400
-Date: Mon, 26 Oct 2009 13:36:29 -0400
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Jan Kara <jack@suse.cz>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       jamie@shareable.org
-Subject: Re: symlinks with permissions
-Message-ID: <20091026173629.GB16861@fieldses.org>
-References: <20091025062953.GC1391@ucw.cz> <20091026163157.GB7233@duck.suse.cz> <20091026165729.GF23564@us.ibm.com>
+	Mon, 26 Oct 2009 13:37:35 -0400
+Received: from james.oetiker.ch ([213.144.138.195]:37150 "EHLO
+	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753833AbZJZRhd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 13:37:33 -0400
+Date: Mon, 26 Oct 2009 18:37:36 +0100 (CET)
+From: Tobias Oetiker <tobi@oetiker.ch>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org\\\"" <linux-mm@kvack.org>
+Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
+ failures V2
+In-Reply-To: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0910261835440.24625@wbuna.brgvxre.pu>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091026165729.GF23564@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 11:57:29AM -0500, Serge E. Hallyn wrote:
-> Quoting Jan Kara (jack@suse.cz):
-> >   Hi,
-> > 
-> > On Sun 25-10-09 07:29:53, Pavel Machek wrote:
-> > > ...yes, they do exist, in /proc/self/fd/* . Unfortunately, their
-> > > permissions are not actually checked during open, resulting in
-> > > (obscure) security hole: if you have fd open for reading, you can
-> > > reopen it for write, even through unix permissions would not allow
-> > > that.
-> > > 
-> > > Now... I'd like to close the hole. One way would be to actually check
-> > > symlink permissions on open -- because those symlinks already have
-> > > correct permissions.
-> >   Hmm, I'm not sure I understand the problem. Symlink is just a file
-> > containing a path. So if you try to open a symlink, you will actually open
-> > a file to which the path points. So what security problem is here? Either
-> > you can open the file symlink points to for writing or you cannot...
-> >   Anyway, if you want to play with this,
-> > fs/proc/base.c:proc_pid_follow_link
-> >   is probably the function you are interested in.
-> 
-> The problem he's trying to address is that users may try to protect
-> a file by doing chmod 700 on the parent dir, but leave the file itself
-> accessible.  They don't realize that merely having a task with an open
-> fd to that file gives other users another path to the file.
-> 
-> Whether or not that's actually a problem is open to debate, but I think
-> he's right that many users aren't aware of it.
+Hi Mel,
 
-If /proc/self/fd/23 is a symlink to /home/me/privatedir/secret, then an
-open("proc/self/fd/23",...) still traverses the whole /home/.../secret
-path, and needs appropriate permissions at each step, doesn't it?
+I have no done additional tests ... and can report the following
 
-Probably I'm just terminally confused....
+Thursday Mel Gorman wrote:
 
---b.
+>   1/5 page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
+>   2/5 page allocator: Do not allow interrupts to use ALLOC_HARDER
+>
+>
+> 	These patches correct problems introduced by me during the 2.6.31-rc1
+> 	merge window. The patches were not meant to introduce any functional
+> 	changes but two were missed.
+>
+> 	If your problem goes away with just these two patches applied,
+> 	please tell me.
+
+1+2 do not help
+
+> Test 3: If you are getting allocation failures, try with the following patch
+>
+>   3/5 vmscan: Force kswapd to take notice faster when high-order watermarks are being hit
+>
+> 	This is a functional change that causes kswapd to notice sooner
+> 	when high-order watermarks have been hit. There have been a number
+> 	of changes in page reclaim since 2.6.30 that might have delayed
+> 	when kswapd kicks in for higher orders
+>
+> 	If your problem goes away with these three patches applied, please
+> 	tell me
+
+1+2+3 do not help either
+
+> Test 4: If you are still getting failures, apply the following
+>   4/5 page allocator: Pre-emptively wake kswapd when high-order watermarks are hit
+>
+> 	This patch is very heavy handed and pre-emptively kicks kswapd when
+> 	watermarks are hit. It should only be necessary if there has been
+> 	significant changes in the timing and density of page allocations
+> 	from an unknown source. Tobias, this patch is largely aimed at you.
+> 	You reported that with patches 3+4 applied that your problems went
+> 	away. I need to know if patch 3 on its own is enough or if both
+> 	are required
+>
+> 	If your problem goes away with these four patches applied, please
+> 	tell me
+
+3 allone does not help
+3+4 does ...
+
+cheers
+tobi
+-- 
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
