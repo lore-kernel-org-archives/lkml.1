@@ -1,88 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbZJZP0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752300AbZJZPhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752891AbZJZP0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 11:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZJZP0c
+	id S1752300AbZJZPhY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 11:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZJZPhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 11:26:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:32778 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752599AbZJZP0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 11:26:31 -0400
-Date: Mon, 26 Oct 2009 15:24:51 GMT
-From: tip-bot for Jan Beulich <JBeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       roland@redhat.com, jbeulich@novell.com, stable@kernel.org,
-       JBeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       roland@redhat.com, jbeulich@novell.com, stable@kernel.org,
-       JBeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4AE5CC4D020000780001BD13@vpn.id2.novell.com>
-References: <4AE5CC4D020000780001BD13@vpn.id2.novell.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86-64: Fix register leak in 32-bit syscall audting
-Message-ID: <tip-81766741fe1eee3884219e8daaf03f466f2ed52f@git.kernel.org>
-Git-Commit-ID: 81766741fe1eee3884219e8daaf03f466f2ed52f
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Mon, 26 Oct 2009 11:37:23 -0400
+Received: from ernst.netinsight.se ([194.16.221.21]:58168 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751916AbZJZPhW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 11:37:22 -0400
+Date: Mon, 26 Oct 2009 16:37:19 +0100
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: "Shargorodsky Atal (EXT-Teleca/Helsinki)" 
+	<ext-atal.shargorodsky@nokia.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Artem Bityutskiy <dedekind1@gmail.com>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH v11 4/5] core: Add kernel message dumper to call on
+ oopses and panics
+Message-ID: <20091026163719.4ab82a4e@marrow.netinsight.se>
+In-Reply-To: <1256570007.5822.58.camel@atal-desktop>
+References: <20091015093133.GF10546@elte.hu>
+	<20091015161052.0752208e@marrow.netinsight.se>
+	<20091015154640.GA11408@elte.hu>
+	<20091016094601.4e2c2d3e@marrow.netinsight.se>
+	<20091016080935.GA3895@elte.hu>
+	<1255681467.32489.360.camel@localhost>
+	<20091016112556.6902b2dc@marrow.netinsight.se>
+	<20091016101045.GA3263@elte.hu>
+	<20091016140918.3981cfa2@marrow.netinsight.se>
+	<1255952922.32489.505.camel@localhost>
+	<20091019125017.GA9030@elte.hu>
+	<alpine.LFD.2.00.0910220832580.9771@eeepc.linux-foundation.org>
+	<20091022082500.602f9a7d@marrow.netinsight.se>
+	<1256313202.5824.60.camel@atal-desktop>
+	<20091026084158.0644ea85@marrow.netinsight.se>
+	<1256553393.5822.24.camel@atal-desktop>
+	<20091026125316.0283e322@marrow.netinsight.se>
+	<1256570007.5822.58.camel@atal-desktop>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  81766741fe1eee3884219e8daaf03f466f2ed52f
-Gitweb:     http://git.kernel.org/tip/81766741fe1eee3884219e8daaf03f466f2ed52f
-Author:     Jan Beulich <JBeulich@novell.com>
-AuthorDate: Mon, 26 Oct 2009 15:20:29 +0000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 26 Oct 2009 16:23:26 +0100
+On Mon, 26 Oct 2009 17:13:27 +0200
+"Shargorodsky Atal (EXT-Teleca/Helsinki)" <ext-atal.shargorodsky@nokia.com> wrote:
 
-x86-64: Fix register leak in 32-bit syscall audting
+> How about adding KMSG_DUMP_LAST_OOPS_BEFORE_PANIC or something to the
+> kmsg_dump_reason enum, and making the kmsg_dump look like
+> kmsg_dump(panic_on_oops ? KMSG_DUMP_LAST_OOPS_BEFORE_PANIC : KMSG_DUMP_OOPS);
+> in oops_exit. Then let the dumpers decide what they want to do about it.
+> Just a thought.
 
-Restoring %ebp after the call to audit_syscall_exit() is not
-only unnecessary (because the register didn't get clobbered),
-but in the sysenter case wasn't even doing the right thing: It
-loaded %ebp from a location below the top of stack (RBP <
-ARGOFFSET), i.e. arbitrary kernel data got passed back to user
-mode in the register.
+It would also have to take in_interrupt() in account since that will
+also lead to a panic.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Acked-by: Roland McGrath <roland@redhat.com>
-Cc: <stable@kernel.org>
-LKML-Reference: <4AE5CC4D020000780001BD13@vpn.id2.novell.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/ia32/ia32entry.S |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+> And since you have no objections about moving notifiers up, it looks
+> like the second issue will be resolved, I believe Artem
+> will take care of it. :)
 
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index 1733f9f..581b056 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -204,7 +204,7 @@ sysexit_from_sys_call:
- 	movl RDI-ARGOFFSET(%rsp),%r8d	/* reload 5th syscall arg */
- 	.endm
- 
--	.macro auditsys_exit exit,ebpsave=RBP
-+	.macro auditsys_exit exit
- 	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),TI_flags(%r10)
- 	jnz ia32_ret_from_sys_call
- 	TRACE_IRQS_ON
-@@ -217,7 +217,6 @@ sysexit_from_sys_call:
- 	call audit_syscall_exit
- 	GET_THREAD_INFO(%r10)
- 	movl RAX-ARGOFFSET(%rsp),%eax	/* reload syscall return value */
--	movl \ebpsave-ARGOFFSET(%rsp),%ebp /* reload user register value */
- 	movl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),%edi
- 	cli
- 	TRACE_IRQS_OFF
-@@ -351,7 +350,7 @@ cstar_auditsys:
- 	jmp cstar_dispatch
- 
- sysretl_audit:
--	auditsys_exit sysretl_from_sys_call, RCX /* user %ebp in RCX slot */
-+	auditsys_exit sysretl_from_sys_call
- #endif
- 
- cstar_tracesys:
+Well, I have no objections to it, but I also know very little of the
+reasoning to put it there in the first place, so don't count my vote
+for very much here :-)
+
+// Simon
