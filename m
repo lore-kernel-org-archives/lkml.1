@@ -1,103 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbZJZPiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752949AbZJZPmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752814AbZJZPiV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 11:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZJZPiV
+	id S1752949AbZJZPmH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 11:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbZJZPmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 11:38:21 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:39375 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbZJZPiU (ORCPT
+	Mon, 26 Oct 2009 11:42:07 -0400
+Received: from gateway-1237.mvista.com ([206.112.117.35]:39287 "HELO
+	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1752571AbZJZPmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 11:38:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=odlDb0jemst21qtqgr9Mpk093SggyAb5v4jJqXDdiHK9GqHFY5l5LgLCFKdVbogwTH
-         wZ18MdwWpiUaU8vj9PIahQ8W8siTk6W2OUCcG0Z0MkkSTHIZK+g9fuhavbEt4nPnJDFl
-         sbOh7VV/kJv4GRx/5xQGFitXNdzPTO2qxMuWc=
-Message-ID: <4AE5C26A.9000400@gmail.com>
-Date: Mon, 26 Oct 2009 11:38:18 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Mon, 26 Oct 2009 11:42:06 -0400
+Message-ID: <4AE5C344.4020104@ru.mvista.com>
+Date: Mon, 26 Oct 2009 18:41:56 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [Alacrityvm-devel] [KVM PATCH v2 1/2] KVM: export lockless GSI
- attribute
-References: <20091023023512.3891.65889.stgit@dev.haskins.net>	<20091023023845.3891.36857.stgit@dev.haskins.net> <4AE460F4.2090905@redhat.com> <4AE5A336.4010801@gmail.com>
-In-Reply-To: <4AE5A336.4010801@gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigDD22D78FF4BC219F9C803553"
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>, rostedt@goodmis.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Adam Nemet <anemet@caviumnetworks.com>,
+       Patrik Kluba <kpajko79@gmail.com>
+Subject: Re: [PATCH -v6 05/13] tracing: enable HAVE_FUNCTION_TRACE_MCOUNT_TEST
+ for MIPS
+References: <cover.1256569489.git.wuzhangjin@gmail.com> <747deea2f18d5ccffe842df95a9dd1c86251a958.1256569489.git.wuzhangjin@gmail.com> <3f47087b70a965fd679b17a59521671296457df1.1256569489.git.wuzhangjin@gmail.com> <f290e125634d164ec65b09b24b269815f78455ab.1256569489.git.wuzhangjin@gmail.com> <07dc907ec62353b1aca99b2850d3b2e4b734189a.1256569489.git.wuzhangjin@gmail.com> <374da7039d2e1b97083edd8bcd7811356884d427.1256569489.git.wuzhangjin@gmail.com>
+In-Reply-To: <374da7039d2e1b97083edd8bcd7811356884d427.1256569489.git.wuzhangjin@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigDD22D78FF4BC219F9C803553
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hello.
 
-Gregory Haskins wrote:
-> Avi Kivity wrote:
->> On 10/23/2009 04:38 AM, Gregory Haskins wrote:
->>> Certain GSI's support lockless injecton, but we have no way to detect=
+Wu Zhangjin wrote:
 
->>> which ones at the GSI level.  Knowledge of this attribute will be
->>> useful later in the series so that we can optimize irqfd injection
->>> paths for cases where we know the code will not sleep.  Therefore,
->>> we provide an API to query a specific GSI.
->>>
->>>   =20
->> Instead of a lockless attribute, how about a ->set_atomic() method.  F=
-or=20
->> msi this can be the same as ->set(), for non-msi it can be a function =
+> There is an exisiting common ftrace_test_stop_func() in
+> kernel/trace/ftrace.c, which is used to check the global variable
+> ftrace_trace_stop to determine whether stop the function tracing.
 
->> that schedules the work (which will eventually call ->set()).
->>
->> The benefit is that we make a decision only once, when preparing the=20
->> routing entry, and install that decision in the routing entry instead =
-of=20
->> making it again and again later.
->=20
-> Yeah, I like this idea.  I think we can also get rid of the custom
-> workqueue if we do this as well, TBD.
+> This patch implepment the MIPS specific one to speedup the procedure.
 
-So I looked into this.  It isn't straight forward because you need to
-retain some kind of state across the deferment on a per-request basis
-(not per-GSI).  Today, this state is neatly tracked into the irqfd
-object itself (e.g. it knows to toggle the GSI).
+> Thanks goes to Zhang Le for Cleaning it up.
 
-So while generalizing this perhaps makes sense at some point, especially
-if irqfd-like interfaces get added, it probably doesn't make a ton of
-sense to expend energy on it ATM.  It is basically a generalization of
-the irqfd deferrment code.  Lets just wait until we have a user beyond
-irqfd for now.  Sound acceptable?
+> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
 
-In the meantime, I found a bug in the irq_routing code, so I will submit
-a v3 with this fix, as well as a few other things I improved in the v2
-series.
+[...]
 
-Kind Regards,
--Greg
+> diff --git a/arch/mips/kernel/mcount.S b/arch/mips/kernel/mcount.S
+> index 0c39bc8..5dfaca8 100644
+> --- a/arch/mips/kernel/mcount.S
+> +++ b/arch/mips/kernel/mcount.S
+> @@ -64,6 +64,10 @@
+>  	.endm
+>  
+>  NESTED(_mcount, PT_SIZE, ra)
+> +	lw	t0, function_trace_stop
+> +	bnez	t0, ftrace_stub
+> +	nop
 
+1) unless .set noreorder is specified in this file, explicit nop is not needed;
 
---------------enigDD22D78FF4BC219F9C803553
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+2) delay slot instruction is usually denoted by adding extra space on its 
+left, like this:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+	bnez	t0, ftrace_stub
+	 nop
 
-iEYEARECAAYFAkrlwmoACgkQP5K2CMvXmqHJFgCeLnNFYf/qAAXaJttfbnaXLhFc
-rAQAn38DgeeIrTz0MkTWKqgv8vbQa2pp
-=07Z5
------END PGP SIGNATURE-----
-
---------------enigDD22D78FF4BC219F9C803553--
+WBR, Sergei
