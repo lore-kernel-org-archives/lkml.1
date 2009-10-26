@@ -1,96 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZJZQQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZJZQUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbZJZQQc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 12:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZJZQQc
+	id S1753534AbZJZQUR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 12:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZJZQUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 12:16:32 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:19578 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753546AbZJZQQ3 (ORCPT
+	Mon, 26 Oct 2009 12:20:16 -0400
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:3714 "EHLO
+	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752757AbZJZQUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 12:16:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=cFeY5DlNYKpF/LF1IhXMthBEDZ90zS7FJhc9JGsc14wcLCmbkSLqK1jEqadhgXMrip
-         qalFSaBhsqTMonSxLHUlkoLVXluLy/l6AUiSAYw0Afoz+U3uFjuEleAWTcmEEQa28aoj
-         2xXy1/NDyCDG+4WwBF98YPw5InoEzMLeFRhz4=
-Subject: Re: [PATCH -v6 05/13] tracing: enable
- HAVE_FUNCTION_TRACE_MCOUNT_TEST for MIPS
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>, rostedt@goodmis.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Adam Nemet <anemet@caviumnetworks.com>,
-       Patrik Kluba <kpajko79@gmail.com>
-In-Reply-To: <4AE5C344.4020104@ru.mvista.com>
-References: <cover.1256569489.git.wuzhangjin@gmail.com>
-	 <747deea2f18d5ccffe842df95a9dd1c86251a958.1256569489.git.wuzhangjin@gmail.com>
-	 <3f47087b70a965fd679b17a59521671296457df1.1256569489.git.wuzhangjin@gmail.com>
-	 <f290e125634d164ec65b09b24b269815f78455ab.1256569489.git.wuzhangjin@gmail.com>
-	 <07dc907ec62353b1aca99b2850d3b2e4b734189a.1256569489.git.wuzhangjin@gmail.com>
-	 <374da7039d2e1b97083edd8bcd7811356884d427.1256569489.git.wuzhangjin@gmail.com>
-	 <4AE5C344.4020104@ru.mvista.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Tue, 27 Oct 2009 00:16:20 +0800
-Message-Id: <1256573780.5642.216.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Oct 2009 12:20:14 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtoEAFto5UrCTtAn/2dsb2JhbACBUNZbgjSCCwQ
+Date: Mon, 26 Oct 2009 17:20:11 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: linux-ide@vger.kernel.org, davem@davemloft.net,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH ide] : Increase WAIT_DRQ to support slow CF cards
+Message-ID: <20091026162011.GA3289@frolo.macqel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-26 at 18:41 +0300, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Wu Zhangjin wrote:
-> 
-> > There is an exisiting common ftrace_test_stop_func() in
-> > kernel/trace/ftrace.c, which is used to check the global variable
-> > ftrace_trace_stop to determine whether stop the function tracing.
-> 
-> > This patch implepment the MIPS specific one to speedup the procedure.
-> 
-> > Thanks goes to Zhang Le for Cleaning it up.
-> 
-> > Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
-> 
-> [...]
-> 
-> > diff --git a/arch/mips/kernel/mcount.S b/arch/mips/kernel/mcount.S
-> > index 0c39bc8..5dfaca8 100644
-> > --- a/arch/mips/kernel/mcount.S
-> > +++ b/arch/mips/kernel/mcount.S
-> > @@ -64,6 +64,10 @@
-> >  	.endm
-> >  
-> >  NESTED(_mcount, PT_SIZE, ra)
-> > +	lw	t0, function_trace_stop
-> > +	bnez	t0, ftrace_stub
-> > +	nop
-> 
-> 1) unless .set noreorder is specified in this file, explicit nop is not needed;
-> 
-> 2) delay slot instruction is usually denoted by adding extra space on its 
-> left, like this:
-> 
-> 	bnez	t0, ftrace_stub
-> 	 nop
-> 
+Hi,
 
-Okay, Will add an extra space for them later, thanks!
+I just encountered a problem with write-access to a batch of CF cards
+(KINGSTON TECHNOLOGY 4GB COMPACT FLASH CF/4GB
+3.3V/5V 9904321 - 006.AOOLF 4449081 - 1219643 X001 ASSY IN TAIWAN (c) 2008)
+connected to a PC-CARD / PCMCIA interface, with the following error messages :
 
-Regards,
-	Wu Zhangjin
+	hda: status timeout: status=0xd0 { Busy }
+	ide: failed opcode was: unknown
+	hda: no DRQ after issuing MULTWRITE
 
+After testing with different bigger values for the WAIT_DRQ timeout value,
+the problem disappeared.  I had success with WAIT_DRQ = 500ms, then with
+WAIT_DRQ = 300ms.  I then tested with WAIT_DRQ = 200ms, but the problem
+reappeared.  So I kept the 300ms value.
+
+Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+
+diff -r a145344bb228 include/linux/ide.h
+--- a/include/linux/ide.h	Thu Oct 22 08:28:28 2009 +0900
++++ b/include/linux/ide.h	Mon Oct 26 16:51:23 2009 +0100
+@@ -125,8 +125,8 @@
+  * Timeouts for various operations:
+  */
+ enum {
+-	/* spec allows up to 20ms */
+-	WAIT_DRQ	= HZ / 10,	/* 100ms */
++	/* spec allows up to 20ms, but some CF cards need more than 200ms */
++	WAIT_DRQ	= 3 * HZ / 10,	/* 300ms */
+ 	/* some laptops are very slow */
+ 	WAIT_READY	= 5 * HZ,	/* 5s */
+ 	/* should be less than 3ms (?), if all ATAPI CD is closed at boot */
