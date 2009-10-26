@@ -1,86 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbZJZLVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbZJZLYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755678AbZJZLVT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 07:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbZJZLVS
+	id S1755693AbZJZLYj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 07:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755674AbZJZLYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 07:21:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60204 "EHLO mx2.mail.elte.hu"
+	Mon, 26 Oct 2009 07:24:38 -0400
+Received: from lucidpixels.com ([75.144.35.66]:39255 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755606AbZJZLVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 07:21:18 -0400
-Date: Mon, 26 Oct 2009 12:21:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf tools: Kill off -Wcast-align
-Message-ID: <20091026112111.GA24010@elte.hu>
-References: <20091026054000.GA13517@linux-sh.org> <20091026062520.GA29580@elte.hu> <20091026094729.GB13517@linux-sh.org> <84144f020910260308r106574e3vdd72e8697571bdc2@mail.gmail.com>
+	id S1755621AbZJZLYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 07:24:38 -0400
+Date: Mon, 26 Oct 2009 07:24:39 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Dave Chinner <david@fromorbit.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: 2.6.31+2.6.31.4: XFS - All I/O locks up to D-state after 24-48
+ hours (sysrq-t+w available)
+In-Reply-To: <alpine.DEB.2.00.0910221849001.24576@p34.internal.lan>
+Message-ID: <alpine.DEB.2.00.0910260723150.22950@p34.internal.lan>
+References: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan> <alpine.DEB.2.00.0910181607040.27363@p34.internal.lan> <20091019030456.GS9464@discord.disaster> <alpine.DEB.2.00.0910190431180.23395@p34.internal.lan> <20091020003358.GW9464@discord.disaster>
+ <alpine.DEB.2.00.0910200431290.21878@p34.internal.lan> <alpine.DEB.2.00.0910210618210.10288@p34.internal.lan> <alpine.DEB.2.00.0910221849001.24576@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <84144f020910260308r106574e3vdd72e8697571bdc2@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-> * Paul Mundt <lethal@linux-sh.org> wrote:
-> >> > The present use of -Wcast-align causes the build to blow up on SH due to
-> >> > generating a "cast increases required alignment of target type" error on
-> >> > each invocation of list_for_each_entry().
-> >> >
-> >> > It seems that this was previously reported and killed off in the ia64
-> >> > support patch, but nothing seems to have happened with that. Presumably
-> >> > the same problem still remains there, too.
-> >> >
-> >> > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> 
-> On Mon, Oct 26, 2009 at 07:25:20AM +0100, Ingo Molnar wrote:
-> >> Is this a GCC bug producing false positive warnings? The GCC manpage
-> >> says:
-> >>
-> >>        -Wcast-align
-> >>            Warn whenever a pointer is cast such that the required alignment of the
-> >>            target is increased.  For example, warn if a "char *" is cast to an
-> >>            "int *" on machines where integers can only be accessed at two- or
-> >>            four-byte boundaries.
-> >>
-> >> Which looks moderately useful - if it works.
-> 
-> On Mon, Oct 26, 2009 at 11:47 AM, Paul Mundt <lethal@linux-sh.org> wrote:
+On Thu, 22 Oct 2009, Justin Piszcz wrote:
+
 >
-> > Well, both ia64 and sh have hit this in the current compilers, and 
-> > it doesn't seem to pose any code generation issues. In the areas 
-> > where it is generated it seems to relate to 64-bit data types in the 
-> > data structures, which in itself doesn't seem inherently 
-> > problematic.
-> >
-> > I'll submit a bug report to the GCC folks, but for the time being 
-> > given that multiple architectures are hitting this and it doesn't 
-> > seem to be causing any issues, it would be better to have this flag 
-> > dropped.
-> 
-> Can we disable the flag for affected architectures but keep it enabled 
-> for x86?
+> Any other ideas?
+>
+> Currently stuck on 2.6.30.9.. (no issues, no lockups)-- Box normally has no 
+> load at all either.. Has anyone else reported similar problems?
+>
+> Justin.
+>
 
-For now i've applied Paul's fix - x86 doesnt have such type restrictions 
-and i dont remember this warning having flagged some real data structure 
-alignment bug anywhere.
+--
 
-	Ingo
+Currently running 2.6.31-rc1 for 2 days now, no crashes, will go to -rc2 
+later today and wait another 48 hours.
+
+Justin.
+
