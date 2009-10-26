@@ -1,241 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZJZSNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752800AbZJZSPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbZJZSNN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 14:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZJZSNM
+	id S1752800AbZJZSPK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 14:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZJZSPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 14:13:12 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34518 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbZJZSNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 14:13:11 -0400
-Date: Mon, 26 Oct 2009 19:13:14 +0100
-From: Jan Kara <jack@suse.cz>
-To: WU Fengguang <wfg@mail.ustc.edu.cn>
-Cc: npiggin@suse.de, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       hch@infradead.org, chris.mason@oracle.com
-Subject: [RFC] [PATCH] Avoid livelock for fsync
-Message-ID: <20091026181314.GE7233@duck.suse.cz>
+	Mon, 26 Oct 2009 14:15:09 -0400
+Received: from relay3.sgi.com ([192.48.152.1]:56604 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752506AbZJZSPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 14:15:07 -0400
+Message-ID: <4AE5E72E.1020702@sgi.com>
+Date: Mon, 26 Oct 2009 11:15:10 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="UlVJffcvxoiEqYs2"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Zhang Rui <rui.zhang@intel.com>,
+       Len Brown <lenb@kernel.org>, Thomas Renninger <trenn@suse.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Myron Stowe <myron.stowe@hp.com>,
+       Feng Tang <feng.tang@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/8] SGI x86_64 UV: Limit the number of ACPI messages
+References: <20091023233743.439628000@alcatraz.americas.sgi.com>	 <20091023233754.668088000@alcatraz.americas.sgi.com> <1256354987.17875.6.camel@dc7800.home>
+In-Reply-To: <1256354987.17875.6.camel@dc7800.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---UlVJffcvxoiEqYs2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-  Hi,
+Bjorn Helgaas wrote:
+> On Fri, 2009-10-23 at 18:37 -0500, Mike Travis wrote:
+>> plain text document attachment (limit_acpi)
+>> Limit number of ACPI messages of the form:
+>>
+>> [    0.000000] ACPI: LSAPIC (acpi_id[0x00] lsapic_id[0x00] lsapic_eid[0x00] enabled)
+>>
+>> [   99.638655] processor ACPI0007:00: registered as cooling_device0
+>>
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: Len Brown <lenb@kernel.org>
+>> Cc: Thomas Renninger <trenn@suse.de>
+>> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+>> Cc: Alexey Dobriyan <adobriyan@gmail.com>
+>> Cc: Myron Stowe <myron.stowe@hp.com>
+>> Cc: Feng Tang <feng.tang@intel.com>
+>> Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+>> Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+>> Cc: linux-acpi@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Signed-off-by: Mike Travis <travis@sgi.com>
+>> ---
+>>  drivers/acpi/fan.c            |    7 ++++++-
+>>  drivers/acpi/processor_core.c |    8 ++++++--
+>>  drivers/acpi/tables.c         |   15 ++++++++++-----
+>>  3 files changed, 22 insertions(+), 8 deletions(-)
+>>
+>> --- linux.orig/drivers/acpi/fan.c
+>> +++ linux/drivers/acpi/fan.c
+>> @@ -243,6 +243,7 @@
+>>  	int result = 0;
+>>  	int state = 0;
+>>  	struct thermal_cooling_device *cdev;
+>> +	static int msgcnt;
+>>  
+>>  	if (!device)
+>>  		return -EINVAL;
+>> @@ -267,7 +268,11 @@
+>>  		goto end;
+>>  	}
+>>  
+>> -	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
+>> +	if (msgcnt < 4 || !limit_console_output(false)) {
+>> +		dev_info(&device->dev,
+>> +			"registered as cooling_device%d\n", cdev->id);
+>> +		msgcnt++;
+>> +	}
+> 
+> I'm personally not in favor of printing some, but not all, of these
+> messages.  That leads to questions when analyzing a dmesg log, such as
+> "Hmm, I see I have 64 CPUs, but only 0-3 are registered as cooling
+> devices.  Does that mean something is wrong?"
+> 
+> But I would be glad to see this particular message removed completely.
 
-  on my way back from Kernel Summit, I've coded the attached patch which
-implements livelock avoidance for write_cache_pages. We tag patches that
-should be written in the beginning of write_cache_pages and then write
-only tagged pages (see the patch for details). The patch is based on Nick's
-idea.
-  The next thing I've aimed at with this patch is a simplification of
-current writeback code. Basically, with this patch I think we can just rip
-out all the range_cyclic and nr_to_write (or other "fairness logic"). The
-rationalle is following:
-  What we want to achieve with fairness logic is that when a page is
-dirtied, it gets written to disk within some reasonable time (like 30s or
-so). We track dirty time on per-inode basis only because keeping it
-per-page is simply too expensive. So in this setting fairness between
-inodes really does not make any sence - why should be a page in a file
-penalized and written later only because there are lots of other dirty
-pages in the file? It is enough to make sure that we don't write one file
-indefinitely when there are new dirty pages continuously created - and my
-patch achieves that.
-  So with my patch we can make write_cache_pages always write from
-range_start (or 0) to range_end (or EOF) and write all tagged pages. Also
-after changing balance_dirty_pages() so that a throttled process does not
-directly submit the IO (Fengguang has the patches for this), we can
-completely remove the nr_to_write logic because nothing really uses it
-anymore. Thus also the requeue_io logic should go away etc...
-  Fengguang, do you have the series somewhere publicly available? You had
-there a plenty of changes and quite some of them are not needed when the
-above is done. So could you maybe separate out the balance_dirty_pages
-change and I'd base my patch and further simplifications on top of that?
-Thanks.
+I didn't want to make the decision to remove messages as the original
+authors might have very good reasons for including them.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Note that the dmesg log (kernel log buffer) still does have every one of
+the messages, only the prints to the console output (which usually is a
+serial connection [or IPMI] on servers) are limited.
 
---UlVJffcvxoiEqYs2
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="0001-mm-Implement-writeback-livelock-avoidance-using-pag.patch"
+> 
+>>  	device->driver_data = cdev;
+>>  	result = sysfs_create_link(&device->dev.kobj,
+>> --- linux.orig/drivers/acpi/processor_core.c
+>> +++ linux/drivers/acpi/processor_core.c
+>> @@ -775,6 +775,7 @@
+>>  	struct acpi_processor *pr = NULL;
+>>  	int result = 0;
+>>  	struct sys_device *sysdev;
+>> +	static int msgcnt;
+>>  
+>>  	pr = kzalloc(sizeof(struct acpi_processor), GFP_KERNEL);
+>>  	if (!pr)
+>> @@ -845,8 +846,11 @@
+>>  		goto err_power_exit;
+>>  	}
+>>  
+>> -	dev_info(&device->dev, "registered as cooling_device%d\n",
+>> -		 pr->cdev->id);
+>> +	if (msgcnt < 4 || !limit_console_output(false)) {
+>> +		dev_info(&device->dev, "registered as cooling_device%d\n",
+>> +			 pr->cdev->id);
+>> +		msgcnt++;
+>> +	}
+>>  
+>>  	result = sysfs_create_link(&device->dev.kobj,
+>>  				   &pr->cdev->device.kobj,
+>> --- linux.orig/drivers/acpi/tables.c
+>> +++ linux/drivers/acpi/tables.c
+>> @@ -170,11 +170,16 @@
+>>  	case ACPI_MADT_TYPE_LOCAL_SAPIC:
+>>  		{
+>>  			struct acpi_madt_local_sapic *p =
+>> -			    (struct acpi_madt_local_sapic *)header;
+>> -			printk(KERN_INFO PREFIX
+>> -			       "LSAPIC (acpi_id[0x%02x] lsapic_id[0x%02x] lsapic_eid[0x%02x] %s)\n",
+>> -			       p->processor_id, p->id, p->eid,
+>> -			       (p->lapic_flags & ACPI_MADT_ENABLED) ? "enabled" : "disabled");
+>> +				(struct acpi_madt_local_sapic *)header;
+>> +
+>> +			if (p->eid < 8 || !limit_console_output(false))
+>> +				printk(KERN_INFO PREFIX
+>> +					"LSAPIC (acpi_id[0x%02x] "
+>> +						"lsapic_id[0x%02x] "
+>> +						"lsapic_eid[0x%02x] %s)\n",
+>> +					p->processor_id, p->id, p->eid,
+>> +					(p->lapic_flags & ACPI_MADT_ENABLED) ?
+>> +						"enabled" : "disabled");
+> 
+> I know we print way too much stuff for every processor, but again, I'd
+> rather see all CPUs or none.  I think there's a little more value in
+> this one than the cooling device one (probably because I do a lot of
+> platform bringup), but it could certainly be made KERN_DEBUG and/or
+> combined with another processor discovery line.
 
->From cf9ee78989c8db475cc41180eac3dbf74b35980b Mon Sep 17 00:00:00 2001
-From: Jan Kara <jack@suse.cz>
-Date: Sat, 24 Oct 2009 09:17:52 +0200
-Subject: [PATCH] mm: Implement writeback livelock avoidance using page tagging
+This was the major reason why I left the default as it currently is, and
+made it a startup option that a site can choose to use or not.
 
-We go though all sorts of hoops to avoid livelocking when we do
-writeback on a mapping and someone steadily creates dirty pages
-in that mapping. The motivation of this patch is to implement
-a simple way to avoid livelocks (an thus we can rip out all the
-methods we used previously).
+The intent of printing a few messages was to give context to the last line
+in this sequence:
 
-The idea is simple: Tag all pages that should be written back
-with a special tag (TOWRITE) in the radix tree. This can be done
-rather quickly and thus livelocks should not happen in practice.
-Then we start doing the hard work of locking pages and sending
-them to disk only for those pages that have TOWRITE tag set.
+[   99.638655] processor ACPI0007:00: registered as cooling_device0
+[   99.648277] processor ACPI0007:01: registered as cooling_device1
+[   99.657976] processor ACPI0007:02: registered as cooling_device2
+[   99.667229] processor ACPI0007:03: registered as cooling_device3
+[   99.676517] printk: further related messages suppressed
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- include/linux/fs.h         |    1 +
- include/linux/radix-tree.h |    2 +-
- mm/page-writeback.c        |   70 +++++++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 71 insertions(+), 2 deletions(-)
+Thanks,
+Mike
 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 2620a8c..6959d65 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -679,6 +679,7 @@ struct block_device {
-  */
- #define PAGECACHE_TAG_DIRTY	0
- #define PAGECACHE_TAG_WRITEBACK	1
-+#define PAGECACHE_TAG_TOWRITE	2
- 
- int mapping_tagged(struct address_space *mapping, int tag);
- 
-diff --git a/include/linux/radix-tree.h b/include/linux/radix-tree.h
-index c5da749..a7bc41b 100644
---- a/include/linux/radix-tree.h
-+++ b/include/linux/radix-tree.h
-@@ -55,7 +55,7 @@ static inline int radix_tree_is_indirect_ptr(void *ptr)
- 
- /*** radix-tree API starts here ***/
- 
--#define RADIX_TREE_MAX_TAGS 2
-+#define RADIX_TREE_MAX_TAGS 3
- 
- /* root tags are stored in gfp_mask, shifted by __GFP_BITS_SHIFT */
- struct radix_tree_root {
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 2c5d792..a19fd5a 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -803,6 +803,51 @@ void __init page_writeback_init(void)
- }
- 
- /**
-+ * tag_pages_for_writeback - tag pages to be written by write_cache_pages
-+ * @mapping: address space structure to write
-+ * @start: starting page index
-+ * @end: ending page index (inclusive)
-+ *
-+ * This function scans the page range from @start to @end and tags all pages
-+ * that have DIRTY tag set with a special TOWRITE tag. The idea is that
-+ * write_cache_pages (or whoever calls this function) will then use TOWRITE tag
-+ * to identify pages eligible for writeback.  This mechanism is used to avoid
-+ * livelocking of writeback by a process steadily creating new dirty pages in
-+ * the file (thus it is important for this function to be damn quick so that it
-+ * can tag pages faster than a dirtying process can create them).
-+ */
-+void tag_pages_for_writeback(struct address_space *mapping,
-+			     pgoff_t start, pgoff_t end)
-+{
-+	struct pagevec pvec;
-+	int nr_pages, i;
-+	struct page *page;
-+
-+	pagevec_init(&pvec, 0);
-+	while (start <= end) {
-+		nr_pages = pagevec_lookup_tag(&pvec, mapping, &start,
-+			      PAGECACHE_TAG_DIRTY,
-+			      min(end - start, (pgoff_t)PAGEVEC_SIZE-1) + 1);
-+		if (!nr_pages)
-+			return;
-+
-+		spin_lock_irq(&mapping->tree_lock);
-+		for (i = 0; i < nr_pages; i++) {
-+			page = pvec.pages[i];
-+			/* Raced with someone freeing the page? */
-+			if (page->mapping != mapping)
-+				continue;
-+			if (page->index > end)
-+				break;
-+			radix_tree_tag_set(&mapping->page_tree,
-+				page_index(page), PAGECACHE_TAG_TOWRITE);
-+		}
-+		spin_unlock_irq(&mapping->tree_lock);
-+	}
-+}
-+EXPORT_SYMBOL(tag_pages_for_writeback);
-+
-+/**
-  * write_cache_pages - walk the list of dirty pages of the given address space and write all of them.
-  * @mapping: address space structure to write
-  * @wbc: subtract the number of written pages from *@wbc->nr_to_write
-@@ -816,6 +861,13 @@ void __init page_writeback_init(void)
-  * the call was made get new I/O started against them.  If wbc->sync_mode is
-  * WB_SYNC_ALL then we were called for data integrity and we must wait for
-  * existing IO to complete.
-+ *
-+ * To avoid livelocks (when other process dirties new pages), we first tag
-+ * pages which should be written back with TOWRITE tag and only then start
-+ * writing them. For data-integrity sync we have to be careful so that we do
-+ * not miss some pages (e.g., because some other process has cleared TOWRITE
-+ * tag we set). The rule we follow is that TOWRITE tag can be cleared only
-+ * by the process clearing the DIRTY tag (and submitting the page for IO).
-  */
- int write_cache_pages(struct address_space *mapping,
- 		      struct writeback_control *wbc, writepage_t writepage,
-@@ -856,12 +908,13 @@ int write_cache_pages(struct address_space *mapping,
- 		cycled = 1; /* ignore range_cyclic tests */
- 	}
- retry:
-+	tag_pages_for_writeback(mapping, index, end);
- 	done_index = index;
- 	while (!done && (index <= end)) {
- 		int i;
- 
- 		nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
--			      PAGECACHE_TAG_DIRTY,
-+			      PAGECACHE_TAG_TOWRITE,
- 			      min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1);
- 		if (nr_pages == 0)
- 			break;
-@@ -984,6 +1037,18 @@ continue_unlock:
- 		wbc->nr_to_write = nr_to_write;
- 	}
- 
-+	/* Debugging aid */
-+	{
-+	int i;
-+	index = 0;
-+	end = -1;
-+	nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
-+		      PAGECACHE_TAG_TOWRITE,
-+		      min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1);
-+	for (i = 0; i < nr_pages; i++)
-+		printk("Seeing tagged page %lu, state %lu\n", pvec.pages[i]->index, pvec.pages[i]->flags);
-+	}
-+
- 	return ret;
- }
- EXPORT_SYMBOL(write_cache_pages);
-@@ -1327,6 +1392,9 @@ int test_set_page_writeback(struct page *page)
- 			radix_tree_tag_clear(&mapping->page_tree,
- 						page_index(page),
- 						PAGECACHE_TAG_DIRTY);
-+		radix_tree_tag_clear(&mapping->page_tree,
-+				     page_index(page),
-+				     PAGECACHE_TAG_TOWRITE);
- 		spin_unlock_irqrestore(&mapping->tree_lock, flags);
- 	} else {
- 		ret = TestSetPageWriteback(page);
--- 
-1.6.0.2
-
-
---UlVJffcvxoiEqYs2--
+> 
+> Bjorn
+> 
+>>  		}
+>>  		break;
+>>  
+>>
