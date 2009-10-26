@@ -1,204 +1,73 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754552AbZJZCED (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sun, 25 Oct 2009 22:04:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbZJZCEB
+	id S1754141AbZJZRai (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Mon, 26 Oct 2009 13:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZJZRah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 22:04:01 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:60159 "EHLO e2.ny.us.ibm.com"
+	Mon, 26 Oct 2009 13:30:37 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:55498 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754453AbZJZCD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 22:03:59 -0400
+	id S1752121AbZJZRah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 13:30:37 -0400
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
         josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-        Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
-        mtosatti@redhat.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 2/6] rcu: Add synchronize_srcu_expedited()
-Date: Sun, 25 Oct 2009 19:03:51 -0700
-Message-Id: <12565226354038-git-send-email->
+        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 1/1] rcu: Simplify creating of lockdep class for root rcu_node
+Date: Mon, 26 Oct 2009 10:24:31 -0700
+Message-Id: <1256577871443-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <20091026020253.GA11350@linux.vnet.ibm.com>
-References: <20091026020253.GA11350@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+From: Peter Zijlstra <peterz@infradead.org>
 
-This patch creates a synchronize_srcu_expedited() that uses
-synchronize_sched_expedited() where synchronize_srcu()
-uses synchronize_sched().  The synchronize_srcu() and
-synchronize_srcu_expedited() functions become one-liners that pass
-synchronize_sched() or synchronize_sched_expedited(), repectively,
-to a new __synchronize_srcu() function.
+Use lockdep_set_class() to simplify the code and to avoid any additional
+overhead in the !LOCKDEP case.  Also move the definition of rcu_root_class
+into kernel/rcutree.c, as suggested by Lai Jiangshan.
 
-While in the file, move the EXPORT_SYMBOL_GPL()s to immediately
-follow the corresponding functions.
-
-Requested-by: Avi Kivity <avi@redhat.com>
-Tested-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/srcu.h |    1 +
- kernel/srcu.c        |   74 ++++++++++++++++++++++++++++++++++---------------
- 2 files changed, 52 insertions(+), 23 deletions(-)
+ kernel/rcutree.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/srcu.h b/include/linux/srcu.h
-index aca0eee..4765d97 100644
---- a/include/linux/srcu.h
-+++ b/include/linux/srcu.h
-@@ -48,6 +48,7 @@ void cleanup_srcu_struct(struct srcu_struct *sp);
- int srcu_read_lock(struct srcu_struct *sp) __acquires(sp);
- void srcu_read_unlock(struct srcu_struct *sp, int idx) __releases(sp);
- void synchronize_srcu(struct srcu_struct *sp);
-+void synchronize_srcu_expedited(struct srcu_struct *sp);
- long srcu_batches_completed(struct srcu_struct *sp);
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index ddbf111..055f1a9 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -51,6 +51,8 @@
  
- #endif
-diff --git a/kernel/srcu.c b/kernel/srcu.c
-index b0aeeaf..818d7d9 100644
---- a/kernel/srcu.c
-+++ b/kernel/srcu.c
-@@ -49,6 +49,7 @@ int init_srcu_struct(struct srcu_struct *sp)
- 	sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
- 	return (sp->per_cpu_ref ? 0 : -ENOMEM);
+ /* Data structures. */
+ 
++static struct lock_class_key rcu_root_class;
++
+ #define RCU_STATE_INITIALIZER(name) { \
+ 	.level = { &name.node[0] }, \
+ 	.levelcnt = { \
+@@ -1666,8 +1668,7 @@ static void __init rcu_init_one(struct rcu_state *rsp)
+ 		cpustride *= rsp->levelspread[i];
+ 		rnp = rsp->level[i];
+ 		for (j = 0; j < rsp->levelcnt[i]; j++, rnp++) {
+-			if (rnp != rcu_get_root(rsp))
+-				spin_lock_init(&rnp->lock);
++			spin_lock_init(&rnp->lock);
+ 			rnp->gpnum = 0;
+ 			rnp->qsmask = 0;
+ 			rnp->qsmaskinit = 0;
+@@ -1690,7 +1691,7 @@ static void __init rcu_init_one(struct rcu_state *rsp)
+ 			INIT_LIST_HEAD(&rnp->blocked_tasks[1]);
+ 		}
+ 	}
+-	spin_lock_init(&rcu_get_root(rsp)->lock);
++	lockdep_set_class(&rcu_get_root(rsp)->lock, &rcu_root_class);
  }
-+EXPORT_SYMBOL_GPL(init_srcu_struct);
  
  /*
-  * srcu_readers_active_idx -- returns approximate number of readers
-@@ -97,6 +98,7 @@ void cleanup_srcu_struct(struct srcu_struct *sp)
- 	free_percpu(sp->per_cpu_ref);
- 	sp->per_cpu_ref = NULL;
- }
-+EXPORT_SYMBOL_GPL(cleanup_srcu_struct);
- 
- /**
-  * srcu_read_lock - register a new reader for an SRCU-protected structure.
-@@ -118,6 +120,7 @@ int srcu_read_lock(struct srcu_struct *sp)
- 	preempt_enable();
- 	return idx;
- }
-+EXPORT_SYMBOL_GPL(srcu_read_lock);
- 
- /**
-  * srcu_read_unlock - unregister a old reader from an SRCU-protected structure.
-@@ -136,22 +139,12 @@ void srcu_read_unlock(struct srcu_struct *sp, int idx)
- 	per_cpu_ptr(sp->per_cpu_ref, smp_processor_id())->c[idx]--;
- 	preempt_enable();
- }
-+EXPORT_SYMBOL_GPL(srcu_read_unlock);
- 
--/**
-- * synchronize_srcu - wait for prior SRCU read-side critical-section completion
-- * @sp: srcu_struct with which to synchronize.
-- *
-- * Flip the completed counter, and wait for the old count to drain to zero.
-- * As with classic RCU, the updater must use some separate means of
-- * synchronizing concurrent updates.  Can block; must be called from
-- * process context.
-- *
-- * Note that it is illegal to call synchornize_srcu() from the corresponding
-- * SRCU read-side critical section; doing so will result in deadlock.
-- * However, it is perfectly legal to call synchronize_srcu() on one
-- * srcu_struct from some other srcu_struct's read-side critical section.
-+/*
-+ * Helper function for synchronize_srcu() and synchronize_srcu_expedited().
-  */
--void synchronize_srcu(struct srcu_struct *sp)
-+void __synchronize_srcu(struct srcu_struct *sp, void (*sync_func)(void))
- {
- 	int idx;
- 
-@@ -173,7 +166,7 @@ void synchronize_srcu(struct srcu_struct *sp)
- 		return;
- 	}
- 
--	synchronize_sched();  /* Force memory barrier on all CPUs. */
-+	sync_func();  /* Force memory barrier on all CPUs. */
- 
- 	/*
- 	 * The preceding synchronize_sched() ensures that any CPU that
-@@ -190,7 +183,7 @@ void synchronize_srcu(struct srcu_struct *sp)
- 	idx = sp->completed & 0x1;
- 	sp->completed++;
- 
--	synchronize_sched();  /* Force memory barrier on all CPUs. */
-+	sync_func();  /* Force memory barrier on all CPUs. */
- 
- 	/*
- 	 * At this point, because of the preceding synchronize_sched(),
-@@ -203,7 +196,7 @@ void synchronize_srcu(struct srcu_struct *sp)
- 	while (srcu_readers_active_idx(sp, idx))
- 		schedule_timeout_interruptible(1);
- 
--	synchronize_sched();  /* Force memory barrier on all CPUs. */
-+	sync_func();  /* Force memory barrier on all CPUs. */
- 
- 	/*
- 	 * The preceding synchronize_sched() forces all srcu_read_unlock()
-@@ -237,6 +230,47 @@ void synchronize_srcu(struct srcu_struct *sp)
- }
- 
- /**
-+ * synchronize_srcu - wait for prior SRCU read-side critical-section completion
-+ * @sp: srcu_struct with which to synchronize.
-+ *
-+ * Flip the completed counter, and wait for the old count to drain to zero.
-+ * As with classic RCU, the updater must use some separate means of
-+ * synchronizing concurrent updates.  Can block; must be called from
-+ * process context.
-+ *
-+ * Note that it is illegal to call synchronize_srcu() from the corresponding
-+ * SRCU read-side critical section; doing so will result in deadlock.
-+ * However, it is perfectly legal to call synchronize_srcu() on one
-+ * srcu_struct from some other srcu_struct's read-side critical section.
-+ */
-+void synchronize_srcu(struct srcu_struct *sp)
-+{
-+	__synchronize_srcu(sp, synchronize_sched);
-+}
-+EXPORT_SYMBOL_GPL(synchronize_srcu);
-+
-+/**
-+ * synchronize_srcu_expedited - like synchronize_srcu, but less patient
-+ * @sp: srcu_struct with which to synchronize.
-+ *
-+ * Flip the completed counter, and wait for the old count to drain to zero.
-+ * As with classic RCU, the updater must use some separate means of
-+ * synchronizing concurrent updates.  Can block; must be called from
-+ * process context.
-+ *
-+ * Note that it is illegal to call synchronize_srcu_expedited()
-+ * from the corresponding SRCU read-side critical section; doing so
-+ * will result in deadlock.  However, it is perfectly legal to call
-+ * synchronize_srcu_expedited() on one srcu_struct from some other
-+ * srcu_struct's read-side critical section.
-+ */
-+void synchronize_srcu_expedited(struct srcu_struct *sp)
-+{
-+	__synchronize_srcu(sp, synchronize_sched_expedited);
-+}
-+EXPORT_SYMBOL_GPL(synchronize_srcu_expedited);
-+
-+/**
-  * srcu_batches_completed - return batches completed.
-  * @sp: srcu_struct on which to report batch completion.
-  *
-@@ -248,10 +282,4 @@ long srcu_batches_completed(struct srcu_struct *sp)
- {
- 	return sp->completed;
- }
--
--EXPORT_SYMBOL_GPL(init_srcu_struct);
--EXPORT_SYMBOL_GPL(cleanup_srcu_struct);
--EXPORT_SYMBOL_GPL(srcu_read_lock);
--EXPORT_SYMBOL_GPL(srcu_read_unlock);
--EXPORT_SYMBOL_GPL(synchronize_srcu);
- EXPORT_SYMBOL_GPL(srcu_batches_completed);
 -- 
 1.5.2.5
 
