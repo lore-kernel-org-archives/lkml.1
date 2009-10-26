@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZJZHFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZJZHKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754807AbZJZHFR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 03:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbZJZHFQ
+	id S1754838AbZJZHKi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 03:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZJZHKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 03:05:16 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39610 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754699AbZJZHFP (ORCPT
+	Mon, 26 Oct 2009 03:10:36 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:47532 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754752AbZJZHKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 03:05:15 -0400
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, Hannes Eder <hannes@hanneseder.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/8] SGI x86_64 UV: Limit the number of microcode messages
-From: Andi Kleen <andi@firstfloor.org>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com>
-	<20091023233756.941535000@alcatraz.americas.sgi.com>
-Date: Mon, 26 Oct 2009 08:05:19 +0100
-In-Reply-To: <20091023233756.941535000@alcatraz.americas.sgi.com> (Mike Travis's message of "Fri, 23 Oct 2009 18:37:49 -0500")
-Message-ID: <87ljiyy6s0.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Mon, 26 Oct 2009 03:10:33 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=QVWhE2gei+v/ryDsiDYzJHxme3dqXUwgQXMpRwGwpE2/r20hwR+lJZu9EJQfuXB6N
+	hmr4dCXoC082uNhm0EppA==
+Date: Mon, 26 Oct 2009 00:10:25 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Mel Gorman <mel@csn.ul.ie>, Frans Pop <elendil@planet.nl>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>, Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org\"" <linux-mm@kvack.org>
+Subject: Re: [PATCH 1/5] page allocator: Always wake kswapd when restarting
+ an allocation attempt after direct reclaim failed
+In-Reply-To: <20091026100019.2F4A.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0910260005500.15361@chino.kir.corp.google.com>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-2-git-send-email-mel@csn.ul.ie> <20091026100019.2F4A.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis <travis@sgi.com> writes:
+On Mon, 26 Oct 2009, KOSAKI Motohiro wrote:
 
-> Limit number of microcode messages of the form:
->
-> [   50.887135] microcode: CPU0 sig=0x206e5, pf=0x4, revision=0xffff001
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index bf72055..5a27896 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1899,6 +1899,12 @@ rebalance:
+>  	if (should_alloc_retry(gfp_mask, order, pages_reclaimed)) {
+>  		/* Wait for some write requests to complete then retry */
+>  		congestion_wait(BLK_RW_ASYNC, HZ/50);
+> +
+> +		/*
+> +		 * While we wait congestion wait, Amount of free memory can
+> +		 * be changed dramatically. Thus, we kick kswapd again.
+> +		 */
+> +		wake_all_kswapd(order, zonelist, high_zoneidx);
+>  		goto rebalance;
+>  	}
+>  
 
-Having a summary message that tells how many CPUs got updated at the
-end would seem like the right approach here.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+We're blocking to finish writeback of the directly reclaimed memory, why 
+do we need to wake kswapd afterwards?
