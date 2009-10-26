@@ -1,111 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752243AbZJZOmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbZJZO4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752243AbZJZOmM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 10:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZJZOmL
+	id S1752162AbZJZO4g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 10:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbZJZO4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 10:42:11 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:63429 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751708AbZJZOmK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 10:42:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=g6Yt40/CCEtdpCoIiDYVUcdialibHNXLxABSS330q+6iInHMOGNc0XEm9latFvOplL
-         fxNrY8BXDOR3xSovzAA8Yy4Xp59vA3Mkw+WLfjGuyfUi3Gr2i34PpIVE7PQo6NYgNHri
-         Clp7seiV7KFlAy/IGCmALBriGZK0sOLkkGmEQ=
-Subject: Re: [PATCH -v5 02/11] MIPS: add mips_timecounter_read() to get
- high precision timestamp
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: rostedt@goodmis.org
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Adam Nemet <anemet@caviumnetworks.com>,
-       Patrik Kluba <kpajko79@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <1256567646.26028.260.camel@gandalf.stny.rr.com>
-References: <cover.1256482555.git.wuzhangjin@gmail.com>
-	 <028867b99ec532b84963a35e7d552becc783cafc.1256483735.git.wuzhangjin@gmail.com>
-	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256483735.git.wuzhangjin@gmail.com>
-	 <1256565667.26028.257.camel@gandalf.stny.rr.com>
-	 <1256567108.5642.165.camel@falcon>
-	 <1256567646.26028.260.camel@gandalf.stny.rr.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Mon, 26 Oct 2009 22:42:03 +0800
-Message-Id: <1256568123.5642.169.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Oct 2009 10:56:36 -0400
+Received: from THUNK.ORG ([69.25.196.29]:41317 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751822AbZJZO4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 10:56:35 -0400
+Date: Mon, 26 Oct 2009 10:56:37 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Robert Bradbury <robert.bradbury@gmail.com>
+Cc: Thomas Backlund <tmb@mandriva.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: RFC: Updating the LKML bug reporting/updating framework
+Message-ID: <20091026145637.GE13941@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Robert Bradbury <robert.bradbury@gmail.com>,
+	Thomas Backlund <tmb@mandriva.org>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <deaa866a0910251559r6c001e6ek553256ac8f81b1f7@mail.gmail.com> <4AE4E026.9070402@mandriva.org> <deaa866a0910260512p1eca02f6k89aa180aec27558d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <deaa866a0910260512p1eca02f6k89aa180aec27558d@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Mon, 2009-10-26 at 10:34 -0400, Steven Rostedt wrote:
-> On Mon, 2009-10-26 at 22:25 +0800, Wu Zhangjin wrote:
-> > Hi,
-> > 
-> > On Mon, 2009-10-26 at 10:01 -0400, Steven Rostedt wrote:
-> > [...]
-> > > Some patches touch core tracing code, and some are arch specific. Now
-> > > the question is how do we go. I prefer that we go the path of the
-> > > tracing tree (easier for me to test).
-> > 
-> > Just coped with the feedbacks from Frederic Weisbecker.
-> > 
-> > I will rebase the whole patches to your git repo(the following one?) and
-> > send them out as the -v6 revision:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git tip/tracing/core
+On Mon, Oct 26, 2009 at 08:12:23AM -0400, Robert Bradbury wrote:
+> I was unaware of the kernel.org bugzilla database.  Sometimes people
+> will go from AT&T UNIX to SGI IRIX to Linux without making a stop at
+> kernel.org.  If it comes on a CD and boots relatively easily people
+> may not bother with such details.  I think I started using Linux
+> around the time I started using Mosaic and that may have been before
+> the kernel.org site was as robust as it now appears to be (if it
+> existed at all).
 > 
-> Actually, I always base off of tip itself. Don't use mine. Use this one:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git  tracing/core
-> 
-> Then we will stay in sync.
-> 
+> Given the bugzilla database, is the LKML with its high volume and
+> noise level (IMO), now largely obsolete [1]?  (I think I a Google
+> search may have led me in the direction that it was the place to
+> report bugs).
 
-Okay, pulling it...
+Robert,
 
-> > 
-> > >  But every patch that touches MIPS
-> > > arch, needs an Acked-by from the MIPS maintainer. Which I see is Ralf
-> > > (on the Cc of this patch set.)
-> > > 
-> > 
-> > Looking forward to the feedback from Ralf, Seems he is a little busy.
-> > and also looking forward to the testing result from the other MIPS
-> > developers, so, we can ensure ftrace for MIPS really function!
-> > 
-> > Welcome to clone this branch and test it:
-> > 
-> > git://dev.lemote.com/rt4ls.git  linux-mips/dev/ftrace-upstream
-> 
-> I already have your repo as a remote ;-)
-> 
+Most end users who use a Linux distribution will have a much better
+time if they use the support channels (bugzilla, irc, web forums,
+etc.) for their particular Linux distribution.  So if you are using
+Ubuntu, use the Ubuntu bugzilla and web forums.  If you are using
+Fedora, they have their own bugzilla and web forums.  Debian users
+have the Debian BTS (Bug Tracking System), as well as many mailing
+lists (focused on debian newbies, debian developers, etc.)
 
-Thanks :-)
+The LKML and the kernel bugzilla are best used for people who are
+working on the mainline Linux kernel, as opposed to the kernels which
+have been snapshotted and customized for each distribution.  Community
+distributions, which tend to snapshot every six months, do tend to be
+closer to mainline than Enterprise kernels (RHEL, SLES) that snapshot
+every 24 months or so, but even some community distributions, such as
+Ubuntu, do add a significant number of "value add" (and thus, bugs :-)
+to their kernels.
 
-> > 
-> > And this document will tell you how to play with it:
-> > Documentation/trace/ftrace.txt
-> 
-> Did you add to it?
+There are also individual sublists for people who are only working on
+a specific part of the kernel (i.e., the linux-ext4 mailing list, the
+linux-scsi mailing list, etc).
 
-I have never touched the file, just hope some newbies(like me) can
-follow it and help to test it :-)
-
-Thanks & Regards,
-	Wu Zhangjin
-
+					- Ted
