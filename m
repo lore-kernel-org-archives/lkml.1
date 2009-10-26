@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbZJZURD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbZJZUT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756558AbZJZURD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 16:17:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZJZURC
+	id S1756483AbZJZUT1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 16:19:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZJZUT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 16:17:02 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50777 "EHLO mx3.mail.elte.hu"
+	Mon, 26 Oct 2009 16:19:26 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52168 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753966AbZJZURA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 16:17:00 -0400
-Date: Mon, 26 Oct 2009 21:16:51 +0100
+	id S1754127AbZJZUT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 16:19:26 -0400
+Date: Mon, 26 Oct 2009 21:19:17 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Tejun Heo <tj@kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64@vger.kernel.org
-Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
-Message-ID: <20091026201651.GD24682@elte.hu>
-References: <4ADB967A.4080707@suse.com> <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz> <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz> <4ADD48D1.1040701@kernel.org> <alpine.LSU.2.00.0910200756300.8582@wotan.suse.de> <4ADD54D4.70808@kernel.org> <4ADD5530.3050107@kernel.org> <alpine.LSU.2.00.0910200826220.8582@wotan.suse.de> <4ADDC69A.5000701@suse.com> <4ADDCDED.6060706@suse.com>
+To: Jan Beulich <JBeulich@novell.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, tglx@linutronix.de,
+       Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, hpa@zytor.com
+Subject: Re: [PATCH] x86: adjust GFP mask handling for coherent allocations
+Message-ID: <20091026201917.GE24682@elte.hu>
+References: <4AE06644020000780001B4AD@vpn.id2.novell.com> <20091023114825.GH5886@elte.hu> <4AE5CA8C020000780001BD09@vpn.id2.novell.com> <20091026152246.GB3749@elte.hu> <4AE5D238020000780001BD46@vpn.id2.novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4ADDCDED.6060706@suse.com>
+In-Reply-To: <4AE5D238020000780001BD46@vpn.id2.novell.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,91 +35,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeff Mahoney <jeffm@suse.com> wrote:
+* Jan Beulich <JBeulich@novell.com> wrote:
 
-> On 10/20/2009 10:18 AM, Jeff Mahoney wrote:
-> > On 10/20/2009 02:27 AM, Jiri Kosina wrote:
-> >> @@ -1627,11 +1623,10 @@ static int tg_shares_up(struct task_group *tg, void *data)
-> >>  		return 0;
-> >>  
-> >>  	local_irq_save(flags);
-> >> -	usd = &__get_cpu_var(update_shares_data);
-> >>  
-> >>  	for_each_cpu(i, sched_domain_span(sd)) {
-> >>  		weight = tg->cfs_rq[i]->load.weight;
-> >> -		usd->rq_weight[i] = weight;
-> >> +		usd = *per_cpu_ptr(update_shares_data, i) = weight;
-> >>  
-> >>  		/*
-> >>  		 * If there are currently no tasks on the cpu pretend there
-> > 
-> > I don't think this is what you want here.
-> > 
-> > In the original version, usd is the percpu var using the current cpu. In
-> > your version, usd is the percpu var using i instead of the current cpu.
-> > 
-> > I'll post my version of the patch shortly. I don't think keeping most of
-> > the original version is a bad thing. We can just allocate it dynamically
-> > instead.
+> >>> Ingo Molnar <mingo@elte.hu> 26.10.09 16:22 >>>
+> >* Jan Beulich <JBeulich@novell.com> wrote:
+> >> And any attempt to eliminate the conditional another way would just 
+> >> introduce a very similar conditional elsewhere; with this having a 
+> >> single user (and foreseeably not ever a second one) I would think this 
+> >> would just make the code less readable.
+> >
+> >There's 3 other current uses of DMA_BIT_MASK(24) in arch/x86 - couldnt 
+> >those use ISA_DMA_BIT_MASK too?
 > 
-> This version fixes a build issue (__alignof__(unsigned long)) and fixes the
-> percpu lookup to be usd = percpu array pointer, usd[i] = actual variable.
-> 
-> -Jeff
-> 
-> From: Jiri Kosina <jkosina@suse.cz>
-> Subject: sched: move rq_weight data array out of .percpu
-> 
-> Commit 34d76c41 introduced percpu array update_shares_data, size of which
-> being proportional to NR_CPUS. Unfortunately this blows up ia64 for large
-> NR_CPUS configuration, as ia64 allows only 64k for .percpu section.
-> 
-> Fix this by allocating this array dynamically and keep only pointer to it
-> percpu.
-> 
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> --- 
->  kernel/sched.c |   20 ++++++++++----------
->  1 file changed, 10 insertions(+), 10 deletions(-)
-> 
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -1564,11 +1564,7 @@ static unsigned long cpu_avg_load_per_ta
->  
->  #ifdef CONFIG_FAIR_GROUP_SCHED
->  
-> -struct update_shares_data {
-> -	unsigned long rq_weight[NR_CPUS];
-> -};
-> -
-> -static DEFINE_PER_CPU(struct update_shares_data, update_shares_data);
-> +unsigned long *update_shares_data;
+> Oh, so you didn't mean me to eliminate the conditional in pci-dma.c, 
+> but just to replace the DMA_BIT_MASK(24) here an elsewhere. Sure, I'm 
+> fine with adding this to the patch.
 
-That should be __read_mostly - this can be a hotly accessed data 
-structure of the scheduler - if it happens to go next to a frequently 
-bouncing variable that can be bad for performance.
+Well, can ISA_BIT_MASK fall back to DMA_BIT_MASK(32) on !CONFIG_ISA? If 
+we have ISA support disabled we might as well pretend the whole world is 
+PCI, right?
 
-> -				    struct update_shares_data *usd)
-> +				    unsigned long *usd)
-
-I dont think using usd[cpu] is clearer than usd->rq_weight[cpu]. At 
-minimum it should be renamed to usd_rq_weight not usd.
-
->  	local_irq_save(flags);
-> -	usd = &__get_cpu_var(update_shares_data);
-> +	usd = per_cpu_ptr(update_shares_data, smp_processor_id());
-
-Could we please have a look at the before/after assembly of this 
-sequence on x86, to make sure the claims in this thread are true and we 
-dont lose performance? (and included it in the changelog with a 
-resubmission - with a new, changed '[PATCH] ...' subject line, not 
-hidden inside a discussion thread.)
-
->From a merge POV i'm quite nervous about such a change to the scheduler 
-this late in the .32 cycle - to offset that risk i'd really like to see 
-that this change has been pursued carefully to the edge of possibilities 
-- currently it does not give that impression.
-
-Thanks,
+That way we'd get rid of that #ifdef in the .c code too.
 
 	Ingo
