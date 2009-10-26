@@ -1,81 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZJZR7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbZJZSAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbZJZR7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 13:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbZJZR7T
+	id S1753484AbZJZSAg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 14:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbZJZSAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 13:59:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:10052 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752772AbZJZR7S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 13:59:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=xRHOqvCbrU81/Re+lMaFXNF++S/J+P47V2JreEmcRj/OV28jaZIkF5PafHLFHSGT64
-         BL2dojd697AhEFwZHJOwNg4213PpgNaehs4YSo9bofLc/HcYkRlmJt5IXO2NQDwRxgW5
-         pjytap41Iz7ll/pPgWiEWHBh1hMWwBdgFLJVA=
+	Mon, 26 Oct 2009 14:00:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57251 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751400AbZJZSAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 14:00:35 -0400
+Message-ID: <4AE5E37F.8070707@kernel.org>
+Date: Mon, 26 Oct 2009 10:59:27 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <4AE5C7C0.3060305@mayc.ru>
-References: <73a01bf20910260850v215385e6q2cbbf9133acd5e1e@mail.gmail.com>
-	 <4AE5C7C0.3060305@mayc.ru>
-Date: Mon, 26 Oct 2009 12:59:22 -0500
-Message-ID: <73a01bf20910261059j74bb37a9td472efc21c5440ca@mail.gmail.com>
-Subject: Re: FatELF & patents
-From: Rayson Ho <raysonlogin@gmail.com>
-To: "Anton D. Kachalov" <mouse@mayc.ru>
-Cc: linux-kernel@vger.kernel.org
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
+ for pcie devices
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com> <4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com> <4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com>
+In-Reply-To: <4AE57976.4060107@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 11:01 AM, Anton D. Kachalov <mouse@mayc.ru> wrote:
-> Hmm... looks like patents talks about objects that stored in one file with
-> arch-independent header.
+Kenji Kaneshige wrote:
+> Yinghai Lu wrote:
+>> Kenji Kaneshige wrote:
+>>> Yinghai Lu wrote:
+>>>> Kenji Kaneshige wrote:
+>>>>> Yinghai Lu wrote:
+>>>>>> move out bus_size_bridges and assign resources out of
+>>>>>> pciehp_add_bridge()
+>>>>>> and at last do them all together one time including slot bridge, to
+>>>>>> avoid to call
+>>>>>> assign resources several times, when there are several bridges under
+>>>>>> the slot bridge.
+>>>>>>
+>>>>>> need to introduce pci_bridge_assign_resources there.
+>>>>>>
+>>>>>> handle the case the first bridge that doesn't get pre-allocated big
+>>>>>> enough res from FW.
+>>>>>> for example pcie devices need 256M, but the bridge only get
+>>>>>> preallocated 2M...
+>>>>>>
+>>>>> Though I have not looked at the patch deeply yet (sorry), I have
+>>>>> some questions and concerns about this change. Please correct me
+>>>>> if my understanding is not correct.
+>>>>>
+>>>>> - Your patch doesn't seems to have the code to free resources.
+>>>>>  If we need to expand the resource range, don't we need to free
+>>>>>  preallocated resource before allocating the new one?
+>>>> that is done with pci_bus_size_bridges ==> pbus_size_io/pbus_size_mem
+>>>> ==> find_free_bus_resource ==> release_resource.
+>>>>
+>>> I didn't noticed that find_free_bus_resource() was changed to call
+>>> release_resource() recently...
+>>>
+>>> By the way, does this (release_resource() by find_bus_resource())
+>>> change the resource assignment by BIOS also for bridges other than
+>>> the ports with hotplug slot (switch upstreamport, for example)?
+>>
+>> yes.
+>>
+>> BIOS preallocate small range for the bridge, and leave the BAR for the
+>> device under that bridge uninitialized.
+>>
+> 
+> Does this happen at the boot time regardless of hot-plug?
 
-Actually, the example in the PDF is an executable.
+yes
+
+> 
+> 
+>>>>> - Your patch seems to update BARs for bridge itself. I think it
+>>>>>  would break the bridge's driver (port service driver) that if
+>>>>>  it controls the device's capability by using IO/Mem, though I
+>>>>>  don't know if such driver or capabilities exists now.
+>>>> port service driver will be AER and pciehotplug.
+>>>> it seems those driver are not use those BAR...
+>>>> those BAR are supposed for the devices under the pcie bridge.
+>>>>
+>>> I understand that there are only two port service drivers (AER and
+>>> PCIe hotplug) and both doesn't use BAR. But I still have a concern
+>>> that changing bridge's BARs might cause problems in the future. In
+>>> my understanding, what you need is expanding IO/Mem base and limit
+>>> of root or switch downstream ports. If so, I think we should only
+>>> touch IO/Mem base/limit, and should not touch bridge's BARs.
+>>
+>> those bridge BAR are for devices under that bridge. the port device is
+>> not supposed to use them.
+>>
+> 
+> Do you mean you touch only BARs of the devices under the bridge?
+
+no. the BAR of 0x1c, 0x20, and 0x28
+
+> 
+>> if we don't touch the bridge's BAR, the hw will not forward the io for
+>> those devices under it.
+>>
+> 
+> I understand you need to touch I/O base/limit and Mem base/limit. But
+> I don't understand why you also need to update bridge's BARs. Could
+> you please explain a little more about it?
+> 
+> Just in case, my terminology "bridge's BARs" is Base Address Register
+> 0 (offset 0x10) and Base Address Register 1 (offset 0x14) in the
+> (type 1) configuration space header of the bridge.
+
+i mean 0x1c, 0x20, 0x28
+
+did not notice that bridge device's 0x10, 0x14 are used...
+if port service need to use 0x10, 0x14, and the device is enabled, we should touch 0x10, and 0x14.
 
 
-> My implementation (that is differ to Ryan's) do not use any headers except
-> ELF header and just 3 bytes in it to store next location. So, it's patent
-> clear.
-
-However, there are 20 claims in the patent. Just using a different way
-to store the architecture independent header might not be enough.
-
-
->  This is very common way to store different arch binaries...
-
-The patent mentions only one prior art:
-
-"One prior art attempt to provide a method for providing a single
-application for a variety of architectures and formats is the ANDF
-system, developed by OSF. This is an architecture neutral binary
-format. A disadvantage of this scheme is that it requires conversion
-to the native architecture at installation time."
-
-I don't think there is anything similar to Apple's fat binary or
-universal binary -- a single executable that can be executed on
-different processor families.
-
-The closest thing I can think of is the mixed of 32-bit / 64-bit
-object files in a single archive on AIX.
-
-
-> PS. Patents is evil.
-
-Hence the heads up.
-
-And yes, thanks but no thanks, I won't need an iPhone!!
-
-Rayson
-
-
-
->
-> Rgds,
-> Anton
->
+YH
