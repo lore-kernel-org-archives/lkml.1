@@ -1,71 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbZJZKIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbZJZKLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486AbZJZKIc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 06:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbZJZKIb
+	id S1755495AbZJZKLl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 06:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbZJZKLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 06:08:31 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:37532 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755473AbZJZKIa convert rfc822-to-8bit (ORCPT
+	Mon, 26 Oct 2009 06:11:40 -0400
+Received: from server1.wserver.cz ([82.113.45.157]:51760 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755478AbZJZKLk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 06:08:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=DGgZaziyV4Ld75lUu0jTWsCk9a7vHrSzzbKdotyzUiWB3Rf5+HEam1ClYQ7LIbJaSK
-         toSLNJxuqDaBPIi/QFlGIeaNu/yyMm2WhDvFb1otS4Ps+D2AzFkM0biIhKEMVibZUH/H
-         NAc7bDNPFqO/f1BRha+hbR/MMvyuz/ET7w0Kg=
-MIME-Version: 1.0
-In-Reply-To: <20091026094729.GB13517@linux-sh.org>
-References: <20091026054000.GA13517@linux-sh.org>
-	 <20091026062520.GA29580@elte.hu> <20091026094729.GB13517@linux-sh.org>
-Date: Mon, 26 Oct 2009 12:08:34 +0200
-X-Google-Sender-Auth: a9be069eae1e7d85
-Message-ID: <84144f020910260308r106574e3vdd72e8697571bdc2@mail.gmail.com>
-Subject: Re: [PATCH] perf tools: Kill off -Wcast-align
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 26 Oct 2009 06:11:40 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: mingo@redhat.com
+Cc: tglx@linutronix.de, hpa@zytor.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Simon Horman <horms@verge.net.au>, Paul Mundt <lethal@linux-sh.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH v2 1/1] crash_dump: fix non-pae kdump kernel memory accesses
+Date: Mon, 26 Oct 2009 11:11:43 +0100
+Message-Id: <1256551903-30567-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.4.2
+In-Reply-To: <20091025162018.GB20391@elte.hu>
+References: <20091025162018.GB20391@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul Mundt <lethal@linux-sh.org> wrote:
->> > The present use of -Wcast-align causes the build to blow up on SH due to
->> > generating a "cast increases required alignment of target type" error on
->> > each invocation of list_for_each_entry().
->> >
->> > It seems that this was previously reported and killed off in the ia64
->> > support patch, but nothing seems to have happened with that. Presumably
->> > the same problem still remains there, too.
->> >
->> > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Non-PAE 32-bit dump kernels may wrap an address around 4G and
+poke unwanted space. ptes there are 32-bit long, and since
+pfn << PAGE_SIZE may exceed this limit, high pfn bits are cropped
+and wrong address mapped by kmap_atomic_pfn in copy_oldmem_page.
 
-On Mon, Oct 26, 2009 at 07:25:20AM +0100, Ingo Molnar wrote:
->> Is this a GCC bug producing false positive warnings? The GCC manpage
->> says:
->>
->>        -Wcast-align
->>            Warn whenever a pointer is cast such that the required alignment of the
->>            target is increased.  For example, warn if a "char *" is cast to an
->>            "int *" on machines where integers can only be accessed at two- or
->>            four-byte boundaries.
->>
->> Which looks moderately useful - if it works.
+Don't allow this behavior in non-PAE kdump kernels by checking
+pfns passed into copy_oldmem_page. In the case of failure,
+userspace process gets EFAULT.
 
-On Mon, Oct 26, 2009 at 11:47 AM, Paul Mundt <lethal@linux-sh.org> wrote:
-> Well, both ia64 and sh have hit this in the current compilers, and it
-> doesn't seem to pose any code generation issues. In the areas where it is
-> generated it seems to relate to 64-bit data types in the data structures,
-> which in itself doesn't seem inherently problematic.
->
-> I'll submit a bug report to the GCC folks, but for the time being given
-> that multiple architectures are hitting this and it doesn't seem to be
-> causing any issues, it would be better to have this flag dropped.
+[v2]
+- fix comments
+- move ifdefs inside the function
 
-Can we disable the flag for affected architectures but keep it enabled for x86?
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Simon Horman <horms@verge.net.au>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/crash_dump_32.c |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/crash_dump_32.c b/arch/x86/kernel/crash_dump_32.c
+index f7cdb3b..cd97ce1 100644
+--- a/arch/x86/kernel/crash_dump_32.c
++++ b/arch/x86/kernel/crash_dump_32.c
+@@ -16,6 +16,22 @@ static void *kdump_buf_page;
+ /* Stores the physical address of elf header of crash image. */
+ unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
+ 
++static inline bool is_crashed_pfn_valid(unsigned long pfn)
++{
++#ifndef CONFIG_X86_PAE
++	/*
++	 * non-PAE kdump kernel executed from a PAE one will crop high pte
++	 * bits and poke unwanted space counting again from address 0, we
++	 * don't want that. pte must fit into unsigned long. In fact the
++	 * test checks high 12 bits for being zero (pfn will be shifted left
++	 * by PAGE_SHIFT).
++	 */
++	return pte_pfn(pfn_pte(pfn, __pgprot(0))) == pfn;
++#else
++	return true;
++#endif
++}
++
+ /**
+  * copy_oldmem_page - copy one page from "oldmem"
+  * @pfn: page frame number to be copied
+@@ -41,6 +57,9 @@ ssize_t copy_oldmem_page(unsigned long pfn, char *buf,
+ 	if (!csize)
+ 		return 0;
+ 
++	if (!is_crashed_pfn_valid(pfn))
++		return -EFAULT;
++
+ 	vaddr = kmap_atomic_pfn(pfn, KM_PTE0);
+ 
+ 	if (!userbuf) {
+-- 
+1.6.4.2
+
