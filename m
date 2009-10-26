@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbZJZLi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbZJZLjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbZJZLi2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 07:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbZJZLi0
+	id S1755892AbZJZLjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 07:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbZJZLjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 07:38:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48136 "EHLO mx3.mail.elte.hu"
+	Mon, 26 Oct 2009 07:39:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57298 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755767AbZJZLiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 07:38:24 -0400
-Date: Mon, 26 Oct 2009 12:38:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: nooiwa <nooiwa@miraclelinux.com>
-Cc: roland@redhat.com, akpm@linux-foundation.org, oleg@redhat.com,
-       LKML <linux-kernel@vger.kernel.org>, h-shimamoto@ct.jp.nec.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] show message when exceeded rlimit of pending signals
-Message-ID: <20091026113800.GA9503@elte.hu>
-References: <4AE1804A.2050404@miraclelinux.com> <20091023114600.GG5886@elte.hu> <4AE2A6A1.1070904@miraclelinux.com> <4AE2C151.8070006@miraclelinux.com> <20091024085848.GA23215@elte.hu> <4AE57745.8080701@miraclelinux.com>
+	id S1755763AbZJZLjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 07:39:13 -0400
+Date: Mon, 26 Oct 2009 11:38:14 GMT
+From: tip-bot for Paul Mundt <lethal@linux-sh.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       lethal@linux-sh.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, lethal@linux-sh.org, mingo@elte.hu
+In-Reply-To: <20091026054000.GA13517@linux-sh.org>
+References: <20091026054000.GA13517@linux-sh.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf tools: Remove -Wcast-align
+Message-ID: <tip-ec29b8d2af01912bb79adda8aeab4293539f29ac@git.kernel.org>
+Git-Commit-ID: ec29b8d2af01912bb79adda8aeab4293539f29ac
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4AE57745.8080701@miraclelinux.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  ec29b8d2af01912bb79adda8aeab4293539f29ac
+Gitweb:     http://git.kernel.org/tip/ec29b8d2af01912bb79adda8aeab4293539f29ac
+Author:     Paul Mundt <lethal@linux-sh.org>
+AuthorDate: Mon, 26 Oct 2009 14:40:01 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 26 Oct 2009 09:43:06 +0100
 
-* nooiwa <nooiwa@miraclelinux.com> wrote:
+perf tools: Remove -Wcast-align
 
-> +++ b/kernel/sysctl.c
-> @@ -67,6 +67,7 @@ static int deprecated_sysctl_warning(struct __sysctl_args *args);
->  /* External variables not in a header file. */
->  extern int C_A_D;
->  extern int print_fatal_signals;
-> +extern int print_reach_rlimit_sigpending;
+The present use of -Wcast-align causes the build to blow up on
+SH due to generating a "cast increases required alignment of
+target type" error on each invocation of list_for_each_entry().
 
-Ooiwa-san, Roland, Andrew - what do you think about just making this 
-part of the existing print_fatal_signals flag, instead of adding a new 
-one?
+It seems that this was previously reported and killed off in the
+ia64 support patch, but nothing seems to have happened with
+that. Presumably the same problem still remains there, too.
 
-Signal queue overflows are a 'fatal', signal-related condition as well - 
-we lose a signal in essence. The patch would be smaller as well.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+LKML-Reference: <20091026054000.GA13517@linux-sh.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/Makefile |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-	Ingo
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 46e877b..7e190d5 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -177,8 +177,7 @@ endif
+ # Include saner warnings here, which can catch bugs:
+ #
+ 
+-EXTRA_WARNINGS := -Wcast-align
+-EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wformat
++EXTRA_WARNINGS := -Wformat
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wformat-security
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wformat-y2k
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wshadow
