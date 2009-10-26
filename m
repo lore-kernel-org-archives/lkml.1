@@ -1,82 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZJZFuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZJZFwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbZJZFuY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 01:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbZJZFuX
+	id S1754768AbZJZFwf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 01:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbZJZFwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 01:50:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43145 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754715AbZJZFuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 01:50:23 -0400
-Message-ID: <4AE53883.3070709@kernel.org>
-Date: Sun, 25 Oct 2009 22:49:55 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
- for pcie devices
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>
-In-Reply-To: <4AE52B68.3070501@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Oct 2009 01:52:35 -0400
+Received: from casper.infradead.org ([85.118.1.10]:57323 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754724AbZJZFwe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 01:52:34 -0400
+Date: Sun, 25 Oct 2009 22:53:42 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, mingo@elte.hu,
+       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
+Subject: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
+Message-ID: <20091025225342.007138f5@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kenji Kaneshige wrote:
-> Yinghai Lu wrote:
->> move out bus_size_bridges and assign resources out of pciehp_add_bridge()
->> and at last do them all together one time including slot bridge, to
->> avoid to call
->> assign resources several times, when there are several bridges under
->> the slot bridge.
->>
->> need to introduce pci_bridge_assign_resources there.
->>
->> handle the case the first bridge that doesn't get pre-allocated big
->> enough res from FW.
->> for example pcie devices need 256M, but the bridge only get
->> preallocated 2M...
->>
-> 
-> Though I have not looked at the patch deeply yet (sorry), I have
-> some questions and concerns about this change. Please correct me
-> if my understanding is not correct.
-> 
-> - Your patch doesn't seems to have the code to free resources.
->  If we need to expand the resource range, don't we need to free
->  preallocated resource before allocating the new one?
+>From b894af8a33bec621dd1a4126603a3ca372bf0643 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Sun, 25 Oct 2009 15:37:04 -0700
+Subject: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
 
-that is done with pci_bus_size_bridges ==> pbus_size_io/pbus_size_mem ==> find_free_bus_resource ==> release_resource.
+PowerTOP would like to be able to show who is keeping the disk
+busy by dirtying data. The most logical spot for this is in the vfs
+in the mark_inode_dirty() function. Doing this on the block level
+is not possible because by the time the IO hits the block layer the
+guilty party can no longer be found ("kjournald" and "pdflush" are not
+useful answers to "who caused this file to be dirty).
 
-> 
-> - Your patch seems to update BARs for bridge itself. I think it
->  would break the bridge's driver (port service driver) that if
->  it controls the device's capability by using IO/Mem, though I
->  don't know if such driver or capabilities exists now.
+The trace point follows the same logic/style as the block_dump code
+and pretty much dumps the same data, just not to dmesg (and thus to
+/var/log/messages) but via the trace events streams.
 
-port service driver will be AER and pciehotplug.
-it seems those driver are not use those BAR...
-those BAR are supposed for the devices under the pcie bridge.
+Signed-of-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ fs/fs-writeback.c          |    3 ++
+ fs/inode.c                 |    4 +++
+ include/trace/events/vfs.h |   53 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 60 insertions(+), 0 deletions(-)
+ create mode 100644 include/trace/events/vfs.h
 
-> 
-> And one comment about pci_configure_slot(). We need to program
-> hotplug parameters before the device start working. So we need
-> to call pci_configure_slot() before calling pci_bus_add_devices().
-> 
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 9d5360c..4102f20 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -25,6 +25,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/backing-dev.h>
+ #include <linux/buffer_head.h>
++#include <trace/events/vfs.h>
+ #include "internal.h"
+ 
+ #define inode_to_bdi(inode)	((inode)->i_mapping->backing_dev_info)
+@@ -1071,6 +1072,8 @@ void __mark_inode_dirty(struct inode *inode, int flags)
+ 	if ((inode->i_state & flags) == flags)
+ 		return;
+ 
++	trace_dirty_inode(inode, current);
++
+ 	if (unlikely(block_dump))
+ 		block_dump___mark_inode_dirty(inode);
+ 
+diff --git a/fs/inode.c b/fs/inode.c
+index 4d8e3be..a61e8ba 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -1624,3 +1624,7 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
+ 				  inode->i_ino);
+ }
+ EXPORT_SYMBOL(init_special_inode);
++
++#define CREATE_TRACE_POINTS  
++#include <trace/events/vfs.h>
++
+diff --git a/include/trace/events/vfs.h b/include/trace/events/vfs.h
+new file mode 100644
+index 0000000..21cf9fb
+--- /dev/null
++++ b/include/trace/events/vfs.h
+@@ -0,0 +1,53 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM vfs
++
++#if !defined(_TRACE_VFS_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_VFS_H
++
++/*
++ * Tracepoint for dirtying an inode:
++ */
++TRACE_EVENT(dirty_inode,
++
++	TP_PROTO(struct inode *inode, struct task_struct *task),
++
++	TP_ARGS(inode, task),
++
++	TP_STRUCT__entry(
++		__array( char,	comm,	TASK_COMM_LEN	)
++		__field( pid_t,	pid			)
++		__array( char,  dev,    16		)
++		__array( char,  file,   32		)
++	),
++
++	TP_fast_assign(
++		if (inode->i_ino || strcmp(inode->i_sb->s_id, "bdev")) {
++                	struct dentry *dentry;
++                	const char *name = "?";
++
++			dentry = d_find_alias(inode);
++			if (dentry) {
++				spin_lock(&dentry->d_lock);
++				name = (const char *) dentry->d_name.name;
++			}
++
++			memcpy(__entry->comm, task->comm, TASK_COMM_LEN);
++			__entry->pid = task->pid;
++			strlcpy(__entry->file, name, 32);
++			strlcpy(__entry->dev, inode->i_sb->s_id, 16);
++
++			if (dentry) {
++				spin_unlock(&dentry->d_lock);
++				dput(dentry);
++			}
++		}
++	),
++
++	TP_printk("task=%i (%s) file=%s dev=%s",
++		__entry->pid, __entry->comm, __entry->file, __entry->dev)
++);
++
++#endif /* _TRACE_VFS_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+-- 
+1.6.2.5
 
 
-Thanks, will correct that.
 
-YH
-
-
-YH
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
