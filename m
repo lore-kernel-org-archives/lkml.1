@@ -1,62 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbZJZVW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbZJZVex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524AbZJZVW2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 17:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZJZVW1
+	id S1753957AbZJZVex (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 17:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbZJZVew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 17:22:27 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:49476 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752043AbZJZVW0 (ORCPT
+	Mon, 26 Oct 2009 17:34:52 -0400
+Received: from mail-px0-f180.google.com ([209.85.216.180]:34543 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753499AbZJZVev (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 17:22:26 -0400
+	Mon, 26 Oct 2009 17:34:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=iUFW1u7grUYvY5/08bvtodUaWMKjCbwTdFkwkmdfv+xwlHVlR2FZVt5hyGuUZpB8hz
-         ARH3pMGNKii7k/eSTM+zTEDyypB/+QKRP8xOXsY13vzlN57Khq6rrVW4KRsOwYjrhMqC
-         hb+6/CHWjM2xHYK0CQdHNtGQBqw37FlcmNO/E=
-Message-ID: <4AE61590.2030603@gmail.com>
-Date: Mon, 26 Oct 2009 22:33:04 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wfFw1KyjqVbX91r9aZL22d47/rLXV3arUlG8qnYsu/JlhCPjYLO5Ko976+OQr2yVTc
+         qGaVpuCstmEJtZKRCHSnFqVTHpMHWNdMxhRcs1p8TSfzobqWkQ4JFRBb0SEOLRwZOm5A
+         MDQil7/CvORjpiiW3dwBJVIgx4tWE+kvVZV+U=
+Date: Mon, 26 Oct 2009 14:34:50 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: ?ric Piel <eric.piel@tremplin-utc.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
+	anymore
+Message-ID: <20091026213450.GA19119@core.coreip.homeip.net>
+References: <4AD31709.4000103@tremplin-utc.net> <20091012154846.GB7996@core.coreip.homeip.net> <20091012173551.GC10557@suse.de> <20091012183313.GC8345@core.coreip.homeip.net> <20091012185417.GA30342@suse.de> <20091013031741.GB2887@core.coreip.homeip.net> <20091018075127.GH3935@core.coreip.homeip.net> <20091018080238.GA13810@suse.de> <20091023020150.GA26723@core.coreip.homeip.net> <20091026205953.GB11665@suse.de>
 MIME-Version: 1.0
-To: Russell King <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] icst307: Add missing increment
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091026205953.GB11665@suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Without this increment the loop can only break if it does in the
-first iteration.
+On Mon, Oct 26, 2009 at 01:59:53PM -0700, Greg KH wrote:
+> On Thu, Oct 22, 2009 at 07:01:50PM -0700, Dmitry Torokhov wrote:
+> > On Sun, Oct 18, 2009 at 01:02:38AM -0700, Greg KH wrote:
+> > > On Sun, Oct 18, 2009 at 12:51:27AM -0700, Dmitry Torokhov wrote:
+> > > > On Mon, Oct 12, 2009 at 08:17:41PM -0700, Dmitry Torokhov wrote:
+> > > > > On Mon, Oct 12, 2009 at 11:54:17AM -0700, Greg KH wrote:
+> > > > > > On Mon, Oct 12, 2009 at 11:33:13AM -0700, Dmitry Torokhov wrote:
+> > > > > > > On Mon, Oct 12, 2009 at 10:35:51AM -0700, Greg KH wrote:
+> > > > > > > > On Mon, Oct 12, 2009 at 08:48:46AM -0700, Dmitry Torokhov wrote:
+> > > > > > > > > > So at least, unbind should fail as well as bind.
+> > > > > > > > > >
+> > > > > > > > > 
+> > > > > > > > > That would be Greg's domain s it is driver core decision whether to
+> > > > > > > > > allow unbinding platform devices registered with
+> > > > > > > > > platform_driver_probe().
+> > > > > > > > 
+> > > > > > > > No, I do not see why that should not be allowed.
+> > > > > > > > 
+> > > > > > > 
+> > > > > > > Because once you did unbind the device you are stuck (unless the driver
+> > > > > > > is compiled as a module, but then you could just unload the module
+> > > > > > > instead of unbinding). Disallowing unbind would allow discarding not
+> > > > > > > only __devinit but __devexit sections when driver is built in which
+> > > > > > > would make ebedded people happy[^Hier].
+> > > > > > 
+> > > > > > Yeah, good point.
+> > > > > > 
+> > > > > > Does anyone do bind/unbind with platform devices today?
+> > > > > > 
+> > > > > > If not, a patch changing this would be welcome.
+> > > > > > 
+> > > > > 
+> > > > > How about this one?
+> > > > > 
+> > > > 
+> > > > *ping* We need to resolve this, otherwise everyone who likes to rebind
+> > > > i8042 in couse of STR/STD will be in trouble.
+> > > 
+> > > Sorry, am in Tokyo right now.
+> > > 
+> > > I like this patch, and will queue it up, but it's too late for .32, it
+> > > will have to wait for .33.
+> > > 
+> > 
+> > Greg,
+> > 
+> > I hope you will reconsider. The patch is extremely small but without it
+> > I am afraid many people whose distributions blindly rebind i8042 on
+> > suspend/resume will lose their keyboards and mice now that i8042 uses
+> > platform_driver_probe()...
+> 
+> What distros do something like that automatically? 
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/arch/arm/common/icst307.c b/arch/arm/common/icst307.c
-index 6d094c1..b255fbf 100644
---- a/arch/arm/common/icst307.c
-+++ b/arch/arm/common/icst307.c
-@@ -55,7 +55,7 @@ icst307_khz_to_vco(const struct icst307_params *p, unsigned long freq)
- 		 */
- 		if (f > 6000 && f <= p->vco_max)
- 			break;
--	} while (i < ARRAY_SIZE(idx2s));
-+	} while (++i < ARRAY_SIZE(idx2s));
- 
- 	if (i >= ARRAY_SIZE(idx2s))
- 		return vco;
-@@ -117,7 +117,7 @@ icst307_ps_to_vco(const struct icst307_params *p, unsigned long period)
- 		 */
- 		if (f >= ps && f < 1000000000UL / 6000 + 1)
- 			break;
--	} while (i < ARRAY_SIZE(idx2s));
-+	} while (++i < ARRAY_SIZE(idx2s));
- 
- 	if (i >= ARRAY_SIZE(idx2s))
- 		return vco;
+It looks SUSE recommends to do so in one of the Wikis.. There certainly
+lots of recommendations to do so in case of keyboard resume troubles all
+over the forums (Ubunto, Gentoo, other random ones).
+
+> And this patch will
+> not solve that problem, just forbid it from happening, right?
+> 
+
+It will prevent unbind from happening so that users who have suspend and
+resume working properly but who have bind/unbind in their suspend/resume
+scripts regardless will not run into trouble.
+
+This still leaves users whose suspend/resume don't work by default but I
+would rather fix their boxes properly instead of relying on that
+workaround.
+
+-- 
+Dmitry
