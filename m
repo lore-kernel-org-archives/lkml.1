@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbZJZSCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbZJZSBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbZJZSCv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 14:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZJZSCv
+	id S1754260AbZJZSBJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 14:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZJZSBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 14:02:51 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48186 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752791AbZJZSCu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 14:02:50 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4AE5E415.801@s5r6.in-berlin.de>
-Date: Mon, 26 Oct 2009 19:01:57 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
+	Mon, 26 Oct 2009 14:01:08 -0400
+Received: from fieldses.org ([174.143.236.118]:39600 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751400AbZJZSBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 14:01:06 -0400
+Date: Mon, 26 Oct 2009 14:02:24 -0400
+From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Jan Kara <jack@suse.cz>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       jamie@shareable.org
+Subject: Re: symlinks with permissions
+Message-ID: <20091026180224.GD16861@fieldses.org>
+References: <20091025062953.GC1391@ucw.cz> <20091026163157.GB7233@duck.suse.cz> <20091026165729.GF23564@us.ibm.com> <20091026173629.GB16861@fieldses.org> <20091026174631.GD7233@duck.suse.cz>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>
-CC: "Luck, Tony" <tony.luck@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nicolas Pitre <nico@fluxnic.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC] to rebase or not to rebase on linux-next
-References: <4AE19A74.1090709@garzik.org> <20091023123555.GA25366@elte.hu> <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com> <20091023134115.GD27097@elte.hu> <alpine.LFD.2.00.0910231424440.21460@xanadu.home> <20091023191631.GA1879@elte.hu> <1256326512.26028.34.camel@gandalf.stny.rr.com> <20091023205400.GA8356@elte.hu> <20091024080326.GA7461@mit.edu> <57C9024A16AD2D4C97DC78E552063EA3E33D0A53@orsmsx505.amr.corp.intel.com> <20091026052118.GB13941@mit.edu>
-In-Reply-To: <20091026052118.GB13941@mit.edu>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091026174631.GD7233@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Sun, Oct 25, 2009 at 09:53:41PM -0700, Luck, Tony wrote:
->> If the "rewind" is simply to add "signed-off-by" notations, update
->> commit comments (or code comments) ... then it does seem useful to
->> keep the commit chain anchored to the original commit, as the testing
->> that has been done is all still valid.
->>
->> But as soon as you talk about fixing bugs ... then you ought to
->> just do a "rebase".  The code you are adding has changed, so it is
->> incorrect to preserve the illusion that these changes have had
->> extensive testing against the old commit base.  The code has changed,
->> so the testing clock gets reset to zero.
-> 
-> I don't think anyone should (or does?) use the base version of a patch
-> series as an indication of how much testing a patch series has
-> received.  It doesn't make much sense.
+On Mon, Oct 26, 2009 at 06:46:31PM +0100, Jan Kara wrote:
+> On Mon 26-10-09 13:36:29, J. Bruce Fields wrote:
+> > On Mon, Oct 26, 2009 at 11:57:29AM -0500, Serge E. Hallyn wrote:
+> > > Quoting Jan Kara (jack@suse.cz):
+> > > >   Hi,
+> > > > 
+> > > > On Sun 25-10-09 07:29:53, Pavel Machek wrote:
+> > > > > ...yes, they do exist, in /proc/self/fd/* . Unfortunately, their
+> > > > > permissions are not actually checked during open, resulting in
+> > > > > (obscure) security hole: if you have fd open for reading, you can
+> > > > > reopen it for write, even through unix permissions would not allow
+> > > > > that.
+> > > > > 
+> > > > > Now... I'd like to close the hole. One way would be to actually check
+> > > > > symlink permissions on open -- because those symlinks already have
+> > > > > correct permissions.
+> > > >   Hmm, I'm not sure I understand the problem. Symlink is just a file
+> > > > containing a path. So if you try to open a symlink, you will actually open
+> > > > a file to which the path points. So what security problem is here? Either
+> > > > you can open the file symlink points to for writing or you cannot...
+> > > >   Anyway, if you want to play with this,
+> > > > fs/proc/base.c:proc_pid_follow_link
+> > > >   is probably the function you are interested in.
+> > > 
+> > > The problem he's trying to address is that users may try to protect
+> > > a file by doing chmod 700 on the parent dir, but leave the file itself
+> > > accessible.  They don't realize that merely having a task with an open
+> > > fd to that file gives other users another path to the file.
+> > > 
+> > > Whether or not that's actually a problem is open to debate, but I think
+> > > he's right that many users aren't aware of it.
+> > 
+> > If /proc/self/fd/23 is a symlink to /home/me/privatedir/secret, then an
+> > open("proc/self/fd/23",...) still traverses the whole /home/.../secret
+> > path, and needs appropriate permissions at each step, doesn't it?
+> > 
+> > Probably I'm just terminally confused....
+>   That's what I'd think as well but it does not as I've just learned and
+> tested :) proc_pid_follow_link actually directly gives a dentry of the
+> target file without checking permissions on the way.
 
-FWIW, I agree to the above.  But the below...
-
-> Suppose I update the 40th patch of a 50th patch series to add check
-> for kmalloc() returning NULL that had been inadvertently left out, or
-> some other error checking is added.  Or suppose I add a new tracepoint
-> definition to a 50 patch series.
-
-...are bad examples in the context of linux-next, IMO.  A missing
-allocation failure check or a missing tracepoint don't break
-bisectability.  So why discard this history?  (It was already published
-in a release preview.)
-
-> Sorry, I'm not going to rewind the
-> entire patch series because someone thinks the base version of the
-> patch series somehow is a magic "test clock" indicator....
-
-Indeed.  Not even the commit date of individual patches says something
-about how extensive they were tested.  Besides, testers might never have
-tested that particular head; it's more likely that they ran a merge
-result which was never published anywhere, or they tested a patch
-stand-alone on top of whatever kernel they happened to have at hand
-(e.g. a distro kernel) when the patch author asked them to test some fix
-or feature.
--- 
-Stefan Richter
--=====-==--= =-=- ==-=-
-http://arcgraph.de/sr/
+Got it, thanks.--b.
