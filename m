@@ -1,113 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZJZWC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbZJZWZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754261AbZJZWC4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 18:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbZJZWCg
+	id S1754281AbZJZWZY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 18:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbZJZWZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 18:02:36 -0400
-Received: from mga01.intel.com ([192.55.52.88]:28173 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753934AbZJZWCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 18:02:33 -0400
-X-ExtLoop1: 1
-Message-Id: <20091026230002.043281924@sbs-t61.sc.intel.com>
-User-Agent: quilt/0.47-1
-Date: Mon, 26 Oct 2009 14:24:36 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de, ebiederm@xmission.com
-Cc: garyhade@us.ibm.com, suresh.b.siddha@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: [RFC patch 6/6] x86: remove local_irq_enable()/local_irq_disable() in fixup_irqs()
-References: <20091026222430.313656103@sbs-t61.sc.intel.com>
-Content-Disposition: inline; filename=fix_irq_migration_during_cpu_offline.patch
+	Mon, 26 Oct 2009 18:25:23 -0400
+Received: from smtp123.mail.ukl.yahoo.com ([77.238.184.54]:31737 "HELO
+	smtp123.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754108AbZJZWZX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 18:25:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.uk;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=IQC93FQ7MSQZ15xnR5yi0OHnzwh1SS6ClkaNlDGcxU/eGhJTC223KkL1S46CfCSo/p3+FUdKQLqpMPNZ9ooJOlW5uyJI/OmEvPRSzxHcX/mzn6LBbVH0zGQgFhMoP37PhNCCyaGbpfR+BAxQBocPGVkGUGgBQg6ho5u6F8FujNE=  ;
+X-Yahoo-SMTP: dGJefyiswBAq8gjvkVdDD_Aeiz1oX_mV
+X-YMail-OSG: ViEwG9AVM1mn0YARbaHLSm_n1vJh5GZVGzUKG_TgIq0BXTb4laaNnbtDSGM74nIT.Npwf7dtsAqOg5dJpuplMqdrqaeNCrXB.96K25SYQHHkeG1HWDP8KmcVoWroT18HnesRdsMy0PWPEFjkP8tipBMY2fA_GdOIP0hXRktLnpIZymQ1d.Mo2NpqCvdZ0iNe4ckSHYlpKPjYYFoAyz8IozqYQouL6udKNDWW3KXtKjAE4uNrgu8OFSg6qx9lICXj29zY8e0ot0TqTj.toEAso5k020w5Okrm6cwSGUJDkVjdl5RLYRfOhAjThXDI7ginMVZP
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4AE621CB.6000700@yahoo.co.uk>
+Date: Tue, 27 Oct 2009 00:25:15 +0200
+From: Boyan <btanastasov@yahoo.co.uk>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.23) Gecko/20090823 SeaMonkey/1.1.18
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       =?UTF-8?B?IkZyw6lkw6lyaWMgTC4gVy4gTWV1bmllciI=?= 
+	<fredlwm@gmail.com>,
+       "Justin P. Mattock" <justinmattock@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera> <vX3ILojF2dJ.A.lYG.ref5KB@chimera>
+In-Reply-To: <vX3ILojF2dJ.A.lYG.ref5KB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To ensure that we handle all the pending interrupts (destined for this cpu that
-is going down) in the interrupt subsystem before the cpu goes offline,
-fixup_irqs() does:
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.30 and 2.6.31.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+> be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14388
+> Subject		: keyboard under X with 2.6.31
+> Submitter	: Frédéric L. W. Meunier <fredlwm@gmail.com>
+> Date		: 2009-10-07 20:19 (20 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e043e42bdb66885b3ac10d27a01ccb9972e2b0a3
+> References	: http://marc.info/?l=linux-kernel&m=125494753228217&w=4
+> 
 
-	local_irq_enable();
-	mdelay(1);
-	local_irq_disable();
-
-Enabling interrupts is not a good thing as this cpu is already offline.
-So this patch replaces that logic with,
-
-	mdelay(1);
-	check APIC_IRR bits
-	Retrigger the irq at the new destination if any interrupt has arrived
-	via IPI.
-
-For IO-APIC level triggered interrupts, this retrigger IPI will appear as an
-edge interrupt. ack_apic_level() will detect this condition and IO-APIC RTE's
-remoteIRR is cleared using directed EOI(using IO-APIC EOI register) on Intel
-platforms and for others it uses the existing mask+edge logic followed by
-unmask+level.
-
-We can also remove mdelay() and then send spuriuous interrupts to
-new cpu targets for all the irqs that were handled previously by this cpu
-that is going offline. While it works, I have seen spurious interrupt messages
-(nothing wrong but still annoying messages during cpu offline, which
-can be seen during suspend/resume etc)
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Gary Hade <garyhade@us.ibm.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
----
- arch/x86/kernel/irq.c |   32 ++++++++++++++++++++++++++++----
- 1 file changed, 28 insertions(+), 4 deletions(-)
-
-Index: tip/arch/x86/kernel/irq.c
-===================================================================
---- tip.orig/arch/x86/kernel/irq.c
-+++ tip/arch/x86/kernel/irq.c
-@@ -279,7 +279,7 @@ EXPORT_SYMBOL_GPL(vector_used_by_percpu_
- /* A cpu has been removed from cpu_online_mask.  Reset irq affinities. */
- void fixup_irqs(void)
- {
--	unsigned int irq;
-+	unsigned int irq, vector;
- 	static int warned;
- 	struct irq_desc *desc;
- 
-@@ -334,9 +334,33 @@ void fixup_irqs(void)
- 			printk("Cannot set affinity for irq %i\n", irq);
- 	}
- 
--	/* That doesn't seem sufficient.  Give it 1ms. */
--	local_irq_enable();
-+	/*
-+	 * We can remove mdelay() and then send spuriuous interrupts to
-+	 * new cpu targets for all the irqs that were handled previously by
-+	 * this cpu. While it works, I have seen spurious interrupt messages
-+	 * (nothing wrong but still...).
-+	 *
-+	 * So for now, retain mdelay(1) and check the IRR and then send those
-+	 * interrupts to new targets as this cpu is already offlined...
-+	 */
- 	mdelay(1);
--	local_irq_disable();
-+
-+	for (vector = FIRST_EXTERNAL_VECTOR; vector < NR_VECTORS; vector++) {
-+		unsigned int irr;
-+
-+		if (__get_cpu_var(vector_irq)[vector] < 0)
-+			continue;
-+
-+		irr = apic_read(APIC_IRR + (vector / 32 * 0x10));
-+		if (irr  & (1 << (vector % 32))) {
-+			irq = __get_cpu_var(vector_irq)[vector];
-+
-+			desc = irq_to_desc(irq);
-+			spin_lock(&desc->lock);
-+			if (desc->chip->retrigger)
-+				desc->chip->retrigger(irq);
-+			spin_unlock(&desc->lock);
-+		}
-+	}
- }
- #endif
-
-
+I think it is fixed in 2.6.31.5. I can't reproduce the problem with it.
