@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbZJZPZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbZJZP0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752773AbZJZPZP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 11:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZJZPZO
+	id S1752891AbZJZP0c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 11:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZJZP0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 11:25:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60975 "EHLO hera.kernel.org"
+	Mon, 26 Oct 2009 11:26:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32778 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751711AbZJZPZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 11:25:13 -0400
-Date: Mon, 26 Oct 2009 15:24:35 GMT
-From: tip-bot for Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, horms@verge.net.au, hpa@zytor.com,
-       mingo@redhat.com, jirislaby@gmail.com, lethal@linux-sh.org,
-       vgoyal@redhat.com, ebiederm@xmission.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com, lethal@linux-sh.org,
-       vgoyal@redhat.com, ebiederm@xmission.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1256551903-30567-1-git-send-email-jirislaby@gmail.com>
-References: <1256551903-30567-1-git-send-email-jirislaby@gmail.com>
+	id S1752599AbZJZP0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 11:26:31 -0400
+Date: Mon, 26 Oct 2009 15:24:51 GMT
+From: tip-bot for Jan Beulich <JBeulich@novell.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       roland@redhat.com, jbeulich@novell.com, stable@kernel.org,
+       JBeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       roland@redhat.com, jbeulich@novell.com, stable@kernel.org,
+       JBeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4AE5CC4D020000780001BD13@vpn.id2.novell.com>
+References: <4AE5CC4D020000780001BD13@vpn.id2.novell.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: crash_dump: Fix non-pae kdump kernel memory accesses
-Message-ID: <tip-72ed7de74e8f0fad0d8e567ae1f987b740accb3f@git.kernel.org>
-Git-Commit-ID: 72ed7de74e8f0fad0d8e567ae1f987b740accb3f
+Subject: [tip:x86/urgent] x86-64: Fix register leak in 32-bit syscall audting
+Message-ID: <tip-81766741fe1eee3884219e8daaf03f466f2ed52f@git.kernel.org>
+Git-Commit-ID: 81766741fe1eee3884219e8daaf03f466f2ed52f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -33,74 +31,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  72ed7de74e8f0fad0d8e567ae1f987b740accb3f
-Gitweb:     http://git.kernel.org/tip/72ed7de74e8f0fad0d8e567ae1f987b740accb3f
-Author:     Jiri Slaby <jirislaby@gmail.com>
-AuthorDate: Mon, 26 Oct 2009 11:11:43 +0100
+Commit-ID:  81766741fe1eee3884219e8daaf03f466f2ed52f
+Gitweb:     http://git.kernel.org/tip/81766741fe1eee3884219e8daaf03f466f2ed52f
+Author:     Jan Beulich <JBeulich@novell.com>
+AuthorDate: Mon, 26 Oct 2009 15:20:29 +0000
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 26 Oct 2009 12:38:59 +0100
+CommitDate: Mon, 26 Oct 2009 16:23:26 +0100
 
-x86: crash_dump: Fix non-pae kdump kernel memory accesses
+x86-64: Fix register leak in 32-bit syscall audting
 
-Non-PAE 32-bit dump kernels may wrap an address around 4G and
-poke unwanted space. ptes there are 32-bit long, and since
-pfn << PAGE_SIZE may exceed this limit, high pfn bits are
-cropped and wrong address mapped by kmap_atomic_pfn in
-copy_oldmem_page.
+Restoring %ebp after the call to audit_syscall_exit() is not
+only unnecessary (because the register didn't get clobbered),
+but in the sysenter case wasn't even doing the right thing: It
+loaded %ebp from a location below the top of stack (RBP <
+ARGOFFSET), i.e. arbitrary kernel data got passed back to user
+mode in the register.
 
-Don't allow this behavior in non-PAE kdump kernels by checking
-pfns passed into copy_oldmem_page. In the case of failure,
-userspace process gets EFAULT.
-
-[v2]
-- fix comments
-- move ifdefs inside the function
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Simon Horman <horms@verge.net.au>
-Cc: Paul Mundt <lethal@linux-sh.org>
-LKML-Reference: <1256551903-30567-1-git-send-email-jirislaby@gmail.com>
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Acked-by: Roland McGrath <roland@redhat.com>
+Cc: <stable@kernel.org>
+LKML-Reference: <4AE5CC4D020000780001BD13@vpn.id2.novell.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/crash_dump_32.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+ arch/x86/ia32/ia32entry.S |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/crash_dump_32.c b/arch/x86/kernel/crash_dump_32.c
-index f7cdb3b..cd97ce1 100644
---- a/arch/x86/kernel/crash_dump_32.c
-+++ b/arch/x86/kernel/crash_dump_32.c
-@@ -16,6 +16,22 @@ static void *kdump_buf_page;
- /* Stores the physical address of elf header of crash image. */
- unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
+diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
+index 1733f9f..581b056 100644
+--- a/arch/x86/ia32/ia32entry.S
++++ b/arch/x86/ia32/ia32entry.S
+@@ -204,7 +204,7 @@ sysexit_from_sys_call:
+ 	movl RDI-ARGOFFSET(%rsp),%r8d	/* reload 5th syscall arg */
+ 	.endm
  
-+static inline bool is_crashed_pfn_valid(unsigned long pfn)
-+{
-+#ifndef CONFIG_X86_PAE
-+	/*
-+	 * non-PAE kdump kernel executed from a PAE one will crop high pte
-+	 * bits and poke unwanted space counting again from address 0, we
-+	 * don't want that. pte must fit into unsigned long. In fact the
-+	 * test checks high 12 bits for being zero (pfn will be shifted left
-+	 * by PAGE_SHIFT).
-+	 */
-+	return pte_pfn(pfn_pte(pfn, __pgprot(0))) == pfn;
-+#else
-+	return true;
-+#endif
-+}
-+
- /**
-  * copy_oldmem_page - copy one page from "oldmem"
-  * @pfn: page frame number to be copied
-@@ -41,6 +57,9 @@ ssize_t copy_oldmem_page(unsigned long pfn, char *buf,
- 	if (!csize)
- 		return 0;
+-	.macro auditsys_exit exit,ebpsave=RBP
++	.macro auditsys_exit exit
+ 	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),TI_flags(%r10)
+ 	jnz ia32_ret_from_sys_call
+ 	TRACE_IRQS_ON
+@@ -217,7 +217,6 @@ sysexit_from_sys_call:
+ 	call audit_syscall_exit
+ 	GET_THREAD_INFO(%r10)
+ 	movl RAX-ARGOFFSET(%rsp),%eax	/* reload syscall return value */
+-	movl \ebpsave-ARGOFFSET(%rsp),%ebp /* reload user register value */
+ 	movl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),%edi
+ 	cli
+ 	TRACE_IRQS_OFF
+@@ -351,7 +350,7 @@ cstar_auditsys:
+ 	jmp cstar_dispatch
  
-+	if (!is_crashed_pfn_valid(pfn))
-+		return -EFAULT;
-+
- 	vaddr = kmap_atomic_pfn(pfn, KM_PTE0);
+ sysretl_audit:
+-	auditsys_exit sysretl_from_sys_call, RCX /* user %ebp in RCX slot */
++	auditsys_exit sysretl_from_sys_call
+ #endif
  
- 	if (!userbuf) {
+ cstar_tracesys:
