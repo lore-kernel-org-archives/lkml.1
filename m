@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZJZXqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZJZXsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754930AbZJZXqJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 19:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbZJZXqH
+	id S1754833AbZJZXsT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 19:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZJZXsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 19:46:07 -0400
-Received: from mail001.aei.ca ([206.123.6.130]:44474 "EHLO mail001.aei.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754792AbZJZXp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 19:45:59 -0400
-From: Ed Tomlinson <edt@aei.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #14388] keyboard under X with 2.6.31
-Date: Mon, 26 Oct 2009 19:45:56 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.31.4-crc; KDE/4.2.4; x86_64; ; )
-Cc: Boyan <btanastasov@yahoo.co.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       " =?iso-8859-1?q?Fr=E9d=E9ric_L=2E_W=2E?= Meunier" 
-	<fredlwm@gmail.com>,
-       "Justin P. Mattock" <justinmattock@gmail.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera> <4AE621CB.6000700@yahoo.co.uk> <alpine.LFD.2.01.0910261543400.31845@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0910261543400.31845@localhost.localdomain>
+	Mon, 26 Oct 2009 19:48:18 -0400
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:48109 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754727AbZJZXsR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 19:48:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=lGWwxsadSNTKWHNSGjUwn0aJKA5TwF4x6sDL/wQP0gelfwI1K2lwr6NLrF1AQu2+Iu
+         mIF4u6bahlXOh7z03cnhl3TPPKb/7CnYXjM13316sIwy8kGgFBTEk2oxl1qrg/zAx51S
+         KddvzUD/mfe3fwZDESKzX3ghZ6SBnq21LwV6o=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910261945.58027.edt@aei.ca>
+In-Reply-To: <vX3ILojF2dJ.A.H8F.Yef5KB@chimera>
+References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera>
+	 <vX3ILojF2dJ.A.H8F.Yef5KB@chimera>
+Date: Mon, 26 Oct 2009 17:48:21 -0600
+Message-ID: <51f3faa70910261648h242a9a2dp42cdf554a9eb1342@mail.gmail.com>
+Subject: Re: [Bug #14474] restorecond going crazy on 2.6.31.4 - inotify 
+	regression?
+From: Robert Hancock <hancockrwd@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 October 2009 18:45:27 Linus Torvalds wrote:
-> 
-> On Tue, 27 Oct 2009, Boyan wrote:
-> > 
-> > I think it is fixed in 2.6.31.5. I can't reproduce the problem with it.
-> 
-> It was fixed by mainline commit c8e33141911bf8fe87dc6c92793b9a59b2be0130 
-> ("tty: Make flush_to_ldisc() locking more robust"), which got back-ported 
-> to 2.6.31.5 as commit 86d23a057.
+On Mon, Oct 26, 2009 at 1:32 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.30 and 2.6.31.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+> be listed and let me know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14474
+> Subject         : restorecond going crazy on 2.6.31.4 - inotify regression?
+> Submitter       : Robert Hancock <hancockrwd@gmail.com>
+> Date            : 2009-10-16 0:03 (11 days old)
+> References      : http://marc.info/?l=linux-kernel&m=125565159520489&w=4
 
-I can confirm that the keyboard is no longer missbehaving here  with 31.5
-
-Ed
+This is definitely reproducible on 2.6.31.4 on CentOS 5.4, I'll likely
+try 2.6.31.5 shortly, but it doesn't seem like any of the 2.6.31.5
+patches touch inotify..
