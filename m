@@ -1,110 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbZJZKyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbZJZLfC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbZJZKyR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 06:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbZJZKyR
+	id S1755736AbZJZLfC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 07:35:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755703AbZJZLfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 06:54:17 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:36592 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755531AbZJZKyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 06:54:16 -0400
-Date: Mon, 26 Oct 2009 11:54:19 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: pci-express hotplug
-Message-ID: <20091026105419.GA10727@kernel.dk>
-References: <20091012120620.GG9228@kernel.dk> <20091012145254.GA1517@kroah.com> <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca> <20091012150603.GK9228@kernel.dk> <20091012214854.GA14102@ldl.fc.hp.com> <20091013082903.GQ9228@kernel.dk> <20091013172731.GB22797@ldl.fc.hp.com> <20091014081309.GM9228@kernel.dk> <20091020190707.GA25615@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091020190707.GA25615@ldl.fc.hp.com>
+	Mon, 26 Oct 2009 07:35:01 -0400
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:52683 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755691AbZJZLfA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 07:35:00 -0400
+X-Greylist: delayed 1435 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Oct 2009 07:35:00 EDT
+Subject: Re: [PATCH][RE-SUBMIT] Default setting of the ARM_UNWIND option
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Claudio Scordino <claudio@evidence.eu.com>
+Cc: linux-kernel@vger.kernel.org, rmk+kernel@arm.linux.org.uk,
+       linux-arm-kernel@lists.arm.linux.org.uk, akpm@linux-foundation.org
+In-Reply-To: <4AE55D83.7080608@evidence.eu.com>
+References: <4AD73DA4.4050006@evidence.eu.com>
+	 <1255620333.10164.77.camel@pc1117.cambridge.arm.com>
+	 <4AE55D83.7080608@evidence.eu.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 26 Oct 2009 11:10:52 +0000
+Message-Id: <1256555452.5282.21.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Oct 2009 11:10:53.0271 (UTC) FILETIME=[FB927670:01CA562C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20 2009, Alex Chiang wrote:
-> * Jens Axboe <jens.axboe@oracle.com>:
-> > On Tue, Oct 13 2009, Alex Chiang wrote:
-> > > > > Can you modprobe acpiphp with debug=1? And send the output?
-> > > > 
-> > > > acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
-> > > > acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:05.0
-> > > > acpiphp_glue: found ACPI PCI Hotplug slot 1 at PCI 0000:08:00
-> > > > acpiphp: Slot [1] registered
-> > > > acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:07.0
-> > > > acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:0b:00
-> > > > acpiphp: Slot [2] registered
-> > > > acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:07.0
-> > > > acpiphp_glue: found ACPI PCI Hotplug slot 6 at PCI 0000:84:00
-> > > > acpiphp: Slot [6] registered
-> > > > acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:09.0
-> > > > acpiphp_glue: found ACPI PCI Hotplug slot 7 at PCI 0000:87:00
-> > > > acpiphp: Slot [7] registered
-> > > > acpiphp_glue: Bus 0000:87 has 1 slot
-> > > > acpiphp_glue: Bus 0000:84 has 1 slot
-> > > > acpiphp_glue: Bus 0000:0b has 1 slot
-> > > > acpiphp_glue: Bus 0000:08 has 1 slot
-> > > > acpiphp_glue: Total 4 slots
-> > > 
-> > > You mentioned in another mail that you echoed 1 into the various
-> > > slots' power files.
-> > > 
-> > > Did you do that after modprobing acpiphp with debug=1?
-> > > 
-> > > If so, there should be debug output when you try and turn them
-> > > on.
-> > 
-> > It produces:
-> > 
-> > acpiphp: enable_slot - physical_slot = 1
-> > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
-> > acpiphp: enable_slot - physical_slot = 2
-> > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
-> > acpiphp: enable_slot - physical_slot = 6
-> > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
-> > acpiphp: enable_slot - physical_slot = 7
-> > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+On Mon, 2009-10-26 at 09:27 +0100, Claudio Scordino wrote:
+> My ARM board hanged at the initial "Calibrating delay loop" message.
 > 
-> Hm, so for some reason, firmware on your machine is telling us
-> that it doesn't think cards are present and/or enabled.
+> After some inspection, I found out the problem to be with commit
+> adf8b37bafc1495393201a2ae4235846371870d0. This commit introduces stack
+> unwinding for ARM, and set it enabled by default. However, it seems to
+> not work with buggy or not-EABI compilers.
 > 
-> Unfortunately, I don't know why your firmware would be saying
-> that. We could add some more debug printks to see what firmware
-> thinks about your system... Or we could just wait and see what
-> happens after you get your hardware replaced.
+> My suggestion is to keep the feature (which is fine) but change the
+> default setting of the option (see the attached patch).
 
-New board, the exact same thing happens.
+The option still depends on EXPERIMENTAL, so you get ARM_UNWIND on when
+enabling that.
 
-> > I have a card in one of the slots only this time.
-> > 
-> > > Also, quick dummy check, you are trying to power on populated
-> > > slots, right? :)
-> > 
-> > Yes :-)
-> > 
-> > > Can you send the output of lspci -vv? And I like the output of
-> > > lspci -vt as well... Both before and after loading acpiphp
-> > > please.
-> > 
-> > Send privately.
-> 
-> No difference in before and after. Odd.
-> 
-> If you want to poke us again after your hardware swap, please do
-> so. Sorry for being not so helpful. :-/
-
-Poke :-)
-
-One more thing I tried was pushing the power button on the slot
-manually. With acpiphp, I get the same messages as above. Using pciehp,
-I get the same power fault bit interrupt storm. So no difference from
-using the sysfs interface or doing it on the box side, doesn't work
-either way.
+I'm more in favour of a #warning on #error in the unwind.c file based on
+the compiler version rather than not having it on by default. The reason
+is that people reported performance improvements when compiling the
+kernel without frame pointers.
 
 -- 
-Jens Axboe
+Catalin
 
