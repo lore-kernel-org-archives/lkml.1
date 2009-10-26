@@ -1,78 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbZJZSZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbZJZS13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340AbZJZSZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 14:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZJZSZ3
+	id S1753573AbZJZS13 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 14:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZJZS12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 14:25:29 -0400
-Received: from relay3.sgi.com ([192.48.152.1]:52259 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752360AbZJZSZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 14:25:28 -0400
-Message-ID: <4AE5E9A0.1020009@sgi.com>
-Date: Mon, 26 Oct 2009 11:25:36 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-CC: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Andreas Mohr <andi@lisas.de>,
-       Hugh Dickins <hugh@veritas.com>, Hannes Eder <hannes@hanneseder.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/8] SGI x86_64 UV: Limit the number of microcode messages
-References: <20091023233743.439628000@alcatraz.americas.sgi.com>	 <20091023233756.941535000@alcatraz.americas.sgi.com>	 <b647ffbd0910241309u7b2f8c94t1f886ef31882539e@mail.gmail.com>	 <Pine.LNX.4.61.0910242207180.2439@ginsburg.homenet> <b647ffbd0910241545g4697a170peb00e541298d5a30@mail.gmail.com>
-In-Reply-To: <b647ffbd0910241545g4697a170peb00e541298d5a30@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 26 Oct 2009 14:27:28 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:27663 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752876AbZJZS12 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 14:27:28 -0400
+Subject: Re: [RFC] scripts/get_maintainer.pl: also find maintainers from
+ Mercurial (hg log)
+From: Marti Raudsepp <marti@juffo.org>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <1256578064.1865.96.camel@Joe-Laptop.home>
+References: <1256573044.7754.20.camel@localhost>
+	 <1256578064.1865.96.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 26 Oct 2009 20:27:28 +0200
+Message-ID: <1256581648.20338.47.camel@newn>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 26, 2009 at 7:27 PM, Joe Perches <joe@perches.com> wrote:
+> What about using hg annotate for the git blame?
+>        hg annotate -c $file
+
+Sure, I will get around to it once this patch is done.
+
+'hg blame' without any arguments already gives the locally-unique
+revision number which can be input to 'hg log -r ####' like the git
+revhash. I think this would be the way to go.
+
+> Is there an hg annotate select line range capability?
+
+No, but -l adds line numbers to output, so it can be filtered in Perl.
+
+> I'm not a user of hg. I did:
+>        hg annotate -c -l README
+> and the output line numbering style isn't clear to me.
+
+It seems they reflect the line number in the original revision, the
+documentation isn't clear on this; I will investigate it.
+I guess we can get the real line number using a counter anyway.
+
+> Maybe it's better not to introduce more arguments.
+> Would it be acceptable to use --git instead of --hg
+> and just execute hg if .git wasn't available but .hg
+> was?  Basically just consider --git the equivalent of
+> --vcs and execute whatever vcs system was supported?
+>
+> Or maybe just add --vcs instead of --hg so that
+> the perforce/cvs/svn/darcs/VisualSourceSafe/etc users
+> could be happy in the future too...
+
+I'm split on this. At first it seems adding a --vcs as an alias to --git
+would make the most sense.
+
+But that's confusing because there already is a --scm option. Also
+renaming all existing --git-* options doesn't sound like a good idea.
+
+Since will do the right thing by default, sticking with --git/--nogit
+might be the best way to go.
+
+Marti
+
+---
+scripts/get_maintainer.pl: also find maintainers from Mercurial (hg log)
+
+When a .git directory doesn't exist, get_maintainer now tries to use Mercurial
+instead.
+
+The --nogit option also disables Mercurial.
+
+Signed-off-by: Marti Raudsepp <marti@juffo.org>
+
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+--- a/scripts/get_maintainer.pl
++++ b/scripts/get_maintainer.pl
+@@ -30,6 +30,7 @@
+ my $email_git_min_percent = 5;
+ my $email_git_since = "1-year-ago";
+ my $email_git_blame = 0;
++my $email_hg_date = "-365";
+ my $email_remove_duplicates = 1;
+ my $output_multiline = 1;
+ my $output_separator = ", ";
+@@ -72,6 +73,7 @@
+ 		'git-min-percent=i' => \$email_git_min_percent,
+ 		'git-since=s' => \$email_git_since,
+ 		'git-blame!' => \$email_git_blame,
++		'hg-date=s' => \$email_hg_date,
+ 		'remove-duplicates!' => \$email_remove_duplicates,
+ 		'm!' => \$email_maintainer,
+ 		'n!' => \$email_usename,
+@@ -278,7 +280,7 @@
+     }
+ 
+     if ($email && $email_git) {
+-	recent_git_signoffs($file);
++	recent_vcs_signoffs($file);
+     }
+ 
+     if ($email && $email_git_blame) {
+@@ -360,13 +362,14 @@
+ 
+ MAINTAINER field selection options:
+   --email => print email address(es) if any
+-    --git => include recent git \*-by: signers
++    --git => include recent git or hg \*-by: signers
+     --git-chief-penguins => include ${penguin_chiefs}
+     --git-min-signatures => number of signatures required (default: 1)
+     --git-max-maintainers => maximum maintainers to add (default: 5)
+     --git-min-percent => minimum percentage of commits required (default: 5)
+     --git-since => git history to use (default: 1-year-ago)
+     --git-blame => use git blame to find modified commits for patch or file
++    --hg-date => hg history to use (default: -365)
+     --m => include maintainer(s) if any
+     --n => include name 'Full Name <addr\@domain.tld>'
+     --l => include list(s) if any
+@@ -661,7 +664,7 @@
+     return @lines;
+ }
+ 
+-sub recent_git_signoffs {
++sub recent_vcs_signoffs {
+     my ($file) = @_;
+ 
+     my $sign_offs = "";
+@@ -672,18 +675,26 @@
+     my %hash;
+     my $total_sign_offs;
+ 
+-    if (which("git") eq "") {
+-	warn("$P: git not found.  Add --nogit to options?\n");
+-	return;
+-    }
+-    if (!(-d ".git")) {
+-	warn("$P: .git directory not found.  Use a git repository for better results.\n");
++    if (-d ".git") {
++	if (which("git") eq "") {
++	    warn("$P: found .git directory but git is not installed.  Use --nogit?\n");
++	    return;
++	}
++
++	$cmd = "git log --since=${email_git_since} -- ${file}";
++    } elsif (-d ".hg") {
++	if (which("hg") eq "") {
++	    warn("$P: found .hg directory but Mercurial is not installed.  Use --nogit?\n");
++	    return;
++	}
++
++	$cmd = "hg log --date=${email_hg_date} --template='{desc}\\n' -- ${file}";
++    } else {
++	warn("$P: .git or .hg directory not found.  Use a git repository for better results.\n");
+ 	warn("$P: perhaps 'git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git'\n");
+ 	return;
+     }
+ 
+-    $cmd = "git log --since=${email_git_since} -- ${file}";
+-
+     $output = `${cmd}`;
+     $output =~ s/^\s*//gm;
+ 
 
 
-Dmitry Adamushko wrote:
-> 2009/10/24 Tigran Aivazian <tigran@aivazian.fsnet.co.uk>:
->> On Sat, 24 Oct 2009, Dmitry Adamushko wrote:
->>>> -       printk(KERN_INFO "microcode: CPU%d sig=0x%x, pf=0x%x,
->>>> revision=0x%x\n",
->>>> +       if (cpu_num < 4 || !limit_console_output(false))
->>>> +               printk(KERN_INFO
->>>> +                       "microcode: CPU%d sig=0x%x, pf=0x%x,
->>>> revision=0x%x\n",
->>>>                        cpu_num, csig->sig, csig->pf, csig->rev);
->>>>
->>> Hmm, I guess we wouldn't lose a lot by simply removing those messages
->>> completely. Per-cpu pf/revision is available via /sys anyway.
->> The reason for printing them is that the pf (possibly others?) can change by the update and so the log has this info handy.
-> 
-> We might store the old sig/pf/revision set as well, export them via
-> /sys or/and print them at update-to-new-microcode time.
-> 
-> If it's really so useful to have this info in the log and, at the same
-> time, to avoid the flood of messages (which, I guess for the majority
-> of systems, are the same) at startup time, we might delay the printout
-> until the end of microcode_init(). Then do something like this:
-> 
-> microcode cpu0: up to date version sig, pf, rev          // let's say,
-> it was updated by BIOS
-> microcode cpus [1 ... 16] : update from sig, pf, rev to sig, pf2, rev2.
-> 
-> Anyway, my humble opinion, is that (at the very least) the current
-> patch should be accompanied by a similar version for amd.
-
-I could add it for AMD but I can't test it, and I'm always reluctant to
-change things I can't verify.
-
-Thanks,
-Mike
-
-> 
-> 
->> Kind regards
->> Tigran
-> 
-> 
-> -- Dmitry
