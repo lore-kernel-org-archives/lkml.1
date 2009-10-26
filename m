@@ -1,119 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZJZPOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZJZPNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793AbZJZPOO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 11:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZJZPOM
+	id S1752703AbZJZPNU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 11:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZJZPNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 11:14:12 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:26442 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752622AbZJZPOJ (ORCPT
+	Mon, 26 Oct 2009 11:13:19 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53333 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752054AbZJZPNS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 11:14:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Sb4SW+EKq4z4URdd2nrSri/atYUHZIeWlLyCIbQ9fCOrEMD/mB7yMO/GHUAgDZZt78
-         vDopjVchvwKoYS31Tho7L7GFBZWRUKiWIT1AlMC5o9dQiKCfSLGmolG9JLsG9q2OIWdF
-         fAtRv3TMNLaR4o2PTk74MJCgluJqOdEhpOLjQ=
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-To: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Cc: Wu Zhangjin <wuzhangjin@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, rostedt@goodmis.org,
+	Mon, 26 Oct 2009 11:13:18 -0400
+Subject: Re: [PATCH -v5 10/11] tracing: add function graph tracer support
+ for MIPS
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
        Thomas Gleixner <tglx@linutronix.de>,
        Ralf Baechle <ralf@linux-mips.org>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
        Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
        David Daney <ddaney@caviumnetworks.com>,
        Adam Nemet <anemet@caviumnetworks.com>,
        Patrik Kluba <kpajko79@gmail.com>
-Subject: [PATCH -v6 03/13] tracing: add MIPS specific trace_clock_local()
-Date: Mon, 26 Oct 2009 23:13:20 +0800
-Message-Id: <f290e125634d164ec65b09b24b269815f78455ab.1256569489.git.wuzhangjin@gmail.com>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <3f47087b70a965fd679b17a59521671296457df1.1256569489.git.wuzhangjin@gmail.com>
-References: <cover.1256569489.git.wuzhangjin@gmail.com>
- <747deea2f18d5ccffe842df95a9dd1c86251a958.1256569489.git.wuzhangjin@gmail.com>
- <3f47087b70a965fd679b17a59521671296457df1.1256569489.git.wuzhangjin@gmail.com>
-In-Reply-To: <cover.1256569489.git.wuzhangjin@gmail.com>
-References: <cover.1256569489.git.wuzhangjin@gmail.com>
+In-Reply-To: <ac9c325539cc056d9539c96a68743a425f9612ce.1256483735.git.wuzhangjin@gmail.com>
+References: <cover.1256482555.git.wuzhangjin@gmail.com>
+	 <028867b99ec532b84963a35e7d552becc783cafc.1256483735.git.wuzhangjin@gmail.com>
+	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256483735.git.wuzhangjin@gmail.com>
+	 <3e0c2d7d8b8f196a8153beb41ea7f3cbf42b3d84.1256483735.git.wuzhangjin@gmail.com>
+	 <54c417629e91f40b2bbb4e08cda2a4e6527824c0.1256483735.git.wuzhangjin@gmail.com>
+	 <29bccff04932e993ecd9f516d8b6dcf84e2ceecf.1256483735.git.wuzhangjin@gmail.com>
+	 <72f2270f7b6e01ca7a4cdf4ac8c21778e5d9652f.1256483735.git.wuzhangjin@gmail.com>
+	 <6140dd8f4e1783e5ac30977cf008bb98e4698322.1256483735.git.wuzhangjin@gmail.com>
+	 <49b3c441a57f4db423732f81432a3450ccb3240e.1256483735.git.wuzhangjin@gmail.com>
+	 <6ad82af0c2ec8ef7b9f536b0a97bf65d385c3945.1256483735.git.wuzhangjin@gmail.com>
+	 <ac9c325539cc056d9539c96a68743a425f9612ce.1256483735.git.wuzhangjin@gmail.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 26 Oct 2009 11:13:21 -0400
+Message-Id: <1256570001.26028.298.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add the mips_timecounter_read() based high precision version
-of trace_clock_local().
+On Sun, 2009-10-25 at 23:17 +0800, Wu Zhangjin wrote:
 
-Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
----
- arch/mips/kernel/Makefile      |    6 ++++++
- arch/mips/kernel/trace_clock.c |   33 +++++++++++++++++++++++++++++++++
- 2 files changed, 39 insertions(+), 0 deletions(-)
- create mode 100644 arch/mips/kernel/trace_clock.c
+> +
+> +unsigned long ftrace_get_parent_addr(unsigned long self_addr,
+> +				     unsigned long parent,
+> +				     unsigned long parent_addr,
+> +				     unsigned long fp)
+> +{
+> +	unsigned long sp, ip, ra;
+> +	unsigned int code;
+> +
+> +	/* move to the instruction "move ra, at" */
+> +	ip = self_addr - 8;
+> +
+> +	/* search the text until finding the "move s8, sp" instruction or
+> +	 * "s{d,w} ra, offset(sp)" instruction */
+> +	do {
+> +		ip -= 4;
+> +
+> +		/* get the code at "ip" */
+> +		code = *(unsigned int *)ip;
 
-diff --git a/arch/mips/kernel/Makefile b/arch/mips/kernel/Makefile
-index 8e26e9c..f228868 100644
---- a/arch/mips/kernel/Makefile
-+++ b/arch/mips/kernel/Makefile
-@@ -8,6 +8,10 @@ obj-y		+= cpu-probe.o branch.o entry.o genex.o irq.o process.o \
- 		   ptrace.o reset.o setup.o signal.o syscall.o \
- 		   time.o topology.o traps.o unaligned.o watch.o
- 
-+ifdef CONFIG_FUNCTION_TRACER
-+CFLAGS_REMOVE_trace_clock.o = -pg
-+endif
-+
- obj-$(CONFIG_CEVT_BCM1480)	+= cevt-bcm1480.o
- obj-$(CONFIG_CEVT_R4K_LIB)	+= cevt-r4k.o
- obj-$(CONFIG_MIPS_MT_SMTC)	+= cevt-smtc.o
-@@ -24,6 +28,8 @@ obj-$(CONFIG_SYNC_R4K)		+= sync-r4k.o
- obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
- obj-$(CONFIG_MODULES)		+= mips_ksyms.o module.o
- 
-+obj-$(CONFIG_FTRACE)		+= trace_clock.o
-+
- obj-$(CONFIG_CPU_LOONGSON2)	+= r4k_fpu.o r4k_switch.o
- obj-$(CONFIG_CPU_MIPS32)	+= r4k_fpu.o r4k_switch.o
- obj-$(CONFIG_CPU_MIPS64)	+= r4k_fpu.o r4k_switch.o
-diff --git a/arch/mips/kernel/trace_clock.c b/arch/mips/kernel/trace_clock.c
-new file mode 100644
-index 0000000..0fe85ea
---- /dev/null
-+++ b/arch/mips/kernel/trace_clock.c
-@@ -0,0 +1,33 @@
-+/*
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive for
-+ * more details.
-+ *
-+ * Copyright (C) 2009 Lemote Inc. & DSLab, Lanzhou University, China
-+ * Author: Wu Zhangjin <wuzj@lemote.com>
-+ */
-+
-+#include <linux/clocksource.h>
-+#include <linux/sched.h>
-+
-+#include <asm/time.h>
-+
-+/*
-+ * trace_clock_local(): the simplest and least coherent tracing clock.
-+ *
-+ * Useful for tracing that does not cross to other CPUs nor
-+ * does it go through idle events.
-+ */
-+u64 trace_clock_local(void)
-+{
-+	unsigned long flags;
-+	u64 clock;
-+
-+	raw_local_irq_save(flags);
-+
-+	clock = mips_timecounter_read();
-+
-+	raw_local_irq_restore(flags);
-+
-+	return clock;
-+}
--- 
-1.6.2.1
+Probably want to put the above in an asm with exception handling.
+
+> +
+> +		/* If we hit the "move s8(fp), sp" instruction before finding
+> +		 * where the ra is stored, then this is a leaf function and it
+> +		 * does not store the ra on the stack. */
+> +		if ((code & MOV_FP_SP) == MOV_FP_SP)
+> +			return parent_addr;
+> +	} while (((code & S_RA) != S_RA));
+
+Hmm, that condition also looks worrisome. Should we just always search
+for s{d,w} R,X(sp)?
+
+Since there should only be stores of registers into the sp above the
+jump to mcount. The break out loop is a check for move. I think it would
+be safer to have the break out loop is a check for non storing of a
+register into SP.
+
+> +
+> +	sp = fp + (code & STACK_OFFSET_MASK);
+> +	ra = *(unsigned long *)sp;
+
+Also might want to make the above into a asm with exception handling.
+
+> +
+> +	if (ra == parent)
+> +		return sp;
+> +
+> +	ftrace_graph_stop();
+> +	WARN_ON(1);
+> +	return parent_addr;
+
+Hmm, may need to do more than this. See below.
+
+> +}
+> +
+> +/*
+> + * Hook the return address and push it in the stack of return addrs
+> + * in current thread info.
+> + */
+> +void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr,
+> +			   unsigned long fp)
+> +{
+> +	unsigned long old;
+> +	struct ftrace_graph_ent trace;
+> +	unsigned long return_hooker = (unsigned long)
+> +	    &return_to_handler;
+> +
+> +	if (unlikely(atomic_read(&current->tracing_graph_pause)))
+> +		return;
+> +
+> +	/* "parent" is the stack address saved the return address of the caller
+> +	 * of _mcount, for a leaf function not save the return address in the
+> +	 * stack address, so, we "emulate" one in _mcount's stack space, and
+> +	 * hijack it directly, but for a non-leaf function, it will save the
+> +	 * return address to the its stack space, so, we can not hijack the
+> +	 * "parent" directly, but need to find the real stack address,
+> +	 * ftrace_get_parent_addr() does it!
+> +	 */
+> +
+> +	old = *parent;
+> +
+> +	parent = (unsigned long *)ftrace_get_parent_addr(self_addr, old,
+> +							 (unsigned long)parent,
+> +							 fp);
+> +
+> +	*parent = return_hooker;
+
+Although you may have turned off fgraph tracer in
+ftrace_get_parent_addr, nothing stops the below from messing with the
+stack. The return stack may get off sync and break later. If you fail
+the above, you should not be calling the push function below.
+
+
+-- Steve
+
+> +
+> +	if (ftrace_push_return_trace(old, self_addr, &trace.depth, fp) ==
+> +	    -EBUSY) {
+> +		*parent = old;
+> +		return;
+> +	}
+> +
+> +	trace.func = self_addr;
+> +
+> +	/* Only trace if the calling function expects to */
+> +	if (!ftrace_graph_entry(&trace)) {
+> +		current->curr_ret_stack--;
+> +		*parent = old;
+> +	}
+> +}
+> +#endif				/* CONFIG_FUNCTION_GRAPH_TRACER */
+
 
