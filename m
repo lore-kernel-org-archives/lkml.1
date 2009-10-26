@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbZJZRBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZJZRH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753880AbZJZRBQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 13:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZJZRBQ
+	id S1753863AbZJZRH0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 13:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZJZRHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 13:01:16 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:43165 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752847AbZJZRBP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 13:01:15 -0400
-Date: Mon, 26 Oct 2009 12:46:45 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Subject: Re: [PATCH 1/4] strip: move driver to staging
-Message-ID: <20091026164645.GD2792@tuxdriver.com>
-References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com> <20091020090627.f36130fb.randy.dunlap@oracle.com>
+	Mon, 26 Oct 2009 13:07:25 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59393 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752486AbZJZRHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 13:07:24 -0400
+Date: Mon, 26 Oct 2009 09:48:07 -0700
+From: Greg KH <gregkh@suse.de>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Russell King <rmk+kernel@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: platform_device_add_data(pdev, NULL, 0)
+Message-ID: <20091026164807.GC28072@suse.de>
+References: <20091023202622.GA11843@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20091020090627.f36130fb.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091023202622.GA11843@pengutronix.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20, 2009 at 09:06:27AM -0700, Randy Dunlap wrote:
-> On Tue, 20 Oct 2009 14:17:07 +0900 John W. Linville wrote:
+On Fri, Oct 23, 2009 at 10:26:22PM +0200, Uwe Kleine-König wrote:
+> Hello,
 > 
-> > Move the strip ("Starmode Radio IP") driver to drivers/staging.  For
-> > several years this driver has only seen API "bombing-run" changes, and
-> > few people ever had the hardware.  This driver represents unnecessary
-> > ongoing maintenance for no clear benefit.
-> > 
-> > This patch brought to you by the "hacking" session at the 2009 Kernel
-> > Summit in Tokyo, Japan...
+> mfd_add_device() (defined in drivers/mfd/mfd-core.c) is a wrapper do
+> allocate platform_devices.
 > 
-> is drivers/staging/ a temporary home or a permanent home?
+> It contains:
+> 
+> 	ret = platform_device_add_data(pdev,
+> 			cell->platform_data, cell->data_size);
+> 
+> If cell->data_size is 0 (and so likely cell->platform_data == NULL),
+> still pdev->dev.platform_data get assigned ZERO_SIZE_PTR.
+> 
+> IMHO the result should better be that pdev->dev.platform_data ends being
+> NULL, too.  Agreed?
 
-I would presume it to be "permanent until removed"...
+Why?  Is this causing problems somewhere?
 
-> so no explanation of what it means to be in drivers/staging/ and
-> no warning to users?  either in Kconfig or in feature-removal-schedule.txt?
+thanks,
 
-Moving it to staging _is_ the warning.  As for the removal schedule,
-I imagined that Greg would "do the needful" before actually removing
-the driver.
-
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+greg k-h
