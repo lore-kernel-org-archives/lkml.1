@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbZJZTbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbZJZT3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755519AbZJZTbO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:31:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbZJZTbO
+	id S1755945AbZJZT3j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755653AbZJZT3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:31:14 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:35569 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753673AbZJZTbO (ORCPT
+	Mon, 26 Oct 2009 15:29:38 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:64266 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755269AbZJZT3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:31:14 -0400
-Date: Mon, 26 Oct 2009 15:20:26 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Joe Perches <joe@perches.com>
-Cc: Greg KH <gregkh@suse.de>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] strip: move driver to staging
-Message-ID: <20091026192026.GI2792@tuxdriver.com>
-References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com> <20091023161006.GA1580@ucw.cz> <20091026165518.GE2792@tuxdriver.com> <20091026172434.GI25725@elf.ucw.cz> <20091026184818.GB21591@suse.de> <1256584063.1865.118.camel@Joe-Laptop.home>
+	Mon, 26 Oct 2009 15:29:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:content-transfer-encoding:user-agent;
+        b=dclX+6PzFc0QE3BtyjwpEYq5hiTAA5lDVjWesiQXepMjmW/mChbslric4KGu0g3DmR
+         B9Bo1WRyHkBAunwpAjdOREVddhNA7MRiE1hLZKTUPxhvNPRg9aKK4pxzWvhrL1ykaBVS
+         NiNFJrpfIqM2lev2Lb8LiJZ8g5IxL0/w0GPl0=
+Date: Mon, 26 Oct 2009 22:24:14 +0300
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH -tip] sched: Use root_task_group_empty only with
+	FAIR_GROUP_SCHED
+Message-ID: <20091026192414.GB5321@lenovo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1256584063.1865.118.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 12:07:43PM -0700, Joe Perches wrote:
-> On Mon, 2009-10-26 at 11:48 -0700, Greg KH wrote:
-> > On Mon, Oct 26, 2009 at 06:24:34PM +0100, Pavel Machek wrote:
-> > > Anyway, for moving to staging, TODO file describing what needs to be
-> > > fixed before it is brought back was listed as a requirement.
-> > 	- A maintainer is needed to take ownership of this driver and
-> > 	  they must be willing to maintain and test any future api
-> > 	  changes needed.
-> 
-> There are a lot of files in the tree without assigned maintainers.
-> (want a list? ;)
-> 
-> I think adding a requirement that files have maintainers before
-> being added to not-staging is not a good thing.
+Please review. Perhaps there some usage planned in future?
 
-This is not a blanket policy.  Please don't imply that it is.
+	-- Cyrill
+---
+root_task_group_empty is used only with
+FAIR_GROUP_SCHED so if we use other scheduler
+we get
 
-> It is likely that strip could have be deleted without anyone caring.
+kernel/sched.c:314: warning: ‘root_task_group_empty’ defined but not used
 
-Perhaps so...how would that be better?  It would be less work for Greg,
-but he seems to be fine with this...
+So move CONFIG_FAIR_GROUP_SCHED up that it cover
+root_task_group_empty.
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
+ kernel/sched.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.git/kernel/sched.c
+=====================================================================
+--- linux-2.6.git.orig/kernel/sched.c
++++ linux-2.6.git/kernel/sched.c
+@@ -309,6 +309,8 @@ static DEFINE_PER_CPU_SHARED_ALIGNED(str
+  */
+ static DEFINE_SPINLOCK(task_group_lock);
+ 
++#ifdef CONFIG_FAIR_GROUP_SCHED
++
+ #ifdef CONFIG_SMP
+ static int root_task_group_empty(void)
+ {
+@@ -316,7 +318,6 @@ static int root_task_group_empty(void)
+ }
+ #endif
+ 
+-#ifdef CONFIG_FAIR_GROUP_SCHED
+ #ifdef CONFIG_USER_SCHED
+ # define INIT_TASK_GROUP_LOAD	(2*NICE_0_LOAD)
+ #else /* !CONFIG_USER_SCHED */
