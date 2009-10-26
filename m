@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbZJZX4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZJ0AAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbZJZX4b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 19:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbZJZX4b
+	id S1755381AbZJ0AAK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 20:00:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbZJ0AAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 19:56:31 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:60468 "EHLO e8.ny.us.ibm.com"
+	Mon, 26 Oct 2009 20:00:07 -0400
+Received: from kroah.org ([198.145.64.141]:48101 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754384AbZJZX4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 19:56:30 -0400
-Subject: Re: [RFC][PATCH] Add prctl to set sibling thread names
-From: john stultz <johnstul@us.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>, Mike Fulton <fultonm@ca.ibm.com>,
-       Sean Foley <Sean_Foley@ca.ibm.com>, Darren Hart <dvhltc@us.ibm.com>
-In-Reply-To: <20091024035438.GY32470@one.firstfloor.org>
-References: <1256167297.4768.14.camel@localhost.localdomain>
-	 <20091021174804.3885db37@infradead.org>
-	 <20091022004919.GT32470@one.firstfloor.org>
-	 <20091021194822.72895c46@infradead.org>
-	 <20091024035438.GY32470@one.firstfloor.org>
-Content-Type: text/plain
-Date: Mon, 26 Oct 2009 16:56:20 -0700
-Message-Id: <1256601380.4905.53.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	id S1755039AbZJ0AAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 20:00:02 -0400
+Subject: patch driver-core-fix-driver_register-return-value.patch added to gregkh-2.6 tree
+To: stsp@aknet.ru, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+From: <gregkh@suse.de>
+Date: Mon, 26 Oct 2009 16:56:58 -0700
+In-Reply-To: <4ADA29AA.9070907@aknet.ru>
+Message-ID: <12566014181853@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-24 at 05:54 +0200, Andi Kleen wrote:
-> On Wed, Oct 21, 2009 at 07:48:22PM -0700, Arjan van de Ven wrote:
-> > On Thu, 22 Oct 2009 02:49:19 +0200
-> > Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > > you're pretty much the first now who touches ->comm from
-> > > > not-the-thread-itself.... are you sure that is safe?
-> > > 
-> > > It's not, there is no locking. On the other hand nothing should crash,
-> > > just users might see half rewritten data.
-> > 
-> > .. with strings this is tricky though.. if the new string is longer
-> > than the old one the terminating zero might just be missed etc.
-> 
-> Good point.
-> He needs to first set the last byte to zero to avoid that.
-> But better probably to do a proper lock on all readers. Or not add
-> this feature at all (does it have a strong use case?)
 
-Thread naming is really helpful for debugging a large multi-threaded
-application. But currently it requires the threads to name themselves. 
+This is a note to let you know that I've just added the patch titled
 
-In some applications there may be a dispatch thread that spawns off the
-siblings, and it has more context for naming the threads then the
-threads do themselves.
+    Subject: Driver core: fix driver_register() return value
 
-So in that case, currently in order to have named threads, the
-application's dispatch thread assigns names, and the threads have to
-occasionally poll to see if they need to name themselves to something.
+to my gregkh-2.6 tree.  Its filename is
 
-So they can get it to work, but its ugly and a big pain. Other OSes
-support pthread_set_name_np() functionality, which makes things easy for
-them, so they've requested to see if Linux can't do something similar.
+    driver-core-fix-driver_register-return-value.patch
 
-thanks
--john
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From stsp@aknet.ru  Mon Oct 26 16:00:03 2009
+From: Stas Sergeev <stsp@aknet.ru>
+Date: Sun, 18 Oct 2009 00:31:38 +0400
+Subject: Driver core: fix driver_register() return value
+To: Greg KH <gregkh@suse.de>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>
+Message-ID: <4ADA29AA.9070907@aknet.ru>
+
+In this patch:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=16dc42e018c2868211b4928f20a957c0c216126c
+the check was added for another driver to already claim the same device
+on the same bus. But the returned error code was wrong: to modprobe, the
+-EEXIST means that _this_ driver is already installed. It therefore
+doesn't produce the needed error message when _another_ driver is trying
+to register for the same device.  Returning -EBUSY fixes the problem.
+
+Signed-off-by: Stas Sergeev <stsp@aknet.ru>
+Cc: stable <stable@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/base/driver.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/base/driver.c
++++ b/drivers/base/driver.c
+@@ -236,7 +236,7 @@ int driver_register(struct device_driver
+ 		put_driver(other);
+ 		printk(KERN_ERR "Error: Driver '%s' is already registered, "
+ 			"aborting...\n", drv->name);
+-		return -EEXIST;
++		return -EBUSY;
+ 	}
+ 
+ 	ret = bus_add_driver(drv);
 
