@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZJZN3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbZJZNbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbZJZN3w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 09:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbZJZN3v
+	id S1754750AbZJZNbq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 09:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbZJZNbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 09:29:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:58391 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754623AbZJZN3v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 09:29:51 -0400
-Subject: Re: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL
- v2,headers to Dual BSD/GPL
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, GeunSik Lim <leemgs1@gmail.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       Jesper Juhl <jj@chaosbits.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Adrian Bunk <bunk@stusta.de>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org,
-       Dominique Toupin <dominique.toupin@ericsson.com>,
-       Michel Dagenais <michel.dagenais@polymtl.ca>
-In-Reply-To: <4AE5A17D.5020202@polymtl.ca>
-References: <20091023160257.GA30447@Krystal> <20091023160632.GA2198@Krystal>
-	 <alpine.LNX.2.00.0910242300510.16628@swampdragon.chaosbits.net>
-	 <20091026015357.GA6033@localhost>
-	 <023001ca55e1$436e38e0$808410ac@zhaoleiwin>
-	 <49b7c2350910252203o69811000w4551c01e6e2a10c7@mail.gmail.com>
-	 <20091026073048.GC8162@elte.hu>  <4AE5A17D.5020202@polymtl.ca>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Mon, 26 Oct 2009 09:29:52 -0400
-Message-Id: <1256563793.26028.240.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Oct 2009 09:31:45 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:56556 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750974AbZJZNbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 09:31:44 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC 0/4] cfq: implement merging and breaking up of  cfq_queues
+References: <1256332492-24566-1-git-send-email-jmoyer@redhat.com>
+	<4e5e476b0910241308s4a14fb69jbc6f8d35eb0ab78@mail.gmail.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 26 Oct 2009 09:31:43 -0400
+In-Reply-To: <4e5e476b0910241308s4a14fb69jbc6f8d35eb0ab78@mail.gmail.com>
+	(Corrado Zoccolo's message of "Sat, 24 Oct 2009 22:08:48 +0200")
+Message-ID: <x49ws2iz3gg.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-26 at 09:17 -0400, Pierre-Marc Fournier wrote:
-> Ingo Molnar wrote:
-> > 
-> > But i also disagree with it on a technical level: code duplication is 
-> > _bad_. Why does the code have to be duplicated in user-space like that? 
-> > I'd like Linux tracing code to be in the kernel repo. Why isnt this done 
-> > properly, as part of the kernel project - to make sure it all stays in 
-> > sync?
-> > 
-> 
-> If you mean that this code should solely be used inside the kernel, then
-> what you propose technically does not work. There is a very high cost to
-> accessing kernel code from userspace. This cost is simply unacceptable
-> for the kind of userspace tracing that is needed today.
+Corrado Zoccolo <czoccolo@gmail.com> writes:
 
-I think that Ingo is thinking that the tracing is for the kernel, and is
-asking why the duplication needs to be done for tools tracing the
-kernel.
+> Hi Jeff,
+> this series looks good.
 
-But what I think is trying to be done here is to use the same types of
-MACROS that we have in the kernel to do tracing in userspace. That a
-userspace program can add their own "TRACE_EVENT" and that the headers
-there will create a tracepoint for them the same way we currently do in
-the kernel.
+Hi, Corrado.  Thanks again for the review!
 
-Am I correct in my analysis?
+> I like in particular the fact that you move seekiness detection in the cfqq.
+> This can help with processes that issue sequential reads and seeky
+> writes, or vice versa.
+> Probably, also the think time could be made per-cfqq, so that the
+> decision whether we should idle for a given cfqq is more precise.
 
--- Steve
+I'll have to think about that one.  It would be good to know Jens'
+opinion on the matter, too.
 
+> On Fri, Oct 23, 2009 at 11:14 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
+>> Hi,
+>>
+>> This is a follow-up patch to the original close cooperator support for
+>> CFQ.  The problem is that some programs (NFSd, dump(8), iscsi target
+>> mode driver, qemu) interleave sequential I/Os between multiple threads
+>> or processes.  The result is that there are large delays due to CFQ's
+>> idling logic that leads to very low throughput.
+>
+> You identified the problem in the idling logic, that reduces the
+> throughput in this particular scenario, in which various threads or
+> processes issue (in random order) the I/O requests with different I/O
+> contexts on behalf of a single entity.
+> In this case, any idling between those threads is detrimental.
+> Ideally, such cases should be already spotted, since think time should
+> be high for such processes, so I wonder if this indicates a problem in
+> the current think time logic.
 
+For read-test2, the readers are not dependent upon each other.  That is,
+each process reads the blocks assigned to it, so they do no
+"thinking", or waiting for the other processes, in between I/Os.
+
+> Can you send me your read-test, so I can investigate it?
+
+Sure thing.  I didn't write it, it was provided by Moritoshi Oshiro to
+aid in reproducing the dump issue.  You can find it here:
+
+  http://people.redhat.com/jmoyer/read-test2.tar.gz
+
+Cheers,
+Jeff
