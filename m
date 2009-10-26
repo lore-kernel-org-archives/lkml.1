@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbZJZT2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZJZTbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbZJZT2h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbZJZT2g
+	id S1755949AbZJZTbn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbZJZTbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:28:36 -0400
-Received: from foo.birdnet.se ([213.88.146.6]:60466 "HELO foo.birdnet.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755563AbZJZT2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:28:35 -0400
-Message-ID: <20091026192839.22901.qmail@stuge.se>
-Date: Mon, 26 Oct 2009 20:28:39 +0100
-From: Peter Stuge <peter@stuge.se>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>,
-       linux-kernel@vger.kernel.org, mjg@redhat.com, eric@anholt.net
-Subject: Re: no video output after suspend after "drm/i915: force mode set
-	at lid open time"
-Mail-Followup-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>,
-	linux-kernel@vger.kernel.org, mjg@redhat.com, eric@anholt.net
-References: <4AE4BBBC.2070809@gmail.com> <20091026015230.6438.qmail@stuge.se> <20091026090234.32ae7656@jbarnes-g45>
+	Mon, 26 Oct 2009 15:31:42 -0400
+Received: from [76.245.85.235] ([76.245.85.235]:55205 "EHLO cynthia.pants.nu"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753852AbZJZTbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 15:31:41 -0400
+Date: Mon, 26 Oct 2009 12:29:35 -0700
+From: Brad Boyer <flar@allandria.com>
+To: Sunil Mushran <sunil.mushran@oracle.com>
+Cc: Jamie Lokier <jamie@shareable.org>, Mark Fasheh <mfasheh@suse.com>,
+       ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Ocfs2-devel] [PATCH 1/2] fiemap: Add new extent flag FIEMAP_EXTENT_SHARED
+Message-ID: <20091026192935.GA12655@cynthia.pants.nu>
+References: <1256173509-2831-1-git-send-email-sunil.mushran@oracle.com> <1256173509-2831-2-git-send-email-sunil.mushran@oracle.com> <20091023180034.GA11402@wotan.suse.de> <20091024183039.GB30762@shareable.org> <4AE5DC80.8010204@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091026090234.32ae7656@jbarnes-g45>
+In-Reply-To: <4AE5DC80.8010204@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> > Can I help solve this somehow?
+On Mon, Oct 26, 2009 at 10:29:36AM -0700, Sunil Mushran wrote:
+> Jamie Lokier wrote:
+> >It might be better to have a flag FIEMAP_EXTENT_NOT_SHARED.
+> >
+> >Apps which need to know the data is not shared can't safely check
+> >!(flags & FIEMAP_EXTENT_SHARED) because of old kernels which don't set
+> >the flag.
 > 
-> I posted a patch that fixed an X40 I was testing:
-> drm/i915: save/restore BLC histogram control reg across suspend/resume
+> I'm probably not understanding your point. Won't the older kernels not set
+> FIEMAP_EXTENT_NOT_SHARED too.
 > 
-> can you give it a try and see if it works for you?
+> If this is important, we could always add this flag in the stable kernel
+> trees. Both sharing of extents and fiemap are relatively new to the kernel.
 
-It works beautifully. Fantastic. Thank you very much! It was marked
-Accepted in patchwork but if you need one then here's a:
+I think the concern is that we are going to be getting "wrong" data when
+using an old kernel, and the question is which type of error is safer. If
+the flag is FIEMAP_EXTENT_SHARED, then programs running against an old
+kernel may think that shared extents are not shared. If the flag is
+instead FIEMAP_EXTENT_NOT_SHARED, then the program may think an extent is
+shared when it is not.
 
-Tested-by: Peter Stuge <peter@stuge.se>
+The real question is which information is more important, to know that the
+extent is shared or if the extent definitely is not shared. I would think
+that having FIEMAP_EXTENT_SHARED is more consistent with the rest of the
+defined bits, particularly since the program couldn't actually do anything
+that relies completely on this data anyway since it could change at any
+moment. It's not like the results of a map are static.
 
+	Brad Boyer
+	flar@allandria.com
 
-> It may not be related to Riccardo's report, since the above patch
-> isn't really related to the lid switch problem.
-
-Agree, I reacted to his message because he saw a similar symptom and
-I was just on my way to write a message about it anyway.
-
-
-//Peter
