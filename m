@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZJZT2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbZJZT2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbZJZT2T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbZJZT2T
+	id S1755830AbZJZT2h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbZJZT2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:28:19 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:37584 "EHLO
-	TX2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753657AbZJZT2S convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:28:18 -0400
-X-SpamScore: 1
-X-BigFish: VPS1(z34a4jz98dNzz1202hzzz32i6bh2ddj43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KS4ZE7-03-HZ2-02
-X-M-MSG: 
-Date: Mon, 26 Oct 2009 20:27:42 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Mike Travis <travis@sgi.com>
-CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Andreas Mohr <andi@lisas.de>,
-       Hugh Dickins <hugh@veritas.com>, Hannes Eder <hannes@hanneseder.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/8] SGI x86_64 UV: Limit the number of microcode
- messages
-Message-ID: <20091026192742.GA3985@aftab>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com>
- <20091023233756.941535000@alcatraz.americas.sgi.com>
- <b647ffbd0910241309u7b2f8c94t1f886ef31882539e@mail.gmail.com>
- <Pine.LNX.4.61.0910242207180.2439@ginsburg.homenet>
- <b647ffbd0910241545g4697a170peb00e541298d5a30@mail.gmail.com>
- <4AE5E9A0.1020009@sgi.com>
+	Mon, 26 Oct 2009 15:28:36 -0400
+Received: from foo.birdnet.se ([213.88.146.6]:60466 "HELO foo.birdnet.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755563AbZJZT2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 15:28:35 -0400
+Message-ID: <20091026192839.22901.qmail@stuge.se>
+Date: Mon, 26 Oct 2009 20:28:39 +0100
+From: Peter Stuge <peter@stuge.se>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>,
+       linux-kernel@vger.kernel.org, mjg@redhat.com, eric@anholt.net
+Subject: Re: no video output after suspend after "drm/i915: force mode set
+	at lid open time"
+Mail-Followup-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>,
+	linux-kernel@vger.kernel.org, mjg@redhat.com, eric@anholt.net
+References: <4AE4BBBC.2070809@gmail.com> <20091026015230.6438.qmail@stuge.se> <20091026090234.32ae7656@jbarnes-g45>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AE5E9A0.1020009@sgi.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 26 Oct 2009 19:27:43.0190 (UTC) FILETIME=[63AB1F60:01CA5672]
-X-Reverse-DNS: unknown
+In-Reply-To: <20091026090234.32ae7656@jbarnes-g45>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 11:25:36AM -0700, Mike Travis wrote:
-> I could add it for AMD but I can't test it, and I'm always reluctant to
-> change things I can't verify.
+Jesse Barnes wrote:
+> > Can I help solve this somehow?
+> 
+> I posted a patch that fixed an X40 I was testing:
+> drm/i915: save/restore BLC histogram control reg across suspend/resume
+> 
+> can you give it a try and see if it works for you?
 
-Just send it to me, I'll test it for ya :)
+It works beautifully. Fantastic. Thank you very much! It was marked
+Accepted in patchwork but if you need one then here's a:
 
--- 
-Regards/Gruss,
-Boris.
+Tested-by: Peter Stuge <peter@stuge.se>
 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
 
+> It may not be related to Riccardo's report, since the above patch
+> isn't really related to the lid switch problem.
+
+Agree, I reacted to his message because he saw a similar symptom and
+I was just on my way to write a message about it anyway.
+
+
+//Peter
