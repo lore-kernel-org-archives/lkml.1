@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbZJZBPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbZJZBwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422AbZJZBPN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 21:15:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZJZBPM
+	id S1754489AbZJZBwb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 21:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbZJZBwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 21:15:12 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55227 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754383AbZJZBPL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 21:15:11 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 2/5] page allocator: Do not allow interrupts to use ALLOC_HARDER
-Cc: kosaki.motohiro@jp.fujitsu.com, Frans Pop <elendil@planet.nl>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org\"" <linux-mm@kvack.org>
-In-Reply-To: <1256221356-26049-3-git-send-email-mel@csn.ul.ie>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-3-git-send-email-mel@csn.ul.ie>
-Message-Id: <20091026101420.2F53.A69D9226@jp.fujitsu.com>
+	Sun, 25 Oct 2009 21:52:30 -0400
+Received: from foo.birdnet.se ([213.88.146.6]:52802 "HELO foo.birdnet.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752559AbZJZBwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 21:52:30 -0400
+Message-ID: <20091026015230.6438.qmail@stuge.se>
+Date: Mon, 26 Oct 2009 02:52:30 +0100
+From: Peter Stuge <peter@stuge.se>
+To: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>
+Cc: linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org, mjg@redhat.com,
+       eric@anholt.net
+Subject: Re: no video output after suspend after "drm/i915: force mode set
+	at lid open time"
+Mail-Followup-To: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>,
+	linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+	mjg@redhat.com, eric@anholt.net
+References: <4AE4BBBC.2070809@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 26 Oct 2009 10:15:12 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AE4BBBC.2070809@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
-> slightly by allowing rt_tasks that are handling an interrupt to set
-> ALLOC_HARDER. This patch brings the watermark logic more in line with
-> 2.6.30.
-> 
-> [rientjes@google.com: Spotted the problem]
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  mm/page_alloc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index dfa4362..7f2aa3e 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1769,7 +1769,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
->  		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
->  		 */
->  		alloc_flags &= ~ALLOC_CPUSET;
-> -	} else if (unlikely(rt_task(p)))
-> +	} else if (unlikely(rt_task(p)) && !in_interrupt())
->  		alloc_flags |= ALLOC_HARDER;
->  
->  	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
-> -- 
-> 1.6.3.3
+Hi,
 
-good catch.
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Riccardo Magliocchetti wrote:
+> i lost video output, screen stays black, after suspend after commit
+> c1c7af60892070e4b82ad63bbfb95ae745056de0 "drm/i915: force mode set at lid 
+> open time".
+
+I also experience this symptom.
+
+I have an IBM ThinkPad X40, chipset with integrated 855GM graphics.
+
+The last release kernel I used was 2.6.30, with DRI enabled but no fb.
+Gentoo xorg-server-1.6.1.092 with xf86-video-intel-2.7.1. All vanilla
+kernels. With that kernel I would get the mode back on restore, but
+the panel backlight would not come on, so it would be very difficult
+to see the screen contents, especially in dim environments.
+
+thinkwiki.org documents this symptom on X40 and many other models.
+One suggested workaround is to chvt 1 and save a copy of the VGA
+device PCI config space right before echo mem > /sys/power/state,
+and write it back and run vbetool post immediately after resume,
+followed by chvt 7 (or wherever X is). This workaround functioned
+fairly well for me, but not always reliably, and of course it's a
+bit of a hack. :)
+
+I am now running drm-intel.git a83a44 from Oct 14 with KMS enabled
+and xf86-video-intel 1556c62 from Oct 8, and the workaround
+(understandably) does not function anymore. I've tried permutations
+with only saving PCI config space and only running vbetool but no go.
+
+(Before this I tried 2.6.31.1 with KMS, but it didn't do Xv.)
+
+(Oh, and Xv performance with a83a44+1556c6 is lower than 2.6.30 nofb,
+but that's somewhat secondary. MPlayer performs worse than VLC, but
+both are worse than MPlayer with 2.6.30+2.7.1.)
+
+Can I help solve this somehow?
 
 
-
-
+//Peter
