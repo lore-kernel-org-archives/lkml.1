@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbZJZSx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbZJZSxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533AbZJZSx0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 14:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbZJZSxX
+	id S1754753AbZJZSxv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 14:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbZJZSxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 14:53:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59228 "EHLO ogre.sisk.pl"
+	Mon, 26 Oct 2009 14:53:49 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43470 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752957AbZJZSxV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 14:53:21 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Christian Casteyde" <casteyde.christian@free.fr>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
-In-Reply-To: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	id S1754468AbZJZSxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 14:53:48 -0400
+Date: Mon, 26 Oct 2009 11:47:34 -0700
+From: Greg KH <gregkh@suse.de>
+To: david@lang.hm
+Cc: "John W. Linville" <linville@tuxdriver.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] strip: move driver to staging
+Message-ID: <20091026184734.GA21591@suse.de>
+References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
+ <20091023161006.GA1580@ucw.cz>
+ <20091026165518.GE2792@tuxdriver.com>
+ <alpine.DEB.2.00.0910261013430.11504@asgard.lang.hm>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <6dRYo8ss7vL.A.FX.kse5KB@chimera>
-Subject: [Bug #14277] Caught 8-bit read from freed memory in b43 driver at association
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 26 Oct 2009 19:45:57 +0100 (CET)
+In-Reply-To: <alpine.DEB.2.00.0910261013430.11504@asgard.lang.hm>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+On Mon, Oct 26, 2009 at 10:18:20AM -0700, david@lang.hm wrote:
+> if someone were to claim 'maintainership' and then do nothing other than 
+> complain if someone else were to change an API but not fix this in the 
+> process, how would this be different than the current situation?
 
-The following bug entry is on the current list of known regressions
-from 2.6.31.  Please verify if it still should be listed and let me know
-(either way).
+A person "claiming maintainership" would then be responsible for keeping
+the API up to date and ensuring that the driver worked.  To do that,
+hardware would probably need to be present.
 
+Do you have this kind of hardware and are willing to accept ownership of
+this driver?
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14277
-Subject		: Caught 8-bit read from freed memory in b43 driver at association
-Submitter	: Christian Casteyde <casteyde.christian@free.fr>
-Date		: 2009-09-30 18:06 (27 days old)
+thanks,
 
-
+greg k-h
