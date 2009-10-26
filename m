@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbZJZHE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZJZHEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754798AbZJZHE3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 03:04:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZJZHE2
+	id S1754782AbZJZHEK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 03:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZJZHEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 03:04:28 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48162 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754707AbZJZHE2 (ORCPT
+	Mon, 26 Oct 2009 03:04:09 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47742 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754644AbZJZHEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 03:04:28 -0400
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, David Rientjes <rientjes@google.com>,
-       Yinghai Lu <yinghai@kernel.org>, Mel Gorman <mel@csn.ul.ie>,
+	Mon, 26 Oct 2009 03:04:09 -0400
+Date: Mon, 26 Oct 2009 00:05:17 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <peterz@infradead.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/8] SGI x86_64 UV: Limit the number of number of SRAT messages
-From: Andi Kleen <andi@firstfloor.org>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com>
-	<20091023233750.702443000@alcatraz.americas.sgi.com>
-Date: Mon, 26 Oct 2009 08:04:31 +0100
-In-Reply-To: <20091023233750.702443000@alcatraz.americas.sgi.com> (Mike Travis's message of "Fri, 23 Oct 2009 18:37:46 -0500")
-Message-ID: <87pr8ay6tc.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: [PATCH 3/3] sched: Disable affine wakeups by default
+Message-ID: <20091026000517.723f7550@infradead.org>
+In-Reply-To: <20091026070112.GA14641@elte.hu>
+References: <1256492289.14241.40.camel@marge.simson.net>
+	<20091025123319.2b76bf69@infradead.org>
+	<1256508287.17306.14.camel@marge.simson.net>
+	<1256522035.7356.19.camel@laptop>
+	<1256531907.7117.31.camel@marge.simson.net>
+	<20091025215225.05ac9ac9@infradead.org>
+	<1256533734.7117.45.camel@marge.simson.net>
+	<20091025223657.5ebc2857@infradead.org>
+	<1256536078.7117.67.camel@marge.simson.net>
+	<1256536660.8150.3.camel@marge.simson.net>
+	<20091026070112.GA14641@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis <travis@sgi.com> writes:
+On Mon, 26 Oct 2009 08:01:12 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> Limit number of SRAT messages of the form:
-> [    0.000000] SRAT: PXM 0 -> APIC 0 -> Node 0
+> 
+> * Mike Galbraith <efault@gmx.de> wrote:
+> 
+> > On Mon, 2009-10-26 at 06:47 +0100, Mike Galbraith wrote:
+> > > On Sun, 2009-10-25 at 22:36 -0700, Arjan van de Ven wrote:
+> > 
+> > > > if you're a multicore domain you better have a shared cache.. 
+> > > > that's what it should mean. If it does not we should fix that.
+> > > 
+> > > Sounds reasonable to me.  I'll go make explosions.
+> > 
+> > (Actually, if multicode and sibling does indeed mean shared cache,
+> > no arch tinkering should be necessary, just reset SD_WAKE_AFFINE
+> > when degenerating should work fine.  Only thing is multicore with 
+> > siblings.. and test test test)
+> 
+> Correct. There's a few cpus where multicore means separate caches but 
+> all modern CPUs have shared caches for cores so we want to tune for 
+> that.
 
-While I generally agree on the concept of limiting per CPU information
-(see other mail) I don't think removing this message by default 
-is a good idea. I regularly needed it for debugging some NUMA related
-problems and they still happen moderately often even today.
+for those cpus where mc means separate caches we should fix the arch
+code to set up separate MC domains to be honest..
+I can look into that in a bit..
 
-I think the right approach here, to limit output, would be to figure out
-a more compact output format, perhaps using a matrix in a table
-or simply printing multiple pair per line.
 
--Andi
-
->
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
