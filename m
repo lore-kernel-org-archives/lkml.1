@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbZJZTmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbZJZTrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756466AbZJZTmT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbZJZTmQ
+	id S1755397AbZJZTrr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZJZTrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:42:16 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:60627 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756380AbZJZTmO (ORCPT
+	Mon, 26 Oct 2009 15:47:45 -0400
+Received: from lennier.cc.vt.edu ([198.82.162.213]:46243 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756021AbZJZTro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:42:14 -0400
-In-Reply-To: <4AE5F9B9.2010707@s5r6.in-berlin.de>
-References: <f22d86810910261019yc77dbf0sa7688a98e7b98267@mail.gmail.com> <7ADB5FD7-9C97-4987-BC20-997258B25FD2@noahdesu.com> <f22d86810910261122j6c9e57e8pd4a257090f65c727@mail.gmail.com> <4AE5F04E.3050908@nortel.com> <f22d86810910261200n130fda06r46fdbcc808195002@mail.gmail.com> <E1A2BB8B-F291-4C9E-B095-39F0AE7A0587@noahdesu.com> <4AE5F9B9.2010707@s5r6.in-berlin.de>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <FB7BE58D-B492-411D-A630-7F7A4424FD30@noahdesu.com>
-Cc: "Leonidas ." <leonidas137@gmail.com>, Chris Friesen <cfriesen@nortel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
+	Mon, 26 Oct 2009 15:47:44 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Gene Heskett <gene.heskett@verizon.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: SHMEM question
+In-Reply-To: Your message of "Mon, 26 Oct 2009 11:59:04 EDT."
+             <200910261159.04995.gene.heskett@verizon.net>
+From: Valdis.Kletnieks@vt.edu
+References: <200910261159.04995.gene.heskett@verizon.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1256586467_3115P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-From: Noah Watkins <noah@noahdesu.com>
-Subject: Re: Difference between atomic operations and memory barriers
-Date: Mon, 26 Oct 2009 12:42:50 -0700
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-X-Mailer: Apple Mail (2.753.1)
+Date: Mon, 26 Oct 2009 15:47:47 -0400
+Message-ID: <19654.1256586467@turing-police.cc.vt.edu>
+X-Mirapoint-Received-SPF: 128.173.14.107 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (0) 
+X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020208.4AE5FCE4.00F8,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-07-29 21:33:33,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Noah Watkins wrote:
->>> So we can safely assume that pointer assignment will be done in an
->>> atomic manner?
->>
->> See the the comment above rcu_assign_pointer in
->> include/linux/rcupdate.h
->
-> This comment only talks about ordering, not about atomicity.
-Ahh, yeh that's true.
+--==_Exmh_1256586467_3115P
+Content-Type: text/plain; charset=us-ascii
 
->
-> Again, AFAIR the ISO C spec should explain what is going to be
-> guaranteed atomic and what might not be atomic.
-This seems likely. I wonder if there are any strange architectures
-out there that have some insane implementation.
+On Mon, 26 Oct 2009 11:59:04 EDT, Gene Heskett said:
 
->
+> -r-------- 1 root root 67108904 2009-10-24 00:28 pulse-shm-3880918577
+
+> That pulse-shm-3880918577 file at over 67 megabytes is all $00 till $04000000 
+> into it, then there is 6 non-zero bytes and the rest is back to all balls.
+> 
+> Is this some indicator of a new rootkit or WTF?
+
+No, it's pulseaudio.  It uses shared mem to move audio data between client
+programs and the pulseaudio server.
+
+--==_Exmh_1256586467_3115P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFK5fzjcC3lWbTT17ARAjzkAKDWb5KF3NelgZePBx4UMya1jBvACwCguikU
+J6vEVP0S+LL8Vo2UGzRiSCI=
+=zuzt
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1256586467_3115P--
 
