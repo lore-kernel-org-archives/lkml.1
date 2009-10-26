@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZJZNqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbZJZNq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbZJZNqf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 09:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZJZNqd
+	id S1752278AbZJZNq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 09:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbZJZNq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 09:46:33 -0400
-Received: from exchange.solarflare.com ([216.237.3.220]:42341 "EHLO
-	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbZJZNqb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 09:46:31 -0400
-Subject: Re: linux-next: manual merge of the net tree with the i2c tree
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mika Kuoppala <mika.kuoppala@nokia.com>,
-       Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
-References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Organization: Solarflare Communications
-Date: Mon, 26 Oct 2009 13:46:33 +0000
-Message-Id: <1256564793.2783.3.camel@achroite>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Mon, 26 Oct 2009 09:46:29 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:47104 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751920AbZJZNq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 09:46:28 -0400
+Message-ID: <4AE5A8DA.3040209@redhat.com>
+Date: Mon, 26 Oct 2009 09:49:14 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Theodore Tso <tytso@mit.edu>, Parag Warudkar <parag.lkml@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       bugzilla-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 14354] Re: ext4 increased intolerance to unclean shutdown?
+References: <f7848160910152128h96237b7ga103915082d6412b@mail.gmail.com> <20091016091558.GA10184@mit.edu> <4AD8C679.3030300@redhat.com> <20091025062202.GB1391@ucw.cz>
+In-Reply-To: <20091025062202.GB1391@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Oct 2009 13:46:36.0641 (UTC) FILETIME=[BCA79510:01CA5642]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.600.1016-16970.005
-X-TM-AS-Result: No--18.130500-0.000000-31
-X-TM-AS-User-Approved-Sender: Yes
-X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-26 at 13:37 +1100, Stephen Rothwell wrote:
-> Hi all,
-> 
-> Today's linux-next merge of the net tree got a conflict in
-> drivers/net/sfc/sfe4001.c between commit
-> 3f7c0648f727a6d5baf6117653e4001dc877b90b ("i2c: Prevent priority
-> inversion on top of bus lock") from the i2c tree and commit
-> c9597d4f89565b6562bd3026adbe6eac6c317f47 ("sfc: Merge sfe4001.c into
-> falcon_boards.c") from the net tree.
-> 
-> I have applied the following merge fixup patch (after removing
-> drivers/net/sfc/sfe4001.c) and can carry it as necessary.
-> 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Mon, 26 Oct 2009 12:24:55 +1100
-> Subject: [PATCH] net: merge fixup for drivers/net/sfc/falcon_boards.c
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Acked-by: Ben Hutchings <bhutchings@solarflare.com>
+On 10/25/2009 02:22 AM, Pavel Machek wrote:
+> Hi!
+>
+>>>> So I have been experimenting with various root file systems on my
+>>>> laptop running latest git. This laptop some times has problems waking
+>>>> up from sleep and that results in it needing a hard reset and
+>>>> subsequently unclean file system.
+>>>>
+>>> A number of people have reported this, and there is some discussion
+>>> and some suggestions that I've made here:
+>>>
+>>> 	http://bugzilla.kernel.org/show_bug.cgi?id=14354
+>>>
+>>> It's been very frustrating because I have not been able to replicate
+>>> it myself; I've been very much looking for someone who is (a) willing
+>>> to work with me on this, and perhaps willing to risk running fsck
+>>> frequently, perhaps after every single unclean shutdown, and (b) who
+>>> can reliably reproduce this problem.  On my system, which is a T400
+>>> running 9.04 with the latest git kernels, I've not been able to
+>>> reproduce it, despite many efforts to try to reproduce it.  (i.e.,
+>>> suspend the machine and then pull the battery and power; pulling the
+>>> battery and power, "echo c>   /proc/sysrq-trigger", etc., while
+>>> doing "make -j4" when the system is being uncleanly shutdown)
+>>>
+>>
+>> I wonder if we might have better luck if we tested using an external
+>> (e-sata or USB connected) S-ATA drive.
+>>
+>> Instead of pulling the drive's data connection, most of these have an
+>> external power source that could be turned off so the drive firmware
+>> won't have a chance to flush the volatile write cache. Note that some
+>> drives automatically write back the cache if they have power and see a
+>> bus disconnect, so hot unplugging just the e-sata or usb cable does not
+>> do the trick.
+>>
+>> Given the number of cheap external drives, this should be easy to test
+>> at home....
+>
+> Do they support barriers?
+>
+> (Anyway, you may want to use some kind of VM for testing. That should
+> make the testing cycle shorter, easier to reprorduce *and* more repeatable.)
+>
+> 									Pavel
+>
 
-Ben.
+The drives themselves will support barriers - they are the same S-ATA/ATA drives 
+you get normally for your desktop, etc.
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+I think that e-SATA would have no trouble (but fewer boxes have that external 
+S-ATA port). Not sure how reliable the SCSI -> USB -> ATA conversion is for USB 
+drives though (a lot of moving pieces there!).
+
+VM testing is a good idea, but I worry that the virtual IO stack support for 
+data integrity is still somewhat shaky. Christoph was working on fixing various 
+bits and pieces I think...
+
+ric
 
