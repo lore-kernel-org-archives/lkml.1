@@ -1,314 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753553AbZJZVXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbZJZVX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753553AbZJZVXY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 17:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbZJZVXX
+	id S1753870AbZJZVX5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 17:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZJZVX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 17:23:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:43418 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837AbZJZVXW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 17:23:22 -0400
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
-Subject: [PATCH 3/3] perf top: Support userspace symbols too
-Date: Mon, 26 Oct 2009 19:23:19 -0200
-Message-Id: <1256592199-9608-3-git-send-email-acme@redhat.com>
-X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1256592199-9608-2-git-send-email-acme@redhat.com>
-References: <y>
- <1256592199-9608-1-git-send-email-acme@redhat.com>
- <1256592199-9608-2-git-send-email-acme@redhat.com>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 26 Oct 2009 17:23:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46344 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752803AbZJZVXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 17:23:55 -0400
+Message-ID: <4AE6135B.2070003@kernel.org>
+Date: Mon, 26 Oct 2009 14:23:39 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] pci: only release that resource index is less than 3
+References: <4AE2C827.8040905@kernel.org>	<200910261032.58231.bjorn.helgaas@hp.com> <20091026101942.578f41b2@jbarnes-g45>
+In-Reply-To: <20091026101942.578f41b2@jbarnes-g45>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Example:
+Jesse Barnes wrote:
+> On Mon, 26 Oct 2009 10:32:57 -0600
+> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> 
+>> On Saturday 24 October 2009 03:25:59 am Yinghai Lu wrote:
+>>> after
+>>>
+>>> | commit 308cf8e13f42f476dfd6552aeff58fdc0788e566
+>>> |
+>>> |    PCI: get larger bridge ranges when space is available
+>>>
+>>> found one of resource of peer root bus (0x00) get released from root
+>>> resource. later one hotplug device can not get big range anymore.
+>>> other peer root buses is ok.
+>>>
+>>> it turns out it is from transparent path.
+>>>
+>>> those resources will be used for pci bridge BAR updated.
+>>> so need to limit it to 3.
+>>>
+>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>
+>>> ---
+>>>  drivers/pci/setup-bus.c |    9 +++++++--
+>>>  1 file changed, 7 insertions(+), 2 deletions(-)
+>>>
+>>> Index: linux-2.6/drivers/pci/setup-bus.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/drivers/pci/setup-bus.c
+>>> +++ linux-2.6/drivers/pci/setup-bus.c
+>>> @@ -344,9 +344,14 @@ static struct resource *find_free_bus_re
+>>>  			 * if there is no child under that, we
+>>> should release
+>>>  			 * and use it. don't need to reset it,
+>>> pbus_size_* will
+>>>  			 * set it again
+>>> +			 * need to be less 3, otherwise can not
+>>> write it to
+>>> +			 * bridge, also need to avoid releasing it
+>>> from
+>>> +			 * transparent bus path
+>>>  			 */
+>>> -			if (!r->child && !release_resource(r))
+>>> -				return r;
+>>> +			if (i < 3 && !r->child) {
+>>> +				if (!release_resource(r))
+>>> +					return r;
+>>> +			}
+>> I am bewildered.
+>>
+>> 308cf8e13f42f added the release_resource() call here in
+>> find_free_bus_resource().  I don't understand why the release
+>> should be there in the first place -- it doesn't seem to
+>> logically fit there.  A "release" should be connected to an
+>> event, maybe a hot-remove or a move of a device from one place
+>> to another.  It shouldn't be something we do as a side-effect
+>> of searching for a free resource.
+>>
+>> Now you're adding the magic number "3", which seems even less
+>> related to the job of "finding an available bus resource."  I'm
+>> guessing the "3" is related to PCI_BRIDGE_RESOURCES or something,
+>> but that should be made explicit, and I really don't think it
+>> belongs in this function.
+> 
+> I agree, the 3 is a bit of magic.  The free could probably be shuffled
+> around a bit too, though it really is related to finding bus
+> resources.  I was a bit ambivalent about putting it in
+> find_free_bus_resources but when I started a reply to Yinghai and
+> looked for a better place it made some sense to leave it as-is.
+> 
+> But if we're going to be adding more logic here, we should probably
+> figure out a better way of doing it, maybe by adding a new pass to do
+> the freeing?  I know we've avoided modifying bus resources too much in
+> the past, but I think that'll be harder and harder to avoid as Windows
+> moves to that model and platforms begin to expect it.
 
-Compiling the kernel with 'make -k 22 allyesconfig'
+not sure if you like this version. it need more lines changes.
 
-[root@emilia linux-2.6-tip]# perf top -r 90
-------------------------------------------------------------------------------
-   PerfTop:    3669 irqs/sec  kernel:59.9% [1000Hz cycles],  (all, 8 CPUs)
-------------------------------------------------------------------------------
+[PATCH] pci: only release that resource index is less than 3 -v2
 
-             samples  pcnt function                                 DSO
-             _______ _____ ________________________________ ________________
 
-             3062.00  6.5% clear_page_c                     [kernel]
-             2233.00  4.8% _int_malloc                      /lib64/libc-2.5.so
-             2100.00  4.5% yylex                            /home/acme/git/build/allyesconfig/scripts/genksyms/genksyms
-             2029.00  4.3% memset                           /lib64/libc-2.5.so
-             1224.00  2.6% page_fault                       [kernel]
-             1075.00  2.3% __GI_strlen                      /lib64/libc-2.5.so
-              863.00  1.8% sub_preempt_count                [kernel]
-              822.00  1.8% __GI_memcpy                      /lib64/libc-2.5.so
-              810.00  1.7% __GI_vfprintf                    /lib64/libc-2.5.so
-              786.00  1.7% _int_free                        /lib64/libc-2.5.so
-              775.00  1.7% __GI_strcmp                      /lib64/libc-2.5.so
-              748.00  1.6% _spin_lock                       [kernel]
-              699.00  1.5% main                             /home/acme/git/build/allyesconfig/scripts/basic/fixdep
-              659.00  1.4% add_preempt_count                [kernel]
-              649.00  1.4% yyparse                          /home/acme/git/build/allyesconfig/scripts/genksyms/genksyms
-              645.00  1.4% preempt_trace                    [kernel]
-              635.00  1.4% __GI___libc_free                 /lib64/libc-2.5.so
-              597.00  1.3% trace_preempt_on                 [kernel]
-              551.00  1.2% __GI___libc_malloc               /lib64/libc-2.5.so
-              516.00  1.1% _spin_lock_irqsave               [kernel]
-              481.00  1.0% copy_user_generic_string         [kernel]
-              479.00  1.0% unmap_vmas                       [kernel]
-              429.00  0.9% _IO_file_xsputn_internal         /lib64/libc-2.5.so
-              425.00  0.9% __GI_strncpy                     /lib64/libc-2.5.so
-              416.00  0.9% get_page_from_freelist           [kernel]
-              414.00  0.9% malloc_consolidate               /lib64/libc-2.5.so
-              406.00  0.9% get_parent_ip                    [kernel]
-              362.00  0.8% __rmqueue                        [kernel]
-              347.00  0.7% in_lock_functions                [kernel]
-              316.00  0.7% __d_lookup                       [kernel]
+after
 
-[root@emilia linux-2.6-tip]#
+| commit 308cf8e13f42f476dfd6552aeff58fdc0788e566
+|
+|    PCI: get larger bridge ranges when space is available
 
-More polishing is needed to print just DSO basename when not --verbose, etc.
+found one of resource of peer root bus (0x00) get released from root
+resource. later one hotplug device can not get big range anymore.
+other peer root buses is ok.
 
-Supporting a 'comm' column requires some more reworking of 'perf top' internals
-as we will need to use something like the hist entries 'perf report' uses and
-will be done in another patch.
+it turns out it is from transparent path.
 
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+those resources will be used for pci bridge BAR updated.
+so need to limit it to 3.
+
+v2: Jesse doesn't like it is in find_free_bus_resource...
+    try to move out of pci_bus_size_bridges loop.
+need to apply after:
+	[PATCH] pci: pciehp update the slot bridge res to get big range for pcie devices - v3
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
 ---
- tools/perf/builtin-top.c |  143 ++++++++++++++++++++++++++++++++-------------
- 1 files changed, 101 insertions(+), 42 deletions(-)
+ drivers/pci/hotplug/pciehp_pci.c |    1 
+ drivers/pci/setup-bus.c          |   83 +++++++++++++++++++++++++++++++++------
+ include/linux/pci.h              |    1 
+ 3 files changed, 74 insertions(+), 11 deletions(-)
 
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index 4a9fe22..a02fc41 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -318,7 +318,7 @@ static void show_details(struct sym_entry *syme)
- }
- 
- /*
-- * Symbols will be added here in record_ip and will get out
-+ * Symbols will be added here in event__process_sample and will get out
-  * after decayed.
-  */
- static LIST_HEAD(active_symbols);
-@@ -459,18 +459,18 @@ static void print_sym_table(void)
- 	}
- 
- 	if (nr_counters == 1)
--		printf("             samples    pcnt");
-+		printf("             samples  pcnt");
- 	else
--		printf("   weight    samples    pcnt");
-+		printf("   weight    samples  pcnt");
- 
- 	if (verbose)
- 		printf("         RIP       ");
--	printf("   kernel function\n");
--	printf("   %s    _______   _____",
-+	printf(" function                                 DSO\n");
-+	printf("   %s    _______ _____",
- 	       nr_counters == 1 ? "      " : "______");
- 	if (verbose)
--		printf("   ________________");
--	printf("   _______________\n\n");
-+		printf(" ________________");
-+	printf(" ________________________________ ________________\n\n");
- 
- 	for (nd = rb_first(&tmp); nd; nd = rb_next(nd)) {
- 		struct symbol *sym;
-@@ -486,16 +486,15 @@ static void print_sym_table(void)
- 					 sum_ksamples));
- 
- 		if (nr_counters == 1 || !display_weighted)
--			printf("%20.2f - ", syme->weight);
-+			printf("%20.2f ", syme->weight);
- 		else
--			printf("%9.1f %10ld - ", syme->weight, syme->snap_count);
-+			printf("%9.1f %10ld ", syme->weight, syme->snap_count);
- 
- 		percent_color_fprintf(stdout, "%4.1f%%", pcnt);
- 		if (verbose)
--			printf(" - %016llx", sym->start);
--		printf(" : %s", sym->name);
--		if (syme->map->dso->name[0] == '[')
--			printf(" \t%s", syme->map->dso->name);
-+			printf(" %016llx", sym->start);
-+		printf(" %-32s", sym->name);
-+		printf(" %s", syme->map->dso->short_name);
- 		printf("\n");
+Index: linux-2.6/drivers/pci/setup-bus.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/setup-bus.c
++++ linux-2.6/drivers/pci/setup-bus.c
+@@ -322,33 +322,54 @@ static void pci_bridge_check_ranges(stru
  	}
  }
-@@ -818,41 +817,97 @@ static int parse_symbols(void)
- 	return 0;
- }
  
--/*
-- * Binary search in the histogram table and record the hit:
-- */
--static void record_ip(u64 ip, int counter)
-+static void event__process_sample(const event_t *self, int counter)
+-/* Helper function for sizing routines: find first available
+-   bus resource of a given type. Note: we intentionally skip
+-   the bus resources which have already been assigned (that is,
+-   have non-NULL parent resource). */
+-static struct resource *find_free_bus_resource(struct pci_bus *bus, unsigned long type)
++void pci_bridge_release_not_used_res(struct pci_bus *bus)
  {
-+	u64 ip = self->ip.ip;
- 	struct map *map;
--	struct symbol *sym = kernel_maps__find_symbol(ip, &map);
--
--	if (sym != NULL) {
--		struct sym_entry *syme = dso__sym_priv(map->dso, sym);
--
--		if (!syme->skip) {
--			syme->count[counter]++;
--			record_precise_ip(syme, counter, ip);
--			pthread_mutex_lock(&active_symbols_lock);
--			if (list_empty(&syme->node) || !syme->node.next)
--				__list_insert_active_sym(syme);
--			pthread_mutex_unlock(&active_symbols_lock);
-+	struct sym_entry *syme;
-+	struct symbol *sym;
+ 	int i;
+ 	struct resource *r;
+ 	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
+ 				  IORESOURCE_PREFETCH;
+ 
+-	for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
++	/* for pci bridges res only */
++	for (i = 0; i < 3; i++) {
+ 		r = bus->resource[i];
+-		if (r == &ioport_resource || r == &iomem_resource)
+-			continue;
+-		if (r && (r->flags & type_mask) == type) {
++		if (r && (r->flags & type_mask)) {
+ 			if (!r->parent)
+-				return r;
++				continue;
+ 			/*
+ 			 * if there is no child under that, we should release
+ 			 * and use it. don't need to reset it, pbus_size_* will
+ 			 * set it again
+ 			 */
+ 			if (!r->child && !release_resource(r))
+-				return r;
++				dev_printk(KERN_DEBUG, &bus->dev,
++					   "resource %d %s %pR released\n", i,
++					   (r->flags & IORESOURCE_IO) ? "io: " :
++					    ((r->flags & IORESOURCE_PREFETCH)?
++						 "pref mem":"mem:"),
++					   r);
+ 		}
+ 	}
++}
++EXPORT_SYMBOL(pci_bridge_release_not_used_res);
 +
-+	switch (self->header.misc & PERF_RECORD_MISC_CPUMODE_MASK) {
-+	case PERF_RECORD_MISC_USER: {
-+		struct thread *thread = threads__findnew(self->ip.pid);
++/* Helper function for sizing routines: find first available
++   bus resource of a given type. Note: we intentionally skip
++   the bus resources which have already been assigned (that is,
++   have non-NULL parent resource). */
++static struct resource *find_free_bus_resource(struct pci_bus *bus, unsigned long type)
++{
++	int i;
++	struct resource *r;
++	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
++				  IORESOURCE_PREFETCH;
 +
-+		if (thread == NULL)
- 			return;
++	for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
++		r = bus->resource[i];
++		if (r == &ioport_resource || r == &iomem_resource)
++			continue;
++		if (r && (r->flags & type_mask) == type && !r->parent)
++			return r;
++	}
+ 	return NULL;
+ }
+ 
+@@ -588,6 +609,41 @@ void __ref pci_bus_size_bridges(struct p
+ }
+ EXPORT_SYMBOL(pci_bus_size_bridges);
+ 
++static void pci_bus_release_bridges_not_used_res(struct pci_bus *bus)
++{
++	struct pci_dev *dev;
 +
-+		map = thread__find_map(thread, ip);
-+		if (map != NULL) {
-+			ip = map->map_ip(map, ip);
-+			sym = map->dso->find_symbol(map->dso, ip);
-+			if (sym == NULL)
-+				return;
-+			userspace_samples++;
++	list_for_each_entry(dev, &bus->devices, bus_list) {
++		struct pci_bus *b = dev->subordinate;
++		if (!b)
++			continue;
++
++		switch (dev->class >> 8) {
++		case PCI_CLASS_BRIDGE_CARDBUS:
 +			break;
- 		}
- 	}
-+		/*
-+		 * If this is outside of all known maps,
-+		 * and is a negative address, try to look it
-+		 * up in the kernel dso, as it might be a
-+		 * vsyscall or vdso (which executes in user-mode).
-+		 */
-+		if ((long long)ip >= 0)
-+			return;
-+		/* Fall thru */
-+	case PERF_RECORD_MISC_KERNEL:
-+		sym = kernel_maps__find_symbol(ip, &map);
-+		if (sym == NULL)
-+			return;
-+		break;
-+	default:
-+		return;
++
++		case PCI_CLASS_BRIDGE_PCI:
++		default:
++			pci_bus_release_bridges_not_used_res(b);
++			break;
++		}
 +	}
 +
-+	syme = dso__sym_priv(map->dso, sym);
- 
--	samples--;
-+	if (!syme->skip) {
-+		syme->count[counter]++;
-+		record_precise_ip(syme, counter, ip);
-+		pthread_mutex_lock(&active_symbols_lock);
-+		if (list_empty(&syme->node) || !syme->node.next)
-+			__list_insert_active_sym(syme);
-+		pthread_mutex_unlock(&active_symbols_lock);
-+		++samples;
++	/* The root bus? */
++	if (!bus->self)
 +		return;
++
++	switch (bus->self->class >> 8) {
++	case PCI_CLASS_BRIDGE_CARDBUS:
++		break;
++
++	case PCI_CLASS_BRIDGE_PCI:
++	default:
++		pci_bridge_release_not_used_res(bus);
++		break;
 +	}
- }
- 
--static void process_event(u64 ip, int counter, int user)
-+static void event__process_mmap(event_t *self)
++}
++
+ void __ref pci_bridge_assign_resources(const struct pci_dev *bridge)
  {
--	samples++;
-+	struct thread *thread = threads__findnew(self->mmap.pid);
-+
-+	if (thread != NULL) {
-+		struct map *map = map__new(&self->mmap, NULL, 0,
-+					   sizeof(struct sym_entry),
-+					   symbol_filter);
-+		if (map != NULL)
-+			thread__insert_map(thread, map);
+ 	struct pci_bus *b;
+@@ -687,6 +743,11 @@ pci_assign_unassigned_resources(void)
+ {
+ 	struct pci_bus *bus;
+ 
++	/* Try to release bridge resources, that there is not child under it */
++	list_for_each_entry(bus, &pci_root_buses, node) {
++		pci_bus_release_bridges_not_used_res(bus);
 +	}
-+}
- 
--	if (user) {
--		userspace_samples++;
--		return;
-+static void event__process_comm(event_t *self)
-+{
-+	struct thread *thread = threads__findnew(self->comm.pid);
 +
-+	if (thread != NULL)
-+		thread__set_comm(thread, self->comm.comm);
-+}
-+
-+static int event__process(event_t *event)
-+{
-+	switch (event->header.type) {
-+	case PERF_RECORD_COMM:
-+		event__process_comm(event);
-+		break;
-+	case PERF_RECORD_MMAP:
-+		event__process_mmap(event);
-+		break;
-+	default:
-+		break;
- 	}
- 
--	record_ip(ip, counter);
-+	return 0;
- }
- 
- struct mmap_data {
-@@ -925,13 +980,11 @@ static void mmap_read_counter(struct mmap_data *md)
- 			event = &event_copy;
+ 	/* Depth first, calculate sizes and alignments of all
+ 	   subordinate buses. */
+ 	list_for_each_entry(bus, &pci_root_buses, node) {
+Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
++++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+@@ -171,6 +171,7 @@ int pciehp_unconfigure_device(struct slo
  		}
- 
-+		if (event->header.type == PERF_RECORD_SAMPLE)
-+			event__process_sample(event, md->counter);
-+		else
-+			event__process(event);
- 		old += size;
--
--		if (event->header.type == PERF_RECORD_SAMPLE) {
--			int user =
--	(event->header.misc & PERF_RECORD_MISC_CPUMODE_MASK) == PERF_RECORD_MISC_USER;
--			process_event(event->ip.ip, md->counter, user);
--		}
+ 		pci_dev_put(temp);
  	}
++	pci_bridge_release_not_used_res(parent);
  
- 	md->prev = old;
-@@ -973,6 +1026,7 @@ static void start_counter(int i, int counter)
- 	}
- 
- 	attr->inherit		= (cpu < 0) && inherit;
-+	attr->mmap		= 1;
- 
- try_again:
- 	fd[i][counter] = sys_perf_event_open(attr, target_pid, cpu, group_fd, 0);
-@@ -1031,6 +1085,11 @@ static int __cmd_top(void)
- 	int i, counter;
- 	int ret;
- 
-+	if (target_pid != -1)
-+		event__synthesize_thread(target_pid, event__process);
-+	else
-+		event__synthesize_threads(event__process);
-+
- 	for (i = 0; i < nr_cpus; i++) {
- 		group_fd = -1;
- 		for (counter = 0; counter < nr_counters; counter++)
--- 
-1.5.5.1
-
+ 	return rc;
+ }
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -759,6 +759,7 @@ int pci_vpd_truncate(struct pci_dev *dev
+ void pci_bridge_assign_resources(const struct pci_dev *bridge);
+ void pci_bus_assign_resources(const struct pci_bus *bus);
+ void pci_bus_size_bridges(struct pci_bus *bus);
++void pci_bridge_release_not_used_res(struct pci_bus *bus);
+ int pci_claim_resource(struct pci_dev *, int);
+ void pci_assign_unassigned_resources(void);
+ void pdev_enable_device(struct pci_dev *);
