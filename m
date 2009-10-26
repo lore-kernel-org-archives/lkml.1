@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbZJZUGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbZJZUGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756567AbZJZUGR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 16:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbZJZUGO
+	id S1756535AbZJZUGH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 16:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755717AbZJZUGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 16:06:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40563 "EHLO mx3.mail.elte.hu"
+	Mon, 26 Oct 2009 16:06:06 -0400
+Received: from mail.perches.com ([173.55.12.10]:1071 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756545AbZJZUGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 16:06:13 -0400
-Date: Mon, 26 Oct 2009 21:05:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Peter Zijlstra <peterz@infradead.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [Bug #14389] Build system issue
-Message-ID: <20091026200555.GB24682@elte.hu>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.OJG.Zre5KB@chimera>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6dRYo8ss7vL.A.OJG.Zre5KB@chimera>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1755090AbZJZUGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 16:06:06 -0400
+Subject: Re: [PATCH 1/4] strip: move driver to staging
+From: Joe Perches <joe@perches.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Greg KH <gregkh@suse.de>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091026192026.GI2792@tuxdriver.com>
+References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
+	 <20091023161006.GA1580@ucw.cz> <20091026165518.GE2792@tuxdriver.com>
+	 <20091026172434.GI25725@elf.ucw.cz> <20091026184818.GB21591@suse.de>
+	 <1256584063.1865.118.camel@Joe-Laptop.home>
+	 <20091026192026.GI2792@tuxdriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 26 Oct 2009 13:06:09 -0700
+Message-ID: <1256587569.1865.135.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(forgot the reply-all)
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On Mon, 2009-10-26 at 15:20 -0400, John W. Linville wrote:
+> On Mon, Oct 26, 2009 at 12:07:43PM -0700, Joe Perches wrote:
+> > I think adding a requirement that files have maintainers before
+> > being added to not-staging is not a good thing.
+> This is not a blanket policy.  Please don't imply that it is.
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+I believe it's an unnecessary precedent.
+
+> > It is likely that strip could have be deleted without anyone caring.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.31.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14389
-> Subject		: Build system issue
-> Submitter	: Peter Zijlstra <peterz@infradead.org>
-> Date		: 2009-10-09 8:58 (18 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=575543347b5baed0ca927cb90ba8807396fe9cc9
-> References	: http://marc.info/?l=linux-kernel&m=125507914909152&w=4
-> 
+> Perhaps so...how would that be better?  It would be less work for Greg,
+> but he seems to be fine with this...
 
-This should be fixed upstream by:
-
- 2331d1a: kbuild: revert "save ARCH & CROSS_COMPILE ..."
-
-Thanks,
-
-	Ingo
+It's fine by me if it moves to staging.
+It's fine by me if it simply disappears as well.
+It's fine by me if Greg works all he wants.
 
