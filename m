@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbZJZTFK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbZJZTI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbZJZTFK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:05:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbZJZTFF
+	id S1755466AbZJZTI5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbZJZTI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:05:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59413 "EHLO ogre.sisk.pl"
+	Mon, 26 Oct 2009 15:08:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59416 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755229AbZJZTFD convert rfc822-to-8bit (ORCPT
+	id S1755347AbZJZTFE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:05:03 -0400
+	Mon, 26 Oct 2009 15:05:04 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "Peter Teoh" <htmldeveloper@gmail.com>
+       "Brian Beardall" <brian@rapsure.net>
 References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
 In-Reply-To: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <6dRYo8ss7vL.A.74F.Ore5KB@chimera>
-Subject: [Bug #14408] sysctl check failed
+Message-ID: <6dRYo8ss7vL.A.L2F.Mre5KB@chimera>
+Subject: [Bug #14415] Reboot on kernel load
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon, 26 Oct 2009 19:55:56 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,9 +35,9 @@ from 2.6.31.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14408
-Subject		: sysctl check failed
-Submitter	: Peter Teoh <htmldeveloper@gmail.com>
-Date		: 2009-10-14 22:59 (13 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14415
+Subject		: Reboot on kernel load
+Submitter	: Brian Beardall <brian@rapsure.net>
+Date		: 2009-10-15 23:57 (12 days old)
 
 
