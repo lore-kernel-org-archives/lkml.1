@@ -1,31 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbZJZD5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751000AbZJZEAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754655AbZJZD5M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 23:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbZJZD5L
+	id S1751000AbZJZEAz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 00:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750726AbZJZEAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 23:57:11 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:61226 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754606AbZJZD5G (ORCPT
+	Mon, 26 Oct 2009 00:00:54 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:8334 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750712AbZJZEAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 23:57:06 -0400
+	Mon, 26 Oct 2009 00:00:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=xaX304hiNiUXmhrNRGySXse1CKuOyKzZDQHuE9gKa4gLKRoF7KLB6ZeGYMJ4xYKVid
-         fDm4NaVl3p33Py215a2U2N0KG0uo7xKojEzWGj0kk/kbkSeOAsCr+32smlYubkR4GtUD
-         74FxIMco2k/k4pzbj46kXlsqYTgduBsaUs5sY=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type;
+        b=jecZ1gwfolRD1W6PIaCQXuT/aLes/xNx9D3dlxAuS/531MlNclWmSlQAFb1Ve8j272
+         AiNHpTBEv+uUDM2c/IrY1MF4256uSAdLQ/wxFG6mEj9zXa0MJE9byTsypScZWAx1ilXb
+         2jXLJLkrigWbbvy/geCYgrt9/LlngvKZUa1HY=
 MIME-Version: 1.0
-Date: Sun, 25 Oct 2009 23:57:09 -0400
-Message-ID: <a44ae5cd0910252057i6d2c96d4w35160714f8bdeb16@mail.gmail.com>
+In-Reply-To: <a44ae5cd0910252057i6d2c96d4w35160714f8bdeb16@mail.gmail.com>
+References: <a44ae5cd0910252057i6d2c96d4w35160714f8bdeb16@mail.gmail.com>
+Date: Mon, 26 Oct 2009 00:00:55 -0400
+Message-ID: <a44ae5cd0910252100p56235185s2a3c95a9deb966b3@mail.gmail.com>
 Subject: 2.6.32-rc5-git3 -- System lockup running "cat /sys/kernel/debug/dri/0/i915_regs"
 From: Miles Lane <miles.lane@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
+To: David Airlie <airlied@linux.ie>,
+       DRI for Linux <dri-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+(Sorry for the duplication to LKML.  I accidentally sent the previous
+message before adding the DRI folks.)
 
 When I run "cat /sys/kernel/debug/dri/0/i915_regs", my laptop
 immediately locks up.
