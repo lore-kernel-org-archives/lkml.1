@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZJZFfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbZJZFkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbZJZFfu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 01:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbZJZFft
+	id S1754744AbZJZFkE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 01:40:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbZJZFkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 01:35:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39526 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753895AbZJZFft (ORCPT
+	Mon, 26 Oct 2009 01:40:03 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:57209 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754706AbZJZFkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 01:35:49 -0400
-Date: Sun, 25 Oct 2009 22:36:57 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] sched: Disable affine wakeups by default
-Message-ID: <20091025223657.5ebc2857@infradead.org>
-In-Reply-To: <1256533734.7117.45.camel@marge.simson.net>
-References: <20091024125853.35143117@infradead.org>
-	<20091024130432.0c46ef27@infradead.org>
-	<20091024130728.051c4d7c@infradead.org>
-	<1256453725.12138.40.camel@marge.simson.net>
-	<20091025095109.449bac9e@infradead.org>
-	<1256492289.14241.40.camel@marge.simson.net>
-	<20091025123319.2b76bf69@infradead.org>
-	<1256508287.17306.14.camel@marge.simson.net>
-	<1256522035.7356.19.camel@laptop>
-	<1256531907.7117.31.camel@marge.simson.net>
-	<20091025215225.05ac9ac9@infradead.org>
-	<1256533734.7117.45.camel@marge.simson.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 26 Oct 2009 01:40:03 -0400
+Date: Mon, 26 Oct 2009 14:40:01 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] perf tools: Kill off -Wcast-align
+Message-ID: <20091026054000.GA13517@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 06:08:54 +0100
-Mike Galbraith <efault@gmx.de> wrote:
+The present use of -Wcast-align causes the build to blow up on SH due to
+generating a "cast increases required alignment of target type" error on
+each invocation of list_for_each_entry().
 
-> On Sun, 2009-10-25 at 21:52 -0700, Arjan van de Ven wrote:
-> > On Mon, 26 Oct 2009 05:38:27 +0100
-> > Mike Galbraith <efault@gmx.de> wrote:
-> > 
-> > > On Mon, 2009-10-26 at 02:53 +0100, Peter Zijlstra wrote:
-> > > > On Sun, 2009-10-25 at 23:04 +0100, Mike Galbraith wrote:
-> > > > >                 if (want_affine && (tmp->flags &
-> > > > > SD_WAKE_AFFINE) &&
-> > > > > -                   cpumask_test_cpu(prev_cpu,
-> > > > > sched_domain_span(tmp))) {
-> > > > > +                               (level == SD_LV_SIBLING ||
-> > > > > level == SD_LV_MC)) {
-> > > > 
-> > > > quick comment without actually having looked at the patch, we
-> > > > should really get rid of sd->level and encode properties of the
-> > > > sched domains in sd->flags.
-> > > 
-> > > Yeah, sounds right, while writing that, it looked kinda ugly.  I
-> > > suppose arch land needs to encode cache property somehow if I
-> > > really want to be able to target cache on multicore.  Booting
-> > > becomes.. exciting when I tinker down there.
-> > 
-> > or we just use SD_WAKE_AFFINE / SD_BALANCE_WAKE for this...
-> 
-> I don't see how.  Oh, you mean another domain level, top level being
-> cache property, and turn off when degenerating?  That looks like it'd
-> be a problem, but adding SD_CACHE_SIBLING or whatnot should work.
-> Problem is how to gain knowledge of whether multicores share a cache
-> or not.
+It seems that this was previously reported and killed off in the ia64
+support patch, but nothing seems to have happened with that. Presumably
+the same problem still remains there, too.
 
-Actually I meant setting the SD_BALANCE_WAKE flag for the SMT and MC
-domains (and then making sure that "MC" really means "shares LLC" in
-the arch code), and then using this as indication in the sched code..
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-if you're a multicore domain you better have a shared cache.. that's
-what it should mean. If it does not we should fix that.
+---
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+ tools/perf/Makefile |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 88c51b8..39a84be 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -177,8 +177,7 @@ endif
+ # Include saner warnings here, which can catch bugs:
+ #
+ 
+-EXTRA_WARNINGS := -Wcast-align
+-EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wformat
++EXTRA_WARNINGS := -Wformat
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wformat-security
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wformat-y2k
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wshadow
