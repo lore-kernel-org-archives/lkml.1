@@ -1,27 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbZJZUT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZJZUVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756483AbZJZUT1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 16:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZJZUT0
+	id S1755017AbZJZUVi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 16:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZJZUVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 16:19:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52168 "EHLO mx3.mail.elte.hu"
+	Mon, 26 Oct 2009 16:21:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39918 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754127AbZJZUT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 16:19:26 -0400
-Date: Mon, 26 Oct 2009 21:19:17 +0100
+	id S1752398AbZJZUVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 16:21:37 -0400
+Date: Mon, 26 Oct 2009 21:21:13 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, tglx@linutronix.de,
-       Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, hpa@zytor.com
-Subject: Re: [PATCH] x86: adjust GFP mask handling for coherent allocations
-Message-ID: <20091026201917.GE24682@elte.hu>
-References: <4AE06644020000780001B4AD@vpn.id2.novell.com> <20091023114825.GH5886@elte.hu> <4AE5CA8C020000780001BD09@vpn.id2.novell.com> <20091026152246.GB3749@elte.hu> <4AE5D238020000780001BD46@vpn.id2.novell.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>,
+       GeunSik Lim <leemgs1@gmail.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Wu Fengguang <fengguang.wu@intel.com>, Jesper Juhl <jj@chaosbits.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Adrian Bunk <bunk@stusta.de>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org,
+       Dominique Toupin <dominique.toupin@ericsson.com>,
+       Michel Dagenais <michel.dagenais@polymtl.ca>
+Subject: Re: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL
+	v2,headers to Dual BSD/GPL
+Message-ID: <20091026202113.GF24682@elte.hu>
+References: <20091023160257.GA30447@Krystal> <20091023160632.GA2198@Krystal> <alpine.LNX.2.00.0910242300510.16628@swampdragon.chaosbits.net> <20091026015357.GA6033@localhost> <023001ca55e1$436e38e0$808410ac@zhaoleiwin> <49b7c2350910252203o69811000w4551c01e6e2a10c7@mail.gmail.com> <20091026073048.GC8162@elte.hu> <4AE5A17D.5020202@polymtl.ca> <20091026071832.36405c9a@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AE5D238020000780001BD46@vpn.id2.novell.com>
+In-Reply-To: <20091026071832.36405c9a@infradead.org>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -35,26 +48,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jan Beulich <JBeulich@novell.com> wrote:
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-> >>> Ingo Molnar <mingo@elte.hu> 26.10.09 16:22 >>>
-> >* Jan Beulich <JBeulich@novell.com> wrote:
-> >> And any attempt to eliminate the conditional another way would just 
-> >> introduce a very similar conditional elsewhere; with this having a 
-> >> single user (and foreseeably not ever a second one) I would think this 
-> >> would just make the code less readable.
-> >
-> >There's 3 other current uses of DMA_BIT_MASK(24) in arch/x86 - couldnt 
-> >those use ISA_DMA_BIT_MASK too?
+> On Mon, 26 Oct 2009 09:17:49 -0400
+> Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca> wrote:
 > 
-> Oh, so you didn't mean me to eliminate the conditional in pci-dma.c, 
-> but just to replace the DMA_BIT_MASK(24) here an elsewhere. Sure, I'm 
-> fine with adding this to the patch.
+> > Ingo Molnar wrote:
+> > > 
+> > > But i also disagree with it on a technical level: code duplication
+> > > is _bad_. Why does the code have to be duplicated in user-space
+> > > like that? I'd like Linux tracing code to be in the kernel repo.
+> > > Why isnt this done properly, as part of the kernel project - to
+> > > make sure it all stays in sync?
+> > > 
+> > 
+> > If you mean that this code should solely be used inside the kernel,
+> > then what you propose technically does not work. There is a very high
+> > cost to accessing kernel code from userspace. 
+> 
+> yeah 100 cycles is insanely high, that's at least the equivalent of... 
+> say one cache miss.
 
-Well, can ISA_BIT_MASK fall back to DMA_BIT_MASK(32) on !CONFIG_ISA? If 
-we have ISA support disabled we might as well pretend the whole world is 
-PCI, right?
-
-That way we'd get rid of that #ifdef in the .c code too.
+That too - plus 'being in the kernel repo' does not mean it has to run 
+in kernel mode. It could be a vdso feature or a library in tools/. I'm 
+quite sure it's a mistake to ad-hoc export the current tracepoint.c code 
+to user-space without having it all under the same maintenance envelope.
 
 	Ingo
