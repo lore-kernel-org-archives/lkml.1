@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZJZFr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZJZFuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbZJZFr6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 01:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZJZFr5
+	id S1754760AbZJZFuY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 01:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbZJZFuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 01:47:57 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43309 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754714AbZJZFr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 01:47:56 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+SX3xUes6Sz3r5JH38d4FMmxkqPcdS8Yc7NHCAN5
-	F+w/VrdD0qsXUX
-Subject: Re: [PATCH 3/3] sched: Disable affine wakeups by default
-From: Mike Galbraith <efault@gmx.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091025223657.5ebc2857@infradead.org>
-References: <20091024125853.35143117@infradead.org>
-	 <20091024130432.0c46ef27@infradead.org>
-	 <20091024130728.051c4d7c@infradead.org>
-	 <1256453725.12138.40.camel@marge.simson.net>
-	 <20091025095109.449bac9e@infradead.org>
-	 <1256492289.14241.40.camel@marge.simson.net>
-	 <20091025123319.2b76bf69@infradead.org>
-	 <1256508287.17306.14.camel@marge.simson.net>
-	 <1256522035.7356.19.camel@laptop>
-	 <1256531907.7117.31.camel@marge.simson.net>
-	 <20091025215225.05ac9ac9@infradead.org>
-	 <1256533734.7117.45.camel@marge.simson.net>
-	 <20091025223657.5ebc2857@infradead.org>
-Content-Type: text/plain
-Date: Mon, 26 Oct 2009 06:47:58 +0100
-Message-Id: <1256536078.7117.67.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Mon, 26 Oct 2009 01:50:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43145 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754715AbZJZFuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 01:50:23 -0400
+Message-ID: <4AE53883.3070709@kernel.org>
+Date: Sun, 25 Oct 2009 22:49:55 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
+ for pcie devices
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com>
+In-Reply-To: <4AE52B68.3070501@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-25 at 22:36 -0700, Arjan van de Ven wrote:
-> On Mon, 26 Oct 2009 06:08:54 +0100
-> Mike Galbraith <efault@gmx.de> wrote:
-
-> > > 
-> > > or we just use SD_WAKE_AFFINE / SD_BALANCE_WAKE for this...
-> > 
-> > I don't see how.  Oh, you mean another domain level, top level being
-> > cache property, and turn off when degenerating?  That looks like it'd
-> > be a problem, but adding SD_CACHE_SIBLING or whatnot should work.
-> > Problem is how to gain knowledge of whether multicores share a cache
-> > or not.
+Kenji Kaneshige wrote:
+> Yinghai Lu wrote:
+>> move out bus_size_bridges and assign resources out of pciehp_add_bridge()
+>> and at last do them all together one time including slot bridge, to
+>> avoid to call
+>> assign resources several times, when there are several bridges under
+>> the slot bridge.
+>>
+>> need to introduce pci_bridge_assign_resources there.
+>>
+>> handle the case the first bridge that doesn't get pre-allocated big
+>> enough res from FW.
+>> for example pcie devices need 256M, but the bridge only get
+>> preallocated 2M...
+>>
 > 
-> Actually I meant setting the SD_BALANCE_WAKE flag for the SMT and MC
-> domains (and then making sure that "MC" really means "shares LLC" in
-> the arch code), and then using this as indication in the sched code..
+> Though I have not looked at the patch deeply yet (sorry), I have
+> some questions and concerns about this change. Please correct me
+> if my understanding is not correct.
+> 
+> - Your patch doesn't seems to have the code to free resources.
+>  If we need to expand the resource range, don't we need to free
+>  preallocated resource before allocating the new one?
 
-I don't think we can do that, because SD_WAKE_BALANCE already has a
-different meaning.  SD_WAKE_AFFINE could be used though, affine wakeups
-have always been a cache thing, and for trying to keep things affine to
-a package or whatnot, we have SD_PREFER_LOCAL.  Sounds clean to me.
+that is done with pci_bus_size_bridges ==> pbus_size_io/pbus_size_mem ==> find_free_bus_resource ==> release_resource.
 
-> if you're a multicore domain you better have a shared cache.. that's
-> what it should mean. If it does not we should fix that.
+> 
+> - Your patch seems to update BARs for bridge itself. I think it
+>  would break the bridge's driver (port service driver) that if
+>  it controls the device's capability by using IO/Mem, though I
+>  don't know if such driver or capabilities exists now.
 
-Sounds reasonable to me.  I'll go make explosions.
+port service driver will be AER and pciehotplug.
+it seems those driver are not use those BAR...
+those BAR are supposed for the devices under the pcie bridge.
 
-	-Mike
+> 
+> And one comment about pci_configure_slot(). We need to program
+> hotplug parameters before the device start working. So we need
+> to call pci_configure_slot() before calling pci_bus_add_devices().
+> 
 
+
+Thanks, will correct that.
+
+YH
+
+
+YH
