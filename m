@@ -1,88 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbZJZH66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbZJZIKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbZJZH66 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 03:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbZJZH65
+	id S1755244AbZJZIKX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 04:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbZJZIKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 03:58:57 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:35420 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754995AbZJZH64 (ORCPT
+	Mon, 26 Oct 2009 04:10:22 -0400
+Received: from mail-gx0-f216.google.com ([209.85.217.216]:44928 "EHLO
+	mail-gx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755190AbZJZIKV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 03:58:56 -0400
-Subject: Re: [PATCH] net: Adjust softirq raising in __napi_schedule
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Tilman Schmidt <tilman@imap.cc>, David Miller <davem@davemloft.net>,
-       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-wireless@vger.kernel.org,
-       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
-       Michael Buesch <mb@bu3sch.de>, Oliver Hartkopp <oliver@hartkopp.net>
-In-Reply-To: <20091026075438.GB6187@ff.dom.local>
-References: <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc>
-	 <20091021211906.GA11401@ami.dom.local>
-	 <1256160330.12174.2.camel@johannes.local>
-	 <20091021213947.GA12202@ami.dom.local>
-	 <1256200021.12174.11.camel@johannes.local> <4AE1C00B.5010008@imap.cc>
-	 <1256309191.12174.51.camel@johannes.local>
-	 <20091026074126.GA6187@ff.dom.local>
-	 <1256543054.28230.6.camel@johannes.local>
-	 <20091026075438.GB6187@ff.dom.local>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-5UamH4+2+8z4jInfScvN"
-Date: Mon, 26 Oct 2009 08:58:52 +0100
-Message-ID: <1256543932.28230.9.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 26 Oct 2009 04:10:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QSCZksnwcBLK5p+joaS9hI7QHlmSye90ZrP2Fl2s0tHhBmQTLpxxdnrLuLsqE/AkI9
+         Tw5adtwn5Hga17xNMrz7oLGnlwnJEypx6qx91qiVFKOZy2S2i6QTMY2mn7UDkNZQXdp0
+         ITIqp/g0ct61x+qXHB/gybd2WtLNW5t5XCxAE=
+MIME-Version: 1.0
+In-Reply-To: <20091026073048.GC8162@elte.hu>
+References: <20091023160257.GA30447@Krystal> <20091023160632.GA2198@Krystal>
+	 <alpine.LNX.2.00.0910242300510.16628@swampdragon.chaosbits.net>
+	 <20091026015357.GA6033@localhost>
+	 <023001ca55e1$436e38e0$808410ac@zhaoleiwin>
+	 <49b7c2350910252203o69811000w4551c01e6e2a10c7@mail.gmail.com>
+	 <20091026073048.GC8162@elte.hu>
+Date: Mon, 26 Oct 2009 17:10:26 +0900
+Message-ID: <49b7c2350910260110l47d76cc5s35e87ca9082a9fa1@mail.gmail.com>
+Subject: Re: Relicensing tracepoints and markers to Dual LGPL v2.1/GPL 
+	v2,headers to Dual BSD/GPL
+From: GeunSik Lim <leemgs1@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Zhaolei <zhaolei@cn.fujitsu.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       Jesper Juhl <jj@chaosbits.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Adrian Bunk <bunk@stusta.de>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org,
+       Dominique Toupin <dominique.toupin@ericsson.com>,
+       Michel Dagenais <michel.dagenais@polymtl.ca>,
+       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 26, 2009 at 4:30 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> Yes, the legality of such relicensing is questionable as that code was
+> never developed outside of the kernel but as part of the kernel.
+>
+> But i also disagree with it on a technical level: code duplication is
+> _bad_. Why does the code have to be duplicated in user-space like that?
+> I'd like Linux tracing code to be in the kernel repo. Why isnt this done
+> properly, as part of the kernel project - to make sure it all stays in
+> sync?
+It's right. I am not a special  lawyer about license issues currently.
+But, Consider GPL v2 license with philosophical view. I think that this
+re-licensing have a some problems in Linux kernel(GPL v2) at least.
+> So for those two grounds i cannot give my permission for this
+> relicensing, sorry.
+I agree with your opinion.
+>        Ingo
+>
 
---=-5UamH4+2+8z4jInfScvN
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2009-10-26 at 07:54 +0000, Jarek Poplawski wrote:
 
-> > No, I wrote that I didn't know. I suppose now that I looked at it I do
-> > know, and only disabling preemption is required.
->=20
-> But netif_rx has preemption disabled most of the time (by hardirqs
-> disabling). So maybe disabling preemption isn't the main reason here
-> either?
-
-Not for netpoll though, which may or may not be relevant (if I were to
-venture a guess I'd say it isn't and it disables preemption to be able
-to do the softirq thing)
-
-However, I lost track now of why we're discussing this.
-
-Basically it boils down to using netif_rx() when in (soft)irq, and
-netif_rx_ni() when in process context. That could just be an
-optimisation, but it's a very valid one.
-
-johannes
-
---=-5UamH4+2+8z4jInfScvN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJK5Va4AAoJEODzc/N7+QmaGZ0P/3XWgEgM6SCQX98BVmafmXc5
-2Mbi7bpGvxC34SPawy9T3H7vUgRrATm8S/DGDscgRjTAY0/bZQaau2dFs+a2UBfc
-4XJvc41om+OuhG83o9LvyjlGN1w0XFt8WwPFT7UeXoRRePnXz0DPt3YPMiZ9IkwY
-tynu6L3i2yG+G2xR2/rd49Dk15YZJfKzbJs6KrMJhtOWPYMWXrDfXD2CDUApbXOZ
-3tzaZrnRF/YbBLvOlNrxoRyBhQyvR+QgiKdnQkf5dD+DqAtPVdFPrJHRdp/W9m1p
-Dgqvml35IoWNA71BeDdH+ozEGkLLESp7G8nR1nnZpU2IBR5PhuPfAzfb6t763bW3
-qS57TUtAGcokPm+HonmginKt2q34+nN3J+iRyjr0XIRlcm05idvMImxBucVYf6CF
-cbVMZ5BGwZRvjj6e2YOdNRZRbcy+5sNfCRF+AGYWuDyF9WbEiaecKnAx0qkWcRQv
-BLTDC35t5cS5M4+Qa/cyopFc9uvBxGa1gMUYpqmSqV6Ix24bdzZlM+e9FrTprsud
-3L/9XjrA8daRU1DQzaAz0uWAL07gu0xq6kJpBndFsDcTq4HIKJvEERvF4fGogURu
-ENDJ6UgqWDMsnIzmVFsOTeZv0YggzRwIc6AxUoSwdHSwSJtszlknjN9Yhzxvw2AR
-Wh1lCuj79evprgY5Fhsx
-=NWhK
------END PGP SIGNATURE-----
-
---=-5UamH4+2+8z4jInfScvN--
-
+-- 
+Regards,
+GeunSik Lim ( Samsung Electronics )
+Blog : http://blog.naver.com/invain/
+e-Mail: geunsik.lim@samsung.com
+           leemgs@gmail.com , leemgs1@gmail.com
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
