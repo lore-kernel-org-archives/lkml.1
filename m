@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbZJZOBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbZJZOIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752376AbZJZOBF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 10:01:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbZJZOBF
+	id S1752181AbZJZOIr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 10:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZJZOIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 10:01:05 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53403 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752264AbZJZOBE (ORCPT
+	Mon, 26 Oct 2009 10:08:46 -0400
+Received: from e24smtp01.br.ibm.com ([32.104.18.85]:58258 "EHLO
+	e24smtp01.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbZJZOIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 10:01:04 -0400
-Subject: Re: [PATCH -v5 02/11] MIPS: add mips_timecounter_read() to get
- high precision timestamp
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Adam Nemet <anemet@caviumnetworks.com>,
-       Patrik Kluba <kpajko79@gmail.com>
-In-Reply-To: <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256483735.git.wuzhangjin@gmail.com>
-References: <cover.1256482555.git.wuzhangjin@gmail.com>
-	 <028867b99ec532b84963a35e7d552becc783cafc.1256483735.git.wuzhangjin@gmail.com>
-	 <2f73eae542c47ac5bbb9f7280e6c0271d193e90d.1256483735.git.wuzhangjin@gmail.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Mon, 26 Oct 2009 10:01:07 -0400
-Message-Id: <1256565667.26028.257.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Mon, 26 Oct 2009 10:08:46 -0400
+Message-ID: <4AE5ACE3.30103@linux.vnet.ibm.com>
+Date: Mon, 26 Oct 2009 12:06:27 -0200
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090614)
+MIME-Version: 1.0
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+CC: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       Jean-Christophe Dubois <jcd@tribudubois.net>,
+       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>,
+       Stable Kernel <stable@kernel.org>
+Subject: Re: [PATCH] tpm add default function definitions
+References: <1256563579-11014-1-git-send-email-zohar@linux.vnet.ibm.com>
+In-Reply-To: <1256563579-11014-1-git-send-email-zohar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-25 at 23:16 +0800, Wu Zhangjin wrote:
-> This patch implement a mips_timecounter_read(), which can be used to get
-> high precision timestamp without extra lock.
-> 
-> It is based on the clock counter register and the
-> timecounter/cyclecounter abstraction layer of kernel.
-> 
-> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+Acked-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+
+Mimi Zohar wrote:
+> Add default tpm_pcr_read/extend function definitions required
+> by IMA/Kconfig changes.
+>
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+> Cc: Stable Kernel <stable@kernel.org>
 > ---
->  arch/mips/include/asm/time.h |   19 +++++++++++++++++++
->  arch/mips/kernel/csrc-r4k.c  |   41 +++++++++++++++++++++++++++++++++++++++++
->  arch/mips/kernel/time.c      |    2 ++
-
-Some patches touch core tracing code, and some are arch specific. Now
-the question is how do we go. I prefer that we go the path of the
-tracing tree (easier for me to test). But every patch that touches MIPS
-arch, needs an Acked-by from the MIPS maintainer. Which I see is Ralf
-(on the Cc of this patch set.)
-
-Thanks,
-
--- Steve
-
+>  include/linux/tpm.h |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+>
+> diff --git a/include/linux/tpm.h b/include/linux/tpm.h
+> index 3338b3f..8eaa8f8 100644
+> --- a/include/linux/tpm.h
+> +++ b/include/linux/tpm.h
+> @@ -31,5 +31,12 @@
+>
+>  extern int tpm_pcr_read(u32 chip_num, int pcr_idx, u8 *res_buf);
+>  extern int tpm_pcr_extend(u32 chip_num, int pcr_idx, const u8 *hash);
+> +#else
+> +static inline int tpm_pcr_read(u32 chip_num, int pcr_idx, u8 *res_buf) {
+> +	return -ENODEV;
+> +}
+> +static inline int tpm_pcr_extend(u32 chip_num, int pcr_idx, const u8 *hash) {
+> +	return -ENODEV;
+> +}
+>  #endif
+>  #endif
+>   
 
