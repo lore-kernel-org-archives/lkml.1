@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753688AbZJZQZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbZJZQ1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753688AbZJZQZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 12:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbZJZQZt
+	id S1753577AbZJZQ1E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 12:27:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbZJZQ1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 12:25:49 -0400
-Received: from mga09.intel.com ([134.134.136.24]:10309 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753434AbZJZQZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 12:25:47 -0400
-X-ExtLoop1: 1
-Subject: Re: iwl3945, after a while stops working with "No space for Tx"
-From: reinette chatre <reinette.chatre@intel.com>
-To: Frederik Nosi <fredin77@yahoo.com>
-Cc: "Zhu, Yi" <yi.zhu@intel.com>, Intel Linux Wireless <ilw@linux.intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "Winkler, Tomas" <tomas.winkler@intel.com>,
-       "Kolekar, Abhijeet" <abhijeet.kolekar@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <177253.23325.qm@web53903.mail.re2.yahoo.com>
-References: <177253.23325.qm@web53903.mail.re2.yahoo.com>
-Content-Type: text/plain
-Date: Mon, 26 Oct 2009 09:25:52 -0700
-Message-Id: <1256574352.21134.7591.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Oct 2009 12:27:04 -0400
+Received: from sous-sol.org ([216.99.217.87]:39793 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753126AbZJZQ1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 12:27:03 -0400
+Date: Mon, 26 Oct 2009 09:26:37 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, David Woodhouse <dwmw2@infradead.org>,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] allow fallback to swiotlb on hw iommu init
+	failures
+Message-ID: <20091026162637.GA27699@sequoia.sous-sol.org>
+References: <20091023012158.177308035@sequoia.sous-sol.org> <87hbtmy6jc.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87hbtmy6jc.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-24 at 06:44 -0700, Frederik Nosi wrote:
-> Hi,
-> first sorry if somebody is not the right contact, got the adressess from ./scripts/get_maintainer.pl -f drivers/net/wireless/iwlwifi.
-> From some kernel versions now, after some time that im using this card it stops working and on messages i get this errors:
+* Andi Kleen (andi@firstfloor.org) wrote:
+> Chris Wright <chrisw@sous-sol.org> writes:
 > 
-> Oct 24 14:38:24 kotys NetworkManager: <info>  Activation (wlan0) Stage 5 of 5 (IP Configure Commit) complete.
-> [snip pulseaudio's stuppid log spam warning]
-> Oct 24 14:40:07 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out after 500ms.
-> Oct 24 14:40:09 kotys pulseaudio[16469]: sap.c: sendmsg() failed: Invalid argument
-> Oct 24 14:40:10 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_SCAN_CMD: time out after 500ms.
-> Oct 24 14:40:11 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out after 500ms.
-> Oct 24 14:40:11 kotys kernel: iwl3945 0000:04:00.0: Error sending POWER_TABLE_CMD: time out after 500ms.
-> Oct 24 14:40:14 kotys kernel: iwl3945 0000:04:00.0: set power fail, ret = -110
-> Oct 24 14:40:14 kotys kernel: No probe response from AP 00:1c:df:82:63:c9 after 500ms, disconnecting.
-> Oct 24 14:40:14 kotys NetworkManager: <info>  (wlan0): supplicant connection state:  completed -> disconnected
-> Oct 24 14:40:14 kotys NetworkManager: <info>  (wlan0): supplicant connection state:  disconnected -> scanning
-> Oct 24 14:40:14 kotys pulseaudio[16469]: sap.c: sendmsg() failed: Invalid argument
-> Oct 24 14:40:14 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_RXON: time out after 500ms.
-> Oct 24 14:40:14 kotys kernel: iwl3945 0000:04:00.0: Error setting new configuration (-110).
-> Oct 24 14:40:15 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_SCAN_CMD: time out after 500ms.
-> Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 (try 1)
-> Oct 24 14:40:15 kotys NetworkManager: <info>  (wlan0): supplicant connection state:  scanning -> associating
-> Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 (try 2)
-> Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 (try 3)
-> Oct 24 14:40:15 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_RXON: time out after 500ms.
-> Oct 24 14:40:15 kotys kernel: iwl3945 0000:04:00.0: Error setting new configuration (-110).
-> Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 timed out
-> Oct 24 14:40:16 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out after 500ms.
-> Oct 24 14:40:16 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_RXON: time out after 500ms.
-> Oct 24 14:40:16 kotys kernel: iwl3945 0000:04:00.0: Error setting new configuration (-110).
+> > This short series gives us the ability to allocate the swiotlb and then
+> > conditionally free it if we discover it isn't needed.  This allows us to
+> > put swiotlb to use when the hw iommu fails to initialize properly.
+> >
+> > This needs some changes to the bootmem allocator to give the ability to
+> > free reserved bootmem directly to the page allocator after bootmem is
+> > torn down.
 > 
-> 
-> When this happens i am able to use the card only after reloading the related modules, iwl3945 ecc. But the problem happens again after some minutes that im connected.
-> 
-> Kernel is 2.6.32-rc5 but his started happening around 2.6.31, not sure exactly what version as i update kernel often. Firmware is iwl3945-ucode-15.32.2.9.
-> 
-> Every other info that you need just ask. I hope i dont have to bisect as this is the laptop i use for work too, but if it's needed i'll do.
-> 
-> I'm not subscribed on any ML, so in case please cc me.
-> 
+> You forgot to state what motivated you to that change?
 
-We currently have a bug open for this issue. Could you please add this
-information to
-http://bugzilla.intellinuxwireless.org/show_bug.cgi?id=1944 ?
+I thought I did ;-)  Here's another more verbose attempt:
 
-Thank you
+The HW IOMMU, for example Intel VT-d, may fail initialization (typically
+due to BIOS bugs).  In that case the existing fallback is nommu, which is
+clearly insufficient for many boxen which need some bounce buffering if
+there is no HW IOMMU.  The problem is that at the point of this failure
+the decision to allocate and initialize the swiotlb has long since past.
 
-Reinette
+There are 4 ways to handle this:
 
+1) Give up and panic the box.  This is not a user friendly option since
+the box will boot and function fine (minus any isolation gained from the
+HW IOMMU) if there is either not much phys mem or an swiotlb.
 
+2) Do the discovery that causes the initialization failure earlier so
+that HW IOMMU detection fails.  Compilcated by the HW IOMMU's use of the
+run time env that includes a real allocator and PCI enumeration, etc.
 
+3) Allow the swiotlb to be allocated later in pci_iommu_init() instead
+of early in pci_iommu_alloc(), IOW don't use bootmem for the swiotlb.
+This is possible, although it will hit 2 limitations.  The first is any
+possible fragmentation that limits the availability of a 64M region
+by the time this runs.  The second is that x86 has MAX_ORDER of 11,
+so at most we can allocate a 4M region from the page allocator which is
+inusufficient for swiotlb.
+
+4) Allow the swiotlb to be allocated in pci_iommu_alloc(), but not
+initialized until pci_iommu_init().  This allows using bootmem allocator
+to reserve a nice large contiguous chunk of memory, but requires some
+way to give that memory back in the case that a HW IOMMU is properly
+both detected and initialized (else it'd be a 64M memory leak for
+effectively all HW IOMMU enabled boxen).
+
+This series implements the fourth option.
+
+thanks,
+-chris
