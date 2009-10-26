@@ -1,37 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbZJZTO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755750AbZJZTKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754943AbZJZTO7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZJZTO6
+	id S1755750AbZJZTKn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbZJZTKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:14:58 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:63132 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbZJZTO6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:14:58 -0400
+	Mon, 26 Oct 2009 15:10:24 -0400
+Received: from bar.sig21.net ([80.81.252.164]:45172 "EHLO bar.sig21.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755187AbZJZTKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 15:10:20 -0400
+Date: Mon, 26 Oct 2009 20:11:14 +0100
+From: Johannes Stezenbach <js@sig21.net>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lguest@ozlabs.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [Lguest] 2.6.32-rc5 guest crash
+Message-ID: <20091026191114.GA3478@sig21.net>
+References: <20091025175521.GA13300@sig21.net>
+ <200910261426.05769.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-In-Reply-To: <1256583204.1865.108.camel@Joe-Laptop.home>
-References: <1256573044.7754.20.camel@localhost> <1256578064.1865.96.camel@Joe-Laptop.home> 
-	<1256581648.20338.47.camel@newn> <1256583204.1865.108.camel@Joe-Laptop.home>
-From: Marti Raudsepp <marti@juffo.org>
-Date: Mon, 26 Oct 2009 21:07:49 +0200
-Message-ID: <54b33ccd0910261207y3202ea57lfc5bc9e1b34cfc78@mail.gmail.com>
-Subject: Re: [RFC] scripts/get_maintainer.pl: also find maintainers from 
-	Mercurial (hg log)
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910261426.05769.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Spam-21-Score: -3.6 (---)
+X-Spam-21-Report: No, score=-3.6 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.824,BAYES_00=-2.599 autolearn=no
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 8:53 PM, Joe Perches <joe@perches.com> wrote:
->> Sure, I will get around to it once this patch is done.
->
-> I'll integrate this with the latest version and add hg-blame
-> and submit it via Andrew when he gets back.
+On Mon, Oct 26, 2009 at 02:26:04PM +1030, Rusty Russell wrote:
+> 
+> Subject: x86: sidestep lguest problem by only building cmpxchg8b_emu for pre-Pentium
+> 
+> Arjen's 79e1dd05d1a22 "x86: Provide an alternative() based cmpxchg64()" broke
+> lguest, even on systems which have cmpxchg8b support.  The emulation code
+> gets used until alternatives get run, but it contains native instructions,
+> not their paravirt alternatives.
+> 
+> The simplest fix is to turn this code off except for 386 and 486 builds.
+> 
+> Reported-by: Johannes Stezenbach <js@sig21.net>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+> --- a/arch/x86/Kconfig.cpu
+> +++ b/arch/x86/Kconfig.cpu
+> @@ -400,7 +400,7 @@ config X86_TSC
+>  
+>  config X86_CMPXCHG64
+>  	def_bool y
+> -	depends on X86_PAE || X86_64 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MATOM
+> +	depends on !M386 && !M486
 
-Ok, I was thinking of doing it myself but go for it. :)
 
-Marti
+FWIW, I've tested it both with original host kernel (only used recompiled
+kernel as guest), and after reboot, the guest works in both cases and
+the host kernel still boots with the patch applied.
+
+
+Thanks,
+Johannes
