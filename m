@@ -1,109 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZJZFTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbZJZFVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbZJZFTg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 01:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbZJZFTf
+	id S1754720AbZJZFVY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 01:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbZJZFVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 01:19:35 -0400
-Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:50687 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754638AbZJZFTe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 01:19:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
-	:date:message-id:mime-version:content-type; q=dns; s=sasl; b=e+R
-	WYs32JZUvA6ToR9Uu9FaXSGmD2EYzj8WaU17GT75hMA/l3iU1b6gma1QJCFRJois
-	I1ZlD0Evz2UmAlRegZA4aWKUMHE0dUmBoZHszXyuXYfcHmntl2NVLzTcEa9W27a4
-	BaxEkZM5zSTf6GsrnL+kSphudTGk4pFkHyCoPnb8=
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.6.5.2
-From: Junio C Hamano <gitster@pobox.com>
-Date: Sun, 25 Oct 2009 22:19:27 -0700
-Message-ID: <7vljiypw9s.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 26 Oct 2009 01:21:23 -0400
+Received: from THUNK.ORG ([69.25.196.29]:40838 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754638AbZJZFVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 01:21:23 -0400
+Date: Mon, 26 Oct 2009 01:21:18 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nicolas Pitre <nico@fluxnic.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC] to rebase or not to rebase on linux-next
+Message-ID: <20091026052118.GB13941@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Luck, Tony" <tony.luck@intel.com>, Ingo Molnar <mingo@elte.hu>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Nicolas Pitre <nico@fluxnic.net>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	"Luis R. Rodriguez" <mcgrof@gmail.com>,
+	Jeff Garzik <jeff@garzik.org>,
+	Robert Richter <robert.richter@amd.com>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Jean Delvare <khali@linux-fr.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <4AE19A74.1090709@garzik.org> <20091023123555.GA25366@elte.hu> <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com> <20091023134115.GD27097@elte.hu> <alpine.LFD.2.00.0910231424440.21460@xanadu.home> <20091023191631.GA1879@elte.hu> <1256326512.26028.34.camel@gandalf.stny.rr.com> <20091023205400.GA8356@elte.hu> <20091024080326.GA7461@mit.edu> <57C9024A16AD2D4C97DC78E552063EA3E33D0A53@orsmsx505.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: 25CB2ADA-C1EF-11DE-A55F-1B12EE7EF46B-77302942!a-pb-sasl-quonix.pobox.com
+Content-Disposition: inline
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E33D0A53@orsmsx505.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.6.5.2 is available at the
-usual places:
+On Sun, Oct 25, 2009 at 09:53:41PM -0700, Luck, Tony wrote:
+> 
+> If the "rewind" is simply to add "signed-off-by" notations, update
+> commit comments (or code comments) ... then it does seem useful to
+> keep the commit chain anchored to the original commit, as the testing
+> that has been done is all still valid.
+> 
+> But as soon as you talk about fixing bugs ... then you ought to
+> just do a "rebase".  The code you are adding has changed, so it is
+> incorrect to preserve the illusion that these changes have had
+> extensive testing against the old commit base.  The code has changed,
+> so the testing clock gets reset to zero.
 
-  http://www.kernel.org/pub/software/scm/git/
+I don't think anyone should (or does?) use the base version of a patch
+series as an indication of how much testing a patch series has
+received.  It doesn't make much sense.
 
-  git-1.6.5.2.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.5.2.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.5.2.tar.{gz,bz2}		(preformatted docs)
+Suppose I update the 40th patch of a 50th patch series to add check
+for kmalloc() returning NULL that had been inadvertently left out, or
+some other error checking is added.  Or suppose I add a new tracepoint
+definition to a 50 patch series.  Sorry, I'm not going to rewind the
+entire patch series because someone thinks the base version of the
+patch series somehow is a magic "test clock" indicator....
 
-The RPM binary packages for a few architectures are found in:
-
-  RPMS/$arch/git-*-1.6.5.2-1.fc9.$arch.rpm	(RPM)
-
-GIT v1.6.5.2 Release Notes
-==========================
-
-Fixes since v1.6.5.1
---------------------
-
- * Installation of templates triggered a bug in busybox when using tar
-   implementation from it.
-
- * "git add -i" incorrectly ignored paths that are already in the index
-   if they matched .gitignore patterns.
-
- * "git describe --always" should have produced some output even there
-   were no tags in the repository, but it didn't.
-
- * "git ls-files" when showing tracked files incorrectly paid attention
-   to the exclude patterns.
-
-Other minor documentation updates are included.
-
-----------------------------------------------------------------
-
-Changes since v1.6.5.1 are as follows:
-
-Andreas Schwab (1):
-      Work around option parsing bug in the busybox tar implementation
-
-Carlos R. Mafra (1):
-      Makefile: clean block-sha1/ directory instead of mozilla-sha1/
-
-Jeff King (2):
-      ls-files: excludes should not impact tracked files
-      document push's new quiet option
-
-Joe Perches (1):
-      git-send-email.perl: fold multiple entry "Cc:" and multiple single line "RCPT TO:"s
-
-Johannes Sixt (2):
-      Remove a left-over file from t/t5100
-      Mark files in t/t5100 as UTF-8
-
-Jonathan Nieder (1):
-      Documentation: describe check-ref-format --branch
-
-Junio C Hamano (4):
-      Fix incorrect error check while reading deflated pack data
-      Do not fail "describe --always" in a tag-less repository
-      Fix list of released versions in the toc document
-      GIT 1.6.5.2
-
-Markus Heidelberg (1):
-      t7800-difftool: fix the effectless GIT_DIFFTOOL_PROMPT test
-
-Matt Kraai (1):
-      Documentation/git-gc.txt: change "references" to "reference"
-
-Nanako Shiraishi (2):
-      git push: remove incomplete options list from help text
-      git push: say that --tag can't be used with --all or --mirror in help text
-
-Nasser Grainawi (1):
-      Document `delta` attribute in "git help attributes".
-
-Pauli Virtanen (1):
-      git-add--interactive: never skip files included in index
-
+      	     	     	  	      	     - Ted
