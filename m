@@ -1,141 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbZJZWDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZJZWC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754324AbZJZWDn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 18:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbZJZWDm
+	id S1754261AbZJZWC4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 18:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbZJZWCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 18:03:42 -0400
-Received: from mga14.intel.com ([143.182.124.37]:23580 "EHLO mga14.intel.com"
+	Mon, 26 Oct 2009 18:02:36 -0400
+Received: from mga01.intel.com ([192.55.52.88]:28173 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753993AbZJZWCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 18:02:34 -0400
+	id S1753934AbZJZWCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 18:02:33 -0400
 X-ExtLoop1: 1
-Message-Id: <20091026230001.947855317@sbs-t61.sc.intel.com>
+Message-Id: <20091026230002.043281924@sbs-t61.sc.intel.com>
 User-Agent: quilt/0.47-1
-Date: Mon, 26 Oct 2009 14:24:35 -0800
+Date: Mon, 26 Oct 2009 14:24:36 -0800
 From: Suresh Siddha <suresh.b.siddha@intel.com>
 To: hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de, ebiederm@xmission.com
 Cc: garyhade@us.ibm.com, suresh.b.siddha@intel.com,
        linux-kernel@vger.kernel.org
-Subject: [RFC patch 5/6] x86: Use EOI register in io-apic on intel platforms
+Subject: [RFC patch 6/6] x86: remove local_irq_enable()/local_irq_disable() in fixup_irqs()
 References: <20091026222430.313656103@sbs-t61.sc.intel.com>
-Content-Disposition: inline; filename=use_eoi_for_intel_platforms.patch
+Content-Disposition: inline; filename=fix_irq_migration_during_cpu_offline.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IO-APIC's in intel chipsets support EOI register starting from IO-APIC version
-2. Use that when ever we need to clear the IO-APIC RTE's RemoteIRR bit
-explicitly.
+To ensure that we handle all the pending interrupts (destined for this cpu that
+is going down) in the interrupt subsystem before the cpu goes offline,
+fixup_irqs() does:
+
+	local_irq_enable();
+	mdelay(1);
+	local_irq_disable();
+
+Enabling interrupts is not a good thing as this cpu is already offline.
+So this patch replaces that logic with,
+
+	mdelay(1);
+	check APIC_IRR bits
+	Retrigger the irq at the new destination if any interrupt has arrived
+	via IPI.
+
+For IO-APIC level triggered interrupts, this retrigger IPI will appear as an
+edge interrupt. ack_apic_level() will detect this condition and IO-APIC RTE's
+remoteIRR is cleared using directed EOI(using IO-APIC EOI register) on Intel
+platforms and for others it uses the existing mask+edge logic followed by
+unmask+level.
+
+We can also remove mdelay() and then send spuriuous interrupts to
+new cpu targets for all the irqs that were handled previously by this cpu
+that is going offline. While it works, I have seen spurious interrupt messages
+(nothing wrong but still annoying messages during cpu offline, which
+can be seen during suspend/resume etc)
 
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 Signed-off-by: Gary Hade <garyhade@us.ibm.com>
 Cc: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/x86/kernel/apic/io_apic.c |   80 +++++++++++++++++++++++++++--------------
- 1 file changed, 53 insertions(+), 27 deletions(-)
+ arch/x86/kernel/irq.c |   32 ++++++++++++++++++++++++++++----
+ 1 file changed, 28 insertions(+), 4 deletions(-)
 
-Index: tip/arch/x86/kernel/apic/io_apic.c
+Index: tip/arch/x86/kernel/irq.c
 ===================================================================
---- tip.orig/arch/x86/kernel/apic/io_apic.c
-+++ tip/arch/x86/kernel/apic/io_apic.c
-@@ -2492,6 +2492,50 @@ static void ack_apic_edge(unsigned int i
- 
- atomic_t irq_mis_count;
- 
-+static void __eoi_ioapic_irq(unsigned int irq, struct irq_cfg *cfg)
-+{
-+	struct irq_pin_list *entry;
-+
-+	for_each_irq_pin(entry, cfg->irq_2_pin)
-+		if (irq_remapped(irq))
-+			io_apic_eoi(entry->apic, entry->pin);
-+		else
-+			io_apic_eoi(entry->apic, cfg->vector);
-+}
-+
-+static void
-+eoi_ioapic_irq(struct irq_desc *desc)
-+{
-+	struct irq_cfg *cfg;
-+	unsigned long flags;
-+	unsigned int irq;
-+
-+	irq = desc->irq;
-+	cfg = desc->chip_data;
-+
-+	spin_lock_irqsave(&ioapic_lock, flags);
-+	__eoi_ioapic_irq(irq, cfg);
-+	spin_unlock_irqrestore(&ioapic_lock, flags);
-+}
-+
-+static int use_eoi_reg;
-+static int ioapic_supports_eoi(void)
-+{
-+	struct pci_dev *root;
-+
-+	root = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
-+	if (root && root->vendor == PCI_VENDOR_ID_INTEL &&
-+	    mp_ioapics[0].apicver >= 0x2) {
-+		use_eoi_reg = 1;
-+		printk("IO-APIC supports EOI register\n");
-+	} else
-+		printk("IO-APIC doesn't support EOI\n");
-+
-+	return 0;
-+}
-+
-+fs_initcall(ioapic_supports_eoi);
-+
- static void ack_apic_level(unsigned int irq)
+--- tip.orig/arch/x86/kernel/irq.c
++++ tip/arch/x86/kernel/irq.c
+@@ -279,7 +279,7 @@ EXPORT_SYMBOL_GPL(vector_used_by_percpu_
+ /* A cpu has been removed from cpu_online_mask.  Reset irq affinities. */
+ void fixup_irqs(void)
  {
- 	struct irq_desc *desc = irq_to_desc(irq);
-@@ -2575,37 +2619,19 @@ static void ack_apic_level(unsigned int 
- 	/* Tail end of version 0x11 I/O APIC bug workaround */
- 	if (!(v & (1 << (i & 0x1f)))) {
- 		atomic_inc(&irq_mis_count);
--		spin_lock(&ioapic_lock);
--		__mask_and_edge_IO_APIC_irq(cfg);
--		__unmask_and_level_IO_APIC_irq(cfg);
--		spin_unlock(&ioapic_lock);
-+
-+		if (use_eoi_reg)
-+			eoi_ioapic_irq(desc);
-+		else {
-+			spin_lock(&ioapic_lock);
-+			__mask_and_edge_IO_APIC_irq(cfg);
-+			__unmask_and_level_IO_APIC_irq(cfg);
-+			spin_unlock(&ioapic_lock);
-+		}
- 	}
- }
- 
- #ifdef CONFIG_INTR_REMAP
--static void __eoi_ioapic_irq(unsigned int irq, struct irq_cfg *cfg)
--{
--	struct irq_pin_list *entry;
--
--	for_each_irq_pin(entry, cfg->irq_2_pin)
--		io_apic_eoi(entry->apic, entry->pin);
--}
--
--static void
--eoi_ioapic_irq(struct irq_desc *desc)
--{
--	struct irq_cfg *cfg;
--	unsigned long flags;
 -	unsigned int irq;
--
--	irq = desc->irq;
--	cfg = desc->chip_data;
--
--	spin_lock_irqsave(&ioapic_lock, flags);
--	__eoi_ioapic_irq(irq, cfg);
--	spin_unlock_irqrestore(&ioapic_lock, flags);
--}
--
- static void ir_ack_apic_edge(unsigned int irq)
- {
- 	ack_APIC_irq();
++	unsigned int irq, vector;
+ 	static int warned;
+ 	struct irq_desc *desc;
+ 
+@@ -334,9 +334,33 @@ void fixup_irqs(void)
+ 			printk("Cannot set affinity for irq %i\n", irq);
+ 	}
+ 
+-	/* That doesn't seem sufficient.  Give it 1ms. */
+-	local_irq_enable();
++	/*
++	 * We can remove mdelay() and then send spuriuous interrupts to
++	 * new cpu targets for all the irqs that were handled previously by
++	 * this cpu. While it works, I have seen spurious interrupt messages
++	 * (nothing wrong but still...).
++	 *
++	 * So for now, retain mdelay(1) and check the IRR and then send those
++	 * interrupts to new targets as this cpu is already offlined...
++	 */
+ 	mdelay(1);
+-	local_irq_disable();
++
++	for (vector = FIRST_EXTERNAL_VECTOR; vector < NR_VECTORS; vector++) {
++		unsigned int irr;
++
++		if (__get_cpu_var(vector_irq)[vector] < 0)
++			continue;
++
++		irr = apic_read(APIC_IRR + (vector / 32 * 0x10));
++		if (irr  & (1 << (vector % 32))) {
++			irq = __get_cpu_var(vector_irq)[vector];
++
++			desc = irq_to_desc(irq);
++			spin_lock(&desc->lock);
++			if (desc->chip->retrigger)
++				desc->chip->retrigger(irq);
++			spin_unlock(&desc->lock);
++		}
++	}
+ }
+ #endif
 
 
