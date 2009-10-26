@@ -1,99 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbZJZRhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbZJZRqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274AbZJZRhg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 13:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZJZRhf
+	id S1752610AbZJZRqQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 13:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbZJZRqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 13:37:35 -0400
-Received: from james.oetiker.ch ([213.144.138.195]:37150 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753833AbZJZRhd (ORCPT
+	Mon, 26 Oct 2009 13:46:15 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:41103 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751939AbZJZRqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 13:37:33 -0400
-Date: Mon, 26 Oct 2009 18:37:36 +0100 (CET)
-From: Tobias Oetiker <tobi@oetiker.ch>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org\\\"" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
- failures V2
-In-Reply-To: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0910261835440.24625@wbuna.brgvxre.pu>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 26 Oct 2009 13:46:13 -0400
+Date: Mon, 26 Oct 2009 13:43:17 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: david@lang.hm
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: [PATCH 1/4] strip: move driver to staging
+Message-ID: <20091026174317.GG2792@tuxdriver.com>
+References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com> <20091023161006.GA1580@ucw.cz> <20091026165518.GE2792@tuxdriver.com> <alpine.DEB.2.00.0910261013430.11504@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0910261013430.11504@asgard.lang.hm>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
+On Mon, Oct 26, 2009 at 10:18:20AM -0700, david@lang.hm wrote:
+> On Mon, 26 Oct 2009, John W. Linville wrote:
 
-I have no done additional tests ... and can report the following
-
-Thursday Mel Gorman wrote:
-
->   1/5 page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
->   2/5 page allocator: Do not allow interrupts to use ALLOC_HARDER
+>> "ongoing maintenance for no clear benefit" -- that is what is wrong
+>> with it.
 >
->
-> 	These patches correct problems introduced by me during the 2.6.31-rc1
-> 	merge window. The patches were not meant to introduce any functional
-> 	changes but two were missed.
->
-> 	If your problem goes away with just these two patches applied,
-> 	please tell me.
+> supporting existing hardware is no longer a 'clear benifit'?
 
-1+2 do not help
+Do you own or have access to such hardware?  If the hardware is
+obsolete, unused, and mostly non-existant then what is the benefit
+to maintaining a driver that is rotting?
 
-> Test 3: If you are getting allocation failures, try with the following patch
->
->   3/5 vmscan: Force kswapd to take notice faster when high-order watermarks are being hit
->
-> 	This is a functional change that causes kswapd to notice sooner
-> 	when high-order watermarks have been hit. There have been a number
-> 	of changes in page reclaim since 2.6.30 that might have delayed
-> 	when kswapd kicks in for higher orders
->
-> 	If your problem goes away with these three patches applied, please
-> 	tell me
+> is this driver broken (as in not working)?
 
-1+2+3 do not help either
+I have no idea.  I suspect that you don't know either.
 
-> Test 4: If you are still getting failures, apply the following
->   4/5 page allocator: Pre-emptively wake kswapd when high-order watermarks are hit
->
-> 	This patch is very heavy handed and pre-emptively kicks kswapd when
-> 	watermarks are hit. It should only be necessary if there has been
-> 	significant changes in the timing and density of page allocations
-> 	from an unknown source. Tobias, this patch is largely aimed at you.
-> 	You reported that with patches 3+4 applied that your problems went
-> 	away. I need to know if patch 3 on its own is enough or if both
-> 	are required
->
-> 	If your problem goes away with these four patches applied, please
-> 	tell me
+> other than the fact that you don't think many people have this hardware,  
+> is there anything wrong with this driver?
 
-3 allone does not help
-3+4 does ...
+It sits there, bloating the target area for API maintenance and
+providing a likely broken example of how to write Linux drivers.
 
-cheers
-tobi
+> if this driver hasn't been changed other than for blanket API changes, 
+> how is it causing significant problems?
+
+It is a distraction for no clear (or even murky) benefit, one more
+thing to keep compiling.
+
+> if someone were to claim 'maintainership' and then do nothing other than  
+> complain if someone else were to change an API but not fix this in the  
+> process, how would this be different than the current situation?
+
+Not much different, possibly worse if they created a bigger
+distraction.  But if they actually had the hardware we might at least
+be confident that the effort was in some way worthwhile...
+
+John
 -- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
