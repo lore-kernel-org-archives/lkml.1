@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZJZHBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbZJZHCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbZJZHBV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 03:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbZJZHBU
+	id S1754777AbZJZHCR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 03:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbZJZHCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 03:01:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57216 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754589AbZJZHBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 03:01:17 -0400
-Date: Mon, 26 Oct 2009 08:01:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] sched: Disable affine wakeups by default
-Message-ID: <20091026070112.GA14641@elte.hu>
-References: <1256492289.14241.40.camel@marge.simson.net> <20091025123319.2b76bf69@infradead.org> <1256508287.17306.14.camel@marge.simson.net> <1256522035.7356.19.camel@laptop> <1256531907.7117.31.camel@marge.simson.net> <20091025215225.05ac9ac9@infradead.org> <1256533734.7117.45.camel@marge.simson.net> <20091025223657.5ebc2857@infradead.org> <1256536078.7117.67.camel@marge.simson.net> <1256536660.8150.3.camel@marge.simson.net>
+	Mon, 26 Oct 2009 03:02:16 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48153 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754388AbZJZHCQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 03:02:16 -0400
+To: Mike Travis <travis@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Robin Getz <rgetz@analog.com>, Dave Young <hidave.darkstar@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH 1/8] SGI x86_64 UV: Add limit console output function
+From: Andi Kleen <andi@firstfloor.org>
+References: <20091023233743.439628000@alcatraz.americas.sgi.com>
+	<20091023233746.128967000@alcatraz.americas.sgi.com>
+Date: Mon, 26 Oct 2009 08:02:13 +0100
+In-Reply-To: <20091023233746.128967000@alcatraz.americas.sgi.com> (Mike Travis's message of "Fri, 23 Oct 2009 18:37:44 -0500")
+Message-ID: <87tyxmy6x6.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1256536660.8150.3.camel@marge.simson.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mike Travis <travis@sgi.com> writes:
 
-* Mike Galbraith <efault@gmx.de> wrote:
+> With a large number of processors in a system there is an excessive amount
+> of messages sent to the system console.  It's estimated that with 4096
+> processors in a system, and the console baudrate set to 56K, the startup
+> messages will take about 84 minutes to clear the serial port.
+>
+> This patch adds (for SGI UV only) a kernel start option "limit_console_
+> output" (or 'lco' for short), which when set provides the ability to
+> temporarily reduce the console loglevel during system startup.  This allows
+> informative messages to still be seen on the console without producing
+> excessive amounts of repetious messages.
+>
+> Note that all the messages are still available in the kernel log buffer.
 
-> On Mon, 2009-10-26 at 06:47 +0100, Mike Galbraith wrote:
-> > On Sun, 2009-10-25 at 22:36 -0700, Arjan van de Ven wrote:
-> 
-> > > if you're a multicore domain you better have a shared cache.. 
-> > > that's what it should mean. If it does not we should fix that.
-> > 
-> > Sounds reasonable to me.  I'll go make explosions.
-> 
-> (Actually, if multicode and sibling does indeed mean shared cache, no 
-> arch tinkering should be necessary, just reset SD_WAKE_AFFINE when 
-> degenerating should work fine.  Only thing is multicore with 
-> siblings.. and test test test)
+I've run into the same problem (kernel log being flooded on large number of CPU thread
+systems). It's definitely not a UV only problem. Making such a option UV only
+is definitely not the right approach, if anything it needs to be for everyone.
 
-Correct. There's a few cpus where multicore means separate caches but 
-all modern CPUs have shared caches for cores so we want to tune for 
-that.
+Frankly a lot of these messages made sense for debugging at some point,
+but really don't anymore and should just be removed.
 
-	Ingo
+Also I don't like the defaults of on. It would be better to evaluate if
+these various messages are really useful and if they are not just remove them.
+
+For example do we really need the scheduler debug messages by default?
+
+Or do we really need to print the caches for each CPU at boot? The information
+is in sysfs anyways and rarely changes (I added this originally on 64bit,
+but in hindsight it was a bad idea)
+
+I don't think it makes much sense to print more than 2-3 lines for each CPU boot
+for example.
+
+Also more work could be done to make CPU boot up less verbose without
+sacrifying debuggability if something goes wrong.
+
+So please:
+- Simply remove messages that don't make sense, no flag.
+- Make the default non verbose.
+- Minimize output in general, with just a few standard checkpoints so 
+that if there is a hang the developer still has some clue what went wrong.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
