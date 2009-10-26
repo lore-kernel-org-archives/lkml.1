@@ -1,106 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbZJZWCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbZJZWDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbZJZWCj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 18:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbZJZWCh
+	id S1754349AbZJZWDp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 18:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZJZWDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 18:02:37 -0400
+	Mon, 26 Oct 2009 18:03:43 -0400
 Received: from mga14.intel.com ([143.182.124.37]:19890 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753961AbZJZWCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753464AbZJZWCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 26 Oct 2009 18:02:34 -0400
 X-ExtLoop1: 1
-Message-Id: <20091026230001.752968906@sbs-t61.sc.intel.com>
+Message-Id: <20091026230001.848830905@sbs-t61.sc.intel.com>
 User-Agent: quilt/0.47-1
-Date: Mon, 26 Oct 2009 14:24:33 -0800
+Date: Mon, 26 Oct 2009 14:24:34 -0800
 From: Suresh Siddha <suresh.b.siddha@intel.com>
 To: hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de, ebiederm@xmission.com
 Cc: garyhade@us.ibm.com, suresh.b.siddha@intel.com,
        linux-kernel@vger.kernel.org
-Subject: [patch 3/6] x86: remove move_cleanup_count from irq_cfg
+Subject: [patch 4/6] x86: force irq complete move during cpu offline
 References: <20091026222430.313656103@sbs-t61.sc.intel.com>
-Content-Disposition: inline; filename=remove_move_cleanup_count.patch
+Content-Disposition: inline; filename=fix_assign_irq_vector_cpu_offline.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-move_cleanup_count for each irq in irq_cfg is keeping track of the total number
-of cpus that need to free the corresponding vectors associated with the irq
-which has now been migrated to new destination. As long as this
-move_cleanup_count is non-zero (i.e., as long as we have n't freed the vector
-allocations on the old destinations) we were preventing the irq's further
-migration.
+When a cpu goes offline, fixup_irqs() try to move irq's currently
+destined to the offline cpu to a new cpu. But this attempt will fail
+if the irq is recently moved to this cpu and the irq still hasn't
+arrived at this cpu (for non intr-remapping platforms this is when we free the
+vector allocation at the previous destination) that is about to go offline.
 
-This cleanup count is unnecessary and it is enough to not allow the irq
-migration till we send the cleanup vector to the previous irq destination,
-for which we already have irq_cfg's move_in_progress.  All we need to make
-sure is that we free the vector at the old desintation but we don't need
-to wait till that gets freed.
+This will endup with the interrupt subsystem still pointing the irq to
+the offline cpu, causing that irq to not work any more.
+
+Fix this by forcing the irq to complete its move (its been a long time
+we moved the irq to this cpu which we are offlining now) and then
+move this irq to a new cpu before this cpu goes offline.
 
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 Signed-off-by: Gary Hade <garyhade@us.ibm.com>
 Cc: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/x86/include/asm/hw_irq.h  |    1 -
- arch/x86/kernel/apic/io_apic.c |    9 +--------
- 2 files changed, 1 insertion(+), 9 deletions(-)
+ arch/x86/include/asm/irq.h     |    1 +
+ arch/x86/kernel/apic/io_apic.c |   18 +++++++++++++++---
+ arch/x86/kernel/irq.c          |    7 +++++++
+ 3 files changed, 23 insertions(+), 3 deletions(-)
 
 Index: tip/arch/x86/kernel/apic/io_apic.c
 ===================================================================
 --- tip.orig/arch/x86/kernel/apic/io_apic.c
 +++ tip/arch/x86/kernel/apic/io_apic.c
-@@ -1161,7 +1161,7 @@ __assign_irq_vector(int irq, struct irq_
- 	int cpu, err;
- 	cpumask_var_t tmp_mask;
+@@ -2450,21 +2450,33 @@ unlock:
+ 	irq_exit();
+ }
  
--	if ((cfg->move_in_progress) || cfg->move_cleanup_count)
-+	if (cfg->move_in_progress)
- 		return -EBUSY;
+-static void irq_complete_move(struct irq_desc **descp)
++static void __irq_complete_move(struct irq_desc **descp, unsigned vector)
+ {
+ 	struct irq_desc *desc = *descp;
+ 	struct irq_cfg *cfg = desc->chip_data;
+-	unsigned vector, me;
++	unsigned me;
  
- 	if (!alloc_cpumask_var(&tmp_mask, GFP_ATOMIC))
-@@ -2234,14 +2234,10 @@ void send_cleanup_vector(struct irq_cfg 
+ 	if (likely(!cfg->move_in_progress))
+ 		return;
  
- 	if (unlikely(!alloc_cpumask_var(&cleanup_mask, GFP_ATOMIC))) {
- 		unsigned int i;
--		cfg->move_cleanup_count = 0;
--		for_each_cpu_and(i, cfg->old_domain, cpu_online_mask)
--			cfg->move_cleanup_count++;
- 		for_each_cpu_and(i, cfg->old_domain, cpu_online_mask)
- 			apic->send_IPI_mask(cpumask_of(i), IRQ_MOVE_CLEANUP_VECTOR);
- 	} else {
- 		cpumask_and(cleanup_mask, cfg->old_domain, cpu_online_mask);
--		cfg->move_cleanup_count = cpumask_weight(cleanup_mask);
- 		apic->send_IPI_mask(cleanup_mask, IRQ_MOVE_CLEANUP_VECTOR);
- 		free_cpumask_var(cleanup_mask);
- 	}
-@@ -2430,8 +2426,6 @@ asmlinkage void smp_irq_move_cleanup_int
+-	vector = ~get_irq_regs()->orig_ax;
+ 	me = smp_processor_id();
  
- 		cfg = irq_cfg(irq);
- 		spin_lock(&desc->lock);
--		if (!cfg->move_cleanup_count)
--			goto unlock;
- 
- 		if (vector == cfg->vector && cpumask_test_cpu(me, cfg->domain))
- 			goto unlock;
-@@ -2449,7 +2443,6 @@ asmlinkage void smp_irq_move_cleanup_int
- 			goto unlock;
- 		}
- 		__get_cpu_var(vector_irq)[vector] = -1;
--		cfg->move_cleanup_count--;
- unlock:
- 		spin_unlock(&desc->lock);
- 	}
-Index: tip/arch/x86/include/asm/hw_irq.h
+ 	if (vector == cfg->vector && cpumask_test_cpu(me, cfg->domain))
+ 		send_cleanup_vector(cfg);
+ }
++
++static void irq_complete_move(struct irq_desc **descp)
++{
++	__irq_complete_move(descp, ~get_irq_regs()->orig_ax);
++}
++
++void irq_force_complete_move(int irq)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++	struct irq_cfg *cfg = desc->chip_data;
++
++	__irq_complete_move(&desc, cfg->vector);
++}
+ #else
+ static inline void irq_complete_move(struct irq_desc **descp) {}
+ #endif
+Index: tip/arch/x86/kernel/irq.c
 ===================================================================
---- tip.orig/arch/x86/include/asm/hw_irq.h
-+++ tip/arch/x86/include/asm/hw_irq.h
-@@ -94,7 +94,6 @@ struct irq_cfg {
- 	struct irq_pin_list	*irq_2_pin;
- 	cpumask_var_t		domain;
- 	cpumask_var_t		old_domain;
--	unsigned		move_cleanup_count;
- 	u8			vector;
- 	u8			move_in_progress : 1;
- };
+--- tip.orig/arch/x86/kernel/irq.c
++++ tip/arch/x86/kernel/irq.c
+@@ -303,6 +303,13 @@ void fixup_irqs(void)
+ 			continue;
+ 		}
+ 
++		/*
++		 * Complete the irq move. This cpu is going down and for
++		 * non intr-remapping case, we can't wait till this interrupt
++		 * arrives at this cpu before completing the irq move.
++		 */
++		irq_force_complete_move(irq);
++
+ 		if (cpumask_any_and(affinity, cpu_online_mask) >= nr_cpu_ids) {
+ 			break_affinity = 1;
+ 			affinity = cpu_all_mask;
+Index: tip/arch/x86/include/asm/irq.h
+===================================================================
+--- tip.orig/arch/x86/include/asm/irq.h
++++ tip/arch/x86/include/asm/irq.h
+@@ -34,6 +34,7 @@ static inline int irq_canonicalize(int i
+ #ifdef CONFIG_HOTPLUG_CPU
+ #include <linux/cpumask.h>
+ extern void fixup_irqs(void);
++extern void irq_force_complete_move(int);
+ #endif
+ 
+ extern void (*x86_platform_ipi_callback)(void);
 
 
