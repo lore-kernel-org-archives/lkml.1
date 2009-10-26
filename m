@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbZJZU2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbZJZU3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbZJZU2L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 16:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZJZU2K
+	id S1755626AbZJZU3h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 16:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbZJZU3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 16:28:10 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:52123 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752284AbZJZU2J (ORCPT
+	Mon, 26 Oct 2009 16:29:36 -0400
+Received: from lennier.cc.vt.edu ([198.82.162.213]:40039 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753790AbZJZU3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 16:28:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=ODvKqOa5ENEGdtyzxMAoS+OILy9+/ZoVRRQm91D0UXFYkf2EKBIzZ4Nt4QZ3I7ILyf
-         B+yJDnvUrXG0D/ZufOBQAXy4hrtaq/Y3byIKCoCxJt9gZ+/Xy/pL15RpRlDBM9Jqh4d6
-         nhSr0qZ882Pi0clPduzjGmlWnT2hPHZyEmzWo=
-Date: Mon, 26 Oct 2009 23:28:11 +0300
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip] irq: Do not attempt to create subdirectories if
-	/proc/irq/<irq> failed
-Message-ID: <20091026202811.GD5321@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 26 Oct 2009 16:29:36 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Bernhard Kaindl <bk@suse.de>
+Subject: Re: PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
+In-Reply-To: Your message of "Mon, 26 Oct 2009 11:34:20 PDT."
+             <dd18b0c30910261134s76274dbbj9c1904e78c2b5a38@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <4AE24009.4090408@gmail.com>
+            <dd18b0c30910261134s76274dbbj9c1904e78c2b5a38@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1256588976_3115P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 26 Oct 2009 16:29:36 -0400
+Message-ID: <21504.1256588976@turing-police.cc.vt.edu>
+X-Mirapoint-Received-SPF: 128.173.14.107 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (0) 
+X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020201.4AE606B1.01A5,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-07-29 21:33:33,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If a parent directory (ie /proc/irq/<irq>) could not be created
-we should not attempt to create subdirectories. Otherwise it would
-lead that "smp_affinity" and "spurious" entries are may be registered
-under /proc root instead of a proper place.
+--==_Exmh_1256588976_3115P
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
+On Mon, 26 Oct 2009 11:34:20 PDT, Justin Mattock said:
 
-Please review. This is not critical even if will be failing
-at this point even at every call but better to be sure all
-goe fine. I hope I don't miss anything?
+> I can't seem to locate a right mailing list
+> for ieee1394 for Linux. Anyways here is a
+> url to flickr which has the image of the PANIC:
+> http://www.flickr.com/photos/44066293=40N08/4046711653/
+> (hopefully you don't need to sign up to view)
+>=20
+> As for the problem, interesting thing here is if I add
+> a printk to:
+>=20
+> if ((class =3D=3D 0xffffffff))
+> printk(KERN_BUG =22init_ohci1394_dma: finished initializing OHCI DMA=5C=
+n=22);
+> continue; /* No device at this func */
+>=20
+> the system will boot-up, and the PANIC will not occur.
 
- kernel/irq/proc.c |    2 ++
- 1 file changed, 2 insertions(+)
+Note that just sticking a printk in there without a =7B =7D pair enclosin=
+g
+the printk and continue will change the semantics drastically - if the
+conditional is true, it will do the printk instead of continuing. And
+possibly more important, the continue just became unconditional.
 
-Index: linux-2.6.git/kernel/irq/proc.c
-=====================================================================
---- linux-2.6.git.orig/kernel/irq/proc.c
-+++ linux-2.6.git/kernel/irq/proc.c
-@@ -214,6 +214,8 @@ void register_irq_proc(unsigned int irq,
- 
- 	/* create /proc/irq/1234 */
- 	desc->dir = proc_mkdir(name, root_irq_dir);
-+	if (!desc->dir)
-+		return;
- 
- #ifdef CONFIG_SMP
- 	/* create /proc/irq/<irq>/smp_affinity */
+What *exactly* does your code look like now?
+
+--==_Exmh_1256588976_3115P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFK5gawcC3lWbTT17ARAsPaAKCQObgycseS2ZwGCi4yMHblbVB0vQCg4cwh
+JXzCIvlAyUELDrfGxgLGMhQ=
+=NSH8
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1256588976_3115P--
+
