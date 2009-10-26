@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZJZHu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZJZHxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbZJZHu3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 03:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbZJZHu2
+	id S1755067AbZJZHxJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 03:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbZJZHxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 03:50:28 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:59333 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754903AbZJZHu1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 03:50:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=dVityZuDInfkTXOfd3ZAHi6wa/34kKmtorTaQMAUO+vUzusMeDzIcVokqa4OKhi35Z
-         1v1cFwgkiKQXxcwKAZShcW4KPsqWfwgeiisy3BWPQmgUD3v3tqCEXtKS/SO05rsLUzG3
-         sa2+BCuiTUS4cN0YcnwoNodBrmK7uGDshs4xw=
-MIME-Version: 1.0
-In-Reply-To: <20091026172104.205f15af.sfr@canb.auug.org.au>
-References: <20091026172104.205f15af.sfr@canb.auug.org.au>
-Date: Mon, 26 Oct 2009 15:50:31 +0800
-Message-ID: <a8e1da0910260050y527bdbcbt4171ad6d868fcb29@mail.gmail.com>
-Subject: Re: linux-next: Tree for October 26
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Huang Ying <ying.huang@intel.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 26 Oct 2009 03:53:09 -0400
+Received: from mail.nomovok.com ([83.150.122.238]:37749 "EHLO mail.nomovok.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754716AbZJZHxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 03:53:08 -0400
+Subject: Re: [PATCH] fix hso soft-lockup
+From: Antti =?ISO-8859-1?Q?Kaijanm=E4ki?= <antti.kaijanmaki@nomovok.com>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1256200578.3057.113.camel@nomovok.homedomain>
+References: <1256200578.3057.113.camel@nomovok.homedomain>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-9nee1o9x7WnGMjKTcHKK"
+Date: Mon, 26 Oct 2009 09:53:04 +0200
+Message-ID: <1256543584.3591.2.camel@nomovok.homedomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-build fails with ghash ghash-clmulni-intel_asm.S:
+--=-9nee1o9x7WnGMjKTcHKK
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-  AS      arch/x86/crypto/ghash-clmulni-intel_asm.o
-arch/x86/crypto/ghash-clmulni-intel_asm.S: Assembler messages:
-arch/x86/crypto/ghash-clmulni-intel_asm.S:100: Error: bad register name `%rdi)'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:101: Error: bad register name `%rsi)'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:106: Error: bad register name `%rdi)'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:114: Error: bad register name `%rdx'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:117: Error: bad register name `%rdi)'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:118: Error: bad register name `%rcx)'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:122: Error: bad register name `%rsi)'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:126: Error: bad register name `%rdx'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:127: Error: bad register name `%rsi'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:128: Error: bad register name `%rdx'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:131: Error: bad register name `%rdi)'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:142: Error: bad register name `%rsi)'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:156: Error: bad register name `%rdi)'
-make[2]: *** [arch/x86/crypto/ghash-clmulni-intel_asm.o] Error 1
-make[1]: *** [arch/x86/crypto] Error 2
-make: *** [arch/x86] Error 2
-make: *** Waiting for unfinished jobs....
+On Thu, 2009-10-22 at 11:36 +0300, Antti Kaijanm=C3=A4ki wrote:
+> Fix soft-lockup in hso.c which is triggered on SMP machine when
+> modem is removed while file descriptor(s) under /dev are still open:
+>=20
+>   old version called kref_put() too early which resulted in destroying
+>   hso_serial and hso_device objects which were still used later on.
+>=20
+> Also fix driver debug routines (not compiled in by default).
 
-cc herbert & huang ying
+I created a new bug report out of this with some additional info:
 
---
-Regards
-dave
+    http://bugzilla.kernel.org/show_bug.cgi?id=3D14469
+
+
+ -- Antti
+
+
+--=-9nee1o9x7WnGMjKTcHKK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkrlVVkACgkQJ/yWUtJ8RGqTIgCfWH/3QF1oDIxjQ7RFcu2w/uhE
+7rAAn3RnI7i+9av0hImhC+y9FDsE2Bpe
+=WrPz
+-----END PGP SIGNATURE-----
+
+--=-9nee1o9x7WnGMjKTcHKK--
+
