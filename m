@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbZJZHjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZJZHjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754907AbZJZHjK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 03:39:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901AbZJZHjF
+	id S1754954AbZJZHjM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 03:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbZJZHjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 03:39:05 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:53784 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754858AbZJZHjC (ORCPT
+	Mon, 26 Oct 2009 03:39:07 -0400
+Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:60969 "EHLO
+	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754864AbZJZHjC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 26 Oct 2009 03:39:02 -0400
 From: Frans Pop <elendil@planet.nl>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Frans Pop <elendil@planet.nl>,
-       Sujith Thomas <sujith.thomas@intel.com>,
        Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: [PATCH 2/6] thermal: sysfs-api.txt - document passive attribute for thermal zones
-Date: Mon, 26 Oct 2009 08:39:00 +0100
-Message-Id: <1256542744-26569-3-git-send-email-elendil@planet.nl>
+Subject: [PATCH 3/6] acpi: thermal: display forced passive trip points in proc
+Date: Mon, 26 Oct 2009 08:39:01 +0100
+Message-Id: <1256542744-26569-4-git-send-email-elendil@planet.nl>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1256542744-26569-1-git-send-email-elendil@planet.nl>
 References: <1256542744-26569-1-git-send-email-elendil@planet.nl>
-X-OriginalArrivalTime: 26 Oct 2009 07:39:05.0799 (UTC) FILETIME=[65541D70:01CA560F]
+X-OriginalArrivalTime: 26 Oct 2009 07:39:05.0661 (UTC) FILETIME=[653F0ED0:01CA560F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Users can force a passive trip point for a thermal zone that does not
+have _PSV defined in ACPI by setting the passive attribute in sysfs.
+It's useful to display such trip points in /proc/acpi/thermal_zone.
+
+.../TZ1/cooling_mode:<setting not supported>
+.../TZ1/polling_frequency:polling frequency:       10 seconds
+.../TZ1/state:state:                   ok
+.../TZ1/temperature:temperature:             53 C
+.../TZ1/trip_points:critical (S5):           110 C
+.../TZ1/trip_points:passive (forced):        95 C
+
+And if not set (passive is 0):
+.../TZ1/trip_points:passive (forced):<not set>
+
 Signed-off-by: Frans Pop <elendil@planet.nl>
 Acked-by: Zhang Rui <rui.zhang@intel.com>
-Cc: Sujith Thomas <sujith.thomas@intel.com>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>
 ---
- Documentation/thermal/sysfs-api.txt |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ drivers/acpi/thermal.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index 895337f..a87dc27 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -199,6 +199,15 @@ cdev[0-*]_trip_point
- 	point.
- 	RO, Optional
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 65f6781..9073ada 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -1052,6 +1052,13 @@ static int acpi_thermal_trip_seq_show(struct seq_file *seq, void *offset)
+ 				   acpi_device_bid(device));
+ 		}
+ 		seq_puts(seq, "\n");
++	} else {
++		seq_printf(seq, "passive (forced):");
++		if (tz->thermal_zone->forced_passive)
++			seq_printf(seq, "        %i C\n",
++				   tz->thermal_zone->forced_passive / 1000);
++		else
++			seq_printf(seq, "<not set>\n");
+ 	}
  
-+passive
-+	Attribute is only present for zones in which the passive cooling
-+	policy is not supported by native thermal driver. Default is zero
-+	and can be set to a temperature (in millidegrees) to enable a
-+	passive trip point for the zone. Activation is done by polling with
-+	an interval of 1 second.
-+	Unit: millidegrees Celsius
-+	RW, Optional
-+
- *****************************
- * Cooling device attributes *
- *****************************
+ 	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE; i++) {
 -- 
 1.5.6.5
 
