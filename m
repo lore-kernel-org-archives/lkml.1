@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbZJZR34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752291AbZJZRqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754170AbZJZR34 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 13:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZJZR3z
+	id S1752291AbZJZRqP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 13:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbZJZRqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 13:29:55 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:52876 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753899AbZJZR3y (ORCPT
+	Mon, 26 Oct 2009 13:46:14 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:41101 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751AbZJZRqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 13:29:54 -0400
-Message-ID: <4AE5DC80.8010204@oracle.com>
-Date: Mon, 26 Oct 2009 10:29:36 -0700
-From: Sunil Mushran <sunil.mushran@oracle.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 26 Oct 2009 13:46:13 -0400
+Date: Mon, 26 Oct 2009 13:34:04 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: [PATCH 1/4] strip: move driver to staging
+Message-ID: <20091026173404.GF2792@tuxdriver.com>
+References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com> <20091023161006.GA1580@ucw.cz> <20091026165518.GE2792@tuxdriver.com> <20091026172434.GI25725@elf.ucw.cz>
 MIME-Version: 1.0
-To: Jamie Lokier <jamie@shareable.org>
-CC: Mark Fasheh <mfasheh@suse.com>, ocfs2-devel@oss.oracle.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [Ocfs2-devel] [PATCH 1/2] fiemap: Add new extent flag FIEMAP_EXTENT_SHARED
-References: <1256173509-2831-1-git-send-email-sunil.mushran@oracle.com> <1256173509-2831-2-git-send-email-sunil.mushran@oracle.com> <20091023180034.GA11402@wotan.suse.de> <20091024183039.GB30762@shareable.org>
-In-Reply-To: <20091024183039.GB30762@shareable.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4AE5DC88.021D:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091026172434.GI25725@elf.ucw.cz>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jamie Lokier wrote:
-> It might be better to have a flag FIEMAP_EXTENT_NOT_SHARED.
->
-> Apps which need to know the data is not shared can't safely check
-> !(flags & FIEMAP_EXTENT_SHARED) because of old kernels which don't set
-> the flag.
+On Mon, Oct 26, 2009 at 06:24:34PM +0100, Pavel Machek wrote:
+> On Mon 2009-10-26 12:55:19, John W. Linville wrote:
+> > On Fri, Oct 23, 2009 at 06:10:06PM +0200, Pavel Machek wrote:
 
-I'm probably not understanding your point. Won't the older kernels not set
-FIEMAP_EXTENT_NOT_SHARED too.
+> > > There's no TODO to say what needs to be fixed. You just don't want to
+> > > maintain it. Because there's nothing to fix, noone has reason to patch
+> > > it, and the (working, good enough) driver will just be removed.
+> > 
+> > "ongoing maintenance for no clear benefit" -- that is what is wrong
+> > with it.
+> 
+> And how is moving to staging helping with that?
 
-If this is important, we could always add this flag in the stable kernel
-trees. Both sharing of extents and fiemap are relatively new to the kernel.
+Because no one is required to protect staging drivers from API-change
+breakage.
 
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
