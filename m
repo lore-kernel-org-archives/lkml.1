@@ -1,98 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbZJZLxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbZJZMI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755818AbZJZLxT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 07:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbZJZLxS
+	id S1755854AbZJZMI0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 08:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbZJZMIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 07:53:18 -0400
-Received: from ernst.netinsight.se ([194.16.221.21]:23251 "HELO
-	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755590AbZJZLxR (ORCPT
+	Mon, 26 Oct 2009 08:08:25 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:41025 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755690AbZJZMIY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 07:53:17 -0400
-Date: Mon, 26 Oct 2009 12:53:16 +0100
-From: Simon Kagstrom <simon.kagstrom@netinsight.net>
-To: "Shargorodsky Atal (EXT-Teleca/Helsinki)" 
-	<ext-atal.shargorodsky@nokia.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Artem Bityutskiy <dedekind1@gmail.com>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v11 4/5] core: Add kernel message dumper to call on
- oopses and panics
-Message-ID: <20091026125316.0283e322@marrow.netinsight.se>
-In-Reply-To: <1256553393.5822.24.camel@atal-desktop>
-References: <20091015093133.GF10546@elte.hu>
-	<20091015161052.0752208e@marrow.netinsight.se>
-	<20091015154640.GA11408@elte.hu>
-	<20091016094601.4e2c2d3e@marrow.netinsight.se>
-	<20091016080935.GA3895@elte.hu>
-	<1255681467.32489.360.camel@localhost>
-	<20091016112556.6902b2dc@marrow.netinsight.se>
-	<20091016101045.GA3263@elte.hu>
-	<20091016140918.3981cfa2@marrow.netinsight.se>
-	<1255952922.32489.505.camel@localhost>
-	<20091019125017.GA9030@elte.hu>
-	<alpine.LFD.2.00.0910220832580.9771@eeepc.linux-foundation.org>
-	<20091022082500.602f9a7d@marrow.netinsight.se>
-	<1256313202.5824.60.camel@atal-desktop>
-	<20091026084158.0644ea85@marrow.netinsight.se>
-	<1256553393.5822.24.camel@atal-desktop>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Oct 2009 08:08:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=KAgEVf6iYndq0NYADIpLk5jkl4FUsIZ/85oFb1hxC+YQRbV9fGlxPq5s0XuiOrYWE+
+         uswlHT705Scon9AygLJylm6HTJ1SYlbkdVyKtrP/eFwRiFry+JcdBxVVfLUG+7qFmVHF
+         zpFZRW/7m2EKaAacJ2gkoQtz1WVisExz+FZ6o=
+MIME-Version: 1.0
+In-Reply-To: <tip-fcd14b3203b538dca04a2b065c774c0b57863eec@git.kernel.org>
+References: <1256545926-6972-1-git-send-email-mcree@orcon.net.nz>
+	 <tip-fcd14b3203b538dca04a2b065c774c0b57863eec@git.kernel.org>
+Date: Mon, 26 Oct 2009 14:08:27 +0200
+X-Google-Sender-Auth: 53e3ed62e002b602
+Message-ID: <84144f020910260508n47ef067ci4adfd02cd3f87edd@mail.gmail.com>
+Subject: Re: [tip:perf/core] perf tools, Alpha: Add Alpha support to perf.h
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       ink@jurassic.park.msu.ru, tglx@linutronix.de, rth@twiddle.net,
+       mingo@elte.hu, mcree@orcon.net.nz
+Cc: linux-tip-commits@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 12:36:33 +0200
-"Shargorodsky Atal (EXT-Teleca/Helsinki)" <ext-atal.shargorodsky@nokia.com> wrote:
+Hi Ingo,
 
-> > > I can think of a couple of way to figure it out in the module
-> > > itself, but I could not think of any clean way to do it.
-> > 
-> > This is correct, and the mtdoops driver has some provisions to handle
-> > this. First, there is a parameter to the module to specify whether
-> > oopses should be dumped at all - I added this for the particular case
-> > that someone has panic_on_oops set.
-> 
-> It takes care of most of the situations, but panic_on_oops
-> can be changed any time, even after the module is loaded.
+On Mon, Oct 26, 2009 at 1:38 PM, tip-bot for Michael Cree
+<mcree@orcon.net.nz> wrote:
+> Commit-ID:  fcd14b3203b538dca04a2b065c774c0b57863eec
+> Gitweb:     http://git.kernel.org/tip/fcd14b3203b538dca04a2b065c774c0b57863eec
+> Author:     Michael Cree <mcree@orcon.net.nz>
+> AuthorDate: Mon, 26 Oct 2009 21:32:06 +1300
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Mon, 26 Oct 2009 09:45:41 +0100
+>
+> perf tools, Alpha: Add Alpha support to perf.h
+>
+> For the perf tool the patch implements an Alpha specific section
+> in the perf.h header file.
+>
+> Signed-off-by: Michael Cree <mcree@orcon.net.nz>
+> Cc: Richard Henderson <rth@twiddle.net>
+> Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Paul Mackerras <paulus@samba.org>
+> LKML-Reference: <1256545926-6972-1-git-send-email-mcree@orcon.net.nz>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  tools/perf/perf.h |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+>
+> diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+> index 8cc4623..216bdb2 100644
+> --- a/tools/perf/perf.h
+> +++ b/tools/perf/perf.h
+> @@ -47,6 +47,12 @@
+>  #define cpu_relax()    asm volatile("":::"memory")
+>  #endif
+>
+> +#ifdef __alpha__
+> +#include "../../arch/alpha/include/asm/unistd.h"
+> +#define rmb()          asm volatile("mb" ::: "memory")
+> +#define cpu_relax()    asm volatile("" ::: "memory")
+> +#endif
 
-Yes, but this parameter is settable at runtime as well by writing
-to /sys/module/mtdoops/parameters/dump_oops.
+OK, I'll bite. We tell userspace developers not to include kernel
+headers. Why is it okay for perf to do it (especially for something
+that's in asm)?
 
-> > Second, it does not dump oopses directly anyway, but puts it in a work
-> > queue. That way, if panic_on_oops is set, it will store the panic but
-> > the oops (called from the workqueue) will not get written anyway.
-> > 
-> 
-> AFAIK, mtdoops does not put oopses in a work queue. And if by any chance
-> it does, then I think it's wrong and might lead to missed oopses, as
-> the oops might be because of the work queues themselves, or it might
-> look to the kernel like some non-fatal fault, but actually it's a
-> sign of a much more catastrophic failure - IOMMU device garbaging
-> memory, for instance.
-
-I was referring to my patches to it, sorry. It's in the patch "[PATCH v7 5/5]:
-mtdoops: refactor as a kmsg_dumper" (as well as the parameter to dump
-oopses at all).
-
-There are other situations which will make dumping problematic as well,
-e.g., crashes in the mtd code, so there are certainly some cases which
-will be difficult to catch. But in the panic_on_oops case or
-oops-in-interrupt, the oops won't be missed and won't be outputted
-twice for mtdoops.
-
-
-Anyway, I understand your problem and agree that it would be good to
-fix. Moving up crash_kexec() and the notifiers will at least fix your
-second issue. For the double-output-of-oopses, I don't see a good way
-to fix it unless relying on the module to correct it like above.
-
-// Simon
+                        Pekka
