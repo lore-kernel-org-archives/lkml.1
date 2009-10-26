@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZJZNEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbZJZNMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbZJZNEa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 09:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbZJZNE3
+	id S1754500AbZJZNMG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 09:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbZJZNMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 09:04:29 -0400
-Received: from khc.piap.pl ([195.187.100.11]:36773 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754376AbZJZNE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 09:04:29 -0400
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-next@vger.kernel.org,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Eric Paris <eparis@parisplace.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: writable limits to -next
-References: <4AC6339B.7000905@gmail.com>
-	<20091006225751.7d5f3eec.sfr@canb.auug.org.au>
-	<4AE16B0A.7020400@gmail.com>
-	<20091026094741.5a1d492c.sfr@canb.auug.org.au>
-	<m3eiorc7r4.fsf@intrepid.localdomain>
-	<20091026120457.39f7ab83.sfr@canb.auug.org.au>
-Date: Mon, 26 Oct 2009 14:04:30 +0100
-In-Reply-To: <20091026120457.39f7ab83.sfr@canb.auug.org.au> (Stephen
-	Rothwell's message of "Mon, 26 Oct 2009 12:04:57 +1100")
-Message-ID: <m3r5sqmhlt.fsf@intrepid.localdomain>
+	Mon, 26 Oct 2009 09:12:06 -0400
+Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:55721 "EHLO
+	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754452AbZJZNMF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 09:12:05 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Robert Bradbury <robert.bradbury@gmail.com>
+Subject: Re: RFC: Updating the LKML bug reporting/updating framework
+Date: Mon, 26 Oct 2009 14:12:05 +0100
+User-Agent: KMail/1.9.9
+Cc: tmb@mandriva.org, linux-kernel@vger.kernel.org
+References: <deaa866a0910251559r6c001e6ek553256ac8f81b1f7@mail.gmail.com> <4AE4E026.9070402@mandriva.org> <4AE4E026.9070402@mandriva.org> <deaa866a0910260512p1eca02f6k89aa180aec27558d@mail.gmail.com>
+In-reply-To: <deaa866a0910260512p1eca02f6k89aa180aec27558d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910261412.07980.elendil@planet.nl>
+X-OriginalArrivalTime: 26 Oct 2009 13:12:08.0615 (UTC) FILETIME=[EC03DB70:01CA563D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+Robert Bradbury wrote:
+> Given the bugzilla database, is the LKML with its high volume and
+> noise level (IMO), now largely obsolete [1]?
 
->> It's not ok to submit under e.g. GPL v3 only, I'd suggest "under GPL v2
->> and optionally other licence(s)" or something like that.
->
-> Or maybe "under a license compatible with the Linux kernel source".
+No, it's not. Many issues benefit from a mail-based discussion where many 
+people can follow the thread and jump in if something strikes them.
+People subscribed to lkml will generally have their own methods of 
+filtering out mails/subjects/threads that interest them.
 
-Right, it looks better. Now I think the author doesn't even have to
-licence under GPLv2, e.g. BSD alone will do as well.
--- 
-Krzysztof Halasa
+Some subsystems (like acpi) prefer to handle bugs using bugzilla; others 
+(netdev, ide) have dedicated mailing lists. All regressions are tracked in 
+bugzilla, even if many are initially reported on mailing lists.
+
+lkml still has an important function for those who wish to keep a good 
+general overview of what's happening. There are a few people who keep an 
+active watch on lkml to spot bug reports and to ensure they are brought to 
+the attention of the right people.
+You are not required to subscribe to lkml to report an issue on it: the 
+policy is to always reply-to-all.
+
+If you prefer to use bugzilla, go ahead. Some subsystem maintainers will 
+then handle the bug in bugzilla; others may switch to email.
+
+> (I think I a Google search may have led me in the direction that it was
+> the place to report bugs).
+
+It depends. It's the one place where you can always report an issue if you 
+don't know where else to report it. The best way to report issues is to do 
+so directly to relevant maintainers, but that requires some familiarity 
+with the source and the community.
+
+Cheers,
+FJP
