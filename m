@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbZJZUGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572AbZJZUIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbZJZUGH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 16:06:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755717AbZJZUGG
+	id S1756572AbZJZUIS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 16:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbZJZUIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 16:06:06 -0400
-Received: from mail.perches.com ([173.55.12.10]:1071 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755090AbZJZUGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 16:06:06 -0400
-Subject: Re: [PATCH 1/4] strip: move driver to staging
-From: Joe Perches <joe@perches.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Greg KH <gregkh@suse.de>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091026192026.GI2792@tuxdriver.com>
-References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
-	 <20091023161006.GA1580@ucw.cz> <20091026165518.GE2792@tuxdriver.com>
-	 <20091026172434.GI25725@elf.ucw.cz> <20091026184818.GB21591@suse.de>
-	 <1256584063.1865.118.camel@Joe-Laptop.home>
-	 <20091026192026.GI2792@tuxdriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 26 Oct 2009 13:06:09 -0700
-Message-ID: <1256587569.1865.135.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 26 Oct 2009 16:08:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:34724 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755991AbZJZUIQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 16:08:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=rxCFPyaF3iNTMFjAlbOTGHnhht1JMYcoRYFpZ/t/tIAURQ2MKrLXajN1tf02QFMrlz
+         KgwZ0AJzas4a4kqOm8iPPnJiqPbT6nuCsaKSOh3zr4AjJJ4NnXBYFHQplCoUQpFNkbLb
+         1+cLkMPK9Zhr6BcdNpLpKj1dkOwSSYbqVYQWY=
+Message-ID: <4AE601B1.7050000@gmail.com>
+Date: Mon, 26 Oct 2009 13:08:17 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14483] WARNING: at drivers/base/sys.c:353 __sysdev_resume+0x54/0xca()
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.hyE.2qe5KB@chimera>
+In-Reply-To: <6dRYo8ss7vL.A.hyE.2qe5KB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(forgot the reply-all)
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14483
+> Subject		: WARNING: at drivers/base/sys.c:353 __sysdev_resume+0x54/0xca()
+> Submitter	: Justin Mattock<justinmattock@gmail.com>
+> Date		: 2009-10-25 19:58 (2 days old)
+> References	: http://marc.info/?l=linux-kernel&m=125650070420168&w=4
+>
+>
+>
+>    
+yeah this happens on the first go of
+echo mem > /sys/power/state
+for both of my imac's I have here.
+(on the second  try, this message does not appear)
 
-On Mon, 2009-10-26 at 15:20 -0400, John W. Linville wrote:
-> On Mon, Oct 26, 2009 at 12:07:43PM -0700, Joe Perches wrote:
-> > I think adding a requirement that files have maintainers before
-> > being added to not-staging is not a good thing.
-> This is not a blanket policy.  Please don't imply that it is.
-
-I believe it's an unnecessary precedent.
-
-> > It is likely that strip could have be deleted without anyone caring.
-> 
-> Perhaps so...how would that be better?  It would be less work for Greg,
-> but he seems to be fine with this...
-
-It's fine by me if it moves to staging.
-It's fine by me if it simply disappears as well.
-It's fine by me if Greg works all he wants.
-
+Justin P. Mattock
