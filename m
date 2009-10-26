@@ -1,17 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZJZTjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756336AbZJZTqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031AbZJZTjf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbZJZTje
+	id S1756336AbZJZTqw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbZJZTqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:39:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59806 "EHLO ogre.sisk.pl"
+	Mon, 26 Oct 2009 15:46:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59808 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755397AbZJZTjd convert rfc822-to-8bit (ORCPT
+	id S1756025AbZJZTjf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:39:33 -0400
+	Mon, 26 Oct 2009 15:39:35 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Hannes Reinecke" <hare@suse.de>
+       "Christian Casteyde" <casteyde.christian@free.fr>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "Larry Finger" <Larry.Finger@lwfinger.net>
 References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera>
 In-Reply-To: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +22,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <vX3ILojF2dJ.A.ZY.Lgf5KB@chimera>
-Subject: [Bug #14017] _end symbol missing from Symbol.map
+Message-ID: <vX3ILojF2dJ.A.df.Wgf5KB@chimera>
+Subject: [Bug #13987] Received NMI interrupt at resume
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon, 26 Oct 2009 20:31:44 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,13 +38,10 @@ introduced between 2.6.30 and 2.6.31.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14017
-Subject		: _end symbol missing from Symbol.map
-Submitter	: Hannes Reinecke <hare@suse.de>
-Date		: 2009-08-13 6:45 (75 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=091e52c3551d3031343df24b573b770b4c6c72b6
-References	: http://marc.info/?l=linux-kernel&m=125014649102253&w=4
-Handled-By	: Hannes Reinecke <hare@suse.de>
-Patch		: http://marc.info/?l=linux-kernel&m=125014649102253&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13987
+Subject		: Received NMI interrupt at resume
+Submitter	: Christian Casteyde <casteyde.christian@free.fr>
+Date		: 2009-08-15 07:55 (73 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f41f3f373dd72344c65d801d6381fe83ef3a2c54
 
 
