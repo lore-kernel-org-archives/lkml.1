@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbZJZVf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbZJZVyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753990AbZJZVf6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 17:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZJZVf5
+	id S1753222AbZJZVyH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 17:54:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZJZVyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 17:35:57 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:48683 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753935AbZJZVf4 (ORCPT
+	Mon, 26 Oct 2009 17:54:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48803
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752794AbZJZVyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 17:35:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=sXtGLoaQhhEi56L5VddmETs7Wnv72JqTsUMBp1tyXpyjkityeRd5FWxum9c42A/oWs
-         O3UoY+ktgviHb0wrnKksJSahGVqt2bvi9tQUuRlpB6M5iIKXUryOPfHo72ozO0fJsVWe
-         J6oh36tau5Yc/JGwUsy1a9Ybx+IHtSWKu3SD0=
-Message-ID: <4AE618BB.4060601@gmail.com>
-Date: Mon, 26 Oct 2009 22:46:35 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Roel Kluin <roel.kluin@gmail.com>
-CC: Russell King <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] icst525: Add missing increment
-References: <4AE61590.2030603@gmail.com>
-In-Reply-To: <4AE61590.2030603@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 26 Oct 2009 17:54:05 -0400
+Date: Mon, 26 Oct 2009 14:54:28 -0700 (PDT)
+Message-Id: <20091026.145428.127892659.davem@davemloft.net>
+To: raysonlogin@gmail.com
+Cc: mouse@mayc.ru, linux-kernel@vger.kernel.org
+Subject: Re: FatELF & patents
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <73a01bf20910261059j74bb37a9td472efc21c5440ca@mail.gmail.com>
+References: <73a01bf20910260850v215385e6q2cbbf9133acd5e1e@mail.gmail.com>
+	<4AE5C7C0.3060305@mayc.ru>
+	<73a01bf20910261059j74bb37a9td472efc21c5440ca@mail.gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Without this increment the loop can only break if it does in the
-first iteration.
+From: Rayson Ho <raysonlogin@gmail.com>
+Date: Mon, 26 Oct 2009 12:59:22 -0500
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- arch/arm/common/icst525.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> The patent mentions only one prior art:
+> 
+> "One prior art attempt to provide a method for providing a single
+> application for a variety of architectures and formats is the ANDF
+> system, developed by OSF. This is an architecture neutral binary
+> format. A disadvantage of this scheme is that it requires conversion
+> to the native architecture at installation time."
+> 
+> I don't think there is anything similar to Apple's fat binary or
+> universal binary -- a single executable that can be executed on
+> different processor families.
 
-Same issue, different file.
+A variant of the Sparc SILO boot loader, called TILO, was
+doing this with Sparc Linux kernel images 15 or so years ago.
 
-diff --git a/arch/arm/common/icst525.c b/arch/arm/common/icst525.c
-index 3d377c5..0aef96a 100644
---- a/arch/arm/common/icst525.c
-+++ b/arch/arm/common/icst525.c
-@@ -53,7 +53,7 @@ icst525_khz_to_vco(const struct icst525_params *p, unsigned long freq)
- 		 */
- 		if (f > 10000 && f <= p->vco_max)
- 			break;
--	} while (i < ARRAY_SIZE(idx2s));
-+	} while (++i < ARRAY_SIZE(idx2s));
- 
- 	if (i >= ARRAY_SIZE(idx2s))
- 		return vco;
-@@ -116,7 +116,7 @@ icst525_ps_to_vco(const struct icst525_params *p, unsigned long period)
- 		 */
- 		if (f >= ps && f < 100000)
- 			break;
--	} while (i < ARRAY_SIZE(idx2s));
-+	} while (++i < ARRAY_SIZE(idx2s));
- 
- 	if (i >= ARRAY_SIZE(idx2s))
- 		return vco;
+It packs a 32-bit and a 64-bit Linux kernel into one blob and figures
+out which one to actually boot once it figures out what kind of
+machine it is executing on.
