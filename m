@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZJZPMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbZJZPNC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbZJZPMp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 11:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZJZPMo
+	id S1752678AbZJZPNC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 11:13:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZJZPNB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 11:12:44 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:48510 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752279AbZJZPMo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 11:12:44 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Alan Cox <alan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 2.6.32] drivers/serial/atmel_serial.c: Fix BUILD_BUG_ON build
-Date: Mon, 26 Oct 2009 15:12:44 +0000
-Message-Id: <1256569964-14416-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.5
+	Mon, 26 Oct 2009 11:13:01 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:52255 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbZJZPNA convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;5:1>);
+	Mon, 26 Oct 2009 11:13:00 -0400
+Message-Id: <4AE5CA8C020000780001BD09@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Mon, 26 Oct 2009 15:13:00 +0000
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Yinghai Lu" <yinghai@kernel.org>, <tglx@linutronix.de>,
+       "Takashi Iwai" <tiwai@suse.de>, <linux-kernel@vger.kernel.org>,
+       <jbarnes@virtuousgeek.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86: adjust GFP mask handling for coherent
+	 allocations
+References: <4AE06644020000780001B4AD@vpn.id2.novell.com>
+ <20091023114825.GH5886@elte.hu>
+In-Reply-To: <20091023114825.GH5886@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since 'BUILD_BUG_ON(): fix it and a couple of bogus uses of it'
-(commit 8c87df45) the BUILD_BUG_ON() for the ring buffer size has
-failed to build due to use of is_power_of_2(). Fix this in the
-same way as the SPARC vio.h was fixed in that commit by converting
-to MAYBE_BUILD_BUG_ON().
+>>> Ingo Molnar <mingo@elte.hu> 23.10.09 13:48 >>>
+>makes sense (although there were a few odd ends in various ISA sound 
+>driver details so this should go on the .33 not .32), but please 
+>introduce a cleaner construct, like a new DMA_ISA_BIT_MASK() or so.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/serial/atmel_serial.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Hmm, I could see DMA_ISA_BIT_MASK only replace DMA_BIT_MASK(24)
+(but specifically not being conditional upon CONFIG_ISA) without becoming
+confusing. Consequently this would eliminate the conditional in the .c
+file. And any attempt to eliminate the conditional another way would just
+introduce a very similar conditional elsewhere; with this having a single
+user (and foreseeably not ever a second one) I would think this would
+just make the code less readable.
 
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index 3551c5c..b37d75f 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -1531,7 +1531,7 @@ static int __devinit atmel_serial_probe(struct platform_device *pdev)
- 	void *data;
- 	int ret;
- 
--	BUILD_BUG_ON(!is_power_of_2(ATMEL_SERIAL_RINGSIZE));
-+	MAYBE_BUILD_BUG_ON(!is_power_of_2(ATMEL_SERIAL_RINGSIZE));
- 
- 	port = &atmel_ports[pdev->id];
- 	port->backup_imr = 0;
--- 
-1.6.5
+Or did you have something else in mind that I just don't realize?
+
+Jan
 
