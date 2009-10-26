@@ -1,53 +1,59 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753779AbZJXOO6 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 24 Oct 2009 10:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbZJXOO6
+	id S1754529AbZJZCEA (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sun, 25 Oct 2009 22:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbZJZCD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Oct 2009 10:14:58 -0400
-Received: from fw.inp.cl ([163.247.62.120]:49709 "EHLO [163.247.62.120]"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753739AbZJXOO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Oct 2009 10:14:57 -0400
-Message-ID: <46743.200.110.32.114.1256393657.squirrel@mail.inp.cl>
-Date: Sat, 24 Oct 2009 11:14:17 -0300 (CLST)
-Subject: Dear Webmail Account Owner,
-From: "Webmail Upgrade Team" <info@ips.gob.cl>
-Reply-To: customercareupgradesupportcenter.ug@ireland.ir
-User-Agent: SquirrelMail/1.4.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
+	Sun, 25 Oct 2009 22:03:59 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:60158 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754422AbZJZCD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 22:03:58 -0400
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+        akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+        josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+        Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
+        mtosatti@redhat.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 5/6] rcu: Improve rcutorture diagnostics when bad torture_type specified
+Date: Sun, 25 Oct 2009 19:03:54 -0700
+Message-Id: <12565226351868-git-send-email->
+X-Mailer: git-send-email 1.5.2.5
+In-Reply-To: <20091026020253.GA11350@linux.vnet.ibm.com>
+References: <20091026020253.GA11350@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
+Make rcutorture list the available torture_type values when it doesn't
+like the one specified.
 
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+ kernel/rcutorture.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-Dear Webmail Account Owner,
-
-This message is from Webmail admin messaging center to all Webmail Account
-Owner. That we are currently upgrading our data base and e-mail account
-center. We are canceling unused email account to create more space for new
-accounts.
-
-To prevent your Webmail account from closing you will have to Update it
-below so that we will know its status as a currently used account.
-
-CONFIRM YOUR EMAIL IDENTITY BELOW
-
-Email Username :...........
-Email Password :...........
-Date of Birth  :...........
-
-Warning!!! Any account owner that refuses to update his or her account
-within Seven days of this update notification will lose his or her account
-permanently.
-
-Thank you for using Yahoo,
-Support Team,
-Warning Code :ID67565434.
+diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+index 14480e8..3dd0ca2 100644
+--- a/kernel/rcutorture.c
++++ b/kernel/rcutorture.c
+@@ -1129,8 +1129,12 @@ rcu_torture_init(void)
+ 			break;
+ 	}
+ 	if (i == ARRAY_SIZE(torture_ops)) {
+-		printk(KERN_ALERT "rcutorture: invalid torture type: \"%s\"\n",
++		printk(KERN_ALERT "rcu-torture: invalid torture type: \"%s\"\n",
+ 		       torture_type);
++		printk(KERN_ALERT "rcu-torture types:");
++		for (i = 0; i < ARRAY_SIZE(torture_ops); i++)
++			printk(KERN_ALERT " %s", torture_ops[i]->name);
++		printk(KERN_ALERT "\n");
+ 		mutex_unlock(&fullstop_mutex);
+ 		return -EINVAL;
+ 	}
+-- 
+1.5.2.5
 
