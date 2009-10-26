@@ -1,55 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbZJZQCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbZJZQEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753344AbZJZQCm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 12:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZJZQCm
+	id S1753386AbZJZQEL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 12:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZJZQEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 12:02:42 -0400
-Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:44960 "HELO
-	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753204AbZJZQCl (ORCPT
+	Mon, 26 Oct 2009 12:04:10 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:45381 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbZJZQEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 12:02:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=P4GD3UG1/r2sbZwy9nZkyWmoSdMQluheReqGrsWaY+bAXi7Nhjg268ydO28BvcnJzJBYOpJ/htigyu4IY+11+bcbgpwxy1G1RrGgKQTgr+qytjP/s9xr7fRCYlseob17;
-Date: Mon, 26 Oct 2009 09:02:34 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Peter Stuge <peter@stuge.se>
-Cc: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>,
-       linux-kernel@vger.kernel.org, mjg@redhat.com, eric@anholt.net
-Subject: Re: no video output after suspend after "drm/i915: force mode set
- at lid open time"
-Message-ID: <20091026090234.32ae7656@jbarnes-g45>
-In-Reply-To: <20091026015230.6438.qmail@stuge.se>
-References: <4AE4BBBC.2070809@gmail.com>
-	<20091026015230.6438.qmail@stuge.se>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	Mon, 26 Oct 2009 12:04:09 -0400
+Subject: [RFC] scripts/get_maintainer.pl: also find maintainers from
+ Mercurial (hg log)
+From: Marti Raudsepp <marti@juffo.org>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 26 Oct 2009 18:04:04 +0200
+Message-ID: <1256573044.7754.20.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 02:52:30 +0100
-Peter Stuge <peter@stuge.se> wrote:
-> (Before this I tried 2.6.31.1 with KMS, but it didn't do Xv.)
-> 
-> (Oh, and Xv performance with a83a44+1556c6 is lower than 2.6.30 nofb,
-> but that's somewhat secondary. MPlayer performs worse than VLC, but
-> both are worse than MPlayer with 2.6.30+2.7.1.)
-> 
-> Can I help solve this somehow?
+Hi!
 
-I posted a patch that fixed an X40 I was testing:
-drm/i915: save/restore BLC histogram control reg across suspend/resume
+I've patched the get_maintainer.pl script to also try finding
+maintainers from Mercurial history -- as alternative to git.
 
-can you give it a try and see if it works for you?
+Given that there are official hg repositories available from kernel.org,
+Mercurial seems to be an acceptable alternative to git. Does this patch
+have any chance?
 
-It may not be related to Riccardo's report, since the above patch isn't
-really related to the lid switch problem.
+(I really did try git, but hg just works better for me. I don't want to
+start a flame war here)
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Marti
+
+---
+scripts/get_maintainer.pl: also find maintainers from Mercurial (hg log)
+
+When a .git directory doesn't exist, get_maintainer now tries to use Mercurial
+instead.
+
+Changed behavior:
+* Warns when .git is found but git is not installed
+* Warns when .hg is found but Mercurial is not installed
+* Previously --nogit made it quiet when outside a repository. Now --nogit yells
+about non-existant .hg repository
+
+New behavior can be disabled with --nohg
+
+Signed-off-by: Marti Raudsepp <marti@juffo.org>
+
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+--- a/scripts/get_maintainer.pl
++++ b/scripts/get_maintainer.pl
+@@ -30,6 +30,8 @@
+ my $email_git_min_percent = 5;
+ my $email_git_since = "1-year-ago";
+ my $email_git_blame = 0;
++my $email_hg = 1;
++my $email_hg_date = "-365";
+ my $email_remove_duplicates = 1;
+ my $output_multiline = 1;
+ my $output_separator = ", ";
+@@ -72,6 +74,8 @@
+ 		'git-min-percent=i' => \$email_git_min_percent,
+ 		'git-since=s' => \$email_git_since,
+ 		'git-blame!' => \$email_git_blame,
++		'hg!' => \$email_hg,
++		'hg-date=s' => \$email_hg_date,
+ 		'remove-duplicates!' => \$email_remove_duplicates,
+ 		'm!' => \$email_maintainer,
+ 		'n!' => \$email_usename,
+@@ -277,8 +281,8 @@
+ 	}
+     }
+ 
+-    if ($email && $email_git) {
+-	recent_git_signoffs($file);
++    if ($email && ($email_git || $email_hg)) {
++	recent_vcs_signoffs($file);
+     }
+ 
+     if ($email && $email_git_blame) {
+@@ -367,6 +371,8 @@
+     --git-min-percent => minimum percentage of commits required (default: 5)
+     --git-since => git history to use (default: 1-year-ago)
+     --git-blame => use git blame to find modified commits for patch or file
++    --hg => include recent signers from hg (if git is unavailable)
++    --hg-date => hg history to use (default: -365)
+     --m => include maintainer(s) if any
+     --n => include name 'Full Name <addr\@domain.tld>'
+     --l => include list(s) if any
+@@ -388,7 +394,7 @@
+   --help => show this help information
+ 
+ Default options:
+-  [--email --git --m --n --l --multiline --pattern-depth=0 --remove-duplicates]
++  [--email --git --hg --m --n --l --multiline --pattern-depth=0 --remove-duplicates]
+ 
+ Notes:
+   Using "-f directory" may give unexpected results:
+@@ -661,7 +667,7 @@
+     return @lines;
+ }
+ 
+-sub recent_git_signoffs {
++sub recent_vcs_signoffs {
+     my ($file) = @_;
+ 
+     my $sign_offs = "";
+@@ -672,18 +678,26 @@
+     my %hash;
+     my $total_sign_offs;
+ 
+-    if (which("git") eq "") {
+-	warn("$P: git not found.  Add --nogit to options?\n");
+-	return;
+-    }
+-    if (!(-d ".git")) {
+-	warn("$P: .git directory not found.  Use a git repository for better results.\n");
++    if ($email_git && -d ".git") {
++	if (which("git") eq "") {
++	    warn("$P: found .git directory but git is not installed.  Use --nogit?\n");
++	    return;
++	}
++
++	$cmd = "git log --since=${email_git_since} -- ${file}";
++    } elsif ($email_hg && -d ".hg") {
++	if (which("hg") eq "") {
++	    warn("$P: found .hg directory but Mercurial is not installed.  Use --nohg?\n");
++	    return;
++	}
++
++	$cmd = "hg log --date=${email_hg_date} --template='{desc}\\n' -- ${file}";
++    } else {
++	warn("$P: .git or .hg directory not found.  Use a git repository for better results.\n");
+ 	warn("$P: perhaps 'git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git'\n");
+ 	return;
+     }
+ 
+-    $cmd = "git log --since=${email_git_since} -- ${file}";
+-
+     $output = `${cmd}`;
+     $output =~ s/^\s*//gm;
+ 
+
+
