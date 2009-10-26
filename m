@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbZJZSvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754332AbZJZSwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbZJZSvK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 14:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZJZSvI
+	id S1754332AbZJZSwh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 14:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbZJZSwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 14:51:08 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:61598 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753496AbZJZSvH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 14:51:07 -0400
-Subject: Re: [PATCH 1/8] SGI x86_64 UV: Add limit console output function
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Mike Travis <travis@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Robin Getz <rgetz@analog.com>, Dave Young <hidave.darkstar@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-In-Reply-To: <4AE5E4D3.6060404@sgi.com>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com>
-	 <20091023233746.128967000@alcatraz.americas.sgi.com>
-	 <87tyxmy6x6.fsf@basil.nowhere.org>
-	 <1256573457.26028.313.camel@gandalf.stny.rr.com> <4AE5E4D3.6060404@sgi.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Mon, 26 Oct 2009 14:51:09 -0400
-Message-Id: <1256583069.26028.334.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Mon, 26 Oct 2009 14:52:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41336 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753776AbZJZSwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 14:52:35 -0400
+Message-ID: <4AE5EFDB.2060908@kernel.org>
+Date: Mon, 26 Oct 2009 11:52:11 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
+ for pcie devices
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com> <4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com> <4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com> <4AE5E37F.8070707@kernel.org>
+In-Reply-To: <4AE5E37F.8070707@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-26 at 11:05 -0700, Mike Travis wrote:
-
-> I haven't heard of "trace_printk" but how does this differ from the
-> existing kernel log buffer you get with 'dmesg'?
+Yinghai Lu wrote:
+> Kenji Kaneshige wrote:
+>> I understand you need to touch I/O base/limit and Mem base/limit. But
+>> I don't understand why you also need to update bridge's BARs. Could
+>> you please explain a little more about it?
+>>
+>> Just in case, my terminology "bridge's BARs" is Base Address Register
+>> 0 (offset 0x10) and Base Address Register 1 (offset 0x14) in the
+>> (type 1) configuration space header of the bridge.
 > 
+> i mean 0x1c, 0x20, 0x28
+> 
+> did not notice that bridge device's 0x10, 0x14 are used...
+> if port service need to use 0x10, 0x14, and the device is enabled, we should touch 0x10, and 0x14.
 
-It goes into the ftrace ring buffer and does not print to console. Nor
-does it print to dmesg. Currently you need to read ftrace (via the
-debugfs) to get to it. Or a sysrq-z will print it out to the console.
+after check the code, if 
 
--- Steve
+pci_bridge_assign_resources ==> pdev_assign_resources_sorted ==>  pdev_sort_resources
+
+will not touch 0x10 and 0x14, if those resource is claimed by port service.
+
+/* Sort resources by alignment */
+void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
+{       
+        int i;
+                
+        for (i = 0; i < PCI_NUM_RESOURCES; i++) {
+                struct resource *r;
+                struct resource_list *list, *tmp;
+                resource_size_t r_align;
+                
+                r = &dev->resource[i];
+                        
+                if (r->flags & IORESOURCE_PCI_FIXED)
+                        continue;
+        
+                if (!(r->flags) || r->parent)
+                        continue;
+                
+
+r->parent != NULL, will make it skip those two.
+
+So -v3 should be safe.
+
+Thanks
+
+Yinghai Lu
 
 
