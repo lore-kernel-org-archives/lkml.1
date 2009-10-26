@@ -1,90 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbZJZUYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbZJZU2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754934AbZJZUYV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 16:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbZJZUYU
+	id S1755552AbZJZU2f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 16:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZJZU2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 16:24:20 -0400
-Received: from outbound-mail-05.bluehost.com ([69.89.21.15]:59711 "HELO
-	outbound-mail-05.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753749AbZJZUYU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 16:24:20 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=OAPJun8N57XdOpsP9EmrFlTtA0H9eWbXZUtuhMNNTaR5G3xVhG75izvPTUkY2khBme3eXE9A68Fp7H4IW5Zxxp6RxdH2scxYwAJTiWFYzo9LyYUQ6zDuBZAbnd7brPSi;
-Date: Mon, 26 Oct 2009 13:24:20 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Eric Anholt <eric@anholt.net>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, lenb@kernel.org
-Subject: Re: 2.6.32-rc1: spurious error message from "ACPI button: provide
- lid status functions"
-Message-ID: <20091026132420.2f639966@jbarnes-g45>
-In-Reply-To: <4AC72D09.3040907@tuffmail.co.uk>
-References: <4AC72D09.3040907@tuffmail.co.uk>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 26 Oct 2009 16:28:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40838 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755464AbZJZU2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 16:28:34 -0400
+Date: Mon, 26 Oct 2009 21:28:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Naohiro Ooiwa <nooiwa@miraclelinux.com>
+Cc: roland@redhat.com, akpm@linux-foundation.org, oleg@redhat.com,
+       LKML <linux-kernel@vger.kernel.org>, h-shimamoto@ct.jp.nec.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] show message when exceeded rlimit of pending signals
+Message-ID: <20091026202808.GA7107@elte.hu>
+References: <4AE1804A.2050404@miraclelinux.com> <20091023114600.GG5886@elte.hu> <4AE2A6A1.1070904@miraclelinux.com> <4AE2C151.8070006@miraclelinux.com> <20091024085848.GA23215@elte.hu> <4AE57745.8080701@miraclelinux.com> <20091026113800.GA9503@elte.hu> <4AE5D0B2.2050706@miraclelinux.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AE5D0B2.2050706@miraclelinux.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 03 Oct 2009 11:52:57 +0100
-Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
 
-> ACPI: Waking up from system sleep state S4
-> PM: Device PNP0C0D:00 failed to thaw: error 1
-> 
-> The device appears to be the acpi lid "button".  The error comes from
-> calling acpi_lid_send_state():
-> 
->     @@ -242,7 +272,12 @@ static int acpi_lid_send_state(struct
->     acpi_device *device)
->          /* input layer checks if event is redundant */
->          input_report_switch(button->input, SW_LID, !state);
->          input_sync(button->input);
->     -    return 0;
->     +
->     +    ret = blocking_notifier_call_chain(&acpi_lid_notifier, state,
->     device);
->     +    if (ret == NOTIFY_DONE)
->     +        ret = blocking_notifier_call_chain(&acpi_lid_notifier,
-> state,
->     +                           device);
->     +    return ret;
->      }
-> 
-> 
-> The "error 1" is actually NOTIFY_OK.
-> 
->     @include/linux/notify.h:
->     #define NOTIFY_DONE        0x0000        /* Don't care */
->     #define NOTIFY_OK        0x0001        /* Suits me */
->     #define NOTIFY_STOP_MASK    0x8000        /* Don't call further */
->     #define NOTIFY_BAD        (NOTIFY_STOP_MASK|0x0002)
->                             /* Bad/Veto action */
->     /*
->      * Clean way to return from the notifier and stop further calls.
->      */
->     #define NOTIFY_STOP        (NOTIFY_OK|NOTIFY_STOP_MASK)
-> 
-> 
-> Clearly acpi_lid_send_state() should return 0 for NOTIFY_OK.  I guess
-> NOTIFY_STOP can be ignored until someone says they need it.
-> 
-> But I don't understand the NOTIFY_DONE case, so I'm not sure.  I can't
-> find any users to reverse engineer it.  IMO it either needs to be
-> removed or commented.
-> 
-> Can you please sort this out, so we don't see this error message on a
-> completely successful resume?
+* Naohiro Ooiwa <nooiwa@miraclelinux.com> wrote:
 
-I think Len and I sorted this out at KS.  Len did you commit the fix
-suggested above?
+> Hi Ingo,
+> 
+> Now that you mention it, I think so, too.
+> I update my patch.
+> 
+> How is the following patch.
+> Could you please review it.
+> 
+> Thanks you.
+> Naohiro Ooiwa
+> 
+> 
+> 
+> Signed-off-by: Naohiro Ooiwa <nooiwa@miraclelinux.com>
+> ---
+>  Documentation/kernel-parameters.txt |    9 ++++++++-
+>  kernel/signal.c                     |   16 +++++++++++++---
+>  2 files changed, 21 insertions(+), 4 deletions(-)
+> 
+> diff --git a/Documentation/kernel-parameters.txt
+> b/Documentation/kernel-parameters.txt
+> index 9107b38..01c2723 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -2032,8 +2032,15 @@ and is between 256 and 4096 characters. It is
+> defined in the file
+> 
+>  	print-fatal-signals=
+>  			[KNL] debug: print fatal signals
+> +			If you would like to know what the cause of a coredump
+> +			by signal number, if your working system may have
+> +			too many POSIX.1 timers, and when during the system
+> +			test,you may as well to enable this parameter.
+>  			print-fatal-signals=1: print segfault info to
+> -			the kernel console.
+> +			the kernel console, and print caution that reached the
+> +			limit of pending signals to the kernel console.
+> +			When printed the caution messages, you can try
+> +			"ulimit -i unlimited".
+>  			default: off.
+> 
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Here's a slightly improved version of the text:
+
+ 	print-fatal-signals=
+ 			[KNL] debug: print fatal signals
+
+			If enabled, warn about various signal handling 
+			related application anomalies: too many signals, 
+			too many POSIX.1 timers, fatal signals causing a 
+			coredump - etc.
+
+			If you hit the warning due to signal overflow, 
+			you might want to try "ulimit -i unlimited".
+
+			default: off.
+
+> +int print_fatal_signals;
+
+i'd suggest __read_mostly.
+
+Plus please move variables to the top of the file. (i know this comes 
+from the previous code but we can improve it while we are touching it)
+
+With these things addressed it looks good to me:
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
