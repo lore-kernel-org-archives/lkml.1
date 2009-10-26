@@ -1,137 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbZJZWSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbZJZWCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667AbZJZWSF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 18:18:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbZJZWSE
+	id S1754184AbZJZWCg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 18:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbZJZWCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 18:18:04 -0400
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:52730 "EHLO
-	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754619AbZJZWSB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 18:18:01 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC failures V2
-Date: Mon, 26 Oct 2009 23:17:50 +0100
-User-Agent: KMail/1.9.9
-Cc: Jiri Kosina <jkosina@suse.cz>, Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
-In-Reply-To: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910262317.55960.elendil@planet.nl>
-X-OriginalArrivalTime: 26 Oct 2009 22:18:05.0677 (UTC) FILETIME=[30BED9D0:01CA568A]
+	Mon, 26 Oct 2009 18:02:35 -0400
+Received: from mga14.intel.com ([143.182.124.37]:19890 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753873AbZJZWCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 18:02:33 -0400
+X-ExtLoop1: 1
+Message-Id: <20091026222430.313656103@sbs-t61.sc.intel.com>
+User-Agent: quilt/0.47-1
+Date: Mon, 26 Oct 2009 14:24:30 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de, ebiederm@xmission.com
+Cc: garyhade@us.ibm.com, suresh.b.siddha@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: [patch 0/6] x86: cleanups and fixes for irq migration code during cpu offline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 October 2009, Mel Gorman wrote:
-> Test 1: Verify your problem occurs on 2.6.32-rc5 if you can
+First four patches in the series unify the fixup_irqs() along with
+couple of cleanups. It also fixes an issue where the interrupt subsystem can 
+point the interrupt to the offlined cpu (for non interrupt-remapping case)
+causing the device to not work. This was observed by Gary.
 
-I've tested against 2.6.31.1 as it's easier for me to compare behaviors 
-with that than with .32. All patches applied without problems against .31.
+These four patches are ready for inclusion and while there was a debate
+in the past that fixup_irqs() is kind of broken (because of migrating
+interrupts in the process context for non intr-remapping platforms)
+we think that these patches enhance the existing code and not introduce any
+more new races.
 
-I've also tested 2.6.31.1 with SLAB instead of SLUB, but that does not seem 
-to make a significant difference for my test.
+The last two patches in the series are titled as RFC. These patches
+address removing the local_irq_enable()/local_irq_disable() in
+the fixup_irqs(). All the patches (including these last two RFC patches) are
+tested on Intel platforms (by myself) and on AMD platforms(by Gary).
 
-> Test 2: Apply the following two patches and test again
->   1/5 page allocator: Always wake kswapd when restarting an allocation
->       attempt after direct reclaim failed
->   2/5 page allocator: Do not allow interrupts to use ALLOC_HARDER
+We labeled the last two patches as RFC mainly because they need more testing and
+thoughts from Eric and others who did some unsuccessful experiments in this
+area (migrating irq in the process context for non intr-remapping platforms)
+before.
 
-Does not look to make any difference. Possibly causes more variation in the 
-duration of the test (increases timing effects)?
+thanks,
+suresh
 
-> Test 3: If you are getting allocation failures, try with the following
-> patch
->   3/5 vmscan: Force kswapd to take notice faster when high-order
->       watermarks are being hit
-
-Applied on top of patches 1-2. Does not look to make any difference.
-
-> Test 4: If you are still getting failures, apply the following
->   4/5 page allocator: Pre-emptively wake kswapd when high-order
->       watermarks are hit
-
-Applied on top of patches 1-3. Does not look to make any difference.
-
-> Test 5: If things are still screwed, apply the following
->   5/5 Revert 373c0a7e, 8aa7e847: Fix congestion_wait() sync/async vs
->       read/write confusion
-
-Applied on top of patches 1-4. Despite Jens' scepticism is this still the 
-patch that makes the most significant difference in my test.
-The reading of commits in gitk is much more fluent and music skips are a 
-lot less severe. But most important is that there is no long total freeze 
-of the system halfway during the reading of commits and gitk loads 
-fastest. It also gives by far the most consistent results.
-The likelyhood of SKB allocation errors during the test is a lot smaller.
-See also http://lkml.org/lkml/2009/10/26/455.
-
-
-Detailed test results follow. I've done 2 test runs with each kernel (3 for 
-the last).
-
-The columns below give the following info:
-- time at which all commits have been read by gitk
-- time at which gitk fills in "branch", "follows" and "precedes" data for
-  the current commit
-- time at which there's no longer any disk activity, i.e. when gitk is
-  fully loaded and all swapping is done
-- total number of SKB allocation errors during the test
-A "freeze" during the reading of commits is indicated by an "f" (short 
-freeze) or "F" (long "hard" freeze). An "S" shows when there were SKB 
-allocation errors.
-
-		end commits	show branch	done		SKB errs
-1) vanilla .31.1
-run 1:		1:20 fFS	2:10 S		2:30		44 a)
-run 2:		1:35 FS		1:45		2:10		13
-
-2) .31.1 + patches 1-2
-run1:		2:30 fFS	2:45		3:00		58
-run2:		1:15 fS		2:00		2:20		2 a)
-
-3) .31.1 + patches 1-3
-run1:		1:00 fS		1:15		1:45		1 *)
-run2:		3:00 fFS	3:15		3:30		33
-*) unexpected; fortunate timing?
-
-4) .31.1 + patches 1-4
-run1:		1:10 ffS	1:55 S		2:20		35 a)
-run2:		3:05 fFS	3:15		3:25		36
-
-5) .31.1 + patches 1-5
-run1:		1:00		1:15		1:35		0
-run2:		0:50		1:15 S		1:45		45 *)
-run3:		1:00		1:15		1:45		0
-*) unexpected; unfortunate timing?
-
-a) fast in 1st phase; slow in 2nd and 3rd
-
-Note that without the congestion_wait() reverts occurrence of SKB errors, 
-the long freezes and time it takes for gitk to load seem roughly related; 
-with the reverts total time is not affected even with many SKB errors.
-
-Cheers,
-FJP
