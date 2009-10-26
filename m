@@ -1,180 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbZJZVZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbZJZVbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753853AbZJZVZw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 17:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbZJZVZv
+	id S1753808AbZJZVbJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 17:31:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbZJZVbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 17:25:51 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:35016 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753533AbZJZVZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 17:25:50 -0400
-Message-ID: <4AE613E3.3060506@sgi.com>
-Date: Mon, 26 Oct 2009 14:25:55 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 26 Oct 2009 17:31:08 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:57697 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753468AbZJZVbH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 17:31:07 -0400
+Date: Tue, 27 Oct 2009 03:01:04 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
+       Jiri Slaby <jirislaby@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Avi Kivity <avi@redhat.com>, Paul Mackerras <paulus@samba.org>,
+       Mike Galbraith <efault@gmx.de>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL v2] hw-breakpoints: Rewrite on top of perf events
+Message-ID: <20091026213104.GA8573@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <1256393818-8921-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
-To: Thomas Renninger <trenn@suse.de>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Zhang Rui <rui.zhang@intel.com>,
-       Len Brown <lenb@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Myron Stowe <myron.stowe@hp.com>, Feng Tang <feng.tang@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/8] SGI x86_64 UV: Limit the number of ACPI messages
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233754.668088000@alcatraz.americas.sgi.com> <1256354987.17875.6.camel@dc7800.home> <200910262347.46292.trenn@suse.de>
-In-Reply-To: <200910262347.46292.trenn@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256393818-8921-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Thomas Renninger wrote:
-> On Saturday 24 October 2009 05:29:47 am Bjorn Helgaas wrote:
->> On Fri, 2009-10-23 at 18:37 -0500, Mike Travis wrote:
->>> plain text document attachment (limit_acpi)
->>> Limit number of ACPI messages of the form:
->>>
->>> [    0.000000] ACPI: LSAPIC (acpi_id[0x00] lsapic_id[0x00]
->>> lsapic_eid[0x00] enabled)
->>>
->>> [   99.638655] processor ACPI0007:00: registered as cooling_device0
->>>
->>> Cc: Zhang Rui <rui.zhang@intel.com>
->>> Cc: Len Brown <lenb@kernel.org>
->>> Cc: Thomas Renninger <trenn@suse.de>
->>> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
->>> Cc: Alexey Dobriyan <adobriyan@gmail.com>
->>> Cc: Myron Stowe <myron.stowe@hp.com>
->>> Cc: Feng Tang <feng.tang@intel.com>
->>> Cc: Suresh Siddha <suresh.b.siddha@intel.com>
->>> Cc: Yinghai Lu <yhlu.kernel@gmail.com>
->>> Cc: linux-acpi@vger.kernel.org
->>> Cc: linux-kernel@vger.kernel.org
->>> Signed-off-by: Mike Travis <travis@sgi.com>
->>> ---
->>>  drivers/acpi/fan.c            |    7 ++++++-
->>>  drivers/acpi/processor_core.c |    8 ++++++--
->>>  drivers/acpi/tables.c         |   15 ++++++++++-----
->>>  3 files changed, 22 insertions(+), 8 deletions(-)
->>>
->>> --- linux.orig/drivers/acpi/fan.c
->>> +++ linux/drivers/acpi/fan.c
->>> @@ -243,6 +243,7 @@
->>>  	int result = 0;
->>>  	int state = 0;
->>>  	struct thermal_cooling_device *cdev;
->>> +	static int msgcnt;
->>>
->>>  	if (!device)
->>>  		return -EINVAL;
->>> @@ -267,7 +268,11 @@
->>>  		goto end;
->>>  	}
->>>
->>> -	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
->>> +	if (msgcnt < 4 || !limit_console_output(false)) {
->>> +		dev_info(&device->dev,
->>> +			"registered as cooling_device%d\n", cdev->id);
->>> +		msgcnt++;
->>> +	}
->> I'm personally not in favor of printing some, but not all, of these
->> messages.  That leads to questions when analyzing a dmesg log, such as
->> "Hmm, I see I have 64 CPUs, but only 0-3 are registered as cooling
->> devices.  Does that mean something is wrong?"
->>
->> But I would be glad to see this particular message removed completely.
->>
->>>  	device->driver_data = cdev;
->>>  	result = sysfs_create_link(&device->dev.kobj,
->>> --- linux.orig/drivers/acpi/processor_core.c
->>> +++ linux/drivers/acpi/processor_core.c
->>> @@ -775,6 +775,7 @@
->>>  	struct acpi_processor *pr = NULL;
->>>  	int result = 0;
->>>  	struct sys_device *sysdev;
->>> +	static int msgcnt;
->>>
->>>  	pr = kzalloc(sizeof(struct acpi_processor), GFP_KERNEL);
->>>  	if (!pr)
->>> @@ -845,8 +846,11 @@
->>>  		goto err_power_exit;
->>>  	}
->>>
->>> -	dev_info(&device->dev, "registered as cooling_device%d\n",
->>> -		 pr->cdev->id);
->>> +	if (msgcnt < 4 || !limit_console_output(false)) {
->>> +		dev_info(&device->dev, "registered as cooling_device%d\n",
->>> +			 pr->cdev->id);
->>> +		msgcnt++;
->>> +	}
-> If Zhang Rui does not complain you can change these:
-> ..registered as cooling_device..
-> into dev_dbg() without any condition.
-> This isn't critical.
+On Sat, Oct 24, 2009 at 04:16:52PM +0200, Frederic Weisbecker wrote:
+> Hi all,
 > 
-> Or why not use the more fine grained
-> ACPI debug facility and change it into:
-> ACPI_DEBUG_PRINT((ACPI_DB_INFO "..."));
-> (compare with Documentation/acpi/debug.txt and other
-> occurences in the same file)
-> You have to pass:
-> acpi_dbg_layer=0x20000000
-> to see it then.
-
-Ok.
->>>  	result = sysfs_create_link(&device->dev.kobj,
->>>  				   &pr->cdev->device.kobj,
->>> --- linux.orig/drivers/acpi/tables.c
->>> +++ linux/drivers/acpi/tables.c
->>> @@ -170,11 +170,16 @@
->>>  	case ACPI_MADT_TYPE_LOCAL_SAPIC:
->>>  		{
->>>  			struct acpi_madt_local_sapic *p =
->>> -			    (struct acpi_madt_local_sapic *)header;
->>> -			printk(KERN_INFO PREFIX
->>> -			       "LSAPIC (acpi_id[0x%02x] lsapic_id[0x%02x] lsapic_eid[0x%02x]
->>> %s)\n", -			       p->processor_id, p->id, p->eid,
->>> -			       (p->lapic_flags & ACPI_MADT_ENABLED) ? "enabled" :
->>> "disabled"); +				(struct acpi_madt_local_sapic *)header;
->>> +
->>> +			if (p->eid < 8 || !limit_console_output(false))
-> I can't find limit_console_output(), I expect it got introduced by another one 
-> of your patch series, not send to the acpi list?
-> Still shouldn't this be:
-> limit_console_output(true)
-> instead of:
-> !limit_console_output(false)
+> This is the v2 of the hw-breakpoints API rewrite on top of perf events.
+> You can find the previous version here:
+> http://lwn.net/Articles/351922/
 > 
->        Thomas
+> Changes in v2:
+>     
+>     - Follow the perf "event " rename
+>     - The ptrace regression have been fixed (ptrace breakpoint perf events
+>       weren't released when a task ended)
+>     - Drop the struct hw_breakpoint and store generic fields in
+>       perf_event_attr.
+>     - Separate core and arch specific headers, drop
+>       asm-generic/hw_breakpoint.h and create linux/hw_breakpoint.h
+>     - Use new generic len/type for breakpoint
+>     - Handle off case: when breakpoints api is not supported by an arch
+>     - Use proper in-kernel perf api provided by Arjan.
+> 
+> There are still a lot of things that need to be cleaned, simplified,
+> improved (ptrace side, the bp api, etc....) I guess these things can
+> be done incrementally if you agree.
+> 
+> I've also tried to get an arch-independent api. Generic fields for
+> breakpoints are stored in perf_event_attr structure (type, len, addr).
+> This needs to be discussed and improved before it becomes a perf
+> userspace ABI. We need to find a generic enough structure to host
+> the breakpoints parameters, something that can better fit to most arch
+> (handling breakpoint ranges in powerpc, etc...).
+>
 
-Sorry, I used a semi-auto method of calling get_maintainer which filled each patch
-with specific Cc's.  I did send the first one to everyone in hopes that that would
-help find the others.
+Outside the specific comments about the implementation here, I think
+the patchset begets a larger question about hw-breakpoint layer's
+integration with perf-events.
 
-See http://marc.info/?l=linux-kernel&m=125634109621411&w=4   (the argument specifies
-whether to reduce the console loglevel.  It's currently only used to suppress the
-cpu bootup messages.)
+Upon being a witness to the proposed changes and after some exploration
+of perf_events' functionality, I'm afraid that hw-breakpoint integration
+with perf doesn't benefit the former as much as originally wished to be
+(http://lkml.org/lkml/2009/8/26/149).
+
+Some of the prevalent concerns (which have been raised in different
+threads earlier) are:
+
+- While kernel-space breakpoints need to reside on every processor
+  (irrespective of the process in user-space), perf-events' notion of a
+  counter is always linked to a process context (although there could be
+  workarounds by making it 'pinned', etc).
+
+- HW Breakpoints register allocation mechanism is 'greedy', which in my
+  opinion is more suitable for allocating a finite and contended
+  resource such as debug register while that of perf-events can give
+  rise to roll-backs (with side-effects such as stray exceptions and
+  race conditions).
+
+- Given that the notion of a per-process context for counters is
+  well-ingrained into the design of perf-events (even system-wide
+  counters are sometimes implemented through individual syscalls over
+  nr_cpus as in builtin-stat.c), it requires huge re-design and
+  user-space changes.
+
+Trying to scoop out the hw-breakpoint layer off its book-keeping/register
+allocation features only to replace with that of perf-events leads to a
+poor retrofit. On the other hand, an implementation to enable perf to use
+hw-breakpoint layer (and its APIs) to profile memory accesses over
+kernel-space variables (in the context of a process) is very elegant,
+modular and fits cleanly within the frame-work of the perf-events as a
+new perf-type (refer http://lkml.org/lkml/2009/10/26/467). A working
+patchset (under development and containing bugs) is posted for RFC here:
+http://lkml.org/lkml/2009/10/26/461
+
+It is my opinion that enhancing perf-layer to profile memory accesses
+through hw-breakpoint layer should be preferred over merging them.
 
 Thanks,
-Mike
+K.Prasad
 
-> 
->>> +				printk(KERN_INFO PREFIX
->>> +					"LSAPIC (acpi_id[0x%02x] "
->>> +						"lsapic_id[0x%02x] "
->>> +						"lsapic_eid[0x%02x] %s)\n",
->>> +					p->processor_id, p->id, p->eid,
->>> +					(p->lapic_flags & ACPI_MADT_ENABLED) ?
->>> +						"enabled" : "disabled");
->> I know we print way too much stuff for every processor, but again, I'd
->> rather see all CPUs or none.  I think there's a little more value in
->> this one than the cooling device one (probably because I do a lot of
->> platform bringup), but it could certainly be made KERN_DEBUG and/or
->> combined with another processor discovery line.
