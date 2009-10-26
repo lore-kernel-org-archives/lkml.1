@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbZJZH4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbZJZH5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbZJZH4t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 03:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbZJZH4s
+	id S1755192AbZJZH5R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 03:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbZJZH5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 03:56:48 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58353 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755141AbZJZH4s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 03:56:48 -0400
-Date: Mon, 26 Oct 2009 08:56:45 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext2: Avoid WARN() messages when failing to write to
- the superblock
-Message-ID: <20091026075645.GA22625@elf.ucw.cz>
-References: <1256016146-2677-1-git-send-email-tytso@mit.edu>
- <20091025062128.GA1391@ucw.cz>
- <20091026040810.GE18523@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091026040810.GE18523@mit.edu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 26 Oct 2009 03:57:16 -0400
+Received: from mga01.intel.com ([192.55.52.88]:58398 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755143AbZJZH5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 03:57:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,625,1249282800"; 
+   d="scan'208";a="740441655"
+Subject: Re: linux-next: Tree for October 26
+From: Huang Ying <ying.huang@intel.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+In-Reply-To: <a8e1da0910260053r245ee675yca4dc984303187df@mail.gmail.com>
+References: <20091026172104.205f15af.sfr@canb.auug.org.au>
+	 <a8e1da0910260050y527bdbcbt4171ad6d868fcb29@mail.gmail.com>
+	 <a8e1da0910260053r245ee675yca4dc984303187df@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 26 Oct 2009 15:57:19 +0800
+Message-Id: <1256543839.30470.29.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-10-26 00:08:10, Theodore Tso wrote:
-> On Sun, Oct 25, 2009 at 07:21:28AM +0100, Pavel Machek wrote:
-> > > +	if (buffer_write_io_error(sbh)) {
-> > > +		/*
-> > > +		 * Oh, dear.  A previous attempt to write the
-> > > +		 * superblock failed.  This could happen because the
-> > > +		 * USB device was yanked out.  Or it could happen to
-> > > +		 * be a transient write error and maybe the block will
-> > > +		 * be remapped.  Nothing we can do but to retry the
-> > > +		 * write and hope for the best.
-> > > +		 */
-> > > +		printk(KERN_ERR "EXT2-fs: %s previous I/O error to "
-> > > +		       "superblock detected", sb->s_id);
-> > 
-> > KERN_ALERT/KERN_CRITICAL?
+Sorry, this should be turned off for x86_32. I will fix this.
+
+Best Regards,
+Huang Ying
+
+On Mon, 2009-10-26 at 15:53 +0800, Dave Young wrote: 
+> On Mon, Oct 26, 2009 at 3:50 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
+> > Hi,
+> >
+> > build fails with ghash ghash-clmulni-intel_asm.S:
 > 
-> Based on kerneloops.org logs, it's apparently very frequent that
-> clueless lusers rip out USB drives without bothering to unmount them
-> first.  (Or people by crappy laptops where the SD cards sticks out
-> slightly and is easily jostled.)  It's not clear we really want to be
-> issueing KERN_ALERT or KERN_CRITICAL messages when this very common
-> event happens.
+> It is a x86_32 laptop
+> 
+> 
+> >
+> >  AS      arch/x86/crypto/ghash-clmulni-intel_asm.o
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S: Assembler messages:
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:100: Error: bad register name `%rdi)'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:101: Error: bad register name `%rsi)'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:106: Error: bad register name `%rdi)'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:114: Error: bad register name `%rdx'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:117: Error: bad register name `%rdi)'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:118: Error: bad register name `%rcx)'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:122: Error: bad register name `%rsi)'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:126: Error: bad register name `%rdx'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:127: Error: bad register name `%rsi'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:128: Error: bad register name `%rdx'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:131: Error: bad register name `%rdi)'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:142: Error: bad register name `%rsi)'
+> > arch/x86/crypto/ghash-clmulni-intel_asm.S:156: Error: bad register name `%rdi)'
+> > make[2]: *** [arch/x86/crypto/ghash-clmulni-intel_asm.o] Error 1
+> > make[1]: *** [arch/x86/crypto] Error 2
+> > make: *** [arch/x86] Error 2
+> > make: *** Waiting for unfinished jobs....
+> >
+> > cc herbert & huang ying
+> >
+> > --
+> > Regards
+> > dave
+> >
+> 
+> 
+> 
 
-I'd say that frequency of the message should not determine the
-priority. (If this happens on your root filesystem you are in deep
-trouble, and it _should_ be broadcast on all consoles).
-
-OTOH filesystem should be handle device unplug just fine, so not
-issuing this in that case would be nice...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
