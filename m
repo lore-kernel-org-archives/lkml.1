@@ -1,123 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbZJZQWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753688AbZJZQZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbZJZQWR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 12:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbZJZQWP
+	id S1753688AbZJZQZt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 12:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbZJZQZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 12:22:15 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:33065 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753651AbZJZQWM (ORCPT
-	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Mon, 26 Oct 2009 12:22:12 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v3 3/3] KVM: Directly inject interrupts if they support
-	lockless operation
-To: kvm@vger.kernel.org
-Cc: alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Date: Mon, 26 Oct 2009 12:22:08 -0400
-Message-ID: <20091026162208.23704.19953.stgit@dev.haskins.net>
-In-Reply-To: <20091026162148.23704.47286.stgit@dev.haskins.net>
-References: <20091026162148.23704.47286.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 26 Oct 2009 12:25:49 -0400
+Received: from mga09.intel.com ([134.134.136.24]:10309 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753434AbZJZQZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 12:25:47 -0400
+X-ExtLoop1: 1
+Subject: Re: iwl3945, after a while stops working with "No space for Tx"
+From: reinette chatre <reinette.chatre@intel.com>
+To: Frederik Nosi <fredin77@yahoo.com>
+Cc: "Zhu, Yi" <yi.zhu@intel.com>, Intel Linux Wireless <ilw@linux.intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "Winkler, Tomas" <tomas.winkler@intel.com>,
+       "Kolekar, Abhijeet" <abhijeet.kolekar@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <177253.23325.qm@web53903.mail.re2.yahoo.com>
+References: <177253.23325.qm@web53903.mail.re2.yahoo.com>
+Content-Type: text/plain
+Date: Mon, 26 Oct 2009 09:25:52 -0700
+Message-Id: <1256574352.21134.7591.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IRQFD currently uses a deferred workqueue item to execute the injection
-operation.  It was originally designed this way because kvm_set_irq()
-required the caller to hold the irq_lock mutex, and the eventfd callback
-is invoked from within a non-preemptible critical section.
+On Sat, 2009-10-24 at 06:44 -0700, Frederik Nosi wrote:
+> Hi,
+> first sorry if somebody is not the right contact, got the adressess from ./scripts/get_maintainer.pl -f drivers/net/wireless/iwlwifi.
+> From some kernel versions now, after some time that im using this card it stops working and on messages i get this errors:
+> 
+> Oct 24 14:38:24 kotys NetworkManager: <info>  Activation (wlan0) Stage 5 of 5 (IP Configure Commit) complete.
+> [snip pulseaudio's stuppid log spam warning]
+> Oct 24 14:40:07 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out after 500ms.
+> Oct 24 14:40:09 kotys pulseaudio[16469]: sap.c: sendmsg() failed: Invalid argument
+> Oct 24 14:40:10 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_SCAN_CMD: time out after 500ms.
+> Oct 24 14:40:11 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out after 500ms.
+> Oct 24 14:40:11 kotys kernel: iwl3945 0000:04:00.0: Error sending POWER_TABLE_CMD: time out after 500ms.
+> Oct 24 14:40:14 kotys kernel: iwl3945 0000:04:00.0: set power fail, ret = -110
+> Oct 24 14:40:14 kotys kernel: No probe response from AP 00:1c:df:82:63:c9 after 500ms, disconnecting.
+> Oct 24 14:40:14 kotys NetworkManager: <info>  (wlan0): supplicant connection state:  completed -> disconnected
+> Oct 24 14:40:14 kotys NetworkManager: <info>  (wlan0): supplicant connection state:  disconnected -> scanning
+> Oct 24 14:40:14 kotys pulseaudio[16469]: sap.c: sendmsg() failed: Invalid argument
+> Oct 24 14:40:14 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_RXON: time out after 500ms.
+> Oct 24 14:40:14 kotys kernel: iwl3945 0000:04:00.0: Error setting new configuration (-110).
+> Oct 24 14:40:15 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_SCAN_CMD: time out after 500ms.
+> Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 (try 1)
+> Oct 24 14:40:15 kotys NetworkManager: <info>  (wlan0): supplicant connection state:  scanning -> associating
+> Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 (try 2)
+> Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 (try 3)
+> Oct 24 14:40:15 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_RXON: time out after 500ms.
+> Oct 24 14:40:15 kotys kernel: iwl3945 0000:04:00.0: Error setting new configuration (-110).
+> Oct 24 14:40:15 kotys kernel: wlan0: direct probe to AP 00:1c:df:82:63:c9 timed out
+> Oct 24 14:40:16 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out after 500ms.
+> Oct 24 14:40:16 kotys kernel: iwl3945 0000:04:00.0: Error sending REPLY_RXON: time out after 500ms.
+> Oct 24 14:40:16 kotys kernel: iwl3945 0000:04:00.0: Error setting new configuration (-110).
+> 
+> 
+> When this happens i am able to use the card only after reloading the related modules, iwl3945 ecc. But the problem happens again after some minutes that im connected.
+> 
+> Kernel is 2.6.32-rc5 but his started happening around 2.6.31, not sure exactly what version as i update kernel often. Firmware is iwl3945-ucode-15.32.2.9.
+> 
+> Every other info that you need just ask. I hope i dont have to bisect as this is the laptop i use for work too, but if it's needed i'll do.
+> 
+> I'm not subscribed on any ML, so in case please cc me.
+> 
 
-With the advent of lockless injection support for certain GSIs, the
-deferment mechanism is no longer technically needed in all cases.
-Since context switching to the workqueue is a source of interrupt
-latency, lets switch to a direct method whenever possible.  Fortunately
-for us, the most common use of irqfd (MSI-based GSIs) readily support
-lockless injection.
+We currently have a bug open for this issue. Could you please add this
+information to
+http://bugzilla.intellinuxwireless.org/show_bug.cgi?id=1944 ?
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+Thank you
 
- virt/kvm/eventfd.c |   31 +++++++++++++++++++++++++++----
- 1 files changed, 27 insertions(+), 4 deletions(-)
+Reinette
 
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index 30f70fd..e6cc958 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -51,20 +51,34 @@ struct _irqfd {
- 	wait_queue_t              wait;
- 	struct work_struct        inject;
- 	struct work_struct        shutdown;
-+	void (*execute)(struct _irqfd *);
- };
- 
- static struct workqueue_struct *irqfd_cleanup_wq;
- 
- static void
--irqfd_inject(struct work_struct *work)
-+irqfd_inject(struct _irqfd *irqfd)
- {
--	struct _irqfd *irqfd = container_of(work, struct _irqfd, inject);
- 	struct kvm *kvm = irqfd->kvm;
- 
- 	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
- 	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
- }
- 
-+static void
-+irqfd_deferred_inject(struct work_struct *work)
-+{
-+	struct _irqfd *irqfd = container_of(work, struct _irqfd, inject);
-+
-+	irqfd_inject(irqfd);
-+}
-+
-+static void
-+irqfd_schedule(struct _irqfd *irqfd)
-+{
-+	schedule_work(&irqfd->inject);
-+}
-+
- /*
-  * Race-free decouple logic (ordering is critical)
-  */
-@@ -126,7 +140,7 @@ irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
- 
- 	if (flags & POLLIN)
- 		/* An event has been signaled, inject an interrupt */
--		schedule_work(&irqfd->inject);
-+		irqfd->execute(irqfd);
- 
- 	if (flags & POLLHUP) {
- 		/* The eventfd is closing, detach from KVM */
-@@ -179,7 +193,7 @@ kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
- 	irqfd->kvm = kvm;
- 	irqfd->gsi = gsi;
- 	INIT_LIST_HEAD(&irqfd->list);
--	INIT_WORK(&irqfd->inject, irqfd_inject);
-+	INIT_WORK(&irqfd->inject, irqfd_deferred_inject);
- 	INIT_WORK(&irqfd->shutdown, irqfd_shutdown);
- 
- 	file = eventfd_fget(fd);
-@@ -209,6 +223,15 @@ kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
- 	list_add_tail(&irqfd->list, &kvm->irqfds.items);
- 	spin_unlock_irq(&kvm->irqfds.lock);
- 
-+	ret = kvm_irq_check_lockless(kvm, gsi);
-+	if (ret < 0)
-+		goto fail;
-+
-+	if (ret)
-+		irqfd->execute = &irqfd_inject;
-+	else
-+		irqfd->execute = &irqfd_schedule;
-+
- 	/*
- 	 * Check if there was an event already pending on the eventfd
- 	 * before we registered, and trigger it as if we didn't miss it.
+
 
