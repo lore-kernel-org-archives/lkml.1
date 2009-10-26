@@ -1,265 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbZJZQMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbZJZQQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753451AbZJZQMn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 12:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbZJZQMm
+	id S1753488AbZJZQQO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 12:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZJZQQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 12:12:42 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:37630 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbZJZQMl (ORCPT
+	Mon, 26 Oct 2009 12:16:13 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:56953 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753182AbZJZQQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 12:12:41 -0400
-Subject: [RFC] firmware_class: make request_firmware_nowait more useful
-From: Johannes Berg <johannes@sipsolutions.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 26 Oct 2009 17:12:41 +0100
-Message-ID: <1256573561.12462.14.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 26 Oct 2009 12:16:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:reply-to:organization:user-agent
+         :mime-version:to:cc:subject:references:in-reply-to:x-age:x-location
+         :x-os:x-face:content-type:content-transfer-encoding;
+        b=py++F3QgMCdOxJfWRVjXLd/tYtQWUpHk18/an8N0Yb6aC07pK4OVroK30+o+YtZpcl
+         CG3+T/MICtzuw7OyrdI9GTRo2+nMw7l8NUVvRgYidl1ZE/Y7JeEfXsRXWsOGtYnpbWwV
+         7UPb9djC/FVUPsjVkVks3LXct8oGWQ4D5jSMU=
+Message-ID: <4AE5CB4E.4090504@gmail.com>
+Date: Mon, 26 Oct 2009 17:16:14 +0100
+From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
+Reply-To: vedran.furac@gmail.com
+Organization: Home
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090701 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: Memory overcommit
+References: <hav57c$rso$1@ger.gmane.org>	<20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com>	<hb2cfu$r08$2@ger.gmane.org>	<20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com>	<4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
+X-Age: 25
+X-Location: Lovran, Croatia
+X-OS: Debian GNU/Linux
+X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unfortunately, one cannot hold on to the struct firmware
-that request_firmware_nowait() hands off, which is needed
-in some cases. Allow this by requiring the callback to
-free it (via release_firmware).
+KAMEZAWA Hiroyuki wrote:
 
-Additionally, give it a gfp_t parameter -- all the current
-users call it from a GFP_KERNEL context so the GFP_ATOMIC
-isn't necessary. This also marks an API break which is
-useful in a sense, although that is obviously not the
-primary purpose of this change.
+> Can I make more questions ?
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
----
-This is a prerequisite for many drivers' conversion to the firmware
-loading scheme we talked about at the wireless summit. Due to
-suspend/hibernate we need to keep a copy of the firmware loaded, but
-because we cannot request_firmware() during probe() we want to use
-_nowait() and then proceed registration (or unbind) on the callback.
+Sure
 
- drivers/base/firmware_class.c               |   14 ++++++--------
- drivers/firmware/dell_rbu.c                 |    9 +++++++--
- drivers/serial/ucc_uart.c                   |    8 +++++---
- drivers/staging/comedi/drivers/usbdux.c     |    5 ++++-
- drivers/staging/comedi/drivers/usbduxfast.c |    5 ++++-
- drivers/usb/atm/ueagle-atm.c                |    7 ++++---
- include/linux/firmware.h                    |    5 +++--
- 7 files changed, 33 insertions(+), 20 deletions(-)
+>  - What's cpu ?
 
---- wireless-testing.orig/drivers/base/firmware_class.c	2009-10-26 16:45:18.000000000 +0100
-+++ wireless-testing/drivers/base/firmware_class.c	2009-10-26 17:08:10.000000000 +0100
-@@ -601,12 +601,9 @@ request_firmware_work_func(void *arg)
- 	}
- 	ret = _request_firmware(&fw, fw_work->name, fw_work->device,
- 		fw_work->uevent);
--	if (ret < 0)
--		fw_work->cont(NULL, fw_work->context);
--	else {
--		fw_work->cont(fw, fw_work->context);
--		release_firmware(fw);
--	}
-+
-+	fw_work->cont(fw, fw_work->context);
-+
- 	module_put(fw_work->module);
- 	kfree(fw_work);
- 	return ret;
-@@ -619,6 +616,7 @@ request_firmware_work_func(void *arg)
-  *	is non-zero else the firmware copy must be done manually.
-  * @name: name of firmware file
-  * @device: device for which firmware is being loaded
-+ * @gfp: allocation flags
-  * @context: will be passed over to @cont, and
-  *	@fw may be %NULL if firmware request fails.
-  * @cont: function will be called asynchronously when the firmware
-@@ -631,12 +629,12 @@ request_firmware_work_func(void *arg)
- int
- request_firmware_nowait(
- 	struct module *module, int uevent,
--	const char *name, struct device *device, void *context,
-+	const char *name, struct device *device, gfp_t gfp, void *context,
- 	void (*cont)(const struct firmware *fw, void *context))
- {
- 	struct task_struct *task;
- 	struct firmware_work *fw_work = kmalloc(sizeof (struct firmware_work),
--						GFP_ATOMIC);
-+						gfp);
- 
- 	if (!fw_work)
- 		return -ENOMEM;
---- wireless-testing.orig/include/linux/firmware.h	2009-10-26 16:45:53.000000000 +0100
-+++ wireless-testing/include/linux/firmware.h	2009-10-26 17:03:56.000000000 +0100
-@@ -4,6 +4,7 @@
- #include <linux/module.h>
- #include <linux/types.h>
- #include <linux/compiler.h>
-+#include <linux/gfp.h>
- 
- #define FW_ACTION_NOHOTPLUG 0
- #define FW_ACTION_HOTPLUG 1
-@@ -38,7 +39,7 @@ int request_firmware(const struct firmwa
- 		     struct device *device);
- int request_firmware_nowait(
- 	struct module *module, int uevent,
--	const char *name, struct device *device, void *context,
-+	const char *name, struct device *device, gfp_t gfp, void *context,
- 	void (*cont)(const struct firmware *fw, void *context));
- 
- void release_firmware(const struct firmware *fw);
-@@ -51,7 +52,7 @@ static inline int request_firmware(const
- }
- static inline int request_firmware_nowait(
- 	struct module *module, int uevent,
--	const char *name, struct device *device, void *context,
-+	const char *name, struct device *device, gfp_t gfp, void *context,
- 	void (*cont)(const struct firmware *fw, void *context))
- {
- 	return -EINVAL;
---- wireless-testing.orig/drivers/firmware/dell_rbu.c	2009-10-26 16:49:06.000000000 +0100
-+++ wireless-testing/drivers/firmware/dell_rbu.c	2009-10-26 16:49:52.000000000 +0100
-@@ -544,9 +544,12 @@ static void callbackfn_rbu(const struct 
- {
- 	rbu_data.entry_created = 0;
- 
--	if (!fw || !fw->size)
-+	if (!fw)
- 		return;
- 
-+	if (!fw->size)
-+		goto out;
-+
- 	spin_lock(&rbu_data.lock);
- 	if (!strcmp(image_type, "mono")) {
- 		if (!img_update_realloc(fw->size))
-@@ -568,6 +571,8 @@ static void callbackfn_rbu(const struct 
- 	} else
- 		pr_debug("invalid image type specified.\n");
- 	spin_unlock(&rbu_data.lock);
-+ out:
-+	release_firmware(fw);
- }
- 
- static ssize_t read_rbu_image_type(struct kobject *kobj,
-@@ -615,7 +620,7 @@ static ssize_t write_rbu_image_type(stru
- 			spin_unlock(&rbu_data.lock);
- 			req_firm_rc = request_firmware_nowait(THIS_MODULE,
- 				FW_ACTION_NOHOTPLUG, "dell_rbu",
--				&rbu_device->dev, &context,
-+				&rbu_device->dev, GFP_KERNEL, &context,
- 				callbackfn_rbu);
- 			if (req_firm_rc) {
- 				printk(KERN_ERR
---- wireless-testing.orig/drivers/serial/ucc_uart.c	2009-10-26 16:50:04.000000000 +0100
-+++ wireless-testing/drivers/serial/ucc_uart.c	2009-10-26 16:51:10.000000000 +0100
-@@ -1179,16 +1179,18 @@ static void uart_firmware_cont(const str
- 
- 	if (firmware->header.length != fw->size) {
- 		dev_err(dev, "invalid firmware\n");
--		return;
-+		goto out;
- 	}
- 
- 	ret = qe_upload_firmware(firmware);
- 	if (ret) {
- 		dev_err(dev, "could not load firmware\n");
--		return;
-+		goto out;
- 	}
- 
- 	firmware_loaded = 1;
-+ out:
-+	release_firmware(fw);
- }
- 
- static int ucc_uart_probe(struct of_device *ofdev,
-@@ -1247,7 +1249,7 @@ static int ucc_uart_probe(struct of_devi
- 			 */
- 			ret = request_firmware_nowait(THIS_MODULE,
- 				FW_ACTION_HOTPLUG, filename, &ofdev->dev,
--				&ofdev->dev, uart_firmware_cont);
-+				GFP_KERNEL, &ofdev->dev, uart_firmware_cont);
- 			if (ret) {
- 				dev_err(&ofdev->dev,
- 					"could not load firmware %s\n",
---- wireless-testing.orig/drivers/staging/comedi/drivers/usbdux.c	2009-10-26 16:51:16.000000000 +0100
-+++ wireless-testing/drivers/staging/comedi/drivers/usbdux.c	2009-10-26 16:51:52.000000000 +0100
-@@ -2327,9 +2327,11 @@ static void usbdux_firmware_request_comp
- 	if (ret) {
- 		dev_err(&usbdev->dev,
- 			"Could not upload firmware (err=%d)\n", ret);
--		return;
-+		goto out;
- 	}
- 	comedi_usb_auto_config(usbdev, BOARDNAME);
-+ out:
-+	release_firmware(fw);
- }
- 
- /* allocate memory for the urbs and initialise them */
-@@ -2580,6 +2582,7 @@ static int usbduxsub_probe(struct usb_in
- 				      FW_ACTION_HOTPLUG,
- 				      "usbdux_firmware.bin",
- 				      &udev->dev,
-+				      GFP_KERNEL,
- 				      usbduxsub + index,
- 				      usbdux_firmware_request_complete_handler);
- 
---- wireless-testing.orig/drivers/staging/comedi/drivers/usbduxfast.c	2009-10-26 17:01:20.000000000 +0100
-+++ wireless-testing/drivers/staging/comedi/drivers/usbduxfast.c	2009-10-26 17:01:47.000000000 +0100
-@@ -1451,10 +1451,12 @@ static void usbduxfast_firmware_request_
- 	if (ret) {
- 		dev_err(&usbdev->dev,
- 			"Could not upload firmware (err=%d)\n", ret);
--		return;
-+		goto out;
- 	}
- 
- 	comedi_usb_auto_config(usbdev, BOARDNAME);
-+ out:
-+	release_firmware(fw);
- }
- 
- /*
-@@ -1569,6 +1571,7 @@ static int usbduxfastsub_probe(struct us
- 				      FW_ACTION_HOTPLUG,
- 				      "usbduxfast_firmware.bin",
- 				      &udev->dev,
-+				      GFP_KERNEL,
- 				      usbduxfastsub + index,
- 				      usbduxfast_firmware_request_complete_handler);
- 
---- wireless-testing.orig/drivers/usb/atm/ueagle-atm.c	2009-10-26 17:01:48.000000000 +0100
-+++ wireless-testing/drivers/usb/atm/ueagle-atm.c	2009-10-26 17:03:29.000000000 +0100
-@@ -667,12 +667,12 @@ static void uea_upload_pre_firmware(cons
- 	else
- 		uea_info(usb, "firmware uploaded\n");
- 
--	uea_leaves(usb);
--	return;
-+	goto err;
- 
- err_fw_corrupted:
- 	uea_err(usb, "firmware is corrupted\n");
- err:
-+	release_firmware(fw_entry);
- 	uea_leaves(usb);
- }
- 
-@@ -705,7 +705,8 @@ static int uea_load_firmware(struct usb_
- 		break;
- 	}
- 
--	ret = request_firmware_nowait(THIS_MODULE, 1, fw_name, &usb->dev, usb, uea_upload_pre_firmware);
-+	ret = request_firmware_nowait(THIS_MODULE, 1, fw_name, &usb->dev,
-+				      GFP_KERNEL, usb, uea_upload_pre_firmware);
- 	if (ret)
- 		uea_err(usb, "firmware %s is not available\n", fw_name);
- 	else
+vendor_id       : AuthenticAMD
 
+
+cpu family      : 16
+
+
+model           : 4
+
+
+model name      : AMD Phenom(tm) II X3 720 Processor
+
+
+stepping        : 2
+
+
+cpu MHz         : 3314.812
+
+
+cache size      : 512 KB
+
+
+>  - How much memory ?
+>  - Do you have swap ?
+
+           total       used       free     shared    buffers     cached
+Mem:        3459       1452       2007          0         65        622
+-/+ buffers/cache:      764       2695
+Swap:          0          0          0
+
+So, no swap. Don't need it.
+
+>  - What's the latest kernel version you tested?
+
+2.6.30-2-amd64 #1 SMP (on Debian)
+
+>  - Could you show me /var/log/dmesg and /var/log/messages at OOM ?
+
+It was catastrophe. :) X crashed (or killed) with all the programs, but
+my little program was alive for 20 minutes (see timestamps). And for
+that time computer was completely unusable. Couldn't even get the
+console via ssh. Rally embarrassing for a modern OS to get destroyed by
+a 5 lines of C run as an ordinary user. Luckily screen was still alive,
+oomk usually kills it also. See for yourself:
+
+dmesg: http://pastebin.com/f3f83738a
+messages: http://pastebin.com/f2091110a
+
+(CCing to lklm again... I just want people to see the logs.)
+
+Regards,
+
+Vedran
 
