@@ -1,164 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbZJZKRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZJZK1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755523AbZJZKRj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 06:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZJZKRi
+	id S1755534AbZJZK1U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 06:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbZJZK1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 06:17:38 -0400
-Received: from mailgw.miraclelinux.com ([122.216.84.157]:18504 "EHLO
-	mailgw.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755501AbZJZKRh (ORCPT
+	Mon, 26 Oct 2009 06:27:19 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56195 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755454AbZJZK1S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 06:17:37 -0400
-Message-ID: <4AE57745.8080701@miraclelinux.com>
-Date: Mon, 26 Oct 2009 19:17:41 +0900
-From: nooiwa <nooiwa@miraclelinux.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 26 Oct 2009 06:27:18 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AE57976.4060107@jp.fujitsu.com>
+Date: Mon, 26 Oct 2009 19:27:02 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: roland@redhat.com, akpm@linux-foundation.org, oleg@redhat.com,
-       LKML <linux-kernel@vger.kernel.org>, h-shimamoto@ct.jp.nec.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] show message when exceeded rlimit of pending signals
-References: <4AE1804A.2050404@miraclelinux.com> <20091023114600.GG5886@elte.hu> <4AE2A6A1.1070904@miraclelinux.com> <4AE2C151.8070006@miraclelinux.com> <20091024085848.GA23215@elte.hu>
-In-Reply-To: <20091024085848.GA23215@elte.hu>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
+ for pcie devices
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com> <4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com> <4AE55D12.30403@kernel.org>
+In-Reply-To: <4AE55D12.30403@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo
-
-I remade a patch.
-
-I already tested it. The result was good for me.
-Could you please check it.
-
-Thanks you.
-Naohiro Ooiwa
-
-
-Signed-off-by: Naohiro Ooiwa <nooiwa@miraclelinux.com>
----
- Documentation/kernel-parameters.txt |   14 ++++++++++++++
- kernel/signal.c                     |   24 +++++++++++++++++++++++-
- kernel/sysctl.c                     |    9 +++++++++
- 3 files changed, 46 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 9107b38..37104b1 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2036,6 +2036,20 @@ and is between 256 and 4096 characters. It is defined in the file
- 			the kernel console.
- 			default: off.
-
-+	print-reach-rlimit-sigpending=
-+			[KNL] debug: print caution that reached the limit of
-+			pending signals.
-+			If your working system may have too many POSIX.1 timers
-+			or during the system test, you may as well to enable
-+			this parameter.
-+			print-reach-rlimit-sigpending=0: disable this print
-+			print-reach-rlimit-sigpending=1: print message that
-+			reached	the limit of pending signals to the kernel
-+			console.
-+			When this message is printed, maybe you should try to
-+			"ulimit -i unlimited".
-+			default: off.
-+
- 	printk.time=	Show timing data prefixed to each printk message line
- 			Format: <bool>  (1/Y/y=enable, 0/N/n=disable)
-
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 6705320..9943e71 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -188,6 +188,24 @@ int next_signal(struct sigpending *pending, sigset_t *mask)
- 	return sig;
- }
-
-+int print_reach_rlimit_sigpending;
-+
-+static void show_reach_rlimit_sigpending(void)
-+{
-+	if (printk_ratelimit())
-+		printk(KERN_WARNING "%s/%d: reached the limit of
-+			pending signals.\n", current->comm, current->pid);
-+}
-+
-+static int __init setup_print_reach_rlimit_sigpending(char *str)
-+{
-+	get_option(&str, &print_reach_rlimit_sigpending);
-+
-+	return 1;
-+}
-+
-+__setup("print-reach-rlimit-sigpending=", setup_print_reach_rlimit_sigpending);
-+
- /*
-  * allocate a new signal queue record
-  * - this may be called without locks if and only if t == current, otherwise an
-@@ -209,8 +227,12 @@ static struct sigqueue *__sigqueue_alloc(struct task_struct *t, gfp_t flags,
- 	atomic_inc(&user->sigpending);
- 	if (override_rlimit ||
- 	    atomic_read(&user->sigpending) <=
--			t->signal->rlim[RLIMIT_SIGPENDING].rlim_cur)
-+			t->signal->rlim[RLIMIT_SIGPENDING].rlim_cur) {
- 		q = kmem_cache_alloc(sigqueue_cachep, flags);
-+	} else {
-+		if (print_reach_rlimit_sigpending)
-+			show_reach_rlimit_sigpending();
-+	}
- 	if (unlikely(q == NULL)) {
- 		atomic_dec(&user->sigpending);
- 		free_uid(user);
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 0d949c5..93b2760 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -67,6 +67,7 @@ static int deprecated_sysctl_warning(struct __sysctl_args *args);
- /* External variables not in a header file. */
- extern int C_A_D;
- extern int print_fatal_signals;
-+extern int print_reach_rlimit_sigpending;
- extern int sysctl_overcommit_memory;
- extern int sysctl_overcommit_ratio;
- extern int sysctl_panic_on_oom;
-@@ -467,6 +468,14 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "print-reach-rlimit-sigpending",
-+		.data		= &print_reach_rlimit_sigpending,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
- #ifdef CONFIG_SPARC
- 	{
- 		.ctl_name	= KERN_SPARC_REBOOT,
--- 1.5.4.1
-
-Ingo Molnar wrote:
-> * Naohiro Ooiwa <nooiwa@miraclelinux.com> wrote:
-> 
->> Hi Ingo, Roland,
+Yinghai Lu wrote:
+> Kenji Kaneshige wrote:
+>> Yinghai Lu wrote:
+>>> Kenji Kaneshige wrote:
+>>>> Yinghai Lu wrote:
+>>>>> move out bus_size_bridges and assign resources out of
+>>>>> pciehp_add_bridge()
+>>>>> and at last do them all together one time including slot bridge, to
+>>>>> avoid to call
+>>>>> assign resources several times, when there are several bridges under
+>>>>> the slot bridge.
+>>>>>
+>>>>> need to introduce pci_bridge_assign_resources there.
+>>>>>
+>>>>> handle the case the first bridge that doesn't get pre-allocated big
+>>>>> enough res from FW.
+>>>>> for example pcie devices need 256M, but the bridge only get
+>>>>> preallocated 2M...
+>>>>>
+>>>> Though I have not looked at the patch deeply yet (sorry), I have
+>>>> some questions and concerns about this change. Please correct me
+>>>> if my understanding is not correct.
+>>>>
+>>>> - Your patch doesn't seems to have the code to free resources.
+>>>>  If we need to expand the resource range, don't we need to free
+>>>>  preallocated resource before allocating the new one?
+>>> that is done with pci_bus_size_bridges ==> pbus_size_io/pbus_size_mem
+>>> ==> find_free_bus_resource ==> release_resource.
+>>>
+>> I didn't noticed that find_free_bus_resource() was changed to call
+>> release_resource() recently...
 >>
->> Now, I received a nice comment from OGAWA-san.
->> How is this impriment like a print_faital_signal().
->>
->> I think it's very nice.
+>> By the way, does this (release_resource() by find_bus_resource())
+>> change the resource assignment by BIOS also for bridges other than
+>> the ports with hotplug slot (switch upstreamport, for example)?
 > 
-> Agreed - i just wanted to suggest that too. print_fatal_signals is 
-> already a switch that turns on warnings about 'weird looking signal 
-> behavior'. print-on-overflow seems like a good match.
+> yes.
 > 
-> 	Ingo
+> BIOS preallocate small range for the bridge, and leave the BAR for the device under that bridge uninitialized.
+> 
+
+Does this happen at the boot time regardless of hot-plug?
 
 
+>>>> - Your patch seems to update BARs for bridge itself. I think it
+>>>>  would break the bridge's driver (port service driver) that if
+>>>>  it controls the device's capability by using IO/Mem, though I
+>>>>  don't know if such driver or capabilities exists now.
+>>> port service driver will be AER and pciehotplug.
+>>> it seems those driver are not use those BAR...
+>>> those BAR are supposed for the devices under the pcie bridge.
+>>>
+>> I understand that there are only two port service drivers (AER and
+>> PCIe hotplug) and both doesn't use BAR. But I still have a concern
+>> that changing bridge's BARs might cause problems in the future. In
+>> my understanding, what you need is expanding IO/Mem base and limit
+>> of root or switch downstream ports. If so, I think we should only
+>> touch IO/Mem base/limit, and should not touch bridge's BARs.
+> 
+> those bridge BAR are for devices under that bridge. the port device is not supposed to use them.
+>
+
+Do you mean you touch only BARs of the devices under the bridge?
+
+> if we don't touch the bridge's BAR, the hw will not forward the io for those devices under it.
+> 
+
+I understand you need to touch I/O base/limit and Mem base/limit. But
+I don't understand why you also need to update bridge's BARs. Could
+you please explain a little more about it?
+
+Just in case, my terminology "bridge's BARs" is Base Address Register
+0 (offset 0x10) and Base Address Register 1 (offset 0x14) in the
+(type 1) configuration space header of the bridge.
+
+Thanks,
+Kenji Kaneshige
 
