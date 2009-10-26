@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbZJZUC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756529AbZJZUEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756518AbZJZUC3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 16:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbZJZUC2
+	id S1756529AbZJZUEM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 16:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbZJZUEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 16:02:28 -0400
-Received: from mail.perches.com ([173.55.12.10]:1067 "EHLO mail.perches.com"
+	Mon, 26 Oct 2009 16:04:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39534 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755934AbZJZUC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 16:02:28 -0400
-Subject: [PATCH] MAINTAINERS: Add s390 drivers block
-From: Joe Perches <joe@perches.com>
-To: linux-s390@vger.kernel.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 26 Oct 2009 13:02:31 -0700
-Message-ID: <1256587351.1865.132.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1753831AbZJZUEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 16:04:10 -0400
+Date: Mon, 26 Oct 2009 21:03:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, esandeen@redhat.com
+Subject: Re: Unnecessary overhead with stack protector.
+Message-ID: <20091026200352.GA24682@elte.hu>
+References: <20091015183540.GA8098@redhat.com> <20091021182636.63edbf72.akpm@linux-foundation.org> <20091026123004.297a0a25@katamari.usersys.redhat.com> <20091026093706.c6416715.akpm@linux-foundation.org> <20091026125615.6dcc1e0e@katamari.usersys.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091026125615.6dcc1e0e@katamari.usersys.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are currently 4 directories in drivers/s390
-(block, char, cio, kvm) without maintainers
-that could point to the s390 mailing list.
 
-Add a block for all drivers/s390
-List status as "Odd Fixes"
+* Chuck Ebbert <cebbert@redhat.com> wrote:
 
-Add a W: link for drivers/s390/crypto/
+> On Mon, 26 Oct 2009 09:37:06 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > > > This looks like a fairly serious problem to me, but I'm confused by the
+> > > > commit ID.  February 2008 - is this correct?
+> > > > 
+> > > 
+> > > That date is pure fiction AFAICT. And the Mercurial kernel repo says May 2008...
+> > > Is there some way to get the date a change was merged into the official tree as
+> > > opposed to the date it was created in some other tree?
+> > 
+> > oh, so someone _did_ read my email!
+> > 
+> > 
+> > git show --pretty=fuller 113c5413cf9051cc50b88befdc42e3402bb92115
+> > 
+> > commit 113c5413cf9051cc50b88befdc42e3402bb92115
+> > Author:     Ingo Molnar <mingo@elte.hu>
+> > AuthorDate: Thu Feb 14 10:36:03 2008 +0100
+> > Commit:     Thomas Gleixner <tglx@linutronix.de>
+> > CommitDate: Mon May 26 16:15:32 2008 +0200
+> > 
+> > I think the CommitDate is when it hit mainline.
+> 
+> The X-Git-Tag from the web page says it first appeared in mainline in
+> 2.6.30-rc1:
+> 
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Thu, 14 Feb 2008 09:36:03 +0000 (+0100)
+> Subject: x86: unify stackprotector features
+> X-Git-Tag: v2.6.30-rc1~2^2~50^2~67^2~11
+> X-Git-Url: http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Ftorvalds%2Flinux-2.6.git;a=commitdiff_plain;h=113c5413c
+> 
+> Looks like it went through three merges on the way there?
 
-Signed-off-by: Joe Perches <joe@perches.com>
+yep. Note that x86/urgent has this queued up now:
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f40dcce..fe37ef3 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4466,6 +4466,12 @@ W:	http://www.ibm.com/developerworks/linux/linux390/
- S:	Supported
- F:	arch/s390/
- 
-+S390 DRIVERS
-+L:	linux-s390@vger.kernel.org
-+W:	http://www.ibm.com/developerworks/linux/linux390/
-+S:	Odd Fixes
-+F:	drivers/s390/
-+
- S390 NETWORK DRIVERS
- M:	Ursula Braun <ursula.braun@de.ibm.com>
- M:	Frank Blaschka <blaschka@linux.vnet.ibm.com>
-@@ -4480,6 +4486,7 @@ M:	Felix Beck <felix.beck@de.ibm.com>
- M:	Ralph Wuerthner <ralph.wuerthner@de.ibm.com>
- M:	linux390@de.ibm.com
- L:	linux-s390@vger.kernel.org
-+W:	http://www.ibm.com/developerworks/linux/linux390/
- S:	Supported
- F:	drivers/s390/crypto/
- 
+ 14a3f40: x86: Remove STACKPROTECTOR_ALL
 
-
+	Ingo
