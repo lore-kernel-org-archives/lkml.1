@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbZJ0Myj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZJZXpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754356AbZJ0Myj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 08:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZJ0Myh
+	id S1754775AbZJZXpx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 19:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbZJZXpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 08:54:37 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:55498 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752809AbZJ0Myg (ORCPT
+	Mon, 26 Oct 2009 19:45:52 -0400
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:55872 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753675AbZJZXpw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 08:54:36 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC failures V2
-Date: Tue, 27 Oct 2009 00:45:43 +0100
-User-Agent: KMail/1.9.9
-Cc: Jiri Kosina <jkosina@suse.cz>, Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <200910262317.55960.elendil@planet.nl>
-In-Reply-To: <200910262317.55960.elendil@planet.nl>
+	Mon, 26 Oct 2009 19:45:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rstWYd7oydR7oHPa+Bsc60wiT86jMlgYmnbwXRjifcJihg/AE3iCieQ6ZBQ7hnThwe
+         W+he+O7P9q5KVPSNmbuzmARHl3eCgjXFlx5KvmqJp9UjA1N4CE9clLDCn0R+nNDAd/nV
+         Pd94kTY/wvbW3ml8cGzMqxaObs/D5rgQKwoJc=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910270045.47456.elendil@planet.nl>
-X-OriginalArrivalTime: 27 Oct 2009 12:54:40.0327 (UTC) FILETIME=[A5998D70:01CA5704]
+In-Reply-To: <6dRYo8ss7vL.A.x7E.4qe5KB@chimera>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
+	 <6dRYo8ss7vL.A.x7E.4qe5KB@chimera>
+Date: Mon, 26 Oct 2009 17:45:56 -0600
+Message-ID: <51f3faa70910261645x16235582keb00a5875f64db14@mail.gmail.com>
+Subject: Re: [Bug #14481] umount blocked for more than 120 seconds after USB 
+	drive removal
+From: Robert Hancock <hancockrwd@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 October 2009, Frans Pop wrote:
-> Detailed test results follow. I've done 2 test runs with each kernel (3
-> for the last).
+Haven't seen the problem again, but I haven't really tried to
+reproduce it, and haven't gotten any responses about it, so yes, it
+should still be listed.
 
-Forgot to mention that each run was after a reboot, so they are not 
-interdependant.
+On Mon, Oct 26, 2009 at 12:56 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14481
+> Subject         : umount blocked for more than 120 seconds after USB drive removal
+> Submitter       : Robert Hancock <hancockrwd@gmail.com>
+> Date            : 2009-10-21 5:26 (6 days old)
+> References      : http://marc.info/?l=linux-kernel&m=125610280532245&w=4
+>
+>
+>
