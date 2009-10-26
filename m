@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbZJ0AAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbZJ0Myj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755410AbZJ0AAN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 20:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbZJ0AAK
+	id S1754356AbZJ0Myj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 08:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZJ0Myh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 20:00:10 -0400
-Received: from kroah.org ([198.145.64.141]:48091 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755195AbZJZX75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 19:59:57 -0400
-Date: Mon, 26 Oct 2009 16:43:32 -0700
-From: Greg KH <greg@kroah.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>
-Subject: Re: staging/dream: add gpio and pmem support
-Message-ID: <20091026234332.GB26583@kroah.com>
-References: <20091022091333.GA31023@elf.ucw.cz>
+	Tue, 27 Oct 2009 08:54:37 -0400
+Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:55498 "EHLO
+	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752809AbZJ0Myg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 08:54:36 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC failures V2
+Date: Tue, 27 Oct 2009 00:45:43 +0100
+User-Agent: KMail/1.9.9
+Cc: Jiri Kosina <jkosina@suse.cz>, Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <200910262317.55960.elendil@planet.nl>
+In-Reply-To: <200910262317.55960.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091022091333.GA31023@elf.ucw.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200910270045.47456.elendil@planet.nl>
+X-OriginalArrivalTime: 27 Oct 2009 12:54:40.0327 (UTC) FILETIME=[A5998D70:01CA5704]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 11:13:34AM +0200, Pavel Machek wrote:
-> 
-> This adds generic_gpio and pmem support, both are needed for other
-> dream drivers.
-> 
-> Signed-off-by: Pavel Machek <pavel@ucw.cz>
+On Monday 26 October 2009, Frans Pop wrote:
+> Detailed test results follow. I've done 2 test runs with each kernel (3
+> for the last).
 
-I'd prefer to get the existing code building, before adding new stuff :(
-
-thanks,
-
-greg k-h
+Forgot to mention that each run was after a reboot, so they are not 
+interdependant.
