@@ -1,73 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbZJZTrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbZJZTtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755397AbZJZTrr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZJZTrp
+	id S1756053AbZJZTtz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZJZTty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:47:45 -0400
-Received: from lennier.cc.vt.edu ([198.82.162.213]:46243 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756021AbZJZTro (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:47:44 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Gene Heskett <gene.heskett@verizon.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: SHMEM question
-In-Reply-To: Your message of "Mon, 26 Oct 2009 11:59:04 EDT."
-             <200910261159.04995.gene.heskett@verizon.net>
-From: Valdis.Kletnieks@vt.edu
-References: <200910261159.04995.gene.heskett@verizon.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1256586467_3115P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 26 Oct 2009 15:49:54 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:39617 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755365AbZJZTtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 15:49:53 -0400
+X-IronPort-AV: E=Sophos;i="4.44,627,1249282800"; 
+   d="scan'208";a="264356330"
+Subject: Re: 2.6.31.4: Oops
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Stephan von Krawczynski <skraw@ithnet.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+In-Reply-To: <20091019112126.f1376514.skraw@ithnet.com>
+References: <20091014115306.2a87a7a4.skraw@ithnet.com>
+	 <20091018204950.7cc299ec.akpm@linux-foundation.org>
+	 <1255927823.5628.4.camel@heimdal.trondhjem.org>
+	 <20091019112126.f1376514.skraw@ithnet.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Mon, 26 Oct 2009 15:47:47 -0400
-Message-ID: <19654.1256586467@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.14.107 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020208.4AE5FCE4.00F8,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+Organization: NetApp
+Date: Mon, 26 Oct 2009 15:49:56 -0400
+Message-Id: <1256586596.15642.6.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-OriginalArrivalTime: 26 Oct 2009 19:49:57.0585 (UTC) FILETIME=[7F07A410:01CA5675]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1256586467_3115P
-Content-Type: text/plain; charset=us-ascii
-
-On Mon, 26 Oct 2009 11:59:04 EDT, Gene Heskett said:
-
-> -r-------- 1 root root 67108904 2009-10-24 00:28 pulse-shm-3880918577
-
-> That pulse-shm-3880918577 file at over 67 megabytes is all $00 till $04000000 
-> into it, then there is 6 non-zero bytes and the rest is back to all balls.
+On Mon, 2009-10-19 at 11:21 +0200, Stephan von Krawczynski wrote:
+> On Mon, 19 Oct 2009 13:50:23 +0900
+> Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
 > 
-> Is this some indicator of a new rootkit or WTF?
+> > On Sun, 2009-10-18 at 20:49 -0700, Andrew Morton wrote:
+> > > (cc linux-nfs)
+> > > 
+> > > On Wed, 14 Oct 2009 11:53:06 +0200 Stephan von Krawczynski <skraw@ithnet.com> wrote:
+> > > 
+> > > > Hello all,
+> > > > 
+> > > > just received this one:
+> > > > 
+> > > > Oct 13 20:16:02 box kernel: BUG: unable to handle kernel paging request at ffffff98
+> > > > Oct 13 20:16:02 box kernel: IP: [<f827b2e4>] nfs_writepages+0x13/0xad [nfs]
+> > > > Oct 13 20:16:02 box kernel: *pde = 0042d067 *pte = 00000000
+> > > > Oct 13 20:16:02 box kernel: Oops: 0002 [#1]
+> > > > Oct 13 20:16:02 box kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:03:08.0/subsystem_device
+> > > > Oct 13 20:16:02 box kernel: Modules linked in: speedstep_lib freq_table nfs lockd sunrpc e100 mii e1000
+> > > > Oct 13 20:16:02 box kernel:
+> > > > Oct 13 20:16:02 box kernel: Pid: 4638, comm: httpd2-prefork Not tainted (2.6.31.4 #1)
+> > > > Oct 13 20:16:02 box kernel: EIP: 0060:[<f827b2e4>] EFLAGS: 00010292 CPU: 0
+> > > > Oct 13 20:16:02 box kernel: EIP is at nfs_writepages+0x13/0xad [nfs]
+> > > > Oct 13 20:16:02 box kernel: EAX: f0d0f654 EBX: 0000000a ECX: 00000020 EDX: f6393ecc
+> > > > Oct 13 20:16:02 box kernel: ESI: f0d0f654 EDI: 00000000 EBP: ffffff98 ESP: f6393e38
+> > > > Oct 13 20:16:02 box kernel:  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> > > > Oct 13 20:16:02 box kernel: Process httpd2-prefork (pid: 4638, ti=f6392000 task=f63f7850 task.ti=f6392000)
+> > > > Oct 13 20:16:03 box kernel: Stack:
+> > > > Oct 13 20:16:03 box kernel:  f6393ecc f0d0f654 00000000 c0161f93 002283a0 00000000 00000000 f6088052
+> > > > Oct 13 20:16:03 box kernel: <0> f4d0f7ec f6393e6c f715ca00 f827362e f700d900 f4d08a14 0000000a f0d0f654
+> > > > Oct 13 20:16:03 box kernel: <0> f6393ecc 00000020 f827c7ce 0000000a f6393ec4 f6393ef4 f0d0f654 f827c85e
+> > > > Oct 13 20:16:03 box kernel: Call Trace:
+> > > > Oct 13 20:16:03 box kernel:  [<c0161f93>] ? __link_path_walk+0x840/0x910
+> > > > Oct 13 20:16:03 box kernel:  [<f827362e>] ? __nfs_revalidate_inode+0x105/0x18a [nfs]
+> > > > Oct 13 20:16:03 box kernel:  [<f827c7ce>] ? __nfs_write_mapping+0xf/0x3b [nfs]
+> > > > Oct 13 20:16:03 box kernel:  [<f827c85e>] ? nfs_write_mapping+0x64/0x6c [nfs]
+> > > > Oct 13 20:16:03 box kernel:  [<c01e0341>] ? __copy_to_user_ll+0x3e/0x45
+> > > > Oct 13 20:16:03 box kernel:  [<f8273238>] ? nfs_getattr+0x34/0xaf [nfs]
+> > > > Oct 13 20:16:03 box kernel:  [<f8273204>] ? nfs_getattr+0x0/0xaf [nfs]
+> > > > Oct 13 20:16:03 box kernel:  [<c015dce1>] ? vfs_getattr+0x21/0x30
+> > > > Oct 13 20:16:03 box kernel:  [<c015dd6e>] ? vfs_fstatat+0x4d/0x61
+> > > > Oct 13 20:16:03 box kernel:  [<c015dda7>] ? vfs_lstat+0x13/0x15
+> > > > Oct 13 20:16:03 box kernel:  [<c015e2fc>] ? sys_lstat64+0xf/0x23
+> > > > Oct 13 20:16:03 box kernel:  [<c0102848>] ? sysenter_do_call+0x12/0x26
+> > > > Oct 13 20:16:03 box kernel: Code: c3 56 89 c6 53 e8 4a ff ff ff 89 c3 89 f0 e8 5b 0e ec c7 89 d8 5b 5e c3 55 57 56 53 83 ec 38 89 44 24 04 89 14 24 8b 38 8d 6f 98 <0f> ba 6f 98 04 19 c0 31 d2 85 c0 74 19 68 82 00 00 00 ba 04 00
+> > > > Oct 13 20:16:03 box kernel: EIP: [<f827b2e4>] nfs_writepages+0x13/0xad [nfs] SS:ESP 0068:f6393e38
+> > > > Oct 13 20:16:03 box kernel: CR2: 00000000ffffff98
+> > > > Oct 13 20:16:03 box kernel: ---[ end trace 8d9ba71dd690c760 ]---
+> > > > 
+> > 
+> > From the Oops, it looks as if mapping->host is a null pointer. I don't
+> > see how this can ever happen short of a memory scribble...
+> > 
+> > Stephan, have you tried turning on the slab debugging code?
+> > 
+> > Cheers
+> >   Trond
+> 
+> I have not up to now, but will do so. If I see further output I will come back.
+> You think it may be a dead RAM?
 
-No, it's pulseaudio.  It uses shared mem to move audio data between client
-programs and the pulseaudio server.
+Are you by any chance running an NFSv4 client? If so, there is a known
+use-after-free bug in 2.6.31 (see
+http://bugzilla.kernel.org/show_bug.cgi?id=14249) that would need to be
+fixed before you do any more testing.
 
---==_Exmh_1256586467_3115P
-Content-Type: application/pgp-signature
+Alternatively, if you can reproduce this using NFSv3 only (i.e. reboot
+after changing _all_ your NFSv4 mounts in /etc/fstab into nfsv3 mounts)
+then it must be a different bug.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Cheers
+  Trond
 
-iD8DBQFK5fzjcC3lWbTT17ARAjzkAKDWb5KF3NelgZePBx4UMya1jBvACwCguikU
-J6vEVP0S+LL8Vo2UGzRiSCI=
-=zuzt
------END PGP SIGNATURE-----
+-- 
+Trond Myklebust
+Linux NFS client maintainer
 
---==_Exmh_1256586467_3115P--
-
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
