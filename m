@@ -1,19 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbZJZTD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbZJZTLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754609AbZJZTD3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:03:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbZJZTD1
+	id S1755829AbZJZTLg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZJZTDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:03:27 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59318 "EHLO ogre.sisk.pl"
+	Mon, 26 Oct 2009 15:03:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59336 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752873AbZJZTD0 convert rfc822-to-8bit (ORCPT
+	id S1754863AbZJZTDs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:03:26 -0400
+	Mon, 26 Oct 2009 15:03:48 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "Pavel Machek" <pavel@ucw.cz>,
-       "reinette chatre" <reinette.chatre@intel.com>
+       "Alex Villacis Lasso" <avillaci@ceibo.fiec.espol.edu.ec>
 References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
 In-Reply-To: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <6dRYo8ss7vL.A.l8H.Xse5KB@chimera>
-Subject: [Bug #14299] oops in wireless, iwl3945 related?
+Message-ID: <6dRYo8ss7vL.A.0rH.Qse5KB@chimera>
+Subject: [Bug #14331] Radeon XPRESS 200M: System hang with radeon DRI and Fedora 10 userspace unless DRI=off
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon, 26 Oct 2009 19:55:50 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,10 +35,9 @@ from 2.6.31.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14299
-Subject		: oops in wireless, iwl3945 related?
-Submitter	: Pavel Machek <pavel@ucw.cz>
-Date		: 2009-09-29 17:12 (28 days old)
-References	: http://marc.info/?l=linux-kernel&m=125424439725743&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14331
+Subject		: Radeon XPRESS 200M: System hang with radeon DRI and Fedora 10 userspace unless DRI=off
+Submitter	: Alex Villacis Lasso <avillaci@ceibo.fiec.espol.edu.ec>
+Date		: 2009-10-06 00:29 (21 days old)
 
 
