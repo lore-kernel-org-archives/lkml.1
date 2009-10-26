@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbZJZRYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZJZR1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbZJZRYj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 13:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbZJZRYi
+	id S1754084AbZJZR1j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 13:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZJZR1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 13:24:38 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37524 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753819AbZJZRYi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 13:24:38 -0400
-Date: Mon, 26 Oct 2009 18:24:34 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Subject: Re: [PATCH 1/4] strip: move driver to staging
-Message-ID: <20091026172434.GI25725@elf.ucw.cz>
-References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
- <20091023161006.GA1580@ucw.cz>
- <20091026165518.GE2792@tuxdriver.com>
+	Mon, 26 Oct 2009 13:27:38 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41135 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754016AbZJZR1i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 13:27:38 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jan Kara <jack@suse.cz>
+Cc: jens.axboe@oracle.com, LKML <linux-kernel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: Performance regression in IO scheduler still there
+References: <20091026172012.GC7233@duck.suse.cz>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 26 Oct 2009 13:26:54 -0400
+In-Reply-To: <20091026172012.GC7233@duck.suse.cz> (Jan Kara's message of "Mon,
+	26 Oct 2009 18:20:12 +0100")
+Message-ID: <x49pr8avzfl.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091026165518.GE2792@tuxdriver.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-10-26 12:55:19, John W. Linville wrote:
-> On Fri, Oct 23, 2009 at 06:10:06PM +0200, Pavel Machek wrote:
-> > On Tue 2009-10-20 14:17:07, John W. Linville wrote:
-> > > Move the strip ("Starmode Radio IP") driver to drivers/staging.  For
-> > > several years this driver has only seen API "bombing-run" changes, and
-> > > few people ever had the hardware.  This driver represents unnecessary
-> > > ongoing maintenance for no clear benefit.
-> > 
-> > This seems like abuse of the staging process.
-> 
-> My mailbox has been filling-up with discussions of using staging like
-> this for the past few weeks.  I'm reasonably certain those threads
-> were on the public lists.
+Jan Kara <jack@suse.cz> writes:
 
-Yes and I skimmed those.
+>   Hi,
+>
+>   I took time and remeasured tiobench results on recent kernel. A short
+> conclusion is that there is still a performance regression which I reported
+> few months ago. The machine is Intel 2 CPU with 2 GB RAM and plain SATA
+> drive. tiobench sequential write performance numbers with 16 threads:
+> 2.6.29:              AVG       STDERR
+> 37.80 38.54 39.48 -> 38.606667 0.687475
+>
+> 2.6.32-rc5:
+> 37.36 36.41 36.61 -> 36.793333 0.408928 
+>
+> So about 5% regression. The regression happened sometime between 2.6.29 and
+> 2.6.30 and stays the same since then... With deadline scheduler, there's
+> no regression. Shouldn't we do something about it?
 
-> > There's no TODO to say what needs to be fixed. You just don't want to
-> > maintain it. Because there's nothing to fix, noone has reason to patch
-> > it, and the (working, good enough) driver will just be removed.
-> 
-> "ongoing maintenance for no clear benefit" -- that is what is wrong
-> with it.
+Background:
+  http://lkml.org/lkml/2009/5/28/415
 
-And how is moving to staging helping with that?
+Thanks for bringing this up again.  I'll try to make some time to look
+into it if others don't beat me to it.
 
-Anyway, for moving to staging, TODO file describing what needs to be
-fixed before it is brought back was listed as a requirement. So it
-looks like staging is wrong tool for the job.
-
-> > What about removing it in the regular way, that's
-> > Documentation/feature-removal.txt ?
-> 
-> This has been discussed recently as an alternative for unmaintained
-> drivers.  I suspect this is better than adding a note to a file that
-> no one reads...
-
-There are other alternatives, like printk() in module_init...
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Cheers,
+Jeff
