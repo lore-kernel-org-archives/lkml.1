@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZJZXa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbZJZXfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220AbZJZXa3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 19:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbZJZXa2
+	id S1754827AbZJZXfJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 19:35:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbZJZXfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 19:30:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42990
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754843AbZJZXa1 (ORCPT
+	Mon, 26 Oct 2009 19:35:08 -0400
+Received: from mga11.intel.com ([192.55.52.93]:63475 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751984AbZJZXfG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 19:30:27 -0400
-Date: Mon, 26 Oct 2009 16:30:50 -0700 (PDT)
-Message-Id: <20091026.163050.156983266.davem@davemloft.net>
-To: rostedt@goodmis.org
-Cc: sam@ravnborg.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       nico@fluxnic.net, tony.luck@intel.com, sfr@canb.auug.org.au,
-       mcgrof@gmail.com, jeff@garzik.org, robert.richter@amd.com,
-       dmitry.torokhov@gmail.com, khali@linux-fr.org,
-       torvalds@linux-foundation.org
-Subject: Re: [RFC] to rebase or not to rebase on linux-next
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1256599588.26028.340.camel@gandalf.stny.rr.com>
-References: <20091023205400.GA8356@elte.hu>
-	<20091023215958.GA4139@merkur.ravnborg.org>
-	<1256599588.26028.340.camel@gandalf.stny.rr.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Oct 2009 19:35:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,628,1249282800"; 
+   d="scan'208";a="507744901"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Tejun Heo <tj@kernel.org>, Randy Dunlap <randy.dunlap@oracle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, Jes Sorensen <jes@sgi.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Date: Mon, 26 Oct 2009 16:35:07 -0700
+Subject: RE: [PATCH -next] ia64/sn: fix percpu warnings
+Thread-Topic: [PATCH -next] ia64/sn: fix percpu warnings
+Thread-Index: AcpWaYPNbj8x7szjQ+Gc3gJXRuuLTQAKtzXg
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E345953E@orsmsx505.amr.corp.intel.com>
+References: <20091014163445.f0441473.sfr@canb.auug.org.au>
+	 <20091014151003.0ef42973.randy.dunlap@oracle.com>
+	 <4AD67C05.2030201@kernel.org>
+ <12c511ca0910261124p64f2ad5emc88d00b9957482b3@mail.gmail.com>
+In-Reply-To: <12c511ca0910261124p64f2ad5emc88d00b9957482b3@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <rostedt@goodmis.org>
-Date: Mon, 26 Oct 2009 19:26:28 -0400
+> WARNING: "per_cpu____sn_cnodeid_to_nasid" [drivers/misc/sgi-xp/xpc.ko] has no CRC!
 
-> I think this is more of a failure in git than in the work flow we
-> present.
 
-Others (like me) will say you should have let that patch cook for a
-while on the mailing list or in your tree before publishing, in order
-to let those acks and tested-by replies come in.
+Note that this warning goes away if I fix the mismatch declaration so
+that we have:
 
-That's how I handle this.
+DECLARE_PER_CPU(short, __sn_cnodeide_to_nasid[MAX_COMPACT_NODES]);
+in arch.h
 
-And I really don't buy the argument that you have to publish the
-change in a GIT tree to get those ACKs and tested-by replies.
+and
+
+DEFINE_PER_CPU(short, __sn_cnodeide_to_nasid[MAX_COMPACT_NODES]);
+in setup.c
+
+
+-Tony
