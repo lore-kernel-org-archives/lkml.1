@@ -1,89 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754998AbZJZHtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZJZHu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754998AbZJZHtB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 03:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbZJZHtA
+	id S1755092AbZJZHu3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 03:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbZJZHu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 03:49:00 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49735 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754806AbZJZHs7 (ORCPT
+	Mon, 26 Oct 2009 03:50:28 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:59333 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754903AbZJZHu1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 03:48:59 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AE5545E.1020900@jp.fujitsu.com>
-Date: Mon, 26 Oct 2009 16:48:46 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 26 Oct 2009 03:50:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=dVityZuDInfkTXOfd3ZAHi6wa/34kKmtorTaQMAUO+vUzusMeDzIcVokqa4OKhi35Z
+         1v1cFwgkiKQXxcwKAZShcW4KPsqWfwgeiisy3BWPQmgUD3v3tqCEXtKS/SO05rsLUzG3
+         sa2+BCuiTUS4cN0YcnwoNodBrmK7uGDshs4xw=
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
- for pcie devices
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com> <4AE53883.3070709@kernel.org>
-In-Reply-To: <4AE53883.3070709@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091026172104.205f15af.sfr@canb.auug.org.au>
+References: <20091026172104.205f15af.sfr@canb.auug.org.au>
+Date: Mon, 26 Oct 2009 15:50:31 +0800
+Message-ID: <a8e1da0910260050y527bdbcbt4171ad6d868fcb29@mail.gmail.com>
+Subject: Re: linux-next: Tree for October 26
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Huang Ying <ying.huang@intel.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> Kenji Kaneshige wrote:
->> Yinghai Lu wrote:
->>> move out bus_size_bridges and assign resources out of pciehp_add_bridge()
->>> and at last do them all together one time including slot bridge, to
->>> avoid to call
->>> assign resources several times, when there are several bridges under
->>> the slot bridge.
->>>
->>> need to introduce pci_bridge_assign_resources there.
->>>
->>> handle the case the first bridge that doesn't get pre-allocated big
->>> enough res from FW.
->>> for example pcie devices need 256M, but the bridge only get
->>> preallocated 2M...
->>>
->> Though I have not looked at the patch deeply yet (sorry), I have
->> some questions and concerns about this change. Please correct me
->> if my understanding is not correct.
->>
->> - Your patch doesn't seems to have the code to free resources.
->>  If we need to expand the resource range, don't we need to free
->>  preallocated resource before allocating the new one?
-> 
-> that is done with pci_bus_size_bridges ==> pbus_size_io/pbus_size_mem ==> find_free_bus_resource ==> release_resource.
-> 
+Hi,
 
-I didn't noticed that find_free_bus_resource() was changed to call
-release_resource() recently...
+build fails with ghash ghash-clmulni-intel_asm.S:
 
-By the way, does this (release_resource() by find_bus_resource())
-change the resource assignment by BIOS also for bridges other than
-the ports with hotplug slot (switch upstreamport, for example)?
+  AS      arch/x86/crypto/ghash-clmulni-intel_asm.o
+arch/x86/crypto/ghash-clmulni-intel_asm.S: Assembler messages:
+arch/x86/crypto/ghash-clmulni-intel_asm.S:100: Error: bad register name `%rdi)'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:101: Error: bad register name `%rsi)'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:106: Error: bad register name `%rdi)'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:114: Error: bad register name `%rdx'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:117: Error: bad register name `%rdi)'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:118: Error: bad register name `%rcx)'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:122: Error: bad register name `%rsi)'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:126: Error: bad register name `%rdx'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:127: Error: bad register name `%rsi'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:128: Error: bad register name `%rdx'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:131: Error: bad register name `%rdi)'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:142: Error: bad register name `%rsi)'
+arch/x86/crypto/ghash-clmulni-intel_asm.S:156: Error: bad register name `%rdi)'
+make[2]: *** [arch/x86/crypto/ghash-clmulni-intel_asm.o] Error 1
+make[1]: *** [arch/x86/crypto] Error 2
+make: *** [arch/x86] Error 2
+make: *** Waiting for unfinished jobs....
 
->> - Your patch seems to update BARs for bridge itself. I think it
->>  would break the bridge's driver (port service driver) that if
->>  it controls the device's capability by using IO/Mem, though I
->>  don't know if such driver or capabilities exists now.
-> 
-> port service driver will be AER and pciehotplug.
-> it seems those driver are not use those BAR...
-> those BAR are supposed for the devices under the pcie bridge.
-> 
+cc herbert & huang ying
 
-I understand that there are only two port service drivers (AER and
-PCIe hotplug) and both doesn't use BAR. But I still have a concern
-that changing bridge's BARs might cause problems in the future. In
-my understanding, what you need is expanding IO/Mem base and limit
-of root or switch downstream ports. If so, I think we should only
-touch IO/Mem base/limit, and should not touch bridge's BARs.
-
-Thanks,
-Kenji Kaneshige
-
+--
+Regards
+dave
