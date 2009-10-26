@@ -1,50 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbZJZTzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbZJZT52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756475AbZJZTzo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZJZTzo
+	id S1756503AbZJZT52 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbZJZT51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:55:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60091 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753948AbZJZTzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:55:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: [Bug #14058] Oops in fsnotify
-Date: Mon, 26 Oct 2009 20:57:37 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Paris <eparis@parisplace.org>,
-       Grant Wilson <grant.wilson@zen.co.uk>
-References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera> <vX3ILojF2dJ.A.GQ.Bgf5KB@chimera> <1256586689.2775.6.camel@dhcp231-106.rdu.redhat.com>
-In-Reply-To: <1256586689.2775.6.camel@dhcp231-106.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Mon, 26 Oct 2009 15:57:27 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37299 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753981AbZJZT51 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 15:57:27 -0400
+Date: Mon, 26 Oct 2009 19:59:04 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Ryan C. Gordon" <icculus@icculus.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/2] binfmt_elf: FatELF support for kernel modules.
+Message-ID: <20091026195904.16a0be2d@lxorguk.ukuu.org.uk>
+In-Reply-To: <4AE5F4FB.3000506@goop.org>
+References: <alpine.DEB.2.00.0910190422090.13303@andre.icculuslan>
+	<4ADD0086.9060304@goop.org>
+	<alpine.DEB.2.00.0910200043200.18342@andre.icculuslan>
+	<4AE22D04.50708@goop.org>
+	<20091024121421.2e530635@lxorguk.ukuu.org.uk>
+	<4AE5F4FB.3000506@goop.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910262057.37334.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 October 2009, Eric Paris wrote:
-> On Mon, 2009-10-26 at 20:31 +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.30 and 2.6.31.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> > be listed and let me know (either way).
-> 
-> Should have been fixed by:
-> 9f0d793b52eb2266359661369ef6303838904855
-> 
-> At least I have my fingers crossed hoping so.  I can't make it happen
-> with that patch.
+> mode of operation (since at least at one point vendors shipping binary
+> modules would seem to include a few enterprise distro builds and hope
+> that would cover it).  But that doesn't seem like a very good idea.
 
-OK, closing.
-
-Thanks,
-Rafael
+If you want to ship additional modules you can already do that, the
+kernel search path is dependant upon the kernel name.
