@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbZJZTWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZJZTVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755920AbZJZTWj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbZJZTWi
+	id S1755891AbZJZTVn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbZJZTVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:22:38 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:34690 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753170AbZJZTWh (ORCPT
+	Mon, 26 Oct 2009 15:21:42 -0400
+Received: from alto.filmlight.ltd.uk ([77.107.81.250]:23373 "HELO
+	a.mx.filmlight.ltd.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755450AbZJZTVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:22:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:date:user-agent:cc:mime-version:message-id:subject
-         :content-type:content-transfer-encoding;
-        b=MTAtJBkNVewP1u2/sfI8YK3LRjF8LRKqnEzODE0QCzUCQkpHT1RtGeJ3hD4o58Kh3n
-         cqhgdIjhbcQ/QmNiOmbAcw00Kr8FObSDMzKR7euIUJStfkQl1F6q9WAvNv9n5z/2Ha6v
-         IoEmeO7UkK5wX08jBtUiGJmHPAieWPTj0WD8s=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 26 Oct 2009 20:14:33 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: users@host1.serialmonkey.com, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Message-Id: <200910262014.34035.bzolnier@gmail.com>
-Subject: [PATCH] MAINTAINERS: rt2x00 list is moderated
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Mon, 26 Oct 2009 15:21:41 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Oct 2009 15:21:41 EDT
+Subject: netlink: symantics for NLM_F_MULTI and NLMSG_DONE ?
+From: Roger Willcocks <roger@filmlight.ltd.uk>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 26 Oct 2009 19:14:53 +0000
+Message-Id: <1256584493.10998.784.camel@montana.filmlight.ltd.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] MAINTAINERS: rt2x00 list is moderated
+The netlink rfc (3549) says that in multi-part messages (messages split
+over multiple netlink packets), the first and all following headers 
+have the NLM_F_MULTI flag set except for the last header which has the
+header type NLMSG_DONE.
 
-Cc: users@rt2x00.serialmonkey.com
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- MAINTAINERS |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+afaict NLMSG_DONE is redundant, since one could simply not set the
+NLM_F_MULTI flag for the final header; and if a multi-part message
+can't cross a datagram boundary - which is assumed by e.g. the reading
+example in
+http://www.kernel.org/doc/man-pages/online/pages/man7/netlink.7.html
+- NLMSG_DONE is redundant too.
 
-Index: b/MAINTAINERS
-===================================================================
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4325,7 +4325,7 @@ F:	drivers/video/aty/aty128fb.c
- RALINK RT2X00 WIRELESS LAN DRIVER
- P:	rt2x00 project
- L:	linux-wireless@vger.kernel.org
--L:	users@rt2x00.serialmonkey.com
-+L:	users@rt2x00.serialmonkey.com (moderated for non-subscribers)
- W:	http://rt2x00.serialmonkey.com/
- S:	Maintained
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ivd/rt2x00.git
+And the rfc doesn't say what NLMSG_DONE /and/ NLM_F_MULTI should mean,
+although net/netlink/af_netlink.c always sets both.
+
+So, what are the symantics for NLM_F_MULTI and NLMSG_DONE?
+
+
+
