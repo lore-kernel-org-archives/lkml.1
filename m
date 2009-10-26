@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZJZDzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbZJZD4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbZJZDzv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 23:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbZJZDzu
+	id S1754661AbZJZD4H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 23:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbZJZD4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 23:55:50 -0400
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:33311 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754594AbZJZDzt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 23:55:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Aeam9Vv/uDTqqDUjCqYVX80lGr69Vyo98LNXyqtd0o/RdWeH98LAPyUz0jrNHfCTEM
-         rYWnekqIi3bHyxYyU4+7gNceeL6z1t4v6sKUlEuVNnA4yG21oMt36LHCqbOaVbvzeGDA
-         k0NQjOtLfXYSuM1smhQdnZWnmXYw3+bBi7MOQ=
-From: Shawn Bohrer <shawn.bohrer@gmail.com>
-To: linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Shawn Bohrer <shawn.bohrer@gmail.com>
-Subject: [PATCH] 8250_pci: Remove duplicate struct pciserial_board
-Date: Sun, 25 Oct 2009 22:55:07 -0500
-Message-Id: <1256529307-32177-1-git-send-email-shawn.bohrer@gmail.com>
-X-Mailer: git-send-email 1.6.5
+	Sun, 25 Oct 2009 23:56:05 -0400
+Received: from ozlabs.org ([203.10.76.45]:55541 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754648AbZJZD4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Oct 2009 23:56:03 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Johannes Stezenbach <js@sig21.net>
+Subject: Re: [Lguest] 2.6.32-rc5 guest crash
+Date: Mon, 26 Oct 2009 14:26:04 +1030
+User-Agent: KMail/1.11.2 (Linux/2.6.28-16-generic; KDE/4.2.2; i686; ; )
+Cc: lguest@ozlabs.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+References: <20091025175521.GA13300@sig21.net>
+In-Reply-To: <20091025175521.GA13300@sig21.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910261426.05769.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pbn_exsys_4055 is the same thing as pbn_b2_4_115200 so replace it with
-the standard pattern.
+On Mon, 26 Oct 2009 04:25:21 am Johannes Stezenbach wrote:
+> Hi,
+> 
+> I'm using linux-2.6.32-rc5-81-g964fe08 as both host and guest,
+> and the guest crashes on boot:
+> 
+> Calibrating delay loop... 
+> general protection fault: 0000 [#1] PREEMPT SMP 
+> last sysfs file: 
+> Modules linked in:
+> 
+> Pid: 0, comm: swapper Not tainted (2.6.32-rc5 #1) 
+> EIP: 0061:[<c11f915d>] EFLAGS: 00010046 CPU: 0
+> EIP is at cmpxchg8b_emu+0x1/0x12
 
-Signed-off-by: Shawn Bohrer <shawn.bohrer@gmail.com>
----
- drivers/serial/8250_pci.c |   10 +---------
- 1 files changed, 1 insertions(+), 9 deletions(-)
+OK, it's the non-paravirt "cli" we're breaking on (the pushfl is bad too).
 
-diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-index e7108e7..8087d0a 100644
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -1545,7 +1545,6 @@ enum pci_board_num_t {
- 	pbn_panacom,
- 	pbn_panacom2,
- 	pbn_panacom4,
--	pbn_exsys_4055,
- 	pbn_plx_romulus,
- 	pbn_oxsemi,
- 	pbn_oxsemi_1_4000000,
-@@ -2011,13 +2010,6 @@ static struct pciserial_board pci_boards[] __devinitdata = {
- 		.reg_shift	= 7,
- 	},
+This is because alternatives haven't been subbed yet.  The Right Thing is to
+make this asm code paravirt aware.  The Easy Thing is to fix this code to
+only get included when we're actually compiling for a 386 or 486 (this was
+introduced with the original pentium AFAICT).
+
+How's this Ingo, Arjan?
+
+Subject: x86: sidestep lguest problem by only building cmpxchg8b_emu for pre-Pentium
+
+Arjen's 79e1dd05d1a22 "x86: Provide an alternative() based cmpxchg64()" broke
+lguest, even on systems which have cmpxchg8b support.  The emulation code
+gets used until alternatives get run, but it contains native instructions,
+not their paravirt alternatives.
+
+The simplest fix is to turn this code off except for 386 and 486 builds.
+
+Reported-by: Johannes Stezenbach <js@sig21.net>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -400,7 +400,7 @@ config X86_TSC
  
--	[pbn_exsys_4055] = {
--		.flags		= FL_BASE2,
--		.num_ports	= 4,
--		.base_baud	= 115200,
--		.uart_offset	= 8,
--	},
--
- 	/* I think this entry is broken - the first_offset looks wrong --rmk */
- 	[pbn_plx_romulus] = {
- 		.flags		= FL_BASE2,
-@@ -2736,7 +2728,7 @@ static struct pci_device_id serial_pci_tbl[] = {
- 	{	PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
- 		PCI_SUBVENDOR_ID_EXSYS,
- 		PCI_SUBDEVICE_ID_EXSYS_4055, 0, 0,
--		pbn_exsys_4055 },
-+		pbn_b2_4_115200 },
- 	/*
- 	 * Megawolf Romulus PCI Serial Card, from Mike Hudson
- 	 * (Exoray@isys.ca)
--- 
-1.6.5
+ config X86_CMPXCHG64
+ 	def_bool y
+-	depends on X86_PAE || X86_64 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MATOM
++	depends on !M386 && !M486
+ 
+ # this should be set for all -march=.. options where the compiler
+ # generates cmov.
+
+
 
