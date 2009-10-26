@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbZJZWNC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbZJZWM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523AbZJZWNC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 18:13:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZJZWNA
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 18:13:00 -0400
-Received: from mga11.intel.com ([192.55.52.93]:12166 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754427AbZJZWM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754438AbZJZWM6 (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 26 Oct 2009 18:12:58 -0400
-X-ExtLoop1: 1
-Subject: Re: [Bug #14375] Intel(R) I/OAT DMA Engine init failed
-From: Dan Williams <dan.j.williams@intel.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <a4423d670910261457o2e1ccb7t768199dfd9985270@mail.gmail.com>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
-	 <6dRYo8ss7vL.A.bIH.qre5KB@chimera>
-	 <a4423d670910261457o2e1ccb7t768199dfd9985270@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 26 Oct 2009 15:13:02 -0700
-Message-Id: <1256595182.19520.5.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbZJZWM5
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 26 Oct 2009 18:12:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60835 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753520AbZJZWM4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 18:12:56 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: q-funk@iki.fi
+Subject: Re: [Bug #13941] x86 Geode issue
+Date: Mon, 26 Oct 2009 23:14:52 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera> <vX3ILojF2dJ.A.Zs.mgf5KB@chimera> <11fae7c70910261432w27b39e92ld319487e679fccaa@mail.gmail.com>
+In-Reply-To: <11fae7c70910261432w27b39e92ld319487e679fccaa@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200910262314.52086.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-26 at 14:57 -0700, Alexander Beregalov wrote:
-> 2009/10/26 Rafael J. Wysocki <rjw@sisk.pl>:
+On Monday 26 October 2009, Martin-Éric Racine wrote:
+> I do not recall anyone on LKML actually ever doing any work towards
+> fixing this issue so, yes, it is still open.
+
+Thanks for the update.
+
+Rafael
+
+
+> On Mon, Oct 26, 2009 at 9:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > > This message has been generated automatically as a part of a report
-> > of recent regressions.
+> > of regressions introduced between 2.6.30 and 2.6.31.
 > >
 > > The following bug entry is on the current list of known regressions
-> > from 2.6.31.  Please verify if it still should be listed and let me know
-> > (either way).
+> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+> > be listed and let me know (either way).
 > >
 > >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14375
-> > Subject         : Intel(R) I/OAT DMA Engine init failed
-> > Submitter       : Alexander Beregalov <a.beregalov@gmail.com>
-> > Date            : 2009-10-02 9:46 (25 days old)
-> > References      : http://marc.info/?l=linux-kernel&m=125447680016160&w=4
-> > Handled-By      : Dan Williams <dan.j.williams@intel.com>
-> > Patch           : http://patchwork.kernel.org/patch/51808/
-> 
-> When I patch reiserfs the bug goes to libata, it means ioatdma works
-> and libata does not. It looks like inaccurate work with memory
-> somewhere, but I do not know how to find it.
-> I cannot reproduce it since 2.6.32-rc3 and I do not see any bugs since then.
-
-If it helps the debug, the symptom seems to be that all interrupts get
-turned off.  Neither the normal device completion interrupt nor the
-completion watchdog timer fire before the self test timeout.  It seems
-something else re-enables interrupts eventually, but we know they were
-at least disabled for 3 seconds.  An unmatched spin_unlock_irq in an
-async initialization path perhaps?
-
---
-Dan
-
-
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13941
+> > Subject         : x86 Geode issue
+> > Submitter       : Martin-Éric Racine <q-funk@iki.fi>
+> > Date            : 2009-08-03 12:58 (85 days old)
+> > References      : http://marc.info/?l=linux-kernel&m=124930434732481&w=4
