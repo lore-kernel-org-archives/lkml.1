@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbZJZXvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbZJZX4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979AbZJZXvP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 19:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZJZXvO
+	id S1754881AbZJZX4b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 19:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbZJZX4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 19:51:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40349 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753852AbZJZXvO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 19:51:14 -0400
-Subject: Re: [RFC] to rebase or not to rebase on linux-next
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: David Miller <davem@davemloft.net>
-Cc: sam@ravnborg.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       nico@fluxnic.net, tony.luck@intel.com, sfr@canb.auug.org.au,
-       mcgrof@gmail.com, jeff@garzik.org, robert.richter@amd.com,
-       dmitry.torokhov@gmail.com, khali@linux-fr.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <20091026.163050.156983266.davem@davemloft.net>
-References: <20091023205400.GA8356@elte.hu>
-	 <20091023215958.GA4139@merkur.ravnborg.org>
-	 <1256599588.26028.340.camel@gandalf.stny.rr.com>
-	 <20091026.163050.156983266.davem@davemloft.net>
+	Mon, 26 Oct 2009 19:56:31 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:60468 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754384AbZJZX4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 19:56:30 -0400
+Subject: Re: [RFC][PATCH] Add prctl to set sibling thread names
+From: john stultz <johnstul@us.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>, Mike Fulton <fultonm@ca.ibm.com>,
+       Sean Foley <Sean_Foley@ca.ibm.com>, Darren Hart <dvhltc@us.ibm.com>
+In-Reply-To: <20091024035438.GY32470@one.firstfloor.org>
+References: <1256167297.4768.14.camel@localhost.localdomain>
+	 <20091021174804.3885db37@infradead.org>
+	 <20091022004919.GT32470@one.firstfloor.org>
+	 <20091021194822.72895c46@infradead.org>
+	 <20091024035438.GY32470@one.firstfloor.org>
 Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Mon, 26 Oct 2009 19:51:01 -0400
-Message-Id: <1256601061.26028.350.camel@gandalf.stny.rr.com>
+Date: Mon, 26 Oct 2009 16:56:20 -0700
+Message-Id: <1256601380.4905.53.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-26 at 16:30 -0700, David Miller wrote:
-> From: Steven Rostedt <rostedt@goodmis.org>
-> Date: Mon, 26 Oct 2009 19:26:28 -0400
+On Sat, 2009-10-24 at 05:54 +0200, Andi Kleen wrote:
+> On Wed, Oct 21, 2009 at 07:48:22PM -0700, Arjan van de Ven wrote:
+> > On Thu, 22 Oct 2009 02:49:19 +0200
+> > Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > > you're pretty much the first now who touches ->comm from
+> > > > not-the-thread-itself.... are you sure that is safe?
+> > > 
+> > > It's not, there is no locking. On the other hand nothing should crash,
+> > > just users might see half rewritten data.
+> > 
+> > .. with strings this is tricky though.. if the new string is longer
+> > than the old one the terminating zero might just be missed etc.
 > 
-> > I think this is more of a failure in git than in the work flow we
-> > present.
-> 
-> Others (like me) will say you should have let that patch cook for a
-> while on the mailing list or in your tree before publishing, in order
-> to let those acks and tested-by replies come in.
-> 
-> That's how I handle this.
-> 
-> And I really don't buy the argument that you have to publish the
-> change in a GIT tree to get those ACKs and tested-by replies.
+> Good point.
+> He needs to first set the last byte to zero to avoid that.
+> But better probably to do a proper lock on all readers. Or not add
+> this feature at all (does it have a strong use case?)
 
-The thing is, I do my changes with git. I get something working and then
-commit it. Then I do more changes and commit that. I don't use quilt
-anymore for this.
+Thread naming is really helpful for debugging a large multi-threaded
+application. But currently it requires the threads to name themselves. 
 
-Then I have an automated process to send out those patches. Heck pushing
-it to git makes it _easier_ to do testing. Instead of having someone
-pull out 5 or so patches from LKML, they can just pull my git repo and
-start testing it.
+In some applications there may be a dispatch thread that spawns off the
+siblings, and it has more context for naming the threads then the
+threads do themselves.
 
-Yes, I could let it cook on LKML, but I don't have the test suite that
-Ingo has either. I do my own set of tests, then I push it out and let
-Ingo run it through his test suite.
+So in that case, currently in order to have named threads, the
+application's dispatch thread assigns names, and the threads have to
+occasionally poll to see if they need to name themselves to something.
 
-Some patches get tested by others, some don't. I don't formally ask
-anyone to test them besides Ingo. But it is nice to know that someone
-tested it, and sometimes I even get people to review it.
+So they can get it to work, but its ugly and a big pain. Other OSes
+support pthread_set_name_np() functionality, which makes things easy for
+them, so they've requested to see if Linux can't do something similar.
 
-So what's the time to leave it out on LKML before pulling it into git?
-(which it is already in git for me anyway). I could wait a week, two?
-And after pulling it in after this time, I may still get a late
-"tested-by" or "reviewed-by".
-
-I think if people knew that they could test or review patches that are
-already in git and get acknowledged for doing so, there may be more
-people who will test and review patches. Heck, if someone was board,
-they could go and review patches already in Linus's tree. I don't think
-it would become a new haven for those that want fame, since placing a
-tag on a commit is also placing your reputation there too.
-
--- Steve
-
+thanks
+-john
 
