@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZJZQUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbZJZQU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbZJZQUR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 12:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZJZQUQ
+	id S1753610AbZJZQU7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 12:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbZJZQU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 12:20:16 -0400
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:3714 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752757AbZJZQUO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 12:20:14 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtoEAFto5UrCTtAn/2dsb2JhbACBUNZbgjSCCwQ
-Date: Mon, 26 Oct 2009 17:20:11 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: linux-ide@vger.kernel.org, davem@davemloft.net,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH ide] : Increase WAIT_DRQ to support slow CF cards
-Message-ID: <20091026162011.GA3289@frolo.macqel>
+	Mon, 26 Oct 2009 12:20:58 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:35180 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753561AbZJZQU6 (ORCPT
+	<rfc822;groupwise-GHaskins@novell.com;0:0>);
+	Mon, 26 Oct 2009 12:20:58 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [KVM PATCH v3 0/3] irqfd enhancements, and irq_routing fixes
+To: "kvm@vger.kernel.org--cc=alacrityvm-devel"@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Date: Mon, 26 Oct 2009 12:20:51 -0400
+Message-ID: <20091026161626.23620.37039.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+(Applies to kvm.git/master:11b06403)
 
-I just encountered a problem with write-access to a batch of CF cards
-(KINGSTON TECHNOLOGY 4GB COMPACT FLASH CF/4GB
-3.3V/5V 9904321 - 006.AOOLF 4449081 - 1219643 X001 ASSY IN TAIWAN (c) 2008)
-connected to a PC-CARD / PCMCIA interface, with the following error messages :
+The following patches are cleanups/enhancements for IRQFD now that
+we have lockless interrupt injection.  For more details, please see
+the patch headers.
 
-	hda: status timeout: status=0xd0 { Busy }
-	ide: failed opcode was: unknown
-	hda: no DRQ after issuing MULTWRITE
+These patches pass checkpatch, and are fully tested.  Please consider
+for merging.  Patch 1/3 is a fix for an issue that may exist upstream
+and should be considered for a more timely push upstream.  Patches 2/3
+- 3/3 are an enhancement only, so there is no urgency to push to
+mainline until a suitable merge window presents itself.
 
-After testing with different bigger values for the WAIT_DRQ timeout value,
-the problem disappeared.  I had success with WAIT_DRQ = 500ms, then with
-WAIT_DRQ = 300ms.  I then tested with WAIT_DRQ = 200ms, but the problem
-reappeared.  So I kept the 300ms value.
+Kind Regards,
+-Greg
 
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+[ Change log:
 
-diff -r a145344bb228 include/linux/ide.h
---- a/include/linux/ide.h	Thu Oct 22 08:28:28 2009 +0900
-+++ b/include/linux/ide.h	Mon Oct 26 16:51:23 2009 +0100
-@@ -125,8 +125,8 @@
-  * Timeouts for various operations:
-  */
- enum {
--	/* spec allows up to 20ms */
--	WAIT_DRQ	= HZ / 10,	/* 100ms */
-+	/* spec allows up to 20ms, but some CF cards need more than 200ms */
-+	WAIT_DRQ	= 3 * HZ / 10,	/* 300ms */
- 	/* some laptops are very slow */
- 	WAIT_READY	= 5 * HZ,	/* 5s */
- 	/* should be less than 3ms (?), if all ATAPI CD is closed at boot */
+  v3:
+     *) Added patch 1/3 as a fix for a race condition
+     *) Minor cleanup to 2/3 to ensure that all shared vectors conform
+        to a unified locking model.
+
+  v2:
+     *) dropped original cleanup which relied on the user registering
+        MSI based GSIs or we may crash at runtime.  Instead, we now
+	check at registration whether the GSI supports lockless
+	operation and dynamically adapt to either the original
+	deferred path for lock-based injections, or direct for lockless.
+
+  v1:
+     *) original release
+]
+
+---
+
+Gregory Haskins (3):
+      KVM: Directly inject interrupts if they support lockless operation
+      KVM: export lockless GSI attribute
+      KVM: fix race in irq_routing logic
+
+
+ include/linux/kvm_host.h |    8 ++++
+ virt/kvm/eventfd.c       |   31 +++++++++++++++--
+ virt/kvm/irq_comm.c      |   85 ++++++++++++++++++++++++++++++++++------------
+ virt/kvm/kvm_main.c      |    1 +
+ 4 files changed, 98 insertions(+), 27 deletions(-)
+
+-- 
+Signature
