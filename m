@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZJZTEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZJZTJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbZJZTEe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbZJZTEd
+	id S1755364AbZJZTJb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbZJZTEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:04:33 -0400
+	Mon, 26 Oct 2009 15:04:32 -0400
 Received: from ogre.sisk.pl ([217.79.144.158]:59390 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754835AbZJZTE1 convert rfc822-to-8bit (ORCPT
+	id S1755166AbZJZTE3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:04:27 -0400
+	Mon, 26 Oct 2009 15:04:29 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+       "Ingo Molnar" <mingo@elte.hu>, "Pavel Machek" <pavel@ucw.cz>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>
 References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
 In-Reply-To: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,8 +21,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <6dRYo8ss7vL.A.zXG.dre5KB@chimera>
-Subject: [Bug #14384] tbench regression with 2.6.32-rc1
+Message-ID: <6dRYo8ss7vL.A.OJG.Zre5KB@chimera>
+Subject: [Bug #14389] Build system issue
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon, 26 Oct 2009 19:55:55 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,12 +37,11 @@ from 2.6.31.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14384
-Subject		: tbench regression with 2.6.32-rc1
-Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-Date		: 2009-10-09 9:51 (18 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=59abf02644c45f1591e1374ee7bb45dc757fcb88
-References	: http://marc.info/?l=linux-kernel&m=125508216713138&w=4
-Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14389
+Subject		: Build system issue
+Submitter	: Peter Zijlstra <peterz@infradead.org>
+Date		: 2009-10-09 8:58 (18 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=575543347b5baed0ca927cb90ba8807396fe9cc9
+References	: http://marc.info/?l=linux-kernel&m=125507914909152&w=4
 
 
