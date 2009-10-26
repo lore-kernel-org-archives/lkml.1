@@ -1,34 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZJZWKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbZJZWNC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbZJZWKc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 18:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZJZWKb
+	id S1754523AbZJZWNC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 18:13:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZJZWNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 18:10:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60809 "EHLO ogre.sisk.pl"
+	Mon, 26 Oct 2009 18:13:00 -0400
+Received: from mga11.intel.com ([192.55.52.93]:12166 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754026AbZJZWKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 18:10:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexander Beregalov <a.beregalov@gmail.com>
+	id S1754427AbZJZWM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 18:12:58 -0400
+X-ExtLoop1: 1
 Subject: Re: [Bug #14375] Intel(R) I/OAT DMA Engine init failed
-Date: Mon, 26 Oct 2009 23:12:21 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dan Williams <dan.j.williams@intel.com>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.bIH.qre5KB@chimera> <a4423d670910261457o2e1ccb7t768199dfd9985270@mail.gmail.com>
+From: Dan Williams <dan.j.williams@intel.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
 In-Reply-To: <a4423d670910261457o2e1ccb7t768199dfd9985270@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
+	 <6dRYo8ss7vL.A.bIH.qre5KB@chimera>
+	 <a4423d670910261457o2e1ccb7t768199dfd9985270@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 26 Oct 2009 15:13:02 -0700
+Message-Id: <1256595182.19520.5.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910262312.21298.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 October 2009, Alexander Beregalov wrote:
+On Mon, 2009-10-26 at 14:57 -0700, Alexander Beregalov wrote:
 > 2009/10/26 Rafael J. Wysocki <rjw@sisk.pl>:
 > > This message has been generated automatically as a part of a report
 > > of recent regressions.
@@ -51,8 +53,14 @@ On Monday 26 October 2009, Alexander Beregalov wrote:
 > somewhere, but I do not know how to find it.
 > I cannot reproduce it since 2.6.32-rc3 and I do not see any bugs since then.
 
-Since you can't reproduce it with -rc3 and later, I'm going to close it now.
-Please reopen if the problem reappears.
+If it helps the debug, the symptom seems to be that all interrupts get
+turned off.  Neither the normal device completion interrupt nor the
+completion watchdog timer fire before the self test timeout.  It seems
+something else re-enables interrupts eventually, but we know they were
+at least disabled for 3 seconds.  An unmatched spin_unlock_irq in an
+async initialization path perhaps?
 
-Best,
-Rafael
+--
+Dan
+
+
