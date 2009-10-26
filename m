@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbZJZV4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbZJZV5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753612AbZJZV4w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 17:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbZJZV4v
+	id S1754001AbZJZV5F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 17:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbZJZV5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 17:56:51 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:33912 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752757AbZJZV4v (ORCPT
+	Mon, 26 Oct 2009 17:57:04 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:44925 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753885AbZJZV5B convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 17:56:51 -0400
-Date: Mon, 26 Oct 2009 22:56:54 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Andi Kleen <andi@firstfloor.org>, David Woodhouse <dwmw2@infradead.org>,
-       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] allow fallback to swiotlb on hw iommu init
-	failures
-Message-ID: <20091026215654.GB3355@basil.fritz.box>
-References: <20091023012158.177308035@sequoia.sous-sol.org> <87hbtmy6jc.fsf@basil.nowhere.org> <20091026162637.GA27699@sequoia.sous-sol.org>
+	Mon, 26 Oct 2009 17:57:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=alUb8wpXThdgTTJWz3401fyGBLfZRivu0MHUJ5Gmr3l6iGdPtKvVWj6Bx4rf+dNgRI
+         XiGRpZARPIjd+e9SVZyh/Mi3eGT1GErJOemLl6b6fIST1IfM6fODgoD4baXepzx7NUjn
+         O3BjYdKX6IyOJDA591NLuNMZsbtzZ+iiz3xog=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091026162637.GA27699@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <6dRYo8ss7vL.A.bIH.qre5KB@chimera>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
+	 <6dRYo8ss7vL.A.bIH.qre5KB@chimera>
+Date: Tue, 27 Oct 2009 01:57:04 +0400
+Message-ID: <a4423d670910261457o2e1ccb7t768199dfd9985270@mail.gmail.com>
+Subject: Re: [Bug #14375] Intel(R) I/OAT DMA Engine init failed
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dan Williams <dan.j.williams@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[... 4 options described ...]
-> 
-> This series implements the fourth option.
+2009/10/26 Rafael J. Wysocki <rjw@sisk.pl>:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14375
+> Subject         : Intel(R) I/OAT DMA Engine init failed
+> Submitter       : Alexander Beregalov <a.beregalov@gmail.com>
+> Date            : 2009-10-02 9:46 (25 days old)
+> References      : http://marc.info/?l=linux-kernel&m=125447680016160&w=4
+> Handled-By      : Dan Williams <dan.j.williams@intel.com>
+> Patch           : http://patchwork.kernel.org/patch/51808/
 
-Ok makes sense.
-
-This should be in the git log somewhere.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+When I patch reiserfs the bug goes to libata, it means ioatdma works
+and libata does not. It looks like inaccurate work with memory
+somewhere, but I do not know how to find it.
+I cannot reproduce it since 2.6.32-rc3 and I do not see any bugs since then.
