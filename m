@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZJZCMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbZJZC2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612AbZJZCMU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Oct 2009 22:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZJZCMT
+	id S1754558AbZJZC2X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Oct 2009 22:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZJZC2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 22:12:19 -0400
-Received: from mail-gx0-f216.google.com ([209.85.217.216]:53205 "EHLO
-	mail-gx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754596AbZJZCMT (ORCPT
+	Sun, 25 Oct 2009 22:28:23 -0400
+Received: from relay4-v.mail.gandi.net ([217.70.178.78]:34679 "EHLO
+	relay4-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754498AbZJZC2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Oct 2009 22:12:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Jje9x2G1XWv3wYRpYAxebxtInfqAmtGXuI4swabA3car5j3H1fHBkUMRvrY1wRSQXJ
-         m3colSmvu7XqimmD86pDMvu5XI2JY4HcFO1VgEpRXIfq7BpHpTtsBB8PeEvRqzjHtI22
-         PnTnxKqBzIGhBYsdJpiWTXd9NoE7vDzvAFIDI=
+	Sun, 25 Oct 2009 22:28:22 -0400
+Date: Sun, 25 Oct 2009 19:27:46 -0700
+From: Josh Triplett <josh@joshtriplett.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
+       mtosatti@redhat.com
+Subject: Re: [PATCH tip/core/rcu 0/6] rcu: Tiny RCU, expedited RCU,
+ rcutorture fixes, lockdep simplification
+Message-ID: <20091026022746.GA30796@feather>
+References: <20091026020253.GA11350@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1256165349.15474.17.camel@localhost>
-References: <1256165349.15474.17.camel@localhost>
-Date: Mon, 26 Oct 2009 12:12:23 +1000
-Message-ID: <21d7e9970910251912w799b1fa4q1bea17f7524102d4@mail.gmail.com>
-Subject: Re: Changing radeon KMS cs+gem ioctl to merge read & write domain
-From: Dave Airlie <airlied@gmail.com>
-To: Jerome Glisse <glisse@freedesktop.org>
-Cc: DRI Development Mailing List <dri-devel@lists.sourceforge.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091026020253.GA11350@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 22, 2009 at 8:49 AM, Jerome Glisse <glisse@freedesktop.org> wrote:
-> Hi,
->
-> I think we should merge the read & write domain of radeon KMS
-> into a single domains information. I don't think there is a
-> good reason for separate read & write domain, we did copy intel
-> model for that and intel use this mostly for cache coherency &
-> cache flushing as far as i understand. We make no good use of
-> this inside the kernel. In order to make this change less disruptive
-> and easier to introduce i propose we keep libdrm-radeon api
-> intact thus userspace xf86video-ati & mesa 3d driver doesn't
-> need a single line patch to adapt. Attached is a proof of concept,
-> a patch against libdrm which merge read & write domain and only
-> use the read domain to communicate with the kernel. I am still
-> in process of stress testing this patch but so far neither X
-> or 3D had any glitches.
->
+On Sun, Oct 25, 2009 at 07:02:53PM -0700, Paul E. McKenney wrote:
+> Updated patches for post 2.6.32:
+> 
+> o	RCU the Bloatwatch Edition, v8
+> 
+> o	Add synchronize_rcu_expedited().
+> 
+> o	Add rcutorture tests for synchronize_rcu_expedited().
+> 
+> o	Update RCU documentation for synchronize_rcu_expedited().
+> 
+> o	Make rcutorture list the torture types it knows about when
+> 	complaining about the one specified.
+> 
+> o	Simplify creation of the separate lockdep class for the
+> 	root rcu_node structure's lock.
+> 
+> 
+>  b/Documentation/RCU/whatisRCU.txt |    3 
+>  b/include/linux/hardirq.h         |   24 +++
+>  b/include/linux/rcupdate.h        |    6 
+>  b/include/linux/rcutiny.h         |   97 ++++++++++++
+>  b/include/linux/srcu.h            |    1 
+>  b/init/Kconfig                    |    9 +
+>  b/kernel/Makefile                 |    1 
+>  b/kernel/rcupdate.c               |    4 
+>  b/kernel/rcutiny.c                |  295 +++++++++++++++++++++++++++++++++++++-
+>  b/kernel/rcutorture.c             |   26 ++-
+>  b/kernel/rcutree.c                |    5 
+>  b/kernel/rcutree.h                |    3 
+>  b/kernel/srcu.c                   |   75 ++++++---
+>  kernel/rcutorture.c               |    7 
+>  14 files changed, 519 insertions(+), 37 deletions(-)
 
-Can you list the advantages (speed, complexity reduction)?, I really
-really don't like this patch at this point in the development process,
-yes the API has warts does fixing it now help any or just increase
-the chance of regressions.
-
-Like I don't think we've hit any of the limitations yet, and I suspect
-the API limitations we hit will require a new revision of the API, which
-I'd rather do once, than just hack away functionality because the current
-underlying implementation doesn't use it yet.
-
-I'd really like to use the read/write information to help decide VRAM/GTT
-migration priorities in the future, I've mentioned this a few times and I've
-haven't heard how your scheme addresses this.
-
-Some issues I can see are you haven't really defined how userspace
-users of this API should look, like who decides the buffer placement?
-userspace only? can the kernel override? how does the kernel know
-which allocs it can override and which it can't? how does space
-checking work for the VRAM but maybe GTT buffers?
-
-I don't think the API we have is perfect by any means I just don't think
-investing in tweaking the corners for no real benefit is worth it. Just
-make the gallium winsys API clean and then you don't need to look
-at this stuff, and in a year or two a new API that actually provides benefits
-and speedups after we've learned a bit from this one.
-
-Dave.
+For all 6 patches:
+Acked-by: Josh Triplett <josh@joshtriplett.org>
