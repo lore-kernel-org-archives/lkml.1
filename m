@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbZJZSBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbZJZSD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754260AbZJZSBJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 14:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZJZSBI
+	id S1754364AbZJZSD0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 14:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbZJZSDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 14:01:08 -0400
-Received: from fieldses.org ([174.143.236.118]:39600 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbZJZSBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 14:01:06 -0400
-Date: Mon, 26 Oct 2009 14:02:24 -0400
-From: "J. Bruce Fields" <bfields@fieldses.org>
-To: Jan Kara <jack@suse.cz>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       jamie@shareable.org
-Subject: Re: symlinks with permissions
-Message-ID: <20091026180224.GD16861@fieldses.org>
-References: <20091025062953.GC1391@ucw.cz> <20091026163157.GB7233@duck.suse.cz> <20091026165729.GF23564@us.ibm.com> <20091026173629.GB16861@fieldses.org> <20091026174631.GD7233@duck.suse.cz>
+	Mon, 26 Oct 2009 14:03:25 -0400
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:50673 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753085AbZJZSDY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 14:03:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Q1ROZKVvD65ZkeyruXIjr6E0MgZ/QcPHFzCtvLvrlPyV/U9IaPIEGdZoX5Kj2qgLE0
+         tr110BMh4AnsPCqV9v7LJI8u5WriZLXIDcxBgEuGImQMB56IBKSooai4tcyNjTmnanJu
+         O2MoRYMsb2Tl7P4yBEQr8Ppq7Tj30wJo/ZgiA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091026174631.GD7233@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <x49k4yixiox.fsf@segfault.boston.devel.redhat.com>
+References: <200910202012.43338.czoccolo@gmail.com>
+	 <x49k4yixiox.fsf@segfault.boston.devel.redhat.com>
+Date: Mon, 26 Oct 2009 19:03:28 +0100
+Message-ID: <4e5e476b0910261103g3dee483fic19e8713ed52ac3e@mail.gmail.com>
+Subject: Re: [RFC V2 PATCH 5/5] cfq-iosched: fairness for sync no-idle queues
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 06:46:31PM +0100, Jan Kara wrote:
-> On Mon 26-10-09 13:36:29, J. Bruce Fields wrote:
-> > On Mon, Oct 26, 2009 at 11:57:29AM -0500, Serge E. Hallyn wrote:
-> > > Quoting Jan Kara (jack@suse.cz):
-> > > >   Hi,
-> > > > 
-> > > > On Sun 25-10-09 07:29:53, Pavel Machek wrote:
-> > > > > ...yes, they do exist, in /proc/self/fd/* . Unfortunately, their
-> > > > > permissions are not actually checked during open, resulting in
-> > > > > (obscure) security hole: if you have fd open for reading, you can
-> > > > > reopen it for write, even through unix permissions would not allow
-> > > > > that.
-> > > > > 
-> > > > > Now... I'd like to close the hole. One way would be to actually check
-> > > > > symlink permissions on open -- because those symlinks already have
-> > > > > correct permissions.
-> > > >   Hmm, I'm not sure I understand the problem. Symlink is just a file
-> > > > containing a path. So if you try to open a symlink, you will actually open
-> > > > a file to which the path points. So what security problem is here? Either
-> > > > you can open the file symlink points to for writing or you cannot...
-> > > >   Anyway, if you want to play with this,
-> > > > fs/proc/base.c:proc_pid_follow_link
-> > > >   is probably the function you are interested in.
-> > > 
-> > > The problem he's trying to address is that users may try to protect
-> > > a file by doing chmod 700 on the parent dir, but leave the file itself
-> > > accessible.  They don't realize that merely having a task with an open
-> > > fd to that file gives other users another path to the file.
-> > > 
-> > > Whether or not that's actually a problem is open to debate, but I think
-> > > he's right that many users aren't aware of it.
-> > 
-> > If /proc/self/fd/23 is a symlink to /home/me/privatedir/secret, then an
-> > open("proc/self/fd/23",...) still traverses the whole /home/.../secret
-> > path, and needs appropriate permissions at each step, doesn't it?
-> > 
-> > Probably I'm just terminally confused....
->   That's what I'd think as well but it does not as I've just learned and
-> tested :) proc_pid_follow_link actually directly gives a dentry of the
-> target file without checking permissions on the way.
+On Mon, Oct 26, 2009 at 4:45 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
+> Corrado Zoccolo <czoccolo@gmail.com> writes:
+>
+>> +static enum wl_type_t cfqq_type(struct cfq_queue *cfqq)
+>> +{
+>> +     if (!cfq_cfqq_sync(cfqq))
+>> +             return ASYNC_WORKLOAD;
+>> +     if (CFQQ_SEEKY(cfqq) || !cfq_cfqq_idle_window(cfqq))
+>> +             return SYNC_NOIDLE_WORKLOAD;
+>> +     return SYNC_WORKLOAD;
+>> +}
+>
+> The calculation to determine whether or not to idle is now done in at
+> least 2 places.  Perhaps it's time for a helper function.
 
-Got it, thanks.--b.
+Maybe that CFQQ_SEEKY(cfqq) test can just be removed, and we just rely
+on the idle flag set by cfq_update_idle_window (it is already testing
+seekiness there, but it also considers number of samples).
+I'll do some testing without it to see if it changes anything.
+
+>
+> There are some other coding style nits, but I'll let Jens comment on
+> those.  I think the idea looks good.  Once you rebase I'll run some
+> tests; this is some really good work!
+>
+Thanks. Testing on different hardware is always appreciated.
+
+Cheers,
+Corrado
+> Cheers,
+> Jeff
+>
