@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbZJZQo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbZJZRBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753658AbZJZQo6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 12:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbZJZQo5
+	id S1753880AbZJZRBQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 13:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZJZRBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 12:44:57 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:50839 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbZJZQo4 (ORCPT
+	Mon, 26 Oct 2009 13:01:16 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:43165 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752847AbZJZRBP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 12:44:56 -0400
-Subject: Re: [PATCH -v6 07/13] tracing: add dynamic function tracer support
- for MIPS
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: wuzhangjin@gmail.com
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Adam Nemet <anemet@caviumnetworks.com>,
-       Patrik Kluba <kpajko79@gmail.com>
-In-Reply-To: <1256574910.5642.228.camel@falcon>
-References: <cover.1256569489.git.wuzhangjin@gmail.com>
-	 <747deea2f18d5ccffe842df95a9dd1c86251a958.1256569489.git.wuzhangjin@gmail.com>
-	 <3f47087b70a965fd679b17a59521671296457df1.1256569489.git.wuzhangjin@gmail.com>
-	 <f290e125634d164ec65b09b24b269815f78455ab.1256569489.git.wuzhangjin@gmail.com>
-	 <07dc907ec62353b1aca99b2850d3b2e4b734189a.1256569489.git.wuzhangjin@gmail.com>
-	 <374da7039d2e1b97083edd8bcd7811356884d427.1256569489.git.wuzhangjin@gmail.com>
-	 <3c82af564d70be05b92687949ed134ce034bf8db.1256569489.git.wuzhangjin@gmail.com>
-	 <a11775df0ec9665fab5861f4fa63a3e192b9ffec.1256569489.git.wuzhangjin@gmail.com>
-	 <1256573175.26028.310.camel@gandalf.stny.rr.com>
-	 <1256574910.5642.228.camel@falcon>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Mon, 26 Oct 2009 12:45:00 -0400
-Message-Id: <1256575500.26028.323.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Oct 2009 13:01:15 -0400
+Date: Mon, 26 Oct 2009 12:46:45 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: [PATCH 1/4] strip: move driver to staging
+Message-ID: <20091026164645.GD2792@tuxdriver.com>
+References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com> <20091020090627.f36130fb.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091020090627.f36130fb.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 00:35 +0800, Wu Zhangjin wrote:
-
-> If remove the long jump, we at least to change the $mcount_regex in
-> scripts/recordmcount.pl, the addr + 12 in arch/mips/include/asm/ftrace.h
-> and the _mcount & ftrace_caller in mcount.S and the ftrace_make_nop &
-> ftrace_make_call in arch/mips/kernel/ftrace.c back to the -v4 version.
+On Tue, Oct 20, 2009 at 09:06:27AM -0700, Randy Dunlap wrote:
+> On Tue, 20 Oct 2009 14:17:07 +0900 John W. Linville wrote:
 > 
-> I think this method of supporting module is not that BAD, no obvious
-> overhead added except the "lui...addiu..." and two more "nop"
-> instructions. and it's very understandable, so, just use this version?
+> > Move the strip ("Starmode Radio IP") driver to drivers/staging.  For
+> > several years this driver has only seen API "bombing-run" changes, and
+> > few people ever had the hardware.  This driver represents unnecessary
+> > ongoing maintenance for no clear benefit.
+> > 
+> > This patch brought to you by the "hacking" session at the 2009 Kernel
+> > Summit in Tokyo, Japan...
+> 
+> is drivers/staging/ a temporary home or a permanent home?
 
-You don't nop the lui and addiu do you? If you do you will crash the
-machine.
+I would presume it to be "permanent until removed"...
 
-As for overhead, you might want to test that out.
+> so no explanation of what it means to be in drivers/staging/ and
+> no warning to users?  either in Kconfig or in feature-removal-schedule.txt?
 
--- Steve
+Moving it to staging _is_ the warning.  As for the removal schedule,
+I imagined that Greg would "do the needful" before actually removing
+the driver.
 
-
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
