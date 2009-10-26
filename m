@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbZJZTk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZJZTkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756174AbZJZTk2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 15:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbZJZTk1
+	id S1756192AbZJZTkb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 15:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbZJZTk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 15:40:27 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59854 "EHLO ogre.sisk.pl"
+	Mon, 26 Oct 2009 15:40:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59858 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755780AbZJZTkY convert rfc822-to-8bit (ORCPT
+	id S1755461AbZJZTk1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 15:40:24 -0400
+	Mon, 26 Oct 2009 15:40:27 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Mikael Pettersson" <mikpe@it.uu.se>
+       "Rishikesh" <risrajak@linux.vnet.ibm.com>
 References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera>
 In-Reply-To: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <vX3ILojF2dJ.A.nPH.Hff5KB@chimera>
-Subject: [Bug #14256] kernel BUG at fs/ext3/super.c:435
+Message-ID: <vX3ILojF2dJ.A._KH.Fff5KB@chimera>
+Subject: [Bug #14257] Not able to boot on 32 bit System
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 26 Oct 2009 20:31:51 +0100 (CET)
+Date: Mon, 26 Oct 2009 20:31:52 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +35,10 @@ introduced between 2.6.30 and 2.6.31.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14256
-Subject		: kernel BUG at fs/ext3/super.c:435
-Submitter	: Mikael Pettersson <mikpe@it.uu.se>
-Date		: 2009-09-21 7:29 (36 days old)
-References	: http://marc.info/?l=linux-kernel&m=125351816109264&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14257
+Subject		: Not able to boot on 32 bit System
+Submitter	: Rishikesh <risrajak@linux.vnet.ibm.com>
+Date		: 2009-09-21 15:25 (36 days old)
+References	: http://marc.info/?l=linux-kernel&m=125354604314412&w=4
 
 
