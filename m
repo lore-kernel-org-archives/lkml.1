@@ -1,12 +1,12 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbZJZCED (ORCPT <rfc822;list-kernel77@spinics.net>);
+	id S1754552AbZJZCED (ORCPT <rfc822;list-kernel77@spinics.net>);
 	Sun, 25 Oct 2009 22:04:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbZJZCEA
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbZJZCEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Oct 2009 22:04:00 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:38003 "EHLO e6.ny.us.ibm.com"
+	Sun, 25 Oct 2009 22:04:01 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:60159 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754451AbZJZCD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754453AbZJZCD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 25 Oct 2009 22:03:59 -0400
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
         mtosatti@redhat.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 3/6] rcu: add synchronize_srcu_expedited() to the rcutorture test suite
-Date: Sun, 25 Oct 2009 19:03:52 -0700
-Message-Id: <12565226353636-git-send-email->
+Subject: [PATCH tip/core/rcu 2/6] rcu: Add synchronize_srcu_expedited()
+Date: Sun, 25 Oct 2009 19:03:51 -0700
+Message-Id: <12565226354038-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20091026020253.GA11350@linux.vnet.ibm.com>
 References: <20091026020253.GA11350@linux.vnet.ibm.com>
@@ -28,64 +28,177 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Adds the "srcu_expedited" torture type, and also renames sched_ops_sync
-to sched_sync_ops for consistency while we are in this file.
+This patch creates a synchronize_srcu_expedited() that uses
+synchronize_sched_expedited() where synchronize_srcu()
+uses synchronize_sched().  The synchronize_srcu() and
+synchronize_srcu_expedited() functions become one-liners that pass
+synchronize_sched() or synchronize_sched_expedited(), repectively,
+to a new __synchronize_srcu() function.
 
+While in the file, move the EXPORT_SYMBOL_GPL()s to immediately
+follow the corresponding functions.
+
+Requested-by: Avi Kivity <avi@redhat.com>
+Tested-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- kernel/rcutorture.c |   25 ++++++++++++++++++++++---
- 1 files changed, 22 insertions(+), 3 deletions(-)
+ include/linux/srcu.h |    1 +
+ kernel/srcu.c        |   74 ++++++++++++++++++++++++++++++++++---------------
+ 2 files changed, 52 insertions(+), 23 deletions(-)
 
-diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-index 697c0a0..14480e8 100644
---- a/kernel/rcutorture.c
-+++ b/kernel/rcutorture.c
-@@ -547,6 +547,25 @@ static struct rcu_torture_ops srcu_ops = {
- 	.name		= "srcu"
- };
+diff --git a/include/linux/srcu.h b/include/linux/srcu.h
+index aca0eee..4765d97 100644
+--- a/include/linux/srcu.h
++++ b/include/linux/srcu.h
+@@ -48,6 +48,7 @@ void cleanup_srcu_struct(struct srcu_struct *sp);
+ int srcu_read_lock(struct srcu_struct *sp) __acquires(sp);
+ void srcu_read_unlock(struct srcu_struct *sp, int idx) __releases(sp);
+ void synchronize_srcu(struct srcu_struct *sp);
++void synchronize_srcu_expedited(struct srcu_struct *sp);
+ long srcu_batches_completed(struct srcu_struct *sp);
  
-+static void srcu_torture_synchronize_expedited(void)
-+{
-+	synchronize_srcu_expedited(&srcu_ctl);
-+}
-+
-+static struct rcu_torture_ops srcu_expedited_ops = {
-+	.init		= srcu_torture_init,
-+	.cleanup	= srcu_torture_cleanup,
-+	.readlock	= srcu_torture_read_lock,
-+	.read_delay	= srcu_read_delay,
-+	.readunlock	= srcu_torture_read_unlock,
-+	.completed	= srcu_torture_completed,
-+	.deferred_free	= rcu_sync_torture_deferred_free,
-+	.sync		= srcu_torture_synchronize_expedited,
-+	.cb_barrier	= NULL,
-+	.stats		= srcu_torture_stats,
-+	.name		= "srcu_expedited"
-+};
-+
+ #endif
+diff --git a/kernel/srcu.c b/kernel/srcu.c
+index b0aeeaf..818d7d9 100644
+--- a/kernel/srcu.c
++++ b/kernel/srcu.c
+@@ -49,6 +49,7 @@ int init_srcu_struct(struct srcu_struct *sp)
+ 	sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
+ 	return (sp->per_cpu_ref ? 0 : -ENOMEM);
+ }
++EXPORT_SYMBOL_GPL(init_srcu_struct);
+ 
  /*
-  * Definitions for sched torture testing.
+  * srcu_readers_active_idx -- returns approximate number of readers
+@@ -97,6 +98,7 @@ void cleanup_srcu_struct(struct srcu_struct *sp)
+ 	free_percpu(sp->per_cpu_ref);
+ 	sp->per_cpu_ref = NULL;
+ }
++EXPORT_SYMBOL_GPL(cleanup_srcu_struct);
+ 
+ /**
+  * srcu_read_lock - register a new reader for an SRCU-protected structure.
+@@ -118,6 +120,7 @@ int srcu_read_lock(struct srcu_struct *sp)
+ 	preempt_enable();
+ 	return idx;
+ }
++EXPORT_SYMBOL_GPL(srcu_read_lock);
+ 
+ /**
+  * srcu_read_unlock - unregister a old reader from an SRCU-protected structure.
+@@ -136,22 +139,12 @@ void srcu_read_unlock(struct srcu_struct *sp, int idx)
+ 	per_cpu_ptr(sp->per_cpu_ref, smp_processor_id())->c[idx]--;
+ 	preempt_enable();
+ }
++EXPORT_SYMBOL_GPL(srcu_read_unlock);
+ 
+-/**
+- * synchronize_srcu - wait for prior SRCU read-side critical-section completion
+- * @sp: srcu_struct with which to synchronize.
+- *
+- * Flip the completed counter, and wait for the old count to drain to zero.
+- * As with classic RCU, the updater must use some separate means of
+- * synchronizing concurrent updates.  Can block; must be called from
+- * process context.
+- *
+- * Note that it is illegal to call synchornize_srcu() from the corresponding
+- * SRCU read-side critical section; doing so will result in deadlock.
+- * However, it is perfectly legal to call synchronize_srcu() on one
+- * srcu_struct from some other srcu_struct's read-side critical section.
++/*
++ * Helper function for synchronize_srcu() and synchronize_srcu_expedited().
   */
-@@ -592,7 +611,7 @@ static struct rcu_torture_ops sched_ops = {
- 	.name		= "sched"
- };
+-void synchronize_srcu(struct srcu_struct *sp)
++void __synchronize_srcu(struct srcu_struct *sp, void (*sync_func)(void))
+ {
+ 	int idx;
  
--static struct rcu_torture_ops sched_ops_sync = {
-+static struct rcu_torture_ops sched_sync_ops = {
- 	.init		= rcu_sync_torture_init,
- 	.cleanup	= NULL,
- 	.readlock	= sched_torture_read_lock,
-@@ -1098,8 +1117,8 @@ rcu_torture_init(void)
- 	int firsterr = 0;
- 	static struct rcu_torture_ops *torture_ops[] =
- 		{ &rcu_ops, &rcu_sync_ops, &rcu_bh_ops, &rcu_bh_sync_ops,
--		  &sched_expedited_ops,
--		  &srcu_ops, &sched_ops, &sched_ops_sync, };
-+		  &srcu_ops, &srcu_expedited_ops,
-+		  &sched_ops, &sched_sync_ops, &sched_expedited_ops, };
+@@ -173,7 +166,7 @@ void synchronize_srcu(struct srcu_struct *sp)
+ 		return;
+ 	}
  
- 	mutex_lock(&fullstop_mutex);
+-	synchronize_sched();  /* Force memory barrier on all CPUs. */
++	sync_func();  /* Force memory barrier on all CPUs. */
  
+ 	/*
+ 	 * The preceding synchronize_sched() ensures that any CPU that
+@@ -190,7 +183,7 @@ void synchronize_srcu(struct srcu_struct *sp)
+ 	idx = sp->completed & 0x1;
+ 	sp->completed++;
+ 
+-	synchronize_sched();  /* Force memory barrier on all CPUs. */
++	sync_func();  /* Force memory barrier on all CPUs. */
+ 
+ 	/*
+ 	 * At this point, because of the preceding synchronize_sched(),
+@@ -203,7 +196,7 @@ void synchronize_srcu(struct srcu_struct *sp)
+ 	while (srcu_readers_active_idx(sp, idx))
+ 		schedule_timeout_interruptible(1);
+ 
+-	synchronize_sched();  /* Force memory barrier on all CPUs. */
++	sync_func();  /* Force memory barrier on all CPUs. */
+ 
+ 	/*
+ 	 * The preceding synchronize_sched() forces all srcu_read_unlock()
+@@ -237,6 +230,47 @@ void synchronize_srcu(struct srcu_struct *sp)
+ }
+ 
+ /**
++ * synchronize_srcu - wait for prior SRCU read-side critical-section completion
++ * @sp: srcu_struct with which to synchronize.
++ *
++ * Flip the completed counter, and wait for the old count to drain to zero.
++ * As with classic RCU, the updater must use some separate means of
++ * synchronizing concurrent updates.  Can block; must be called from
++ * process context.
++ *
++ * Note that it is illegal to call synchronize_srcu() from the corresponding
++ * SRCU read-side critical section; doing so will result in deadlock.
++ * However, it is perfectly legal to call synchronize_srcu() on one
++ * srcu_struct from some other srcu_struct's read-side critical section.
++ */
++void synchronize_srcu(struct srcu_struct *sp)
++{
++	__synchronize_srcu(sp, synchronize_sched);
++}
++EXPORT_SYMBOL_GPL(synchronize_srcu);
++
++/**
++ * synchronize_srcu_expedited - like synchronize_srcu, but less patient
++ * @sp: srcu_struct with which to synchronize.
++ *
++ * Flip the completed counter, and wait for the old count to drain to zero.
++ * As with classic RCU, the updater must use some separate means of
++ * synchronizing concurrent updates.  Can block; must be called from
++ * process context.
++ *
++ * Note that it is illegal to call synchronize_srcu_expedited()
++ * from the corresponding SRCU read-side critical section; doing so
++ * will result in deadlock.  However, it is perfectly legal to call
++ * synchronize_srcu_expedited() on one srcu_struct from some other
++ * srcu_struct's read-side critical section.
++ */
++void synchronize_srcu_expedited(struct srcu_struct *sp)
++{
++	__synchronize_srcu(sp, synchronize_sched_expedited);
++}
++EXPORT_SYMBOL_GPL(synchronize_srcu_expedited);
++
++/**
+  * srcu_batches_completed - return batches completed.
+  * @sp: srcu_struct on which to report batch completion.
+  *
+@@ -248,10 +282,4 @@ long srcu_batches_completed(struct srcu_struct *sp)
+ {
+ 	return sp->completed;
+ }
+-
+-EXPORT_SYMBOL_GPL(init_srcu_struct);
+-EXPORT_SYMBOL_GPL(cleanup_srcu_struct);
+-EXPORT_SYMBOL_GPL(srcu_read_lock);
+-EXPORT_SYMBOL_GPL(srcu_read_unlock);
+-EXPORT_SYMBOL_GPL(synchronize_srcu);
+ EXPORT_SYMBOL_GPL(srcu_batches_completed);
 -- 
 1.5.2.5
 
