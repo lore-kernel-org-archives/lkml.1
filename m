@@ -1,82 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbZJZWRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbZJZWSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607AbZJZWRw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 18:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbZJZWRv
+	id S1754667AbZJZWSF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 18:18:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbZJZWSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 18:17:51 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:53800 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752516AbZJZWRv (ORCPT
+	Mon, 26 Oct 2009 18:18:04 -0400
+Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:52730 "EHLO
+	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754619AbZJZWSB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 18:17:51 -0400
-Date: Mon, 26 Oct 2009 15:17:48 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: jeremy@goop.org, x86@kernel.org, torvalds@linux-foundation.org
-Subject: Re: 2.6.32-rc not booting with Xen-3.2 (bisected)
-In-Reply-To: <alpine.DEB.2.01.0910261445170.9408@bogon.housecafe.de>
-Message-ID: <alpine.DEB.2.01.0910261513520.9408@bogon.housecafe.de>
-References: <alpine.DEB.2.01.0910261445170.9408@bogon.housecafe.de>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+	Mon, 26 Oct 2009 18:18:01 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC failures V2
+Date: Mon, 26 Oct 2009 23:17:50 +0100
+User-Agent: KMail/1.9.9
+Cc: Jiri Kosina <jkosina@suse.cz>, Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
+In-Reply-To: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX19zWl6p8XUsEz41W2g9tc2DALH9bAtGviRqw24
- qr02FmPMH3Hxf/Y1UPXQsTW0s0j9SX2eT5LgAbAgsxJjHOnCVi
- cP/WBxJCkXH/IDWFW51Tw==
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910262317.55960.elendil@planet.nl>
+X-OriginalArrivalTime: 26 Oct 2009 22:18:05.0677 (UTC) FILETIME=[30BED9D0:01CA568A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 at 15:02, Christian Kujau wrote:
-> really know where the DomU stops (or panics). However, I was able to 
-> bisect it, I hope the bisection makes any sense:
+On Thursday 22 October 2009, Mel Gorman wrote:
+> Test 1: Verify your problem occurs on 2.6.32-rc5 if you can
 
-My bisection was one iteration short, here's the full one, which confirms 
-my suspicion of 78f28b7c555359c67c2a0d23f7436e915329421e being the 
-culprit:
+I've tested against 2.6.31.1 as it's easier for me to compare behaviors 
+with that than with .32. All patches applied without problems against .31.
 
-domU$ git bisect start
-# good: [74fca6a42863ffacaf7ba6f1936a9f228950f657] Linux 2.6.31
-git bisect good 74fca6a42863ffacaf7ba6f1936a9f228950f657
-# bad: [17d857be649a21ca90008c6dc425d849fa83db5c] Linux 2.6.32-rc1
-git bisect bad 17d857be649a21ca90008c6dc425d849fa83db5c
-# good: [5d1fe0c98f2aef99fb57aaf6dd25e793c186cea3] Staging: vt6656: Integrate vt6656 into build system.
-git bisect good 5d1fe0c98f2aef99fb57aaf6dd25e793c186cea3
-# bad: [c720f5655df159a630fa0290a0bd67c93e92b0bf] Merge branch 'for_linus' of git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6
-git bisect bad c720f5655df159a630fa0290a0bd67c93e92b0bf
-# good: [a03fdb7612874834d6847107198712d18b5242c7] Merge branch 'timers-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-git bisect good a03fdb7612874834d6847107198712d18b5242c7
-# good: [3530c1886291df061e3972c55590777ef1cb67f8] Merge branch 'for_linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4
-git bisect good 3530c1886291df061e3972c55590777ef1cb67f8
-# bad: [84d6ae431f315e8973aac3c3fe1d550fc9240ef3] V4L/DVB (13033): pt1: Don't use a deprecated DMA_BIT_MASK macro
-git bisect bad 84d6ae431f315e8973aac3c3fe1d550fc9240ef3
-# bad: [068ed40b8fc14cd3d16b5cf2db59ecd735a68ca8] V4L/DVB (12939): SAA7164: Removed a duplicate call to address any PCI quirks.
-git bisect bad 068ed40b8fc14cd3d16b5cf2db59ecd735a68ca8
-# bad: [f4e96deb4513d044653027d4921fd7592195503a] V4L/DVB (12756): af9015: fix typo in register compare
-git bisect bad f4e96deb4513d044653027d4921fd7592195503a
-# good: [dd0a70c8f921708eba29ef9f30dde1f14a74af05] x86: Move tsc_init to late_time_init
-git bisect good dd0a70c8f921708eba29ef9f30dde1f14a74af05
-# bad: [53e712d0844e99b8d8720327470b86ef401fb727] V4L/DVB (12734): cx25821: Fix some compilation troubles
-git bisect bad 53e712d0844e99b8d8720327470b86ef401fb727
-# good: [7bd867dfb4e0357e06a3211ab2bd0e714110def3] x86: Move get/set_wallclock to x86_platform_ops
-git bisect good 7bd867dfb4e0357e06a3211ab2bd0e714110def3
-# bad: [78f28b7c555359c67c2a0d23f7436e915329421e] Merge branch 'x86-platform-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-git bisect bad 78f28b7c555359c67c2a0d23f7436e915329421e
-# good: [9c88b25bcfde51eccf2cca13d933a2948d0ca4eb] frv: clean up linker script using new linker script macros.
-git bisect good 9c88b25bcfde51eccf2cca13d933a2948d0ca4eb
-# good: [3240a77b515f4a15e24d8a3a2135bc87b02cf1d6] sparc: Clean up linker script using new linker script macros.
-git bisect good 3240a77b515f4a15e24d8a3a2135bc87b02cf1d6
+I've also tested 2.6.31.1 with SLAB instead of SLUB, but that does not seem 
+to make a significant difference for my test.
+
+> Test 2: Apply the following two patches and test again
+>   1/5 page allocator: Always wake kswapd when restarting an allocation
+>       attempt after direct reclaim failed
+>   2/5 page allocator: Do not allow interrupts to use ALLOC_HARDER
+
+Does not look to make any difference. Possibly causes more variation in the 
+duration of the test (increases timing effects)?
+
+> Test 3: If you are getting allocation failures, try with the following
+> patch
+>   3/5 vmscan: Force kswapd to take notice faster when high-order
+>       watermarks are being hit
+
+Applied on top of patches 1-2. Does not look to make any difference.
+
+> Test 4: If you are still getting failures, apply the following
+>   4/5 page allocator: Pre-emptively wake kswapd when high-order
+>       watermarks are hit
+
+Applied on top of patches 1-3. Does not look to make any difference.
+
+> Test 5: If things are still screwed, apply the following
+>   5/5 Revert 373c0a7e, 8aa7e847: Fix congestion_wait() sync/async vs
+>       read/write confusion
+
+Applied on top of patches 1-4. Despite Jens' scepticism is this still the 
+patch that makes the most significant difference in my test.
+The reading of commits in gitk is much more fluent and music skips are a 
+lot less severe. But most important is that there is no long total freeze 
+of the system halfway during the reading of commits and gitk loads 
+fastest. It also gives by far the most consistent results.
+The likelyhood of SKB allocation errors during the test is a lot smaller.
+See also http://lkml.org/lkml/2009/10/26/455.
 
 
-> Version numbers and more for both the domU and dom0 are on:
-> http://nerdbynature.de/bits/2.6.32/dom0/dpkg-l.txt
+Detailed test results follow. I've done 2 test runs with each kernel (3 for 
+the last).
 
-That should read: http://nerdbynature.de/bits/2.6.32/
+The columns below give the following info:
+- time at which all commits have been read by gitk
+- time at which gitk fills in "branch", "follows" and "precedes" data for
+  the current commit
+- time at which there's no longer any disk activity, i.e. when gitk is
+  fully loaded and all swapping is done
+- total number of SKB allocation errors during the test
+A "freeze" during the reading of commits is indicated by an "f" (short 
+freeze) or "F" (long "hard" freeze). An "S" shows when there were SKB 
+allocation errors.
 
-Thanks,
-Christian.
--- 
-BOFH excuse #19:
+		end commits	show branch	done		SKB errs
+1) vanilla .31.1
+run 1:		1:20 fFS	2:10 S		2:30		44 a)
+run 2:		1:35 FS		1:45		2:10		13
 
-floating point processor overflow
+2) .31.1 + patches 1-2
+run1:		2:30 fFS	2:45		3:00		58
+run2:		1:15 fS		2:00		2:20		2 a)
+
+3) .31.1 + patches 1-3
+run1:		1:00 fS		1:15		1:45		1 *)
+run2:		3:00 fFS	3:15		3:30		33
+*) unexpected; fortunate timing?
+
+4) .31.1 + patches 1-4
+run1:		1:10 ffS	1:55 S		2:20		35 a)
+run2:		3:05 fFS	3:15		3:25		36
+
+5) .31.1 + patches 1-5
+run1:		1:00		1:15		1:35		0
+run2:		0:50		1:15 S		1:45		45 *)
+run3:		1:00		1:15		1:45		0
+*) unexpected; unfortunate timing?
+
+a) fast in 1st phase; slow in 2nd and 3rd
+
+Note that without the congestion_wait() reverts occurrence of SKB errors, 
+the long freezes and time it takes for gitk to load seem roughly related; 
+with the reverts total time is not affected even with many SKB errors.
+
+Cheers,
+FJP
