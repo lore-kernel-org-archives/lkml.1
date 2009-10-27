@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbZJ0Uvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932323AbZJ0Uwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932308AbZJ0Uvo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932252AbZJ0Uvo
+	id S932323AbZJ0Uwu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932281AbZJ0Uwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:51:44 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42057 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932248AbZJ0Uvn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:51:43 -0400
-Subject: Re: [PATCH 9/9] tracing: recordmcount.pl Remove the redundant code
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Li Hong <lihong.hi@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20091027070540.GI22032@uhli>
-References: <20091027065421.GA22032@uhli>  <20091027070540.GI22032@uhli>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 27 Oct 2009 16:51:41 -0400
-Message-Id: <1256676701.26028.465.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Tue, 27 Oct 2009 16:52:49 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:39564 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932255AbZJ0Uws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 16:52:48 -0400
+Message-ID: <4AE75DB9.3040702@sgi.com>
+Date: Tue, 27 Oct 2009 13:53:13 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: [PATCH] x86: Don't print number of MCE banks for every CPU
+References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com>
+In-Reply-To: <4AE74D25.8090901@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 15:05 +0800, Li Hong wrote:
-> >From d0aa71d523b6315fd3ea0ee66fddb020a625856f Mon Sep 17 00:00:00 2001
-> From: Li Hong <lihong.hi@gmail.com>
-> Date: Tue, 27 Oct 2009 13:28:53 +0800
-> Subject: [PATCH] tracing: recordmcount.pl Remove the redundant code
+
+Mike Travis wrote:
+> Hi Roland,
 > 
-> If an object file has some local symbols and objcopy doesn't support local
-> reference, we have exited before the real work starts. So remove the redundant
-> check in update_funcs.
-
-Are you sure? Where does it exit? Even if I add patch 6, you can still
-have a section that does not have any globals in it.
-
--- Steve
-
+> I've found that I'm getting one of these lines for every cpu:
 > 
-> Signed-off-by: Li Hong <lihong.hi@gmail.com>
+> mce: CPU supports 0 MCE banks
 > 
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 867c24a..ff3a9eb 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -353,14 +353,7 @@ sub update_funcs
->      return unless ($ref_func and @offsets);
->  
->      # is this function static? If so, note this fact.
-> -    if (defined $locals{$ref_func}) {
-> -
-> -	# only use locals if objcopy supports globalize-symbols
-> -	if (!$can_use_local) {
-> -	    return;
-> -	}
-> -	$convert{$ref_func} = 1;
-> -    }
-> +    $convert{$ref_func} = 1 if $locals{$ref_func}; 
->  
->      # Loop through all the mcount caller offsets and print a reference
->      # to the caller based from the ref_func.
 
+A bit more info.  THe data above was from our simulator which
+apparently is not simulating mce very well.  On a live system
+I get 383 lines (for 383 additional cpus) with what appears to be
+redundant lines...
+
+[    4.882085] CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
+[    4.978893] CPU 2 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
+...
+[    4.978893] CPU 2 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
+
+
+> Regards,
+> Mike
+> 
+> Roland Dreier wrote:
+>> The MCE initialization code explicitly says it doesn't handle asymmetric
+>> configurations where different CPUs support different numbers of MCE
+>> banks, and it prints a big warning in that case.  Therefore, printing
+>> the "mce: CPU supports <x> MCE banks" message into the kernel log for
+>> every CPU is pure redundancy that clutters the log significantly for
+>> systems with lots of CPUs.
+>>
+>> Signed-off-by: Roland Dreier <rolandd@cisco.com>
+>> ---
+>>  arch/x86/kernel/cpu/mcheck/mce.c |    3 ++-
+>>  1 files changed, 2 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/cpu/mcheck/mce.c 
+>> b/arch/x86/kernel/cpu/mcheck/mce.c
+>> index b1598a9..721a77c 100644
+>> --- a/arch/x86/kernel/cpu/mcheck/mce.c
+>> +++ b/arch/x86/kernel/cpu/mcheck/mce.c
+>> @@ -1214,7 +1214,8 @@ static int __cpuinit mce_cap_init(void)
+>>      rdmsrl(MSR_IA32_MCG_CAP, cap);
+>>  
+>>      b = cap & MCG_BANKCNT_MASK;
+>> -    printk(KERN_INFO "mce: CPU supports %d MCE banks\n", b);
+>> +    if (!banks)
+>> +        printk(KERN_INFO "mce: CPU supports %d MCE banks\n", b);
+>>  
+>>      if (b > MAX_NR_BANKS) {
+>>          printk(KERN_WARNING
+>> -- 
+>> To unsubscribe from this list: send the line "unsubscribe 
+>> linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
