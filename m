@@ -1,143 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbZJ0QcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbZJ0Qhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbZJ0QcL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 12:32:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbZJ0QcK
+	id S1756098AbZJ0Qhl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 12:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016AbZJ0Qhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 12:32:10 -0400
-Received: from mail-forward1.uio.no ([129.240.10.70]:34951 "EHLO
-	mail-forward1.uio.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755864AbZJ0QcG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 12:32:06 -0400
-Message-ID: <4AE7207D.8090402@simula.no>
-Date: Tue, 27 Oct 2009 17:31:57 +0100
-From: Andreas Petlund <apetlund@simula.no>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: netdev@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, shemminger@vyatta.com,
-       ilpo.jarvinen@helsinki.fi, davem@davemloft.net
-Subject: [PATCH 3/3] net: TCP thin dupack
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 27 Oct 2009 12:37:40 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:30943 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756014AbZJ0Qhh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 12:37:37 -0400
+Subject: Re: [PATCH] ima: remove ACPI dependency
+From: Eric Paris <eparis@redhat.com>
+To: David Safford <safford@watson.ibm.com>
+Cc: Eric Paris <eparis@parisplace.org>, Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       Rajiv Andrade <srajiv@linux.vnet.ibm.com>,
+       Jean-Christophe Dubois <jcd@tribudubois.net>,
+       Mimi Zohar <zohar@us.ibm.com>, Stable Kernel <stable@kernel.org>
+In-Reply-To: <1256659146.3028.29.camel@localhost.localdomain>
+References: <1256563579-11014-1-git-send-email-zohar@linux.vnet.ibm.com>
+	 <1256563579-11014-2-git-send-email-zohar@linux.vnet.ibm.com>
+	 <7e0fb38c0910270658v153480fdt5ced717feca76c17@mail.gmail.com>
+	 <1256659146.3028.29.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 27 Oct 2009 12:36:47 -0400
+Message-Id: <1256661407.2804.15.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 20 msgs/h 4 sum rcpts/h 23 sum msgs/h 5 total rcpts 354 max rcpts/h 20 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 8D7E9FEE2BFFED0B3F12E071F181E4EB5C7AAE5F
-X-UiO-SPAM-Test: remote_host: 128.39.37.254 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 5 total 4104 max/h 42 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables fast retransmissions after one dupACK for TCP if the stream is identified as thin. This will reduce latencies for thin streams that are not able to trigger fast retransmissions due to high packet interarrival time. This mechanism is only active if enabled by iocontrol or syscontrol and the stream is identified as thin.
+On Tue, 2009-10-27 at 11:59 -0400, David Safford wrote:
+> On Tue, 2009-10-27 at 09:58 -0400, Eric Paris wrote:
+> > On Mon, Oct 26, 2009 at 9:26 AM, Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
+> > > Remove ACPI dependency on systems without a TPM enabled.
+> > 
+> > I'm confused why you need ACPI at all.  The TPM code doesn't require
+> > ACPI (I wish it did but Alan Cox Nak'd that patch).  I don't see acpi
+> > anywhere in the ima code.  What's the problem we are solving?  Why
+> > does IMA care about ACPI at all?  And aren't you really just dropping
+> > the build requirement on TCG_TPM?  Is that a great idea?
+> > 
+> > -Eric
+> 
+> This is discussed in the LSM thread:
+> http://marc.info/?l=linux-security-module&m=125322062401677&w=2
+> 
+> Basically, if running on a system with a TPM, IMA wants the TPM
+> boot measurement log, which the TPM driver can only get through
+> ACPI. If the platform does not have a TPM, then IMA does not 
+> need ACPI.
 
+I'm afraid I'm not seeing the connection.  Where does IMA gets the boot
+measurement log?  I see that the TPM exports that log in securityfs as 2
+files (ascii and binary) in tpm_bios.c but I don't see how IMA ever
+makes use of that log either internally to the kernel or through the
+securityfs files.
 
-Signed-off-by: Andreas Petlund <apetlund@simula.no>
----
- include/linux/tcp.h        |    4 +++-
- include/net/tcp.h          |    1 +
- net/ipv4/sysctl_net_ipv4.c |    8 ++++++++
- net/ipv4/tcp.c             |    5 +++++
- net/ipv4/tcp_input.c       |    8 ++++++++
- 5 files changed, 25 insertions(+), 1 deletions(-)
+If I'm missing it, and IMA is getting and making use of the bios boot
+log I think we need to instead make the TPM code send a reasonable
+failure code without ACPI and IMA should be changed to handle it.  I
+really don't like the obscure ACPI requirement.
 
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index e64368d..f4a05ff 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -97,6 +97,7 @@ enum {
- #define TCP_CONGESTION		13	/* Congestion control algorithm */
- #define TCP_MD5SIG		14	/* TCP MD5 Signature (RFC2385) */
- #define TCP_THIN_RM_EXPB        15      /* Remove exp. backoff for thin streams*/
-+#define TCP_THIN_DUPACK         16      /* Fast retrans. after 1 dupack */
- 
- #define TCPI_OPT_TIMESTAMPS	1
- #define TCPI_OPT_SACK		2
-@@ -301,7 +302,8 @@ struct tcp_sock {
- 	u8	frto_counter;	/* Number of new acks after RTO */
- 	u8	nonagle;	/* Disable Nagle algorithm?             */
- 	u8      thin_rm_expb:1, /* Remove exp. backoff for thin streams */
--		thin_undef : 7;
-+		thin_dupack : 1,/* Fast retransmit on first dupack      */
-+		thin_undef : 6;
- 
- /* RTT measurement */
- 	u32	srtt;		/* smoothed round trip time << 3	*/
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 412c1bd..41f3a5e 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -238,6 +238,7 @@ extern int sysctl_tcp_workaround_signed_windows;
- extern int sysctl_tcp_slow_start_after_idle;
- extern int sysctl_tcp_max_ssthresh;
- extern int sysctl_tcp_force_thin_rm_expb;
-+extern int sysctl_tcp_force_thin_dupack;
- 
- extern atomic_t tcp_memory_allocated;
- extern struct percpu_counter tcp_sockets_allocated;
-diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
-index 7458f37..8653867 100644
---- a/net/ipv4/sysctl_net_ipv4.c
-+++ b/net/ipv4/sysctl_net_ipv4.c
-@@ -721,6 +721,14 @@ static struct ctl_table ipv4_table[] = {
- 		.proc_handler   = proc_dointvec
- 	},
- 	{
-+		.ctl_name       = CTL_UNNUMBERED,
-+		.procname       = "tcp_force_thin_dupack",
-+		.data           = &sysctl_tcp_force_thin_dupack,
-+		.maxlen         = sizeof(int),
-+		.mode           = 0644,
-+		.proc_handler   = proc_dointvec
-+	},
-+	{
- 		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "udp_mem",
- 		.data		= &sysctl_udp_mem,
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index b4b0931..de190db 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -2139,6 +2139,11 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
- 			tp->thin_rm_expb = 1;
- 		break;
- 
-+	case TCP_THIN_DUPACK:
-+		if (val)
-+			tp->thin_dupack = 1;
-+		break;
-+
- 	case TCP_CORK:
- 		/* When set indicates to always queue non-full frames.
- 		 * Later the user clears this option and we transmit
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index d86784b..b71eb89 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -89,6 +89,8 @@ int sysctl_tcp_frto __read_mostly = 2;
- int sysctl_tcp_frto_response __read_mostly;
- int sysctl_tcp_nometrics_save __read_mostly;
- 
-+int sysctl_tcp_force_thin_dupack __read_mostly;
-+
- int sysctl_tcp_moderate_rcvbuf __read_mostly = 1;
- int sysctl_tcp_abc __read_mostly;
- 
-@@ -2447,6 +2449,12 @@ static int tcp_time_to_recover(struct sock *sk)
- 		return 1;
- 	}
- 
-+	/* If a thin stream is detected, retransmit after first
-+	 * received dupack */
-+	if ((tp->thin_dupack || sysctl_tcp_force_thin_dupack) &&
-+	    tcp_dupack_heurestics(tp) > 1 && tcp_stream_is_thin(tp))
-+		return 1;
-+
- 	return 0;
- }
- 
--- 
-1.6.0.4
-
-
+-Eric
 
