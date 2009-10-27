@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932373AbZJ0Uxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932351AbZJ0Uz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932373AbZJ0Uxe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932300AbZJ0Uxc
+	id S932351AbZJ0Uz6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932284AbZJ0Uz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:53:32 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:39593 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932353AbZJ0Uxa convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-ghaskins@novell.com;2:1>);
-	Tue, 27 Oct 2009 16:53:30 -0400
-Message-Id: <4AE7258D0200005A000576F6@sinclair.provo.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Tue, 27 Oct 2009 14:53:33 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, <linux-kernel@vger.kernel.org>
-Subject: Re: Zillions of warnings in -next
-References: <20091027152530.75ca60e4@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091027152530.75ca60e4@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Tue, 27 Oct 2009 16:55:57 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:36388 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932133AbZJ0Uz4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 16:55:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=q6duR/4Cq4zswqza0rkgZueks9xPh8EVsFqn7m4jWfmxgPzqyGMCNUr3gIJPJZC+0b
+         slYjcdldMGaqodpwTGhtG2CJMuQ4AhK93EnhU9M5BjfmLQSdpAonkW0JIkul62uEYOi2
+         CzNz5wRyjaiNtCjJE2yhIR92U+jS1WdDPOGjA=
+Date: Tue, 27 Oct 2009 23:55:58 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [patch] x86: reduce srat verbosity in the kernel log
+Message-ID: <20091027205558.GM5893@lenovo>
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On 10/27/2009 at 11:25 AM, in message
-<20091027152530.75ca60e4@lxorguk.ukuu.org.uk>, Alan Cox
-<alan@lxorguk.ukuu.org.uk> wrote: 
-> I was thinking "what a lot of new warnings". Then I dug a little deeper
-> and it seems that someone never bothered to try and build
-> drivers/net/vbus-enet.c on a 32bit system.
-> 
-> So would you mind fixing the 27 new warnings introduced ?
-> 
-> Alan
+[David Rientjes - Tue, Oct 27, 2009 at 01:25:51PM -0700]
+| On Tue, 27 Oct 2009, Mike Travis wrote:
+| 
+...
+| +
+| +void __init acpi_numa_print_srat_mapping(void)
+| +{
+| +	int i, j;
+| +
+| +	for (i = 0; i < MAX_PXM_DOMAINS; i++) {
+| +		int nid;
+| +
+| +		nid = pxm_to_node(i);
+| +		if (nid == NUMA_NO_NODE)
 
-I just did a 32-bit build and indeed reproduced the warnings.  However, the warnings
-appear to be dubious as the code is properly (afaict) annotated with explicit casts, and
-I believe they are doing what I intended.
+Btw, David, while you at it, I just curious -- shouldn't we test it
+with NID_INVAL (as pxm_to_node_map initially defined to)? Not a big
+deal at all (since they are both = -1) but for the record.
+Or perhaps I miss something?
 
-Basically I have structures that are always 64 bit (so we can have a mixed-mode 32-bit
-guest talk to a 64-bit hypervisor, for instance).  Therefore I am casting between native
-and u64, but the compiler doesn't like this.  Does anyone have any suggestions on ways
-to fix this so the compiler is happy?
+| +			continue;
+...
 
-For instance:
-
-struct foo {
-   u64 bar;
-}
-
-xmit_foo(void *ptr)
-{
- struct foo f;
-
- f->bar = (u64)ptr; /* generates warning */
-}
-
-Kind Regards,
--Greg
-
-
-
+	-- Cyrill
