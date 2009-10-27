@@ -1,69 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbZJ0O5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZJ0PCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754974AbZJ0O5s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 10:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZJ0O5s
+	id S1755067AbZJ0PCZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 11:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbZJ0PCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 10:57:48 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49839 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753810AbZJ0O5r (ORCPT
+	Tue, 27 Oct 2009 11:02:24 -0400
+Received: from mail-px0-f180.google.com ([209.85.216.180]:38180 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753718AbZJ0PCX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 10:57:47 -0400
-Message-ID: <4AE70A6D.8060700@s5r6.in-berlin.de>
-Date: Tue, 27 Oct 2009 15:57:49 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
+	Tue, 27 Oct 2009 11:02:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=RdQt7FstuUL+weA3vo9tmjvuj+h5sDqK9h75+NiWx2wnsDFzjJwssc5ASo684vt33B
+         /EPESKWfN4K3rXKy+Snti+9icl+PXIrq561dbAW4zcGGMkr5v7jNyxYCJKQvLY8++qmn
+         JQeyfMW+dmXUAAQgSwnxnyb6O9/1TOdPKCKoU=
+Message-ID: <4AE70B7F.5030602@gmail.com>
+Date: Tue, 27 Oct 2009 11:02:23 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: "Leonidas ." <leonidas137@gmail.com>
-CC: Michael Schnell <mschnell@lumino.de>, Noah Watkins <noah@noahdesu.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Difference between atomic operations and memory barriers
-References: <f22d86810910261019yc77dbf0sa7688a98e7b98267@mail.gmail.com>	 <7ADB5FD7-9C97-4987-BC20-997258B25FD2@noahdesu.com>	 <f22d86810910261122j6c9e57e8pd4a257090f65c727@mail.gmail.com>	 <4AE5F1D2.9030908@s5r6.in-berlin.de>	 <f22d86810910261205r232db5d4re97a54827c7adab3@mail.gmail.com>	 <4AE6C998.9040405@lumino.de> <f22d86810910270323m6e004576ya4da96afc02e3d07@mail.gmail.com>
-In-Reply-To: <f22d86810910270323m6e004576ya4da96afc02e3d07@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: paulmck@linux.vnet.ibm.com
+CC: Gleb Natapov <gleb@redhat.com>, Gregory Haskins <ghaskins@novell.com>,
+       kvm@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [KVM PATCH v3 1/3] KVM: fix race in irq_routing logic
+References: <20091026162148.23704.47286.stgit@dev.haskins.net> <20091026162157.23704.12420.stgit@dev.haskins.net> <20091027064529.GJ29477@redhat.com> <4AE6F7F7.1010302@gmail.com> <20091027140237.GM29477@redhat.com> <20091027144932.GK6645@linux.vnet.ibm.com>
+In-Reply-To: <20091027144932.GK6645@linux.vnet.ibm.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6657AE1F908DB4369087A641"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Leonidas . wrote:
-> On Tue, Oct 27, 2009 at 3:21 AM, Michael Schnell <mschnell@lumino.de> wrote:
->> Leonidas . wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6657AE1F908DB4369087A641
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Thanks for this, Paul.
+
+Some questions and statements below.
+
+Paul E. McKenney wrote:
+> On Tue, Oct 27, 2009 at 04:02:37PM +0200, Gleb Natapov wrote:
+>> On Tue, Oct 27, 2009 at 09:39:03AM -0400, Gregory Haskins wrote:
+>=20
+> [ . . . ]
+>=20
+>>> standard RCU RSCS, which is what SRCU is designed for.  So rather tha=
+n
+>>> inventing an awkward two-phased stack based solution, it's better to
+>>> reuse the provided tools, IMO.
 >>>
->>> any_t *ptr = something;
+>>> To flip it around:  Is there any reason why an SRCU would not work he=
+re,
+>>> and thus we were forced to use something like the stack-copy approach=
+?
 >>>
->>> is always atomic even on SMPs without using locks, barriers then my
->>> doubt is cleared. Thanks.
->>
->> I assume that this only holds if the pointer (not the thing it points
->> to) is denoted as volatile.
+>> If SRCU has no disadvantage comparing to RCU why not use it always? :)=
 
-  - Atomic access (either old or new value is visible to CPUs or
-    devices, but never any intermediary, half-baked value),
-  - memory barrier (enforced order of accesses),
-  - volatile qualifier (disabled compiler optimization of accesses)
+>=20
+> The disadvantages of SRCU compared to RCU include the following:
+>=20
+> 1.	SRCU requires that the return value of srcu_read_lock()
+> 	be fed into srcu_read_unlock().  This is usually not a problem,
+> 	but can be painful if there are multiple levels of function
+> 	call separating the two.
 
-are three different concepts.
+Right, and this is simple/neat w.r.t. its usage in irq_routing, so no
+problem there.
 
-We rely on atomic pointer load and store all over the kernel, yet never
-qualify them as "volatile".  (A look into the C language spec might
-bring clarity here.  I don't have the spec at hand alas.)
+>=20
+> 2.	SRCU's grace periods are about 4x slower than those of RCU.
+> 	And they also don't scale all that well with extremely large
+> 	numbers of CPUs (but this can be fixed when/if it becomes a
+> 	real problem).
 
-> I dont think so,  volatile would only ensure no caching, so some cpus
-> might see the cached pointer (this is where you would want to use
-> barriers), but pointer assignment would still be atomic.
+The irq_routing update path is extremely infrequent, so this should not
+be an issue.
 
-What "volatile" ensures or not ensures is not that well defined in the C
-language specification as far as I recall prior discussion.  Its precise
-effects are compiler dependent.  You are right in so far as volatile
-(given or missing) does not change whether an access is guaranteed
-atomic or not.  Since it affects compiler optimizations, I think it
-could possibly affect atomicity of accesses which were never guaranteed
-to be atomic.  But this should not be interesting to 99.99% of all
-kernel coders because they better use guaranteed atomic accesses when
-they really need them.  (E.g. <linux/atomic.h> or pointer load/ store.)
--- 
-Stefan Richter
--=====-==--= =-=- ==-==
-http://arcgraph.de/sr/
+>=20
+> 3.	SRCU's read-side primitives are also significantly slower than
+> 	those of RCU.
+>=20
+
+Are the 10ns vs 45ns numbers that I mentioned in my last reply the
+proper ballpark?  How do these compare to an atomic-op, say an
+uncontended spinlock on modern hardware?  The assumption is that
+srcu_read_lock() should be significantly cheaper than a read-lock().  If
+its not, then we might as well use something else, I suppose.  But if
+its not, I guess you probably wouldn't have bothered to invent it in the
+first place ;)
+
+> 4.	SRCU does not have a call_srcu().  One could be provided, but
+> 	its semantics would be a bit strange due to the need to limit
+> 	the number of callbacks, given that general blocking is
+> 	permitted in SRCU read-side critical sections.  (And it would
+> 	take some doing to convince me to supply an SRCU!)
+
+This is not an issue in our design.
+
+>=20
+> 5.	The current SRCU has no reasonable way to implement read-side
+> 	priority boosting, as there is no record of which task
+> 	is read-holding which SRCU.
+
+Given the infrequency of the update path, I do not see this as a problem.=
+
+
+Kind Regards,
+-Greg
+
+
+--------------enig6657AE1F908DB4369087A641
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkrnC38ACgkQP5K2CMvXmqHh5ACdGLep4fTDLxH4pDxhcV6I+XZf
+0osAnitVCApFiH8V8Hq+oTIGSMgBhvMo
+=cxt9
+-----END PGP SIGNATURE-----
+
+--------------enig6657AE1F908DB4369087A641--
