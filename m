@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZJ0RaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbZJ0Rcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123AbZJ0RaR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 13:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbZJ0RaQ
+	id S1756304AbZJ0Rcq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 13:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbZJ0Rcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 13:30:16 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:45573 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754029AbZJ0RaP (ORCPT
+	Tue, 27 Oct 2009 13:32:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60383 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754029AbZJ0Rcp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 13:30:15 -0400
-Date: Tue, 27 Oct 2009 10:30:01 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Crane Cai <crane.cai@amd.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       lenb@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] acpi: support IBM SMBus CMI devices
-Message-ID: <20091027173001.GT26149@tux1.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-References: <20091021023016.GC32413@crane-desktop> <200910210857.13978.bjorn.helgaas@hp.com> <20091021173733.GN26149@tux1.beaverton.ibm.com> <20091022071748.GA17917@crane-desktop> <20091022174304.GO26149@tux1.beaverton.ibm.com> <20091023044451.GB1367@crane-desktop> <20091023170311.GC21723@tux1.beaverton.ibm.com> <20091025125353.55d3bfad@hyperion.delvare> <20091026205819.GR26149@tux1.beaverton.ibm.com> <20091027180332.62f2c758@hyperion.delvare>
+	Tue, 27 Oct 2009 13:32:45 -0400
+Date: Tue, 27 Oct 2009 10:32:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Stephen Hemminger <shemminger@vyatta.com>
+cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Stephen Hemminger <stephen.hemminger@vyatta.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] dcache: better name hash function
+In-Reply-To: <20091027100736.5303f1ab@nehalam>
+Message-ID: <alpine.LFD.2.01.0910271017170.31845@localhost.localdomain>
+References: <19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com> <4AE68E23.20205@gmail.com> <4AE69829.9070207@gmail.com> <4AE6A16F.4020002@gmail.com> <20091027100736.5303f1ab@nehalam>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091027180332.62f2c758@hyperion.delvare>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 06:03:32PM +0100, Jean Delvare wrote:
 
-> I'm only half please with this. You change the function named, but it
-> doesn't follow the calling convention of acpi_dock_match(), which is a
-> little confusing.
+
+On Tue, 27 Oct 2009, Stephen Hemminger wrote:
 > 
-> Anyway, I will need an ack from the ACPI people before I can pick this
-> patch. Or maybe they should even push it upstream themselves.
+> Rather than wasting space, or doing expensive, modulus; just folding
+> the higher bits back with XOR redistributes the bits better.
 
-I am confused.  Looking at that bunch of ifs, acpi_is_video_device returns 1
-for a match and 0 for no match.  acpi_bay_match returns 0 for a match and
--ENODEV for no match, which just happens to work with the ACPI_SUCCESS macro.
-acpi_dock_match returns ACPI error codes.  Each of the three existing tests has
-different return value semantics, so it is not clear to me which one I should
-use.
+Please don't make up any new hash functions without having a better input 
+set than the one you seem to use.
 
-I didn't think it was correct for my probe function to use the ACPI_STATUS
-macro unless it returned ACPI error codes... which it does not.  -ENODEV seemed
-appropriate for "no device found".
+The 'fnv' function I can believe in, because the whole "multiply by big 
+prime number" thing to spread out the bits is a very traditional model. 
+But making up a new hash function based on essentially consecutive names 
+is absolutely the wrong thing to do. You need a much better corpus of path 
+component names for testing.
 
-Is it desirable to clean them all up to follow the same convention?
+> The following seems to give best results (combination of 16bit trick
+> and string17).
 
---D
+.. and these kinds of games are likely to work badly on some 
+architectures. Don't use 16-bit values, and don't use 'get_unaligned()'. 
+Both tend to work fine on x86, but likely suck on some other 
+architectures.
+
+Also remember that the critical hash function needs to check for '/' and 
+'\0' while at it, which is one reason why it does things byte-at-a-time. 
+If you try to be smart, you'd need to be smart about the end condition 
+too.
+
+The loop to optimize is _not_ based on 'name+len', it is this code:
+
+                this.name = name;
+                c = *(const unsigned char *)name;
+
+                hash = init_name_hash();
+                do {
+                        name++;
+                        hash = partial_name_hash(c, hash);
+                        c = *(const unsigned char *)name;
+                } while (c && (c != '/'));
+                this.len = name - (const char *) this.name;
+                this.hash = end_name_hash(hash);
+
+(which depends on us having already removed all slashed at the head, and 
+knowing that the string is not zero-sized)
+
+So doing things multiple bytes at a time is certainly still possible, but 
+you would always have to find the slashes/NUL's in there first. Doing that 
+efficiently and portably is not trivial - especially since a lot of 
+critical path components are short.
+
+(Remember: there may be just a few 'bin' directory names, but if you do 
+performance analysis, 'bin' as a path component is probably hashed a lot 
+more than 'five_slutty_bimbos_and_a_donkey.jpg'. So the relative weighting 
+of importance of the filename should probably include the frequency it 
+shows up in pathname lookup)
+
+		Linus
