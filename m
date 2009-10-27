@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbZJ0WLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbZJ0WT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753667AbZJ0WLU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 18:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZJ0WLT
+	id S1753870AbZJ0WT3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 18:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZJ0WT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 18:11:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39951 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753028AbZJ0WLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 18:11:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>
-Subject: Re: [Bug #14484] no video output after suspend
-Date: Tue, 27 Oct 2009 23:12:56 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.5tE.0qe5KB@chimera> <4AE7654B.6040401@gmail.com>
-In-Reply-To: <4AE7654B.6040401@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Tue, 27 Oct 2009 18:19:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45691 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753534AbZJ0WT2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 18:19:28 -0400
+Date: Tue, 27 Oct 2009 22:21:12 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: Zillions of warnings in -next
+Message-ID: <20091027222112.74058162@lxorguk.ukuu.org.uk>
+In-Reply-To: <4AE7258D0200005A000576F6@sinclair.provo.novell.com>
+References: <20091027152530.75ca60e4@lxorguk.ukuu.org.uk>
+	<4AE7258D0200005A000576F6@sinclair.provo.novell.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910272312.56120.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 October 2009, Riccardo Magliocchetti wrote:
-> Hello Rafael,
+> I just did a 32-bit build and indeed reproduced the warnings.  However, the warnings
+> appear to be dubious as the code is properly (afaict) annotated with explicit casts, and
+> I believe they are doing what I intended.
 > 
-> Rafael J. Wysocki ha scritto:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.31.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14484
-> > Subject		: no video output after suspend
-> > Submitter	: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>
-> > Date		: 2009-10-25 20:57 (2 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125650430123713&w=4
-> > Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
-> 
-> Since the bad commit is around 2.6.31-rc9 i think this is a regression 
-> from 2.6.30 and not 2.6.31, it's me that have reported the issue so 
-> late. Then the patch that you added on the first comment is for another 
-> issue and not this one.
+> Basically I have structures that are always 64 bit (so we can have a mixed-mode 32-bit
+> guest talk to a 64-bit hypervisor, for instance).  Therefore I am casting between native
+> and u64, but the compiler doesn't like this.  Does anyone have any suggestions on ways
+> to fix this so the compiler is happy?
 
-Thanks, updated.
+	foo = (void *)(unsigned long)x
 
-Rafael
+works for the general case because Linux assumes ptr fits ulong
+
+Similarly in the other direction.
+
+Alan
