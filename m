@@ -1,102 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbZJ0VfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932488AbZJ0Vfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932468AbZJ0VfY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 17:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932464AbZJ0VfW
+	id S932488AbZJ0Vfe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 17:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932463AbZJ0Vfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 17:35:22 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:54567 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932422AbZJ0VfS (ORCPT
+	Tue, 27 Oct 2009 17:35:32 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:61493 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932477AbZJ0Vf2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 17:35:18 -0400
-Subject: Re: [PATCH] [GIT PULL] tracing: allow to change permissions for
- text with dynamic ftrace enabled
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <1256682364.2691.33.camel@sbs-t61.sc.intel.com>
-References: <1256666023.26028.411.camel@gandalf.stny.rr.com>
-	 <1256671227.2691.15.camel@sbs-t61.sc.intel.com>
-	 <1256668438.26028.414.camel@gandalf.stny.rr.com>
-	 <1256682364.2691.33.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 27 Oct 2009 17:35:18 -0400
-Message-Id: <1256679318.26028.468.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Oct 2009 17:35:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TU4hylmrlaB36LJb/50wUDt0sySLJQuBRTSaITup/9bHd16CWWOTH596lQH2hi1MF2
+         fBLaXAD1faPh5gSFJ0CxDbYOuImEnFKKssVoKQxScr24RUoOgK0jlVQ/Ce9anydfvFSr
+         aoKRbRjaK/VbYkS2kK3Fo1ofs4FQSFN+keoLU=
+MIME-Version: 1.0
+In-Reply-To: <20091027174603.GD23368@kroah.com>
+References: <20091025175057.270011110@gmail.com>
+	 <20091025175316.391430732@gmail.com>
+	 <20091027174603.GD23368@kroah.com>
+Date: Tue, 27 Oct 2009 22:35:31 +0100
+Message-ID: <7eb6a4d80910271435w5ec28f3j4b4424a6d3eeaeaf@mail.gmail.com>
+Subject: Re: [PATCH 1/7] ark3116: (3rd try) Setup some basic infrastructure 
+	for new ark3116 driver.
+From: Bart Hartgers <bart.hartgers@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mike McCormack <mikem@ring3k.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 14:26 -0800, Suresh Siddha wrote:
-> On Tue, 2009-10-27 at 11:33 -0700, Steven Rostedt wrote:
-> > On Tue, 2009-10-27 at 11:20 -0800, Suresh Siddha wrote:
-> > 
-> > > Steven, Is it possible for dynamic ftrace to use the kernel identity
-> > > mapping instead of the kernel text mapping for converting the tracing
-> > > calls to nops etc.
-> > 
-> > Not sure what you mean by "kernel identity" mapping.
-> 
-> 64bit has the kernel text pages mapped at two locations. kernel identity
-> mapping  (__PAGE_OFFSET) and kernel image/text mapping
-> (__START_KERNEL_map).
+2009/10/27 Greg KH <greg@kroah.com>:
+> On Sun, Oct 25, 2009 at 06:50:58PM +0100, bart.hartgers@gmail.com wrote:
+>> Signed-off-by: Bart Hartgers <bart.hartgers@gmail.com>
+>> ---
+>> Index: linux-2.6.32-rc4/drivers/usb/serial/ark3116.c
+>> ===================================================================
+>> --- linux-2.6.32-rc4.orig/drivers/usb/serial/ark3116.c        2009-10-18 14:25:02.000000000 +0200
+>> +++ linux-2.6.32-rc4/drivers/usb/serial/ark3116.c     2009-10-18 14:25:14.000000000 +0200
+>> @@ -1,4 +1,6 @@
+>>  /*
+>> + * Copyright (C) 2009 by Bart Hartgers (bart.hartgers+ark3116@gmail.com)
+>> + * Original version:
+>>   * Copyright (C) 2006
+>>   *   Simon Schulz (ark3116_driver <at> auctionant.de)
+>>   *
+>> @@ -6,10 +8,13 @@
+>>   * - implements a driver for the arkmicro ark3116 chipset (vendor=0x6547,
+>>   *   productid=0x0232) (used in a datacable called KQ-U8A)
+>>   *
+>> - * - based on code by krisfx -> thanks !!
+>> - *   (see http://www.linuxquestions.org/questions/showthread.php?p=2184457#post2184457)
+>> + * Supports full modem status lines, break, hardware flow control. Does not
+>> + * support software flow control, since I do not know how to enable it in hw.
+>>   *
+>> - *  - based on logs created by usbsnoopy
+>> + * This driver is a essentially new implementation. I initially dug
+>> + * into the old ark3116.c driver and suddenly realized the ark3116 is
+>> + * a 16450 with a USB interface glued to it. See comments at the
+>> + * bottom of this file.
+>>   *
+>>   * This program is free software; you can redistribute it and/or modify it
+>>   * under the terms of the GNU General Public License as published by the
+>> @@ -19,15 +24,31 @@
+>>
+>>  #include <linux/kernel.h>
+>>  #include <linux/init.h>
+>> +#include <asm/atomic.h>
+>> +#include <linux/ioctl.h>
+>>  #include <linux/tty.h>
+>> +#include <linux/tty_flip.h>
+>>  #include <linux/module.h>
+>>  #include <linux/usb.h>
+>>  #include <linux/usb/serial.h>
+>>  #include <linux/serial.h>
+>> +#include <linux/serial_reg.h>
+>>  #include <linux/uaccess.h>
+>> -
+>> +#include <linux/mutex.h>
+>>
+>>  static int debug;
+>> +/*
+>> + * Version information
+>> + */
+>> +
+>> +#define DRIVER_VERSION "v0.3"
+>> +#define DRIVER_AUTHOR "Bart Hartgers <bart.hartgers+ark3116@gmail.com>"
+>> +#define DRIVER_DESC "USB ARK3116 serial/IrDA driver"
+>> +#define DRIVER_DEV_DESC "ARK3116 RS232/IrDA"
+>> +#define DRIVER_NAME "ark3116"
+>> +
+>> +/* usb timeout of 1 second */
+>> +#define ARK_TIMEOUT (1*HZ)
+>>
+>>  static struct usb_device_id id_table [] = {
+>>       { USB_DEVICE(0x6547, 0x0232) },
+>> @@ -45,6 +66,52 @@ static int is_irda(struct usb_serial *se
+>>       return 0;
+>>  }
+>>
+>> +struct ark3116_private {
+>> +     wait_queue_head_t       delta_msr_wait;
+>> +     struct async_icount     icount;
+>> +     int                     irda;   /* 1 for irda device */
+>> +
+>> +     /* protects hw register updates */
+>> +     struct mutex            lock;
+>> +
+>> +     int                     quot;   /* baudrate divisor */
+>> +     __u8                    lcr;    /* line control register value */
+>> +     __u8                    hcr;    /* handshake control register (0x8)
+>> +                                      * value
+>> +                                      */
+>> +     /* register values - updated asynchronously */
+>> +     atomic_t                mcr;
+>> +     atomic_t                msr;
+>> +     atomic_t                lsr;
+>
+> These don't need to be atomic, please don't use them if they are not
+> needed.  Just use the lock to protect updating them if needed.
+>
+At least lsr and msr are (or will be in patch 6) updated by the
+interrupt_callback. I am happy to add another lock (for
+interrupt-context it would need a spinlock rather than a mutex,
+right?). I am just surprised that is considered cleaner than using
+atomic_t.
 
-I didn't realize that x86_64 mapped it two different ways.
+For mcr I am not sure whether a race between tiocmget and tiocmset is
+possible. I didn't see any obvious locking in usb-serial.c or
+tty_io.c, that's why I used an atomic_t. Am I missing something?
 
-> 
-> DEBUG_RODATA patch was trying to preserve large page mapping (for perf
-> reasons) for kernel text. We can use the identity mapping for modifying
-> the kernel text.
-> 
-> This patch seems to fix.
-> 
-> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-> index 5a1b975..7e1799b 100644
-> --- a/arch/x86/kernel/ftrace.c
-> +++ b/arch/x86/kernel/ftrace.c
-> @@ -215,6 +215,11 @@ do_ftrace_mod_code(unsigned long ip, void *new_code)
->  }
->  
-> 
-> +static inline int
-> +within(unsigned long addr, unsigned long start, unsigned long end)
-> +{
-> +	return addr >= start && addr < end;
-> +}
->  
-> 
->  static unsigned char ftrace_nop[MCOUNT_INSN_SIZE];
-> @@ -248,6 +253,14 @@ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
->  	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
->  		return -EINVAL;
->  
-> +	/*
-> +	 * On x86_64, we use the kernel identity mapping instead of the
-> +	 * kernel text mapping to modify the kernel text. This is a nop
-> +	 * for 32bit kernels.
-> +	 */
+> Care to respin this series based on the review so far?
+Will do somewhere tomorrow. Mike and I are working out how to combine
+our patches.
 
-Is it really a nop on 32bit? Does it just turn into ip = ip?
+Groeten,
+Bart
+
+>
+> thanks,
+>
+> greg k-h
+>
 
 
-> +	if (within(ip, (unsigned long)_text, (unsigned long)_etext))
-> +		ip = (unsigned long)__va(__pa(ip));
-> +
->  	/* replace the text with the new text */
->  	if (do_ftrace_mod_code(ip, new_code))
->  		return -EPERM;
 
-I'll test it out, and if it does work, you can write up a formal patch
-and remove the !define that I added.
-
-Thanks,
-
--- Steve
-
-
+-- 
+Bart Hartgers - New e-mail: bart.hartgers@gmail.com
