@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756836AbZJ0UXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZJ0UWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756836AbZJ0UXV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbZJ0UXU
+	id S1756805AbZJ0UWq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbZJ0UWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:23:20 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:59396 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756787AbZJ0UXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:23:19 -0400
-Message-ID: <4AE756CE.2030309@sgi.com>
-Date: Tue, 27 Oct 2009 13:23:42 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 27 Oct 2009 16:22:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39483 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756785AbZJ0UWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 16:22:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Eric Paris <eparis@parisplace.org>
+Subject: Re: [Bug #14090] WARNING: at fs/notify/inotify/inotify_user.c:394
+Date: Tue, 27 Oct 2009 21:24:17 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Joerg Platte <bugzilla@jako.ping.de>
+References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera> <vX3ILojF2dJ.A.1J.5ff5KB@chimera> <7e0fb38c0910270733g7b05c779m1f593529659a6ff@mail.gmail.com>
+In-Reply-To: <7e0fb38c0910270733g7b05c779m1f593529659a6ff@mail.gmail.com>
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: David Rientjes <rientjes@google.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 3/8] SGI x86_64 UV: Limit the number of number of SRAT
- messages
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <20091027201636.GK5893@lenovo>
-In-Reply-To: <20091027201636.GK5893@lenovo>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910272124.17796.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Cyrill Gorcunov wrote:
-> [David Rientjes - Tue, Oct 27, 2009 at 12:45:00PM -0700]
-> ...
-> | On Tue, 27 Oct 2009, Mike Travis wrote:
-> | +
-> | +void __init acpi_numa_print_srat_mapping(void)
-> | +{
-> | +	DECLARE_BITMAP(apicid_map, MAX_LOCAL_APIC);
-> | +	char apicid_list[MAX_LOCAL_APIC];
+On Tuesday 27 October 2009, Eric Paris wrote:
+> On Mon, Oct 26, 2009 at 3:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.30 and 2.6.31.
+> >
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+> > be listed and let me know (either way).
+> >
+> >
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14090
+> > Subject         : WARNING: at fs/notify/inotify/inotify_user.c:394
+> > Submitter       : Joerg Platte <bugzilla@jako.ping.de>
+> > Date            : 2009-08-30 15:21 (58 days old)
 > 
-> Hi David, I suppose 32K on stack is too much :)
-> (perhaps gcc will move it out of stack?)
-> 
-> ...
-> 
-> 	-- Cyrill
+> should be fixed by: 9f0d793b52eb2266359661369ef6303838904855 in linus' tree
 
-Yeah, I missed that too on my first review.  (4k seems piddling
-compared to 32k on the stack! ;-)
+Thanks, closing.
 
-I moved them both to static and will be testing it shortly:
-
-static DECLARE_BITMAP(apicid_map, MAX_LOCAL_APIC) __initdata;
-static char apicid_list[MAX_LOCAL_APIC] __initdata;
-
-Thanks,
-Mike
-
+Rafael
