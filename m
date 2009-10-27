@@ -1,106 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbZJ0UXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbZJ0UTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbZJ0UXL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:23:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbZJ0UXK
+	id S1756799AbZJ0UTk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbZJ0UTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:23:10 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40634 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756785AbZJ0UXJ (ORCPT
+	Tue, 27 Oct 2009 16:19:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36249 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756768AbZJ0UTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:23:09 -0400
-Subject: Re: [PATCH 5/9] tracing: recordmcount.pl Clarify the logic on
- mcount section check
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Li Hong <lihong.hi@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20091027070113.GE22032@uhli>
-References: <20091027065421.GA22032@uhli>  <20091027070113.GE22032@uhli>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 27 Oct 2009 16:18:52 -0400
-Message-Id: <1256674732.26028.438.camel@gandalf.stny.rr.com>
+	Tue, 27 Oct 2009 16:19:30 -0400
+Date: Tue, 27 Oct 2009 13:19:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org\"" <linux-mm@kvack.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 3/3] vmscan: Force kswapd to take notice faster when
+ high-order watermarks are being hit
+Message-Id: <20091027131905.410ec04a.akpm@linux-foundation.org>
+In-Reply-To: <1256650833-15516-4-git-send-email-mel@csn.ul.ie>
+References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie>
+	<1256650833-15516-4-git-send-email-mel@csn.ul.ie>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 15:01 +0800, Li Hong wrote:
-> >From eb8a2d53bc2484be223e4fa0df8804389e969b72 Mon Sep 17 00:00:00 2001
-> From: Li Hong <lihong.hi@gmail.com>
-> Date: Tue, 27 Oct 2009 12:53:52 +0800
-> Subject: [PATCH] tracing: recordmcount.pl Clarify the logic on mcount section check
-> 
-> Move the mcount section check to the beginning of the objdump read loop.
-> It is clearer, because mcount section check uses headers dump part of objdump
-> to identify a mcount section, which goes before the section parts.
-> 
-> Signed-off-by: Li Hong <lihong.hi@gmail.com>
-> 
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 970c6d6..a6585b6 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -384,9 +384,26 @@ open(IN, "$objdump -hdr $inputfile|") || die "error running $objdump";
->  
->  my $text;
->  
-> -my $read_headers = 1;
->  
->  while (<IN>) {
-> +    # read headers first
-> +    my $read_headers = 1;
-> +    
+On Tue, 27 Oct 2009 13:40:33 +0000
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-Please keep the $read_headers initialization outside of the while loop.
-It makes it easier for C programers to understand. Otherwise it looks
-like it gets reset every time.
+> When a high-order allocation fails, kswapd is kicked so that it reclaims
+> at a higher-order to avoid direct reclaimers stall and to help GFP_ATOMIC
+> allocations. Something has changed in recent kernels that affect the timing
+> where high-order GFP_ATOMIC allocations are now failing with more frequency,
+> particularly under pressure. This patch forces kswapd to notice sooner that
+> high-order allocations are occuring.
+> 
 
--- Steve
+"something has changed"?  Shouldn't we find out what that is?
 
-> +    if ($read_headers && /$mcount_section/) {
-> +	#
-> +	# Somehow the make process can execute this script on an
-> +	# object twice. If it does, we would duplicate the mcount
-> +	# section and it will cause the function tracer self test
-> +	# to fail. Check if the mcount section exists, and if it does,
-> +	# warn and exit.
-> +	#
-> +	print STDERR "ERROR: $mcount_section already in $inputfile\n" .
-> +	    "\tThis may be an indication that your build is corrupted.\n" .
-> +	    "\tDelete $inputfile and try again. If the same object file\n" .
-> +	    "\tstill causes an issue, then disable CONFIG_DYNAMIC_FTRACE.\n";
-> +	exit(-1);
-> +    }
+> ---
+>  mm/vmscan.c |    9 +++++++++
+>  1 files changed, 9 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 64e4388..7eceb02 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2016,6 +2016,15 @@ loop_again:
+>  					priority != DEF_PRIORITY)
+>  				continue;
+>  
+> +			/*
+> +			 * Exit the function now and have kswapd start over
+> +			 * if it is known that higher orders are required
+> +			 */
+> +			if (pgdat->kswapd_max_order > order) {
+> +				all_zones_ok = 1;
+> +				goto out;
+> +			}
 > +
->      # is it a section?
->      if (/$section_regex/) {
->  	$read_headers = 0;
-> @@ -427,21 +444,7 @@ while (<IN>) {
->  		$offset = hex $1;
->  	    }
->  	}
-> -    } elsif ($read_headers && /$mcount_section/) {
-> -	#
-> -	# Somehow the make process can execute this script on an
-> -	# object twice. If it does, we would duplicate the mcount
-> -	# section and it will cause the function tracer self test
-> -	# to fail. Check if the mcount section exists, and if it does,
-> -	# warn and exit.
-> -	#
-> -	print STDERR "ERROR: $mcount_section already in $inputfile\n" .
-> -	    "\tThis may be an indication that your build is corrupted.\n" .
-> -	    "\tDelete $inputfile and try again. If the same object file\n" .
-> -	    "\tstill causes an issue, then disable CONFIG_DYNAMIC_FTRACE.\n";
-> -	exit(-1);
-> -    }
-> -
-> +    } 
->      # is this a call site to mcount? If so, record it to print later
->      if ($text_found && /$mcount_regex/) {
->  	$offsets[$#offsets + 1] = hex $1;
+>  			if (!zone_watermark_ok(zone, order,
+>  					high_wmark_pages(zone), end_zone, 0))
+>  				all_zones_ok = 0;
 
+So this handles the case where some concurrent thread or interrupt
+increases pgdat->kswapd_max_order while kswapd was running
+balance_pgdat(), yes?
+
+Does that actually happen much?  Enough for this patch to make any
+useful difference?
+
+If one where to whack a printk in that `if' block, how often would it
+trigger, and under what circumstances?
+
+
+If the -stable maintainers were to ask me "why did you send this" then
+right now my answer would have to be "I have no idea".  Help.
