@@ -1,41 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbZJ0ROp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZJ0RSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752568AbZJ0ROp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 13:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbZJ0ROo
+	id S1753811AbZJ0RSd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 13:18:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZJ0RSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 13:14:44 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:6366 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751330AbZJ0ROo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 13:14:44 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 3/5] cfq-iosched: reimplement priorities using different service trees
-References: <200910262244.51965.czoccolo@gmail.com>
-	<200910271009.08776.czoccolo@gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 27 Oct 2009 13:14:43 -0400
-In-Reply-To: <200910271009.08776.czoccolo@gmail.com> (Corrado Zoccolo's
-	message of "Tue, 27 Oct 2009 10:09:08 +0100")
-Message-ID: <x4963a021z0.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 27 Oct 2009 13:18:32 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:18787 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbZJ0RSc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 13:18:32 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 27 Oct 2009 13:18:34 -0400 (EDT)
+From: Nicolas Pitre <nico@fluxnic.net>
+X-X-Sender: nico@xanadu.home
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Luck, Tony" <tony.luck@intel.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [RFC] to rebase or not to rebase on linux-next
+In-reply-to: <1256657956.26028.408.camel@gandalf.stny.rr.com>
+Message-id: <alpine.LFD.2.00.0910271258160.10545@xanadu.home>
+References: <4AE19A74.1090709@garzik.org> <20091023123555.GA25366@elte.hu>
+ <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com>
+ <20091023134115.GD27097@elte.hu>
+ <alpine.LFD.2.00.0910231424440.21460@xanadu.home>
+ <20091023191631.GA1879@elte.hu>
+ <1256326512.26028.34.camel@gandalf.stny.rr.com>
+ <20091023205400.GA8356@elte.hu> <20091023215958.GA4139@merkur.ravnborg.org>
+ <1256599588.26028.340.camel@gandalf.stny.rr.com>
+ <20091027075954.GA32640@elte.hu>
+ <1256657956.26028.408.camel@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
+On Tue, 27 Oct 2009, Steven Rostedt wrote:
 
-> Resent to fix one regression in close cooperator code.
+> Sure, but I'm not talking about changing the patch, I'm talking about a
+> late "reviewed by" or "tested-by". These usually do come after a patch
+> set has been moved into the final git push. It would be nice to flag a
+> commit that it was tested by someone.
+>
+[...]
+> 
+> My suggestion is to add an "annotation" commit that can tag another
+> commit with something like a "tested-by". This way a tester can say,
+> they tested this particular commit, and if someone changes it, the SHA1
+> will no longer match. And then we can also have a record of what commit
+> was tested by who, after the fact that it went into git.
 
-This seems to be damaged (or my mailer sucks).  Can you send it again,
-please?  The other patches apply just fine.
+There is a "git notes" feature from Johan Herland being carried in thepu 
+branch of the git repository.  I strongly suggest to those who might 
+think this could be useful in this context to express their interest by 
+posting to git@vger.kernel.org.  With a concrete need and usage scenario 
+(and offer to help at least with testing) this feature might become 
+usable sooner.
 
-Cheers,
-Jeff
+
+Nicolas
