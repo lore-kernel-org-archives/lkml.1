@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbZJ0Bhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZJ0Bjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbZJ0Bhy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 21:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbZJ0Bhy
+	id S1755992AbZJ0Bjb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 21:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbZJ0Bjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 21:37:54 -0400
-Received: from mail-gx0-f216.google.com ([209.85.217.216]:49992 "EHLO
-	mail-gx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752341AbZJ0Bhx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 21:37:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=IrQ8ctM8mxE2CTjuHxCW6VzoUwBv1Lmpe8ACxZ13l21gvmf/5uxxckyhn7R7PMZeKM
-         LfYQeAxuVXf4xiyzOm+ExyKoDce+wZqRf9Ee6+V4a0jIlDJj6wF9LWzpqa0JhXqu2fgT
-         6itd3qdkmdBmvSULZR00d0Gbpgu1CVKv8ZHP8=
-Subject: Re: What ever happened to: [PATCH] MIPS: add support for
- gzip/bzip2/lzma compressed kernel images
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: rostedt@goodmis.org
-Cc: LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
-       alex@digriz.org.uk, ithamar.adema@team-embedded.nl,
-       linux-mips <linux-mips@linux-mips.org>
-In-Reply-To: <1256606966.26028.364.camel@gandalf.stny.rr.com>
-References: <1256606966.26028.364.camel@gandalf.stny.rr.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Tue, 27 Oct 2009 09:37:48 +0800
-Message-Id: <1256607468.5499.7.camel@falcon>
+	Mon, 26 Oct 2009 21:39:31 -0400
+Received: from sh.osrg.net ([192.16.179.4]:34408 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754246AbZJ0Bja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 21:39:30 -0400
+Date: Tue, 27 Oct 2009 10:38:18 +0900
+To: mingo@elte.hu
+Cc: JBeulich@novell.com, yinghai@kernel.org, tglx@linutronix.de, tiwai@suse.de,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org, hpa@zytor.com
+Subject: Re: [PATCH] x86: adjust GFP mask handling for coherent allocations
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091026201917.GE24682@elte.hu>
+References: <20091026152246.GB3749@elte.hu>
+	<4AE5D238020000780001BD46@vpn.id2.novell.com>
+	<20091026201917.GE24682@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20091027103758L.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 27 Oct 2009 10:38:20 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, 26 Oct 2009 21:19:17 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-On Mon, 2009-10-26 at 21:29 -0400, Steven Rostedt wrote:
-> Hi,
 > 
-> I'm playing with ftrace on MIPS thanks to Lemote for supplying me a
-> machine. And I noticed that, although Wu's repo gives me a nice vmlinuz
-> to install, the default kernels do not.
+> * Jan Beulich <JBeulich@novell.com> wrote:
 > 
-> Wu wrote a nice patch that adds this feature, and I see that he posted
-> it a few months back:
+> > >>> Ingo Molnar <mingo@elte.hu> 26.10.09 16:22 >>>
+> > >* Jan Beulich <JBeulich@novell.com> wrote:
+> > >> And any attempt to eliminate the conditional another way would just 
+> > >> introduce a very similar conditional elsewhere; with this having a 
+> > >> single user (and foreseeably not ever a second one) I would think this 
+> > >> would just make the code less readable.
+> > >
+> > >There's 3 other current uses of DMA_BIT_MASK(24) in arch/x86 - couldnt 
+> > >those use ISA_DMA_BIT_MASK too?
+> > 
+> > Oh, so you didn't mean me to eliminate the conditional in pci-dma.c, 
+> > but just to replace the DMA_BIT_MASK(24) here an elsewhere. Sure, I'm 
+> > fine with adding this to the patch.
 > 
-> http://www.linux-mips.org/archives/linux-mips/2009-08/msg00056.html
-> 
-> I do not see it in the mainline nor in Ralf's repo on kernel.org. I'm
-> hoping that it did not get lost and forgotten. What ever happened to it?
+> Well, can ISA_BIT_MASK fall back to DMA_BIT_MASK(32) on !CONFIG_ISA? If 
+> we have ISA support disabled we might as well pretend the whole world is 
+> PCI, right?
 
-Ralf have added this to his -queue git repo:
+I don't think that it works. At least, you can't do that with
+the DMA_BIT_MASK(24) in arch/x86/kernl/pci-dma.c; it must be
+DMA_BIT_MASK(24) even with !CONFIG_ISA.
 
-http://www.linux-mips.org/git?p=linux-queue.git;a=commit;h=9d20b1ddf20c3ead5e381a1d06471c33d7f3cb6d
 
-Thanks :-)
-	Wu Zhangjin
+> That way we'd get rid of that #ifdef in the .c code too.
 
+Well, in the first place, we don't need the #ifdef in Jan's patch. We
+can always use DMA_BIT_MASK(24) for the fallback device.
