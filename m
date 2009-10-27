@@ -1,126 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbZJ0WKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbZJ0Wc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567AbZJ0WKW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 18:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZJ0WKW
+	id S1754576AbZJ0Wc6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 18:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbZJ0Wc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 18:10:22 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:52408 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752321AbZJ0WKU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 18:10:20 -0400
-From: Dhananjay Phadke <dhananjay.phadke@qlogic.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       netdev <netdev@vger.kernel.org>
-CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "davem@davemloft.net" <davem@davemloft.net>
-Date: Tue, 27 Oct 2009 15:09:24 -0700
-Subject: RE: [PATCH -next] netxen: fix builds for SYSFS=n or MODULES=n
-Thread-Topic: [PATCH -next] netxen: fix builds for SYSFS=n or MODULES=n
-Thread-Index: AcpWiZOx7OSTHKKlTsW/F2l9iyr7CgAxzHJw
-Message-ID: <7608421F3572AB4292BB2532AE89D5658B0B8903CB@AVEXMB1.qlogic.org>
-References: <20091026172104.205f15af.sfr@canb.auug.org.au>
- <20091026150945.3f35a811.randy.dunlap@oracle.com>
-In-Reply-To: <20091026150945.3f35a811.randy.dunlap@oracle.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 27 Oct 2009 18:32:57 -0400
+Received: from kroah.org ([198.145.64.141]:55112 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753944AbZJ0Wc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 18:32:56 -0400
+Date: Tue, 27 Oct 2009 15:11:21 -0700
+From: Greg KH <greg@kroah.com>
+To: Bart Hartgers <bart.hartgers@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mike McCormack <mikem@ring3k.org>
+Subject: Re: [PATCH 1/7] ark3116: (3rd try) Setup some basic infrastructure
+ for new ark3116 driver.
+Message-ID: <20091027221121.GA20746@kroah.com>
+References: <20091025175057.270011110@gmail.com>
+ <20091025175316.391430732@gmail.com>
+ <20091027174603.GD23368@kroah.com>
+ <7eb6a4d80910271435w5ec28f3j4b4424a6d3eeaeaf@mail.gmail.com>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 27 Oct 2009 22:09:26.0899 (UTC) FILETIME=[25F15C30:01CA5752]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <7eb6a4d80910271435w5ec28f3j4b4424a6d3eeaeaf@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, seems like I am keeping you busy with the build errors.
-Thanks for fixing it again (may be I need to setup all different build configs).
+On Tue, Oct 27, 2009 at 10:35:31PM +0100, Bart Hartgers wrote:
+> 2009/10/27 Greg KH <greg@kroah.com>:
+> > On Sun, Oct 25, 2009 at 06:50:58PM +0100, bart.hartgers@gmail.com wrote:
+> >> Signed-off-by: Bart Hartgers <bart.hartgers@gmail.com>
+> >> ---
+> >> Index: linux-2.6.32-rc4/drivers/usb/serial/ark3116.c
+> >> ===================================================================
+> >> --- linux-2.6.32-rc4.orig/drivers/usb/serial/ark3116.c        2009-10-18 14:25:02.000000000 +0200
+> >> +++ linux-2.6.32-rc4/drivers/usb/serial/ark3116.c     2009-10-18 14:25:14.000000000 +0200
+> >> @@ -1,4 +1,6 @@
+> >>  /*
+> >> + * Copyright (C) 2009 by Bart Hartgers (bart.hartgers+ark3116@gmail.com)
+> >> + * Original version:
+> >>   * Copyright (C) 2006
+> >>   *   Simon Schulz (ark3116_driver <at> auctionant.de)
+> >>   *
+> >> @@ -6,10 +8,13 @@
+> >>   * - implements a driver for the arkmicro ark3116 chipset (vendor=0x6547,
+> >>   *   productid=0x0232) (used in a datacable called KQ-U8A)
+> >>   *
+> >> - * - based on code by krisfx -> thanks !!
+> >> - *   (see http://www.linuxquestions.org/questions/showthread.php?p=2184457#post2184457)
+> >> + * Supports full modem status lines, break, hardware flow control. Does not
+> >> + * support software flow control, since I do not know how to enable it in hw.
+> >>   *
+> >> - *  - based on logs created by usbsnoopy
+> >> + * This driver is a essentially new implementation. I initially dug
+> >> + * into the old ark3116.c driver and suddenly realized the ark3116 is
+> >> + * a 16450 with a USB interface glued to it. See comments at the
+> >> + * bottom of this file.
+> >>   *
+> >>   * This program is free software; you can redistribute it and/or modify it
+> >>   * under the terms of the GNU General Public License as published by the
+> >> @@ -19,15 +24,31 @@
+> >>
+> >>  #include <linux/kernel.h>
+> >>  #include <linux/init.h>
+> >> +#include <asm/atomic.h>
+> >> +#include <linux/ioctl.h>
+> >>  #include <linux/tty.h>
+> >> +#include <linux/tty_flip.h>
+> >>  #include <linux/module.h>
+> >>  #include <linux/usb.h>
+> >>  #include <linux/usb/serial.h>
+> >>  #include <linux/serial.h>
+> >> +#include <linux/serial_reg.h>
+> >>  #include <linux/uaccess.h>
+> >> -
+> >> +#include <linux/mutex.h>
+> >>
+> >>  static int debug;
+> >> +/*
+> >> + * Version information
+> >> + */
+> >> +
+> >> +#define DRIVER_VERSION "v0.3"
+> >> +#define DRIVER_AUTHOR "Bart Hartgers <bart.hartgers+ark3116@gmail.com>"
+> >> +#define DRIVER_DESC "USB ARK3116 serial/IrDA driver"
+> >> +#define DRIVER_DEV_DESC "ARK3116 RS232/IrDA"
+> >> +#define DRIVER_NAME "ark3116"
+> >> +
+> >> +/* usb timeout of 1 second */
+> >> +#define ARK_TIMEOUT (1*HZ)
+> >>
+> >>  static struct usb_device_id id_table [] = {
+> >>       { USB_DEVICE(0x6547, 0x0232) },
+> >> @@ -45,6 +66,52 @@ static int is_irda(struct usb_serial *se
+> >>       return 0;
+> >>  }
+> >>
+> >> +struct ark3116_private {
+> >> +     wait_queue_head_t       delta_msr_wait;
+> >> +     struct async_icount     icount;
+> >> +     int                     irda;   /* 1 for irda device */
+> >> +
+> >> +     /* protects hw register updates */
+> >> +     struct mutex            lock;
+> >> +
+> >> +     int                     quot;   /* baudrate divisor */
+> >> +     __u8                    lcr;    /* line control register value */
+> >> +     __u8                    hcr;    /* handshake control register (0x8)
+> >> +                                      * value
+> >> +                                      */
+> >> +     /* register values - updated asynchronously */
+> >> +     atomic_t                mcr;
+> >> +     atomic_t                msr;
+> >> +     atomic_t                lsr;
+> >
+> > These don't need to be atomic, please don't use them if they are not
+> > needed.  Just use the lock to protect updating them if needed.
+> >
+> At least lsr and msr are (or will be in patch 6) updated by the
+> interrupt_callback. I am happy to add another lock (for
+> interrupt-context it would need a spinlock rather than a mutex,
+> right?). I am just surprised that is considered cleaner than using
+> atomic_t.
 
-Acked-by: Dhananjay Phadke <dhananjay@netxen.com>
+Yes, just use a spinlock.  atomic_t are bad as they can be a mess (you
+will thrash cachelines multiple times if you hit multiple atomic_t
+values, but only once for a spinlock for those same multiple values.)
 
------Original Message-----
-From: Randy Dunlap [mailto:randy.dunlap@oracle.com] 
-Sent: Monday, October 26, 2009 3:10 PM
-To: Stephen Rothwell; netdev
-Cc: linux-next@vger.kernel.org; LKML; davem@davemloft.net; Dhananjay Phadke
-Subject: [PATCH -next] netxen: fix builds for SYSFS=n or MODULES=n
+It's just not worth it for a driver like this, just use a u32 and a
+spinlock.
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+thanks,
 
-When CONFIG_MODULES=n:
-drivers/net/netxen/netxen_nic_main.c:2751: error: dereferencing pointer to incomplete type
-drivers/net/netxen/netxen_nic_main.c:2764: error: dereferencing pointer to incomplete type
-
-Also needs addition of <linux/sysfs.h> for sysfs function prototypes or
-stubs when CONFIG_SYSFS=n.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/net/netxen/netxen_nic_main.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
-
---- linux-next-20091026.orig/drivers/net/netxen/netxen_nic_main.c
-+++ linux-next-20091026/drivers/net/netxen/netxen_nic_main.c
-@@ -34,6 +34,7 @@
- #include <net/ip.h>
- #include <linux/ipv6.h>
- #include <linux/inetdevice.h>
-+#include <linux/sysfs.h>
- 
- MODULE_DESCRIPTION("NetXen Multi port (1/10) Gigabit Network Driver");
- MODULE_LICENSE("GPL");
-@@ -2500,6 +2501,7 @@ static struct bin_attribute bin_attr_mem
- 	.write = netxen_sysfs_write_mem,
- };
- 
-+#ifdef CONFIG_MODULES
- static ssize_t
- netxen_store_auto_fw_reset(struct module_attribute *mattr,
- 		struct module *mod, const char *buf, size_t count)
-@@ -2534,6 +2536,7 @@ static struct module_attribute mod_attr_
- 	.show = netxen_show_auto_fw_reset,
- 	.store = netxen_store_auto_fw_reset,
- };
-+#endif
- 
- static void
- netxen_create_sysfs_entries(struct netxen_adapter *adapter)
-@@ -2739,7 +2742,9 @@ static struct pci_driver netxen_driver =
- 
- static int __init netxen_init_module(void)
- {
-+#ifdef CONFIG_MODULES
- 	struct module *mod = THIS_MODULE;
-+#endif
- 
- 	printk(KERN_INFO "%s\n", netxen_nic_driver_string);
- 
-@@ -2748,9 +2753,11 @@ static int __init netxen_init_module(voi
- 	register_inetaddr_notifier(&netxen_inetaddr_cb);
- #endif
- 
-+#ifdef CONFIG_MODULES
- 	if (sysfs_create_file(&mod->mkobj.kobj, &mod_attr_fw_reset.attr))
- 		printk(KERN_ERR "%s: Failed to create auto_fw_reset "
- 				"sysfs entry.", netxen_nic_driver_name);
-+#endif
- 
- 	return pci_register_driver(&netxen_driver);
- }
-@@ -2759,9 +2766,11 @@ module_init(netxen_init_module);
- 
- static void __exit netxen_exit_module(void)
- {
-+#ifdef CONFIG_MODULES
- 	struct module *mod = THIS_MODULE;
- 
- 	sysfs_remove_file(&mod->mkobj.kobj, &mod_attr_fw_reset.attr);
-+#endif
- 
- 	pci_unregister_driver(&netxen_driver);
- 
+greg k-h
