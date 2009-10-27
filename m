@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbZJ0Q2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932181AbZJ0Udx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbZJ0Q2h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 12:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbZJ0Q2g
+	id S932181AbZJ0Udx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbZJ0Udw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 12:28:36 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:47533 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755767AbZJ0Q2f (ORCPT
+	Tue, 27 Oct 2009 16:33:52 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:43831 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932081AbZJ0Udv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 12:28:35 -0400
-Date: Tue, 27 Oct 2009 16:28:03 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jeff Mahoney <jeffm@suse.com>,
-       Jiri Kosina <jkosina@suse.cz>, "Luck, Tony" <tony.luck@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>
-Subject: Re: [Bug #14467] Linker errors on ia64 with NR_CPUS=4096
-In-Reply-To: <6dRYo8ss7vL.A.nnF.Cre5KB@chimera>
-Message-ID: <alpine.DEB.1.10.0910271623210.20363@V090114053VZO-1>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.nnF.Cre5KB@chimera>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 27 Oct 2009 16:33:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BIwjvDJPRJ5oLSG5J3fsY+QB4DV7FgZZg5Y2ZaYj1lN1z3p5XMJcf2XVW0BXlYdDBA
+         Tu2QBg+Vi4xaJilgT3xqsjc3uwhXnMGwrFjLbuIHQHlHsezia7AzIq7UaPN2FJ29HuIC
+         9R6jfNnul5MzBuP6Ryr3e4yj8nMiPnBjgkktM=
+Date: Tue, 27 Oct 2009 23:33:52 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Mike Travis <travis@sgi.com>
+Cc: David Rientjes <rientjes@google.com>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 3/8] SGI x86_64 UV: Limit the number of number of SRAT
+	messages
+Message-ID: <20091027203352.GL5893@lenovo>
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <20091027201636.GK5893@lenovo> <4AE756CE.2030309@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AE756CE.2030309@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The NR_CPUS array in the percpu section needs to be removed.
+[Mike Travis - Tue, Oct 27, 2009 at 01:23:42PM -0700]
+>
+> I moved them both to static and will be testing it shortly:
+>
+> static DECLARE_BITMAP(apicid_map, MAX_LOCAL_APIC) __initdata;
+> static char apicid_list[MAX_LOCAL_APIC] __initdata;
+>
+> Thanks,
+> Mike
+>
 
-A simple fix would be to allocate the rq_weight per cpu array
-dynamically.
+Great! David has just updated patch too.
 
-The large per cpu array was introduced as a fix to a race condition. Maybe
-there is another way of dealing with this issue that does not require
-large per cpu arrays?
-
-
-
+	-- Cyrill
