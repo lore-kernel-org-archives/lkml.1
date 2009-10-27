@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZJ0S3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbZJ0Sa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbZJ0S3t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 14:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbZJ0S3s
+	id S1756141AbZJ0Sa0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 14:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbZJ0SaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 14:29:48 -0400
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:37628 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755574AbZJ0S3r (ORCPT
+	Tue, 27 Oct 2009 14:30:25 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:46315 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755972AbZJ0SaY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 14:29:47 -0400
+	Tue, 27 Oct 2009 14:30:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=u65Qb46v1MCI3UkUaE9LWe6/HLbMyvmmXFx0VPDWaWdHj2rj5jn3SP8zl5Jo3ofkKk
-         MVCKBirkNSY+tESxpHpklJCunvG0rEBZiN9lrQaGtcA17VMBOdZ7Ef6ms9l6g9inkOI+
-         pQbIQcOOeI/ed9QHBUA46iZlrc/jXkplmLo0A=
+        h=sender:message-id:date:from:reply-to:organization:user-agent
+         :mime-version:to:cc:subject:references:in-reply-to:x-age:x-location
+         :x-os:x-face:content-type:content-transfer-encoding;
+        b=JJvFwR17fQpGnS0YNpAVD1Q8JvBS48jTXZvn7HEZANNFig4zgNUCaG3T0/mPJErcH+
+         Pu8yPcqNHiiqmdk8hR+qEZoSmsrq3okTv6uWHGpvcZuzBAFeW3E3N2mKCSy7zXirg6OC
+         3SiU5bUCoe7iCzos3K+3W4CH8YQTP1gnH7GFM=
+Message-ID: <4AE73C40.8070307@gmail.com>
+Date: Tue, 27 Oct 2009 19:30:24 +0100
+From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
+Reply-To: vedran.furac@gmail.com
+Organization: Home
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090701 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-In-Reply-To: <20091026084854.GA26990@elte.hu>
-References: <1256545926-6972-1-git-send-email-mcree@orcon.net.nz>
-	 <20091026084854.GA26990@elte.hu>
-Date: Tue, 27 Oct 2009 14:29:52 -0400
-Message-ID: <b4198de60910271129v5765c963rad8d2f4522112986@mail.gmail.com>
-Subject: Re: [PATCH] [alpha] Add minimal support for software performance 
-	events.
-From: Matt Turner <mattst88@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Michael Cree <mcree@orcon.net.nz>, linux-kernel@vger.kernel.org,
-       linux-alpha@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, hugh.dickins@tiscali.co.uk,
+       akpm@linux-foundation.org, rientjes@google.com
+Subject: Re: Memory overcommit
+References: <hav57c$rso$1@ger.gmane.org>	 <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com>	 <hb2cfu$r08$2@ger.gmane.org>	 <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com>	 <4ADE3121.6090407@gmail.com>	 <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>	 <4AE5CB4E.4090504@gmail.com>	 <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>	 <4AE72A0D.9070804@gmail.com> <2f11576a0910271102g60dcdd1dj8f3df213bc64a51d@mail.gmail.com>
+In-Reply-To: <2f11576a0910271102g60dcdd1dj8f3df213bc64a51d@mail.gmail.com>
+X-Age: 25
+X-Location: Lovran, Croatia
+X-OS: Debian GNU/Linux
+X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 4:48 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> Is there a tree for Alpha bits?
+KOSAKI Motohiro wrote:
 
-No, but really other than a very few scattered patches we don't have
-much activity.
+>>> I attached a scirpt for checking oom_score of all exisiting process.
+>>> (oom_score is a value used for selecting "bad" processs.")
+>>> please run if you have time.
+>> 96890   21463   VirtualBox // OK
+>> 118615  11144   kded4 // WRONG
+>> 127455  11158   knotify4 // WRONG
+>> 132198  1       init // WRONG
+>> 133940  11151   ksmserver // WRONG
+>> 134109  11224   audacious2 // Audio player, maybe
+>> 145476  21503   VirtualBox // OK
+>> 174939  11322   icedove-bin // thunderbird, maybe
+>> 178015  11223   akregator // rss reader, maybe
+>> 201043  22672   krusader  // WRONG
+>> 212609  11187   krunner // WRONG
+>> 256911  24252   test // culprit, malloced 1GB
+>> 1750371 11318   run-mozilla.sh // tiny, parent of firefox threads
+>> 2044902 11141   kdeinit4 // tiny, parent of most KDE apps
+> 
+> Verdran, I made alternative improvement idea. Can you please mesure
+> badness score
+> on your system?
+> Maybe your culprit process take biggest badness value.
 
-Maybe it's worth creating one at git.kernel.org? I don't think Richard
-or Ivan are interested in doing it. Could Michael or I do it without
-being maintainers?
+Thanks, I'll test it during the week. But note that not every user
+reboots its computer everyday. I, for example, usually have it up for
+days. And when it comes to my laptop - weeks, as I just suspend it when
+I don't use it. Maybe the best way is to combine two patches. Also, you
+and others could also test these patches. It is not only my kernel that
+behaves strange. :)
 
-Matt
+> Note: this patch change time related thing. So, please drink a cup of
+> coffee before mesurement.
+> small rest time makes correct test result.
+
+OK. :)
+
+Regards,
+
+Vedran
+
