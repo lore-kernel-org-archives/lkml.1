@@ -1,80 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbZJ0XeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbZJ0XkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756876AbZJ0XeE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 19:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756502AbZJ0XeD
+	id S1756887AbZJ0XkU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 19:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756852AbZJ0XkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 19:34:03 -0400
-Received: from mga01.intel.com ([192.55.52.88]:8424 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756395AbZJ0XeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 19:34:01 -0400
-X-ExtLoop1: 1
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
- failures V2
-From: reinette chatre <reinette.chatre@intel.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>, Kalle Valo <kalle.valo@iki.fi>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Abbas, Mohamed" <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-In-Reply-To: <20091027104017.GC8900@csn.ul.ie>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie>
-	 <1256226219.21134.1493.camel@rc-desk>  <20091027104017.GC8900@csn.ul.ie>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 27 Oct 2009 16:34:05 -0700
-Message-Id: <1256686445.21134.10091.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 8bit
+	Tue, 27 Oct 2009 19:40:19 -0400
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:33075 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756843AbZJ0XkS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 19:40:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=pXeW509mSboXTfZnHpaB/oG335PSqDJe2e6m8YobmoG0NZuQNoYjcz4dRIDlepxOIk
+         G+SeLuydYJXbTnWYSEtg2MdggOBOZPc9QAs8dB4mJBT2A5J6wBu/9h+CGtPRHQARFRA0
+         6YqwEIqP0qKDed+66g7XAeQkpGPl/MMuY0pvs=
+MIME-Version: 1.0
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Tue, 27 Oct 2009 16:40:03 -0700
+Message-ID: <43e72e890910271640n7fafc8edpc14143fcfca7df60@mail.gmail.com>
+Subject: scheduling while atomic acpi_idle_enter_bm
+To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Cc: Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 03:40 -0700, Mel Gorman wrote:
-> On Thu, Oct 22, 2009 at 08:43:38AM -0700, reinette chatre wrote:
-> > On Thu, 2009-10-22 at 07:22 -0700, Mel Gorman wrote:
-> > > [Bug #14141] order 2 page allocation failures in iwlagn
-> > > 	Commit 4752c93c30441f98f7ed723001b1a5e3e5619829 introduced GFP_ATOMIC
-> > > 	allocations within the wireless driver. This has caused large numbers
-> > > 	of failure reports to occur as reported by Frans Pop. Fixing this
-> > > 	requires changes to the driver if it wants to use GFP_ATOMIC which
-> > > 	is in the hands of Mohamed Abbas and Reinette Chatre. However,
-> > > 	it is very likely that it has being compounded by core mm changes
-> > > 	that this series is aimed at.
-> > 
-> > Driver has been changed to allocate paged skb for its receive buffers.
-> > This reduces amount of memory needed from order-2 to order-1. This work
-> > is significant and will thus be in 2.6.33. 
-> > 
-> 
-> What do you want to do for -stable in 2.6.31?
-> 
+I get this when modprobing some module I am working on. I figured it
+was the module's fault but the EIP points to something else so I am
+not sure. I get the following repeating about 4 times on 2.6.32-rc5:
 
-I have just posted two patches to stable. The first is to address a bug
-in which buffer loss occurs when there is an allocation failure and the
-second is what Frans has been testing that reduces the noise when these
-allocations fail. They are:
+[ 4806.829545] BUG: scheduling while atomic: swapper/0/0x10010000
+[ 4806.829551] Modules linked in: ath9k_htc ath9k_hw ath_hif_usb
+ath_htc binfmt_misc i915 drm_kms_helper drm i2c_algo_bit bri
+dge stp bnep lp snd_hda_codec_analog snd_hda_intel snd_hda_codec
+snd_pcm_oss snd_mixer_oss snd_pcm arc4 snd_seq_dummy snd_seq
+_oss snd_seq_midi snd_rawmidi ath5k snd_seq_midi_event snd_seq
+snd_timer snd_seq_device mac80211 ath joydev pcmcia ppdev thin
+kpad_acpi snd hid_microsoft video parport_pc psmouse soundcore
+cfg80211 usbhid output yenta_socket rsrc_nonstatic pcmcia_core
+ parport btusb serio_raw pcspkr nvram snd_page_alloc led_class
+intel_agp agpgart iTCO_wdt iTCO_vendor_support ohci1394 ieee13
+94 e1000e
+[ 4806.829683]
+[ 4806.829690] Pid: 0, comm: swapper Not tainted (2.6.32-rc5-wl #27) 7660A14
+[ 4806.829700] EIP: 0060:[<c03a1a7b>] EFLAGS: 00000292 CPU: 0
+[ 4806.829714] EIP is at acpi_idle_enter_bm+0x251/0x282
+[ 4806.829720] EAX: c0884bec EBX: 000002ba ECX: 00000000 EDX: 0137f000
+[ 4806.829727] ESI: 00000000 EDI: f70bacc0 EBP: c0773f9c ESP: c0773f70
+[ 4806.829733]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[ 4806.829740] CR0: 8005003b CR2: 0804c000 CR3: 00892000 CR4: 00000690
+[ 4806.829748] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+[ 4806.829753] DR6: ffff0ff0 DR7: 00000400
+[ 4806.829758] Call Trace:
+[ 4806.829773]  [<c04a9537>] cpuidle_idle_call+0x77/0xf0
+[ 4806.829784]  [<c01020da>] cpu_idle+0x5a/0x90
+[ 4806.829795]  [<c05913c8>] rest_init+0x58/0x70
+[ 4806.829808]  [<c07e8945>] start_kernel+0x330/0x398
+[ 4806.829818]  [<c07e83ce>] ? unknown_bootoption+0x0/0x1f6
+[ 4806.829828]  [<c07e807e>] i386_start_kernel+0x7e/0xa8
 
-  iwlwifi: fix potential rx buffer loss­­­­­­­
-de0bd50845eb5935ce3d503c5d2f565d6cb9ece1 in linux-2.6
-  iwlwifi: reduce noise when skb allocation fails
-­­­­­­­f82a924cc88a5541df1d4b9d38a0968cd077a051 in linux-2.6
+Then I get some 3 of these:
 
-Reinette
+[ 4808.518136] BUG: scheduling while atomic: swapper/0/0x10010000
+[ 4808.518143] Modules linked in: ath9k_htc ath9k_hw ath_hif_usb
+ath_htc binfmt_misc i915 drm_kms_helper drm i2c_algo_bit bridge stp
+bnep lp snd_hda_codec_analog snd_hda_intel snd_hda_codec snd_pcm_oss
+snd_mixer_oss snd_pcm arc4 snd_seq_dummy snd_seq_oss snd_seq_midi
+snd_rawmidi ath5k snd_seq_midi_event snd_seq snd_timer snd_seq_device
+mac80211 ath joydev pcmcia ppdev thinkpad_acpi snd hid_microsoft video
+parport_pc psmouse soundcore cfg80211 usbhid output yenta_socket
+rsrc_nonstatic pcmcia_core parport btusb serio_raw pcspkr nvram
+snd_page_alloc led_class intel_agp agpgart iTCO_wdt
+iTCO_vendor_support ohci1394 ieee1394 e1000e
+[ 4808.518258]
+[ 4808.518264] Pid: 0, comm: swapper Not tainted (2.6.32-rc5-wl #27) 7660A14
+[ 4808.518271] EIP: 0060:[<c05a65cf>] EFLAGS: 00000296 CPU: 1
+[ 4808.518280] EIP is at _spin_unlock_irqrestore+0xf/0x20
+[ 4808.518286] EAX: 00000296 EBX: f70bb008 ECX: 0000195e EDX: 00000296
+[ 4808.518292] ESI: 00000005 EDI: 00000296 EBP: f70b3f20 ESP: f70b3f20
+[ 4808.518299]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[ 4808.518304] CR0: 8005003b CR2: 08204008 CR3: 36b26000 CR4: 00000690
+[ 4808.518310] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+[ 4808.518315] DR6: ffff0ff0 DR7: 00000400
+[ 4808.518319] Call Trace:
+[ 4808.518328]  [<c017615a>] clockevents_notify+0x3a/0x80
+[ 4808.518338]  [<c03a14d4>] lapic_timer_state_broadcast+0x36/0x39
+[ 4808.518347]  [<c03a1a99>] acpi_idle_enter_bm+0x26f/0x282
+[ 4808.518356]  [<c04a9537>] cpuidle_idle_call+0x77/0xf0
+[ 4808.518364]  [<c01020da>] cpu_idle+0x5a/0x90
+[ 4808.518373]  [<c05a1204>] start_secondary+0x170/0x1dc
+[ 4808.518382]  [<c05a1204>] ? start_secondary+0x170/0x1dc
+
+  Luis
 
 
+  Luis
