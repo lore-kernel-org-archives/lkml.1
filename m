@@ -1,95 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZJ0OFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbZJ0OVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbZJ0OFc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 10:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbZJ0OFb
+	id S1753556AbZJ0OVV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 10:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbZJ0OVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 10:05:31 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:16753 "EHLO mx1.redhat.com"
+	Tue, 27 Oct 2009 10:21:20 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49442 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754740AbZJ0OFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 10:05:30 -0400
-Date: Tue, 27 Oct 2009 16:05:07 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
-Subject: Re: [KVM PATCH v3 1/3] KVM: fix race in irq_routing logic
-Message-ID: <20091027140507.GN29477@redhat.com>
-References: <20091026162148.23704.47286.stgit@dev.haskins.net>
- <20091026162157.23704.12420.stgit@dev.haskins.net>
- <20091027064529.GJ29477@redhat.com>
- <4AE6F7F7.1010302@gmail.com>
- <4AE6FCEF.8030607@gmail.com>
+	id S1752835AbZJ0OVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 10:21:20 -0400
+Date: Tue, 27 Oct 2009 07:05:58 -0700
+From: Greg KH <gregkh@suse.de>
+To: Eric Miao <eric.miao@canonical.com>
+Cc: Bryan Wu <bryan.wu@canonical.com>, kernel-team@lists.ubuntu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Staging: Android logger: fix compiling error
+Message-ID: <20091027140558.GA17208@suse.de>
+References: <1256316741-14053-1-git-send-email-bryan.wu@canonical.com>
+ <f17812d70910262140i63e4d2f0x708521a9287ca386@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4AE6FCEF.8030607@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <f17812d70910262140i63e4d2f0x708521a9287ca386@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 10:00:15AM -0400, Gregory Haskins wrote:
-> Gregory Haskins wrote:
-> > Gleb Natapov wrote:
-> >> On Mon, Oct 26, 2009 at 12:21:57PM -0400, Gregory Haskins wrote:
-> >>> The current code suffers from the following race condition:
-> >>>
-> >>> thread-1                                    thread-2
-> >>> -----------------------------------------------------------
-> >>>
-> >>> kvm_set_irq() {
-> >>>    rcu_read_lock()
-> >>>    irq_rt = rcu_dereference(table);
-> >>>    rcu_read_unlock();
-> >>>
-> >>>                                        kvm_set_irq_routing() {
-> >>>                                           mutex_lock();
-> >>>                                           irq_rt = table;
-> >>>                                           rcu_assign_pointer();
-> >>>                                           mutex_unlock();
-> >>>                                           synchronize_rcu();
-> >>>
-> >>>                                           kfree(irq_rt);
-> >>>
-> >>>    irq_rt->entry->set(); /* bad */
-> >>>
-> >> This is not what happens. irq_rt is never accessed outside read-side
-> >> critical section.
-> > 
-> > Sorry, I was generalizing to keep the comments short.  I figured it
-> > would be clear what I was actually saying, but realize in retrospect
-> > that I was a little ambiguous.
-> 
-> Here is a revised problem statement
-> 
->     thread-1                                    thread-2
->     -----------------------------------------------------------
-> 
->     kvm_set_irq() {
->        rcu_read_lock()
->        irq_rt = rcu_dereference(table);
->        entry_cache = get_entries(irq_rt);
->        rcu_read_unlock();
-> 
->                                             invalidate_entries(irq_rt);
-> 
->        for_each_entry(entry_cache)
-> 	  entry->set(); /* bad */
-> 
->     -------------------------------------------------------------
-> 
-> 
-> "invalidate_entries()" may be any operation that deletes an entry at
-> run-time (doesn't exist today), or as the guest is shutting down.  As
-> far as I can tell, the current code does not protect us from either
-> condition, and my proposed patch protects us from both.  Did I miss
-> anything?
-> 
-Yes. What happened to irq_rt is completely irrelevant at the point you
-marked /* bad */.
+On Tue, Oct 27, 2009 at 12:40:07PM +0800, Eric Miao wrote:
+> > Compiling broke since commit a99bbaf5ee6bad1aca0c88ea65ec6e5373e86184
+> >    headers: remove sched.h from poll.h
+> >
+> > Adding <linux/sched.h> to fix this compiling bug.
 
---
-			Gleb.
+I have now just marked the android drivers as broken, as this is not the
+only build error in them at the moment :(
+
+thanks,
+
+greg k-h
