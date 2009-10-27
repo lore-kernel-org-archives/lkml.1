@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbZJ0NZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZJ0N1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbZJ0NZq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 09:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbZJ0NZp
+	id S1754811AbZJ0N1F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 09:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbZJ0N1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 09:25:45 -0400
-Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:60204 "EHLO
-	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754495AbZJ0NZp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 09:25:45 -0400
-Date: Tue, 27 Oct 2009 14:25:49 +0100
-From: Gabor Gombas <gombasg@sztaki.hu>
-To: Gene Heskett <gene.heskett@verizon.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: SHMEM question
-Message-ID: <20091027132548.GD5585@boogie.lpds.sztaki.hu>
-References: <200910261159.04995.gene.heskett@verizon.net>
+	Tue, 27 Oct 2009 09:27:04 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:47763 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754542AbZJ0N1C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 09:27:02 -0400
+Date: Tue, 27 Oct 2009 13:27:04 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Sven Geggus <lists@fuchsschwanzdomain.de>
+Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
+	failures V2
+Message-ID: <20091027132704.GE8900@csn.ul.ie>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <20091024140207.GA5102@geggus.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <200910261159.04995.gene.heskett@verizon.net>
-X-Copyright: Forwarding or publishing without permission is prohibited.
+In-Reply-To: <20091024140207.GA5102@geggus.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 11:59:04AM -0400, Gene Heskett wrote:
-
-> On looking at it:
-> [root@coyote Download]# ls -l /dev/shm
-> total 28
-> -rw-r----- 1 root root     4096 2009-10-25 12:09 mono.10594
-> -r-------- 1 root root 67108904 2009-10-24 00:28 pulse-shm-3880918577
-> -rw-rw-rw- 1 root root       16 2009-10-24 01:17 sem.ADBE_ReadPrefs_root
-> -rw-rw-rw- 1 root root       16 2009-10-24 01:17 sem.ADBE_REL_root
-> -rw-rw-rw- 1 root root       16 2009-10-24 01:17 sem.ADBE_WritePrefs_root
+On Sat, Oct 24, 2009 at 04:02:09PM +0200, Sven Geggus wrote:
+> Mel Gorman schrieb am Donnerstag, den 22. Oktober um 16:22 Uhr:
 > 
-> On grepping for SHM in the .config, I find SHMEM set to y, but about an hours 
-> worth of wandering around in a 'make xconfig' has failed to actually find it.
+> > Test 1: Verify your problem occurs on 2.6.32-rc5 if you can
+> 
+> Problem persists. RAID resync in progress :(
+> 
 
-No wonder, it has nothing to do with the kernel. glibc uses /dev/shm to
-implement POSIX shared memory, see shm_overview(7).
+What about the rest of the patches, any luck?
 
-> That pulse-shm-3880918577 file at over 67 megabytes is all $00 till $04000000 
-> into it, then there is 6 non-zero bytes and the rest is back to all balls.
-
-If it bothers you then do not use pulseaudio.
-
-> Is this some indicator of a new rootkit or WTF?
-
-Not neccessarily. However since most people never look into /dev/shm,
-it's not a bad place to hide data. But it will go away at reboot, so
-it's not that useful for a rootkit.
-
-Gabor
+Thanks
 
 -- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences
-     ---------------------------------------------------------
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
