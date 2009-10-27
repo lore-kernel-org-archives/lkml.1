@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbZJ0JpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbZJ0Jrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752724AbZJ0JpR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 05:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZJ0JpQ
+	id S1752697AbZJ0Jrb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 05:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZJ0Jra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 05:45:16 -0400
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:8965 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752181AbZJ0JpO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 05:45:14 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArEEAHNe5krCTtAn/2dsb2JhbACBUNZkhD8E
-Date: Tue, 27 Oct 2009 10:45:03 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: David Miller <davem@davemloft.net>
-Cc: hancockrwd@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH ide] : Increase WAIT_DRQ to support slow CF cards
-Message-ID: <20091027094503.GA3116@frolo.macqel>
-References: <51f3faa70910261807h54f05f73j48b67067ee3dde70@mail.gmail.com> <20091026.181922.261475236.davem@davemloft.net> <51f3faa70910261840v16444067uc323de7129b7592f@mail.gmail.com> <20091026.184318.205708741.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 27 Oct 2009 05:47:30 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:28950 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751639AbZJ0Jra convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;6:1>);
+	Tue, 27 Oct 2009 05:47:30 -0400
+Message-Id: <4AE6CFC4020000780001BF75@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Tue, 27 Oct 2009 09:47:32 +0000
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+Cc: <mingo@elte.hu>, <yinghai@kernel.org>, <tglx@linutronix.de>,
+       <tiwai@suse.de>, <linux-kernel@vger.kernel.org>,
+       <jbarnes@virtuousgeek.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86: adjust GFP mask handling for coherent
+	 allocations
+References: <4AE6C4D3020000780001BF13@vpn.id2.novell.com>
+ <20091027181053L.fujita.tomonori@lab.ntt.co.jp>
+ <4AE6CA2A020000780001BF51@vpn.id2.novell.com>
+ <20091027183658A.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091027183658A.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20091026.184318.205708741.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+>>> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> 27.10.09 10:37 >>>
+>On Tue, 27 Oct 2009 09:23:38 +0000
+>"Jan Beulich" <JBeulich@novell.com> wrote:
+>
+>> Because there's quite a few of them - just search for callers of
+>> dma_alloc_coherent() passing NULL as the first argument. Of course
+>> I'd rather see the fallback gone, but I think this requires cooperation
+>> from/action taken by the driver maintainers first. A first step might be
+>> to add a WRN_ON() for that case, but I don't see it being reasonable
+>> to eliminate the fallback right away. Hence, with it having got broken
+>> in .26 I think it is reasonable to fix it for the time being.
+>
+>Well, the most of them are drivers that nobody cares about (uses).
+>
+>What drivers did you hit this problem with?
 
-On Mon, Oct 26, 2009 at 06:43:18PM -0700, David Miller wrote:
-> From: Robert Hancock <hancockrwd@gmail.com>
-> Date: Mon, 26 Oct 2009 19:40:03 -0600
-> 
-> > On Mon, Oct 26, 2009 at 7:19 PM, David Miller <davem@davemloft.net> wrote:
-> >> Meanwhile we should provide a way for things to work, and
-> >> realistically the only way to do that currently is to bump the
-> >> WAIT_DRQ value to some large number.
-> >>
-> >> And that's exactly the kind of patch I'm willing to accept for this.
-> > 
-> > I agree, it's sub-optimal but it helps.. if the user wants better
-> > behavior they should a) fix it so that the card isn't using PIO, at
-> > least if it supports DMA and b) not use drivers/ide..
+drivers/firmware/dell_rbu.c (on .27.x, and in particular with the derivation
+of __GFP_NORETRY from __GFP_DMA, which fortunately doesn't exist in
+newer kernels anymore).
 
-Strangely enough, I also had no timeout problem if I started my kernel with
-'ide=nodma', instead of increasing WAIT_DRQ.  So I surmise that WAIT_DRQ
-is used in the dma case.
+>We've lived with the current code for some years so this problem isn't
+>urgent at all. Please don't add another workaround for broken code.
+>Let's put WARN_ON for callers that use NULL and see who complains.
 
-> 
-> Philippe's patch that started this thread uses "3 * HZ / 10"
-> which isn't large enough for the SSD cases.  Can someone please
-> post a patch that uses a large enough value?
+Jan
 
-How big a timeout do you want/accept ? Mark Lord wrote about SSD's in the mail
-referred by Robert Hancock :
-	It should probably be at least 500msec or more now.
-
-Philippe
