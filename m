@@ -1,49 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZJ0Fuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbZJ0GIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbZJ0Fuq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 01:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbZJ0Fup
+	id S1756213AbZJ0GIH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 02:08:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbZJ0GIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 01:50:45 -0400
-Received: from mail.lang.hm ([64.81.33.126]:43002 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754726AbZJ0Fup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 01:50:45 -0400
-Date: Mon, 26 Oct 2009 22:50:25 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: David Miller <davem@davemloft.net>
-cc: stefanr@s5r6.in-berlin.de, mingo@elte.hu, gregkh@suse.de,
-       bzolnier@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: removing existing working drivers via staging
-In-Reply-To: <20091026.222200.53878862.davem@davemloft.net>
-Message-ID: <alpine.DEB.2.00.0910262237580.14994@asgard.lang.hm>
-References: <4AD77C4F.5010307@s5r6.in-berlin.de> <alpine.DEB.2.00.0910151250480.22169@asgard.lang.hm> <alpine.DEB.2.00.0910262119530.14994@asgard.lang.hm> <20091026.222200.53878862.davem@davemloft.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 27 Oct 2009 02:08:06 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:60914 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755451AbZJ0GIF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 02:08:05 -0400
+Message-ID: <4AE68E23.20205@gmail.com>
+Date: Tue, 27 Oct 2009 07:07:31 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Stephen Hemminger <stephen.hemminger@vyatta.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] dcache: better name hash function
+References: <19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com>
+In-Reply-To: <19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 27 Oct 2009 07:07:33 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009, David Miller wrote:
+Stephen Hemminger a écrit :
+> One of the root causes of slowness in network usage
+> was my original choice of power of 2 for hash size, to avoid
+> a mod operation. It turns out if size is not a power of 2
+> the original algorithm works fairly well.
 
-> From: david@lang.hm
-> Date: Mon, 26 Oct 2009 21:23:35 -0700 (PDT)
+Interesting, but I suspect all users have power of 2 tables :(
+
+> 
+> On slow cpu; with 10million entries and 211 hash size
+> 
 >
->> where a driver is being moved to staging because it does not have a
->> maintainer and the only changes to it for some time have been due to
->> kernel API changes.
->
-> It's also in a non-working condition and we are very confident
-> nobody is using it.
->
-> It hasn't been maintained at all for years, it's just taking up
-> space.
+> 
+> How important is saving the one division, versus getting better
+> distribution.
 
-this is the first I have seen anyone say that the driver doesn't work, 
-everything prior had been "I don't know that it works, do you?"
 
-I agree that it's unlikly that many people are using this.
+unsigned int fold1(unsigned hash)
+{
+	return hash % 211;
+}
 
-David Lang
+Compiler uses a reciprocal divide because of 211 being a constant.
+
+And you also could try following that contains one multiply only,
+and check if hash distribution properties are still OK
+
+unsigned int fold2(unsigned hash)
+{
+	return ((unsigned long long)hash * 211) >> 32;
+}
+
+fold1:
+        movl    4(%esp), %ecx
+        movl    $-1689489505, %edx
+        movl    %ecx, %eax
+        mull    %edx
+        shrl    $7, %edx
+        imull   $211, %edx, %edx
+        subl    %edx, %ecx
+        movl    %ecx, %eax
+        ret
+
+fold2:
+        movl    $211, %eax
+        mull    4(%esp)
+        movl    %edx, %eax
+        ret
+
+
