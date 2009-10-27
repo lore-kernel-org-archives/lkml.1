@@ -1,92 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbZJ0UTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932223AbZJ0UZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756799AbZJ0UTk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbZJ0UTi
+	id S932223AbZJ0UZn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbZJ0UZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:19:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36249 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756768AbZJ0UTa (ORCPT
+	Tue, 27 Oct 2009 16:25:27 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46516 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932129AbZJ0UZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:19:30 -0400
-Date: Tue, 27 Oct 2009 13:19:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org\"" <linux-mm@kvack.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 3/3] vmscan: Force kswapd to take notice faster when
- high-order watermarks are being hit
-Message-Id: <20091027131905.410ec04a.akpm@linux-foundation.org>
-In-Reply-To: <1256650833-15516-4-git-send-email-mel@csn.ul.ie>
-References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie>
-	<1256650833-15516-4-git-send-email-mel@csn.ul.ie>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Tue, 27 Oct 2009 16:25:26 -0400
+Subject: Re: [PATCH 6/9] tracing: recordmcount.pl Exit early if no work to
+ do
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Hong <lihong.hi@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20091027070212.GF22032@uhli>
+References: <20091027065421.GA22032@uhli>  <20091027070212.GF22032@uhli>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 27 Oct 2009 16:20:42 -0400
+Message-Id: <1256674842.26028.439.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Oct 2009 13:40:33 +0000
-Mel Gorman <mel@csn.ul.ie> wrote:
-
-> When a high-order allocation fails, kswapd is kicked so that it reclaims
-> at a higher-order to avoid direct reclaimers stall and to help GFP_ATOMIC
-> allocations. Something has changed in recent kernels that affect the timing
-> where high-order GFP_ATOMIC allocations are now failing with more frequency,
-> particularly under pressure. This patch forces kswapd to notice sooner that
-> high-order allocations are occuring.
+On Tue, 2009-10-27 at 15:02 +0800, Li Hong wrote:
+> >From 1589563d8113db41fa77dd657459b563dcecd389 Mon Sep 17 00:00:00 2001
+> From: Li Hong <lihong.hi@gmail.com>
+> Date: Tue, 27 Oct 2009 13:13:37 +0800
+> Subject: [PATCH] tracing: recordmcount.pl Exit early if no work to do
 > 
+> Also keep the global symbols and use it to check if no work to do, exit
+> early.
 
-"something has changed"?  Shouldn't we find out what that is?
+How many files does this fall out of?  This looks like added complexity
+for no real gain.
 
-> ---
->  mm/vmscan.c |    9 +++++++++
->  1 files changed, 9 insertions(+), 0 deletions(-)
+-- Steve
+
 > 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 64e4388..7eceb02 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -2016,6 +2016,15 @@ loop_again:
->  					priority != DEF_PRIORITY)
->  				continue;
+> Signed-off-by: Li Hong <lihong.hi@gmail.com>
+> 
+> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+> index a6585b6..d750da8 100755
+> --- a/scripts/recordmcount.pl
+> +++ b/scripts/recordmcount.pl
+> @@ -91,7 +91,7 @@
+>  #
+>  # Here are the steps we take:
+>  #
+> -# 1) Record all the local symbols by using 'nm'
+> +# 1) Record all the global, local and weak symbols by using 'nm'
+>  # 2) Use objdump to find all the call site offsets and sections for
+>  #    mcount.
+>  # 3) Compile the list into its own object.
+> @@ -143,12 +143,15 @@ $mv = "mv" if ((length $mv) == 0);
+>  #print STDERR "running: $P '$arch' '$objdump' '$objcopy' '$cc' '$ld' " .
+>  #    "'$nm' '$rm' '$mv' '$inputfile'\n";
 >  
-> +			/*
-> +			 * Exit the function now and have kswapd start over
-> +			 * if it is known that higher orders are required
-> +			 */
-> +			if (pgdat->kswapd_max_order > order) {
-> +				all_zones_ok = 1;
-> +				goto out;
-> +			}
+> +my %globals;		# List of global functions
+>  my %locals;		# List of local (static) functions
+>  my %weak;		# List of weak functions
+>  my %convert;		# List of local functions used that needs conversion
+>  
+>  my $type;
+> -my $nm_regex;		# Find the local functions (return function)
+> +my $global_regex;	# Match a global function (return function)
+> +my $local_regex;	# Match a local function (return function)
+> +my $weak_regex; 	# Match a weak function (return function)
+>  my $section_regex;	# Find the start of a section
+>  my $function_regex;	# Find the name of a function
+>  			#    (return offset and func name)
+> @@ -190,7 +193,9 @@ if ($arch eq "x86") {
+>  # We base the defaults off of i386, the other archs may
+>  # feel free to change them in the below if statements.
+>  #
+> -$nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
+> +$global_regex = "^[0-9a-fA-F]+\\s+T\\s+(\\S+)";
+> +$local_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
+> +$weak_regex = "^[0-9a-fA-F]+\\s+([wW])\\s+(\\S+)";
+>  $section_regex = "Disassembly of section\\s+(\\S+):";
+>  $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+>  $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
+> @@ -239,7 +244,8 @@ if ($arch eq "x86_64") {
+>      $cc .= " -m32";
+>  
+>  } elsif ($arch eq "powerpc") {
+> -    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
+> +    $global_regex = "^[0-9a-fA-F]+\\s+T\\s+(\\.?\\S+)";
+> +    $local_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
+>      $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?.*?)>:";
+>      $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
+>  
+> @@ -314,19 +320,24 @@ my $mcount_o = $dirname . "/.tmp_mc_" . $prefix . ".o";
+>  check_objcopy();
+>  
+>  #
+> -# Step 1: find all the local (static functions) and weak symbols.
+> -#        't' is local, 'w/W' is weak (we never use a weak function)
+> +# Step 1: find all the global and local (static functions) and weak symbols.
+> +#        'T' is global 't' is local, 'w/W' is weak
+>  #
+>  open (IN, "$nm $inputfile|") || die "error running $nm";
+>  while (<IN>) {
+> -    if (/$nm_regex/) {
+> +    if (/$global_regex/) {
+> +        $globals{$1} = 1;
+> +    } elsif (/$local_regex/) {
+>  	$locals{$1} = 1;
+> -    } elsif (/^[0-9a-fA-F]+\s+([wW])\s+(\S+)/) {
+> +    } elsif (/$weak_regex/) {
+>  	$weak{$2} = $1;
+>      }
+>  }
+>  close(IN);
+>  
+> +# Exit early if no work to do 
+> +exit(0) unless (%globals or (%locals and $can_use_local)); 
 > +
->  			if (!zone_watermark_ok(zone, order,
->  					high_wmark_pages(zone), end_zone, 0))
->  				all_zones_ok = 0;
+>  my @offsets;		# Array of offsets of mcount callers
+>  my $ref_func;		# reference function to use for offsets
+>  my $offset = 0;		# offset of ref_func to section beginning
 
-So this handles the case where some concurrent thread or interrupt
-increases pgdat->kswapd_max_order while kswapd was running
-balance_pgdat(), yes?
-
-Does that actually happen much?  Enough for this patch to make any
-useful difference?
-
-If one where to whack a printk in that `if' block, how often would it
-trigger, and under what circumstances?
-
-
-If the -stable maintainers were to ask me "why did you send this" then
-right now my answer would have to be "I have no idea".  Help.
