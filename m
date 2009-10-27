@@ -1,72 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZJ0T7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbZJ0UAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbZJ0T7G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 15:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbZJ0T7F
+	id S1756761AbZJ0UAP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932071AbZJ0UAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 15:59:05 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:27406 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756722AbZJ0T7E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 15:59:04 -0400
-Date: Tue, 27 Oct 2009 13:59:07 -0600
-From: Alex Chiang <achiang@hp.com>
-To: David Rientjes <rientjes@google.com>
-Cc: akpm@linux-foundation.org, Gary Hade <garyhade@us.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v2 1/5] mm: add numa node symlink for memory section in
-	sysfs
-Message-ID: <20091027195907.GJ14102@ldl.fc.hp.com>
-References: <20091022040814.15705.95572.stgit@bob.kio> <20091022041510.15705.5410.stgit@bob.kio> <alpine.DEB.2.00.0910221249030.26631@chino.kir.corp.google.com>
+	Tue, 27 Oct 2009 16:00:14 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:55855 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756725AbZJ0UAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 16:00:12 -0400
+Message-ID: <4AE75162.7080903@sgi.com>
+Date: Tue, 27 Oct 2009 13:00:34 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910221249030.26631@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Rientjes <rientjes@google.com>
+CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 3/8] SGI x86_64 UV: Limit the number of number of SRAT
+ messages
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for ACKing, David.
+Hi David,
 
-S390 guys, I cc'ed you on this patch because I heard a rumour
-that your memory sections may belong to more than one NUMA node?
-Is that true? If so, how would you like me to handle that
-situation?
+Very Cool, I'll try it out and let you know how it goes.
 
-Any comments on this patch series would be appreciated.
+Note that it would be better to declare the BITMAP in the
+static initdata section so it doesn't grow the stack by 4k
+bytes.  (And it's thrown away after the kernel starts.)
 
-Thanks.
-/ac
+Thanks,
+Mike
 
-* David Rientjes <rientjes@google.com>:
-> On Wed, 21 Oct 2009, Alex Chiang wrote:
+
+David Rientjes wrote:
+> On Tue, 27 Oct 2009, Mike Travis wrote:
 > 
-> > Commit c04fc586c (mm: show node to memory section relationship with
-> > symlinks in sysfs) created symlinks from nodes to memory sections, e.g.
-> > 
-> > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
-> > 
-> > If you're examining the memory section though and are wondering what
-> > node it might belong to, you can find it by grovelling around in
-> > sysfs, but it's a little cumbersome.
-> > 
-> > Add a reverse symlink for each memory section that points back to the
-> > node to which it belongs.
-> > 
-> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > Cc: Gary Hade <garyhade@us.ibm.com>
-> > Cc: Badari Pulavarty <pbadari@us.ibm.com>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Signed-off-by: Alex Chiang <achiang@hp.com>
+>> --- linux.orig/arch/x86/mm/srat_64.c
+>> +++ linux/arch/x86/mm/srat_64.c
+>> @@ -115,6 +115,7 @@
+>> {
+>> 	int pxm, node;
+>> 	int apic_id;
+>> +	static int last_node = -1;
+>>
+>> 	if (srat_disabled())
+>> 		return;
+>> @@ -136,8 +137,11 @@
+>> 	apicid_to_node[apic_id] = node;
+>> 	node_set(node, cpu_nodes_parsed);
+>> 	acpi_numa = 1;
+>> -	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
+>> -	       pxm, apic_id, node);
+>> +	if (node > last_node) {
+>> +		printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
+>> +		       pxm, apic_id, node);
+>> +		last_node = node;
+>> +	}
+>> }
+>>
+>> /* Callback for Proximity Domain -> LAPIC mapping */
+>> @@ -146,6 +150,7 @@
+>> {
+>> 	int pxm, node;
+>> 	int apic_id;
+>> +	static int last_node = -1;
+>>
+>> 	if (srat_disabled())
+>> 		return;
+>> @@ -170,8 +175,11 @@
+>> 	apicid_to_node[apic_id] = node;
+>> 	node_set(node, cpu_nodes_parsed);
+>> 	acpi_numa = 1;
+>> -	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
+>> -	       pxm, apic_id, node);
+>> +	if (node > last_node) {
+>> +		printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
+>> +		       pxm, apic_id, node);
+>> +		last_node = node;
+>> +	}
+>> }
+>>
+>> #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+>>
 > 
-> Acked-by: David Rientjes <rientjes@google.com>
+> So on my Opteron I'll be getting this:
 > 
-> Very helpful backlinks to memory section nodes even though I have lots of 
-> memory directories on some of my test machines :)
+> 	SRAT: PXM 0 -> APIC 0 -> Node 0
+> 	SRAT: PXM 1 -> APIC 2 -> Node 1
+> 
+> instead of this:
+> 
+> 	SRAT: PXM 0 -> APIC 0 -> Node 0
+> 	SRAT: PXM 0 -> APIC 1 -> Node 0
+> 	SRAT: PXM 1 -> APIC 2 -> Node 1
+> 	SRAT: PXM 1 -> APIC 3 -> Node 1
+> 
+> Do I need to infer what apic 1 or 3 map to with your patch (or whether 
+> they are even valid)?
+> 
+> It would seem much better to print this information once the SRAT parsing 
+> in acpi_numa_init() is complete and apicid_to_node[] is populated.  This 
+> leads to the ideal beheavior, which is:
+> 
+> 	SRAT: PXM 0 -> APIC {0-1} -> Node 0
+> 	SRAT: PXM 1 -> APIC {2-3} -> Node 1
+> 
+> Something like the following patch?  (Regardless, we need to cc 
+> linux-acpi@vger.kernel.org.  I've added it.)
+> 
+> 
+> 
+> x86: reduce srat verbosity in the kernel log
+> 
+> It's possible to reduce the number of SRAT messages emitted to the kernel
+> log by printing each valid pxm once and then creating bitmaps to represent
+> the apicids that map to the same node.
+> 
+> This reduces lines such as
+> 
+> 	SRAT: PXM 0 -> APIC 0 -> Node 0
+> 	SRAT: PXM 0 -> APIC 1 -> Node 0
+> 	SRAT: PXM 1 -> APIC 2 -> Node 1
+> 	SRAT: PXM 1 -> APIC 3 -> Node 1
+> 
+> to
+> 
+> 	SRAT: PXM 0 -> APIC {0-1} -> Node 0
+> 	SRAT: PXM 1 -> APIC {2-3} -> Node 1
+> 
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> ---
+>  arch/x86/mm/srat_64.c |   31 +++++++++++++++++++++++++++----
+>  drivers/acpi/numa.c   |    5 +++++
+>  include/linux/acpi.h  |    3 ++-
+>  3 files changed, 34 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+> --- a/arch/x86/mm/srat_64.c
+> +++ b/arch/x86/mm/srat_64.c
+> @@ -136,8 +136,6 @@ acpi_numa_x2apic_affinity_init(struct acpi_srat_x2apic_cpu_affinity *pa)
+>  	apicid_to_node[apic_id] = node;
+>  	node_set(node, cpu_nodes_parsed);
+>  	acpi_numa = 1;
+> -	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
+> -	       pxm, apic_id, node);
+>  }
+>  
+>  /* Callback for Proximity Domain -> LAPIC mapping */
+> @@ -170,8 +168,33 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
+>  	apicid_to_node[apic_id] = node;
+>  	node_set(node, cpu_nodes_parsed);
+>  	acpi_numa = 1;
+> -	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
+> -	       pxm, apic_id, node);
+> +}
+> +
+> +void __init acpi_numa_print_srat_mapping(void)
+> +{
+> +	DECLARE_BITMAP(apicid_map, MAX_LOCAL_APIC);
+> +	char apicid_list[MAX_LOCAL_APIC];
+> +	int i, j;
+> +
+> +	for (i = 0; i < MAX_PXM_DOMAINS; i++) {
+> +		int nid;
+> +
+> +		nid = pxm_to_node(i);
+> +		if (nid == NUMA_NO_NODE)
+> +			continue;
+> +
+> +		bitmap_zero(apicid_map, MAX_LOCAL_APIC);
+> +		for (j = 0; j < MAX_LOCAL_APIC; j++)
+> +			if (apicid_to_node[j] == nid)
+> +				set_bit(j, apicid_map);
+> +
+> +		if (bitmap_empty(apicid_map, MAX_LOCAL_APIC))
+> +			continue;
+> +		bitmap_scnlistprintf(apicid_list, MAX_LOCAL_APIC,
+> +				     apicid_map, MAX_LOCAL_APIC);
+> +		pr_info("SRAT: PXM %u -> APIC {%s} -> Node %u\n",
+> +			i, apicid_list, nid);
+> +	}
+>  }
+>  
+>  #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+> diff --git a/drivers/acpi/numa.c b/drivers/acpi/numa.c
+> --- a/drivers/acpi/numa.c
+> +++ b/drivers/acpi/numa.c
+> @@ -281,6 +281,10 @@ acpi_table_parse_srat(enum acpi_srat_type id,
+>  					    handler, max_entries);
+>  }
+>  
+> +void __init __attribute__((weak)) acpi_numa_print_srat_mapping(void)
+> +{
+> +}
+> +
+>  int __init acpi_numa_init(void)
+>  {
+>  	/* SRAT: Static Resource Affinity Table */
+> @@ -292,6 +296,7 @@ int __init acpi_numa_init(void)
+>  		acpi_table_parse_srat(ACPI_SRAT_TYPE_MEMORY_AFFINITY,
+>  				      acpi_parse_memory_affinity,
+>  				      NR_NODE_MEMBLKS);
+> +		acpi_numa_print_srat_mapping();
+>  	}
+>  
+>  	/* SLIT: System Locality Information Table */
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -92,12 +92,13 @@ int acpi_table_parse_madt (enum acpi_madt_type id, acpi_table_entry_handler hand
+>  int acpi_parse_mcfg (struct acpi_table_header *header);
+>  void acpi_table_print_madt_entry (struct acpi_subtable_header *madt);
+>  
+> -/* the following four functions are architecture-dependent */
+> +/* the following six functions are architecture-dependent */
+>  void acpi_numa_slit_init (struct acpi_table_slit *slit);
+>  void acpi_numa_processor_affinity_init (struct acpi_srat_cpu_affinity *pa);
+>  void acpi_numa_x2apic_affinity_init(struct acpi_srat_x2apic_cpu_affinity *pa);
+>  void acpi_numa_memory_affinity_init (struct acpi_srat_mem_affinity *ma);
+>  void acpi_numa_arch_fixup(void);
+> +void acpi_numa_print_srat_mapping(void);
+>  
+>  #ifdef CONFIG_ACPI_HOTPLUG_CPU
+>  /* Arch dependent functions for cpu hotplug support */
