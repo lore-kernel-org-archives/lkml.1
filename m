@@ -1,57 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZJ0UQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbZJ0UZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbZJ0UQj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbZJ0UQi
+	id S932174AbZJ0UZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932133AbZJ0UZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:16:38 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:1226 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756726AbZJ0UQh (ORCPT
+	Tue, 27 Oct 2009 16:25:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46371 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932129AbZJ0UZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:16:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TM0UlBZFJFL1EWp4kE15FIfKWGI2gTklBVGdONQkAswttK9nTSuj+CLjPHrl6ALKjC
-         aecMsGfJdILCUcPZIDpEb0/K7LglGl/9/qQMeI4OIRWn/rRBM1y5t7DhBKom2KHcCuv+
-         5l+82Siavy82Z92BU5FRkfjvck9tG+4n4SHHQ=
-Date: Tue, 27 Oct 2009 23:16:36 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Mike Travis <travis@sgi.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 3/8] SGI x86_64 UV: Limit the number of number of SRAT
-	messages
-Message-ID: <20091027201636.GK5893@lenovo>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 27 Oct 2009 16:25:24 -0400
+Subject: Re: [PATCH 4/9] tracing: recordmcount.pl Objcopy check should
+ disable local reference correctly
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Hong <lihong.hi@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20091027070011.GD22032@uhli>
+References: <20091027065421.GA22032@uhli>  <20091027070011.GD22032@uhli>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 27 Oct 2009 16:16:36 -0400
+Message-Id: <1256674596.26028.436.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[David Rientjes - Tue, Oct 27, 2009 at 12:45:00PM -0700]
-...
-| On Tue, 27 Oct 2009, Mike Travis wrote:
-| +
-| +void __init acpi_numa_print_srat_mapping(void)
-| +{
-| +	DECLARE_BITMAP(apicid_map, MAX_LOCAL_APIC);
-| +	char apicid_list[MAX_LOCAL_APIC];
+On Tue, 2009-10-27 at 15:00 +0800, Li Hong wrote:
+> >From 580ea035d04d4ca58300423db3dd5b4c73c8d61c Mon Sep 17 00:00:00 2001
+> From: Li Hong <lihong.hi@gmail.com>
+> Date: Tue, 27 Oct 2009 12:41:22 +0800
+> Subject: [PATCH] tracing: recordmcount.pl Objcopy check should disable local reference correctly
+> 
+> Use a function to do objcopy version check. Disable the local reference if
+> copy can't support it. Remove some unused variables.
+> 
+> Signed-off-by: Li Hong <lihong.hi@gmail.com>
+> 
+> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+> index 94daf9e..970c6d6 100755
+> --- a/scripts/recordmcount.pl
+> +++ b/scripts/recordmcount.pl
+> @@ -155,6 +155,28 @@ my $function_regex;	# Find the name of a function
+>  my $mcount_regex;	# Find the call site to mcount (return offset)
+>  my $alignment;		# The .align value to use for $mcount_section
+>  my $section_type;	# Section header plus possible alignment command
+> +my $can_use_local = 0; 	# If we can use local function references
+> +
+> +##
+> +# check_objcopy - whether objcopy supports --globalize-symbols
+> +#
+> +#  --globalize-symbols came out in 2.17, we must test the version
+> +#  of objcopy, and if it is less than 2.17, then we can not
+> +#  record local functions.
+> +sub check_objcopy
+> +{
+> +    open (IN, "$objcopy --version |") or die "error running $objcopy";
+> +    while (<IN>) {
+> +        if (/objcopy.*\s(\d+)\.(\d+)/) {
+> +            $can_use_local = 1 if ($1 > 2 || ($1 == 2 && $2 >= 17)); 
+> +            last;
+> +        }
+> +    }
+> +    close (IN);
+> +
+> +    print STDERR "WARNING: could not find objcopy version or version is less than 2.17.\n" .
+> +	"\tLocal function references is disabled.\n" if !$can_use_local; 
 
-Hi David, I suppose 32K on stack is too much :)
-(perhaps gcc will move it out of stack?)
+Please use C like if's. This tricked even me. I looked at it, and said
+to myself, "Wait, this prints an error every time... oh wait!".
 
-...
+There are some cases where I don't mind the perl if style, and used it
+for assigning defaults. But this just makes it more difficult to
+understand.
 
-	-- Cyrill
+The rest of the patch looks good.
+
+-- Steve
+
+> +}
+>  
+>  if ($arch eq "x86") {
+>      if ($bits == 64) {
+> @@ -289,34 +311,7 @@ if ($filename =~ m,^(.*)(\.\S),) {
+>  my $mcount_s = $dirname . "/.tmp_mc_" . $prefix . ".s";
+>  my $mcount_o = $dirname . "/.tmp_mc_" . $prefix . ".o";
+>  
+> -#
+> -# --globalize-symbols came out in 2.17, we must test the version
+> -# of objcopy, and if it is less than 2.17, then we can not
+> -# record local functions.
+> -my $use_locals = 01;
+> -my $local_warn_once = 0;
+> -my $found_version = 0;
+> -
+> -open (IN, "$objcopy --version |") || die "error running $objcopy";
+> -while (<IN>) {
+> -    if (/objcopy.*\s(\d+)\.(\d+)/) {
+> -	my $major = $1;
+> -	my $minor = $2;
+> -
+> -	$found_version = 1;
+> -	if ($major < 2 ||
+> -	    ($major == 2 && $minor < 17)) {
+> -	    $use_locals = 0;
+> -	}
+> -	last;
+> -    }
+> -}
+> -close (IN);
+> -
+> -if (!$found_version) {
+> -    print STDERR "WARNING: could not find objcopy version.\n" .
+> -	"\tDisabling local function references.\n";
+> -}
+> +check_objcopy();
+>  
+>  #
+>  # Step 1: find all the local (static functions) and weak symbols.
+> @@ -363,7 +358,7 @@ sub update_funcs
+>      if (defined $locals{$ref_func}) {
+>  
+>  	# only use locals if objcopy supports globalize-symbols
+> -	if (!$use_locals) {
+> +	if (!$can_use_local) {
+>  	    return;
+>  	}
+>  	$convert{$ref_func} = 1;
+
