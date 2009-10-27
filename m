@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932346AbZJ0Unc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932363AbZJ0Unv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932346AbZJ0Unc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932167AbZJ0Un3
+	id S932363AbZJ0Unv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932206AbZJ0Unu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:43:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:63869 "EHLO mx1.redhat.com"
+	Tue, 27 Oct 2009 16:43:50 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41031 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932196AbZJ0Un1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:43:27 -0400
+	id S932158AbZJ0Unr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 16:43:47 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip perf/probes 06/10] kprobe-tracer: Compare both of
-	event-name and event-group to find probe
+Subject: [PATCH -tip perf/probes 07/10] perf/probes: Exit searching after
+	finding target function
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>,
@@ -27,8 +27,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Date: Tue, 27 Oct 2009 16:42:44 -0400
-Message-ID: <20091027204244.30545.27516.stgit@harusame>
+Date: Tue, 27 Oct 2009 16:42:53 -0400
+Message-ID: <20091027204252.30545.19251.stgit@harusame>
 In-Reply-To: <20091027204156.30545.96425.stgit@harusame>
 References: <20091027204156.30545.96425.stgit@harusame>
 User-Agent: StGIT/0.14.3
@@ -39,9 +39,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix find_probe_event() to compare both of event-name and event-group.
-Without this fix, kprobe-tracer overwrites existing same event-name probe
-even if its group-name is different.
+Exit searching after finding real (not-inlined) function, because
+there should be no same symbol in that CU.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ingo Molnar <mingo@elte.hu>
@@ -58,39 +57,30 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
 
- kernel/trace/trace_kprobe.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ tools/perf/util/probe-finder.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index b8ef707..a86c3ac 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -353,12 +353,14 @@ static void free_trace_probe(struct trace_probe *tp)
- 	kfree(tp);
- }
- 
--static struct trace_probe *find_probe_event(const char *event)
-+static struct trace_probe *find_probe_event(const char *event,
-+					    const char *group)
- {
- 	struct trace_probe *tp;
- 
- 	list_for_each_entry(tp, &probe_list, list)
--		if (!strcmp(tp->call.name, event))
-+		if (strcmp(tp->call.name, event) == 0 &&
-+		    strcmp(tp->call.system, group) == 0)
- 			return tp;
- 	return NULL;
- }
-@@ -383,7 +385,7 @@ static int register_trace_probe(struct trace_probe *tp)
- 	mutex_lock(&probe_lock);
- 
- 	/* register as an event */
--	old_tp = find_probe_event(tp->call.name);
-+	old_tp = find_probe_event(tp->call.name, tp->call.system);
- 	if (old_tp) {
- 		/* delete old event */
- 		unregister_trace_probe(old_tp);
+diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
+index 54e7071..b98d35e 100644
+--- a/tools/perf/util/probe-finder.c
++++ b/tools/perf/util/probe-finder.c
+@@ -585,14 +585,14 @@ static int probefunc_callback(struct die_link *dlink, void *data)
+ 				DIE_IF(ret != DW_DLV_OK);
+ 				pr_debug("inline definition offset %lld\n",
+ 					 pf->inl_offs);
+-				return 0;
++				return 0;	/* Continue to search */
+ 			}
+ 			/* Get probe address */
+ 			pf->addr = die_get_entrypc(dlink->die);
+ 			pf->addr += pp->offset;
+ 			/* TODO: Check the address in this function */
+ 			show_probepoint(dlink->die, pp->offset, pf);
+-			/* Continue to search */
++			return 1; /* Exit; no same symbol in this CU. */
+ 		}
+ 	} else if (tag == DW_TAG_inlined_subroutine && pf->inl_offs) {
+ 		if (die_get_abstract_origin(dlink->die) == pf->inl_offs) {
 
 
 -- 
