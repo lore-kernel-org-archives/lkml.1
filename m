@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932276AbZJ0Umv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbZJ0UnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932276AbZJ0Umv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932198AbZJ0Umt
+	id S932339AbZJ0UnT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932281AbZJ0UnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:42:49 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:4517 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932158AbZJ0Umr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:42:47 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip perf/probes 01/10] x86: Fix SSE opcode map bug
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jason Baron <jbaron@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Date: Tue, 27 Oct 2009 16:42:04 -0400
-Message-ID: <20091027204204.30545.97296.stgit@harusame>
-In-Reply-To: <20091027204156.30545.96425.stgit@harusame>
-References: <20091027204156.30545.96425.stgit@harusame>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 27 Oct 2009 16:43:17 -0400
+Received: from igw2.watson.ibm.com ([129.34.20.6]:43129 "EHLO
+	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932290AbZJ0UnM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 16:43:12 -0400
+Subject: Re: [PATCH] ima: remove ACPI dependency
+From: David Safford <safford@watson.ibm.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: Eric Paris <eparis@parisplace.org>, Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       Rajiv Andrade <srajiv@linux.vnet.ibm.com>,
+       Jean-Christophe Dubois <jcd@tribudubois.net>,
+       Mimi Zohar <zohar@us.ibm.com>, Stable Kernel <stable@kernel.org>
+In-Reply-To: <1256661407.2804.15.camel@dhcp231-106.rdu.redhat.com>
+References: <1256563579-11014-1-git-send-email-zohar@linux.vnet.ibm.com>
+	 <1256563579-11014-2-git-send-email-zohar@linux.vnet.ibm.com>
+	 <7e0fb38c0910270658v153480fdt5ced717feca76c17@mail.gmail.com>
+	 <1256659146.3028.29.camel@localhost.localdomain>
+	 <1256661407.2804.15.camel@dhcp231-106.rdu.redhat.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 27 Oct 2009 16:42:07 -0400
+Message-Id: <1256676127.3028.86.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix superscripts position because some superscripts of SSE opcode are
-not put in correct position.
+On Tue, 2009-10-27 at 12:36 -0400, Eric Paris wrote:
+> On Tue, 2009-10-27 at 11:59 -0400, David Safford wrote:
+> > Basically, if running on a system with a TPM, IMA wants the TPM
+> > boot measurement log, which the TPM driver can only get through
+> > ACPI. If the platform does not have a TPM, then IMA does not 
+> > need ACPI.
+> 
+> I'm afraid I'm not seeing the connection.  Where does IMA gets the boot
+> measurement log?  I see that the TPM exports that log in securityfs as 2
+> files (ascii and binary) in tpm_bios.c but I don't see how IMA ever
+> makes use of that log either internally to the kernel or through the
+> securityfs files.
+> 
+sorry - bad explanation. IMA reads PCR 0-7, and combines them into
+a single "boot_aggregate" as the first entry in the IMA list. For full
+attestation, a user level program needs access to both IMA's
+boot aggregate, and to the detailed TPM event log upon which
+the aggregate is based. So IMA does not itself access the logs,
+but the boot aggregate is less useful without them.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Frank Ch. Eigler <fche@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
----
+As a separate issue, IMA requires the TPM driver to be compiled in
+(not loaded as a module) so it is available at IMA initialization, and
+the driver apparently requires ACPI in this case. I believe Rajiv
+will comment more on this.
 
- arch/x86/lib/x86-opcode-map.txt |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+dave
 
-diff --git a/arch/x86/lib/x86-opcode-map.txt b/arch/x86/lib/x86-opcode-map.txt
-index 701c467..efef3ca 100644
---- a/arch/x86/lib/x86-opcode-map.txt
-+++ b/arch/x86/lib/x86-opcode-map.txt
-@@ -401,9 +401,9 @@ Referrer: 2-byte escape
- 62: punpckldq Pq,Qd | punpckldq Vdq,Wdq (66)
- 63: packsswb Pq,Qq | packsswb Vdq,Wdq (66)
- 64: pcmpgtb Pq,Qq | pcmpgtb Vdq,Wdq (66)
--65: pcmpgtw Pq,Qq | pcmpgtw(66) Vdq,Wdq
-+65: pcmpgtw Pq,Qq | pcmpgtw Vdq,Wdq (66)
- 66: pcmpgtd Pq,Qq | pcmpgtd Vdq,Wdq (66)
--67: packuswb Pq,Qq | packuswb(66) Vdq,Wdq
-+67: packuswb Pq,Qq | packuswb Vdq,Wdq (66)
- 68: punpckhbw Pq,Qd | punpckhbw Vdq,Wdq (66)
- 69: punpckhwd Pq,Qd | punpckhwd Vdq,Wdq (66)
- 6a: punpckhdq Pq,Qd | punpckhdq Vdq,Wdq (66)
-@@ -425,8 +425,8 @@ Referrer: 2-byte escape
- 79: VMWRITE Gd/q,Ed/q
- 7a:
- 7b:
--7c: haddps(F2) Vps,Wps | haddpd(66) Vpd,Wpd
--7d: hsubps(F2) Vps,Wps | hsubpd(66) Vpd,Wpd
-+7c: haddps Vps,Wps (F2) | haddpd Vpd,Wpd (66)
-+7d: hsubps Vps,Wps (F2) | hsubpd Vpd,Wpd (66)
- 7e: movd/q Ed/q,Pd | movd/q Ed/q,Vdq (66) | movq Vq,Wq (F3)
- 7f: movq Qq,Pq | movdqa Wdq,Vdq (66) | movdqu Wdq,Vdq (F3)
- # 0x0f 0x80-0x8f
-@@ -574,7 +574,7 @@ Referrer: 3-byte escape 1
- 01: phaddw Pq,Qq | phaddw Vdq,Wdq (66)
- 02: phaddd Pq,Qq | phaddd Vdq,Wdq (66)
- 03: phaddsw Pq,Qq | phaddsw Vdq,Wdq (66)
--04: pmaddubsw Pq,Qq | pmaddubsw (66)Vdq,Wdq
-+04: pmaddubsw Pq,Qq | pmaddubsw Vdq,Wdq (66)
- 05: phsubw Pq,Qq | phsubw Vdq,Wdq (66)
- 06: phsubd Pq,Qq | phsubd Vdq,Wdq (66)
- 07: phsubsw Pq,Qq | phsubsw Vdq,Wdq (66)
+> If I'm missing it, and IMA is getting and making use of the bios boot
+> log I think we need to instead make the TPM code send a reasonable
+> failure code without ACPI and IMA should be changed to handle it.  I
+> really don't like the obscure ACPI requirement.
+
+> -Eric
 
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
