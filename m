@@ -1,35 +1,83 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbZJ0Ddb (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 26 Oct 2009 23:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbZJ0Dda
+	id S1753757AbZJ0LZA (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Tue, 27 Oct 2009 07:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZJ0LY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 23:33:30 -0400
-Received: from mxout2.netvision.net.il ([194.90.9.21]:52048 "EHLO
-	mxout2.netvision.net.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752964AbZJ0Dda (ORCPT
+	Tue, 27 Oct 2009 07:24:59 -0400
+Received: from danae.med.uoc.gr ([147.52.72.200]:43342 "EHLO danae.med.uoc.gr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753212AbZJ0LY6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 23:33:30 -0400
-Date: Tue, 27 Oct 2009 04:33:31 +0100
-From: b b <belalqassem@013net.net>
-Subject: Hello
-Reply-to: missvictoria_2graham@yahoo.ie
-Message-id: <f69288146abc.4ae6781b@netvision.net.il>
-MIME-version: 1.0
-X-Mailer: Sun Java(tm) System Messenger Express 6.2-8.04 (built Feb 28 2007)
-Content-type: text/plain; charset=us-ascii
-Content-language: en
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-Accept-Language: en
-To: unlisted-recipients:; (no To-header on input)
+	Tue, 27 Oct 2009 07:24:58 -0400
+X-Greylist: delayed 304 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Oct 2009 07:24:58 EDT
+Message-ID: <20091027132445.13825qhglrj7cxog@webmail.med.uoc.gr>
+Date: Tue, 27 Oct 2009 13:24:45 +0200
+From: "Support centre" <agouridp@med.uoc.gr>
+Reply-to: webcentre101@gmail.com
+To: undisclosed-recipients:;
+Subject: {Spam?} Confirm and upgrade your webmail account
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=UTF-8;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
+X-UOC-Medicine-Dep-MailScanner-Information: Please contact the ISP for more information
+X-UOC-Medicine-Dep-MailScanner-ID: EA49B60132.035FE
+X-UOC-Medicine-Dep-MailScanner: Found to be clean
+X-UOC-Medicine-Dep-MailScanner-SpamCheck: spam, SpamAssassin (cached,
+	score=5.303, required 5, BAYES_00 -2.60, MIME_QP_LONG_LINE 1.40,
+	RCVD_IN_BL_SPAMCOP_NET 1.96, RCVD_IN_SBL 1.55, SPF_PASS -0.00,
+	TVD_PH_SUBJ_ACCOUNTS_POST 3.00)
+X-UOC-Medicine-Dep-MailScanner-SpamScore: 5
+X-UOC-Medicine-Dep-MailScanner-From: agouridp@med.uoc.gr
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dear uncu.edu.ar Email Account Owner,
+
+This message is from Webmastere messaging center to all our  email  
+account owners. We are currently upgrading our data base and e-mail  
+account center. We are deleting all unused email account to create  
+more space for new accounts.
+To prevent your account from closing you will have to update it below so that
+we will know that it's a present used account.
+
+To complete your  Webmail account, you must reply to this email  
+immediately and
+enter your.
+
+Name:( ............................. )
+
+Username: (  .............................  )
+
+password (  ............................  )
+
+Contact address: ( ............................. )
+
+You can also confirm your email address by logging into your Webmail account
+
+Failure to do this will immediately render your email address deactivated from
+our database.
+
+Warning!!! Account owner that refuses to update his or her account  
+within Seven
+days of receiving this warning will lose his or her account permanently.
+
+Warning Code:VX2G99AAJ
+Thanks,
+Welcome to Webmaster WebMail
+***************************************************************************
 
 
-Hello,
 
-How are you today? I hope you are fine.If so thank be to God almigthy.My name is Miss victoria graham ,26 years I am single girl looking for honest and nice person. Somebody who care and respect God whom i can partner with .I don't care about your colour or ethnicity.I would like to know you more,most especially what you like and what you dislike.I'm sending you this beautiful mail, with a wish for much happiness. I am looking forward to hear from you.
-Love from,
-Miss victoria 
+
+
+
+
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
+
