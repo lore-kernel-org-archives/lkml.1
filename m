@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756895AbZJ0XmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbZJ0Xwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756895AbZJ0XmV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 19:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756852AbZJ0XmU
+	id S1756899AbZJ0Xwh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 19:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbZJ0Xwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 19:42:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43016 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756830AbZJ0XmT (ORCPT
+	Tue, 27 Oct 2009 19:52:36 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47403 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756539AbZJ0Xwf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 19:42:19 -0400
-Date: Tue, 27 Oct 2009 16:41:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Stephen Hemminger <shemminger@vyatta.com>
-cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Stephen Hemminger <stephen.hemminger@vyatta.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH] dcache: better name hash function
-In-Reply-To: <20091027160822.384dc109@nehalam>
-Message-ID: <alpine.LFD.2.01.0910271636100.31845@localhost.localdomain>
-References: <19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com> <4AE68E23.20205@gmail.com> <4AE69829.9070207@gmail.com> <4AE6A16F.4020002@gmail.com> <20091027100736.5303f1ab@nehalam> <alpine.LFD.2.01.0910271017170.31845@localhost.localdomain>
- <20091027160822.384dc109@nehalam>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 27 Oct 2009 19:52:35 -0400
+Date: Tue, 27 Oct 2009 16:53:45 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Len Brown <lenb@kernel.org>
+Subject: Re: scheduling while atomic acpi_idle_enter_bm
+Message-ID: <20091027165345.3237d3df@infradead.org>
+In-Reply-To: <43e72e890910271640n7fafc8edpc14143fcfca7df60@mail.gmail.com>
+References: <43e72e890910271640n7fafc8edpc14143fcfca7df60@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 27 Oct 2009 16:40:03 -0700
+"Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
+
+> I get this when modprobing some module I am working on. I figured it
+> was the module's fault but the EIP points to something else so I am
+> not sure. I get the following repeating about 4 times on 2.6.32-rc5:
 
 
-On Tue, 27 Oct 2009, Stephen Hemminger wrote:
-> 
-> Going back to basics. Run tests across different input sets.
-> Dropping off the slow ones like crc, md5, ...
-> Not using jhash because it doesn't have good character at a time
-> interface.
-> 
-> Also, the folding algorithm used matters. Since the kernel
-> already uses hash_long() to fold back to N bits, all the
-> tests were rerun with that.
+you can get this if your own code leaves interrupts disabled in a
+kernel thread and then lets the cpu go idle...
 
-Yeah, the 'hash_long()' folding matters for anything that doesn't multiply 
-big some big number to spread the bits out, because otherwise the bits 
-from the last character hashed will always be in the low bits.
 
-That explains why our current hash looked so bad with your previous code.
-
->From your numbers, I think we can dismiss 'kr_hash()' as having horrible 
-behavior with names like pppXXX (and that isn't just a special case: it's 
-also noticeably worse for your /home directory case, which means that the 
-bad behavior shows up in practice too, not just in some special cases).
-
-'elf' and 'pjw' don't have quite the same bad case, but the stddev for the 
-pppXXX cases are still clearly worse than the other alternatives. They 
-also seem to always be slower than what we already have. 
-
-The 'fnv32' algorithm gets fairly good behavior, but seems bad on Itanium. 
-Looks like it depends on a fast multiplication unit, and all even your 
-"slow" ULV chip seems to be a Core2 one, so all your x86 targets have 
-that. And our current name hash still actually seems to do better in all 
-cases (maybe I missed some case) even if fnv32 is slightly faster on x86.
-
->From your list 'string10' seems to get consistently good results and is at 
-or near the top of performance too. It seems to be the one that 
-consistently beats 'full_name_hash()' both in performance and in behavior 
-(string_hash17/31 come close, but aren't as clearly better performing).
-
-But I haven't actually seen the hashes. Maybe there's something that makes 
-string10 bad?
-
-Regardless, one thing your new numbers do say is that our current hash 
-really isn't that bad.
-
-		Linus
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
