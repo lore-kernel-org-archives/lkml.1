@@ -1,275 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbZJ0II6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbZJ0IMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932119AbZJ0II6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 04:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932093AbZJ0II5
+	id S932160AbZJ0IMO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 04:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932140AbZJ0IMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 04:08:57 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41370 "EHLO smtps.tip.net.au"
+	Tue, 27 Oct 2009 04:12:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38018 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932088AbZJ0IIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 04:08:53 -0400
-Date: Tue, 27 Oct 2009 19:08:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for October 27
-Message-Id: <20091027190850.9694fb39.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__27_Oct_2009_19_08_50_+1100_1hxpLode7e4DDM60"
+	id S932137AbZJ0IMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 04:12:09 -0400
+Message-ID: <4AE6AABC.5040603@kernel.org>
+Date: Tue, 27 Oct 2009 01:09:32 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Alex Chiang <achiang@hp.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 1/4] pci: pciehp update the slot bridge res to get big range
+ for pcie devices - v4
+References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com> <4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com> <4AE55D72.7080202@kernel.org>
+In-Reply-To: <4AE55D72.7080202@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__27_Oct_2009_19_08_50_+1100_1hxpLode7e4DDM60
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
 
-Changes since 20091026:
+move out bus_size_bridges and assign resources out of pciehp_add_bridge()
+and at last do them all together one time including slot bridge, to avoid to
+call assign resources several times, when there are several bridges under the
+slot bridge.
 
-My fixes tree contains a build fix for powerpc/kvm.
+need to introduce pci_bridge_assign_resources there.
 
-The pci tree lost its conflict.
+handle the case the slot bridge that doesn't get pre-allocated big enough res
+from FW.
+for example pcie devices need 256M, but the bridge only get preallocated 2M...
 
-The block tree gained a build failure so I used the version from
-next-20091026.
+pci_setup_bridge() will take extra check_enabled for the slot bridge, otherwise
+update res is not updated to bridge BAR. that is bridge is enabled already for
+port service.
 
-The staging tree gained a conflict against the net/wireless trees.
+-v2: address Alex's concern about pci remove/rescan feature about pci_setup_bridge changes.
+-v3: Kenji pointed out that pci_config_slot need to be called before pci_bus_add_devices()
+-v4: move out pci_is_enabled checkout of pci_setup_bridge()
 
-----------------------------------------------------------------------------
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+---
+ drivers/pci/hotplug/pciehp_pci.c |   29 ++++++++++++---
+ drivers/pci/setup-bus.c          |   73 ++++++++++++++++++++++++++++++++++++---
+ include/linux/pci.h              |    1 
+ 3 files changed, 93 insertions(+), 10 deletions(-)
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
+Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
++++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+@@ -53,19 +53,18 @@ static int __ref pciehp_add_bridge(struc
+ 		busnr = pci_scan_bridge(parent, dev, busnr, pass);
+ 	if (!dev->subordinate)
+ 		return -1;
+-	pci_bus_size_bridges(dev->subordinate);
+-	pci_bus_assign_resources(parent);
+-	pci_enable_bridges(parent);
+-	pci_bus_add_devices(parent);
++
+ 	return 0;
+ }
+ 
+ int pciehp_configure_device(struct slot *p_slot)
+ {
+ 	struct pci_dev *dev;
+-	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
++	struct pci_dev *bridge = p_slot->ctrl->pcie->port;
++	struct pci_bus *parent = bridge->subordinate;
+ 	int num, fn;
+ 	struct controller *ctrl = p_slot->ctrl;
++	int retval;
+ 
+ 	dev = pci_get_slot(parent, PCI_DEVFN(0, 0));
+ 	if (dev) {
+@@ -96,12 +95,30 @@ int pciehp_configure_device(struct slot
+ 				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
+ 			pciehp_add_bridge(dev);
+ 		}
++		pci_dev_put(dev);
++	}
++
++	pci_bus_size_bridges(parent);
++	pci_clear_master(bridge);
++	pci_bridge_assign_resources(bridge);
++	retval = pci_reenable_device(bridge);
++	pci_set_master(bridge);
++	pci_enable_bridges(parent);
++
++	for (fn = 0; fn < 8; fn++) {
++		dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
++		if (!dev)
++			continue;
++		if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
++			pci_dev_put(dev);
++			continue;
++		}
+ 		pci_configure_slot(dev);
+ 		pci_dev_put(dev);
+ 	}
+ 
+-	pci_bus_assign_resources(parent);
+ 	pci_bus_add_devices(parent);
++
+ 	return 0;
+ }
+ 
+Index: linux-2.6/drivers/pci/setup-bus.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/setup-bus.c
++++ linux-2.6/drivers/pci/setup-bus.c
+@@ -27,6 +27,44 @@
+ #include <linux/slab.h>
+ #include "pci.h"
+ 
++static void pdev_assign_resources_sorted(struct pci_dev *dev)
++{
++	struct resource *res;
++	struct resource_list head, *list, *tmp;
++	int idx;
++	u16 class = dev->class >> 8;
++
++	head.next = NULL;
++
++	/* Don't touch classless devices or host bridges or ioapics.  */
++	if (class == PCI_CLASS_NOT_DEFINED ||
++	    class == PCI_CLASS_BRIDGE_HOST)
++		return;
++
++	/* Don't touch ioapic devices already enabled by firmware */
++	if (class == PCI_CLASS_SYSTEM_PIC) {
++		u16 command;
++		pci_read_config_word(dev, PCI_COMMAND, &command);
++		if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
++			return;
++	}
++
++	pdev_sort_resources(dev, &head);
++
++	for (list = head.next; list;) {
++		res = list->res;
++		idx = res - &list->dev->resource[0];
++		if (pci_assign_resource(list->dev, idx)) {
++			res->start = 0;
++			res->end = 0;
++			res->flags = 0;
++		}
++		tmp = list;
++		list = list->next;
++		kfree(tmp);
++	}
++}
++
+ static void pbus_assign_resources_sorted(const struct pci_bus *bus)
+ {
+ 	struct pci_dev *dev;
+@@ -144,9 +182,6 @@ static void pci_setup_bridge(struct pci_
+ 	u32 l, bu, lu, io_upper16;
+ 	int pref_mem64;
+ 
+-	if (pci_is_enabled(bridge))
+-		return;
+-
+ 	dev_info(&bridge->dev, "PCI bridge, secondary bus %04x:%02x\n",
+ 		 pci_domain_nr(bus), bus->number);
+ 
+@@ -550,6 +585,35 @@ void __ref pci_bus_size_bridges(struct p
+ }
+ EXPORT_SYMBOL(pci_bus_size_bridges);
+ 
++void __ref pci_bridge_assign_resources(const struct pci_dev *bridge)
++{
++	struct pci_bus *b;
++
++	pdev_assign_resources_sorted((struct pci_dev *)bridge);
++
++	b = bridge->subordinate;
++	if (!b)
++		return;
++
++	pci_bus_assign_resources(b);
++
++	switch (bridge->class >> 8) {
++	case PCI_CLASS_BRIDGE_PCI:
++		pci_setup_bridge(b);
++		break;
++
++	case PCI_CLASS_BRIDGE_CARDBUS:
++		pci_setup_cardbus(b);
++		break;
++
++	default:
++		dev_info(&bridge->dev, "not setting up bridge for bus "
++			 "%04x:%02x\n", pci_domain_nr(b), b->number);
++		break;
++	}
++}
++EXPORT_SYMBOL(pci_bridge_assign_resources);
++
+ void __ref pci_bus_assign_resources(const struct pci_bus *bus)
+ {
+ 	struct pci_bus *b;
+@@ -566,7 +630,8 @@ void __ref pci_bus_assign_resources(cons
+ 
+ 		switch (dev->class >> 8) {
+ 		case PCI_CLASS_BRIDGE_PCI:
+-			pci_setup_bridge(b);
++			if (!pci_is_enabled(dev))
++				pci_setup_bridge(b);
+ 			break;
+ 
+ 		case PCI_CLASS_BRIDGE_CARDBUS:
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -756,6 +756,7 @@ ssize_t pci_write_vpd(struct pci_dev *de
+ int pci_vpd_truncate(struct pci_dev *dev, size_t size);
+ 
+ /* Helper functions for low-level code (drivers/pci/setup-[bus,res].c) */
++void pci_bridge_assign_resources(const struct pci_dev *bridge);
+ void pci_bus_assign_resources(const struct pci_bus *bus);
+ void pci_bus_size_bridges(struct pci_bus *bus);
+ int pci_claim_resource(struct pci_dev *, int);
 
-Below is a summary of the state of the merge.
-
-We are up to 146 trees (counting Linus' and 22 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-CONFLICT (content): Merge conflict in arch/x86/kvm/mmu.c
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-CONFLICT (delete/modify): drivers/net/sfc/sfe4001.c deleted in net/master a=
-nd modified in HEAD. Version HEAD of drivers/net/sfc/sfe4001.c left in tree.
-$ git rm -f drivers/net/sfc/sfe4001.c
-Applying: net: merge fixup for drivers/net/sfc/falcon_boards.c
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-$ git reset --hard HEAD^
-Merging refs/next/20091026/block
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
-CONFLICT (content): Merge conflict in drivers/mfd/Makefile
-Merging security-testing/next
-CONFLICT (content): Merge conflict in Documentation/dontdiff
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-CONFLICT (content): Merge conflict in drivers/acpi/video_detect.c
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/Kconfig
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/Makefile
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_actlog.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_int.h
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_main.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_nl.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_receiver.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_req.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_worker.c
-CONFLICT (add/add): Merge conflict in include/linux/drbd.h
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in drivers/net/Kconfig
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging limits/writable_limits
-Merging tip/auto-latest
-Merging oprofile/for-next
-Merging percpu/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/net/wireless/Kconfig
-Applying: staging: merge fixup for wireless drivers move
-Merging scsi-post-merge/master
-
---Signature=_Tue__27_Oct_2009_19_08_50_+1100_1hxpLode7e4DDM60
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrmqpIACgkQjjKRsyhoI8zkawCgtfJpkL79G/FvoqUHpl3zabV2
-8A8An1rRbMRww4mLnely8KTaq1fVQ7QS
-=ClGI
------END PGP SIGNATURE-----
-
---Signature=_Tue__27_Oct_2009_19_08_50_+1100_1hxpLode7e4DDM60--
