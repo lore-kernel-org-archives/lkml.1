@@ -1,132 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbZJ0GXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbZJ0GcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbZJ0GXU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 02:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755610AbZJ0GXT
+	id S1756279AbZJ0GcL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 02:32:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbZJ0GcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 02:23:19 -0400
-Received: from lennier.cc.vt.edu ([198.82.162.213]:59581 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755504AbZJ0GXS (ORCPT
+	Tue, 27 Oct 2009 02:32:11 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57373 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754978AbZJ0GcJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 02:23:18 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Bernhard Kaindl <bk@suse.de>
-Subject: Re: PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
-In-Reply-To: Your message of "Mon, 26 Oct 2009 14:16:34 PDT."
-             <4AE611B2.1030409@gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <4AE24009.4090408@gmail.com> <dd18b0c30910261134s76274dbbj9c1904e78c2b5a38@mail.gmail.com> <21504.1256588976@turing-police.cc.vt.edu>
-            <4AE611B2.1030409@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1256624599_9496P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 27 Oct 2009 02:32:09 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AE693D9.3070100@jp.fujitsu.com>
+Date: Tue, 27 Oct 2009 15:31:53 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Alex Chiang <achiang@hp.com>, Mark Lord <lkml@rtr.ca>,
+       Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org
+Subject: Re: pci-express hotplug
+References: <20091012120620.GG9228@kernel.dk> <20091012145254.GA1517@kroah.com> <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca> <20091012150603.GK9228@kernel.dk> <20091012214854.GA14102@ldl.fc.hp.com> <20091013082903.GQ9228@kernel.dk> <20091013172731.GB22797@ldl.fc.hp.com> <20091014081309.GM9228@kernel.dk> <20091020190707.GA25615@ldl.fc.hp.com> <20091026105419.GA10727@kernel.dk>
+In-Reply-To: <20091026105419.GA10727@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Tue, 27 Oct 2009 02:23:19 -0400
-Message-ID: <29209.1256624599@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.34.98 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=dagger.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020207.4AE691D8.012B,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1256624599_9496P
-Content-Type: text/plain; charset=us-ascii
-
-On Mon, 26 Oct 2009 14:16:34 PDT, "Justin P. Mattock" said:
-  
-> as of now in init_ohci1394_dma.c
-> I did:
+Jens Axboe wrote:
+> On Tue, Oct 20 2009, Alex Chiang wrote:
+>> * Jens Axboe <jens.axboe@oracle.com>:
+>>> On Tue, Oct 13 2009, Alex Chiang wrote:
+>>>>>> Can you modprobe acpiphp with debug=1? And send the output?
+>>>>> acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:05.0
+>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 1 at PCI 0000:08:00
+>>>>> acpiphp: Slot [1] registered
+>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:07.0
+>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:0b:00
+>>>>> acpiphp: Slot [2] registered
+>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:07.0
+>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 6 at PCI 0000:84:00
+>>>>> acpiphp: Slot [6] registered
+>>>>> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:80:09.0
+>>>>> acpiphp_glue: found ACPI PCI Hotplug slot 7 at PCI 0000:87:00
+>>>>> acpiphp: Slot [7] registered
+>>>>> acpiphp_glue: Bus 0000:87 has 1 slot
+>>>>> acpiphp_glue: Bus 0000:84 has 1 slot
+>>>>> acpiphp_glue: Bus 0000:0b has 1 slot
+>>>>> acpiphp_glue: Bus 0000:08 has 1 slot
+>>>>> acpiphp_glue: Total 4 slots
+>>>> You mentioned in another mail that you echoed 1 into the various
+>>>> slots' power files.
+>>>>
+>>>> Did you do that after modprobing acpiphp with debug=1?
+>>>>
+>>>> If so, there should be debug output when you try and turn them
+>>>> on.
+>>> It produces:
+>>>
+>>> acpiphp: enable_slot - physical_slot = 1
+>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+>>> acpiphp: enable_slot - physical_slot = 2
+>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+>>> acpiphp: enable_slot - physical_slot = 6
+>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+>>> acpiphp: enable_slot - physical_slot = 7
+>>> acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+>> Hm, so for some reason, firmware on your machine is telling us
+>> that it doesn't think cards are present and/or enabled.
+>>
+>> Unfortunately, I don't know why your firmware would be saying
+>> that. We could add some more debug printks to see what firmware
+>> thinks about your system... Or we could just wait and see what
+>> happens after you get your hardware replaced.
 > 
+> New board, the exact same thing happens.
 > 
+>>> I have a card in one of the slots only this time.
+>>>
+>>>> Also, quick dummy check, you are trying to power on populated
+>>>> slots, right? :)
+>>> Yes :-)
+>>>
+>>>> Can you send the output of lspci -vv? And I like the output of
+>>>> lspci -vt as well... Both before and after loading acpiphp
+>>>> please.
+>>> Send privately.
+>> No difference in before and after. Odd.
+>>
+>> If you want to poke us again after your hardware swap, please do
+>> so. Sorry for being not so helpful. :-/
 > 
-> void __init init_ohci1394_dma_on_all_controllers(void)
-> {
->      int num, slot, func;
+> Poke :-)
 > 
->      if (!early_pci_allowed())
->          return;
+> One more thing I tried was pushing the power button on the slot
+> manually. With acpiphp, I get the same messages as above. Using pciehp,
+> I get the same power fault bit interrupt storm. So no difference from
+> using the sysfs interface or doing it on the box side, doesn't work
+> either way.
 > 
->      /* Poor man's PCI discovery, the only thing we can do at early boot */
->      for (num = 0; num < 32; num++) {
->          for (slot = 0; slot < 32; slot++) {
->              for (func = 0; func < 8; func++) {
->                  u32 class = read_pci_config(num,slot,func,
->                              PCI_CLASS_REVISION);
->                  if ((class == 0xffffffff))
-> +                    printk(KERN_DEBUG "putting a printk here keeps the  machine from a panic\n");
->                      continue; /* No device at this func */
 
-Try this instead:
+I'd like to confirm power fault interrupt storm, just in case.
+Could you get /proc/interrupts information after power fault
+problem happens and send it to me?
 
-                   
-                   printk(KERN_DEBUG "trying class=%d num=%d slot=%d func=%d\n",
-                             class, num, slot, func);
-                   if ((class == 0xffffffff)) {
-                       printk(KERN_DEBUG "No device here\n");
-                       continue; /* No device at this func */
-                   }
-
-The curly brackets are important.  This version will still panic, and it will
-probably spew a lot of msgs, but we'll hopefully find out which num/slot/func
-is giving it indigestion. 
+Thanks,
+Kenji Kaneshige
 
 
-> interesting thing here, is I just was wanting to see were this thing was
-> crashing. when adding this in(above) Ill see a long string during boot
-> for a few seconds and then the machine boots up.
->  Now if I add a printk(example below) to here:
-
->                  if (class>>8 != PCI_CLASS_SERIAL_FIREWIRE_OHCI)
-> +                    printk(KERN_DEBUG "putting a printk here keeps the machine from a panic\n");
->                      continue; /* Not an OHCI-1394 device */
-
-> In dmesg I will see maybe 5 to 10 debug messages and then
-> onto init_ohci1394_initialize.
-
-That's because you forgot the curlies, and the 'continue;' is now unconditional
-Now ou hit it *every* time, so you *never* do the test against
-PCI_CLASS_SERIAL_FIREWIRE-OHCI and you never call init_ohci1394_controller();
-
-And I suspect your *real* problem is something gone astray down in
-init_ohci1394_conrtroller() - so if you change the code to never call it,
-it never goes astray and you boot OK.
-
-> keep in mind I'm not familiar with any of this, but just looking
-> at the code I see 0xffffffff and searching(google) tells me
-> that that's something with 32bit, should maybe there be something
-> with 0xffffffffffffffffff 64bit?
-
-No - it's "u32 class", so treated as a 32-bit.
-
-
-
-
-
---==_Exmh_1256624599_9496P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFK5pHXcC3lWbTT17ARAiY5AJ0bDYClTqmCmcC2Hn7F9LJfIeis/wCg15rF
-JCKo33y7tsnLVdUDFAchy6o=
-=gnVx
------END PGP SIGNATURE-----
-
---==_Exmh_1256624599_9496P--
 
