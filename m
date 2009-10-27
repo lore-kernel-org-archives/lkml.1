@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbZJ0AIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbZJ0Af5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbZJ0AIo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 20:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbZJ0AIn
+	id S1755724AbZJ0Af5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 20:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbZJ0Af4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 20:08:43 -0400
-Received: from mail.perches.com ([173.55.12.10]:1074 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754781AbZJ0AIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 20:08:43 -0400
-Subject: git vs hg commit counts?
-From: Joe Perches <joe@perches.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: git <git@vger.kernel.org>, mercurial@selenic.com,
-       Marti Raudsepp <marti@juffo.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 26 Oct 2009 17:08:47 -0700
-Message-ID: <1256602127.29938.8.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Oct 2009 20:35:56 -0400
+Received: from mxout2.netvision.net.il ([194.90.9.21]:15728 "EHLO
+	mxout2.netvision.net.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755574AbZJ0Af4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 20:35:56 -0400
+X-Greylist: delayed 990 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Oct 2009 20:35:55 EDT
+Date: Tue, 27 Oct 2009 01:13:37 +0100
+From: b b <belalqassem@013net.net>
+Subject: Hello,
+Reply-to: missvictoria_4graham@yahoo.ie
+Message-id: <f759f7396d7.4ae64941@netvision.net.il>
+MIME-version: 1.0
+X-Mailer: Sun Java(tm) System Messenger Express 6.2-8.04 (built Feb 28 2007)
+Content-type: text/plain; charset=us-ascii
+Content-language: en
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-Accept-Language: en
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm comparing linux-kernel git vs hg repositories.
 
-While testing some changes to scripts/get_maintainer.pl,
-I noticed that git and hg have different commit counts
-for the same files.
 
-For instance:
+Hello,
 
-$ git log --since=1-year-ago -- MAINTAINERS | \
-	grep -P "^commit [0-9a-f]{40,40}$"  | wc -l
-514
-
-$ hg log --template="commit {node}\n" --date -365 -- MAINTAINERS  | \
-	grep -P "^commit [0-9a-f]{40,40}$" | wc -l
-601
-
-Anyone have any understanding why?
-
+How are you today? I hope you are fine.If so thank be to God almigthy.My name is Miss victoria graham ,26 years I am single girl looking for honest and nice person. Somebody who care and respect God whom i can partner with .I don't care about your colour or ethnicity.I would like to know you more,most especially what you like and what you dislike.I'm sending you this beautiful mail, with a wish for much happiness. I am looking forward to hear from you.
+Love from,
+Miss victoria 
