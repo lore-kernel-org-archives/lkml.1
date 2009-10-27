@@ -1,30 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbZJ0RWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZJ0RYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754160AbZJ0RWy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 13:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZJ0RWy
+	id S1755568AbZJ0RYY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 13:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbZJ0RYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 13:22:54 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:54287 "EHLO mail.vyatta.com"
+	Tue, 27 Oct 2009 13:24:24 -0400
+Received: from bamako.nerim.net ([62.4.17.28]:50224 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751884AbZJ0RWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 13:22:53 -0400
-Date: Tue, 27 Oct 2009 10:22:51 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       eric.dumazet@gmail.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, opurdila@ixiacom.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk
-Subject: [PATCH] net: fold network name hash
-Message-ID: <20091027102251.244ee681@nehalam>
-In-Reply-To: <20091026.222428.80364204.davem@davemloft.net>
-References: <9986527.24561256620662709.JavaMail.root@tahiti.vyatta.com>
- <19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com>
- <20091026.222428.80364204.davem@davemloft.net>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	id S1754029AbZJ0RYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 13:24:23 -0400
+Date: Tue, 27 Oct 2009 18:24:25 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: djwong@us.ibm.com
+Cc: Crane Cai <crane.cai@amd.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       lenb@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] i2c-scmi: support IBM SMBus CMI devices
+Message-ID: <20091027182425.31d09784@hyperion.delvare>
+In-Reply-To: <20091026210024.GS26149@tux1.beaverton.ibm.com>
+References: <20091020231149.GM26149@tux1.beaverton.ibm.com>
+	<20091021023016.GC32413@crane-desktop>
+	<200910210857.13978.bjorn.helgaas@hp.com>
+	<20091021173733.GN26149@tux1.beaverton.ibm.com>
+	<20091022071748.GA17917@crane-desktop>
+	<20091022174304.GO26149@tux1.beaverton.ibm.com>
+	<20091023044451.GB1367@crane-desktop>
+	<20091023170311.GC21723@tux1.beaverton.ibm.com>
+	<20091025125353.55d3bfad@hyperion.delvare>
+	<20091026210024.GS26149@tux1.beaverton.ibm.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,29 +36,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The full_name_hash does not produce a value that is evenly distributed
-over the lower 8 bits. This causes name hash to be unbalanced with large
-number of names.  A simple fix is to just fold in the higher bits
-with XOR.
+On Mon, 26 Oct 2009 14:00:24 -0700, Darrick J. Wong wrote:
+> From: Crane Cai <crane.cai@amd.com>
+> 
+> *) add a new HID for IBM SMBus CMI devices
+> *) add methods for IBM SMBus CMI devices
+> *) hook different HID with different control methods set
+> *) minor tweaks as suggested by Jean Delvare
+> 
+> Slightly modified by Darrick to use #define'd IBM SMBUS HID from Darrick's ACPI
+> scan quirk patch.
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> Signed-off-by: Crane Cai <crane.cai@amd.com>
+> ---
+> 
+>  drivers/i2c/busses/i2c-scmi.c |   31 +++++++++++++++++++++++--------
+>  1 files changed, 23 insertions(+), 8 deletions(-)
 
-This is independent of possible improvements to full_name_hash()
-in future.
+Applied, thanks.
 
-Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-
-
---- a/net/core/dev.c	2009-10-27 09:21:46.127252547 -0700
-+++ b/net/core/dev.c	2009-10-27 09:25:14.593313378 -0700
-@@ -199,7 +199,11 @@ EXPORT_SYMBOL(dev_base_lock);
- static inline struct hlist_head *dev_name_hash(struct net *net, const char *name)
- {
- 	unsigned hash = full_name_hash(name, strnlen(name, IFNAMSIZ));
--	return &net->dev_name_head[hash & ((1 << NETDEV_HASHBITS) - 1)];
-+
-+	hash ^= (hash >> NETDEV_HASHBITS);
-+	hash &= NETDEV_HASHENTRIES - 1;
-+
-+	return &net->dev_name_head[hash];
- }
- 
- static inline struct hlist_head *dev_index_hash(struct net *net, int ifindex)
+-- 
+Jean Delvare
