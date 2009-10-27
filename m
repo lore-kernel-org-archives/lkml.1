@@ -1,310 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932371AbZJ0Un6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932400AbZJ0UoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932371AbZJ0Un6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932170AbZJ0Un4
+	id S932400AbZJ0UoV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932385AbZJ0UoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:43:56 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:30549 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932206AbZJ0Unx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:43:53 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip perf/probes 10/10] perf/probes: Support function entry
-	relative line number
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jason Baron <jbaron@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Date: Tue, 27 Oct 2009 16:43:19 -0400
-Message-ID: <20091027204319.30545.30678.stgit@harusame>
-In-Reply-To: <20091027204156.30545.96425.stgit@harusame>
-References: <20091027204156.30545.96425.stgit@harusame>
-User-Agent: StGIT/0.14.3
+	Tue, 27 Oct 2009 16:44:12 -0400
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:18708 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932375AbZJ0UoJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 16:44:09 -0400
+X-Trace: 279973979/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.36.94/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.36.94
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgkBAOf45kpPRSRe/2dsb2JhbAAI2iKEPwQ
+X-IronPort-AV: E=Sophos;i="4.44,634,1249254000"; 
+   d="scan'208";a="279973979"
+Date: Tue, 27 Oct 2009 20:44:16 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: vedran.furac@gmail.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com, minchan.kim@gmail.com,
+       akpm@linux-foundation.org, rientjes@google.com, aarcange@redhat.com
+Subject: Re: Memory overcommit
+In-Reply-To: <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0910271843510.11372@sister.anvils>
+References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com>
+ <hb2cfu$r08$2@ger.gmane.org> <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com>
+ <4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
+ <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add function-entry relative line number specifying support to perf-probe.
-This allows users to define probes by line number from entry of the
-function.
+On Tue, 27 Oct 2009, KAMEZAWA Hiroyuki wrote:
+> Sigh, gnome-session has twice value of mmap(1G).
+> Of course, gnome-session only uses 6M bytes of anon.
+> I wonder this is because gnome-session has many children..but need to
+> dig more. Does anyone has idea ?
 
- e.g.
+When preparing KSM unmerge to handle OOM, I looked at how the precedent
+was handled by running a little program which mmaps an anonymous region
+of the same size as physical memory, then tries to mlock it.  The
+program was such an obvious candidate to be killed, I was shocked
+by the poor decisions the OOM killer made.  Usually I ran it with
+mem=512M, with gnome and firefox active.  Often the OOM killer killed
+it right the first time, but went wrong when I tried it a second time
+(I think that's because of what's already swapped out the first time).
 
-  perf probe schedule:16
+I built up a patchset of fixes, but once I came to split them up for
+submission, not one of them seemed entirely satisfactory; and Andrea's
+fix to the KSM/mlock deadlock forced me to abandon even the first of
+the patches (we've since then fixed the way munlocking behaves, so
+in theory could revisit that; but Andrea disliked what I was trying
+to do there in KSM for other reasons, so I've not touched it since).
+I had to get on with KSM, so I set it all aside: none of the issues
+was a recent regression.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Frank Ch. Eigler <fche@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
----
+I did briefly wonder about the reliance on total_vm which you're now
+looking into, but didn't touch that at all.  Let me describe those
+issues which I did try but fail to fix - I've no more time to deal
+with them now than then, but ought at least to mention them to you.
 
- tools/perf/builtin-probe.c     |   14 ++++---
- tools/perf/util/probe-finder.c |   79 +++++++++++++++++++++++++++++++---------
- tools/perf/util/probe-finder.h |    2 +
- 3 files changed, 70 insertions(+), 25 deletions(-)
+1.  select_bad_process() tries to avoid killing another process while
+there's still a TIF_MEMDIE, but its loop starts by skipping !p->mm
+processes.  However, p->mm is set to NULL well before p reaches
+exit_mmap() to actually free the memory, and there may be significant
+delays in between (I think exit_robust_list() gave me a hang at one
+stage).  So in practice, even when the OOM killer selects the right
+process to kill, there can be lots of collateral damage from it not
+waiting long enough for that process to give up its memory.
 
-diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-index 92b4c49..a99a366 100644
---- a/tools/perf/builtin-probe.c
-+++ b/tools/perf/builtin-probe.c
-@@ -133,17 +133,16 @@ static void parse_probe_point(char *arg, struct probe_point *pp)
- 	}
- 
- 	/* Exclusion check */
--	if (pp->line && pp->function)
--		semantic_error("Function-relative line number is not"
--				" supported yet.");
-+	if (pp->line && pp->offset)
-+		semantic_error("Offset can't be used with line number.");
- 	if (!pp->line && pp->file && !pp->function)
- 		semantic_error("File always requires line number.");
- 	if (pp->offset && !pp->function)
- 		semantic_error("Offset requires an entry function.");
- 	if (pp->retprobe && !pp->function)
- 		semantic_error("Return probe requires an entry function.");
--	if (pp->offset && pp->retprobe)
--		semantic_error("Offset can't be used with return probe.");
-+	if ((pp->offset || pp->line) && pp->retprobe)
-+		semantic_error("Offset/Line can't be used with return probe.");
- 
- 	pr_debug("symbol:%s file:%s line:%d offset:%d, return:%d\n",
- 		 pp->function, pp->file, pp->line, pp->offset, pp->retprobe);
-@@ -270,7 +269,7 @@ static const struct option options[] = {
- #ifdef NO_LIBDWARF
- 		"FUNC[+OFFS|%return] [ARG ...]",
- #else
--		"FUNC[+OFFS|%return][@SRC]|SRC:LINE [ARG ...]",
-+		"FUNC[+OFFS|%return|:RLN][@SRC]|SRC:ALN [ARG ...]",
- #endif
- 		"probe point definition, where\n"
- 		"\t\tGRP:\tGroup name (optional)\n"
-@@ -282,7 +281,8 @@ static const struct option options[] = {
- 		"\t\tARG:\tProbe argument (only \n"
- #else
- 		"\t\tSRC:\tSource code path\n"
--		"\t\tLINE:\tLine number\n"
-+		"\t\tRLN:\tRelative line number from function entry.\n"
-+		"\t\tALN:\tAbsolute line number in file.\n"
- 		"\t\tARG:\tProbe argument (local variable name or\n"
- #endif
- 		"\t\t\tkprobe-tracer argument format is supported.)\n",
-diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
-index 6d3bac9..db96186 100644
---- a/tools/perf/util/probe-finder.c
-+++ b/tools/perf/util/probe-finder.c
-@@ -114,7 +114,7 @@ static int strtailcmp(const char *s1, const char *s2)
- }
- 
- /* Find the fileno of the target file. */
--static Dwarf_Unsigned die_get_fileno(Dwarf_Die cu_die, const char *fname)
-+static Dwarf_Unsigned cu_find_fileno(Dwarf_Die cu_die, const char *fname)
- {
- 	Dwarf_Signed cnt, i;
- 	Dwarf_Unsigned found = 0;
-@@ -335,6 +335,36 @@ static int attr_get_locdesc(Dwarf_Attribute attr, Dwarf_Locdesc *desc,
- 	return ret;
- }
- 
-+/* Get decl_file attribute value (file number) */
-+static Dwarf_Unsigned die_get_decl_file(Dwarf_Die sp_die)
-+{
-+	Dwarf_Attribute attr;
-+	Dwarf_Unsigned fno;
-+	int ret;
-+
-+	ret = dwarf_attr(sp_die, DW_AT_decl_file, &attr, &__dw_error);
-+	DIE_IF(ret != DW_DLV_OK);
-+	dwarf_formudata(attr, &fno, &__dw_error);
-+	DIE_IF(ret != DW_DLV_OK);
-+	dwarf_dealloc(__dw_debug, attr, DW_DLA_ATTR);
-+	return fno;
-+}
-+
-+/* Get decl_line attribute value (line number) */
-+static Dwarf_Unsigned die_get_decl_line(Dwarf_Die sp_die)
-+{
-+	Dwarf_Attribute attr;
-+	Dwarf_Unsigned lno;
-+	int ret;
-+
-+	ret = dwarf_attr(sp_die, DW_AT_decl_line, &attr, &__dw_error);
-+	DIE_IF(ret != DW_DLV_OK);
-+	dwarf_formudata(attr, &lno, &__dw_error);
-+	DIE_IF(ret != DW_DLV_OK);
-+	dwarf_dealloc(__dw_debug, attr, DW_DLA_ATTR);
-+	return lno;
-+}
-+
- /*
-  * Probe finder related functions
-  */
-@@ -501,6 +531,7 @@ static void show_probepoint(Dwarf_Die sp_die, Dwarf_Signed offs,
- 	DIE_IF(ret < 0);
- 	DIE_IF(ret >= MAX_PROBE_BUFFER);
- 	len = ret;
-+	pr_debug("Probe point found: %s\n", tmp);
- 
- 	/* Find each argument */
- 	get_current_frame_base(sp_die, pf);
-@@ -536,17 +567,16 @@ static int probeaddr_callback(struct die_link *dlink, void *data)
- }
- 
- /* Find probe point from its line number */
--static void find_by_line(Dwarf_Die cu_die, struct probe_finder *pf)
-+static void find_by_line(struct probe_finder *pf)
- {
--	struct probe_point *pp = pf->pp;
--	Dwarf_Signed cnt, i;
-+	Dwarf_Signed cnt, i, clm;
- 	Dwarf_Line *lines;
- 	Dwarf_Unsigned lineno = 0;
- 	Dwarf_Addr addr;
- 	Dwarf_Unsigned fno;
- 	int ret;
- 
--	ret = dwarf_srclines(cu_die, &lines, &cnt, &__dw_error);
-+	ret = dwarf_srclines(pf->cu_die, &lines, &cnt, &__dw_error);
- 	DIE_IF(ret != DW_DLV_OK);
- 
- 	for (i = 0; i < cnt; i++) {
-@@ -557,15 +587,20 @@ static void find_by_line(Dwarf_Die cu_die, struct probe_finder *pf)
- 
- 		ret = dwarf_lineno(lines[i], &lineno, &__dw_error);
- 		DIE_IF(ret != DW_DLV_OK);
--		if (lineno != (Dwarf_Unsigned)pp->line)
-+		if (lineno != pf->lno)
- 			continue;
- 
-+		ret = dwarf_lineoff(lines[i], &clm, &__dw_error);
-+		DIE_IF(ret != DW_DLV_OK);
-+
- 		ret = dwarf_lineaddr(lines[i], &addr, &__dw_error);
- 		DIE_IF(ret != DW_DLV_OK);
--		pr_debug("Probe point found: 0x%llx\n", addr);
-+		pr_debug("Probe line found: line[%d]:%u,%d addr:0x%llx\n",
-+			 (int)i, (unsigned)lineno, (int)clm, addr);
- 		pf->addr = addr;
- 		/* Search a real subprogram including this line, */
--		ret = search_die_from_children(cu_die, probeaddr_callback, pf);
-+		ret = search_die_from_children(pf->cu_die,
-+					       probeaddr_callback, pf);
- 		if (ret == 0)
- 			die("Probe point is not found in subprograms.\n");
- 		/* Continuing, because target line might be inlined. */
-@@ -587,6 +622,13 @@ static int probefunc_callback(struct die_link *dlink, void *data)
- 	DIE_IF(ret == DW_DLV_ERROR);
- 	if (tag == DW_TAG_subprogram) {
- 		if (die_compare_name(dlink->die, pp->function) == 0) {
-+			if (pp->line) {	/* Function relative line */
-+				pf->fno = die_get_decl_file(dlink->die);
-+				pf->lno = die_get_decl_line(dlink->die)
-+					 + pp->line;
-+				find_by_line(pf);
-+				return 1;
-+			}
- 			if (die_inlined_subprogram(dlink->die)) {
- 				/* Inlined function, save it. */
- 				ret = dwarf_die_CU_offset(dlink->die,
-@@ -631,9 +673,9 @@ found:
- 	return 0;
- }
- 
--static void find_by_func(Dwarf_Die cu_die, struct probe_finder *pf)
-+static void find_by_func(struct probe_finder *pf)
- {
--	search_die_from_children(cu_die, probefunc_callback, pf);
-+	search_die_from_children(pf->cu_die, probefunc_callback, pf);
- }
- 
- /* Find a probe point */
-@@ -641,7 +683,6 @@ int find_probepoint(int fd, struct probe_point *pp)
- {
- 	Dwarf_Half addr_size = 0;
- 	Dwarf_Unsigned next_cuh = 0;
--	Dwarf_Die cu_die = 0;
- 	int cu_number = 0, ret;
- 	struct probe_finder pf = {.pp = pp};
- 
-@@ -659,25 +700,27 @@ int find_probepoint(int fd, struct probe_point *pp)
- 			break;
- 
- 		/* Get the DIE(Debugging Information Entry) of this CU */
--		ret = dwarf_siblingof(__dw_debug, 0, &cu_die, &__dw_error);
-+		ret = dwarf_siblingof(__dw_debug, 0, &pf.cu_die, &__dw_error);
- 		DIE_IF(ret != DW_DLV_OK);
- 
- 		/* Check if target file is included. */
- 		if (pp->file)
--			pf.fno = die_get_fileno(cu_die, pp->file);
-+			pf.fno = cu_find_fileno(pf.cu_die, pp->file);
- 
- 		if (!pp->file || pf.fno) {
- 			/* Save CU base address (for frame_base) */
--			ret = dwarf_lowpc(cu_die, &pf.cu_base, &__dw_error);
-+			ret = dwarf_lowpc(pf.cu_die, &pf.cu_base, &__dw_error);
- 			DIE_IF(ret == DW_DLV_ERROR);
- 			if (ret == DW_DLV_NO_ENTRY)
- 				pf.cu_base = 0;
--			if (pp->line)
--				find_by_line(cu_die, &pf);
- 			if (pp->function)
--				find_by_func(cu_die, &pf);
-+				find_by_func(&pf);
-+			else {
-+				pf.lno = pp->line;
-+				find_by_line(&pf);
-+			}
- 		}
--		dwarf_dealloc(__dw_debug, cu_die, DW_DLA_DIE);
-+		dwarf_dealloc(__dw_debug, pf.cu_die, DW_DLA_DIE);
- 	}
- 	ret = dwarf_finish(__dw_debug, &__dw_error);
- 	DIE_IF(ret != DW_DLV_OK);
-diff --git a/tools/perf/util/probe-finder.h b/tools/perf/util/probe-finder.h
-index 240d6cb..bdebca6 100644
---- a/tools/perf/util/probe-finder.h
-+++ b/tools/perf/util/probe-finder.h
-@@ -41,7 +41,9 @@ struct probe_finder {
- 	/* For function searching */
- 	Dwarf_Addr	addr;		/* Address */
- 	Dwarf_Unsigned	fno;		/* File number */
-+	Dwarf_Unsigned	lno;		/* Line number */
- 	Dwarf_Off	inl_offs;	/* Inline offset */
-+	Dwarf_Die	cu_die;		/* Current CU */
- 
- 	/* For variable searching */
- 	Dwarf_Addr	cu_base;	/* Current CU base address */
+I tried to deal with that by moving the TIF_MEMDIE test up before
+the p->mm test, but adding in a check on p->exit_state:
+		if (test_tsk_thread_flag(p, TIF_MEMDIE) &&
+		    !p->exit_state)
+			return ERR_PTR(-1UL);
+But this is then liable to hang the system if there's some reason
+why the selected process cannot proceed to free its memory (e.g.
+the current KSM unmerge case).  It needs to wait "a while", but
+give up if no progress is made, instead of hanging: originally
+I thought that setting PF_MEMALLOC more widely in page_alloc.c,
+and giving up on the TIF_MEMDIE if it was waiting in PF_MEMALLOC,
+would deal with that; but we cannot be sure that waiting of memory
+is the only reason for a holdup there (in the KSM unmerge case it's
+waiting for an mmap_sem, and there may well be other such cases).
+
+2.  I started out running my mlock test program as root (later
+switched to use "ulimit -l unlimited" first).  But badness() reckons
+CAP_SYS_ADMIN or CAP_SYS_RESOURCE is a reason to quarter your points;
+and CAP_SYS_RAWIO another reason to quarter your points: so running
+as root makes you sixteen times less likely to be killed.  Quartering
+is anyway debatable, but sixteenthing seems utterly excessive to me.
+
+I moved the CAP_SYS_RAWIO test in with the others, so it does no
+more than quartering; but is quartering appropriate anyway?  I did
+wonder if I was right to be "subverting" the fine-grained CAPs in
+this way, but have since seen unrelated mail from one who knows
+better, implying they're something of a fantasy, that su and sudo
+are indeed what's used in the real world.  Maybe this patch was okay.
+
+3.  badness() has a comment above it which says:  
+ * 5) we try to kill the process the user expects us to kill, this
+ *    algorithm has been meticulously tuned to meet the principle
+ *    of least surprise ... (be careful when you change it)
+But Andrea's 2.6.11 86a4c6d9e2e43796bb362debd3f73c0e3b198efa (later
+refined by Kurt's 2.6.16 9827b781f20828e5ceb911b879f268f78fe90815)
+adds plenty of surprise there, by trying to factor children into the
+calculation.  Intended to deal with forkbombs, but any reasonable
+process whose purpose is to fork children (e.g. gnome-session)
+becomes very vulnerable.  And whereas badness() itself goes on to
+refine the total_vm points by various adjustments peculiar to the
+process in question, those refinements have been ignored when
+adding the child's total_vm/2.  (Andrea does remark that he'd
+rather have rewritten badness() from scratch.)
+
+I tried to fix this by moving the PF_OOM_ORIGIN (was PF_SWAPOFF)
+part of the calculation up to select_bad_process(), making a
+solo_badness() function which makes all those adjustments to
+total_vm, then badness() itself a simple function adding half
+the children's solo_badness()es to the process' own solo_badness().
+But probably lots more needs doing - Andrea's rewrite?
+
+4.  In some cases those children are sharing exactly the same mm,
+yet its total_vm is being added again and again to the points:
+I had a nasty inner loop searching back to see if we'd already
+counted this mm (but then, what if the different tasks sharing
+the mm deserved different adjustments to the total_vm?).
 
 
--- 
-Masami Hiramatsu
+I hope these notes help someone towards a better solution
+(and be prepared to discover more on the way).  I agree with
+Vedran that the present behaviour is pretty unimpressive, and
+I'm puzzled as to how people can have been tinkering with
+oom_kill.c down the years without seeing any of this.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+Hugh
