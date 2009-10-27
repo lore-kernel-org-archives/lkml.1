@@ -1,86 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZJ0Cp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbZJ0Csk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbZJ0Cp4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 22:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755537AbZJ0Cpz
+	id S1756206AbZJ0Csk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 22:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756146AbZJ0Csj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 22:45:55 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:37267 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753509AbZJ0Cpy (ORCPT
+	Mon, 26 Oct 2009 22:48:39 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:19484 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755927AbZJ0Csi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 22:45:54 -0400
-Message-ID: <4AE65EDE.8080605@gmail.com>
-Date: Tue, 27 Oct 2009 03:45:50 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 26 Oct 2009 22:48:38 -0400
+Date: Mon, 26 Oct 2009 20:48:41 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org
+Subject: Re: pci-express hotplug
+Message-ID: <20091027024841.GA30509@ldl.fc.hp.com>
+References: <20091012145254.GA1517@kroah.com> <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca> <20091012150603.GK9228@kernel.dk> <20091012214854.GA14102@ldl.fc.hp.com> <20091013082903.GQ9228@kernel.dk> <20091013172731.GB22797@ldl.fc.hp.com> <20091014081309.GM9228@kernel.dk> <20091020190707.GA25615@ldl.fc.hp.com> <20091026105419.GA10727@kernel.dk>
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>,
-       Al Viro <viro@zeniv.linux.org.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dcache: better name hash function
-References: <200910252158.53921.opurdila@ixiacom.com>	<20091025214357.666350d2@nehalam> <20091026153656.25be4369@nehalam>
-In-Reply-To: <20091026153656.25be4369@nehalam>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 27 Oct 2009 03:45:52 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091026105419.GA10727@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger <shemminger@vyatta.com>, Al Viro a écrit :
-> --- a/include/linux/dcache.h	2009-10-26 14:58:45.220347300 -0700
-> +++ b/include/linux/dcache.h	2009-10-26 15:12:15.004160122 -0700
-> @@ -45,15 +45,28 @@ struct dentry_stat_t {
->  };
->  extern struct dentry_stat_t dentry_stat;
->  
-> -/* Name hashing routines. Initial hash value */
-> -/* Hash courtesy of the R5 hash in reiserfs modulo sign bits */
-> -#define init_name_hash()		0
-> +/*
-> + * Fowler / Noll / Vo (FNV) Hash
-> + * see: http://www.isthe.com/chongo/tech/comp/fnv/
-> + */
-> +#ifdef CONFIG_64BIT
-> +#define FNV_PRIME  1099511628211ull
-> +#define FNV1_INIT  14695981039346656037ull
-> +#else
-> +#define FNV_PRIME  16777619u
-> +#define FNV1_INIT  2166136261u
-> +#endif
-> +
-> +#define init_name_hash()	FNV1_INIT
->  
-> -/* partial hash update function. Assume roughly 4 bits per character */
-> +/* partial hash update function. */
->  static inline unsigned long
-> -partial_name_hash(unsigned long c, unsigned long prevhash)
-> +partial_name_hash(unsigned char c, unsigned long prevhash)
->  {
-> -	return (prevhash + (c << 4) + (c >> 4)) * 11;
-> +	prevhash ^= c;
-> +	prevhash *= FNV_PRIME;
-> +
-> +	return prevhash;
->  }
->  
->  /*
+* Jens Axboe <jens.axboe@oracle.com>:
+> > > acpiphp: enable_slot - physical_slot = 1
+> > > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+> > > acpiphp: enable_slot - physical_slot = 2
+> > > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+> > > acpiphp: enable_slot - physical_slot = 6
+> > > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+> > > acpiphp: enable_slot - physical_slot = 7
+> > > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+> > 
+> > Hm, so for some reason, firmware on your machine is telling us
+> > that it doesn't think cards are present and/or enabled.
+> > 
+> > Unfortunately, I don't know why your firmware would be saying
+> > that. We could add some more debug printks to see what firmware
+> > thinks about your system... Or we could just wait and see what
+> > happens after you get your hardware replaced.
 
-OK, but thats strlen(name) X (long,long) multiplies.
+Let's try and find out why firmware is telling us that we didn't
+get ACPI_STA_ALL.
 
-I suspect you tested on recent x86_64 cpu.
+Can you please apply this debug patch and send the output? Again,
+please modprobe with debug=1.
 
-Some arches might have slow multiplies, no ?
+Thanks,
+/ac
 
-jhash() (and others) are optimized by compiler to use basic and fast operations.
-jhash operates on blocs of 12 chars per round, so it might be a pretty good choice once
-out-of-line (because its pretty large and full_name_hash() is now used by
-a lot of call sites)
+---
+diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+index 58d25a1..2caa447 100644
+--- a/drivers/pci/hotplug/acpiphp_glue.c
++++ b/drivers/pci/hotplug/acpiphp_glue.c
+@@ -797,9 +797,13 @@ static int power_on_slot(struct acpiphp_slot *slot)
+ 	struct list_head *l;
+ 	int retval = 0;
+ 
++	printk("%s\n", __func__);
++
+ 	/* if already enabled, just skip */
+-	if (slot->flags & SLOT_POWEREDON)
++	if (slot->flags & SLOT_POWEREDON) {
++		printk("  slot %ld already powered on\n", slot->sun);
+ 		goto err_exit;
++	}
+ 
+ 	list_for_each (l, &slot->funcs) {
+ 		func = list_entry(l, struct acpiphp_func, sibling);
+@@ -813,6 +817,8 @@ static int power_on_slot(struct acpiphp_slot *slot)
+ 				goto err_exit;
+ 			} else
+ 				break;
++		} else {
++			printk("  no _PS0\n");
+ 		}
+ 	}
+ 
+@@ -1122,11 +1128,14 @@ static unsigned int get_slot_status(struct acpiphp_slot *slot)
+ 	struct list_head *l;
+ 	struct acpiphp_func *func;
+ 
++	printk("%s\n", __func__);
++
+ 	list_for_each (l, &slot->funcs) {
+ 		func = list_entry(l, struct acpiphp_func, sibling);
+ 
+ 		if (func->flags & FUNC_HAS_STA) {
+ 			status = acpi_evaluate_integer(func->handle, "_STA", NULL, &sta);
++			printk("  FUNC_HAS_STA status %d _STA %#lx\n", status, sta);
+ 			if (ACPI_SUCCESS(status) && sta)
+ 				break;
+ 		} else {
+@@ -1134,6 +1143,7 @@ static unsigned int get_slot_status(struct acpiphp_slot *slot)
+ 						  PCI_DEVFN(slot->device,
+ 							    func->function),
+ 						  PCI_VENDOR_ID, &dvid);
++			printk("  reading config space dvid %#lx\n", dvid);
+ 			if (dvid != 0xffffffff) {
+ 				sta = ACPI_STA_ALL;
+ 				break;
 
-Please provide your test program source, so that other can test on various arches.
-
-Thanks
