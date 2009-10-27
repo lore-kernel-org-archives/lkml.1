@@ -1,37 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbZJ0KoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbZJ0Krf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753620AbZJ0KoD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 06:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZJ0KoC
+	id S1753666AbZJ0Krf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 06:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbZJ0Krf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 06:44:02 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59594 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752483AbZJ0KoB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 06:44:01 -0400
-Date: Tue, 27 Oct 2009 10:45:24 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: david@lang.hm
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <gregkh@suse.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: removing existing working drivers via staging
-Message-ID: <20091027104524.2cf3f9a5@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.DEB.2.00.0910262119530.14994@asgard.lang.hm>
-References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm>
-	<200910151942.40259.bzolnier@gmail.com>
-	<20091015174932.GA3595@suse.de>
-	<200910152020.13080.bzolnier@gmail.com>
-	<20091015184656.GA29858@suse.de>
-	<alpine.DEB.2.00.0910151200100.22169@asgard.lang.hm>
-	<20091015191641.GB19467@elte.hu>
-	<alpine.DEB.2.00.0910151230560.22169@asgard.lang.hm>
-	<4AD77C4F.5010307@s5r6.in-berlin.de>
-	<alpine.DEB.2.00.0910151250480.22169@asgard.lang.hm>
-	<alpine.DEB.2.00.0910262119530.14994@asgard.lang.hm>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Tue, 27 Oct 2009 06:47:35 -0400
+Received: from mail-a04.ithnet.com ([217.64.83.99]:48841 "HELO ithnet.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752982AbZJ0Krd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 06:47:33 -0400
+X-Sender-Authentication: net64
+Date: Tue, 27 Oct 2009 11:47:33 +0100
+From: Stephan von Krawczynski <skraw@ithnet.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Subject: Re: 2.6.31.4: Oops
+Message-Id: <20091027114733.ad438f9f.skraw@ithnet.com>
+In-Reply-To: <1256586596.15642.6.camel@heimdal.trondhjem.org>
+References: <20091014115306.2a87a7a4.skraw@ithnet.com>
+	<20091018204950.7cc299ec.akpm@linux-foundation.org>
+	<1255927823.5628.4.camel@heimdal.trondhjem.org>
+	<20091019112126.f1376514.skraw@ithnet.com>
+	<1256586596.15642.6.camel@heimdal.trondhjem.org>
+Organization: ith Kommunikationstechnik GmbH
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -39,22 +32,89 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> this is exactly the 'wants to get rid of' category I mentioned being 
-> concerned about below.
+On Mon, 26 Oct 2009 15:49:56 -0400
+Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
 
-Why are you concerned, its dead, its defunct, nobody cares, nobody uses
-it. The same is true of a lot of other junk drivers we have and need to
-get rid of.
+> On Mon, 2009-10-19 at 11:21 +0200, Stephan von Krawczynski wrote:
+> > On Mon, 19 Oct 2009 13:50:23 +0900
+> > Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
+> > 
+> > > On Sun, 2009-10-18 at 20:49 -0700, Andrew Morton wrote:
+> > > > (cc linux-nfs)
+> > > > 
+> > > > On Wed, 14 Oct 2009 11:53:06 +0200 Stephan von Krawczynski <skraw@ithnet.com> wrote:
+> > > > 
+> > > > > Hello all,
+> > > > > 
+> > > > > just received this one:
+> > > > > 
+> > > > > Oct 13 20:16:02 box kernel: BUG: unable to handle kernel paging request at ffffff98
+> > > > > Oct 13 20:16:02 box kernel: IP: [<f827b2e4>] nfs_writepages+0x13/0xad [nfs]
+> > > > > Oct 13 20:16:02 box kernel: *pde = 0042d067 *pte = 00000000
+> > > > > Oct 13 20:16:02 box kernel: Oops: 0002 [#1]
+> > > > > Oct 13 20:16:02 box kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:03:08.0/subsystem_device
+> > > > > Oct 13 20:16:02 box kernel: Modules linked in: speedstep_lib freq_table nfs lockd sunrpc e100 mii e1000
+> > > > > Oct 13 20:16:02 box kernel:
+> > > > > Oct 13 20:16:02 box kernel: Pid: 4638, comm: httpd2-prefork Not tainted (2.6.31.4 #1)
+> > > > > Oct 13 20:16:02 box kernel: EIP: 0060:[<f827b2e4>] EFLAGS: 00010292 CPU: 0
+> > > > > Oct 13 20:16:02 box kernel: EIP is at nfs_writepages+0x13/0xad [nfs]
+> > > > > Oct 13 20:16:02 box kernel: EAX: f0d0f654 EBX: 0000000a ECX: 00000020 EDX: f6393ecc
+> > > > > Oct 13 20:16:02 box kernel: ESI: f0d0f654 EDI: 00000000 EBP: ffffff98 ESP: f6393e38
+> > > > > Oct 13 20:16:02 box kernel:  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> > > > > Oct 13 20:16:02 box kernel: Process httpd2-prefork (pid: 4638, ti=f6392000 task=f63f7850 task.ti=f6392000)
+> > > > > Oct 13 20:16:03 box kernel: Stack:
+> > > > > Oct 13 20:16:03 box kernel:  f6393ecc f0d0f654 00000000 c0161f93 002283a0 00000000 00000000 f6088052
+> > > > > Oct 13 20:16:03 box kernel: <0> f4d0f7ec f6393e6c f715ca00 f827362e f700d900 f4d08a14 0000000a f0d0f654
+> > > > > Oct 13 20:16:03 box kernel: <0> f6393ecc 00000020 f827c7ce 0000000a f6393ec4 f6393ef4 f0d0f654 f827c85e
+> > > > > Oct 13 20:16:03 box kernel: Call Trace:
+> > > > > Oct 13 20:16:03 box kernel:  [<c0161f93>] ? __link_path_walk+0x840/0x910
+> > > > > Oct 13 20:16:03 box kernel:  [<f827362e>] ? __nfs_revalidate_inode+0x105/0x18a [nfs]
+> > > > > Oct 13 20:16:03 box kernel:  [<f827c7ce>] ? __nfs_write_mapping+0xf/0x3b [nfs]
+> > > > > Oct 13 20:16:03 box kernel:  [<f827c85e>] ? nfs_write_mapping+0x64/0x6c [nfs]
+> > > > > Oct 13 20:16:03 box kernel:  [<c01e0341>] ? __copy_to_user_ll+0x3e/0x45
+> > > > > Oct 13 20:16:03 box kernel:  [<f8273238>] ? nfs_getattr+0x34/0xaf [nfs]
+> > > > > Oct 13 20:16:03 box kernel:  [<f8273204>] ? nfs_getattr+0x0/0xaf [nfs]
+> > > > > Oct 13 20:16:03 box kernel:  [<c015dce1>] ? vfs_getattr+0x21/0x30
+> > > > > Oct 13 20:16:03 box kernel:  [<c015dd6e>] ? vfs_fstatat+0x4d/0x61
+> > > > > Oct 13 20:16:03 box kernel:  [<c015dda7>] ? vfs_lstat+0x13/0x15
+> > > > > Oct 13 20:16:03 box kernel:  [<c015e2fc>] ? sys_lstat64+0xf/0x23
+> > > > > Oct 13 20:16:03 box kernel:  [<c0102848>] ? sysenter_do_call+0x12/0x26
+> > > > > Oct 13 20:16:03 box kernel: Code: c3 56 89 c6 53 e8 4a ff ff ff 89 c3 89 f0 e8 5b 0e ec c7 89 d8 5b 5e c3 55 57 56 53 83 ec 38 89 44 24 04 89 14 24 8b 38 8d 6f 98 <0f> ba 6f 98 04 19 c0 31 d2 85 c0 74 19 68 82 00 00 00 ba 04 00
+> > > > > Oct 13 20:16:03 box kernel: EIP: [<f827b2e4>] nfs_writepages+0x13/0xad [nfs] SS:ESP 0068:f6393e38
+> > > > > Oct 13 20:16:03 box kernel: CR2: 00000000ffffff98
+> > > > > Oct 13 20:16:03 box kernel: ---[ end trace 8d9ba71dd690c760 ]---
+> > > > > 
+> > > 
+> > > From the Oops, it looks as if mapping->host is a null pointer. I don't
+> > > see how this can ever happen short of a memory scribble...
+> > > 
+> > > Stephan, have you tried turning on the slab debugging code?
+> > > 
+> > > Cheers
+> > >   Trond
+> > 
+> > I have not up to now, but will do so. If I see further output I will come back.
+> > You think it may be a dead RAM?
+> 
+> Are you by any chance running an NFSv4 client? If so, there is a known
+> use-after-free bug in 2.6.31 (see
+> http://bugzilla.kernel.org/show_bug.cgi?id=14249) that would need to be
+> fixed before you do any more testing.
+> 
+> Alternatively, if you can reproduce this using NFSv3 only (i.e. reboot
+> after changing _all_ your NFSv4 mounts in /etc/fstab into nfsv3 mounts)
+> then it must be a different bug.
+> 
+> Cheers
+>   Trond
 
-> I don't know what was decided at the kernel summit where this was 
-> discussed, how easy is it supposed to be to drop drivers out of the 
-> kernel?
+Hi Trond,
 
-If there is someone with the hardware its a trivial git command to put it
-back and they can then maintain it, but I'm pretty sure that there won't
-be anyone using this ancient hardware and I really doubt the code even
-works after the big tty re-arrange.
+this is NFSv3 only. There is no v4 involved or has ever been used in this
+setup. We have seen another hang on the same box with same kernel lately, but
+unfortunately there was no output generated. So I cannot tell if it was the
+very same issue. 
 
-There is a difference between ancient junk people care about (however
-crazy) and stuff that is just dead and slowing real work (and I have
-several serial drivers I want to bit bucket such as rio and esp)
+-- 
+Regards,
+Stephan
