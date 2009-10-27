@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbZJ0AqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZJ0Auh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884AbZJ0AqH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 20:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbZJ0AqG
+	id S1755842AbZJ0Auh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 20:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbZJ0Aug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 20:46:06 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48804 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755541AbZJ0AqE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 20:46:04 -0400
-Date: Tue, 27 Oct 2009 01:46:00 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       reinette chatre <reinette.chatre@intel.com>
-Subject: Re: [Bug #14299] oops in wireless, iwl3945 related?
-Message-ID: <20091027004600.GD5019@elf.ucw.cz>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
- <6dRYo8ss7vL.A.l8H.Xse5KB@chimera>
+	Mon, 26 Oct 2009 20:50:36 -0400
+Received: from mga03.intel.com ([143.182.124.21]:27814 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754785AbZJ0Aug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 20:50:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,628,1249282800"; 
+   d="scan'208";a="203917523"
+Date: Tue, 27 Oct 2009 08:50:39 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC]cfq-iosched: improve hw_tag detection
+Message-ID: <20091027005039.GA14819@sli10-desk.sh.intel.com>
+References: <20091026091624.GA1169@sli10-desk.sh.intel.com> <20091026113555.GB10727@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6dRYo8ss7vL.A.l8H.Xse5KB@chimera>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091026113555.GB10727@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-10-26 19:55:50, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Mon, Oct 26, 2009 at 07:35:55PM +0800, Jens Axboe wrote:
+> On Mon, Oct 26 2009, Shaohua Li wrote:
+> > If active queue hasn't enough requests and idle window opens, cfq will not
+> > dispatch sufficient requests to hardware. In such situation, current code
+> > will zero hw_tag. But this is because cfq doesn't dispatch enough requests
+> > instead of hardware queue doesn't work. Don't zero hw_tag in such case.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.31.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14299
-> Subject		: oops in wireless, iwl3945 related?
-> Submitter	: Pavel Machek <pavel@ucw.cz>
-> Date		: 2009-09-29 17:12 (28 days old)
-> References	: http://marc.info/?l=linux-kernel&m=125424439725743&w=4
+> Thanks, that looks like a good fix. Curious, is this fixing some
+> regression at your end?
+No, just observed such issue when I play with cfq.
 
-It did not happen again, and there were some fixes in that area. (It
-happened 2 times total). Close it, I guess?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Shaohua
