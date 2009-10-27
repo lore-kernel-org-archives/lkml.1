@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbZJ0DfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbZJ0Bzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbZJ0DfL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 23:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbZJ0DfK
+	id S1756052AbZJ0Bzb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 21:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755927AbZJ0Bzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 23:35:10 -0400
-Received: from smtp.tuells.org ([204.188.108.206]:47492 "EHLO tuells.org"
+	Mon, 26 Oct 2009 21:55:31 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59227 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753220AbZJ0DfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 23:35:09 -0400
-X-Greylist: delayed 6442 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Oct 2009 23:35:09 EDT
-Date: Mon, 26 Oct 2009 19:47:51 -0600
-From: marcus hall <marcus@tuells.org>
-To: linux-kernel@vger.kernel.org
-Message-ID: <20091027014751.GA3144@bagatelle.tuells.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam_score: -1.0
-X-Spam_bar: -
-Subject: Cannot access non-LVM /boot partiton.
+	id S1754374AbZJ0Bza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 21:55:30 -0400
+Subject: Re: [Bug #14355] USB serial regression after 2.6.31.1 with Huawei
+ E169 GSM modem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Ben Efros <ben@pc-doctor.com>
+In-Reply-To: <6dRYo8ss7vL.A.xWH.0re5KB@chimera>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera>
+	 <6dRYo8ss7vL.A.xWH.0re5KB@chimera>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 27 Oct 2009 12:54:50 +1100
+Message-ID: <1256608490.2076.55.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello..
+On Mon, 2009-10-26 at 19:55 +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
 
-I have a Fedora system that I recently upgraded to Fedora 11 and subsequently
-I cannot access my /boot partition.  I have upgraded several systems without
-any problems, and I am not sure what to look at that may be the source of
-the problem.  I've asked on the fedora list with no response, and although I
-don't think that it is a kernel problem, perhaps somebody can point me to
-the right corner of userspace to start looking deeper.
+Well, the E169 works, though there seem to be a few issues remaining:
 
-The problem system has a pair of SATA disks that are mirrored.  They each
-contain two partitions, a /boot partition on /dev/sda1 and /dev/sdb1, and
-an LVM setup on /dev/sda2 and /dev/sdb2.  After booting the system, the
-only disk device files in /dev are /dev/sda, /dev/sdb, and /dev/sdb2.  Grub
-sees the boot partition just fine and gets into the kernel, which fails
-after userspace starts mounting the filesystems because it cannot find /boot.
-If I run fdisk, it is happy with the partition table on either disk.
+ - There are reports that the E220 is still broken (by the same
+regression, just that the patch that fixes the E169 doesn't fix the
+E220, but since I don't have one of these, I'm waiting for users to send
+dumps instead of just complaining :-)
 
-During boot, the kernel seems to be recognizing the partitions on both disks,
-since it shows "sda: sda1 sda2" etc.  But, something seems to be disabling
-access to the first partition later on.  If I manually create a /dev/sda1
-or /dev/sdb1 device file, whenever I try to access it I get ENODEV.
+ - There's a weird glitch where the E169 tend to only work after being
+plugged the -second- time. The first time, the storage device generally
+shows up but not the ttyS's devices for some strange reason. Not sure
+what's up yet. Yanking it and plugging it back works. Could be timing
+related due to the need to load the module.
 
-When I try to boot an earlier kernel that the system was running happily on
-before, I get the same problems, so I believe that this is due to some change
-in user space during the "upgrade".  It does seem reasonable to block access
-to the /dev/sdaX devices, since the mirroring works from the /dev/sdbX
-devices, and I am suspecting that something is removing /dev/sdb1 because
-it has no LVM data on it, or something.  I'm suspecting that this might be
-something in udev, but that's a weaker guess.
+None of that happens with 2.6.31.1
 
-What could remove access to a disk partition in the kernel after it comes
-up?  If I cat /proc/partitions, all I see are the LVM partitions.
+Cheers,
+Ben.
 
-Thanks in advance!
 
-Marcus Hall
-marcus@tuells.org
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14355
+> Subject		: USB serial regression after 2.6.31.1 with Huawei E169 GSM modem
+> Submitter	: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date		: 2009-10-10 03:07 (17 days old)
+> References	: http://marc.info/?l=linux-kernel&m=125513456327542&w=4
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
