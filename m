@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZJ0BQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbZJ0BSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbZJ0BQt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 21:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbZJ0BQs
+	id S1755947AbZJ0BSh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 21:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbZJ0BSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 21:16:48 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:42486 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755426AbZJ0BQs convert rfc822-to-8bit (ORCPT
+	Mon, 26 Oct 2009 21:18:37 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:32952 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755391AbZJ0BSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 21:16:48 -0400
+	Mon, 26 Oct 2009 21:18:36 -0400
+Message-ID: <4AE64A02.9010403@ct.jp.nec.com>
+Date: Tue, 27 Oct 2009 10:16:50 +0900
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <7v8wexd6zq.fsf@alter.siamese.dyndns.org>
-References: <1256602127.29938.8.camel@Joe-Laptop.home> <7v8wexd6zq.fsf@alter.siamese.dyndns.org>
-From: Marti Raudsepp <marti@juffo.org>
-Date: Tue, 27 Oct 2009 03:16:31 +0200
-Message-ID: <54b33ccd0910261816x3c49d4ccr60a80a88dd4cfac9@mail.gmail.com>
-Subject: Re: git vs hg commit counts?
-To: Junio C Hamano <gitster@pobox.com>
-Cc: Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>,
-       git <git@vger.kernel.org>, mercurial@selenic.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: gitignore: arch/x86/lib/inat-tables.c
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 2:18 AM, Junio C Hamano <gitster@pobox.com> wrote:
-> We simplify a merge history by discarding one branch when the merge result
-> matches one of the parents.  Does "hg" know how to do that as well?
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-57 of the differing changesets are normal merges (probably what Junio explained)
-3 are duplicate changesets in hg, probably also related to that
-27 changesets are octopus merge fixups
+Ignore generated file arch/x86/lib/inat-tables.c.
 
-wrt octopus merges: in git, one merge commit can have an arbitrary
-number of parents, but in hg a merge changeset always has 2 parents --
-so a octopus merge is represented as multiple distinct changesets.
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/lib/.gitignore |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+ create mode 100644 arch/x86/lib/.gitignore
 
-Marti
+diff --git a/arch/x86/lib/.gitignore b/arch/x86/lib/.gitignore
+new file mode 100644
+index 0000000..8df89f0
+--- /dev/null
++++ b/arch/x86/lib/.gitignore
+@@ -0,0 +1 @@
++inat-tables.c
+-- 
+1.6.3.3
+
