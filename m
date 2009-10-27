@@ -1,96 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbZJ0HtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbZJ0Hum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbZJ0HtR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 03:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756264AbZJ0HtQ
+	id S1756563AbZJ0Hum (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 03:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZJ0Hul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 03:49:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42056 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756156AbZJ0HtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 03:49:15 -0400
-Date: Tue, 27 Oct 2009 07:48:41 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1256577871443-git-send-email->
-References: <1256577871443-git-send-email->
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Simplify creating of lockdep class for root rcu_node
-Message-ID: <tip-88b91c7ca49bc8600cf1106eb891d08c1965b9ce@git.kernel.org>
-Git-Commit-ID: 88b91c7ca49bc8600cf1106eb891d08c1965b9ce
-X-Mailer: tip-git-log-daemon
+	Tue, 27 Oct 2009 03:50:41 -0400
+Received: from mtagate6.de.ibm.com ([195.212.17.166]:39223 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756532AbZJ0Huk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 03:50:40 -0400
+Date: Tue, 27 Oct 2009 08:50:44 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-s390@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] MAINTAINERS: Add s390 drivers block
+Message-ID: <20091027075044.GB4261@osiris.boeblingen.de.ibm.com>
+References: <1256587351.1865.132.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1256587351.1865.132.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  88b91c7ca49bc8600cf1106eb891d08c1965b9ce
-Gitweb:     http://git.kernel.org/tip/88b91c7ca49bc8600cf1106eb891d08c1965b9ce
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Mon, 26 Oct 2009 10:24:31 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 26 Oct 2009 21:07:16 +0100
+On Mon, Oct 26, 2009 at 01:02:31PM -0700, Joe Perches wrote:
+> There are currently 4 directories in drivers/s390
+> (block, char, cio, kvm) without maintainers
+> that could point to the s390 mailing list.
+> 
+> Add a block for all drivers/s390
+> List status as "Odd Fixes"
 
-rcu: Simplify creating of lockdep class for root rcu_node
+Hmm.. that's not exactly what we want. The status for (nearly)
+everything in drivers/s390 is "Supported". The drivers/kvm
+directory should have been added to the
+"KERNEL VIRTUAL MACHINE for s390 (KVM/s390)" section.
 
-Use lockdep_set_class() to simplify the code and to avoid any
-additional overhead in the !LOCKDEP case.  Also move the
-definition of rcu_root_class into kernel/rcutree.c, as suggested
-by Lai Jiangshan.
+I take your patch, change it and put it into Martin's queue.
+Thanks.
 
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josh@joshtriplett.org
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: rostedt@goodmis.org
-Cc: Valdis.Kletnieks@vt.edu
-Cc: dhowells@redhat.com
-LKML-Reference: <1256577871443-git-send-email->
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/rcutree.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index ddbf111..055f1a9 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -51,6 +51,8 @@
- 
- /* Data structures. */
- 
-+static struct lock_class_key rcu_root_class;
-+
- #define RCU_STATE_INITIALIZER(name) { \
- 	.level = { &name.node[0] }, \
- 	.levelcnt = { \
-@@ -1666,8 +1668,7 @@ static void __init rcu_init_one(struct rcu_state *rsp)
- 		cpustride *= rsp->levelspread[i];
- 		rnp = rsp->level[i];
- 		for (j = 0; j < rsp->levelcnt[i]; j++, rnp++) {
--			if (rnp != rcu_get_root(rsp))
--				spin_lock_init(&rnp->lock);
-+			spin_lock_init(&rnp->lock);
- 			rnp->gpnum = 0;
- 			rnp->qsmask = 0;
- 			rnp->qsmaskinit = 0;
-@@ -1690,7 +1691,7 @@ static void __init rcu_init_one(struct rcu_state *rsp)
- 			INIT_LIST_HEAD(&rnp->blocked_tasks[1]);
- 		}
- 	}
--	spin_lock_init(&rcu_get_root(rsp)->lock);
-+	lockdep_set_class(&rcu_get_root(rsp)->lock, &rcu_root_class);
- }
- 
- /*
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index f40dcce..fe37ef3 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4466,6 +4466,12 @@ W:	http://www.ibm.com/developerworks/linux/linux390/
+>  S:	Supported
+>  F:	arch/s390/
+> 
+> +S390 DRIVERS
+> +L:	linux-s390@vger.kernel.org
+> +W:	http://www.ibm.com/developerworks/linux/linux390/
+> +S:	Odd Fixes
+> +F:	drivers/s390/
+> +
+>  S390 NETWORK DRIVERS
+>  M:	Ursula Braun <ursula.braun@de.ibm.com>
+>  M:	Frank Blaschka <blaschka@linux.vnet.ibm.com>
+> @@ -4480,6 +4486,7 @@ M:	Felix Beck <felix.beck@de.ibm.com>
+>  M:	Ralph Wuerthner <ralph.wuerthner@de.ibm.com>
+>  M:	linux390@de.ibm.com
+>  L:	linux-s390@vger.kernel.org
+> +W:	http://www.ibm.com/developerworks/linux/linux390/
+>  S:	Supported
+>  F:	drivers/s390/crypto/
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
