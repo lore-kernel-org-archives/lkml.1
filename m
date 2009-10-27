@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZJ0HvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbZJ0Hpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbZJ0HvO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 03:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZJ0HvN
+	id S1756539AbZJ0Hpt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 03:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756522AbZJ0Hps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 03:51:13 -0400
-Received: from web94710.mail.in2.yahoo.com ([203.104.17.170]:30390 "HELO
-	web94710.mail.in2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756533AbZJ0HvM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 03:51:12 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Oct 2009 03:51:11 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=zVsUAtXw+TGXWpztTq26U8lr0ZonMTwxX8KPpoTgtsWXlIJZnNmFs6bOqUiryrCVvTXQggxR8gJBGx+DNJHJfQ3jLrLe8PcgFjXAIziW515oHojgxI5uUi1STccsbUQ1/MxDKP5GTntVVbavflORC8DdiAGW1wjcu2FMjPjtnxQ=;
-Message-ID: <256042.70547.qm@web94710.mail.in2.yahoo.com>
-X-YMail-OSG: Y7Ay_M0VM1mehpVQ2g0lk87zl67RKIXfd_9DspyReHvzycdvClFALKVRP4.y4UiqhAEC.YomKWcqA4j5t5qwFOyy_y3btmhfl67QPUEkVWz3ceflSoljjKcVTOdl6Y8DsPUEK3k5docEHb20b3VeqkRCClmiXzEDHEzopsQ5wAorHDlh70h1u6BxEhfSBWJddAtjM1b233hZgsPU9uz..AulJqyllV24FNp0bMpuZnMsd1JP6BJS0BZ_doGlX8_wV6JNCNA-
-X-Mailer: YahooMailClassic/8.0.7 YahooMailWebService/0.7.361.3
-Date: Tue, 27 Oct 2009 13:14:34 +0530 (IST)
-From: J K Rai <jk.anurag@yahoo.com>
-Subject: Instantaneous snapshot of CPU schedule
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+	Tue, 27 Oct 2009 03:45:48 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56436 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756520AbZJ0Hpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 03:45:46 -0400
+Message-ID: <4AE6A513.6010100@cn.fujitsu.com>
+Date: Tue, 27 Oct 2009 15:45:23 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Guillaume Chazarain <guichaz@yahoo.fr>
+Subject: [PATCH] no_hz: remove unused field
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+In 15934a37324f32e0fda633dc7984a671ea81cd75,
+field last_tick_seen is added to struct rq.
+But it is unused now.
 
-Is there any utility using which we can take current (instantaneous) snapshot of process schedule on the linux based system from user land. Like use a system call or command to know what is running on each of the cpus 0..n-1 (assuming n cpus in the system). Output could be like tuple (pid, cpu_no).
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 91ffb01..5166de1 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -534,7 +534,6 @@ struct rq {
+ 	#define CPU_LOAD_IDX_MAX 5
+ 	unsigned long cpu_load[CPU_LOAD_IDX_MAX];
+ #ifdef CONFIG_NO_HZ
+-	unsigned long last_tick_seen;
+ 	unsigned char in_nohz_recently;
+ #endif
+ 	/* capture load from *all* tasks on this cpu: */
 
-If such utility does not exist then kindly throw some light / ideas so that it could be implemented.
-
-Regards,
-Jitendra
-
-
-      Add whatever you love to the Yahoo! India homepage. Try now! http://in.yahoo.com/trynew
