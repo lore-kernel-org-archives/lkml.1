@@ -1,121 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZJ0P1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbZJ0P2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755534AbZJ0P1Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 11:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbZJ0P1Q
+	id S1755551AbZJ0P2q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 11:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbZJ0P2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 11:27:16 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:59975 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754345AbZJ0P1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 11:27:15 -0400
-Message-ID: <4AE71167.7060506@sgi.com>
-Date: Tue, 27 Oct 2009 08:27:35 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Zhang Rui <rui.zhang@intel.com>,
-       Len Brown <lenb@kernel.org>, Thomas Renninger <trenn@suse.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Myron Stowe <myron.stowe@hp.com>,
-       Feng Tang <feng.tang@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/8] SGI x86_64 UV: Limit the number of ACPI messages
-References: <20091023233743.439628000@alcatraz.americas.sgi.com>	 <20091023233754.668088000@alcatraz.americas.sgi.com> <1256354987.17875.6.camel@dc7800.home>
-In-Reply-To: <1256354987.17875.6.camel@dc7800.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 27 Oct 2009 11:28:45 -0400
+Received: from mail.perches.com ([173.55.12.10]:1097 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755497AbZJ0P2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 11:28:45 -0400
+Subject: Re: [PATCH] MAINTAINERS: Add s390 drivers block
+From: Joe Perches <joe@perches.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-s390@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091027075044.GB4261@osiris.boeblingen.de.ibm.com>
+References: <1256587351.1865.132.camel@Joe-Laptop.home>
+	 <20091027075044.GB4261@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 27 Oct 2009 08:28:49 -0700
+Message-ID: <1256657329.29938.52.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-...
-> 
-> I know we print way too much stuff for every processor, but again, I'd
-> rather see all CPUs or none.  I think there's a little more value in
-> this one than the cooling device one (probably because I do a lot of
-> platform bringup), but it could certainly be made KERN_DEBUG and/or
-> combined with another processor discovery line.
+On Tue, 2009-10-27 at 08:50 +0100, Heiko Carstens wrote:
+> Hmm.. that's not exactly what we want.
+[]
+> I take your patch, change it and put it into Martin's queue.
 
-Is this more acceptable?
+Oh good.  It was really more of a prod than a patch.
 
-Thanks,
-Mike
---- 
+cheers, Joe
 
-SGI x86_64 UV: Limit the number of ACPI messages
-
-Limit number of ACPI messages of the form:
-
-[    0.000000] ACPI: LSAPIC (acpi_id[0x00] lsapic_id[0x00] lsapic_eid[0x00] enabled)
-
-[   99.638655] processor ACPI0007:00: registered as cooling_device0
-
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Thomas Renninger <trenn@suse.de>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Myron Stowe <myron.stowe@hp.com>
-Cc: Feng Tang <feng.tang@intel.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: linux-acpi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- drivers/acpi/fan.c            |    2 +-
- drivers/acpi/processor_core.c |    3 +--
- drivers/acpi/tables.c         |   13 ++++++++-----
- 3 files changed, 10 insertions(+), 8 deletions(-)
-
---- linux.orig/drivers/acpi/fan.c
-+++ linux/drivers/acpi/fan.c
-@@ -267,7 +267,7 @@
- 		goto end;
- 	}
- 
--	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
-+	dev_dbg(&device->dev, "registered as cooling_device%d\n", cdev->id);
- 
- 	device->driver_data = cdev;
- 	result = sysfs_create_link(&device->dev.kobj,
---- linux.orig/drivers/acpi/processor_core.c
-+++ linux/drivers/acpi/processor_core.c
-@@ -845,8 +845,7 @@
- 		goto err_power_exit;
- 	}
- 
--	dev_info(&device->dev, "registered as cooling_device%d\n",
--		 pr->cdev->id);
-+	dev_dbg(&device->dev, "registered as cooling_device%d\n", pr->cdev->id);
- 
- 	result = sysfs_create_link(&device->dev.kobj,
- 				   &pr->cdev->device.kobj,
---- linux.orig/drivers/acpi/tables.c
-+++ linux/drivers/acpi/tables.c
-@@ -170,11 +170,14 @@
- 	case ACPI_MADT_TYPE_LOCAL_SAPIC:
- 		{
- 			struct acpi_madt_local_sapic *p =
--			    (struct acpi_madt_local_sapic *)header;
--			printk(KERN_INFO PREFIX
--			       "LSAPIC (acpi_id[0x%02x] lsapic_id[0x%02x] lsapic_eid[0x%02x] %s)\n",
--			       p->processor_id, p->id, p->eid,
--			       (p->lapic_flags & ACPI_MADT_ENABLED) ? "enabled" : "disabled");
-+				(struct acpi_madt_local_sapic *)header;
-+
-+			printk(KERN_DEBUG PREFIX
-+				"LSAPIC (acpi_id[0x%02x] "
-+				"lsapic_id[0x%02x] lsapic_eid[0x%02x] %s)\n",
-+				p->processor_id, p->id, p->eid,
-+				(p->lapic_flags & ACPI_MADT_ENABLED) ?
-+					"enabled" : "disabled");
- 		}
- 		break;
- 
