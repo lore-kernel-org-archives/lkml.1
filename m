@@ -1,237 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbZJ0UAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932115AbZJ0UZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756761AbZJ0UAP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932071AbZJ0UAO
+	id S932115AbZJ0UZY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756794AbZJ0UZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:00:14 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:55855 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756725AbZJ0UAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:00:12 -0400
-Message-ID: <4AE75162.7080903@sgi.com>
-Date: Tue, 27 Oct 2009 13:00:34 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 3/8] SGI x86_64 UV: Limit the number of number of SRAT
- messages
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 27 Oct 2009 16:25:23 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46251 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756793AbZJ0UZW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 16:25:22 -0400
+Subject: Re: [PATCH 1/9] tracing: recordmcount.pl Amend the documentation
+ according to the implementation
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Hong <lihong.hi@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20091027065421.GA22032@uhli>
+References: <20091027065421.GA22032@uhli>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 27 Oct 2009 16:04:22 -0400
+Message-Id: <1256673862.26028.430.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Tue, 2009-10-27 at 14:54 +0800, Li Hong wrote:
+> In documentation, we says we will use the first function in a section as a
+> reference. Actually, the algorithm is: choose the first global function we
+> meet as a reference. If there is none, choose the first local one. So let the
+> documentation consistent to the code.
+> 
+> Also add several clarifications.
+> 
+> Signed-off-by: Li Hong <lihong.hi@gmail.com>
+> 
+> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+> index 090d300..ac908b3 100755
+> --- a/scripts/recordmcount.pl
+> +++ b/scripts/recordmcount.pl
+> @@ -6,73 +6,88 @@
+>  #                   all the offsets to the calls to mcount.
+>  #
+>  #
+> -# What we want to end up with is a section in vmlinux called
+> -# __mcount_loc that contains a list of pointers to all the
+> -# call sites in the kernel that call mcount. Later on boot up, the kernel
+> -# will read this list, save the locations and turn them into nops.
+> -# When tracing or profiling is later enabled, these locations will then
+> -# be converted back to pointers to some function.
+> +# What we want to end up with this is a data area in .init.data in vmlinux 
+> +# that contains a list of pointers to all the call sites in the kernel that
+> +# call mcount. Later on boot up, the kernel will read this list, save the 
+> +# locations and turn them into nops. When tracing or profiling is later 
+> +# enabled, these locations will then be converted back to pointers to 
+> +# some function.
 
-Very Cool, I'll try it out and let you know how it goes.
+Yes it is in .init.data, but the point is that we called it __mcount_loc
+in the object files. I don't want to blindly throw that name away.
 
-Note that it would be better to declare the BITMAP in the
-static initdata section so it doesn't grow the stack by 4k
-bytes.  (And it's thrown away after the kernel starts.)
+Something to the lines of this.
 
-Thanks,
-Mike
+Each object file will have a section called __mcount_loc that will hold
+the list of pointers to mcount callers. After final linking, the vmlinux
+will have within .init.data the list of all callers to mcount between
+_start_mcount_loc and __stop_mcount_loc.
 
 
-David Rientjes wrote:
-> On Tue, 27 Oct 2009, Mike Travis wrote:
-> 
->> --- linux.orig/arch/x86/mm/srat_64.c
->> +++ linux/arch/x86/mm/srat_64.c
->> @@ -115,6 +115,7 @@
->> {
->> 	int pxm, node;
->> 	int apic_id;
->> +	static int last_node = -1;
->>
->> 	if (srat_disabled())
->> 		return;
->> @@ -136,8 +137,11 @@
->> 	apicid_to_node[apic_id] = node;
->> 	node_set(node, cpu_nodes_parsed);
->> 	acpi_numa = 1;
->> -	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
->> -	       pxm, apic_id, node);
->> +	if (node > last_node) {
->> +		printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
->> +		       pxm, apic_id, node);
->> +		last_node = node;
->> +	}
->> }
->>
->> /* Callback for Proximity Domain -> LAPIC mapping */
->> @@ -146,6 +150,7 @@
->> {
->> 	int pxm, node;
->> 	int apic_id;
->> +	static int last_node = -1;
->>
->> 	if (srat_disabled())
->> 		return;
->> @@ -170,8 +175,11 @@
->> 	apicid_to_node[apic_id] = node;
->> 	node_set(node, cpu_nodes_parsed);
->> 	acpi_numa = 1;
->> -	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
->> -	       pxm, apic_id, node);
->> +	if (node > last_node) {
->> +		printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
->> +		       pxm, apic_id, node);
->> +		last_node = node;
->> +	}
->> }
->>
->> #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
->>
-> 
-> So on my Opteron I'll be getting this:
-> 
-> 	SRAT: PXM 0 -> APIC 0 -> Node 0
-> 	SRAT: PXM 1 -> APIC 2 -> Node 1
-> 
-> instead of this:
-> 
-> 	SRAT: PXM 0 -> APIC 0 -> Node 0
-> 	SRAT: PXM 0 -> APIC 1 -> Node 0
-> 	SRAT: PXM 1 -> APIC 2 -> Node 1
-> 	SRAT: PXM 1 -> APIC 3 -> Node 1
-> 
-> Do I need to infer what apic 1 or 3 map to with your patch (or whether 
-> they are even valid)?
-> 
-> It would seem much better to print this information once the SRAT parsing 
-> in acpi_numa_init() is complete and apicid_to_node[] is populated.  This 
-> leads to the ideal beheavior, which is:
-> 
-> 	SRAT: PXM 0 -> APIC {0-1} -> Node 0
-> 	SRAT: PXM 1 -> APIC {2-3} -> Node 1
-> 
-> Something like the following patch?  (Regardless, we need to cc 
-> linux-acpi@vger.kernel.org.  I've added it.)
-> 
-> 
-> 
-> x86: reduce srat verbosity in the kernel log
-> 
-> It's possible to reduce the number of SRAT messages emitted to the kernel
-> log by printing each valid pxm once and then creating bitmaps to represent
-> the apicids that map to the same node.
-> 
-> This reduces lines such as
-> 
-> 	SRAT: PXM 0 -> APIC 0 -> Node 0
-> 	SRAT: PXM 0 -> APIC 1 -> Node 0
-> 	SRAT: PXM 1 -> APIC 2 -> Node 1
-> 	SRAT: PXM 1 -> APIC 3 -> Node 1
-> 
-> to
-> 
-> 	SRAT: PXM 0 -> APIC {0-1} -> Node 0
-> 	SRAT: PXM 1 -> APIC {2-3} -> Node 1
-> 
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  arch/x86/mm/srat_64.c |   31 +++++++++++++++++++++++++++----
->  drivers/acpi/numa.c   |    5 +++++
->  include/linux/acpi.h  |    3 ++-
->  3 files changed, 34 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
-> --- a/arch/x86/mm/srat_64.c
-> +++ b/arch/x86/mm/srat_64.c
-> @@ -136,8 +136,6 @@ acpi_numa_x2apic_affinity_init(struct acpi_srat_x2apic_cpu_affinity *pa)
->  	apicid_to_node[apic_id] = node;
->  	node_set(node, cpu_nodes_parsed);
->  	acpi_numa = 1;
-> -	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
-> -	       pxm, apic_id, node);
->  }
->  
->  /* Callback for Proximity Domain -> LAPIC mapping */
-> @@ -170,8 +168,33 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
->  	apicid_to_node[apic_id] = node;
->  	node_set(node, cpu_nodes_parsed);
->  	acpi_numa = 1;
-> -	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
-> -	       pxm, apic_id, node);
-> +}
-> +
-> +void __init acpi_numa_print_srat_mapping(void)
-> +{
-> +	DECLARE_BITMAP(apicid_map, MAX_LOCAL_APIC);
-> +	char apicid_list[MAX_LOCAL_APIC];
-> +	int i, j;
-> +
-> +	for (i = 0; i < MAX_PXM_DOMAINS; i++) {
-> +		int nid;
-> +
-> +		nid = pxm_to_node(i);
-> +		if (nid == NUMA_NO_NODE)
-> +			continue;
-> +
-> +		bitmap_zero(apicid_map, MAX_LOCAL_APIC);
-> +		for (j = 0; j < MAX_LOCAL_APIC; j++)
-> +			if (apicid_to_node[j] == nid)
-> +				set_bit(j, apicid_map);
-> +
-> +		if (bitmap_empty(apicid_map, MAX_LOCAL_APIC))
-> +			continue;
-> +		bitmap_scnlistprintf(apicid_list, MAX_LOCAL_APIC,
-> +				     apicid_map, MAX_LOCAL_APIC);
-> +		pr_info("SRAT: PXM %u -> APIC {%s} -> Node %u\n",
-> +			i, apicid_list, nid);
-> +	}
->  }
->  
->  #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-> diff --git a/drivers/acpi/numa.c b/drivers/acpi/numa.c
-> --- a/drivers/acpi/numa.c
-> +++ b/drivers/acpi/numa.c
-> @@ -281,6 +281,10 @@ acpi_table_parse_srat(enum acpi_srat_type id,
->  					    handler, max_entries);
->  }
->  
-> +void __init __attribute__((weak)) acpi_numa_print_srat_mapping(void)
-> +{
-> +}
-> +
->  int __init acpi_numa_init(void)
->  {
->  	/* SRAT: Static Resource Affinity Table */
-> @@ -292,6 +296,7 @@ int __init acpi_numa_init(void)
->  		acpi_table_parse_srat(ACPI_SRAT_TYPE_MEMORY_AFFINITY,
->  				      acpi_parse_memory_affinity,
->  				      NR_NODE_MEMBLKS);
-> +		acpi_numa_print_srat_mapping();
->  	}
->  
->  	/* SLIT: System Locality Information Table */
-> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-> --- a/include/linux/acpi.h
-> +++ b/include/linux/acpi.h
-> @@ -92,12 +92,13 @@ int acpi_table_parse_madt (enum acpi_madt_type id, acpi_table_entry_handler hand
->  int acpi_parse_mcfg (struct acpi_table_header *header);
->  void acpi_table_print_madt_entry (struct acpi_subtable_header *madt);
->  
-> -/* the following four functions are architecture-dependent */
-> +/* the following six functions are architecture-dependent */
->  void acpi_numa_slit_init (struct acpi_table_slit *slit);
->  void acpi_numa_processor_affinity_init (struct acpi_srat_cpu_affinity *pa);
->  void acpi_numa_x2apic_affinity_init(struct acpi_srat_x2apic_cpu_affinity *pa);
->  void acpi_numa_memory_affinity_init (struct acpi_srat_mem_affinity *ma);
->  void acpi_numa_arch_fixup(void);
-> +void acpi_numa_print_srat_mapping(void);
->  
->  #ifdef CONFIG_ACPI_HOTPLUG_CPU
->  /* Arch dependent functions for cpu hotplug support */
+>  #
+>  # This is no easy feat. This script is called just after the original
+>  # object is compiled and before it is linked.
+>  #
+> -# The references to the call sites are offsets from the section of text
+> -# that the call site is in. Hence, all functions in a section that
+> -# has a call site to mcount, will have the offset from the beginning of
+> -# the section and not the beginning of the function.
+> +# When parse this object file using 'objdump', the references to the call 
+> +# sites are offsets from the section that the call site is in. Hence, all 
+> +# functions in a section that  has a call site to mcount, will have the 
+                                ^^
+                            double space
+
+> +# offset from the beginning of the section and not the beginning of the 
+> +# function.
+>  #
+> -# The trick is to find a way to record the beginning of the section.
+> -# The way we do this is to look at the first function in the section
+> -# which will also be the location of that section after final link.
+> +# But where this section will reside finally in vmlinx is undetermined at 
+> +# this point. So we can't use this kind of offsets to record the final
+> +# address of this call site.
+> +#
+> +# The trick is to change the call offset refering the start of a section to
+                                         referring
+
+> +# refering a function symbol in this section. During the link step, 'ld' will
+     referring
+
+
+The rest looks good.
+
+-- Steve
+
+> +# compute the final address according to the information we record.
+> +# 
+>  # e.g.
+>  #
+>  #  .section ".sched.text", "ax"
+> -#
+
