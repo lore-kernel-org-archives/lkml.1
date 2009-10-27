@@ -1,67 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932228AbZJ0UkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932257AbZJ0Umn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932228AbZJ0UkL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932158AbZJ0UkK
+	id S932257AbZJ0Umn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932158AbZJ0Umm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:40:10 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57154 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932150AbZJ0UkJ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:40:09 -0400
-Message-Id: <1256676013.24305.1342273367@webmail.messagingengine.com>
-X-Sasl-Enc: O5GRR4xDMrWRKUIPjIVxN3wYn9czEaaR89TCZMt3OAjj 1256676013
-From: myuboot@fastmail.fm
-To: "Florian Fainelli" <florian@openwrt.org>
-Cc: linux-kernel@vger.kernel.org, "linux-mips" <linux-mips@linux-mips.org>
+	Tue, 27 Oct 2009 16:42:42 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:52235 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932113AbZJ0Uml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 16:42:41 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip perf/probes 00/10] x86 insn decoder bugfixes
+To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Tue, 27 Oct 2009 16:41:56 -0400
+Message-ID: <20091027204156.30545.96425.stgit@harusame>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset="ISO-8859-1"
-X-Mailer: MessagingEngine.com Webmail Interface
-In-Reply-To: <200910200817.24018.florian@openwrt.org>
-References: <1255735395.30097.1340523469@webmail.messagingengine.com>
- <4AD906D8.3020404@caviumnetworks.com>
- <1255996564.10560.1340920621@webmail.messagingengine.com>
- <200910200817.24018.florian@openwrt.org>
-Subject: Re: serial port 8250 messed up after coverting from little endian to
- big endian on kernel  2.6.31
-Date: Tue, 27 Oct 2009 15:40:13 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks, Florian. I found the cause of the problem. My board is 32 bit
-based, so each serial port register is 32bit even only 8 bit is used. So
-when the board is switched endianess, I need to change the address
-offset to access the same registers.
-For example, original RHR register address is 0x8001000 with little
-endian mode. With big endian, I need to access it as 0x8001003.
+Hi Ingo,
 
-On Tue, 20 Oct 2009 08:17 +0200, "Florian Fainelli"
-<florian@openwrt.org> wrote:
-> Hi,
-> 
-> Le mardi 20 octobre 2009 01:56:04, myuboot@fastmail.fm a écrit :
-> > I am trying to bringup a MIPS32 board using 2.6.31. It is working in
-> > little endian mode. After changing the board's hardware from little
-> > endian to bit endian, the serial port print messed up. It prints now
-> > something like - "àààààààààààààààà" on the screen. When I trace the
-> > execution, I can see the string the kernel is trying print is correct -
-> > "Linux version 2.6.31 ..." and etc.
-> > 
-> > I guess it means the initialization of the serial port is not properly
-> > done. But I am not sure where I should check for the problem. The serial
-> > port device I am using is 8250. Please give me some advise.
-> 
-> If the same initialization routine used to work in little-endian, check
-> how 
-> you actually write and read characters from the UART FIFO and especially
-> if 
-> your hardware requires you to do word or byte access to these registers.
-> 
-> You can have a look at AR7, which has the same code working for Little
-> and Big 
-> Endian modes in arch/mips/ar7/prom.c lines 272 to the end of the file. It
-> also 
-> uses a 8250-compatible UART.
+Here are bugfixes and some enhances of x86-insn decoder and perf-probe.
+ - x86 insn decoder supports AVX and FMA.
+ - perf-probe syntax change.
+ - perf-probe supports function-relative line number.
+ - minor bugfixes.
+
+New perf-probe syntax is below:
+
+  perf probe 'PROBE'
+
+ or 
+
+  perf probe --add 'PROBE'
+
+ where, PROBE is
+
+  <source>:<line-number>
+
+ or
+
+  <function>[:<rel-lineno>|+<byte-offset>|%return][@<source>]
+
+ e.g.
+
+  perf probe 'schedule:10@kernel/sched.c'
+
+  puts a probe at 10th line from entry line of schedule() function
+  in kernel/sched.c." and
+
+  perf probe 'vmalloc%return'
+
+  puts a return probe at the returning of vmalloc.
+
+TODO:
+ - Support --line option to show which lines user can probe.
+ - Support lazy string matching.
+
+Thank you,
+
+---
+
+Masami Hiramatsu (10):
+      perf/probes: Support function entry relative line number
+      perf/probes: Change probepoint syntax of perf-probe
+      perf/probes: Change command-line option of perf-probe
+      perf/probes: Exit searching after finding target function
+      kprobe-tracer: Compare both of event-name and event-group to find probe
+      x86: Add Intel FMA instructions to x86 opcode map
+      x86: AVX instruction set decoder support
+      x86: Add pclmulq to x86 opcode map
+      x86: Merge INAT_REXPFX into INAT_PFX_*
+      x86: Fix SSE opcode map bug
+
+
+ arch/x86/include/asm/inat.h          |   68 ++++-
+ arch/x86/include/asm/insn.h          |   43 +++
+ arch/x86/lib/inat.c                  |   12 +
+ arch/x86/lib/insn.c                  |   54 ++++
+ arch/x86/lib/x86-opcode-map.txt      |  464 +++++++++++++++++++---------------
+ arch/x86/tools/gen-insn-attr-x86.awk |  100 +++++--
+ kernel/trace/trace_kprobe.c          |    8 -
+ tools/perf/builtin-probe.c           |  201 +++++++++------
+ tools/perf/util/probe-finder.c       |   93 +++++--
+ tools/perf/util/probe-finder.h       |    4 
+ 10 files changed, 695 insertions(+), 352 deletions(-)
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+e-mail: mhiramat@redhat.com
