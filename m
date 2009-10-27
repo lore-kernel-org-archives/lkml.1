@@ -1,109 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbZJ0PgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbZJ0PjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755388AbZJ0PgB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 11:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZJ0PgA
+	id S1755668AbZJ0PjR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 11:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbZJ0PjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 11:36:00 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:49317 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755423AbZJ0Pf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 11:35:59 -0400
-Date: Tue, 27 Oct 2009 15:36:00 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Tobias Oetiker <tobi@oetiker.ch>
-Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
-	failures V2
-Message-ID: <20091027153600.GK8900@csn.ul.ie>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.0910261835440.24625@wbuna.brgvxre.pu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910261835440.24625@wbuna.brgvxre.pu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 27 Oct 2009 11:39:17 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:60077 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755543AbZJ0PjQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 11:39:16 -0400
+Subject: Re: [RFC] to rebase or not to rebase on linux-next
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Nicolas Pitre <nico@fluxnic.net>, "Luck, Tony" <tony.luck@intel.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20091027075954.GA32640@elte.hu>
+References: <4AE19A74.1090709@garzik.org> <20091023123555.GA25366@elte.hu>
+	 <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com>
+	 <20091023134115.GD27097@elte.hu>
+	 <alpine.LFD.2.00.0910231424440.21460@xanadu.home>
+	 <20091023191631.GA1879@elte.hu>
+	 <1256326512.26028.34.camel@gandalf.stny.rr.com>
+	 <20091023205400.GA8356@elte.hu> <20091023215958.GA4139@merkur.ravnborg.org>
+	 <1256599588.26028.340.camel@gandalf.stny.rr.com>
+	 <20091027075954.GA32640@elte.hu>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 27 Oct 2009 11:39:16 -0400
+Message-Id: <1256657956.26028.408.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 06:37:36PM +0100, Tobias Oetiker wrote:
-> Hi Mel,
-> 
-> I have no done additional tests ... and can report the following
-> 
-> Thursday Mel Gorman wrote:
-> 
-> >   1/5 page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
-> >   2/5 page allocator: Do not allow interrupts to use ALLOC_HARDER
-> >
-> >
-> > 	These patches correct problems introduced by me during the 2.6.31-rc1
-> > 	merge window. The patches were not meant to introduce any functional
-> > 	changes but two were missed.
-> >
-> > 	If your problem goes away with just these two patches applied,
-> > 	please tell me.
-> 
-> 1+2 do not help
-> 
-> > Test 3: If you are getting allocation failures, try with the following patch
-> >
-> >   3/5 vmscan: Force kswapd to take notice faster when high-order watermarks are being hit
-> >
-> > 	This is a functional change that causes kswapd to notice sooner
-> > 	when high-order watermarks have been hit. There have been a number
-> > 	of changes in page reclaim since 2.6.30 that might have delayed
-> > 	when kswapd kicks in for higher orders
-> >
-> > 	If your problem goes away with these three patches applied, please
-> > 	tell me
-> 
-> 1+2+3 do not help either
-> 
-> > Test 4: If you are still getting failures, apply the following
-> >   4/5 page allocator: Pre-emptively wake kswapd when high-order watermarks are hit
-> >
-> > 	This patch is very heavy handed and pre-emptively kicks kswapd when
-> > 	watermarks are hit. It should only be necessary if there has been
-> > 	significant changes in the timing and density of page allocations
-> > 	from an unknown source. Tobias, this patch is largely aimed at you.
-> > 	You reported that with patches 3+4 applied that your problems went
-> > 	away. I need to know if patch 3 on its own is enough or if both
-> > 	are required
-> >
-> > 	If your problem goes away with these four patches applied, please
-> > 	tell me
-> 
-> 3 allone does not help
-> 3+4 does ...
-> 
+On Tue, 2009-10-27 at 08:59 +0100, Ingo Molnar wrote:
 
-This is a bit surprising.....
+> For any reasonably complex change you simply need to wait a bit anyway 
+> to gather feedback. And for trivial/obvious/small patches it makes 
+> little sense to upset the Git history just to add the tags.
+> 
+> (And if there's frequent problems with small changes that were supposed 
+> to be easy you need to revisit the quality process.)
 
-Tell me, do you have an Intel IO-MMU on your system by any chance?  It should
-be mentioned in either dmesg or lspci -v (please send the full output of
-both). If you do have one of these things, I notice they abuse PF_MEMALLOC
-which would explain why this patch makes a difference to your testing.
+Sure, but I'm not talking about changing the patch, I'm talking about a
+late "reviewed by" or "tested-by". These usually do come after a patch
+set has been moved into the final git push. It would be nice to flag a
+commit that it was tested by someone.
 
-Thanks
+If we have to change the commit to add tested-by, then it changes the
+SHA1, and if you're going to change the commit, you may be tempted to
+make a small fix somewhere too. And that small fix might have an
+unexpected result and nullifies the "tested-by".
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Sure you can say, "don't do that" but its human nature. Someone will,
+and when this patch is proven to break something, it will be
+embarrassing to the tester who put their name on it.
+
+> 
+> So no, the rewinding of published for-pull git trees are not fine in 
+> Linux. It's OK to post a declaredly RFC git tree with some 
+> to-be-reworked patches in it - but it's not OK to publish a git tree for 
+> pull and rebase it after that. You'll certainly see me complain if you 
+> do that (and Linus will complain to me if i do that).
+
+I agree with this to. And for complex changes, I usually do a RFC post
+first.  But after comments and we get a good commit going, then I
+sometimes get "tested-by" after the final version has been posted.
+Because they tested that version.
+
+My suggestion is to add an "annotation" commit that can tag another
+commit with something like a "tested-by". This way a tester can say,
+they tested this particular commit, and if someone changes it, the SHA1
+will no longer match. And then we can also have a record of what commit
+was tested by who, after the fact that it went into git.
+
+A tester could have a git tree that you could pull from that only adds
+annotations of what they tested. This would add to git a history of what
+changes were tested by who.
+
+Just my $0.02.
+
+-- Steve
+
+
