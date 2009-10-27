@@ -1,45 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932455AbZJ0VbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932460AbZJ0VfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932455AbZJ0VbO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 17:31:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932442AbZJ0VbN
+	id S932460AbZJ0VfP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 17:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932422AbZJ0VfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 17:31:13 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53175 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932440AbZJ0VbN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 17:31:13 -0400
-Date: Tue, 27 Oct 2009 21:32:42 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: david@lang.hm
-Cc: Greg KH <gregkh@suse.de>, "John W. Linville" <linville@tuxdriver.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] strip: move driver to staging
-Message-ID: <20091027213242.0c2494c5@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.DEB.2.00.0910271136530.11504@asgard.lang.hm>
-References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
-	<20091023161006.GA1580@ucw.cz>
-	<20091026165518.GE2792@tuxdriver.com>
-	<alpine.DEB.2.00.0910261013430.11504@asgard.lang.hm>
-	<20091026184734.GA21591@suse.de>
-	<alpine.DEB.2.00.0910262106050.14994@asgard.lang.hm>
-	<20091027140812.GC17208@suse.de>
-	<alpine.DEB.2.00.0910271136530.11504@asgard.lang.hm>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 27 Oct 2009 17:35:14 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:33532 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932421AbZJ0VfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 17:35:13 -0400
+X-IronPort-AV: E=Sophos;i="4.44,635,1249282800"; 
+   d="scan'208";a="265031157"
+Subject: [GIT] Please pull NFS client bugfixes...
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Tue, 27 Oct 2009 17:35:00 -0400
+Message-Id: <1256679301.3234.1.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-OriginalArrivalTime: 27 Oct 2009 21:35:02.0268 (UTC) FILETIME=[5753ABC0:01CA574D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O> while I definantly agree that this driver is unlikly to have many users, 
-> unless it is known broken (which David Miller has stated that it is, but 
-> had not been mentioned previously in this thread), how can you know that 
-> the number of users has dropped below 1?
+Hi Linus,
 
-By the fact it never turns up in bugzilla, in kernel questions or
-in google - and then by deleting it and checking for screaming noises.
+Please pull from the "bugfixes" branch of the repository at
 
-Do you have a better testing procedure ?
+   git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git bugfixes
+
+This will update the following files through the appended changesets.
+
+  Cheers,
+    Trond
+
+----
+ fs/nfs/dir.c      |    2 ++
+ fs/nfs/direct.c   |    1 +
+ fs/nfs/nfs4proc.c |   15 ++++++++-------
+ fs/nfs/nfs4xdr.c  |    1 -
+ 4 files changed, 11 insertions(+), 8 deletions(-)
+
+commit 9a3936aac133037f65124fcb2d676a6c201a90a4
+Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date:   Mon Oct 26 08:09:46 2009 -0400
+
+    NFSv4: The link() operation should return any delegation on the file
+    
+    Otherwise, we have to wait for the server to recall it.
+    
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+commit 141aeb9f26f9f12f1584c128ce8697cdffb046e7
+Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date:   Mon Oct 26 08:09:46 2009 -0400
+
+    NFSv4: Fix two unbalanced put_rpccred() issues.
+    
+    Commits 29fba38b (nfs41: lease renewal) and fc01cea9 (nfs41: sequence
+    operation) introduce a couple of put_rpccred() calls on credentials for
+    which there is no corresponding get_rpccred().
+    
+    See http://bugzilla.kernel.org/show_bug.cgi?id=14249
+    
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+commit 52567b03ca38b6e556ced450d64dba8d66e23b0e
+Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date:   Fri Oct 23 14:46:42 2009 -0400
+
+    NFSv4: Fix a bug when the server returns NFS4ERR_RESOURCE
+    
+    RFC 3530 states that when we recieve the error NFS4ERR_RESOURCE, we are not
+    supposed to bump the sequence number on OPEN, LOCK, LOCKU, CLOSE, etc
+    operations. The problem is that we map that error into EREMOTEIO in the XDR
+    layer, and so the NFSv4 middle-layer routines like seqid_mutating_err(),
+    and nfs_increment_seqid() don't recognise it.
+    
+    The fix is to defer the mapping until after the middle layers have
+    processed the error.
+    
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+commit a8b40bc7e635831b61c43acc71a86d3a68b2dff0
+Author: Terry Loftin <terry.loftin@hp.com>
+Date:   Thu Oct 22 21:36:01 2009 -0400
+
+    nfs: Panic when commit fails
+    
+    Actually pass the NFS_FILE_SYNC option to the server to avoid a
+    Panic in nfs_direct_write_complete() when a commit fails.
+    
+    At the end of an nfs write, if the nfs commit fails, all the writes
+    will be rescheduled.  They are supposed to be rescheduled as NFS_FILE_SYNC
+    writes, but the rpc_task structure is not completely intialized and so
+    the option is not passed.  When the rescheduled writes complete, the
+    return indicates that they are NFS_UNSTABLE and we try to do another
+    commit.  This leads to a Panic because the commit data structure pointer
+    was set to null in the initial (failed) commit attempt.
+    
+    Signed-off-by: Terry Loftin <terry.loftin@hp.com>
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
+index 32062c3..7cb2985 100644
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -1536,6 +1536,8 @@ nfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
+ 		old_dentry->d_parent->d_name.name, old_dentry->d_name.name,
+ 		dentry->d_parent->d_name.name, dentry->d_name.name);
+ 
++	nfs_inode_return_delegation(inode);
++
+ 	d_drop(dentry);
+ 	error = NFS_PROTO(dir)->link(inode, dir, &dentry->d_name);
+ 	if (error == 0) {
+diff --git a/fs/nfs/direct.c b/fs/nfs/direct.c
+index 6c32100..e1d415e 100644
+--- a/fs/nfs/direct.c
++++ b/fs/nfs/direct.c
+@@ -457,6 +457,7 @@ static void nfs_direct_write_reschedule(struct nfs_direct_req *dreq)
+ 	};
+ 	struct rpc_task_setup task_setup_data = {
+ 		.rpc_client = NFS_CLIENT(inode),
++		.rpc_message = &msg,
+ 		.callback_ops = &nfs_write_direct_ops,
+ 		.workqueue = nfsiod_workqueue,
+ 		.flags = RPC_TASK_ASYNC,
+diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+index ed7c269..ff37454 100644
+--- a/fs/nfs/nfs4proc.c
++++ b/fs/nfs/nfs4proc.c
+@@ -72,12 +72,17 @@ static int _nfs4_proc_getattr(struct nfs_server *server, struct nfs_fh *fhandle,
+ /* Prevent leaks of NFSv4 errors into userland */
+ static int nfs4_map_errors(int err)
+ {
+-	if (err < -1000) {
++	if (err >= -1000)
++		return err;
++	switch (err) {
++	case -NFS4ERR_RESOURCE:
++		return -EREMOTEIO;
++	default:
+ 		dprintk("%s could not handle NFSv4 error %d\n",
+ 				__func__, -err);
+-		return -EIO;
++		break;
+ 	}
+-	return err;
++	return -EIO;
+ }
+ 
+ /*
+@@ -3060,9 +3065,6 @@ static void nfs4_renew_done(struct rpc_task *task, void *data)
+ 	if (time_before(clp->cl_last_renewal,timestamp))
+ 		clp->cl_last_renewal = timestamp;
+ 	spin_unlock(&clp->cl_lock);
+-	dprintk("%s calling put_rpccred on rpc_cred %p\n", __func__,
+-				task->tk_msg.rpc_cred);
+-	put_rpccred(task->tk_msg.rpc_cred);
+ }
+ 
+ static const struct rpc_call_ops nfs4_renew_ops = {
+@@ -4877,7 +4879,6 @@ void nfs41_sequence_call_done(struct rpc_task *task, void *data)
+ 	nfs41_sequence_free_slot(clp, task->tk_msg.rpc_resp);
+ 	dprintk("%s rpc_cred %p\n", __func__, task->tk_msg.rpc_cred);
+ 
+-	put_rpccred(task->tk_msg.rpc_cred);
+ 	kfree(task->tk_msg.rpc_argp);
+ 	kfree(task->tk_msg.rpc_resp);
+ 
+diff --git a/fs/nfs/nfs4xdr.c b/fs/nfs/nfs4xdr.c
+index 83ad47c..20b4e30 100644
+--- a/fs/nfs/nfs4xdr.c
++++ b/fs/nfs/nfs4xdr.c
+@@ -5681,7 +5681,6 @@ static struct {
+ 	{ NFS4ERR_SERVERFAULT,	-ESERVERFAULT	},
+ 	{ NFS4ERR_BADTYPE,	-EBADTYPE	},
+ 	{ NFS4ERR_LOCKED,	-EAGAIN		},
+-	{ NFS4ERR_RESOURCE,	-EREMOTEIO	},
+ 	{ NFS4ERR_SYMLINK,	-ELOOP		},
+ 	{ NFS4ERR_OP_ILLEGAL,	-EOPNOTSUPP	},
+ 	{ NFS4ERR_DEADLOCK,	-EDEADLK	},
+
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
