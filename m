@@ -1,118 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbZJ0ICV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbZJ0II6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932113AbZJ0ICV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 04:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932088AbZJ0ICU
+	id S932119AbZJ0II6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 04:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932093AbZJ0II5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 04:02:20 -0400
-Received: from mga09.intel.com ([134.134.136.24]:21487 "EHLO mga09.intel.com"
+	Tue, 27 Oct 2009 04:08:57 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41370 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756536AbZJ0ICT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 04:02:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,631,1249282800"; 
-   d="scan'208";a="461707717"
-Subject: Re: hackbench regression with kernel 2.6.32-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1255691192.7029.13.camel@marge.simson.net>
-References: <1255079943.25078.23.camel@ymzhang>
-	 <1255084986.8802.46.camel@laptop>  <1255331120.3684.43.camel@ymzhang>
-	 <1255357264.10420.15.camel@twins>  <1255403522.3684.57.camel@ymzhang>
-	 <1255691192.7029.13.camel@marge.simson.net>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 27 Oct 2009 16:03:04 +0800
-Message-Id: <1256630584.16282.13.camel@ymzhang>
+	id S932088AbZJ0IIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 04:08:53 -0400
+Date: Tue, 27 Oct 2009 19:08:50 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for October 27
+Message-Id: <20091027190850.9694fb39.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__27_Oct_2009_19_08_50_+1100_1hxpLode7e4DDM60"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-16 at 13:06 +0200, Mike Galbraith wrote:
-> On Tue, 2009-10-13 at 11:12 +0800, Zhang, Yanmin wrote:
-> 
-> > NEXT_BUDDY has no help on volanoMark and tbench.
-> 
-> Can you try the patch below please?  It does tries to preserve buddy
-> affinity where possible, and mitigates over-preemption by strengthening
-> buddies a bit.  It improves vmark here by ~7%.
-I ran some benchmarks against 2.6.32-rc1+Peter_2_patches+below_patch.
-Below result is against 2.6.32-rc1.
-hackbench result has about 10% improvement on stoakley (2*4 cores) and
-tigerton (4*4 cores).
-tbench still has about 5% regression on ﻿stoakley and tigerton.
-VolanoMark has 33% regression on tigerton, but has 2% improvement on stoakley.
+--Signature=_Tue__27_Oct_2009_19_08_50_+1100_1hxpLode7e4DDM60
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I also ran the benchmarks against the latest tips/master and got the similiar
-results like above testing.
-﻿
-The testing against tips on Nehalem machine didn't show much improvement/regression.
+Hi all,
 
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 00f9e71..fb025d4 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -2007,8 +2007,12 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
->  
->  	/*
->  	 * Buddy candidates are cache hot:
-> +	 *
-> +	 * Do not honor buddies if there may be nothing else to
-> +	 * prevent us from becoming idle.
->  	 */
->  	if (sched_feat(CACHE_HOT_BUDDY) &&
-> +			task_rq(p)->nr_running >= sched_nr_latency &&
->  			(&p->se == cfs_rq_of(&p->se)->next ||
->  			 &p->se == cfs_rq_of(&p->se)->last))
->  		return 1;
-> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> index c32c3e6..428bf55 100644
-> --- a/kernel/sched_fair.c
-> +++ b/kernel/sched_fair.c
-> @@ -863,18 +863,20 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
->  	struct sched_entity *se = __pick_next_entity(cfs_rq);
->  	struct sched_entity *buddy;
->  
-> -	if (cfs_rq->next) {
-> +	if (cfs_rq->next && sched_feat(NEXT_BUDDY)) {
->  		buddy = cfs_rq->next;
-> -		cfs_rq->next = NULL;
-> -		if (wakeup_preempt_entity(buddy, se) < 1)
-> +		if (wakeup_preempt_entity(buddy, se) < 1) {
-> +			cfs_rq->next = NULL;
->  			return buddy;
-> +		}
->  	}
->  
-> -	if (cfs_rq->last) {
-> +	if (cfs_rq->last && sched_feat(LAST_BUDDY)) {
->  		buddy = cfs_rq->last;
-> -		cfs_rq->last = NULL;
-> -		if (wakeup_preempt_entity(buddy, se) < 1)
-> +		if (wakeup_preempt_entity(buddy, se) < 1) {
-> +			cfs_rq->last = NULL;
->  			return buddy;
-> +		}
->  	}
->  
->  	return se;
-> @@ -1600,9 +1602,9 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
->  	 * Also, during early boot the idle thread is in the fair class, for
->  	 * obvious reasons its a bad idea to schedule back to the idle thread.
->  	 */
-> -	if (sched_feat(LAST_BUDDY) && likely(se->on_rq && curr != rq->idle))
-> +	if (!(wake_flags & WF_FORK) && likely(se->on_rq && curr != rq->idle))
->  		set_last_buddy(se);
-> -	if (sched_feat(NEXT_BUDDY) && !(wake_flags & WF_FORK))
-> +	if (!(wake_flags & WF_FORK))
->  		set_next_buddy(pse);
->  
->  	/*
-> 
-> 
+Changes since 20091026:
 
+My fixes tree contains a build fix for powerpc/kvm.
+
+The pci tree lost its conflict.
+
+The block tree gained a build failure so I used the version from
+next-20091026.
+
+The staging tree gained a conflict against the net/wireless trees.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 146 trees (counting Linus' and 22 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/davinci-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+CONFLICT (content): Merge conflict in arch/x86/kvm/mmu.c
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+CONFLICT (delete/modify): drivers/net/sfc/sfe4001.c deleted in net/master a=
+nd modified in HEAD. Version HEAD of drivers/net/sfc/sfe4001.c left in tree.
+$ git rm -f drivers/net/sfc/sfe4001.c
+Applying: net: merge fixup for drivers/net/sfc/falcon_boards.c
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+$ git reset --hard HEAD^
+Merging refs/next/20091026/block
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
+CONFLICT (content): Merge conflict in drivers/mfd/Makefile
+Merging security-testing/next
+CONFLICT (content): Merge conflict in Documentation/dontdiff
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+CONFLICT (content): Merge conflict in drivers/acpi/video_detect.c
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/Kconfig
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/Makefile
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_actlog.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_int.h
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_main.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_nl.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_receiver.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_req.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_worker.c
+CONFLICT (add/add): Merge conflict in include/linux/drbd.h
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in drivers/net/Kconfig
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Merging devicetree/next-devicetree
+Merging limits/writable_limits
+Merging tip/auto-latest
+Merging oprofile/for-next
+Merging percpu/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+Merging quilt/staging
+CONFLICT (content): Merge conflict in drivers/net/wireless/Kconfig
+Applying: staging: merge fixup for wireless drivers move
+Merging scsi-post-merge/master
+
+--Signature=_Tue__27_Oct_2009_19_08_50_+1100_1hxpLode7e4DDM60
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrmqpIACgkQjjKRsyhoI8zkawCgtfJpkL79G/FvoqUHpl3zabV2
+8A8An1rRbMRww4mLnely8KTaq1fVQ7QS
+=ClGI
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__27_Oct_2009_19_08_50_+1100_1hxpLode7e4DDM60--
