@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbZJZX5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbZJ0AIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755079AbZJZX5r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 19:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbZJZX5r
+	id S1755308AbZJ0AIo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 20:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbZJ0AIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 19:57:47 -0400
-Received: from mga06.intel.com ([134.134.136.21]:3087 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754757AbZJZX5q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 19:57:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,628,1249282800"; 
-   d="scan'208";a="461593995"
-Date: Tue, 27 Oct 2009 00:59:41 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Ilkka Koskinen <ilkka.koskinen@nokia.com>
-Subject: [GIT] [2.6.32] MFD pull request
-Message-ID: <20091026235940.GA32634@sortiz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 26 Oct 2009 20:08:43 -0400
+Received: from mail.perches.com ([173.55.12.10]:1074 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754781AbZJ0AIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 20:08:43 -0400
+Subject: git vs hg commit counts?
+From: Joe Perches <joe@perches.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: git <git@vger.kernel.org>, mercurial@selenic.com,
+       Marti Raudsepp <marti@juffo.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 26 Oct 2009 17:08:47 -0700
+Message-ID: <1256602127.29938.8.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+I'm comparing linux-kernel git vs hg repositories.
 
-I have a couple more bug fixes for 2.6.32, for the MFD subsystem. One is for a
-NULL pointer dereference, and the other one is for a potentially uninitialized
-mutex.
-Thanks in advance for pulling.
+While testing some changes to scripts/get_maintainer.pl,
+I noticed that git and hg have different commit counts
+for the same files.
 
-The following changes since commit 964fe080d94db82a3268443e9b9ece4c60246414:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../rusty/linux-2.6-for-linus
+For instance:
 
-are available in the git repository at:
+$ git log --since=1-year-ago -- MAINTAINERS | \
+	grep -P "^commit [0-9a-f]{40,40}$"  | wc -l
+514
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/sameo/mfd-2.6 for-linus
+$ hg log --template="commit {node}\n" --date -365 -- MAINTAINERS  | \
+	grep -P "^commit [0-9a-f]{40,40}$" | wc -l
+601
 
-Ilkka Koskinen (1):
-      mfd: Do not dereference null pointer in twl4030 error path
+Anyone have any understanding why?
 
-Mark Brown (1):
-      mfd: Always initialise WM831x IRQ mutex
-
- drivers/mfd/twl4030-core.c |    2 +-
- drivers/mfd/wm831x-irq.c   |    3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
