@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932087AbZJ0ToF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932105AbZJ0TnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932087AbZJ0ToF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 15:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZJ0ToB
+	id S932105AbZJ0TnZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 15:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZJ0TnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 15:44:01 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:58785 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756696AbZJ0Tny (ORCPT
+	Tue, 27 Oct 2009 15:43:24 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:38922 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753186AbZJ0TnX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 15:43:54 -0400
-Subject: Re: [RFC] to rebase or not to rebase on linux-next
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Valdis.Kletnieks@vt.edu
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Nicolas Pitre <nico@fluxnic.net>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jean Delvare <khali@linux-fr.org>, Sam Ravnborg <sam@ravnborg.org>
-In-Reply-To: <22616.1256672350@turing-police.cc.vt.edu>
-References: <20091022122042.e535d43c.sfr@canb.auug.org.au>
-	 <20091023112732.GB5886@elte.hu> <4AE19A74.1090709@garzik.org>
-	 <20091023123555.GA25366@elte.hu>
-	 <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com>
-	 <20091023134115.GD27097@elte.hu>
-	 <alpine.LFD.2.00.0910231424440.21460@xanadu.home>
-	 <20091023191631.GA1879@elte.hu>
-	 <1256326512.26028.34.camel@gandalf.stny.rr.com>
-	 <20091023205400.GA8356@elte.hu> <20091024080326.GA7461@mit.edu>
-	 <4AE2F0F6.30909@s5r6.in-berlin.de>
-	 <alpine.LFD.2.01.0910271200060.31845@localhost.localdomain>
-	 <1256671624.26028.419.camel@gandalf.stny.rr.com>
-	 <22616.1256672350@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 27 Oct 2009 15:43:24 -0400
-Message-Id: <1256672604.26028.421.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Oct 2009 15:43:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mDkgk3W13sWhVSxxPfcja/ApgB7gQqp3HulKA9TI75sksV5HnSiSblLFgkHXs7WApq
+         8bmK4j16ksDsqBljJk55vzzF+TsceL4LlJGAn8FU7yG7jhYhFpYBN5jQhQxKCNSTu+II
+         O7IQ6BS/TVctzDvEllJ2CMMTcrYd29oWNPvcw=
+MIME-Version: 1.0
+In-Reply-To: <a3b1332815576dc4d496937b8a5ab69d36818d00.1256314995.git.nicolas.ferre@atmel.com>
+References: <acfa557032a93e2d3186981b16f7048a5a31028a.1256314995.git.nicolas.ferre@atmel.com>
+	 <20090930155557.7dae503b@hskinnemoen-d830>
+	 <a3b1332815576dc4d496937b8a5ab69d36818d00.1256314995.git.nicolas.ferre@atmel.com>
+Date: Tue, 27 Oct 2009 21:43:26 +0200
+Message-ID: <cd73a99e0910271243x744c956bl598fef9fd4144840@mail.gmail.com>
+Subject: Re: [PATCH 3/3 v2] at91/atmel-mci: inclusion of sd/mmc driver in 
+	at91sam9g45 chip and board
+From: Andrew Victor <avictor.za@gmail.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: linux-mmc@vger.kernel.org, haavard.skinnemoen@atmel.com,
+       akpm@linux-foundation.org, kernel@avr32linux.org,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 15:39 -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Tue, 27 Oct 2009 15:27:04 EDT, Steven Rostedt said:
-> > On Tue, 2009-10-27 at 12:06 -0700, Linus Torvalds wrote:
-> > >  Don't lie about 
-> > > getting an ack that you didn't get before you made that patch public.
-> > 
-> > But how do you get your ack without making it public?
-> 
-> I'm going to guess that Linus meant "causing the patch to show up in a
-> public git tree" - i.e. shop the patch around on lkml and similar lists a
-> bit and get some acked-by's to attach to it *before* it goes out in a tree
-> that everybody might pull from.
+hi Nicolas,
 
-Yeah, I was being a little facetious there. The rest of my email I was
-being serious.
+> +       if (data->slot[0].wp_pin)
+> +               at91_set_gpio_input(data->slot[0].wp_pin, 1);
 
--- Steve
+> +static struct mci_platform_data __initdata mci0_data = {
+> +       .slot[0] = {
+> +               .bus_width      = 4,
+> +               .detect_pin     = AT91_PIN_PD10,
+> +               .wp_pin         = -1,
+> +       },
+
+Causes at91_set_gpio_input() to be called for pin -1.  Which shouldn't be valid.
+AT91 platforms use 0 to indicate an un-connected GPIO pin, so the
+assignment of "wp_pin" should probably just be removed.
 
 
+Regards,
+  Andrew Victor
