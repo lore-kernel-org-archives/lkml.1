@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbZJ0OAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbZJ0OBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755326AbZJ0OAW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 10:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZJ0OAV
+	id S1755308AbZJ0OBY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 10:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbZJ0OBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 10:00:21 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:52082 "EHLO gir.skynet.ie"
+	Tue, 27 Oct 2009 10:01:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55751 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754988AbZJ0OAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 10:00:15 -0400
-Date: Tue, 27 Oct 2009 14:00:18 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Frans Pop <elendil@planet.nl>
-Cc: Michael Guntsche <mike@it-loops.com>, linux-kernel@vger.kernel.org
-Subject: Re: Page alloc problems with 2.6.32-rc kernels
-Message-ID: <20091027140018.GF8900@csn.ul.ie>
-References: <20091027095014.GA22215@gibson.comsick.at> <200910271138.01624.elendil@planet.nl>
+	id S1754345AbZJ0OBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 10:01:22 -0400
+Date: Tue, 27 Oct 2009 14:00:34 GMT
+From: tip-bot for Andreas Herrmann <herrmann.der.user@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       andreas.herrmann3@amd.com, herrmann.der.user@googlemail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andreas.herrmann3@amd.com, herrmann.der.user@googlemail.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20091027100138.GB30802@alberich.amd.com>
+References: <20091027100138.GB30802@alberich.amd.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/apic] x86, apic: Clear APIC Timer Initial Count Register on shutdown
+Message-ID: <tip-6f9b41006af1bc489030f84ee247abc0df1edccd@git.kernel.org>
+Git-Commit-ID: 6f9b41006af1bc489030f84ee247abc0df1edccd
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <200910271138.01624.elendil@planet.nl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 11:38:00AM +0100, Frans Pop wrote:
-> Michael Guntsche wrote:
-> > I noticed that I get page alloc errors on one of my machines.
-> > It is an old server I use as a fileserver with 512MB RAM. Before
-> > 2.6.3[12] I did not see this problem at all.
-> > This only seems to happens when I use mutt on this machine.
-> > I know that it means I am running out of memory here, but I am wondering
-> > why I did not see this before....
-> > 
-> > mutt: page allocation failure. order:1, mode:0x20
-> > Pid: 21746, comm: mutt Not tainted 2.6.32-rc5 #2
-> 
-> This is a known issue that's being heavily investigated, but is proving 
-> very elusive. See http://lkml.org/lkml/2009/10/22/128 for an overview.
-> 
-> Can you easily reproduce the problem, or does it happen at random moments? 
-> If you can reproduce it, it would be great if you could test the patches 
-> mentioned in that mail.
-> 
+Commit-ID:  6f9b41006af1bc489030f84ee247abc0df1edccd
+Gitweb:     http://git.kernel.org/tip/6f9b41006af1bc489030f84ee247abc0df1edccd
+Author:     Andreas Herrmann <herrmann.der.user@googlemail.com>
+AuthorDate: Tue, 27 Oct 2009 11:01:38 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 27 Oct 2009 14:54:21 +0100
 
-Specifically, this looks very like the bug
+x86, apic: Clear APIC Timer Initial Count Register on shutdown
 
-"page allocation failure message kernel 2.6.31.4 (tty-related)"
+Commit a98f8fd24fb24fcb9a359553e64dd6aac5cf4279 (x86: apic reset
+counter on shutdown) set the counter to max to avoid spurious
+interrupts when the timer is re-enabled.
 
-The first three patches on the thread Frans Pop are expected to close
-that one out. Michael, I'm hoping they'll help you too. Whether they
-help or not, let me know please.
+(In theory) you'll still get a spurious interrupt if spending
+more than 344 seconds with this interrupt disabled and then
+unmasking it.
 
-Thanks
+The right thing to do is to clear the register. This disables
+the interrupt from happening (at least it does on AMD hardware).
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+LKML-Reference: <20091027100138.GB30802@alberich.amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/apic/apic.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index dce93d4..4c689f4 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -444,7 +444,7 @@ static void lapic_timer_setup(enum clock_event_mode mode,
+ 		v = apic_read(APIC_LVTT);
+ 		v |= (APIC_LVT_MASKED | LOCAL_TIMER_VECTOR);
+ 		apic_write(APIC_LVTT, v);
+-		apic_write(APIC_TMICT, 0xffffffff);
++		apic_write(APIC_TMICT, 0);
+ 		break;
+ 	case CLOCK_EVT_MODE_RESUME:
+ 		/* Nothing to do here */
