@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbZJ0DCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbZJ0DWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756265AbZJ0DCo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 23:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbZJ0DCn
+	id S1754257AbZJ0DWG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 23:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZJ0DWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 23:02:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:44893 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755938AbZJ0DCm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 23:02:42 -0400
-Subject: Re: [RFC] to rebase or not to rebase on linux-next
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: David Miller <davem@davemloft.net>
-Cc: sam@ravnborg.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       nico@fluxnic.net, tony.luck@intel.com, sfr@canb.auug.org.au,
-       mcgrof@gmail.com, jeff@garzik.org, robert.richter@amd.com,
-       dmitry.torokhov@gmail.com, khali@linux-fr.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <20091026.183416.52095233.davem@davemloft.net>
-References: <1256601061.26028.350.camel@gandalf.stny.rr.com>
-	 <20091026.171539.06989895.davem@davemloft.net>
-	 <1256603403.26028.358.camel@gandalf.stny.rr.com>
-	 <20091026.183416.52095233.davem@davemloft.net>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Mon, 26 Oct 2009 23:02:38 -0400
-Message-Id: <1256612558.26028.391.camel@gandalf.stny.rr.com>
+	Mon, 26 Oct 2009 23:22:05 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47060 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753407AbZJ0DWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 23:22:05 -0400
+Subject: Re: [PATCH 10/16] percpu: make percpu symbols in powerpc unique
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, mingo@redhat.com, tglx@linutronix.de,
+       akpm@linux-foundation.org, rostedt@goodmis.org, hpa@zytor.com,
+       cebbert@redhat.com, Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev@ozlabs.org
+In-Reply-To: <1255500125-3210-11-git-send-email-tj@kernel.org>
+References: <1255500125-3210-1-git-send-email-tj@kernel.org>
+	 <1255500125-3210-11-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 27 Oct 2009 14:19:49 +1100
+Message-ID: <1256613589.11607.29.camel@pasglop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-26 at 18:34 -0700, David Miller wrote:
-
-> > My testing is mostly done in Ingo's test suite, and that happens after I
-> > do my push to him. This works best for me.
+On Wed, 2009-10-14 at 15:01 +0900, Tejun Heo wrote:
+> This patch updates percpu related symbols in powerpc such that percpu
+> symbols are unique and don't clash with local symbols.  This serves
+> two purposes of decreasing the possibility of global percpu symbol
+> collision and allowing dropping per_cpu__ prefix from percpu symbols.
 > 
-> So you both should keep your trees private until it's all sorted out
-> and you have the results in hand.
+> * arch/powerpc/kernel/perf_callchain.c: s/callchain/cpu_perf_callchain/
 > 
-> Nobody forces you guys to use public trees just to run Ingo's personal
-> test suite, you have decided to work that way.  And that is therefore
-> something you guys can change without effecting other people.
-
-I guess we have a different point of view on this. We like to keep
-things public as much as possible. As stated earlier, it's easier to get
-people to test the patches if the git trees in question are available.
-
-90% of the bugs are found by Ingo's tests, the other 10% is found by
-people pulling one of our git trees and testing themselves.
-
+> * arch/powerpc/kernel/setup-common.c: s/pvr/cpu_pvr/
 > 
-> > If I had to publish and let cook on LKML, then I would also need to keep
-> > better accounting of what I have pushed out and what I have left to do.
+> * arch/powerpc/platforms/pseries/dtl.c: s/dtl/cpu_dtl/
 > 
-> The problem isn't that you have to push patches out and only work
-> with patches, the problem is that you want to use publicly visible
-> GIT trees to do your testing at all times.
+> * arch/powerpc/platforms/cell/interrupt.c: s/iic/cpu_iic/
 > 
-> And sorry, that is not how you're supposed to do things.
+> Partly based on Rusty Russell's "alloc_percpu: rename percpu vars
+> which cause name clashes" patch.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
 
-That is a matter of opinion. We prefer to keep things as public as
-possible. No patches back and forth privately doing our own internal
-test suites, then come out with some "production release". If someone
-found something wrong with it then, we would need to start the cycle all
-over again.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-I do not like to send patches to anyone privately, unless it is a hack
-that is to help someone debug something and not for inclusion. Any time
-I send out a patch to be included for mainline, I start it out public. I
-also prefer to have a public git repo available to be tested by anyone.
-
-Whether I'm sending a patch to Ingo, Linus, Andrew, or even you, I would
-do it publicly and have a git repo to pull from for simplicity.
-
--- Steve
+Cheers,
+Ben.
 
 
