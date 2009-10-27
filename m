@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbZJ0UK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbZJ0UTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756771AbZJ0UK1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbZJ0UK0
+	id S1756812AbZJ0UTy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbZJ0UTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:10:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55212 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756739AbZJ0UKZ (ORCPT
+	Tue, 27 Oct 2009 16:19:53 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37882 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756765AbZJ0UTw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:10:25 -0400
-Date: Tue, 27 Oct 2009 13:09:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org\"" <linux-mm@kvack.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Kernel Testers List <kernel-testers@vger.kernel.org>, Mel Gorman <mel@csn.ul.ie>"@linux-foundation.org
-Subject: Re: [PATCH 2/3] page allocator: Do not allow interrupts to use
- ALLOC_HARDER
-Message-Id: <20091027130924.fa903f5a.akpm@linux-foundation.org>
-In-Reply-To: <1256650833-15516-3-git-send-email-mel@csn.ul.ie>
-References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie>
-	<1256650833-15516-3-git-send-email-mel@csn.ul.ie>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Tue, 27 Oct 2009 16:19:52 -0400
+Subject: Re: [PATCH 3/9] tracing: recordmcount.pl Support absolute path
+ check on $inputfile
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Hong <lihong.hi@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20091027065858.GC22032@uhli>
+References: <20091027065421.GA22032@uhli>  <20091027065858.GC22032@uhli>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 27 Oct 2009 16:12:49 -0400
+Message-Id: <1256674369.26028.433.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Oct 2009 13:40:32 +0000
-Mel Gorman <mel@csn.ul.ie> wrote:
-
-> Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
-> slightly by allowing rt_tasks that are handling an interrupt to set
-> ALLOC_HARDER. This patch brings the watermark logic more in line with
-> 2.6.30.
+On Tue, 2009-10-27 at 14:58 +0800, Li Hong wrote:
+> >From fdf89709ddf4a6ff2f2d21ff8a964e949a069fe4 Mon Sep 17 00:00:00 2001
+> From: Li Hong <lihong.hi@gmail.com>
+> Date: Tue, 27 Oct 2009 12:32:18 +0800
+> Subject: [PATCH] tracing: recordmcount.pl Support absolute path check on $inputfile
 > 
-> [rientjes@google.com: Spotted the problem]
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> Reviewed-by: Rik van Riel <riel@redhat.com>
-> Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  mm/page_alloc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> Signed-off-by: Li Hong <lihong.hi@gmail.com>
 > 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index dfa4362..7f2aa3e 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1769,7 +1769,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
->  		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
->  		 */
->  		alloc_flags &= ~ALLOC_CPUSET;
-> -	} else if (unlikely(rt_task(p)))
-> +	} else if (unlikely(rt_task(p)) && !in_interrupt())
->  		alloc_flags |= ALLOC_HARDER;
+> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+> index 0850b83..94daf9e 100755
+> --- a/scripts/recordmcount.pl
+> +++ b/scripts/recordmcount.pl
+> @@ -122,9 +122,7 @@ my ($arch, $bits, $objdump, $objcopy, $cc,
+>      $ld, $nm, $rm, $mv, $is_module, $inputfile) = @ARGV;
 >  
->  	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+>  # This file refers to mcount and shouldn't be ftraced, so lets' ignore it
+> -if ($inputfile eq "kernel/trace/ftrace.o") {
+> -    exit(0);
+> -}
+> +exit (0) if ($inputfile =~ "kernel/trace/ftrace.o");
 
-What are the runtime-observeable effects of this change?
+I prefer to keep the C like notation for error paths. Less to scare C
+programers from perl the better.
 
-The description is a bit waffly-sounding for a -stable backportable
-thing, IMO.  What reason do the -stable maintainers and users have to
-believe that this patch is needed, and an improvement?
+Also, if you are using a regular expression to match, might as well do
+it fully:
+
+if ($inputfile =~ m,kernel/tracel/ftrace\.o$,) {
+	exit(0);
+}
+
+-- Steve
+
 
