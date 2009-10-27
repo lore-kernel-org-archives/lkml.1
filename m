@@ -1,73 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbZJ0CPC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZJ0CRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756088AbZJ0CPC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 22:15:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZJ0CPB
+	id S1756113AbZJ0CRE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 22:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZJ0CRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 22:15:01 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:51316 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752889AbZJ0CPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 22:15:00 -0400
-Date: Mon, 26 Oct 2009 22:14:26 -0400
-From: Valerie Aurora <vaurora@redhat.com>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
-       Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Theodore Tso <tytso@mit.edu>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 15/41] whiteout: ext2 whiteout support
-Message-ID: <20091027021426.GA14574@shell>
-References: <1256152779-10054-8-git-send-email-vaurora@redhat.com> <1256152779-10054-9-git-send-email-vaurora@redhat.com> <1256152779-10054-10-git-send-email-vaurora@redhat.com> <1256152779-10054-11-git-send-email-vaurora@redhat.com> <1256152779-10054-12-git-send-email-vaurora@redhat.com> <1256152779-10054-13-git-send-email-vaurora@redhat.com> <1256152779-10054-14-git-send-email-vaurora@redhat.com> <1256152779-10054-15-git-send-email-vaurora@redhat.com> <1256152779-10054-16-git-send-email-vaurora@redhat.com> <1983FB3A-C88F-4EF4-A2E1-8B18DF97F0AB@sun.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1983FB3A-C88F-4EF4-A2E1-8B18DF97F0AB@sun.com>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 26 Oct 2009 22:17:03 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:36309 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752538AbZJ0CRC (ORCPT
+	<rfc822;groupwise-PMullaney@novell.com;0:0>);
+	Mon, 26 Oct 2009 22:17:02 -0400
+From: Patrick Mullaney <pmullaney@novell.com>
+Subject: [PATCH] vbus-enet: fix l4ro pool non-atomic allocations in softirq
+	context
+To: linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net
+Date: Mon, 26 Oct 2009 22:17:01 -0400
+Message-ID: <20091027021701.20826.67034.stgit@mimic.site>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2009 at 03:17:38PM -0600, Andreas Dilger wrote:
-> On 2009-10-21, at 13:19, Valerie Aurora wrote:
-> >This patch adds whiteout support to EXT2. A whiteout is an empty  
-> >directory
-> >entry (inode == 0) with the file type set to EXT2_FT_WHT. Therefore it
-> >allocates space in directories. Due to being implemented as a  
-> >filetype it is
-> >necessary to have the EXT2_FEATURE_INCOMPAT_FILETYPE flag set.
-> >
-> >diff --git a/include/linux/ext2_fs.h b/include/linux/ext2_fs.h
-> >index 121720d..bd10826 100644
-> >--- a/include/linux/ext2_fs.h
-> >+++ b/include/linux/ext2_fs.h
-> >@@ -189,6 +189,7 @@ struct ext2_group_desc
-> >+#define EXT2_OPAQUE_FL			0x00040000
-> 
-> Please check in the upstream e2fsprogs ext2_fs.h before defining new  
-> flag
-> values for ext2/3/4.  In this case, 0x40000 conflicts with  
-> EXT4_HUGE_FILE_FL,
-> which is of course bad.
-> 
-> 
-> >@@ -503,10 +504,12 @@ struct ext2_super_block {
-> >#define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
-> >+#define EXT2_FEATURE_INCOMPAT_WHITEOUT		0x0020
-> 
-> This one doesn't conflict, probably due to luck, because 0x0040-0x0200  
-> are
-> already in use for other features.  I'm not sure if 0x0020 was  
-> reserved for
-> some other use, or just skipped to avoid potential conflicts.
+The current code exhibits odd behavior in the guest when receiving L4RO
+packets. This was tracked down to the improper allocation of
+GFP_KERNEL memory from softirq context
 
-Thanks for reviewing!  I'll fix that in the next rev.
 
--VAL
+Signed-off-by: Patrick Mullaney <pmullaney@novell.com>
+---
+
+ drivers/net/vbus-enet.c |   20 ++++++++++++--------
+ 1 files changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/vbus-enet.c b/drivers/net/vbus-enet.c
+index 228c366..6aaee1c 100644
+--- a/drivers/net/vbus-enet.c
++++ b/drivers/net/vbus-enet.c
+@@ -182,11 +182,11 @@ rxdesc_alloc(struct vbus_enet_priv *priv, struct ioq_ring_desc *desc, size_t len
+ }
+ 
+ static void
+-rx_pageq_refill(struct vbus_enet_priv *priv)
++rx_pageq_refill(struct vbus_enet_priv *priv, gfp_t gfp_mask)
+ {
+ 	struct ioq *ioq = priv->l4ro.pageq.queue;
+ 	struct ioq_iterator iter;
+-	int ret;
++	int ret, added = 0;
+ 
+ 	if (ioq_full(ioq, ioq_idxtype_inuse))
+ 		/* nothing to do if the pageq is already fully populated */
+@@ -202,11 +202,14 @@ rx_pageq_refill(struct vbus_enet_priv *priv)
+ 	 * Now populate each descriptor with an empty page
+ 	 */
+ 	while (!iter.desc->sown) {
+-		struct page *page;
++		struct page *page = NULL;
++
++		page = alloc_page(gfp_mask);
+ 
+-		page = alloc_page(GFP_KERNEL);
+-		BUG_ON(!page);
++		if (!page)
++			break;
+ 
++		added = 1;
+ 		iter.desc->cookie = (u64)page;
+ 		iter.desc->ptr    = (u64)__pa(page_address(page));
+ 		iter.desc->len    = PAGE_SIZE;
+@@ -215,7 +218,8 @@ rx_pageq_refill(struct vbus_enet_priv *priv)
+ 		BUG_ON(ret < 0);
+ 	}
+ 
+-	ioq_signal(ioq, 0);
++	if (added)
++		ioq_signal(ioq, 0);
+ }
+ 
+ static void
+@@ -271,7 +275,7 @@ rx_setup(struct vbus_enet_priv *priv)
+ 	}
+ 
+ 	if (priv->l4ro.available)
+-		rx_pageq_refill(priv);
++		rx_pageq_refill(priv, GFP_KERNEL);
+ }
+ 
+ static void
+@@ -602,7 +606,7 @@ vbus_enet_l4ro_import(struct vbus_enet_priv *priv, struct ioq_ring_desc *desc)
+ 	struct skb_shared_info *sinfo = skb_shinfo(skb);
+ 	int i;
+ 
+-	rx_pageq_refill(priv);
++	rx_pageq_refill(priv, GFP_ATOMIC);
+ 
+ 	if (!vsg->len)
+ 		/*
+
