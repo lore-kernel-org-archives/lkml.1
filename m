@@ -1,146 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932400AbZJ0UoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932342AbZJ0Ux1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932400AbZJ0UoV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932385AbZJ0UoM
+	id S932342AbZJ0Ux1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932281AbZJ0Ux0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:44:12 -0400
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:18708 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932375AbZJ0UoJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:44:09 -0400
-X-Trace: 279973979/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.36.94/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.36.94
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgkBAOf45kpPRSRe/2dsb2JhbAAI2iKEPwQ
-X-IronPort-AV: E=Sophos;i="4.44,634,1249254000"; 
-   d="scan'208";a="279973979"
-Date: Tue, 27 Oct 2009 20:44:16 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: vedran.furac@gmail.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kosaki.motohiro@jp.fujitsu.com, minchan.kim@gmail.com,
-       akpm@linux-foundation.org, rientjes@google.com, aarcange@redhat.com
-Subject: Re: Memory overcommit
-In-Reply-To: <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0910271843510.11372@sister.anvils>
-References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com>
- <hb2cfu$r08$2@ger.gmane.org> <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com>
- <4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
- <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 27 Oct 2009 16:53:26 -0400
+Received: from kroah.org ([198.145.64.141]:51353 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932081AbZJ0Ux0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 16:53:26 -0400
+Date: Tue, 27 Oct 2009 13:44:45 -0700
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>
+Subject: Re: staging/dream: add gpio and pmem support
+Message-ID: <20091027204445.GA28878@kroah.com>
+References: <20091022091333.GA31023@elf.ucw.cz>
+ <20091026234332.GB26583@kroah.com>
+ <20091027001702.GA5019@elf.ucw.cz>
+ <20091027030039.GA6195@kroah.com>
+ <20091027081921.GG5019@elf.ucw.cz>
+ <20091027165750.GA24477@kroah.com>
+ <20091027193330.GB19379@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091027193330.GB19379@elf.ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Oct 2009, KAMEZAWA Hiroyuki wrote:
-> Sigh, gnome-session has twice value of mmap(1G).
-> Of course, gnome-session only uses 6M bytes of anon.
-> I wonder this is because gnome-session has many children..but need to
-> dig more. Does anyone has idea ?
+On Tue, Oct 27, 2009 at 08:33:30PM +0100, Pavel Machek wrote:
+> Hi!
+> 
+> > > Could we perhaps use -I to let it build before I find time to do
+> > > search&replace of 100 #includes? Yes, I'm working on that, but no, it
+> > > obviously does not progress as fast as I expected...
+> > > 
+> > > Add missing files/includes neccessary for Dream compilation.
+> > >     
+> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> > 
+> > Ick, no.  I'm not going to take the wakelock and other header files that
+> > are "generic" to android into the dream subdir.  That's not ok.
+> 
+> What is so wrong with wakelocks? They are just nops in this case.
 
-When preparing KSM unmerge to handle OOM, I looked at how the precedent
-was handled by running a little program which mmaps an anonymous region
-of the same size as physical memory, then tries to mlock it.  The
-program was such an obvious candidate to be killed, I was shocked
-by the poor decisions the OOM killer made.  Usually I ran it with
-mem=512M, with gnome and firefox active.  Often the OOM killer killed
-it right the first time, but went wrong when I tried it a second time
-(I think that's because of what's already swapped out the first time).
+Are they really?  Then why is the whole large file needed?
 
-I built up a patchset of fixes, but once I came to split them up for
-submission, not one of them seemed entirely satisfactory; and Andrea's
-fix to the KSM/mlock deadlock forced me to abandon even the first of
-the patches (we've since then fixed the way munlocking behaves, so
-in theory could revisit that; but Andrea disliked what I was trying
-to do there in KSM for other reasons, so I've not touched it since).
-I had to get on with KSM, so I set it all aside: none of the issues
-was a recent regression.
+> > If this code requires this mess to build, I think we should just delete
+> > the whole thing and start over with patches that add code that can
+> > actually build properly.
+> 
+> Well, crap is easier to clean up when it compiles (and is in tree --
+> that's point of staging -- right?), and it is not particulary bad crap
+> in this case.
+> 
+> > Any objection to that?
+> 
+> Yes; dropping the code now will not help anything. Merging it to this
+> point was not easy, and forcing me to redo it will just delay me from
+> cleaning it up.
+> 
+> Merging crappy Windows driver to staging is easy:
+> 
+> 1) you verify it is GPL
+> 
+> 2) you submit it
 
-I did briefly wonder about the reliance on total_vm which you're now
-looking into, but didn't touch that at all.  Let me describe those
-issues which I did try but fail to fix - I've no more time to deal
-with them now than then, but ought at least to mention them to you.
+Wait, it has to BUILD!  This code has never been able to be built.  Only
+after I disabled it from the CONFIG_ANDROID have I noticed this, which
+is my fault.  But it needs to get fixed, and taking a bunch of code in
+addition to the mess we have now, seems like the wrong way to do it.
 
-1.  select_bad_process() tries to avoid killing another process while
-there's still a TIF_MEMDIE, but its loop starts by skipping !p->mm
-processes.  However, p->mm is set to NULL well before p reaches
-exit_mmap() to actually free the memory, and there may be significant
-delays in between (I think exit_robust_list() gave me a hang at one
-stage).  So in practice, even when the OOM killer selects the right
-process to kill, there can be lots of collateral damage from it not
-waiting long enough for that process to give up its memory.
+> [and then, clean it in tree].
+> 
+> I tried same process with dream support:
+> 
+> 1) driver was GPLed
+> 
+> 2) I tried submitting
 
-I tried to deal with that by moving the TIF_MEMDIE test up before
-the p->mm test, but adding in a check on p->exit_state:
-		if (test_tsk_thread_flag(p, TIF_MEMDIE) &&
-		    !p->exit_state)
-			return ERR_PTR(-1UL);
-But this is then liable to hang the system if there's some reason
-why the selected process cannot proceed to free its memory (e.g.
-the current KSM unmerge case).  It needs to wait "a while", but
-give up if no progress is made, instead of hanging: originally
-I thought that setting PF_MEMALLOC more widely in page_alloc.c,
-and giving up on the TIF_MEMDIE if it was waiting in PF_MEMALLOC,
-would deal with that; but we cannot be sure that waiting of memory
-is the only reason for a holdup there (in the KSM unmerge case it's
-waiting for an mmap_sem, and there may well be other such cases).
+It did not BUILD!!!
 
-2.  I started out running my mlock test program as root (later
-switched to use "ulimit -l unlimited" first).  But badness() reckons
-CAP_SYS_ADMIN or CAP_SYS_RESOURCE is a reason to quarter your points;
-and CAP_SYS_RAWIO another reason to quarter your points: so running
-as root makes you sixteen times less likely to be killed.  Quartering
-is anyway debatable, but sixteenthing seems utterly excessive to me.
+> 3) I was told to split it according to authors. In Windows driver
+> world, that would be show-stopper. Thanks to Google support, I figured
+> authors.
+> 
+> 4) I'm told that -I is not acceptable, not even inside
+> staging. Windows drivers regulary have way worse build system
+> abuses. (Of course, those need to be fixed before merging into kernel
+> proper; fortunately they are easy to do incrementally).
 
-I moved the CAP_SYS_RAWIO test in with the others, so it does no
-more than quartering; but is quartering appropriate anyway?  I did
-wonder if I was right to be "subverting" the fine-grained CAPs in
-this way, but have since seen unrelated mail from one who knows
-better, implying they're something of a fantasy, that su and sudo
-are indeed what's used in the real world.  Maybe this patch was okay.
+I have never taken a driver in staging that was not self-contained or
+needed any -I funkyness.
 
-3.  badness() has a comment above it which says:  
- * 5) we try to kill the process the user expects us to kill, this
- *    algorithm has been meticulously tuned to meet the principle
- *    of least surprise ... (be careful when you change it)
-But Andrea's 2.6.11 86a4c6d9e2e43796bb362debd3f73c0e3b198efa (later
-refined by Kurt's 2.6.16 9827b781f20828e5ceb911b879f268f78fe90815)
-adds plenty of surprise there, by trying to factor children into the
-calculation.  Intended to deal with forkbombs, but any reasonable
-process whose purpose is to fork children (e.g. gnome-session)
-becomes very vulnerable.  And whereas badness() itself goes on to
-refine the total_vm points by various adjustments peculiar to the
-process in question, those refinements have been ignored when
-adding the child's total_vm/2.  (Andrea does remark that he'd
-rather have rewritten badness() from scratch.)
+> Now, I see that wakelocks are show-stopper for merging into kernel
+> proper, but what is the problem for staging? We merged drivers with
+> OS_MEMORY_ALLOCATE(); wakelocks are just nops in this case.
+> 
+> Could we please clean this driver in-tree? (Wakelocks are already nops
+> due to #ifdef magic, cleaning them incrementally is easy.)
 
-I tried to fix this by moving the PF_OOM_ORIGIN (was PF_SWAPOFF)
-part of the calculation up to select_bad_process(), making a
-solo_badness() function which makes all those adjustments to
-total_vm, then badness() itself a simple function adding half
-the children's solo_badness()es to the process' own solo_badness().
-But probably lots more needs doing - Andrea's rewrite?
+With this patch, will it build properly?
 
-4.  In some cases those children are sharing exactly the same mm,
-yet its total_vm is being added again and again to the points:
-I had a nasty inner loop searching back to see if we'd already
-counted this mm (but then, what if the different tasks sharing
-the mm deserved different adjustments to the total_vm?).
+> (Plus, of course I'd like some help, but google people seem very
+> silent :-( ).
 
+Google has abandonded upstream Android development, which is a very sad
+state of being :(
 
-I hope these notes help someone towards a better solution
-(and be prepared to discover more on the way).  I agree with
-Vedran that the present behaviour is pretty unimpressive, and
-I'm puzzled as to how people can have been tinkering with
-oom_kill.c down the years without seeing any of this.
+thanks,
 
-Hugh
+greg k-h
