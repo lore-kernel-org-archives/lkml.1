@@ -1,180 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbZJ0Oyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbZJ0PBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754769AbZJ0Oyg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 10:54:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbZJ0Oyf
+	id S1754784AbZJ0PBX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 11:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbZJ0PBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 10:54:35 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:34988 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753892AbZJ0Oye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 10:54:34 -0400
-Date: Tue, 27 Oct 2009 14:54:35 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Frans Pop <elendil@planet.nl>
-Cc: Chris Mason <chris.mason@oracle.com>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Message-ID: <20091027145435.GG8900@csn.ul.ie>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <20091019161815.GA11487@think> <20091020104839.GC11778@csn.ul.ie> <200910262206.13146.elendil@planet.nl>
+	Tue, 27 Oct 2009 11:01:22 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:48651 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752020AbZJ0PBV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 11:01:21 -0400
+Date: Tue, 27 Oct 2009 10:56:31 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Greg KH <greg@kroah.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Holger Schurig <hs4233@mail.mn-solutions.de>
+Subject: Re: linux-next: manual merge of the staging tree with the
+	net/wireless tree
+Message-ID: <20091027145631.GB15566@tuxdriver.com>
+References: <20091027183503.5c398311.sfr@canb.auug.org.au> <20091027141325.GA17352@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200910262206.13146.elendil@planet.nl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20091027141325.GA17352@kroah.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 10:06:09PM +0100, Frans Pop wrote:
-> On Tuesday 20 October 2009, Mel Gorman wrote:
-> > I've attached a patch below that should allow us to cheat. When it's
-> > applied, it outputs who called congestion_wait(), how long the timeout
-> > was and how long it waited for. By comparing before and after sleep
-> > times, we should be able to see which of the callers has significantly
-> > changed and if it's something easily addressable.
+On Tue, Oct 27, 2009 at 07:13:25AM -0700, Greg KH wrote:
+> On Tue, Oct 27, 2009 at 06:35:03PM +1100, Stephen Rothwell wrote:
+> > Hi Greg,
+> > 
+> > Today's linux-next merge of the staging tree got conflicts in
+> > drivers/net/wireless/Kconfig between commits
+> > 3d23e349d807177eaf519d444677cee86b1a04cf ("wext: refactor") and
+> > 0465af8e03bdc6cd0b49dc5548671387a8674b69 ("libertas: separate libertas'
+> > Kconfig in it's own file") from the net/wireless tree and various commits
+> > ("... move driver to staging") from the staging tree.
+> > 
+> > I fixed it up (see below) and added a merge fixup (see further below) and
+> > can carry these as necessary (though it may be easier for everyone (i.e.
+> > me :-)) if these 4 staging tree commits are moved to the wireless
+> > tree ...).
 > 
-> The results from this look fairly interesting (although I may be a bad 
-> judge as I don't really know what I'm looking at ;-).
-> 
-> I've tested with two kernels:
-> 1) 2.6.31.1: 1 test run
-> 2) 2.6.31.1 + congestion_wait() reverts: 2 test runs
-> 
-> The 1st kernel had the expected "freeze" while reading commits in gitk; 
-> reading commits with the 2nd kernel was more fluent.
-> I did 2 runs with the 2nd kernel as the first run had a fairly long music 
-> skip and more SKB errors than expected. The second run was fairly normal 
-> with no music skips at all even though it had a few SKB errors.
-> 
-> Data for the tests:
-> 				1st kernel	2nd kernel 1	2nd kernel 2
-> end reading commits		1:15		1:00		0:55
->   "freeze"			yes		no		no
-> branch data shown		1:55		1:15		1:10
-> system quiet			2:25		1:50		1:45
-> # SKB allocation errors		10		53		5
-> 
-> Note that the test is substantially faster with the 2nd kernel and that the 
-> SKB errors don't really affect the duration of the test.
-> 
+> John, I have no objection to these 4 commits going through your tree, if
+> it will make these types of merge issues go away.  If so, I have 4 more
+> patches that should be added, adding the TODO files for the drivers.  I
+> can send them to you if you want to take them.
 
-Ok. I think that despite expectations, the writeback changes have
-changed the timing significantly enough to be worth examining closer.
+Sure, that would be fine.  I did get copies of the TODO addition
+patches, but I deleted them as I had not yet seen this. :-(  Could
+you resend them to me?
 
-> 
-> - without the revert 'background_writeout' is called a lot less frequently,
->   but when it's called it gets long delays
-> - without the revert you have 'wb_kupdate', which is relatively expensive
-> - with the revert 'shrink_list' is relatively expensive, although not
->   really in absolute terms
-> 
+Thanks!
 
-Lets look at the callers that waited in congestion_wait() for at least
-25 jiffies.
-
-2.6.31.1-async-sync-congestion-wait i.e. vanilla kernel
-generated with: cat kern.log_1_test | awk -F ] '{print $2}' | sort -k 5 -n | uniq -c
-     24  background_writeout  congestion_wait sync=0 delay 25 timeout 25
-    203  kswapd               congestion_wait sync=0 delay 25 timeout 25
-      5  shrink_list          congestion_wait sync=0 delay 25 timeout 25
-    155  try_to_free_pages    congestion_wait sync=0 delay 25 timeout 25
-    145  wb_kupdate           congestion_wait sync=0 delay 25 timeout 25
-      2  kswapd               congestion_wait sync=0 delay 26 timeout 25
-      8  wb_kupdate           congestion_wait sync=0 delay 26 timeout 25
-      1  try_to_free_pages    congestion_wait sync=0 delay 54 timeout 25
-
-2.6.31.1-write-congestion-wait i.e. kernel with patch reverted
-generated with: cat kern.log_2.1_test | awk -F ] '{print $2}' | sort -k 5 -n | uniq -c
-      2  background_writeout  congestion_wait rw=1 delay 25 timeout 25
-    188  kswapd               congestion_wait rw=1 delay 25 timeout 25
-     14  shrink_list          congestion_wait rw=1 delay 25 timeout 25
-    181  try_to_free_pages    congestion_wait rw=1 delay 25 timeout 25
-      5  kswapd               congestion_wait rw=1 delay 26 timeout 25
-     10  try_to_free_pages    congestion_wait rw=1 delay 26 timeout 25
-      3  try_to_free_pages    congestion_wait rw=1 delay 27 timeout 25
-      1  kswapd               congestion_wait rw=1 delay 29 timeout 25
-      1  __alloc_pages_nodemask congestion_wait rw=1 delay 30 timeout 5
-      1  try_to_free_pages    congestion_wait rw=1 delay 31 timeout 25
-      1  try_to_free_pages    congestion_wait rw=1 delay 35 timeout 25
-      1  kswapd               congestion_wait rw=1 delay 51 timeout 25
-      1  try_to_free_pages    congestion_wait rw=1 delay 56 timeout 25
-
-So, wb_kupdate and background_writeout are the big movers in terms of waiting,
-not the direct reclaimers which is what we were expecting. Of those big
-movers, wb_kupdate is the most interested because compare the following
-
-$ cat kern.log_2.1_test | awk -F ] '{print $2}' | sort -k 5 -n | uniq -c | grep wb_kup
-[ no output ]
-$ $ cat kern.log_1_test | awk -F ] '{print $2}' | sort -k 5 -n | uniq -c | grep wb_kup
-      1  wb_kupdate           congestion_wait sync=0 delay 15 timeout 25
-      1  wb_kupdate           congestion_wait sync=0 delay 23 timeout 25
-    145  wb_kupdate           congestion_wait sync=0 delay 25 timeout 25
-      8  wb_kupdate           congestion_wait sync=0 delay 26 timeout 25
-
-The vanilla kernel is not waiting in wb_kupdate at all.
-
-Jens, before the congestion_wait() changes, wb_kupdate was waiting on
-congestion and afterwards it's not. Furthermore, look at the number of pages
-that are queued for writeback in the two page allocation failure reports.
-
-without-revert:	writeback:65653
-with-revert:	writeback:21713
-
-So, after the move to async/sync, a lot more pages are getting queued
-for writeback - more than three times the number of pages are queued for
-writeback with the vanilla kernel. This amount of congestion might be why
-direct reclaimers and kswapd's timings have changed so much.
-
-Chris Mason hinted at this but I didn't quite "get it" at the time but is it
-possible that writeback_inodes() is converting what is expected to be async
-IO into sync IO? One way of checking this is if Frans could test the patch
-below that makes wb_kupdate wait on sync instead of async.
-
-If this makes a difference, I think the three main areas of trouble we
-are now seeing are
-
-	1. page allocator regressions - mostly fixed hopefully
-	2. page writeback change in timing - theory yet to be confirmed
-	3. drivers using more atomics - iwlagn specific, being dealt with
-
-Of course, the big problem is if the changes are due to major timing
-differences in page writeback, then mainline is a totally different
-shape of problem as pdflush has been replaced there.
-
-==== 
-Have wb_kupdate wait on sync IO congestion instead of async
-
-wb_kupdate is expected to only have queued up pages for async IO.
-However, something screwy is happening because it never appears to go to
-sleep. Frans, can you test with this patch instead of the revert please?
-Preferably, keep the verbose-congestion_wait patch applied so we can
-still get an idea who is going to sleep and for how long when calling
-congestion_wait. thanks
-
-Not-signed-off-hacket-job: Mel Gorman <mel@csn.ul.ie>
---- 
-
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 81627eb..cb646dd 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -787,7 +787,7 @@ static void wb_kupdate(unsigned long arg)
- 		writeback_inodes(&wbc);
- 		if (wbc.nr_to_write > 0) {
- 			if (wbc.encountered_congestion || wbc.more_io)
--				congestion_wait(BLK_RW_ASYNC, HZ/10);
-+				congestion_wait(BLK_RW_SYNC, HZ/10);
- 			else
- 				break;	/* All the old data is written */
- 		}
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
