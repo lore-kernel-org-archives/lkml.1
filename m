@@ -1,115 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932115AbZJ0UZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbZJ0UK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932115AbZJ0UZY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756794AbZJ0UZX
+	id S1756771AbZJ0UK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbZJ0UK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:25:23 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46251 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756793AbZJ0UZW (ORCPT
+	Tue, 27 Oct 2009 16:10:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55212 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756739AbZJ0UKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:25:22 -0400
-Subject: Re: [PATCH 1/9] tracing: recordmcount.pl Amend the documentation
- according to the implementation
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Li Hong <lihong.hi@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20091027065421.GA22032@uhli>
-References: <20091027065421.GA22032@uhli>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 27 Oct 2009 16:04:22 -0400
-Message-Id: <1256673862.26028.430.camel@gandalf.stny.rr.com>
+	Tue, 27 Oct 2009 16:10:25 -0400
+Date: Tue, 27 Oct 2009 13:09:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org\"" <linux-mm@kvack.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Kernel Testers List <kernel-testers@vger.kernel.org>, Mel Gorman <mel@csn.ul.ie>"@linux-foundation.org
+Subject: Re: [PATCH 2/3] page allocator: Do not allow interrupts to use
+ ALLOC_HARDER
+Message-Id: <20091027130924.fa903f5a.akpm@linux-foundation.org>
+In-Reply-To: <1256650833-15516-3-git-send-email-mel@csn.ul.ie>
+References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie>
+	<1256650833-15516-3-git-send-email-mel@csn.ul.ie>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 14:54 +0800, Li Hong wrote:
-> In documentation, we says we will use the first function in a section as a
-> reference. Actually, the algorithm is: choose the first global function we
-> meet as a reference. If there is none, choose the first local one. So let the
-> documentation consistent to the code.
+On Tue, 27 Oct 2009 13:40:32 +0000
+Mel Gorman <mel@csn.ul.ie> wrote:
+
+> Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
+> slightly by allowing rt_tasks that are handling an interrupt to set
+> ALLOC_HARDER. This patch brings the watermark logic more in line with
+> 2.6.30.
 > 
-> Also add several clarifications.
+> [rientjes@google.com: Spotted the problem]
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  mm/page_alloc.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Signed-off-by: Li Hong <lihong.hi@gmail.com>
-> 
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 090d300..ac908b3 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -6,73 +6,88 @@
->  #                   all the offsets to the calls to mcount.
->  #
->  #
-> -# What we want to end up with is a section in vmlinux called
-> -# __mcount_loc that contains a list of pointers to all the
-> -# call sites in the kernel that call mcount. Later on boot up, the kernel
-> -# will read this list, save the locations and turn them into nops.
-> -# When tracing or profiling is later enabled, these locations will then
-> -# be converted back to pointers to some function.
-> +# What we want to end up with this is a data area in .init.data in vmlinux 
-> +# that contains a list of pointers to all the call sites in the kernel that
-> +# call mcount. Later on boot up, the kernel will read this list, save the 
-> +# locations and turn them into nops. When tracing or profiling is later 
-> +# enabled, these locations will then be converted back to pointers to 
-> +# some function.
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index dfa4362..7f2aa3e 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1769,7 +1769,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
+>  		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+>  		 */
+>  		alloc_flags &= ~ALLOC_CPUSET;
+> -	} else if (unlikely(rt_task(p)))
+> +	} else if (unlikely(rt_task(p)) && !in_interrupt())
+>  		alloc_flags |= ALLOC_HARDER;
+>  
+>  	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
 
-Yes it is in .init.data, but the point is that we called it __mcount_loc
-in the object files. I don't want to blindly throw that name away.
+What are the runtime-observeable effects of this change?
 
-Something to the lines of this.
-
-Each object file will have a section called __mcount_loc that will hold
-the list of pointers to mcount callers. After final linking, the vmlinux
-will have within .init.data the list of all callers to mcount between
-_start_mcount_loc and __stop_mcount_loc.
-
-
->  #
->  # This is no easy feat. This script is called just after the original
->  # object is compiled and before it is linked.
->  #
-> -# The references to the call sites are offsets from the section of text
-> -# that the call site is in. Hence, all functions in a section that
-> -# has a call site to mcount, will have the offset from the beginning of
-> -# the section and not the beginning of the function.
-> +# When parse this object file using 'objdump', the references to the call 
-> +# sites are offsets from the section that the call site is in. Hence, all 
-> +# functions in a section that  has a call site to mcount, will have the 
-                                ^^
-                            double space
-
-> +# offset from the beginning of the section and not the beginning of the 
-> +# function.
->  #
-> -# The trick is to find a way to record the beginning of the section.
-> -# The way we do this is to look at the first function in the section
-> -# which will also be the location of that section after final link.
-> +# But where this section will reside finally in vmlinx is undetermined at 
-> +# this point. So we can't use this kind of offsets to record the final
-> +# address of this call site.
-> +#
-> +# The trick is to change the call offset refering the start of a section to
-                                         referring
-
-> +# refering a function symbol in this section. During the link step, 'ld' will
-     referring
-
-
-The rest looks good.
-
--- Steve
-
-> +# compute the final address according to the information we record.
-> +# 
->  # e.g.
->  #
->  #  .section ".sched.text", "ax"
-> -#
+The description is a bit waffly-sounding for a -stable backportable
+thing, IMO.  What reason do the -stable maintainers and users have to
+believe that this patch is needed, and an improvement?
 
