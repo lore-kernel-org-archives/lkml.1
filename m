@@ -1,91 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbZJ0VVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932429AbZJ0VWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932409AbZJ0VVl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 17:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932303AbZJ0VVk
+	id S932429AbZJ0VWb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 17:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932369AbZJ0VWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 17:21:40 -0400
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:36151 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932300AbZJ0VVk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 17:21:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Au24U+yM3cdFWPkoBP36XdUPlGFO31xH9zxu27VAEV4OjljVlBI8SEqY0qONXM82e8
-         9TMnFnEYou51deKqFqyyakVpU6Cz8UkueLSCe9zm1iDGItefVGKnoLnaoAtjCfgfgNPh
-         5gbc0CgP/oCnPzmzLenugpf9QQGM+hkkR41ZQ=
-Message-ID: <4AE76463.6010404@gmail.com>
-Date: Tue, 27 Oct 2009 22:21:39 +0100
-From: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
-MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: linux-kernel@vger.kernel.org, mjg@redhat.com, eric@anholt.net
-Subject: Re: no video output after suspend after "drm/i915: force mode set
- at lid open time"
-References: <4AE4BBBC.2070809@gmail.com> <20091026090548.2d4e20a9@jbarnes-g45>
-In-Reply-To: <20091026090548.2d4e20a9@jbarnes-g45>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Oct 2009 17:22:30 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:49505 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932312AbZJ0VW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 17:22:29 -0400
+Date: Tue, 27 Oct 2009 17:22:06 -0400
+From: Valerie Aurora <vaurora@redhat.com>
+To: Eric Paris <eparis@parisplace.org>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 10/41] whiteout: Add vfs_whiteout() and whiteout inode operation
+Message-ID: <20091027212205.GB2132@shell>
+References: <1256152779-10054-3-git-send-email-vaurora@redhat.com> <1256152779-10054-4-git-send-email-vaurora@redhat.com> <1256152779-10054-5-git-send-email-vaurora@redhat.com> <1256152779-10054-6-git-send-email-vaurora@redhat.com> <1256152779-10054-7-git-send-email-vaurora@redhat.com> <1256152779-10054-8-git-send-email-vaurora@redhat.com> <1256152779-10054-9-git-send-email-vaurora@redhat.com> <1256152779-10054-10-git-send-email-vaurora@redhat.com> <1256152779-10054-11-git-send-email-vaurora@redhat.com> <7e0fb38c0910270736h13860a3ckf2690a76f99b35be@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7e0fb38c0910270736h13860a3ckf2690a76f99b35be@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse,
-
-Jesse Barnes ha scritto:
-> On Sun, 25 Oct 2009 21:57:32 +0100
-> Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com> wrote:
+On Tue, Oct 27, 2009 at 10:36:18AM -0400, Eric Paris wrote:
+> On Wed, Oct 21, 2009 at 3:19 PM, Valerie Aurora <vaurora@redhat.com> wrote:
+> > From: Jan Blunck <jblunck@suse.de>
+> >
+> > Simply white-out a given directory entry. This functionality is usually used
+> > in the sense of unlink. Therefore the given dentry can still be in-use and
+> > contains an in-use inode. The filesystems inode operation has to do what
+> > unlink or rmdir would in that case. Since the dentry still might be in-use
+> > we have to provide a fresh unhashed dentry that is used as the whiteout
+> > dentry instead. The given dentry is dropped and the whiteout dentry is
+> > rehashed instead.
+> >
+> > Signed-off-by: Jan Blunck <jblunck@suse.de>
+> > Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+> > Signed-off-by: Valerie Aurora <vaurora@redhat.com>
+> > ---
+> > ?fs/dcache.c ? ? ? ? ? ?| ? ?4 +-
+> > ?fs/namei.c ? ? ? ? ? ? | ?104 ++++++++++++++++++++++++++++++++++++++++++++++++
+> > ?include/linux/dcache.h | ? ?6 +++
+> > ?include/linux/fs.h ? ? | ? ?3 +
+> > ?4 files changed, 116 insertions(+), 1 deletions(-)
+> >
 > 
->> Hello,
->>
->> i lost video output, screen stays black, after suspend after commit 
->> c1c7af60892070e4b82ad63bbfb95ae745056de0 "drm/i915: force mode set at 
->> lid open time".
->>
->> I'm attaching my dmesg with 2.6.32-rc5 (actually
->> 964fe080d94db82a3268443e9b9ece4c60246414), my bisect log and my
->> config.
->>
->> git bisect response:
->>
->> c1c7af60892070e4b82ad63bbfb95ae745056de0 is the first bad commit
->> commit c1c7af60892070e4b82ad63bbfb95ae745056de0
->> Author: Jesse Barnes <jbarnes@virtuousgeek.org>
->> Date:   Thu Sep 10 15:28:03 2009 -0700
->>
->>      drm/i915: force mode set at lid open time
->>
-[snip]
+> > diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+> > index 30b93b2..7648b49 100644
+> > --- a/include/linux/dcache.h
+> > +++ b/include/linux/dcache.h
+> > @@ -183,6 +183,7 @@ d_iput: ? ? ? ? ? ? no ? ? ? ? ? ? ?no ? ? ? ? ? ? ?no ? ? ? yes
+> > ?#define DCACHE_INOTIFY_PARENT_WATCHED ?0x0020 /* Parent inode is watched by inotify */
+> >
+> > ?#define DCACHE_COOKIE ? ? ? ? ?0x0040 ?/* For use by dcookie subsystem */
+> > +#define DCACHE_WHITEOUT ? ? ? ? ? ? ? ?0x0080 ?/* This negative dentry is a whiteout */
+> >
+> > ?#define DCACHE_FSNOTIFY_PARENT_WATCHED 0x0080 /* Parent inode is watched by some fsnotify listener */
+> >
 > 
-> I wonder if this is the real problem...  This patch introduced an issue
-> that was fixed by 06891e27a9b5dba5268bb80e41a283f51335afe7 that could
-> cause a blank screen on lid open or resume, depending on how lid events
-> were delivered.  Should be easy enough to test though, you can remove
-> the whole
-> 
-> +       if (acpi_lid_open())
-> +               drm_helper_resume_force_mode(dev);
-> 
-> block and see if that also helps (in the current tree there's a lock
-> taken around the force_mode call, you'll need to remove those lines too
-> for testing).
+> I don't think you want 2 flags with the 0x0080 value.......   This
+> can't be right.
 
-So i've tried separately both this and the patch with the fix for 
-thinkpad (i have a samsung p460aa01 btw) with latest git and they have 
-not fixed the issue.
+This looks like a merge error I introduced during a rebase.  Thanks
+for catching it!
 
-+#if 0
-  	if (acpi_lid_open() && !dev_priv->suspended) {
-  		mutex_lock(&dev->mode_config.mutex);
-  		drm_helper_resume_force_mode(dev);
-  		mutex_unlock(&dev->mode_config.mutex);
-  	}
-+#endif
-
-thanks,
-riccardo
-
+-VAL
