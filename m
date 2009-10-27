@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbZJ0IYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756624AbZJ0I0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbZJ0IYA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 04:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZJ0IX7
+	id S1756624AbZJ0I0e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 04:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbZJ0I0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 04:23:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34616 "EHLO ogre.sisk.pl"
+	Tue, 27 Oct 2009 04:26:33 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60572 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756169AbZJ0IX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 04:23:58 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Bug #14299] oops in wireless, iwl3945 related?
-Date: Tue, 27 Oct 2009 09:25:50 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       reinette chatre <reinette.chatre@intel.com>
-References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.l8H.Xse5KB@chimera> <20091027004600.GD5019@elf.ucw.cz>
-In-Reply-To: <20091027004600.GD5019@elf.ucw.cz>
+	id S1756615AbZJ0I0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 04:26:31 -0400
+Date: Tue, 27 Oct 2009 09:26:35 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org
+Subject: Re: pci-express hotplug
+Message-ID: <20091027082635.GS10727@kernel.dk>
+References: <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca> <20091012150603.GK9228@kernel.dk> <20091012214854.GA14102@ldl.fc.hp.com> <20091013082903.GQ9228@kernel.dk> <20091013172731.GB22797@ldl.fc.hp.com> <20091014081309.GM9228@kernel.dk> <20091020190707.GA25615@ldl.fc.hp.com> <20091026105419.GA10727@kernel.dk> <20091027024841.GA30509@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910270925.50769.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091027024841.GA30509@ldl.fc.hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 October 2009, Pavel Machek wrote:
-> On Mon 2009-10-26 19:55:50, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.31.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14299
-> > Subject		: oops in wireless, iwl3945 related?
-> > Submitter	: Pavel Machek <pavel@ucw.cz>
-> > Date		: 2009-09-29 17:12 (28 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125424439725743&w=4
+On Mon, Oct 26 2009, Alex Chiang wrote:
+> * Jens Axboe <jens.axboe@oracle.com>:
+> > > > acpiphp: enable_slot - physical_slot = 1
+> > > > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+> > > > acpiphp: enable_slot - physical_slot = 2
+> > > > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+> > > > acpiphp: enable_slot - physical_slot = 6
+> > > > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+> > > > acpiphp: enable_slot - physical_slot = 7
+> > > > acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
+> > > 
+> > > Hm, so for some reason, firmware on your machine is telling us
+> > > that it doesn't think cards are present and/or enabled.
+> > > 
+> > > Unfortunately, I don't know why your firmware would be saying
+> > > that. We could add some more debug printks to see what firmware
+> > > thinks about your system... Or we could just wait and see what
+> > > happens after you get your hardware replaced.
 > 
-> It did not happen again, and there were some fixes in that area. (It
-> happened 2 times total). Close it, I guess?
+> Let's try and find out why firmware is telling us that we didn't
+> get ACPI_STA_ALL.
+> 
+> Can you please apply this debug patch and send the output? Again,
+> please modprobe with debug=1.
 
-OK, closing.
+acpiphp: enable_slot - physical_slot = 1
+power_on_slot
+  no _PS0
+  no _PS0
+  no _PS0
+  no _PS0
+  no _PS0
+  no _PS0
+  no _PS0
+  no _PS0
+get_slot_status
+  reading config space dvid 0xffffffff
+  reading config space dvid 0xffffffff
+  reading config space dvid 0xffffffff
+  reading config space dvid 0xffffffff
+  reading config space dvid 0xffffffff
+  reading config space dvid 0xffffffff
+  reading config space dvid 0xffffffff
+  reading config space dvid 0xffffffff
+acpiphp_glue: acpiphp_enable_slot: Slot status is not ACPI_STA_ALL
 
-Thanks,
-Rafael
+-- 
+Jens Axboe
+
