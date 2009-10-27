@@ -1,102 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZJ0M1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbZJ0McU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbZJ0M1K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 08:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998AbZJ0M1J
+	id S1754182AbZJ0McU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 08:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbZJ0McT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 08:27:09 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:44015 "EHLO gir.skynet.ie"
+	Tue, 27 Oct 2009 08:32:19 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52328 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753993AbZJ0M1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 08:27:07 -0400
-Date: Tue, 27 Oct 2009 12:27:07 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: David Rientjes <rientjes@google.com>, Frans Pop <elendil@planet.nl>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/5] page allocator: Always wake kswapd when restarting
-	an allocation attempt after direct reclaim failed
-Message-ID: <20091027122707.GD8900@csn.ul.ie>
-References: <20091026100019.2F4A.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0910260005500.15361@chino.kir.corp.google.com> <20091026222159.2F72.A69D9226@jp.fujitsu.com>
+	id S1754097AbZJ0McS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 08:32:18 -0400
+Date: Tue, 27 Oct 2009 13:32:21 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Tejun Heo <tj@kernel.org>, Jeff Mahoney <jeffm@suse.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64@vger.kernel.org
+Subject: [PATCH 1/2] percpu: allow pcpu_alloc() to be called with IRQs off
+Message-ID: <alpine.LSU.2.00.0910271328340.19847@wotan.suse.de>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091026222159.2F72.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 11:42:55AM +0900, KOSAKI Motohiro wrote:
-> > On Mon, 26 Oct 2009, KOSAKI Motohiro wrote:
-> > 
-> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > > index bf72055..5a27896 100644
-> > > --- a/mm/page_alloc.c
-> > > +++ b/mm/page_alloc.c
-> > > @@ -1899,6 +1899,12 @@ rebalance:
-> > >  	if (should_alloc_retry(gfp_mask, order, pages_reclaimed)) {
-> > >  		/* Wait for some write requests to complete then retry */
-> > >  		congestion_wait(BLK_RW_ASYNC, HZ/50);
-> > > +
-> > > +		/*
-> > > +		 * While we wait congestion wait, Amount of free memory can
-> > > +		 * be changed dramatically. Thus, we kick kswapd again.
-> > > +		 */
-> > > +		wake_all_kswapd(order, zonelist, high_zoneidx);
-> > >  		goto rebalance;
-> > >  	}
-> > >  
-> > 
-> > We're blocking to finish writeback of the directly reclaimed memory, why 
-> > do we need to wake kswapd afterwards?
-> 
-> the same reason of "goto restart" case. that's my intention.
-> if following scenario occur, it is equivalent that we didn't call wake_all_kswapd().
-> 
->   1. call congestion_wait()
->   2. kswapd reclaimed lots memory and sleep
->   3. another task consume lots memory
->   4. wakeup from congestion_wait()
-> 
-> IOW, if we falled into __alloc_pages_slowpath(), we naturally expect
-> next page_alloc() don't fall into slowpath. however if kswapd end to
-> its work too early, this assumption isn't true.
-> 
-> Is this too pessimistic assumption?
-> 
+pcpu_alloc() and pcpu_extend_area_map() perform a series of
+spin_lock_irq()/spin_unlock_irq() calls, which make them unsafe
+with respect to being called from contexts which have IRQs off.
 
-hmm.
+This patch converts the code to perform save/restore of flags instead,
+making pcpu_alloc() (or __alloc_percpu() respectively) to be called
+from early kernel startup stage, where IRQs are off.
 
-The reason it's not woken in both cases a second time was to match the
-behaviour of 2.6.30.  If the direct reclaimer goes asleep and another task
-consumes the memory the direct reclaimer freed then the greedy process should
-kick kswapd back awake again as free memory goes below the low watermark.
+This is needed for proper initialization of per-cpu rq_weight data from
+sched_init().
 
-However, if the greedy process was allocating order-0, it's possible that
-the watermarks for order-0 are being met leaving kswapd alone where as the
-high-order ones are not leaving kswapd to go back asleep or to reclaim at
-the wrong order.
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+---
+ mm/percpu.c |   25 +++++++++++++------------
+ 1 files changed, 13 insertions(+), 12 deletions(-)
 
-It's a functional change but I can add it to the list of things to
-consider. Thanks
-
+diff --git a/mm/percpu.c b/mm/percpu.c
+index 6af78c1..6b82bbf 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -366,7 +366,7 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
+  * RETURNS:
+  * 0 if noop, 1 if successfully extended, -errno on failure.
+  */
+-static int pcpu_extend_area_map(struct pcpu_chunk *chunk)
++static int pcpu_extend_area_map(struct pcpu_chunk *chunk, unsigned long *flags)
+ {
+ 	int new_alloc;
+ 	int *new;
+@@ -376,7 +376,7 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk)
+ 	if (chunk->map_alloc >= chunk->map_used + 2)
+ 		return 0;
+ 
+-	spin_unlock_irq(&pcpu_lock);
++	spin_unlock_irqrestore(&pcpu_lock, *flags);
+ 
+ 	new_alloc = PCPU_DFL_MAP_ALLOC;
+ 	while (new_alloc < chunk->map_used + 2)
+@@ -384,7 +384,7 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk)
+ 
+ 	new = pcpu_mem_alloc(new_alloc * sizeof(new[0]));
+ 	if (!new) {
+-		spin_lock_irq(&pcpu_lock);
++		spin_lock_irqsave(&pcpu_lock, *flags);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -393,7 +393,7 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk)
+ 	 * could have happened inbetween, so map_used couldn't have
+ 	 * grown.
+ 	 */
+-	spin_lock_irq(&pcpu_lock);
++	spin_lock_irqsave(&pcpu_lock, *flags);
+ 	BUG_ON(new_alloc < chunk->map_used + 2);
+ 
+ 	size = chunk->map_alloc * sizeof(chunk->map[0]);
+@@ -1047,6 +1047,7 @@ static void *pcpu_alloc(size_t size, size_t align, bool reserved)
+ 	struct pcpu_chunk *chunk;
+ 	const char *err;
+ 	int slot, off;
++	unsigned long flags;
+ 
+ 	if (unlikely(!size || size > PCPU_MIN_UNIT_SIZE || align > PAGE_SIZE)) {
+ 		WARN(true, "illegal size (%zu) or align (%zu) for "
+@@ -1055,13 +1056,13 @@ static void *pcpu_alloc(size_t size, size_t align, bool reserved)
+ 	}
+ 
+ 	mutex_lock(&pcpu_alloc_mutex);
+-	spin_lock_irq(&pcpu_lock);
++	spin_lock_irqsave(&pcpu_lock, flags);
+ 
+ 	/* serve reserved allocations from the reserved chunk if available */
+ 	if (reserved && pcpu_reserved_chunk) {
+ 		chunk = pcpu_reserved_chunk;
+ 		if (size > chunk->contig_hint ||
+-		    pcpu_extend_area_map(chunk) < 0) {
++		    pcpu_extend_area_map(chunk, &flags) < 0) {
+ 			err = "failed to extend area map of reserved chunk";
+ 			goto fail_unlock;
+ 		}
+@@ -1079,7 +1080,7 @@ restart:
+ 			if (size > chunk->contig_hint)
+ 				continue;
+ 
+-			switch (pcpu_extend_area_map(chunk)) {
++			switch (pcpu_extend_area_map(chunk, &flags)) {
+ 			case 0:
+ 				break;
+ 			case 1:
+@@ -1096,7 +1097,7 @@ restart:
+ 	}
+ 
+ 	/* hmmm... no space left, create a new chunk */
+-	spin_unlock_irq(&pcpu_lock);
++	spin_unlock_irqrestore(&pcpu_lock, flags);
+ 
+ 	chunk = alloc_pcpu_chunk();
+ 	if (!chunk) {
+@@ -1104,16 +1105,16 @@ restart:
+ 		goto fail_unlock_mutex;
+ 	}
+ 
+-	spin_lock_irq(&pcpu_lock);
++	spin_lock_irqsave(&pcpu_lock, flags);
+ 	pcpu_chunk_relocate(chunk, -1);
+ 	goto restart;
+ 
+ area_found:
+-	spin_unlock_irq(&pcpu_lock);
++	spin_unlock_irqrestore(&pcpu_lock, flags);
+ 
+ 	/* populate, map and clear the area */
+ 	if (pcpu_populate_chunk(chunk, off, size)) {
+-		spin_lock_irq(&pcpu_lock);
++		spin_lock_irqsave(&pcpu_lock, flags);
+ 		pcpu_free_area(chunk, off);
+ 		err = "failed to populate";
+ 		goto fail_unlock;
+@@ -1125,7 +1126,7 @@ area_found:
+ 	return __addr_to_pcpu_ptr(chunk->base_addr + off);
+ 
+ fail_unlock:
+-	spin_unlock_irq(&pcpu_lock);
++	spin_unlock_irqrestore(&pcpu_lock, flags);
+ fail_unlock_mutex:
+ 	mutex_unlock(&pcpu_alloc_mutex);
+ 	if (warn_limit) {
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.6.4.2
+
