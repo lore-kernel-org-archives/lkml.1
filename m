@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbZJ0QCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbZJ0QFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbZJ0QCn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 12:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755836AbZJ0QCm
+	id S1755870AbZJ0QFO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 12:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755836AbZJ0QFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 12:02:42 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:11016 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755822AbZJ0QCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 12:02:41 -0400
-Date: Tue, 27 Oct 2009 12:01:35 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, mingo@elte.hu,
-       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
-Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
-Message-ID: <20091027160135.GA2623@redhat.com>
-References: <20091025225342.007138f5@infradead.org>
+	Tue, 27 Oct 2009 12:05:13 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:59943 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753203AbZJ0QFL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 12:05:11 -0400
+Date: Tue, 27 Oct 2009 12:03:32 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Frans Pop <elendil@planet.nl>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+Message-ID: <20091027160332.GA7776@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Mel Gorman <mel@csn.ul.ie>, Frans Pop <elendil@planet.nl>,
+	David Rientjes <rientjes@google.com>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	Reinette Chatre <reinette.chatre@intel.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+	Mohamed Abbas <mohamed.abbas@intel.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	"John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
+ <20091019161815.GA11487@think>
+ <20091020104839.GC11778@csn.ul.ie>
+ <200910262206.13146.elendil@planet.nl>
+ <20091027145435.GG8900@csn.ul.ie>
+ <20091027155223.GL8900@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091025225342.007138f5@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091027155223.GL8900@csn.ul.ie>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt358.oracle.com [141.146.40.158]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4AE719F5.0183:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 25, 2009 at 10:53:42PM -0700, Arjan van de Ven wrote:
-> diff --git a/include/trace/events/vfs.h b/include/trace/events/vfs.h
-> new file mode 100644
-> index 0000000..21cf9fb
-> --- /dev/null
-> +++ b/include/trace/events/vfs.h
-> @@ -0,0 +1,53 @@
-> +#undef TRACE_SYSTEM
-> +#define TRACE_SYSTEM vfs
-> +
-> +#if !defined(_TRACE_VFS_H) || defined(TRACE_HEADER_MULTI_READ)
-> +#define _TRACE_VFS_H
-> +
-> +/*
-> + * Tracepoint for dirtying an inode:
-> + */
+On Tue, Oct 27, 2009 at 03:52:24PM +0000, Mel Gorman wrote:
+> 
+> > So, after the move to async/sync, a lot more pages are getting queued
+> > for writeback - more than three times the number of pages are queued for
+> > writeback with the vanilla kernel. This amount of congestion might be why
+> > direct reclaimers and kswapd's timings have changed so much.
+> > 
+> 
+> Or more accurately, the vanilla kernel has queued up a lot more pages for
+> IO than when the patch is reverted. I'm not seeing yet why this is.
 
-hi,
+[ sympathies over confusion about congestion...lots of variables here ]
 
-I would like to see us add docbook style comments for each added trace
-event. I've already started a docbook for this, and written comments for
-the irq tracepoints, in include/trace/events/irq.h. The docbook can be
-viewed at: http://www.kernel.org/doc/htmldocs/tracepoint/
+If wb_kupdate has been able to queue more writes it is because the
+congestion logic isn't stopping it.  We have congestion_wait(), but
+before calling that in the writeback paths it says: are you congested?
+and then backs off if the answer is yes.
 
-I think there has been some talk that the documentation should be
-included as part of the kernel, so that 'perf' can easily access this. I
-don't see how these docbook style comments wouldn't help with that
-effort as well. We already have scripts to parse these comments, and it
-probably wouldn't be hard to extend them to create a binary version, if
-needed. Further, as your above comment indicates, these types of
-comments want to be included in the source code above the TRACE_EVENTS
-macros.
+Ideally, direct reclaim will never do writeback.  We want it to be able
+to find clean pages that kupdate and friends have already processed.
 
-The initial lkml postings were:
+Waiting for congestion is a funny thing, it only tells us the device has
+managed to finish some IO or that a timeout has passed.  Neither event has
+any relation to figuring out if the IO for reclaimable pages has
+finished.
 
-1) http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/02647.html
-2) http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/02650.html
-3) http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/02648.html
-4) http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/02651.html
+One option is to have the VM remember the hashed waitqueue for one of
+the pages it direct reclaims and then wait on it.
 
-thanks,
-
--Jason
+-chris
 
