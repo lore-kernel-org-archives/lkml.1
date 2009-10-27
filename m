@@ -1,67 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbZJ0KBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbZJ0KDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752992AbZJ0KBi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 06:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbZJ0KBh
+	id S1752922AbZJ0KDY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 06:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZJ0KDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 06:01:37 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:42027 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752643AbZJ0KBg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 06:01:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=PyLARI9l5/wgwdVidZp4vTZmHYEQJbDxHnAztZ1JtkKqhwFi+yHJi3bBoLf4iiZxds
-         7XPus6F2CFxq79yNyQj7eJkQvwUnKc3jtWdixG3izpuUojOTnXD1rhR7xUAnJPwEHhHk
-         5gAMOPW1ohr0zrajxrb32EZ0tCqnytyIpckvY=
-Date: Tue, 27 Oct 2009 11:01:38 +0100
-From: Andreas Herrmann <herrmann.der.user@googlemail.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86, apic: Clear APIC Timer Initial Count Register on
- shutdown
-Message-ID: <20091027100138.GB30802@alberich.amd.com>
+	Tue, 27 Oct 2009 06:03:22 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44670 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752049AbZJ0KDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 06:03:21 -0400
+Date: Tue, 27 Oct 2009 11:03:24 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeff Mahoney <jeffm@suse.com>, Tejun Heo <tj@kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64@vger.kernel.org
+Subject: Re: Commit 34d76c41 causes linker errors on ia64 with NR_CPUS=4096
+In-Reply-To: <20091026201651.GD24682@elte.hu>
+Message-ID: <alpine.LSU.2.00.0910271044250.19847@wotan.suse.de>
+References: <4ADB967A.4080707@suse.com> <alpine.LRH.2.00.0910200356340.20992@twin.jikos.cz> <alpine.LRH.2.00.0910200651510.20992@twin.jikos.cz> <4ADD48D1.1040701@kernel.org> <alpine.LSU.2.00.0910200756300.8582@wotan.suse.de> <4ADD54D4.70808@kernel.org>
+ <4ADD5530.3050107@kernel.org> <alpine.LSU.2.00.0910200826220.8582@wotan.suse.de> <4ADDC69A.5000701@suse.com> <4ADDCDED.6060706@suse.com> <20091026201651.GD24682@elte.hu>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 26 Oct 2009, Ingo Molnar wrote:
 
-Commit a98f8fd24fb24fcb9a359553e64dd6aac5cf4279 (x86: apic reset
-counter on shutdown) set the counter to max to avoid spurious
-interrupts when the timer is re-enabled.
+> > -struct update_shares_data {
+> > -	unsigned long rq_weight[NR_CPUS];
+> > -};
+> > -
+> > -static DEFINE_PER_CPU(struct update_shares_data, update_shares_data);
+> > +unsigned long *update_shares_data;
+> 
+> That should be __read_mostly - this can be a hotly accessed data 
+> structure of the scheduler - if it happens to go next to a frequently 
+> bouncing variable that can be bad for performance.
 
-(In theory) you'll still get a spurious interrupt if spending more
-than 344 seconds with this interrupt disabled and then unmasking it.
+Good point, will resend with this annotation added.
 
-The right thing to do is to clear the register. This disables the
-interrupt from happening (at least it does on AMD hardware).
+> > -				    struct update_shares_data *usd)
+> > +				    unsigned long *usd)
+> 
+> I dont think using usd[cpu] is clearer than usd->rq_weight[cpu]. At 
+> minimum it should be renamed to usd_rq_weight not usd.
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/kernel/apic/apic.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+OK.
 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index dce93d4..4c689f4 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -444,7 +444,7 @@ static void lapic_timer_setup(enum clock_event_mode mode,
- 		v = apic_read(APIC_LVTT);
- 		v |= (APIC_LVT_MASKED | LOCAL_TIMER_VECTOR);
- 		apic_write(APIC_LVTT, v);
--		apic_write(APIC_TMICT, 0xffffffff);
-+		apic_write(APIC_TMICT, 0);
- 		break;
- 	case CLOCK_EVT_MODE_RESUME:
- 		/* Nothing to do here */
+> >  	local_irq_save(flags);
+> > -	usd = &__get_cpu_var(update_shares_data);
+> > +	usd = per_cpu_ptr(update_shares_data, smp_processor_id());
+> 
+> Could we please have a look at the before/after assembly of this 
+> sequence on x86, to make sure the claims in this thread are true and we 
+> dont lose performance? (and included it in the changelog with a 
+> resubmission - with a new, changed '[PATCH] ...' subject line, not 
+> hidden inside a discussion thread.)
+
+Just for completness (I will include it in the changelog with the next 
+resubmission shortly):
+
+
+Before:
+
+...
+ffffffff8104337c:       65 48 8b 14 25 20 cd    mov    %gs:0xcd20,%rdx
+ffffffff81043383:       00 00
+ffffffff81043385:       48 c7 c0 00 e1 00 00    mov    $0xe100,%rax
+ffffffff8104338c:       48 c7 45 a0 00 00 00    movq   $0x0,-0x60(%rbp)
+ffffffff81043393:       00
+ffffffff81043394:       48 c7 45 a8 00 00 00    movq   $0x0,-0x58(%rbp)
+ffffffff8104339b:       00
+ffffffff8104339c:       48 01 d0                add    %rdx,%rax
+ffffffff8104339f:       49 8d 94 24 08 01 00    lea    0x108(%r12),%rdx
+ffffffff810433a6:       00
+ffffffff810433a7:       b9 ff ff ff ff          mov    $0xffffffff,%ecx
+ffffffff810433ac:       48 89 45 b0             mov    %rax,-0x50(%rbp)
+ffffffff810433b0:       bb 00 04 00 00          mov    $0x400,%ebx
+ffffffff810433b5:       48 89 55 c0             mov    %rdx,-0x40(%rbp)
+...
+
+After:
+
+...
+ffffffff8104337c:       65 8b 04 25 28 cd 00    mov    %gs:0xcd28,%eax
+ffffffff81043383:       00
+ffffffff81043384:       48 98                   cltq
+ffffffff81043386:       49 8d bc 24 08 01 00    lea    0x108(%r12),%rdi
+ffffffff8104338d:       00
+ffffffff8104338e:       48 8b 15 d3 7f 76 00    mov    0x767fd3(%rip),%rdx        # ffffffff817ab368 <update_shares_data>
+ffffffff81043395:       48 8b 34 c5 00 ee 6d    mov    -0x7e921200(,%rax,8),%rsi
+ffffffff8104339c:       81
+ffffffff8104339d:       48 c7 45 a0 00 00 00    movq   $0x0,-0x60(%rbp)
+ffffffff810433a4:       00
+ffffffff810433a5:       b9 ff ff ff ff          mov    $0xffffffff,%ecx
+ffffffff810433aa:       48 89 7d c0             mov    %rdi,-0x40(%rbp)
+ffffffff810433ae:       48 c7 45 a8 00 00 00    movq   $0x0,-0x58(%rbp)
+ffffffff810433b5:       00
+ffffffff810433b6:       bb 00 04 00 00          mov    $0x400,%ebx
+ffffffff810433bb:       48 01 f2                add    %rsi,%rdx
+ffffffff810433be:       48 89 55 b0             mov    %rdx,-0x50(%rbp)
+...
+
+> From a merge POV i'm quite nervous about such a change to the scheduler 
+> this late in the .32 cycle - to offset that risk i'd really like to see 
+> that this change has been pursued carefully to the edge of possibilities 
+> - currently it does not give that impression.
+
+So what's your other proposal?
+
+Refactoring the ia64 pagefault handler is no-go this late in the cycle 
+IMHO.
+
+So either this, or reverting 34d76c41 (which is also no-go, I believe).
+
 -- 
-1.6.2.5
-
+Jiri Kosina
+SUSE Labs, Novell Inc.
