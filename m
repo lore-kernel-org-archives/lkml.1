@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbZJ0SUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbZJ0SUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932095AbZJ0SUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 14:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756640AbZJ0SUR
+	id S1756631AbZJ0SUH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 14:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbZJ0SUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 14:20:17 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41091 "EHLO mx1.redhat.com"
+	Tue, 27 Oct 2009 14:20:07 -0400
+Received: from claw.goop.org ([74.207.240.146]:38865 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756635AbZJ0SUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 14:20:15 -0400
-Message-ID: <4AE7397A.4010907@redhat.com>
-Date: Tue, 27 Oct 2009 14:18:34 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+	id S1756575AbZJ0SUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 14:20:06 -0400
+Message-ID: <4AE739DA.20601@goop.org>
+Date: Tue, 27 Oct 2009 11:20:10 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       linux-kernel@vger.kernel.org,
-       " <rjw@sisk.pl>, Kernel Testers List <kernel-testers@vger.kernel.org>"@redhat.com
-Subject: Re: [PATCH 3/3] vmscan: Force kswapd to take notice faster when high-order
- watermarks are being hit
-References: <1256650833-15516-1-git-send-email-mel@csn.ul.ie> <1256650833-15516-4-git-send-email-mel@csn.ul.ie>
-In-Reply-To: <1256650833-15516-4-git-send-email-mel@csn.ul.ie>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+CC: Avi Kivity <avi@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
+       chris.mason@oracle.com, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add	vsyscall	implementation
+References: <4f079cd6-0872-4cb5-832b-ee6a46841192@default>
+In-Reply-To: <4f079cd6-0872-4cb5-832b-ee6a46841192@default>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/27/2009 09:40 AM, Mel Gorman wrote:
-> When a high-order allocation fails, kswapd is kicked so that it reclaims
-> at a higher-order to avoid direct reclaimers stall and to help GFP_ATOMIC
-> allocations. Something has changed in recent kernels that affect the timing
-> where high-order GFP_ATOMIC allocations are now failing with more frequency,
-> particularly under pressure. This patch forces kswapd to notice sooner that
-> high-order allocations are occuring.
+On 10/27/09 10:29, Dan Magenheimer wrote:
+> Is there any way for an application to conclusively determine
+> programmatically if the "fast vsyscall" pvclock is functional
+> vs the much much slower gettimeofday/clock_gettime equivalents?
 >
-> Signed-off-by: Mel Gorman<mel@csn.ul.ie>
+> If not, might it be possible to implement some (sysfs?)
+> way to determine this, that would also be backwards compatible
+> to existing OS's that don't have pvclock+vsyscall supported?
+>   
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
+It would probably be simplest and most portable for the app to just
+measure the performance of gettimeofday and see if it meets its needs.
 
--- 
-All rights reversed.
+    J
