@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZJ0Bjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZJ0BkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbZJ0Bjb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 21:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbZJ0Bjb
+	id S1756043AbZJ0BkA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 21:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbZJ0BkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 21:39:31 -0400
-Received: from sh.osrg.net ([192.16.179.4]:34408 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754246AbZJ0Bja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 21:39:30 -0400
-Date: Tue, 27 Oct 2009 10:38:18 +0900
-To: mingo@elte.hu
-Cc: JBeulich@novell.com, yinghai@kernel.org, tglx@linutronix.de, tiwai@suse.de,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org, hpa@zytor.com
-Subject: Re: [PATCH] x86: adjust GFP mask handling for coherent allocations
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091026201917.GE24682@elte.hu>
-References: <20091026152246.GB3749@elte.hu>
-	<4AE5D238020000780001BD46@vpn.id2.novell.com>
-	<20091026201917.GE24682@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20091027103758L.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 27 Oct 2009 10:38:20 +0900 (JST)
+	Mon, 26 Oct 2009 21:40:00 -0400
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:64318 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755732AbZJ0Bj7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 21:39:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=cNHpVY+3qeAxSKwVT5ovyS/2blzEnoiuhGB/Brnsk32WTBHtY/HxpkmEr+Gcu03yxv
+         a9OO8+nXT3FA/jsDZdITPH0vxElTyHk3G3vwpGQVpGY+y675zMyRwjJlquWlQdXzszqu
+         3c0mfU/c8yiDPl3wrZueTfEwR0eq3c/P5Dct8=
+MIME-Version: 1.0
+In-Reply-To: <20091026.181922.261475236.davem@davemloft.net>
+References: <4AE64031.5060105@gmail.com>
+	 <20091026.174525.154760254.davem@davemloft.net>
+	 <51f3faa70910261807h54f05f73j48b67067ee3dde70@mail.gmail.com>
+	 <20091026.181922.261475236.davem@davemloft.net>
+Date: Mon, 26 Oct 2009 19:40:03 -0600
+Message-ID: <51f3faa70910261840v16444067uc323de7129b7592f@mail.gmail.com>
+Subject: Re: [PATCH ide] : Increase WAIT_DRQ to support slow CF cards
+From: Robert Hancock <hancockrwd@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: phdm@macqel.be, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 21:19:17 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, Oct 26, 2009 at 7:19 PM, David Miller <davem@davemloft.net> wrote:
+> From: Robert Hancock <hancockrwd@gmail.com>
+> Date: Mon, 26 Oct 2009 19:07:18 -0600
+>
+>> libata only busy-waits for 50 microseconds, if not set then it sleeps
+>> for 2ms and polls for another 10 microseconds, if still not set it
+>> tries the whole thing again at 16ms intervals. Only after (typically)
+>> 30 seconds does it give up.
+>
+> Porting that kind of logic over to IDE is a non-starter.
+>
+> It's easier to get people to move over to using the ATA layer for
+> their devices.
+>
+> Meanwhile we should provide a way for things to work, and
+> realistically the only way to do that currently is to bump the
+> WAIT_DRQ value to some large number.
+>
+> And that's exactly the kind of patch I'm willing to accept for this.
 
-> 
-> * Jan Beulich <JBeulich@novell.com> wrote:
-> 
-> > >>> Ingo Molnar <mingo@elte.hu> 26.10.09 16:22 >>>
-> > >* Jan Beulich <JBeulich@novell.com> wrote:
-> > >> And any attempt to eliminate the conditional another way would just 
-> > >> introduce a very similar conditional elsewhere; with this having a 
-> > >> single user (and foreseeably not ever a second one) I would think this 
-> > >> would just make the code less readable.
-> > >
-> > >There's 3 other current uses of DMA_BIT_MASK(24) in arch/x86 - couldnt 
-> > >those use ISA_DMA_BIT_MASK too?
-> > 
-> > Oh, so you didn't mean me to eliminate the conditional in pci-dma.c, 
-> > but just to replace the DMA_BIT_MASK(24) here an elsewhere. Sure, I'm 
-> > fine with adding this to the patch.
-> 
-> Well, can ISA_BIT_MASK fall back to DMA_BIT_MASK(32) on !CONFIG_ISA? If 
-> we have ISA support disabled we might as well pretend the whole world is 
-> PCI, right?
-
-I don't think that it works. At least, you can't do that with
-the DMA_BIT_MASK(24) in arch/x86/kernl/pci-dma.c; it must be
-DMA_BIT_MASK(24) even with !CONFIG_ISA.
-
-
-> That way we'd get rid of that #ifdef in the .c code too.
-
-Well, in the first place, we don't need the #ifdef in Jan's patch. We
-can always use DMA_BIT_MASK(24) for the fallback device.
+I agree, it's sub-optimal but it helps.. if the user wants better
+behavior they should a) fix it so that the card isn't using PIO, at
+least if it supports DMA and b) not use drivers/ide..
