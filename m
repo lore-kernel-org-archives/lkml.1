@@ -1,109 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZJ0UTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZJ0T7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbZJ0UTb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756765AbZJ0UTa
+	id S1756753AbZJ0T7G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 15:59:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbZJ0T7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:19:30 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37343 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756743AbZJ0UT3 (ORCPT
+	Tue, 27 Oct 2009 15:59:05 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:27406 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756722AbZJ0T7E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:19:29 -0400
-Subject: Re: [PATCH RFC tip/core/rcu 1/3] rcu: The Bloatwatch Edition, v7
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: tglx@linutronix.de, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       peterz@infradead.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       avi@redhat.com, mtosatti@redhat.com, torvalds@linux-foundation.org
-In-Reply-To: <4AE6A0BD.1080102@cn.fujitsu.com>
-References: <20091009224954.GA26516@linux.vnet.ibm.com>
-	 <4AD42FF5.2080109@cn.fujitsu.com>
-	 <20091013170022.GA6782@linux.vnet.ibm.com> <4AD51D3E.60103@cn.fujitsu.com>
-	 <20091014010956.GG6782@linux.vnet.ibm.com>
-	 <4AD531E5.6070103@cn.fujitsu.com>
-	 <1255488586.7113.3094.camel@gandalf.stny.rr.com>
-	 <4AE6A0BD.1080102@cn.fujitsu.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 27 Oct 2009 15:56:16 -0400
-Message-Id: <1256673376.26028.422.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Oct 2009 15:59:04 -0400
+Date: Tue, 27 Oct 2009 13:59:07 -0600
+From: Alex Chiang <achiang@hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: akpm@linux-foundation.org, Gary Hade <garyhade@us.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2 1/5] mm: add numa node symlink for memory section in
+	sysfs
+Message-ID: <20091027195907.GJ14102@ldl.fc.hp.com>
+References: <20091022040814.15705.95572.stgit@bob.kio> <20091022041510.15705.5410.stgit@bob.kio> <alpine.DEB.2.00.0910221249030.26631@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0910221249030.26631@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 15:26 +0800, Lai Jiangshan wrote:
-> Steven Rostedt wrote:
+Thank you for ACKing, David.
 
-> I found something weird about NO_HZ, maybe I misunderstood the codes.
-> 
-> see this flow:
-> 
-> cpu idle
->   enter nohz
->   cpu halt
-> ---->interrupt happens
->      irq_enter()
->         we don't reprogram the clock device                         #1
->      irq_exit()
->        tick_nohz_stop_sched_tick(inidle = 0)
->          something disallow this cpu reenter nohz                   #2
->          we don't reprogram the clock device                        #3
-> <----interrupt return
->    cpu halt again and wait interrupt for a long time than expected  #4
->    exit nohz
-> 
-> 
-> #1 tick_nohz_kick_tick() is disabled in the current mainline kernel,
->    so we don't calls tick_nohz_restart(ts, now) when irq_enter()
-> 
-> static void tick_nohz_kick_tick(int cpu)
-> {
-> #if 0                                            <------------- here
-> 	/* Switch back to 2.6.27 behaviour */
-> 
-> 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
-> 	ktime_t delta, now;
-> 
-> 	if (!ts->tick_stopped)
-> 		return;
-> 
-> 	/*
-> 	 * Do not touch the tick device, when the next expiry is either
-> 	 * already reached or less/equal than the tick period.
-> 	 */
-> 	now = ktime_get();
-> 	delta =	ktime_sub(hrtimer_get_expires(&ts->sched_timer), now);
-> 	if (delta.tv64 <= tick_period.tv64)
-> 		return;
-> 
-> 	tick_nohz_restart(ts, now);               <----------- here
-> #endif
-> }
-> 
-> 
-> #2 When rcu_needs_cpu() or  printk_needs_cpu()
->    returns true then tick_nohz_stop_sched_tick() will just return.
-> 
-> #3 And we don't reprogram the clock device when #2 happens
-> 
-> #4 So we may be in nohz for a long time than expected, but actually
->     we have some work to do. (rcu, printk... etc)
-> 
-> So I think, we need to reprogram the clock device and restart the tick
-> when #2 happens, or there is something that I have misunderstood.
+S390 guys, I cc'ed you on this patch because I heard a rumour
+that your memory sections may belong to more than one NUMA node?
+Is that true? If so, how would you like me to handle that
+situation?
 
+Any comments on this patch series would be appreciated.
 
-This looks like a different question than you asked before. And
-something I don't know the answer to ;-)
+Thanks.
+/ac
 
--- Steve
-
-
+* David Rientjes <rientjes@google.com>:
+> On Wed, 21 Oct 2009, Alex Chiang wrote:
+> 
+> > Commit c04fc586c (mm: show node to memory section relationship with
+> > symlinks in sysfs) created symlinks from nodes to memory sections, e.g.
+> > 
+> > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+> > 
+> > If you're examining the memory section though and are wondering what
+> > node it might belong to, you can find it by grovelling around in
+> > sysfs, but it's a little cumbersome.
+> > 
+> > Add a reverse symlink for each memory section that points back to the
+> > node to which it belongs.
+> > 
+> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > Cc: Gary Hade <garyhade@us.ibm.com>
+> > Cc: Badari Pulavarty <pbadari@us.ibm.com>
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Signed-off-by: Alex Chiang <achiang@hp.com>
+> 
+> Acked-by: David Rientjes <rientjes@google.com>
+> 
+> Very helpful backlinks to memory section nodes even though I have lots of 
+> memory directories on some of my test machines :)
