@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbZJ0HoC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZJ0HvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756458AbZJ0HoC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 03:44:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbZJ0HoB
+	id S1756574AbZJ0HvO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 03:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZJ0HvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 03:44:01 -0400
-Received: from mail-qy0-f174.google.com ([209.85.221.174]:47635 "EHLO
-	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755985AbZJ0HoA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 03:44:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Z1wrMv9zIOP+VYSToxCQPSlC5oBYcBY7UZCxu0xjYjAjBhTLgOWMhSdzrL7TVLse84
-         GZ4pUMXGY+SGx+h6PLOShgXkyIFXga+IIUmbgLm/Cvb4Jrets8/TMeJvwkLczFjF4rOm
-         u+rllLx9mN/LlqHV32yUXZCS5yxtWXg1WJM9g=
+	Tue, 27 Oct 2009 03:51:13 -0400
+Received: from web94710.mail.in2.yahoo.com ([203.104.17.170]:30390 "HELO
+	web94710.mail.in2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756533AbZJ0HvM convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 03:51:12 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Oct 2009 03:51:11 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=zVsUAtXw+TGXWpztTq26U8lr0ZonMTwxX8KPpoTgtsWXlIJZnNmFs6bOqUiryrCVvTXQggxR8gJBGx+DNJHJfQ3jLrLe8PcgFjXAIziW515oHojgxI5uUi1STccsbUQ1/MxDKP5GTntVVbavflORC8DdiAGW1wjcu2FMjPjtnxQ=;
+Message-ID: <256042.70547.qm@web94710.mail.in2.yahoo.com>
+X-YMail-OSG: Y7Ay_M0VM1mehpVQ2g0lk87zl67RKIXfd_9DspyReHvzycdvClFALKVRP4.y4UiqhAEC.YomKWcqA4j5t5qwFOyy_y3btmhfl67QPUEkVWz3ceflSoljjKcVTOdl6Y8DsPUEK3k5docEHb20b3VeqkRCClmiXzEDHEzopsQ5wAorHDlh70h1u6BxEhfSBWJddAtjM1b233hZgsPU9uz..AulJqyllV24FNp0bMpuZnMsd1JP6BJS0BZ_doGlX8_wV6JNCNA-
+X-Mailer: YahooMailClassic/8.0.7 YahooMailWebService/0.7.361.3
+Date: Tue, 27 Oct 2009 13:14:34 +0530 (IST)
+From: J K Rai <jk.anurag@yahoo.com>
+Subject: Instantaneous snapshot of CPU schedule
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20091026225930.GA18723@localhost>
-References: <20091026225930.GA18723@localhost>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Tue, 27 Oct 2009 15:43:44 +0800
-Message-ID: <f17812d70910270043q328ab091mb1d76760e674450d@mail.gmail.com>
-Subject: Re: [PATCH] 2.6.32-rc5 bug in Palm Tungsten C keyboard
-To: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       marek.vasut@gmail.com
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 6:59 AM, Ondrej Zajicek <santiago@crfreenet.org> wrote:
-> Palm Tungsten C keyboard structure has swapped
-> rows/cols gpio structures and does not work.
-> This patch fixes it.
->
-> Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+Hello
 
-This fix looks obvious to me. Applied to 'fix'.
+Is there any utility using which we can take current (instantaneous) snapshot of process schedule on the linux based system from user land. Like use a system call or command to know what is running on each of the cpus 0..n-1 (assuming n cpus in the system). Output could be like tuple (pid, cpu_no).
 
->
-> diff -uprN linux-2.6.32-rc5-old/arch/arm/mach-pxa/palmtc.c linux-2.6.32-rc5/arch/arm/mach-pxa/palmtc.c
-> --- linux-2.6.32-rc5-old/arch/arm/mach-pxa/palmtc.c     2009-10-16 02:41:50.000000000 +0200
-> +++ linux-2.6.32-rc5/arch/arm/mach-pxa/palmtc.c 2009-10-26 20:56:44.000000000 +0100
-> @@ -292,10 +292,10 @@ const static unsigned int palmtc_keypad_
->
->  static struct matrix_keypad_platform_data palmtc_keypad_platform_data = {
->        .keymap_data    = &palmtc_keymap_data,
-> -       .col_gpios      = palmtc_keypad_row_gpios,
-> -       .num_col_gpios  = 12,
-> -       .row_gpios      = palmtc_keypad_col_gpios,
-> -       .num_row_gpios  = 4,
-> +       .row_gpios      = palmtc_keypad_row_gpios,
-> +       .num_row_gpios  = ARRAY_SIZE(palmtc_keypad_row_gpios),
-> +       .col_gpios      = palmtc_keypad_col_gpios,
-> +       .num_col_gpios  = ARRAY_SIZE(palmtc_keypad_col_gpios),
->        .active_low     = 1,
->
->        .debounce_ms            = 20,
->
->
-> --
-> Elen sila lumenn' omentielvo
->
-> Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
-> OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-> "To err is human -- to blame it on a computer is even more so."
->
+If such utility does not exist then kindly throw some light / ideas so that it could be implemented.
+
+Regards,
+Jitendra
+
+
+      Add whatever you love to the Yahoo! India homepage. Try now! http://in.yahoo.com/trynew
