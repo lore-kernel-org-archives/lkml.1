@@ -1,128 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932206AbZJ0I6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbZJ0I6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932206AbZJ0I6z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 04:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbZJ0I6y
+	id S1756634AbZJ0I6O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 04:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932124AbZJ0I6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 04:58:54 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54879 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756589AbZJ0I6y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 04:58:54 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 27 Oct 2009 17:56:27 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, vedran.furac@gmail.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       rientjes@google.com
-Subject: Re: [RFC][PATCH] oom_kill: avoid depends on total_vm and use real
- RSS/swap value for oom_score (Re: Memory overcommit
-Message-Id: <20091027175627.3986104e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091027175243.31105265.minchan.kim@barrios-desktop>
-References: <hav57c$rso$1@ger.gmane.org>
-	<hb2cfu$r08$2@ger.gmane.org>
-	<20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com>
-	<4ADE3121.6090407@gmail.com>
-	<20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
-	<4AE5CB4E.4090504@gmail.com>
-	<20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>
-	<2f11576a0910262310g7aea23c0n9bfc84c900879d45@mail.gmail.com>
-	<20091027153429.b36866c4.minchan.kim@barrios-desktop>
-	<20091027153626.c5a4b5be.kamezawa.hiroyu@jp.fujitsu.com>
-	<28c262360910262355p3cac5c1bla4de9d42ea67fb4e@mail.gmail.com>
-	<20091027164526.da6a23cb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091027165628.acda4540.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091027171441.ca9600ea.minchan.kim@barrios-desktop>
-	<20091027173308.cc0eb535.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091027175243.31105265.minchan.kim@barrios-desktop>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 27 Oct 2009 04:58:13 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:24431 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756589AbZJ0I6N convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;6:1>);
+	Tue, 27 Oct 2009 04:58:13 -0400
+Message-Id: <4AE6C436020000780001BF10@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Tue, 27 Oct 2009 08:58:14 +0000
+From: "Jan Beulich" <JBeulich@novell.com>
+To: <mingo@elte.hu>, "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+Cc: <yinghai@kernel.org>, <tglx@linutronix.de>, <tiwai@suse.de>,
+       <linux-kernel@vger.kernel.org>, <jbarnes@virtuousgeek.org>,
+       <hpa@zytor.com>
+Subject: Re: [PATCH] x86: adjust GFP mask handling for coherent
+	 allocations
+References: <20091026152246.GB3749@elte.hu>
+ <4AE5D238020000780001BD46@vpn.id2.novell.com>
+ <20091026201917.GE24682@elte.hu>
+ <20091027103758L.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091027103758L.fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Oct 2009 17:52:43 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
+>>> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> 27.10.09 02:38 >>>
+>On Mon, 26 Oct 2009 21:19:17 +0100
+>Ingo Molnar <mingo@elte.hu> wrote:
+>> Well, can ISA_BIT_MASK fall back to DMA_BIT_MASK(32) on !CONFIG_ISA? If 
+>> we have ISA support disabled we might as well pretend the whole world is 
+>> PCI, right?
+>
+>I don't think that it works. At least, you can't do that with
+>the DMA_BIT_MASK(24) in arch/x86/kernl/pci-dma.c; it must be
+>DMA_BIT_MASK(24) even with !CONFIG_ISA.
 
-> On Tue, 27 Oct 2009 17:33:08 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > On Tue, 27 Oct 2009 17:14:41 +0900
-> > Minchan Kim <minchan.kim@gmail.com> wrote:
-> > 
-> > > On Tue, 27 Oct 2009 16:56:28 +0900
-> > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > 
-> > > > On Tue, 27 Oct 2009 16:45:26 +0900
-> > > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > >   	/*
-> > > > >  	 * After this unlock we can no longer dereference local variable `mm'
-> > > > > @@ -92,8 +93,13 @@ unsigned long badness(struct task_struct
-> > > > >  	 */
-> > > > >  	list_for_each_entry(child, &p->children, sibling) {
-> > > > >  		task_lock(child);
-> > > > > -		if (child->mm != mm && child->mm)
-> > > > > -			points += child->mm->total_vm/2 + 1;
-> > > > > +		if (child->mm != mm && child->mm) {
-> > > > > +			unsigned long cpoint;
-> > > > > +			/* At considering child, we don't count swap */
-> > > > > +			cpoint = get_mm_counter(child->mm, anon_rss) +
-> > > > > +				 get_mm_counter(child->mm, file_rss);
-> > > > > +			points += cpoint/2 + 1;
-> > > > > +		}
-> > > > >  		task_unlock(child);
-> > > > 
-> > > > BTW, I'd like to get rid of this code.
-> > > > 
-> > > > Can't we use other techniques for detecting fork-bomb ?
-> > > > 
-> > > > This check can't catch following type, anyway.
-> > > > 
-> > > >    fork()
-> > > >      -> fork()
-> > > >           -> fork()
-> > > >                -> fork()
-> > > >                     ....
-> > > > 
-> > > > but I have no good idea.
-> > > > What is the difference with task-launcher and fork bomb()...
-> > > > 
-> > > 
-> > > I think it's good as-is. 
-> > > Kernel is hard to know it by effiecient method.
-> > > It depends on applications. so Doesnt's task-launcher 
-> > > like gnome-session have to control his oom_score? 
-> > > 
-> > > Welcome to any ideas if kernel can do it well.
-> > > 
-> > Hmmm, check system-wide fork/sec and fork-depth ? Maybe not difficult to calculate..
-> 
-> Yes. We can do anything to achieve the goal in kernel. 
-> Maybe check the time or fork-depth counting. 
-> What I have a concern is how we can do it nicely if it is a serious
-> problem in kernel. ;)
-> 
-yes...only the user knows whether user is wrong, finally. Especially in case
-of memory leak.
+This one I too was about to point out, which is why I think
+DMA_ISA_BIT_MASK should only be an alias of DMA_BIT_MASK(24), with
+no fallback to DMA_BIT_MASK(32).
 
-> I think most of program which have many child are victims of OOM killing.
-> It make sense to me. There is some cases to not make sense like task-launcher.
-> So I think if task-launcher which is very rare and special program can change
-> oom_adj by itself, it's good than thing that add new heuristic in kernel.
-> 
-> It's just my opinon. :)
-> 
-I know KDE already adjsut oom_adj for their 3.5 release ;)
-Okay, concentrate on avoiding total_vm issue for a while.
+>> That way we'd get rid of that #ifdef in the .c code too.
+>
+>Well, in the first place, we don't need the #ifdef in Jan's patch. We
+>can always use DMA_BIT_MASK(24) for the fallback device.
 
-Thanks,
--Kame
+But this one I don't agree with - the purpose of the patch is to not have
+a 24-bit (or 32-bit) mask here unconditionally: It would result in GFP_DMA
+to be forced on for the allocation (which the patch specifically eliminates),
+and for x86-64 this wasn't the case up to .25, which is the behavior I'm
+trying to restore (and extend to the !CONFIG_ISA case for ix86).
 
+Jan
 
