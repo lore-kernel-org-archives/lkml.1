@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbZJ0McU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbZJ0Mca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754182AbZJ0McU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 08:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbZJ0McT
+	id S1754235AbZJ0Mca (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 08:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZJ0Mc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 08:32:19 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52328 "EHLO mx1.suse.de"
+	Tue, 27 Oct 2009 08:32:29 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43804 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754097AbZJ0McS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 08:32:18 -0400
-Date: Tue, 27 Oct 2009 13:32:21 +0100 (CET)
+	id S1754115AbZJ0Mc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 08:32:29 -0400
+Date: Tue, 27 Oct 2009 13:32:33 +0100 (CET)
 From: Jiri Kosina <jkosina@suse.cz>
 X-X-Sender: jkosina@wotan.suse.de
 To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
@@ -17,8 +17,8 @@ To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
        linux-ia64@vger.kernel.org
-Subject: [PATCH 1/2] percpu: allow pcpu_alloc() to be called with IRQs off
-Message-ID: <alpine.LSU.2.00.0910271328340.19847@wotan.suse.de>
+Subject: [PATCH 2/2] sched: move rq_weight data array out of .percpu
+Message-ID: <alpine.LSU.2.00.0910271330200.19847@wotan.suse.de>
 User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -26,133 +26,135 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pcpu_alloc() and pcpu_extend_area_map() perform a series of
-spin_lock_irq()/spin_unlock_irq() calls, which make them unsafe
-with respect to being called from contexts which have IRQs off.
+Commit 34d76c41 introduced percpu array update_shares_data, size of which 
+being proportional to NR_CPUS. Unfortunately this blows up ia64 for large 
+NR_CPUS configuration, as ia64 allows only 64k for .percpu section.
 
-This patch converts the code to perform save/restore of flags instead,
-making pcpu_alloc() (or __alloc_percpu() respectively) to be called
-from early kernel startup stage, where IRQs are off.
+Fix this by allocating this array dynamically and keep only pointer to it
+percpu.
 
-This is needed for proper initialization of per-cpu rq_weight data from
-sched_init().
+The per-cpu handling doesn't impose significant performance penalty on
+potentially contented path in tg_shares_up().
+
+...
+ffffffff8104337c:       65 48 8b 14 25 20 cd    mov    %gs:0xcd20,%rdx
+ffffffff81043383:       00 00
+ffffffff81043385:       48 c7 c0 00 e1 00 00    mov    $0xe100,%rax
+ffffffff8104338c:       48 c7 45 a0 00 00 00    movq   $0x0,-0x60(%rbp)
+ffffffff81043393:       00
+ffffffff81043394:       48 c7 45 a8 00 00 00    movq   $0x0,-0x58(%rbp)
+ffffffff8104339b:       00
+ffffffff8104339c:       48 01 d0                add    %rdx,%rax
+ffffffff8104339f:       49 8d 94 24 08 01 00    lea    0x108(%r12),%rdx
+ffffffff810433a6:       00
+ffffffff810433a7:       b9 ff ff ff ff          mov    $0xffffffff,%ecx
+ffffffff810433ac:       48 89 45 b0             mov    %rax,-0x50(%rbp)
+ffffffff810433b0:       bb 00 04 00 00          mov    $0x400,%ebx
+ffffffff810433b5:       48 89 55 c0             mov    %rdx,-0x40(%rbp)
+...
+
+After:
+
+...
+ffffffff8104337c:       65 8b 04 25 28 cd 00    mov    %gs:0xcd28,%eax
+ffffffff81043383:       00
+ffffffff81043384:       48 98                   cltq
+ffffffff81043386:       49 8d bc 24 08 01 00    lea    0x108(%r12),%rdi
+ffffffff8104338d:       00
+ffffffff8104338e:       48 8b 15 d3 7f 76 00    mov    0x767fd3(%rip),%rdx        # ffffffff817ab368 <update_shares_data>
+ffffffff81043395:       48 8b 34 c5 00 ee 6d    mov    -0x7e921200(,%rax,8),%rsi
+ffffffff8104339c:       81
+ffffffff8104339d:       48 c7 45 a0 00 00 00    movq   $0x0,-0x60(%rbp)
+ffffffff810433a4:       00
+ffffffff810433a5:       b9 ff ff ff ff          mov    $0xffffffff,%ecx
+ffffffff810433aa:       48 89 7d c0             mov    %rdi,-0x40(%rbp)
+ffffffff810433ae:       48 c7 45 a8 00 00 00    movq   $0x0,-0x58(%rbp)
+ffffffff810433b5:       00
+ffffffff810433b6:       bb 00 04 00 00          mov    $0x400,%ebx
+ffffffff810433bb:       48 01 f2                add    %rsi,%rdx
+ffffffff810433be:       48 89 55 b0             mov    %rdx,-0x50(%rbp)
+...
 
 Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 ---
- mm/percpu.c |   25 +++++++++++++------------
- 1 files changed, 13 insertions(+), 12 deletions(-)
+ kernel/sched.c |   22 +++++++++++-----------
+ 1 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 6af78c1..6b82bbf 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -366,7 +366,7 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
-  * RETURNS:
-  * 0 if noop, 1 if successfully extended, -errno on failure.
-  */
--static int pcpu_extend_area_map(struct pcpu_chunk *chunk)
-+static int pcpu_extend_area_map(struct pcpu_chunk *chunk, unsigned long *flags)
+diff --git a/kernel/sched.c b/kernel/sched.c
+index e886895..7c7ccbb 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1564,11 +1564,7 @@ static unsigned long cpu_avg_load_per_task(int cpu)
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 
+-struct update_shares_data {
+-	unsigned long rq_weight[NR_CPUS];
+-};
+-
+-static DEFINE_PER_CPU(struct update_shares_data, update_shares_data);
++static __read_mostly unsigned long *update_shares_data;
+ 
+ static void __set_se_shares(struct sched_entity *se, unsigned long shares);
+ 
+@@ -1578,12 +1574,12 @@ static void __set_se_shares(struct sched_entity *se, unsigned long shares);
+ static void update_group_shares_cpu(struct task_group *tg, int cpu,
+ 				    unsigned long sd_shares,
+ 				    unsigned long sd_rq_weight,
+-				    struct update_shares_data *usd)
++				    unsigned long *usd_rq_weight)
  {
- 	int new_alloc;
- 	int *new;
-@@ -376,7 +376,7 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk)
- 	if (chunk->map_alloc >= chunk->map_used + 2)
+ 	unsigned long shares, rq_weight;
+ 	int boost = 0;
+ 
+-	rq_weight = usd->rq_weight[cpu];
++	rq_weight = usd_rq_weight[cpu];
+ 	if (!rq_weight) {
+ 		boost = 1;
+ 		rq_weight = NICE_0_LOAD;
+@@ -1618,7 +1614,7 @@ static void update_group_shares_cpu(struct task_group *tg, int cpu,
+ static int tg_shares_up(struct task_group *tg, void *data)
+ {
+ 	unsigned long weight, rq_weight = 0, shares = 0;
+-	struct update_shares_data *usd;
++	unsigned long *usd_rq_weight;
+ 	struct sched_domain *sd = data;
+ 	unsigned long flags;
+ 	int i;
+@@ -1627,11 +1623,11 @@ static int tg_shares_up(struct task_group *tg, void *data)
  		return 0;
  
--	spin_unlock_irq(&pcpu_lock);
-+	spin_unlock_irqrestore(&pcpu_lock, *flags);
+ 	local_irq_save(flags);
+-	usd = &__get_cpu_var(update_shares_data);
++	usd_rq_weight = per_cpu_ptr(update_shares_data, smp_processor_id());
  
- 	new_alloc = PCPU_DFL_MAP_ALLOC;
- 	while (new_alloc < chunk->map_used + 2)
-@@ -384,7 +384,7 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk)
+ 	for_each_cpu(i, sched_domain_span(sd)) {
+ 		weight = tg->cfs_rq[i]->load.weight;
+-		usd->rq_weight[i] = weight;
++		usd_rq_weight[i] = weight;
  
- 	new = pcpu_mem_alloc(new_alloc * sizeof(new[0]));
- 	if (!new) {
--		spin_lock_irq(&pcpu_lock);
-+		spin_lock_irqsave(&pcpu_lock, *flags);
- 		return -ENOMEM;
- 	}
+ 		/*
+ 		 * If there are currently no tasks on the cpu pretend there
+@@ -1652,7 +1648,7 @@ static int tg_shares_up(struct task_group *tg, void *data)
+ 		shares = tg->shares;
  
-@@ -393,7 +393,7 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk)
- 	 * could have happened inbetween, so map_used couldn't have
- 	 * grown.
- 	 */
--	spin_lock_irq(&pcpu_lock);
-+	spin_lock_irqsave(&pcpu_lock, *flags);
- 	BUG_ON(new_alloc < chunk->map_used + 2);
+ 	for_each_cpu(i, sched_domain_span(sd))
+-		update_group_shares_cpu(tg, i, shares, rq_weight, usd);
++		update_group_shares_cpu(tg, i, shares, rq_weight, usd_rq_weight);
  
- 	size = chunk->map_alloc * sizeof(chunk->map[0]);
-@@ -1047,6 +1047,7 @@ static void *pcpu_alloc(size_t size, size_t align, bool reserved)
- 	struct pcpu_chunk *chunk;
- 	const char *err;
- 	int slot, off;
-+	unsigned long flags;
+ 	local_irq_restore(flags);
  
- 	if (unlikely(!size || size > PCPU_MIN_UNIT_SIZE || align > PAGE_SIZE)) {
- 		WARN(true, "illegal size (%zu) or align (%zu) for "
-@@ -1055,13 +1056,13 @@ static void *pcpu_alloc(size_t size, size_t align, bool reserved)
- 	}
+@@ -9407,6 +9403,10 @@ void __init sched_init(void)
+ #endif /* CONFIG_USER_SCHED */
+ #endif /* CONFIG_GROUP_SCHED */
  
- 	mutex_lock(&pcpu_alloc_mutex);
--	spin_lock_irq(&pcpu_lock);
-+	spin_lock_irqsave(&pcpu_lock, flags);
++#ifdef CONFIG_FAIR_GROUP_SCHED
++	update_shares_data = __alloc_percpu(nr_cpu_ids * sizeof(unsigned long),
++					    __alignof__(unsigned long));
++#endif
+ 	for_each_possible_cpu(i) {
+ 		struct rq *rq;
  
- 	/* serve reserved allocations from the reserved chunk if available */
- 	if (reserved && pcpu_reserved_chunk) {
- 		chunk = pcpu_reserved_chunk;
- 		if (size > chunk->contig_hint ||
--		    pcpu_extend_area_map(chunk) < 0) {
-+		    pcpu_extend_area_map(chunk, &flags) < 0) {
- 			err = "failed to extend area map of reserved chunk";
- 			goto fail_unlock;
- 		}
-@@ -1079,7 +1080,7 @@ restart:
- 			if (size > chunk->contig_hint)
- 				continue;
- 
--			switch (pcpu_extend_area_map(chunk)) {
-+			switch (pcpu_extend_area_map(chunk, &flags)) {
- 			case 0:
- 				break;
- 			case 1:
-@@ -1096,7 +1097,7 @@ restart:
- 	}
- 
- 	/* hmmm... no space left, create a new chunk */
--	spin_unlock_irq(&pcpu_lock);
-+	spin_unlock_irqrestore(&pcpu_lock, flags);
- 
- 	chunk = alloc_pcpu_chunk();
- 	if (!chunk) {
-@@ -1104,16 +1105,16 @@ restart:
- 		goto fail_unlock_mutex;
- 	}
- 
--	spin_lock_irq(&pcpu_lock);
-+	spin_lock_irqsave(&pcpu_lock, flags);
- 	pcpu_chunk_relocate(chunk, -1);
- 	goto restart;
- 
- area_found:
--	spin_unlock_irq(&pcpu_lock);
-+	spin_unlock_irqrestore(&pcpu_lock, flags);
- 
- 	/* populate, map and clear the area */
- 	if (pcpu_populate_chunk(chunk, off, size)) {
--		spin_lock_irq(&pcpu_lock);
-+		spin_lock_irqsave(&pcpu_lock, flags);
- 		pcpu_free_area(chunk, off);
- 		err = "failed to populate";
- 		goto fail_unlock;
-@@ -1125,7 +1126,7 @@ area_found:
- 	return __addr_to_pcpu_ptr(chunk->base_addr + off);
- 
- fail_unlock:
--	spin_unlock_irq(&pcpu_lock);
-+	spin_unlock_irqrestore(&pcpu_lock, flags);
- fail_unlock_mutex:
- 	mutex_unlock(&pcpu_alloc_mutex);
- 	if (warn_limit) {
 -- 
 1.6.4.2
 
