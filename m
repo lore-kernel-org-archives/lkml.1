@@ -1,45 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZJ0QZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZJ0Q03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbZJ0QZw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 12:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbZJ0QZu
+	id S1756119AbZJ0Q03 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 12:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbZJ0QZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 12:25:50 -0400
-Received: from kroah.org ([198.145.64.141]:59452 "EHLO coco.kroah.org"
+	Tue, 27 Oct 2009 12:25:51 -0400
+Received: from kroah.org ([198.145.64.141]:59454 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755979AbZJ0QZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 12:25:44 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Oct 27 09:21:18 2009
-Message-Id: <20091027162118.084188449@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 27 Oct 2009 09:18:26 -0700
+	id S1755984AbZJ0QZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 12:25:47 -0400
+Date: Tue, 27 Oct 2009 09:21:42 -0700
 From: Greg Kroah-Hartman <gregkh@suse.de>
-To: "John W. Linville" <linville@tuxdriver.com>, Greg KH <greg@kroah.com>
+To: "John W. Linville" <linville@tuxdriver.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 4/4] Staging: netwave: add TODO file
-References: <20091027161822.657794160@mini.kroah.org>
-Content-Disposition: inline; filename=staging/staging-netwave-add-todo-file.patch
-In-Reply-To: <20091027162142.GA23728@kroah.com>
+Subject: [patch 0/4] TODO files for moving the wireless drivers into staging
+Message-ID: <20091027162142.GA23728@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: John W. Linville <linville@tuxdriver.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Here are 4 patches to be applied on top of your previous tree that adds
+the TODO files to the drivers that you moved into the drivers/staging
+tree.  Please apply them to your tree.
 
----
- drivers/staging/netwave/TODO |    7 +++++++
- 1 file changed, 7 insertions(+)
+thanks,
 
---- /dev/null
-+++ b/drivers/staging/netwave/TODO
-@@ -0,0 +1,7 @@
-+TODO:
-+	- step up and maintain this driver to ensure that it continues
-+	  to work.  Having the hardware for this is pretty much a
-+	  requirement.  If this does not happen, the will be removed in
-+	  the 2.6.35 kernel release.
-+
-+Please send patches to Greg Kroah-Hartman <greg@kroah.com>.
-
+greg k-h
 
