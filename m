@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403AbZJ0Gqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbZJ0Guv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756403AbZJ0Gqj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 02:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756350AbZJ0Gqj
+	id S1756413AbZJ0Guv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 02:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756289AbZJ0Guu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 02:46:39 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60921 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756316AbZJ0Gqi (ORCPT
+	Tue, 27 Oct 2009 02:50:50 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:60674 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756191AbZJ0Guu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 02:46:38 -0400
-Date: Tue, 27 Oct 2009 15:46:36 +0900 (JST)
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: Memory overcommit
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       vedran.furac@gmail.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091027153429.b36866c4.minchan.kim@barrios-desktop>
-References: <2f11576a0910262310g7aea23c0n9bfc84c900879d45@mail.gmail.com> <20091027153429.b36866c4.minchan.kim@barrios-desktop>
-Message-Id: <20091027154429.E2A4.A69D9226@jp.fujitsu.com>
+	Tue, 27 Oct 2009 02:50:50 -0400
+Message-ID: <4AE69829.9070207@gmail.com>
+Date: Tue, 27 Oct 2009 07:50:17 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+To: Stephen Hemminger <stephen.hemminger@vyatta.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] dcache: better name hash function
+References: <19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com> <4AE68E23.20205@gmail.com>
+In-Reply-To: <4AE68E23.20205@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 27 Oct 2009 07:50:19 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > %check_badness.pl | sort -n | tail
-> > > --
-> > > 89924   3938    mixer_applet2
-> > > 90210   3942    tomboy
-> > > 94753   3936    clock-applet
-> > > 101994  3919    pulseaudio
-> > > 113525  4028    gnome-terminal
-> > > 127340  1       init
-> > > 128177  3871    nautilus
-> > > 151003  11515   bash
-> > > 256944  11653   mmap
-> > > 425561  3829    gnome-session
-> > > --
-> > > Sigh, gnome-session has twice value of mmap(1G).
-> > > Of course, gnome-session only uses 6M bytes of anon.
-> > > I wonder this is because gnome-session has many children..but need to
-> > > dig more. Does anyone has idea ?
-> > > (CCed kosaki)
-> > 
-> > Following output address the issue.
-> > The fact is, modern desktop application linked pretty many library. it
-> > makes bloat VSS size and increase
-> > OOM score.
-> > 
-> > Ideally, We shouldn't account evictable file-backed mappings for oom_score.
-> > 
-> Hmm. 
-> I wonder why we consider VM size for OOM kiling. 
-> How about RSS size?
+Eric Dumazet a écrit :
+> unsigned int fold2(unsigned hash)
+> {
+> 	return ((unsigned long long)hash * 211) >> 32;
+> }
+> 
 
-Because, swap out-ed bad body (e.g. fork bomb process) still should
-be killed by oom.
-RSS + swap-entries is acceptable to me.
+I tried this reciprocal thing with 511 and 1023 values and got on a PIII 550 MHz, gcc-3.3.2 :
+
+# ./hashtest 100000 511 
+jhash_string         0.033123       1.01       234   1.06
+fnv32                0.033911       1.02       254   1.38
+# ./hashtest 1000000 511
+jhash_string         0.331155       1.00      2109   1.10
+fnv32                0.359346       1.00      2151   1.65
+# ./hashtest 10000000 511
+jhash_string         3.383340       1.00     19985   1.03
+fnv32                3.849359       1.00     20198   1.53
+
+# ./hashtest 100000 1023
+jhash_string         0.033123       1.03       134   1.01
+fnv32                0.034260       1.03       142   1.32
+# ./hashtest 1000000 1023
+jhash_string         0.332329       1.00      1075   1.06
+fnv32                0.422035       1.00      1121   1.59
+# ./hashtest 10000000 1023
+jhash_string         3.417559       1.00     10107   1.01
+fnv32                3.747563       1.00     10223   1.35
 
 
+511 value on 64bit, and 1023 on 32bit arches are nice because
+hashsz * sizeof(pointer) <= 4096, wasting space for one pointer only.
+
+Conclusion : jhash and 511/1023 hashsize for netdevices,
+no divides, only one multiply for the fold.
 
