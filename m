@@ -1,171 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbZJ0Pad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbZJ0Pcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755630AbZJ0Pad (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 11:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbZJ0Pac
+	id S1754885AbZJ0Pcy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 11:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZJ0Pcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 11:30:32 -0400
-Received: from cantor.suse.de ([195.135.220.2]:60853 "EHLO mx1.suse.de"
+	Tue, 27 Oct 2009 11:32:53 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52528 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755527AbZJ0Paa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 11:30:30 -0400
-Date: Tue, 27 Oct 2009 16:30:33 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Tejun Heo <tj@kernel.org>, Jeff Mahoney <jeffm@suse.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 2/2] sched: move rq_weight data array out of .percpu
-In-Reply-To: <alpine.LSU.2.00.0910271330200.19847@wotan.suse.de>
-Message-ID: <alpine.LSU.2.00.0910271629410.19847@wotan.suse.de>
-References: <alpine.LSU.2.00.0910271330200.19847@wotan.suse.de>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	id S1754000AbZJ0Pcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 11:32:53 -0400
+Date: Tue, 27 Oct 2009 16:32:51 +0100
+From: Jan Kara <jack@suse.cz>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Jan Kara <jack@suse.cz>, WU Fengguang <wfg@mail.ustc.edu.cn>,
+       npiggin@suse.de, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       hch@infradead.org, chris.mason@oracle.com
+Subject: Re: [RFC] [PATCH] Avoid livelock for fsync
+Message-ID: <20091027153251.GA5345@duck.suse.cz>
+References: <20091026181314.GE7233@duck.suse.cz> <200910271926.15176.knikanth@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910271926.15176.knikanth@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The previous version of the patch will actually not compile for 
-configurations with CONFIG_SMP=n && CONFIG_FAR_GROUP_SCHED=y
+On Tue 27-10-09 19:26:14, Nikanth Karthikesan wrote:
+> On Monday 26 October 2009 23:43:14 Jan Kara wrote:
+> >   Hi,
+> > 
+> >   on my way back from Kernel Summit, I've coded the attached patch which
+> > implements livelock avoidance for write_cache_pages. We tag patches that
+> > should be written in the beginning of write_cache_pages and then write
+> > only tagged pages (see the patch for details). The patch is based on Nick's
+> > idea.
+> 
+> As I understand, livelock can be caused only by dirtying new pages.
+> 
+> So theoretically, if a process can dirty pages faster than we can tag pages 
+> for writeback, even now isn't there a chance for livelock? But if it is really 
+  Yes, theoretically the livelock is still there but practically, I don't
+think it's triggerable (the amount of work needed to do either write(2) or
+page fault is much higher than just looking up a page in radix tree and
+setting there one bit). If the file has lots of dirty pages, I belive user
+can create a few more while we are tagging but not much...
 
-Tejun, please use the version below instead, which has proper ifdef in 
-place around the percpu allocation. Thanks.
+> a very fast operation and livelock is not possible, why not hold the tree_lock 
+> during the entire period of tagging the pages for writeback i.e., call 
+> tag_pages_for_writeback() under mapping->tree_lock? Would it cause 
+> deadlock/starvation or some other serious problems?
+  I'm dropping tree_lock because I don't think I can hold it during
+pagevec_lookup_tag. Even if that was worked-around, if the file has lots of
+dirty pages, it could take us long enough to tag all of them that it would
+matter latency-wise for other users of the lock. So I'd leave the code as
+is.
 
-
-
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: sched: move rq_weight data array out of .percpu
-
-Commit 34d76c41 introduced percpu array update_shares_data, size of which
-being proportional to NR_CPUS. Unfortunately this blows up ia64 for large
-NR_CPUS configuration, as ia64 allows only 64k for .percpu section.
-
-Fix this by allocating this array dynamically and keep only pointer to it
-percpu.
-
-The per-cpu handling doesn't impose significant performance penalty on
-potentially contented path in tg_shares_up().
-
-...
-ffffffff8104337c:       65 48 8b 14 25 20 cd    mov    %gs:0xcd20,%rdx
-ffffffff81043383:       00 00
-ffffffff81043385:       48 c7 c0 00 e1 00 00    mov    $0xe100,%rax
-ffffffff8104338c:       48 c7 45 a0 00 00 00    movq   $0x0,-0x60(%rbp)
-ffffffff81043393:       00
-ffffffff81043394:       48 c7 45 a8 00 00 00    movq   $0x0,-0x58(%rbp)
-ffffffff8104339b:       00
-ffffffff8104339c:       48 01 d0                add    %rdx,%rax
-ffffffff8104339f:       49 8d 94 24 08 01 00    lea    0x108(%r12),%rdx
-ffffffff810433a6:       00
-ffffffff810433a7:       b9 ff ff ff ff          mov    $0xffffffff,%ecx
-ffffffff810433ac:       48 89 45 b0             mov    %rax,-0x50(%rbp)
-ffffffff810433b0:       bb 00 04 00 00          mov    $0x400,%ebx
-ffffffff810433b5:       48 89 55 c0             mov    %rdx,-0x40(%rbp)
-...
-
-After:
-
-...
-ffffffff8104337c:       65 8b 04 25 28 cd 00    mov    %gs:0xcd28,%eax
-ffffffff81043383:       00
-ffffffff81043384:       48 98                   cltq
-ffffffff81043386:       49 8d bc 24 08 01 00    lea    0x108(%r12),%rdi
-ffffffff8104338d:       00
-ffffffff8104338e:       48 8b 15 d3 7f 76 00    mov    0x767fd3(%rip),%rdx        # ffffffff817ab368 <update_shares_data>
-ffffffff81043395:       48 8b 34 c5 00 ee 6d    mov    -0x7e921200(,%rax,8),%rsi
-ffffffff8104339c:       81
-ffffffff8104339d:       48 c7 45 a0 00 00 00    movq   $0x0,-0x60(%rbp)
-ffffffff810433a4:       00
-ffffffff810433a5:       b9 ff ff ff ff          mov    $0xffffffff,%ecx
-ffffffff810433aa:       48 89 7d c0             mov    %rdi,-0x40(%rbp)
-ffffffff810433ae:       48 c7 45 a8 00 00 00    movq   $0x0,-0x58(%rbp)
-ffffffff810433b5:       00
-ffffffff810433b6:       bb 00 04 00 00          mov    $0x400,%ebx
-ffffffff810433bb:       48 01 f2                add    %rsi,%rdx
-ffffffff810433be:       48 89 55 b0             mov    %rdx,-0x50(%rbp)
-...
-
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
----
- kernel/sched.c |   22 +++++++++++-----------
- 1 files changed, 11 insertions(+), 11 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e886895..7c7ccbb 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1564,11 +1564,7 @@ static unsigned long cpu_avg_load_per_task(int cpu)
- 
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 
--struct update_shares_data {
--	unsigned long rq_weight[NR_CPUS];
--};
--
--static DEFINE_PER_CPU(struct update_shares_data, update_shares_data);
-+static __read_mostly unsigned long *update_shares_data;
- 
- static void __set_se_shares(struct sched_entity *se, unsigned long shares);
- 
-@@ -1578,12 +1574,12 @@ static void __set_se_shares(struct sched_entity *se, unsigned long shares);
- static void update_group_shares_cpu(struct task_group *tg, int cpu,
- 				    unsigned long sd_shares,
- 				    unsigned long sd_rq_weight,
--				    struct update_shares_data *usd)
-+				    unsigned long *usd_rq_weight)
- {
- 	unsigned long shares, rq_weight;
- 	int boost = 0;
- 
--	rq_weight = usd->rq_weight[cpu];
-+	rq_weight = usd_rq_weight[cpu];
- 	if (!rq_weight) {
- 		boost = 1;
- 		rq_weight = NICE_0_LOAD;
-@@ -1618,7 +1614,7 @@ static void update_group_shares_cpu(struct task_group *tg, int cpu,
- static int tg_shares_up(struct task_group *tg, void *data)
- {
- 	unsigned long weight, rq_weight = 0, shares = 0;
--	struct update_shares_data *usd;
-+	unsigned long *usd_rq_weight;
- 	struct sched_domain *sd = data;
- 	unsigned long flags;
- 	int i;
-@@ -1627,11 +1623,11 @@ static int tg_shares_up(struct task_group *tg, void *data)
- 		return 0;
- 
- 	local_irq_save(flags);
--	usd = &__get_cpu_var(update_shares_data);
-+	usd_rq_weight = per_cpu_ptr(update_shares_data, smp_processor_id());
- 
- 	for_each_cpu(i, sched_domain_span(sd)) {
- 		weight = tg->cfs_rq[i]->load.weight;
--		usd->rq_weight[i] = weight;
-+		usd_rq_weight[i] = weight;
- 
- 		/*
- 		 * If there are currently no tasks on the cpu pretend there
-@@ -1652,7 +1648,7 @@ static int tg_shares_up(struct task_group *tg, void *data)
- 		shares = tg->shares;
- 
- 	for_each_cpu(i, sched_domain_span(sd))
--		update_group_shares_cpu(tg, i, shares, rq_weight, usd);
-+		update_group_shares_cpu(tg, i, shares, rq_weight, usd_rq_weight);
- 
- 	local_irq_restore(flags);
- 
-@@ -9407,6 +9403,10 @@ void __init sched_init(void)
- #endif /* CONFIG_USER_SCHED */
- #endif /* CONFIG_GROUP_SCHED */
- 
-+#if defined CONFIG_FAIR_GROUP_SCHED && defined CONFIG_SMP
-+	update_shares_data = __alloc_percpu(nr_cpu_ids * sizeof(unsigned long),
-+					    __alignof__(unsigned long));
-+#endif
- 	for_each_possible_cpu(i) {
- 		struct rq *rq;
- 
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
