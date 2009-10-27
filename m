@@ -1,200 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755426AbZJ0PVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbZJ0PVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755426AbZJ0PVU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 11:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZJ0PVS
+	id S1755238AbZJ0PVB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 11:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZJ0PVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 11:21:18 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:39571 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755361AbZJ0PVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 11:21:17 -0400
-Date: Tue, 27 Oct 2009 15:21:19 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Frans Pop <elendil@planet.nl>, Chris Mason <chris.mason@oracle.com>,
-       David Rientjes <rientjes@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Message-ID: <20091027152118.GI8900@csn.ul.ie>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <20091019161815.GA11487@think> <20091020104839.GC11778@csn.ul.ie> <200910262206.13146.elendil@planet.nl> <20091027145435.GG8900@csn.ul.ie> <2f11576a0910270816s3e1b268ah91b5f2d0cc0d562e@mail.gmail.com>
+	Tue, 27 Oct 2009 11:21:00 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:37873 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753009AbZJ0PU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 11:20:59 -0400
+Message-ID: <4AE70FF0.10409@sgi.com>
+Date: Tue, 27 Oct 2009 08:21:20 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2f11576a0910270816s3e1b268ah91b5f2d0cc0d562e@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Andreas Mohr <andi@lisas.de>,
+       Hugh Dickins <hugh@veritas.com>, Hannes Eder <hannes@hanneseder.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/8] SGI x86_64 UV: Limit the number of microcode messages
+References: <20091023233743.439628000@alcatraz.americas.sgi.com>	 <20091023233756.941535000@alcatraz.americas.sgi.com>	 <b647ffbd0910241309u7b2f8c94t1f886ef31882539e@mail.gmail.com>	 <Pine.LNX.4.61.0910242207180.2439@ginsburg.homenet>	 <b647ffbd0910241545g4697a170peb00e541298d5a30@mail.gmail.com>	 <20091025163704.GE20391@elte.hu> <4AE5EA71.2050304@sgi.com> <b647ffbd0910261311n4ac4471el7a32ac41104cf93b@mail.gmail.com>
+In-Reply-To: <b647ffbd0910261311n4ac4471el7a32ac41104cf93b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 12:16:30AM +0900, KOSAKI Motohiro wrote:
-> 2009/10/27 Mel Gorman <mel@csn.ul.ie>:
-> > On Mon, Oct 26, 2009 at 10:06:09PM +0100, Frans Pop wrote:
-> >> On Tuesday 20 October 2009, Mel Gorman wrote:
-> >> > I've attached a patch below that should allow us to cheat. When it's
-> >> > applied, it outputs who called congestion_wait(), how long the timeout
-> >> > was and how long it waited for. By comparing before and after sleep
-> >> > times, we should be able to see which of the callers has significantly
-> >> > changed and if it's something easily addressable.
-> >>
-> >> The results from this look fairly interesting (although I may be a bad
-> >> judge as I don't really know what I'm looking at ;-).
-> >>
-> >> I've tested with two kernels:
-> >> 1) 2.6.31.1: 1 test run
-> >> 2) 2.6.31.1 + congestion_wait() reverts: 2 test runs
-> >>
-> >> The 1st kernel had the expected "freeze" while reading commits in gitk;
-> >> reading commits with the 2nd kernel was more fluent.
-> >> I did 2 runs with the 2nd kernel as the first run had a fairly long music
-> >> skip and more SKB errors than expected. The second run was fairly normal
-> >> with no music skips at all even though it had a few SKB errors.
-> >>
-> >> Data for the tests:
-> >>                               1st kernel      2nd kernel 1    2nd kernel 2
-> >> end reading commits           1:15            1:00            0:55
-> >>   "freeze"                    yes             no              no
-> >> branch data shown             1:55            1:15            1:10
-> >> system quiet                  2:25            1:50            1:45
-> >> # SKB allocation errors               10              53              5
-> >>
-> >> Note that the test is substantially faster with the 2nd kernel and that the
-> >> SKB errors don't really affect the duration of the test.
-> >>
-> >
-> > Ok. I think that despite expectations, the writeback changes have
-> > changed the timing significantly enough to be worth examining closer.
-> >
-> >>
-> >> - without the revert 'background_writeout' is called a lot less frequently,
-> >>   but when it's called it gets long delays
-> >> - without the revert you have 'wb_kupdate', which is relatively expensive
-> >> - with the revert 'shrink_list' is relatively expensive, although not
-> >>   really in absolute terms
-> >>
-> >
-> > Lets look at the callers that waited in congestion_wait() for at least
-> > 25 jiffies.
-> >
-> > 2.6.31.1-async-sync-congestion-wait i.e. vanilla kernel
-> > generated with: cat kern.log_1_test | awk -F ] '{print $2}' | sort -k 5 -n | uniq -c
-> >     24  background_writeout  congestion_wait sync=0 delay 25 timeout 25
-> >    203  kswapd               congestion_wait sync=0 delay 25 timeout 25
-> >      5  shrink_list          congestion_wait sync=0 delay 25 timeout 25
-> >    155  try_to_free_pages    congestion_wait sync=0 delay 25 timeout 25
-> >    145  wb_kupdate           congestion_wait sync=0 delay 25 timeout 25
-> >      2  kswapd               congestion_wait sync=0 delay 26 timeout 25
-> >      8  wb_kupdate           congestion_wait sync=0 delay 26 timeout 25
-> >      1  try_to_free_pages    congestion_wait sync=0 delay 54 timeout 25
-> >
-> > 2.6.31.1-write-congestion-wait i.e. kernel with patch reverted
-> > generated with: cat kern.log_2.1_test | awk -F ] '{print $2}' | sort -k 5 -n | uniq -c
-> >      2  background_writeout  congestion_wait rw=1 delay 25 timeout 25
-> >    188  kswapd               congestion_wait rw=1 delay 25 timeout 25
-> >     14  shrink_list          congestion_wait rw=1 delay 25 timeout 25
-> >    181  try_to_free_pages    congestion_wait rw=1 delay 25 timeout 25
-> >      5  kswapd               congestion_wait rw=1 delay 26 timeout 25
-> >     10  try_to_free_pages    congestion_wait rw=1 delay 26 timeout 25
-> >      3  try_to_free_pages    congestion_wait rw=1 delay 27 timeout 25
-> >      1  kswapd               congestion_wait rw=1 delay 29 timeout 25
-> >      1  __alloc_pages_nodemask congestion_wait rw=1 delay 30 timeout 5
-> >      1  try_to_free_pages    congestion_wait rw=1 delay 31 timeout 25
-> >      1  try_to_free_pages    congestion_wait rw=1 delay 35 timeout 25
-> >      1  kswapd               congestion_wait rw=1 delay 51 timeout 25
-> >      1  try_to_free_pages    congestion_wait rw=1 delay 56 timeout 25
-> >
-> > So, wb_kupdate and background_writeout are the big movers in terms of waiting,
-> > not the direct reclaimers which is what we were expecting. Of those big
-> > movers, wb_kupdate is the most interested because compare the following
-> >
-> > $ cat kern.log_2.1_test | awk -F ] '{print $2}' | sort -k 5 -n | uniq -c | grep wb_kup
-> > [ no output ]
-> > $ $ cat kern.log_1_test | awk -F ] '{print $2}' | sort -k 5 -n | uniq -c | grep wb_kup
-> >      1  wb_kupdate           congestion_wait sync=0 delay 15 timeout 25
-> >      1  wb_kupdate           congestion_wait sync=0 delay 23 timeout 25
-> >    145  wb_kupdate           congestion_wait sync=0 delay 25 timeout 25
-> >      8  wb_kupdate           congestion_wait sync=0 delay 26 timeout 25
-> >
-> > The vanilla kernel is not waiting in wb_kupdate at all.
-> >
-> > Jens, before the congestion_wait() changes, wb_kupdate was waiting on
-> > congestion and afterwards it's not. Furthermore, look at the number of pages
-> > that are queued for writeback in the two page allocation failure reports.
-> >
-> > without-revert: writeback:65653
-> > with-revert:    writeback:21713
-> >
-> > So, after the move to async/sync, a lot more pages are getting queued
-> > for writeback - more than three times the number of pages are queued for
-> > writeback with the vanilla kernel. This amount of congestion might be why
-> > direct reclaimers and kswapd's timings have changed so much.
-> >
-> > Chris Mason hinted at this but I didn't quite "get it" at the time but is it
-> > possible that writeback_inodes() is converting what is expected to be async
-> > IO into sync IO? One way of checking this is if Frans could test the patch
-> > below that makes wb_kupdate wait on sync instead of async.
-> >
-> > If this makes a difference, I think the three main areas of trouble we
-> > are now seeing are
-> >
-> >        1. page allocator regressions - mostly fixed hopefully
-> >        2. page writeback change in timing - theory yet to be confirmed
-> >        3. drivers using more atomics - iwlagn specific, being dealt with
-> >
-> > Of course, the big problem is if the changes are due to major timing
-> > differences in page writeback, then mainline is a totally different
-> > shape of problem as pdflush has been replaced there.
-> >
-> > ====
-> > Have wb_kupdate wait on sync IO congestion instead of async
-> >
-> > wb_kupdate is expected to only have queued up pages for async IO.
-> > However, something screwy is happening because it never appears to go to
-> > sleep. Frans, can you test with this patch instead of the revert please?
-> > Preferably, keep the verbose-congestion_wait patch applied so we can
-> > still get an idea who is going to sleep and for how long when calling
-> > congestion_wait. thanks
-> >
-> > Not-signed-off-hacket-job: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >
-> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> > index 81627eb..cb646dd 100644
-> > --- a/mm/page-writeback.c
-> > +++ b/mm/page-writeback.c
-> > @@ -787,7 +787,7 @@ static void wb_kupdate(unsigned long arg)
-> >                writeback_inodes(&wbc);
-> >                if (wbc.nr_to_write > 0) {
-> >                        if (wbc.encountered_congestion || wbc.more_io)
-> > -                               congestion_wait(BLK_RW_ASYNC, HZ/10);
-> > +                               congestion_wait(BLK_RW_SYNC, HZ/10);
-> >                        else
-> >                                break;  /* All the old data is written */
-> >                }
-> 
-> Hmm, This doesn't looks correct to me.
-> 
-> BLK_RW_ASYNC mean async write.
-> BLK_RW_SYNC  mean read and sync-write.
-> 
-> wb_kupdate use WB_SYNC_NONE. it's async write.
-> 
+[Another approach is shown below.]
 
-I don't think it's correct either which is why I described it as
-"something screwy is happening because it never appears to go to sleep".
-This is despite there being a whole lot of pages queued for writeback
-according to the page allocation failure reports. 
+Dmitry Adamushko wrote:
+> 2009/10/26 Mike Travis <travis@sgi.com>:
+>>
+>> Ingo Molnar wrote:
+>>> * Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
+>>>
+>>>> 2009/10/24 Tigran Aivazian <tigran@aivazian.fsnet.co.uk>:
+>>>>> On Sat, 24 Oct 2009, Dmitry Adamushko wrote:
+>>>>>>> -       printk(KERN_INFO "microcode: CPU%d sig=0x%x, pf=0x%x,
+>>>>>>> revision=0x%x\n",
+>>>>>>> +       if (cpu_num < 4 || !limit_console_output(false))
+>>>>>>> +               printk(KERN_INFO
+>>>>>>> +                       "microcode: CPU%d sig=0x%x, pf=0x%x,
+>>>>>>> revision=0x%x\n",
+>>>>>>>                       cpu_num, csig->sig, csig->pf, csig->rev);
+>>>>>>>
+>>>>>> Hmm, I guess we wouldn't lose a lot by simply removing those messages
+>>>>>> completely. Per-cpu pf/revision is available via /sys anyway.
+>>>>> The reason for printing them is that the pf (possibly others?) can
+>>>>> change by the update and so the log has this info handy.
+>>>> We might store the old sig/pf/revision set as well, export them via
+>>>> /sys or/and print them at update-to-new-microcode time.
+>>>>
+>>>> If it's really so useful to have this info in the log and, at the same
+>>>> time, to avoid the flood of messages (which, I guess for the majority
+>>>> of systems, are the same) at startup time, we might delay the printout
+>>>> until the end of microcode_init(). Then do something like this:
+>>>>
+>>>> microcode cpu0: up to date version sig, pf, rev          // let's say,
+>>>> it was updated by BIOS
+>>>> microcode cpus [1 ... 16] : update from sig, pf, rev to sig, pf2, rev2.
+>>>>
+>>>> Anyway, my humble opinion, is that (at the very least) the current
+>>>> patch should be accompanied by a similar version for amd.
+>>> yeah. Since we load new microcode on all cpus it's enough to print it for
+>>> the boot CPU or so.
+>>>
+>>> Having the precise microcode version printed (or exposed somewhere in
+>>> /sys) is useful - sometimes when there's a weird crash in some prototype CPU
+>>> one of the first questions from hw vendors is 'which precise microcode
+>>> version was that?'.
+>>>
+>>>        Ingo
+>> I would agree especially in the case where not all the cpus are exactly
+>> the same.  But so far, I've only seen variations of the speed of the cpus
+>> not it's generic type, in an SSI.  So the version of the microcode was
+>> identical in all cases.
+> 
+> I guess that (at least) a bootup cpu can be updated by BIOS so that it
+> may appear to be different.
+> Perhaps, cases where some 'broken' cpus have been replaced for others
+> with a different "revision" (but still compatible otherwise) might be
+> rare but possible (say, big machines with hot-pluggable cpus) ?
+> 
+> btw., I was thinking of having something like this:
+> 
+> microcode: cpus [K...L]  platform-specific-format (e.g. for Intel :
+> sig, pf, rev)
+> microcode: updating...
+> microcode: cpus [K...L]  platform-specific-format (e.g. for Intel :
+> sig, pf, rev)
+> 
+> or even just,
+> 
+> microcode: cpus [ K...L] updated from platform-specific-format-1 to
+> platform-specific-format-2
+> 
+> 
+>> Thanks,
+>> Mike
+>>
+> 
+> 
+> -- Dmitry
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Here's another approach...
+
+I wasn't sure how to trigger the printing of the summary, so I winged it.
+Looking closer it would appear that perhaps adding a new "summarize"
+function to the microcode_ops struct could trigger it?  Note this version
+builds but I haven't yet tested it on a live system.
+
+Thanks,
+Mike
+
+SGI x86_64 UV: Limit the number of microcode messages
+
+Limit number of microcode messages of the form:
+
+[   50.887135] microcode: CPU0 sig=0x206e5, pf=0x4, revision=0xffff001
+
+Cc: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Andreas Mohr <andi@lisas.de>
+Cc: Hannes Eder <hannes@hanneseder.net>
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/kernel/microcode_intel.c |   73 +++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 72 insertions(+), 1 deletion(-)
+
+--- linux.orig/arch/x86/kernel/microcode_intel.c
++++ linux/arch/x86/kernel/microcode_intel.c
+@@ -137,6 +137,52 @@
+ 
+ #define exttable_size(et) ((et)->count * EXT_SIGNATURE_SIZE + EXT_HEADER_SIZE)
+ 
++static struct cpu_signature *cpusigs;
++static cpumask_var_t cpusigslist;
++static int cpusigs_error;
++
++static void summarize_cpu_info(void)
++{
++	char buf[128];
++	int cpu;
++	cpumask_var_t cpulist;
++
++	if (cpusigs_error || !alloc_cpumask_var(&cpulist, GFP_KERNEL)) {
++		printk(KERN_INFO "Can't print microcode summary\n");
++		return;
++	}
++
++	while ((cpu = cpumask_first(cpusigslist)) < nr_cpu_ids) {
++		struct cpu_signature *csig = &cpusigs[cpu];
++		int ncpu = cpu;
++
++		cpumask_clear(cpulist);
++		cpumask_set_cpu(cpu, cpulist);
++
++		/* gather all cpu info with same data */
++		while ((ncpu = cpumask_next(ncpu, cpusigslist)) < nr_cpu_ids)
++			if (csig->sig == cpusigs[ncpu].sig &&
++			    csig->pf  == cpusigs[ncpu].pf &&
++			    csig->rev == cpusigs[ncpu].rev)
++				cpumask_set_cpu(ncpu, cpulist);
++
++		cpulist_scnprintf(buf, sizeof(buf), cpulist);
++
++		printk(KERN_INFO
++			"microcode: CPU%s: sig=0x%x, pf=0x%x, revision=0x%x\n",
++			buf, csig->sig, csig->pf, csig->rev);
++
++		/* clear bits we just processed */
++		cpumask_xor(cpusigslist, cpusigslist, cpulist);
++	}
++
++	/* cleanup */
++	free_cpumask_var(cpulist);
++	free_cpumask_var(cpusigslist);
++	vfree(cpusigs);
++	cpusigs_error = 0;
++}
++
+ static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
+ {
+ 	struct cpuinfo_x86 *c = &cpu_data(cpu_num);
+@@ -165,9 +211,34 @@
+ 	/* get the current revision from MSR 0x8B */
+ 	rdmsr(MSR_IA32_UCODE_REV, val[0], csig->rev);
+ 
+-	printk(KERN_INFO "microcode: CPU%d sig=0x%x, pf=0x%x, revision=0x%x\n",
++	if (!cpusigs && !cpusigs_error) {
++		if (!alloc_cpumask_var(&cpusigslist, GFP_KERNEL))
++			cpusigs_error = 1;
++		else {
++			cpusigs = vmalloc(sizeof(*cpusigs) * nr_cpu_ids);
++			if (!cpusigs) {
++				free_cpumask_var(cpusigslist);
++				cpusigs_error = 1;
++			}
++		}
++	}
++
++	if (cpusigs_error || cpu_num == 0)
++		printk(KERN_INFO
++			"microcode: CPU%d sig=0x%x, pf=0x%x, revision=0x%x\n",
+ 			cpu_num, csig->sig, csig->pf, csig->rev);
+ 
++	else if (!cpusigs_error) {
++		cpusigs[cpu_num].sig = csig->sig;
++		cpusigs[cpu_num].pf = csig->pf;
++		cpusigs[cpu_num].rev = csig->rev;
++		cpumask_set_cpu(cpu_num, cpusigslist);
++
++		/* (XXX Need better method for when to print summary) */
++		if (cpu_num == (num_present_cpus() - 1))
++			summarize_cpu_info();
++	}
++
+ 	return 0;
+ }
+ 
