@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932467AbZJ0WDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbZJ0WEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932467AbZJ0WDL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 18:03:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbZJ0WDK
+	id S1756819AbZJ0WEn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 18:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932421AbZJ0WEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 18:03:10 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:22352 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756726AbZJ0WDJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 18:03:09 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=XXVIY+xYnMQQIsfkSPhtaWJ1F4x6XCw3l4XYPq9UjTpJhEWqJXl89o1tF7xXA/gnW
-	2p/m2ZzTZduVcTdSuRbEw==
-MIME-Version: 1.0
-In-Reply-To: <20091027193330.GB19379@elf.ucw.cz>
-References: <20091022091333.GA31023@elf.ucw.cz>
-	 <20091026234332.GB26583@kroah.com> <20091027001702.GA5019@elf.ucw.cz>
-	 <20091027030039.GA6195@kroah.com> <20091027081921.GG5019@elf.ucw.cz>
-	 <20091027165750.GA24477@kroah.com> <20091027193330.GB19379@elf.ucw.cz>
-Date: Tue, 27 Oct 2009 15:03:08 -0700
-Message-ID: <a55d774e0910271503u40184a37ub493cfb3ed37adba@mail.gmail.com>
-Subject: Re: staging/dream: add gpio and pmem support
-From: Brian Swetland <swetland@google.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Greg KH <greg@kroah.com>, "Arve Hj?nnev?g" <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Petri Gynther <pgynther@google.com>, Chris Dibona <cdibona@google.com>
-Content-Type: text/plain; charset=UTF-8
-X-System-Of-Record: true
+	Tue, 27 Oct 2009 18:04:42 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:38974 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756786AbZJ0WEl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 18:04:41 -0400
+Date: Tue, 27 Oct 2009 15:04:36 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       opurdila@ixiacom.com, viro@zeniv.linux.org.uk
+Subject: [PATCH] net: fold network name hash (v2)
+Message-ID: <20091027150436.56e673cd@nehalam>
+In-Reply-To: <20091027102251.244ee681@nehalam>
+References: <9986527.24561256620662709.JavaMail.root@tahiti.vyatta.com>
+	<19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com>
+	<20091026.222428.80364204.davem@davemloft.net>
+	<20091027102251.244ee681@nehalam>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 12:33 PM, Pavel Machek <pavel@ucw.cz> wrote:
->
-> (Plus, of course I'd like some help, but google people seem very
-> silent :-( ).
+The full_name_hash does not produce a value that is evenly distributed
+over the lower 8 bits. This causes name hash to be unbalanced with large
+number of names. There is a standard function to fold in upper bits
+so use that.
 
-Hi Pavel,
+This is independent of possible improvements to full_name_hash()
+in future.
+ 
+Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
 
-The Android kernel team is completely buried in issues related to fall
-09 devices -- we're just not going to have cycles for sorting out
-stuff related to going upstream until we're past that (probably
-mid-late November).  Yeah, this totally sucks, but that's where we
-are.  We're definitely going to be rebasing all our working trees up
-to 2.6.32/33 for the end of the year and doing a push to get more
-stuff cleaned up and push towards mainline.
-
-My hope remains that once we get more of the core msm support and
-device support out there we can get patches send upstream more
-incrementally in the future instead of these big blobs of code.  We
-need to adjust our working model to be more involved with the mainline
-day-by-day while still supporting "stable" branches that can make it
-into production hardware.  Fun times.
-
-Brian
+--- a/net/core/dev.c	2009-10-27 14:54:21.922563076 -0700
++++ b/net/core/dev.c	2009-10-27 15:04:16.733813459 -0700
+@@ -86,6 +86,7 @@
+ #include <linux/socket.h>
+ #include <linux/sockios.h>
+ #include <linux/errno.h>
++#include <linux/hash.h>
+ #include <linux/interrupt.h>
+ #include <linux/if_ether.h>
+ #include <linux/netdevice.h>
+@@ -199,7 +200,7 @@ EXPORT_SYMBOL(dev_base_lock);
+ static inline struct hlist_head *dev_name_hash(struct net *net, const char *name)
+ {
+ 	unsigned hash = full_name_hash(name, strnlen(name, IFNAMSIZ));
+-	return &net->dev_name_head[hash & ((1 << NETDEV_HASHBITS) - 1)];
++	return &net->dev_name_head[hash_long(hash, NETDEV_HASHBITS)];
+ }
+ 
+ static inline struct hlist_head *dev_index_hash(struct net *net, int ifindex)
