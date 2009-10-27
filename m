@@ -1,196 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932460AbZJ0VfP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbZJ0VfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932460AbZJ0VfP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 17:35:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932422AbZJ0VfO
+	id S932468AbZJ0VfY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 17:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932464AbZJ0VfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 17:35:14 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:33532 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932421AbZJ0VfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 17:35:13 -0400
-X-IronPort-AV: E=Sophos;i="4.44,635,1249282800"; 
-   d="scan'208";a="265031157"
-Subject: [GIT] Please pull NFS client bugfixes...
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+	Tue, 27 Oct 2009 17:35:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:54567 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932422AbZJ0VfS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 17:35:18 -0400
+Subject: Re: [PATCH] [GIT PULL] tracing: allow to change permissions for
+ text with dynamic ftrace enabled
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <1256682364.2691.33.camel@sbs-t61.sc.intel.com>
+References: <1256666023.26028.411.camel@gandalf.stny.rr.com>
+	 <1256671227.2691.15.camel@sbs-t61.sc.intel.com>
+	 <1256668438.26028.414.camel@gandalf.stny.rr.com>
+	 <1256682364.2691.33.camel@sbs-t61.sc.intel.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Tue, 27 Oct 2009 17:35:00 -0400
-Message-Id: <1256679301.3234.1.camel@heimdal.trondhjem.org>
+Organization: Kihon Technologies Inc.
+Date: Tue, 27 Oct 2009 17:35:18 -0400
+Message-Id: <1256679318.26028.468.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-X-OriginalArrivalTime: 27 Oct 2009 21:35:02.0268 (UTC) FILETIME=[5753ABC0:01CA574D]
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tue, 2009-10-27 at 14:26 -0800, Suresh Siddha wrote:
+> On Tue, 2009-10-27 at 11:33 -0700, Steven Rostedt wrote:
+> > On Tue, 2009-10-27 at 11:20 -0800, Suresh Siddha wrote:
+> > 
+> > > Steven, Is it possible for dynamic ftrace to use the kernel identity
+> > > mapping instead of the kernel text mapping for converting the tracing
+> > > calls to nops etc.
+> > 
+> > Not sure what you mean by "kernel identity" mapping.
+> 
+> 64bit has the kernel text pages mapped at two locations. kernel identity
+> mapping  (__PAGE_OFFSET) and kernel image/text mapping
+> (__START_KERNEL_map).
 
-Please pull from the "bugfixes" branch of the repository at
+I didn't realize that x86_64 mapped it two different ways.
 
-   git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git bugfixes
+> 
+> DEBUG_RODATA patch was trying to preserve large page mapping (for perf
+> reasons) for kernel text. We can use the identity mapping for modifying
+> the kernel text.
+> 
+> This patch seems to fix.
+> 
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index 5a1b975..7e1799b 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -215,6 +215,11 @@ do_ftrace_mod_code(unsigned long ip, void *new_code)
+>  }
+>  
+> 
+> +static inline int
+> +within(unsigned long addr, unsigned long start, unsigned long end)
+> +{
+> +	return addr >= start && addr < end;
+> +}
+>  
+> 
+>  static unsigned char ftrace_nop[MCOUNT_INSN_SIZE];
+> @@ -248,6 +253,14 @@ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+>  	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
+>  		return -EINVAL;
+>  
+> +	/*
+> +	 * On x86_64, we use the kernel identity mapping instead of the
+> +	 * kernel text mapping to modify the kernel text. This is a nop
+> +	 * for 32bit kernels.
+> +	 */
 
-This will update the following files through the appended changesets.
+Is it really a nop on 32bit? Does it just turn into ip = ip?
 
-  Cheers,
-    Trond
 
-----
- fs/nfs/dir.c      |    2 ++
- fs/nfs/direct.c   |    1 +
- fs/nfs/nfs4proc.c |   15 ++++++++-------
- fs/nfs/nfs4xdr.c  |    1 -
- 4 files changed, 11 insertions(+), 8 deletions(-)
+> +	if (within(ip, (unsigned long)_text, (unsigned long)_etext))
+> +		ip = (unsigned long)__va(__pa(ip));
+> +
+>  	/* replace the text with the new text */
+>  	if (do_ftrace_mod_code(ip, new_code))
+>  		return -EPERM;
 
-commit 9a3936aac133037f65124fcb2d676a6c201a90a4
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Mon Oct 26 08:09:46 2009 -0400
+I'll test it out, and if it does work, you can write up a formal patch
+and remove the !define that I added.
 
-    NFSv4: The link() operation should return any delegation on the file
-    
-    Otherwise, we have to wait for the server to recall it.
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Thanks,
 
-commit 141aeb9f26f9f12f1584c128ce8697cdffb046e7
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Mon Oct 26 08:09:46 2009 -0400
+-- Steve
 
-    NFSv4: Fix two unbalanced put_rpccred() issues.
-    
-    Commits 29fba38b (nfs41: lease renewal) and fc01cea9 (nfs41: sequence
-    operation) introduce a couple of put_rpccred() calls on credentials for
-    which there is no corresponding get_rpccred().
-    
-    See http://bugzilla.kernel.org/show_bug.cgi?id=14249
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-commit 52567b03ca38b6e556ced450d64dba8d66e23b0e
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Fri Oct 23 14:46:42 2009 -0400
-
-    NFSv4: Fix a bug when the server returns NFS4ERR_RESOURCE
-    
-    RFC 3530 states that when we recieve the error NFS4ERR_RESOURCE, we are not
-    supposed to bump the sequence number on OPEN, LOCK, LOCKU, CLOSE, etc
-    operations. The problem is that we map that error into EREMOTEIO in the XDR
-    layer, and so the NFSv4 middle-layer routines like seqid_mutating_err(),
-    and nfs_increment_seqid() don't recognise it.
-    
-    The fix is to defer the mapping until after the middle layers have
-    processed the error.
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-commit a8b40bc7e635831b61c43acc71a86d3a68b2dff0
-Author: Terry Loftin <terry.loftin@hp.com>
-Date:   Thu Oct 22 21:36:01 2009 -0400
-
-    nfs: Panic when commit fails
-    
-    Actually pass the NFS_FILE_SYNC option to the server to avoid a
-    Panic in nfs_direct_write_complete() when a commit fails.
-    
-    At the end of an nfs write, if the nfs commit fails, all the writes
-    will be rescheduled.  They are supposed to be rescheduled as NFS_FILE_SYNC
-    writes, but the rpc_task structure is not completely intialized and so
-    the option is not passed.  When the rescheduled writes complete, the
-    return indicates that they are NFS_UNSTABLE and we try to do another
-    commit.  This leads to a Panic because the commit data structure pointer
-    was set to null in the initial (failed) commit attempt.
-    
-    Signed-off-by: Terry Loftin <terry.loftin@hp.com>
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index 32062c3..7cb2985 100644
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -1536,6 +1536,8 @@ nfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
- 		old_dentry->d_parent->d_name.name, old_dentry->d_name.name,
- 		dentry->d_parent->d_name.name, dentry->d_name.name);
- 
-+	nfs_inode_return_delegation(inode);
-+
- 	d_drop(dentry);
- 	error = NFS_PROTO(dir)->link(inode, dir, &dentry->d_name);
- 	if (error == 0) {
-diff --git a/fs/nfs/direct.c b/fs/nfs/direct.c
-index 6c32100..e1d415e 100644
---- a/fs/nfs/direct.c
-+++ b/fs/nfs/direct.c
-@@ -457,6 +457,7 @@ static void nfs_direct_write_reschedule(struct nfs_direct_req *dreq)
- 	};
- 	struct rpc_task_setup task_setup_data = {
- 		.rpc_client = NFS_CLIENT(inode),
-+		.rpc_message = &msg,
- 		.callback_ops = &nfs_write_direct_ops,
- 		.workqueue = nfsiod_workqueue,
- 		.flags = RPC_TASK_ASYNC,
-diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
-index ed7c269..ff37454 100644
---- a/fs/nfs/nfs4proc.c
-+++ b/fs/nfs/nfs4proc.c
-@@ -72,12 +72,17 @@ static int _nfs4_proc_getattr(struct nfs_server *server, struct nfs_fh *fhandle,
- /* Prevent leaks of NFSv4 errors into userland */
- static int nfs4_map_errors(int err)
- {
--	if (err < -1000) {
-+	if (err >= -1000)
-+		return err;
-+	switch (err) {
-+	case -NFS4ERR_RESOURCE:
-+		return -EREMOTEIO;
-+	default:
- 		dprintk("%s could not handle NFSv4 error %d\n",
- 				__func__, -err);
--		return -EIO;
-+		break;
- 	}
--	return err;
-+	return -EIO;
- }
- 
- /*
-@@ -3060,9 +3065,6 @@ static void nfs4_renew_done(struct rpc_task *task, void *data)
- 	if (time_before(clp->cl_last_renewal,timestamp))
- 		clp->cl_last_renewal = timestamp;
- 	spin_unlock(&clp->cl_lock);
--	dprintk("%s calling put_rpccred on rpc_cred %p\n", __func__,
--				task->tk_msg.rpc_cred);
--	put_rpccred(task->tk_msg.rpc_cred);
- }
- 
- static const struct rpc_call_ops nfs4_renew_ops = {
-@@ -4877,7 +4879,6 @@ void nfs41_sequence_call_done(struct rpc_task *task, void *data)
- 	nfs41_sequence_free_slot(clp, task->tk_msg.rpc_resp);
- 	dprintk("%s rpc_cred %p\n", __func__, task->tk_msg.rpc_cred);
- 
--	put_rpccred(task->tk_msg.rpc_cred);
- 	kfree(task->tk_msg.rpc_argp);
- 	kfree(task->tk_msg.rpc_resp);
- 
-diff --git a/fs/nfs/nfs4xdr.c b/fs/nfs/nfs4xdr.c
-index 83ad47c..20b4e30 100644
---- a/fs/nfs/nfs4xdr.c
-+++ b/fs/nfs/nfs4xdr.c
-@@ -5681,7 +5681,6 @@ static struct {
- 	{ NFS4ERR_SERVERFAULT,	-ESERVERFAULT	},
- 	{ NFS4ERR_BADTYPE,	-EBADTYPE	},
- 	{ NFS4ERR_LOCKED,	-EAGAIN		},
--	{ NFS4ERR_RESOURCE,	-EREMOTEIO	},
- 	{ NFS4ERR_SYMLINK,	-ELOOP		},
- 	{ NFS4ERR_OP_ILLEGAL,	-EOPNOTSUPP	},
- 	{ NFS4ERR_DEADLOCK,	-EDEADLK	},
-
--- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
