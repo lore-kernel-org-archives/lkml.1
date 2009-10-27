@@ -1,97 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbZJ0Ky2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbZJ0LBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbZJ0Ky2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 06:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZJ0Ky2
+	id S1753635AbZJ0LBx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 07:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZJ0LBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 06:54:28 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39577 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752497AbZJ0Ky1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 06:54:27 -0400
-Date: Tue, 27 Oct 2009 11:54:31 +0100
-From: Jan Kara <jack@suse.cz>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] const: struct quota_format_ops
-Message-ID: <20091027105430.GD4285@duck.suse.cz>
-References: <20091016112603.GA32474@x200>
+	Tue, 27 Oct 2009 07:01:52 -0400
+Received: from ns2.intersolute.de ([193.110.43.67]:33926 "EHLO
+	ns2.intersolute.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752996AbZJ0LBw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 07:01:52 -0400
+Message-ID: <4AE6D312.9040803@lumino.de>
+Date: Tue, 27 Oct 2009 12:01:38 +0100
+From: Michael Schnell <mschnell@lumino.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091016112603.GA32474@x200>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Leonidas ." <leonidas137@gmail.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Noah Watkins <noah@noahdesu.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Difference between atomic operations and memory barriers
+References: <f22d86810910261019yc77dbf0sa7688a98e7b98267@mail.gmail.com>	 <7ADB5FD7-9C97-4987-BC20-997258B25FD2@noahdesu.com>	 <f22d86810910261122j6c9e57e8pd4a257090f65c727@mail.gmail.com>	 <4AE5F1D2.9030908@s5r6.in-berlin.de>	 <f22d86810910261205r232db5d4re97a54827c7adab3@mail.gmail.com>	 <4AE6C998.9040405@lumino.de> <f22d86810910270323m6e004576ya4da96afc02e3d07@mail.gmail.com>
+In-Reply-To: <f22d86810910270323m6e004576ya4da96afc02e3d07@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 16-10-09 15:26:03, Alexey Dobriyan wrote:
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-  Thanks. Merged into my tree. I plan to push it to Linus in the next merge
-window.
+Leonidas . wrote:
+> but pointer
+> assignment would still be atomic.
+> 
 
-							Honza
-> ---
-> 
->  fs/ocfs2/quota_local.c |    2 +-
->  fs/quota/quota_v1.c    |    2 +-
->  fs/quota/quota_v2.c    |    2 +-
->  include/linux/quota.h  |    4 ++--
->  4 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> --- a/fs/ocfs2/quota_local.c
-> +++ b/fs/ocfs2/quota_local.c
-> @@ -1325,7 +1325,7 @@ out:
->  	return status;
->  }
->  
-> -static struct quota_format_ops ocfs2_format_ops = {
-> +static const struct quota_format_ops ocfs2_format_ops = {
->  	.check_quota_file	= ocfs2_local_check_quota_file,
->  	.read_file_info		= ocfs2_local_read_info,
->  	.write_file_info	= ocfs2_global_write_info,
-> --- a/fs/quota/quota_v1.c
-> +++ b/fs/quota/quota_v1.c
-> @@ -204,7 +204,7 @@ out:
->  	return ret;
->  }
->  
-> -static struct quota_format_ops v1_format_ops = {
-> +static const struct quota_format_ops v1_format_ops = {
->  	.check_quota_file	= v1_check_quota_file,
->  	.read_file_info		= v1_read_file_info,
->  	.write_file_info	= v1_write_file_info,
-> --- a/fs/quota/quota_v2.c
-> +++ b/fs/quota/quota_v2.c
-> @@ -207,7 +207,7 @@ static int v2_free_file_info(struct super_block *sb, int type)
->  	return 0;
->  }
->  
-> -static struct quota_format_ops v2_format_ops = {
-> +static const struct quota_format_ops v2_format_ops = {
->  	.check_quota_file	= v2_check_quota_file,
->  	.read_file_info		= v2_read_file_info,
->  	.write_file_info	= v2_write_file_info,
-> --- a/include/linux/quota.h
-> +++ b/include/linux/quota.h
-> @@ -334,7 +334,7 @@ struct quotactl_ops {
->  
->  struct quota_format_type {
->  	int qf_fmt_id;	/* Quota format id */
-> -	struct quota_format_ops *qf_ops;	/* Operations of format */
-> +	const struct quota_format_ops *qf_ops;	/* Operations of format */
->  	struct module *qf_owner;		/* Module implementing quota format */
->  	struct quota_format_type *qf_next;
->  };
-> @@ -383,7 +383,7 @@ struct quota_info {
->  	struct rw_semaphore dqptr_sem;		/* serialize ops using quota_info struct, pointers from inode to dquots */
->  	struct inode *files[MAXQUOTAS];		/* inodes of quotafiles */
->  	struct mem_dqinfo info[MAXQUOTAS];	/* Information for each quota type */
-> -	struct quota_format_ops *ops[MAXQUOTAS];	/* Operations for each type */
-> +	const struct quota_format_ops *ops[MAXQUOTAS];	/* Operations for each type */
->  };
->  
->  int register_quota_format(struct quota_format_type *fmt);
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Yep. bit maybe the assignment to the memory cell that holds the pointer
+just would be optimized out and be done at all. This my be considered
+atomic but of course not desired for anything atomicness is considered for.
+
+-Michael
