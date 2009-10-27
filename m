@@ -1,108 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755107AbZJ0AOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbZJ0APS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755107AbZJ0AOw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 20:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZJ0AOv
+	id S1755378AbZJ0APS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 20:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbZJ0APR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 20:14:51 -0400
-Received: from mail.perches.com ([173.55.12.10]:1082 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754786AbZJ0AOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 20:14:50 -0400
-Subject: Re: [PATCH 6/9] ser_gigaset: checkpatch cleanup
-From: Joe Perches <joe@perches.com>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>,
-       Hansjoerg Lipp <hjlipp@web.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
-       i4ldeveloper@listserv.isdn4linux.de
-In-Reply-To: <4AE637D8.60809@imap.cc>
-References: <20091023-patch-gigaset-00.tilman@imap.cc>
-	 <20091023-patch-gigaset-06.tilman@imap.cc>
-	 <1256518486.14711.13.camel@Joe-Laptop.home>  <4AE637D8.60809@imap.cc>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 26 Oct 2009 17:14:54 -0700
-Message-ID: <1256602494.29938.13.camel@Joe-Laptop.home>
+	Mon, 26 Oct 2009 20:15:17 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47010
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754804AbZJ0APQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 20:15:16 -0400
+Date: Mon, 26 Oct 2009 17:15:39 -0700 (PDT)
+Message-Id: <20091026.171539.06989895.davem@davemloft.net>
+To: rostedt@goodmis.org
+Cc: sam@ravnborg.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       nico@fluxnic.net, tony.luck@intel.com, sfr@canb.auug.org.au,
+       mcgrof@gmail.com, jeff@garzik.org, robert.richter@amd.com,
+       dmitry.torokhov@gmail.com, khali@linux-fr.org,
+       torvalds@linux-foundation.org
+Subject: Re: [RFC] to rebase or not to rebase on linux-next
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1256601061.26028.350.camel@gandalf.stny.rr.com>
+References: <1256599588.26028.340.camel@gandalf.stny.rr.com>
+	<20091026.163050.156983266.davem@davemloft.net>
+	<1256601061.26028.350.camel@gandalf.stny.rr.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 00:59 +0100, Tilman Schmidt wrote:
-> Am 26.10.2009 01:54 schrieb Joe Perches:
-> > On Sun, 2009-10-25 at 20:30 +0100, Tilman Schmidt wrote:
-> >> Duly uglified as demanded by checkpatch.pl.
-> >> diff --git a/drivers/isdn/gigaset/ser-gigaset.c b/drivers/isdn/gigaset/ser-gigaset.c
-> >> index 3071a52..ac3409e 100644
-> >> --- a/drivers/isdn/gigaset/ser-gigaset.c
-> >> +++ b/drivers/isdn/gigaset/ser-gigaset.c
-> >> @@ -164,9 +164,15 @@ static void gigaset_modem_fill(unsigned long data)
-> >>  {
-> >>  	struct cardstate *cs = (struct cardstate *) data;
-> >>  	struct bc_state *bcs;
-> >> +	struct sk_buff *nextskb;
-> >>  	int sent = 0;
-> >>  
-> >> -	if (!cs || !(bcs = cs->bcs)) {
-> >> +	if (!cs) {
-> >> +		gig_dbg(DEBUG_OUTPUT, "%s: no cardstate", __func__);
-> >> +		return;
-> >> +	}
-> >> +	bcs = cs->bcs;
-> >> +	if (!bcs) {
-> >>  		gig_dbg(DEBUG_OUTPUT, "%s: no cardstate", __func__);
-> >>  		return;
-> >> 	}
-> > 
-> > perhaps:
-> > 	if (!cs || !cs->bcs) {
-> > 		gig_dbg(DEBUG_OUTPUT, "%s: no cardstate", __func__);
-> > 		return;
-> > 	}
-> > 	bcs = cs->bcs;
+From: Steven Rostedt <rostedt@goodmis.org>
+Date: Mon, 26 Oct 2009 19:51:01 -0400
+
+> On Mon, 2009-10-26 at 16:30 -0700, David Miller wrote:
+>> From: Steven Rostedt <rostedt@goodmis.org>
+>> Date: Mon, 26 Oct 2009 19:26:28 -0400
+>> 
+>> > I think this is more of a failure in git than in the work flow we
+>> > present.
+>> 
+>> Others (like me) will say you should have let that patch cook for a
+>> while on the mailing list or in your tree before publishing, in order
+>> to let those acks and tested-by replies come in.
+>> 
+>> That's how I handle this.
+>> 
+>> And I really don't buy the argument that you have to publish the
+>> change in a GIT tree to get those ACKs and tested-by replies.
 > 
-> That would evaluate cs->bcs twice, and is also, in my experience,
-> significantly more prone to easily overlooked typos which result in
-> checking a different pointer in the if statement than the one that's
-> actually used in the subsequent assignment.
+> The thing is, I do my changes with git.
 
-The other is to duplicate the gig_dbg function as you've done.
-Also prone to typos and more code as well.
+So do I.
 
-> >> @@ -404,16 +412,20 @@ static void gigaset_device_release(struct device *dev)
-> >>  static int gigaset_initcshw(struct cardstate *cs)
-> >>  {
-> >>  	int rc;
-> >> +	struct ser_cardstate *scs;
-> >>  
-> >> -	if (!(cs->hw.ser = kzalloc(sizeof(struct ser_cardstate), GFP_KERNEL))) {
-> >> +	scs = kzalloc(sizeof(struct ser_cardstate), GFP_KERNEL);
-> >> +	if (!scs) {
-> >>  		pr_err("out of memory\n");
-> >>  		return 0;
-> >>  	}
-> >> +	cs->hw.ser = scs;
-> > 
-> > Why not no temporary and just:
-> > 
-> > 	cs->hw.ser = kzalloc...
-> > 	if (!cs->hw.ser)
-> 
-> For the same reasons as above.
+> I get something working and then commit it. Then I do more changes
+> and commit that. I don't use quilt anymore for this.
 
-I believe the checkpatch recommended form is:
+And you can do this all day long if you like.
 
-	foo = func();
-	if ([!]foo) {
-		handle_error()...
-	}
+What you can't do is _PUBLISH_ this anywhere to a tree that people
+also do development against _UNTIL_ you get those acks and tested-by
+tags back from people.
 
-as you've used in all the other conversions.
+Once your acks etc. come in, you can pop all of those pending patches
+out of your tree, add the ack tags to the commit messages, then
+reapply them.
 
-No big deal or difference, but I think what I
-suggested is more kernel style normal.
+Then you can push to your public tree, but no sooner.
 
-cheers, Joe
-
+It really is that simple.
