@@ -1,64 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbZJ0LwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbZJ0MBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbZJ0LwL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 07:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZJ0LwJ
+	id S1754003AbZJ0MBy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 08:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZJ0MBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 07:52:09 -0400
-Received: from pptp-il.jungo.com ([194.90.113.98]:43429 "EHLO
-	wall-ext.jungo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753691AbZJ0LwI (ORCPT
+	Tue, 27 Oct 2009 08:01:54 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:55786 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753774AbZJ0MBw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 07:52:08 -0400
-Date: Tue, 27 Oct 2009 13:52:05 +0200
-From: Shmulik Ladkani <shmulik@jungo.com>
-To: linux-serial@vger.kernel.org
-Cc: shmulik@jungo.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial: copy UART properties of UPF_FIXED_TYPE ports
- provisioned  using early_serial_setup
-Message-ID: <20091027135205.74bbf5f7@pixies.home.jungo.com>
-In-Reply-To: <dzvMe-7Mg-3@gated-at.bofh.it>
-References: <dzvMe-7Mg-3@gated-at.bofh.it>
-Organization: Jungo Ltd.
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Tue, 27 Oct 2009 08:01:52 -0400
+From: "Dasgupta, Romit" <romit@ti.com>
+To: "Hilman, Kevin" <khilman@ti.com>, "rjw@sisk.pl" <rjw@sisk.pl>
+CC: "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 27 Oct 2009 17:31:30 +0530
+Subject: [PATCH] PM: Fixes warning on suspend errors
+Thread-Topic: [PATCH] PM: Fixes warning on suspend errors
+Thread-Index: AcpW/TguHlLgiK/OSwWE73VOdePpNg==
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE0DC96A@dbde02.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 12:20:02 +0100 Shmulik Ladkani <shmulik@jungo.com> wrote:
-> Augment the UPF_FIXED_TYPE logic, which currently applies to UART ports 
-> provisioned using platform_device_register.
-> 
-> The suggested patch applies same logic into 'serial8250_register_ports', 
-> making UART ports provisioned using early_serial_setup inherit their 
-> properties from the uart_config entry.
-> 
-> The patch applies to linux-2.6.32-rc5
+Hi,
+     I get the following errors when I choose devices in /sys/power/pm_test. It also shows that if 'dpm_suspend_start' fails somewhere down the line then the kernel does not reset the 'transition_started' variable and we can get warning similar to below. IMHO 'dpm_resume_noirq' is not the right place for setting this variable. Please see the patch below which fixes the issue.
 
-Re-submit (previous mailer messed-up whitespace).
+Thanks,
+-Romit
 
-Signed-off-by: Shmulik Ladkani <shmulik@jungo.com>
+
+# [  113.713958] mmcblk0: mmc1:0001 STM16G 14.8 GiB
+[  113.718902]  mmcblk0: unknown partition table
+[  113.745574] ------------[ cut here ]------------
+[  113.751525] WARNING: at drivers/base/power/main.c:98 device_pm_add+0x94/0xdc()
+[  113.758819] Device: bdi
+[  113.758819] Parentless device registered during a PM transaction
+[  113.773071] Modules linked in:
+[  113.776214] [<c002b87c>] (unwind_backtrace+0x0/0xdc) from [<c004ff58>] (warn_slowpath_common+0x48/0x60)
+[  113.785705] [<c004ff58>] (warn_slowpath_common+0x48/0x60) from [<c004ffa8>] (warn_slowpath_fmt+0x24/0x30)
+[  113.799896] [<c004ffa8>] (warn_slowpath_fmt+0x24/0x30) from [<c01b36b8>] (device_pm_add+0x94/0xdc)
+[  113.808990] [<c01b36b8>] (device_pm_add+0x94/0xdc) from [<c01ad9bc>] (device_add+0x3a8/0x534)
+[  113.817565] [<c01ad9bc>] (device_add+0x3a8/0x534) from [<c01adbd8>] (device_create_vargs+0x78/0xa8)
+[  113.829650] [<c01adbd8>] (device_create_vargs+0x78/0xa8) from [<c0090a9c>] (bdi_register+0x3c/0x154)
+[  113.839263] [<c0090a9c>] (bdi_register+0x3c/0x154) from [<c0090bd4>] (bdi_register_dev+0x20/0x28)
+[  113.851348] [<c0090bd4>] (bdi_register_dev+0x20/0x28) from [<c0173b98>] (add_disk+0xe4/0x124)
+[  113.859954] [<c0173b98>] (add_disk+0xe4/0x124) from [<c01e6b54>] (mmc_blk_probe+0x250/0x288)
+[  113.870513] [<c01e6b54>] (mmc_blk_probe+0x250/0x288) from [<c01e14d4>] (mmc_bus_probe+0x18/0x1c)
+[  113.879394] [<c01e14d4>] (mmc_bus_probe+0x18/0x1c) from [<c01af97c>] (driver_probe_device+0xa0/0x14c)
+[  113.893890] [<c01af97c>] (driver_probe_device+0xa0/0x14c) from [<c01aef44>] (bus_for_each_drv+0x44/0x80)
+[  113.905609] [<c01aef44>] (bus_for_each_drv+0x44/0x80) from [<c01afb60>] (device_attach+0x50/0x68)
+[  113.914550] [<c01afb60>] (device_attach+0x50/0x68) from [<c01aed94>] (bus_probe_device+0x24/0x40)
+[  113.925170] [<c01aed94>] (bus_probe_device+0x24/0x40) from [<c01ad9f0>] (device_add+0x3dc/0x534)
+[  113.934082] [<c01ad9f0>] (device_add+0x3dc/0x534) from [<c01e1688>] (mmc_add_card+0xcc/0x118)
+[  113.945251] [<c01e1688>] (mmc_add_card+0xcc/0x118) from [<c01e2408>] (mmc_attach_mmc+0xdc/0x13c)
+[  113.954132] [<c01e2408>] (mmc_attach_mmc+0xdc/0x13c) from [<c01e12f0>] (mmc_rescan+0x2b0/0x2e8)
+[  113.964874] [<c01e12f0>] (mmc_rescan+0x2b0/0x2e8) from [<c0060840>] (worker_thread+0x16c/0x218)
+[  113.973693] [<c0060840>] (worker_thread+0x16c/0x218) from [<c0063d88>] (kthread+0x7c/0x84)
+[  113.986694] [<c0063d88>] (kthread+0x7c/0x84) from [<c0026ea0>] (kernel_thread_exit+0x0/0x8)
+[  113.995147] ---[ end trace aaa7bf5becc572f5 ]---
+
+
+
+
+Fixes the location where we decide that our power transition is complete.
+Signed-off-by: Romit Dasgupta <romit@ti.com>
 ---
-diff -upr linux-2.6.32-rc5.clean/drivers/serial/8250.c linux-2.6.32-rc5/drivers/serial/8250.c
---- linux-2.6.32-rc5.clean/drivers/serial/8250.c	2009-10-16 02:41:50.000000000 +0200
-+++ linux-2.6.32-rc5/drivers/serial/8250.c	2009-10-26 11:36:09.000000000 +0200
-@@ -2704,6 +2704,14 @@ serial8250_register_ports(struct uart_dr
- 		struct uart_8250_port *up = &serial8250_ports[i];
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index e0dc407..6b9e991 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -365,7 +365,6 @@ void dpm_resume_noirq(pm_message_t state)
+ 	struct device *dev;
  
- 		up->port.dev = dev;
-+
-+		if (up->port.flags & UPF_FIXED_TYPE) {
-+			up->port.fifosize =
-+				uart_config[up->port.type].fifo_size;
-+			up->capabilities = uart_config[up->port.type].flags;
-+			up->tx_loadsz = uart_config[up->port.type].tx_loadsz;
-+		}
-+
- 		uart_add_one_port(drv, &up->port);
+ 	mutex_lock(&dpm_list_mtx);
+-	transition_started = false;
+ 	list_for_each_entry(dev, &dpm_list, power.entry)
+ 		if (dev->power.status > DPM_OFF) {
+ 			int error;
+@@ -529,6 +528,7 @@ static void dpm_complete(pm_message_t state)
+ 		put_device(dev);
  	}
+ 	list_splice(&list, &dpm_list);
++	transition_started = false;
+ 	mutex_unlock(&dpm_list_mtx);
  }
--- 
-Shmulik Ladkani		Jungo Ltd.
+
