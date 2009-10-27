@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756486AbZJ0RuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZJ0Rxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756486AbZJ0RuP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 13:50:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756472AbZJ0RuO
+	id S1756511AbZJ0Rxt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 13:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756483AbZJ0Rxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 13:50:14 -0400
-Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:42727 "EHLO
-	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756465AbZJ0RuN (ORCPT
+	Tue, 27 Oct 2009 13:53:49 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47916 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756480AbZJ0Rxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 13:50:13 -0400
-Subject: [PATCH] nfs: reorder nfs4_sequence_regs to remove 8 bytes of
- padding on 64 bits
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: linux-nfs@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+	Tue, 27 Oct 2009 13:53:48 -0400
+Subject: [PATCH] [GIT PULL] tracing: allow to change permissions for text
+ with dynamic ftrace enabled
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
 Content-Type: text/plain
-Date: Tue, 27 Oct 2009 17:50:12 +0000
-Message-Id: <1256665813.2319.26.camel@castor>
+Organization: Kihon Technologies Inc.
+Date: Tue, 27 Oct 2009 13:53:43 -0400
+Message-Id: <1256666023.26028.411.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-reorder nfs4_sequence_args to remove 8 bytes of padding on 64 bit
-builds. 
 
-The size of this structure drops to 24 bytes from 32 and reduces the
-text size of nfs.ko.
-On my x86_64 size reports 
+Ingo,
 
-		text       data     bss
-2.6.32-rc5 	200996	   8512	    432	 209940	  33414	nfs.ko
-+patch 		200884	   8512	    432	 209828	  333a4	nfs.ko
+The cause of the ftrace bug you saw in tip/master was caused by a change
+in tip's x86/mm branch.
+
+Please pull the latest tip/x86/mm tree, which can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/x86/mm
 
 
-Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+Steven Rostedt (1):
+      tracing: allow to change permissions for text with dynamic ftrace enabled
 
 ----
-patch against 2.6.32-rc5
-only lightly tested but it seems to work both with   
-64 bit client -> 32 bit server & 32 bit client -> 64 bit server.
+ arch/x86/mm/pageattr.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+---------------------------
+commit 883242dd0e5faaba041528a9a99f483f2a656c83
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Tue Oct 27 13:15:11 2009 -0400
 
-regards
+    tracing: allow to change permissions for text with dynamic ftrace enabled
+    
+    The commit 74e081797bd9d2a7d8005fe519e719df343a2ba8
+    x86-64: align RODATA kernel section to 2MB with CONFIG_DEBUG_RODATA
+    prevents text sections from becoming read/write using set_memory_rw.
+    
+    The dynamic ftrace changes all text pages to read/write just before
+    converting the calls to tracing to nops, and vice versa.
+    
+    I orginally just added a flag to allow this transaction when ftrace
+    did the change, but I also found that when the CPA testing was running
+    it would remove the read/write as well, and ftrace does not do the text
+    conversion on boot up, and the CPA changes caused the dynamic tracer
+    to fail on self tests.
+    
+    The current solution I have is to simply not to prevent
+    change_page_attr from setting the RW bit for kernel text pages.
+    
+    Reported-by: Ingo Molnar <mingo@elte.hu>
+    Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+    Cc: H. Peter Anvin <hpa@zytor.com>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-Richard 
-
-
-diff --git a/include/linux/nfs_xdr.h b/include/linux/nfs_xdr.h
-index 62f63fb..8c88037 100644
---- a/include/linux/nfs_xdr.h
-+++ b/include/linux/nfs_xdr.h
-@@ -170,8 +170,8 @@ struct nfs4_sequence_args {
- struct nfs4_sequence_res {
- 	struct nfs4_session	*sr_session;
- 	u8			sr_slotid;	/* slot used to send request */
--	unsigned long		sr_renewal_time;
- 	int			sr_status;	/* sequence operation status */
-+	unsigned long		sr_renewal_time;
- };
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index b494fc4..78d3168 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -279,7 +279,8 @@ static inline pgprot_t static_protections(pgprot_t prot, unsigned long address,
+ 		   __pa((unsigned long)__end_rodata) >> PAGE_SHIFT))
+ 		pgprot_val(forbidden) |= _PAGE_RW;
  
- struct nfs4_get_lease_time_args {
+-#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA)
++#if defined(CONFIG_X86_64) && defined(CONFIG_DEBUG_RODATA) && \
++	!defined(CONFIG_DYNAMIC_FTRACE)
+ 	/*
+ 	 * Kernel text mappings for the large page aligned .rodata section
+ 	 * will be read-only. For the kernel identity mappings covering
 
 
