@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932181AbZJ0Udx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932219AbZJ0UeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932181AbZJ0Udx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 16:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbZJ0Udw
+	id S932219AbZJ0UeM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 16:34:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932192AbZJ0UeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 16:33:52 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:43831 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932081AbZJ0Udv (ORCPT
+	Tue, 27 Oct 2009 16:34:11 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:37505 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932190AbZJ0UeJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 16:33:51 -0400
+	Tue, 27 Oct 2009 16:34:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BIwjvDJPRJ5oLSG5J3fsY+QB4DV7FgZZg5Y2ZaYj1lN1z3p5XMJcf2XVW0BXlYdDBA
-         Tu2QBg+Vi4xaJilgT3xqsjc3uwhXnMGwrFjLbuIHQHlHsezia7AzIq7UaPN2FJ29HuIC
-         9R6jfNnul5MzBuP6Ryr3e4yj8nMiPnBjgkktM=
-Date: Tue, 27 Oct 2009 23:33:52 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Mike Travis <travis@sgi.com>
-Cc: David Rientjes <rientjes@google.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 3/8] SGI x86_64 UV: Limit the number of number of SRAT
-	messages
-Message-ID: <20091027203352.GL5893@lenovo>
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <20091027201636.GK5893@lenovo> <4AE756CE.2030309@sgi.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=qEMw/aZs914uoJIIeQPyE+6KPbLagpZQ5Fqkx/HtRJw0Yxcz+HMKBhEe5lgz2CHg46
+         FPj3yF2PG5tdCOSS1DAK+ikoWon0K1NWLmuz1XYCEP3E6fNP9R09rsNidnXQIMS1dmOw
+         ft7q8HW8MS8AUEZwloeg5fxMlWeyXPzV/t6Q8=
+Message-ID: <4AE75945.8010407@gmail.com>
+Date: Tue, 27 Oct 2009 13:34:13 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE756CE.2030309@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Valdis.Kletnieks@vt.edu
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2
+ 0
+References: <4AE24009.4090408@gmail.com> <dd18b0c30910261134s76274dbbj9c1904e78c2b5a38@mail.gmail.com> <21504.1256588976@turing-police.cc.vt.edu> <4AE611B2.1030409@gmail.com> <29209.1256624599@turing-police.cc.vt.edu>            <4AE744F6.5050801@gmail.com> <22388.1256672113@turing-police.cc.vt.edu>
+In-Reply-To: <22388.1256672113@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Mike Travis - Tue, Oct 27, 2009 at 01:23:42PM -0700]
+Valdis.Kletnieks@vt.edu wrote:
+> On Tue, 27 Oct 2009 12:07:34 PDT, "Justin P. Mattock" said:
 >
-> I moved them both to static and will be testing it shortly:
+>    
+>> The results are similar with the messages, except
+>> with the curly's the system will panic the same as above
+>> and not boot.
+>>      
 >
-> static DECLARE_BITMAP(apicid_map, MAX_LOCAL_APIC) __initdata;
-> static char apicid_list[MAX_LOCAL_APIC] __initdata;
+> As I expected - I explained why already.  And in fact, I intentionally did
+> that, so that the *last* one of those added messages before your panic
+> will output the info regarding the device that caused it (hacking around
+> the panic would mean that you'd get a whole bunch of messages and not have
+> an easy way to tell *which one* caused the now-bypassed issue...)
 >
-> Thanks,
-> Mike
+>    
+>> (So I guess it was good to forget the curly's
+>> to some extent).
+>>      
 >
+> So out of curiosity, what did the messages actually *SAY*?  They should
+> be pointing at the device that's giving your system indigestion, so it's
+> useful to actually include the output (I didn't pull that printk format
+> string out of thin air.. ;)
+>
+>    
+o.k. you should be able to view
+this:(let me know if you can't and I can
+manually write out, and in time find a public
+photo sharing suite to make things easier).
 
-Great! David has just updated patch too.
+http://www.flickr.com/photos/44066293@N08/4050317695
 
-	-- Cyrill
+When this happens I see lots of messages from the print
+during boot, then this happens.
+
+Justin P. Mattock
+
+
