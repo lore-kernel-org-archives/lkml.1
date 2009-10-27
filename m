@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZJ0Wc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbZJ0WLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754986AbZJ0Wc7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 18:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbZJ0Wc7
+	id S1753667AbZJ0WLU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 18:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZJ0WLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 18:32:59 -0400
-Received: from kroah.org ([198.145.64.141]:55114 "EHLO coco.kroah.org"
+	Tue, 27 Oct 2009 18:11:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39951 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753950AbZJ0Wc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 18:32:57 -0400
-Date: Tue, 27 Oct 2009 15:12:19 -0700
-From: Greg KH <greg@kroah.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Subject: Re: Staging: netwave: move driver to staging
-Message-ID: <20091027221219.GB20746@kroah.com>
-References: <1256015830-12700-4-git-send-email-linville@tuxdriver.com>
- <20091027203643.GA28719@kroah.com>
- <20091027210554.GG15566@tuxdriver.com>
+	id S1753028AbZJ0WLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 18:11:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>
+Subject: Re: [Bug #14484] no video output after suspend
+Date: Tue, 27 Oct 2009 23:12:56 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <6dRYo8ss7vL.A.5tE.0qe5KB@chimera> <4AE7654B.6040401@gmail.com>
+In-Reply-To: <4AE7654B.6040401@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091027210554.GG15566@tuxdriver.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910272312.56120.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 05:05:54PM -0400, John W. Linville wrote:
-> On Tue, Oct 27, 2009 at 01:36:43PM -0700, Greg KH wrote:
-> > On Tue, Oct 20, 2009 at 02:17:10PM +0900, John W. Linville wrote:
-> > > -menuconfig WLAN_80211
-> > 
-> > If you are removing this config option, what should we use to depend on
-> > the wireless stack?  This is what the staging wireless drivers use,
-> > should they be changed to use something else?
+On Tuesday 27 October 2009, Riccardo Magliocchetti wrote:
+> Hello Rafael,
 > 
-> Hmmm...probably WLAN will do.  I should probably make that depend on NETDEVICES as well...
+> Rafael J. Wysocki ha scritto:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.31.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14484
+> > Subject		: no video output after suspend
+> > Submitter	: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>
+> > Date		: 2009-10-25 20:57 (2 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=125650430123713&w=4
+> > Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
+> 
+> Since the bad commit is around 2.6.31-rc9 i think this is a regression 
+> from 2.6.30 and not 2.6.31, it's me that have reported the issue so 
+> late. Then the patch that you added on the first comment is for another 
+> issue and not this one.
 
-Ok, I'll go change the staging drivers now to depend on that so they
-don't "disappear" when this change goes through your tree.
+Thanks, updated.
 
-thanks,
-
-greg k-h
+Rafael
