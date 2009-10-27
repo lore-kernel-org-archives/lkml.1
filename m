@@ -1,42 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbZJ0LMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbZJ0MzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567AbZJ0LMm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 07:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbZJ0LMl
+	id S1754617AbZJ0MzM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 08:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbZJ0MzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 07:12:41 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:45623 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752286AbZJ0LMl (ORCPT
+	Tue, 27 Oct 2009 08:55:09 -0400
+Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:55550 "EHLO
+	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754332AbZJ0Myi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 07:12:41 -0400
-Date: Tue, 27 Oct 2009 19:12:38 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Dave Young <hidave.darkstar@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [BUGFIX] crypto, ghash_clmul_ni, Fix building failure on x86_32
-Message-ID: <20091027111238.GB5418@gondor.apana.org.au>
-References: <1256545932.30470.31.camel@yhuang-dev.sh.intel.com>
+	Tue, 27 Oct 2009 08:54:38 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Warning: dev (pts2) tty->count(4) != #fd's(3) in tty_release_dev
+Date: Tue, 27 Oct 2009 12:16:23 +0100
+User-Agent: KMail/1.9.9
+Cc: Alan Cox <alan@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1256545932.30470.31.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200910271216.24214.elendil@planet.nl>
+X-OriginalArrivalTime: 27 Oct 2009 12:54:41.0155 (UTC) FILETIME=[A617E530:01CA5704]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 04:32:12PM +0800, Huang Ying wrote:
-> CLMUL-NI accelerated GHASH should be turned off on non-x86_64 machine.
-> 
-> Reported-by: Dave Young <hidave.darkstar@gmail.com>
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
+With v2.6.32-rc5-81-g964fe08 I just got this warning:
+   Warning: dev (pts2) tty->count(4) != #fd's(3) in tty_release_dev
 
-Patch applied to cryptodev.  Thanks!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+I've not had any tty problems with earlier kernels. I was running 
+v2.6.32-rc4-1-gd93a8f8 before this.
+
+Cheers,
+FJP
