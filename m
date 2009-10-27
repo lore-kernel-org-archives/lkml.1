@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbZJ0OVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZJ0OIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754784AbZJ0OVp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 10:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbZJ0OVo
+	id S1755361AbZJ0OIm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 10:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbZJ0OIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 10:21:44 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58076 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753741AbZJ0OV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 10:21:28 -0400
-Date: Tue, 27 Oct 2009 07:08:12 -0700
-From: Greg KH <gregkh@suse.de>
-To: david@lang.hm
-Cc: "John W. Linville" <linville@tuxdriver.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] strip: move driver to staging
-Message-ID: <20091027140812.GC17208@suse.de>
-References: <1256015830-12700-1-git-send-email-linville@tuxdriver.com>
- <20091023161006.GA1580@ucw.cz>
- <20091026165518.GE2792@tuxdriver.com>
- <alpine.DEB.2.00.0910261013430.11504@asgard.lang.hm>
- <20091026184734.GA21591@suse.de>
- <alpine.DEB.2.00.0910262106050.14994@asgard.lang.hm>
+	Tue, 27 Oct 2009 10:08:42 -0400
+Received: from mail-px0-f180.google.com ([209.85.216.180]:45451 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754918AbZJ0OIl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 10:08:41 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0910262106050.14994@asgard.lang.hm>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4AE5ACE3.30103@linux.vnet.ibm.com>
+References: <1256563579-11014-1-git-send-email-zohar@linux.vnet.ibm.com>
+	 <4AE5ACE3.30103@linux.vnet.ibm.com>
+Date: Tue, 27 Oct 2009 10:08:44 -0400
+Message-ID: <7e0fb38c0910270708ue3619fage123c24893685189@mail.gmail.com>
+Subject: Re: [PATCH] tpm add default function definitions
+From: Eric Paris <eparis@parisplace.org>
+To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       Jean-Christophe Dubois <jcd@tribudubois.net>,
+       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>,
+       Stable Kernel <stable@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 26, 2009 at 09:17:55PM -0700, david@lang.hm wrote:
-> On Mon, 26 Oct 2009, Greg KH wrote:
-> 
-> > On Mon, Oct 26, 2009 at 10:18:20AM -0700, david@lang.hm wrote:
-> >> if someone were to claim 'maintainership' and then do nothing other than
-> >> complain if someone else were to change an API but not fix this in the
-> >> process, how would this be different than the current situation?
-> >
-> > A person "claiming maintainership" would then be responsible for keeping
-> > the API up to date and ensuring that the driver worked.  To do that,
-> > hardware would probably need to be present.
-> 
-> actually, I understood that the person changing the API was responsible 
-> for making the changes. when did this change?
+On Mon, Oct 26, 2009 at 10:06 AM, Rajiv Andrade
+<srajiv@linux.vnet.ibm.com> wrote:
+> Acked-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
 
-It did not.
+I don't see this as stable material, but it looks good for -next.
 
-> > Do you have this kind of hardware and are willing to accept ownership of
-> > this driver?
-> 
-> no, I do not have the hardware, but if there are no bugs reported against 
-> this driverit would seem that having a 'maintainer' who made absolutly no 
-> changes to the driver (just allowing API changes by others to be 
-> implemented) would be the same thing as having no maintainer, but in the 
-> first case you are willing to have the driver in the kernel, in the other 
-> you want to rip it out.
-> 
-> it used to be (not that long ago) that when people said that the reason 
-> they didn't push their driver upstream into the kernel because there 
-> wasn't that much demand for it, the response was that we wanted drivers 
-> for everything, no matter how small the user base. I remember seeing posts 
-> from core developers saying that we had drivers for hardware where there 
-> were only single digit quantities ever built.
-> 
-> now it appears that you have to have 'enough' users (an amount undefined)
+Acked-by: Eric Paris <eparis@redhat.com>
 
-That amount would be 1.  This driver does not have that, so it can be
-removed.
-
-thanks,
-
-greg k-h
+>
+> Mimi Zohar wrote:
+>> Add default tpm_pcr_read/extend function definitions required
+>> by IMA/Kconfig changes.
+>>
+>> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+>> Cc: Stable Kernel <stable@kernel.org>
+>> ---
+>>  include/linux/tpm.h |    7 +++++++
+>>  1 files changed, 7 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/include/linux/tpm.h b/include/linux/tpm.h
+>> index 3338b3f..8eaa8f8 100644
+>> --- a/include/linux/tpm.h
+>> +++ b/include/linux/tpm.h
+>> @@ -31,5 +31,12 @@
+>>
+>>  extern int tpm_pcr_read(u32 chip_num, int pcr_idx, u8 *res_buf);
+>>  extern int tpm_pcr_extend(u32 chip_num, int pcr_idx, const u8 *hash);
+>> +#else
+>> +static inline int tpm_pcr_read(u32 chip_num, int pcr_idx, u8 *res_buf) {
+>> +     return -ENODEV;
+>> +}
+>> +static inline int tpm_pcr_extend(u32 chip_num, int pcr_idx, const u8 *hash) {
+>> +     return -ENODEV;
+>> +}
+>>  #endif
+>>  #endif
+>>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
