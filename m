@@ -1,97 +1,325 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbZJ0WZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbZJ0XZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754281AbZJ0WZY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 18:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbZJ0WZY
+	id S1756821AbZJ0XZQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 19:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbZJ0XZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 18:25:24 -0400
-Received: from mga14.intel.com ([143.182.124.37]:8006 "EHLO mga14.intel.com"
+	Tue, 27 Oct 2009 19:25:15 -0400
+Received: from mail.perches.com ([173.55.12.10]:1105 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753907AbZJ0WZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 18:25:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,635,1249282800"; 
-   d="scan'208";a="204395209"
-Subject: Re: [PATCH] [GIT PULL] tracing: allow to change permissions for
- text with dynamic ftrace enabled
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "rostedt@goodmis.org" <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <1256679318.26028.468.camel@gandalf.stny.rr.com>
-References: <1256666023.26028.411.camel@gandalf.stny.rr.com>
-	 <1256671227.2691.15.camel@sbs-t61.sc.intel.com>
-	 <1256668438.26028.414.camel@gandalf.stny.rr.com>
-	 <1256682364.2691.33.camel@sbs-t61.sc.intel.com>
-	 <1256679318.26028.468.camel@gandalf.stny.rr.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 27 Oct 2009 15:23:46 -0800
-Message-Id: <1256685826.15873.41.camel@sbs-t61.sc.intel.com>
+	id S1756579AbZJ0XZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 19:25:14 -0400
+Subject: Re: [patch] Re: Zillions of warnings in -next
+From: Joe Perches <joe@perches.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Gregory Haskins <ghaskins@novell.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091027153651.6d636fe8.randy.dunlap@oracle.com>
+References: <20091027152530.75ca60e4@lxorguk.ukuu.org.uk>
+	 <4AE7258D0200005A000576F6@sinclair.provo.novell.com>
+	 <20091027222112.74058162@lxorguk.ukuu.org.uk>
+	 <20091027153651.6d636fe8.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 27 Oct 2009 16:25:17 -0700
+Message-ID: <1256685917.29938.79.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 14:35 -0700, Steven Rostedt wrote: 
-> On Tue, 2009-10-27 at 14:26 -0800, Suresh Siddha wrote:
-> >  
-> > +	/*
-> > +	 * On x86_64, we use the kernel identity mapping instead of the
-> > +	 * kernel text mapping to modify the kernel text. This is a nop
-> > +	 * for 32bit kernels.
-> > +	 */
+On Tue, 2009-10-27 at 15:36 -0700, Randy Dunlap wrote:
+> On Tue, 27 Oct 2009 22:21:12 +0000 Alan Cox wrote:
 > 
-> Is it really a nop on 32bit? Does it just turn into ip = ip?
-
-Yes. it will be ip = ip for 32bit.
-
-> > +	if (within(ip, (unsigned long)_text, (unsigned long)_etext))
-> > +		ip = (unsigned long)__va(__pa(ip));
-> > +
-> >  	/* replace the text with the new text */
-> >  	if (do_ftrace_mod_code(ip, new_code))
-> >  		return -EPERM;
+> > > I just did a 32-bit build and indeed reproduced the warnings.  However, the warnings
+> > > appear to be dubious as the code is properly (afaict) annotated with explicit casts, and
+> > > I believe they are doing what I intended.
+> > > 
+> > > Basically I have structures that are always 64 bit (so we can have a mixed-mode 32-bit
+> > > guest talk to a 64-bit hypervisor, for instance).  Therefore I am casting between native
+> > > and u64, but the compiler doesn't like this.  Does anyone have any suggestions on ways
+> > > to fix this so the compiler is happy?
+> > 
+> > 	foo = (void *)(unsigned long)x
+> > 
+> > works for the general case because Linux assumes ptr fits ulong
+> > 
+> > Similarly in the other direction.
 > 
-> I'll test it out, and if it does work, you can write up a formal patch
-> and remove the !define that I added.
+> Yes, I already had this done for venet and pci-bridge.  Patch below.
+> 
+> ---
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Eliminate all cast warnings in vbus-enet.c and pci-bridge.c.
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  drivers/net/vbus-enet.c   |   52 ++++++++++++++++++------------------
+>  drivers/vbus/pci-bridge.c |   13 ++++-----
+>  2 files changed, 33 insertions(+), 32 deletions(-)
+> 
+> --- linux-next-20091027.orig/drivers/net/vbus-enet.c
+> +++ linux-next-20091027/drivers/net/vbus-enet.c
+> @@ -162,18 +162,18 @@ rxdesc_alloc(struct vbus_enet_priv *priv
+>  		 * larger than MTU, the host will grab pages out of the
+>  		 * page-queue and populate additional IOVs
+>  		 */
+> -		struct venet_sg *vsg = (struct venet_sg *)desc->cookie;
+> +		struct venet_sg *vsg = (struct venet_sg *)(unsigned long)desc->cookie;
+>  		struct venet_iov *iov = &vsg->iov[0];
+>  
+>  		memset(vsg, 0, SG_DESC_SIZE);
+>  
+> -		vsg->cookie  = (u64)skb;
+> +		vsg->cookie  = (u64)(unsigned long)skb;
+>  		vsg->count   = 1;
+>  
+>  		iov->ptr     = (u64)__pa(skb->data);
+>  		iov->len     = len;
+>  	} else {
+> -		desc->cookie = (u64)skb;
+> +		desc->cookie = (u64)(unsigned long)skb;
+>  		desc->ptr    = (u64)__pa(skb->data);
+>  		desc->len    = len; /* total length  */
+>  	}
+> @@ -207,7 +207,7 @@ rx_pageq_refill(struct vbus_enet_priv *p
+>  		page = alloc_page(GFP_KERNEL);
+>  		BUG_ON(!page);
+>  
+> -		iter.desc->cookie = (u64)page;
+> +		iter.desc->cookie = (u64)(unsigned long)page;
+>  		iter.desc->ptr    = (u64)__pa(page_address(page));
+>  		iter.desc->len    = PAGE_SIZE;
+>  
+> @@ -253,7 +253,7 @@ rx_setup(struct vbus_enet_priv *priv)
+>  			void *addr = &priv->l4ro.pool[offset];
+>  
+>  			iter.desc->ptr    = (u64)offset;
+> -			iter.desc->cookie = (u64)addr;
+> +			iter.desc->cookie = (u64)(unsigned long)addr;
+>  			iter.desc->len    = SG_DESC_SIZE;
+>  		}
+>  
+> @@ -297,19 +297,19 @@ rx_rxq_teardown(struct vbus_enet_priv *p
+>  			struct venet_sg *vsg;
+>  			int i;
+>  
+> -			vsg = (struct venet_sg *)iter.desc->cookie;
+> +			vsg = (struct venet_sg *)(unsigned long)iter.desc->cookie;
+>  
+>  			/* skip i=0, since that is the skb->data IOV */
+>  			for (i = 1; i < vsg->count; i++) {
+>  				struct venet_iov *iov = &vsg->iov[i];
+> -				struct page *page = (struct page *)iov->ptr;
+> +				struct page *page = (struct page *)(unsigned long)iov->ptr;
+>  
+>  				put_page(page);
+>  			}
+>  
+> -			skb = (struct sk_buff *)vsg->cookie;
+> +			skb = (struct sk_buff *)(unsigned long)vsg->cookie;
+>  		} else
+> -			skb = (struct sk_buff *)iter.desc->cookie;
+> +			skb = (struct sk_buff *)(unsigned long)iter.desc->cookie;
+>  
+>  		iter.desc->valid = 0;
+>  		wmb();
+> @@ -341,7 +341,7 @@ rx_l4ro_teardown(struct vbus_enet_priv *
+>  	 * free each valid descriptor
+>  	 */
+>  	while (iter.desc->sown) {
+> -		struct page *page = (struct page *)iter.desc->cookie;
+> +		struct page *page = (struct page *)(unsigned long)iter.desc->cookie;
+>  
+>  		iter.desc->valid = 0;
+>  		wmb();
+> @@ -432,7 +432,7 @@ tx_setup(struct vbus_enet_priv *priv)
+>  			iter.desc->ptr = (u64)__pa(vsg);
+>  		}
+>  
+> -		iter.desc->cookie = (u64)vsg;
+> +		iter.desc->cookie = (u64)(unsigned long)vsg;
+>  		iter.desc->len    = SG_DESC_SIZE;
+>  
+>  		ret = ioq_iter_seek(&iter, ioq_seek_next, 0, 0);
+> @@ -480,7 +480,7 @@ tx_teardown(struct vbus_enet_priv *priv)
+>  	 * free each valid descriptor
+>  	 */
+>  	while (iter.desc->cookie) {
+> -		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
+> +		struct venet_sg *vsg = (struct venet_sg *)(unsigned long)iter.desc->cookie;
+>  
+>  		iter.desc->valid = 0;
+>  		wmb();
+> @@ -597,8 +597,8 @@ vbus_enet_change_mtu(struct net_device *
+>  static struct sk_buff *
+>  vbus_enet_l4ro_import(struct vbus_enet_priv *priv, struct ioq_ring_desc *desc)
+>  {
+> -	struct venet_sg *vsg = (struct venet_sg *)desc->cookie;
+> -	struct sk_buff *skb = (struct sk_buff *)vsg->cookie;
+> +	struct venet_sg *vsg = (struct venet_sg *)(unsigned long)desc->cookie;
+> +	struct sk_buff *skb = (struct sk_buff *)(unsigned long)vsg->cookie;
+>  	struct skb_shared_info *sinfo = skb_shinfo(skb);
+>  	int i;
+>  
+> @@ -618,7 +618,7 @@ vbus_enet_l4ro_import(struct vbus_enet_p
+>  	/* skip i=0, since that is the skb->data IOV */
+>  	for (i = 1; i < vsg->count; i++) {
+>  		struct venet_iov *iov = &vsg->iov[i];
+> -		struct page *page = (struct page *)iov->ptr;
+> +		struct page *page = (struct page *)(unsigned long)iov->ptr;
+>  		skb_frag_t *f = &sinfo->frags[i-1];
+>  
+>  		f->page        = page;
+> @@ -691,7 +691,7 @@ fail:
+>  static struct sk_buff *
+>  vbus_enet_flat_import(struct vbus_enet_priv *priv, struct ioq_ring_desc *desc)
+>  {
+> -	struct sk_buff *skb = (struct sk_buff *)desc->cookie;
+> +	struct sk_buff *skb = (struct sk_buff *)(unsigned long)desc->cookie;
+>  
+>  	if (!desc->len) {
+>  		/*
+> @@ -816,7 +816,7 @@ vbus_enet_tx_start(struct sk_buff *skb, 
+>  	BUG_ON(iter.desc->sown);
+>  
+>  	if (priv->sg) {
+> -		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
+> +		struct venet_sg *vsg = (struct venet_sg *)(unsigned long)iter.desc->cookie;
+>  		struct scatterlist sgl[MAX_SKB_FRAGS+1];
+>  		struct scatterlist *sg;
+>  		int count, maxcount = ARRAY_SIZE(sgl);
+> @@ -825,7 +825,7 @@ vbus_enet_tx_start(struct sk_buff *skb, 
+>  
+>  		memset(vsg, 0, sizeof(*vsg));
+>  
+> -		vsg->cookie = (u64)skb;
+> +		vsg->cookie = (u64)(unsigned long)skb;
+>  		vsg->len    = skb->len;
+>  
+>  		if (skb->ip_summed == CHECKSUM_PARTIAL) {
+> @@ -873,7 +873,7 @@ vbus_enet_tx_start(struct sk_buff *skb, 
+>  		 * non scatter-gather mode: simply put the skb right onto the
+>  		 * ring.
+>  		 */
+> -		iter.desc->cookie = (u64)skb;
+> +		iter.desc->cookie = (u64)(unsigned long)skb;
+>  		iter.desc->len = (u64)skb->len;
+>  		iter.desc->ptr = (u64)__pa(skb->data);
+>  	}
+> @@ -950,10 +950,10 @@ vbus_enet_tx_reap_one(struct vbus_enet_p
+>  		if (priv->sg) {
+>  			struct venet_sg *vsg;
+>  
+> -			vsg = (struct venet_sg *)iter.desc->cookie;
+> -			skb = (struct sk_buff *)vsg->cookie;
+> +			vsg = (struct venet_sg *)(unsigned long)iter.desc->cookie;
+> +			skb = (struct sk_buff *)(unsigned long)vsg->cookie;
+>  		} else
+> -			skb = (struct sk_buff *)iter.desc->cookie;
+> +			skb = (struct sk_buff *)(unsigned long)iter.desc->cookie;
+>  
+>  		/* Reset the descriptor */
+>  		iter.desc->valid  = 0;
+> @@ -1069,7 +1069,7 @@ evq_txc_event(struct vbus_enet_priv *pri
+>  
+>  	vbus_enet_tx_reap(priv);
+>  
+> -	vbus_enet_skb_complete(priv, (struct sk_buff *)event->cookie);
+> +	vbus_enet_skb_complete(priv, (struct sk_buff *)(unsigned long)event->cookie);
+>  }
+>  
+>  static void
+> @@ -1097,7 +1097,7 @@ deferred_evq_isr(unsigned long data)
+>  	while (!iter.desc->sown) {
+>  		struct venet_event_header *header;
+>  
+> -		header = (struct venet_event_header *)iter.desc->cookie;
+> +		header = (struct venet_event_header *)(unsigned long)iter.desc->cookie;
+>  
+>  		switch (header->id) {
+>  		case VENET_EVENT_LINKSTATE:
+> @@ -1112,7 +1112,7 @@ deferred_evq_isr(unsigned long data)
+>  			break;
+>  		}
+>  
+> -		memset((void *)iter.desc->cookie, 0, priv->evq.evsize);
+> +		memset((void *)(unsigned long)iter.desc->cookie, 0, priv->evq.evsize);
+>  
+>  		/* Advance the in-use tail */
+>  		ret = ioq_iter_pop(&iter, 0);
+> @@ -1254,7 +1254,7 @@ vbus_enet_evq_negcap(struct vbus_enet_pr
+>  			void *addr = &priv->evq.pool[offset];
+>  
+>  			iter.desc->ptr    = (u64)offset;
+> -			iter.desc->cookie = (u64)addr;
+> +			iter.desc->cookie = (u64)(unsigned long)addr;
+>  			iter.desc->len    = query.evsize;
+>  
+>  			ret = ioq_iter_push(&iter, 0);
+> --- linux-next-20091027.orig/drivers/vbus/pci-bridge.c
+> +++ linux-next-20091027/drivers/vbus/pci-bridge.c
+> @@ -325,9 +325,10 @@ vbus_pci_device_shm(struct vbus_device_p
+>  		 */
+>  		shm_signal_get(&_signal->signal);
+>  
+> -		params.signal.offset = (u64)sdesc - (u64)ptr;
+> +		params.signal.offset = (u64)(unsigned long)sdesc -
+> +					(u64)(unsigned long)ptr;
+>  		params.signal.prio   = prio;
+> -		params.signal.cookie = (u64)_signal;
+> +		params.signal.cookie = (u64)(unsigned long)_signal;
+>  
+>  	} else
+>  		params.signal.offset = -1; /* yes, this is a u32, but its ok */
+> @@ -526,7 +527,7 @@ event_devdrop(struct vbus_pci_handle_eve
+>  static void
+>  event_shmsignal(struct vbus_pci_handle_event *event)
+>  {
+> -	struct _signal *_signal = (struct _signal *)event->handle;
+> +	struct _signal *_signal = (struct _signal *)(unsigned long)event->handle;
+>  	struct irq_desc *desc = _signal->desc;
+>  
+>  	vbus_pci.stats.notify++;
+> @@ -536,7 +537,7 @@ event_shmsignal(struct vbus_pci_handle_e
+>  static void
+>  event_shmclose(struct vbus_pci_handle_event *event)
+>  {
+> -	struct _signal *_signal = (struct _signal *)event->handle;
+> +	struct _signal *_signal = (struct _signal *)(unsigned long)event->handle;
+>  
+>  	/*
+>  	 * This reference was taken during the DEVICESHM call
+> @@ -593,7 +594,7 @@ eventq_init(int qlen)
+>  
+>  		BUG_ON(iter.desc->valid);
+>  
+> -		desc->cookie = (u64)event;
+> +		desc->cookie = (u64)(unsigned long)event;
+>  		desc->ptr    = (u64)__pa(event);
+>  		desc->len    = len; /* total length  */
+>  		desc->valid  = 1;
+> @@ -643,7 +644,7 @@ eventq_wakeup(struct ioq_notifier *notif
+>  		struct ioq_ring_desc *desc  = iter.desc;
+>  		struct vbus_pci_event *event;
+>  
+> -		event = (struct vbus_pci_event *)desc->cookie;
+> +		event = (struct vbus_pci_event *)(unsigned long)desc->cookie;
+>  
+>  		switch (event->eventid) {
+>  		case VBUS_PCI_EVENT_DEVADD:
 
-I just saw one more place calling do_ftrace_mod_code(). So moved this
-check inside the do_ftrace_mod_code(). Does this cover all the cases?
-Thanks.
+#define cast_cookie(type, cookie) ((type)(unsigned long)(cookie))
+#define assign_cookie(var, cookie) (var) = ((typeof(var))(unsigned
+long)(cookie))
+?
 
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 5a1b975..e239fd7 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -189,9 +189,23 @@ static void wait_for_nmi(void)
- 	nmi_wait_count++;
- }
- 
-+static inline int
-+within(unsigned long addr, unsigned long start, unsigned long end)
-+{
-+	return addr >= start && addr < end;
-+}
-+
- static int
- do_ftrace_mod_code(unsigned long ip, void *new_code)
- {
-+	/*
-+	 * On x86_64, we use the kernel identity mapping instead of the
-+	 * kernel text mapping to modify the kernel text. For 32bit kernels,
-+	 * these mappings are same.
-+	 */
-+	if (within(ip, (unsigned long)_text, (unsigned long)_etext))
-+		ip = (unsigned long)__va(__pa(ip));
-+
- 	mod_code_ip = (void *)ip;
- 	mod_code_newcode = new_code;
- 
-
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 
 
