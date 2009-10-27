@@ -1,95 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbZJ0DuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZJ0Dxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbZJ0DuY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 23:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbZJ0DuX
+	id S1754219AbZJ0Dxy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 23:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbZJ0Dxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 23:50:23 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:50143 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753483AbZJ0DuW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 23:50:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=IU08obNV1VF1y8DmwnpbdYVPa8JnwbALI1KiAegxZv9n3Fhzyjpm5rYb3VPlDCC4w2
-         H5NmIY04MYNSy+TF+GZKMSF6KGERngzIgwPHLsbDnpSV0Ao4lyr5+DRs2NYlsTgaHnoh
-         dPOhc5etjInZgCST0YnlGTyUR3vbpSmdC+ao0=
-MIME-Version: 1.0
-In-Reply-To: <20091013071805.GC13175@elte.hu>
-References: <3877989d0909102303m31066b01he38e8a295995c430@mail.gmail.com>
-	 <alpine.LSU.2.00.0910091706350.19284@wotan.suse.de>
-	 <20091012202613.GB7648@elte.hu>
-	 <alpine.LSU.2.00.0910130031420.19284@wotan.suse.de>
-	 <20091013071805.GC13175@elte.hu>
-Date: Tue, 27 Oct 2009 11:50:27 +0800
-Message-ID: <3877989d0910262050o289ae12bgd7242aa5614ad94b@mail.gmail.com>
-Subject: Re: [trivial PATCH] fix typo in nmi.c of apic
-From: Luming Yu <luming.yu@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jiri Kosina <jkosina@suse.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 26 Oct 2009 23:53:54 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:47716 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753530AbZJ0Dxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Oct 2009 23:53:53 -0400
+Date: Mon, 26 Oct 2009 20:53:51 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dcache: better name hash function
+Message-ID: <20091026205351.0fa64468@nehalam>
+In-Reply-To: <4AE65EDE.8080605@gmail.com>
+References: <200910252158.53921.opurdila@ixiacom.com>
+	<20091025214357.666350d2@nehalam>
+	<20091026153656.25be4369@nehalam>
+	<4AE65EDE.8080605@gmail.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="MP_/Nj6c6e.ymj2XbZwjINf2wyK"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 3:18 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Jiri Kosina <jkosina@suse.cz> wrote:
->
->> On Mon, 12 Oct 2009, Ingo Molnar wrote:
->>
->> > > > I came across x86/kernel/apic/nmi.c and found several typo.
->> > > > It's trivial in terms of doing nothing on changing execution logic.
->> > > I'd rather go this through x86 tree. Adding Ingo.
->> > >
->> > > > Ps. The patch is enclosed in attachment. The inline one
->> > > > is c&p of it for reading.
->> > > >
->> > > >
->> > > > Thanks,
->> > > > Luming
->> > > >
->> > > > Signed-off-by: Yu Luming <luming.yu@intel.com>
->> > > >
->> > > >  nmi.c |   18 +++++++++---------
->> > > >  1 file changed, 9 insertions(+), 9 deletions(-)
->> > > >
->> > > > diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
->> > > > index b3025b4..9ff1f6d 100644
->> > > > --- a/arch/x86/kernel/apic/nmi.c
->> > > > +++ b/arch/x86/kernel/apic/nmi.c
->> > > > @@ -121,7 +121,7 @@ static void report_broken_nmi(int cpu, unsigned
->> > > > int *prev_nmi_count)
->> > > >         atomic_dec(&nmi_active);
->> > > >  }
->> > > >
->> > > > -static void __acpi_nmi_disable(void *__unused)
->> > > > +static void __apic_nmi_disable(void *__unused)
->> >
->> > that's correctly named, as a 'git grep acpi_nmi_disable' should reveal.
->>
->> I actually think that Luming Yu is right that the function is misnamed.
->> What does it have to do with ACPI?
->
-> It's not misnamed - it is a facility provided by architecture code to
-> the ACPI subsystem and hence named acpi_*(). See:
->
->  5d0e600: [PATCH] x86: fix laptop bootup hang in init_acpi()
+--MP_/Nj6c6e.ymj2XbZwjINf2wyK
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Hmm..I would put some comments around those "__acpi_xxx",
-so others can know it is intended name.
+On Tue, 27 Oct 2009 03:45:50 +0100
+Eric Dumazet <eric.dumazet@gmail.com> wrote:
 
->
-> Other architectures could opt to implement the same quirk - but it has
-> nothing to do with APIC.
->
-> Yes, on x86 we use the local APIC to disable NMIs, but that has no
-> effect on the naming of the facility ...
->
->        Ingo
->
+> Stephen Hemminger <shemminger@vyatta.com>, Al Viro a =C3=A9crit :
+> > --- a/include/linux/dcache.h	2009-10-26 14:58:45.220347300 -0700
+> > +++ b/include/linux/dcache.h	2009-10-26 15:12:15.004160122 -0700
+> > @@ -45,15 +45,28 @@ struct dentry_stat_t {
+> >  };
+> >  extern struct dentry_stat_t dentry_stat;
+> > =20
+> > -/* Name hashing routines. Initial hash value */
+> > -/* Hash courtesy of the R5 hash in reiserfs modulo sign bits */
+> > -#define init_name_hash()		0
+> > +/*
+> > + * Fowler / Noll / Vo (FNV) Hash
+> > + * see: http://www.isthe.com/chongo/tech/comp/fnv/
+> > + */
+> > +#ifdef CONFIG_64BIT
+> > +#define FNV_PRIME  1099511628211ull
+> > +#define FNV1_INIT  14695981039346656037ull
+> > +#else
+> > +#define FNV_PRIME  16777619u
+> > +#define FNV1_INIT  2166136261u
+> > +#endif
+> > +
+> > +#define init_name_hash()	FNV1_INIT
+> > =20
+> > -/* partial hash update function. Assume roughly 4 bits per character */
+> > +/* partial hash update function. */
+> >  static inline unsigned long
+> > -partial_name_hash(unsigned long c, unsigned long prevhash)
+> > +partial_name_hash(unsigned char c, unsigned long prevhash)
+> >  {
+> > -	return (prevhash + (c << 4) + (c >> 4)) * 11;
+> > +	prevhash ^=3D c;
+> > +	prevhash *=3D FNV_PRIME;
+> > +
+> > +	return prevhash;
+> >  }
+> > =20
+> >  /*
+>=20
+> OK, but thats strlen(name) X (long,long) multiplies.
+>=20
+> I suspect you tested on recent x86_64 cpu.
+>=20
+> Some arches might have slow multiplies, no ?
+>=20
+> jhash() (and others) are optimized by compiler to use basic and fast oper=
+ations.
+> jhash operates on blocs of 12 chars per round, so it might be a pretty go=
+od choice once
+> out-of-line (because its pretty large and full_name_hash() is now used by
+> a lot of call sites)
+>=20
+> Please provide your test program source, so that other can test on variou=
+s arches.
+>=20
+> Thanks
+
+long on i386 is 32 bits so it is 32 bit multiply.  There is also an optimiz=
+ation
+that uses shift and adds.
+
+
+
+
+--=20
+
+--MP_/Nj6c6e.ymj2XbZwjINf2wyK
+Content-Type: application/x-bzip; name=hashtest.tar.bz2
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=hashtest.tar.bz2
+
+QlpoOTFBWSZTWVMIwSoAIw9/hN70FQB/////v/ff//////9AIAAIYCPfPAFPt3N3GX333eb3rzLv
+bMA6JdM7HbzbsPJwlNm1udXMetRuADB3hvnHcmBs+Pve9gM7udamahQB06j6w9AAZSkdGOtRQQga
+1SkEppEAmhkYgJkI9E0yAmSeh6p4mRqYNGp+qGgaaGnqaDDQRoAmgQqeJHiRNp5TInqepmo9Rmo0
+YmAQMCMgZDBqZoEoUZGTIAGjIAAeiA00NAYgAAAACTSRIgagjAp6GpNPZSNHpqeUP0mo03qnlGQB
+6g9QaaADamgRSKDSE8SMQZMRiGRptIMEPRBgNQDTE0ND0hiAkSAgmgE0TRphBNMk8jU2lPyap6j1
+NPTTKGE2SD0RkGmjT9qP54v9H6n93Z2h5a3Q7jAeACDikuqEW+BOCf60cCABsmI8wZeW55vNaUUn
+yyyxQ7ggJNNAhIJA7NQxiVIBRsk17j00z195s5jDkTWvi0sNJNiyhSRYFaMFiMVcAAQbFUPb/JoC
+c9VUYRYkQUBEQWRiggiKqjObUgsOUSVBRpSSiRiEpS+L7PzX5ef2dvX9jeDW+vr5cCPLKVxqUTFe
+W7pd8OHCdMHlLmgVOGQKrKkMZrRyTHaawF1395NpbwZMcl3e1DDRyzJMiILCzdJNiCkUxhRBNsos
+LEIsFnr5a03Uvt18ySNjJXJyvBaTcx3fsfHjH7mFr+yQd/GAoM8FctBp0+BjxdUwzMl92yHum7zI
+AbctZgUC3bZoBhxbHJZaWKbchvUw5pEIWlER70Kk4kAaJagTx2/zdJr5y4WSYGZDRwkKZ5zrgxO4
+ZkVP9ytz8CP/CsFBlihPEjrMxbdu6BOmOUhe2nYktbweEHgt3Sl08vVQuTl6lGWuqpsXAeepCwWJ
+A7zA8R5knlhgh/m+oxesVKyoHrtFGGFFzRqGtPOQNukUD1aAzYoaVWA3TXYEfAhpJJHmZljcMomk
+hBipAC5MCgtNWrChdhQCUIxCjHb5IMwG+h2GLuH5znCBUuR0ZydggiVO7h4qOcrMukftnzuH5ZyY
+ktO576oxGt/B24HcMuKUkSMrZPYvFFvvD3fd7uiyU/tQ7JhqHg7rl0YEvt6ft4SzFpNxAyaul7kl
+x/OXLhMJuA6QuSKtxkAPZnRO7A+SVPnjOuQSMRjGVWcgc5hAyQb/72zg8tqS8+f8pbDG4wxZ3HDv
+cfwwACgsmb8B3ZO462VSGiT3rneBfHn+XL0OXAtiFYdpernR0srLidm8z07xVNE3mb1F6lnq72Zz
+nxlKEIQaUZQjCDQk+TRrfa6XMVNXjJT60CrDLtlm7Xl4ePnHyR9KLNnx2Z9ukNZcbbPh97oRTM3u
+q943v9+F/HPCln8SEhfCGJzfM1DOaJgjGMaKDLV82hLEMg4UsNizzz6rXl3RaO3s6qk8FCxTTUKX
+Pk92R1Rr4/OHnsM9TQkoTOjxyEGbSXq/ziqXoECsg2yQzKEwEQtez4Om+XTj854Lyf2P7vxabA8M
+puFLI+ggXVG1UqqJpzSAZKgYJaVlwjJmjMGIeh5IIGZ85H3H+d6iq9EMxKpohgJHQNQZNVnwFDFD
+Ja2N1tEZuAcQvgjt4HS76IkWD765uygUltmVtRK8sXCpUzmN/xooloShRMLTJJftjoupw8ejf4+a
+rp5OlsSb0piIpO6lkQ/cfpg/OI6U0LbgbwzSC7/ephRJ35KqTEM4gGIe2DyHtOWmcOp0DC3goDgC
+1gGArW8OjymiGMeAW4AQm/ybHEeSWsOG8oGmqrS0d+XC9VWJDEJhtdjUGhRM5LEeE2pds/I8pgbD
+tHxC8rg8M2Y8PfCQ8Am5IJ+WByz5zuMzfHlPv9m1nbiqvwmXXxLW9wxOeMycR4jeTIKkCTHmUtuK
+CmDDofKzPdkJEPm9kKkj1C+Mo7wKcOhzMEKtI5AzEg12YHqbgp8/oLDWgUFBQUFBQUFBQUFBQUFB
+Q5mHqBGdt9hNmGE8fKn2CZrY/o+12GCgGHc2jyP4V31onMR+Iz6841HYbw0Wpcw1fZ5vdTgALn/I
+xasyYduv03kPd0SSsLbdfka0LmRJnlGSuUZtDaaDKkz8uYSvbxGylJGyN/h2hxXMt3FyTEhQlY7W
+aBn7dZ7vnwlv4XMaY0pRzPnN+ZvxN+5bluWDTEg5MA36MWWnegKMDqaJsEtlujYVCV9lDsxMnvnw
+/l3zrMSxUNhn6ZoQsuVdXKc5xpDDe8HvMq0CocAnSCPPaAm8N2rxOZVc3GAlLzy1EiL6XtB44hOh
+UbOBzFPwqoI6la2oHQTAobYIwikS35KOFfc67gD2ZatFf2hLe1AZY93uyNpqO1JaWgRNC3ZMscp+
+A2n2gylccicfgZYVDxdUuEkYnDo63ft+NrDn6MphsBJbGgcGe0xGMMjE8k6EixtIgHPEhrp5j6ZT
+dyxJJDUrx38EQy5XjEWeQGz1YOdn+6mj590eEDHUBi7IywFDNAwkLKOYp9tBvC5GIBhNg/r1gPyM
++rFDqBuS8JgaDiajMG3lASNCp8VArXs8k6lzQwLjKHCXCmNx9A0CQomvM+4+i4nxmEBUqBXSOZBG
+Pk7fshN2jLbMbYnprLBqJGo1AzdnnWYScgsXNh7YpyyCsx5a5m6ZgMYxXMik78xFZWCpGg5GuZIK
+RP11wZBgYHP0Bo95uuKAxcINxkMhsGcV7RKoiMDQGEAQJAQDgYMbOrl6Eoi7NSYQW5lQcPDlB9BI
+eiimmTxph4LNZQDquN4QmIOSQokxvl+jpo2QjTIucdtuGrp+nQUmi7yXqN3aMkZjNpYzNWcIQFso
+AtpRC52opALycAowyMT06g4dBLis/7iWCRmz7QSJNI/m0SR9rXHzQGtghsLDo3PX6z9ZEhv2w3ts
+0rcRq9LtAkHAggOxFbLwJCSqqsXvGSkv2uudmtIdTI6X34dma5xcz6WsLMB0dLW0+KURCUQkkklh
+Ft2BS8cJa4CATN1uSqqSSSwGyQAMWckkkkklrQkJfJzOcOovaM+r0a+Gjp89EKlkMrTCy3oLc2d7
+oQd3hCEIQiF9E37kTROpCDPu3GIyCz5fF0z0G76BhbuzJD4mZG3JKQmIIcMkaiQqMxnQkDC8vl17
+tu7VcoYSNuS3DfsRds+vihGiD9uiNEv0soNH9S7Xt+SBsTNKmy/U4bExYs88nM2/OfN5L+tvrKsZ
+zNAWFl2g1eyfNir74WhSG2TD0ZidLADvPOZSwjCru6WnCE/VOtUU8dPQs7NoXd1jyHRJLj4uQ7Ql
+QaNsctclgZMM9zTRstDTJvTb45OUGLwNuUUJYFxtPmAv7YGgHOA/m29Popz6Iq86VnvB0nj1H+dk
+/4pUkeNX2udo0DzmcMrh+VcrtWNHNPJZHXbgNZc99Uo890dV+qMbJIeTizzYTzeG2/Snd3en8ayp
+vHCBfXl51ZyQgrq8a8OTijq5VXx2l07bDE82RFFtVWxa9upblmnxbgnDxhy7juSA/R+oKxBEUUQS
+IqgRYQERGCCxEBiqRFFiRGMYiCMSLBYiIgsESKT7lpEZCQMTzMiwFAOjAnrZA62SgcrAEj5NkNV+
+iPlKGKGimZwYZM2GJLOtGiEM/Lp04GQ5IFh8BsM+efXCg0A3CnlKHBmaeNudWp0+dIShiLcVcxFu
+KtwXMVbiLcVcx7MsI+iezlLSfwEQ7oyE3mzZcTlJ3qyAAH+DqAGpDOW/DWW4qN4zDV38+aTnGYbX
+DHM5JEGG+Dsu5u1moxocXBgwjChTXQWx0R53WOfEQAqPV8SPLtjwsoXcZju9nTx810bvIqw1zxPG
++L4+OfceGHVxfNcqlzLVLmWqXo6Nay1S5lqlzLVLmWqX3A7gckK58LKKugG3+MCYDq7o5uPb5JwY
+rGDODneQknYSGwQd0IOyXjl0GkeLCMBCBGbB6iPieGGBDwCMQpBwdDedcdkxbRnlTaUyWmJkWrJ6
+FkkonmqrSvpkADyk9p7YHwn7QADLClLKyow/vaNtfumEVhKbZlx7OnMOk2rALAtaS/D68DdVkfJl
+nhOD+0rYdZ+7lOibY0IW5pe6NskObNYkv4fiHz/8YRBn+oGAUAQwJ548ramBAEEbyz15eqvl6o+G
+sKQfq2dHRtx6Ll9oghoD+IEDG2xlabuGOzPBAuBkXSfymCAKjwfjGTlNHWpx8QizNGLMQeGcH9jp
+YF2nC6nFx1UxxwE8CDweDwr3qgEOJu4kvso1wbZl1QbWNlc+VTuENTF0jErE+u2JOvupgG6+/XM7
+GhzEGEWvbEgJnUp7bhMp+nCAsV7zK2DKDGlCgeGiOcYMGh7I17YKrvIIXpMBEI1MX9BuwlZqOa0H
+WPEvWBtSbbGSiD+IRz92EtM+GnglSnCI0OUtYZ91M57VU1As72zuzM3hc7IwXF6O3WXSiQigglIi
+VOJSbkQyc40ffqYwDlstBO5jAZzIkww7OqeWRbBk4Qp68j7pTfl0wn0PkuoqjaNpTySOTrbI6Rtb
+bhjG2iM0hK3jvKNV/qq/FXHdjERnO3KK1pKVZUxom3SXIond6FB4CeAnhOWSatUTRyCCcg+zr+lL
+VEOFNZf+YcGZhsWesoYzu7HJQ18c2A7Rne+GqOORzE8DWtEKUbNrpUukkJNXJPVNPCkJ6K0k88a4
+1wHeIgK4V04CBbQHWzhMxJZwhKooIJi0ZClsOdmQjHpc7r0QCV1gncgxBn6QuAzaQQA7urLKfJ+H
+h5ao74rYvPDIeaJkOESOYMGZmSGYA45wnkd6ukvHe2WqMDy0Zld8AIjtsc85dNOXIZEBHIAqOcmi
+plhDqcLOFBhysxp0GHK/d0Nk0Ou8F2IAcImZmDJARDMYwfUs9dMcBbRUsLmaPag63sphDJDAO1dX
+AhI+y0aDSayra+1WhKtpvExxQukwZ6gO3A6QOkDDm6FyvfKDmDufhowfNtTuAYMGAjmUhtzOkGTg
++UAdUpe73vp5mS78ZViQjeug+y8aAhpwzjI+U6OSTwiyG4LKhyrO83b4fa8EhstnT5n7g+ojzywM
+PJ4PfjGmwTRdNVz4uzdLa81zjszjntnuRct6xrhEzSkhOj8WfO7w0aLQCr6OU2yYaGem6hcrY1qC
+MxPOeoJMLacxOyvXizHy1Dh50EVle7PfJWVSSTUeo9IAGN8UHR636eiMDmFVA/p7H8aZmJvC4TJj
+Hi9tMTZZq1qJZGiAYjXpI/cJ8fX4pyJjfaPLCZNB4djxuFH6HPKu3rf55p9VEkNLiWVG+TYTkUyu
+toINl6/q+jJ9/CbV4N9wriuWOPhwjw7vVPhmlg/1Dt6oyCILmxbep5N1cxKiTLu06bZWKaNmONMH
+MSk90yHhaJ2hE8KmoNUJBvVxYChUq8wWvzSQpgez9f5FkBRWSJIMkOrvEUneSXADoKQT5I0KSnoT
+IyKRHLT+wQkK/gv4clc/5uCIn8pZYOyW0ikt5NssspLJSI0QrwwK6fpTtCbqAKCyJIZi65Ljd4TD
+Am87Ai3wn+zrbsOxpQ7DmByJtjVOYqGiCXg0EEy1WU+t9BI9G6UVywSt/z4TKZDQkm8A4SYhMsBB
+B8vciNcqGC8xcMCm7DgjIR+vyx9PgDfmaHQbxI8BpMSNobDRG9GAtRVFCVkJkiwVMDv3LC/UbCW1
+i3GR3kBL63H0GRK4A1z7NakI2iyOhH6Tvqh/kgHwHERkAPB9o1QxfLAF7j7DDxjzAGk8xfoE75AY
+mgwBwge1E4BsLwlIjXhkC5hnoCJlEWBsO2GopIlrfkTMBoZBIEpxlZxZAMjbDcFB5DmHnOqeafbS
+KpwTysk+t7ra5mZW4X9MU1ekyG8FOwNwKkNwpgxD350hn1/VQ7jcthcauGCOkmBMtQkhMHAVAkYk
+lPTxx0qZ0HFC7RqhiUJHULv9QQTD+GIRyEP19KqfYcQog3cwcCAXAasFS5IaocQRsMBgxMgkEg84
+1BzwlBxOYwGcwsVIqAIzQaFzcplA0mCHG+aF08IFyDM2hBByMxQa4khZisFA0JhMJFjWBBpSyOl9
+aH1ligXRExAxeVhCdi+YKyQcMNhMBsTjZRF4iUe3vTc4PyfB+IZ+qFygiCgGC4r9eBmhMwLrRTAb
+KFxzAT3n7xgUQYh+O0ED1ICpqIANixC9ZAAt7GLWFsODz6+praq95E8mOMllDMfGymHKtSBQi5Tx
+ExB8JxDHT4lw1wdiMUPhmYjXpWZ4mmqJu8U03l5mWiau8UlEvE1NRMReWWDBkQcrF9S/DGjMlkKc
+nMiVpZmVXOsZy3ItCBTMgSKHvGM9q+S4HrR8xHi8UHHMdjyCzWKKopUXAlJ5u+eblblQvUHibEN8
+zc3tDmIxS4rG1ItSQ0GFSRYUZA4PpO+ffh2FE+azwsn5dXGyIm5gHoz9GVUUQiqAIBgEHd1324Yd
+jOVJZVi7qPLJtsWSg7sd3RagrJWDhylyMPq734fNu/YqXh/feM2bd2/D0pK/Vu8soG1kQSYec6z/
+FlGSTknDk9g1IehRyI+qSVvtpIquJquklNHM0kag8+uVkEDFMZIFkySJpCNCxCRxodIftCGJjGmH
+KPqgi0yoLImYGH0EkbhLg5hrYIBtJIkT/qMi5TYwPiNjSYltNUQ0mgKlQdIYYh6b4HkUiMhO4hQI
+wTvAHwLOq6xtVZCDdxMz9Dja4BJe4RQAmGG/Asj5jy+Xqj09EauZ9UOpe+i3Isi669ocXetLsHf8
+GIAsOVa9wh2VA0zBez1C4Egeobb1pV5/XDzxmpPGdc/MZ/SonBGdwzoCwbX6D2a5h2k6kha6FJRK
+8lKEAncrQpkEB1V66ugWysAXEhZTQHe28ufnjqZlqp4efqi/m6te9s1jY725UkkNHAnwymarddXI
+Ths37Z4hMIqMl183OZZGw1DN7SQbqwiThjNWAw1GeLFJJeIBNiK8ljz6sBpIWHxg0fqG/to3eVwI
+AOwB+NKdJRH2RLDaaPMMlTWaxWQUGpAI98zBDRm/BwbEnEKwkMoUgQWB4evezWbKMYDpCxEWF7A8
+ue7gB1ABggYRKJGvTVtn4uJ9e/foYKU0kYm22ndHdS+L1luFDZqswbN17JTjsm52CsyYU4+Mwxml
+HEMy2s1NmwmQEjdkv3gg2H3Jr12DrzmekZz69ZLMRAvRIbfOeuByzh2ENiZo8JqayebqnZnaWUzl
+c5bpO8ac45wRJbCutiOHh9eKm0ioKRogMBgDZLI/IVMiWeGcpnpxpYgkSoNhU6ihOZOX4zOLlDcO
+Q22SKVLGRBVVMCehSlZ1DOiwDPMMR5GNaJmkoIRJ5Z3+DTVoGA9UMgW1iySzJmmagp2+fxHd0HdW
+bgpOjBSr41aWU4ZlEZsgxdNuvvMhrIExEl0ucwbL3PmCns+VoKHmZrIDZ30JHUNbGahjYkgdSLA9
+0i5SxRHTQkUnt1rQ4mO6vPGoWcsLhfw1QIt1fq9/QvF8UWWIdKXMI4gQlj9jGDExz5iDhekgSbTG
+JMYmNLwYBjzZo6iouIdBpqYoDMIR3gZsn7jUEYiNpevJ6ZTpzIrW0yWhchMMyakFrB3jLEVw+gZf
+YflNtdZUZc08EajUm+OezFsZPUdIYBeYsxq5vAtde8GoOAirTAaYtSW+SLGs3/HhQokjtlC23aPR
+3jNJLeg50uAvYwPiA6gaRDGOGCdVG2CPiPPdEu8fp9+kJ+ixl2mJy5nx7YLGjeLplRjLIHmDhqJk
+TAaUwjXKXYKEoAsIpUGgQz1eb5ZUcm2c/tGvcnAwckuwZh3CjqUKslPaAZ4nt9FQ1GJ5usdZJA5L
+lFhk/Q0PuHilQmFIZzgVFJWdzjMC2lAkCAH1payBYCxD37Qyp+Yju15xknDJwzatiQowK2Mm97xy
+XDDN6AMxbBxsqsHvaCZDZCTRxHwIeNPZpEpzEEv58JqIsiGSw+kPYPPPRhUIEpJTomjX+/xnvYm/
+/szHwkMFIB9cJEIVman8eTyG9mbw3Ib1IHyoGwSJKRgJ4DkMaA2kNC+lSQLcIOkuz1wD5/DkqCdE
+ZNEvMRNoRJpEhh7wZUZ2AjIwAYVRQdvaHyo83buBsi4zeUWYOTPYNMYGAGsQAZmftSGeoXLnyRqP
+hYmwbBv67fmT9GxFGJo8w+3a+2YGDKxixEGJGsj9o7h1M4gc69AQLuY5NI6xGayQHnbH97NzTDyw
+LurABNpL8aa8LSR42oaRmvkAA8eiJm8pwhJg0mMaaQpjXMU3CYmMTYMQz7gOehwAwSKHbzexrQO4
+Os0AgUyC+suJEzMXeKpGoGHI0VFdbhqjCPALYcmjqZI0NJHqXPbymxZdD6pLQffLY/WgiIJsJNWK
+JWCqWNbhQ2pgMbBjb5yEiBpt5kSVa7vlBV2G2USGjI2evlEv+XjKEhfASIKMhDZzESYgyMus8Bt+
+9sKaGsmeBErikqjSh7wZ9se7wnLTBJiN7RfdrIGsF9v0fv8KSqvJn0jgyxc/Bk4KWGGkwraUWSCU
+JsX7nRhEImiaXto2bhnh2xxzV2IIYjfM9ceIk3Igh9FhSB2IHaRIWye08gjYBgtgidkFH1KxhQLx
+ZJYB1F0VnUkyVtdFNhRokw7Y7OBgiYbzjVtYTYZLcwjbhhYof+S6ITbB5FhsWaZUtIWQ1SBgdbJe
+IK+SUSAhG7YiK03FJo7TBfoQGWZrgMUl+uHAaEGaQU2kNiTwWGoZvjRCHpIERAIMHr4PDdTqYKRB
+RIjAWSc2IigqEpAzFMRawfGMuxeagkrDYN4BuB2EACmSSagAVWQxCAIGjRohSaySRhgVCjgXiHaG
+Qnt8ht+B9JPugMxlWHfChC+Atf3Qbw1QQ0qC6i6BpayoAMMwCx7gR8MLjBC0MD429DEY2gMmhE1q
+BQkQhKjEA5aNcEWCgYsVQZwEaTDQSGWSSDPNKVLAsr4Bmjeo2LJf3OoTXponiUCNiD4fKJmncUhH
+jO4USA1bzkd9liZ4rKjIYvgZXs/0bQ+7mOwhRWZUIAmQEa8TwLMmFw1ihdx6sguG0pi9y6OmRJiW
+dCDRir0NuCooyCJFVV2GjyyJDw9khROkLAEhYwJRrYMqJYNthSgiFZGNAtt5HeYUMan4DPfP3CbG
+k4MNcBicpAoiQB0DoAcsHNRyEhMzWWOQBBcCInn9nApGLEHU6jjyWUOhGeYnUZCVS0Sr2GtBcUpi
+CAHJJEKiTXOrhICZNcCecp/8wwYcwp1gmG5LTj8mw0rP9rofc4YTKljwDJ1lHSRWVakybgvSBsPL
+BFSBtI8BaVyhIYLqmnUkVoS5wfbUmxbggmTziUODitcSTMFIGl2X0zA7dUjQS3mBqMiCjMD4qobe
+s4BiZ35OUCwgTs9EP0QwIa0yggAgodkAORtFv9OZkD2DSDUhbEzIDwLVJBsHmVg1SSE4SKDLIuFC
+yIX7FtcRERERELgIRc6+M3+NHOBLeh5i5BFDCzbci70E0pH8+33zmMZOJziZ0BCNC5ipHwioah7t
+4lMIDXJnw0JxJdEy0gyatO44ZyMFBQ1XA+7TlvaGMYTwtfkNlzlQJW4X1cr5y0U2cHA0o9TshNrn
+b1jEOfQ2cdUJcpYc7IGXV0450wDTogckN6iT97vx9w0HENUJJsOU62IOBgh12YKRYHZ3T3hQDYQF
+VgXIskltYhEEMLsKkyo197FcVemIBgXGAXFRBtvKYWQ2BwQac2yFUEHoWhhGDKCA79DV8s0gkJbU
+ywi7ACopmAfJ3FzdhULxaETGzbCm0oGm0TBnnalxVipMv73uYLAaOaxkhcyMx0MSEkMRYfEaIYSF
+tQL2BI74BsCCo0lc7Tebj4l9nXgxlPd37DOPOMHhyfB+9BTvsTISOk1umZNBRAAQREZhQ4mv9O7k
+bPKrgjWh3F3QGVkskXtBCCkelL0SX70cSTGsTUQZayIcQSGk5kwkeeqCF1mAskHckjcKl220gesQ
+75/jDr4AQfFQWxZFCSlQYL+w3bwZ25h3CiMqxM8k13BDF1DLY0OgqE1MCZ3DbQxthzz/OZAE0cOh
+DUchgGNiM11H1Mmk6puiCHzEAzVNQAL+MhUMIClKnnJIAqeLkuc5yCIJTFATIIDi3oVFgFEHWSMA
+yBogxKCgWxdQMZmJQWDA2LgeAA0sDxKIwiIsBEjFhH3AEFgVIHpw8Wpo0vp2ZrqmyB/+LuSKcKEg
+phGCVA==
+
+--MP_/Nj6c6e.ymj2XbZwjINf2wyK--
