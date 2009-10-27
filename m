@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbZJ0H65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbZJ0IAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756547AbZJ0H65 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 03:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756169AbZJ0H65
+	id S1756569AbZJ0IAV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 04:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZJ0IAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 03:58:57 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:32902 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756124AbZJ0H64 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 03:58:56 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 27 Oct 2009 16:56:28 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       vedran.furac@gmail.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       rientjes@google.com
-Subject: Re: [RFC][PATCH] oom_kill: avoid depends on total_vm and use real
- RSS/swap value for oom_score (Re: Memory overcommit
-Message-Id: <20091027165628.acda4540.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091027164526.da6a23cb.kamezawa.hiroyu@jp.fujitsu.com>
-References: <hav57c$rso$1@ger.gmane.org>
-	<hb2cfu$r08$2@ger.gmane.org>
-	<20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com>
-	<4ADE3121.6090407@gmail.com>
-	<20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
-	<4AE5CB4E.4090504@gmail.com>
-	<20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>
-	<2f11576a0910262310g7aea23c0n9bfc84c900879d45@mail.gmail.com>
-	<20091027153429.b36866c4.minchan.kim@barrios-desktop>
-	<20091027153626.c5a4b5be.kamezawa.hiroyu@jp.fujitsu.com>
-	<28c262360910262355p3cac5c1bla4de9d42ea67fb4e@mail.gmail.com>
-	<20091027164526.da6a23cb.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Oct 2009 04:00:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49273 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756170AbZJ0IAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 04:00:20 -0400
+Date: Tue, 27 Oct 2009 08:59:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Nicolas Pitre <nico@fluxnic.net>, "Luck, Tony" <tony.luck@intel.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [RFC] to rebase or not to rebase on linux-next
+Message-ID: <20091027075954.GA32640@elte.hu>
+References: <4AE19A74.1090709@garzik.org> <20091023123555.GA25366@elte.hu> <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com> <20091023134115.GD27097@elte.hu> <alpine.LFD.2.00.0910231424440.21460@xanadu.home> <20091023191631.GA1879@elte.hu> <1256326512.26028.34.camel@gandalf.stny.rr.com> <20091023205400.GA8356@elte.hu> <20091023215958.GA4139@merkur.ravnborg.org> <1256599588.26028.340.camel@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1256599588.26028.340.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Oct 2009 16:45:26 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-  	/*
->  	 * After this unlock we can no longer dereference local variable `mm'
-> @@ -92,8 +93,13 @@ unsigned long badness(struct task_struct
->  	 */
->  	list_for_each_entry(child, &p->children, sibling) {
->  		task_lock(child);
-> -		if (child->mm != mm && child->mm)
-> -			points += child->mm->total_vm/2 + 1;
-> +		if (child->mm != mm && child->mm) {
-> +			unsigned long cpoint;
-> +			/* At considering child, we don't count swap */
-> +			cpoint = get_mm_counter(child->mm, anon_rss) +
-> +				 get_mm_counter(child->mm, file_rss);
-> +			points += cpoint/2 + 1;
-> +		}
->  		task_unlock(child);
 
-BTW, I'd like to get rid of this code.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Can't we use other techniques for detecting fork-bomb ?
+> On Fri, 2009-10-23 at 23:59 +0200, Sam Ravnborg wrote:
+> > On Fri, Oct 23, 2009 at 10:54:00PM +0200, Ingo Molnar wrote:
+> > > 
+> > > Maintainer trees pushed towards linux-next should strive to be Git 
+> > > based, append-mostly, 'nice', 'intended for upstream' and 
+> > > defendable as-is IMO, and rebasing a _maintainer tree_ should 
+> > > really be a rare act of last resort.
+> > 
+> > As maintainer I try to put some effort in crediting people where 
+> > credit belongs. In other words collecting "Acked-by:", "Tested-by", 
+> > "Reviewed-by".
+> > 
+> > Adding this require a rebase as soon as said patch hits git.
+> 
+> I've been saying for a while that git really needs a way to "annotate" 
+> a commit. And have git log show those annotations by default. 
+> Signed-off-by must be in the original commit. But Acked-by, Tested-by 
+> and Reviewed-by almost always come after it hits some git repo.
 
-This check can't catch following type, anyway.
+For any reasonably complex change you simply need to wait a bit anyway 
+to gather feedback. And for trivial/obvious/small patches it makes 
+little sense to upset the Git history just to add the tags.
 
-   fork()
-     -> fork()
-          -> fork()
-               -> fork()
-                    ....
+(And if there's frequent problems with small changes that were supposed 
+to be easy you need to revisit the quality process.)
 
-but I have no good idea.
-What is the difference with task-launcher and fork bomb()...
+So no, the rewinding of published for-pull git trees are not fine in 
+Linux. It's OK to post a declaredly RFC git tree with some 
+to-be-reworked patches in it - but it's not OK to publish a git tree for 
+pull and rebase it after that. You'll certainly see me complain if you 
+do that (and Linus will complain to me if i do that).
 
-Thanks,
--Kame
+Now with tip:tracing/core we sometimes ran into a situaton where we did 
+rebases to make the tree fast-forward all the time - but that's not 
+necessary as Linus has made it clear that the occasional merge commit is 
+not a problem. (if the mechanism to remove them is to rebase) We can 
+certainly do that to make the Git flow even more append-only.
 
+	Ingo
