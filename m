@@ -1,67 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbZJ0Gdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbZJ0GfC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756301AbZJ0Gdq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 02:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbZJ0Gdp
+	id S1756304AbZJ0GfC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 02:35:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZJ0GfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 02:33:45 -0400
-Received: from mailout05.t-online.de ([194.25.134.82]:38768 "EHLO
-	mailout05.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755610AbZJ0Gdp (ORCPT
+	Tue, 27 Oct 2009 02:35:01 -0400
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:41080 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755560AbZJ0GfA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 02:33:45 -0400
-Message-ID: <4AE69449.6080605@t-online.de>
-Date: Tue, 27 Oct 2009 07:33:45 +0100
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090923 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31.4, ps2-to-usb adapter: fourth mouse button not working
-References: <1N1EA3-10pOoy0@fwd05.aul.t-online.de> <20091023073730.GB10914@srcf.ucam.org> <4AE2C572.1030209@t-online.de> <20091024091858.GA30614@srcf.ucam.org> <4AE3043A.4060706@t-online.de> <20091024135357.GA1170@srcf.ucam.org> <4AE3336B.8030905@t-online.de> <20091024171925.GA3541@srcf.ucam.org>
-In-Reply-To: <20091024171925.GA3541@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ID: ThzZFQZbghwvNewnGyL46lE+RGqJiaasT+TH6FZgnAkHgqJQV1CoIdnrFJnljjxwr3
-X-TOI-MSGID: 8acd2140-7c9c-4b64-a4cf-4dca6f7e373a
+	Tue, 27 Oct 2009 02:35:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=W99kUTrSYtkRuCIZybSVjaXXBilRAOpfyIt3jD+OiJ0Sv+kkqvwNF3BLTYrfjI4NhC
+         BR7YjeiRuK7f/Qac4tUo/HtmINPLpIAK+tzIFYqKqytGicBV+C9+LIbEYKOd2Bg0S70K
+         ixq+nxMH5+u3/ATU4+rZ5zTYcJ+PunZARHud0=
+Date: Tue, 27 Oct 2009 15:34:29 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, vedran.furac@gmail.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: Memory overcommit
+Message-Id: <20091027153429.b36866c4.minchan.kim@barrios-desktop>
+In-Reply-To: <2f11576a0910262310g7aea23c0n9bfc84c900879d45@mail.gmail.com>
+References: <hav57c$rso$1@ger.gmane.org>
+	<20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com>
+	<hb2cfu$r08$2@ger.gmane.org>
+	<20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com>
+	<4ADE3121.6090407@gmail.com>
+	<20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
+	<4AE5CB4E.4090504@gmail.com>
+	<20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>
+	<2f11576a0910262310g7aea23c0n9bfc84c900879d45@mail.gmail.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/24/09 19:19, Matthew Garrett wrote:
->
-> usbmon will let you dump USB traffic.
->
+On Tue, 27 Oct 2009 15:10:52 +0900
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-Sorry for the delay.
+> 2009/10/27 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
+> > On Mon, 26 Oct 2009 17:16:14 +0100
+> > Vedran Furač <vedran.furac@gmail.com> wrote:
+> >> >  - Could you show me /var/log/dmesg and /var/log/messages at OOM ?
+> >>
+> >> It was catastrophe. :) X crashed (or killed) with all the programs, but
+> >> my little program was alive for 20 minutes (see timestamps). And for
+> >> that time computer was completely unusable. Couldn't even get the
+> >> console via ssh. Rally embarrassing for a modern OS to get destroyed by
+> >> a 5 lines of C run as an ordinary user. Luckily screen was still alive,
+> >> oomk usually kills it also. See for yourself:
+> >>
+> >> dmesg: http://pastebin.com/f3f83738a
+> >> messages: http://pastebin.com/f2091110a
+> >>
+> >> (CCing to lklm again... I just want people to see the logs.)
+> >>
+> > Thank you for reporting and your patience. It seems something strange
+> > that your KDE programs are killed. I agree.
+> >
+> > I attached a scirpt for checking oom_score of all exisiting process.
+> > (oom_score is a value used for selecting "bad" processs.")
+> > please run if you have time.
+> >
+> > This is a result of my own desktop(on virtual machine.)
+> > In this environ (Total memory is 1.6GBytes), mmap(1G) program is running.
+> >
+> > %check_badness.pl | sort -n | tail
+> > --
+> > 89924   3938    mixer_applet2
+> > 90210   3942    tomboy
+> > 94753   3936    clock-applet
+> > 101994  3919    pulseaudio
+> > 113525  4028    gnome-terminal
+> > 127340  1       init
+> > 128177  3871    nautilus
+> > 151003  11515   bash
+> > 256944  11653   mmap
+> > 425561  3829    gnome-session
+> > --
+> > Sigh, gnome-session has twice value of mmap(1G).
+> > Of course, gnome-session only uses 6M bytes of anon.
+> > I wonder this is because gnome-session has many children..but need to
+> > dig more. Does anyone has idea ?
+> > (CCed kosaki)
+> 
+> Following output address the issue.
+> The fact is, modern desktop application linked pretty many library. it
+> makes bloat VSS size and increase
+> OOM score.
+> 
+> Ideally, We shouldn't account evictable file-backed mappings for oom_score.
+> 
+Hmm. 
+I wonder why we consider VM size for OOM kiling. 
+How about RSS size?
 
-This is what I got for pressing mouse buttons 1 to 4 (in this sequence):
 
-ffff88011e462680 2851892632 C Ii:5:002:2 0:8 5 = 01010000 00
-ffff88011e462680 2851892646 S Ii:5:002:2 -115:8 5 <
-ffff88011e462680 2852236652 C Ii:5:002:2 0:8 5 = 01000000 00
-ffff88011e462680 2852236661 S Ii:5:002:2 -115:8 5 <
-ffff88011e462680 2853620738 C Ii:5:002:2 0:8 5 = 01020000 00
-ffff88011e462680 2853620747 S Ii:5:002:2 -115:8 5 <
-ffff88011e462680 2853868753 C Ii:5:002:2 0:8 5 = 01000000 00
-ffff88011e462680 2853868761 S Ii:5:002:2 -115:8 5 <
-ffff88011e462680 2854524793 C Ii:5:002:2 0:8 5 = 01040000 00
-ffff88011e462680 2854524802 S Ii:5:002:2 -115:8 5 <
-ffff88011e462680 2854772808 C Ii:5:002:2 0:8 5 = 01000000 00
-ffff88011e462680 2854772816 S Ii:5:002:2 -115:8 5 <
-ffff88011e462680 2855572857 C Ii:5:002:2 0:8 5 = 01000000 00
-ffff88011e462680 2855572863 S Ii:5:002:2 -115:8 5 <
-ffff88011e462680 2855892877 C Ii:5:002:2 0:8 5 = 01000000 00
-ffff88011e462680 2855892882 S Ii:5:002:2 -115:8 5 <
-
-
-The last 4 lines are for button 4. AFAICS it does create an event
-on the USB line, but there is no special bit set in the bit mask (the
-2nd last value on the "C" lines).
-
-Is there some traffic that usbmon doesn't show yet?
-
-
-Regards
-
-Harri
+-- 
+Kind regards,
+Minchan Kim
