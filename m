@@ -1,117 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbZJ0NjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZJ0Nki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754974AbZJ0NjJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 09:39:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbZJ0NjI
+	id S1755067AbZJ0Nki (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 09:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbZJ0Nkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 09:39:08 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:30831 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754820AbZJ0NjG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 09:39:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=bHqnt0zV5kRjX9+Hf+5xh44P6so8HayqcV3JmGNWOGUfX49dQiOZgczz7+KwHrgo4q
-         H3vnWs0iyl5ZSOyM/hk1EXoZoF6syvoj5TlJmFymlXSKh7hjS3tWhSlDnC383tzxxdSJ
-         mcaez1VSwE2sQ7HDBAtEBxCo9VydMYgdl2N94=
-Message-ID: <4AE6F7F7.1010302@gmail.com>
-Date: Tue, 27 Oct 2009 09:39:03 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Gleb Natapov <gleb@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
-Subject: Re: [KVM PATCH v3 1/3] KVM: fix race in irq_routing logic
-References: <20091026162148.23704.47286.stgit@dev.haskins.net> <20091026162157.23704.12420.stgit@dev.haskins.net> <20091027064529.GJ29477@redhat.com>
-In-Reply-To: <20091027064529.GJ29477@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE72CA70663330B3397696C62"
+	Tue, 27 Oct 2009 09:40:37 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:54786 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754888AbZJ0Nkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 09:40:35 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
+Cc: linux-kernel@vger.kernel.org, "linux-mm@kvack.org\"" <linux-mm@kvack.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: [PATCH 0/3] Reduce GFP_ATOMIC allocation failures, partial fix V3
+Date: Tue, 27 Oct 2009 13:40:30 +0000
+Message-Id: <1256650833-15516-1-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE72CA70663330B3397696C62
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Since 2.6.31-rc1, there have been an increasing number of GFP_ATOMIC
+failures. A significant number of these have been high-order GFP_ATOMIC
+failures and while they are generally brushed away, there has been a large
+increase in them recently and there are a number of possible areas the
+problem could be in - core vm, page writeback and a specific driver. The
+bugs affected by this that I am aware of are;
 
-Gleb Natapov wrote:
-> On Mon, Oct 26, 2009 at 12:21:57PM -0400, Gregory Haskins wrote:
->> The current code suffers from the following race condition:
->>
->> thread-1                                    thread-2
->> -----------------------------------------------------------
->>
->> kvm_set_irq() {
->>    rcu_read_lock()
->>    irq_rt =3D rcu_dereference(table);
->>    rcu_read_unlock();
->>
->>                                        kvm_set_irq_routing() {
->>                                           mutex_lock();
->>                                           irq_rt =3D table;
->>                                           rcu_assign_pointer();
->>                                           mutex_unlock();
->>                                           synchronize_rcu();
->>
->>                                           kfree(irq_rt);
->>
->>    irq_rt->entry->set(); /* bad */
->>
-> This is not what happens. irq_rt is never accessed outside read-side
-> critical section.
+[Bug #14141] order 2 page allocation failures in iwlagn
+[Bug #14141] order 2 page allocation failures (generic)
+[Bug #14265] ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
+[No BZ ID]   Kernel crash on 2.6.31.x (kcryptd: page allocation failure..)
+[No BZ ID]   page allocation failure message kernel 2.6.31.4 (tty-related)
 
-Sorry, I was generalizing to keep the comments short.  I figured it
-would be clear what I was actually saying, but realize in retrospect
-that I was a little ambiguous.
+The three patches in this series partially address the problem. I am
+proposing these for merging to mainline and -stable now to reduce the number
+of duplicate bug reports. The following bug should be fixed by these patches.
 
-Yes, irq_rt is not accessed outside the RSCS.  However, the entry
-pointers stored in the irq_rt->map are, and this is equally problematic
-afaict.
+[No BZ ID] page allocation failure message kernel 2.6.31.4 (tty-related)
 
-In this particular case we seem to never delete entries at run-time once
-they are established.  Therefore, while perhaps sloppy, its technically
-safe to leave them unprotected from this perspective.  The issue is more
-related to shutdown since a kvm_set_irq() caller could be within the
-aforementioned race-region and call entry->set() after the guest is
-gone.  Or did I miss something?
+The following bug becomes very difficult to reproduce with these patches;
 
-> Data is copied from irq_rt onto the stack and this copy is accessed
-> outside critical section.
+[Bug #14265] ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
 
-As mentioned above, I do not believe this really protect us.  And even
-if it did, the copy is just a work-around to avoid sleeping within the
-standard RCU RSCS, which is what SRCU is designed for.  So rather than
-inventing an awkward two-phased stack based solution, it's better to
-reuse the provided tools, IMO.
+The rest of the bugs remain open.
 
-To flip it around:  Is there any reason why an SRCU would not work here,
-and thus we were forced to use something like the stack-copy approach?
+If these patches are agreed upon, they should be also considered -stable
+candidates. Patch 1 does not apply cleanly but I can supply a version
+that does.
 
-Kind Regards,
--Greg
+ mm/page_alloc.c |    4 ++--
+ mm/vmscan.c     |    9 +++++++++
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-
---------------enigE72CA70663330B3397696C62
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkrm9/cACgkQP5K2CMvXmqGOiwCghnCZqSOvphfog7Ka/mn+X5V0
-jtIAn2FcKx03Ah7KtV8baIs9FV7ICUgN
-=1dWw
------END PGP SIGNATURE-----
-
---------------enigE72CA70663330B3397696C62--
