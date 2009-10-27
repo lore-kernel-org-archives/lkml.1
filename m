@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbZJ0TMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbZJ0SVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756667AbZJ0TMF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 15:12:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756616AbZJ0TME
+	id S1755721AbZJ0SVw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 14:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbZJ0SVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 15:12:04 -0400
-Received: from claw.goop.org ([74.207.240.146]:43033 "EHLO claw.goop.org"
+	Tue, 27 Oct 2009 14:21:51 -0400
+Received: from mga14.intel.com ([143.182.124.37]:49142 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756551AbZJ0TMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 15:12:03 -0400
-Message-ID: <4AE74606.9050309@goop.org>
-Date: Tue, 27 Oct 2009 12:12:06 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Christian Kujau <lists@nerdbynature.de>
-CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       torvalds@linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.32-rc not booting with Xen-3.2 (bisected)
-References: <alpine.DEB.2.01.0910261445170.9408@bogon.housecafe.de> <alpine.DEB.2.01.0910261513520.9408@bogon.housecafe.de> <4AE628DB.5010305@goop.org> <alpine.DEB.2.01.0910261759470.9408@bogon.housecafe.de> <alpine.DEB.2.01.0910261820050.9408@bogon.housecafe.de> <4AE67506.2040200@goop.org> <alpine.DEB.2.01.0910262154410.9408@bogon.housecafe.de> <4AE73973.3070709@goop.org> <alpine.DEB.2.01.0910271158100.9408@bogon.housecafe.de>
-In-Reply-To: <alpine.DEB.2.01.0910271158100.9408@bogon.housecafe.de>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755630AbZJ0SVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 14:21:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,634,1249282800"; 
+   d="scan'208";a="204294671"
+Subject: Re: [PATCH] [GIT PULL] tracing: allow to change permissions for
+ text with dynamic ftrace enabled
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: "rostedt@goodmis.org" <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <1256666023.26028.411.camel@gandalf.stny.rr.com>
+References: <1256666023.26028.411.camel@gandalf.stny.rr.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Tue, 27 Oct 2009 11:20:27 -0800
+Message-Id: <1256671227.2691.15.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/27/09 12:01, Christian Kujau wrote:
-> On Tue, 27 Oct 2009 at 11:18, Jeremy Fitzhardinge wrote:
->   
->> $ gdb vmlinux
->> (gdb) x/i 0xffffffff812c50ad
->>     
-> The value is always ffffffff812c50ad, gdb says:
->
-> (gdb) x/i 0xffffffff812c50ad
-> 0xffffffff812c50ad <xen_load_gdt_boot+252>:     ud2a  
->   
+On Tue, 2009-10-27 at 10:53 -0700, Steven Rostedt wrote:
+> commit 883242dd0e5faaba041528a9a99f483f2a656c83
+> Author: Steven Rostedt <srostedt@redhat.com>
+> Date:   Tue Oct 27 13:15:11 2009 -0400
+> 
+>     tracing: allow to change permissions for text with dynamic ftrace enabled
+>     
+>     The commit 74e081797bd9d2a7d8005fe519e719df343a2ba8
+>     x86-64: align RODATA kernel section to 2MB with CONFIG_DEBUG_RODATA
+>     prevents text sections from becoming read/write using set_memory_rw.
+>     
+>     The dynamic ftrace changes all text pages to read/write just before
+>     converting the calls to tracing to nops, and vice versa.
+>     
+>     I orginally just added a flag to allow this transaction when ftrace
+>     did the change, but I also found that when the CPA testing was running
+>     it would remove the read/write as well, and ftrace does not do the text
+>     conversion on boot up, and the CPA changes caused the dynamic tracer
+>     to fail on self tests.
+>     
+>     The current solution I have is to simply not to prevent
+>     change_page_attr from setting the RW bit for kernel text pages.
 
-OK, I can repro this here and I'm looking into it.   This particular
-crash has been reported before on other kernels, but it seems more
-easily triggered in this kernel.
 
-    J
+Steven, Is it possible for dynamic ftrace to use the kernel identity
+mapping instead of the kernel text mapping for converting the tracing
+calls to nops etc.
+
+That way, we can still retain large page mappings for kernel text, while
+allowing the text to be changed.
+
+I need to think through this to see if there are any subtle issues. What
+do you think?
+
+thanks,
+suresh
+
