@@ -1,103 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbZJ0EXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZJ0EeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752740AbZJ0EXv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 00:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZJ0EXu
+	id S1753811AbZJ0EeG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 00:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZJ0EeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 00:23:50 -0400
-Received: from mail.lang.hm ([64.81.33.126]:39131 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750748AbZJ0EXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 00:23:49 -0400
-Date: Mon, 26 Oct 2009 21:23:35 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: removing existing working drivers via staging
-In-Reply-To: <alpine.DEB.2.00.0910151250480.22169@asgard.lang.hm>
-Message-ID: <alpine.DEB.2.00.0910262119530.14994@asgard.lang.hm>
-References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm> <200910151942.40259.bzolnier@gmail.com> <20091015174932.GA3595@suse.de> <200910152020.13080.bzolnier@gmail.com> <20091015184656.GA29858@suse.de> <alpine.DEB.2.00.0910151200100.22169@asgard.lang.hm>
- <20091015191641.GB19467@elte.hu> <alpine.DEB.2.00.0910151230560.22169@asgard.lang.hm> <4AD77C4F.5010307@s5r6.in-berlin.de> <alpine.DEB.2.00.0910151250480.22169@asgard.lang.hm>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 27 Oct 2009 00:34:05 -0400
+Received: from mail-gx0-f216.google.com ([209.85.217.216]:47750 "EHLO
+	mail-gx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753513AbZJ0EeE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 00:34:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=iET0zF4lG/YJkF+0KzX02Eo/MiAoggq/t0o9hmy+Yi2RguDxVTVpt0DtY7/Qn4o+43
+         nOsEZ6U2mgqN9A2rEtxbGO9p8yY6Ti6c+F0VaJDbMSwjRX/LG1JeOurfTRHWm9P77OIr
+         O1kbZCNyo67tt8AUTaK2wx2oaiADcqcAmhb58=
+Message-ID: <4AE6783F.1000400@gmail.com>
+Date: Mon, 26 Oct 2009 21:34:07 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Ed Tomlinson <edt@aei.ca>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Boyan <btanastasov@yahoo.co.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       =?ISO-8859-1?Q?=22Fr=E9d=E9ric_L=2E_W=2E_Meunier=22?= 
+	<fredlwm@gmail.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera> <4AE621CB.6000700@yahoo.co.uk> <alpine.LFD.2.01.0910261543400.31845@localhost.localdomain> <200910261945.58027.edt@aei.ca>
+In-Reply-To: <200910261945.58027.edt@aei.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-for those who were reading this thread, the topic has come up again in the 
-thread titled
+Ed Tomlinson wrote:
+> On Monday 26 October 2009 18:45:27 Linus Torvalds wrote:
+>    
+>> On Tue, 27 Oct 2009, Boyan wrote:
+>>      
+>>> I think it is fixed in 2.6.31.5. I can't reproduce the problem with it.
+>>>        
+>> It was fixed by mainline commit c8e33141911bf8fe87dc6c92793b9a59b2be0130
+>> ("tty: Make flush_to_ldisc() locking more robust"), which got back-ported
+>> to 2.6.31.5 as commit 86d23a057.
+>>      
+>
+> I can confirm that the keyboard is no longer missbehaving here  with 31.5
+>
+> Ed
+>
+>    
+I guess there you have it... everybody
+confirms this is fixed.
+safe to say yes close, but not until the patch
+has been pushed to the main tree..
 
-[PATCH 1/4] strip: move driver to staging
+cheers
 
-where a driver is being moved to staging because it does not have a 
-maintainer and the only changes to it for some time have been due to 
-kernel API changes.
-
-the maintainer of the area feels that it's too much work to allow the 
-driver to remain because it must be updated when kernel APIs change.
-
-
-this is exactly the 'wants to get rid of' category I mentioned being 
-concerned about below.
-
-
-I don't know what was decided at the kernel summit where this was 
-discussed, how easy is it supposed to be to drop drivers out of the 
-kernel?
-
-David Lang
-
-On Thu, 15 Oct 2009, david@lang.hm wrote:
-
-> Date: Thu, 15 Oct 2009 12:57:49 -0700 (PDT)
-> From: david@lang.hm
-> To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> Cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
->     Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
->     linux-kernel <linux-kernel@vger.kernel.org>
-> Subject: Re: removing existing working drivers via staging
-> 
-> On Thu, 15 Oct 2009, Stefan Richter wrote:
->
->> david@lang.hm wrote:
->>> it's these users who will discover the missing driver and care about it,
->>> not the distros.
->> 
->> I think we are talking about stuff of which users will typically
->> discover that it plainly doesn't work long before it vanishes from any
->> kernel distribution, or of which there is a superior alternative already
->> available.
->
-> if there's a superior alternative already available staging isn't needed 
-> (like the e1000 split), but I have also seen many new systems added to the 
-> kernel that the author thinks covers all the old ones, only to find out when 
-> people get it in the real world that it doesn't cover all existing hardware. 
-> but this is an existing problem that is already being handled.
->
->
->
-> if it clearly doesn't work that is also fine with me.
->
-> however, that is not the criteria that has been expressed.
->
-> from earlier in this thread
->
->        - For drivers currently in the kernel tree, that the subsystem
->          maintainer, for whatever reason, feels is obsolete / broken /
->          needs major cleaning / wants to get rid of, can be submitted
->          to the staging maintainer to be moved to the drivers/staging/
->          directory.
->
-> it's the 'needs major cleaning' and 'wants to get rid of' portions that 
-> concern me the most.
->
-> 'obsolete' can mean that there is a superior alternative available, or it 
-> could mean that the hardware the driver supports has not been manufactured in 
-> several years (or, depending who you ask, several weeks ;-)
->
-> David Lang
->
+Justin P. Mattock
