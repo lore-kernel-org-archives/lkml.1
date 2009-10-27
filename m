@@ -1,93 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZJ0HnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbZJ0HoC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbZJ0HnB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 03:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbZJ0HnA
+	id S1756458AbZJ0HoC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 03:44:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbZJ0HoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 03:43:00 -0400
-Received: from sh.osrg.net ([192.16.179.4]:51841 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755376AbZJ0Hm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 03:42:59 -0400
-Date: Tue, 27 Oct 2009 16:43:01 +0900
-To: tony.luck@intel.com
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-Id: <20091027164235N.fujita.tomonori@lab.ntt.co.jp>
-From: fujita <fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 27 Oct 2009 16:43:01 +0900 (JST)
+	Tue, 27 Oct 2009 03:44:01 -0400
+Received: from mail-qy0-f174.google.com ([209.85.221.174]:47635 "EHLO
+	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755985AbZJ0HoA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 03:44:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Z1wrMv9zIOP+VYSToxCQPSlC5oBYcBY7UZCxu0xjYjAjBhTLgOWMhSdzrL7TVLse84
+         GZ4pUMXGY+SGx+h6PLOShgXkyIFXga+IIUmbgLm/Cvb4Jrets8/TMeJvwkLczFjF4rOm
+         u+rllLx9mN/LlqHV32yUXZCS5yxtWXg1WJM9g=
+MIME-Version: 1.0
+In-Reply-To: <20091026225930.GA18723@localhost>
+References: <20091026225930.GA18723@localhost>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Tue, 27 Oct 2009 15:43:44 +0800
+Message-ID: <f17812d70910270043q328ab091mb1d76760e674450d@mail.gmail.com>
+Subject: Re: [PATCH] 2.6.32-rc5 bug in Palm Tungsten C keyboard
+To: Ondrej Zajicek <santiago@crfreenet.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       marek.vasut@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] swiotlb: remove duplicated swiotlb_late_init_with_default_size
- declarations
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Dcc: fujita.tomonori@lab.ntt.co.jp
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+On Tue, Oct 27, 2009 at 6:59 AM, Ondrej Zajicek <santiago@crfreenet.org> wrote:
+> Palm Tungsten C keyboard structure has swapped
+> rows/cols gpio structures and does not work.
+> This patch fixes it.
+>
+> Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
 
-This adds swiotlb_late_init_with_default_size declaration to the
-common header so that we can remove duplicated
-swiotlb_late_init_with_default_size declarations in the IOMMU drivers.
+This fix looks obvious to me. Applied to 'fix'.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/ia64/hp/common/hwsw_iommu.c |    3 ---
- arch/ia64/hp/common/sba_iommu.c  |    3 +--
- include/linux/swiotlb.h          |    4 ++--
- 3 files changed, 3 insertions(+), 7 deletions(-)
-
-diff --git a/arch/ia64/hp/common/hwsw_iommu.c b/arch/ia64/hp/common/hwsw_iommu.c
-index e4a80d8..d557779 100644
---- a/arch/ia64/hp/common/hwsw_iommu.c
-+++ b/arch/ia64/hp/common/hwsw_iommu.c
-@@ -19,9 +19,6 @@
- 
- extern struct dma_map_ops sba_dma_ops, swiotlb_dma_ops;
- 
--/* swiotlb declarations & definitions: */
--extern int swiotlb_late_init_with_default_size (size_t size);
--
- /*
-  * Note: we need to make the determination of whether or not to use
-  * the sw I/O TLB based purely on the device structure.  Anything else
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index 674a837..96c769e 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -37,6 +37,7 @@
- #include <linux/crash_dump.h>
- #include <linux/iommu-helper.h>
- #include <linux/dma-mapping.h>
-+#include <linux/swiotlb.h>
- 
- #include <asm/delay.h>		/* ia64_get_itc() */
- #include <asm/io.h>
-@@ -46,8 +47,6 @@
- 
- #include <asm/acpi-ext.h>
- 
--extern int swiotlb_late_init_with_default_size (size_t size);
--
- #define PFX "IOC: "
- 
- /*
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index 73b1f1c..2583af3 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -20,8 +20,8 @@ struct scatterlist;
-  */
- #define IO_TLB_SHIFT 11
- 
--extern void
--swiotlb_init(void);
-+extern void swiotlb_init(void);
-+extern int swiotlb_late_init_with_default_size(size_t size);
- 
- extern void
- *swiotlb_alloc_coherent(struct device *hwdev, size_t size,
--- 
-1.5.6.5
-
+>
+> diff -uprN linux-2.6.32-rc5-old/arch/arm/mach-pxa/palmtc.c linux-2.6.32-rc5/arch/arm/mach-pxa/palmtc.c
+> --- linux-2.6.32-rc5-old/arch/arm/mach-pxa/palmtc.c     2009-10-16 02:41:50.000000000 +0200
+> +++ linux-2.6.32-rc5/arch/arm/mach-pxa/palmtc.c 2009-10-26 20:56:44.000000000 +0100
+> @@ -292,10 +292,10 @@ const static unsigned int palmtc_keypad_
+>
+>  static struct matrix_keypad_platform_data palmtc_keypad_platform_data = {
+>        .keymap_data    = &palmtc_keymap_data,
+> -       .col_gpios      = palmtc_keypad_row_gpios,
+> -       .num_col_gpios  = 12,
+> -       .row_gpios      = palmtc_keypad_col_gpios,
+> -       .num_row_gpios  = 4,
+> +       .row_gpios      = palmtc_keypad_row_gpios,
+> +       .num_row_gpios  = ARRAY_SIZE(palmtc_keypad_row_gpios),
+> +       .col_gpios      = palmtc_keypad_col_gpios,
+> +       .num_col_gpios  = ARRAY_SIZE(palmtc_keypad_col_gpios),
+>        .active_low     = 1,
+>
+>        .debounce_ms            = 20,
+>
+>
+> --
+> Elen sila lumenn' omentielvo
+>
+> Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
+> OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+> "To err is human -- to blame it on a computer is even more so."
+>
