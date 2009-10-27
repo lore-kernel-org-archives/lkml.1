@@ -1,101 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbZJ0RVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbZJ0RWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754083AbZJ0RVR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 13:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZJ0RVQ
+	id S1754160AbZJ0RWy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 13:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZJ0RWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 13:21:16 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:60435 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751877AbZJ0RVP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 13:21:15 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Chris Mason <chris.mason@oracle.com>, Mel Gorman <mel@csn.ul.ie>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Date: Tue, 27 Oct 2009 18:21:13 +0100
-User-Agent: KMail/1.9.9
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <20091027155223.GL8900@csn.ul.ie> <20091027160332.GA7776@think>
-In-Reply-To: <20091027160332.GA7776@think>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 27 Oct 2009 13:22:54 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:54287 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751884AbZJ0RWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 13:22:53 -0400
+Date: Tue, 27 Oct 2009 10:22:51 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       eric.dumazet@gmail.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, opurdila@ixiacom.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+Subject: [PATCH] net: fold network name hash
+Message-ID: <20091027102251.244ee681@nehalam>
+In-Reply-To: <20091026.222428.80364204.davem@davemloft.net>
+References: <9986527.24561256620662709.JavaMail.root@tahiti.vyatta.com>
+ <19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com>
+ <20091026.222428.80364204.davem@davemloft.net>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910271821.18521.elendil@planet.nl>
-X-OriginalArrivalTime: 27 Oct 2009 17:21:18.0432 (UTC) FILETIME=[E536A600:01CA5729]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 October 2009, Chris Mason wrote:
-> On Tue, Oct 27, 2009 at 03:52:24PM +0000, Mel Gorman wrote:
-> > > So, after the move to async/sync, a lot more pages are getting
-> > > queued for writeback - more than three times the number of pages are
-> > > queued for writeback with the vanilla kernel. This amount of
-> > > congestion might be why direct reclaimers and kswapd's timings have
-> > > changed so much.
-> >
-> > Or more accurately, the vanilla kernel has queued up a lot more pages
-> > for IO than when the patch is reverted. I'm not seeing yet why this
-> > is.
->
-> [ sympathies over confusion about congestion...lots of variables here ]
->
-> If wb_kupdate has been able to queue more writes it is because the
-> congestion logic isn't stopping it.  We have congestion_wait(), but
-> before calling that in the writeback paths it says: are you congested?
-> and then backs off if the answer is yes.
->
-> Ideally, direct reclaim will never do writeback.  We want it to be able
-> to find clean pages that kupdate and friends have already processed.
->
-> Waiting for congestion is a funny thing, it only tells us the device has
-> managed to finish some IO or that a timeout has passed.  Neither event
-> has any relation to figuring out if the IO for reclaimable pages has
-> finished.
->
-> One option is to have the VM remember the hashed waitqueue for one of
-> the pages it direct reclaims and then wait on it.
+The full_name_hash does not produce a value that is evenly distributed
+over the lower 8 bits. This causes name hash to be unbalanced with large
+number of names.  A simple fix is to just fold in the higher bits
+with XOR.
 
-What people should be aware of is the behavior of the system I see at this 
-point. I've already mentioned this in other mails, but it's probably good 
-to repeat it here.
+This is independent of possible improvements to full_name_hash()
+in future.
 
-While gitk is reading commits with vanilla .31 and .32 kernels there is at 
-some point a fairly long period (10-20 seconds) where I see:
-- a completely frozen desktop, including frozen mouse cursor
-- really very little disk activity (HD led flashes very briefly less than
-  once per second)
-- reading commits stops completely during this period
-- no music.
-After that there is a period (another 5-15 seconds) with a huge amount of 
-disk activity during which the system gradually becomes responsive again 
-and in gitk the count of commits that have been read starts increasing 
-again (without a jump in the counter which confirms that no commits were 
-read during the freeze).
+Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
 
-I cannot really tell what the system is doing during those freezes. Because 
-of the frozen desktop I cannot for example see CPU usage. I suspect that, 
-as there is hardly any disk activity, the system must be reorganizing RAM 
-or something. But it seems quite bad that that gets "bunched up" instead 
-of happening more gradually.
 
-With the congestion_wait() change reverted I never see these freezes, only 
-much more normal minor latencies (< 2 seconds; mostly < 0.5 seconds), 
-which is probably unavoidable during heavy swapping.
-
-Hth,
-FJP
+--- a/net/core/dev.c	2009-10-27 09:21:46.127252547 -0700
++++ b/net/core/dev.c	2009-10-27 09:25:14.593313378 -0700
+@@ -199,7 +199,11 @@ EXPORT_SYMBOL(dev_base_lock);
+ static inline struct hlist_head *dev_name_hash(struct net *net, const char *name)
+ {
+ 	unsigned hash = full_name_hash(name, strnlen(name, IFNAMSIZ));
+-	return &net->dev_name_head[hash & ((1 << NETDEV_HASHBITS) - 1)];
++
++	hash ^= (hash >> NETDEV_HASHBITS);
++	hash &= NETDEV_HASHENTRIES - 1;
++
++	return &net->dev_name_head[hash];
+ }
+ 
+ static inline struct hlist_head *dev_index_hash(struct net *net, int ifindex)
