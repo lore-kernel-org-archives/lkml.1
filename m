@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZJ0Jsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752870AbZJ0JuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbZJ0Jsn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 05:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZJ0Jsm
+	id S1752870AbZJ0JuZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 05:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZJ0JuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 05:48:42 -0400
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:43617 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751639AbZJ0Jsl (ORCPT
+	Tue, 27 Oct 2009 05:50:24 -0400
+Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:35899
+	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752300AbZJ0JuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 05:48:41 -0400
-To: David Miller <davem@davemloft.net>
-Cc: rostedt@goodmis.org, sam@ravnborg.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, nico@fluxnic.net, tony.luck@intel.com,
-       sfr@canb.auug.org.au, mcgrof@gmail.com, jeff@garzik.org,
-       robert.richter@amd.com, dmitry.torokhov@gmail.com, khali@linux-fr.org,
-       torvalds@linux-foundation.org
-Subject: Re: [RFC] to rebase or not to rebase on linux-next
-References: <1256599588.26028.340.camel@gandalf.stny.rr.com>
-	<20091026.163050.156983266.davem@davemloft.net>
-	<1256601061.26028.350.camel@gandalf.stny.rr.com>
-	<20091026.171539.06989895.davem@davemloft.net>
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Tue, 27 Oct 2009 09:48:36 +0000
-In-Reply-To: <20091026.171539.06989895.davem@davemloft.net> (David Miller's message of "Mon\, 26 Oct 2009 17\:15\:39 -0700 \(PDT\)")
-Message-ID: <tnx4opl5frf.fsf@pc1117.cambridge.arm.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Tue, 27 Oct 2009 05:50:23 -0400
+Date: Tue, 27 Oct 2009 10:50:15 +0100
+From: Michael Guntsche <mike@it-loops.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Page alloc problems with 2.6.32-rc kernels
+Message-ID: <20091027095014.GA22215@gibson.comsick.at>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 27 Oct 2009 09:48:43.0746 (UTC) FILETIME=[ABC26420:01CA56EA]
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> wrote:
-> From: Steven Rostedt <rostedt@goodmis.org>
-> Date: Mon, 26 Oct 2009 19:51:01 -0400
->> I get something working and then commit it. Then I do more changes
->> and commit that. I don't use quilt anymore for this.
->
-> And you can do this all day long if you like.
->
-> What you can't do is _PUBLISH_ this anywhere to a tree that people
-> also do development against _UNTIL_ you get those acks and tested-by
-> tags back from people.
->
-> Once your acks etc. come in, you can pop all of those pending patches
-> out of your tree, add the ack tags to the commit messages, then
-> reapply them.
->
-> Then you can push to your public tree, but no sooner.
+Hello list,
 
-I use stacked git for my patches and I may rewind the series (fixes
-following reviews/testing, acked-by lines etc.) before patches are
-pushed into mainline (nothing new here). But to make it easier for
-others to test or develop on top of such branch, I added a "stg
-publish" command which creates a separate merge-friendly branch that
-is never rebased nor rewound (for some implementation details, see
-http://procode.org/stgit/doc/stg-publish.html). The top commit sha1
-(and history) of the published and series branches differ but they
-always have the same tree so that people using the published branch
-always get the same source. You even get to add a comment about what
-was modified in the series when publishing the change.
+I noticed that I get page alloc errors on one of my machines.
+It is an old server I use as a fileserver with 512MB RAM. Before
+2.6.3[12] I did not see this problem at all. 
+This only seems to happens when I use mutt on this machine.
+I know that it means I am running out of memory here, but I am wondering
+why I did not see this before....
 
-There is currently no way to publish commit message changes like
-adding Acked-by (unless the "publish" command would do a revert of the
-original commit, though not sure it's worth as it makes the history
-more unreadable).
 
-For mainline merging you can send a pull request on the series
-(rewound) branch once you are happy with it and don't foresee further
-changes (when rebasing a series on the latest mainline, the "publish"
-command generates a "merge" with mainline so that people pulling both
-the published branch and mainline don't need to resolve the possible
-conflicts with your series).
+mutt: page allocation failure. order:1, mode:0x20
+Pid: 21746, comm: mutt Not tainted 2.6.32-rc5 #2
+Call Trace:
+ [<c11981ef>] ? printk+0x18/0x21
+ [<c1050945>] __alloc_pages_nodemask+0x417/0x4d8
+ [<c1069edc>] cache_alloc_refill+0x250/0x496
+ [<c106a1c6>] __kmalloc+0xa4/0xa8
+ [<c110ddef>] tty_buffer_request_room+0x88/0x11d
+ [<c110dfb8>] tty_insert_flip_string+0x27/0x93
+ [<c110e8d9>] pty_write+0x24/0x4a
+ [<c110a24f>] n_tty_write+0x163/0x3ab
+ [<c1020960>] ? default_wake_function+0x0/0xd
+ [<c1107f3c>] tty_write+0x129/0x1c2
+ [<c110a0ec>] ? n_tty_write+0x0/0x3ab
+ [<c106cfe0>] vfs_write+0x8e/0x142
+ [<c1107e13>] ? tty_write+0x0/0x1c2
+ [<c106d13d>] sys_write+0x3d/0x6b
+ [<c1002bb5>] syscall_call+0x7/0xb
+Mem-Info:
+DMA per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+Normal per-cpu:
+CPU    0: hi:  186, btch:  31 usd:  52
+active_anon:17616 inactive_anon:20870 isolated_anon:0
+ active_file:27963 inactive_file:43021 isolated_file:0
+ unevictable:0 dirty:284 writeback:0 unstable:0 buffer:5599
+ free:1401 slab_reclaimable:2966 slab_unreclaimable:3731
+ mapped:4083 shmem:88 pagetables:515 bounce:0
+DMA free:2196kB min:84kB low:104kB high:124kB active_anon:1496kB inactive_anon:2340kB active_file:3212kB inactive_file:5884kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15804kB mlocked:0kB dirty:40kB writeback:0kB mapped:648kB shmem:0kB slab_reclaimable:244kB slab_unreclaimable:244kB kernel_stack:176kB pagetables:64kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 491 491
+Normal free:3408kB min:2792kB low:3488kB high:4188kB active_anon:68968kB inactive_anon:81140kB active_file:108640kB inactive_file:166200kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:503616kB mlocked:0kB dirty:1096kB writeback:0kB mapped:15684kB shmem:352kB slab_reclaimable:11620kB slab_unreclaimable:14680kB kernel_stack:1688kB pagetables:1996kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0
+DMA: 549*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 2196kB
+Normal: 754*4kB 35*8kB 7*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 3408kB
+73515 total pagecache pages
+2437 pages in swap cache
+Swap cache stats: add 22864, delete 20427, find 290544/291230
+Free swap  = 456788kB
+Total swap = 524280kB
+130976 pages RAM
+1952 pages reserved
+52425 pages shared
+86057 pages non-shared
 
-A similar script could be easily done for plain git (Stefan Richter
-mentioned something like this as well).
+Please put me on CC since I am not subscribed to the list.
 
--- 
-Catalin
+Kind regards,
+Michael
