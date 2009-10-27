@@ -1,98 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbZJ0S5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756449AbZJ0TCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbZJ0S5E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 14:57:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZJ0S5E
+	id S1756449AbZJ0TCI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 15:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbZJ0TCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 14:57:04 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:55517 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752865AbZJ0S5C (ORCPT
+	Tue, 27 Oct 2009 15:02:08 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:52055 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753807AbZJ0TCH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 14:57:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=oSa4m04vH8PbuM8DxX8IfNp5uj2VJEy2XnPVCMnzDziaDo57N7pfkjUTJU04wPQ3Up
-         dQYsYfktxed8VOmEkv7FVJC0zszd6CVNVbAVANYvwKkLcrXniuKJeSj+xvTsqZdhOgbp
-         QI7RRKICf2cLHCTWZz0L00z40qpdkldHToKlI=
-Message-ID: <4AE74282.2000207@gmail.com>
-Date: Tue, 27 Oct 2009 11:57:06 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+	Tue, 27 Oct 2009 15:02:07 -0400
+Date: Tue, 27 Oct 2009 12:01:21 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       torvalds@linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.32-rc not booting with Xen-3.2 (bisected)
+In-Reply-To: <4AE73973.3070709@goop.org>
+Message-ID: <alpine.DEB.2.01.0910271158100.9408@bogon.housecafe.de>
+References: <alpine.DEB.2.01.0910261445170.9408@bogon.housecafe.de> <alpine.DEB.2.01.0910261513520.9408@bogon.housecafe.de> <4AE628DB.5010305@goop.org> <alpine.DEB.2.01.0910261759470.9408@bogon.housecafe.de> <alpine.DEB.2.01.0910261820050.9408@bogon.housecafe.de>
+ <4AE67506.2040200@goop.org> <alpine.DEB.2.01.0910262154410.9408@bogon.housecafe.de> <4AE73973.3070709@goop.org>
+User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2
- 0
-References: <4AE24009.4090408@gmail.com> <dd18b0c30910261134s76274dbbj9c1904e78c2b5a38@mail.gmail.com> <21504.1256588976@turing-police.cc.vt.edu>            <4AE611B2.1030409@gmail.com> <29209.1256624599@turing-police.cc.vt.edu>
-In-Reply-To: <29209.1256624599@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX183yA/hwMl+VrigjaEASOPq7FA4VRtqz+rGBRm
+ VIKBtHgUlDANhMzDniO0Lli/auGcsK+JY/CZ2+jJo3Qxjp5goy
+ mbinlfHRnJjWZziFLLxEA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 26 Oct 2009 14:16:34 PDT, "Justin P. Mattock" said:
->
->    
->>      
->
-> Try this instead:
->
->
->                     printk(KERN_DEBUG "trying class=%d num=%d slot=%d func=%d\n",
->                               class, num, slot, func);
->                     if ((class == 0xffffffff)) {
->                         printk(KERN_DEBUG "No device here\n");
->                         continue; /* No device at this func */
->                     }
->
-> The curly brackets are important.  This version will still panic, and it will
-> probably spew a lot of msgs, but we'll hopefully find out which num/slot/func
-> is giving it indigestion.
->
->
->    
-O.K.thanks for the test printk.
-(didn't even think of putting a curly bracket in there)
+On Tue, 27 Oct 2009 at 11:18, Jeremy Fitzhardinge wrote:
+> $ gdb vmlinux
+> (gdb) x/i 0xffffffff812c50ad
 
-here's the results from your test printk:
-(this goes on for some time during boot)
+The value is always ffffffff812c50ad, gdb says:
 
-[    0.000000] trying class=-1 num=31 slot=30 func=7
-[    0.000000] No device here
-[    0.000000] trying class=-1 num=31 slot=31 func=0
-[    0.000000] No device here
-[    0.000000] trying class=-1 num=31 slot=31 func=1
-[    0.000000] No device here
-[    0.000000] trying class=-1 num=31 slot=31 func=2
-[    0.000000] No device here
-[    0.000000] trying class=-1 num=31 slot=31 func=3
-[    0.000000] No device here
-[    0.000000] trying class=-1 num=31 slot=31 func=4
-[    0.000000] No device here
-[    0.000000] trying class=-1 num=31 slot=31 func=5
-[    0.000000] No device here
-[    0.000000] trying class=-1 num=31 slot=31 func=6
-[    0.000000] No device here
-[    0.000000] trying class=-1 num=31 slot=31 func=7
-[    0.000000] No device here
-[    0.000000] init_ohci1394_dma: finished initializing OHCI DMA
-[    0.000000] ACPI: RSDP 00000000000fe020 00024 (v02 APPLE )
-[    0.000000] ACPI: XSDT 000000003fefd1c0 00074 (v01 APPLE   Apple00
-000000A5      01000013)
-[    0.000000] ACPI: FACP 000000003fefb000 000F4 (v03 APPLE   Apple00
-000000A5 Loki 0000005F)
+(gdb) x/i 0xffffffff812c50ad
+0xffffffff812c50ad <xen_load_gdt_boot+252>:     ud2a  
 
+> Hm, sounds like a xenstored bug, or something is just pounding on it. 
+> Are there any other domains running, or other busy processes?
 
-I'm going to have a look at this today, and look to
-see if I can fix this.(also the guys e-mail bk@suse.de
-keeps giving me a fail to send message so I took it off
-for now, and then later I'll try to find that person and
-update his e-mail).
+Yes, there's another domU running. But the high load and xenstored 
+spinning is only happening when I try to start the domain with this 
+2.6.32-rc kernel.
 
-Justin P. Mattock
+Christian.
+-- 
+BOFH excuse #145:
 
+Flat tire on station wagon with tapes.  ("Never underestimate the bandwidth of a station wagon full of tapes hurling down the highway" Andrew S. Tannenbaum)
