@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbZJ0BOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbZJ0BOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755629AbZJ0BOW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Oct 2009 21:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbZJ0BOW
+	id S1755925AbZJ0BOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Oct 2009 21:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbZJ0BOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Oct 2009 21:14:22 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:59841 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755207AbZJ0BOV (ORCPT
+	Mon, 26 Oct 2009 21:14:42 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:40507 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755894AbZJ0BOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Oct 2009 21:14:21 -0400
-Date: Mon, 26 Oct 2009 18:14:14 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       torvalds@linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.32-rc not booting with Xen-3.2 (bisected)
-In-Reply-To: <4AE628DB.5010305@goop.org>
-Message-ID: <alpine.DEB.2.01.0910261759470.9408@bogon.housecafe.de>
-References: <alpine.DEB.2.01.0910261445170.9408@bogon.housecafe.de> <alpine.DEB.2.01.0910261513520.9408@bogon.housecafe.de> <4AE628DB.5010305@goop.org>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+	Mon, 26 Oct 2009 21:14:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=x-authentication-warning:to:cc:subject:references:from:date
+         :in-reply-to:message-id:lines:user-agent:mime-version:content-type;
+        b=XdJXysRZUvqgtrquX306+e5lCvi6haVtyedDwr85kgMr6YXcT9MW+SWT4bU/Fq4EEW
+         81Yi46KLFlO0TsqCNRllVkwv3tqTP08UbzAZ+g7ZVRv6aGaK/pUKnZW5LiayeJ4EmkR6
+         HN27mxpsGW7jFGE4sbnJjrOdS94C1bG1buMHc=
+To: Joe Perches <joe@perches.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, git <git@vger.kernel.org>,
+       mercurial@selenic.com, Marti Raudsepp <marti@juffo.org>
+Subject: Re: git vs hg commit counts?
+References: <1256602127.29938.8.camel@Joe-Laptop.home>
+From: Jakub Narebski <jnareb@gmail.com>
+Date: Mon, 26 Oct 2009 18:14:43 -0700 (PDT)
+In-Reply-To: <1256602127.29938.8.camel@Joe-Laptop.home>
+Message-ID: <m3zl7dd4g6.fsf@localhost.localdomain>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1+LLKlqYg/fKyW0A3/2wHQ6fHtTOBgC+pM6h0r
- rFTvHUGQ8TIyegn8BHNbNtcDzaYyiVR9HYrI/2dwx6rmykBxJt
- NEeurzSHU2oIOBDispj3A==
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 at 15:55, Jeremy Fitzhardinge wrote:
-> Yes, that is indeed a likely suspect.
+Joe Perches <joe@perches.com> writes:
 
-Is there any way I can bisect this any further, i.e. which change of this 
-merge is causing this?
+> I'm comparing linux-kernel git vs hg repositories.
+> 
+> While testing some changes to scripts/get_maintainer.pl,
+> I noticed that git and hg have different commit counts
+> for the same files.
+> 
+> For instance:
+> 
+> $ git log --since=1-year-ago -- MAINTAINERS | \
+> 	grep -P "^commit [0-9a-f]{40,40}$"  | wc -l
+> 514
+> 
+> $ hg log --template="commit {node}\n" --date -365 -- MAINTAINERS  | \
+> 	grep -P "^commit [0-9a-f]{40,40}$" | wc -l
+> 601
+> 
+> Anyone have any understanding why?
 
-> Is Xen compiled with DEBUG=y? 
+It *might* be caused by the fact that in Mercurial commit can have
+only up to two parents.  This means that octopus merges (merge commits
+with more than two parents: there are a few of them in linux-kernel
+history) have to be represented as a set of two-parent merges.
 
-Hm, I doubt that the "stock" Ubuntu Xen packages are compiled with DEBUG 
-flags. I've put the .config of the running Dom0 kernel here:
-
-http://nerdbynature.de/bits/2.6.32/dom0/
-
-> Does anything appear on the Xen console (xm dmesg)?
-
-Oh, I totally forgot about "xm dmesg", it's on the URL above too. I don't 
-see any timestamps in "xm dmesg", so I guess I'll have to try again with 
-"xm dmesg --clear" inbetween boots.
-
-Thanks,
-Christian.
 -- 
-BOFH excuse #210:
+Jakub Narebski
 
-We didn't pay the Internet bill and it's been cut off.
+http://stackoverflow.com/questions/1598759/git-and-mercurial-compare-and-contrast/1599930#1599930
