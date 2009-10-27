@@ -1,241 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbZJ0IMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932126AbZJ0IJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932160AbZJ0IMO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 04:12:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932140AbZJ0IMN
+	id S932126AbZJ0IJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 04:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932103AbZJ0IJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 04:12:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38018 "EHLO hera.kernel.org"
+	Tue, 27 Oct 2009 04:09:56 -0400
+Received: from mx9.orcon.net.nz ([219.88.242.59]:57571 "EHLO mx9.orcon.net.nz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932137AbZJ0IMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 04:12:09 -0400
-Message-ID: <4AE6AABC.5040603@kernel.org>
-Date: Tue, 27 Oct 2009 01:09:32 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S932088AbZJ0IJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 04:09:53 -0400
+Message-ID: <4AE6AAD3.3000102@orcon.net.nz>
+Date: Tue, 27 Oct 2009 21:09:55 +1300
+From: Michael Cree <mcree@orcon.net.nz>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Alex Chiang <achiang@hp.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+       Richard Henderson <rth@twiddle.net>,
        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 1/4] pci: pciehp update the slot bridge res to get big range
- for pcie devices - v4
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com> <4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com> <4AE55D72.7080202@kernel.org>
-In-Reply-To: <4AE55D72.7080202@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [alpha] Add minimal support for software performance
+ events.
+References: <1256545926-6972-1-git-send-email-mcree@orcon.net.nz> <20091026084854.GA26990@elte.hu>
+In-Reply-To: <20091026084854.GA26990@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------090208020908000308050607"
+X-DSPAM-Check: by mx9.orcon.net.nz on Tue, 27 Oct 2009 21:09:57 +1300
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Tue Oct 27 21:09:57 2009
+X-DSPAM-Confidence: 0.9945
+X-DSPAM-Probability: 0.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------090208020908000308050607
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Ingo Molnar wrote:
+> * Michael Cree <mcree@orcon.net.nz> wrote:
+>   
+>> In the kernel the patch enables configuration of the perf event 
+>> option, adds the perf_event_open syscall, and includes a minimal 
+>> architecture specific asm/perf_event.h header file.
+>>
+>> For the perf tool the patch implements an Alpha specific section
+>> in the perf.h header file and adjusts options used in the
+>> Makefile to allow compilation on Alpha.  The -Wcast-align gives
+>> a "cast increases required alignment of target type" warning for
+>> the list_for_each_entry() macro. The -fstack-protector-all
+>> option generates a "not supported for this target" warning which
+>> with -Werror causes the compiler to abort.
+>>
+>> Signed-off-by: Michael Cree <mcree@orcon.net.nz>
+>> ---
+>>  arch/alpha/Kconfig                  |    1 +
+>>  arch/alpha/include/asm/perf_event.h |    9 +++++++++
+>>  arch/alpha/include/asm/unistd.h     |    3 ++-
+>>  arch/alpha/kernel/systbls.S         |    1 +
+>>  tools/perf/Makefile                 |    5 ++---
+>>  tools/perf/perf.h                   |    6 ++++++
+>>  6 files changed, 21 insertions(+), 4 deletions(-)
+>>  create mode 100644 arch/alpha/include/asm/perf_event.h
+>>     
+>
+> Nice!
+>
+> I've picked up the perf.h bit in an independent commit. Is there a tree 
+> for Alpha bits?
+>   
+
+Not that I know of.  Note also that this patch is on top of the patch 
+"alpha: Wire up missing/new syscalls" recently posted by Daniele Calore 
+(http://lkml.org/lkml/2009/10/21/99).  Hopefully this and prior patches 
+get picked up by the Alpha maintainers.
+
+> This portion:
+>   
+>> --- a/tools/perf/Makefile
+>> +++ b/tools/perf/Makefile
+>> @@ -201,7 +200,7 @@ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wold-style-definition
+>>  EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wstrict-prototypes
+>>  EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wdeclaration-after-statement
+>>  
+>> -CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
+>> +CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
+>>  LDFLAGS = -lpthread -lrt -lelf -lm
+>>  ALL_CFLAGS = $(CFLAGS)
+>>  ALL_LDFLAGS = $(LDFLAGS)
+>>     
+>
+> Should be done not by removing the stack-protector build unconditionally 
+> - but by auto-testing whether stackprotector is supported by GCC and 
+> using it if yes.
+>   
+
+Revised patch attached.  It includes a test that the compiler doesn't 
+bomb out with -fstack-protector-all and only adds the option to CFLAGS 
+if ok.  But I have had to put the test below the definition of the macro 
+CC.  This has the side effect of separating the addition of 
+-fstack-protector-all from the main definitions of CFLAGS and 
+ALL_CFLAGS, and is not ideal in my opinion.  The patch also removes 
+-Wcast-align (I forgot to say that in the commit message of the patch).
+
+Michael.
 
 
-move out bus_size_bridges and assign resources out of pciehp_add_bridge()
-and at last do them all together one time including slot bridge, to avoid to
-call assign resources several times, when there are several bridges under the
-slot bridge.
 
-need to introduce pci_bridge_assign_resources there.
+--------------090208020908000308050607
+Content-Type: text/x-patch;
+ name="0001-Test-fstack-protector-all-compiler-option-for-inclus.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-Test-fstack-protector-all-compiler-option-for-inclus.pa";
+ filename*1="tch"
 
-handle the case the slot bridge that doesn't get pre-allocated big enough res
-from FW.
-for example pcie devices need 256M, but the bridge only get preallocated 2M...
+>From 92feeaec19635a10145fa32a2f0077c4ddda5c7d Mon Sep 17 00:00:00 2001
+From: Michael Cree <mcree@orcon.net.nz>
+Date: Tue, 27 Oct 2009 20:56:27 +1300
+Subject: [PATCH] Test -fstack-protector-all compiler option for inclusion in CFLAGS.
 
-pci_setup_bridge() will take extra check_enabled for the slot bridge, otherwise
-update res is not updated to bridge BAR. that is bridge is enabled already for
-port service.
-
--v2: address Alex's concern about pci remove/rescan feature about pci_setup_bridge changes.
--v3: Kenji pointed out that pci_config_slot need to be called before pci_bus_add_devices()
--v4: move out pci_is_enabled checkout of pci_setup_bridge()
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
+Some architectures (e.g. Alpha) do not support the -fstack-protector-all
+compiler option and the use of the option with -Werror causes the compiler
+to abort.  Test that the compiler supports -fstack-protector-all before
+inclusion in CFLAGS.
 ---
- drivers/pci/hotplug/pciehp_pci.c |   29 ++++++++++++---
- drivers/pci/setup-bus.c          |   73 ++++++++++++++++++++++++++++++++++++---
- include/linux/pci.h              |    1 
- 3 files changed, 93 insertions(+), 10 deletions(-)
+ tools/perf/Makefile |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
-+++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
-@@ -53,19 +53,18 @@ static int __ref pciehp_add_bridge(struc
- 		busnr = pci_scan_bridge(parent, dev, busnr, pass);
- 	if (!dev->subordinate)
- 		return -1;
--	pci_bus_size_bridges(dev->subordinate);
--	pci_bus_assign_resources(parent);
--	pci_enable_bridges(parent);
--	pci_bus_add_devices(parent);
-+
- 	return 0;
- }
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 742a32e..e7dc01d 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -177,8 +177,7 @@ endif
+ # Include saner warnings here, which can catch bugs:
+ #
  
- int pciehp_configure_device(struct slot *p_slot)
- {
- 	struct pci_dev *dev;
--	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
-+	struct pci_dev *bridge = p_slot->ctrl->pcie->port;
-+	struct pci_bus *parent = bridge->subordinate;
- 	int num, fn;
- 	struct controller *ctrl = p_slot->ctrl;
-+	int retval;
+-EXTRA_WARNINGS := -Wcast-align
+-EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wformat
++EXTRA_WARNINGS := -Wformat
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wformat-security
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wformat-y2k
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wshadow
+@@ -201,7 +200,7 @@ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wold-style-definition
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wstrict-prototypes
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wdeclaration-after-statement
  
- 	dev = pci_get_slot(parent, PCI_DEVFN(0, 0));
- 	if (dev) {
-@@ -96,12 +95,30 @@ int pciehp_configure_device(struct slot
- 				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
- 			pciehp_add_bridge(dev);
- 		}
-+		pci_dev_put(dev);
-+	}
-+
-+	pci_bus_size_bridges(parent);
-+	pci_clear_master(bridge);
-+	pci_bridge_assign_resources(bridge);
-+	retval = pci_reenable_device(bridge);
-+	pci_set_master(bridge);
-+	pci_enable_bridges(parent);
-+
-+	for (fn = 0; fn < 8; fn++) {
-+		dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
-+		if (!dev)
-+			continue;
-+		if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
-+			pci_dev_put(dev);
-+			continue;
-+		}
- 		pci_configure_slot(dev);
- 		pci_dev_put(dev);
- 	}
+-CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
++CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
+ LDFLAGS = -lpthread -lrt -lelf -lm
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+@@ -253,6 +252,9 @@ PTHREAD_LIBS = -lpthread
+ # explicitly what architecture to check for. Fix this up for yours..
+ SPARSE_FLAGS = -D__BIG_ENDIAN__ -D__powerpc__
  
--	pci_bus_assign_resources(parent);
- 	pci_bus_add_devices(parent);
-+
- 	return 0;
- }
++ifeq ($(shell sh -c "echo 'int foo(void) {char X[2]; return 3;}' | $(CC) -x c -c -Werror -fstack-protector-all - -o /dev/null >/dev/null 2>&1 && echo y"), y)
++  CFLAGS := $(CFLAGS) -fstack-protector-all
++endif
  
-Index: linux-2.6/drivers/pci/setup-bus.c
-===================================================================
---- linux-2.6.orig/drivers/pci/setup-bus.c
-+++ linux-2.6/drivers/pci/setup-bus.c
-@@ -27,6 +27,44 @@
- #include <linux/slab.h>
- #include "pci.h"
  
-+static void pdev_assign_resources_sorted(struct pci_dev *dev)
-+{
-+	struct resource *res;
-+	struct resource_list head, *list, *tmp;
-+	int idx;
-+	u16 class = dev->class >> 8;
-+
-+	head.next = NULL;
-+
-+	/* Don't touch classless devices or host bridges or ioapics.  */
-+	if (class == PCI_CLASS_NOT_DEFINED ||
-+	    class == PCI_CLASS_BRIDGE_HOST)
-+		return;
-+
-+	/* Don't touch ioapic devices already enabled by firmware */
-+	if (class == PCI_CLASS_SYSTEM_PIC) {
-+		u16 command;
-+		pci_read_config_word(dev, PCI_COMMAND, &command);
-+		if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
-+			return;
-+	}
-+
-+	pdev_sort_resources(dev, &head);
-+
-+	for (list = head.next; list;) {
-+		res = list->res;
-+		idx = res - &list->dev->resource[0];
-+		if (pci_assign_resource(list->dev, idx)) {
-+			res->start = 0;
-+			res->end = 0;
-+			res->flags = 0;
-+		}
-+		tmp = list;
-+		list = list->next;
-+		kfree(tmp);
-+	}
-+}
-+
- static void pbus_assign_resources_sorted(const struct pci_bus *bus)
- {
- 	struct pci_dev *dev;
-@@ -144,9 +182,6 @@ static void pci_setup_bridge(struct pci_
- 	u32 l, bu, lu, io_upper16;
- 	int pref_mem64;
- 
--	if (pci_is_enabled(bridge))
--		return;
--
- 	dev_info(&bridge->dev, "PCI bridge, secondary bus %04x:%02x\n",
- 		 pci_domain_nr(bus), bus->number);
- 
-@@ -550,6 +585,35 @@ void __ref pci_bus_size_bridges(struct p
- }
- EXPORT_SYMBOL(pci_bus_size_bridges);
- 
-+void __ref pci_bridge_assign_resources(const struct pci_dev *bridge)
-+{
-+	struct pci_bus *b;
-+
-+	pdev_assign_resources_sorted((struct pci_dev *)bridge);
-+
-+	b = bridge->subordinate;
-+	if (!b)
-+		return;
-+
-+	pci_bus_assign_resources(b);
-+
-+	switch (bridge->class >> 8) {
-+	case PCI_CLASS_BRIDGE_PCI:
-+		pci_setup_bridge(b);
-+		break;
-+
-+	case PCI_CLASS_BRIDGE_CARDBUS:
-+		pci_setup_cardbus(b);
-+		break;
-+
-+	default:
-+		dev_info(&bridge->dev, "not setting up bridge for bus "
-+			 "%04x:%02x\n", pci_domain_nr(b), b->number);
-+		break;
-+	}
-+}
-+EXPORT_SYMBOL(pci_bridge_assign_resources);
-+
- void __ref pci_bus_assign_resources(const struct pci_bus *bus)
- {
- 	struct pci_bus *b;
-@@ -566,7 +630,8 @@ void __ref pci_bus_assign_resources(cons
- 
- 		switch (dev->class >> 8) {
- 		case PCI_CLASS_BRIDGE_PCI:
--			pci_setup_bridge(b);
-+			if (!pci_is_enabled(dev))
-+				pci_setup_bridge(b);
- 			break;
- 
- 		case PCI_CLASS_BRIDGE_CARDBUS:
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -756,6 +756,7 @@ ssize_t pci_write_vpd(struct pci_dev *de
- int pci_vpd_truncate(struct pci_dev *dev, size_t size);
- 
- /* Helper functions for low-level code (drivers/pci/setup-[bus,res].c) */
-+void pci_bridge_assign_resources(const struct pci_dev *bridge);
- void pci_bus_assign_resources(const struct pci_bus *bus);
- void pci_bus_size_bridges(struct pci_bus *bus);
- int pci_claim_resource(struct pci_dev *, int);
+ ### --- END CONFIGURATION SECTION ---
+-- 
+1.6.3.3
+
+
+--------------090208020908000308050607--
 
