@@ -1,117 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZJ0OcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbZJ0Ob7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbZJ0OcL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 10:32:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbZJ0OcK
+	id S1755036AbZJ0Ob7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 10:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbZJ0Ob7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 10:32:10 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:57595 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755188AbZJ0OcH convert rfc822-to-8bit (ORCPT
+	Tue, 27 Oct 2009 10:31:59 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:52487 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753490AbZJ0Ob6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 10:32:07 -0400
-From: "Dasgupta, Romit" <romit@ti.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: "Hilman, Kevin" <khilman@ti.com>, "rjw@sisk.pl" <rjw@sisk.pl>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 27 Oct 2009 20:00:51 +0530
-Subject: RE: [linux-pm] [PATCH] PM: Fixes warning on suspend errors
-Thread-Topic: [linux-pm] [PATCH] PM: Fixes warning on suspend errors
-Thread-Index: AcpXCucqZ0DHElPoRlWfujt4Gh4lLQABwbYw
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE0DCA79@dbde02.ent.ti.com>
-References: <B85A65D85D7EB246BE421B3FB0FBB59301DE0DC96A@dbde02.ent.ti.com>
- <Pine.LNX.4.44L0.0910270936450.2882-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0910270936450.2882-100000@iolanthe.rowland.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 27 Oct 2009 10:31:58 -0400
 MIME-Version: 1.0
+In-Reply-To: <200910270924.41037.rjw@sisk.pl>
+References: <G2WU8XrUVpF.A.lxF.Ref5KB@chimera>
+	 <vX3ILojF2dJ.A.H8F.Yef5KB@chimera>
+	 <51f3faa70910261648h242a9a2dp42cdf554a9eb1342@mail.gmail.com>
+	 <200910270924.41037.rjw@sisk.pl>
+Date: Tue, 27 Oct 2009 10:32:01 -0400
+Message-ID: <7e0fb38c0910270732p3a7098d3jc6334e417320295d@mail.gmail.com>
+Subject: Re: [Bug #14474] restorecond going crazy on 2.6.31.4 - inotify 
+	regression?
+From: Eric Paris <eparis@parisplace.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Robert Hancock <hancockrwd@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok. Then the following is the refined and probably more appropriate one.
+On Tue, Oct 27, 2009 at 4:24 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday 27 October 2009, Robert Hancock wrote:
+>> On Mon, Oct 26, 2009 at 1:32 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > This message has been generated automatically as a part of a report
+>> > of regressions introduced between 2.6.30 and 2.6.31.
+>> >
+>> > The following bug entry is on the current list of known regressions
+>> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+>> > be listed and let me know (either way).
+>> >
+>> >
+>> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14474
+>> > Subject         : restorecond going crazy on 2.6.31.4 - inotify regression?
+>> > Submitter       : Robert Hancock <hancockrwd@gmail.com>
+>> > Date            : 2009-10-16 0:03 (11 days old)
+>> > References      : http://marc.info/?l=linux-kernel&m=125565159520489&w=4
+>>
+>> This is definitely reproducible on 2.6.31.4 on CentOS 5.4, I'll likely
+>> try 2.6.31.5 shortly, but it doesn't seem like any of the 2.6.31.5
+>> patches touch inotify..
 
+It's a restorecond bug.  restorecon acted as if watch descriptors
+could never be reused.  They weren't on old kernels and it's possible
+they are reused now.  Restorecon was fixed.
 
+http://marc.info/?l=selinux&m=125380417916233&w=2
 
-This fixes the point where we need to complete the power transition when 
-device suspend fails.
+a change in the kernel caused a buggy userspace program to break.  I
+know how to put the kernel back the way it was, but I don't know if we
+call this a regression, you guys tell me.
 
-Signed-off-by: Romit Dasgupta <romit@ti.com>
----
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index e0dc407..3d0b26a 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -444,6 +444,7 @@ static void dpm_resume(pm_message_t state)
- 
- 	INIT_LIST_HEAD(&list);
- 	mutex_lock(&dpm_list_mtx);
-+	transition_started = false;
- 	while (!list_empty(&dpm_list)) {
- 		struct device *dev = to_device(dpm_list.next);
-
-
-
-
-
-> -----Original Message-----
-> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> owner@vger.kernel.org] On Behalf Of Alan Stern
-> Sent: Tuesday, October 27, 2009 7:08 PM
-> To: Dasgupta, Romit
-> Cc: Hilman, Kevin; rjw@sisk.pl; linux-pm@lists.linux-foundation.org; linux-
-> omap@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: Re: [linux-pm] [PATCH] PM: Fixes warning on suspend errors
-> 
-> On Tue, 27 Oct 2009, Dasgupta, Romit wrote:
-> 
-> > Hi,
-> >      I get the following errors when I choose devices in /sys/power/pm_test. It
-> also shows that if 'dpm_suspend_start' fails somewhere down the line then
-> the kernel does not reset the 'transition_started' variable and we can get
-> warning similar to below. IMHO 'dpm_resume_noirq' is not the right place for
-> setting this variable. Please see the patch below which fixes the issue.
-> 
-> > Fixes the location where we decide that our power transition is complete.
-> > Signed-off-by: Romit Dasgupta <romit@ti.com>
-> > ---
-> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> > index e0dc407..6b9e991 100644
-> > --- a/drivers/base/power/main.c
-> > +++ b/drivers/base/power/main.c
-> > @@ -365,7 +365,6 @@ void dpm_resume_noirq(pm_message_t state)
-> >  	struct device *dev;
-> >
-> >  	mutex_lock(&dpm_list_mtx);
-> > -	transition_started = false;
-> >  	list_for_each_entry(dev, &dpm_list, power.entry)
-> >  		if (dev->power.status > DPM_OFF) {
-> >  			int error;
-> > @@ -529,6 +528,7 @@ static void dpm_complete(pm_message_t state)
-> >  		put_device(dev);
-> >  	}
-> >  	list_splice(&list, &dpm_list);
-> > +	transition_started = false;
-> >  	mutex_unlock(&dpm_list_mtx);
-> >  }
-> 
-> The second hunk is okay, but the first hunk isn't.  We want to set
-> transition_started to false as soon as devices start resuming, because
-> once a resume has begun it's okay to add new devices.
-> 
-> Alan Stern
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+-Eric
