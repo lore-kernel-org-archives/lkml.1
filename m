@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZJ0HFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbZJ0HLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbZJ0HFu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 03:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756417AbZJ0HFt
+	id S1756525AbZJ0HLl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 03:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbZJ0HLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 03:05:49 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:62250 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755802AbZJ0HFs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 03:05:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :x-operating-system:user-agent;
-        b=X7y9sDjr0K8cGTFEh9k9oeHAF+gTtTaeUnsAaxgaJVLG5YINUm5lX2gshNpYk6Tot6
-         wXyN6ZoKluC7ynAcLNpHKHhd3cJVzyQvv/G4Vnb2DNi5z/JF+UGKAlyJbCGLfcPbqw9G
-         3ABL9hWUA29+8U7wg0agCmXyeu7Uj7X4wO6bY=
-Date: Tue, 27 Oct 2009 15:05:40 +0800
-From: Li Hong <lihong.hi@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 9/9] tracing: recordmcount.pl Remove the redundant code 
-Message-ID: <20091027070540.GI22032@uhli>
-Mail-Followup-To: Steven Rostedt <rostedt@goodmis.org>,
-	linux-kernel@vger.kernel.org
-References: <20091027065421.GA22032@uhli>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091027065421.GA22032@uhli>
-X-Operating-System: Linux uhli 2.6.28-11-generic 
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 27 Oct 2009 03:11:40 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42714 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756462AbZJ0HLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 03:11:40 -0400
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 27 Oct 2009 18:10:52 +1100
+Message-ID: <1256627452.11607.90.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From d0aa71d523b6315fd3ea0ee66fddb020a625856f Mon Sep 17 00:00:00 2001
-From: Li Hong <lihong.hi@gmail.com>
-Date: Tue, 27 Oct 2009 13:28:53 +0800
-Subject: [PATCH] tracing: recordmcount.pl Remove the redundant code
+Hi Linus !
 
-If an object file has some local symbols and objcopy doesn't support local
-reference, we have exited before the real work starts. So remove the redundant
-check in update_funcs.
+Some of these might have been better in -rc4 or earlier, all my fault
+for having some backlog that I'm still going through. So we have some
+bug fixes (not necessarily regressions but also generally simple
+enough that I decided to go for 2.6.32 anyways) and a few very trivial
+Kconfig cleanups (outside of arch/powerpc but related to our symbols)
+from Kumar that could go anytime.
 
-Signed-off-by: Li Hong <lihong.hi@gmail.com>
+The following changes since commit 964fe080d94db82a3268443e9b9ece4c60246414:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../rusty/linux-2.6-for-linus
 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 867c24a..ff3a9eb 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -353,14 +353,7 @@ sub update_funcs
-     return unless ($ref_func and @offsets);
- 
-     # is this function static? If so, note this fact.
--    if (defined $locals{$ref_func}) {
--
--	# only use locals if objcopy supports globalize-symbols
--	if (!$can_use_local) {
--	    return;
--	}
--	$convert{$ref_func} = 1;
--    }
-+    $convert{$ref_func} = 1 if $locals{$ref_func}; 
- 
-     # Loop through all the mcount caller offsets and print a reference
-     # to the caller based from the ref_func.
--- 
-1.6.0.4
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Andreas Schwab (2):
+      powerpc: Fix segment mapping in vdso32
+      powerpc: Align vDSO base address
+
+Benjamin Herrenschmidt (1):
+      powerpc/ppc64: Use preempt_schedule_irq instead of preempt_schedule
+
+Josh Boyer (1):
+      powerpc/booke: Fix xmon single step on PowerPC Book-E
+
+Kumar Gala (7):
+      powerpc: Add a Book-3E 64-bit defconfig
+      powerpc: Fix compile errors found by new ppc64e_defconfig
+      powerpc: Limit hugetlbfs support to PPC64 Book-3S machines
+      powerpc: Limit memory hotplug support to PPC64 Book-3S machines
+      powerpc: Minor cleanup to init/Kconfig
+      powerpc: Minor cleanup to sound/ppc/Kconfig
+      powerpc: Minor cleanup to lib/Kconfig.debug
+
+Michael Neuling (1):
+      powerpc/perf_events: Fix priority of MSR HV vs PR bits
+
+Stephen Rothwell (1):
+      powerpc/iseries: Remove compiler version dependent hack
+
+ arch/powerpc/configs/ppc64e_defconfig   | 2199 +++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/entry_64.S          |   41 +-
+ arch/powerpc/kernel/pci_64.c            |    2 +
+ arch/powerpc/kernel/perf_event.c        |   17 +-
+ arch/powerpc/kernel/process.c           |    2 +-
+ arch/powerpc/kernel/setup_64.c          |    1 -
+ arch/powerpc/kernel/vdso.c              |   11 +-
+ arch/powerpc/kernel/vdso32/vdso32.lds.S |    4 +-
+ arch/powerpc/platforms/iseries/Makefile |   11 +-
+ arch/powerpc/platforms/iseries/dt.c     |   56 +-
+ arch/powerpc/xmon/xmon.c                |   20 +-
+ fs/Kconfig                              |    2 +-
+ init/Kconfig                            |    2 +-
+ lib/Kconfig.debug                       |    2 +-
+ mm/Kconfig                              |    2 +-
+ sound/ppc/Kconfig                       |    2 +-
+ 16 files changed, 2294 insertions(+), 80 deletions(-)
+ create mode 100644 arch/powerpc/configs/ppc64e_defconfig
+
 
