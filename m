@@ -1,98 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbZJ0EUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbZJ0EXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752879AbZJ0EUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 00:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbZJ0EUT
+	id S1752740AbZJ0EXv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 00:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZJ0EXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 00:20:19 -0400
-Received: from claw.goop.org ([74.207.240.146]:56649 "EHLO claw.goop.org"
+	Tue, 27 Oct 2009 00:23:50 -0400
+Received: from mail.lang.hm ([64.81.33.126]:39131 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750889AbZJ0EUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 00:20:18 -0400
-Message-ID: <4AE67506.2040200@goop.org>
-Date: Mon, 26 Oct 2009 21:20:22 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
+	id S1750748AbZJ0EXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 00:23:49 -0400
+Date: Mon, 26 Oct 2009 21:23:35 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: removing existing working drivers via staging
+In-Reply-To: <alpine.DEB.2.00.0910151250480.22169@asgard.lang.hm>
+Message-ID: <alpine.DEB.2.00.0910262119530.14994@asgard.lang.hm>
+References: <alpine.DEB.2.00.0910142213590.22169@asgard.lang.hm> <200910151942.40259.bzolnier@gmail.com> <20091015174932.GA3595@suse.de> <200910152020.13080.bzolnier@gmail.com> <20091015184656.GA29858@suse.de> <alpine.DEB.2.00.0910151200100.22169@asgard.lang.hm>
+ <20091015191641.GB19467@elte.hu> <alpine.DEB.2.00.0910151230560.22169@asgard.lang.hm> <4AD77C4F.5010307@s5r6.in-berlin.de> <alpine.DEB.2.00.0910151250480.22169@asgard.lang.hm>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Christian Kujau <lists@nerdbynature.de>
-CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       torvalds@linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.32-rc not booting with Xen-3.2 (bisected)
-References: <alpine.DEB.2.01.0910261445170.9408@bogon.housecafe.de> <alpine.DEB.2.01.0910261513520.9408@bogon.housecafe.de> <4AE628DB.5010305@goop.org> <alpine.DEB.2.01.0910261759470.9408@bogon.housecafe.de> <alpine.DEB.2.01.0910261820050.9408@bogon.housecafe.de>
-In-Reply-To: <alpine.DEB.2.01.0910261820050.9408@bogon.housecafe.de>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/26/09 18:26, Christian Kujau wrote:
-> On Mon, 26 Oct 2009 at 18:14, Christian Kujau wrote:
->   
->> Oh, I totally forgot about "xm dmesg", it's on the URL above too. I don't 
->> see any timestamps in "xm dmesg", so I guess I'll have to try again with 
->> "xm dmesg --clear" inbetween boots.
->>     
-> Did that - when I boot a working kernel (2.6.31), "xm dmesg" prints 
-> nothing but a newline. When I boot 2.6.31-rc1, this happens:
->
-> $ xm create sid.cfg -c
-> Using config file "/etc/xen/sid.cfg".
-> Started domain sid
->
-> $ xm dmesg
-> (XEN) mm.c:665:d889 Error getting mfn 127f (pfn 7403) from L1 entry 801000000127f065 for dom889
-> (XEN) traps.c:413:d889 Unhandled invalid opcode fault/trap [#6] on VCPU 0 [ec=0000]
-> (XEN) domain_crash_sync called from entry.S
-> (XEN) Domain 889 (vcpu#0) crashed on cpu#0:
-> (XEN) ----[ Xen-3.2.1-rc1-pre  x86_64  debug=n  Not tainted ]----
-> (XEN) CPU:    0
-> (XEN) RIP:    e033:[<ffffffff812c50ad>]
->   
+for those who were reading this thread, the topic has come up again in the 
+thread titled
 
-What does this map to in the kernel symbol table?
+[PATCH 1/4] strip: move driver to staging
 
-> (XEN) RFLAGS: 0000000000000282   CONTEXT: guest
-> (XEN) rax: 00000000ffffffea   rbx: 800000000127f061   rcx: 000000000008885a
-> (XEN) rdx: 0000000000000000   rsi: 800000000127f061   rdi: ffffffff8127f000
-> (XEN) rbp: ffffffff81279fb8   rsp: ffffffff81279f18   r8:  0000000000000000
-> (XEN) r9:  0000000000000000   r10: 0000000000000000   r11: 0000000000000000
-> (XEN) r12: ffffffff8127f000   r13: 0000000000000000   r14: 0000000000000080
-> (XEN) r15: ffffffff81279fc8   cr0: 000000008005003b   cr4: 00000000000026b0
-> (XEN) cr3: 00000000aa991000   cr2: 0000000000000000
-> (XEN) ds: 0000   es: 0000   fs: 0000   gs: 0000   ss: e02b   cs: e033
-> (XEN) Guest stack trace from rsp=ffffffff81279f18:
-> (XEN)    000000000008885a 0000000000000000 ffffffff812c50ad 000000010000e030
-> (XEN)    0000000000010082 ffffffff81279f58 000000000000e02b ffffffff812c504c
-> (XEN)    0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> (XEN)    0000000000000000 ffffffff81279f60 0000008000000000 0000000000000000
-> (XEN)    0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> (XEN)    0000000000000000 ffffffff810197bd ffff8127f000007f 000000000000ffff
-> (XEN)    0000000000000000 ffffffff812c4d19 0000000000000000 0000000000000000
-> (XEN)    0000000000000000 ffffffff81385000 ffffffff81386000 ffffffff81387000
-> (XEN)    ffffffff81388000 ffffffff81389000 ffffffff8138a000 ffffffff8138b000
-> (XEN)    ffffffff8138c000 ffffffff8138d000 ffffffff8138e000 ffffffff8138f000
-> (XEN)    ffffffff81390000 ffffffff81391000 ffffffff81392000 ffffffff81393000
-> (XEN)    ffffffff81394000 ffffffff81395000 ffffffff81396000 ffffffff81397000
-> (XEN)    ffffffff81398000 ffffffff81399000 ffffffff8139a000 ffffffff8139b000
-> (XEN)    ffffffff8139c000 ffffffff8139d000 ffffffff8139e000 ffffffff8139f000
-> (XEN)    ffffffff813a0000 ffffffff813a1000 ffffffff813a2000 ffffffff813a3000
-> (XEN)    ffffffff813a4000 ffffffff813a5000 ffffffff813a6000 ffffffff813a7000
-> (XEN)    ffffffff813a8000 ffffffff813a9000 ffffffff813aa000 ffffffff813ab000
-> (XEN)    ffffffff813ac000 ffffffff813ad000 ffffffff813ae000 ffffffff813af000
-> (XEN)    ffffffff813b0000 ffffffff813b1000 ffffffff813b2000 ffffffff813b3000
-> (XEN)    ffffffff813b4000 ffffffff813b5000 ffffffff813b6000 ffffffff813b7000
+where a driver is being moved to staging because it does not have a 
+maintainer and the only changes to it for some time have been due to 
+kernel API changes.
+
+the maintainer of the area feels that it's too much work to allow the 
+driver to remain because it must be updated when kernel APIs change.
+
+
+this is exactly the 'wants to get rid of' category I mentioned being 
+concerned about below.
+
+
+I don't know what was decided at the kernel summit where this was 
+discussed, how easy is it supposed to be to drop drivers out of the 
+kernel?
+
+David Lang
+
+On Thu, 15 Oct 2009, david@lang.hm wrote:
+
+> Date: Thu, 15 Oct 2009 12:57:49 -0700 (PDT)
+> From: david@lang.hm
+> To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+>     Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+>     linux-kernel <linux-kernel@vger.kernel.org>
+> Subject: Re: removing existing working drivers via staging
+> 
+> On Thu, 15 Oct 2009, Stefan Richter wrote:
+>
+>> david@lang.hm wrote:
+>>> it's these users who will discover the missing driver and care about it,
+>>> not the distros.
+>> 
+>> I think we are talking about stuff of which users will typically
+>> discover that it plainly doesn't work long before it vanishes from any
+>> kernel distribution, or of which there is a superior alternative already
+>> available.
+>
+> if there's a superior alternative already available staging isn't needed 
+> (like the e1000 split), but I have also seen many new systems added to the 
+> kernel that the author thinks covers all the old ones, only to find out when 
+> people get it in the real world that it doesn't cover all existing hardware. 
+> but this is an existing problem that is already being handled.
 >
 >
-> Also, "xm list" takes very long to complete now:
 >
-> $ time xm list sid
-> Name                  ID   Mem VCPUs      State   Time(s)
-> sid                  906   512     1     --p---     0.0
-> real    0m10.677s user    0m0.108s sys     0m0.028s
->   
-
-Hm, that's odd.  Never seen that.
-
-    J
+> if it clearly doesn't work that is also fine with me.
+>
+> however, that is not the criteria that has been expressed.
+>
+> from earlier in this thread
+>
+>        - For drivers currently in the kernel tree, that the subsystem
+>          maintainer, for whatever reason, feels is obsolete / broken /
+>          needs major cleaning / wants to get rid of, can be submitted
+>          to the staging maintainer to be moved to the drivers/staging/
+>          directory.
+>
+> it's the 'needs major cleaning' and 'wants to get rid of' portions that 
+> concern me the most.
+>
+> 'obsolete' can mean that there is a superior alternative available, or it 
+> could mean that the hardware the driver supports has not been manufactured in 
+> several years (or, depending who you ask, several weeks ;-)
+>
+> David Lang
+>
