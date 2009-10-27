@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbZJ0Fel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbZJ0FuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115AbZJ0Fel (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 01:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZJ0Fek
+	id S1755362AbZJ0FuM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 01:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbZJ0FuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 01:34:40 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:38674 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753236AbZJ0Fek (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 01:34:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=C5ZJnbdDF03nnVjyaVhQKFZZjIo/rwkVQFeSdVwYYIHrTa+LAW77QDW661Wyaret5J
-         WToypzNLeiHlhGNrZf46SlHGOJwiJqFcMrPaT2Z4TIp9rL+pLPRSJkVSY62Ng1z/PWmg
-         sqzohzwq3Db7VFQYzmHicR9GaDJS9PLgK39vg=
-Date: Tue, 27 Oct 2009 13:34:04 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: dmitry.torokhov@gmail.com
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH][RFC] input: remove bios I8042_CTR_XLATE check to make
-	keyboard usable
-Message-ID: <20091027053404.GA2241@darkstar.vlan7>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 27 Oct 2009 01:50:11 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41908 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754672AbZJ0FuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 01:50:10 -0400
+Date: Tue, 27 Oct 2009 16:50:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: block tree build failure
+Message-Id: <20091027165008.8ddcb5ba.sfr@canb.auug.org.au>
+In-Reply-To: <20091027053109.GO10727@kernel.dk>
+References: <20091027143433.bfe08a1b.sfr@canb.auug.org.au>
+	<20091027053109.GO10727@kernel.dk>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__27_Oct_2009_16_50_08_+1100_ZkwkshBLTqKu=u8f"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Tue__27_Oct_2009_16_50_08_+1100_ZkwkshBLTqKu=u8f
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Pressing somekey at early booting phase cause keyboard to be not usable
-(The hardware is DELL latitude e5400):
+Hi Jens,
 
-atkbd.c: Unknown key pressed (raw set 2, code 0xd3 on isa0060/serio0).
-atkbd.c: Use 'setkeycodes e053 <keycode>' to make it known.
-atkbd.c: Unknown key pressed (raw set 2, code 0x1d3 on isa0060/serio0).
-atkbd.c: Use 'setkeycodes e053 <keycode>' to make it known.
+On Tue, 27 Oct 2009 06:31:09 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
+>
+> Sorry, not sure why that problem seems so persistent, I just merged the
+> newer bits in. Will fix it.
 
-i8042.c set i8042_direct to true when the controller init. But the result
-is keyboard not usable, The only option is press the power button to shutdown. 
+OK, thanks.
 
-So here remove the bios check to fix it.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
----
- drivers/input/serio/i8042.c |    8 --------
- 1 file changed, 8 deletions(-)
+--Signature=_Tue__27_Oct_2009_16_50_08_+1100_ZkwkshBLTqKu=u8f
+Content-Type: application/pgp-signature
 
---- linux-2.6.orig/drivers/input/serio/i8042.c	2009-10-13 08:57:07.000000000 +0800
-+++ linux-2.6/drivers/input/serio/i8042.c	2009-10-27 13:15:13.000000000 +0800
-@@ -869,14 +869,6 @@ static int i8042_controller_init(void)
- 	spin_unlock_irqrestore(&i8042_lock, flags);
- 
- /*
-- * If the chip is configured into nontranslated mode by the BIOS, don't
-- * bother enabling translating and be happy.
-- */
--
--	if (~i8042_ctr & I8042_CTR_XLATE)
--		i8042_direct = true;
--
--/*
-  * Set nontranslated mode for the kbd interface if requested by an option.
-  * After this the kbd interface becomes a simple serial in/out, like the aux
-  * interface is. We don't do this by default, since it can confuse notebook
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrmihAACgkQjjKRsyhoI8w4SgCdEjQF0Ir6FpfhVGvkzAFRErrk
+B9wAnA9qvW+ac18Wyz+bjQjYY/q2Rub7
+=TFWQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__27_Oct_2009_16_50_08_+1100_ZkwkshBLTqKu=u8f--
