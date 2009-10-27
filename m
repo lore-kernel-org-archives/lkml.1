@@ -1,70 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZJ0RSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbZJ0RVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753811AbZJ0RSd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 13:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZJ0RSc
+	id S1754083AbZJ0RVR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 13:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZJ0RVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 13:18:32 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:18787 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751740AbZJ0RSc (ORCPT
+	Tue, 27 Oct 2009 13:21:16 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:60435 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751877AbZJ0RVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 13:18:32 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Tue, 27 Oct 2009 13:18:34 -0400 (EDT)
-From: Nicolas Pitre <nico@fluxnic.net>
-X-X-Sender: nico@xanadu.home
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Luck, Tony" <tony.luck@intel.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [RFC] to rebase or not to rebase on linux-next
-In-reply-to: <1256657956.26028.408.camel@gandalf.stny.rr.com>
-Message-id: <alpine.LFD.2.00.0910271258160.10545@xanadu.home>
-References: <4AE19A74.1090709@garzik.org> <20091023123555.GA25366@elte.hu>
- <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com>
- <20091023134115.GD27097@elte.hu>
- <alpine.LFD.2.00.0910231424440.21460@xanadu.home>
- <20091023191631.GA1879@elte.hu>
- <1256326512.26028.34.camel@gandalf.stny.rr.com>
- <20091023205400.GA8356@elte.hu> <20091023215958.GA4139@merkur.ravnborg.org>
- <1256599588.26028.340.camel@gandalf.stny.rr.com>
- <20091027075954.GA32640@elte.hu>
- <1256657956.26028.408.camel@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 27 Oct 2009 13:21:15 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Chris Mason <chris.mason@oracle.com>, Mel Gorman <mel@csn.ul.ie>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+Date: Tue, 27 Oct 2009 18:21:13 +0100
+User-Agent: KMail/1.9.9
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <20091027155223.GL8900@csn.ul.ie> <20091027160332.GA7776@think>
+In-Reply-To: <20091027160332.GA7776@think>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910271821.18521.elendil@planet.nl>
+X-OriginalArrivalTime: 27 Oct 2009 17:21:18.0432 (UTC) FILETIME=[E536A600:01CA5729]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Oct 2009, Steven Rostedt wrote:
-
-> Sure, but I'm not talking about changing the patch, I'm talking about a
-> late "reviewed by" or "tested-by". These usually do come after a patch
-> set has been moved into the final git push. It would be nice to flag a
-> commit that it was tested by someone.
+On Tuesday 27 October 2009, Chris Mason wrote:
+> On Tue, Oct 27, 2009 at 03:52:24PM +0000, Mel Gorman wrote:
+> > > So, after the move to async/sync, a lot more pages are getting
+> > > queued for writeback - more than three times the number of pages are
+> > > queued for writeback with the vanilla kernel. This amount of
+> > > congestion might be why direct reclaimers and kswapd's timings have
+> > > changed so much.
+> >
+> > Or more accurately, the vanilla kernel has queued up a lot more pages
+> > for IO than when the patch is reverted. I'm not seeing yet why this
+> > is.
 >
-[...]
-> 
-> My suggestion is to add an "annotation" commit that can tag another
-> commit with something like a "tested-by". This way a tester can say,
-> they tested this particular commit, and if someone changes it, the SHA1
-> will no longer match. And then we can also have a record of what commit
-> was tested by who, after the fact that it went into git.
+> [ sympathies over confusion about congestion...lots of variables here ]
+>
+> If wb_kupdate has been able to queue more writes it is because the
+> congestion logic isn't stopping it.  We have congestion_wait(), but
+> before calling that in the writeback paths it says: are you congested?
+> and then backs off if the answer is yes.
+>
+> Ideally, direct reclaim will never do writeback.  We want it to be able
+> to find clean pages that kupdate and friends have already processed.
+>
+> Waiting for congestion is a funny thing, it only tells us the device has
+> managed to finish some IO or that a timeout has passed.  Neither event
+> has any relation to figuring out if the IO for reclaimable pages has
+> finished.
+>
+> One option is to have the VM remember the hashed waitqueue for one of
+> the pages it direct reclaims and then wait on it.
 
-There is a "git notes" feature from Johan Herland being carried in thepu 
-branch of the git repository.  I strongly suggest to those who might 
-think this could be useful in this context to express their interest by 
-posting to git@vger.kernel.org.  With a concrete need and usage scenario 
-(and offer to help at least with testing) this feature might become 
-usable sooner.
+What people should be aware of is the behavior of the system I see at this 
+point. I've already mentioned this in other mails, but it's probably good 
+to repeat it here.
 
+While gitk is reading commits with vanilla .31 and .32 kernels there is at 
+some point a fairly long period (10-20 seconds) where I see:
+- a completely frozen desktop, including frozen mouse cursor
+- really very little disk activity (HD led flashes very briefly less than
+  once per second)
+- reading commits stops completely during this period
+- no music.
+After that there is a period (another 5-15 seconds) with a huge amount of 
+disk activity during which the system gradually becomes responsive again 
+and in gitk the count of commits that have been read starts increasing 
+again (without a jump in the counter which confirms that no commits were 
+read during the freeze).
 
-Nicolas
+I cannot really tell what the system is doing during those freezes. Because 
+of the frozen desktop I cannot for example see CPU usage. I suspect that, 
+as there is hardly any disk activity, the system must be reorganizing RAM 
+or something. But it seems quite bad that that gets "bunched up" instead 
+of happening more gradually.
+
+With the congestion_wait() change reverted I never see these freezes, only 
+much more normal minor latencies (< 2 seconds; mostly < 0.5 seconds), 
+which is probably unavoidable during heavy swapping.
+
+Hth,
+FJP
