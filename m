@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932150AbZJ0ILs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbZJ0INj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932150AbZJ0ILs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 04:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932110AbZJ0ILr
+	id S932167AbZJ0INj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 04:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932110AbZJ0INi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 04:11:47 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53131 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932109AbZJ0ILq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 04:11:46 -0400
-Date: Tue, 27 Oct 2009 09:11:41 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Jan Kara <jack@suse.cz>, "J. Bruce Fields" <bfields@fieldses.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       jamie@shareable.org
-Subject: Re: symlinks with permissions
-Message-ID: <20091027081141.GF5019@elf.ucw.cz>
-References: <20091025062953.GC1391@ucw.cz>
- <20091026163157.GB7233@duck.suse.cz>
- <20091026165729.GF23564@us.ibm.com>
- <20091026173629.GB16861@fieldses.org>
- <20091026174631.GD7233@duck.suse.cz>
- <1256579869.8576.7.camel@heimdal.trondhjem.org>
- <20091025093604.GA1501@ucw.cz>
- <1256581336.8576.20.camel@heimdal.trondhjem.org>
+	Tue, 27 Oct 2009 04:13:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54286 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932108AbZJ0INh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 04:13:37 -0400
+Date: Tue, 27 Oct 2009 09:13:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: rostedt@goodmis.org, sam@ravnborg.org, linux-kernel@vger.kernel.org,
+       nico@fluxnic.net, tony.luck@intel.com, sfr@canb.auug.org.au,
+       mcgrof@gmail.com, jeff@garzik.org, robert.richter@amd.com,
+       dmitry.torokhov@gmail.com, khali@linux-fr.org,
+       torvalds@linux-foundation.org
+Subject: Re: [RFC] to rebase or not to rebase on linux-next
+Message-ID: <20091027081316.GB32640@elte.hu>
+References: <1256603403.26028.358.camel@gandalf.stny.rr.com> <20091026.183416.52095233.davem@davemloft.net> <1256612558.26028.391.camel@gandalf.stny.rr.com> <20091026.221854.111712128.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1256581336.8576.20.camel@heimdal.trondhjem.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091026.221854.111712128.davem@davemloft.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-10-26 14:22:16, Trond Myklebust wrote:
-> On Sun, 2009-10-25 at 10:36 +0100, Pavel Machek wrote:
-> > Well, it is unexpected and mild security hole.
-> > 
-> > Part of the problem is that even  if you have read-only
-> > filedescriptor, you can upgrade it to read-write, even if path is
-> > inaccessible to you.
-> > 
-> > So if someone passes you read-only filedescriptor, you can still write
-> > to it.
-> 
-> If someone passes you a file descriptor, can't you in any case play
-> games with, openat(fd,"",O_RDWR), in order to achieve the same thing? I
-> must admit I haven't tried it yet, but at a first glance I can't see
-> anything that prevents me from doing this...
 
-According to my documentation, openat needs directory fd.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+* David Miller <davem@davemloft.net> wrote:
+
+> From: Steven Rostedt <rostedt@goodmis.org>
+> Date: Mon, 26 Oct 2009 23:02:38 -0400
+> 
+> > Whether I'm sending a patch to Ingo, Linus, Andrew, or even you, I 
+> > would do it publicly and have a git repo to pull from for 
+> > simplicity.
+> 
+> Sure, but just don't do it with a GIT repo that's going to make it's 
+> way to Linus.
+> 
+> When you commit to any such GIT repo, you're making a permanent 
+> irrevocable change whose history cannot be changed.
+> 
+> And given what you get in return for that, it's a pretty reasonable 
+> constraint.
+
+Agreed - and the people asking us to rebase trees miss this point, 
+completely.
+
+The thing is, i've been on both sides of the equation - three years ago 
+i ran a patch-queue with 1500 patches in it, two years ago i ran a daily 
+rebasing/rewinding Git tree and later i ran an occasionally-rebasing 
+flow as well.
+
+By far the best method is to not rebase/rewind maintainer trees.
+
+If Linus can manage without rebasing _ever_, with _his_ rate of 10,000 
+commits every 3 months, 300+ merges, with up to 50 direct commits 
+authored by him per cycle then i'm quite sure other maintainers should 
+be able to do that too. (at minimum the larger ones)
+
+The networking tree has been doing this for a long amount of time - and 
+all the trees i co-maintain are very close to doing this as well. So if 
+there's any trend for the trees i'm involved with it's in the direction 
+of _less_ rebasing/rewinding, not more of it.
+
+	Ingo
