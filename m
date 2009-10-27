@@ -1,202 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbZJ0RBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756278AbZJ0RDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756248AbZJ0RBV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 13:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbZJ0RBV
+	id S1756278AbZJ0RDe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 13:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbZJ0RDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 13:01:21 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:49001 "EHLO e3.ny.us.ibm.com"
+	Tue, 27 Oct 2009 13:03:33 -0400
+Received: from poutre.nerim.net ([62.4.16.124]:63387 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756052AbZJ0RBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 13:01:19 -0400
-Date: Tue, 27 Oct 2009 10:01:21 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [KVM PATCH v3 1/3] KVM: fix race in irq_routing logic
-Message-ID: <20091027170121.GE6258@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091026162148.23704.47286.stgit@dev.haskins.net> <20091026162157.23704.12420.stgit@dev.haskins.net> <20091027033601.GA6645@linux.vnet.ibm.com> <4AE6F6F1.4090308@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AE6F6F1.4090308@gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1756217AbZJ0RDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 13:03:31 -0400
+Date: Tue, 27 Oct 2009 18:03:32 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: djwong@us.ibm.com
+Cc: Crane Cai <crane.cai@amd.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       lenb@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v2 1/2] acpi: support IBM SMBus CMI devices
+Message-ID: <20091027180332.62f2c758@hyperion.delvare>
+In-Reply-To: <20091026205819.GR26149@tux1.beaverton.ibm.com>
+References: <20091020231149.GM26149@tux1.beaverton.ibm.com>
+	<20091021023016.GC32413@crane-desktop>
+	<200910210857.13978.bjorn.helgaas@hp.com>
+	<20091021173733.GN26149@tux1.beaverton.ibm.com>
+	<20091022071748.GA17917@crane-desktop>
+	<20091022174304.GO26149@tux1.beaverton.ibm.com>
+	<20091023044451.GB1367@crane-desktop>
+	<20091023170311.GC21723@tux1.beaverton.ibm.com>
+	<20091025125353.55d3bfad@hyperion.delvare>
+	<20091026205819.GR26149@tux1.beaverton.ibm.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 09:34:41AM -0400, Gregory Haskins wrote:
-> Hi Paul,
+On Mon, 26 Oct 2009 13:58:19 -0700, Darrick J. Wong wrote:
+> On some old IBM workstations and desktop computers, the BIOS presents in the
+> DSDT an SMBus object that is missing the HID identifier that the i2c-scmi
+> driver looks for.  Modify the ACPI device scan code to insert the missing HID
+> if it finds an IBM system with such an object.  This patch needs Crane Cai's
+> update to i2c-scmi to work around incorrectly named methods within the SMBus
+> control object.
 > 
-> Paul E. McKenney wrote:
-> > On Mon, Oct 26, 2009 at 12:21:57PM -0400, Gregory Haskins wrote:
-> >> The current code suffers from the following race condition:
-> >>
-> >> thread-1                                    thread-2
-> >> -----------------------------------------------------------
-> >>
-> >> kvm_set_irq() {
-> >>    rcu_read_lock()
-> >>    irq_rt = rcu_dereference(table);
-> >>    rcu_read_unlock();
-> >>
-> >>                                        kvm_set_irq_routing() {
-> >>                                           mutex_lock();
-> >>                                           irq_rt = table;
-> >>                                           rcu_assign_pointer();
-> >>                                           mutex_unlock();
-> >>                                           synchronize_rcu();
-> >>
-> >>                                           kfree(irq_rt);
-> >>
-> >>    irq_rt->entry->set(); /* bad */
-> >>
-> >> -------------------------------------------------------------
-> >>
-> >> Because the pointer is accessed outside of the read-side critical
-> >> section.  There are two basic patterns we can use to fix this bug:
-> >>
-> >> 1) Switch to sleeping-rcu and encompass the ->set() access within the
-> >>    read-side critical section,
-> >>
-> >>    OR
-> >>
-> >> 2) Add reference counting to the irq_rt structure, and simply acquire
-> >>    the reference from within the RSCS.
-> >>
-> >> This patch implements solution (1).
-> > 
-> > Looks like a good transformation!  A few questions interspersed below.
+> Affected machines: IntelliStation Z20/Z30.  Note that the i2c-i801 driver no
+> longer works on these machines because of ACPI resource conflicts.
 > 
-> Thanks for the review.  I would have CC'd you but I figured I pestered
-> you enough with my RCU reviews in the past, and didn't want to annoy you ;)
+> v2 contains minor tweaks suggested by Jean Delvare.
 > 
-> I will be sure to CC you in the future, unless you ask otherwise.
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
+> 
+>  drivers/acpi/scan.c         |   38 ++++++++++++++++++++++++++++++++++++++
+>  include/acpi/acpi_drivers.h |    2 ++
+>  2 files changed, 40 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+> index 14a7481..5a24429 100644
+> --- a/drivers/acpi/scan.c
+> +++ b/drivers/acpi/scan.c
+> @@ -8,6 +8,7 @@
+>  #include <linux/acpi.h>
+>  #include <linux/signal.h>
+>  #include <linux/kthread.h>
+> +#include <linux/dmi.h>
+>  
+>  #include <acpi/acpi_drivers.h>
+>  
+> @@ -1014,6 +1015,41 @@ static void acpi_add_id(struct acpi_device *device, const char *dev_id)
+>  	list_add_tail(&id->list, &device->pnp.ids);
+>  }
+>  
+> +/*
+> + * Old IBM workstations have a DSDT bug wherein the SMBus object
+> + * lacks the SMBUS01 HID and the methods do not have the necessary "_"
+> + * prefix.  Work around this.
+> + */
+> +static int acpi_ibm_smbus_match(struct acpi_device *device)
+> +{
+> +	acpi_handle h_dummy;
+> +	struct acpi_buffer path = {ACPI_ALLOCATE_BUFFER, NULL};
+> +	int result;
+> +
+> +	if (!dmi_name_in_vendors("IBM"))
+> +		return -ENODEV;
+> +
+> +	/* Look for SMBS object */
+> +	result = acpi_get_name(device->handle, ACPI_SINGLE_NAME, &path);
+> +	if (result)
+> +		return result;
+> +
+> +	if (strcmp("SMBS", path.pointer)) {
+> +		result = -ENODEV;
+> +		goto out;
+> +	}
+> +
+> +	/* Does it have the necessary (but misnamed) methods? */
+> +	result = -ENODEV;
+> +	if (ACPI_SUCCESS(acpi_get_handle(device->handle, "SBI", &h_dummy)) &&
+> +	    ACPI_SUCCESS(acpi_get_handle(device->handle, "SBR", &h_dummy)) &&
+> +	    ACPI_SUCCESS(acpi_get_handle(device->handle, "SBW", &h_dummy)))
+> +		result = 0;
+> +out:
+> +	kfree(path.pointer);
+> +	return result;
+> +}
 
-No problem either way.  ;-)
+I'm only half please with this. You change the function named, but it
+doesn't follow the calling convention of acpi_dock_match(), which is a
+little confusing.
 
-							Thanx, Paul
+Anyway, I will need an ack from the ACPI people before I can pick this
+patch. Or maybe they should even push it upstream themselves.
 
-> >> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> >> ---
-> >>
-> >>  include/linux/kvm_host.h |    6 +++++-
-> >>  virt/kvm/irq_comm.c      |   50 +++++++++++++++++++++++++++-------------------
-> >>  virt/kvm/kvm_main.c      |    1 +
-> >>  3 files changed, 35 insertions(+), 22 deletions(-)
-> >>
-> >> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> >> index bd5a616..1fe135d 100644
-> >> --- a/include/linux/kvm_host.h
-> >> +++ b/include/linux/kvm_host.h
-> >> @@ -185,7 +185,10 @@ struct kvm {
-> >>
-> >>  	struct mutex irq_lock;
-> >>  #ifdef CONFIG_HAVE_KVM_IRQCHIP
-> >> -	struct kvm_irq_routing_table *irq_routing;
-> >> +	struct {
-> >> +		struct srcu_struct            srcu;
-> > 
-> > Each structure has its own SRCU domain.  This is OK, but just asking
-> > if that is the intent.  It does look like the SRCU primitives are
-> > passed a pointer to the correct structure, and that the return value
-> > from srcu_read_lock() gets passed into the matching srcu_read_unlock()
-> > like it needs to be, so that is good.
-> 
-> Yeah, it was intentional.  Technically the table is per-guest, and thus
-> the locking is too, which is the desired/intentional granularity.
-> 
-> On that note, I tried to denote that kvm->irq_routing.srcu and
-> kvm->irq_routing.table were related to one another, but then went ahead
-> and modified the hunks that touched kvm->irq_ack_notifier_list, too.  In
-> retrospect, this was probably a mistake.  I should leave the rcu usage
-> outside of ->irq_routing.table alone.
-> 
-> > 
-> >> +		struct kvm_irq_routing_table *table;
-> >> +	} irq_routing;
-> >>  	struct hlist_head mask_notifier_list;
-> >>  	struct hlist_head irq_ack_notifier_list;
-> >>  #endif
-> > 
-> > [ . . . ]
-> > 
-> >> @@ -155,21 +156,19 @@ int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level)
-> >>  	 * IOAPIC.  So set the bit in both. The guest will ignore
-> >>  	 * writes to the unused one.
-> >>  	 */
-> >> -	rcu_read_lock();
-> >> -	irq_rt = rcu_dereference(kvm->irq_routing);
-> >> +	idx = srcu_read_lock(&kvm->irq_routing.srcu);
-> >> +	irq_rt = rcu_dereference(kvm->irq_routing.table);
-> >>  	if (irq < irq_rt->nr_rt_entries)
-> >> -		hlist_for_each_entry(e, n, &irq_rt->map[irq], link)
-> >> -			irq_set[i++] = *e;
-> >> -	rcu_read_unlock();
-> >> +		hlist_for_each_entry(e, n, &irq_rt->map[irq], link) {
-> > 
-> > What prevents the above list from changing while we are traversing it?
-> > (Yes, presumably whatever was preventing it from changing before this
-> > patch, but what?)
-> > 
-> > Mostly kvm->lock is held, but not always.  And if kvm->lock were held
-> > all the time, there would be no point in using SRCU.  ;-)
-> 
-> This is protected by kvm->irq_lock within kvm_set_irq_routing().
-> Entries are added to a copy of the list, and the top-level table pointer
-> is swapped (via rcu_assign_pointer(), as it should be) while holding the
-> lock.  Finally, we synchronize with the RSCS before deleting the old
-> copy.  It looks to me like the original author got this part right, so I
-> didn't modify it outside of converting to SRCU.
-> 
-> > 
-> >> +			int r;
-> >>
-> >> -	while(i--) {
-> >> -		int r;
-> >> -		r = irq_set[i].set(&irq_set[i], kvm, irq_source_id, level);
-> >> -		if (r < 0)
-> >> -			continue;
-> >> +			r = e->set(e, kvm, irq_source_id, level);
-> >> +			if (r < 0)
-> >> +				continue;
-> >>
-> >> -		ret = r + ((ret < 0) ? 0 : ret);
-> >> -	}
-> >> +			ret = r + ((ret < 0) ? 0 : ret);
-> >> +		}
-> >> +	srcu_read_unlock(&kvm->irq_routing.srcu, idx);
-> >>
-> >>  	return ret;
-> >>  }
-> >> @@ -179,17 +178,18 @@ void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned pin)
-> >>  	struct kvm_irq_ack_notifier *kian;
-> >>  	struct hlist_node *n;
-> >>  	int gsi;
-> >> +	int idx;
-> >>
-> >>  	trace_kvm_ack_irq(irqchip, pin);
-> >>
-> >> -	rcu_read_lock();
-> >> -	gsi = rcu_dereference(kvm->irq_routing)->chip[irqchip][pin];
-> >> +	idx = srcu_read_lock(&kvm->irq_routing.srcu);
-> >> +	gsi = rcu_dereference(kvm->irq_routing.table)->chip[irqchip][pin];
-> >>  	if (gsi != -1)
-> >>  		hlist_for_each_entry_rcu(kian, n, &kvm->irq_ack_notifier_list,
-> >>  					 link)
-> > 
-> > And same question here -- what keeps the above list from changing while
-> > we are traversing it?
-> 
-> This is also protected via the kvm->irq_lock in
-> kvm_register_irq_ack_notifier().  Though as mentioned above, I should
-> probably drop the non irq_routing.table hunks, so this will go away.
-> But I think its correct either way.
-> 
-> Thanks Paul,
-> -Greg
-> 
+> +
+>  static void acpi_device_set_id(struct acpi_device *device)
+>  {
+>  	acpi_status status;
+> @@ -1064,6 +1100,8 @@ static void acpi_device_set_id(struct acpi_device *device)
+>  			acpi_add_id(device, ACPI_BAY_HID);
+>  		else if (ACPI_SUCCESS(acpi_dock_match(device)))
+>  			acpi_add_id(device, ACPI_DOCK_HID);
+> +		else if (!acpi_ibm_smbus_match(device))
+> +			acpi_add_id(device, ACPI_SMBUS_IBM_HID);
+>  
+>  		break;
+>  	case ACPI_BUS_TYPE_POWER:
+> diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
+> index f4906f6..83a2960 100644
+> --- a/include/acpi/acpi_drivers.h
+> +++ b/include/acpi/acpi_drivers.h
+> @@ -65,6 +65,8 @@
+>  #define ACPI_VIDEO_HID			"LNXVIDEO"
+>  #define ACPI_BAY_HID			"LNXIOBAY"
+>  #define ACPI_DOCK_HID			"LNXDOCK"
+> +/* Quirk for broken IBM BIOSes */
+> +#define ACPI_SMBUS_IBM_HID		"SMBUSIBM"
+>  
+>  /*
+>   * For fixed hardware buttons, we fabricate acpi_devices with HID
 
 
+-- 
+Jean Delvare
