@@ -1,126 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbZJ0RlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbZJ0Rru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335AbZJ0RlY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 13:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbZJ0RlX
+	id S1756414AbZJ0Rru (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 13:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbZJ0Rru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 13:41:23 -0400
-Received: from gv-out-0910.google.com ([216.239.58.189]:17711 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754275AbZJ0RlX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 13:41:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:reply-to:organization:user-agent
-         :mime-version:to:cc:subject:references:in-reply-to:x-age:x-location
-         :x-os:x-face:content-type:content-transfer-encoding;
-        b=VHN36hePvznudssmOGAsdGbLLQoquc5rVEcDN1OROlM6JOtZm3ApN5tKCmLryHtXqD
-         CZQ9e7a5glpf8gy7ZO2WKPrLaraPd9FH5dDOvCkIQxaok+2LRgcfmcyPyV4gBiHZn7Qw
-         JuztK0WDeM9PICBScF3GxkphX/NyLqIXQ1U34=
-Message-ID: <4AE730C2.30401@gmail.com>
-Date: Tue, 27 Oct 2009 18:41:22 +0100
-From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
-Reply-To: vedran.furac@gmail.com
-Organization: Home
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090701 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
+	Tue, 27 Oct 2009 13:47:50 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:49938 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753686AbZJ0Rrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 13:47:49 -0400
+Date: Tue, 27 Oct 2009 19:45:15 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [KVM PATCH v3 3/3] KVM: Directly inject interrupts if they
+	support lockless operation
+Message-ID: <20091027174515.GA14421@redhat.com>
+References: <20091026162148.23704.47286.stgit@dev.haskins.net> <20091026162208.23704.19953.stgit@dev.haskins.net>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Minchan Kim <minchan.kim@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       rientjes@google.com
-Subject: Re: [RFC][PATCH] oom_kill: avoid depends on total_vm and use real
- RSS/swap value for oom_score (Re: Memory overcommit
-References: <hav57c$rso$1@ger.gmane.org>	<hb2cfu$r08$2@ger.gmane.org>	<20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com>	<4ADE3121.6090407@gmail.com>	<20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>	<4AE5CB4E.4090504@gmail.com>	<20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com>	<2f11576a0910262310g7aea23c0n9bfc84c900879d45@mail.gmail.com>	<20091027153429.b36866c4.minchan.kim@barrios-desktop>	<20091027153626.c5a4b5be.kamezawa.hiroyu@jp.fujitsu.com>	<28c262360910262355p3cac5c1bla4de9d42ea67fb4e@mail.gmail.com> <20091027164526.da6a23cb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091027164526.da6a23cb.kamezawa.hiroyu@jp.fujitsu.com>
-X-Age: 25
-X-Location: Lovran, Croatia
-X-OS: Debian GNU/Linux
-X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091026162208.23704.19953.stgit@dev.haskins.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-
-> On Tue, 27 Oct 2009 15:55:26 +0900
-> Minchan Kim <minchan.kim@gmail.com> wrote:
+On Mon, Oct 26, 2009 at 12:22:08PM -0400, Gregory Haskins wrote:
+> IRQFD currently uses a deferred workqueue item to execute the injection
+> operation.  It was originally designed this way because kvm_set_irq()
+> required the caller to hold the irq_lock mutex, and the eventfd callback
+> is invoked from within a non-preemptible critical section.
 > 
->>>> Hmm.
->>>> I wonder why we consider VM size for OOM kiling.
->>>> How about RSS size?
->>>>
->>> Maybe the current code assumes "Tons of swap have been generated, already" if
->>> oom-kill is invoked. Then, just using mm->anon_rss will not be correct.
->>>
->>> Hm, should we count # of swap entries reference from mm ?....
->> In Vedran case, he didn't use swap. So, Only considering vm is the problem.
->> I think it would be better to consider both RSS + # of swap entries as
->> Kosaki mentioned.
->>
-> Then, maybe this kind of patch is necessary.
-> This is on 2.6.31...then I may have to rebase this to mmotom.
-> Added more CCs.
+> With the advent of lockless injection support for certain GSIs, the
+> deferment mechanism is no longer technically needed in all cases.
+> Since context switching to the workqueue is a source of interrupt
+> latency, lets switch to a direct method whenever possible.  Fortunately
+> for us, the most common use of irqfd (MSI-based GSIs) readily support
+> lockless injection.
 > 
-> Vedran, I'm glad if you can test this patch.
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 
-Thanks for the patch! I'll test it during this week a report after that.
+This is a useful optimization I think.
+Some comments below.
 
-> Instead of total_vm, we should use anon/file/swap usage of a process, I think.
-> This patch adds mm->swap_usage and calculate oom_score based on
->   anon_rss + file_rss + swap_usage.
-
-Isn't file_rss shared between processes? Sorry, I'm newbie. :)
-
-% pmap $(pidof test)
-29049:   ./test
-0000000000400000      4K r-x--  /home/vedranf/dev/tmp/test
-0000000000600000      4K rw---  /home/vedranf/dev/tmp/test
-00002ba362a80000    116K r-x--  /lib/ld-2.10.1.so
-00002ba362a9d000     12K rw---    [ anon ]
-00002ba362c9c000      4K r----  /lib/ld-2.10.1.so
-00002ba362c9d000      4K rw---  /lib/ld-2.10.1.so
-00002ba362c9e000   1320K r-x--  /lib/libc-2.10.1.so
-00002ba362de8000   2044K -----  /lib/libc-2.10.1.so
-00002ba362fe7000     16K r----  /lib/libc-2.10.1.so
-00002ba362feb000      4K rw---  /lib/libc-2.10.1.so
-00002ba362fec000 1024028K rw---    [ anon ] // <-- This
-00007ffff4618000     84K rw---    [ stack ]
-00007ffff47b7000      4K r-x--    [ anon ]
-ffffffffff600000      4K r-x--    [ anon ]
- total          1027648K
-
-I would just look at anon if that's OK (or possible).
-
-> Considering usual applications, this will be much better information than
-> total_vm.
-
-Agreed.
-
-> score   PID     name
-> 4033	3176	gnome-panel
-> 4077	3113	xinit
-> 4526	3190	python
-> 4820	3161	gnome-settings-
-> 4989	3289	gnome-terminal
-> 7105	3271	tomboy
-> 8427	3177	nautilus
-> 17549	3140	gnome-session
-> 128501	3299	bash
-> 256106	3383	mmap
+> ---
 > 
-> This order is not bad, I think.
+>  virt/kvm/eventfd.c |   31 +++++++++++++++++++++++++++----
+>  1 files changed, 27 insertions(+), 4 deletions(-)
+> 
+> diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+> index 30f70fd..e6cc958 100644
+> --- a/virt/kvm/eventfd.c
+> +++ b/virt/kvm/eventfd.c
+> @@ -51,20 +51,34 @@ struct _irqfd {
+>  	wait_queue_t              wait;
+>  	struct work_struct        inject;
+>  	struct work_struct        shutdown;
+> +	void (*execute)(struct _irqfd *);
+>  };
+>  
+>  static struct workqueue_struct *irqfd_cleanup_wq;
+>  
+>  static void
+> -irqfd_inject(struct work_struct *work)
+> +irqfd_inject(struct _irqfd *irqfd)
+>  {
+> -	struct _irqfd *irqfd = container_of(work, struct _irqfd, inject);
+>  	struct kvm *kvm = irqfd->kvm;
+>  
+>  	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
+>  	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
+>  }
+>  
+> +static void
+> +irqfd_deferred_inject(struct work_struct *work)
+> +{
+> +	struct _irqfd *irqfd = container_of(work, struct _irqfd, inject);
+> +
+> +	irqfd_inject(irqfd);
+> +}
+> +
+> +static void
+> +irqfd_schedule(struct _irqfd *irqfd)
+> +{
+> +	schedule_work(&irqfd->inject);
+> +}
+> +
+>  /*
+>   * Race-free decouple logic (ordering is critical)
+>   */
+> @@ -126,7 +140,7 @@ irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
+>  
+>  	if (flags & POLLIN)
+>  		/* An event has been signaled, inject an interrupt */
+> -		schedule_work(&irqfd->inject);
+> +		irqfd->execute(irqfd);
+>  
+>  	if (flags & POLLHUP) {
+>  		/* The eventfd is closing, detach from KVM */
+> @@ -179,7 +193,7 @@ kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
+>  	irqfd->kvm = kvm;
+>  	irqfd->gsi = gsi;
+>  	INIT_LIST_HEAD(&irqfd->list);
+> -	INIT_WORK(&irqfd->inject, irqfd_inject);
+> +	INIT_WORK(&irqfd->inject, irqfd_deferred_inject);
+>  	INIT_WORK(&irqfd->shutdown, irqfd_shutdown);
+>  
+>  	file = eventfd_fget(fd);
+> @@ -209,6 +223,15 @@ kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
+>  	list_add_tail(&irqfd->list, &kvm->irqfds.items);
+>  	spin_unlock_irq(&kvm->irqfds.lock);
+>  
+> +	ret = kvm_irq_check_lockless(kvm, gsi);
+> +	if (ret < 0)
+> +		goto fail;
+> +
+> +	if (ret)
+> +		irqfd->execute = &irqfd_inject;
+> +	else
+> +		irqfd->execute = &irqfd_schedule;
+> +
 
-Yes, this looks much better now.  Bash is only having somewhat strangely
-high score.
+Can't gsi get converted from lockless to non-lockless
+after it's checked (by the routing ioctl)?  Kernel will crash then.
 
-Regards,
+How about, each time we get event from eventfd, we implement
+kvm_irqfd_toggle_lockless, which does a single scan, and returns
+true/false status (and I really mean toggle, let's not do set 1 / set 0
+as well) telling us whether interrupts could be delivered in a lockless
+manner?
 
-Vedran
+Then we can either just ignore the error (no one uses eventfd this way),
+or handle the mostly irrelevant case of level by means of the workqueue,
+like we did previously.
 
 
+>  	/*
+>  	 * Check if there was an event already pending on the eventfd
+>  	 * before we registered, and trigger it as if we didn't miss it.
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
