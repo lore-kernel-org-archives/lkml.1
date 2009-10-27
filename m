@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbZJ0TKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbZJ0TKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbZJ0TKQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 15:10:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756664AbZJ0TKP
+	id S1756708AbZJ0TKX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 15:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbZJ0TKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 15:10:15 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:26583 "EHLO mx1.redhat.com"
+	Tue, 27 Oct 2009 15:10:22 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:17140 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756666AbZJ0TKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 15:10:10 -0400
+	id S1756664AbZJ0TKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 15:10:16 -0400
 From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH 4/6] fsnotify: rename mark_entry to just mark
+Subject: [PATCH 5/6] inotify: rename mark_entry to just mark
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: agruen@suse.de
-Date: Tue, 27 Oct 2009 15:10:12 -0400
-Message-ID: <20091027191011.27472.73790.stgit@paris.rdu.redhat.com>
+Date: Tue, 27 Oct 2009 15:10:18 -0400
+Message-ID: <20091027191018.27472.61371.stgit@paris.rdu.redhat.com>
 In-Reply-To: <20091027190952.27472.91015.stgit@paris.rdu.redhat.com>
 References: <20091027190952.27472.91015.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -25,456 +25,592 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-previously I used mark_entry when talking about marks on inodes.  The
-_entry is pretty useless.  Just use "mark" instead.
+rename anything in inotify that deals with mark_entry to just be mark.  It
+makes a lot more sense.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- fs/notify/group.c                |    6 +-
- fs/notify/inode_mark.c           |  148 +++++++++++++++++++-------------------
- include/linux/fsnotify_backend.h |   26 +++----
- 3 files changed, 90 insertions(+), 90 deletions(-)
+ fs/notify/inotify/inotify.h          |    7 +
+ fs/notify/inotify/inotify_fsnotify.c |   48 ++++-----
+ fs/notify/inotify/inotify_user.c     |  192 +++++++++++++++++-----------------
+ 3 files changed, 123 insertions(+), 124 deletions(-)
 
-diff --git a/fs/notify/group.c b/fs/notify/group.c
-index b70e7d2..9e9eb40 100644
---- a/fs/notify/group.c
-+++ b/fs/notify/group.c
-@@ -74,11 +74,11 @@ void fsnotify_recalc_group_mask(struct fsnotify_group *group)
- {
- 	__u32 mask = 0;
- 	__u32 old_mask = group->mask;
--	struct fsnotify_mark *entry;
-+	struct fsnotify_mark *mark;
+diff --git a/fs/notify/inotify/inotify.h b/fs/notify/inotify/inotify.h
+index 07be6df..b6642e4 100644
+--- a/fs/notify/inotify/inotify.h
++++ b/fs/notify/inotify/inotify.h
+@@ -9,13 +9,12 @@ struct inotify_event_private_data {
+ 	int wd;
+ };
  
- 	spin_lock(&group->mark_lock);
--	list_for_each_entry(entry, &group->marks_list, g_list)
--		mask |= entry->mask;
-+	list_for_each_entry(mark, &group->marks_list, g_list)
-+		mask |= mark->mask;
- 	spin_unlock(&group->mark_lock);
+-struct inotify_inode_mark_entry {
+-	/* fsnotify_mark MUST be the first thing */
+-	struct fsnotify_mark fsn_entry;
++struct inotify_inode_mark {
++	struct fsnotify_mark fsn_mark;
+ 	int wd;
+ };
  
- 	group->mask = mask;
-diff --git a/fs/notify/inode_mark.c b/fs/notify/inode_mark.c
-index 9681126..31ec37b 100644
---- a/fs/notify/inode_mark.c
-+++ b/fs/notify/inode_mark.c
-@@ -30,21 +30,21 @@
-  * There are 3 spinlocks involved with fsnotify inode marks and they MUST
-  * be taken in order as follows:
-  *
-- * entry->lock
-+ * mark->lock
-  * group->mark_lock
-  * inode->i_lock
-  *
-- * entry->lock protects 2 things, entry->group and entry->inode.  You must hold
-+ * mark->lock protects 2 things, mark->group and mark->inode.  You must hold
-  * that lock to dereference either of these things (they could be NULL even with
-  * the lock)
-  *
-  * group->mark_lock protects the marks_list anchored inside a given group
-- * and each entry is hooked via the g_list.  It also sorta protects the
-+ * and each mark is hooked via the g_list.  It also sorta protects the
-  * free_g_list, which when used is anchored by a private list on the stack of the
-  * task which held the group->mark_lock.
-  *
-  * inode->i_lock protects the i_fsnotify_marks list anchored inside a
-- * given inode and each entry is hooked via the i_list. (and sorta the
-+ * given inode and each mark is hooked via the i_list. (and sorta the
-  * free_i_list)
-  *
-  *
-@@ -96,15 +96,15 @@
- #include <linux/fsnotify_backend.h>
- #include "fsnotify.h"
+-extern void inotify_ignored_and_remove_idr(struct fsnotify_mark *entry,
++extern void inotify_ignored_and_remove_idr(struct fsnotify_mark *fsn_mark,
+ 					   struct fsnotify_group *group);
+ extern void inotify_free_event_priv(struct fsnotify_event_private_data *event_priv);
  
--void fsnotify_get_mark(struct fsnotify_mark *entry)
-+void fsnotify_get_mark(struct fsnotify_mark *mark)
- {
--	atomic_inc(&entry->refcnt);
-+	atomic_inc(&mark->refcnt);
- }
+diff --git a/fs/notify/inotify/inotify_fsnotify.c b/fs/notify/inotify/inotify_fsnotify.c
+index 94954c1..0156e27 100644
+--- a/fs/notify/inotify/inotify_fsnotify.c
++++ b/fs/notify/inotify/inotify_fsnotify.c
+@@ -87,8 +87,8 @@ static int inotify_merge(struct list_head *list, struct fsnotify_event *event)
  
--void fsnotify_put_mark(struct fsnotify_mark *entry)
-+void fsnotify_put_mark(struct fsnotify_mark *mark)
- {
--	if (atomic_dec_and_test(&entry->refcnt))
--		entry->free_mark(entry);
-+	if (atomic_dec_and_test(&mark->refcnt))
-+		mark->free_mark(mark);
- }
- 
- /*
-@@ -112,14 +112,14 @@ void fsnotify_put_mark(struct fsnotify_mark *entry)
-  */
- static void fsnotify_recalc_inode_mask_locked(struct inode *inode)
+ static int inotify_handle_event(struct fsnotify_group *group, struct fsnotify_event *event)
  {
 -	struct fsnotify_mark *entry;
-+	struct fsnotify_mark *mark;
- 	struct hlist_node *pos;
- 	__u32 new_mask = 0;
+-	struct inotify_inode_mark_entry *ientry;
++	struct fsnotify_mark *fsn_mark;
++	struct inotify_inode_mark *i_mark;
+ 	struct inode *to_tell;
+ 	struct inotify_event_private_data *event_priv;
+ 	struct fsnotify_event_private_data *fsn_event_priv;
+@@ -97,14 +97,14 @@ static int inotify_handle_event(struct fsnotify_group *group, struct fsnotify_ev
+ 	to_tell = event->to_tell;
  
- 	assert_spin_locked(&inode->i_lock);
+ 	spin_lock(&to_tell->i_lock);
+-	entry = fsnotify_find_mark(group, to_tell);
++	fsn_mark = fsnotify_find_mark(group, to_tell);
+ 	spin_unlock(&to_tell->i_lock);
+ 	/* race with watch removal?  We already passes should_send */
+-	if (unlikely(!entry))
++	if (unlikely(!fsn_mark))
+ 		return 0;
+-	ientry = container_of(entry, struct inotify_inode_mark_entry,
+-			      fsn_entry);
+-	wd = ientry->wd;
++	i_mark = container_of(fsn_mark, struct inotify_inode_mark,
++			      fsn_mark);
++	wd = i_mark->wd;
  
--	hlist_for_each_entry(entry, pos, &inode->i_fsnotify_marks, i.i_list)
--		new_mask |= entry->mask;
-+	hlist_for_each_entry(mark, pos, &inode->i_fsnotify_marks, i.i_list)
-+		new_mask |= mark->mask;
- 	inode->i_fsnotify_mask = new_mask;
- }
- 
-@@ -139,40 +139,40 @@ void fsnotify_recalc_inode_mask(struct inode *inode)
- /*
-  * Any time a mark is getting freed we end up here.
-  * The caller had better be holding a reference to this mark so we don't actually
-- * do the final put under the entry->lock
-+ * do the final put under the mark->lock
-  */
--void fsnotify_destroy_mark(struct fsnotify_mark *entry)
-+void fsnotify_destroy_mark(struct fsnotify_mark *mark)
- {
- 	struct fsnotify_group *group;
- 	struct inode *inode;
- 
--	spin_lock(&entry->lock);
-+	spin_lock(&mark->lock);
- 
--	group = entry->group;
--	inode = entry->i.inode;
-+	group = mark->group;
-+	inode = mark->i.inode;
- 
- 	BUG_ON(group && !inode);
- 	BUG_ON(!group && inode);
- 
- 	/* if !group something else already marked this to die */
- 	if (!group) {
--		spin_unlock(&entry->lock);
-+		spin_unlock(&mark->lock);
- 		return;
+ 	event_priv = kmem_cache_alloc(event_priv_cachep, GFP_KERNEL);
+ 	if (unlikely(!event_priv))
+@@ -126,37 +126,37 @@ static int inotify_handle_event(struct fsnotify_group *group, struct fsnotify_ev
  	}
  
- 	/* 1 from caller and 1 for being on i_list/g_list */
--	BUG_ON(atomic_read(&entry->refcnt) < 2);
-+	BUG_ON(atomic_read(&mark->refcnt) < 2);
- 
- 	spin_lock(&group->mark_lock);
- 	spin_lock(&inode->i_lock);
- 
--	hlist_del_init(&entry->i.i_list);
--	entry->i.inode = NULL;
-+	hlist_del_init(&mark->i.i_list);
-+	mark->i.inode = NULL;
- 
--	list_del_init(&entry->g_list);
--	entry->group = NULL;
-+	list_del_init(&mark->g_list);
-+	mark->group = NULL;
- 
--	fsnotify_put_mark(entry); /* for i_list and g_list */
-+	fsnotify_put_mark(mark); /* for i_list and g_list */
- 
  	/*
- 	 * this mark is now off the inode->i_fsnotify_marks list and we
-@@ -183,21 +183,21 @@ void fsnotify_destroy_mark(struct fsnotify_mark *entry)
- 
- 	spin_unlock(&inode->i_lock);
- 	spin_unlock(&group->mark_lock);
--	spin_unlock(&entry->lock);
-+	spin_unlock(&mark->lock);
- 
- 	/*
- 	 * Some groups like to know that marks are being freed.  This is a
--	 * callback to the group function to let it know that this entry
-+	 * callback to the group function to let it know that this mark
- 	 * is being freed.
+-	 * If we hold the entry until after the event is on the queue
++	 * If we hold the fsn_mark until after the event is on the queue
+ 	 * IN_IGNORED won't be able to pass this event in the queue
  	 */
- 	if (group->ops->freeing_mark)
--		group->ops->freeing_mark(entry, group);
-+		group->ops->freeing_mark(mark, group);
+-	fsnotify_put_mark(entry);
++	fsnotify_put_mark(fsn_mark);
  
- 	/*
- 	 * __fsnotify_update_child_dentry_flags(inode);
- 	 *
- 	 * I really want to call that, but we can't, we have no idea if the inode
--	 * still exists the second we drop the entry->lock.
-+	 * still exists the second we drop the mark->lock.
- 	 *
- 	 * The next time an event arrive to this inode from one of it's children
- 	 * __fsnotify_parent will see that the inode doesn't care about it's
-@@ -222,20 +222,20 @@ void fsnotify_destroy_mark(struct fsnotify_mark *entry)
-  */
- void fsnotify_clear_marks_by_group(struct fsnotify_group *group)
- {
--	struct fsnotify_mark *lentry, *entry;
-+	struct fsnotify_mark *lmark, *mark;
- 	LIST_HEAD(free_list);
- 
- 	spin_lock(&group->mark_lock);
--	list_for_each_entry_safe(entry, lentry, &group->marks_list, g_list) {
--		list_add(&entry->free_g_list, &free_list);
--		list_del_init(&entry->g_list);
--		fsnotify_get_mark(entry);
-+	list_for_each_entry_safe(mark, lmark, &group->marks_list, g_list) {
-+		list_add(&mark->free_g_list, &free_list);
-+		list_del_init(&mark->g_list);
-+		fsnotify_get_mark(mark);
- 	}
- 	spin_unlock(&group->mark_lock);
- 
--	list_for_each_entry_safe(entry, lentry, &free_list, free_g_list) {
--		fsnotify_destroy_mark(entry);
--		fsnotify_put_mark(entry);
-+	list_for_each_entry_safe(mark, lmark, &free_list, free_g_list) {
-+		fsnotify_destroy_mark(mark);
-+		fsnotify_put_mark(mark);
- 	}
+ 	return ret;
  }
  
-@@ -244,21 +244,21 @@ void fsnotify_clear_marks_by_group(struct fsnotify_group *group)
-  */
- void fsnotify_clear_marks_by_inode(struct inode *inode)
+-static void inotify_freeing_mark(struct fsnotify_mark *entry, struct fsnotify_group *group)
++static void inotify_freeing_mark(struct fsnotify_mark *fsn_mark, struct fsnotify_group *group)
  {
--	struct fsnotify_mark *entry, *lentry;
-+	struct fsnotify_mark *mark, *lmark;
- 	struct hlist_node *pos, *n;
- 	LIST_HEAD(free_list);
- 
- 	spin_lock(&inode->i_lock);
--	hlist_for_each_entry_safe(entry, pos, n, &inode->i_fsnotify_marks, i.i_list) {
--		list_add(&entry->i.free_i_list, &free_list);
--		hlist_del_init(&entry->i.i_list);
--		fsnotify_get_mark(entry);
-+	hlist_for_each_entry_safe(mark, pos, n, &inode->i_fsnotify_marks, i.i_list) {
-+		list_add(&mark->i.free_i_list, &free_list);
-+		hlist_del_init(&mark->i.i_list);
-+		fsnotify_get_mark(mark);
- 	}
- 	spin_unlock(&inode->i_lock);
- 
--	list_for_each_entry_safe(entry, lentry, &free_list, i.free_i_list) {
--		fsnotify_destroy_mark(entry);
--		fsnotify_put_mark(entry);
-+	list_for_each_entry_safe(mark, lmark, &free_list, i.free_i_list) {
-+		fsnotify_destroy_mark(mark);
-+		fsnotify_put_mark(mark);
- 	}
+-	inotify_ignored_and_remove_idr(entry, group);
++	inotify_ignored_and_remove_idr(fsn_mark, group);
  }
  
-@@ -269,15 +269,15 @@ void fsnotify_clear_marks_by_inode(struct inode *inode)
- struct fsnotify_mark *fsnotify_find_mark(struct fsnotify_group *group,
- 					 struct inode *inode)
+ static bool inotify_should_send_event(struct fsnotify_group *group, struct inode *inode,
+ 				      struct vfsmount *mnt, __u32 mask, void *data,
+ 				      int data_type)
  {
 -	struct fsnotify_mark *entry;
-+	struct fsnotify_mark *mark;
- 	struct hlist_node *pos;
++	struct fsnotify_mark *fsn_mark;
+ 	bool send;
  
- 	assert_spin_locked(&inode->i_lock);
+ 	spin_lock(&inode->i_lock);
+-	entry = fsnotify_find_mark(group, inode);
++	fsn_mark = fsnotify_find_mark(group, inode);
+ 	spin_unlock(&inode->i_lock);
+-	if (!entry)
++	if (!fsn_mark)
+ 		return false;
  
--	hlist_for_each_entry(entry, pos, &inode->i_fsnotify_marks, i.i_list) {
--		if (entry->group == group) {
--			fsnotify_get_mark(entry);
--			return entry;
-+	hlist_for_each_entry(mark, pos, &inode->i_fsnotify_marks, i.i_list) {
-+		if (mark->group == group) {
-+			fsnotify_get_mark(mark);
-+			return mark;
- 		}
- 	}
- 	return NULL;
-@@ -295,35 +295,35 @@ void fsnotify_duplicate_mark(struct fsnotify_mark *new, struct fsnotify_mark *ol
- /*
-  * Nothing fancy, just initialize lists and locks and counters.
+ 	mask = (mask & ~FS_EVENT_ON_CHILD);
+-	send = (entry->mask & mask);
++	send = (fsn_mark->mask & mask);
+ 
+ 	/* find took a reference */
+-	fsnotify_put_mark(entry);
++	fsnotify_put_mark(fsn_mark);
+ 
+ 	return send;
+ }
+@@ -170,18 +170,18 @@ static bool inotify_should_send_event(struct fsnotify_group *group, struct inode
   */
--void fsnotify_init_mark(struct fsnotify_mark *entry,
--			void (*free_mark)(struct fsnotify_mark *entry))
-+void fsnotify_init_mark(struct fsnotify_mark *mark,
-+			void (*free_mark)(struct fsnotify_mark *mark))
+ static int idr_callback(int id, void *p, void *data)
  {
--	spin_lock_init(&entry->lock);
--	atomic_set(&entry->refcnt, 1);
--	INIT_HLIST_NODE(&entry->i.i_list);
--	entry->group = NULL;
--	entry->mask = 0;
--	entry->i.inode = NULL;
--	entry->free_mark = free_mark;
-+	spin_lock_init(&mark->lock);
-+	atomic_set(&mark->refcnt, 1);
-+	INIT_HLIST_NODE(&mark->i.i_list);
-+	mark->group = NULL;
-+	mark->mask = 0;
-+	mark->i.inode = NULL;
-+	mark->free_mark = free_mark;
+-	struct fsnotify_mark *entry;
+-	struct inotify_inode_mark_entry *ientry;
++	struct fsnotify_mark *fsn_mark;
++	struct inotify_inode_mark *i_mark;
+ 	static bool warned = false;
+ 
+ 	if (warned)
+ 		return 0;
+ 
+ 	warned = false;
+-	entry = p;
+-	ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
++	fsn_mark = p;
++	i_mark = container_of(fsn_mark, struct inotify_inode_mark, fsn_mark);
+ 
+-	WARN(1, "inotify closing but id=%d for entry=%p in group=%p still in "
++	WARN(1, "inotify closing but id=%d for fsn_mark=%p in group=%p still in "
+ 		"idr.  Probably leaking memory\n", id, p, data);
+ 
+ 	/*
+@@ -190,9 +190,9 @@ static int idr_callback(int id, void *p, void *data)
+ 	 * out why we got here and the panic is no worse than the original
+ 	 * BUG() that was here.
+ 	 */
+-	if (entry)
+-		printk(KERN_WARNING "entry->group=%p inode=%p wd=%d\n",
+-			entry->group, entry->i.inode, ientry->wd);
++	if (fsn_mark)
++		printk(KERN_WARNING "fsn_mark->group=%p inode=%p wd=%d\n",
++			fsn_mark->group, fsn_mark->i.inode, i_mark->wd);
+ 	return 0;
+ }
+ 
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index 4733e50..974bc59 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -363,7 +363,7 @@ static int inotify_find_inode(const char __user *dirname, struct path *path, uns
+ 
+ static int inotify_add_to_idr(struct idr *idr, spinlock_t *idr_lock,
+ 			      int last_wd,
+-			      struct inotify_inode_mark_entry *ientry)
++			      struct inotify_inode_mark *i_mark)
+ {
+ 	int ret;
+ 
+@@ -372,64 +372,64 @@ static int inotify_add_to_idr(struct idr *idr, spinlock_t *idr_lock,
+ 			return -ENOMEM;
+ 
+ 		spin_lock(idr_lock);
+-		ret = idr_get_new_above(idr, ientry, last_wd + 1,
+-					&ientry->wd);
++		ret = idr_get_new_above(idr, i_mark, last_wd + 1,
++					&i_mark->wd);
+ 		/* we added the mark to the idr, take a reference */
+ 		if (!ret)
+-			fsnotify_get_mark(&ientry->fsn_entry);
++			fsnotify_get_mark(&i_mark->fsn_mark);
+ 		spin_unlock(idr_lock);
+ 	} while (ret == -EAGAIN);
+ 
+ 	return ret;
+ }
+ 
+-static struct inotify_inode_mark_entry *inotify_idr_find_locked(struct fsnotify_group *group,
++static struct inotify_inode_mark *inotify_idr_find_locked(struct fsnotify_group *group,
+ 								int wd)
+ {
+ 	struct idr *idr = &group->inotify_data.idr;
+ 	spinlock_t *idr_lock = &group->inotify_data.idr_lock;
+-	struct inotify_inode_mark_entry *ientry;
++	struct inotify_inode_mark *i_mark;
+ 
+ 	assert_spin_locked(idr_lock);
+ 
+-	ientry = idr_find(idr, wd);
+-	if (ientry) {
+-		struct fsnotify_mark *fsn_entry = &ientry->fsn_entry;
++	i_mark = idr_find(idr, wd);
++	if (i_mark) {
++		struct fsnotify_mark *fsn_mark = &i_mark->fsn_mark;
+ 
+-		fsnotify_get_mark(fsn_entry);
++		fsnotify_get_mark(fsn_mark);
+ 		/* One ref for being in the idr, one ref we just took */
+-		BUG_ON(atomic_read(&fsn_entry->refcnt) < 2);
++		BUG_ON(atomic_read(&fsn_mark->refcnt) < 2);
+ 	}
+ 
+-	return ientry;
++	return i_mark;
+ }
+ 
+-static struct inotify_inode_mark_entry *inotify_idr_find(struct fsnotify_group *group,
++static struct inotify_inode_mark *inotify_idr_find(struct fsnotify_group *group,
+ 							 int wd)
+ {
+-	struct inotify_inode_mark_entry *ientry;
++	struct inotify_inode_mark *i_mark;
+ 	spinlock_t *idr_lock = &group->inotify_data.idr_lock;
+ 
+ 	spin_lock(idr_lock);
+-	ientry = inotify_idr_find_locked(group, wd);
++	i_mark = inotify_idr_find_locked(group, wd);
+ 	spin_unlock(idr_lock);
+ 
+-	return ientry;
++	return i_mark;
+ }
+ 
+ static void do_inotify_remove_from_idr(struct fsnotify_group *group,
+-				       struct inotify_inode_mark_entry *ientry)
++				       struct inotify_inode_mark *i_mark)
+ {
+ 	struct idr *idr = &group->inotify_data.idr;
+ 	spinlock_t *idr_lock = &group->inotify_data.idr_lock;
+-	int wd = ientry->wd;
++	int wd = i_mark->wd;
+ 
+ 	assert_spin_locked(idr_lock);
+ 
+ 	idr_remove(idr, wd);
+ 
+ 	/* removed from the idr, drop that ref */
+-	fsnotify_put_mark(&ientry->fsn_entry);
++	fsnotify_put_mark(&i_mark->fsn_mark);
  }
  
  /*
-- * Attach an initialized mark entry to a given group and inode.
-+ * Attach an initialized mark mark to a given group and inode.
-  * These marks may be used for the fsnotify backend to determine which
-  * event types should be delivered to which group and for which inodes.
+@@ -437,51 +437,51 @@ static void do_inotify_remove_from_idr(struct fsnotify_group *group,
+  * on the mark because it was in the idr.
   */
--int fsnotify_add_mark(struct fsnotify_mark *entry,
-+int fsnotify_add_mark(struct fsnotify_mark *mark,
- 		      struct fsnotify_group *group, struct inode *inode,
- 		      int allow_dups)
+ static void inotify_remove_from_idr(struct fsnotify_group *group,
+-				    struct inotify_inode_mark_entry *ientry)
++				    struct inotify_inode_mark *i_mark)
  {
--	struct fsnotify_mark *lentry = NULL;
-+	struct fsnotify_mark *lmark = NULL;
- 	int ret = 0;
+ 	spinlock_t *idr_lock = &group->inotify_data.idr_lock;
+-	struct inotify_inode_mark_entry *found_ientry = NULL;
++	struct inotify_inode_mark *found_i_mark = NULL;
+ 	int wd;
  
- 	inode = igrab(inode);
- 	if (unlikely(!inode))
+ 	spin_lock(idr_lock);
+-	wd = ientry->wd;
++	wd = i_mark->wd;
+ 
+ 	/*
+-	 * does this ientry think it is in the idr?  we shouldn't get called
++	 * does this i_mark think it is in the idr?  we shouldn't get called
+ 	 * if it wasn't....
+ 	 */
+ 	if (wd == -1) {
+-		printk(KERN_WARNING "%s: ientry=%p ientry->wd=%d ientry->group=%p"
+-			" ientry->inode=%p\n", __func__, ientry, ientry->wd,
+-			ientry->fsn_entry.group, ientry->fsn_entry.i.inode);
++		printk(KERN_WARNING "%s: i_mark=%p i_mark->wd=%d i_mark->group=%p"
++			" i_mark->inode=%p\n", __func__, i_mark, i_mark->wd,
++			i_mark->fsn_mark.group, i_mark->fsn_mark.i.inode);
+ 		WARN_ON(1);
+ 		goto out;
+ 	}
+ 
+ 	/* Lets look in the idr to see if we find it */
+-	found_ientry = inotify_idr_find_locked(group, wd);
+-	if (unlikely(!found_ientry)) {
+-		printk(KERN_WARNING "%s: ientry=%p ientry->wd=%d ientry->group=%p"
+-			" ientry->inode=%p\n", __func__, ientry, ientry->wd,
+-			ientry->fsn_entry.group, ientry->fsn_entry.i.inode);
++	found_i_mark = inotify_idr_find_locked(group, wd);
++	if (unlikely(!found_i_mark)) {
++		printk(KERN_WARNING "%s: i_mark=%p i_mark->wd=%d i_mark->group=%p"
++			" i_mark->inode=%p\n", __func__, i_mark, i_mark->wd,
++			i_mark->fsn_mark.group, i_mark->fsn_mark.i.inode);
+ 		WARN_ON(1);
+ 		goto out;
+ 	}
+ 
+ 	/*
+-	 * We found an entry in the idr at the right wd, but it's
+-	 * not the entry we were told to remove.  eparis seriously
++	 * We found an mark in the idr at the right wd, but it's
++	 * not the mark we were told to remove.  eparis seriously
+ 	 * fucked up somewhere.
+ 	 */
+-	if (unlikely(found_ientry != ientry)) {
++	if (unlikely(found_i_mark != i_mark)) {
+ 		WARN_ON(1);
+-		printk(KERN_WARNING "%s: ientry=%p ientry->wd=%d ientry->group=%p "
+-			"entry->inode=%p found_ientry=%p found_ientry->wd=%d "
+-			"found_ientry->group=%p found_ientry->inode=%p\n",
+-			__func__, ientry, ientry->wd, ientry->fsn_entry.group,
+-			ientry->fsn_entry.i.inode, found_ientry, found_ientry->wd,
+-			found_ientry->fsn_entry.group,
+-			found_ientry->fsn_entry.i.inode);
++		printk(KERN_WARNING "%s: i_mark=%p i_mark->wd=%d i_mark->group=%p "
++			"mark->inode=%p found_i_mark=%p found_i_mark->wd=%d "
++			"found_i_mark->group=%p found_i_mark->inode=%p\n",
++			__func__, i_mark, i_mark->wd, i_mark->fsn_mark.group,
++			i_mark->fsn_mark.i.inode, found_i_mark, found_i_mark->wd,
++			found_i_mark->fsn_mark.group,
++			found_i_mark->fsn_mark.i.inode);
+ 		goto out;
+ 	}
+ 
+@@ -490,30 +490,30 @@ static void inotify_remove_from_idr(struct fsnotify_group *group,
+ 	 * one ref held by the caller trying to kill us
+ 	 * one ref grabbed by inotify_idr_find
+ 	 */
+-	if (unlikely(atomic_read(&ientry->fsn_entry.refcnt) < 3)) {
+-		printk(KERN_WARNING "%s: ientry=%p ientry->wd=%d ientry->group=%p"
+-			" ientry->inode=%p\n", __func__, ientry, ientry->wd,
+-			ientry->fsn_entry.group, ientry->fsn_entry.i.inode);
++	if (unlikely(atomic_read(&i_mark->fsn_mark.refcnt) < 3)) {
++		printk(KERN_WARNING "%s: i_mark=%p i_mark->wd=%d i_mark->group=%p"
++			" i_mark->inode=%p\n", __func__, i_mark, i_mark->wd,
++			i_mark->fsn_mark.group, i_mark->fsn_mark.i.inode);
+ 		/* we can't really recover with bad ref cnting.. */
+ 		BUG();
+ 	}
+ 
+-	do_inotify_remove_from_idr(group, ientry);
++	do_inotify_remove_from_idr(group, i_mark);
+ out:
+ 	/* match the ref taken by inotify_idr_find_locked() */
+-	if (found_ientry)
+-		fsnotify_put_mark(&found_ientry->fsn_entry);
+-	ientry->wd = -1;
++	if (found_i_mark)
++		fsnotify_put_mark(&found_i_mark->fsn_mark);
++	i_mark->wd = -1;
+ 	spin_unlock(idr_lock);
+ }
+ 
+ /*
+  * Send IN_IGNORED for this wd, remove this wd from the idr.
+  */
+-void inotify_ignored_and_remove_idr(struct fsnotify_mark *entry,
++void inotify_ignored_and_remove_idr(struct fsnotify_mark *fsn_mark,
+ 				    struct fsnotify_group *group)
+ {
+-	struct inotify_inode_mark_entry *ientry;
++	struct inotify_inode_mark *i_mark;
+ 	struct fsnotify_event *ignored_event;
+ 	struct inotify_event_private_data *event_priv;
+ 	struct fsnotify_event_private_data *fsn_event_priv;
+@@ -525,7 +525,7 @@ void inotify_ignored_and_remove_idr(struct fsnotify_mark *entry,
+ 	if (!ignored_event)
+ 		return;
+ 
+-	ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
++	i_mark = container_of(fsn_mark, struct inotify_inode_mark, fsn_mark);
+ 
+ 	event_priv = kmem_cache_alloc(event_priv_cachep, GFP_NOFS);
+ 	if (unlikely(!event_priv))
+@@ -534,7 +534,7 @@ void inotify_ignored_and_remove_idr(struct fsnotify_mark *entry,
+ 	fsn_event_priv = &event_priv->fsnotify_event_priv_data;
+ 
+ 	fsn_event_priv->group = group;
+-	event_priv->wd = ientry->wd;
++	event_priv->wd = i_mark->wd;
+ 
+ 	ret = fsnotify_add_notify_event(group, ignored_event, fsn_event_priv, NULL);
+ 	if (ret)
+@@ -545,28 +545,28 @@ skip_send_ignore:
+ 	/* matches the reference taken when the event was created */
+ 	fsnotify_put_event(ignored_event);
+ 
+-	/* remove this entry from the idr */
+-	inotify_remove_from_idr(group, ientry);
++	/* remove this mark from the idr */
++	inotify_remove_from_idr(group, i_mark);
+ 
+ 	atomic_dec(&group->inotify_data.user->inotify_watches);
+ }
+ 
+ /* ding dong the mark is dead */
+-static void inotify_free_mark(struct fsnotify_mark *entry)
++static void inotify_free_mark(struct fsnotify_mark *fsn_mark)
+ {
+-	struct inotify_inode_mark_entry *ientry;
++	struct inotify_inode_mark *i_mark;
+ 
+-	ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
++	i_mark = container_of(fsn_mark, struct inotify_inode_mark, fsn_mark);
+ 
+-	kmem_cache_free(inotify_inode_mark_cachep, ientry);
++	kmem_cache_free(inotify_inode_mark_cachep, i_mark);
+ }
+ 
+ static int inotify_update_existing_watch(struct fsnotify_group *group,
+ 					 struct inode *inode,
+ 					 u32 arg)
+ {
+-	struct fsnotify_mark *entry;
+-	struct inotify_inode_mark_entry *ientry;
++	struct fsnotify_mark *fsn_mark;
++	struct inotify_inode_mark *i_mark;
+ 	__u32 old_mask, new_mask;
+ 	__u32 mask;
+ 	int add = (arg & IN_MASK_ADD);
+@@ -578,35 +578,35 @@ static int inotify_update_existing_watch(struct fsnotify_group *group,
  		return -EINVAL;
  
--	entry->flags = FSNOTIFY_MARK_FLAG_INODE;
-+	mark->flags = FSNOTIFY_MARK_FLAG_INODE;
- 
- 	/*
- 	 * if this group isn't being testing for inode type events we need
-@@ -341,24 +341,24 @@ int fsnotify_add_mark(struct fsnotify_mark *entry,
- 
- 	/*
- 	 * LOCKING ORDER!!!!
--	 * entry->lock
-+	 * mark->lock
- 	 * group->mark_lock
- 	 * inode->i_lock
- 	 */
--	spin_lock(&entry->lock);
-+	spin_lock(&mark->lock);
- 	spin_lock(&group->mark_lock);
  	spin_lock(&inode->i_lock);
- 
- 	if (!allow_dups)
--		lentry = fsnotify_find_mark(group, inode);
--	if (!lentry) {
--		entry->group = group;
--		entry->i.inode = inode;
-+		lmark = fsnotify_find_mark(group, inode);
-+	if (!lmark) {
-+		mark->group = group;
-+		mark->i.inode = inode;
- 
--		hlist_add_head(&entry->i.i_list, &inode->i_fsnotify_marks);
--		list_add(&entry->g_list, &group->marks_list);
-+		hlist_add_head(&mark->i.i_list, &inode->i_fsnotify_marks);
-+		list_add(&mark->g_list, &group->marks_list);
- 
--		fsnotify_get_mark(entry); /* for i_list and g_list */
-+		fsnotify_get_mark(mark); /* for i_list and g_list */
- 
- 		atomic_inc(&group->num_marks);
- 
-@@ -367,12 +367,12 @@ int fsnotify_add_mark(struct fsnotify_mark *entry,
- 
+-	entry = fsnotify_find_mark(group, inode);
++	fsn_mark = fsnotify_find_mark(group, inode);
  	spin_unlock(&inode->i_lock);
- 	spin_unlock(&group->mark_lock);
--	spin_unlock(&entry->lock);
-+	spin_unlock(&mark->lock);
+-	if (!entry)
++	if (!fsn_mark)
+ 		return -ENOENT;
  
--	if (lentry) {
-+	if (lmark) {
- 		ret = -EEXIST;
- 		iput(inode);
--		fsnotify_put_mark(lentry);
-+		fsnotify_put_mark(lmark);
+-	ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
++	i_mark = container_of(fsn_mark, struct inotify_inode_mark, fsn_mark);
+ 
+-	spin_lock(&entry->lock);
++	spin_lock(&fsn_mark->lock);
+ 
+-	old_mask = entry->mask;
++	old_mask = fsn_mark->mask;
+ 	if (add) {
+-		entry->mask |= mask;
+-		new_mask = entry->mask;
++		fsn_mark->mask |= mask;
++		new_mask = fsn_mark->mask;
  	} else {
- 		__fsnotify_update_child_dentry_flags(inode);
+-		entry->mask = mask;
+-		new_mask = entry->mask;
++		fsn_mark->mask = mask;
++		new_mask = fsn_mark->mask;
  	}
-diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
-index 83b6bfe..ff654c1 100644
---- a/include/linux/fsnotify_backend.h
-+++ b/include/linux/fsnotify_backend.h
-@@ -83,7 +83,7 @@ struct fsnotify_ops {
- 				  int data_type);
- 	int (*handle_event)(struct fsnotify_group *group, struct fsnotify_event *event);
- 	void (*free_group_priv)(struct fsnotify_group *group);
--	void (*freeing_mark)(struct fsnotify_mark *entry, struct fsnotify_group *group);
-+	void (*freeing_mark)(struct fsnotify_mark *mark, struct fsnotify_group *group);
- 	void (*free_event_priv)(struct fsnotify_event_private_data *priv);
- };
  
-@@ -135,7 +135,7 @@ struct fsnotify_group {
+-	spin_unlock(&entry->lock);
++	spin_unlock(&fsn_mark->lock);
  
- 	/* stores all fastpath marks assoc with this group so they can be cleaned on unregister */
- 	spinlock_t mark_lock;		/* protect marks_list */
--	atomic_t num_marks;		/* 1 for each mark entry and 1 for not being
-+	atomic_t num_marks;		/* 1 for each mark and 1 for not being
- 					 * past the point of no return when freeing
- 					 * a group */
- 	struct list_head marks_list;	/* all inode marks for this group */
-@@ -229,7 +229,7 @@ struct fsnotify_event {
-  * Inode specific fields in an fsnotify_mark
-  */
- struct fsnotify_inode_mark {
--	struct inode *inode;		/* inode this entry is associated with */
-+	struct inode *inode;		/* inode this mark is associated with */
- 	struct hlist_node i_list;	/* list of marks by inode->i_fsnotify_marks */
- 	struct list_head free_i_list;	/* tmp list used when freeing this mark */
- };
-@@ -238,13 +238,13 @@ struct fsnotify_inode_mark {
-  * Mount point specific fields in an fsnotify_mark
-  */
- struct fsnotify_vfsmount_mark {
--	struct vfsmount *mnt;		/* inode this entry is associated with */
-+	struct vfsmount *mnt;		/* vfsmount this mark is associated with */
- 	struct hlist_node m_list;	/* list of marks by inode->i_fsnotify_marks */
- 	struct list_head free_m_list;	/* tmp list used when freeing this mark */
- };
+ 	if (old_mask != new_mask) {
+ 		/* more bits in old than in new? */
+ 		int dropped = (old_mask & ~new_mask);
+-		/* more bits in this entry than the inode's mask? */
++		/* more bits in this fsn_mark than the inode's mask? */
+ 		int do_inode = (new_mask & ~inode->i_fsnotify_mask);
+-		/* more bits in this entry than the group? */
++		/* more bits in this fsn_mark than the group? */
+ 		int do_group = (new_mask & ~group->mask);
  
- /*
-- * a mark is simply an entry attached to an in core inode which allows an
-+ * a mark is simply an object attached to an in core inode which allows an
-  * fsnotify listener to indicate they are either no longer interested in events
-  * of a type matching mask or only interested in those events.
-  *
-@@ -254,11 +254,11 @@ struct fsnotify_vfsmount_mark {
-  * inode eviction or modification.
-  */
- struct fsnotify_mark {
--	__u32 mask;			/* mask this mark entry is for */
-+	__u32 mask;			/* mask this mark is for */
- 	/* we hold ref for each i_list and g_list.  also one ref for each 'thing'
- 	 * in kernel that found and may be using this mark. */
- 	atomic_t refcnt;		/* active things looking at this mark */
--	struct fsnotify_group *group;	/* group this mark entry is for */
-+	struct fsnotify_group *group;	/* group this mark is for */
- 	struct list_head g_list;	/* list of marks by group->i_fsnotify_marks */
- 	spinlock_t lock;		/* protect group and inode */
- 	union {
-@@ -269,7 +269,7 @@ struct fsnotify_mark {
- #define FSNOTIFY_MARK_FLAG_INODE	0x01
- #define FSNOTIFY_MARK_FLAG_VFSMOUNT	0x02
- 	unsigned int flags;		/* vfsmount or inode mark? */
--	void (*free_mark)(struct fsnotify_mark *entry); /* called on final put+free */
-+	void (*free_mark)(struct fsnotify_mark *mark); /* called on final put+free */
- };
+-		/* update the inode with this new entry */
++		/* update the inode with this new fsn_mark */
+ 		if (dropped || do_inode)
+ 			fsnotify_recalc_inode_mask(inode);
  
- #ifdef CONFIG_FSNOTIFY
-@@ -361,19 +361,19 @@ extern struct fsnotify_event *fsnotify_remove_notify_event(struct fsnotify_group
+@@ -616,10 +616,10 @@ static int inotify_update_existing_watch(struct fsnotify_group *group,
+ 	}
  
- /* run all marks associated with an inode and update inode->i_fsnotify_mask */
- extern void fsnotify_recalc_inode_mask(struct inode *inode);
--extern void fsnotify_init_mark(struct fsnotify_mark *entry, void (*free_mark)(struct fsnotify_mark *entry));
-+extern void fsnotify_init_mark(struct fsnotify_mark *mark, void (*free_mark)(struct fsnotify_mark *mark));
- /* find (and take a reference) to a mark associated with group and inode */
- extern struct fsnotify_mark *fsnotify_find_mark(struct fsnotify_group *group, struct inode *inode);
- /* copy the values from old into new */
- extern void fsnotify_duplicate_mark(struct fsnotify_mark *new, struct fsnotify_mark *old);
- /* attach the mark to both the group and the inode */
--extern int fsnotify_add_mark(struct fsnotify_mark *entry, struct fsnotify_group *group, struct inode *inode, int allow_dups);
-+extern int fsnotify_add_mark(struct fsnotify_mark *mark, struct fsnotify_group *group, struct inode *inode, int allow_dups);
- /* given a mark, flag it to be freed when all references are dropped */
--extern void fsnotify_destroy_mark(struct fsnotify_mark *entry);
-+extern void fsnotify_destroy_mark(struct fsnotify_mark *mark);
- /* run all the marks in a group, and flag them to be freed */
- extern void fsnotify_clear_marks_by_group(struct fsnotify_group *group);
--extern void fsnotify_get_mark(struct fsnotify_mark *entry);
--extern void fsnotify_put_mark(struct fsnotify_mark *entry);
-+extern void fsnotify_get_mark(struct fsnotify_mark *mark);
-+extern void fsnotify_put_mark(struct fsnotify_mark *mark);
- extern void fsnotify_unmount_inodes(struct list_head *list);
+ 	/* return the wd */
+-	ret = ientry->wd;
++	ret = i_mark->wd;
  
- /* put here because inotify does some weird stuff when destroying watches */
+ 	/* match the get from fsnotify_find_mark() */
+-	fsnotify_put_mark(entry);
++	fsnotify_put_mark(fsn_mark);
+ 
+ 	return ret;
+ }
+@@ -628,7 +628,7 @@ static int inotify_new_watch(struct fsnotify_group *group,
+ 			     struct inode *inode,
+ 			     u32 arg)
+ {
+-	struct inotify_inode_mark_entry *tmp_ientry;
++	struct inotify_inode_mark *tmp_i_mark;
+ 	__u32 mask;
+ 	int ret;
+ 	struct idr *idr = &group->inotify_data.idr;
+@@ -639,47 +639,47 @@ static int inotify_new_watch(struct fsnotify_group *group,
+ 	if (unlikely(!mask))
+ 		return -EINVAL;
+ 
+-	tmp_ientry = kmem_cache_alloc(inotify_inode_mark_cachep, GFP_KERNEL);
+-	if (unlikely(!tmp_ientry))
++	tmp_i_mark = kmem_cache_alloc(inotify_inode_mark_cachep, GFP_KERNEL);
++	if (unlikely(!tmp_i_mark))
+ 		return -ENOMEM;
+ 
+-	fsnotify_init_mark(&tmp_ientry->fsn_entry, inotify_free_mark);
+-	tmp_ientry->fsn_entry.mask = mask;
+-	tmp_ientry->wd = -1;
++	fsnotify_init_mark(&tmp_i_mark->fsn_mark, inotify_free_mark);
++	tmp_i_mark->fsn_mark.mask = mask;
++	tmp_i_mark->wd = -1;
+ 
+ 	ret = -ENOSPC;
+ 	if (atomic_read(&group->inotify_data.user->inotify_watches) >= inotify_max_user_watches)
+ 		goto out_err;
+ 
+ 	ret = inotify_add_to_idr(idr, idr_lock, group->inotify_data.last_wd,
+-				 tmp_ientry);
++				 tmp_i_mark);
+ 	if (ret)
+ 		goto out_err;
+ 
+ 	/* we are on the idr, now get on the inode */
+-	ret = fsnotify_add_mark(&tmp_ientry->fsn_entry, group, inode, 0);
++	ret = fsnotify_add_mark(&tmp_i_mark->fsn_mark, group, inode, 0);
+ 	if (ret) {
+ 		/* we failed to get on the inode, get off the idr */
+-		inotify_remove_from_idr(group, tmp_ientry);
++		inotify_remove_from_idr(group, tmp_i_mark);
+ 		goto out_err;
+ 	}
+ 
+ 	/* update the idr hint, who cares about races, it's just a hint */
+-	group->inotify_data.last_wd = tmp_ientry->wd;
++	group->inotify_data.last_wd = tmp_i_mark->wd;
+ 
+ 	/* increment the number of watches the user has */
+ 	atomic_inc(&group->inotify_data.user->inotify_watches);
+ 
+-	/* return the watch descriptor for this new entry */
+-	ret = tmp_ientry->wd;
++	/* return the watch descriptor for this new mark */
++	ret = tmp_i_mark->wd;
+ 
+ 	/* if this mark added a new event update the group mask */
+ 	if (mask & ~group->mask)
+ 		fsnotify_recalc_group_mask(group);
+ 
+ out_err:
+-	/* match the ref from fsnotify_init_markentry() */
+-	fsnotify_put_mark(&tmp_ientry->fsn_entry);
++	/* match the ref from fsnotify_init_mark() */
++	fsnotify_put_mark(&tmp_i_mark->fsn_mark);
+ 
+ 	return ret;
+ }
+@@ -839,7 +839,7 @@ fput_and_out:
+ SYSCALL_DEFINE2(inotify_rm_watch, int, fd, __s32, wd)
+ {
+ 	struct fsnotify_group *group;
+-	struct inotify_inode_mark_entry *ientry;
++	struct inotify_inode_mark *i_mark;
+ 	struct file *filp;
+ 	int ret = 0, fput_needed;
+ 
+@@ -855,16 +855,16 @@ SYSCALL_DEFINE2(inotify_rm_watch, int, fd, __s32, wd)
+ 	group = filp->private_data;
+ 
+ 	ret = -EINVAL;
+-	ientry = inotify_idr_find(group, wd);
+-	if (unlikely(!ientry))
++	i_mark = inotify_idr_find(group, wd);
++	if (unlikely(!i_mark))
+ 		goto out;
+ 
+ 	ret = 0;
+ 
+-	fsnotify_destroy_mark(&ientry->fsn_entry);
++	fsnotify_destroy_mark(&i_mark->fsn_mark);
+ 
+ 	/* match ref taken by inotify_idr_find */
+-	fsnotify_put_mark(&ientry->fsn_entry);
++	fsnotify_put_mark(&i_mark->fsn_mark);
+ 
+ out:
+ 	fput_light(filp, fput_needed);
+@@ -902,7 +902,7 @@ static int __init inotify_user_setup(void)
+ 	if (IS_ERR(inotify_mnt))
+ 		panic("inotify: kern_mount ret %ld!\n", PTR_ERR(inotify_mnt));
+ 
+-	inotify_inode_mark_cachep = KMEM_CACHE(inotify_inode_mark_entry, SLAB_PANIC);
++	inotify_inode_mark_cachep = KMEM_CACHE(inotify_inode_mark, SLAB_PANIC);
+ 	event_priv_cachep = KMEM_CACHE(inotify_event_private_data, SLAB_PANIC);
+ 
+ 	inotify_max_queued_events = 16384;
 
