@@ -1,151 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbZJ0P0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZJ0P1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755519AbZJ0P0w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 11:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbZJ0P0v
+	id S1755534AbZJ0P1Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 11:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbZJ0P1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 11:26:51 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47165 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755469AbZJ0P0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 11:26:49 -0400
-Date: Tue, 27 Oct 2009 15:26:51 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/5] page allocator: Pre-emptively wake kswapd when
-	high-order watermarks are hit
-Message-ID: <20091027152650.GJ8900@csn.ul.ie>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <1256221356-26049-5-git-send-email-mel@csn.ul.ie> <20091026235032.2F78.A69D9226@jp.fujitsu.com>
+	Tue, 27 Oct 2009 11:27:16 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:59975 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754345AbZJ0P1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 11:27:15 -0400
+Message-ID: <4AE71167.7060506@sgi.com>
+Date: Tue, 27 Oct 2009 08:27:35 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091026235032.2F78.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Zhang Rui <rui.zhang@intel.com>,
+       Len Brown <lenb@kernel.org>, Thomas Renninger <trenn@suse.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Myron Stowe <myron.stowe@hp.com>,
+       Feng Tang <feng.tang@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/8] SGI x86_64 UV: Limit the number of ACPI messages
+References: <20091023233743.439628000@alcatraz.americas.sgi.com>	 <20091023233754.668088000@alcatraz.americas.sgi.com> <1256354987.17875.6.camel@dc7800.home>
+In-Reply-To: <1256354987.17875.6.camel@dc7800.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 11:42:58AM +0900, KOSAKI Motohiro wrote:
-> > When a high-order allocation fails, kswapd is kicked so that it reclaims
-> > at a higher-order to avoid direct reclaimers stall and to help GFP_ATOMIC
-> > allocations. Something has changed in recent kernels that affect the timing
-> > where high-order GFP_ATOMIC allocations are now failing with more frequency,
-> > particularly under pressure.
-> > 
-> > This patch pre-emptively checks if watermarks have been hit after a
-> > high-order allocation completes successfully. If the watermarks have been
-> > reached, kswapd is woken in the hope it fixes the watermarks before the
-> > next GFP_ATOMIC allocation fails.
-> > 
-> > Warning, this patch is somewhat of a band-aid. If this makes a difference,
-> > it still implies that something has changed that is either causing more
-> > GFP_ATOMIC allocations to occur (such as the case with iwlagn wireless
-> > driver) or make them more likely to fail.
+Bjorn Helgaas wrote:
+...
 > 
-> hmm, I'm confused. this description addressed generic high order allocation.
-> but, 
-> 
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  mm/page_alloc.c |   33 ++++++++++++++++++++++-----------
-> >  1 files changed, 22 insertions(+), 11 deletions(-)
-> > 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 7f2aa3e..851df40 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1596,6 +1596,17 @@ try_next_zone:
-> >  	return page;
-> >  }
-> >  
-> > +static inline
-> > +void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
-> > +						enum zone_type high_zoneidx)
-> > +{
-> > +	struct zoneref *z;
-> > +	struct zone *zone;
-> > +
-> > +	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
-> > +		wakeup_kswapd(zone, order);
-> > +}
-> > +
-> >  static inline int
-> >  should_alloc_retry(gfp_t gfp_mask, unsigned int order,
-> >  				unsigned long pages_reclaimed)
-> > @@ -1730,18 +1741,18 @@ __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
-> 
-> __alloc_pages_high_priority() is only called if ALLOC_NO_WATERMARKS.
-> ALLOC_NO_WATERMARKS mean PF_MEMALLOC or TIF_MEMDIE and GFP_ATOMIC don't make
-> nested alloc_pages() (= don't make PF_MEMALLOC case). 
-> Then, I haven't understand why this patch improve iwlagn GFP_ATOMIC case.
-> 
-> hmm, maybe I missed something. I see the code again tommorow.
-> 
+> I know we print way too much stuff for every processor, but again, I'd
+> rather see all CPUs or none.  I think there's a little more value in
+> this one than the cooling device one (probably because I do a lot of
+> platform bringup), but it could certainly be made KERN_DEBUG and/or
+> combined with another processor discovery line.
 
-The description is misleading but in the patches current form, it makes
-a different to Tobias's testing. I still haven't figured out why.
+Is this more acceptable?
 
-> 
-> >  			congestion_wait(BLK_RW_ASYNC, HZ/50);
-> >  	} while (!page && (gfp_mask & __GFP_NOFAIL));
-> >  
-> > -	return page;
-> > -}
-> > -
-> > -static inline
-> > -void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
-> > -						enum zone_type high_zoneidx)
-> > -{
-> > -	struct zoneref *z;
-> > -	struct zone *zone;
-> > +	/*
-> > +	 * If after a high-order allocation we are now below watermarks,
-> > +	 * pre-emptively kick kswapd rather than having the next allocation
-> > +	 * fail and have to wake up kswapd, potentially failing GFP_ATOMIC
-> > +	 * allocations or entering direct reclaim
-> > +	 */
-> > +	if (unlikely(order) && page && !zone_watermark_ok(preferred_zone, order,
-> > +				preferred_zone->watermark[ALLOC_WMARK_LOW],
-> > +				zone_idx(preferred_zone), ALLOC_WMARK_LOW))
-> > +		wake_all_kswapd(order, zonelist, high_zoneidx);
-> >  
-> > -	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
-> > -		wakeup_kswapd(zone, order);
-> > +	return page;
-> >  }
-> >  
-> >  static inline int
-> > -- 
-> > 1.6.3.3
-> > 
-> > --
-> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> > the body to majordomo@kvack.org.  For more info on Linux MM,
-> > see: http://www.linux-mm.org/ .
-> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
-> 
-> 
+Thanks,
+Mike
+--- 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+SGI x86_64 UV: Limit the number of ACPI messages
+
+Limit number of ACPI messages of the form:
+
+[    0.000000] ACPI: LSAPIC (acpi_id[0x00] lsapic_id[0x00] lsapic_eid[0x00] enabled)
+
+[   99.638655] processor ACPI0007:00: registered as cooling_device0
+
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Thomas Renninger <trenn@suse.de>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Myron Stowe <myron.stowe@hp.com>
+Cc: Feng Tang <feng.tang@intel.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ drivers/acpi/fan.c            |    2 +-
+ drivers/acpi/processor_core.c |    3 +--
+ drivers/acpi/tables.c         |   13 ++++++++-----
+ 3 files changed, 10 insertions(+), 8 deletions(-)
+
+--- linux.orig/drivers/acpi/fan.c
++++ linux/drivers/acpi/fan.c
+@@ -267,7 +267,7 @@
+ 		goto end;
+ 	}
+ 
+-	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
++	dev_dbg(&device->dev, "registered as cooling_device%d\n", cdev->id);
+ 
+ 	device->driver_data = cdev;
+ 	result = sysfs_create_link(&device->dev.kobj,
+--- linux.orig/drivers/acpi/processor_core.c
++++ linux/drivers/acpi/processor_core.c
+@@ -845,8 +845,7 @@
+ 		goto err_power_exit;
+ 	}
+ 
+-	dev_info(&device->dev, "registered as cooling_device%d\n",
+-		 pr->cdev->id);
++	dev_dbg(&device->dev, "registered as cooling_device%d\n", pr->cdev->id);
+ 
+ 	result = sysfs_create_link(&device->dev.kobj,
+ 				   &pr->cdev->device.kobj,
+--- linux.orig/drivers/acpi/tables.c
++++ linux/drivers/acpi/tables.c
+@@ -170,11 +170,14 @@
+ 	case ACPI_MADT_TYPE_LOCAL_SAPIC:
+ 		{
+ 			struct acpi_madt_local_sapic *p =
+-			    (struct acpi_madt_local_sapic *)header;
+-			printk(KERN_INFO PREFIX
+-			       "LSAPIC (acpi_id[0x%02x] lsapic_id[0x%02x] lsapic_eid[0x%02x] %s)\n",
+-			       p->processor_id, p->id, p->eid,
+-			       (p->lapic_flags & ACPI_MADT_ENABLED) ? "enabled" : "disabled");
++				(struct acpi_madt_local_sapic *)header;
++
++			printk(KERN_DEBUG PREFIX
++				"LSAPIC (acpi_id[0x%02x] "
++				"lsapic_id[0x%02x] lsapic_eid[0x%02x] %s)\n",
++				p->processor_id, p->id, p->eid,
++				(p->lapic_flags & ACPI_MADT_ENABLED) ?
++					"enabled" : "disabled");
+ 		}
+ 		break;
+ 
