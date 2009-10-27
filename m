@@ -1,325 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbZJ0XZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbZJ0XZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbZJ0XZQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 19:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbZJ0XZP
+	id S1756845AbZJ0XZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 19:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbZJ0XZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 19:25:15 -0400
-Received: from mail.perches.com ([173.55.12.10]:1105 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756579AbZJ0XZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 19:25:14 -0400
-Subject: Re: [patch] Re: Zillions of warnings in -next
-From: Joe Perches <joe@perches.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Gregory Haskins <ghaskins@novell.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091027153651.6d636fe8.randy.dunlap@oracle.com>
-References: <20091027152530.75ca60e4@lxorguk.ukuu.org.uk>
-	 <4AE7258D0200005A000576F6@sinclair.provo.novell.com>
-	 <20091027222112.74058162@lxorguk.ukuu.org.uk>
-	 <20091027153651.6d636fe8.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 27 Oct 2009 16:25:17 -0700
-Message-ID: <1256685917.29938.79.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Oct 2009 19:25:28 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45091 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756831AbZJ0XZ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 19:25:26 -0400
+Date: Wed, 28 Oct 2009 00:25:22 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Greg KH <greg@kroah.com>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>
+Subject: Re: staging/dream: add gpio and pmem support
+Message-ID: <20091027232521.GA16782@elf.ucw.cz>
+References: <20091022091333.GA31023@elf.ucw.cz>
+ <20091026234332.GB26583@kroah.com>
+ <20091027001702.GA5019@elf.ucw.cz>
+ <20091027030039.GA6195@kroah.com>
+ <20091027081921.GG5019@elf.ucw.cz>
+ <20091027165750.GA24477@kroah.com>
+ <20091027193330.GB19379@elf.ucw.cz>
+ <20091027204445.GA28878@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091027204445.GA28878@kroah.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 15:36 -0700, Randy Dunlap wrote:
-> On Tue, 27 Oct 2009 22:21:12 +0000 Alan Cox wrote:
+Hi!
+
+> > What is so wrong with wakelocks? They are just nops in this case.
 > 
-> > > I just did a 32-bit build and indeed reproduced the warnings.  However, the warnings
-> > > appear to be dubious as the code is properly (afaict) annotated with explicit casts, and
-> > > I believe they are doing what I intended.
-> > > 
-> > > Basically I have structures that are always 64 bit (so we can have a mixed-mode 32-bit
-> > > guest talk to a 64-bit hypervisor, for instance).  Therefore I am casting between native
-> > > and u64, but the compiler doesn't like this.  Does anyone have any suggestions on ways
-> > > to fix this so the compiler is happy?
+> Are they really?  Then why is the whole large file needed?
+
+It is probably not, I went to "submit vendor code, then clean it up"
+mode. CONFIG_HAS_WAKELOCK should be disabled, so it basically stubs
+itself out.
+
+> > 2) you submit it
+> 
+> Wait, it has to BUILD!  This code has never been able to be built.  Only
+> after I disabled it from the CONFIG_ANDROID have I noticed this, which
+> is my fault.  But it needs to get fixed, and taking a bunch of code in
+> addition to the mess we have now, seems like the wrong way to do it.
+
+It seems to be the only reasonable way. gpio is used from all the
+other stuff, and removing it is not really an option.
+
+> > Now, I see that wakelocks are show-stopper for merging into kernel
+> > proper, but what is the problem for staging? We merged drivers with
+> > OS_MEMORY_ALLOCATE(); wakelocks are just nops in this case.
 > > 
-> > 	foo = (void *)(unsigned long)x
-> > 
-> > works for the general case because Linux assumes ptr fits ulong
-> > 
-> > Similarly in the other direction.
+> > Could we please clean this driver in-tree? (Wakelocks are already nops
+> > due to #ifdef magic, cleaning them incrementally is easy.)
 > 
-> Yes, I already had this done for venet and pci-bridge.  Patch below.
-> 
-> ---
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Eliminate all cast warnings in vbus-enet.c and pci-bridge.c.
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/net/vbus-enet.c   |   52 ++++++++++++++++++------------------
->  drivers/vbus/pci-bridge.c |   13 ++++-----
->  2 files changed, 33 insertions(+), 32 deletions(-)
-> 
-> --- linux-next-20091027.orig/drivers/net/vbus-enet.c
-> +++ linux-next-20091027/drivers/net/vbus-enet.c
-> @@ -162,18 +162,18 @@ rxdesc_alloc(struct vbus_enet_priv *priv
->  		 * larger than MTU, the host will grab pages out of the
->  		 * page-queue and populate additional IOVs
->  		 */
-> -		struct venet_sg *vsg = (struct venet_sg *)desc->cookie;
-> +		struct venet_sg *vsg = (struct venet_sg *)(unsigned long)desc->cookie;
->  		struct venet_iov *iov = &vsg->iov[0];
->  
->  		memset(vsg, 0, SG_DESC_SIZE);
->  
-> -		vsg->cookie  = (u64)skb;
-> +		vsg->cookie  = (u64)(unsigned long)skb;
->  		vsg->count   = 1;
->  
->  		iov->ptr     = (u64)__pa(skb->data);
->  		iov->len     = len;
->  	} else {
-> -		desc->cookie = (u64)skb;
-> +		desc->cookie = (u64)(unsigned long)skb;
->  		desc->ptr    = (u64)__pa(skb->data);
->  		desc->len    = len; /* total length  */
->  	}
-> @@ -207,7 +207,7 @@ rx_pageq_refill(struct vbus_enet_priv *p
->  		page = alloc_page(GFP_KERNEL);
->  		BUG_ON(!page);
->  
-> -		iter.desc->cookie = (u64)page;
-> +		iter.desc->cookie = (u64)(unsigned long)page;
->  		iter.desc->ptr    = (u64)__pa(page_address(page));
->  		iter.desc->len    = PAGE_SIZE;
->  
-> @@ -253,7 +253,7 @@ rx_setup(struct vbus_enet_priv *priv)
->  			void *addr = &priv->l4ro.pool[offset];
->  
->  			iter.desc->ptr    = (u64)offset;
-> -			iter.desc->cookie = (u64)addr;
-> +			iter.desc->cookie = (u64)(unsigned long)addr;
->  			iter.desc->len    = SG_DESC_SIZE;
->  		}
->  
-> @@ -297,19 +297,19 @@ rx_rxq_teardown(struct vbus_enet_priv *p
->  			struct venet_sg *vsg;
->  			int i;
->  
-> -			vsg = (struct venet_sg *)iter.desc->cookie;
-> +			vsg = (struct venet_sg *)(unsigned long)iter.desc->cookie;
->  
->  			/* skip i=0, since that is the skb->data IOV */
->  			for (i = 1; i < vsg->count; i++) {
->  				struct venet_iov *iov = &vsg->iov[i];
-> -				struct page *page = (struct page *)iov->ptr;
-> +				struct page *page = (struct page *)(unsigned long)iov->ptr;
->  
->  				put_page(page);
->  			}
->  
-> -			skb = (struct sk_buff *)vsg->cookie;
-> +			skb = (struct sk_buff *)(unsigned long)vsg->cookie;
->  		} else
-> -			skb = (struct sk_buff *)iter.desc->cookie;
-> +			skb = (struct sk_buff *)(unsigned long)iter.desc->cookie;
->  
->  		iter.desc->valid = 0;
->  		wmb();
-> @@ -341,7 +341,7 @@ rx_l4ro_teardown(struct vbus_enet_priv *
->  	 * free each valid descriptor
->  	 */
->  	while (iter.desc->sown) {
-> -		struct page *page = (struct page *)iter.desc->cookie;
-> +		struct page *page = (struct page *)(unsigned long)iter.desc->cookie;
->  
->  		iter.desc->valid = 0;
->  		wmb();
-> @@ -432,7 +432,7 @@ tx_setup(struct vbus_enet_priv *priv)
->  			iter.desc->ptr = (u64)__pa(vsg);
->  		}
->  
-> -		iter.desc->cookie = (u64)vsg;
-> +		iter.desc->cookie = (u64)(unsigned long)vsg;
->  		iter.desc->len    = SG_DESC_SIZE;
->  
->  		ret = ioq_iter_seek(&iter, ioq_seek_next, 0, 0);
-> @@ -480,7 +480,7 @@ tx_teardown(struct vbus_enet_priv *priv)
->  	 * free each valid descriptor
->  	 */
->  	while (iter.desc->cookie) {
-> -		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
-> +		struct venet_sg *vsg = (struct venet_sg *)(unsigned long)iter.desc->cookie;
->  
->  		iter.desc->valid = 0;
->  		wmb();
-> @@ -597,8 +597,8 @@ vbus_enet_change_mtu(struct net_device *
->  static struct sk_buff *
->  vbus_enet_l4ro_import(struct vbus_enet_priv *priv, struct ioq_ring_desc *desc)
->  {
-> -	struct venet_sg *vsg = (struct venet_sg *)desc->cookie;
-> -	struct sk_buff *skb = (struct sk_buff *)vsg->cookie;
-> +	struct venet_sg *vsg = (struct venet_sg *)(unsigned long)desc->cookie;
-> +	struct sk_buff *skb = (struct sk_buff *)(unsigned long)vsg->cookie;
->  	struct skb_shared_info *sinfo = skb_shinfo(skb);
->  	int i;
->  
-> @@ -618,7 +618,7 @@ vbus_enet_l4ro_import(struct vbus_enet_p
->  	/* skip i=0, since that is the skb->data IOV */
->  	for (i = 1; i < vsg->count; i++) {
->  		struct venet_iov *iov = &vsg->iov[i];
-> -		struct page *page = (struct page *)iov->ptr;
-> +		struct page *page = (struct page *)(unsigned long)iov->ptr;
->  		skb_frag_t *f = &sinfo->frags[i-1];
->  
->  		f->page        = page;
-> @@ -691,7 +691,7 @@ fail:
->  static struct sk_buff *
->  vbus_enet_flat_import(struct vbus_enet_priv *priv, struct ioq_ring_desc *desc)
->  {
-> -	struct sk_buff *skb = (struct sk_buff *)desc->cookie;
-> +	struct sk_buff *skb = (struct sk_buff *)(unsigned long)desc->cookie;
->  
->  	if (!desc->len) {
->  		/*
-> @@ -816,7 +816,7 @@ vbus_enet_tx_start(struct sk_buff *skb, 
->  	BUG_ON(iter.desc->sown);
->  
->  	if (priv->sg) {
-> -		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
-> +		struct venet_sg *vsg = (struct venet_sg *)(unsigned long)iter.desc->cookie;
->  		struct scatterlist sgl[MAX_SKB_FRAGS+1];
->  		struct scatterlist *sg;
->  		int count, maxcount = ARRAY_SIZE(sgl);
-> @@ -825,7 +825,7 @@ vbus_enet_tx_start(struct sk_buff *skb, 
->  
->  		memset(vsg, 0, sizeof(*vsg));
->  
-> -		vsg->cookie = (u64)skb;
-> +		vsg->cookie = (u64)(unsigned long)skb;
->  		vsg->len    = skb->len;
->  
->  		if (skb->ip_summed == CHECKSUM_PARTIAL) {
-> @@ -873,7 +873,7 @@ vbus_enet_tx_start(struct sk_buff *skb, 
->  		 * non scatter-gather mode: simply put the skb right onto the
->  		 * ring.
->  		 */
-> -		iter.desc->cookie = (u64)skb;
-> +		iter.desc->cookie = (u64)(unsigned long)skb;
->  		iter.desc->len = (u64)skb->len;
->  		iter.desc->ptr = (u64)__pa(skb->data);
->  	}
-> @@ -950,10 +950,10 @@ vbus_enet_tx_reap_one(struct vbus_enet_p
->  		if (priv->sg) {
->  			struct venet_sg *vsg;
->  
-> -			vsg = (struct venet_sg *)iter.desc->cookie;
-> -			skb = (struct sk_buff *)vsg->cookie;
-> +			vsg = (struct venet_sg *)(unsigned long)iter.desc->cookie;
-> +			skb = (struct sk_buff *)(unsigned long)vsg->cookie;
->  		} else
-> -			skb = (struct sk_buff *)iter.desc->cookie;
-> +			skb = (struct sk_buff *)(unsigned long)iter.desc->cookie;
->  
->  		/* Reset the descriptor */
->  		iter.desc->valid  = 0;
-> @@ -1069,7 +1069,7 @@ evq_txc_event(struct vbus_enet_priv *pri
->  
->  	vbus_enet_tx_reap(priv);
->  
-> -	vbus_enet_skb_complete(priv, (struct sk_buff *)event->cookie);
-> +	vbus_enet_skb_complete(priv, (struct sk_buff *)(unsigned long)event->cookie);
->  }
->  
->  static void
-> @@ -1097,7 +1097,7 @@ deferred_evq_isr(unsigned long data)
->  	while (!iter.desc->sown) {
->  		struct venet_event_header *header;
->  
-> -		header = (struct venet_event_header *)iter.desc->cookie;
-> +		header = (struct venet_event_header *)(unsigned long)iter.desc->cookie;
->  
->  		switch (header->id) {
->  		case VENET_EVENT_LINKSTATE:
-> @@ -1112,7 +1112,7 @@ deferred_evq_isr(unsigned long data)
->  			break;
->  		}
->  
-> -		memset((void *)iter.desc->cookie, 0, priv->evq.evsize);
-> +		memset((void *)(unsigned long)iter.desc->cookie, 0, priv->evq.evsize);
->  
->  		/* Advance the in-use tail */
->  		ret = ioq_iter_pop(&iter, 0);
-> @@ -1254,7 +1254,7 @@ vbus_enet_evq_negcap(struct vbus_enet_pr
->  			void *addr = &priv->evq.pool[offset];
->  
->  			iter.desc->ptr    = (u64)offset;
-> -			iter.desc->cookie = (u64)addr;
-> +			iter.desc->cookie = (u64)(unsigned long)addr;
->  			iter.desc->len    = query.evsize;
->  
->  			ret = ioq_iter_push(&iter, 0);
-> --- linux-next-20091027.orig/drivers/vbus/pci-bridge.c
-> +++ linux-next-20091027/drivers/vbus/pci-bridge.c
-> @@ -325,9 +325,10 @@ vbus_pci_device_shm(struct vbus_device_p
->  		 */
->  		shm_signal_get(&_signal->signal);
->  
-> -		params.signal.offset = (u64)sdesc - (u64)ptr;
-> +		params.signal.offset = (u64)(unsigned long)sdesc -
-> +					(u64)(unsigned long)ptr;
->  		params.signal.prio   = prio;
-> -		params.signal.cookie = (u64)_signal;
-> +		params.signal.cookie = (u64)(unsigned long)_signal;
->  
->  	} else
->  		params.signal.offset = -1; /* yes, this is a u32, but its ok */
-> @@ -526,7 +527,7 @@ event_devdrop(struct vbus_pci_handle_eve
->  static void
->  event_shmsignal(struct vbus_pci_handle_event *event)
->  {
-> -	struct _signal *_signal = (struct _signal *)event->handle;
-> +	struct _signal *_signal = (struct _signal *)(unsigned long)event->handle;
->  	struct irq_desc *desc = _signal->desc;
->  
->  	vbus_pci.stats.notify++;
-> @@ -536,7 +537,7 @@ event_shmsignal(struct vbus_pci_handle_e
->  static void
->  event_shmclose(struct vbus_pci_handle_event *event)
->  {
-> -	struct _signal *_signal = (struct _signal *)event->handle;
-> +	struct _signal *_signal = (struct _signal *)(unsigned long)event->handle;
->  
->  	/*
->  	 * This reference was taken during the DEVICESHM call
-> @@ -593,7 +594,7 @@ eventq_init(int qlen)
->  
->  		BUG_ON(iter.desc->valid);
->  
-> -		desc->cookie = (u64)event;
-> +		desc->cookie = (u64)(unsigned long)event;
->  		desc->ptr    = (u64)__pa(event);
->  		desc->len    = len; /* total length  */
->  		desc->valid  = 1;
-> @@ -643,7 +644,7 @@ eventq_wakeup(struct ioq_notifier *notif
->  		struct ioq_ring_desc *desc  = iter.desc;
->  		struct vbus_pci_event *event;
->  
-> -		event = (struct vbus_pci_event *)desc->cookie;
-> +		event = (struct vbus_pci_event *)(unsigned long)desc->cookie;
->  
->  		switch (event->eventid) {
->  		case VBUS_PCI_EVENT_DEVADD:
+> With this patch, will it build properly?
 
-#define cast_cookie(type, cookie) ((type)(unsigned long)(cookie))
-#define assign_cookie(var, cookie) (var) = ((typeof(var))(unsigned
-long)(cookie))
-?
+Its certainly way closer to building... it builds for me, with
+something like below; platform devices really are initialized from
+board-* files and get passed parameters.
 
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I should get some sleep now, I'll take closer look tommorow.
+
+									Pavel
+
+diff --git a/arch/arm/mach-msm/include/mach/board.h b/arch/arm/mach-msm/include/mach/board.h
+index 264d62e..9e68db2 100644
+--- a/arch/arm/mach-msm/include/mach/board.h
++++ b/arch/arm/mach-msm/include/mach/board.h
+@@ -35,4 +61,50 @@ void __init msm_init_irq(void);
+ void __init msm_init_gpio(void);
+ void __init msm_clock_init(void);
+ 
++struct msm_camera_io_ext {
++	uint32_t mdcphy;
++	uint32_t mdcsz;
++	uint32_t appphy;
++	uint32_t appsz;
++};
++
++struct msm_camera_device_platform_data {
++	void (*camera_gpio_on) (void);
++	void (*camera_gpio_off)(void);
++	struct msm_camera_io_ext ioext;
++};
++
++#ifdef CONFIG_SENSORS_MT9T013
++struct msm_camera_legacy_device_platform_data {
++	int sensor_reset;
++	int sensor_pwd;
++	int vcm_pwd;
++	void (*config_gpio_on) (void);
++	void (*config_gpio_off)(void);
++};
++#endif
++
++#define MSM_CAMERA_FLASH_NONE 0
++#define MSM_CAMERA_FLASH_LED  1
++
++struct msm_camera_sensor_info {
++	const char *sensor_name;
++	int sensor_reset;
++	int sensor_pwd;
++	int vcm_pwd;
++	int mclk;
++	int flash_type;
++	struct msm_camera_device_platform_data *pdata;
++};
++
++struct snd_endpoint {
++	int id;
++	const char *name;
++};
++
++struct msm_snd_endpoints {
++	struct snd_endpoint *endpoints;
++	unsigned num;
++};
++
+ #endif
+diff --git a/arch/arm/mach-msm/include/mach/msm_iomap.h b/arch/arm/mach-msm/include/mach/msm_iomap.h
+index 2f7b4c8..8b88e4a 100644
+--- a/arch/arm/mach-msm/include/mach/msm_iomap.h
++++ b/arch/arm/mach-msm/include/mach/msm_iomap.h
+@@ -116,6 +116,7 @@
+ 
+ #define MSM_AD5_PHYS          0xAC000000
+ #define MSM_AD5_SIZE          (SZ_1M*13)
++#define MSM_AD5_BASE          IOMEM(0xE0300000)
+ 
+ 
+ #endif
 
 
-
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
