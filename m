@@ -1,106 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbZJ0HBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbZJ0HCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756502AbZJ0HBr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 03:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbZJ0HBq
+	id S932095AbZJ0HCW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 03:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbZJ0HCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 03:01:46 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:53566 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755172AbZJ0HBp (ORCPT
+	Tue, 27 Oct 2009 03:02:21 -0400
+Received: from mail-px0-f180.google.com ([209.85.216.180]:64373 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755172AbZJ0HCU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 03:01:45 -0400
-Subject: Re: [PATCH] net: Adjust softirq raising in __napi_schedule
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-wireless@vger.kernel.org,
-       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, paulus@samba.org,
-       Michael Buesch <mb@bu3sch.de>, Oliver Hartkopp <oliver@hartkopp.net>
-In-Reply-To: <4AE64441.7060008@imap.cc>
-References: <4AD76184.6030900@gmail.com> <4ADF5710.4030505@imap.cc>
-	 <20091021211906.GA11401@ami.dom.local>
-	 <1256160330.12174.2.camel@johannes.local>
-	 <20091021213947.GA12202@ami.dom.local>
-	 <1256200021.12174.11.camel@johannes.local> <4AE1C00B.5010008@imap.cc>
-	 <1256309191.12174.51.camel@johannes.local>
-	 <20091026074126.GA6187@ff.dom.local>
-	 <1256543054.28230.6.camel@johannes.local>
-	 <20091026075438.GB6187@ff.dom.local>
-	 <1256543932.28230.9.camel@johannes.local>  <4AE56217.3040708@imap.cc>
-	 <1256547380.28230.17.camel@johannes.local>  <4AE64441.7060008@imap.cc>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-6ch9KbQaLIJxH1wlGqDK"
-Date: Tue, 27 Oct 2009 08:01:40 +0100
-Message-ID: <1256626900.4237.2.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 27 Oct 2009 03:02:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :x-operating-system:user-agent;
+        b=GMPmCnzEZW5fmZIjEe6f/F+NSwVdv427T0KFC407ixp6rNVPbgOjSClY5zyPSiFEZ7
+         IJKix6akA0sqc54vj/6BLFC/a8SgrVDRv8r+zYBYLIcsHgBF0AARikwWVuBuJVS91NEj
+         O6CKZ2+D3LPQKGJiW2KQLfV+Y0WkKWnqFBStA=
+Date: Tue, 27 Oct 2009 15:02:12 +0800
+From: Li Hong <lihong.hi@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 6/9] tracing: recordmcount.pl Exit early if no work to do 
+Message-ID: <20091027070212.GF22032@uhli>
+Mail-Followup-To: Steven Rostedt <rostedt@goodmis.org>,
+	linux-kernel@vger.kernel.org
+References: <20091027065421.GA22032@uhli>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091027065421.GA22032@uhli>
+X-Operating-System: Linux uhli 2.6.28-11-generic 
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From 1589563d8113db41fa77dd657459b563dcecd389 Mon Sep 17 00:00:00 2001
+From: Li Hong <lihong.hi@gmail.com>
+Date: Tue, 27 Oct 2009 13:13:37 +0800
+Subject: [PATCH] tracing: recordmcount.pl Exit early if no work to do
 
---=-6ch9KbQaLIJxH1wlGqDK
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Also keep the global symbols and use it to check if no work to do, exit
+early.
 
-On Tue, 2009-10-27 at 01:52 +0100, Tilman Schmidt wrote:
+Signed-off-by: Li Hong <lihong.hi@gmail.com>
 
-> > Any code (say ISDN code) that calls netif_rx() is clearly assuming to
-> > always be running in (soft)irq context, otherwise it couldn't call
-> > netif_rx() unconditionally. Agree so far?
->=20
-> Well, in fact I'm not sure. :-) All I know is that in the ISDN case, no
-> such assumption is explicitly stated anywhere. (The code in question is
-> called from the rcvcallb_skb() callback method which the hardware driver
-> calls when data has been received, and the description of that method in
-> Documentation/isdn/INTERFACE does not say anything about the context in
-> which it may be called.) The relevant code in drivers/isdn/i4l/isdn_ppp.c
-> is rather old, perhaps even older than softirqs and the netif_rx() /
-> netif_rx_ni() split. (Bear in mind that we are talking about the old
-> ISDN4Linux subsystem which initially didn't even make it into the 2.6
-> series because it was considered obsolete.) It seems quite possible to me
-> that just no one ever thought about that question.
-
-Heh :)
-
-> > So now if you change the ISDN code to call netif_rx_ni(), you've change=
-d
-> > the assumption that the ISDN code makes -- that it is running in
-> > (soft)irq context. Therefore, you need to verify that this is actually =
-a
-> > correct change, which is what I tried to say.
->=20
-> Understood. However, the fact that the local_softirq_pending message is
-> appearing would seem to indicate that this assumption was wrong to
-> begin with, wouldn't it?
-
-I thought it only recently started appearing with a new driver or
-something, but I may have misunderstood you. Anyway, I think that sums
-up the issue from my POV.
-
-johannes
-
---=-6ch9KbQaLIJxH1wlGqDK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJK5prQAAoJEODzc/N7+QmauwkQANCskBVoH8XtWB1eCnIoVb6v
-tqkrME+6YSTmUicvRLv6Ci3jNWGmsnDF253/GUavqD8uZqWdKQnx3srkl6EbS8/t
-X/je+cnc/zTVaTcjGZUYkL3lofLBzlwaE3jRCf8oMVKFn/HhaNvs2eMKKr/ckeOW
-9emANyTor5anZUsNJaLXIi1qgVibyE9VGLCElKN4cYvGftc6uRCrRU923g/wzgK6
-k41wjmSFW0NN4s7KCcuai2szbNSf9vB9Sb4spc2zbOmSY9r+TIoPVGw/vpPKNomz
-IytG7O7kLOiLYBPCTeALBqWamZtOTNwG71EIEqSaTJE/GCz7CRs7QcL/OLJIQw/4
-xWhf8Ln5tbUk2Nb1ZCzvNi5XUiqI3iC4ZC8Aym/CXarlQdCoDgqQJ0/M4Bo7k5Es
-CETP98YH0U6b2l7/N13Ys+j39DyeBrG/d4SUPE1J1ffPd60zZ18Yo36XNjf1Syfu
-aaWRFUSOyaqTNrWR0SlF3sajkzAtnp6ccmFXmX8q1J0rniEvtD/7GcQ5FfrOhZBY
-uGx58WiNHfMirxmnowkv/mvnVLLSfoo+6GWVMVgLOqnRZ8geukJwapK6k1xQtfGG
-oxMO0kJ6eNVRIQtp0/CNeU6q33qwp2aVRbzy1F4atlXNLMB2z7Gp6A3ykw8bE+nA
-SL62Vg5JKLA8w9d/7hz1
-=NgnP
------END PGP SIGNATURE-----
-
---=-6ch9KbQaLIJxH1wlGqDK--
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index a6585b6..d750da8 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -91,7 +91,7 @@
+ #
+ # Here are the steps we take:
+ #
+-# 1) Record all the local symbols by using 'nm'
++# 1) Record all the global, local and weak symbols by using 'nm'
+ # 2) Use objdump to find all the call site offsets and sections for
+ #    mcount.
+ # 3) Compile the list into its own object.
+@@ -143,12 +143,15 @@ $mv = "mv" if ((length $mv) == 0);
+ #print STDERR "running: $P '$arch' '$objdump' '$objcopy' '$cc' '$ld' " .
+ #    "'$nm' '$rm' '$mv' '$inputfile'\n";
+ 
++my %globals;		# List of global functions
+ my %locals;		# List of local (static) functions
+ my %weak;		# List of weak functions
+ my %convert;		# List of local functions used that needs conversion
+ 
+ my $type;
+-my $nm_regex;		# Find the local functions (return function)
++my $global_regex;	# Match a global function (return function)
++my $local_regex;	# Match a local function (return function)
++my $weak_regex; 	# Match a weak function (return function)
+ my $section_regex;	# Find the start of a section
+ my $function_regex;	# Find the name of a function
+ 			#    (return offset and func name)
+@@ -190,7 +193,9 @@ if ($arch eq "x86") {
+ # We base the defaults off of i386, the other archs may
+ # feel free to change them in the below if statements.
+ #
+-$nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
++$global_regex = "^[0-9a-fA-F]+\\s+T\\s+(\\S+)";
++$local_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
++$weak_regex = "^[0-9a-fA-F]+\\s+([wW])\\s+(\\S+)";
+ $section_regex = "Disassembly of section\\s+(\\S+):";
+ $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+ $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
+@@ -239,7 +244,8 @@ if ($arch eq "x86_64") {
+     $cc .= " -m32";
+ 
+ } elsif ($arch eq "powerpc") {
+-    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
++    $global_regex = "^[0-9a-fA-F]+\\s+T\\s+(\\.?\\S+)";
++    $local_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
+ 
+@@ -314,19 +320,24 @@ my $mcount_o = $dirname . "/.tmp_mc_" . $prefix . ".o";
+ check_objcopy();
+ 
+ #
+-# Step 1: find all the local (static functions) and weak symbols.
+-#        't' is local, 'w/W' is weak (we never use a weak function)
++# Step 1: find all the global and local (static functions) and weak symbols.
++#        'T' is global 't' is local, 'w/W' is weak
+ #
+ open (IN, "$nm $inputfile|") || die "error running $nm";
+ while (<IN>) {
+-    if (/$nm_regex/) {
++    if (/$global_regex/) {
++        $globals{$1} = 1;
++    } elsif (/$local_regex/) {
+ 	$locals{$1} = 1;
+-    } elsif (/^[0-9a-fA-F]+\s+([wW])\s+(\S+)/) {
++    } elsif (/$weak_regex/) {
+ 	$weak{$2} = $1;
+     }
+ }
+ close(IN);
+ 
++# Exit early if no work to do 
++exit(0) unless (%globals or (%locals and $can_use_local)); 
++
+ my @offsets;		# Array of offsets of mcount callers
+ my $ref_func;		# reference function to use for offsets
+ my $offset = 0;		# offset of ref_func to section beginning
+-- 
+1.6.0.4
 
