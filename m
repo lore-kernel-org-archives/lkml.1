@@ -1,152 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbZJ1Ghe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbZJ1Gk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757040AbZJ1Ghe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 02:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbZJ1Ghe
+	id S1757178AbZJ1Gk1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 02:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbZJ1Gk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 02:37:34 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:46329 "EHLO e7.ny.us.ibm.com"
+	Wed, 28 Oct 2009 02:40:27 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43717 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756656AbZJ1Ghd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 02:37:33 -0400
-Date: Tue, 27 Oct 2009 23:37:37 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Xiaotian Feng <xtfeng@gmail.com>
-Cc: Alex <mysqlstudent@gmail.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.32-rc5-git3 compile problems
-Message-ID: <20091028063737.GA6632@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <55e03a0a0910271350r6900aaf3qed4cbf31b6359727@mail.gmail.com> <7b6bb4a50910272007i2c931012y13d204402d65a589@mail.gmail.com>
+	id S1756851AbZJ1Gk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 02:40:26 -0400
+Date: Wed, 28 Oct 2009 07:40:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Nicolas Pitre <nico@fluxnic.net>, "Luck, Tony" <tony.luck@intel.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [RFC] to rebase or not to rebase on linux-next
+Message-ID: <20091028064009.GA6353@elte.hu>
+References: <57C9024A16AD2D4C97DC78E552063EA3E33D0174@orsmsx505.amr.corp.intel.com> <20091023134115.GD27097@elte.hu> <alpine.LFD.2.00.0910231424440.21460@xanadu.home> <20091023191631.GA1879@elte.hu> <1256326512.26028.34.camel@gandalf.stny.rr.com> <20091023205400.GA8356@elte.hu> <20091023215958.GA4139@merkur.ravnborg.org> <1256599588.26028.340.camel@gandalf.stny.rr.com> <20091027075954.GA32640@elte.hu> <1256657956.26028.408.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <7b6bb4a50910272007i2c931012y13d204402d65a589@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1256657956.26028.408.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 11:07:13AM +0800, Xiaotian Feng wrote:
-> Try this patch, thanks.
-> ---
-> index b40ac57..04a4272 100644
-> --- a/kernel/rcutree.h
-> +++ b/kernel/rcutree.h
-> @@ -292,8 +292,24 @@ DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
-> 
->  #else /* #ifdef RCU_TREE_NONCORE */
-> 
-> -/* Forward declarations for rcutree_plugin.h */
-> -static inline void rcu_bootup_announce(void);
-> +#ifdef CONFIG_TREE_PREEMPT_RCU
-> +/*
-> + * Tell them what RCU they are running.
-> + */
-> +static inline void rcu_bootup_announce(void)
-> +{
-> +        printk(KERN_INFO
-> +               "Experimental preemptable hierarchical RCU implementation.\n");
-> +}
-> +#else
-> +/*
-> + * Tell them what RCU they are running.
-> + */
-> +static inline void rcu_bootup_announce(void)
-> +{
-> +        printk(KERN_INFO "Hierarchical RCU implementation.\n");
-> +}
-> +#endif
->  long rcu_batches_completed(void);
->  static void rcu_preempt_note_context_switch(int cpu);
->  static int rcu_preempted_readers(struct rcu_node *rnp);
-> diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-> index c0cb783..1b96445 100644
-> --- a/kernel/rcutree_plugin.h
-> +++ b/kernel/rcutree_plugin.h
-> @@ -31,15 +31,6 @@ struct rcu_state rcu_preempt_state =
-> RCU_STATE_INITIALIZER(rcu_preempt_state);
->  DEFINE_PER_CPU(struct rcu_data, rcu_preempt_data);
-> 
->  /*
-> - * Tell them what RCU they are running.
-> - */
-> -static inline void rcu_bootup_announce(void)
 
-Given that this is anything but performance-critical, could we instead
-remove the "inline" above and on the forward declaration, possibly
-also marking as __init?
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Or am I misunderstanding the problem?
-
-							Thanx, Paul
-
-> -{
-> -       printk(KERN_INFO
-> -              "Experimental preemptable hierarchical RCU implementation.\n");
-> -}
-> -
-> -/*
->   * Return the number of RCU-preempt batches processed thus far
->   * for debug and statistics.
->   */
-> @@ -462,14 +453,6 @@ void exit_rcu(void)
->  #else /* #ifdef CONFIG_TREE_PREEMPT_RCU */
+> On Tue, 2009-10-27 at 08:59 +0100, Ingo Molnar wrote:
 > 
->  /*
-> - * Tell them what RCU they are running.
-> - */
-> -static inline void rcu_bootup_announce(void)
-> -{
-> -       printk(KERN_INFO "Hierarchical RCU implementation.\n");
-> -}
-> -
-> -/*
->   * Return the number of RCU batches processed thus far for debug & stats.
->   */
->  long rcu_batches_completed(void)
+> > For any reasonably complex change you simply need to wait a bit 
+> > anyway to gather feedback. And for trivial/obvious/small patches it 
+> > makes little sense to upset the Git history just to add the tags.
+> > 
+> > (And if there's frequent problems with small changes that were 
+> > supposed to be easy you need to revisit the quality process.)
 > 
-> On Wed, Oct 28, 2009 at 4:50 AM, Alex <mysqlstudent@gmail.com> wrote:
-> > Hi,
-> >
-> > I receive the following error when using defconfig on 2.6.32-rc5-git3:
-> >
-> >  CC      kernel/seccomp.o
-> >  CC      kernel/rcutree.o
-> > kernel/rcutree.c: In function `__rcu_init':
-> > kernel/rcutree.h:296: sorry, unimplemented: inlining failed in call to
-> > 'rcu_bootup_announce': function body not available
-> > kernel/rcutree.c:1702: sorry, unimplemented: called from here
-> > make[1]: *** [kernel/rcutree.o] Error 1
-> > make: *** [kernel] Error 2
-> >
-> > Is this something I'm doing wrong? I'm actually trying to compile
-> > 2.6.31.5 with the default config, and it too fails, for another
-> > reason. I'm having difficulty compiling 2.6.31 and 2.6.31.5 on x86
-> > with gcc-3.4.4 and binutils-2.20.51.0.2. I'm also using glibc-2.3.6.
-> >
-> >  AS      arch/x86/lib/thunk_32.o
-> >  CC      arch/x86/lib/usercopy_32.o
-> >  AR      arch/x86/lib/lib.a
-> >  LD      vmlinux.o
-> >  MODPOST vmlinux.o
-> >  GEN     .version
-> >  CHK     include/linux/compile.h
-> >  UPD     include/linux/compile.h
-> >  CC      init/version.o
-> >  LD      init/built-in.o
-> >  LD      .tmp_vmlinux1
-> > drivers/built-in.o: In function `con_init':
-> > vt.c:(.init.text+0x3c5b): undefined reference to `.L1446'
-> > make: *** [.tmp_vmlinux1] Error 1
-> >
-> > I'd sure appreciate any pointers on how to troubleshoot this.
-> >
-> > Thanks,
-> > Alex
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
+> Sure, but I'm not talking about changing the patch, I'm talking about 
+> a late "reviewed by" or "tested-by". These usually do come after a 
+> patch set has been moved into the final git push. It would be nice to 
+> flag a commit that it was tested by someone.
+
+If you want to make your patches dependent on acks then you first need 
+to send out those patches with an '[RFC]' added, and put into a branch 
+hierarchy (rfc/* would be fine) that i sure wont pull from you.
+
+You can also send obvious/small/own patches out for immediate pull. In 
+that case extra review can still be done after you sent patches out. 
+Mistakes noticed during review will be credited in terms of future 
+Reported-by tags.
+
+People do this frequently.
+
+	Ingo
