@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754663AbZJ1PnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbZJ1PkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754663AbZJ1PnG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 11:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbZJ1PnF
+	id S1754326AbZJ1PkV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 11:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbZJ1PkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 11:43:05 -0400
-Received: from kroah.org ([198.145.64.141]:35137 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754224AbZJ1PnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 11:43:04 -0400
-Date: Wed, 28 Oct 2009 08:40:00 -0700
-From: Greg KH <greg@kroah.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [quilt patches] Staging: rt28x0: more cleanups
-Message-ID: <20091028154000.GA28313@kroah.com>
-References: <200910252134.17360.bzolnier@gmail.com>
+	Wed, 28 Oct 2009 11:40:20 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:37025 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751533AbZJ1PkU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 11:40:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=XD/Na1e536g/Ez0tLfFHnXyCxwu3Th0TZfi3akDrOfaP/musFK6apiVaDv/uGgcOdT
+         Iss2MFKn1VR/OX9d5SN/dSDKQzXnqb+eKV8pU6UaxqpYxBZt+pdQ6B/5aMox++l4pcCI
+         C83R/FRxeAqzo2AEI5gjMzFQkaLTOstWdAICo=
+From: Arnd Bergmann <arndbergmann@googlemail.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: is avoiding compat ioctls possible?
+Date: Wed, 28 Oct 2009 16:40:18 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
+Cc: arndbergmann@googlemail.com, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+References: <20091027.230450.222178419.davem@davemloft.net> <200910281313.32827.arnd@arndb.de> <20091028.051631.212225494.davem@davemloft.net>
+In-Reply-To: <20091028.051631.212225494.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910252134.17360.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910281640.18491.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 25, 2009 at 09:34:17PM +0100, Bartlomiej Zolnierkiewicz wrote:
+On Wednesday 28 October 2009, David Miller wrote:
+> > The ioctl argument actually needs a compat_ptr() conversion as well.
+> > For the s390 case, we can't do that in common code, because some
+> > ioctl methods put a 32 bit integer into the argument. Not sure if we
+> > want to fix that everywhere, the problem is very common and the
+> > impact is minimal.
 > 
-> Hi,
-> 
-> More cleanups:
-> - run all files through scripts/Lindent
-> - convert C++ style comments to C style
-> - remove typedefs
-> 
-> As a result those drivers start looking Linux-like and become easier
-> to comprehend, also as an added bonus another 1.5 KLOC are gone..
-> 
-> The downside is that it will be harder now to port over updates from
-> the original vendor source code than it was in the past..
-> 
-> As usual all changes were tested with RT2860 and RT3070.
-> 
-> 
-> Cause patches are too big for a mailing list they are available at:
-> 
-> http://www.kernel.org/pub/linux/kernel/people/bart/staging-rt28x0-more-cleanups/
+> What does s390 do with the 'arg' argument to sys_ioctl()?
 
-All queued up now.
+It clears the top 32 bits, but not bit 31, because that is significant
+for a few ioctl handlers passing data directly instead of a pointer.
+ 
+> That assumption that you can cast this to a pointer is everywhere.
 
-It seemed that there were some merge issues, like you forgot to add a
-file to one of your patches somehow, and you had one mod.c file patched
-which needed to be fixed up.
+Yes, I know :(
 
-So if you could verify I got it all correctly, that would be great.
+> If someone wants to fix this up, feel free to do an audit and go
+> over that seperately from my work :-)
 
-thanks,
+Cc'ing Heiko and Martin, since I'm not working on s390 any more.
 
-greg k-h
+I'm pretty sure it was ok when we started adding the compat_ioctl
+handlers years ago. I think most people just ignored these for
+the majority of drivers that can't possibly run on s390. Even
+on s390, gcc will always do the right thing if you call call ioctl
+with a pointer to a normal object in the .data section, heap or stack,
+but hand-written assembly or other compilers may not.
+
+	Arnd <><
