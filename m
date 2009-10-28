@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757086AbZJ1AxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932491AbZJ1A7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757086AbZJ1AxY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 20:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757066AbZJ1AxX
+	id S932491AbZJ1A7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 20:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932478AbZJ1A7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 20:53:23 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:38840 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757056AbZJ1AxW convert rfc822-to-8bit (ORCPT
+	Tue, 27 Oct 2009 20:59:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34096 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757082AbZJ1A7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 20:53:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=o3mPCth0+BShabdaqHU2+y4l6ImdiDSl3n2QBqf3xHlOCDXlenCg1O22SpVVbZo3UI
-         oM9JcDg+F8ntgPc7fDb3kdP2Tm5sfe+sG0u/6PlSm7EP56efCpQKWEMt6r3Gz0DeKsL5
-         C8q0byY3Nx0577Q9a/Ha/6MDt/E06rdqzS2Vc=
+	Tue, 27 Oct 2009 20:59:22 -0400
+Date: Tue, 27 Oct 2009 17:58:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Stephen Hemminger <shemminger@vyatta.com>
+cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Stephen Hemminger <stephen.hemminger@vyatta.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Octavian Purdila <opurdila@ixiacom.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] dcache: better name hash function
+In-Reply-To: <20091027171035.39e18383@nehalam>
+Message-ID: <alpine.LFD.2.01.0910271744560.31845@localhost.localdomain>
+References: <19864844.24581256620784317.JavaMail.root@tahiti.vyatta.com> <4AE68E23.20205@gmail.com> <4AE69829.9070207@gmail.com> <4AE6A16F.4020002@gmail.com> <20091027100736.5303f1ab@nehalam> <alpine.LFD.2.01.0910271017170.31845@localhost.localdomain>
+ <20091027160822.384dc109@nehalam> <alpine.LFD.2.01.0910271636100.31845@localhost.localdomain> <20091027171035.39e18383@nehalam>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-In-Reply-To: <20091028083548.38f1d80c@hskinnemoen-d830>
-References: <acfa557032a93e2d3186981b16f7048a5a31028a.1256314995.git.nicolas.ferre@atmel.com>
-	 <20090930155557.7dae503b@hskinnemoen-d830>
-	 <a3b1332815576dc4d496937b8a5ab69d36818d00.1256314995.git.nicolas.ferre@atmel.com>
-	 <cd73a99e0910271243x744c956bl598fef9fd4144840@mail.gmail.com>
-	 <20091028083548.38f1d80c@hskinnemoen-d830>
-Date: Tue, 27 Oct 2009 22:53:26 -0200
-Message-ID: <d6cda7730910271753o54acfa04t1225de460083325f@mail.gmail.com>
-Subject: Re: [PATCH 3/3 v2] at91/atmel-mci: inclusion of sd/mmc driver in 
-	at91sam9g45 chip and board
-From: =?ISO-8859-1?Q?Thiago_A=2E_Corr=EAa?= <thiago.correa@gmail.com>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Andrew Victor <avictor.za@gmail.com>, linux-mmc@vger.kernel.org,
-       kernel@avr32linux.org, linux-kernel@vger.kernel.org,
-       Nicolas Ferre <nicolas.ferre@atmel.com>, akpm@linux-foundation.org,
-       linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 10:35 PM, Haavard Skinnemoen
-<haavard.skinnemoen@atmel.com> wrote:
-> Andrew Victor <avictor.za@gmail.com> wrote:
->> > +static struct mci_platform_data __initdata mci0_data = {
->> > +       .slot[0] = {
->> > +               .bus_width      = 4,
->> > +               .detect_pin     = AT91_PIN_PD10,
->> > +               .wp_pin         = -1,
->> > +       },
->>
->> Causes at91_set_gpio_input() to be called for pin -1.  Which shouldn't be valid.
->> AT91 platforms use 0 to indicate an un-connected GPIO pin, so the
->> assignment of "wp_pin" should probably just be removed.
->
-> The mci driver expects non-existent pins to have a negative value, as
-> do all other drivers which use gpio_is_valid().
->
-
-Then I think it would be best to use GPIO_PIN_NONE. Makes it clear
-what is expected and avoids confusion on what should be the proper
-value.
-I hope I'm not saying non-sense, but even if I am, I guess you can see
-that I'm advocating against the magic numbers :)
 
 
-Kind Regards,
-   Thiago A. Correa
+On Tue, 27 Oct 2009, Stephen Hemminger wrote:
+> 
+> Agreed. Here is the reduced version of the program.
+> To run:
+>   find /home -printf '%f\n' 2>/dev/null | ./htest -n 100
+
+The timings are very sensitive to random I$ layout at least on Nehalem. 
+The reason seems to be that the inner loop is _so_ tight that just 
+depending on exactly where the loop ends up, you can get subtle 
+interactions with the loop cache.
+
+Look here:
+
+	[torvalds@nehalem ~]$ find /home -printf '%f\n' 2>/dev/null | ./htest -n 100
+	Algorithm             Time       Ratio       Max   StdDev
+	full_name_hash       1.141899     1.03      4868 263.37
+	djb2                 0.980200     1.03      4835 266.05
+	string10             0.909175     1.03      4850 262.67
+	string10a            0.673915     1.03      4850 262.67
+	string10b            0.909374     1.03      4850 262.67
+	string_hash17        0.966050     1.03      4805 263.68
+	string_hash31        1.008544     1.03      4807 259.37
+	fnv32                0.774806     1.03      4817 259.17
+
+what do you think the difference between 'string10', 'string10a' and 
+'string10b' are?
+
+None. None what-so-ever. The source code is identical, and gcc generates 
+identical assembly language. Yet those timings are extremely stable for 
+me, and 'string10b' is 25% faster than the identical string10 and 
+string10a functions.
+
+The only difference? 'string10a' starts aligned to just 16 bytes, but that 
+in turn happens to mean that the tight inner loop ends up aligned on a 
+128-byte boundary. And being cacheline aligned just there seems to matters 
+for some subtle micro-architectural reason.
+
+The reason I noticed this is that I wondered what small modifications to 
+'string10' would do for performance, and noticed that even _without_ the 
+small modifications, performance fluctuated.
+
+Lesson? Microbenchmarks like this can be dangerous and misleading. That's 
+_especially_ true if the loop ends up being just tight enough that it can 
+fit in some trace cache or similar. In real life, the name hash is 
+performance-critical, but at the same time almost certainly won't be run 
+in a tight enough loop that you'd ever notice things like that.
+
+		Linus
