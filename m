@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751676AbZJ1S5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754462AbZJ1UKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751676AbZJ1S5n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 14:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZJ1S5m
+	id S1754462AbZJ1UKr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 16:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbZJ1UKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 14:57:42 -0400
-Received: from mga14.intel.com ([143.182.124.37]:32232 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750816AbZJ1S5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 14:57:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,641,1249282800"; 
-   d="scan'208";a="204862397"
-Subject: Re: [PATCH] [GIT PULL] tracing: allow to change permissions for
- text with dynamic ftrace enabled
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "rostedt@goodmis.org" <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <1256686285.26028.487.camel@gandalf.stny.rr.com>
-References: <1256666023.26028.411.camel@gandalf.stny.rr.com>
-	 <1256671227.2691.15.camel@sbs-t61.sc.intel.com>
-	 <1256668438.26028.414.camel@gandalf.stny.rr.com>
-	 <1256682364.2691.33.camel@sbs-t61.sc.intel.com>
-	 <1256679318.26028.468.camel@gandalf.stny.rr.com>
-	 <1256685826.15873.41.camel@sbs-t61.sc.intel.com>
-	 <1256686285.26028.487.camel@gandalf.stny.rr.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Wed, 28 Oct 2009 11:56:18 -0800
-Message-Id: <1256759778.2683.185.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Oct 2009 16:10:47 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:46859 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753102AbZJ1UKq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 16:10:46 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=ASw00L+gZgPKrfJLZor1+rsoGm2AQhj+0tQpqlIkexVBXWEnpEFVm9nvBf0cw2o/z
+	ELwXTKEuB6IpuATWDY7lA==
+Date: Wed, 28 Oct 2009 13:10:43 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Vedran Furac <vedran.furac@gmail.com>
+cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Memory overcommit
+In-Reply-To: <4AE846E8.1070303@gmail.com>
+Message-ID: <alpine.DEB.2.00.0910281307370.23279@chino.kir.corp.google.com>
+References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com> <hb2cfu$r08$2@ger.gmane.org> <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com> <4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com>
+ <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271843510.11372@sister.anvils> <alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com> <4AE78B8F.9050201@gmail.com>
+ <alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com> <4AE792B8.5020806@gmail.com> <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com> <4AE846E8.1070303@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-27 at 16:31 -0700, Steven Rostedt wrote: 
-> On Tue, 2009-10-27 at 15:23 -0800, Suresh Siddha wrote:
-> 
-> > > 
-> > > I'll test it out, and if it does work, you can write up a formal patch
-> > > and remove the !define that I added.
+On Wed, 28 Oct 2009, Vedran Furac wrote:
+
+> > Those are practically happening simultaneously with very little memory 
+> > being available between each oom kill.  Only later is "test" killed:
 > > 
-> > I just saw one more place calling do_ftrace_mod_code(). So moved this
-> > check inside the do_ftrace_mod_code(). Does this cover all the cases?
-> > Thanks.
+> > [97240.203228] Out of memory: kill process 5005 (test) score 256912 or a child
+> > [97240.206832] Killed process 5005 (test)
+> > 
+> > Notice how the badness score is less than 1/4th of the others.  So while 
+> > you may find it to be hogging a lot of memory, there were others that 
+> > consumed much more.
+> ^^^^^^^^^^^^^^^^^^^^^
 > 
-> For ftrace, probably. But I just realized this may have other
-> consequences. The CPA_DEBUG tests setting a bit in the page table at
-> random locations.
+> This is just wrong. I have 3.5GB of RAM, free says that 2GB are empty
+> (ignoring cache). Culprit then allocates all free memory (2GB). That
+> means it is using *more* than all other processes *together*. There
+> cannot be any other "that consumed much more".
+> 
 
-CPA_DEBUG is setting/clearing unused bit 9. It has no interaction with
-RW bits. Though the random page and random length selections may end up
-splitting the large page mappings for kernel text. This is a different
-issue that needs to be addressed (perhaps I can ignore this bit 9 as
-well for the kernel text mapping. In general it sounds like a bad idea
-to break any large page mappings to small page mappings for cpa debug
-tests, especially when we don't restore the large page mapping when we
-clear those unused bits once the test is done. Will look into this).
+Just post the oom killer results after using echo 1 > 
+/proc/sys/vm/oom_dump_tasks as requested and it will clarify why those 
+tasks were chosen to kill.  It will also show the result of using rss 
+instead of total_vm and allow us to see how such a change would have 
+changed the killing order for your workload.
 
-> The code you added makes any change to kernel text
-> page attributes remove the RW bit.
+> Thanks, I'll try that... but I guess that using rss would yield better
+> results.
+> 
 
-Only for CONFIG_DEBUG_RODATA.
-
-> On boot up, it is considered that
-> kernel text is writable.
-
-For CONFIG_DEBUG_RODATA, during the boot we change it to RO.
-
-> Perhaps you need to add a check in your if statement to only prevent
-> that bit when kernel_set_to_readonly is not true.
-
-Are you worried that kernel_set_to_readonly might not be true but we
-might have the kernel text mapping read-only?
-
-As ftrace is now using kernel identity mapping on 64-bit, we can change
-the semantics of kernel_set_to_readonly to reflect the status of kernel
-identity mapping for 64-bit. I can update the comments.
-
-thanks,
-suresh
-
+We would know if you posted the data.
