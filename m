@@ -1,144 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932814AbZJ1JPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbZJ1JSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932814AbZJ1JPt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 05:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932380AbZJ1JPs
+	id S1756681AbZJ1JSP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 05:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZJ1JSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 05:15:48 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:63059 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932265AbZJ1JPr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 05:15:47 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=k96ZB5n48f9Yp7mcjGKj0z4V9CdmCAuGCSXSuTVT8NQ3T2HK2cLxF4qRCroIVo+Cr
-	ukumUBc9MrsSWrKxqESyg==
-Date: Wed, 28 Oct 2009 02:15:45 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrea Arcangeli <aarcange@redhat.com>, vedran.furac@gmail.com,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
-In-Reply-To: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
-References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 28 Oct 2009 05:18:15 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:59065 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752740AbZJ1JSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 05:18:14 -0400
+Date: Wed, 28 Oct 2009 10:18:18 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org
+Subject: Re: pci-express hotplug
+Message-ID: <20091028091818.GZ10727@kernel.dk>
+References: <20091012214854.GA14102@ldl.fc.hp.com> <20091013082903.GQ9228@kernel.dk> <20091013172731.GB22797@ldl.fc.hp.com> <20091014081309.GM9228@kernel.dk> <20091020190707.GA25615@ldl.fc.hp.com> <20091026105419.GA10727@kernel.dk> <20091027024841.GA30509@ldl.fc.hp.com> <20091027082635.GS10727@kernel.dk> <20091027083419.GU10727@kernel.dk> <20091027151552.GB15737@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091027151552.GB15737@ldl.fc.hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Oct 2009, KAMEZAWA Hiroyuki wrote:
+On Tue, Oct 27 2009, Alex Chiang wrote:
+> * Jens Axboe <jens.axboe@oracle.com>:
+> > 
+> > Since this is a new board and BIOS, below is the info from loading
+> > acpiphp with debug enabled and acpi debug enabled.
+> 
+> Thanks. Can you please send your DSDT as well please?
+> 
+> You can obtain that with the acpidump tools. If they're not part
+> of your distro, you can find them on lesswatts.org.
 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> It's reported that OOM-Killer kills Gnone/KDE at first...
-> And yes, we can reproduce it easily.
-> 
-> Now, oom-killer uses mm->total_vm as its base value. But in recent
-> applications, there are a big gap between VM size and RSS size.
-> Because
->   - Applications attaches much dynamic libraries. (Gnome, KDE, etc...)
->   - Applications may alloc big VM area but use small part of them.
->     (Java, and multi-threaded applications has this tendency because
->      of default-size of stack.)
-> 
-> I think using mm->total_vm as score for oom-kill is not good.
-> By the same reason, overcommit memory can't work as expected.
-> (In other words, if we depends on total_vm, using overcommit more positive
->  is a good choice.)
-> 
-> This patch uses mm->anon_rss/file_rss as base value for calculating badness.
-> 
+Sent privately.
 
-How does this affect the ability of the user to tune the badness score of 
-individual threads?  It seems like there will now only be two polarizing 
-options: the equivalent of an oom_adj value of +15 or -17.  It is now 
-heavily dependent on the rss which may be unclear at the time of oom and 
-very dynamic.
+-- 
+Jens Axboe
 
-I think a longer-term solution may rely more on the difference in 
-get_mm_hiwater_rss() and get_mm_rss() instead to know the difference 
-between what is resident in RAM at the time of oom compared to what has 
-been swaped.  Using this with get_mm_hiwater_vm() would produce a nice 
-picture for the pattern of each task's memory consumption.
-
-> Following is changes to OOM score(badness) on an environment with 1.6G memory
-> plus memory-eater(500M & 1G).
-> 
-> Top 10 of badness score. (The highest one is the first candidate to be killed)
-> Before
-> badness program
-> 91228	gnome-settings-
-> 94210	clock-applet
-> 103202	mixer_applet2
-> 106563	tomboy
-> 112947	gnome-terminal
-> 128944	mmap              <----------- 500M malloc
-> 129332	nautilus
-> 215476	bash              <----------- parent of 2 mallocs.
-> 256944	mmap              <----------- 1G malloc
-> 423586	gnome-session
-> 
-> After
-> badness 
-> 1911	mixer_applet2
-> 1955	clock-applet
-> 1986	xinit
-> 1989	gnome-session
-> 2293	nautilus
-> 2955	gnome-terminal
-> 4113	tomboy
-> 104163	mmap             <----------- 500M malloc.
-> 168577	bash             <----------- parent of 2 mallocs
-> 232375	mmap             <----------- 1G malloc
-> 
-> seems good for me. 
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  mm/oom_kill.c |   10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
-> 
-> Index: mm-test-kernel/mm/oom_kill.c
-> ===================================================================
-> --- mm-test-kernel.orig/mm/oom_kill.c
-> +++ mm-test-kernel/mm/oom_kill.c
-> @@ -93,7 +93,7 @@ unsigned long badness(struct task_struct
->  	/*
->  	 * The memory size of the process is the basis for the badness.
->  	 */
-> -	points = mm->total_vm;
-> +	points = get_mm_counter(mm, anon_rss) + get_mm_counter(mm, file_rss);
->  
->  	/*
->  	 * After this unlock we can no longer dereference local variable `mm'
-> @@ -116,8 +116,12 @@ unsigned long badness(struct task_struct
->  	 */
->  	list_for_each_entry(child, &p->children, sibling) {
->  		task_lock(child);
-> -		if (child->mm != mm && child->mm)
-> -			points += child->mm->total_vm/2 + 1;
-> +		if (child->mm != mm && child->mm) {
-> +			unsigned long cpoints;
-> +			cpoints = get_mm_counter(child->mm, anon_rss);
-> +				  + get_mm_counter(child->mm, file_rss);
-
-That shouldn't compile.
-
-> +			points += cpoints/2 + 1;
-> +		}
->  		task_unlock(child);
->  	}
->  
-
-This can all be simplified by just using get_mm_rss(mm) and 
-get_mm_rss(child->mm).
