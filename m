@@ -1,118 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZJ1RpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZJ1Rrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbZJ1RpA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 13:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbZJ1Ro7
+	id S1755353AbZJ1Rrh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 13:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbZJ1Rrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 13:44:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48633 "EHLO hera.kernel.org"
+	Wed, 28 Oct 2009 13:47:36 -0400
+Received: from claw.goop.org ([74.207.240.146]:40593 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755333AbZJ1Ro6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 13:44:58 -0400
-Message-ID: <4AE88305.8020207@kernel.org>
-Date: Wed, 28 Oct 2009 10:44:37 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1755267AbZJ1Rrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 13:47:36 -0400
+Message-ID: <4AE883B9.4050409@goop.org>
+Date: Wed, 28 Oct 2009 10:47:37 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Alex Chiang <achiang@hp.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] pci: pciehp update the slot bridge res to get big range
- for pcie devices
-References: <4ADEB601.8020200@kernel.org> <4AE52B68.3070501@jp.fujitsu.com> <4AE53883.3070709@kernel.org> <4AE5545E.1020900@jp.fujitsu.com> <4AE55D12.30403@kernel.org> <4AE57976.4060107@jp.fujitsu.com> <4AE5E37F.8070707@kernel.org> <4AE5EFDB.2060908@kernel.org> <4AE80170.6030402@jp.fujitsu.com>
-In-Reply-To: <4AE80170.6030402@jp.fujitsu.com>
+To: Avi Kivity <avi@redhat.com>
+CC: Glauber Costa <glommer@redhat.com>,
+       Dan Magenheimer <dan.magenheimer@oracle.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
+       chris.mason@oracle.com, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall	implementation
+References: <4f079cd6-0872-4cb5-832b-ee6a46841192@default> <4AE739DA.20601@goop.org> <4AE7DC04.7080706@redhat.com> <20091028092900.GG3627@mothafucka.localdomain> <4AE81011.4040904@redhat.com>
+In-Reply-To: <4AE81011.4040904@redhat.com>
+X-Enigmail-Version: 0.97a
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kenji Kaneshige wrote:
-> Yinghai Lu wrote:
->> Yinghai Lu wrote:
->>> Kenji Kaneshige wrote:
->>>> I understand you need to touch I/O base/limit and Mem base/limit. But
->>>> I don't understand why you also need to update bridge's BARs. Could
->>>> you please explain a little more about it?
->>>>
->>>> Just in case, my terminology "bridge's BARs" is Base Address Register
->>>> 0 (offset 0x10) and Base Address Register 1 (offset 0x14) in the
->>>> (type 1) configuration space header of the bridge.
->>> i mean 0x1c, 0x20, 0x28
->>>
->>> did not notice that bridge device's 0x10, 0x14 are used...
->>> if port service need to use 0x10, 0x14, and the device is enabled, we
->>> should touch 0x10, and 0x14.
->>
->> after check the code, if
->> pci_bridge_assign_resources ==> pdev_assign_resources_sorted ==> 
->> pdev_sort_resources
->>
->> will not touch 0x10 and 0x14, if those resource is claimed by port
->> service.
->>
->> /* Sort resources by alignment */
->> void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
->> {               int i;
->>                         for (i = 0; i < PCI_NUM_RESOURCES; i++) {
->>                 struct resource *r;
->>                 struct resource_list *list, *tmp;
->>                 resource_size_t r_align;
->>                                 r = &dev->resource[i];
->>                                         if (r->flags &
->> IORESOURCE_PCI_FIXED)
->>                         continue;
->>                         if (!(r->flags) || r->parent)
->>                         continue;
->>                
->> r->parent != NULL, will make it skip those two.
->>
->> So -v3 should be safe.
->>
-> 
-> Thank you for the clarification.
-> 
-> But I still don't understand the whole picture of your set of
-> changes. Let me ask some questions.
-> 
-> In my understanding of your set of changes, if there is a PCIe
-> switch with some hot-plug slots and all of those slots are empty,
-> I/O and Memory resources assigned by BIOS are all released at
-> the boot time. For example, suppose the following case.
-> 
->                bridge(A)
->                   |
->        -----------------------
->        |                     |
->     bridge(B)             bridge(C)
->        |                     |
->      slot(1)               slot(2)
->      (empty)               (empty)
-> 
->   bridge(A): P2P bridge for switch upstream port
->   bridge(B): P2P bridge for switch downstream port
->   bridge(C): P2P bridge for switch downstream port
-> 
-> In the above example, I/O and Mem resource assigned to bridge(A),
-> bridge(B) and bridge(C) are all released at the boot time. Correct?
-> 
-> Then, when a adapter card is hot-added to slot(1), I/O and Mem
-> resources enough for enabling the hot-added adapter card is assigned
-> to bridge(A), bridge(B) and the adapter card. Correct?
-> 
-> Then, when an another adpater card is hot-added to slot(2), we
-> need to assign enough resource to bridge(C) and the new card.
-> But bridge(A) doesn't have enough resource for bridge(C) and
-> the new card. In addition, all bridge(A) and bridge(B) and the
-> adapter card on slot(1) are already working. How do you assign
-> resource to bridge(C) and the card on slot(2)?
-> 
+On 10/28/09 02:34, Avi Kivity wrote:
+> On 10/28/2009 11:29 AM, Glauber Costa wrote:
+>>> How can you reliably measure performance in a virtualized environment?
+>>>      
+>> If we loop gettimeofday(), I would expect the vsyscall-based version
+>> not to show
+>> up in strace, right?
+>>    
+>
+> Much better to have an API for this.  Life is hacky enough already.
 
-thanks, will update the patches to only handle leaf bridge, and don't touch min_size etc.
+My point is that if an app cares about property X then it should just
+measure property X.  The fact that gettimeofday is a vsyscall is just an
+implementation detail that apps don't really care about.  What they care
+about is whether gettimeofday is fast or not.
 
-YH
+If the environment has such unstable timing that the effect can't be
+measured, then it is moot whether its a vsyscall or not (but in that
+case its almost certainly better to use the standard API rather than
+trying to roll your own timesource with rdtsc).
+
+    J
