@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbZJ1Brp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbZJ1B4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757128AbZJ1Brp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Oct 2009 21:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbZJ1Bro
+	id S1755835AbZJ1B4R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Oct 2009 21:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756845AbZJ1B4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Oct 2009 21:47:44 -0400
-Received: from mail1.radix.net ([207.192.128.31]:56064 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756655AbZJ1Brn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Oct 2009 21:47:43 -0400
-Subject: Re: [PATCH 0/7] kfifo: new API v0.6
-From: Andy Walls <awalls@radix.net>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Joe Perches <joe@perches.com>, linux-media@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Content-Type: text/plain
-Date: Tue, 27 Oct 2009 21:49:31 -0400
-Message-Id: <1256694571.3131.26.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Oct 2009 21:56:15 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:36108 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756821AbZJ1B4O convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Oct 2009 21:56:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=jUJLPkL6R2lGGGrXsI636ywWY/qEl/bfAbgHOPyhFYNvbSoMlYELwIAobXI045aswX
+         UFEvPF2QuWiy+pE0coEJDnTzUUyc89tnyarYg+6kysjMsYmv0YJkZVBgWtlaUPSASI0C
+         sYYOCoHBReljMny38Zor/BPO1dhG6MjaoqZ9s=
+MIME-Version: 1.0
+In-Reply-To: <200910280237.40268.marek.vasut@gmail.com>
+References: <20091026225930.GA18723@localhost> <f17812d70910270043q328ab091mb1d76760e674450d@mail.gmail.com> 
+	<200910280237.40268.marek.vasut@gmail.com>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Wed, 28 Oct 2009 09:55:59 +0800
+Message-ID: <f17812d70910271855m4be6e4avcf90bfbbcb7ddb20@mail.gmail.com>
+Subject: Re: [PATCH] 2.6.32-rc5 bug in Palm Tungsten C keyboard
+To: Marek Vasut <marek.vasut@gmail.com>
+Cc: Ondrej Zajicek <santiago@crfreenet.org>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 28, 2009 at 9:37 AM, Marek Vasut <marek.vasut@gmail.com> wrote:
+> Dne Út 27. října 2009 08:43:44 Eric Miao napsal(a):
+>> On Tue, Oct 27, 2009 at 6:59 AM, Ondrej Zajicek <santiago@crfreenet.org>
+> wrote:
+>> > Palm Tungsten C keyboard structure has swapped
+>> > rows/cols gpio structures and does not work.
+>> > This patch fixes it.
+>> >
+>> > Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+>>
+>> This fix looks obvious to me. Applied to 'fix'.
+>
+> Just wondering ... you checked the GPIO directions, right ? I mean, it works in
+> both directions, it just works worse the other one. I can't really check now.
+>
 
-> One thing is that the new API is not compatible with the old one. I
-> had a look at the current user of the old kfifo API and it is was easy
-> to adapt it to the new API. These are the files which currently use
-> the kfifo API:
-> 
-> drivers/char/nozomi.c
-> drivers/char/sonypi.c
-> drivers/infiniband/hw/cxgb3/cxio_resource.c
-> drivers/media/video/meye.c
-> drivers/net/wireless/libertas/main.c
-> drivers/platform/x86/fujitsu-laptop.c
-> drivers/platform/x86/sony-laptop.c
-> drivers/scsi/libiscsi.c
-> drivers/scsi/libiscsi_tcp.c
-> drivers/scsi/libsrp.c
-> drivers/usb/host/fhci.h
-> net/dccp/probe.c
-> drivers/usb/serial/usb-serial.c
-> drivers/usb/serial/generic.c
+It would be good if you can have it checked and give your Ack please.
 
-Here's a V4L-DVB cx23885 module change, that is on its way upstream,
-that uses kfifo as is:
-
-http://linuxtv.org/hg/v4l-dvb/rev/a2d8d3d88c6d
-
-Do you really have to break the old API?
-
-Regards,
-Andy
-
+> Also, it'll be possibly good to use the following emails for pxa patches:
+> Eric Miao <eric.y.miao@gmail.com>
+> Linux-ARM-Kernel <linux-arm-kernel@lists.infradead.org>
+> Marek Vasut <marek.vasut@gmail.com>
+>
+> Those should be enough.
+>
+> Cheers!
