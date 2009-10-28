@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754287AbZJ1Wf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbZJ1WgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754287AbZJ1Wf4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 18:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZJ1Wfz
+	id S1754393AbZJ1WgW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 18:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZJ1WgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 18:35:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34615 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753497AbZJ1Wfy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 18:35:54 -0400
-Date: Wed, 28 Oct 2009 15:35:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Zhang Rui <rui.zhang@intel.com>,
-       Sujith Thomas <sujith.thomas@intel.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 0/6] [resend] thermal: improvements re. forced passive
- cooling
-Message-Id: <20091028153551.6c665ca1.akpm@linux-foundation.org>
-In-Reply-To: <1256542744-26569-1-git-send-email-elendil@planet.nl>
-References: <1256542744-26569-1-git-send-email-elendil@planet.nl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Oct 2009 18:36:21 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:35193 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753912AbZJ1WgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 18:36:20 -0400
+Message-ID: <4AE8C764.90705@sgi.com>
+Date: Wed, 28 Oct 2009 15:36:20 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: David Rientjes <rientjes@google.com>
+CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [patch] x86: reduce srat verbosity in the kernel log
+References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233750.702443000@alcatraz.americas.sgi.com> <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com> <20091028033219.GE7744@basil.fritz.box> <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com> <20091028041159.GI7744@basil.fritz.box> <4AE8792F.8070200@sgi.com> <alpine.DEB.2.00.0910281348590.24785@chino.kir.corp.google.com> <4AE8B933.5020103@sgi.com> <alpine.DEB.2.00.0910281440580.32315@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0910281440580.32315@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Oct 2009 08:38:58 +0100
-Frans Pop <elendil@planet.nl> wrote:
+
+
+David Rientjes wrote:
+> On Wed, 28 Oct 2009, Mike Travis wrote:
+> 
+>>> Printing a list of apic ids longer than 128 characters would pollute the
+>>> kernel log and this upper bound will probably never be reached based on the
+>>> way apic ids are created for physical and logical processors: they are
+>>> normally reduced to ranges instead of comma seperated entities.
+>> Ahh, ok, thanks.
+>>
+>> Does that mean this 10,649 character line full of periods is illegal?
+>>
+> 
+> I'm not saying it would be illegal, merely that it would be harm 
+> readability.  Based on how apic id's are formed from processor ids, 
+> though, I think we're really talking about an upper limit (128) that will 
+> never be reached.
+
+We actually have many, many more than that by adding on some extra bits
+to the CPU's apicid.  These select which blade in the system to target.
 
 > 
-> Please consider this patch set for 2.6.32. It was previously submitted
-> for 2.6.31, but AFAICT it has not yet been picked up.
+>> [  102.551570] Completing Region/Field/Buffer/Package initialization:
+>> ............... [long time later] .........
+>> <4>Clocksource tsc unstable (delta = 4396383657849 ns)
+>>
+>> I'm having trouble finding it.  Does it look familiar to anyone?
+>>
 > 
-> All patches have been acked by either Rui or Matthew, with the
-> exception of 1/6 and 4/6, but the entire series has been implicitly
-> acked by Rui in http://bugzilla.kernel.org/show_bug.cgi?id=13918#c26.
-> 
-> The patch set closes http://bugzilla.kernel.org/show_bug.cgi?id=13918.
-> 
-> Andrew, could you take the set just in case?
-> 
+> It's debugging output from acpi_ns_initialize_objects() and each period is 
+> from acpi_ns_init_one_device().  You can suppress it by disabing 
+> CONFIG_ACPI_DEBUG.
 
-I'm trying to work out what the actual bug is in here.
-
-afacit some KDE tool put wrong numbers into /proc files, acpi didn't
-sanity check them sufficiently and permitted the CPU to overheat, yes?
-
-There seems to be rather a lot of non-bugfix stuff in this patch
-series.  Perhaps too much for 2.6.32, and a real problem if we want to
-backport something into 2.6.31.x and earlier.
-
-
+Ahh, didn't know that was set in the (our) default config.  Is it normally
+set by distros?  
