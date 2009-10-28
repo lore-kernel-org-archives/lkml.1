@@ -1,72 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbZJ1WG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbZJ1WLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753287AbZJ1WG5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 18:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbZJ1WG4
+	id S1753668AbZJ1WLf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 18:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbZJ1WLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 18:06:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46248 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751915AbZJ1WG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 18:06:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/1] PM / Hibernate: swap, use KERN_CONT
-Date: Wed, 28 Oct 2009 23:08:52 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc5-rjw; KDE/4.3.1; x86_64; ; )
-Cc: pavel@ucw.cz, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <1255176024-12420-1-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1255176024-12420-1-git-send-email-jirislaby@gmail.com>
+	Wed, 28 Oct 2009 18:11:35 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56601 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752325AbZJ1WLe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 18:11:34 -0400
+Date: Wed, 28 Oct 2009 23:11:31 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Brian Swetland <swetland@google.com>
+Subject: Add missing header for HTC Dream framebuffer
+Message-ID: <20091028221131.GC8053@elf.ucw.cz>
+References: <20090629111029.GA15514@elf.ucw.cz>
+ <20091026221129.GB23415@game.jcrosoft.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910282308.52955.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091026221129.GB23415@game.jcrosoft.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 October 2009, Jiri Slaby wrote:
-> Use KERN_CONT in save_image for printks. So that anybody won't
-> try to add a loglevel.
+
+> > I cleaned up dead code, a lot of debugging infastructure and horrific
+> > logo code. I had to remove earlysuspend support, because neccessary
+> > headers are not in mainline. The driver still works :-).
+> > 
+> > I'd like to see it applied, working framebuffer is quite important for
+> > debugging / getting other drivers into working state.
+> > 
+> the include/linux/msm_mdp.h is missing
 > 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> could you send a patch to add it?
 
-Applied to suspend-2.6/linux-next.
+---
 
-Thanks,
-Rafael
+This should fix compilation by adding missing include/linux/msm_mdp.h
+file.
+
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+
+diff --git a/include/linux/msm_mdp.h b/include/linux/msm_mdp.h
+new file mode 100644
+index 0000000..228e46e
+--- /dev/null
++++ b/include/linux/msm_mdp.h
+@@ -0,0 +1,86 @@
++/* include/linux/msm_mdp.h
++ *
++ * Copyright (C) 2007 Google Incorporated
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++#ifndef _MSM_MDP_H_
++#define _MSM_MDP_H_
++
++#include <linux/types.h>
++
++#define MSMFB_IOCTL_MAGIC 'm'
++#define MSMFB_GRP_DISP          _IOW(MSMFB_IOCTL_MAGIC, 1, unsigned int)
++#define MSMFB_BLIT              _IOW(MSMFB_IOCTL_MAGIC, 2, unsigned int)
++
++enum {
++	MDP_RGB_565,      /* RGB 565 planer */
++	MDP_XRGB_8888,    /* RGB 888 padded */
++	MDP_Y_CBCR_H2V2,  /* Y and CbCr, pseudo planer w/ Cb is in MSB */
++	MDP_ARGB_8888,    /* ARGB 888 */
++	MDP_RGB_888,      /* RGB 888 planer */
++	MDP_Y_CRCB_H2V2,  /* Y and CrCb, pseudo planer w/ Cr is in MSB */
++	MDP_YCRYCB_H2V1,  /* YCrYCb interleave */
++	MDP_Y_CRCB_H2V1,  /* Y and CrCb, pseduo planer w/ Cr is in MSB */
++	MDP_Y_CBCR_H2V1,  /* Y and CrCb, pseduo planer w/ Cr is in MSB */
++	MDP_RGBA_8888,    /* ARGB 888 */
++	MDP_BGRA_8888,    /* ARGB 888 */
++	MDP_IMGTYPE_LIMIT /* Non valid image type after this enum */
++};
++
++enum {
++	PMEM_IMG,
++	FB_IMG,
++};
++
++/* flag values */
++#define MDP_ROT_NOP 0
++#define MDP_FLIP_LR 0x1
++#define MDP_FLIP_UD 0x2
++#define MDP_ROT_90 0x4
++#define MDP_ROT_180 (MDP_FLIP_UD|MDP_FLIP_LR)
++#define MDP_ROT_270 (MDP_ROT_90|MDP_FLIP_UD|MDP_FLIP_LR)
++#define MDP_DITHER 0x8
++#define MDP_BLUR 0x10
++
++#define MDP_TRANSP_NOP 0xffffffff
++#define MDP_ALPHA_NOP 0xff
++
++struct mdp_rect {
++	uint32_t x;
++	uint32_t y;
++	uint32_t w;
++	uint32_t h;
++};
++
++struct mdp_img {
++	uint32_t width;
++	uint32_t height;
++	uint32_t format;
++	uint32_t offset;
++	int memory_id;		/* the file descriptor */
++};
++
++struct mdp_blit_req {
++	struct mdp_img src;
++	struct mdp_img dst;
++	struct mdp_rect src_rect;
++	struct mdp_rect dst_rect;
++	uint32_t alpha;
++	uint32_t transp_mask;
++	uint32_t flags;
++};
++
++struct mdp_blit_req_list {
++	uint32_t count;
++	struct mdp_blit_req req[];
++};
++
++#endif
 
 
-> ---
->  kernel/power/swap.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> index 47586d9..4c0f80b 100644
-> --- a/kernel/power/swap.c
-> +++ b/kernel/power/swap.c
-> @@ -437,7 +437,7 @@ static int save_image(struct swap_map_handle *handle,
->  		if (ret)
->  			break;
->  		if (!(nr_pages % m))
-> -			printk("\b\b\b\b%3d%%", nr_pages / m);
-> +			printk(KERN_CONT "\b\b\b\b%3d%%", nr_pages / m);
->  		nr_pages++;
->  	}
->  	err2 = wait_on_bio_chain(&bio);
-> @@ -445,9 +445,9 @@ static int save_image(struct swap_map_handle *handle,
->  	if (!ret)
->  		ret = err2;
->  	if (!ret)
-> -		printk("\b\b\b\bdone\n");
-> +		printk(KERN_CONT "\b\b\b\bdone\n");
->  	else
-> -		printk("\n");
-> +		printk(KERN_CONT "\n");
->  	swsusp_show_speed(&start, &stop, nr_to_write, "Wrote");
->  	return ret;
->  }
-> 
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
