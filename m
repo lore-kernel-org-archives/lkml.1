@@ -1,88 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbZJ1L71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbZJ1MD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753343AbZJ1L71 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 07:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZJ1L70
+	id S1753468AbZJ1MD5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 08:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbZJ1MD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 07:59:26 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47903 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752929AbZJ1L7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 07:59:25 -0400
-Date: Wed, 28 Oct 2009 11:59:26 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-Cc: Mel LKML <mel.lkml@gmail.com>, Frans Pop <elendil@planet.nl>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Miller <davem@davemloft.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
-	failures V2
-Message-ID: <20091028115926.GW8900@csn.ul.ie>
-References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <20091023165810.GA4588@bizet.domek.prywatny> <20091023211239.GA6185@bizet.domek.prywatny> <9ec2d7290910240646p75b93c68v6ea1648d628a9660@mail.gmail.com> <20091028114208.GA14476@bizet.domek.prywatny>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091028114208.GA14476@bizet.domek.prywatny>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 28 Oct 2009 08:03:56 -0400
+Received: from lennier.cc.vt.edu ([198.82.162.213]:56477 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753407AbZJ1MDz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 08:03:55 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Mike Travis <travis@sgi.com>, Roland Dreier <rdreier@cisco.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: [PATCH] x86, mce: disable MCE if cpu has no MCE banks
+In-Reply-To: Your message of "Wed, 28 Oct 2009 06:24:45 BST."
+             <4AE7D59D.9070307@linux.intel.com>
+From: Valdis.Kletnieks@vt.edu
+References: <adaeip473qt.fsf@cisco.com> <4AE74D25.8090901@sgi.com> <4AE75DB9.3040702@sgi.com> <4AE7C396.7040109@jp.fujitsu.com>
+            <4AE7D59D.9070307@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1256731383_2776P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 28 Oct 2009 08:03:03 -0400
+Message-ID: <32564.1256731383@turing-police.cc.vt.edu>
+X-Mirapoint-Received-SPF: 128.173.34.98 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (0) 
+X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020205.4AE832F8.01D4,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-07-29 21:33:33,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 28, 2009 at 12:42:08PM +0100, Karol Lewandowski wrote:
-> On Sat, Oct 24, 2009 at 02:46:56PM +0100, Mel LKML wrote:
-> > Hi,
-> 
-> Hi,
-> 
-> > On 10/23/09, Karol Lewandowski <karol.k.lewandowski@gmail.com> wrote:
-> > > On Fri, Oct 23, 2009 at 06:58:10PM +0200, Karol Lewandowski wrote:
-> 
-> > > Ok, I've tested patches 1+2+4 and bug, while very hard to trigger, is
-> > > still present. I'll test complete 1-4 patchset as time permits.
-> 
-> Sorry for silence, I've been quite busy lately.
-> 
-> 
-> > And also patch 5 please which is the revert. Patch 5 as pointed out is
-> > probably a red herring. Hwoever, it has changed the timing and made a
-> > difference for some testing so I'd like to know if it helps yours as
-> > well.
-> 
-> I've tested patches 1+2+3+4 in my normal usage scenario (do some work,
-> suspend, do work, suspend, ...) and it failed today after 4 days (== 4
-> suspend-resume cycles).
-> 
-> I'll test 1-5 now.
-> 
+--==_Exmh_1256731383_2776P
+Content-Type: text/plain; charset=us-ascii
 
-I was digging through commits for suspend-related changes. Rafael, is
-there any chance that some change to suspend is responsible for this
-regression? This commit for example is a vague possibility;
-c6f37f12197ac3bd2e5a35f2f0e195ae63d437de: PM/Suspend: Do not shrink memory before suspend
+On Wed, 28 Oct 2009 06:24:45 BST, Andi Kleen said:
 
-I say vague because FREE_PAGE_NUMBER is so small.
+> >>> mce: CPU supports 0 MCE banks
+> 
+> That message can be just removed I think. I don't see much value in it
+> because the value is in sysfs and when you see the CPU type you can easily
+> determine it anyways.
 
-Also, what was the behaviour of the e100 driver when suspending before
-this commit?
+Maybe it should only print a message if it finds an unexpected number of banks?
+"Hey dood - we're on a Core3.5 and there should be 6 banks here, but the
+hardware says there's only 4. What's up with that?"
 
-6905b1f1a03a48dcf115a2927f7b87dba8d5e566: Net / e100: Fix suspend of devices that cannot be power managed
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+--==_Exmh_1256731383_2776P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFK6DL3cC3lWbTT17ARAjBuAKDjuDXi1VI3ryqYxpy6C3qKcIkf3gCg6zGa
+AbttAfi7QFrbby1u5mnxU7Y=
+=gU3T
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1256731383_2776P--
+
