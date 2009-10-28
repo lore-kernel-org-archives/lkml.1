@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbZJ1U5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbZJ1U6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754629AbZJ1U5U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 16:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZJ1U5T
+	id S1754832AbZJ1U6i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 16:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbZJ1U6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 16:57:19 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:60089 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753833AbZJ1U5T (ORCPT
+	Wed, 28 Oct 2009 16:58:38 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:44133 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753877AbZJ1U6h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 16:57:19 -0400
-Message-ID: <4AE8B02C.3060706@austin.ibm.com>
-Date: Wed, 28 Oct 2009 15:57:16 -0500
+	Wed, 28 Oct 2009 16:58:37 -0400
+Message-ID: <4AE8B072.1070603@austin.ibm.com>
+Date: Wed, 28 Oct 2009 15:58:26 -0500
 From: Nathan Fontenot <nfont@austin.ibm.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/6 v5] Memory DLPAR Handling
+Subject: [PATCH 5/6 v5] CPU probe/release files
 References: <4AE8ADCF.6090104@austin.ibm.com>
 In-Reply-To: <4AE8ADCF.6090104@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
@@ -25,216 +25,170 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds the capability to DLPAR add and remove memory from the kernel.  The
-patch registers handlers for the arch-specific probe and release memory 
-callouts to handle addition/removal of memory to the system and the associated
-device tree updates. 
+Create new probe and release sysfs files to facilitate adding and removing
+cpus from the system.  This also creates the powerpc specific stubs to handle
+the arch callouts from writes to the sysfs files.
 
-Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com> 
+The creation and use of these files is regulated by the 
+CONFIG_ARCH_CPU_PROBE_RELEASE option so that only architectures that need the
+capability will have the files created.
+
+Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com>
 ---
 
-Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
+Index: powerpc/drivers/base/cpu.c
 ===================================================================
---- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-10-28 15:21:38.000000000 -0500
-+++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-10-28 15:21:49.000000000 -0500
-@@ -16,6 +16,10 @@
- #include <linux/notifier.h>
- #include <linux/proc_fs.h>
- #include <linux/spinlock.h>
-+#include <linux/memory_hotplug.h>
-+#include <linux/sysdev.h>
-+#include <linux/sysfs.h>
-+
- 
- #include <asm/prom.h>
- #include <asm/machdep.h>
-@@ -404,11 +408,189 @@
- 	return 0;
+--- powerpc.orig/drivers/base/cpu.c	2009-10-28 15:20:34.000000000 -0500
++++ powerpc/drivers/base/cpu.c	2009-10-28 15:21:53.000000000 -0500
+@@ -54,6 +54,7 @@
+ 		ret = count;
+ 	return ret;
  }
++
+ static SYSDEV_ATTR(online, 0644, show_online, store_online);
  
-+#ifdef CONFIG_MEMORY_HOTPLUG
+ static void __cpuinit register_cpu_control(struct cpu *cpu)
+@@ -72,6 +73,38 @@
+ 	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
+ 	return;
+ }
 +
-+static struct property *clone_property(struct property *old_prop)
++#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
++static ssize_t cpu_probe_store(struct class *class, const char *buf,
++			       size_t count)
 +{
-+	struct property *new_prop;
-+
-+	new_prop = kzalloc((sizeof *new_prop), GFP_KERNEL);
-+	if (!new_prop)
-+		return NULL;
-+
-+	new_prop->name = kstrdup(old_prop->name, GFP_KERNEL);
-+	new_prop->value = kzalloc(old_prop->length + 1, GFP_KERNEL);
-+	if (!new_prop->name || !new_prop->value) {
-+		free_property(new_prop);
-+		return NULL;
-+	}
-+
-+	memcpy(new_prop->value, old_prop->value, old_prop->length);
-+	new_prop->length = old_prop->length;
-+
-+	return new_prop;
++	return arch_cpu_probe(buf, count);
 +}
 +
-+#ifdef CONFIG_ARCH_MEMORY_PROBE
-+
-+int memory_probe(u64 phys_addr)
++static ssize_t cpu_release_store(struct class *class, const char *buf,
++				 size_t count)
 +{
-+	struct device_node *dn = NULL;
-+	struct property *new_prop;
-+	struct property *old_prop;
-+	struct of_drconf_cell *drmem;
-+	const u64 *lmb_size;
-+	int num_entries, i;
-+	int rc = -EINVAL;
++	return arch_cpu_release(buf, count);
++}
 +
-+	if (!phys_addr)
-+		goto memory_probe_exit;
++static CLASS_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
++static CLASS_ATTR(release, S_IWUSR, NULL, cpu_release_store);
 +
-+	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (!dn)
-+		goto memory_probe_exit;
++int __init cpu_probe_release_init(void)
++{
++	int rc;
 +
-+	lmb_size = of_get_property(dn, "ibm,lmb-size", NULL);
-+	if (!lmb_size)
-+		goto memory_probe_exit;
++	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
++			       &class_attr_probe.attr);
++	if (!rc)
++		rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
++				       &class_attr_release.attr);
 +
-+	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
-+	if (!old_prop)
-+		goto memory_probe_exit;
-+
-+	num_entries = *(u32 *)old_prop->value;
-+	drmem = (struct of_drconf_cell *)
-+				((char *)old_prop->value + sizeof(u32));
-+
-+	for (i = 0; i < num_entries; i++) {
-+		u64 lmb_end_addr = drmem[i].base_addr + *lmb_size;
-+		if (phys_addr >= drmem[i].base_addr
-+		    && phys_addr < lmb_end_addr)
-+			break;
-+	}
-+
-+	if (i >= num_entries)
-+		goto memory_probe_exit;
-+
-+	if (drmem[i].flags & DRCONF_MEM_ASSIGNED) {
-+		/* This lmb is already adssigned to the system, nothing to do */
-+		rc = 0;
-+		goto memory_probe_exit;
-+	}
-+
-+	rc = acquire_drc(drmem[i].drc_index);
-+	if (rc) {
-+		rc = -EINVAL;
-+		goto memory_probe_exit;
-+	}
-+
-+	new_prop = clone_property(old_prop);
-+	drmem = (struct of_drconf_cell *)
-+				((char *)new_prop->value + sizeof(u32));
-+
-+	drmem[i].flags |= DRCONF_MEM_ASSIGNED;
-+	rc = prom_update_property(dn, new_prop, old_prop);
-+	if (rc) {
-+		free_property(new_prop);
-+		rc = -EINVAL;
-+		goto memory_probe_exit;
-+	}
-+
-+	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
-+					  PSERIES_DRCONF_MEM_ADD,
-+					  &drmem[i].base_addr);
-+	if (rc == NOTIFY_BAD) {
-+		prom_update_property(dn, old_prop, new_prop);
-+		release_drc(drmem[i].drc_index);
-+		rc = -EINVAL;
-+	} else
-+		rc = 0;
-+
-+memory_probe_exit:
-+	of_node_put(dn);
 +	return rc;
 +}
++device_initcall(cpu_probe_release_init);
++#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
 +
-+#endif /* CONFIG_ARCH_MEMORY_PROBE */
-+
-+#ifdef CONFIG_ARCH_MEMORY_RELEASE
-+
-+static int memory_release(const char *buf, size_t count)
-+{
-+	unsigned long drc_index;
-+	struct device_node *dn;
-+	struct property *new_prop, *old_prop;
-+	struct of_drconf_cell *drmem;
-+	int num_entries;
-+	int i;
-+	int rc = -EINVAL;
-+
-+	rc = strict_strtoul(buf, 0, &drc_index);
-+	if (rc)
-+		return rc;
-+
-+	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (!dn)
-+		return rc;
-+
-+	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
-+	if (!old_prop)
-+		goto memory_release_exit;
-+
-+	num_entries = *(u32 *)old_prop->value;
-+	drmem = (struct of_drconf_cell *)
-+				((char *)old_prop->value + sizeof(u32));
-+
-+	for (i = 0; i < num_entries; i++) {
-+		if (drmem[i].drc_index == drc_index)
-+			break;
-+	}
-+
-+	if (i >= num_entries)
-+		goto memory_release_exit;
-+
-+	new_prop = clone_property(old_prop);
-+	drmem = (struct of_drconf_cell *)
-+				((char *)new_prop->value + sizeof(u32));
-+
-+	drmem[i].flags &= ~DRCONF_MEM_ASSIGNED;
-+	rc = prom_update_property(dn, new_prop, old_prop);
-+	if (rc) {
-+		free_property(new_prop);
-+		rc = -EINVAL;
-+		goto memory_release_exit;
-+	}
-+
-+	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
-+					  PSERIES_DRCONF_MEM_REMOVE,
-+					  &drmem[i].base_addr);
-+	if (rc != NOTIFY_BAD)
-+		rc = release_drc(drc_index);
-+
-+	if (rc) {
-+		prom_update_property(dn, old_prop, new_prop);
-+		rc = -EINVAL;
-+	}
-+
-+memory_release_exit:
-+	of_node_put(dn);
-+	return rc ? rc : count;
-+}
-+#endif /* CONFIG_ARCH_MEMORY_RELEASE */
-+#endif /* CONFIG_MEMORY_HOTPLUG */
-+
- static int pseries_dlpar_init(void)
+ #else /* ... !CONFIG_HOTPLUG_CPU */
+ static inline void register_cpu_control(struct cpu *cpu)
  {
- 	if (!machine_is(pseries))
- 		return 0;
+Index: powerpc/arch/powerpc/include/asm/machdep.h
+===================================================================
+--- powerpc.orig/arch/powerpc/include/asm/machdep.h	2009-10-28 15:21:47.000000000 -0500
++++ powerpc/arch/powerpc/include/asm/machdep.h	2009-10-28 15:21:53.000000000 -0500
+@@ -274,6 +274,11 @@
+ 	int (*memory_probe)(u64);
+ #endif
  
-+#ifdef CONFIG_ARCH_MEMORY_RELEASE
-+	ppc_md.memory_release = memory_release;
-+#endif
-+#ifdef CONFIG_ARCH_MEMORY_PROBE
-+	ppc_md.memory_probe = memory_probe;
++#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
++	ssize_t (*cpu_probe)(const char *, size_t);
++	ssize_t (*cpu_release)(const char *, size_t);
 +#endif
 +
- 	return 0;
+ };
+ 
+ extern void e500_idle(void);
+Index: powerpc/arch/powerpc/kernel/sysfs.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/sysfs.c	2009-10-28 15:20:34.000000000 -0500
++++ powerpc/arch/powerpc/kernel/sysfs.c	2009-10-28 15:21:53.000000000 -0500
+@@ -461,6 +461,25 @@
+ 
+ 	cacheinfo_cpu_offline(cpu);
  }
- device_initcall(pseries_dlpar_init);
++
++#ifdef CONFIG_ARCH_PROBE_RELEASE
++ssize_t arch_cpu_probe(const char *buf, size_t count)
++{
++	if (ppc_md.cpu_probe)
++		return ppc_md.cpu_probe(buf, count);
++
++	return -EINVAL;
++}
++
++ssize_t arch_cpu_release(const char *buf, size_t count)
++{
++	if (ppc_md.cpu_release)
++		return ppc_md.cpu_release(buf, count);
++
++	return -EINVAL;
++}
++#endif /* CONFIG_ARCH_PROBE_RELEASE */
++
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+ static int __cpuinit sysfs_cpu_notify(struct notifier_block *self,
+Index: powerpc/arch/powerpc/Kconfig
+===================================================================
+--- powerpc.orig/arch/powerpc/Kconfig	2009-10-28 15:21:47.000000000 -0500
++++ powerpc/arch/powerpc/Kconfig	2009-10-28 15:21:53.000000000 -0500
+@@ -320,6 +320,10 @@
+ 
+ 	  Say N if you are unsure.
+ 
++config ARCH_CPU_PROBE_RELEASE
++	def_bool y
++	depends on HOTPLUG_CPU
++
+ config ARCH_ENABLE_MEMORY_HOTPLUG
+ 	def_bool y
+ 
+Index: powerpc/include/linux/cpu.h
+===================================================================
+--- powerpc.orig/include/linux/cpu.h	2009-10-28 15:20:34.000000000 -0500
++++ powerpc/include/linux/cpu.h	2009-10-28 15:21:53.000000000 -0500
+@@ -43,6 +43,10 @@
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern void unregister_cpu(struct cpu *cpu);
++#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
++extern ssize_t arch_cpu_probe(const char *, size_t);
++extern ssize_t arch_cpu_release(const char *, size_t);
++#endif
+ #endif
+ 
+ struct notifier_block;
+Index: powerpc/arch/powerpc/kernel/smp.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/smp.c	2009-10-28 15:20:34.000000000 -0500
++++ powerpc/arch/powerpc/kernel/smp.c	2009-10-28 15:21:53.000000000 -0500
+@@ -364,7 +364,24 @@
+ 	set_cpu_online(cpu, true);
+ 	local_irq_enable();
+ }
++
++#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
++ssize_t arch_cpu_probe(const char *buf, size_t count)
++{
++	if (ppc_md.cpu_probe)
++		return ppc_md.cpu_probe(buf, count);
++
++	return -EINVAL;
++}
++ssize_t arch_cpu_release(const char *buf, size_t count)
++{
++	if (ppc_md.cpu_release)
++		return ppc_md.cpu_release(buf, count);
++
++	return -EINVAL;
++}
+ #endif
++#endif /* CONFIG_HOTPLUG_CPU */
+ 
+ static int __devinit cpu_enable(unsigned int cpu)
+ {
