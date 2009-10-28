@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbZJ1LnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbZJ1LmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753113AbZJ1LnB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 07:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZJ1LnB
+	id S1753023AbZJ1LmN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 07:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbZJ1LmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 07:43:01 -0400
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:57248 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790AbZJ1LnA (ORCPT
+	Wed, 28 Oct 2009 07:42:11 -0400
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:52146 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752567AbZJ1LmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 07:43:00 -0400
+	Wed, 28 Oct 2009 07:42:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=LuMYX5X4V1nB6DKqI388gFcJuwWJt4MCUeP/3WrPNllDEtMdRTGYjnqSUtQt6ppeiw
-         AQgk5P9T/7lhJbO0cOPj+izONnlQv0sIwns7JEQu8PaZGlOqS7+p+3JkaUWx5r6k6Djb
-         mwXZ9metdhO0F0JJ1sjtEyjn3N/moatb0nBFk=
-Message-ID: <4AE82DF9.6050506@ring3k.org>
-Date: Wed, 28 Oct 2009 20:41:45 +0900
-From: Mike McCormack <mikem@ring3k.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wy8QXKLI0jxb0T0NVxJWJQ6bRczeixo0ofgoRgrZR4VPR86jmr+BLCPiPjnfFGfs84
+         2OKdQHZfZsmMorM+P7RTEheuwtObK1C3rPBq5QAg4YxNmPTT/mrRzwtyTMmuIM0QAOWS
+         oqwSOa1YR2XQf4uUxPRL/Mo5cBfZ8qLerzYds=
+Date: Wed, 28 Oct 2009 12:42:08 +0100
+From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+To: Mel LKML <mel.lkml@gmail.com>
+Cc: Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Mel Gorman <mel@csn.ul.ie>, Frans Pop <elendil@planet.nl>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Tobias Oetiker <tobi@oetiker.ch>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Kalle Valo <kalle.valo@iki.fi>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mohamed Abbas <mohamed.abbas@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 0/5] Candidate fix for increased number of GFP_ATOMIC
+	failures V2
+Message-ID: <20091028114208.GA14476@bizet.domek.prywatny>
+References: <1256221356-26049-1-git-send-email-mel@csn.ul.ie> <20091023165810.GA4588@bizet.domek.prywatny> <20091023211239.GA6185@bizet.domek.prywatny> <9ec2d7290910240646p75b93c68v6ea1648d628a9660@mail.gmail.com>
 MIME-Version: 1.0
-To: bart.hartgers@gmail.com
-CC: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/6] ark3116: (v2) driver rework after review
-References: <20091028094324.010816897@gmail.com>
-In-Reply-To: <20091028094324.010816897@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9ec2d7290910240646p75b93c68v6ea1648d628a9660@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bart.hartgers@gmail.com wrote:
-> Hi Greg,
-> 
-> I updated my ark3116 patches after the review on the list. The main
-> change is the removal of the atomic_t fields and addition of a spinlock.
-> 
-> This patch set brings the ark3116 driver up to date by:
-> - replacing the magic numbers by proper uart register accesses
-> - introducing locking
-> - line error handling
-> - interrupt based modem status handling
-> - cts/rts handshaking
-> - break signaling
-> 
-> The patches are against 2.6.32-rc4.
-> 
-> Mike: do you still want to combine these with yours?: if so, let me
-> know if I can help with merging them.
+On Sat, Oct 24, 2009 at 02:46:56PM +0100, Mel LKML wrote:
+> Hi,
 
-Hey Guys,
+Hi,
 
-If everybody is happy with this patch set, then go ahead with it.  I was going
-to try to clean up the old code first before adding new stuff, however it
-won't be necessary if these patches are applied.
+> On 10/23/09, Karol Lewandowski <karol.k.lewandowski@gmail.com> wrote:
+> > On Fri, Oct 23, 2009 at 06:58:10PM +0200, Karol Lewandowski wrote:
 
-When all the dust settles, I'm happy to clean up anything left over :-)
+> > Ok, I've tested patches 1+2+4 and bug, while very hard to trigger, is
+> > still present. I'll test complete 1-4 patchset as time permits.
 
-thanks,
+Sorry for silence, I've been quite busy lately.
 
-Mike
 
+> And also patch 5 please which is the revert. Patch 5 as pointed out is
+> probably a red herring. Hwoever, it has changed the timing and made a
+> difference for some testing so I'd like to know if it helps yours as
+> well.
+
+I've tested patches 1+2+3+4 in my normal usage scenario (do some work,
+suspend, do work, suspend, ...) and it failed today after 4 days (== 4
+suspend-resume cycles).
+
+I'll test 1-5 now.
+
+
+Thanks.
