@@ -1,74 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752316AbZJ1N2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbZJ1N2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752316AbZJ1N2F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 09:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZJ1N2F
+	id S1753624AbZJ1N2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 09:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZJ1N2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 09:28:05 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:19617 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751449AbZJ1N2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 09:28:04 -0400
-Message-ID: <4AE846D6.6020505@redhat.com>
-Date: Wed, 28 Oct 2009 15:27:50 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 28 Oct 2009 09:28:16 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:62103 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752943AbZJ1N2M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 09:28:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:reply-to:organization:user-agent
+         :mime-version:to:cc:subject:references:in-reply-to:x-age:x-location
+         :x-os:x-face:content-type:content-transfer-encoding;
+        b=ZnSwWUG0MG8qMVN8uvTJIIW3j88fCVoeZqROfPttD+QDe+a0U8Jt2z4qNuZlgwTJNH
+         A3DPlJKFNxWIVb4lIdimKZawgQeeTIPgzK0pRn62qXBXTeOULlhfWucnCekquOSINXD/
+         70IzAhoAXgCx2tc7LXoPlXngS9yEZiE08qf9k=
+Message-ID: <4AE846E8.1070303@gmail.com>
+Date: Wed, 28 Oct 2009 14:28:08 +0100
+From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
+Reply-To: vedran.furac@gmail.com
+Organization: Home
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090701 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [Alacrityvm-devel] [KVM PATCH v2 1/2] KVM: export lockless GSI
- attribute
-References: <20091023023512.3891.65889.stgit@dev.haskins.net>	<20091023023845.3891.36857.stgit@dev.haskins.net> <4AE460F4.2090905@redhat.com> <4AE5A336.4010801@gmail.com> <4AE5C26A.9000400@gmail.com> <4AE81710.1080103@redhat.com> <4AE844FA.4070408@gmail.com>
-In-Reply-To: <4AE844FA.4070408@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Rientjes <rientjes@google.com>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, minchan.kim@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Memory overcommit
+References: <hav57c$rso$1@ger.gmane.org> <20091013120840.a844052d.kamezawa.hiroyu@jp.fujitsu.com> <hb2cfu$r08$2@ger.gmane.org> <20091014135119.e1baa07f.kamezawa.hiroyu@jp.fujitsu.com> <4ADE3121.6090407@gmail.com> <20091026105509.f08eb6a3.kamezawa.hiroyu@jp.fujitsu.com> <4AE5CB4E.4090504@gmail.com> <20091027122213.f3d582b2.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0910271843510.11372@sister.anvils> <alpine.DEB.2.00.0910271351140.9183@chino.kir.corp.google.com> <4AE78B8F.9050201@gmail.com> <alpine.DEB.2.00.0910271723180.17615@chino.kir.corp.google.com> <4AE792B8.5020806@gmail.com> <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0910272047430.8988@chino.kir.corp.google.com>
+X-Age: 25
+X-Location: Lovran, Croatia
+X-OS: Debian GNU/Linux
+X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/28/2009 03:19 PM, Gregory Haskins wrote:
->> Yes, and it also contains the work_struct.
+David Rientjes wrote:
+
+> On Wed, 28 Oct 2009, Vedran Furac wrote:
+> 
+>>> This is wrong; it doesn't "emulate oom" since oom_kill_process() always 
+>>> kills a child of the selected process instead if they do not share the 
+>>> same memory.  The chosen task in that case is untouched.
+>> OK, I stand corrected then. Thanks! But, while testing this I lost X
+>> once again and "test" survived for some time (check the timestamps):
 >>
->> What if we make the work_struct (and any additional state) part of the
->> set_atomic() argument list?  Does it simplify things?
->>      
-> Hmmm, that might not, but we could do a kmalloc(GFP_ATOMIC) for such
-> parameters.  Considering this is just a safety net, perhaps this would
-> work fine.
->    
+>> http://pastebin.com/d5c9d026e
+>>
+>> - It started by killing gkrellm(!!!)
+>> - Then I lost X (kdeinit4 I guess)
+>> - Then 103 seconds after the killing started, it killed "test" - the
+>> real culprit.
+>>
+>> I mean... how?!
+>>
+> 
+> Here are the five oom kills that occurred in your log, and notice that the 
+> first four times it kills a child and not the actual task as I explained:
 
-Can't you simply pass the same work_struct from irqfd as we use now?
+Yes, but four times wrong.
 
->>> So while generalizing this perhaps makes sense at some point, especially
->>> if irqfd-like interfaces get added, it probably doesn't make a ton of
->>> sense to expend energy on it ATM.  It is basically a generalization of
->>> the irqfd deferrment code.  Lets just wait until we have a user beyond
->>> irqfd for now.  Sound acceptable?
->>>
->>>        
->> I'll look at v3, but would really like to disentangle this.
->>      
-> Ok, I will see what I can do.  I need at least a v4 to get rid of the
-> dependency on the now defunct v3:1/3 patch per yesterdays discussion.
->    
+> Those are practically happening simultaneously with very little memory 
+> being available between each oom kill.  Only later is "test" killed:
+> 
+> [97240.203228] Out of memory: kill process 5005 (test) score 256912 or a child
+> [97240.206832] Killed process 5005 (test)
+> 
+> Notice how the badness score is less than 1/4th of the others.  So while 
+> you may find it to be hogging a lot of memory, there were others that 
+> consumed much more.
+^^^^^^^^^^^^^^^^^^^^^
 
-There's another alternative - make ioapic and pic irq-safe by switching 
-irq locking to spinlocks and using spin_lock_irqsave().
+This is just wrong. I have 3.5GB of RAM, free says that 2GB are empty
+(ignoring cache). Culprit then allocates all free memory (2GB). That
+means it is using *more* than all other processes *together*. There
+cannot be any other "that consumed much more".
 
-I've long opposed this since the ioapic loops on all vcpus when 
-injecting some irqs and this will increase irqoff times with large 
-guests.  But we don't have large guests now, and we need irq-safe 
-injection in three places now:
+> You can get a more detailed understanding of this by doing
+> 
+> 	echo 1 > /proc/sys/vm/oom_dump_tasks
+> 
+> before trying your testcase; it will show various information like the 
+> total_vm
 
-- irqfd
-- pit - we now signal vcpu0 to handle the injection, but this has its 
-problems
-- device assignment
+Looking at total_vm (VIRT in top/vsize in ps?) is completely wrong. If I
+sum up those numbers for every process running I would get:
 
-so it may be better to have irq-safe injection, and deal with the loop 
-later (would be good to have an idea how exactly).
+%ps -eo pid,vsize,command|awk '{ SUM += $2} END {print SUM/1024/1024}'
+14.7935
 
--- 
-error compiling committee.c: too many arguments to function
+14GB. And I only have 3GB. I usually use exmap to get realistic numbers:
 
+http://www.berthels.co.uk/exmap/doc.html
+
+> and oom_adj value for each task at the time of oom (and the 
+> actual badness score is exported per-task via /proc/pid/oom_score in 
+> real-time).  This will also include the rss and show what the end result 
+> would be in using that value as part of the heuristic on this particular 
+> workload compared to the current implementation.
+
+Thanks, I'll try that... but I guess that using rss would yield better
+results.
+
+
+Regards,
+
+Vedran
