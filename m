@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbZJ1QGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbZJ1QRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbZJ1QGy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 12:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZJ1QGy
+	id S1754977AbZJ1QRU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 12:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbZJ1QRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 12:06:54 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:22150 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752900AbZJ1QGx (ORCPT
+	Wed, 28 Oct 2009 12:17:20 -0400
+Received: from ip78-183-211-87.adsl2.static.versatel.nl ([87.211.183.78]:49612
+	"EHLO god.dyndns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754874AbZJ1QRT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 12:06:53 -0400
-Subject: Re: [PATCH 4/5] intel-iommu: Reinstate RMRRs if a device is
- removed from passthrough domain
-From: Alex Williamson <alex.williamson@hp.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-In-Reply-To: <1256740619.9814.141.camel@macbook.infradead.org>
-References: <20091026232401.9646.90540.stgit@nehalem.aw>
-	 <20091026232514.9646.58322.stgit@nehalem.aw>
-	 <1256631324.9814.14.camel@macbook.infradead.org>
-	 <1256658632.5937.7.camel@bling>
-	 <1256740619.9814.141.camel@macbook.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: HP OSLO R&D
-Date: Wed, 28 Oct 2009 10:06:55 -0600
-Message-ID: <1256746015.5937.128.camel@bling>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Oct 2009 12:17:19 -0400
+Date: Wed, 28 Oct 2009 17:17:22 +0100
+From: spam@systol-ng.god.lan
+To: Hans Petter Selasky <hselasky@c2i.net>
+Cc: Henk.Vergonet@gmail.com, licensing@fsf.org, linux-kernel@vger.kernel.org
+Subject: Re: Yealink driver
+Message-ID: <20091028161722.GA30039@systol-ng.god.lan>
+Reply-To: Henk.Vergonet@gmail.com
+References: <200910102012.51666.hselasky@c2i.net> <20091026171204.GA28750@systol-ng.god.lan> <200910262115.41869.hselasky@c2i.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910262115.41869.hselasky@c2i.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-28 at 14:36 +0000, David Woodhouse wrote:
-> On Tue, 2009-10-27 at 09:50 -0600, Alex Williamson wrote:
-> > 
-> > Yes, good point.  I'm not seeing any convenient ways to setup a new
-> > domain for a device while it's still a member of the si_domain.  It
-> > looks like I'd need to extract parts of the get_valid_domain_for_dev()
-> > path and ignore any bits about using the already existing domain.
+On Mon, Oct 26, 2009 at 09:15:40PM +0100, Hans Petter Selasky wrote:
+> On Monday 26 October 2009 18:12:04 spam@systol-ng.god.lan wrote:
+> > On Sat, Oct 10, 2009 at 08:12:50PM +0200, Hans Petter Selasky wrote:
+> > > Hi,
+> > >
+> > > I'm about to port your Yealink driver in Linux to FreeBSD (ISDN4BSD)
+> > > under a 2 clause BSD license. Your Yealink driver will be used as a
+> > > hardware reference document. Hope that is OK by you.
+> > >
+> > > I will send you an e-mail when the porting is complete with the source
+> > > code
+> > >
+> > > :-)
+> > >
+> > > --HPS
+> >
+> > Hmm,
+> >
+> > The driver is released under GPL2 for good reasons, I object to a
+> > re-license under a BSD or any other "free beer" type of license.
+> >
 > 
-> That seems like a sane plan. That code wants cleaning up anyway, and
-> factoring out the 'make new domain' part of get_valid_domain_for_dev()
-> should be simple enough.
+> Hi,
+> 
+> I'm not asking about re-licensing the whole driver, I think you misunderstand. 
+> I'm asking for permission to copy some programming commands so that I can use 
+> my Yealink under ISDN4BSD. Where did you get the documentation from, in 
+> between?
+> 
 
-Ok, I'll work on something along those lines.  FWIW, even though I sent
-these as a series, each one stands on it's own.  While I think
-reinstating RMRRs is the right thing to do, I don't know of any devices
-that break with the current model (the device I know of with the
-interesting RMRR usage shouldn't be demoted from the si_domain).  So
-please consider pushing patches 2, 3 & 5 upstream (particularly 2).
-Thanks,
+Ok there's no problem in using the code as a reference. I only want to
+avoid my code being reused in proprietary implementations, as is
+possible with BSD licensing.
 
-Alex
+Regards,
+Henk
 
