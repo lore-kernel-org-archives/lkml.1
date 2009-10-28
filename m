@@ -1,88 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbZJ1GyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932312AbZJ1Gzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757478AbZJ1GyX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Oct 2009 02:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757428AbZJ1GyR
+	id S932312AbZJ1Gzh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Oct 2009 02:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932235AbZJ1Gzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Oct 2009 02:54:17 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54072 "EHLO sh.osrg.net"
+	Wed, 28 Oct 2009 02:55:35 -0400
+Received: from sh.osrg.net ([192.16.179.4]:54084 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756960AbZJ1GyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Oct 2009 02:54:16 -0400
+	id S1757502AbZJ1GyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Oct 2009 02:54:25 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: chrisw@sous-sol.org, dwmw2@infradead.org, joerg.roedel@amd.com,
        mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH 05/10] intel-iommu: convert detect_intel_iommu to use iommu_init hook
-Date: Wed, 28 Oct 2009 15:47:39 +0900
-Message-Id: <1256712464-21472-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 06/10] bootmem: refactor free_all_bootmem_core
+Date: Wed, 28 Oct 2009 15:47:40 +0900
+Message-Id: <1256712464-21472-7-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 28 Oct 2009 15:53:50 +0900 (JST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 28 Oct 2009 15:53:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This changes detect_intel_iommu() to set intel_iommu_init() to
-iommu_init hook if detect_intel_iommu() finds the IOMMU.
+From: Chris Wright <chrisw@sous-sol.org>
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Move the loop that frees all bootmem pages back to page allocator into
+its own function.  This should have not functional effect and allows the
+function to be reused later.
+
+Reviewed-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/x86/kernel/pci-dma.c |    2 --
- drivers/pci/dmar.c        |    4 ++++
- include/linux/dmar.h      |   10 ----------
- 3 files changed, 4 insertions(+), 12 deletions(-)
+ mm/bootmem.c |   61 +++++++++++++++++++++++++++++++++++++++-------------------
+ 1 files changed, 41 insertions(+), 20 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 6abb8c2..f70b766 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -294,8 +294,6 @@ static int __init pci_iommu_init(void)
- 
- 	x86_init.iommu.iommu_init();
- 
--	intel_iommu_init();
--
- 	no_iommu_init();
- 	return 0;
+diff --git a/mm/bootmem.c b/mm/bootmem.c
+index 555d5d2..94ef2e7 100644
+--- a/mm/bootmem.c
++++ b/mm/bootmem.c
+@@ -143,17 +143,22 @@ unsigned long __init init_bootmem(unsigned long start, unsigned long pages)
+ 	return init_bootmem_core(NODE_DATA(0)->bdata, start, 0, pages);
  }
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index 22b02c6..bce9cd7 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -617,6 +617,10 @@ void __init detect_intel_iommu(void)
- 		    !dmar_disabled)
- 			iommu_detected = 1;
- #endif
-+#ifdef CONFIG_X86
-+		if (ret)
-+			x86_init.iommu.iommu_init = intel_iommu_init;
-+#endif
- 	}
- 	early_acpi_os_unmap_memory(dmar_tbl, dmar_tbl_size);
- 	dmar_tbl = NULL;
-diff --git a/include/linux/dmar.h b/include/linux/dmar.h
-index 4a2b162..3d12f28 100644
---- a/include/linux/dmar.h
-+++ b/include/linux/dmar.h
-@@ -208,16 +208,6 @@ struct dmar_atsr_unit {
- 	u8 include_all:1;		/* include all ports */
- };
  
--/* Intel DMAR  initialization functions */
- extern int intel_iommu_init(void);
--#else
--static inline int intel_iommu_init(void)
--{
--#ifdef CONFIG_INTR_REMAP
--	return dmar_dev_scope_init();
--#else
--	return -ENODEV;
- #endif
--}
--#endif /* !CONFIG_DMAR */
- #endif /* __DMAR_H__ */
+-static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
++/**
++ * free_bootmem_pages - frees bootmem pages to page allocator
++ * @start: start pfn
++ * @end: end pfn
++ * @map: bootmem bitmap of reserved pages
++ *
++ * This will free the pages in the range @start to @end, making them
++ * available to the page allocator.  The @map will be used to skip
++ * reserved pages.  Returns the count of pages freed.
++ */
++static unsigned long __init free_bootmem_pages(unsigned long start,
++					       unsigned long end,
++					       unsigned long *map)
+ {
++	unsigned long cursor, count = 0;
+ 	int aligned;
+-	struct page *page;
+-	unsigned long start, end, pages, count = 0;
+-
+-	if (!bdata->node_bootmem_map)
+-		return 0;
+-
+-	start = bdata->node_min_pfn;
+-	end = bdata->node_low_pfn;
+ 
+ 	/*
+ 	 * If the start is aligned to the machines wordsize, we might
+@@ -161,27 +166,25 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
+ 	 */
+ 	aligned = !(start & (BITS_PER_LONG - 1));
+ 
+-	bdebug("nid=%td start=%lx end=%lx aligned=%d\n",
+-		bdata - bootmem_node_data, start, end, aligned);
++	for (cursor = start; cursor < end; cursor += BITS_PER_LONG) {
++		unsigned long idx, vec;
+ 
+-	while (start < end) {
+-		unsigned long *map, idx, vec;
+-
+-		map = bdata->node_bootmem_map;
+-		idx = start - bdata->node_min_pfn;
++		idx = cursor - start;
+ 		vec = ~map[idx / BITS_PER_LONG];
+ 
+-		if (aligned && vec == ~0UL && start + BITS_PER_LONG < end) {
++		if (aligned && vec == ~0UL && cursor + BITS_PER_LONG < end) {
+ 			int order = ilog2(BITS_PER_LONG);
+ 
+-			__free_pages_bootmem(pfn_to_page(start), order);
++			__free_pages_bootmem(pfn_to_page(cursor), order);
+ 			count += BITS_PER_LONG;
+ 		} else {
+ 			unsigned long off = 0;
+ 
+ 			while (vec && off < BITS_PER_LONG) {
+ 				if (vec & 1) {
+-					page = pfn_to_page(start + off);
++					struct page *page;
++
++					page = pfn_to_page(cursor + off);
+ 					__free_pages_bootmem(page, 0);
+ 					count++;
+ 				}
+@@ -189,8 +192,26 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
+ 				off++;
+ 			}
+ 		}
+-		start += BITS_PER_LONG;
+ 	}
++	return count;
++}
++
++static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
++{
++	struct page *page;
++	unsigned long start, end, *map, pages, count = 0;
++
++	if (!bdata->node_bootmem_map)
++		return 0;
++
++	start = bdata->node_min_pfn;
++	end = bdata->node_low_pfn;
++	map = bdata->node_bootmem_map;
++
++	bdebug("nid=%td start=%lx end=%lx\n", bdata - bootmem_node_data,
++		start, end);
++
++	count = free_bootmem_pages(start, end, map);
+ 
+ 	page = virt_to_page(bdata->node_bootmem_map);
+ 	pages = bdata->node_low_pfn - bdata->node_min_pfn;
 -- 
 1.5.6.5
 
